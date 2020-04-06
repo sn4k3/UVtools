@@ -51,11 +51,12 @@ But also, i need victims for test subject. Proceed at your own risk!
 
 ## How to use
 
-Theres multiple ways to open your SL1 file:
+There are multiple ways to open your SL1 file:
 
 1. Open PrusaSL1Viewer.exe and load your file (CTRL + O) (File -> Open)
 2. Open PrusaSL1Viewer.exe and drag and drop your file inside window
 3. Drag and drop sl1 file into PrusaSL1Viewer.exe
+4. Set PrusaSL1Viewer.exe the default program to open .sl1 files
 
 ## Library -> Developers
 
