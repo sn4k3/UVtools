@@ -4,6 +4,10 @@ Open, view, extract and convert SL1 files generated from PrusaSlicer.
 
 This easy tool can also give you insight of supports and find some failures.
 
+Youtube video: https://www.youtube.com/watch?v=hJD2cgF5rxs
+
+![GUI Screenshot](https://raw.githubusercontent.com/sn4k3/PrusaSL1Viewer/master/PrusaSL1Viewer/Images/Screenshots/PrusaSL1Viewer_GUI.png)
+
 ## Why this project?
 I don't own a Prusa SL1 or any other resin printer, for now I’m only a FDM user with 
 Prusa MK3 and a Ender3.
