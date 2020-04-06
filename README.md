@@ -65,3 +65,10 @@ Are you a developer? This project include a .NET Core library (PrusaSL1Reader) t
 ## TODO
 * Convert SL1 files to another slicer file format
 * Add printer profiles
+
+## Support my work / Donate
+
+All my work here is given for free (OpenSource), it took some hours to build, test and polish the program.
+If you're happy to contribute for a better program and for my work i will appreciate the tip.
+
+PP: https://paypal.me/SkillTournament
