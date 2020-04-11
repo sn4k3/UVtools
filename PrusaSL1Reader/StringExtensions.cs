@@ -13,6 +13,11 @@ namespace PrusaSL1Reader
 {
     public static class StringExtensions
     {
+        /// <summary>
+        /// Upper the first character in a string
+        /// </summary>
+        /// <param name="input">Input string</param>
+        /// <returns>Modified string with fist character upper</returns>
         public static string FirstCharToUpper(this string input)
         {
             switch (input)
@@ -23,6 +28,12 @@ namespace PrusaSL1Reader
             }
         }
 
+        /// <summary>
+        /// Converts a string into a target type
+        /// </summary>
+        /// <typeparam name="T">Target type to convert into</typeparam>
+        /// <param name="input">Value</param>
+        /// <returns>Converted value into target type</returns>
         public static T Convert<T>(this string input)
         {
             var converter = TypeDescriptor.GetConverter(typeof(T));

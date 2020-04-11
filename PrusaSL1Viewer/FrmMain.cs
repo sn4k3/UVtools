@@ -13,6 +13,7 @@ using System.IO.Compression;
 using System.Reflection;
 using System.Windows.Forms;
 using PrusaSL1Reader;
+using SixLabors.ImageSharp.Processing;
 
 namespace PrusaSL1Viewer
 {
@@ -34,7 +35,7 @@ namespace PrusaSL1Viewer
         #region Events
         private void sbLayers_ValueChanged(object sender, EventArgs e)
         {
-            ShowLayer(sbLayers.Maximum - sbLayers.Value);
+            ShowLayer((uint)(sbLayers.Maximum - sbLayers.Value));
         }
         
 
@@ -46,7 +47,7 @@ namespace PrusaSL1Viewer
                 using (OpenFileDialog openFile = new OpenFileDialog())
                 {
                     openFile.CheckFileExists = true;
-                    openFile.Filter = $@"{Program.SL1File.FileExtensionName} (*.{Program.SL1File.FileExtension})|*.{Program.SL1File.FileExtension}";
+                    openFile.Filter = Program.SL1File.GetFileFilter();
                     openFile.FilterIndex = 0;
                     if (openFile.ShowDialog() == DialogResult.OK)
                     {
@@ -97,13 +98,34 @@ namespace PrusaSL1Viewer
                 return;
             }
 
+            if (ReferenceEquals(sender, menuEditConvert))
+            {
+                using (SaveFileDialog dialog = new SaveFileDialog())
+                {
+                    dialog.FileName = Path.GetFileNameWithoutExtension(Program.SL1File.FileFullPath);
+                    using (CbddlpFile file = new CbddlpFile())
+                    {
+                        dialog.Filter = file.GetFileFilter();
+                    }
+
+
+                    if (dialog.ShowDialog() == DialogResult.OK)
+                    {
+                        Program.SL1File.Convert(typeof(CbddlpFile), dialog.FileName);
+                    }
+
+                }
+                
+                return;
+            }
+
             if (ReferenceEquals(sender, menuAboutAbout))
             {
                 Program.FrmAbout.ShowDialog();
             }
             if (ReferenceEquals(sender, menuAboutWebsite))
             {
-                Process.Start(PrusaSL1Reader.About.Website);
+                Process.Start(About.Website);
                 return;
             }
 
@@ -124,7 +146,7 @@ namespace PrusaSL1Viewer
             if (ReferenceEquals(files, null)) return;
             foreach (string file in files)
             {
-                if (!file.EndsWith($".{Program.SL1File.FileExtension}")) continue;
+                if (!Program.SL1File.IsExtensionValid(file, true)) continue;
                 try
                 {
                     ProcessFile(file);
@@ -141,14 +163,14 @@ namespace PrusaSL1Viewer
 
         void ProcessFile(string fileName)
         {
-            if (!ReferenceEquals(Program.SL1File, null))
+           /* if (!ReferenceEquals(Program.SL1File, null))
             {
                 Program.SL1File.Dispose();
-            }
+            }*/
 
-            Program.SL1File.Load(fileName);
+            Program.SL1File.Decode(fileName);
 
-            pbThumbnail.Image = Image.FromStream(Program.SL1File.Thumbnails[0].Open());
+            pbThumbnail.Image = Program.SL1File.Thumbnails[0].ToBitmap();
             //ShowLayer(0);
 
             sbLayers.SmallChange = 1;
@@ -190,12 +212,15 @@ namespace PrusaSL1Viewer
             Text = $"{FrmAbout.AssemblyTitle}   Version: {FrmAbout.AssemblyVersion}   File: {Path.GetFileName(fileName)}";
         }
 
-        void ShowLayer(int layerNum)
+        void ShowLayer(uint layerNum)
         {
             //if(!ReferenceEquals(pbLayer.Image, null))
             //    pbLayer.Image.Dispose(); SLOW! LET GC DO IT
-            pbLayer.Image = Image.FromStream(Program.SL1File.LayerImages[layerNum].Open());
-            pbLayer.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
+            //pbLayer.Image = Image.FromStream(Program.SL1File.LayerImages[layerNum].Open());
+            //pbLayer.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
+            var image = Program.SL1File.GetLayerImage(layerNum);
+            image.Mutate(x => x.Rotate(RotateMode.Rotate90));
+            pbLayer.Image = image.ToBitmap();
 
             byte percent = (byte)((layerNum + 1) * 100 / Program.SL1File.GetLayerCount);
 

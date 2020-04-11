@@ -7,13 +7,18 @@
     <PackageProjectUrl>https://github.com/sn4k3/PrusaSL1Viewer</PackageProjectUrl>
     <PackageIcon></PackageIcon>
     <RepositoryUrl>https://github.com/sn4k3/PrusaSL1Viewer</RepositoryUrl>
-    <AssemblyVersion>0.1.0.0</AssemblyVersion>
-    <FileVersion>0.1.0.0</FileVersion>
-    <Version>0.1</Version>
+    <AssemblyVersion>0.2.0.0</AssemblyVersion>
+    <FileVersion>0.2.0.0</FileVersion>
+    <Version>0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\LICENSE" Link="LICENSE" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BinarySerializer" Version="8.5.1" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
   </ItemGroup>
 
 </Project>

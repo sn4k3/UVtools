@@ -56,6 +56,7 @@
             this.scCenter = new System.Windows.Forms.SplitContainer();
             this.pbLayer = new System.Windows.Forms.PictureBox();
             this.pbLayers = new System.Windows.Forms.ProgressBar();
+            this.menuEditConvert = new System.Windows.Forms.ToolStripMenuItem();
             this.menu.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -116,7 +117,8 @@
             // menuEdit
             // 
             this.menuEdit.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuEditExtract});
+            this.menuEditExtract,
+            this.menuEditConvert});
             this.menuEdit.Enabled = false;
             this.menuEdit.Name = "menuEdit";
             this.menuEdit.Size = new System.Drawing.Size(39, 20);
@@ -128,7 +130,7 @@
             this.menuEditExtract.Image = global::PrusaSL1Viewer.Properties.Resources.Extract_object_16x16;
             this.menuEditExtract.Name = "menuEditExtract";
             this.menuEditExtract.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.E)));
-            this.menuEditExtract.Size = new System.Drawing.Size(150, 22);
+            this.menuEditExtract.Size = new System.Drawing.Size(181, 22);
             this.menuEditExtract.Text = "&Extract";
             this.menuEditExtract.Click += new System.EventHandler(this.MenuItemClicked);
             // 
@@ -349,6 +351,15 @@
             this.pbLayers.Step = 1;
             this.pbLayers.TabIndex = 6;
             // 
+            // menuEditConvert
+            // 
+            this.menuEditConvert.Name = "menuEditConvert";
+            this.menuEditConvert.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            | System.Windows.Forms.Keys.C)));
+            this.menuEditConvert.Size = new System.Drawing.Size(181, 22);
+            this.menuEditConvert.Text = "&Convert";
+            this.menuEditConvert.Click += new System.EventHandler(this.MenuItemClicked);
+            // 
             // FrmMain
             // 
             this.AllowDrop = true;
@@ -410,6 +421,7 @@
         private System.Windows.Forms.SplitContainer scCenter;
         private System.Windows.Forms.PictureBox pbLayer;
         private System.Windows.Forms.ProgressBar pbLayers;
+        private System.Windows.Forms.ToolStripMenuItem menuEditConvert;
     }
 }
 

@@ -13,10 +13,13 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace PrusaSL1Reader
 {
-    public class SL1File : FileFormat, IDisposable, IEquatable<SL1File>
+    public class SL1File : FileFormat, IEquatable<SL1File>
     {
         #region Sub Classes 
 
@@ -265,7 +268,11 @@ namespace PrusaSL1Reader
 
         public Statistics Statistics { get; } = new Statistics();
 
-        public List<ZipArchiveEntry> Thumbnails { get; } = new List<ZipArchiveEntry>(2);
+        public override byte ThumbnailsCount { get; } = 2;
+
+        public override Image<Rgba32>[] Thumbnails { get; protected internal set; }
+
+        //public List<ZipArchiveEntry> Thumbnails { get; } = new List<ZipArchiveEntry>(2);
         public List<ZipArchiveEntry> LayerImages { get; } = new List<ZipArchiveEntry>();
 
         public uint GetLayerCount => (uint)LayerImages.Count;
@@ -292,11 +299,6 @@ namespace PrusaSL1Reader
             return (FileFullPath != null ? FileFullPath.GetHashCode() : 0);
         }
 
-        public void Dispose()
-        {
-            Archive?.Dispose();
-        }
-
         public override string ToString()
         {
             return $"{nameof(FileFullPath)}: {FileFullPath}, {nameof(MaterialSettings)}: {MaterialSettings}, {nameof(PrintSettings)}: {PrintSettings}, {nameof(OutputConfigSettings)}: {OutputConfigSettings}, {nameof(Statistics)}: {Statistics}, {nameof(GetLayerCount)}: {GetLayerCount}, {nameof(TotalHeight)}: {TotalHeight}";
@@ -306,26 +308,42 @@ namespace PrusaSL1Reader
 
         #region Contructors
         public SL1File() { }
-        public SL1File(string fileFullPath)
+        public SL1File(string fileFullPath) 
         {
-            Load(fileFullPath);
+            Decode(fileFullPath);
         }
         #endregion
 
         #region Functions
 
-        public override string FileExtension { get; } = "sl1";
-        public override string FileExtensionName { get; } = "Prusa SL1 Files";
+        public override string FileFullPath { get; protected set; }
 
-        public override void Load(string fileFullPath)
+        public override FileExtension[] ValidFiles { get; } = {
+            new FileExtension("sl1", "Prusa SL1 Files")
+        };
+
+        private List<Image<Gray8>> images = new List<Image<Gray8>>();
+
+        public override void BeginEncode(string fileFullPath)
         {
-            FileValidation(fileFullPath);
-            FileFullPath = fileFullPath;
+            throw new NotImplementedException();
+        }
 
-            Archive?.Dispose();
-            Thumbnails.Clear();
-            LayerImages.Clear();
-            Statistics.Clear();
+        public override void InsertLayerImageEncode(Image<Gray8> image, uint layerIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void EndEncode()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Decode(string fileFullPath)
+        {
+            DecodeInternal(fileFullPath);
+
+            FileFullPath = fileFullPath;
 
             PrinterSettings = new Printer();
             MaterialSettings = new Material();
@@ -343,6 +361,7 @@ namespace PrusaSL1Reader
             };
 
             Archive = ZipFile.OpenRead(FileFullPath);
+            byte thumbnailIndex = 0;
             foreach (ZipArchiveEntry entity in Archive.Entries)
             {
                 if (entity.Name.EndsWith(".ini"))
@@ -383,21 +402,132 @@ namespace PrusaSL1Reader
                 {
                     if (entity.Name.StartsWith("thumbnail"))
                     {
-                        Thumbnails.Add(entity);
+                        using (Stream stream = entity.Open())
+                        {
+                            Thumbnails[thumbnailIndex] = Image.Load<Rgba32>(stream);
+                            stream.Close();
+                        }
+
+                        thumbnailIndex++;
+
                         continue;
                     }
 
                     LayerImages.Add(entity);
                 }
             }
+
             Statistics.ExecutionTime.Stop();
 
             Debug.WriteLine(Statistics);
         }
 
+        public override Image<Gray8> GetLayerImage(uint layerIndex)
+        {
+            return Image.Load<Gray8>(LayerImages[(int)layerIndex].Open());
+        }
+
         public override float GetHeightFromLayer(uint layerNum)
         {
             return (float)Math.Round(MaterialSettings.InitialLayerHeight + (layerNum - 1) * OutputConfigSettings.LayerHeight, 2);
+        }
+
+        public override void Clear()
+        {
+            ClearInternal();
+            Archive?.Dispose();
+            LayerImages.Clear();
+            Statistics.Clear();
+        }
+
+        public override bool Convert(Type to, string fileFullPath)
+        {
+            if (!IsValid()) return false;
+
+            if (to == typeof(CbddlpFile))
+            {
+                CbddlpFile file = new CbddlpFile
+                {
+                    HeaderSettings = new CbddlpFile.Header
+                    {
+                        Version = 2,
+                        AntiAliasLevel = LookupCustomValue<uint>("AntiAliasLevel", 1),
+                        BedSizeX = PrinterSettings.DisplayWidth,
+                        BedSizeY = PrinterSettings.DisplayHeight,
+                        BedSizeZ = PrinterSettings.MaxPrintHeight,
+                        BottomExposureSeconds = MaterialSettings.InitialExposureTime,
+                        BottomLayersCount = PrintSettings.FadedLayers,
+                        BottomLightPWM = LookupCustomValue<ushort>("BottomLightPWM", 255), // TODO
+                        LayerCount = GetLayerCount,
+                        LayerExposureSeconds = MaterialSettings.ExposureTime,
+                        LayerHeightMilimeter = PrintSettings.LayerHeight,
+                        LayerOffTime = LookupCustomValue<float>("LayerOffTime", 0), // TODO
+                        LightPWM = LookupCustomValue<ushort>("LightPWM", 255), // TODO
+                        PrintTime = (uint) OutputConfigSettings.PrintTime,
+                        ProjectorType = PrinterSettings.DisplayMirrorX ? 1u : 0u,
+                        ResolutionX = PrinterSettings.DisplayPixelsX,
+                        ResolutionY = PrinterSettings.DisplayPixelsY,
+                    },
+                    PrintParametersSettings = new CbddlpFile.PrintParameters
+                    {
+                        BottomLayerCount = PrintSettings.FadedLayers,
+                        BottomLiftHeight = LookupCustomValue<float>("BottomLiftHeight", 5), // TODO
+                        BottomLiftSpeed = LookupCustomValue<float>("BottomLiftSpeed", 60), // TODO
+                        BottomLightOffDelay = LookupCustomValue<float>("BottomLightOffDelay", 0), // TODO
+                        CostDollars = OutputConfigSettings.UsedMaterial * MaterialSettings.BottleCost /
+                                      MaterialSettings.BottleVolume,
+                        LiftHeight = LookupCustomValue<float>("LiftHeight", 5), // TODO, // TODO
+                        LiftingSpeed = LookupCustomValue<float>("LiftingSpeed", 60), // TODO
+                        LightOffDelay = LookupCustomValue<float>("LightOffDelay", 0), // TODO
+                        RetractSpeed = LookupCustomValue<float>("RetractSpeed", 150), // TODO
+                        VolumeMl = OutputConfigSettings.UsedMaterial,
+                        WeightG = OutputConfigSettings.UsedMaterial * MaterialSettings.MaterialDensity
+                    },
+                    Thumbnails = Thumbnails,
+                    MachineInfoSettings = new CbddlpFile.MachineInfo()
+                    {
+                        MachineName = PrinterSettings.PrinterSettingsId,
+                        MachineNameSize = (uint)PrinterSettings.PrinterSettingsId.Length
+
+                    },
+                };
+
+
+
+                file.BeginEncode(fileFullPath);
+
+                for (uint layerIndex = 0; layerIndex < GetLayerCount; layerIndex++)
+                {
+                    file.InsertLayerImageEncode(GetLayerImage(layerIndex), layerIndex);
+                }
+
+                file.EndEncode();
+            }
+
+            return false;
+        }
+
+        public T LookupCustomValue<T>(string name, T defaultValue)
+        {
+            string result = string.Empty;
+            name += '_';
+
+            int index = PrinterSettings.PrinterNotes.IndexOf(name, StringComparison.Ordinal);
+            int startIndex = index + name.Length;
+
+            if (index < 0 || PrinterSettings.PrinterNotes.Length < startIndex) return defaultValue;
+            for (int i = startIndex; i < PrinterSettings.PrinterNotes.Length; i++)
+            {
+                char c = PrinterSettings.PrinterNotes[i];
+                if (!Char.IsLetterOrDigit(c) && c != '.')
+                {
+                    break;
+                }
+                
+                result += PrinterSettings.PrinterNotes[i];
+            }
+
+            return result.Convert<T>();
         }
 
         #endregion
