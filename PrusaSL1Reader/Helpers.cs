@@ -5,6 +5,8 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -15,6 +17,10 @@ namespace PrusaSL1Reader
 {
     public static class Helpers
     {
+        public static Type[] AvaliableFileFormats { get; } = {
+            typeof(SL1File), 
+            typeof(CbddlpFile)
+        };
         public static BinarySerializer Serializer { get; } = new BinarySerializer {Endianness = Endianness.Little };
         public static Gray8 Gray8White { get; } = new Gray8(255);
         public static T ByteToType<T>(BinaryReader reader)
@@ -56,22 +62,22 @@ namespace PrusaSL1Reader
             return Helpers.Serializer.Deserialize<T>(stream);
         }
 
-        public static int WriteFileStream(FileStream fs, MemoryStream stream, uint offset = 0)
+        public static uint WriteFileStream(FileStream fs, MemoryStream stream, uint offset = 0)
         {
-            return WriteFileStream(fs, stream.GetBuffer(), offset);
+            return WriteFileStream(fs, stream.ToArray(), offset);
         }
 
-        public static int WriteFileStream(FileStream fs, byte[] bytes, uint offset = 0)
+        public static uint WriteFileStream(FileStream fs, byte[] bytes, uint offset = 0)
         {
             fs.Write(bytes, 0, bytes.Length);
-            return bytes.Length;
+            return (uint)bytes.Length;
         }
 
-        public static int SerializeWriteFileStream(FileStream fs, object value, uint offset = 0)
+        public static uint SerializeWriteFileStream(FileStream fs, object value, uint offset = 0)
         {
             using (MemoryStream stream = Helpers.Serialize(value))
             {
-                return Helpers.WriteFileStream(fs, stream);
+                return (uint)Helpers.WriteFileStream(fs, stream);
             }
         }
     }

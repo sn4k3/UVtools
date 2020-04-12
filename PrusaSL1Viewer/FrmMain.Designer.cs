@@ -39,6 +39,7 @@
             this.menuFileExit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuEditExtract = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuEditConvert = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuAboutWebsite = new System.Windows.Forms.ToolStripMenuItem();
             this.menuAboutDonate = new System.Windows.Forms.ToolStripMenuItem();
@@ -56,7 +57,6 @@
             this.scCenter = new System.Windows.Forms.SplitContainer();
             this.pbLayer = new System.Windows.Forms.PictureBox();
             this.pbLayers = new System.Windows.Forms.ProgressBar();
-            this.menuEditConvert = new System.Windows.Forms.ToolStripMenuItem();
             this.menu.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -129,10 +129,19 @@
             this.menuEditExtract.Enabled = false;
             this.menuEditExtract.Image = global::PrusaSL1Viewer.Properties.Resources.Extract_object_16x16;
             this.menuEditExtract.Name = "menuEditExtract";
-            this.menuEditExtract.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.E)));
-            this.menuEditExtract.Size = new System.Drawing.Size(181, 22);
+            this.menuEditExtract.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            | System.Windows.Forms.Keys.E)));
+            this.menuEditExtract.Size = new System.Drawing.Size(180, 22);
             this.menuEditExtract.Text = "&Extract";
             this.menuEditExtract.Click += new System.EventHandler(this.MenuItemClicked);
+            // 
+            // menuEditConvert
+            // 
+            this.menuEditConvert.Enabled = false;
+            this.menuEditConvert.Image = global::PrusaSL1Viewer.Properties.Resources.Convert_16x16;
+            this.menuEditConvert.Name = "menuEditConvert";
+            this.menuEditConvert.Size = new System.Drawing.Size(180, 22);
+            this.menuEditConvert.Text = "&Convert To";
             // 
             // helpToolStripMenuItem
             // 
@@ -204,7 +213,7 @@
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 1;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 737F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(1631, 737);
             this.tableLayoutPanel1.TabIndex = 5;
             // 
@@ -350,15 +359,6 @@
             this.pbLayers.Size = new System.Drawing.Size(1125, 25);
             this.pbLayers.Step = 1;
             this.pbLayers.TabIndex = 6;
-            // 
-            // menuEditConvert
-            // 
-            this.menuEditConvert.Name = "menuEditConvert";
-            this.menuEditConvert.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
-            | System.Windows.Forms.Keys.C)));
-            this.menuEditConvert.Size = new System.Drawing.Size(181, 22);
-            this.menuEditConvert.Text = "&Convert";
-            this.menuEditConvert.Click += new System.EventHandler(this.MenuItemClicked);
             // 
             // FrmMain
             // 

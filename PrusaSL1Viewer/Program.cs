@@ -6,13 +6,8 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
-using System.Drawing;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows.Forms;
 using PrusaSL1Reader;
-using SixLabors.ImageSharp;
 
 namespace PrusaSL1Viewer
 {
@@ -34,16 +29,14 @@ namespace PrusaSL1Viewer
             FrmAbout = new FrmAbout();
             Application.Run(FrmMain);
 
-            CbddlpFile file = new CbddlpFile();
+            //CbddlpFile file = new CbddlpFile();
 
             //file.Decode(@"D:\Tiago\Desktop\_Coronavirus-v6-HIRES-Supports_NOAA.cbddlp");
-            //file.Decode(@"D:\Tiago\Desktop\coronanew11.cbddlp");
-            /*file.GetLayerImage(0).Save(@"D:\img0.png");
-            file.GetLayerImage(10).Save(@"D:\img10.png");
-            file.GetLayerImage(20).Save(@"D:\img20.png");
-            file.GetLayerImage(50).Save(@"D:\img50.png");*/
-
-        //LayerPositionZ: 0, LayerExposure: 35, LayerOffTimeSeconds: 0, DataAddress: 283641, DataSize: 30804, Unknown1: 0, Unknown2: 0, Unknown3: 0, Unknown4: 0
+            /*file.Decode(@"D:\Tiago\Desktop\coronanew11.cbddlp");
+            file.GetLayerImage(0).Save(@"D:\img-new-0.png");
+            file.GetLayerImage(10).Save(@"D:\img-new-10.png");
+            file.GetLayerImage(20).Save(@"D:\img-new-20.png");
+            file.GetLayerImage(50).Save(@"D:\img-new-50.png");*/
         }
     }
 }

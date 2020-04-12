@@ -15,7 +15,6 @@ using System.Linq;
 using System.Reflection;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 
 namespace PrusaSL1Reader
 {
@@ -282,6 +281,12 @@ namespace PrusaSL1Reader
         #endregion
 
         #region Overrides
+
+        public override string FileFullPath { get; protected set; }
+
+        public override FileExtension[] ValidFiles { get; } = {
+            new FileExtension("sl1", "Prusa SL1 Files")
+        };
         public override bool Equals(object obj)
         {
             return Equals(obj as SL1File);
@@ -314,13 +319,9 @@ namespace PrusaSL1Reader
         }
         #endregion
 
-        #region Functions
+        #region Methods
 
-        public override string FileFullPath { get; protected set; }
-
-        public override FileExtension[] ValidFiles { get; } = {
-            new FileExtension("sl1", "Prusa SL1 Files")
-        };
+        
 
         private List<Image<Gray8>> images = new List<Image<Gray8>>();
 
@@ -492,6 +493,11 @@ namespace PrusaSL1Reader
                     },
                 };
 
+                if (LookupCustomValue<bool>("FLIP_XY", false, true))
+                {
+                    file.HeaderSettings.ResolutionX = PrinterSettings.DisplayPixelsY;
+                    file.HeaderSettings.ResolutionY = PrinterSettings.DisplayPixelsX;
+                }
 
 
                 file.BeginEncode(fileFullPath);
@@ -507,15 +513,19 @@ namespace PrusaSL1Reader
             return false;
         }
 
-        public T LookupCustomValue<T>(string name, T defaultValue)
+        public T LookupCustomValue<T>(string name, T defaultValue, bool existsOnly = false)
         {
             string result = string.Empty;
-            name += '_';
+            if(!existsOnly)
+                name += '_';
 
             int index = PrinterSettings.PrinterNotes.IndexOf(name, StringComparison.Ordinal);
+            
+            
             int startIndex = index + name.Length;
-
+            
             if (index < 0 || PrinterSettings.PrinterNotes.Length < startIndex) return defaultValue;
+            if (existsOnly) return "true".Convert<T>();
             for (int i = startIndex; i < PrinterSettings.PrinterNotes.Length; i++)
             {
                 char c = PrinterSettings.PrinterNotes[i];
@@ -532,7 +542,7 @@ namespace PrusaSL1Reader
 
         #endregion
 
-        #region Static Functions
+        #region Static Methods
         public static string IniKeyToMemberName(string keyName)
         {
             string memberName = string.Empty;

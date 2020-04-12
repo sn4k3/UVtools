@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Cryptography;
 using BinarySerialization;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
@@ -182,13 +183,13 @@ namespace PrusaSL1Reader
         public PrintParameters PrintParametersSettings { get; protected internal set; }
 
         public MachineInfo MachineInfoSettings { get; protected internal set; }
-        //public string MachineName { get; protected internal set; }
 
         public Preview[] Previews { get; protected internal set; }
 
         public Layer[,] Layers { get; private set; }
 
         private uint CurrentOffset { get; set; }
+        private uint LayerDataCurrentOffset { get; set; }
 
         #endregion
 
@@ -219,10 +220,10 @@ namespace PrusaSL1Reader
             //HeaderSettings.PreviewOneOffsetAddress = CurrentOffset;
             HeaderSettings.PrintParametersSize = (uint)Helpers.Serializer.SizeOf(PrintParametersSettings);
 
-            Helpers.SerializeWriteFileStream(OutputFile, HeaderSettings);
+            //CurrentOffset = Helpers.SerializeWriteFileStream(OutputFile, HeaderSettings);
 
-            //OutputFile.Seek((int)HeaderSettings.PreviewOneOffsetAddress, SeekOrigin.Begin);
-            
+            OutputFile.Seek((int)CurrentOffset, SeekOrigin.Begin);
+
 
             /*for (int i = 0; i < ThumbnailsCount; i++)
             {
@@ -295,36 +296,28 @@ namespace PrusaSL1Reader
 
                 Previews[i] = preview;
 
-                using (MemoryStream stream = Helpers.Serialize(preview))
-                {
-                    OutputFile.Write(stream.GetBuffer());
-                }
-
-                OutputFile.Write(rawData.ToArray());
-
-                CurrentOffset += (uint)rawData.Count;
-            }
-            */
+                Helpers.SerializeWriteFileStream(OutputFile, preview);
+                CurrentOffset += Helpers.SerializeWriteFileStream(OutputFile, rawData.ToArray());
+            }*/
+            
 
             if (HeaderSettings.Version == 2)
             {
                 HeaderSettings.PrintParametersOffsetAddress = CurrentOffset;
 
-                Helpers.SerializeWriteFileStream(OutputFile, PrintParametersSettings);
+                CurrentOffset += Helpers.SerializeWriteFileStream(OutputFile, PrintParametersSettings);
 
-                CurrentOffset += (uint) (Helpers.Serializer.SizeOf(PrintParametersSettings) +
-                                         Helpers.Serializer.SizeOf(MachineInfoSettings) -
-                                         MachineInfoSettings.MachineNameSize);
+                MachineInfoSettings.MachineNameAddress = (uint)(CurrentOffset + Helpers.Serializer.SizeOf(MachineInfoSettings) -
+                                                                MachineInfoSettings.MachineNameSize);
 
-                MachineInfoSettings.MachineNameAddress = CurrentOffset;
 
-                Helpers.SerializeWriteFileStream(OutputFile, MachineInfoSettings);
-
-                CurrentOffset += MachineInfoSettings.MachineNameSize;
+                CurrentOffset += Helpers.SerializeWriteFileStream(OutputFile, MachineInfoSettings);
             }
 
             HeaderSettings.LayersDefinitionOffsetAddress = CurrentOffset;
+            LayerDataCurrentOffset = CurrentOffset + (uint)Helpers.Serializer.SizeOf(new Layer()) * HeaderSettings.LayerCount * HeaderSettings.AntiAliasLevel;
         }
+
 
         public override void InsertLayerImageEncode(Image<Gray8> image, uint layerIndex)
         {
@@ -347,13 +340,15 @@ namespace PrusaSL1Reader
                     if (prevColor == byte.MaxValue) prevColor = color;
                     bool isLastPixel = x == (image.Width - 1) && y == (image.Height - 1);
 
-                    if (color == prevColor && nrOfColor< 0x7D && !isLastPixel)
+                    if (color == prevColor && nrOfColor < 0x7D && !isLastPixel)
                     {
                         nrOfColor++;
                     }
                     else
                     {
-                        byte encValue = (byte)((prevColor << 7) | nrOfColor); // push color (B/W) to highest bit and repetitions to lowest 7 bits.
+                        byte encValue =
+                            (byte) ((prevColor << 7) |
+                                    nrOfColor); // push color (B/W) to highest bit and repetitions to lowest 7 bits.
                         rawData.Add(encValue);
                         prevColor = color;
                         nrOfColor = 1;
@@ -361,19 +356,20 @@ namespace PrusaSL1Reader
                 }
             }
 
-            CurrentOffset += (uint)Helpers.Serializer.SizeOf(layer);
 
-            layer.DataAddress = CurrentOffset;
+            //layer.DataAddress = CurrentOffset + (uint)Helpers.Serializer.SizeOf(layer);
+            layer.DataAddress = LayerDataCurrentOffset;
             layer.DataSize = (uint)rawData.Count;
             layer.LayerPositionZ = layerIndex * HeaderSettings.LayerHeightMilimeter;
             layer.LayerOffTimeSeconds = layerIndex < HeaderSettings.BottomLayersCount ? PrintParametersSettings.BottomLightOffDelay : PrintParametersSettings.LightOffDelay;
             layer.LayerExposure = layerIndex < HeaderSettings.BottomLayersCount ? HeaderSettings.BottomExposureSeconds : HeaderSettings.LayerExposureSeconds;
-            Layers[layerIndex, 0] =  layer;
+            Layers[layerIndex, 0] = layer;
 
-            Helpers.SerializeWriteFileStream(OutputFile, layer);
-            Helpers.WriteFileStream(OutputFile, rawData.ToArray());
-            
-            CurrentOffset += (uint)rawData.Count;
+            CurrentOffset += Helpers.SerializeWriteFileStream(OutputFile, layer);
+
+            OutputFile.Seek(LayerDataCurrentOffset, SeekOrigin.Begin);
+            LayerDataCurrentOffset += Helpers.WriteFileStream(OutputFile, rawData.ToArray());
+            OutputFile.Seek(CurrentOffset, SeekOrigin.Begin);
         }
 
         public override void EndEncode()

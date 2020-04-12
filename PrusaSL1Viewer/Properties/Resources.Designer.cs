@@ -73,6 +73,16 @@ namespace PrusaSL1Viewer.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Convert_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("Convert-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Donate_16x16 {
             get {
                 object obj = ResourceManager.GetObject("Donate-16x16", resourceCulture);
@@ -106,6 +116,16 @@ namespace PrusaSL1Viewer.Properties {
         internal static System.Drawing.Bitmap Global_Network_icon_16x16 {
             get {
                 object obj = ResourceManager.GetObject("Global-Network-icon-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap layers_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("layers-16x16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

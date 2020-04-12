@@ -36,7 +36,29 @@ But also, i need victims for test subject. Proceed at your own risk!
 * View thumbnail
 * View all used settings
 * Export file to a folder
-* Portable (2 files only)
+* Convert SL1 format to another format
+* Portable (No installation needed)
+
+## Known Formats
+
+* SL1 (Prusa SL1)
+* CBDDLP (Chitubox DLP)
+
+## Configure printer under PrusaSlicer
+
+1. Import Epax X1 printer (PrusaSlicer -> printers)
+1. Duplicate and tune the values if required
+1. Look up under "Printer -> Notes" and configure parameters from target slicer
+1. Change only the value after the "_" (underscore)
+
+## Custom "Printer Notes" keywords
+
+* **FLIP_XY** Flip X with Y resolution, this is required in some cases, it will not affect Prusa output, only used for convertions to another format, use this if you have to use inverted XY under printer settings (Epax for example).
+
+## File Convertion
+
+I highly recommend open the converted file into original slicer and check if it's okay to print, on this beta stage never blind trust the program.
+After some tests without failure you can increase your confidence and ignore this stage, or maybe not ;) 
 
 ## Requirements
 
@@ -64,8 +86,10 @@ Are you a developer? This project include a .NET Core library (PrusaSL1Reader) t
 
 
 ## TODO
-* Convert SL1 files to another slicer file format
-* Add printer profiles
+* Speed up layer preview
+* Put convert operation under a task (No GUI freeze)
+* More file formats
+* Clean up (always)
 
 ## Support my work / Donate
 

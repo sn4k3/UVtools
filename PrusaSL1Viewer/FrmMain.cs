@@ -7,7 +7,6 @@
  */
 using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
@@ -25,11 +24,24 @@ namespace PrusaSL1Viewer
             InitializeComponent();
             Text = $"{FrmAbout.AssemblyTitle}   Version: {FrmAbout.AssemblyVersion}";
 
+            foreach (var type in Helpers.AvaliableFileFormats)
+            {
+                if(type == typeof(SL1File)) continue;
+                ToolStripMenuItem menuItem = new ToolStripMenuItem(type.Name.Replace("File", string.Empty))
+                {
+                    Tag = type,
+                    Image = Properties.Resources.layers_16x16
+                };
+                menuItem.Click += ConvertToItemOnClick;
+                menuEditConvert.DropDownItems.Add(menuItem);
+            }
+
             DragEnter += (s, e) => { if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy; };
             DragDrop += (s, e) => { ProcessFile((string[])e.Data.GetData(DataFormats.FileDrop)); };
 
             ProcessFile(Environment.GetCommandLineArgs());
         }
+
         #endregion
 
         #region Events
@@ -38,8 +50,6 @@ namespace PrusaSL1Viewer
             ShowLayer((uint)(sbLayers.Maximum - sbLayers.Value));
         }
         
-
-
         private void MenuItemClicked(object sender, EventArgs e)
         {
             if (ReferenceEquals(sender, menuFileOpen))
@@ -79,6 +89,19 @@ namespace PrusaSL1Viewer
                     {
                         try
                         {
+                            if (Directory.Exists(folder.SelectedPath))
+                            {
+                                DirectoryInfo di = new DirectoryInfo(folder.SelectedPath);
+
+                                foreach (FileInfo file in di.GetFiles())
+                                {
+                                    file.Delete();
+                                }
+                                foreach (DirectoryInfo dir in di.GetDirectories())
+                                {
+                                    dir.Delete(true);
+                                }
+                            }
                             Program.SL1File.Archive.ExtractToDirectory(folder.SelectedPath);
                             if (MessageBox.Show(
                                 $"Extraction was successful, browser folder to see it contents.\n{folder.SelectedPath}\nPress 'Yes' if you want open the target folder, otherwise select 'No' to continue.",
@@ -95,27 +118,6 @@ namespace PrusaSL1Viewer
                         
                     }
                 }
-                return;
-            }
-
-            if (ReferenceEquals(sender, menuEditConvert))
-            {
-                using (SaveFileDialog dialog = new SaveFileDialog())
-                {
-                    dialog.FileName = Path.GetFileNameWithoutExtension(Program.SL1File.FileFullPath);
-                    using (CbddlpFile file = new CbddlpFile())
-                    {
-                        dialog.Filter = file.GetFileFilter();
-                    }
-
-
-                    if (dialog.ShowDialog() == DialogResult.OK)
-                    {
-                        Program.SL1File.Convert(typeof(CbddlpFile), dialog.FileName);
-                    }
-
-                }
-                
                 return;
             }
 
@@ -136,6 +138,29 @@ namespace PrusaSL1Viewer
                                 "A browser window will be open and forward to my paypal address after you click 'OK'.\nHappy Printing!", "Donation", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 Process.Start(About.Donate);
                 return;
+            }
+        }
+
+        private void ConvertToItemOnClick(object sender, EventArgs e)
+        {
+            ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
+            Type type = (Type)menuItem.Tag;
+            using (SaveFileDialog dialog = new SaveFileDialog())
+            {
+                dialog.FileName = Path.GetFileNameWithoutExtension(Program.SL1File.FileFullPath);
+
+                using (FileFormat instance = (FileFormat)Activator.CreateInstance(type)) 
+                //using (CbddlpFile file = new CbddlpFile())
+                {
+                    dialog.Filter = instance.GetFileFilter();
+                }
+
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    Program.SL1File.Convert(type, dialog.FileName);
+                }
+
             }
         }
         #endregion
@@ -178,7 +203,10 @@ namespace PrusaSL1Viewer
             sbLayers.Maximum = (int)Program.SL1File.GetLayerCount-1;
             sbLayers.Value = sbLayers.Maximum;
 
-            sbLayers.Enabled = menuEdit.Enabled = menuEditExtract.Enabled = true;
+            sbLayers.Enabled = 
+            menuEdit.Enabled = 
+            menuEditExtract.Enabled = 
+            menuEditConvert.Enabled = true;
 
             lvProperties.BeginUpdate();
             lvProperties.Items.Clear();
@@ -238,7 +266,5 @@ namespace PrusaSL1Viewer
             statusBar.Items.Add(label);
         }
         #endregion
-
-
     }
 }
