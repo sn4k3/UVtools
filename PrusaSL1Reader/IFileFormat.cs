@@ -19,10 +19,58 @@ namespace PrusaSL1Reader
     public interface IFileFormat
     {
         /// <summary>
-        /// Check if this file is valid to read
+        /// Gets the input file path loaded into this <see cref="FileFormat"/>
         /// </summary>
-        /// <returns></returns>
-        bool IsValid();
+        string FileFullPath { get; set; }
+
+        /// <summary>
+        /// Gets the valid file extensions for this <see cref="FileFormat"/>
+        /// </summary>
+        FileExtension[] ValidFiles { get; }
+
+        uint ResolutionX { get; }
+        uint ResolutionY { get; }
+
+        /// <summary>
+        /// Gets the thumbnails count present in this file format
+        /// </summary>
+        byte ThumbnailsCount { get; }
+
+        /// <summary>
+        /// Gets the thumbnails for this <see cref="FileFormat"/>
+        /// </summary>
+        Image<Rgba32>[] Thumbnails { get; set; }
+
+        /// <summary>
+        /// Number of layers present in this file
+        /// </summary>
+        uint LayerCount { get; }
+        float InitialExposureTime { get; }
+        float LayerExposureTime { get; }
+        float PrintTime { get; }
+        float UsedMaterial { get; }
+        float MaterialCost { get; }
+        string MaterialName { get; }
+        string MachineName { get; }
+
+        /// <summary>
+        /// Layer Height in mm
+        /// </summary>
+        float LayerHeight { get; }
+
+        float TotalHeight { get; }
+
+        /// <summary>
+        /// Get all configuration objects with properties and values
+        /// </summary>
+        object[] Configs { get; }
+
+
+
+        /// <summary>
+        /// If this file is valid to read
+        /// </summary>
+        bool IsValid { get; }
 
         /// <summary>
         /// Begin encode to an output file
@@ -49,6 +97,13 @@ namespace PrusaSL1Reader
         void Decode(string fileFullPath);
 
         /// <summary>
+        /// Extract contents to a folder
+        /// </summary>
+        /// <param name="path">Path to folder where content will be extracted</param>
+        /// <param name="emptyFirst">Empty target folder first</param>
+        void Extract(string path, bool emptyFirst = true);
+
+        /// <summary>
         /// Gets a image from layer
         /// </summary>
         /// <param name="layerIndex">The layer index</param>
@@ -70,9 +125,17 @@ namespace PrusaSL1Reader
         /// <summary>
         /// Converts this file type to another file type
         /// </summary>
-        /// <param name="to">Target type</param>
+        /// <param name="to">Target file format</param>
         /// <param name="fileFullPath">Output path file</param>
         /// <returns>True if convert succeed, otherwise false</returns>
         bool Convert(Type to, string fileFullPath);
+
+        /// <summary>
+        /// Converts this file type to another file type
+        /// </summary>
+        /// <param name="to">Target file format</param>
+        /// <param name="fileFullPath">Output path file</param>
+        /// <returns>True if convert succeed, otherwise false</returns>
+        bool Convert(FileFormat to, string fileFullPath);
     }
 }

@@ -7,6 +7,7 @@
  */
 using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
@@ -23,18 +24,6 @@ namespace PrusaSL1Viewer
         {
             InitializeComponent();
             Text = $"{FrmAbout.AssemblyTitle}   Version: {FrmAbout.AssemblyVersion}";
-
-            foreach (var type in Helpers.AvaliableFileFormats)
-            {
-                if(type == typeof(SL1File)) continue;
-                ToolStripMenuItem menuItem = new ToolStripMenuItem(type.Name.Replace("File", string.Empty))
-                {
-                    Tag = type,
-                    Image = Properties.Resources.layers_16x16
-                };
-                menuItem.Click += ConvertToItemOnClick;
-                menuEditConvert.DropDownItems.Add(menuItem);
-            }
 
             DragEnter += (s, e) => { if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy; };
             DragDrop += (s, e) => { ProcessFile((string[])e.Data.GetData(DataFormats.FileDrop)); };
@@ -57,7 +46,7 @@ namespace PrusaSL1Viewer
                 using (OpenFileDialog openFile = new OpenFileDialog())
                 {
                     openFile.CheckFileExists = true;
-                    openFile.Filter = Program.SL1File.GetFileFilter();
+                    openFile.Filter = FileFormat.AllFileFilters;
                     openFile.FilterIndex = 0;
                     if (openFile.ShowDialog() == DialogResult.OK)
                     {
@@ -89,20 +78,7 @@ namespace PrusaSL1Viewer
                     {
                         try
                         {
-                            if (Directory.Exists(folder.SelectedPath))
-                            {
-                                DirectoryInfo di = new DirectoryInfo(folder.SelectedPath);
-
-                                foreach (FileInfo file in di.GetFiles())
-                                {
-                                    file.Delete();
-                                }
-                                foreach (DirectoryInfo dir in di.GetDirectories())
-                                {
-                                    dir.Delete(true);
-                                }
-                            }
-                            Program.SL1File.Archive.ExtractToDirectory(folder.SelectedPath);
+                            Program.SlicerFile.Extract(folder.SelectedPath);
                             if (MessageBox.Show(
                                 $"Extraction was successful, browser folder to see it contents.\n{folder.SelectedPath}\nPress 'Yes' if you want open the target folder, otherwise select 'No' to continue.",
                                 "Extraction completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
@@ -144,21 +120,21 @@ namespace PrusaSL1Viewer
         private void ConvertToItemOnClick(object sender, EventArgs e)
         {
             ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
-            Type type = (Type)menuItem.Tag;
+            FileFormat fileFormat = (FileFormat)menuItem.Tag;
             using (SaveFileDialog dialog = new SaveFileDialog())
             {
-                dialog.FileName = Path.GetFileNameWithoutExtension(Program.SL1File.FileFullPath);
+                dialog.FileName = Path.GetFileNameWithoutExtension(Program.SlicerFile.FileFullPath);
 
-                using (FileFormat instance = (FileFormat)Activator.CreateInstance(type)) 
+                //using (FileFormat instance = (FileFormat)Activator.CreateInstance(type)) 
                 //using (CbddlpFile file = new CbddlpFile())
                 {
-                    dialog.Filter = instance.GetFileFilter();
+                    dialog.Filter = fileFormat.GetFileFilter();
                 }
 
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    Program.SL1File.Convert(type, dialog.FileName);
+                    Program.SlicerFile.Convert(fileFormat, dialog.FileName);
                 }
 
             }
@@ -171,7 +147,6 @@ namespace PrusaSL1Viewer
             if (ReferenceEquals(files, null)) return;
             foreach (string file in files)
             {
-                if (!Program.SL1File.IsExtensionValid(file, true)) continue;
                 try
                 {
                     ProcessFile(file);
@@ -187,20 +162,31 @@ namespace PrusaSL1Viewer
         }
 
         void ProcessFile(string fileName)
-        {
-           /* if (!ReferenceEquals(Program.SL1File, null))
+        { 
+            Program.SlicerFile?.Dispose();
+            Program.SlicerFile = FileFormat.FindByExtension(fileName, true, true);
+            if (ReferenceEquals(Program.SlicerFile, null)) return;
+            Program.SlicerFile.Decode(fileName);
+
+            menuEditConvert.DropDownItems.Clear();
+            foreach (var fileFormat in FileFormat.AvaliableFormats)
             {
-                Program.SL1File.Dispose();
-            }*/
+                if (fileFormat.GetType() == Program.SlicerFile.GetType()) continue;
+                ToolStripMenuItem menuItem = new ToolStripMenuItem(fileFormat.GetType().Name.Replace("File", string.Empty))
+                {
+                    Tag = fileFormat,
+                    Image = Properties.Resources.layers_16x16
+                };
+                menuItem.Click += ConvertToItemOnClick;
+                menuEditConvert.DropDownItems.Add(menuItem);
+            }
 
-            Program.SL1File.Decode(fileName);
-
-            pbThumbnail.Image = Program.SL1File.Thumbnails[0].ToBitmap();
+            pbThumbnail.Image = Program.SlicerFile.Thumbnails[0]?.ToBitmap();
             //ShowLayer(0);
 
             sbLayers.SmallChange = 1;
             sbLayers.Minimum = 0;
-            sbLayers.Maximum = (int)Program.SL1File.GetLayerCount-1;
+            sbLayers.Maximum = (int)Program.SlicerFile.LayerCount-1;
             sbLayers.Value = sbLayers.Maximum;
 
             sbLayers.Enabled = 
@@ -211,31 +197,32 @@ namespace PrusaSL1Viewer
             lvProperties.BeginUpdate();
             lvProperties.Items.Clear();
 
-            object[] configs = { Program.SL1File.PrinterSettings, Program.SL1File.MaterialSettings, Program.SL1File.PrintSettings, Program.SL1File.OutputConfigSettings };
-            byte configNum = 0;
-            foreach (object config in configs)
+            lvProperties.Groups.Clear();
+
+            foreach (object config in Program.SlicerFile.Configs)
             {
+                ListViewGroup group = new ListViewGroup(config.GetType().Name);
+                lvProperties.Groups.Add(group);
                 foreach (PropertyInfo propertyInfo in config.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
-                    ListViewItem item = new ListViewItem(propertyInfo.Name, lvProperties.Groups[configNum]);
+                    ListViewItem item = new ListViewItem(propertyInfo.Name, group);
                     object obj = new object();
                     item.SubItems.Add(propertyInfo.GetValue(config)?.ToString());
                     lvProperties.Items.Add(item);
                 }
-
-                configNum++;
             }
             lvProperties.EndUpdate();
 
             statusBar.Items.Clear();
 
-            AddStatusBarItem(nameof(Program.SL1File.OutputConfigSettings.LayerHeight), Program.SL1File.OutputConfigSettings.LayerHeight, "mm");
-            AddStatusBarItem(nameof(Program.SL1File.OutputConfigSettings.ExpTimeFirst), Program.SL1File.OutputConfigSettings.ExpTimeFirst);
-            AddStatusBarItem(nameof(Program.SL1File.OutputConfigSettings.ExpTime), Program.SL1File.OutputConfigSettings.ExpTime);
-            AddStatusBarItem(nameof(Program.SL1File.OutputConfigSettings.PrintTime), Math.Round(Program.SL1File.OutputConfigSettings.PrintTime/ 3600, 2), "h");
-            AddStatusBarItem(nameof(Program.SL1File.OutputConfigSettings.UsedMaterial), Math.Round(Program.SL1File.OutputConfigSettings.UsedMaterial, 2), "ml");
-            AddStatusBarItem(nameof(Program.SL1File.OutputConfigSettings.MaterialName), Program.SL1File.OutputConfigSettings.MaterialName);
-            AddStatusBarItem(nameof(Program.SL1File.OutputConfigSettings.PrinterProfile), Program.SL1File.OutputConfigSettings.PrinterProfile);
+            AddStatusBarItem(nameof(Program.SlicerFile.LayerHeight), Program.SlicerFile.LayerHeight, "mm");
+            AddStatusBarItem(nameof(Program.SlicerFile.InitialExposureTime), Program.SlicerFile.InitialExposureTime, "s");
+            AddStatusBarItem(nameof(Program.SlicerFile.LayerExposureTime), Program.SlicerFile.LayerExposureTime, "s");
+            AddStatusBarItem(nameof(Program.SlicerFile.PrintTime), Math.Round(Program.SlicerFile.PrintTime / 3600, 2), "h");
+            AddStatusBarItem(nameof(Program.SlicerFile.UsedMaterial), Math.Round(Program.SlicerFile.UsedMaterial, 2), "ml");
+            AddStatusBarItem(nameof(Program.SlicerFile.MaterialCost), Program.SlicerFile.MaterialCost, "€");
+            AddStatusBarItem(nameof(Program.SlicerFile.MaterialName), Program.SlicerFile.MaterialName);
+            AddStatusBarItem(nameof(Program.SlicerFile.MachineName), Program.SlicerFile.MachineName);
 
             Text = $"{FrmAbout.AssemblyTitle}   Version: {FrmAbout.AssemblyVersion}   File: {Path.GetFileName(fileName)}";
         }
@@ -244,17 +231,32 @@ namespace PrusaSL1Viewer
         {
             //if(!ReferenceEquals(pbLayer.Image, null))
             //    pbLayer.Image.Dispose(); SLOW! LET GC DO IT
-            //pbLayer.Image = Image.FromStream(Program.SL1File.LayerImages[layerNum].Open());
+            //pbLayer.Image = Image.FromStream(Program.SlicerFile.LayerImages[layerNum].Open());
             //pbLayer.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
-            var image = Program.SL1File.GetLayerImage(layerNum);
-            image.Mutate(x => x.Rotate(RotateMode.Rotate90));
+            //Stopwatch watch = Stopwatch.StartNew();
+            var image = Program.SlicerFile.GetLayerImage(layerNum);
+            //Debug.Write(watch.ElapsedMilliseconds.ToString());
+            if (menuViewRotateImage.Checked)
+            {
+                //watch.Restart();
+                image.Mutate(x => x.Rotate(RotateMode.Rotate90));
+                //Debug.Write($"/{watch.ElapsedMilliseconds}");
+            }
+
+            //watch.Restart();
             pbLayer.Image = image.ToBitmap();
+            //Debug.WriteLine($"/{watch.ElapsedMilliseconds}");
 
-            byte percent = (byte)((layerNum + 1) * 100 / Program.SL1File.GetLayerCount);
+            //UniversalLayer layer = new UniversalLayer(image);
+            //pbLayer.Image = layer.ToBitmap(image.Width, image.Height);
 
 
-            lbLayers.Text = $"{Program.SL1File.TotalHeight}mm\n{layerNum+1} / {Program.SL1File.GetLayerCount}\n{Program.SL1File.GetHeightFromLayer((uint)layerNum+1)}mm\n{percent}%";
+            byte percent = (byte)((layerNum + 1) * 100 / Program.SlicerFile.LayerCount);
+
+
+            lbLayers.Text = $"{Program.SlicerFile.TotalHeight}mm\n{layerNum+1} / {Program.SlicerFile.LayerCount}\n{Program.SlicerFile.GetHeightFromLayer((uint)layerNum+1)}mm\n{percent}%";
             pbLayers.Value = percent;
+
         }
 
         void AddStatusBarItem(string name, object item, string extraText = "")
@@ -262,7 +264,7 @@ namespace PrusaSL1Viewer
             if (statusBar.Items.Count > 0)
                 statusBar.Items.Add(new ToolStripSeparator());
 
-            ToolStripLabel label = new ToolStripLabel($"{name}: {item.ToString()}{extraText}");
+            ToolStripLabel label = new ToolStripLabel($"{name}: {item}{extraText}");
             statusBar.Items.Add(label);
         }
         #endregion

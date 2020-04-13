@@ -8,7 +8,6 @@
 using System.IO;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
-using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace PrusaSL1Viewer
@@ -19,7 +18,7 @@ namespace PrusaSL1Viewer
         {
             using (var memoryStream = new MemoryStream())
             {
-                var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(PngFormat.Instance);
+                var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(SixLabors.ImageSharp.Formats.Bmp.BmpFormat.Instance);
                 image.Save(memoryStream, imageEncoder);
 
                 memoryStream.Seek(0, SeekOrigin.Begin);

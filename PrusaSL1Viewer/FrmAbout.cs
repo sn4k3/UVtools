@@ -6,8 +6,10 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
+using PrusaSL1Reader;
 
 namespace PrusaSL1Viewer
 {
@@ -16,12 +18,12 @@ namespace PrusaSL1Viewer
         public FrmAbout()
         {
             InitializeComponent();
-            this.Text = String.Format("About {0}", AssemblyTitle);
-            this.labelProductName.Text = AssemblyProduct;
-            this.labelVersion.Text = String.Format("Version {0}", AssemblyVersion);
-            this.labelCopyright.Text = AssemblyCopyright;
-            this.labelCompanyName.Text = AssemblyCompany;
-            this.textBoxDescription.Text = AssemblyDescription;
+            Text = String.Format("About {0}", AssemblyTitle);
+            labelProductName.Text = AssemblyProduct;
+            labelVersion.Text = String.Format("Version {0}", AssemblyVersion);
+            labelCopyright.Text = AssemblyCopyright;
+            labelCompanyName.Text = AssemblyCompany;
+            textBoxDescription.Text = AssemblyDescription;
         }
 
         #region Assembly Attribute Accessors
@@ -60,7 +62,10 @@ namespace PrusaSL1Viewer
                 {
                     return "";
                 }
-                return ((AssemblyDescriptionAttribute)attributes[0]).Description;
+
+                string description = ((AssemblyDescriptionAttribute) attributes[0]).Description + $"{Environment.NewLine}{Environment.NewLine}Available File Formats:";
+
+                return FileFormat.AvaliableFormats.SelectMany(fileFormat => fileFormat.ValidFiles).Aggregate(description, (current, fileExtension) => current + $"{Environment.NewLine}- {fileExtension.Description} (.{fileExtension.Extension})");
             }
         }
 

@@ -263,30 +263,48 @@ namespace PrusaSL1Reader
         public Material MaterialSettings { get; private set; }
 
         public Print PrintSettings { get; private set; }
+
         public OutputConfig OutputConfigSettings { get; private set; }
 
         public Statistics Statistics { get; } = new Statistics();
 
-        public override byte ThumbnailsCount { get; } = 2;
-
-        public override Image<Rgba32>[] Thumbnails { get; protected internal set; }
-
-        //public List<ZipArchiveEntry> Thumbnails { get; } = new List<ZipArchiveEntry>(2);
         public List<ZipArchiveEntry> LayerImages { get; } = new List<ZipArchiveEntry>();
-
-        public uint GetLayerCount => (uint)LayerImages.Count;
-
-        public double TotalHeight => Math.Round(MaterialSettings.InitialLayerHeight + (LayerImages.Count - 1) * OutputConfigSettings.LayerHeight, 2);
 
         #endregion
 
         #region Overrides
 
-        public override string FileFullPath { get; protected set; }
+        public override string FileFullPath { get; set; }
+
+        public override uint ResolutionY => PrinterSettings.DisplayPixelsY;
+
+        public override byte ThumbnailsCount { get; } = 2;
+        public override Image<Rgba32>[] Thumbnails { get; set; }
+        public override uint LayerCount => (uint)LayerImages.Count;
+
+        public override float InitialExposureTime => OutputConfigSettings.ExpTimeFirst;
+
+        public override float LayerExposureTime => OutputConfigSettings.ExpTime;
+
+        public override float PrintTime => OutputConfigSettings.PrintTime;
+
+        public override float UsedMaterial => OutputConfigSettings.UsedMaterial;
+
+        public override float MaterialCost => OutputConfigSettings.UsedMaterial * MaterialSettings.BottleCost / MaterialSettings.BottleVolume;
+
+        public override string MaterialName => OutputConfigSettings.MaterialName;
+
+        public override string MachineName => PrinterSettings.PrinterSettingsId;
+
+        public override float LayerHeight => OutputConfigSettings.LayerHeight;
+        public override object[] Configs => new object[] { PrinterSettings, MaterialSettings, PrintSettings, OutputConfigSettings };
 
         public override FileExtension[] ValidFiles { get; } = {
             new FileExtension("sl1", "Prusa SL1 Files")
         };
+
+        public override uint ResolutionX => PrinterSettings.DisplayPixelsX;
+
         public override bool Equals(object obj)
         {
             return Equals(obj as SL1File);
@@ -306,7 +324,7 @@ namespace PrusaSL1Reader
 
         public override string ToString()
         {
-            return $"{nameof(FileFullPath)}: {FileFullPath}, {nameof(MaterialSettings)}: {MaterialSettings}, {nameof(PrintSettings)}: {PrintSettings}, {nameof(OutputConfigSettings)}: {OutputConfigSettings}, {nameof(Statistics)}: {Statistics}, {nameof(GetLayerCount)}: {GetLayerCount}, {nameof(TotalHeight)}: {TotalHeight}";
+            return $"{nameof(FileFullPath)}: {FileFullPath}, {nameof(MaterialSettings)}: {MaterialSettings}, {nameof(PrintSettings)}: {PrintSettings}, {nameof(OutputConfigSettings)}: {OutputConfigSettings}, {nameof(Statistics)}: {Statistics}, {nameof(LayerCount)}: {LayerCount}, {nameof(TotalHeight)}: {TotalHeight}";
         }
 
         #endregion
@@ -320,10 +338,6 @@ namespace PrusaSL1Reader
         #endregion
 
         #region Methods
-
-        
-
-        private List<Image<Gray8>> images = new List<Image<Gray8>>();
 
         public override void BeginEncode(string fileFullPath)
         {
@@ -342,7 +356,7 @@ namespace PrusaSL1Reader
 
         public override void Decode(string fileFullPath)
         {
-            DecodeInternal(fileFullPath);
+            base.Decode(fileFullPath);
 
             FileFullPath = fileFullPath;
 
@@ -353,12 +367,12 @@ namespace PrusaSL1Reader
 
             Statistics.ExecutionTime.Restart();
 
-            var parseTypes = new[]
+            var parseObjects = new object[]
             {
-                new KeyValuePair<Type, object>(typeof(Printer), PrinterSettings),
-                new KeyValuePair<Type, object>(typeof(Material), MaterialSettings),
-                new KeyValuePair<Type, object>(typeof(Print), PrintSettings),
-                new KeyValuePair<Type, object>(typeof(OutputConfig), OutputConfigSettings),
+                PrinterSettings,
+                MaterialSettings,
+                PrintSettings,
+                OutputConfigSettings,
             };
 
             Archive = ZipFile.OpenRead(FileFullPath);
@@ -380,11 +394,11 @@ namespace PrusaSL1Reader
                             var fieldName = IniKeyToMemberName(keyValue[0]);
                             bool foundMember = false;
 
-                            foreach (var kv in parseTypes)
+                            foreach (var obj in parseObjects)
                             {
-                                var attribute = kv.Key.GetProperty(fieldName);
+                                var attribute = obj.GetType().GetProperty(fieldName);
                                 if (attribute == null) continue;
-                                SetValue(attribute, kv.Value, keyValue[1]);
+                                SetValue(attribute, obj, keyValue[1]);
                                 Statistics.ImplementedKeys.Add(keyValue[0]);
                                 foundMember = true;
                             }
@@ -423,6 +437,12 @@ namespace PrusaSL1Reader
             Debug.WriteLine(Statistics);
         }
 
+        public override void Extract(string path, bool emptyFirst = true)
+        {
+            base.Extract(path, emptyFirst);
+            Archive.ExtractToDirectory(path);
+        }
+
         public override Image<Gray8> GetLayerImage(uint layerIndex)
         {
             return Image.Load<Gray8>(LayerImages[(int)layerIndex].Open());
@@ -435,7 +455,7 @@ namespace PrusaSL1Reader
 
         public override void Clear()
         {
-            ClearInternal();
+            base.Clear();
             Archive?.Dispose();
             LayerImages.Clear();
             Statistics.Clear();
@@ -443,7 +463,7 @@ namespace PrusaSL1Reader
 
         public override bool Convert(Type to, string fileFullPath)
         {
-            if (!IsValid()) return false;
+            if (!IsValid) return false;
 
             if (to == typeof(CbddlpFile))
             {
@@ -459,7 +479,7 @@ namespace PrusaSL1Reader
                         BottomExposureSeconds = MaterialSettings.InitialExposureTime,
                         BottomLayersCount = PrintSettings.FadedLayers,
                         BottomLightPWM = LookupCustomValue<ushort>("BottomLightPWM", 255), // TODO
-                        LayerCount = GetLayerCount,
+                        LayerCount = LayerCount,
                         LayerExposureSeconds = MaterialSettings.ExposureTime,
                         LayerHeightMilimeter = PrintSettings.LayerHeight,
                         LayerOffTime = LookupCustomValue<float>("LayerOffTime", 0), // TODO
@@ -475,8 +495,7 @@ namespace PrusaSL1Reader
                         BottomLiftHeight = LookupCustomValue<float>("BottomLiftHeight", 5), // TODO
                         BottomLiftSpeed = LookupCustomValue<float>("BottomLiftSpeed", 60), // TODO
                         BottomLightOffDelay = LookupCustomValue<float>("BottomLightOffDelay", 0), // TODO
-                        CostDollars = OutputConfigSettings.UsedMaterial * MaterialSettings.BottleCost /
-                                      MaterialSettings.BottleVolume,
+                        CostDollars = MaterialCost,
                         LiftHeight = LookupCustomValue<float>("LiftHeight", 5), // TODO, // TODO
                         LiftingSpeed = LookupCustomValue<float>("LiftingSpeed", 60), // TODO
                         LightOffDelay = LookupCustomValue<float>("LightOffDelay", 0), // TODO
@@ -502,7 +521,7 @@ namespace PrusaSL1Reader
 
                 file.BeginEncode(fileFullPath);
 
-                for (uint layerIndex = 0; layerIndex < GetLayerCount; layerIndex++)
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
                     file.InsertLayerImageEncode(GetLayerImage(layerIndex), layerIndex);
                 }

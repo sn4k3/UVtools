@@ -13,7 +13,7 @@ namespace PrusaSL1Viewer
 {
     static class Program
     {
-        public static SL1File SL1File { get; } = new SL1File();
+        public static FileFormat SlicerFile { get; set; }
         public static FrmMain FrmMain { get; private set; }
         public static FrmAbout FrmAbout { get; private set; }
         /// <summary>

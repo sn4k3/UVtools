@@ -28,10 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("Printer", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("Material", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("Print", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("Output", System.Windows.Forms.HorizontalAlignment.Left);
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMain));
             this.menu = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -40,6 +36,8 @@
             this.menuEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuEditExtract = new System.Windows.Forms.ToolStripMenuItem();
             this.menuEditConvert = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuViewRotateImage = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuAboutWebsite = new System.Windows.Forms.ToolStripMenuItem();
             this.menuAboutDonate = new System.Windows.Forms.ToolStripMenuItem();
@@ -80,6 +78,7 @@
             this.menu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.menuEdit,
+            this.viewToolStripMenuItem,
             this.helpToolStripMenuItem});
             this.menu.Location = new System.Drawing.Point(0, 0);
             this.menu.Name = "menu";
@@ -131,7 +130,7 @@
             this.menuEditExtract.Name = "menuEditExtract";
             this.menuEditExtract.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
             | System.Windows.Forms.Keys.E)));
-            this.menuEditExtract.Size = new System.Drawing.Size(180, 22);
+            this.menuEditExtract.Size = new System.Drawing.Size(173, 22);
             this.menuEditExtract.Text = "&Extract";
             this.menuEditExtract.Click += new System.EventHandler(this.MenuItemClicked);
             // 
@@ -140,8 +139,27 @@
             this.menuEditConvert.Enabled = false;
             this.menuEditConvert.Image = global::PrusaSL1Viewer.Properties.Resources.Convert_16x16;
             this.menuEditConvert.Name = "menuEditConvert";
-            this.menuEditConvert.Size = new System.Drawing.Size(180, 22);
+            this.menuEditConvert.Size = new System.Drawing.Size(173, 22);
             this.menuEditConvert.Text = "&Convert To";
+            // 
+            // viewToolStripMenuItem
+            // 
+            this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuViewRotateImage});
+            this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.viewToolStripMenuItem.Text = "&View";
+            // 
+            // menuViewRotateImage
+            // 
+            this.menuViewRotateImage.Checked = true;
+            this.menuViewRotateImage.CheckOnClick = true;
+            this.menuViewRotateImage.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.menuViewRotateImage.Image = global::PrusaSL1Viewer.Properties.Resources.Rotate_16x16;
+            this.menuViewRotateImage.Name = "menuViewRotateImage";
+            this.menuViewRotateImage.Size = new System.Drawing.Size(164, 22);
+            this.menuViewRotateImage.Text = "&Rotate Image 90º";
+            this.menuViewRotateImage.ToolTipText = "Auto rotate layer preview image at 90º (This can slow down the layer preview)";
             // 
             // helpToolStripMenuItem
             // 
@@ -288,19 +306,6 @@
             this.lvProperties.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lvProperties.FullRowSelect = true;
             this.lvProperties.GridLines = true;
-            listViewGroup1.Header = "Printer";
-            listViewGroup1.Name = "lvGroupPrinter";
-            listViewGroup2.Header = "Material";
-            listViewGroup2.Name = "lvGroupMaterial";
-            listViewGroup3.Header = "Print";
-            listViewGroup3.Name = "lvGroupPrint";
-            listViewGroup4.Header = "Output";
-            listViewGroup4.Name = "lvGroupOutput";
-            this.lvProperties.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup1,
-            listViewGroup2,
-            listViewGroup3,
-            listViewGroup4});
             this.lvProperties.HideSelection = false;
             this.lvProperties.Location = new System.Drawing.Point(0, 0);
             this.lvProperties.Name = "lvProperties";
@@ -422,6 +427,8 @@
         private System.Windows.Forms.PictureBox pbLayer;
         private System.Windows.Forms.ProgressBar pbLayers;
         private System.Windows.Forms.ToolStripMenuItem menuEditConvert;
+        private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem menuViewRotateImage;
     }
 }
 

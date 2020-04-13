@@ -8,6 +8,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -18,15 +19,38 @@ namespace PrusaSL1Reader
     /// </summary>
     public abstract class FileFormat : IFileFormat, IDisposable
     {
+        public static FileFormat[] AvaliableFormats { get; } =
+        {
+            new SL1File(),
+            new CbddlpFile(),
+        };
+
+        public static string AllFileFilters => AvaliableFormats.Aggregate(string.Empty, (current, fileFormat) => string.IsNullOrEmpty(current) ? fileFormat.GetFileFilter() : $"{current}|" + fileFormat.GetFileFilter());
+
+        /// <summary>
+        /// Find <see cref="FileFormat"/> by an extension
+        /// </summary>
+        /// <param name="extension">Extension name to find</param>
+        /// <param name="isFilePath">True if <see cref="extension"/> is a file path rather than only a extension name</param>
+        /// <param name="createNewInstance">True to create a new instance of found file format, otherwise will return a pre created one which should be used for read-only purpose</param>
+        /// <returns><see cref="FileFormat"/> object or null if not found</returns>
+        public static FileFormat FindByExtension(string extension, bool isFilePath = false, bool createNewInstance = false)
+        {
+            return (from fileFormat in AvaliableFormats where fileFormat.IsExtensionValid(extension, isFilePath) select createNewInstance ? (FileFormat) Activator.CreateInstance(fileFormat.GetType()) : fileFormat).FirstOrDefault();
+        }
+
         /// <summary>
         /// Gets the input file path loaded into this <see cref="FileFormat"/>
         /// </summary>
-        public abstract string FileFullPath { get; protected set; }
+        public abstract string FileFullPath { get; set; }
 
         /// <summary>
         /// Gets the valid file extensions for this <see cref="FileFormat"/>
         /// </summary>
         public abstract FileExtension[] ValidFiles { get; }
+
+        public abstract uint ResolutionX { get; }
+        public abstract uint ResolutionY { get; }
 
         /// <summary>
         /// Gets the thumbnails count present in this file format
@@ -36,17 +60,31 @@ namespace PrusaSL1Reader
         /// <summary>
         /// Gets the thumbnails for this <see cref="FileFormat"/>
         /// </summary>
-        public abstract Image<Rgba32>[] Thumbnails { get; protected internal set; }
+        public abstract Image<Rgba32>[] Thumbnails { get; set; }
+
+        public abstract uint LayerCount { get; }
+
+        public abstract float InitialExposureTime { get; }
+
+        public abstract float LayerExposureTime { get; }
+        public abstract float PrintTime { get; }
+        public abstract float UsedMaterial { get; }
+
+        public abstract float MaterialCost { get; }
+
+        public abstract string MaterialName { get; }
+        public abstract string MachineName { get; }
+        public abstract float LayerHeight { get; }
+        public float TotalHeight => (float)Math.Round(LayerCount * LayerHeight, 2);
 
         protected FileFormat()
         {
             Thumbnails = new Image<Rgba32>[ThumbnailsCount];
         }
 
-        public bool IsValid()
-        {
-            return !ReferenceEquals(FileFullPath, null);
-        }
+        public abstract object[] Configs { get; }
+        public bool IsValid => !ReferenceEquals(FileFullPath, null);
+
 
         public abstract void BeginEncode(string fileFullPath);
 
@@ -54,20 +92,38 @@ namespace PrusaSL1Reader
 
         public abstract void EndEncode();
 
-        public abstract void Decode(string fileFullPath);
-        public abstract Image<Gray8> GetLayerImage(uint layerIndex);
-
-        protected void DecodeInternal(string fileFullPath)
+        public virtual void Decode(string fileFullPath)
         {
             Clear();
             FileValidation(fileFullPath);
             FileFullPath = fileFullPath;
         }
+
+        public virtual void Extract(string path, bool emptyFirst = true)
+        {
+            if (emptyFirst)
+            {
+                if (Directory.Exists(path))
+                {
+                    DirectoryInfo di = new DirectoryInfo(path);
+
+                    foreach (FileInfo file in di.GetFiles())
+                    {
+                        file.Delete();
+                    }
+                    foreach (DirectoryInfo dir in di.GetDirectories())
+                    {
+                        dir.Delete(true);
+                    }
+                }
+            }
+        }
+
+        public abstract Image<Gray8> GetLayerImage(uint layerIndex);
+
         public abstract float GetHeightFromLayer(uint layerNum);
 
-        public abstract void Clear();
-
-        protected void ClearInternal()
+        public virtual void Clear()
         {
             FileFullPath = null;
             if (!ReferenceEquals(Thumbnails, null))
@@ -78,7 +134,12 @@ namespace PrusaSL1Reader
                 }
             }
         }
+
         public abstract bool Convert(Type to, string fileFullPath);
+        public bool Convert(FileFormat to, string fileFullPath)
+        {
+            return Convert(to.GetType(), fileFullPath);
+        }
 
         public void FileValidation(string fileFullPath)
         {
@@ -101,7 +162,7 @@ namespace PrusaSL1Reader
 
         public string GetFileFilter()
         {
-            string result = String.Empty;
+            string result = string.Empty;
 
             foreach (var fileExt in ValidFiles)
             {

@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Security.Cryptography;
 using BinarySerialization;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
@@ -202,13 +201,33 @@ namespace PrusaSL1Reader
 
         #region Overrides
 
-        public override string FileFullPath { get; protected set; }
+        public override string FileFullPath { get; set; }
 
         public override FileExtension[] ValidFiles { get; } = {
             new FileExtension("cbddlp", "Chitubox DLP Files"), 
+            new FileExtension("photon", "Photon Files"), 
         };
+
+        public override uint ResolutionX => HeaderSettings.ResolutionX;
+
+        public override uint ResolutionY => HeaderSettings.ResolutionY;
+
+
         public override byte ThumbnailsCount { get; } = 2;
-        public override Image<Rgba32>[] Thumbnails { get; protected internal set; }
+        public override Image<Rgba32>[] Thumbnails { get; set; }
+        public override uint LayerCount => HeaderSettings.LayerCount;
+        public override float InitialExposureTime => HeaderSettings.BottomExposureSeconds;
+        public override float LayerExposureTime => HeaderSettings.LayerExposureSeconds;
+        public override float PrintTime => HeaderSettings.PrintTime;
+        public override float UsedMaterial => PrintParametersSettings.VolumeMl;
+
+        public override float MaterialCost => PrintParametersSettings.CostDollars;
+
+        public override string MaterialName => "Unknown";
+        public override string MachineName => MachineInfoSettings.MachineName;
+        public override float LayerHeight => HeaderSettings.LayerHeightMilimeter;
+
+        public override object[] Configs => new[] { (object)HeaderSettings, PrintParametersSettings, MachineInfoSettings };
 
         public override void BeginEncode(string fileFullPath)
         {
@@ -223,7 +242,6 @@ namespace PrusaSL1Reader
             //CurrentOffset = Helpers.SerializeWriteFileStream(OutputFile, HeaderSettings);
 
             OutputFile.Seek((int)CurrentOffset, SeekOrigin.Begin);
-
 
             /*for (int i = 0; i < ThumbnailsCount; i++)
             {
@@ -299,7 +317,7 @@ namespace PrusaSL1Reader
                 Helpers.SerializeWriteFileStream(OutputFile, preview);
                 CurrentOffset += Helpers.SerializeWriteFileStream(OutputFile, rawData.ToArray());
             }*/
-            
+
 
             if (HeaderSettings.Version == 2)
             {
@@ -392,7 +410,7 @@ namespace PrusaSL1Reader
 
         public override void Decode(string fileFullPath)
         {
-            DecodeInternal(fileFullPath);
+            base.Decode(fileFullPath);
             
             InputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
 
@@ -503,6 +521,11 @@ namespace PrusaSL1Reader
             }
         }
 
+        public override void Extract(string path, bool emptyFirst = true)
+        {
+            throw new NotImplementedException();
+        }
+
         public override Image<Gray8> GetLayerImage(uint layerIndex)
         {
             if (layerIndex >= HeaderSettings.LayerCount)
@@ -569,7 +592,7 @@ namespace PrusaSL1Reader
 
         public override void Clear()
         {
-            ClearInternal();
+            base.Clear();
 
             for (byte i = 0; i < ThumbnailsCount; i++)
             {

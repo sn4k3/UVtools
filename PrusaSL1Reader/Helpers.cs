@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -17,10 +18,6 @@ namespace PrusaSL1Reader
 {
     public static class Helpers
     {
-        public static Type[] AvaliableFileFormats { get; } = {
-            typeof(SL1File), 
-            typeof(CbddlpFile)
-        };
         public static BinarySerializer Serializer { get; } = new BinarySerializer {Endianness = Endianness.Little };
         public static Gray8 Gray8White { get; } = new Gray8(255);
         public static T ByteToType<T>(BinaryReader reader)
