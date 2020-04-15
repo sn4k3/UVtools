@@ -1,3 +1,5 @@
+# Credits
+
 ### Tiago Conceição (sn4k3)
 * Main developer
 * https://github.com/sn4k3 
