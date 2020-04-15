@@ -170,6 +170,9 @@
     <None Include="..\CHANGELOG.md">
       <Link>CHANGELOG.md</Link>
     </None>
+    <None Include="..\CREDITS.md">
+      <Link>CREDITS.md</Link>
+    </None>
     <None Include="..\LICENSE">
       <Link>LICENSE</Link>
     </None>
