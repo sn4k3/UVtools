@@ -58,6 +58,25 @@ namespace PrusaSL1Reader
         public abstract byte ThumbnailsCount { get; }
 
         /// <summary>
+        /// Gets the number of created thumbnails
+        /// </summary>
+        public byte CreatedThumbnailsCount {
+            get
+            {
+                if (ReferenceEquals(Thumbnails, null)) return 0;
+                byte count = 0;
+
+                foreach (var thumbnail in Thumbnails)
+                {
+                    if (ReferenceEquals(thumbnail, null)) continue;
+                    count++;
+                }
+
+                return count;
+            }
+        }
+
+        /// <summary>
         /// Gets the thumbnails for this <see cref="FileFormat"/>
         /// </summary>
         public abstract Image<Rgba32>[] Thumbnails { get; set; }

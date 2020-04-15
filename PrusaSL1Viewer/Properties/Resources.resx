@@ -118,34 +118,49 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="Donate-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Donate-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Open-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Open-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="layers-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\layers-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="PrusaSL1Viewer" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\PrusaSL1Viewer.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Convert-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Convert-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Button-Info-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Button-Info-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Exit-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Exit-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Donate-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Donate-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Rotate-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Rotate-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Global-Network-icon-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Global-Network-icon-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Back-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Back-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Save-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Save-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Exit-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Exit-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Convert-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Convert-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PrusaSL1Viewer" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\PrusaSL1Viewer.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="File-Close-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\File-Close-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Extract-object-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Extract-object-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Rotate-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Rotate-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Next-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Next-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Error-128x128" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Error-128x128.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

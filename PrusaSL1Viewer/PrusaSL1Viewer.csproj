@@ -211,6 +211,11 @@
     <None Include="Images\Convert-16x16.png" />
     <None Include="Images\layers-16x16.png" />
     <None Include="Images\Rotate-16x16.png" />
+    <None Include="Images\Back-16x16.png" />
+    <None Include="Images\Next-16x16.png" />
+    <None Include="Images\Save-16x16.png" />
+    <None Include="Images\File-Close-16x16.png" />
+    <None Include="Images\Error-128x128.png" />
     <Content Include="PrusaSL1Viewer.ico" />
   </ItemGroup>
   <ItemGroup>

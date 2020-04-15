@@ -7,23 +7,28 @@
  */
 using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
-using System.IO.Compression;
 using System.Reflection;
 using System.Windows.Forms;
 using PrusaSL1Reader;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 
 namespace PrusaSL1Viewer
 {
     public partial class FrmMain : Form
     {
+        public static FileFormat SlicerFile
+        {
+            get => Program.SlicerFile;
+            set => Program.SlicerFile = value;
+        }
+
         #region Constructors
         public FrmMain()
         {
             InitializeComponent();
-            Text = $"{FrmAbout.AssemblyTitle}   Version: {FrmAbout.AssemblyVersion}";
+            Clear();
 
             DragEnter += (s, e) => { if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy; };
             DragDrop += (s, e) => { ProcessFile((string[])e.Data.GetData(DataFormats.FileDrop)); };
@@ -34,14 +39,14 @@ namespace PrusaSL1Viewer
         #endregion
 
         #region Events
-        private void sbLayers_ValueChanged(object sender, EventArgs e)
+       
+        private void ItemClicked(object sender, EventArgs e)
         {
-            ShowLayer((uint)(sbLayers.Maximum - sbLayers.Value));
-        }
-        
-        private void MenuItemClicked(object sender, EventArgs e)
-        {
-            if (ReferenceEquals(sender, menuFileOpen))
+            /*******************
+             *    Main Menu    *
+             ******************/
+            // File
+            if (ReferenceEquals(sender, menuOpenFile))
             {
                 using (OpenFileDialog openFile = new OpenFileDialog())
                 {
@@ -64,12 +69,19 @@ namespace PrusaSL1Viewer
                 return;
             }
 
+            if (ReferenceEquals(sender, menuCloseFile))
+            {
+                Clear();
+                return;
+            }
+
             if (ReferenceEquals(sender, menuFileExit))
             {
                 Application.Exit();
                 return;
             }
 
+            // Edit
             if (ReferenceEquals(sender, menuEditExtract))
             {
                 using (FolderBrowserDialog folder = new FolderBrowserDialog())
@@ -78,7 +90,7 @@ namespace PrusaSL1Viewer
                     {
                         try
                         {
-                            Program.SlicerFile.Extract(folder.SelectedPath);
+                            SlicerFile.Extract(folder.SelectedPath);
                             if (MessageBox.Show(
                                 $"Extraction was successful, browser folder to see it contents.\n{folder.SelectedPath}\nPress 'Yes' if you want open the target folder, otherwise select 'No' to continue.",
                                 "Extraction completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
@@ -97,6 +109,13 @@ namespace PrusaSL1Viewer
                 return;
             }
 
+            if (ReferenceEquals(sender, menuViewRotateImage))
+            {
+                sbLayers_ValueChanged(sbLayers, null);
+                return;
+            }
+
+            // About
             if (ReferenceEquals(sender, menuAboutAbout))
             {
                 Program.FrmAbout.ShowDialog();
@@ -115,6 +134,91 @@ namespace PrusaSL1Viewer
                 Process.Start(About.Donate);
                 return;
             }
+
+            /************************
+             *    Thumbnail Menu    *
+             ***********************/
+            if (ReferenceEquals(sender, tsThumbnailsPrevious))
+            {
+                byte i = (byte)tsThumbnailsCount.Tag;
+                if (i == 0)
+                {
+                    // This should never happen!
+                    tsThumbnailsPrevious.Enabled = false;
+                    return;
+                }
+
+                tsThumbnailsCount.Tag = --i;
+
+                if (i == 0)
+                {
+                    tsThumbnailsPrevious.Enabled = false;
+                }
+
+                pbThumbnail.Image = SlicerFile.Thumbnails[i]?.ToBitmap();
+
+                tsThumbnailsCount.Text = $"{i+1}/{SlicerFile.CreatedThumbnailsCount}";
+                tsThumbnailsNext.Enabled = true;
+                return;
+            }
+
+            if (ReferenceEquals(sender, tsThumbnailsNext))
+            {
+                byte i = byte.Parse(tsThumbnailsCount.Tag.ToString());
+                if (i >= SlicerFile.CreatedThumbnailsCount-1)
+                {
+                    // This should never happen!
+                    tsThumbnailsNext.Enabled = false;
+                    return;
+                }
+
+                tsThumbnailsCount.Tag = ++i;
+
+                if (i >= SlicerFile.CreatedThumbnailsCount-1)
+                {
+                    tsThumbnailsNext.Enabled = false;
+                }
+
+                pbThumbnail.Image = SlicerFile.Thumbnails[i]?.ToBitmap();
+
+                tsThumbnailsCount.Text = $"{i+1}/{SlicerFile.CreatedThumbnailsCount}";
+                tsThumbnailsPrevious.Enabled = true;
+                return;
+            }
+
+            if (ReferenceEquals(sender, tsThumbnailsExport))
+            {
+                using (SaveFileDialog dialog = new SaveFileDialog())
+                {
+                    byte i = byte.Parse(tsThumbnailsCount.Tag.ToString());
+                    if(ReferenceEquals(SlicerFile.Thumbnails[i], null))
+                    {
+                        return; // This should never happen!
+                    }
+
+                    dialog.Filter = "Image Files|.*png";
+                    dialog.AddExtension = true;
+                    dialog.FileName = $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_thumbnail{i+1}.png";
+
+                    if (dialog.ShowDialog() == DialogResult.OK)
+                    {
+                        using (var stream = dialog.OpenFile())
+                        {
+                            SlicerFile.Thumbnails[i].SaveAsPng(stream);
+                            stream.Close();
+                        }
+                    }
+
+                    return;
+
+                }
+            }
+        }
+
+        private void sbLayers_ValueChanged(object sender, EventArgs e)
+        {
+            if (ReferenceEquals(SlicerFile, null)) return;
+            ShowLayer((uint)(sbLayers.Maximum - sbLayers.Value));
         }
 
         private void ConvertToItemOnClick(object sender, EventArgs e)
@@ -123,7 +227,7 @@ namespace PrusaSL1Viewer
             FileFormat fileFormat = (FileFormat)menuItem.Tag;
             using (SaveFileDialog dialog = new SaveFileDialog())
             {
-                dialog.FileName = Path.GetFileNameWithoutExtension(Program.SlicerFile.FileFullPath);
+                dialog.FileName = Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath);
 
                 //using (FileFormat instance = (FileFormat)Activator.CreateInstance(type)) 
                 //using (CbddlpFile file = new CbddlpFile())
@@ -134,7 +238,7 @@ namespace PrusaSL1Viewer
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    Program.SlicerFile.Convert(fileFormat, dialog.FileName);
+                    SlicerFile.Convert(fileFormat, dialog.FileName);
                 }
 
             }
@@ -142,6 +246,51 @@ namespace PrusaSL1Viewer
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Closes file and clear UI
+        /// </summary>
+        void Clear()
+        {
+            Text = $"{FrmAbout.AssemblyTitle}   Version: {FrmAbout.AssemblyVersion}";
+            SlicerFile?.Dispose();
+            SlicerFile = null;
+
+            // GUI CLEAN
+            pbThumbnail.Image = null;
+            pbLayer.Image = null;
+            pbThumbnail.Image = null;
+            lbLayers.Text = "Layers";
+            lvProperties.BeginUpdate();
+            lvProperties.Items.Clear();
+            lvProperties.Groups.Clear();
+            lvProperties.EndUpdate();
+            pbLayers.Value = 0;
+            sbLayers.Value = 0;
+
+            statusBar.Items.Clear();
+            menuEditConvert.DropDownItems.Clear();
+
+            foreach (ToolStripItem item in menuEdit.DropDownItems)
+            {
+                item.Enabled = false;
+            }
+
+            foreach (ToolStripItem item in tsThumbnails.Items)
+            {
+                item.Enabled = false;
+            }
+
+            menuCloseFile.Enabled =
+            sbLayers.Enabled = 
+            pbLayers.Enabled = 
+            menuEdit.Enabled =
+                false;
+
+            tsThumbnailsCount.Text = "0/0";
+            tsThumbnailsCount.Tag = null;
+        }
+
         void ProcessFile(string[] files)
         {
             if (ReferenceEquals(files, null)) return;
@@ -162,16 +311,15 @@ namespace PrusaSL1Viewer
         }
 
         void ProcessFile(string fileName)
-        { 
-            Program.SlicerFile?.Dispose();
-            Program.SlicerFile = FileFormat.FindByExtension(fileName, true, true);
-            if (ReferenceEquals(Program.SlicerFile, null)) return;
-            Program.SlicerFile.Decode(fileName);
+        {
+            Clear();
+            SlicerFile = FileFormat.FindByExtension(fileName, true, true);
+            if (ReferenceEquals(SlicerFile, null)) return;
+            SlicerFile.Decode(fileName);
 
-            menuEditConvert.DropDownItems.Clear();
             foreach (var fileFormat in FileFormat.AvaliableFormats)
             {
-                if (fileFormat.GetType() == Program.SlicerFile.GetType()) continue;
+                if (fileFormat.GetType() == SlicerFile.GetType()) continue;
                 ToolStripMenuItem menuItem = new ToolStripMenuItem(fileFormat.GetType().Name.Replace("File", string.Empty))
                 {
                     Tag = fileFormat,
@@ -181,25 +329,42 @@ namespace PrusaSL1Viewer
                 menuEditConvert.DropDownItems.Add(menuItem);
             }
 
-            pbThumbnail.Image = Program.SlicerFile.Thumbnails[0]?.ToBitmap();
+            if (SlicerFile.CreatedThumbnailsCount > 0)
+            {
+                tsThumbnailsCount.Tag = 0;
+                tsThumbnailsCount.Text = $"1/{SlicerFile.CreatedThumbnailsCount}";
+                pbThumbnail.Image = SlicerFile.Thumbnails[0]?.ToBitmap();
+
+                for (var i = 1; i < tsThumbnails.Items.Count; i++)
+                {
+                    tsThumbnails.Items[i].Enabled = true;
+                }
+            }
+
+
+            foreach (ToolStripItem item in menuEdit.DropDownItems)
+            {
+                item.Enabled = true;
+            }
+
+
+            menuCloseFile.Enabled =
+            sbLayers.Enabled =
+            pbLayers.Enabled =
+            menuEdit.Enabled =
+                true;
+
             //ShowLayer(0);
 
             sbLayers.SmallChange = 1;
             sbLayers.Minimum = 0;
-            sbLayers.Maximum = (int)Program.SlicerFile.LayerCount-1;
+            sbLayers.Maximum = (int)SlicerFile.LayerCount-1;
             sbLayers.Value = sbLayers.Maximum;
 
-            sbLayers.Enabled = 
-            menuEdit.Enabled = 
-            menuEditExtract.Enabled = 
-            menuEditConvert.Enabled = true;
 
             lvProperties.BeginUpdate();
-            lvProperties.Items.Clear();
 
-            lvProperties.Groups.Clear();
-
-            foreach (object config in Program.SlicerFile.Configs)
+            foreach (object config in SlicerFile.Configs)
             {
                 ListViewGroup group = new ListViewGroup(config.GetType().Name);
                 lvProperties.Groups.Add(group);
@@ -213,16 +378,14 @@ namespace PrusaSL1Viewer
             }
             lvProperties.EndUpdate();
 
-            statusBar.Items.Clear();
-
-            AddStatusBarItem(nameof(Program.SlicerFile.LayerHeight), Program.SlicerFile.LayerHeight, "mm");
-            AddStatusBarItem(nameof(Program.SlicerFile.InitialExposureTime), Program.SlicerFile.InitialExposureTime, "s");
-            AddStatusBarItem(nameof(Program.SlicerFile.LayerExposureTime), Program.SlicerFile.LayerExposureTime, "s");
-            AddStatusBarItem(nameof(Program.SlicerFile.PrintTime), Math.Round(Program.SlicerFile.PrintTime / 3600, 2), "h");
-            AddStatusBarItem(nameof(Program.SlicerFile.UsedMaterial), Math.Round(Program.SlicerFile.UsedMaterial, 2), "ml");
-            AddStatusBarItem(nameof(Program.SlicerFile.MaterialCost), Program.SlicerFile.MaterialCost, "€");
-            AddStatusBarItem(nameof(Program.SlicerFile.MaterialName), Program.SlicerFile.MaterialName);
-            AddStatusBarItem(nameof(Program.SlicerFile.MachineName), Program.SlicerFile.MachineName);
+            AddStatusBarItem(nameof(SlicerFile.LayerHeight), SlicerFile.LayerHeight, "mm");
+            AddStatusBarItem(nameof(SlicerFile.InitialExposureTime), SlicerFile.InitialExposureTime, "s");
+            AddStatusBarItem(nameof(SlicerFile.LayerExposureTime), SlicerFile.LayerExposureTime, "s");
+            AddStatusBarItem(nameof(SlicerFile.PrintTime), Math.Round(SlicerFile.PrintTime / 3600, 2), "h");
+            AddStatusBarItem(nameof(SlicerFile.UsedMaterial), Math.Round(SlicerFile.UsedMaterial, 2), "ml");
+            AddStatusBarItem(nameof(SlicerFile.MaterialCost), SlicerFile.MaterialCost, "€");
+            AddStatusBarItem(nameof(SlicerFile.MaterialName), SlicerFile.MaterialName);
+            AddStatusBarItem(nameof(SlicerFile.MachineName), SlicerFile.MachineName);
 
             Text = $"{FrmAbout.AssemblyTitle}   Version: {FrmAbout.AssemblyVersion}   File: {Path.GetFileName(fileName)}";
         }
@@ -231,10 +394,10 @@ namespace PrusaSL1Viewer
         {
             //if(!ReferenceEquals(pbLayer.Image, null))
             //    pbLayer.Image.Dispose(); SLOW! LET GC DO IT
-            //pbLayer.Image = Image.FromStream(Program.SlicerFile.LayerImages[layerNum].Open());
+            //pbLayer.Image = Image.FromStream(SlicerFile.LayerImages[layerNum].Open());
             //pbLayer.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
             //Stopwatch watch = Stopwatch.StartNew();
-            var image = Program.SlicerFile.GetLayerImage(layerNum);
+            var image = SlicerFile.GetLayerImage(layerNum);
             //Debug.Write(watch.ElapsedMilliseconds.ToString());
             if (menuViewRotateImage.Checked)
             {
@@ -251,10 +414,10 @@ namespace PrusaSL1Viewer
             //pbLayer.Image = layer.ToBitmap(image.Width, image.Height);
 
 
-            byte percent = (byte)((layerNum + 1) * 100 / Program.SlicerFile.LayerCount);
+            byte percent = (byte)((layerNum + 1) * 100 / SlicerFile.LayerCount);
 
 
-            lbLayers.Text = $"{Program.SlicerFile.TotalHeight}mm\n{layerNum+1} / {Program.SlicerFile.LayerCount}\n{Program.SlicerFile.GetHeightFromLayer((uint)layerNum+1)}mm\n{percent}%";
+            lbLayers.Text = $"{SlicerFile.TotalHeight}mm\n{layerNum+1} / {SlicerFile.LayerCount}\n{SlicerFile.GetHeightFromLayer((uint)layerNum+1)}mm\n{percent}%";
             pbLayers.Value = percent;
 
         }
