@@ -34,8 +34,9 @@ But also, i need victims for test subject. Proceed at your own risk!
 ## Features
 
 * View image layer by layer
-* View thumbnail
+* View and extract thumbnails
 * View all used settings
+* Edit print properties and save file
 * Export file to a folder
 * Convert SL1 format to another format
 * Portable (No installation needed)
@@ -44,6 +45,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 
 * SL1 (Prusa SL1)
 * CBDDLP (Chitubox DLP)
+* Photon
 
 ## Configure printer under PrusaSlicer
 
