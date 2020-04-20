@@ -215,7 +215,29 @@ namespace PrusaSL1Reader
 
         public override byte ThumbnailsCount { get; } = 2;
         public override Image<Rgba32>[] Thumbnails { get; set; }
+
+        public override PrintParameterModifier[] PrintParameterModifiers => new[]
+        {
+            PrintParameterModifier.InitialLayerCount,
+            PrintParameterModifier.InitialExposureTime,
+            PrintParameterModifier.ExposureTime,
+
+            PrintParameterModifier.BottomLayerOffTime, 
+            PrintParameterModifier.LayerOffTime, 
+            PrintParameterModifier.BottomLiftHeight, 
+            PrintParameterModifier.BottomLiftSpeed, 
+            PrintParameterModifier.LiftHeight, 
+            PrintParameterModifier.LiftingSpeed, 
+            PrintParameterModifier.RetractSpeed,
+
+            PrintParameterModifier.BottomLightPWM,
+            PrintParameterModifier.LightPWM,
+        };
+
         public override uint LayerCount => HeaderSettings.LayerCount;
+
+        public override ushort InitialLayerCount => (ushort) HeaderSettings.BottomLayersCount;
+
         public override float InitialExposureTime => HeaderSettings.BottomExposureSeconds;
         public override float LayerExposureTime => HeaderSettings.LayerExposureSeconds;
         public override float PrintTime => HeaderSettings.PrintTime;
@@ -228,6 +250,30 @@ namespace PrusaSL1Reader
         public override float LayerHeight => HeaderSettings.LayerHeightMilimeter;
 
         public override object[] Configs => new[] { (object)HeaderSettings, PrintParametersSettings, MachineInfoSettings };
+        public override object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
+        {
+            var baseValue = base.GetValueFromPrintParameterModifier(modifier);
+            if (!ReferenceEquals(baseValue, null)) return baseValue;
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerOffTime)) return PrintParametersSettings.BottomLightOffDelay;
+            if (ReferenceEquals(modifier, PrintParameterModifier.LayerOffTime)) return PrintParametersSettings.LightOffDelay;
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftHeight)) return PrintParametersSettings.BottomLiftHeight;
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftSpeed)) return PrintParametersSettings.BottomLiftSpeed;
+            if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight)) return PrintParametersSettings.LiftHeight;
+            if (ReferenceEquals(modifier, PrintParameterModifier.LiftingSpeed)) return PrintParametersSettings.LiftingSpeed;
+            if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed)) return PrintParametersSettings.RetractSpeed;
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightPWM)) return HeaderSettings.BottomLightPWM;
+            if (ReferenceEquals(modifier, PrintParameterModifier.LightPWM)) return HeaderSettings.LightPWM;
+
+
+
+            return null;
+        }
+
+        public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
+        {
+            throw new NotImplementedException();
+        }
 
         public override void BeginEncode(string fileFullPath)
         {
@@ -522,6 +568,11 @@ namespace PrusaSL1Reader
         }
 
         public override void Extract(string path, bool emptyFirst = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void SaveAs(string filePath = null)
         {
             throw new NotImplementedException();
         }

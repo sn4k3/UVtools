@@ -31,6 +31,8 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMain));
             this.menu = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.menuEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -52,11 +54,14 @@
             this.tsThumbnailsNext = new System.Windows.Forms.ToolStripButton();
             this.tsThumbnailsExport = new System.Windows.Forms.ToolStripButton();
             this.pbLayer = new System.Windows.Forms.PictureBox();
-            this.menuOpenFile = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuCloseFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileOpen = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileReload = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileSave = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileSaveAs = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileClose = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileExtract = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileConvert = new System.Windows.Forms.ToolStripMenuItem();
             this.menuFileExit = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuEditExtract = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuEditConvert = new System.Windows.Forms.ToolStripMenuItem();
             this.menuViewRotateImage = new System.Windows.Forms.ToolStripMenuItem();
             this.menuAboutWebsite = new System.Windows.Forms.ToolStripMenuItem();
             this.menuAboutDonate = new System.Windows.Forms.ToolStripMenuItem();
@@ -96,18 +101,32 @@
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuOpenFile,
-            this.menuCloseFile,
+            this.menuFileOpen,
+            this.menuFileReload,
+            this.menuFileSave,
+            this.menuFileSaveAs,
+            this.menuFileClose,
+            this.toolStripSeparator1,
+            this.menuFileExtract,
+            this.menuFileConvert,
+            this.toolStripSeparator2,
             this.menuFileExit});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "&File";
             // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(183, 6);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(183, 6);
+            // 
             // menuEdit
             // 
-            this.menuEdit.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuEditExtract,
-            this.menuEditConvert});
             this.menuEdit.Enabled = false;
             this.menuEdit.Name = "menuEdit";
             this.menuEdit.Size = new System.Drawing.Size(39, 20);
@@ -357,52 +376,82 @@
             this.pbLayer.TabIndex = 5;
             this.pbLayer.TabStop = false;
             // 
-            // menuOpenFile
+            // menuFileOpen
             // 
-            this.menuOpenFile.Image = global::PrusaSL1Viewer.Properties.Resources.Open_16x16;
-            this.menuOpenFile.Name = "menuOpenFile";
-            this.menuOpenFile.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.menuOpenFile.Size = new System.Drawing.Size(169, 22);
-            this.menuOpenFile.Text = "&Open File";
-            this.menuOpenFile.Click += new System.EventHandler(this.ItemClicked);
+            this.menuFileOpen.Image = global::PrusaSL1Viewer.Properties.Resources.Open_16x16;
+            this.menuFileOpen.Name = "menuFileOpen";
+            this.menuFileOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
+            this.menuFileOpen.Size = new System.Drawing.Size(186, 22);
+            this.menuFileOpen.Text = "&Open";
+            this.menuFileOpen.Click += new System.EventHandler(this.ItemClicked);
             // 
-            // menuCloseFile
+            // menuFileReload
             // 
-            this.menuCloseFile.Enabled = false;
-            this.menuCloseFile.Image = global::PrusaSL1Viewer.Properties.Resources.File_Close_16x16;
-            this.menuCloseFile.Name = "menuCloseFile";
-            this.menuCloseFile.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.W)));
-            this.menuCloseFile.Size = new System.Drawing.Size(169, 22);
-            this.menuCloseFile.Text = "&Close File";
-            this.menuCloseFile.Click += new System.EventHandler(this.ItemClicked);
+            this.menuFileReload.Image = global::PrusaSL1Viewer.Properties.Resources.File_Refresh_16x16;
+            this.menuFileReload.Name = "menuFileReload";
+            this.menuFileReload.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F5)));
+            this.menuFileReload.Size = new System.Drawing.Size(186, 22);
+            this.menuFileReload.Text = "&Reload";
+            this.menuFileReload.Click += new System.EventHandler(this.ItemClicked);
+            // 
+            // menuFileSave
+            // 
+            this.menuFileSave.Enabled = false;
+            this.menuFileSave.Image = global::PrusaSL1Viewer.Properties.Resources.Save_16x16;
+            this.menuFileSave.Name = "menuFileSave";
+            this.menuFileSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.menuFileSave.Size = new System.Drawing.Size(186, 22);
+            this.menuFileSave.Text = "&Save";
+            this.menuFileSave.Click += new System.EventHandler(this.ItemClicked);
+            // 
+            // menuFileSaveAs
+            // 
+            this.menuFileSaveAs.Enabled = false;
+            this.menuFileSaveAs.Image = global::PrusaSL1Viewer.Properties.Resources.SaveAs_16x16;
+            this.menuFileSaveAs.Name = "menuFileSaveAs";
+            this.menuFileSaveAs.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.S)));
+            this.menuFileSaveAs.Size = new System.Drawing.Size(186, 22);
+            this.menuFileSaveAs.Text = "Save As";
+            this.menuFileSaveAs.Click += new System.EventHandler(this.ItemClicked);
+            // 
+            // menuFileClose
+            // 
+            this.menuFileClose.Enabled = false;
+            this.menuFileClose.Image = global::PrusaSL1Viewer.Properties.Resources.File_Close_16x16;
+            this.menuFileClose.Name = "menuFileClose";
+            this.menuFileClose.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.W)));
+            this.menuFileClose.Size = new System.Drawing.Size(186, 22);
+            this.menuFileClose.Text = "&Close";
+            this.menuFileClose.Click += new System.EventHandler(this.ItemClicked);
+            // 
+            // menuFileExtract
+            // 
+            this.menuFileExtract.Enabled = false;
+            this.menuFileExtract.Image = global::PrusaSL1Viewer.Properties.Resources.Extract_object_16x16;
+            this.menuFileExtract.Name = "menuFileExtract";
+            this.menuFileExtract.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            | System.Windows.Forms.Keys.E)));
+            this.menuFileExtract.Size = new System.Drawing.Size(186, 22);
+            this.menuFileExtract.Text = "&Extract";
+            this.menuFileExtract.Click += new System.EventHandler(this.ItemClicked);
+            // 
+            // menuFileConvert
+            // 
+            this.menuFileConvert.Enabled = false;
+            this.menuFileConvert.Image = global::PrusaSL1Viewer.Properties.Resources.Convert_16x16;
+            this.menuFileConvert.Name = "menuFileConvert";
+            this.menuFileConvert.Size = new System.Drawing.Size(186, 22);
+            this.menuFileConvert.Text = "&Convert To";
             // 
             // menuFileExit
             // 
             this.menuFileExit.Image = global::PrusaSL1Viewer.Properties.Resources.Exit_16x16;
             this.menuFileExit.Name = "menuFileExit";
             this.menuFileExit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.menuFileExit.Size = new System.Drawing.Size(169, 22);
+            this.menuFileExit.Size = new System.Drawing.Size(186, 22);
             this.menuFileExit.Text = "&Exit";
             this.menuFileExit.Click += new System.EventHandler(this.ItemClicked);
-            // 
-            // menuEditExtract
-            // 
-            this.menuEditExtract.Enabled = false;
-            this.menuEditExtract.Image = global::PrusaSL1Viewer.Properties.Resources.Extract_object_16x16;
-            this.menuEditExtract.Name = "menuEditExtract";
-            this.menuEditExtract.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
-            | System.Windows.Forms.Keys.E)));
-            this.menuEditExtract.Size = new System.Drawing.Size(173, 22);
-            this.menuEditExtract.Text = "&Extract";
-            this.menuEditExtract.Click += new System.EventHandler(this.ItemClicked);
-            // 
-            // menuEditConvert
-            // 
-            this.menuEditConvert.Enabled = false;
-            this.menuEditConvert.Image = global::PrusaSL1Viewer.Properties.Resources.Convert_16x16;
-            this.menuEditConvert.Name = "menuEditConvert";
-            this.menuEditConvert.Size = new System.Drawing.Size(173, 22);
-            this.menuEditConvert.Text = "&Convert To";
             // 
             // menuViewRotateImage
             // 
@@ -488,7 +537,7 @@
 
         private System.Windows.Forms.MenuStrip menu;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem menuOpenFile;
+        private System.Windows.Forms.ToolStripMenuItem menuFileOpen;
         private System.Windows.Forms.ToolStripMenuItem menuFileExit;
         private System.Windows.Forms.StatusStrip statusBar;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
@@ -500,7 +549,6 @@
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.Label lbLayers;
         private System.Windows.Forms.ToolStripMenuItem menuEdit;
-        private System.Windows.Forms.ToolStripMenuItem menuEditExtract;
         private System.Windows.Forms.PictureBox pbThumbnail;
         private System.Windows.Forms.ListView lvProperties;
         private System.Windows.Forms.ColumnHeader lvChKey;
@@ -509,7 +557,6 @@
         private System.Windows.Forms.SplitContainer scCenter;
         private System.Windows.Forms.PictureBox pbLayer;
         private System.Windows.Forms.ProgressBar pbLayers;
-        private System.Windows.Forms.ToolStripMenuItem menuEditConvert;
         private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem menuViewRotateImage;
         private System.Windows.Forms.ToolStrip tsThumbnails;
@@ -517,7 +564,14 @@
         private System.Windows.Forms.ToolStripButton tsThumbnailsPrevious;
         private System.Windows.Forms.ToolStripButton tsThumbnailsNext;
         private System.Windows.Forms.ToolStripButton tsThumbnailsExport;
-        private System.Windows.Forms.ToolStripMenuItem menuCloseFile;
+        private System.Windows.Forms.ToolStripMenuItem menuFileClose;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem menuFileExtract;
+        private System.Windows.Forms.ToolStripMenuItem menuFileConvert;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem menuFileReload;
+        private System.Windows.Forms.ToolStripMenuItem menuFileSave;
+        private System.Windows.Forms.ToolStripMenuItem menuFileSaveAs;
     }
 }
 

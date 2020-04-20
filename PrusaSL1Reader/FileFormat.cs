@@ -8,7 +8,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -19,6 +18,53 @@ namespace PrusaSL1Reader
     /// </summary>
     public abstract class FileFormat : IFileFormat, IDisposable
     {
+        #region Enums
+
+        /// <summary>
+        /// Available Print Parameters to modify
+        /// </summary>
+        public class PrintParameterModifier
+        {
+            public static PrintParameterModifier InitialLayerCount { get; } = new PrintParameterModifier("Initial Layer Count", @"Modify 'Initial Layer Count' value", null,0, ushort.MaxValue);
+            public static PrintParameterModifier InitialExposureTime { get; } = new PrintParameterModifier("Initial Exposure Time", @"Modify 'Initial Exposure Time' seconds", "s", 0.1M, byte.MaxValue);
+            public static PrintParameterModifier ExposureTime { get; } = new PrintParameterModifier("Exposure Time", @"Modify 'Exposure Time' seconds", "s", 0.1M, byte.MaxValue);
+            
+            public static PrintParameterModifier BottomLayerOffTime { get; } = new PrintParameterModifier("Bottom Layer Off Time", @"Modify 'Bottom Layer Off Time' seconds", "s");
+            public static PrintParameterModifier LayerOffTime { get; } = new PrintParameterModifier("Layer Off Time", @"Modify 'Layer Off Time' seconds", "s");
+            public static PrintParameterModifier BottomLiftHeight { get; } = new PrintParameterModifier("Bottom Lift Height", @"Modify 'Bottom Lift Height' millimeters", "mm");
+            public static PrintParameterModifier BottomLiftSpeed { get; } = new PrintParameterModifier("Bottom Lift Speed", @"Modify 'Bottom Lift Speed' mm/min", "mm/min");
+            public static PrintParameterModifier LiftHeight { get; } = new PrintParameterModifier("Lift Height", @"Modify 'Lift Height' millimeters", "mm");
+            public static PrintParameterModifier LiftingSpeed { get; } = new PrintParameterModifier("Lifting Speed", @"Modify 'Lifting Speed' mm/min", "mm/min", 10, 5000);
+            public static PrintParameterModifier RetractSpeed { get; } = new PrintParameterModifier("Retract Speed", @"Modify 'Retract Speed' mm/min", "mm/min", 10, 5000);
+
+            public static PrintParameterModifier BottomLightPWM { get; } = new PrintParameterModifier("Bottom Light PWM", @"Modify 'Bottom Light PWM' value", null, 50, byte.MaxValue);
+            public static PrintParameterModifier LightPWM { get; } = new PrintParameterModifier("Light PWM", @"Modify 'Light PWM' value", null, 50, byte.MaxValue);
+
+            #region Properties
+
+            public string Name { get; }
+            public string Description { get; }
+            public string ValueUnit { get; }
+
+            public decimal Minimum { get; }
+            public decimal Maximum { get; }
+            #endregion
+
+            #region Constructor
+            public PrintParameterModifier(string name, string description, string valueUnit = null, decimal minimum = 0, decimal maximum = 1000)
+            {
+                Name = name;
+                Description = description;
+                ValueUnit = valueUnit ?? string.Empty;
+                Minimum = minimum;
+                Maximum = maximum;
+            }
+            #endregion
+
+
+        }
+        #endregion
+
         public static FileFormat[] AvaliableFormats { get; } =
         {
             new SL1File(),
@@ -81,7 +127,11 @@ namespace PrusaSL1Reader
         /// </summary>
         public abstract Image<Rgba32>[] Thumbnails { get; set; }
 
+        public abstract PrintParameterModifier[] PrintParameterModifiers { get; }
+
         public abstract uint LayerCount { get; }
+
+        public abstract ushort InitialLayerCount { get; }
 
         public abstract float InitialExposureTime { get; }
 
@@ -102,6 +152,27 @@ namespace PrusaSL1Reader
         }
 
         public abstract object[] Configs { get; }
+
+        public virtual object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
+        {
+            if (ReferenceEquals(modifier, PrintParameterModifier.InitialLayerCount))
+                return InitialLayerCount;
+            if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureTime))
+                return InitialExposureTime;
+            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureTime))
+                return LayerExposureTime;
+
+
+            return null;
+        }
+
+        public virtual bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, object value)
+        {
+            return SetValueFromPrintParameterModifier(modifier, value.ToString());
+        }
+
+        public abstract bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value);
+
         public bool IsValid => !ReferenceEquals(FileFullPath, null);
 
 
@@ -137,6 +208,13 @@ namespace PrusaSL1Reader
                 }
             }
         }
+
+        public void Save()
+        {
+            SaveAs();
+        }
+
+        public abstract void SaveAs(string filePath = null);
 
         public abstract Image<Gray8> GetLayerImage(uint layerIndex);
 

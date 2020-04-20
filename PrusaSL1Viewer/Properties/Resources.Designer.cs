@@ -83,6 +83,26 @@ namespace PrusaSL1Viewer.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Cancel_24x24 {
+            get {
+                object obj = ResourceManager.GetObject("Cancel-24x24", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Cancel_32x32 {
+            get {
+                object obj = ResourceManager.GetObject("Cancel-32x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Convert_16x16 {
             get {
                 object obj = ResourceManager.GetObject("Convert-16x16", resourceCulture);
@@ -143,6 +163,16 @@ namespace PrusaSL1Viewer.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap File_Refresh_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("File-Refresh-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Global_Network_icon_16x16 {
             get {
                 object obj = ResourceManager.GetObject("Global-Network-icon-16x16", resourceCulture);
@@ -166,6 +196,16 @@ namespace PrusaSL1Viewer.Properties {
         internal static System.Drawing.Bitmap Next_16x16 {
             get {
                 object obj = ResourceManager.GetObject("Next-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Ok_24x24 {
+            get {
+                object obj = ResourceManager.GetObject("Ok-24x24", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -206,6 +246,26 @@ namespace PrusaSL1Viewer.Properties {
         internal static System.Drawing.Bitmap Save_16x16 {
             get {
                 object obj = ResourceManager.GetObject("Save-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SaveAs_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("SaveAs-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Wrench_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("Wrench-16x16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

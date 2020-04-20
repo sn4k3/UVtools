@@ -256,7 +256,7 @@ namespace PrusaSL1Reader
         #endregion
 
         #region Properties
-        public ZipArchive Archive { get; private set; }
+        public ZipArchive InputFile { get; private set; }
 
         public Printer PrinterSettings { get; private set; }
 
@@ -266,9 +266,9 @@ namespace PrusaSL1Reader
 
         public OutputConfig OutputConfigSettings { get; private set; }
 
-        public Statistics Statistics { get; } = new Statistics();
+        public List<ZipArchiveEntry> LayerEntries { get; } = new List<ZipArchiveEntry>();
 
-        public List<ZipArchiveEntry> LayerImages { get; } = new List<ZipArchiveEntry>();
+        public Statistics Statistics { get; } = new Statistics();
 
         #endregion
 
@@ -280,7 +280,17 @@ namespace PrusaSL1Reader
 
         public override byte ThumbnailsCount { get; } = 2;
         public override Image<Rgba32>[] Thumbnails { get; set; }
-        public override uint LayerCount => (uint)LayerImages.Count;
+
+        public override PrintParameterModifier[] PrintParameterModifiers => new[]
+        {
+            PrintParameterModifier.InitialLayerCount,
+            PrintParameterModifier.InitialExposureTime,
+            PrintParameterModifier.ExposureTime,
+        };
+
+        public override uint LayerCount => OutputConfigSettings.NumFast;
+
+        public override ushort InitialLayerCount => OutputConfigSettings.NumFade;
 
         public override float InitialExposureTime => OutputConfigSettings.ExpTimeFirst;
 
@@ -298,6 +308,29 @@ namespace PrusaSL1Reader
 
         public override float LayerHeight => OutputConfigSettings.LayerHeight;
         public override object[] Configs => new object[] { PrinterSettings, MaterialSettings, PrintSettings, OutputConfigSettings };
+        public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
+        {
+            if (ReferenceEquals(modifier, PrintParameterModifier.InitialLayerCount))
+            {
+                PrintSettings.FadedLayers = 
+                OutputConfigSettings.NumFade = value.Convert<byte>();
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureTime))
+            {
+                MaterialSettings.InitialExposureTime =
+                OutputConfigSettings.ExpTimeFirst = value.Convert<ushort>();
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureTime))
+            {
+                MaterialSettings.ExposureTime =
+                OutputConfigSettings.ExpTime = value.Convert<byte>();
+                return true;
+            }
+
+            return false;
+        }
 
         public override FileExtension[] ValidFiles { get; } = {
             new FileExtension("sl1", "Prusa SL1 Files")
@@ -374,10 +407,9 @@ namespace PrusaSL1Reader
                 PrintSettings,
                 OutputConfigSettings,
             };
-
-            Archive = ZipFile.OpenRead(FileFullPath);
+            InputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update);
             byte thumbnailIndex = 0;
-            foreach (ZipArchiveEntry entity in Archive.Entries)
+            foreach (ZipArchiveEntry entity in InputFile.Entries)
             {
                 if (entity.Name.EndsWith(".ini"))
                 {
@@ -397,7 +429,7 @@ namespace PrusaSL1Reader
                             foreach (var obj in parseObjects)
                             {
                                 var attribute = obj.GetType().GetProperty(fieldName);
-                                if (attribute == null) continue;
+                                if (ReferenceEquals(attribute, null)) continue;
                                 SetValue(attribute, obj, keyValue[1]);
                                 Statistics.ImplementedKeys.Add(keyValue[0]);
                                 foundMember = true;
@@ -428,7 +460,7 @@ namespace PrusaSL1Reader
                         continue;
                     }
 
-                    LayerImages.Add(entity);
+                    LayerEntries.Add(entity);
                 }
             }
 
@@ -440,12 +472,64 @@ namespace PrusaSL1Reader
         public override void Extract(string path, bool emptyFirst = true)
         {
             base.Extract(path, emptyFirst);
-            Archive.ExtractToDirectory(path);
+            InputFile.ExtractToDirectory(path);
+        }
+
+        public override void SaveAs(string filePath = null)
+        {
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                InputFile.Dispose();
+
+                File.Copy(FileFullPath, filePath, true);
+                
+                FileFullPath = filePath;
+                InputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update);
+            }
+
+            //InputFile.CreateEntry("Modified");
+            InputFile.GetEntry("config.ini")?.Delete();
+            var entry = InputFile.CreateEntry("config.ini");
+            using (TextWriter tw = new StreamWriter(entry.Open()))
+            {
+                var properties = OutputConfigSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+                foreach (var property in properties)
+                {
+                    var name = char.ToLowerInvariant(property.Name[0]) + property.Name.Substring(1);
+                    tw.WriteLine($"{name} = {property.GetValue(OutputConfigSettings)}");
+                }
+                tw.Close();
+            }
+
+            InputFile.GetEntry("prusaslicer.ini")?.Delete();
+            entry = InputFile.CreateEntry("prusaslicer.ini");
+            using (TextWriter tw = new StreamWriter(entry.Open()))
+            {
+                foreach (var config in Configs)
+                {
+                    if (ReferenceEquals(config, OutputConfigSettings))
+                        continue;
+
+                    var properties = config.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+                    foreach (var property in properties)
+                    {
+                        tw.WriteLine($"{MemberNameToIniKey(property.Name)} = {property.GetValue(config)}");
+                    }
+                }
+
+                tw.Close();
+            }
+
+            InputFile.Dispose();
+            Decode(FileFullPath);
+
         }
 
         public override Image<Gray8> GetLayerImage(uint layerIndex)
         {
-            return Image.Load<Gray8>(LayerImages[(int)layerIndex].Open());
+            return Image.Load<Gray8>(LayerEntries[(int)layerIndex].Open());
         }
 
         public override float GetHeightFromLayer(uint layerNum)
@@ -456,8 +540,8 @@ namespace PrusaSL1Reader
         public override void Clear()
         {
             base.Clear();
-            Archive?.Dispose();
-            LayerImages.Clear();
+            InputFile?.Dispose();
+            LayerEntries.Clear();
             Statistics.Clear();
         }
 
@@ -567,6 +651,22 @@ namespace PrusaSL1Reader
             string memberName = string.Empty;
             string[] objs = keyName.Split('_');
             return objs.Aggregate(memberName, (current, obj) => current + obj.FirstCharToUpper());
+        }
+
+        public static string MemberNameToIniKey(string memberName)
+        {
+            string iniKey = char.ToLowerInvariant(memberName[0]).ToString();
+            for (var i = 1; i < memberName.Length; i++)
+            {
+                iniKey += char.IsUpper(memberName[i])
+                    ? $"_{char.ToLowerInvariant(memberName[i])}"
+                    : memberName[i].ToString();
+            }
+
+            if (iniKey.EndsWith("_"))
+                iniKey.Remove(iniKey.Length-1);
+
+            return iniKey;
         }
 
         public static bool SetValue(PropertyInfo attribute, object obj, string value)

@@ -42,97 +42,194 @@ namespace PrusaSL1Viewer
        
         private void ItemClicked(object sender, EventArgs e)
         {
-            /*******************
-             *    Main Menu    *
-             ******************/
-            // File
-            if (ReferenceEquals(sender, menuOpenFile))
+            if (sender.GetType() == typeof(ToolStripMenuItem))
             {
-                using (OpenFileDialog openFile = new OpenFileDialog())
+                ToolStripMenuItem item = (ToolStripMenuItem) sender;
+                /*******************
+                 *    Main Menu    *
+                 ******************/
+                // File
+                if (ReferenceEquals(sender, menuFileOpen))
                 {
-                    openFile.CheckFileExists = true;
-                    openFile.Filter = FileFormat.AllFileFilters;
-                    openFile.FilterIndex = 0;
-                    if (openFile.ShowDialog() == DialogResult.OK)
+                    using (OpenFileDialog openFile = new OpenFileDialog())
                     {
-                        try
+                        openFile.CheckFileExists = true;
+                        openFile.Filter = FileFormat.AllFileFilters;
+                        openFile.FilterIndex = 0;
+                        if (openFile.ShowDialog() == DialogResult.OK)
                         {
-                            ProcessFile(openFile.FileName);
-                        }
-                        catch (Exception exception)
-                        {
-                            MessageBox.Show(exception.ToString(), "Error while try opening the file", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            return;
-                        }
-                    }
-                }
-                return;
-            }
-
-            if (ReferenceEquals(sender, menuCloseFile))
-            {
-                Clear();
-                return;
-            }
-
-            if (ReferenceEquals(sender, menuFileExit))
-            {
-                Application.Exit();
-                return;
-            }
-
-            // Edit
-            if (ReferenceEquals(sender, menuEditExtract))
-            {
-                using (FolderBrowserDialog folder = new FolderBrowserDialog())
-                {
-                    if (folder.ShowDialog() == DialogResult.OK)
-                    {
-                        try
-                        {
-                            SlicerFile.Extract(folder.SelectedPath);
-                            if (MessageBox.Show(
-                                $"Extraction was successful, browser folder to see it contents.\n{folder.SelectedPath}\nPress 'Yes' if you want open the target folder, otherwise select 'No' to continue.",
-                                "Extraction completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                            try
                             {
-                                Process.Start(folder.SelectedPath);
+                                ProcessFile(openFile.FileName);
+                            }
+                            catch (Exception exception)
+                            {
+                                MessageBox.Show(exception.ToString(), "Error while try opening the file",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
                             }
                         }
-                        catch (Exception exception)
+                    }
+
+                    return;
+                }
+
+                if (ReferenceEquals(sender, menuFileReload))
+                {
+                    ProcessFile();
+                    return;
+                }
+
+                if (ReferenceEquals(sender, menuFileSave))
+                {
+                    SlicerFile.Save();
+                    menuFileSave.Enabled =
+                    menuFileSaveAs.Enabled = false;
+                    return;
+                }
+
+                if (ReferenceEquals(sender, menuFileSaveAs))
+                {
+                    using (SaveFileDialog dialog = new SaveFileDialog())
+                    {
+                        dialog.Filter = SlicerFile.GetFileFilter();
+                        dialog.AddExtension = true;
+                        dialog.FileName =
+                            $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_copy";
+                        if (dialog.ShowDialog() == DialogResult.OK)
                         {
-                            MessageBox.Show(exception.ToString(), "Error while try extracting the file", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            SlicerFile.SaveAs(dialog.FileName);
+                            menuFileSave.Enabled =
+                            menuFileSaveAs.Enabled = false;
+                            ProcessFile(dialog.FileName);
+                        }
+                    }
+
+                    
+                    return;
+                }
+
+                if (ReferenceEquals(sender, menuFileClose))
+                {
+                    if (menuFileSave.Enabled)
+                    {
+                        if (MessageBox.Show("There are unsaved changes, do you want close this file without save?",
+                                "Close file without save?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) !=
+                            DialogResult.Yes)
+                        {
                             return;
                         }
-                        
+                    }
+                    Clear();
+                    return;
+                }
+
+                if (ReferenceEquals(sender, menuFileExit))
+                {
+                    if (menuFileSave.Enabled)
+                    {
+                        if (MessageBox.Show("There are unsaved changes, do you want exit without save?",
+                                "Exit without save?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) !=
+                            DialogResult.Yes)
+                        {
+                            return;
+                        }
+                    }
+                    Application.Exit();
+                    return;
+                }
+
+
+                if (ReferenceEquals(sender, menuFileExtract))
+                {
+                    using (FolderBrowserDialog folder = new FolderBrowserDialog())
+                    {
+                        if (folder.ShowDialog() == DialogResult.OK)
+                        {
+                            try
+                            {
+                                SlicerFile.Extract(folder.SelectedPath);
+                                if (MessageBox.Show(
+                                        $"Extraction was successful, browser folder to see it contents.\n{folder.SelectedPath}\nPress 'Yes' if you want open the target folder, otherwise select 'No' to continue.",
+                                        "Extraction completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
+                                    DialogResult.Yes)
+                                {
+                                    Process.Start(folder.SelectedPath);
+                                }
+                            }
+                            catch (Exception exception)
+                            {
+                                MessageBox.Show(exception.ToString(), "Error while try extracting the file",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+
+                        }
+                    }
+
+                    return;
+                }
+
+                // Edit
+                if (!ReferenceEquals(item.Tag, null))
+                {
+                    if (item.Tag.GetType() == typeof(FileFormat.PrintParameterModifier))
+                    {
+                        FileFormat.PrintParameterModifier modifier = (FileFormat.PrintParameterModifier) item.Tag;
+                        using (FrmInputBox inputBox = new FrmInputBox(modifier,
+                            decimal.Parse(SlicerFile.GetValueFromPrintParameterModifier(modifier).ToString())))
+                        {
+                            if (inputBox.ShowDialog() != DialogResult.OK) return;
+                            var value = inputBox.NewValue;
+
+                            if (!SlicerFile.SetValueFromPrintParameterModifier(modifier, value))
+                            {
+                                MessageBox.Show(
+                                    $"Unable to set '{modifier.Name}' value, was not found, it may not implemented yet.", "Operation error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+
+                            RefreshInfo();
+
+                            menuFileSave.Enabled =
+                            menuFileSaveAs.Enabled = true;
+                        }
+
+                        return;
+
                     }
                 }
-                return;
-            }
 
-            if (ReferenceEquals(sender, menuViewRotateImage))
-            {
-                sbLayers_ValueChanged(sbLayers, null);
-                return;
-            }
+                // View
+                if (ReferenceEquals(sender, menuViewRotateImage))
+                {
+                    sbLayers_ValueChanged(sbLayers, null);
+                    return;
+                }
 
-            // About
-            if (ReferenceEquals(sender, menuAboutAbout))
-            {
-                Program.FrmAbout.ShowDialog();
-            }
-            if (ReferenceEquals(sender, menuAboutWebsite))
-            {
-                Process.Start(About.Website);
-                return;
-            }
+                // About
+                if (ReferenceEquals(sender, menuAboutAbout))
+                {
+                    Program.FrmAbout.ShowDialog();
+                    return;
+                }
 
-            if (ReferenceEquals(sender, menuAboutDonate))
-            {
-                MessageBox.Show("All my work here is given for free (OpenSource), it took some hours to build, test and polish the program.\n" +
-                                "If you're happy to contribute for a better program and for my work i will appreciate the tip.\n" +
-                                "A browser window will be open and forward to my paypal address after you click 'OK'.\nHappy Printing!", "Donation", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                Process.Start(About.Donate);
-                return;
+                if (ReferenceEquals(sender, menuAboutWebsite))
+                {
+                    Process.Start(About.Website);
+                    return;
+                }
+
+                if (ReferenceEquals(sender, menuAboutDonate))
+                {
+                    MessageBox.Show(
+                        "All my work here is given for free (OpenSource), it took some hours to build, test and polish the program.\n" +
+                        "If you're happy to contribute for a better program and for my work i will appreciate the tip.\n" +
+                        "A browser window will be open and forward to my paypal address after you click 'OK'.\nHappy Printing!",
+                        "Donation", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    Process.Start(About.Donate);
+                    return;
+                }
             }
 
             /************************
@@ -269,19 +366,27 @@ namespace PrusaSL1Viewer
             sbLayers.Value = 0;
 
             statusBar.Items.Clear();
-            menuEditConvert.DropDownItems.Clear();
+            menuFileConvert.DropDownItems.Clear();
 
-            foreach (ToolStripItem item in menuEdit.DropDownItems)
+            menuEdit.DropDownItems.Clear();
+            /*foreach (ToolStripItem item in menuEdit.DropDownItems)
             {
                 item.Enabled = false;
-            }
+            }*/
 
             foreach (ToolStripItem item in tsThumbnails.Items)
             {
                 item.Enabled = false;
             }
 
-            menuCloseFile.Enabled =
+            
+
+            menuFileReload.Enabled =
+            menuFileSave.Enabled =
+            menuFileSaveAs.Enabled =
+            menuFileClose.Enabled =
+            menuFileExtract.Enabled =
+            menuFileConvert.Enabled =
             sbLayers.Enabled = 
             pbLayers.Enabled = 
             menuEdit.Enabled =
@@ -289,6 +394,12 @@ namespace PrusaSL1Viewer
 
             tsThumbnailsCount.Text = "0/0";
             tsThumbnailsCount.Tag = null;
+        }
+
+        void ProcessFile()
+        {
+            if (ReferenceEquals(SlicerFile, null)) return;
+            ProcessFile(SlicerFile.FileFullPath);
         }
 
         void ProcessFile(string[] files)
@@ -326,7 +437,7 @@ namespace PrusaSL1Viewer
                     Image = Properties.Resources.layers_16x16
                 };
                 menuItem.Click += ConvertToItemOnClick;
-                menuEditConvert.DropDownItems.Add(menuItem);
+                menuFileConvert.DropDownItems.Add(menuItem);
             }
 
             if (SlicerFile.CreatedThumbnailsCount > 0)
@@ -342,13 +453,10 @@ namespace PrusaSL1Viewer
             }
 
 
-            foreach (ToolStripItem item in menuEdit.DropDownItems)
-            {
-                item.Enabled = true;
-            }
-
-
-            menuCloseFile.Enabled =
+            menuFileReload.Enabled =
+            menuFileClose.Enabled =
+            menuFileExtract.Enabled =
+            menuFileConvert.Enabled =
             sbLayers.Enabled =
             pbLayers.Enabled =
             menuEdit.Enabled =
@@ -362,7 +470,29 @@ namespace PrusaSL1Viewer
             sbLayers.Value = sbLayers.Maximum;
 
 
+            RefreshInfo();
+
+            Text = $"{FrmAbout.AssemblyTitle}   Version: {FrmAbout.AssemblyVersion}   File: {Path.GetFileName(fileName)}";
+        }
+
+        void RefreshInfo()
+        {
+            menuEdit.DropDownItems.Clear();
+            foreach (var modifier in SlicerFile.PrintParameterModifiers)
+            {
+                ToolStripItem item = new ToolStripMenuItem
+                {
+                    Text = $"{modifier.Name} ({SlicerFile.GetValueFromPrintParameterModifier(modifier)}{modifier.ValueUnit})",
+                    Tag = modifier,
+                    Image = Properties.Resources.Wrench_16x16,
+                };
+                menuEdit.DropDownItems.Add(item);
+
+                item.Click += ItemClicked;
+            }
+
             lvProperties.BeginUpdate();
+            lvProperties.Items.Clear();
 
             foreach (object config in SlicerFile.Configs)
             {
@@ -378,7 +508,9 @@ namespace PrusaSL1Viewer
             }
             lvProperties.EndUpdate();
 
+            statusBar.Items.Clear();
             AddStatusBarItem(nameof(SlicerFile.LayerHeight), SlicerFile.LayerHeight, "mm");
+            AddStatusBarItem(nameof(SlicerFile.InitialLayerCount), SlicerFile.InitialLayerCount);
             AddStatusBarItem(nameof(SlicerFile.InitialExposureTime), SlicerFile.InitialExposureTime, "s");
             AddStatusBarItem(nameof(SlicerFile.LayerExposureTime), SlicerFile.LayerExposureTime, "s");
             AddStatusBarItem(nameof(SlicerFile.PrintTime), Math.Round(SlicerFile.PrintTime / 3600, 2), "h");
@@ -386,15 +518,13 @@ namespace PrusaSL1Viewer
             AddStatusBarItem(nameof(SlicerFile.MaterialCost), SlicerFile.MaterialCost, "€");
             AddStatusBarItem(nameof(SlicerFile.MaterialName), SlicerFile.MaterialName);
             AddStatusBarItem(nameof(SlicerFile.MachineName), SlicerFile.MachineName);
-
-            Text = $"{FrmAbout.AssemblyTitle}   Version: {FrmAbout.AssemblyVersion}   File: {Path.GetFileName(fileName)}";
         }
 
         void ShowLayer(uint layerNum)
         {
             //if(!ReferenceEquals(pbLayer.Image, null))
             //    pbLayer.Image.Dispose(); SLOW! LET GC DO IT
-            //pbLayer.Image = Image.FromStream(SlicerFile.LayerImages[layerNum].Open());
+            //pbLayer.Image = Image.FromStream(SlicerFile.LayerEntries[layerNum].Open());
             //pbLayer.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
             //Stopwatch watch = Stopwatch.StartNew();
             var image = SlicerFile.GetLayerImage(layerNum);

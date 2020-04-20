@@ -41,10 +41,13 @@ namespace PrusaSL1Reader
         /// </summary>
         Image<Rgba32>[] Thumbnails { get; set; }
 
+        FileFormat.PrintParameterModifier[] PrintParameterModifiers { get; }
+
         /// <summary>
         /// Number of layers present in this file
         /// </summary>
         uint LayerCount { get; }
+        ushort InitialLayerCount { get; }
         float InitialExposureTime { get; }
         float LayerExposureTime { get; }
         float PrintTime { get; }
@@ -65,8 +68,10 @@ namespace PrusaSL1Reader
         /// </summary>
         object[] Configs { get; }
 
-
-
+        object GetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier);
+        bool SetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier, object value);
+        bool SetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier, string value);
+        
         /// <summary>
         /// If this file is valid to read
         /// </summary>
@@ -102,6 +107,17 @@ namespace PrusaSL1Reader
         /// <param name="path">Path to folder where content will be extracted</param>
         /// <param name="emptyFirst">Empty target folder first</param>
         void Extract(string path, bool emptyFirst = true);
+
+        /// <summary>
+        /// Saves current configuration on input file
+        /// </summary>
+        void Save();
+
+        /// <summary>
+        /// Saves current configuration on a copy
+        /// </summary>
+        /// <param name="filePath">File path to save copy as, use null to overwrite active file (Same as <see cref="Save"/>)</param>
+        void SaveAs(string filePath = null);
 
         /// <summary>
         /// Gets a image from layer

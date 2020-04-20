@@ -6,6 +6,8 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using System.Globalization;
+using System.Threading;
 using System.Windows.Forms;
 using PrusaSL1Reader;
 
@@ -22,6 +24,8 @@ namespace PrusaSL1Viewer
         [STAThread]
         static void Main()
         {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-GB");
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 

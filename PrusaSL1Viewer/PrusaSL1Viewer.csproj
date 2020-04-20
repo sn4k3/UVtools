@@ -126,6 +126,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FrmInputBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmInputBox.Designer.cs">
+      <DependentUpon>FrmInputBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrmAbout.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -150,6 +156,9 @@
     <Compile Include="UniversalLayerExtensions.cs" />
     <EmbeddedResource Include="FrmAbout.resx">
       <DependentUpon>FrmAbout.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmInputBox.resx">
+      <DependentUpon>FrmInputBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FrmMain.resx">
       <DependentUpon>FrmMain.cs</DependentUpon>
@@ -216,6 +225,12 @@
     <None Include="Images\Save-16x16.png" />
     <None Include="Images\File-Close-16x16.png" />
     <None Include="Images\Error-128x128.png" />
+    <None Include="Images\Wrench-16x16.png" />
+    <None Include="Images\File-Refresh-16x16.png" />
+    <None Include="Images\Cancel-32x32.png" />
+    <None Include="Images\Cancel-24x24.png" />
+    <None Include="Images\Ok-24x24.png" />
+    <None Include="Images\SaveAs-16x16.png" />
     <Content Include="PrusaSL1Viewer.ico" />
   </ItemGroup>
   <ItemGroup>

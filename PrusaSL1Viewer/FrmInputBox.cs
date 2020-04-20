@@ -1,0 +1,90 @@
+﻿using System;
+using System.Globalization;
+using System.Windows.Forms;
+using PrusaSL1Reader;
+
+namespace PrusaSL1Viewer
+{
+    public partial class FrmInputBox : Form
+    {
+        private string _description;
+        public string Description
+        {
+            get => _description;
+            set { 
+                lbDescription.Text = value;
+                _description = value;
+            }
+        }
+
+        public string ValueUint { get; }
+        public decimal NewValue
+        {
+            get => numNewValue.Value;
+            private set => numNewValue.Value = value;
+        }
+
+        private decimal _currentValue;
+        public decimal CurrentValue
+        {
+            get => _currentValue;
+            set { _currentValue = value; tbCurrentValue.Text = value.ToString(CultureInfo.InvariantCulture)+ValueUint; }
+        }
+
+        public FrmInputBox()
+        {
+            InitializeComponent();
+            DialogResult = DialogResult.Cancel;
+            numNewValue.Select();
+        }
+
+        public FrmInputBox(FileFormat.PrintParameterModifier modifier, decimal currentValue) : this(modifier.Name,
+            modifier.Description, currentValue, modifier.ValueUnit, modifier.Minimum, modifier.Maximum)
+        { }
+        public FrmInputBox(string title, string description, decimal currentValue, string valueUnit = null, decimal minValue = 0, decimal maxValue = 100) : this()
+        {
+            Text = title;
+            Description = description;
+            ValueUint = valueUnit ?? string.Empty;
+            CurrentValue = currentValue;
+            numNewValue.Minimum = minValue;
+            numNewValue.Maximum = maxValue;
+            NewValue = currentValue;
+        }
+
+        private void ValueChanged(object sender, EventArgs e)
+        {
+            if (ReferenceEquals(sender, numNewValue))
+            {
+                btnModify.Enabled = numNewValue.Value != CurrentValue;
+
+                return;
+            }
+        }
+
+        private void ItemClicked(object sender, EventArgs e)
+        {
+            if (ReferenceEquals(sender, btnModify))
+            {
+                if (MessageBox.Show($"Are you sure you want to {Description}?\nFrom {CurrentValue}{ValueUint} to {NewValue}{ValueUint}", Text, MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    DialogResult = DialogResult.OK;
+                    if (NewValue == CurrentValue) // Should never happen!
+                    {
+                        DialogResult = DialogResult.Cancel;
+                    }
+                    Close();
+                }
+
+                return;
+            }
+
+            if (ReferenceEquals(sender, btnCancel))
+            {
+                DialogResult = DialogResult.Cancel;
+                return;
+            }
+        }
+    }
+}
