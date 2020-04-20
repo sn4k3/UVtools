@@ -6,6 +6,7 @@
 * (Add) File -> Save
 * (Add) File -> Save As
 * (Add) Can now edit some print properties
+* (Add) 'Initial Layer Count' to status bar
 * (Change) Rearrange menu edit items to file
 * (Change) Edit some shortcuts
 
