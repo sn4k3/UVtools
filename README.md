@@ -2,7 +2,7 @@
 
 Open, view, extract, edit and convert SL1 files generated from PrusaSlicer.
 
-This simple tool can also give you insight of supports and find some failures. Did you forget what resin or orther settings you used on a project? This can also save you, check every setting that were used with.
+This simple tool can give you insight of supports and find some failures. Did you forget what resin or orther settings you used on a project? This can also save you, check every setting that were used with or simply change them!
 
 Youtube video: https://www.youtube.com/watch?v=hJD2cgF5rxs
 
