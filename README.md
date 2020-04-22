@@ -1,6 +1,6 @@
 # Prusa SL1 File Viewer
 
-Open, view, extract and convert SL1 files generated from PrusaSlicer.
+Open, view, extract, edit and convert SL1 files generated from PrusaSlicer.
 
 This simple tool can also give you insight of supports and find some failures. Did you forget what resin or orther settings you used on a project? This can also save you, check every setting that were used with.
 
