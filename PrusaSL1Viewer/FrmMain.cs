@@ -7,11 +7,14 @@
  */
 using System;
 using System.Diagnostics;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 using PrusaSL1Reader;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
 namespace PrusaSL1Viewer
@@ -23,6 +26,8 @@ namespace PrusaSL1Viewer
             get => Program.SlicerFile;
             set => Program.SlicerFile = value;
         }
+
+        public uint ActualLayer => (uint)(sbLayers.Maximum - sbLayers.Value);
 
         #region Constructors
         public FrmMain()
@@ -256,6 +261,8 @@ namespace PrusaSL1Viewer
 
                 tsThumbnailsCount.Text = $"{i+1}/{SlicerFile.CreatedThumbnailsCount}";
                 tsThumbnailsNext.Enabled = true;
+
+                tsThumbnailsResolution.Text = pbThumbnail.Image.PhysicalDimension.ToString();
                 return;
             }
 
@@ -280,6 +287,8 @@ namespace PrusaSL1Viewer
 
                 tsThumbnailsCount.Text = $"{i+1}/{SlicerFile.CreatedThumbnailsCount}";
                 tsThumbnailsPrevious.Enabled = true;
+
+                tsThumbnailsResolution.Text = pbThumbnail.Image.PhysicalDimension.ToString();
                 return;
             }
 
@@ -310,12 +319,43 @@ namespace PrusaSL1Viewer
 
                 }
             }
+
+            /************************
+             *      Layer Menu      *
+             ***********************/
+            if (ReferenceEquals(sender, tsLayerImageExport))
+            {
+                using (SaveFileDialog dialog = new SaveFileDialog())
+                {
+                    if (ReferenceEquals(pbLayer, null))
+                    {
+                        return; // This should never happen!
+                    }
+
+                    dialog.Filter = "Image Files|.*png";
+                    dialog.AddExtension = true;
+                    dialog.FileName = $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_layer{ActualLayer}.png";
+
+                    if (dialog.ShowDialog() == DialogResult.OK)
+                    {
+                        using (var stream = dialog.OpenFile())
+                        {
+                            Image<Gray8> image = (Image<Gray8>)pbLayer.Image.Tag;
+                            image.Save(stream, new PngEncoder());
+                            stream.Close();
+                        }
+                    }
+
+                    return;
+
+                }
+            }
         }
 
         private void sbLayers_ValueChanged(object sender, EventArgs e)
         {
             if (ReferenceEquals(SlicerFile, null)) return;
-            ShowLayer((uint)(sbLayers.Maximum - sbLayers.Value));
+            ShowLayer(ActualLayer);
         }
 
         private void ConvertToItemOnClick(object sender, EventArgs e)
@@ -378,8 +418,14 @@ namespace PrusaSL1Viewer
             {
                 item.Enabled = false;
             }
+            foreach (ToolStripItem item in tsLayer.Items)
+            {
+                item.Enabled = false;
+            }
 
-            
+            tsThumbnailsResolution.Text =
+            tsLayerResolution.Text = string.Empty;
+
 
             menuFileReload.Enabled =
             menuFileSave.Enabled =
@@ -428,6 +474,18 @@ namespace PrusaSL1Viewer
             if (ReferenceEquals(SlicerFile, null)) return;
             SlicerFile.Decode(fileName);
 
+            if (SlicerFile.LayerCount == 0)
+            {
+                MessageBox.Show("It seens the file don't have any layer, the causes can be:\n" +
+                                "- Empty\n" +
+                                "- Corrupted\n" +
+                                "- Lacking a sliced model\n" +
+                                "- A programing internal error\n\n" +
+                                "Please check your file and retry", "Error reading the file - Lacking of layers", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Clear();
+                return;
+            }
+
             foreach (var fileFormat in FileFormat.AvaliableFormats)
             {
                 if (fileFormat.GetType() == SlicerFile.GetType()) continue;
@@ -445,13 +503,17 @@ namespace PrusaSL1Viewer
                 tsThumbnailsCount.Tag = 0;
                 tsThumbnailsCount.Text = $"1/{SlicerFile.CreatedThumbnailsCount}";
                 pbThumbnail.Image = SlicerFile.Thumbnails[0]?.ToBitmap();
+                tsThumbnailsResolution.Text = pbThumbnail.Image.PhysicalDimension.ToString();
 
                 for (var i = 1; i < tsThumbnails.Items.Count; i++)
                 {
                     tsThumbnails.Items[i].Enabled = true;
                 }
             }
-
+            foreach (ToolStripItem item in tsLayer.Items)
+            {
+                item.Enabled = true;
+            }
 
             menuFileReload.Enabled =
             menuFileClose.Enabled =
@@ -471,6 +533,8 @@ namespace PrusaSL1Viewer
 
 
             RefreshInfo();
+
+            tsLayerResolution.Text = pbLayer.Image.PhysicalDimension.ToString();
 
             Text = $"{FrmAbout.AssemblyTitle}   Version: {FrmAbout.AssemblyVersion}   File: {Path.GetFileName(fileName)}";
         }
@@ -522,33 +586,41 @@ namespace PrusaSL1Viewer
 
         void ShowLayer(uint layerNum)
         {
-            //if(!ReferenceEquals(pbLayer.Image, null))
-            //    pbLayer.Image.Dispose(); SLOW! LET GC DO IT
-            //pbLayer.Image = Image.FromStream(SlicerFile.LayerEntries[layerNum].Open());
-            //pbLayer.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
-            //Stopwatch watch = Stopwatch.StartNew();
-            var image = SlicerFile.GetLayerImage(layerNum);
-            //Debug.Write(watch.ElapsedMilliseconds.ToString());
-            if (menuViewRotateImage.Checked)
+            try
             {
+                //if(!ReferenceEquals(pbLayer.Image, null))
+                //pbLayer.Image?.Dispose(); // SLOW! LET GC DO IT
+                //pbLayer.Image = Image.FromStream(SlicerFile.LayerEntries[layerNum].Open());
+                //pbLayer.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
+                //Stopwatch watch = Stopwatch.StartNew();
+                var image = SlicerFile.GetLayerImage(layerNum);
+                //Debug.Write(watch.ElapsedMilliseconds.ToString());
+                if (menuViewRotateImage.Checked)
+                {
+                    //watch.Restart();
+                    image.Mutate(x => x.Rotate(RotateMode.Rotate90));
+                    //Debug.Write($"/{watch.ElapsedMilliseconds}");
+                }
+
                 //watch.Restart();
-                image.Mutate(x => x.Rotate(RotateMode.Rotate90));
-                //Debug.Write($"/{watch.ElapsedMilliseconds}");
+                pbLayer.Image = image.ToBitmap();
+                pbLayer.Image.Tag = image;
+                //Debug.WriteLine($"/{watch.ElapsedMilliseconds}");
+
+                //UniversalLayer layer = new UniversalLayer(image);
+                //pbLayer.Image = layer.ToBitmap(image.Width, image.Height);
+
+
+                byte percent = (byte)((layerNum + 1) * 100 / SlicerFile.LayerCount);
+
+
+                lbLayers.Text = $"{SlicerFile.TotalHeight}mm\n{layerNum + 1} / {SlicerFile.LayerCount}\n{SlicerFile.GetHeightFromLayer((uint)layerNum + 1)}mm\n{percent}%";
+                pbLayers.Value = percent;
             }
-
-            //watch.Restart();
-            pbLayer.Image = image.ToBitmap();
-            //Debug.WriteLine($"/{watch.ElapsedMilliseconds}");
-
-            //UniversalLayer layer = new UniversalLayer(image);
-            //pbLayer.Image = layer.ToBitmap(image.Width, image.Height);
-
-
-            byte percent = (byte)((layerNum + 1) * 100 / SlicerFile.LayerCount);
-
-
-            lbLayers.Text = $"{SlicerFile.TotalHeight}mm\n{layerNum+1} / {SlicerFile.LayerCount}\n{SlicerFile.GetHeightFromLayer((uint)layerNum+1)}mm\n{percent}%";
-            pbLayers.Value = percent;
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
 
         }
 

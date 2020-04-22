@@ -65,7 +65,7 @@ namespace PrusaSL1Viewer
 
                 string description = ((AssemblyDescriptionAttribute) attributes[0]).Description + $"{Environment.NewLine}{Environment.NewLine}Available File Formats:";
 
-                return FileFormat.AvaliableFormats.SelectMany(fileFormat => fileFormat.ValidFiles).Aggregate(description, (current, fileExtension) => current + $"{Environment.NewLine}- {fileExtension.Description} (.{fileExtension.Extension})");
+                return FileFormat.AvaliableFormats.SelectMany(fileFormat => fileFormat.FileExtensions).Aggregate(description, (current, fileExtension) => current + $"{Environment.NewLine}- {fileExtension.Description} (.{fileExtension.Extension})");
             }
         }
 

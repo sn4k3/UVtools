@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("PrusaSL1Viewer")]
-[assembly: AssemblyDescription("Open, view, extract and convert SL1 files generated from PrusaSlicer")]
+[assembly: AssemblyDescription("Open, view, edit, extract and convert SL1 files generated from PrusaSlicer")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("PTRTECH")]
 [assembly: AssemblyProduct("PrusaSL1Viewer")]

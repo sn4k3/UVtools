@@ -7,7 +7,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -19,16 +18,23 @@ namespace PrusaSL1Reader
     public interface IFileFormat
     {
         /// <summary>
+        /// Gets the valid file extensions for this <see cref="FileFormat"/>
+        /// </summary>
+        FileExtension[] FileExtensions { get; }
+
+        /// <summary>
         /// Gets the input file path loaded into this <see cref="FileFormat"/>
         /// </summary>
         string FileFullPath { get; set; }
 
         /// <summary>
-        /// Gets the valid file extensions for this <see cref="FileFormat"/>
+        /// Gets the image width resolution
         /// </summary>
-        FileExtension[] ValidFiles { get; }
-
         uint ResolutionX { get; }
+
+        /// <summary>
+        /// Gets the image height resolution
+        /// </summary>
         uint ResolutionY { get; }
 
         /// <summary>
@@ -106,7 +112,10 @@ namespace PrusaSL1Reader
         /// </summary>
         /// <param name="path">Path to folder where content will be extracted</param>
         /// <param name="emptyFirst">Empty target folder first</param>
-        void Extract(string path, bool emptyFirst = true);
+        /// <param name="genericConfigExtract"></param>
+        /// <param name="genericLayersExtract"></param>
+        void Extract(string path, bool emptyFirst = true, bool genericConfigExtract = false,
+            bool genericLayersExtract = false);
 
         /// <summary>
         /// Saves current configuration on input file

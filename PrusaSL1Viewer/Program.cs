@@ -32,15 +32,6 @@ namespace PrusaSL1Viewer
             FrmMain = new FrmMain();
             FrmAbout = new FrmAbout();
             Application.Run(FrmMain);
-
-            //CbddlpFile file = new CbddlpFile();
-
-            //file.Decode(@"D:\Tiago\Desktop\_Coronavirus-v6-HIRES-Supports_NOAA.cbddlp");
-            /*file.Decode(@"D:\Tiago\Desktop\coronanew11.cbddlp");
-            file.GetLayerImage(0).Save(@"D:\img-new-0.png");
-            file.GetLayerImage(10).Save(@"D:\img-new-10.png");
-            file.GetLayerImage(20).Save(@"D:\img-new-20.png");
-            file.GetLayerImage(50).Save(@"D:\img-new-50.png");*/
         }
     }
 }

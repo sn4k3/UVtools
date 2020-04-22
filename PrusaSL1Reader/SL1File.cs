@@ -284,8 +284,8 @@ namespace PrusaSL1Reader
         public override PrintParameterModifier[] PrintParameterModifiers => new[]
         {
             PrintParameterModifier.InitialLayerCount,
-            PrintParameterModifier.InitialExposureTime,
-            PrintParameterModifier.ExposureTime,
+            PrintParameterModifier.InitialExposureSeconds,
+            PrintParameterModifier.ExposureSeconds,
         };
 
         public override uint LayerCount => OutputConfigSettings.NumFast;
@@ -316,13 +316,13 @@ namespace PrusaSL1Reader
                 OutputConfigSettings.NumFade = value.Convert<byte>();
                 return true;
             }
-            if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureTime))
+            if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureSeconds))
             {
                 MaterialSettings.InitialExposureTime =
                 OutputConfigSettings.ExpTimeFirst = value.Convert<ushort>();
                 return true;
             }
-            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureTime))
+            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
             {
                 MaterialSettings.ExposureTime =
                 OutputConfigSettings.ExpTime = value.Convert<byte>();
@@ -332,7 +332,7 @@ namespace PrusaSL1Reader
             return false;
         }
 
-        public override FileExtension[] ValidFiles { get; } = {
+        public override FileExtension[] FileExtensions { get; } = {
             new FileExtension("sl1", "Prusa SL1 Files")
         };
 
@@ -407,7 +407,7 @@ namespace PrusaSL1Reader
                 PrintSettings,
                 OutputConfigSettings,
             };
-            InputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update);
+            InputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read);
             byte thumbnailIndex = 0;
             foreach (ZipArchiveEntry entity in InputFile.Entries)
             {
@@ -419,7 +419,7 @@ namespace PrusaSL1Reader
                         while ((line = streamReader.ReadLine()) != null)
                         {
                             string[] keyValue = line.Split(new []{'='}, 2);
-                            if (keyValue.Length < 1) continue;
+                            if (keyValue.Length < 2) continue;
                             keyValue[0] = keyValue[0].Trim();
                             keyValue[1] = keyValue[1].Trim();
                             
@@ -469,60 +469,64 @@ namespace PrusaSL1Reader
             Debug.WriteLine(Statistics);
         }
 
-        public override void Extract(string path, bool emptyFirst = true)
+        public override void Extract(string path, bool emptyFirst = true, bool genericConfigExtract = false,
+            bool genericLayersExtract = false)
         {
-            base.Extract(path, emptyFirst);
+            base.Extract(path, emptyFirst, genericConfigExtract);
             InputFile.ExtractToDirectory(path);
         }
 
         public override void SaveAs(string filePath = null)
         {
+            InputFile.Dispose();
             if (!string.IsNullOrEmpty(filePath))
             {
-                InputFile.Dispose();
-
                 File.Copy(FileFullPath, filePath, true);
-                
                 FileFullPath = filePath;
-                InputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update);
+                
             }
 
-            //InputFile.CreateEntry("Modified");
-            InputFile.GetEntry("config.ini")?.Delete();
-            var entry = InputFile.CreateEntry("config.ini");
-            using (TextWriter tw = new StreamWriter(entry.Open()))
+            using (InputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update))
             {
-                var properties = OutputConfigSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-                foreach (var property in properties)
+                //InputFile.CreateEntry("Modified");
+                InputFile.GetEntry("config.ini")?.Delete();
+                var entry = InputFile.CreateEntry("config.ini");
+                using (TextWriter tw = new StreamWriter(entry.Open()))
                 {
-                    var name = char.ToLowerInvariant(property.Name[0]) + property.Name.Substring(1);
-                    tw.WriteLine($"{name} = {property.GetValue(OutputConfigSettings)}");
-                }
-                tw.Close();
-            }
-
-            InputFile.GetEntry("prusaslicer.ini")?.Delete();
-            entry = InputFile.CreateEntry("prusaslicer.ini");
-            using (TextWriter tw = new StreamWriter(entry.Open()))
-            {
-                foreach (var config in Configs)
-                {
-                    if (ReferenceEquals(config, OutputConfigSettings))
-                        continue;
-
-                    var properties = config.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                    var properties = OutputConfigSettings.GetType()
+                        .GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
                     foreach (var property in properties)
                     {
-                        tw.WriteLine($"{MemberNameToIniKey(property.Name)} = {property.GetValue(config)}");
+                        var name = char.ToLowerInvariant(property.Name[0]) + property.Name.Substring(1);
+                        tw.WriteLine($"{name} = {property.GetValue(OutputConfigSettings)}");
                     }
+
+                    tw.Close();
                 }
 
-                tw.Close();
+                InputFile.GetEntry("prusaslicer.ini")?.Delete();
+                entry = InputFile.CreateEntry("prusaslicer.ini");
+                using (TextWriter tw = new StreamWriter(entry.Open()))
+                {
+                    foreach (var config in Configs)
+                    {
+                        if (ReferenceEquals(config, OutputConfigSettings))
+                            continue;
+
+                        var properties = config.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+                        foreach (var property in properties)
+                        {
+                            tw.WriteLine($"{MemberNameToIniKey(property.Name)} = {property.GetValue(config)}");
+                        }
+                    }
+
+                    tw.Close();
+                }
             }
 
-            InputFile.Dispose();
             Decode(FileFullPath);
 
         }

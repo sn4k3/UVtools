@@ -203,7 +203,7 @@ namespace PrusaSL1Reader
 
         public override string FileFullPath { get; set; }
 
-        public override FileExtension[] ValidFiles { get; } = {
+        public override FileExtension[] FileExtensions { get; } = {
             new FileExtension("cbddlp", "Chitubox DLP Files"), 
             new FileExtension("photon", "Photon Files"), 
         };
@@ -219,8 +219,8 @@ namespace PrusaSL1Reader
         public override PrintParameterModifier[] PrintParameterModifiers => new[]
         {
             PrintParameterModifier.InitialLayerCount,
-            PrintParameterModifier.InitialExposureTime,
-            PrintParameterModifier.ExposureTime,
+            PrintParameterModifier.InitialExposureSeconds,
+            PrintParameterModifier.ExposureSeconds,
 
             PrintParameterModifier.BottomLayerOffTime, 
             PrintParameterModifier.LayerOffTime, 
@@ -272,7 +272,91 @@ namespace PrusaSL1Reader
 
         public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
         {
-            throw new NotImplementedException();
+            void updateLayers()
+            {
+                for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
+                {
+                    for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
+                    {
+                        // Bottom : others
+                        Layers[layerIndex, aaIndex].LayerExposure = layerIndex < HeaderSettings.BottomLayersCount ? HeaderSettings.BottomExposureSeconds : HeaderSettings.LayerExposureSeconds;
+                        Layers[layerIndex, aaIndex].LayerOffTimeSeconds = layerIndex < HeaderSettings.BottomLayersCount ? PrintParametersSettings.BottomLightOffDelay : PrintParametersSettings.LightOffDelay;
+                    }
+                }
+            }
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.InitialLayerCount))
+            {
+                HeaderSettings.BottomLayersCount =
+                PrintParametersSettings.BottomLayerCount = value.Convert<uint>();
+                updateLayers();
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureSeconds))
+            {
+                HeaderSettings.BottomExposureSeconds = value.Convert<float>();
+                updateLayers();
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
+            {
+                HeaderSettings.LayerExposureSeconds = value.Convert<float>();
+                updateLayers();
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerOffTime))
+            {
+                PrintParametersSettings.BottomLightOffDelay = value.Convert<float>();
+                updateLayers();
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.LayerOffTime))
+            {
+                HeaderSettings.LayerOffTime = 
+                PrintParametersSettings.LightOffDelay = value.Convert<float>();
+                updateLayers();
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftHeight))
+            {
+                PrintParametersSettings.BottomLiftHeight = value.Convert<float>();
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftSpeed))
+            {
+                PrintParametersSettings.BottomLiftSpeed = value.Convert<float>();
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight))
+            {
+                PrintParametersSettings.LiftHeight = value.Convert<float>();
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.LiftingSpeed))
+            {
+                PrintParametersSettings.LiftingSpeed = value.Convert<float>();
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
+            {
+                PrintParametersSettings.RetractSpeed = value.Convert<float>();
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightPWM))
+            {
+                HeaderSettings.BottomLightPWM = value.Convert<ushort>();
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.LightPWM))
+            {
+                HeaderSettings.LightPWM = value.Convert<ushort>();
+                return true;
+            }
+            
+            return false;
         }
 
         public override void BeginEncode(string fileFullPath)
@@ -550,7 +634,7 @@ namespace PrusaSL1Reader
             Image<Gray8> image = new Image<Gray8>((int)HeaderSettings.BedSizeX, (int)HeaderSettings.BedSizeY);
 
             
-            for (uint aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
+            for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
             {
                 Debug.WriteLine($"-Image GROUP {aaIndex}-");
                 for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
@@ -567,14 +651,49 @@ namespace PrusaSL1Reader
             }
         }
 
-        public override void Extract(string path, bool emptyFirst = true)
+        public override void Extract(string path, bool emptyFirst = true, bool genericConfigExtract = false,
+            bool genericLayersExtract = false)
         {
-            throw new NotImplementedException();
+            base.Extract(path, emptyFirst, true, true);
         }
 
         public override void SaveAs(string filePath = null)
         {
-            throw new NotImplementedException();
+            InputFile.Dispose();
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                File.Copy(FileFullPath, filePath, true);
+                FileFullPath = filePath;
+
+            }
+
+            using (InputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write))
+            {
+
+                InputFile.Seek(0, SeekOrigin.Begin);
+                Helpers.SerializeWriteFileStream(InputFile, HeaderSettings);
+
+                if (HeaderSettings.Version == 2 && HeaderSettings.PrintParametersOffsetAddress > 0)
+                {
+                    InputFile.Seek(HeaderSettings.PrintParametersOffsetAddress, SeekOrigin.Begin);
+                    Helpers.SerializeWriteFileStream(InputFile, PrintParametersSettings);
+                    Helpers.SerializeWriteFileStream(InputFile, MachineInfoSettings);
+                }
+
+                uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
+                for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
+                {
+                    for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
+                    {
+                        InputFile.Seek(layerOffset, SeekOrigin.Begin);
+                        Helpers.SerializeWriteFileStream(InputFile, Layers[layerIndex, aaIndex]);
+                        layerOffset += (uint) Helpers.Serializer.SizeOf(Layers[layerIndex, aaIndex]);
+                    }
+                }
+                InputFile.Close();
+            }
+
+            Decode(FileFullPath);
         }
 
         public override Image<Gray8> GetLayerImage(uint layerIndex)

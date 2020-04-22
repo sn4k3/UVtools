@@ -1,14 +1,19 @@
 # Changelog
 
-## ?? - v0.2.2 - Beta
+## 22/04/2020 - v0.2.2 - Beta
 
 * (Add) File -> Reload
 * (Add) File -> Save
 * (Add) File -> Save As
-* (Add) Can now edit some print properties
+* (Add) Can now ajust some print properties
 * (Add) 'Initial Layer Count' to status bar
+* (Add) Allow cbbdlp format to extract 'File -> Extract'
+* (Add) Thumbnail resolution label
+* (Add) Layer resolution label
+* (Add) Allow save current layer image
 * (Change) Rearrange menu edit items to file
 * (Change) Edit some shortcuts
+* (Change) Strict use dot (.) for real numbers instead of comma (,)
 
 ## 15/04/2020 - v0.2.1 - Beta
 

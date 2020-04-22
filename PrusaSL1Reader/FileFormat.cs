@@ -8,7 +8,9 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace PrusaSL1Reader
@@ -26,8 +28,8 @@ namespace PrusaSL1Reader
         public class PrintParameterModifier
         {
             public static PrintParameterModifier InitialLayerCount { get; } = new PrintParameterModifier("Initial Layer Count", @"Modify 'Initial Layer Count' value", null,0, ushort.MaxValue);
-            public static PrintParameterModifier InitialExposureTime { get; } = new PrintParameterModifier("Initial Exposure Time", @"Modify 'Initial Exposure Time' seconds", "s", 0.1M, byte.MaxValue);
-            public static PrintParameterModifier ExposureTime { get; } = new PrintParameterModifier("Exposure Time", @"Modify 'Exposure Time' seconds", "s", 0.1M, byte.MaxValue);
+            public static PrintParameterModifier InitialExposureSeconds { get; } = new PrintParameterModifier("Initial Exposure Time", @"Modify 'Initial Exposure Time' seconds", "s", 0.1M, byte.MaxValue);
+            public static PrintParameterModifier ExposureSeconds { get; } = new PrintParameterModifier("Exposure Time", @"Modify 'Exposure Time' seconds", "s", 0.1M, byte.MaxValue);
             
             public static PrintParameterModifier BottomLayerOffTime { get; } = new PrintParameterModifier("Bottom Layer Off Time", @"Modify 'Bottom Layer Off Time' seconds", "s");
             public static PrintParameterModifier LayerOffTime { get; } = new PrintParameterModifier("Layer Off Time", @"Modify 'Layer Off Time' seconds", "s");
@@ -65,6 +67,11 @@ namespace PrusaSL1Reader
         }
         #endregion
 
+        #region Constants
+        private const string ExtractConfigFileName = "Configuration";
+        private const string ExtractConfigFileExtension = "ini";
+        #endregion
+
         public static FileFormat[] AvaliableFormats { get; } =
         {
             new SL1File(),
@@ -93,7 +100,7 @@ namespace PrusaSL1Reader
         /// <summary>
         /// Gets the valid file extensions for this <see cref="FileFormat"/>
         /// </summary>
-        public abstract FileExtension[] ValidFiles { get; }
+        public abstract FileExtension[] FileExtensions { get; }
 
         public abstract uint ResolutionX { get; }
         public abstract uint ResolutionY { get; }
@@ -157,9 +164,9 @@ namespace PrusaSL1Reader
         {
             if (ReferenceEquals(modifier, PrintParameterModifier.InitialLayerCount))
                 return InitialLayerCount;
-            if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureTime))
+            if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureSeconds))
                 return InitialExposureTime;
-            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureTime))
+            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
                 return LayerExposureTime;
 
 
@@ -189,7 +196,7 @@ namespace PrusaSL1Reader
             FileFullPath = fileFullPath;
         }
 
-        public virtual void Extract(string path, bool emptyFirst = true)
+        public virtual void Extract(string path, bool emptyFirst = true, bool genericConfigExtract = false, bool genericLayersExtract = false)
         {
             if (emptyFirst)
             {
@@ -205,6 +212,44 @@ namespace PrusaSL1Reader
                     {
                         dir.Delete(true);
                     }
+                }
+            }
+
+            if (genericConfigExtract)
+            {
+                using (TextWriter tw = new StreamWriter(Path.Combine(path, $"{ExtractConfigFileName}.{ExtractConfigFileExtension}")))
+                {
+                    foreach (var config in Configs)
+                    {
+                        var type = config.GetType();
+                        tw.WriteLine($"[{type.Name}]");
+                        foreach (var property in type.GetProperties())
+                        {
+                            tw.WriteLine($"{property.Name} = {property.GetValue(config)}");
+                        }
+                        tw.WriteLine();
+                    }
+                    tw.Close();
+                }
+            }
+
+            if (genericLayersExtract)
+            {
+                var encoder = new PngEncoder();
+                uint i = 0;
+                foreach (var thumbnail in Thumbnails)
+                {
+                    if (ReferenceEquals(thumbnail, null))
+                    {
+                        continue;
+                    }
+                    thumbnail.Save(Path.Combine(path, $"Thumbnail{i}.png"), encoder);
+                    i++;
+                }
+                for (i = 0; i < LayerCount; i++)
+                {
+                    
+                    GetLayerImage(i).Save(Path.Combine(path, $"Layer{i}.png"), encoder);
                 }
             }
         }
@@ -254,14 +299,14 @@ namespace PrusaSL1Reader
         public bool IsExtensionValid(string extension, bool isFilePath = false)
         {
             extension = isFilePath ? Path.GetExtension(extension)?.Remove(0, 1) : extension;
-            return ValidFiles.Any(fileExtension => fileExtension.Extension.Equals(extension));
+            return FileExtensions.Any(fileExtension => fileExtension.Extension.Equals(extension));
         }
 
         public string GetFileFilter()
         {
             string result = string.Empty;
 
-            foreach (var fileExt in ValidFiles)
+            foreach (var fileExt in FileExtensions)
             {
                 if (!ReferenceEquals(result, string.Empty))
                 {
