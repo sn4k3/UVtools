@@ -1,12 +1,52 @@
-﻿using System.Collections.Generic;
+﻿/*
+ *                     GNU AFFERO GENERAL PUBLIC LICENSE
+ *                       Version 3, 19 November 2007
+ *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ *  Everyone is permitted to copy and distribute verbatim copies
+ *  of this license document, but changing it is not allowed.
+ */
+using System.Collections.Generic;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace PrusaSL1Reader
 {
-    public class UniversalLayer : List<LayerLine>
+    public class UniversalLayer : List<UniversalLayer.LayerLine>
     {
+        /// <summary>
+        /// Represents a line, only white pixels
+        /// </summary>
+        public class LayerLine
+        {
+            /// <summary>
+            /// Gets the x start position
+            /// </summary>
+            public uint X { get; }
+
+            /// <summary>
+            /// Gets the x end position
+            /// </summary>
+            public uint X2 => X + Length;
+
+            /// <summary>
+            /// Gets the y position
+            /// </summary>
+            public uint Y { get; }
+
+            /// <summary>
+            /// Number of pixels to fill
+            /// </summary>
+            public uint Length { get; }
+
+            public LayerLine(uint x, uint y, uint length)
+            {
+                X = x;
+                Y = y;
+                Length = length;
+            }
+        }
+
         public List<LayerLine> Lines { get; } = new List<LayerLine>();
 
         public UniversalLayer(Image<Gray8> image)

@@ -6,8 +6,8 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using System.Collections;
 using System.Diagnostics;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
@@ -33,6 +33,8 @@ namespace PrusaSL1Viewer
         public FrmMain()
         {
             InitializeComponent();
+            Program.SetAllControlsFontSize(Controls, 11);
+
             Clear();
 
             DragEnter += (s, e) => { if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy; };
@@ -97,7 +99,7 @@ namespace PrusaSL1Viewer
                 {
                     using (SaveFileDialog dialog = new SaveFileDialog())
                     {
-                        dialog.Filter = SlicerFile.GetFileFilter();
+                        dialog.Filter = SlicerFile.FileFilter;
                         dialog.AddExtension = true;
                         dialog.FileName =
                             $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_copy";
@@ -314,9 +316,79 @@ namespace PrusaSL1Viewer
                             stream.Close();
                         }
                     }
-
                     return;
+                }
+            }
 
+            /************************
+             *   Properties Menu    *
+             ***********************/
+            if (ReferenceEquals(sender, tsPropertiesButtonSave))
+            {
+                using (SaveFileDialog dialog = new SaveFileDialog())
+                {
+                    dialog.Filter = "Ini Files|.*ini";
+                    dialog.AddExtension = true;
+                    dialog.FileName = $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_properties.ini";
+
+                    if (dialog.ShowDialog() == DialogResult.OK)
+                    {
+                        using (TextWriter tw = new StreamWriter(dialog.OpenFile()))
+                        {
+                            foreach (var config in SlicerFile.Configs)
+                            {
+                                var type = config.GetType();
+                                tw.WriteLine($"[{type.Name}]");
+                                foreach (var property in type.GetProperties())
+                                {
+                                    tw.WriteLine($"{property.Name} = {property.GetValue(config)}");
+                                }
+                                tw.WriteLine();
+                            }
+                            tw.Close();
+                        }
+
+                        if (MessageBox.Show(
+                                $"Properties save was successful, do you want open the file with default editor?.\nPress 'Yes' if you want open the target file, otherwise select 'No' to continue.",
+                                "Properties save completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
+                            DialogResult.Yes)
+                        {
+                            Process.Start(dialog.FileName);
+                        }
+                    }
+                    return;
+                }
+                return;
+            }
+
+            /************************
+             *      GCode Menu      *
+             ***********************/
+            if (ReferenceEquals(sender, tsGCodeButtonSave))
+            {
+                using (SaveFileDialog dialog = new SaveFileDialog())
+                {
+                    dialog.Filter = "Text Files|.*txt";
+                    dialog.AddExtension = true;
+                    dialog.FileName = $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_gcode.txt";
+
+                    if (dialog.ShowDialog() == DialogResult.OK)
+                    {
+                        using (TextWriter tw = new StreamWriter(dialog.OpenFile()))
+                        {
+                            tw.Write(SlicerFile.GCode);
+                            tw.Close();
+                        }
+
+                        if (MessageBox.Show(
+                                $"GCode save was successful, do you want open the file with default editor?.\nPress 'Yes' if you want open the target file, otherwise select 'No' to continue.",
+                                "GCode save completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
+                            DialogResult.Yes)
+                        {
+                            Process.Start(dialog.FileName);
+                        }
+                    }
+                    return;
                 }
             }
 
@@ -369,13 +441,15 @@ namespace PrusaSL1Viewer
                 //using (FileFormat instance = (FileFormat)Activator.CreateInstance(type)) 
                 //using (CbddlpFile file = new CbddlpFile())
                 {
-                    dialog.Filter = fileFormat.GetFileFilter();
+                    dialog.Filter = fileFormat.FileFilter;
                 }
 
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     SlicerFile.Convert(fileFormat, dialog.FileName);
+                    MessageBox.Show("Convertion is completed", "Convertion completed", MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
                 }
 
             }
@@ -397,6 +471,7 @@ namespace PrusaSL1Viewer
             pbThumbnail.Image = null;
             pbLayer.Image = null;
             pbThumbnail.Image = null;
+            tbGCode.Clear();
             lbLayers.Text = "Layers";
             lvProperties.BeginUpdate();
             lvProperties.Items.Clear();
@@ -422,9 +497,15 @@ namespace PrusaSL1Viewer
             {
                 item.Enabled = false;
             }
+            foreach (ToolStripItem item in tsProperties.Items)
+            {
+                item.Enabled = false;
+            }
 
             tsThumbnailsResolution.Text =
-            tsLayerResolution.Text = string.Empty;
+            tsLayerResolution.Text =
+            tsPropertiesLabelCount.Text =
+            tsPropertiesLabelGroups.Text = string.Empty;
 
 
             menuFileReload.Enabled =
@@ -436,10 +517,14 @@ namespace PrusaSL1Viewer
             sbLayers.Enabled = 
             pbLayers.Enabled = 
             menuEdit.Enabled =
+
                 false;
 
             tsThumbnailsCount.Text = "0/0";
             tsThumbnailsCount.Tag = null;
+
+            tabControlLeft.TabPages.Remove(tbpGCode);
+            tabControlLeft.SelectedIndex = 0;
         }
 
         void ProcessFile()
@@ -498,6 +583,7 @@ namespace PrusaSL1Viewer
                 menuFileConvert.DropDownItems.Add(menuItem);
             }
 
+            scLeft.Panel1Collapsed = SlicerFile.CreatedThumbnailsCount == 0;
             if (SlicerFile.CreatedThumbnailsCount > 0)
             {
                 tsThumbnailsCount.Tag = 0;
@@ -509,11 +595,20 @@ namespace PrusaSL1Viewer
                 {
                     tsThumbnails.Items[i].Enabled = true;
                 }
+
+                tsThumbnailsNext.Enabled = SlicerFile.CreatedThumbnailsCount > 1;
+                scLeft.SplitterDistance = pbThumbnail.Image.Height + 5;
             }
             foreach (ToolStripItem item in tsLayer.Items)
             {
                 item.Enabled = true;
             }
+            foreach (ToolStripItem item in tsProperties.Items)
+            {
+                item.Enabled = true;
+            }
+            tsPropertiesLabelCount.Text = $"Properties: {lvProperties.Items.Count}";
+            tsPropertiesLabelGroups.Text = $"Groups: {lvProperties.Groups.Count}";
 
             menuFileReload.Enabled =
             menuFileClose.Enabled =
@@ -524,12 +619,19 @@ namespace PrusaSL1Viewer
             menuEdit.Enabled =
                 true;
 
+            if (!string.IsNullOrEmpty(SlicerFile.GCode))
+            {
+                tabControlLeft.TabPages.Add(tbpGCode);
+            }
+
             //ShowLayer(0);
 
             sbLayers.SmallChange = 1;
             sbLayers.Minimum = 0;
             sbLayers.Maximum = (int)SlicerFile.LayerCount-1;
             sbLayers.Value = sbLayers.Maximum;
+
+            tabControlLeft.SelectedIndex = 0;
 
 
             RefreshInfo();
@@ -566,11 +668,34 @@ namespace PrusaSL1Viewer
                 {
                     ListViewItem item = new ListViewItem(propertyInfo.Name, group);
                     object obj = new object();
-                    item.SubItems.Add(propertyInfo.GetValue(config)?.ToString());
+                    var value = propertyInfo.GetValue(config);
+                    if (!ReferenceEquals(value, null))
+                    {
+                        if (value is IList list)
+                        {
+                            item.SubItems.Add(list.Count.ToString());
+                        }
+                        else
+                        {
+                            item.SubItems.Add(value.ToString());
+                        }
+                        
+                    }
+
                     lvProperties.Items.Add(item);
                 }
             }
             lvProperties.EndUpdate();
+
+            tsPropertiesLabelCount.Text = $"Properties: {lvProperties.Items.Count}";
+            tsPropertiesLabelGroups.Text = $"Groups: {lvProperties.Groups.Count}";
+
+            if (!string.IsNullOrEmpty(SlicerFile.GCode))
+            {
+                tbGCode.Text = SlicerFile.GCode;
+                tsGCodeLabelLines.Text = $"Lines: {tbGCode.Lines.Length}";
+                tsGcodeLabelChars.Text = $"Chars: {tbGCode.Text.Length}";
+            }
 
             statusBar.Items.Clear();
             AddStatusBarItem(nameof(SlicerFile.LayerHeight), SlicerFile.LayerHeight, "mm");
@@ -614,7 +739,7 @@ namespace PrusaSL1Viewer
                 byte percent = (byte)((layerNum + 1) * 100 / SlicerFile.LayerCount);
 
 
-                lbLayers.Text = $"{SlicerFile.TotalHeight}mm\n{layerNum + 1} / {SlicerFile.LayerCount}\n{SlicerFile.GetHeightFromLayer((uint)layerNum + 1)}mm\n{percent}%";
+                lbLayers.Text = $"{SlicerFile.GetHeightFromLayer((uint)layerNum + 1)} / {SlicerFile.TotalHeight}mm\n{layerNum + 1} / {SlicerFile.LayerCount}\n{percent}%";
                 pbLayers.Value = percent;
             }
             catch (Exception e)

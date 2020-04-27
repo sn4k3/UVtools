@@ -6,21 +6,30 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters.Binary;
 using BinarySerialization;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace PrusaSL1Reader
 {
+    /// <summary>
+    /// A helper class with utilities
+    /// </summary>
     public static class Helpers
     {
+        public static PngEncoder PngEncoder { get; } = new PngEncoder();
+        /// <summary>
+        /// Gets the <see cref="BinarySerializer"/> instance
+        /// </summary>
         public static BinarySerializer Serializer { get; } = new BinarySerializer {Endianness = Endianness.Little };
+
+        /// <summary>
+        /// Gets a white color of <see cref="Gray8"/>
+        /// </summary>
         public static Gray8 Gray8White { get; } = new Gray8(255);
-        public static T ByteToType<T>(BinaryReader reader)
+
+        /*public static T ByteToType<T>(BinaryReader reader)
         {
             byte[] bytes = reader.ReadBytes(Marshal.SizeOf(typeof(T)));
 
@@ -40,7 +49,7 @@ namespace PrusaSL1Reader
                 stream.Seek(0, SeekOrigin.Begin);
                 return stream.ToArray();
             }
-        }
+        }*/
 
         public static MemoryStream Serialize(object value)
         {
@@ -56,7 +65,7 @@ namespace PrusaSL1Reader
 
         public static T Deserialize<T>(Stream stream)
         {
-            return Helpers.Serializer.Deserialize<T>(stream);
+            return Serializer.Deserialize<T>(stream);
         }
 
         public static uint WriteFileStream(FileStream fs, MemoryStream stream, uint offset = 0)
@@ -74,7 +83,7 @@ namespace PrusaSL1Reader
         {
             using (MemoryStream stream = Helpers.Serialize(value))
             {
-                return (uint)Helpers.WriteFileStream(fs, stream);
+                return WriteFileStream(fs, stream);
             }
         }
     }

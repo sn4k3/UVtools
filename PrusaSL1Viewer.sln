@@ -8,7 +8,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrusaSL1Viewer", "PrusaSL1V
 		{53B884CA-E640-4171-8AA2-03935AC076D2} = {53B884CA-E640-4171-8AA2-03935AC076D2}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrusaSL1Reader", "PrusaSL1Reader\PrusaSL1Reader.csproj", "{53B884CA-E640-4171-8AA2-03935AC076D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrusaSL1Reader", "PrusaSL1Reader\PrusaSL1Reader.csproj", "{53B884CA-E640-4171-8AA2-03935AC076D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

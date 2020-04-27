@@ -17,16 +17,53 @@ namespace PrusaSL1Reader
     /// </summary>
     public interface IFileFormat
     {
+        #region Properties
+        /// <summary>
+        /// Gets the file format type
+        /// </summary>
+        FileFormat.FileFormatType FileType { get; }
+
         /// <summary>
         /// Gets the valid file extensions for this <see cref="FileFormat"/>
         /// </summary>
         FileExtension[] FileExtensions { get; }
 
         /// <summary>
+        /// Gets the available <see cref="FileFormat.PrintParameterModifier"/>
+        /// </summary>
+        FileFormat.PrintParameterModifier[] PrintParameterModifiers { get; }
+
+        /// <summary>
+        /// Gets the file filter for open and save dialogs
+        /// </summary>
+        string FileFilter { get; }
+
+        /// <summary>
+        /// Gets all valid file extensions in "*.extension1;*.extension2" format
+        /// </summary>
+
+        string FileFilterExtensionsOnly { get; }
+
+        /// <summary>
         /// Gets the input file path loaded into this <see cref="FileFormat"/>
         /// </summary>
         string FileFullPath { get; set; }
 
+        /// <summary>
+        /// Gets the thumbnails count present in this file format
+        /// </summary>
+        byte ThumbnailsCount { get; }
+
+        /// <summary>
+        /// Gets the number of created thumbnails
+        /// </summary>
+        byte CreatedThumbnailsCount { get; }
+        
+        /// <summary>
+        /// Gets the thumbnails for this <see cref="FileFormat"/>
+        /// </summary>
+        Image<Rgba32>[] Thumbnails { get; set; }
+        
         /// <summary>
         /// Gets the image width resolution
         /// </summary>
@@ -38,50 +75,111 @@ namespace PrusaSL1Reader
         uint ResolutionY { get; }
 
         /// <summary>
-        /// Gets the thumbnails count present in this file format
-        /// </summary>
-        byte ThumbnailsCount { get; }
-
-        /// <summary>
-        /// Gets the thumbnails for this <see cref="FileFormat"/>
-        /// </summary>
-        Image<Rgba32>[] Thumbnails { get; set; }
-
-        FileFormat.PrintParameterModifier[] PrintParameterModifiers { get; }
-
-        /// <summary>
-        /// Number of layers present in this file
-        /// </summary>
-        uint LayerCount { get; }
-        ushort InitialLayerCount { get; }
-        float InitialExposureTime { get; }
-        float LayerExposureTime { get; }
-        float PrintTime { get; }
-        float UsedMaterial { get; }
-        float MaterialCost { get; }
-        string MaterialName { get; }
-        string MachineName { get; }
-
-        /// <summary>
-        /// Layer Height in mm
+        /// Gets Layer Height in mm
         /// </summary>
         float LayerHeight { get; }
 
+        /// <summary>
+        /// Gets Total Height in mm
+        /// </summary>
         float TotalHeight { get; }
+
+        /// <summary>
+        /// Gets the number of layers present in this file
+        /// </summary>
+        uint LayerCount { get; }
+
+        /// <summary>
+        /// Gets the number of initial layer count
+        /// </summary>
+        ushort InitialLayerCount { get; }
+
+        /// <summary>
+        /// Gets the initial exposure time for <see cref="InitialLayerCount"/>
+        /// </summary>
+        float InitialExposureTime { get; }
+
+        /// <summary>
+        /// Gets the normal layer exposure time
+        /// </summary>
+        float LayerExposureTime { get; }
+
+        /// <summary>
+        /// Gets the height in mm to retract between layers
+        /// </summary>
+        float ZRetractHeight { get; }
+
+        /// <summary>
+        /// Gets the speed in mm/min for the retracts
+        /// </summary>
+        float ZRetractSpeed { get; }
+
+        /// <summary>
+        /// Gets the speed in mm/min for the detracts
+        /// </summary>
+        float ZDetractSpeed { get; }
+
+        /// <summary>
+        /// Gets the estimate print time in seconds
+        /// </summary>
+        float PrintTime { get; }
+
+        /// <summary>
+        /// Gets the estimate used material in ml
+        /// </summary>
+        float UsedMaterial { get; }
+
+        /// <summary>
+        /// Gets the estimate material cost
+        /// </summary>
+        float MaterialCost { get; }
+
+        /// <summary>
+        /// Gets the material name
+        /// </summary>
+        string MaterialName { get; }
+
+        /// <summary>
+        /// Gets the machine name
+        /// </summary>
+        string MachineName { get; }
+
+        /// <summary>
+        /// Gets the GCode, returns null if not supported
+        /// </summary>
+        string GCode { get; set; }
 
         /// <summary>
         /// Get all configuration objects with properties and values
         /// </summary>
         object[] Configs { get; }
 
-        object GetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier);
-        bool SetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier, object value);
-        bool SetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier, string value);
-        
         /// <summary>
-        /// If this file is valid to read
+        /// Gets if this file is valid to read
         /// </summary>
         bool IsValid { get; }
+
+        #endregion
+
+        #region Methods
+        /// <summary>
+        /// Clears all definitions and properties, it also dispose valid candidates 
+        /// </summary>
+        void Clear();
+
+        /// <summary>
+        /// Validate if a file is a valid <see cref="FileFormat"/>
+        /// </summary>
+        /// <param name="fileFullPath">Full file path</param>
+        void FileValidation(string fileFullPath);
+
+        /// <summary>
+        /// Checks if a extension is valid under the <see cref="FileFormat"/>
+        /// </summary>
+        /// <param name="extension">Extension to check</param>
+        /// <param name="isFilePath">True if <see cref="extension"/> is a full file path, otherwise false for extension only</param>
+        /// <returns>True if valid, otherwise false</returns>
+        bool IsExtensionValid(string extension, bool isFilePath = false);
 
         /// <summary>
         /// Begin encode to an output file
@@ -118,17 +216,6 @@ namespace PrusaSL1Reader
             bool genericLayersExtract = false);
 
         /// <summary>
-        /// Saves current configuration on input file
-        /// </summary>
-        void Save();
-
-        /// <summary>
-        /// Saves current configuration on a copy
-        /// </summary>
-        /// <param name="filePath">File path to save copy as, use null to overwrite active file (Same as <see cref="Save"/>)</param>
-        void SaveAs(string filePath = null);
-
-        /// <summary>
         /// Gets a image from layer
         /// </summary>
         /// <param name="layerIndex">The layer index</param>
@@ -143,9 +230,38 @@ namespace PrusaSL1Reader
         float GetHeightFromLayer(uint layerNum);
 
         /// <summary>
-        /// Clears all definitions and properties, it also dispose valid candidates 
+        /// Gets the value attributed to <see cref="FileFormat.PrintParameterModifier"/>
         /// </summary>
-        void Clear();
+        /// <param name="modifier">Modifier to use</param>
+        /// <returns>A value</returns>
+        object GetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier);
+
+        /// <summary>
+        /// Sets a property value attributed to <see cref="modifier"/>
+        /// </summary>
+        /// <param name="modifier">Modifier to use</param>
+        /// <param name="value">Value to set</param>
+        /// <returns>True if set, otherwise false = <see cref="modifier"/> not found</returns>
+        bool SetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier, object value);
+
+        /// <summary>
+        /// Sets a property value attributed to <see cref="modifier"/>
+        /// </summary>
+        /// <param name="modifier">Modifier to use</param>
+        /// <param name="value">Value to set</param>
+        /// <returns>True if set, otherwise false = <see cref="modifier"/> not found</returns>
+        bool SetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier, string value);
+
+        /// <summary>
+        /// Saves current configuration on input file
+        /// </summary>
+        void Save();
+
+        /// <summary>
+        /// Saves current configuration on a copy
+        /// </summary>
+        /// <param name="filePath">File path to save copy as, use null to overwrite active file (Same as <see cref="Save"/>)</param>
+        void SaveAs(string filePath = null);
 
         /// <summary>
         /// Converts this file type to another file type
@@ -162,5 +278,6 @@ namespace PrusaSL1Reader
         /// <param name="fileFullPath">Output path file</param>
         /// <returns>True if convert succeed, otherwise false</returns>
         bool Convert(FileFormat to, string fileFullPath);
+        #endregion
     }
 }

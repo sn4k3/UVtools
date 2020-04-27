@@ -5,11 +5,12 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using System;
 using System.ComponentModel;
 using System.Linq;
 
-namespace PrusaSL1Reader
+namespace PrusaSL1Reader.Extensions
 {
     public static class StringExtensions
     {

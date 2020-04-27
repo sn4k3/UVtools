@@ -13,12 +13,13 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using PrusaSL1Reader.Extensions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace PrusaSL1Reader
 {
-    public class SL1File : FileFormat, IEquatable<SL1File>
+    public class SL1File : FileFormat
     {
         #region Sub Classes 
 
@@ -270,23 +271,30 @@ namespace PrusaSL1Reader
 
         public Statistics Statistics { get; } = new Statistics();
 
-        #endregion
 
-        #region Overrides
+        public override FileFormatType FileType => FileFormatType.Archive;
 
-        public override string FileFullPath { get; set; }
+        public override FileExtension[] FileExtensions { get; } = {
+            new FileExtension("sl1", "Prusa SL1 Files")
+        };
 
-        public override uint ResolutionY => PrinterSettings.DisplayPixelsY;
-
-        public override byte ThumbnailsCount { get; } = 2;
-        public override Image<Rgba32>[] Thumbnails { get; set; }
-
-        public override PrintParameterModifier[] PrintParameterModifiers => new[]
-        {
+        public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
             PrintParameterModifier.InitialLayerCount,
             PrintParameterModifier.InitialExposureSeconds,
             PrintParameterModifier.ExposureSeconds,
         };
+
+        public override string FileFullPath { get; set; }
+
+        public override byte ThumbnailsCount { get; } = 2;
+
+        public override Image<Rgba32>[] Thumbnails { get; set; }
+
+        public override uint ResolutionX => PrinterSettings.DisplayPixelsX;
+
+        public override uint ResolutionY => PrinterSettings.DisplayPixelsY;
+
+        public override float LayerHeight => OutputConfigSettings.LayerHeight;
 
         public override uint LayerCount => OutputConfigSettings.NumFast;
 
@@ -296,65 +304,26 @@ namespace PrusaSL1Reader
 
         public override float LayerExposureTime => OutputConfigSettings.ExpTime;
 
+        public override float ZRetractHeight { get; } = 0;
+
+        public override float ZRetractSpeed { get; } = 0;
+
+        public override float ZDetractSpeed { get; } = 0;
+
         public override float PrintTime => OutputConfigSettings.PrintTime;
 
         public override float UsedMaterial => OutputConfigSettings.UsedMaterial;
 
-        public override float MaterialCost => OutputConfigSettings.UsedMaterial * MaterialSettings.BottleCost / MaterialSettings.BottleVolume;
+        public override float MaterialCost => (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.BottleCost / MaterialSettings.BottleVolume, 2);
 
         public override string MaterialName => OutputConfigSettings.MaterialName;
 
         public override string MachineName => PrinterSettings.PrinterSettingsId;
 
-        public override float LayerHeight => OutputConfigSettings.LayerHeight;
         public override object[] Configs => new object[] { PrinterSettings, MaterialSettings, PrintSettings, OutputConfigSettings };
-        public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
-        {
-            if (ReferenceEquals(modifier, PrintParameterModifier.InitialLayerCount))
-            {
-                PrintSettings.FadedLayers = 
-                OutputConfigSettings.NumFade = value.Convert<byte>();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureSeconds))
-            {
-                MaterialSettings.InitialExposureTime =
-                OutputConfigSettings.ExpTimeFirst = value.Convert<ushort>();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
-            {
-                MaterialSettings.ExposureTime =
-                OutputConfigSettings.ExpTime = value.Convert<byte>();
-                return true;
-            }
+        #endregion
 
-            return false;
-        }
-
-        public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("sl1", "Prusa SL1 Files")
-        };
-
-        public override uint ResolutionX => PrinterSettings.DisplayPixelsX;
-
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as SL1File);
-        }
-
-        public bool Equals(SL1File other)
-        {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return FileFullPath == other.FileFullPath;
-        }
-
-        public override int GetHashCode()
-        {
-            return (FileFullPath != null ? FileFullPath.GetHashCode() : 0);
-        }
-
+        #region Overrides
         public override string ToString()
         {
             return $"{nameof(FileFullPath)}: {FileFullPath}, {nameof(MaterialSettings)}: {MaterialSettings}, {nameof(PrintSettings)}: {PrintSettings}, {nameof(OutputConfigSettings)}: {OutputConfigSettings}, {nameof(Statistics)}: {Statistics}, {nameof(LayerCount)}: {LayerCount}, {nameof(TotalHeight)}: {TotalHeight}";
@@ -370,7 +339,70 @@ namespace PrusaSL1Reader
         }
         #endregion
 
+        #region Static Methods
+        public static string IniKeyToMemberName(string keyName)
+        {
+            string memberName = string.Empty;
+            string[] objs = keyName.Split('_');
+            return objs.Aggregate(memberName, (current, obj) => current + obj.FirstCharToUpper());
+        }
+
+        public static string MemberNameToIniKey(string memberName)
+        {
+            string iniKey = char.ToLowerInvariant(memberName[0]).ToString();
+            for (var i = 1; i < memberName.Length; i++)
+            {
+                iniKey += char.IsUpper(memberName[i])
+                    ? $"_{char.ToLowerInvariant(memberName[i])}"
+                    : memberName[i].ToString();
+            }
+
+            if (iniKey.EndsWith("_"))
+                iniKey.Remove(iniKey.Length - 1);
+
+            return iniKey;
+        }
+
+        public static bool SetValue(PropertyInfo attribute, object obj, string value)
+        {
+            var name = attribute.PropertyType.Name.ToLower();
+            switch (name)
+            {
+                case "string":
+                    attribute.SetValue(obj, value.Convert<string>());
+                    return true;
+                case "boolean":
+                    attribute.SetValue(obj, !value.Equals(0));
+                    return true;
+                case "byte":
+                    attribute.SetValue(obj, value.Convert<byte>());
+                    return true;
+                case "uint16":
+                    attribute.SetValue(obj, value.Convert<ushort>());
+                    return true;
+                case "single":
+                    attribute.SetValue(obj, (float)Math.Round(float.Parse(value, CultureInfo.InvariantCulture.NumberFormat), 2));
+                    return true;
+                case "double":
+                    attribute.SetValue(obj, Math.Round(double.Parse(value, CultureInfo.InvariantCulture.NumberFormat), 2));
+                    return true;
+                case "decimal":
+                    attribute.SetValue(obj, (decimal)Math.Round(decimal.Parse(value, CultureInfo.InvariantCulture.NumberFormat), 2));
+                    return true;
+                default:
+                    throw new Exception($"Data type '{name}' not recognized, contact developer.");
+            }
+        }
+        #endregion
+
         #region Methods
+        public override void Clear()
+        {
+            base.Clear();
+            InputFile?.Dispose();
+            LayerEntries.Clear();
+            Statistics.Clear();
+        }
 
         public override void BeginEncode(string fileFullPath)
         {
@@ -400,14 +432,7 @@ namespace PrusaSL1Reader
 
             Statistics.ExecutionTime.Restart();
 
-            var parseObjects = new object[]
-            {
-                PrinterSettings,
-                MaterialSettings,
-                PrintSettings,
-                OutputConfigSettings,
-            };
-            InputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read);
+            InputFile = ZipFile.OpenRead(FileFullPath);
             byte thumbnailIndex = 0;
             foreach (ZipArchiveEntry entity in InputFile.Entries)
             {
@@ -426,7 +451,7 @@ namespace PrusaSL1Reader
                             var fieldName = IniKeyToMemberName(keyValue[0]);
                             bool foundMember = false;
 
-                            foreach (var obj in parseObjects)
+                            foreach (var obj in Configs)
                             {
                                 var attribute = obj.GetType().GetProperty(fieldName);
                                 if (ReferenceEquals(attribute, null)) continue;
@@ -472,8 +497,37 @@ namespace PrusaSL1Reader
         public override void Extract(string path, bool emptyFirst = true, bool genericConfigExtract = false,
             bool genericLayersExtract = false)
         {
-            base.Extract(path, emptyFirst, genericConfigExtract);
-            InputFile.ExtractToDirectory(path);
+            base.Extract(path, emptyFirst, genericConfigExtract, false);
+            InputFile?.ExtractToDirectory(path);
+        }
+
+        public override Image<Gray8> GetLayerImage(uint layerIndex)
+        {
+            return Image.Load<Gray8>(LayerEntries[(int)layerIndex].Open());
+        }
+
+        public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
+        {
+            if (ReferenceEquals(modifier, PrintParameterModifier.InitialLayerCount))
+            {
+                PrintSettings.FadedLayers =
+                    OutputConfigSettings.NumFade = value.Convert<byte>();
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureSeconds))
+            {
+                MaterialSettings.InitialExposureTime =
+                    OutputConfigSettings.ExpTimeFirst = value.Convert<ushort>();
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
+            {
+                MaterialSettings.ExposureTime =
+                    OutputConfigSettings.ExpTime = value.Convert<byte>();
+                return true;
+            }
+
+            return false;
         }
 
         public override void SaveAs(string filePath = null)
@@ -483,7 +537,7 @@ namespace PrusaSL1Reader
             {
                 File.Copy(FileFullPath, filePath, true);
                 FileFullPath = filePath;
-                
+
             }
 
             using (InputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update))
@@ -529,24 +583,6 @@ namespace PrusaSL1Reader
 
             Decode(FileFullPath);
 
-        }
-
-        public override Image<Gray8> GetLayerImage(uint layerIndex)
-        {
-            return Image.Load<Gray8>(LayerEntries[(int)layerIndex].Open());
-        }
-
-        public override float GetHeightFromLayer(uint layerNum)
-        {
-            return (float)Math.Round(MaterialSettings.InitialLayerHeight + (layerNum - 1) * OutputConfigSettings.LayerHeight, 2);
-        }
-
-        public override void Clear()
-        {
-            base.Clear();
-            InputFile?.Dispose();
-            LayerEntries.Clear();
-            Statistics.Clear();
         }
 
         public override bool Convert(Type to, string fileFullPath)
@@ -615,6 +651,98 @@ namespace PrusaSL1Reader
                 }
 
                 file.EndEncode();
+                
+                return true;
+            }
+
+            if (to == typeof(ZCodexFile))
+            {
+                TimeSpan ts = new TimeSpan(0, 0, (int)PrintTime);
+                ZCodexFile file = new ZCodexFile
+                {
+                    ResinMetadataSettings = new ZCodexFile.ResinMetadata
+                    {
+                        MaterialId = 2,
+                        Material = MaterialName,
+                        AdditionalSupportLayerTime = 0,
+                        BottomLayersNumber = InitialLayerCount,
+                        BottomLayersTime = (uint)(InitialExposureTime*1000),
+                        LayerTime = (uint)(LayerExposureTime * 1000),
+                        DisableSettingsChanges = false,
+                        LayerThickness = LayerHeight,
+                        PrintTime = (uint)PrintTime,
+                        TotalLayersCount = LayerCount,
+                        TotalMaterialVolumeUsed = UsedMaterial,
+                        TotalMaterialWeightUsed = UsedMaterial,
+                    },
+                    UserSettings = new ZCodexFile.UserSettingsdata
+                    {
+                        Printer = MachineName,
+                        BottomLayersCount = InitialLayerCount,
+                        PrintTime = $"{ts.Hours}h {ts.Minutes}m",
+                        LayerExposureTime = (uint)(LayerExposureTime * 1000),
+                        BottomLayerExposureTime = (uint)(InitialExposureTime * 1000),
+                        MaterialId = 2,
+                        LayerThickness = $"{LayerHeight} mm",
+                        AntiAliasing = 0,
+                        CrossSupportEnabled = 1,
+                        ExposureOffTime = LookupCustomValue<uint>("ExposureOffTime", 5)*1000,
+                        HollowEnabled = PrintSettings.HollowingEnable ? (byte)1 : (byte)0,
+                        HollowThickness = PrintSettings.HollowingMinThickness,
+                        InfillDensity = 0,
+                        IsAdvanced = 0,
+                        MaterialType = MaterialName,
+                        MaterialVolume = UsedMaterial,
+                        MaxLayer = LayerCount-1,
+                        ModelLiftEnabled = PrintSettings.SupportObjectElevation > 0 ? (byte)1 : (byte)0,
+                        ModelLiftHeight = PrintSettings.SupportObjectElevation,
+                        RaftEnabled = PrintSettings.SupportBaseHeight > 0 ? (byte)1 : (byte)0,
+                        RaftHeight = PrintSettings.SupportBaseHeight,
+                        RaftOffset = 0,
+                        SupportAdditionalExposureEnabled = 0,
+                        SupportAdditionalExposureTime = 0,
+                        XCorrection = PrinterSettings.AbsoluteCorrection,
+                        YCorrection = PrinterSettings.AbsoluteCorrection,
+                        ZLiftDistance = (float)Math.Round(LookupCustomValue<float>("ZLiftDistance", 5), 2),
+                        ZLiftFeedRate = (float)Math.Round(LookupCustomValue<float>("ZLiftFeedRate", 100), 2),
+                        ZLiftRetractRate = (float)Math.Round(LookupCustomValue<float>("ZLiftRetractRate", 100), 2),
+                    },
+                    ZCodeMetadataSettings = new ZCodexFile.ZCodeMetadata
+                    {
+                        PrintTime = (uint)PrintTime,
+                        PrinterName = MachineName,
+                        Materials = new List<ZCodexFile.ZCodeMetadata.MaterialsData>()
+                        {
+                            new ZCodexFile.ZCodeMetadata.MaterialsData
+                            {
+                                Name = MaterialName,
+                                ExtruderType = "MAIN",
+                                Id = 0,
+                                Usage = 0,
+                                Temperature = 0
+                            }
+                        },
+                    },
+                    Thumbnails = Thumbnails,
+                };
+
+                float usedMaterial = UsedMaterial / LayerCount;
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                {
+                    file.ResinMetadataSettings.Layers.Add(new ZCodexFile.ResinMetadata.LayerData
+                    {
+                        Layer = layerIndex,
+                        UsedMaterialVolume = usedMaterial
+                    });
+                }
+
+                file.BeginEncode(fileFullPath);
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                {
+                    file.InsertLayerImageEncode(GetLayerImage(layerIndex), layerIndex);
+                }
+                file.EndEncode();
+                return true;
             }
 
             return false;
@@ -622,13 +750,12 @@ namespace PrusaSL1Reader
 
         public T LookupCustomValue<T>(string name, T defaultValue, bool existsOnly = false)
         {
+            if (string.IsNullOrEmpty(PrinterSettings.PrinterNotes)) return defaultValue;
             string result = string.Empty;
             if(!existsOnly)
                 name += '_';
 
             int index = PrinterSettings.PrinterNotes.IndexOf(name, StringComparison.Ordinal);
-            
-            
             int startIndex = index + name.Length;
             
             if (index < 0 || PrinterSettings.PrinterNotes.Length < startIndex) return defaultValue;
@@ -636,70 +763,17 @@ namespace PrusaSL1Reader
             for (int i = startIndex; i < PrinterSettings.PrinterNotes.Length; i++)
             {
                 char c = PrinterSettings.PrinterNotes[i];
-                if (!Char.IsLetterOrDigit(c) && c != '.')
+                if (!char.IsLetterOrDigit(c) && c != '.')
                 {
                     break;
                 }
                 
-                result += PrinterSettings.PrinterNotes[i];
+                result += c;
             }
 
-            return result.Convert<T>();
+            return string.IsNullOrWhiteSpace(result) ? defaultValue : result.Convert<T>();
         }
 
-        #endregion
-
-        #region Static Methods
-        public static string IniKeyToMemberName(string keyName)
-        {
-            string memberName = string.Empty;
-            string[] objs = keyName.Split('_');
-            return objs.Aggregate(memberName, (current, obj) => current + obj.FirstCharToUpper());
-        }
-
-        public static string MemberNameToIniKey(string memberName)
-        {
-            string iniKey = char.ToLowerInvariant(memberName[0]).ToString();
-            for (var i = 1; i < memberName.Length; i++)
-            {
-                iniKey += char.IsUpper(memberName[i])
-                    ? $"_{char.ToLowerInvariant(memberName[i])}"
-                    : memberName[i].ToString();
-            }
-
-            if (iniKey.EndsWith("_"))
-                iniKey.Remove(iniKey.Length-1);
-
-            return iniKey;
-        }
-
-        public static bool SetValue(PropertyInfo attribute, object obj, string value)
-        {
-            var name = attribute.PropertyType.Name.ToLower();
-            switch (name)
-            {
-                case "string":
-                    attribute.SetValue(obj, value.Convert<string>());
-                    return true;
-                case "boolean":
-                    attribute.SetValue(obj, !value.Equals(0));
-                    return true;
-                case "byte":
-                    attribute.SetValue(obj, value.Convert<byte>());
-                    return true;
-                case "uint16":
-                    attribute.SetValue(obj, value.Convert<ushort>());
-                    return true;
-                case "single":
-                    attribute.SetValue(obj, float.Parse(value, CultureInfo.InvariantCulture.NumberFormat));
-                    return true;
-                case "double":
-                    attribute.SetValue(obj, double.Parse(value, CultureInfo.InvariantCulture.NumberFormat));
-                    return true;
-                default:
-                    throw new Exception($"Data type '{name}' not recognized, contact developer.");
-            }
-        }
         #endregion
     }
 }

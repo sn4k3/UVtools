@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using System.Drawing;
 using System.Globalization;
 using System.Threading;
 using System.Windows.Forms;
@@ -15,6 +16,50 @@ namespace PrusaSL1Viewer
 {
     static class Program
     {
+        /// <summary>
+        /// Changes fonts of controls contained in font collection recursively. <br/>
+        /// <b>Usage:</b> <c><br/>
+        /// SetAllControlsFont(this.Controls, 20); // This makes fonts 20% bigger. <br/>
+        /// SetAllControlsFont(this.Controls, -4, false); // This makes fonts smaller by 4.</c>
+        /// </summary>
+        /// <param name="ctrls">Control collection containing controls</param>
+        /// <param name="amount">Amount to change: posive value makes it bigger, 
+        /// negative value smaller</param>
+        /// <param name="amountInPercent">True - grow / shrink in percent, 
+        /// False - grow / shrink absolute</param>
+        /// <param name="amountType">0 = Absolute | 1 = Partial | 2 = Percent</param>
+        public static void SetAllControlsFontSize(
+            Control.ControlCollection ctrls,
+            int amount = 0, byte amountType = 0)
+        {
+            if (amount == 0) return;
+            foreach (Control ctrl in ctrls)
+            {
+                // recursive
+                SetAllControlsFontSize(ctrl.Controls, amount, amountType);
+
+                var oldSize = ctrl.Font.Size;
+                float newSize;
+                switch (amountType)
+                {
+                    case 1:
+                        newSize = oldSize + amount;
+                        break;
+                    case 2:
+                        newSize = oldSize + oldSize * (amount / 100);
+                        break;
+                    default:
+                        newSize = amount;
+                        break;
+                }
+                
+                if (newSize < 8) newSize = 8; // don't allow less than 8
+                var fontFamilyName = ctrl.Font.FontFamily.Name;
+                var fontStyle = ctrl.Font.Style;
+                ctrl.Font = new Font(fontFamilyName, newSize, fontStyle);
+            };
+        }
+
         public static FileFormat SlicerFile { get; set; }
         public static FrmMain FrmMain { get; private set; }
         public static FrmAbout FrmAbout { get; private set; }
@@ -31,6 +76,7 @@ namespace PrusaSL1Viewer
 
             FrmMain = new FrmMain();
             FrmAbout = new FrmAbout();
+
             Application.Run(FrmMain);
         }
     }

@@ -1,4 +1,11 @@
-﻿using System;
+﻿/*
+ *                     GNU AFFERO GENERAL PUBLIC LICENSE
+ *                       Version 3, 19 November 2007
+ *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ *  Everyone is permitted to copy and distribute verbatim copies
+ *  of this license document, but changing it is not allowed.
+ */
+using System;
 using System.Globalization;
 using System.Windows.Forms;
 using PrusaSL1Reader;
@@ -7,6 +14,7 @@ namespace PrusaSL1Viewer
 {
     public partial class FrmInputBox : Form
     {
+        #region Properties
         private string _description;
         public string Description
         {
@@ -30,12 +38,16 @@ namespace PrusaSL1Viewer
             get => _currentValue;
             set { _currentValue = value; tbCurrentValue.Text = value.ToString(CultureInfo.InvariantCulture)+ValueUint; }
         }
+        #endregion
 
+        #region Constructors
         public FrmInputBox()
         {
             InitializeComponent();
             DialogResult = DialogResult.Cancel;
             numNewValue.Select();
+
+            
         }
 
         public FrmInputBox(FileFormat.PrintParameterModifier modifier, decimal currentValue) : this(modifier.Name,
@@ -51,7 +63,22 @@ namespace PrusaSL1Viewer
             numNewValue.Maximum = maxValue;
             NewValue = currentValue;
         }
+        #endregion
 
+        #region Overrides
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            base.OnKeyUp(e);
+            if (e.KeyCode == Keys.Enter)
+            {
+                btnModify.PerformClick();
+                e.Handled = true;
+            }
+        }
+
+        #endregion
+
+        #region Events
         private void ValueChanged(object sender, EventArgs e)
         {
             if (ReferenceEquals(sender, numNewValue))
@@ -66,6 +93,7 @@ namespace PrusaSL1Viewer
         {
             if (ReferenceEquals(sender, btnModify))
             {
+                if (!btnModify.Enabled) return;
                 if (MessageBox.Show($"Are you sure you want to {Description}?\nFrom {CurrentValue}{ValueUint} to {NewValue}{ValueUint}", Text, MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question) == DialogResult.Yes)
                 {
@@ -86,5 +114,6 @@ namespace PrusaSL1Viewer
                 return;
             }
         }
+        #endregion
     }
 }

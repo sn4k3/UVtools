@@ -1,5 +1,22 @@
 # Changelog
 
+## 27/04/2020 - v0.3.0 - Beta
+
+* (Add) zcodex file format
+* (Add) Zortrax Inkspire Printer
+* (Add) Properties menu -- Shows total keys and allow save information to a file
+* (Add) "GCode" viewer Tab -- Only for formats that incldue gcode into file (ie: zcodex)
+* (Add) Save gcode to a text file
+* (Add) Allow to vertical arrange height between thumbnails and properties
+* (Improvement) Thumbnail section is now hidden if no thumbnails avaliable
+* (Improvement) Thumbnail section now vertical auto scales to the image height on file load
+* (Improvement) On "modify properties" window, ENTER key can now be used to accept and submit the form
+* (Fixed) Current model height doesn't calculate when viewing cbddlp files
+* (Change) Round values up to two decimals
+* (Change) Move actual model height near total height, now it shows (actual/total mm)
+* (Change) Increase font size
+* (Change) Rearrange code
+
 ## 22/04/2020 - v0.2.2 - Beta
 
 * (Add) File -> Reload
@@ -27,10 +44,10 @@
 
 ## 12/04/2020 - v0.2 - Beta
 
-* Add cbddlp file format
-* Add "convert to" function, allow convert sl1 file to another
-* Add EPAX X1 printer
-* Change code with abstraction of file formats
+* (Add) cbddlp file format
+* (Add) "convert to" function, allow convert sl1 file to another
+* (Add) EPAX X1 printer
+* (Change) Code with abstraction of file formats
 
 ## 06/04/2020 - V0.1 - Beta
 

@@ -46,12 +46,25 @@ But also, i need victims for test subject. Proceed at your own risk!
 * SL1 (Prusa SL1)
 * CBDDLP (Chitubox DLP)
 * Photon
+* ZCodex
 
-## Configure printer under PrusaSlicer
+## Install and configure printer under PrusaSlicer
 
-1. Import Epax X1 printer (PrusaSlicer -> printers)
-1. Duplicate and tune the values if required
-1. Look up under "Printer -> Notes" and configure parameters from target slicer
+1. Download and install PrusaSlicer from: https://www.prusa3d.com/prusaslicer/
+1. Start and configure PrusaSlicer (Wizard)
+    * Choose SL1 printer
+1. Close PrusaSlicer
+1. On different operating systems open:
+    * Windows: "%AppData%\PrusaSlicer"
+    * macOS: "/Users/[Username]/Library/Application Support/PrusaSlicer"
+    * Linux:
+        * Stable build: "~/.PrusaSlicer/"
+        * Alpha build: "~/.PrusaSlicer-alpha/"
+1. Copy GitHub PrusaSlicer subfolder ("printer") to the folder above
+1. Open PrusaSlicer and check if profiles are there
+1. To clean up interface remove printers that you will not use (OPTIONAL)
+1. Duplicate or create your printer and tune the values if required
+1. Look up under "Printer -> Notes" and configure parameters to the target slicer
 1. Change only the value after the "_" (underscore)
 
 ## Custom "Printer Notes" keywords

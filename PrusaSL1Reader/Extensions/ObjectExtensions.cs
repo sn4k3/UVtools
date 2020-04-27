@@ -9,7 +9,7 @@
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace PrusaSL1Reader
+namespace PrusaSL1Reader.Extensions
 {
     public static class ObjectExtensions
     {
@@ -21,7 +21,7 @@ namespace PrusaSL1Reader
         /// <returns>Converted value into target type</returns>
         public static T Convert<T>(this object input)
         {
-            return input.ToString().Convert<T>();
+            return StringExtensions.Convert<T>(input.ToString());
         }
 
         public static object DeserializeFromBytes(byte[] bytes)
