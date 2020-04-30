@@ -6,12 +6,13 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
-using System.Dynamic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace PrusaSL1Reader
 {
@@ -29,6 +30,15 @@ namespace PrusaSL1Reader
         {
             Archive,
             Binary
+        }
+
+        /// <summary>
+        /// Enumeration of file thumbnail size types
+        /// </summary>
+        public enum FileThumbnailSize : byte
+        {
+            Small = 0,
+            Large
         }
         #endregion
 
@@ -48,9 +58,9 @@ namespace PrusaSL1Reader
             public static PrintParameterModifier LayerOffTime { get; } = new PrintParameterModifier("Layer Off Time", @"Modify 'Layer Off Time' seconds", "s");
             public static PrintParameterModifier BottomLiftHeight { get; } = new PrintParameterModifier("Bottom Lift Height", @"Modify 'Bottom Lift Height' millimeters between bottom layers", "mm");
             public static PrintParameterModifier BottomLiftSpeed { get; } = new PrintParameterModifier("Bottom Lift Speed", @"Modify 'Bottom Lift Speed' mm/min between bottom layers", "mm/min");
-            public static PrintParameterModifier ZRetractHeight { get; } = new PrintParameterModifier("Z Retract Height", @"Modify 'Z Retract Height' millimeters between layers", "mm");
-            public static PrintParameterModifier ZRetractSpeed { get; } = new PrintParameterModifier("Z Retract Speed", @"Modify 'Z Retract Speed' mm/min between layers", "mm/min", 10, 5000);
-            public static PrintParameterModifier ZDetractSpeed { get; } = new PrintParameterModifier("Z Detract Speed", @"Modify 'Z Detract Speed' mm/min between layers", "mm/min", 10, 5000);
+            public static PrintParameterModifier LiftHeight { get; } = new PrintParameterModifier("Lift Height", @"Modify 'Lift Height' millimeters between layers", "mm");
+            public static PrintParameterModifier LiftSpeed { get; } = new PrintParameterModifier("Lift Speed", @"Modify 'Lift Speed' mm/min between layers", "mm/min", 10, 5000);
+            public static PrintParameterModifier RetractSpeed { get; } = new PrintParameterModifier("Retract Speed", @"Modify 'Retract Speed' mm/min between layers", "mm/min", 10, 5000);
 
             public static PrintParameterModifier BottomLightPWM { get; } = new PrintParameterModifier("Bottom Light PWM", @"Modify 'Bottom Light PWM' value", null, 50, byte.MaxValue);
             public static PrintParameterModifier LightPWM { get; } = new PrintParameterModifier("Light PWM", @"Modify 'Light PWM' value", null, 50, byte.MaxValue);
@@ -116,7 +126,7 @@ namespace PrusaSL1Reader
         public static FileFormat[] AvaliableFormats { get; } =
         {
             new SL1File(),      // Prusa SL1
-            new CbddlpFile(),   // cbddlp, photon
+            new ChituboxFile(), // cbddlp, cbt, photon
             new ZCodexFile(),   // zcodex
         };
 
@@ -203,7 +213,7 @@ namespace PrusaSL1Reader
             }
         }
 
-        public abstract string FileFullPath { get; set; }
+        public string FileFullPath { get; set; }
 
         public abstract byte ThumbnailsCount { get; }
 
@@ -223,7 +233,9 @@ namespace PrusaSL1Reader
             }
         }
 
-        public abstract Image<Rgba32>[] Thumbnails { get; set; }
+        public abstract Size[] ThumbnailsOriginalSize { get; }
+
+        public Image<Rgba32>[] Thumbnails { get; set; }
 
         public abstract uint ResolutionX { get; }
 
@@ -241,11 +253,11 @@ namespace PrusaSL1Reader
 
         public abstract float LayerExposureTime { get; }
 
-        public abstract float ZRetractHeight { get; }
+        public abstract float LiftHeight { get; }
 
-        public abstract float ZRetractSpeed { get; }
+        public abstract float RetractSpeed { get; }
 
-        public abstract float ZDetractSpeed { get; }
+        public abstract float LiftSpeed { get; }
 
         public abstract float PrintTime { get; }
         
@@ -328,11 +340,61 @@ namespace PrusaSL1Reader
             return FileExtensions.Any(fileExtension => fileExtension.Extension.Equals(extension));
         }
 
+        public string GetFileExtensions(string prepend = ".", string separator = ", ")
+        {
+            var result = string.Empty;
+
+            foreach (var fileExt in FileExtensions)
+            {
+                if (!ReferenceEquals(result, string.Empty))
+                {
+                    result += separator;
+                }
+                result += $"{prepend}{fileExt.Extension}";
+            }
+
+            return result;
+        }
+
+        public Image<Rgba32> GetThumbnail(uint maxHeight = 400)
+        {
+            for (int i = 0; i < ThumbnailsCount; i++)
+            {
+                if(ReferenceEquals(Thumbnails[i], null)) continue;
+                if (Thumbnails[i].Height <= maxHeight) return Thumbnails[i];
+            }
+
+            return null;
+        }
+
+        public void SetThumbnails(Image<Rgba32>[] images)
+        {
+            for (var i = 0; i < ThumbnailsCount; i++)
+            {
+                Thumbnails[i] = images[Math.Min(i, images.Length - 1)].Clone();
+            }
+        }
+
+        public void SetThumbnails(Image<Rgba32> image)
+        {
+            for (var i = 0; i < ThumbnailsCount; i++)
+            {
+                Thumbnails[i] = image.Clone();
+            }
+        }
+
         public virtual void BeginEncode(string fileFullPath)
         {
             if (File.Exists(fileFullPath))
             {
                 File.Delete(fileFullPath);
+            }
+
+            for (var i = 0; i < Thumbnails.Length; i++)
+            {
+                if(ReferenceEquals(Thumbnails[i], null)) continue;
+
+                Thumbnails[i].Mutate(x => x.Resize(ThumbnailsOriginalSize[i].Width, ThumbnailsOriginalSize[i].Height));
             }
         }
 
@@ -421,12 +483,13 @@ namespace PrusaSL1Reader
             if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
                 return LayerExposureTime;
 
-            if (ReferenceEquals(modifier, PrintParameterModifier.ZRetractHeight))
-                return ZRetractHeight;
-            if (ReferenceEquals(modifier, PrintParameterModifier.ZRetractSpeed))
-                return ZRetractSpeed;
-            if (ReferenceEquals(modifier, PrintParameterModifier.ZDetractSpeed))
-                return ZDetractSpeed;
+            if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight))
+                return LiftHeight;
+            if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed))
+                return LiftSpeed;
+            if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
+                return RetractSpeed;
+            
 
 
             return null;

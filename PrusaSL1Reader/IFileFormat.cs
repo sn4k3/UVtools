@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Drawing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -58,6 +59,11 @@ namespace PrusaSL1Reader
         /// Gets the number of created thumbnails
         /// </summary>
         byte CreatedThumbnailsCount { get; }
+
+        /// <summary>
+        /// Gets the original thumbnail sizes
+        /// </summary>
+        Size[] ThumbnailsOriginalSize { get; }
         
         /// <summary>
         /// Gets the thumbnails for this <see cref="FileFormat"/>
@@ -105,19 +111,19 @@ namespace PrusaSL1Reader
         float LayerExposureTime { get; }
 
         /// <summary>
+        /// Gets the speed in mm/min for the detracts
+        /// </summary>
+        float LiftSpeed { get; }
+
+        /// <summary>
         /// Gets the height in mm to retract between layers
         /// </summary>
-        float ZRetractHeight { get; }
+        float LiftHeight { get; }
 
         /// <summary>
         /// Gets the speed in mm/min for the retracts
         /// </summary>
-        float ZRetractSpeed { get; }
-
-        /// <summary>
-        /// Gets the speed in mm/min for the detracts
-        /// </summary>
-        float ZDetractSpeed { get; }
+        float RetractSpeed { get; }
 
         /// <summary>
         /// Gets the estimate print time in seconds
@@ -180,6 +186,31 @@ namespace PrusaSL1Reader
         /// <param name="isFilePath">True if <see cref="extension"/> is a full file path, otherwise false for extension only</param>
         /// <returns>True if valid, otherwise false</returns>
         bool IsExtensionValid(string extension, bool isFilePath = false);
+
+        /// <summary>
+        /// Gets all valid file extensions in a specified format
+        /// </summary>
+
+        string GetFileExtensions(string prepend = ".", string separator = ", ");
+
+        /// <summary>
+        /// Gets a thumbnail by it height or lower
+        /// </summary>
+        /// <param name="maxHeight">Max height allowed</param>
+        /// <returns></returns>
+        Image<Rgba32> GetThumbnail(uint maxHeight = 400);
+
+        /// <summary>
+        /// Sets thumbnails from a list of thumbnails and clone them
+        /// </summary>
+        /// <param name="images"></param>
+        void SetThumbnails(Image<Rgba32>[] images);
+
+        /// <summary>
+        /// Sets all thumbnails the same image
+        /// </summary>
+        /// <param name="images">Image to set</param>
+        void SetThumbnails(Image<Rgba32> images);
 
         /// <summary>
         /// Begin encode to an output file

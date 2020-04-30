@@ -256,4 +256,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.Toolset.3.6.0-3.final\build\Microsoft.Net.Compilers.Toolset.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.Toolset.3.6.0-3.final\build\Microsoft.Net.Compilers.Toolset.props'))" />
   </Target>
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /y $(ProjectDir)..\LICENSE $(ProjectDir)$(OutDir)</PostBuildEvent>
+  </PropertyGroup>
 </Project>

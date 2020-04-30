@@ -45,6 +45,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 
 * SL1 (Prusa SL1)
 * CBDDLP (Chitubox DLP)
+* CBT (Chitubox)
 * Photon
 * ZCodex
 

@@ -6,7 +6,9 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.IO;
+using System.Security.Cryptography;
 using BinarySerialization;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
@@ -85,6 +87,12 @@ namespace PrusaSL1Reader
             {
                 return WriteFileStream(fs, stream);
             }
+        }
+
+        public static SHA1CryptoServiceProvider SHA1 { get; } = new SHA1CryptoServiceProvider();
+        public static string ComputeSHA1Hash(byte[] input)
+        {
+            return Convert.ToBase64String(SHA1.ComputeHash(input));
         }
     }
 }

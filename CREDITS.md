@@ -9,6 +9,11 @@
 * For information about cbddlp file format
 * https://github.com/Photonsters
 
+### Cliff L. Biffle
+* Catibo: read/write/analyze CTB, CBDDLP, and PHZ files
+* For information about cbddlp and cbt file format
+* https://github.com/cbiffle/catibo
+
 ### Jason S. McMullan (ezrec)
 
 * For ideas and permission to use his project (uv3dp)

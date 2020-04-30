@@ -1,5 +1,23 @@
 # Changelog
 
+## 30/04/2020 - v0.3.1 - Beta
+
+* (Add) Thumbnails to converted photon and cbddlp files
+* (Add) ctb file format
+* (Add) Show possible extensions/files under "Convert To" menu
+* (Add) Open new file in a new window without lose current work
+* (Improvement) Rename and complete some Chitubox properties
+* (Improvement) More completion of cbddlp file
+* (Improvement) Optimized layer read from cbddlp file
+* (Improvement) Add layer hash code to encoded Chitubox layers in order to optimize file size in case of repeated layer images
+* (Improvement) GUI thumbnail preview now auto scale splitter height to a max of 400px when change thumbnail
+* (Improvement) After convertion program prompt for open the result file in a new window
+* (Change) Move layer rotate from view menu to layer menu
+* (Change) Cbbdlp convertion name to Chitubox
+* (Change) On covert, thumbnails now are resized to match exactly the target thumbnail size
+* (Change) GUI will now show thumbnails from smaller to larger
+* (Fixed) RetractFeedrate was incorrectly used instead of LiftFeedrate on Zcodex gcode
+
 ## 27/04/2020 - v0.3.0 - Beta
 
 * (Add) zcodex file format

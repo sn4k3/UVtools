@@ -40,13 +40,29 @@ namespace PrusaSL1Viewer
             DragEnter += (s, e) => { if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy; };
             DragDrop += (s, e) => { ProcessFile((string[])e.Data.GetData(DataFormats.FileDrop)); };
 
-            ProcessFile(Environment.GetCommandLineArgs());
+            ProcessFile(Program.Args);
+        }
+
+        #endregion
+
+        #region Overrides
+
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            base.OnKeyUp(e);
+
+            if (e.KeyCode == Keys.R && e.Control)
+            {
+                tsLayerImageRotate.PerformClick();
+                e.Handled = true;
+                return;
+            }
         }
 
         #endregion
 
         #region Events
-       
+
         private void ItemClicked(object sender, EventArgs e)
         {
             if (sender.GetType() == typeof(ToolStripMenuItem))
@@ -73,8 +89,23 @@ namespace PrusaSL1Viewer
                             {
                                 MessageBox.Show(exception.ToString(), "Error while try opening the file",
                                     MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                return;
                             }
+                        }
+                    }
+
+                    return;
+                }
+
+                if (ReferenceEquals(sender, menuFileOpenNewWindow))
+                {
+                    using (OpenFileDialog openFile = new OpenFileDialog())
+                    {
+                        openFile.CheckFileExists = true;
+                        openFile.Filter = FileFormat.AllFileFilters;
+                        openFile.FilterIndex = 0;
+                        if (openFile.ShowDialog() == DialogResult.OK)
+                        {
+                            Program.NewInstance(openFile.FileName);
                         }
                     }
 
@@ -208,11 +239,7 @@ namespace PrusaSL1Viewer
                 }
 
                 // View
-                if (ReferenceEquals(sender, menuViewRotateImage))
-                {
-                    sbLayers_ValueChanged(sbLayers, null);
-                    return;
-                }
+
 
                 // About
                 if (ReferenceEquals(sender, menuAboutAbout))
@@ -265,6 +292,8 @@ namespace PrusaSL1Viewer
                 tsThumbnailsNext.Enabled = true;
 
                 tsThumbnailsResolution.Text = pbThumbnail.Image.PhysicalDimension.ToString();
+
+                AdjustThumbnailSplitter();
                 return;
             }
 
@@ -291,6 +320,8 @@ namespace PrusaSL1Viewer
                 tsThumbnailsPrevious.Enabled = true;
 
                 tsThumbnailsResolution.Text = pbThumbnail.Image.PhysicalDimension.ToString();
+
+                AdjustThumbnailSplitter();
                 return;
             }
 
@@ -358,7 +389,6 @@ namespace PrusaSL1Viewer
                     }
                     return;
                 }
-                return;
             }
 
             /************************
@@ -395,6 +425,12 @@ namespace PrusaSL1Viewer
             /************************
              *      Layer Menu      *
              ***********************/
+            if (ReferenceEquals(sender, tsLayerImageRotate))
+            {
+                sbLayers_ValueChanged(sbLayers, null);
+                return;
+            }
+
             if (ReferenceEquals(sender, tsLayerImageExport))
             {
                 using (SaveFileDialog dialog = new SaveFileDialog())
@@ -424,6 +460,7 @@ namespace PrusaSL1Viewer
             }
         }
 
+
         private void sbLayers_ValueChanged(object sender, EventArgs e)
         {
             if (ReferenceEquals(SlicerFile, null)) return;
@@ -448,8 +485,13 @@ namespace PrusaSL1Viewer
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     SlicerFile.Convert(fileFormat, dialog.FileName);
-                    MessageBox.Show("Convertion is completed", "Convertion completed", MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
+                    if (MessageBox.Show($"Convertion is completed: {Path.GetFileName(dialog.FileName)}\n" +
+                                        "Do you want open the converted file in a new window?",
+                        "Convertion completed", MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Information) == DialogResult.Yes)
+                    {
+                        Program.NewInstance(dialog.FileName);
+                    }
                 }
 
             }
@@ -574,7 +616,9 @@ namespace PrusaSL1Viewer
             foreach (var fileFormat in FileFormat.AvaliableFormats)
             {
                 if (fileFormat.GetType() == SlicerFile.GetType()) continue;
-                ToolStripMenuItem menuItem = new ToolStripMenuItem(fileFormat.GetType().Name.Replace("File", string.Empty))
+
+                string extensions = fileFormat.FileExtensions.Length > 0 ? $" ({fileFormat.GetFileExtensions()})" : string.Empty;
+                ToolStripMenuItem menuItem = new ToolStripMenuItem(fileFormat.GetType().Name.Replace("File", extensions))
                 {
                     Tag = fileFormat,
                     Image = Properties.Resources.layers_16x16
@@ -597,7 +641,7 @@ namespace PrusaSL1Viewer
                 }
 
                 tsThumbnailsNext.Enabled = SlicerFile.CreatedThumbnailsCount > 1;
-                scLeft.SplitterDistance = pbThumbnail.Image.Height + 5;
+                AdjustThumbnailSplitter();
             }
             foreach (ToolStripItem item in tsLayer.Items)
             {
@@ -720,7 +764,7 @@ namespace PrusaSL1Viewer
                 //Stopwatch watch = Stopwatch.StartNew();
                 var image = SlicerFile.GetLayerImage(layerNum);
                 //Debug.Write(watch.ElapsedMilliseconds.ToString());
-                if (menuViewRotateImage.Checked)
+                if (tsLayerImageRotate.Checked)
                 {
                     //watch.Restart();
                     image.Mutate(x => x.Rotate(RotateMode.Rotate90));
@@ -756,6 +800,11 @@ namespace PrusaSL1Viewer
 
             ToolStripLabel label = new ToolStripLabel($"{name}: {item}{extraText}");
             statusBar.Items.Add(label);
+        }
+
+        void AdjustThumbnailSplitter()
+        {
+            scLeft.SplitterDistance = Math.Min(pbThumbnail.Image.Height + 5, 400);
         }
         #endregion
     }

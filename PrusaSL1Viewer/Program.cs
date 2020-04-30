@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.Threading;
@@ -63,12 +64,14 @@ namespace PrusaSL1Viewer
         public static FileFormat SlicerFile { get; set; }
         public static FrmMain FrmMain { get; private set; }
         public static FrmAbout FrmAbout { get; private set; }
+        public static string[] Args { get; private set; }
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
+            Args = args;
             Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-GB");
 
             Application.EnableVisualStyles();
@@ -78,6 +81,12 @@ namespace PrusaSL1Viewer
             FrmAbout = new FrmAbout();
 
             Application.Run(FrmMain);
+        }
+
+        public static void NewInstance(string filePath)
+        {
+            var info = new ProcessStartInfo(Application.ExecutablePath, $"\"{filePath}\"");
+            Process.Start(info);
         }
     }
 }

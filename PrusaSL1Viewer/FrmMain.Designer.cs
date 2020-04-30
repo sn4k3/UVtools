@@ -33,6 +33,7 @@
             this.menu = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuFileOpen = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileOpenNewWindow = new System.Windows.Forms.ToolStripMenuItem();
             this.menuFileReload = new System.Windows.Forms.ToolStripMenuItem();
             this.menuFileSave = new System.Windows.Forms.ToolStripMenuItem();
             this.menuFileSaveAs = new System.Windows.Forms.ToolStripMenuItem();
@@ -44,7 +45,6 @@
             this.menuFileExit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuViewRotateImage = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuAboutWebsite = new System.Windows.Forms.ToolStripMenuItem();
             this.menuAboutDonate = new System.Windows.Forms.ToolStripMenuItem();
@@ -70,6 +70,14 @@
             this.tsThumbnailsNext = new System.Windows.Forms.ToolStripButton();
             this.tsThumbnailsExport = new System.Windows.Forms.ToolStripButton();
             this.tsThumbnailsResolution = new System.Windows.Forms.ToolStripLabel();
+            this.lvProperties = new System.Windows.Forms.ListView();
+            this.lvChKey = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.lvChValue = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.tsProperties = new System.Windows.Forms.ToolStrip();
+            this.tsPropertiesLabelCount = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsPropertiesLabelGroups = new System.Windows.Forms.ToolStripLabel();
+            this.tsPropertiesButtonSave = new System.Windows.Forms.ToolStripButton();
             this.tbpGCode = new System.Windows.Forms.TabPage();
             this.tbGCode = new System.Windows.Forms.TextBox();
             this.tsGCode = new System.Windows.Forms.ToolStrip();
@@ -78,14 +86,7 @@
             this.tsGcodeLabelChars = new System.Windows.Forms.ToolStripLabel();
             this.tsGCodeButtonSave = new System.Windows.Forms.ToolStripButton();
             this.imageList16x16 = new System.Windows.Forms.ImageList(this.components);
-            this.tsProperties = new System.Windows.Forms.ToolStrip();
-            this.lvProperties = new System.Windows.Forms.ListView();
-            this.lvChKey = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.lvChValue = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.tsPropertiesLabelCount = new System.Windows.Forms.ToolStripLabel();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsPropertiesLabelGroups = new System.Windows.Forms.ToolStripLabel();
-            this.tsPropertiesButtonSave = new System.Windows.Forms.ToolStripButton();
+            this.tsLayerImageRotate = new System.Windows.Forms.ToolStripButton();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -106,9 +107,9 @@
             this.scLeft.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbThumbnail)).BeginInit();
             this.tsThumbnails.SuspendLayout();
+            this.tsProperties.SuspendLayout();
             this.tbpGCode.SuspendLayout();
             this.tsGCode.SuspendLayout();
-            this.tsProperties.SuspendLayout();
             this.SuspendLayout();
             // 
             // menu
@@ -128,6 +129,7 @@
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuFileOpen,
+            this.menuFileOpenNewWindow,
             this.menuFileReload,
             this.menuFileSave,
             this.menuFileSaveAs,
@@ -146,16 +148,26 @@
             this.menuFileOpen.Image = global::PrusaSL1Viewer.Properties.Resources.Open_16x16;
             this.menuFileOpen.Name = "menuFileOpen";
             this.menuFileOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.menuFileOpen.Size = new System.Drawing.Size(186, 22);
+            this.menuFileOpen.Size = new System.Drawing.Size(261, 22);
             this.menuFileOpen.Text = "&Open";
             this.menuFileOpen.Click += new System.EventHandler(this.ItemClicked);
+            // 
+            // menuFileOpenNewWindow
+            // 
+            this.menuFileOpenNewWindow.Image = global::PrusaSL1Viewer.Properties.Resources.Open_16x16;
+            this.menuFileOpenNewWindow.Name = "menuFileOpenNewWindow";
+            this.menuFileOpenNewWindow.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.O)));
+            this.menuFileOpenNewWindow.Size = new System.Drawing.Size(261, 22);
+            this.menuFileOpenNewWindow.Text = "Open in new window";
+            this.menuFileOpenNewWindow.Click += new System.EventHandler(this.ItemClicked);
             // 
             // menuFileReload
             // 
             this.menuFileReload.Image = global::PrusaSL1Viewer.Properties.Resources.File_Refresh_16x16;
             this.menuFileReload.Name = "menuFileReload";
             this.menuFileReload.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F5)));
-            this.menuFileReload.Size = new System.Drawing.Size(186, 22);
+            this.menuFileReload.Size = new System.Drawing.Size(261, 22);
             this.menuFileReload.Text = "&Reload";
             this.menuFileReload.Click += new System.EventHandler(this.ItemClicked);
             // 
@@ -165,7 +177,7 @@
             this.menuFileSave.Image = global::PrusaSL1Viewer.Properties.Resources.Save_16x16;
             this.menuFileSave.Name = "menuFileSave";
             this.menuFileSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.menuFileSave.Size = new System.Drawing.Size(186, 22);
+            this.menuFileSave.Size = new System.Drawing.Size(261, 22);
             this.menuFileSave.Text = "&Save";
             this.menuFileSave.Click += new System.EventHandler(this.ItemClicked);
             // 
@@ -176,7 +188,7 @@
             this.menuFileSaveAs.Name = "menuFileSaveAs";
             this.menuFileSaveAs.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
             | System.Windows.Forms.Keys.S)));
-            this.menuFileSaveAs.Size = new System.Drawing.Size(186, 22);
+            this.menuFileSaveAs.Size = new System.Drawing.Size(261, 22);
             this.menuFileSaveAs.Text = "Save As";
             this.menuFileSaveAs.Click += new System.EventHandler(this.ItemClicked);
             // 
@@ -186,14 +198,14 @@
             this.menuFileClose.Image = global::PrusaSL1Viewer.Properties.Resources.File_Close_16x16;
             this.menuFileClose.Name = "menuFileClose";
             this.menuFileClose.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.W)));
-            this.menuFileClose.Size = new System.Drawing.Size(186, 22);
+            this.menuFileClose.Size = new System.Drawing.Size(261, 22);
             this.menuFileClose.Text = "&Close";
             this.menuFileClose.Click += new System.EventHandler(this.ItemClicked);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(183, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(258, 6);
             // 
             // menuFileExtract
             // 
@@ -202,7 +214,7 @@
             this.menuFileExtract.Name = "menuFileExtract";
             this.menuFileExtract.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
             | System.Windows.Forms.Keys.E)));
-            this.menuFileExtract.Size = new System.Drawing.Size(186, 22);
+            this.menuFileExtract.Size = new System.Drawing.Size(261, 22);
             this.menuFileExtract.Text = "&Extract";
             this.menuFileExtract.Click += new System.EventHandler(this.ItemClicked);
             // 
@@ -211,20 +223,20 @@
             this.menuFileConvert.Enabled = false;
             this.menuFileConvert.Image = global::PrusaSL1Viewer.Properties.Resources.Convert_16x16;
             this.menuFileConvert.Name = "menuFileConvert";
-            this.menuFileConvert.Size = new System.Drawing.Size(186, 22);
+            this.menuFileConvert.Size = new System.Drawing.Size(261, 22);
             this.menuFileConvert.Text = "&Convert To";
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(183, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(258, 6);
             // 
             // menuFileExit
             // 
             this.menuFileExit.Image = global::PrusaSL1Viewer.Properties.Resources.Exit_16x16;
             this.menuFileExit.Name = "menuFileExit";
             this.menuFileExit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.menuFileExit.Size = new System.Drawing.Size(186, 22);
+            this.menuFileExit.Size = new System.Drawing.Size(261, 22);
             this.menuFileExit.Text = "&Exit";
             this.menuFileExit.Click += new System.EventHandler(this.ItemClicked);
             // 
@@ -237,24 +249,10 @@
             // 
             // viewToolStripMenuItem
             // 
-            this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuViewRotateImage});
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
             this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.viewToolStripMenuItem.Text = "&View";
-            // 
-            // menuViewRotateImage
-            // 
-            this.menuViewRotateImage.Checked = true;
-            this.menuViewRotateImage.CheckOnClick = true;
-            this.menuViewRotateImage.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.menuViewRotateImage.Image = global::PrusaSL1Viewer.Properties.Resources.Rotate_16x16;
-            this.menuViewRotateImage.Name = "menuViewRotateImage";
-            this.menuViewRotateImage.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.R)));
-            this.menuViewRotateImage.Size = new System.Drawing.Size(205, 22);
-            this.menuViewRotateImage.Text = "&Rotate Image 90º";
-            this.menuViewRotateImage.ToolTipText = "Auto rotate layer preview image at 90º (This can slow down the layer preview)";
-            this.menuViewRotateImage.Click += new System.EventHandler(this.ItemClicked);
+            this.viewToolStripMenuItem.Visible = false;
             // 
             // helpToolStripMenuItem
             // 
@@ -398,7 +396,8 @@
             this.tsLayer.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.tsLayer.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsLayerImageExport,
-            this.tsLayerResolution});
+            this.tsLayerResolution,
+            this.tsLayerImageRotate});
             this.tsLayer.Location = new System.Drawing.Point(0, 0);
             this.tsLayer.Name = "tsLayer";
             this.tsLayer.Size = new System.Drawing.Size(1095, 25);
@@ -560,6 +559,76 @@
             this.tsThumbnailsResolution.Text = "Resolution";
             this.tsThumbnailsResolution.ToolTipText = "Thumbnail Resolution";
             // 
+            // lvProperties
+            // 
+            this.lvProperties.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.lvChKey,
+            this.lvChValue});
+            this.lvProperties.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lvProperties.FullRowSelect = true;
+            this.lvProperties.GridLines = true;
+            this.lvProperties.HideSelection = false;
+            this.lvProperties.Location = new System.Drawing.Point(0, 25);
+            this.lvProperties.Name = "lvProperties";
+            this.lvProperties.Size = new System.Drawing.Size(380, 244);
+            this.lvProperties.TabIndex = 1;
+            this.lvProperties.UseCompatibleStateImageBehavior = false;
+            this.lvProperties.View = System.Windows.Forms.View.Details;
+            // 
+            // lvChKey
+            // 
+            this.lvChKey.Text = "Key";
+            this.lvChKey.Width = 183;
+            // 
+            // lvChValue
+            // 
+            this.lvChValue.Text = "Value";
+            this.lvChValue.Width = 205;
+            // 
+            // tsProperties
+            // 
+            this.tsProperties.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.tsProperties.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsPropertiesLabelCount,
+            this.toolStripSeparator4,
+            this.tsPropertiesLabelGroups,
+            this.tsPropertiesButtonSave});
+            this.tsProperties.Location = new System.Drawing.Point(0, 0);
+            this.tsProperties.Name = "tsProperties";
+            this.tsProperties.Size = new System.Drawing.Size(380, 25);
+            this.tsProperties.TabIndex = 0;
+            this.tsProperties.Text = "Properties";
+            // 
+            // tsPropertiesLabelCount
+            // 
+            this.tsPropertiesLabelCount.Name = "tsPropertiesLabelCount";
+            this.tsPropertiesLabelCount.Size = new System.Drawing.Size(40, 22);
+            this.tsPropertiesLabelCount.Text = "Count";
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsPropertiesLabelGroups
+            // 
+            this.tsPropertiesLabelGroups.Name = "tsPropertiesLabelGroups";
+            this.tsPropertiesLabelGroups.Size = new System.Drawing.Size(45, 22);
+            this.tsPropertiesLabelGroups.Text = "Groups";
+            // 
+            // tsPropertiesButtonSave
+            // 
+            this.tsPropertiesButtonSave.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsPropertiesButtonSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsPropertiesButtonSave.Enabled = false;
+            this.tsPropertiesButtonSave.Image = global::PrusaSL1Viewer.Properties.Resources.Save_16x16;
+            this.tsPropertiesButtonSave.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsPropertiesButtonSave.Name = "tsPropertiesButtonSave";
+            this.tsPropertiesButtonSave.Size = new System.Drawing.Size(23, 22);
+            this.tsPropertiesButtonSave.Text = "Save Thumbnail";
+            this.tsPropertiesButtonSave.ToolTipText = "Save properties to a file";
+            this.tsPropertiesButtonSave.Click += new System.EventHandler(this.ItemClicked);
+            // 
             // tbpGCode
             // 
             this.tbpGCode.Controls.Add(this.tbGCode);
@@ -633,75 +702,19 @@
             this.imageList16x16.Images.SetKeyName(1, "PhotoInfo-16x16.png");
             this.imageList16x16.Images.SetKeyName(2, "GCode-16x16.png");
             // 
-            // tsProperties
+            // tsLayerImageRotate
             // 
-            this.tsProperties.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.tsProperties.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsPropertiesLabelCount,
-            this.toolStripSeparator4,
-            this.tsPropertiesLabelGroups,
-            this.tsPropertiesButtonSave});
-            this.tsProperties.Location = new System.Drawing.Point(0, 0);
-            this.tsProperties.Name = "tsProperties";
-            this.tsProperties.Size = new System.Drawing.Size(380, 25);
-            this.tsProperties.TabIndex = 0;
-            this.tsProperties.Text = "Properties";
-            // 
-            // lvProperties
-            // 
-            this.lvProperties.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.lvChKey,
-            this.lvChValue});
-            this.lvProperties.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lvProperties.FullRowSelect = true;
-            this.lvProperties.GridLines = true;
-            this.lvProperties.HideSelection = false;
-            this.lvProperties.Location = new System.Drawing.Point(0, 25);
-            this.lvProperties.Name = "lvProperties";
-            this.lvProperties.Size = new System.Drawing.Size(380, 244);
-            this.lvProperties.TabIndex = 1;
-            this.lvProperties.UseCompatibleStateImageBehavior = false;
-            this.lvProperties.View = System.Windows.Forms.View.Details;
-            // 
-            // lvChKey
-            // 
-            this.lvChKey.Text = "Key";
-            this.lvChKey.Width = 183;
-            // 
-            // lvChValue
-            // 
-            this.lvChValue.Text = "Value";
-            this.lvChValue.Width = 205;
-            // 
-            // tsPropertiesLabelCount
-            // 
-            this.tsPropertiesLabelCount.Name = "tsPropertiesLabelCount";
-            this.tsPropertiesLabelCount.Size = new System.Drawing.Size(40, 22);
-            this.tsPropertiesLabelCount.Text = "Count";
-            // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsPropertiesLabelGroups
-            // 
-            this.tsPropertiesLabelGroups.Name = "tsPropertiesLabelGroups";
-            this.tsPropertiesLabelGroups.Size = new System.Drawing.Size(45, 22);
-            this.tsPropertiesLabelGroups.Text = "Groups";
-            // 
-            // tsPropertiesButtonSave
-            // 
-            this.tsPropertiesButtonSave.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsPropertiesButtonSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsPropertiesButtonSave.Enabled = false;
-            this.tsPropertiesButtonSave.Image = global::PrusaSL1Viewer.Properties.Resources.Save_16x16;
-            this.tsPropertiesButtonSave.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsPropertiesButtonSave.Name = "tsPropertiesButtonSave";
-            this.tsPropertiesButtonSave.Size = new System.Drawing.Size(23, 22);
-            this.tsPropertiesButtonSave.Text = "Save Thumbnail";
-            this.tsPropertiesButtonSave.ToolTipText = "Save properties to a file";
-            this.tsPropertiesButtonSave.Click += new System.EventHandler(this.ItemClicked);
+            this.tsLayerImageRotate.Checked = true;
+            this.tsLayerImageRotate.CheckOnClick = true;
+            this.tsLayerImageRotate.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsLayerImageRotate.Image = global::PrusaSL1Viewer.Properties.Resources.Rotate_16x16;
+            this.tsLayerImageRotate.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerImageRotate.Name = "tsLayerImageRotate";
+            this.tsLayerImageRotate.Size = new System.Drawing.Size(117, 22);
+            this.tsLayerImageRotate.Text = "Rotate Image 90º";
+            this.tsLayerImageRotate.ToolTipText = "Auto rotate layer preview image at 90º (This can slow down the layer preview) [CT" +
+    "RL+R]";
+            this.tsLayerImageRotate.Click += new System.EventHandler(this.ItemClicked);
             // 
             // FrmMain
             // 
@@ -714,6 +727,7 @@
             this.Controls.Add(this.menu);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
             this.MainMenuStrip = this.menu;
             this.MinimumSize = new System.Drawing.Size(1000, 600);
             this.Name = "FrmMain";
@@ -744,12 +758,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbThumbnail)).EndInit();
             this.tsThumbnails.ResumeLayout(false);
             this.tsThumbnails.PerformLayout();
+            this.tsProperties.ResumeLayout(false);
+            this.tsProperties.PerformLayout();
             this.tbpGCode.ResumeLayout(false);
             this.tbpGCode.PerformLayout();
             this.tsGCode.ResumeLayout(false);
             this.tsGCode.PerformLayout();
-            this.tsProperties.ResumeLayout(false);
-            this.tsProperties.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -775,7 +789,6 @@
         private System.Windows.Forms.PictureBox pbLayer;
         private System.Windows.Forms.ProgressBar pbLayers;
         private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem menuViewRotateImage;
         private System.Windows.Forms.ToolStripMenuItem menuFileClose;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem menuFileExtract;
@@ -813,6 +826,8 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripLabel tsPropertiesLabelGroups;
         private System.Windows.Forms.ToolStripButton tsPropertiesButtonSave;
+        private System.Windows.Forms.ToolStripMenuItem menuFileOpenNewWindow;
+        private System.Windows.Forms.ToolStripButton tsLayerImageRotate;
     }
 }
 

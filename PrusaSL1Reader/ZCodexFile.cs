@@ -7,6 +7,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Runtime.CompilerServices;
@@ -159,16 +160,14 @@ namespace PrusaSL1Reader
             PrintParameterModifier.ExposureSeconds,
 
 
-            PrintParameterModifier.ZRetractHeight,
-            PrintParameterModifier.ZRetractSpeed,
-            PrintParameterModifier.ZDetractSpeed,
+            PrintParameterModifier.LiftHeight,
+            PrintParameterModifier.RetractSpeed,
+            PrintParameterModifier.LiftSpeed,
         };
-
-        public override string FileFullPath { get; set; }
 
         public override byte ThumbnailsCount { get; } = 1;
 
-        public override Image<Rgba32>[] Thumbnails { get; set; }
+        public override Size[] ThumbnailsOriginalSize { get; } = {new Size(320, 180)};
 
         public override uint ResolutionX => 1440;
 
@@ -183,9 +182,11 @@ namespace PrusaSL1Reader
         public override float InitialExposureTime => UserSettings.BottomLayerExposureTime / 1000;
 
         public override float LayerExposureTime => UserSettings.LayerExposureTime / 1000;
-        public override float ZRetractHeight => UserSettings.ZLiftDistance;
-        public override float ZRetractSpeed => (uint) UserSettings.ZLiftRetractRate;
-        public override float ZDetractSpeed => (uint) UserSettings.ZLiftFeedRate;
+        public override float LiftHeight => UserSettings.ZLiftDistance;
+
+        public override float LiftSpeed =>  UserSettings.ZLiftFeedRate;
+
+        public override float RetractSpeed => UserSettings.ZLiftRetractRate;
 
         public override float PrintTime => ResinMetadataSettings.PrintTime;
 
@@ -399,21 +400,21 @@ namespace PrusaSL1Reader
                 return true;
             }
 
-            if (ReferenceEquals(modifier, PrintParameterModifier.ZRetractHeight))
+            if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight))
             {
                 UserSettings.ZLiftDistance = value.Convert<float>();
                 UpdateGCode();
                 return true;
             }
-            if (ReferenceEquals(modifier, PrintParameterModifier.ZRetractSpeed))
+            if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed))
             {
-                UserSettings.ZLiftRetractRate = value.Convert<float>();
+                UserSettings.ZLiftFeedRate = value.Convert<float>();
                 UpdateGCode();
                 return true;
             }
-            if (ReferenceEquals(modifier, PrintParameterModifier.ZDetractSpeed))
+            if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
             {
-                UserSettings.ZLiftFeedRate = value.Convert<float>();
+                UserSettings.ZLiftRetractRate = value.Convert<float>();
                 UpdateGCode();
                 return true;
             }
@@ -450,10 +451,10 @@ namespace PrusaSL1Reader
         private void UpdateGCode()
         {
             GCode = Regex.Replace(GCode, @"Z[+]?([0-9]*\.[0-9]+|[0-9]+) F[+]?([0-9]*\.[0-9]+|[0-9]+)",
-                $"Z{UserSettings.ZLiftDistance} F{UserSettings.ZLiftRetractRate}");
+                $"Z{UserSettings.ZLiftDistance} F{UserSettings.ZLiftFeedRate}");
 
             GCode = Regex.Replace(GCode, @"Z-[-]?([0-9]*\.[0-9]+|[0-9]+) F[+]?([0-9]*\.[0-9]+|[0-9]+)",
-                $"Z-{UserSettings.ZLiftDistance - LayerHeight} F{UserSettings.ZLiftFeedRate}");
+                $"Z-{UserSettings.ZLiftDistance - LayerHeight} F{UserSettings.ZLiftRetractRate}");
 
         }
         #endregion
