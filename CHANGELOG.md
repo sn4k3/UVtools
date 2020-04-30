@@ -14,7 +14,7 @@
 * (Improvement) After convertion program prompt for open the result file in a new window
 * (Change) Move layer rotate from view menu to layer menu
 * (Change) Cbbdlp convertion name to Chitubox
-* (Change) On covert, thumbnails now are resized to match exactly the target thumbnail size
+* (Change) On convert, thumbnails are now resized to match exactly the target thumbnail size
 * (Change) GUI will now show thumbnails from smaller to larger
 * (Fixed) RetractFeedrate was incorrectly used instead of LiftFeedrate on Zcodex gcode
 
