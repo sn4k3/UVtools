@@ -8,6 +8,7 @@
 
 using System;
 using System.Drawing;
+using System.IO;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -63,12 +64,17 @@ namespace PrusaSL1Reader
         /// <summary>
         /// Gets the original thumbnail sizes
         /// </summary>
-        Size[] ThumbnailsOriginalSize { get; }
+        System.Drawing.Size[] ThumbnailsOriginalSize { get; }
         
         /// <summary>
         /// Gets the thumbnails for this <see cref="FileFormat"/>
         /// </summary>
         Image<Rgba32>[] Thumbnails { get; set; }
+
+        /// <summary>
+        /// Gets the cached layers into compressed bytes
+        /// </summary>
+        byte[][] Layers { get; set; }
         
         /// <summary>
         /// Gets the image width resolution
@@ -97,6 +103,7 @@ namespace PrusaSL1Reader
 
         /// <summary>
         /// Gets the number of initial layer count
+        /// </summary>
         /// </summary>
         ushort InitialLayerCount { get; }
 
@@ -213,22 +220,50 @@ namespace PrusaSL1Reader
         void SetThumbnails(Image<Rgba32> images);
 
         /// <summary>
+        /// Compress a layer from a <see cref="Stream"/>
+        /// </summary>
+        /// <param name="input"><see cref="Stream"/> to compress</param>
+        /// <returns>Compressed byte array</returns>
+        byte[] CompressLayer(Stream input);
+
+        /// <summary>
+        /// Compress a layer from a byte array
+        /// </summary>
+        /// <param name="input">byte array to compress</param>
+        /// <returns>Compressed byte array</returns>
+        byte[] CompressLayer(byte[] input);
+
+        /// <summary>
+        /// Decompress a layer from a byte array
+        /// </summary>
+        /// <param name="input">byte array to decompress</param>
+        /// <returns>Decompressed byte array</returns>
+        byte[] DecompressLayer(byte[] input);
+
+        /// <summary>
+        /// Encode to an output file
+        /// </summary>
+        /// <param name="fileFullPath">Output file</param>
+        void Encode(string fileFullPath);
+
+        /*
+        /// <summary>
         /// Begin encode to an output file
         /// </summary>
         /// <param name="fileFullPath">Output file</param>
-        void BeginEncode(string fileFullPath);
+        //void BeginEncode(string fileFullPath);
 
         /// <summary>
         /// Insert a layer image to be encoded
         /// </summary>
         /// <param name="image"></param>
         /// <param name="layerIndex"></param>
-        void InsertLayerImageEncode(Image<Gray8> image, uint layerIndex);
+        //void InsertLayerImageEncode(Image<L8> image, uint layerIndex);
 
         /// <summary>
         /// Finish the encoding procedure
         /// </summary>
-        void EndEncode();
+        //void EndEncode();*/
 
         /// <summary>
         /// Decode a slicer file
@@ -243,15 +278,22 @@ namespace PrusaSL1Reader
         /// <param name="emptyFirst">Empty target folder first</param>
         /// <param name="genericConfigExtract"></param>
         /// <param name="genericLayersExtract"></param>
-        void Extract(string path, bool emptyFirst = true, bool genericConfigExtract = false,
-            bool genericLayersExtract = false);
+        void Extract(string path, bool emptyFirst = true, bool genericConfigExtract = true,
+            bool genericLayersExtract = true);
+
+        /// <summary>
+        /// Gets a byte array from layer
+        /// </summary>
+        /// <param name="layerIndex">The layer index</param>
+        /// <returns>Returns a byte array</returns>
+        byte[] GetLayer(uint layerIndex);
 
         /// <summary>
         /// Gets a image from layer
         /// </summary>
         /// <param name="layerIndex">The layer index</param>
         /// <returns>Returns a image</returns>
-        Image<Gray8> GetLayerImage(uint layerIndex);
+        Image<L8> GetLayerImage(uint layerIndex);
 
         /// <summary>
         /// Get height in mm from layer height

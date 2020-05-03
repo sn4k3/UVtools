@@ -14,6 +14,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using PrusaSL1Reader.Extensions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -268,8 +269,6 @@ namespace PrusaSL1Reader
 
         public OutputConfig OutputConfigSettings { get; private set; }
 
-        public List<ZipArchiveEntry> LayerEntries { get; } = new List<ZipArchiveEntry>();
-
         public Statistics Statistics { get; } = new Statistics();
 
 
@@ -287,7 +286,7 @@ namespace PrusaSL1Reader
 
         public override byte ThumbnailsCount { get; } = 2;
 
-        public override Size[] ThumbnailsOriginalSize { get; } = { new Size(400, 400), new Size(800, 480) };
+        public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = { new System.Drawing.Size(400, 400), new System.Drawing.Size(800, 480) };
         //public override Image<Rgba32>[] Thumbnails { get; set; }
 
         public override uint ResolutionX => PrinterSettings.DisplayPixelsX;
@@ -400,25 +399,15 @@ namespace PrusaSL1Reader
         {
             base.Clear();
             InputFile?.Dispose();
-            LayerEntries.Clear();
             Statistics.Clear();
         }
 
-        public override void BeginEncode(string fileFullPath)
+        public override void Encode(string fileFullPath)
         {
             throw new NotImplementedException();
         }
 
-        public override void InsertLayerImageEncode(Image<Gray8> image, uint layerIndex)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void EndEncode()
-        {
-            throw new NotImplementedException();
-        }
-
+        
         public override void Decode(string fileFullPath)
         {
             base.Decode(fileFullPath);
@@ -433,66 +422,96 @@ namespace PrusaSL1Reader
             Statistics.ExecutionTime.Restart();
 
             InputFile = ZipFile.OpenRead(FileFullPath);
+
+            foreach (ZipArchiveEntry entity in InputFile.Entries)
+            {
+                if (!entity.Name.EndsWith(".ini")) continue;
+                using (StreamReader streamReader = new StreamReader(entity.Open()))
+                {
+                    string line = null;
+                    while ((line = streamReader.ReadLine()) != null)
+                    {
+                        string[] keyValue = line.Split(new[] {'='}, 2);
+                        if (keyValue.Length < 2) continue;
+                        keyValue[0] = keyValue[0].Trim();
+                        keyValue[1] = keyValue[1].Trim();
+
+                        var fieldName = IniKeyToMemberName(keyValue[0]);
+                        bool foundMember = false;
+
+                        foreach (var obj in Configs)
+                        {
+                            var attribute = obj.GetType().GetProperty(fieldName);
+                            if (ReferenceEquals(attribute, null)) continue;
+                            SetValue(attribute, obj, keyValue[1]);
+                            Statistics.ImplementedKeys.Add(keyValue[0]);
+                            foundMember = true;
+                        }
+
+                        if (!foundMember)
+                        {
+                            Statistics.MissingKeys.Add(keyValue[0]);
+                        }
+                    }
+                }
+            }
+
+            Layers = new byte[LayerCount][];
+            uint iLayer = 0;
+
+
+            /*Parallel.ForEach(InputFile.Entries, (entity) =>
+            {
+                if (!entity.Name.EndsWith(".png")) return;
+                if (entity.Name.StartsWith("thumbnail"))
+                {
+                    using (Stream stream = entity.Open())
+                    {
+                        var image = Image.Load<Rgba32>(stream);
+                        byte thumbnailIndex =
+                            (byte)(image.Width == ThumbnailsOriginalSize[(int)FileThumbnailSize.Small].Width &&
+                                   image.Height == ThumbnailsOriginalSize[(int)FileThumbnailSize.Small].Height
+                                ? FileThumbnailSize.Small
+                                : FileThumbnailSize.Large);
+                        Thumbnails[thumbnailIndex] = image;
+                        stream.Close();
+                    }
+
+                    //thumbnailIndex++;
+
+                    return;
+                }
+
+                string stripName = entity.Name.Remove(0, OutputConfigSettings.JobDir.Length);
+                stripName = stripName.Remove(stripName.Length - 4);
+                Debug.WriteLine(uint.Parse(stripName));
+
+                Layers[uint.Parse(stripName)] = CompressLayer(entity.Open());
+            });*/
             
             foreach (ZipArchiveEntry entity in InputFile.Entries)
             {
-                if (entity.Name.EndsWith(".ini"))
+                if (!entity.Name.EndsWith(".png")) continue;
+                if (entity.Name.StartsWith("thumbnail"))
                 {
-                    using (StreamReader streamReader = new StreamReader(entity.Open()))
+                    using (Stream stream = entity.Open())
                     {
-                        string line = null;
-                        while ((line = streamReader.ReadLine()) != null)
-                        {
-                            string[] keyValue = line.Split(new []{'='}, 2);
-                            if (keyValue.Length < 2) continue;
-                            keyValue[0] = keyValue[0].Trim();
-                            keyValue[1] = keyValue[1].Trim();
-                            
-                            var fieldName = IniKeyToMemberName(keyValue[0]);
-                            bool foundMember = false;
-
-                            foreach (var obj in Configs)
-                            {
-                                var attribute = obj.GetType().GetProperty(fieldName);
-                                if (ReferenceEquals(attribute, null)) continue;
-                                SetValue(attribute, obj, keyValue[1]);
-                                Statistics.ImplementedKeys.Add(keyValue[0]);
-                                foundMember = true;
-                            }
-
-                            if (!foundMember)
-                            {
-                                Statistics.MissingKeys.Add(keyValue[0]);
-                            }
-                        }
+                        var image = Image.Load<Rgba32>(stream);
+                        byte thumbnailIndex =
+                            (byte) (image.Width == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Width &&
+                                    image.Height == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Height
+                                ? FileThumbnailSize.Small
+                                : FileThumbnailSize.Large);
+                        Thumbnails[thumbnailIndex] = image;
+                        stream.Close();
                     }
+
+                    //thumbnailIndex++;
 
                     continue;
                 }
 
-                if (entity.Name.EndsWith(".png"))
-                {
-                    if (entity.Name.StartsWith("thumbnail"))
-                    {
-                        using (Stream stream = entity.Open())
-                        {
-                            var image = Image.Load<Rgba32>(stream);
-                            byte thumbnailIndex =
-                                (byte) (image.Width == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Width &&
-                                        image.Height == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Height
-                                    ? FileThumbnailSize.Small
-                                    : FileThumbnailSize.Large);
-                            Thumbnails[thumbnailIndex] = image;
-                            stream.Close();
-                        }
-
-                        //thumbnailIndex++;
-
-                        continue;
-                    }
-
-                    LayerEntries.Add(entity);
-                }
+                Layers[iLayer++] = CompressLayer(entity.Open());
             }
 
             Statistics.ExecutionTime.Stop();
@@ -500,17 +519,16 @@ namespace PrusaSL1Reader
             Debug.WriteLine(Statistics);
         }
 
-        public override void Extract(string path, bool emptyFirst = true, bool genericConfigExtract = false,
-            bool genericLayersExtract = false)
+        /*public override Image<L8> GetLayerImage(uint layerIndex)
         {
-            base.Extract(path, emptyFirst, genericConfigExtract, false);
-            InputFile?.ExtractToDirectory(path);
-        }
+            //Stopwatch sw = Stopwatch.StartNew();
+            var image = Image.Load<L8>(DecompressLayer(Layers[layerIndex]));
+            //Debug.WriteLine(sw.ElapsedMilliseconds);
 
-        public override Image<Gray8> GetLayerImage(uint layerIndex)
-        {
-            return Image.Load<Gray8>(LayerEntries[(int)layerIndex].Open());
-        }
+            return layerIndex >= LayerCount ? null : image;
+            //return layerIndex >= LayerCount ? null : Image.Load<L8>(LayerEntries[(int)layerIndex].Open());
+            //return layerIndex >= LayerCount ? null : Image.Load<L8>(DecompressLayer(Layers[layerIndex]));
+        }*/
 
         public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
         {
@@ -644,15 +662,8 @@ namespace PrusaSL1Reader
                     file.HeaderSettings.ResolutionY = PrinterSettings.DisplayPixelsX;
                 }
 
-
-                file.BeginEncode(fileFullPath);
-
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    file.InsertLayerImageEncode(GetLayerImage(layerIndex), layerIndex);
-                }
-
-                file.EndEncode();
+                file.Layers = Layers;
+                file.Encode(fileFullPath);
                 
                 return true;
             }
@@ -728,6 +739,7 @@ namespace PrusaSL1Reader
                 };
 
                 file.SetThumbnails(Thumbnails);
+                file.Layers = Layers;
 
                 float usedMaterial = UsedMaterial / LayerCount;
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
@@ -739,12 +751,7 @@ namespace PrusaSL1Reader
                     });
                 }
 
-                file.BeginEncode(fileFullPath);
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    file.InsertLayerImageEncode(GetLayerImage(layerIndex), layerIndex);
-                }
-                file.EndEncode();
+                file.Encode(fileFullPath);
                 return true;
             }
 

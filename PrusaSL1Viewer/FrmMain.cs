@@ -8,14 +8,19 @@
 using System;
 using System.Collections;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using PrusaSL1Reader;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace PrusaSL1Viewer
 {
@@ -425,7 +430,7 @@ namespace PrusaSL1Viewer
             /************************
              *      Layer Menu      *
              ***********************/
-            if (ReferenceEquals(sender, tsLayerImageRotate))
+            if (ReferenceEquals(sender, tsLayerImageRotate) || ReferenceEquals(sender, tsLayerImageLayerDifference)) 
             {
                 sbLayers_ValueChanged(sbLayers, null);
                 return;
@@ -448,7 +453,7 @@ namespace PrusaSL1Viewer
                     {
                         using (var stream = dialog.OpenFile())
                         {
-                            Image<Gray8> image = (Image<Gray8>)pbLayer.Image.Tag;
+                            Image<L8> image = (Image<L8>)pbLayer.Image.Tag;
                             image.Save(stream, new PngEncoder());
                             stream.Close();
                         }
@@ -544,7 +549,8 @@ namespace PrusaSL1Viewer
                 item.Enabled = false;
             }
 
-            tsThumbnailsResolution.Text =
+            tsThumbnailsResolution.Text = 
+            tsLayerPreviewTime.Text =
             tsLayerResolution.Text =
             tsPropertiesLabelCount.Text =
             tsPropertiesLabelGroups.Text = string.Empty;
@@ -680,7 +686,7 @@ namespace PrusaSL1Viewer
 
             RefreshInfo();
 
-            tsLayerResolution.Text = pbLayer.Image.PhysicalDimension.ToString();
+            tsLayerResolution.Text = pbLayer.Image?.PhysicalDimension.ToString() ?? string.Empty;
 
             Text = $"{FrmAbout.AssemblyTitle}   Version: {FrmAbout.AssemblyVersion}   File: {Path.GetFileName(fileName)}";
         }
@@ -757,13 +763,47 @@ namespace PrusaSL1Viewer
         {
             try
             {
+                // OLD
                 //if(!ReferenceEquals(pbLayer.Image, null))
                 //pbLayer.Image?.Dispose(); // SLOW! LET GC DO IT
                 //pbLayer.Image = Image.FromStream(SlicerFile.LayerEntries[layerNum].Open());
                 //pbLayer.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
-                //Stopwatch watch = Stopwatch.StartNew();
+
+
+                Stopwatch watch = Stopwatch.StartNew();
                 var image = SlicerFile.GetLayerImage(layerNum);
-                //Debug.Write(watch.ElapsedMilliseconds.ToString());
+                if (tsLayerImageLayerDifference.Checked)
+                {
+                    if (layerNum > 0)
+                    {
+                        var previousImage = SlicerFile.GetLayerImage(layerNum - 1);
+
+                        //var nextImage = SlicerFile.GetLayerImage(layerNum+1);
+
+                        Parallel.For(0, image.Height, y => {
+                            var imageSpan = image.GetPixelRowSpan(y);
+                            var previousImageSpan = previousImage.GetPixelRowSpan(y);
+                            for (int x = 0; x < image.Width; x++)
+                            {
+                                if (imageSpan[x].PackedValue == 0 || previousImageSpan[x].PackedValue == 0) continue;
+                                imageSpan[x].PackedValue = (byte)(previousImageSpan[x].PackedValue / 2);
+                            }
+                        });
+
+                        /*for (int y = 0; y < image.Height; y++)
+                        {
+                            var imageSpan = image.GetPixelRowSpan(y);
+                            var previousImageSpan = previousImage.GetPixelRowSpan(y);
+                            //var nextImageSpan = nextImage.GetPixelRowSpan(y);
+                            for (int x = 0; x < image.Width; x++)
+                            {
+                                if(imageSpan[x].PackedValue == 0 || previousImageSpan[x].PackedValue == 0) continue;
+                                imageSpan[x].PackedValue = (byte) (previousImageSpan[x].PackedValue / 2);
+                            }
+                        }*/
+                    }
+                }
+
                 if (tsLayerImageRotate.Checked)
                 {
                     //watch.Restart();
@@ -774,15 +814,38 @@ namespace PrusaSL1Viewer
                 //watch.Restart();
                 pbLayer.Image = image.ToBitmap();
                 pbLayer.Image.Tag = image;
-                //Debug.WriteLine($"/{watch.ElapsedMilliseconds}");
+                //Debug.WriteLine(watch.ElapsedMilliseconds);
 
                 //UniversalLayer layer = new UniversalLayer(image);
                 //pbLayer.Image = layer.ToBitmap(image.Width, image.Height);
 
 
+                // NEW
+                /*Stopwatch watch = Stopwatch.StartNew();
+                Bitmap bmp;
+                using (var ms = new MemoryStream(SlicerFile.GetLayer(layerNum)))
+                {
+                    bmp = new Bitmap(ms);
+                }
+
+                if (tsLayerImageRotate.Checked)
+                {
+                    //watch.Restart();
+                    bmp.RotateFlip(RotateFlipType.Rotate90FlipNone);
+                    //Debug.Write($"/{watch.ElapsedMilliseconds}");
+                }
+
+
+
+                pbLayer.Image = bmp;
+                Debug.WriteLine(watch.ElapsedMilliseconds);
+                //pbLayer.Image.Tag = image;*/
+
+
                 byte percent = (byte)((layerNum + 1) * 100 / SlicerFile.LayerCount);
 
-
+                watch.Stop();
+                tsLayerPreviewTime.Text = $"{watch.ElapsedMilliseconds}ms";
                 lbLayers.Text = $"{SlicerFile.GetHeightFromLayer((uint)layerNum + 1)} / {SlicerFile.TotalHeight}mm\n{layerNum + 1} / {SlicerFile.LayerCount}\n{percent}%";
                 pbLayers.Value = percent;
             }

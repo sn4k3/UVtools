@@ -137,16 +137,11 @@ namespace PrusaSL1Reader
         #endregion
 
         #region Properties
-        public ZipArchive InputFile { get; private set; }
-        public ZipArchive OutputFile { get; private set; }
-
-
         public ResinMetadata ResinMetadataSettings { get; set; }
         public UserSettingsdata UserSettings { get; set; }
         public ZCodeMetadata ZCodeMetadataSettings { get; set; }
 
-        public List<ZipArchiveEntry> LayerEntries { get; } = new List<ZipArchiveEntry>();
-        public List<Layer> Layers { get; } = new List<Layer>();
+        public List<Layer> LayersSettings { get; } = new List<Layer>();
 
         public override FileFormatType FileType => FileFormatType.Archive;
 
@@ -167,7 +162,7 @@ namespace PrusaSL1Reader
 
         public override byte ThumbnailsCount { get; } = 1;
 
-        public override Size[] ThumbnailsOriginalSize { get; } = {new Size(320, 180)};
+        public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = {new System.Drawing.Size(320, 180)};
 
         public override uint ResolutionX => 1440;
 
@@ -208,59 +203,55 @@ namespace PrusaSL1Reader
         public override void Clear()
         {
             base.Clear();
-            InputFile?.Dispose();
-            OutputFile?.Dispose();
-            Layers.Clear();
-            LayerEntries.Clear();
+            LayersSettings.Clear();
             GCode = null;
         }
 
-        public override void BeginEncode(string fileFullPath)
+        public override void Encode(string fileFullPath)
         {
-            base.BeginEncode(fileFullPath);
-            OutputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create);
-           
-            OutputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings), false);
-            OutputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings), false);
-            OutputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings), false);
-
-            if (CreatedThumbnailsCount > 0)
+            base.Encode(fileFullPath);
+            using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
             {
-                using (Stream stream = OutputFile.CreateEntry("Preview.png").Open())
+
+                outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings), false);
+                outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings), false);
+                outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings), false);
+
+                if (CreatedThumbnailsCount > 0)
                 {
-                    Thumbnails[0].Save(stream, Helpers.PngEncoder);
-                    stream.Close();
+                    using (Stream stream = outputFile.CreateEntry("Preview.png").Open())
+                    {
+                        Thumbnails[0].Save(stream, Helpers.PngEncoder);
+                        stream.Close();
+                    }
                 }
+
+                GCode = GCodeStart;
+
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                {
+                    GCode += $"{GCodeKeywordSlice} {layerIndex}\n" +
+                             $"G1 Z{UserSettings.ZLiftDistance} F{UserSettings.ZLiftRetractRate}\n" +
+                             $"G1 Z-{UserSettings.ZLiftDistance - LayerHeight} F{UserSettings.ZLiftFeedRate}\n" +
+                             $"{GCodeKeywordDelayBlank}\n" +
+                             "M106 S255\n" +
+                             $"{GCodeKeywordDelayModel}\n" +
+                             "M106 S0\n";
+
+                    var layerimagePath = $"{FolderImages}/{FolderImageName}{layerIndex:D5}.png";
+                    using (Stream stream = outputFile.CreateEntry(layerimagePath).Open())
+                    {
+                        //image.Save(stream, Helpers.PngEncoder);
+                        var byteArr = GetLayer(layerIndex);
+                        stream.Write(byteArr, 0, byteArr.Length);
+                        stream.Close();
+                    }
+                }
+
+                GCode += $"G1 Z40.0 F{UserSettings.ZLiftFeedRate}\n" +
+                         "M18\n";
+                outputFile.PutFileContent("ResinGCodeData", GCode, false);
             }
-
-            GCode = GCodeStart;
-        }
-
-        public override void InsertLayerImageEncode(Image<Gray8> image, uint layerIndex)
-        {
-            GCode += $"{GCodeKeywordSlice} {layerIndex}\n" +
-                     $"G1 Z{UserSettings.ZLiftDistance} F{UserSettings.ZLiftRetractRate}\n" +
-                     $"G1 Z-{UserSettings.ZLiftDistance - LayerHeight} F{UserSettings.ZLiftFeedRate}\n" +
-                     $"{GCodeKeywordDelayBlank}\n" +
-                     "M106 S255\n" +
-                     $"{GCodeKeywordDelayModel}\n" +
-                     "M106 S0\n";
-
-            var layerimagePath = $"{FolderImages}/{FolderImageName}{layerIndex:D5}.png";
-            using (Stream stream = OutputFile.CreateEntry(layerimagePath).Open())
-            {
-                image.Save(stream, Helpers.PngEncoder);
-                stream.Close();
-            }
-        }
-
-        public override void EndEncode()
-        {
-            GCode += $"G1 Z40.0 F{UserSettings.ZLiftFeedRate}\n" +
-                     "M18\n";
-            OutputFile.PutFileContent("ResinGCodeData", GCode, false);
-
-            OutputFile.Dispose();
         }
 
         public override void Decode(string fileFullPath)
@@ -268,115 +259,92 @@ namespace PrusaSL1Reader
             base.Decode(fileFullPath);
 
             FileFullPath = fileFullPath;
-            InputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read);
-            var entry = InputFile.GetEntry("ResinMetadata");
-            if (ReferenceEquals(entry, null))
+            using (var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read))
             {
-                Clear();
-                throw new FileLoadException("ResinMetadata not found", fileFullPath);
-            }
-            using (TextReader tr = new StreamReader(entry.Open()))
-            {
-                ResinMetadataSettings = JsonConvert.DeserializeObject<ResinMetadata>(tr.ReadToEnd());
-                tr.Close();
-            }
-
-            entry = InputFile.GetEntry("UserSettingsData");
-            if (ReferenceEquals(entry, null))
-            {
-                Clear();
-                throw new FileLoadException("UserSettingsData not found", fileFullPath);
-            }
-            using (TextReader tr = new StreamReader(entry.Open()))
-            {
-                UserSettings = JsonConvert.DeserializeObject<UserSettingsdata>(tr.ReadToEnd());
-                tr.Close();
-            }
-
-            entry = InputFile.GetEntry("ZCodeMetadata");
-            if (ReferenceEquals(entry, null))
-            {
-                Clear();
-                throw new FileLoadException("ZCodeMetadata not found", fileFullPath);
-            }
-            using (TextReader tr = new StreamReader(entry.Open()))
-            {
-                ZCodeMetadataSettings = JsonConvert.DeserializeObject<ZCodeMetadata>(tr.ReadToEnd());
-                tr.Close();
-            }
-
-            entry = InputFile.GetEntry("ResinGCodeData");
-            if (ReferenceEquals(entry, null))
-            {
-                Clear();
-                throw new FileLoadException("ResinGCodeData not found", fileFullPath);
-            }
-
-            GCode = string.Empty;
-            using (TextReader tr = new StreamReader(entry.Open()))
-            {
-                string line;
-                int layerIndex = 0;
-                int layerFileIndex = 0;
-                string layerimagePath = null;
-                while (!ReferenceEquals(line = tr.ReadLine(), null))
+                var entry = inputFile.GetEntry("ResinMetadata");
+                if (ReferenceEquals(entry, null))
                 {
-                    GCode += line + Environment.NewLine;
-                    if (line.StartsWith(GCodeKeywordSlice))
-                    {
-                        layerFileIndex = int.Parse(line.Substring(GCodeKeywordSlice.Length));
-                        layerimagePath = $"{FolderImages}/{FolderImageName}{layerFileIndex:D5}.png";
-                        if (Layers.Count - 1 < layerIndex) Layers.Add(new Layer());
-                        continue;
-                    }
-                  
-                    if (line.StartsWith(GCodeKeywordDelaySupportPart))
-                    {
-                        Layers[layerIndex].SupportLayerFileIndex = layerFileIndex;
-                        Layers[layerIndex].SupportLayerEntry = InputFile.GetEntry(layerimagePath);
-                        continue;
-                    }
-
-                    if (line.StartsWith(GCodeKeywordDelaySupportFull) || line.StartsWith(GCodeKeywordDelayModel))
-                    {
-                        Layers[layerIndex].LayerFileIndex = layerFileIndex;
-                        Layers[layerIndex].LayerEntry = InputFile.GetEntry(layerimagePath);
-                        layerIndex++;
-                        continue;
-                    }
+                    Clear();
+                    throw new FileLoadException("ResinMetadata not found", fileFullPath);
                 }
-                tr.Close();
-            }
 
-            foreach (ZipArchiveEntry entity in InputFile.Entries)
-            {
-                if (entity.Name.EndsWith(".png"))
+                ResinMetadataSettings = Helpers.JsonDeserializeObject<ResinMetadata>(entry.Open());
+
+                entry = inputFile.GetEntry("UserSettingsData");
+                if (ReferenceEquals(entry, null))
                 {
-                    if (entity.Name.Equals("Preview.png"))
+                    Clear();
+                    throw new FileLoadException("UserSettingsData not found", fileFullPath);
+                }
+
+                UserSettings = Helpers.JsonDeserializeObject<UserSettingsdata>(entry.Open());
+
+                entry = inputFile.GetEntry("ZCodeMetadata");
+                if (ReferenceEquals(entry, null))
+                {
+                    Clear();
+                    throw new FileLoadException("ZCodeMetadata not found", fileFullPath);
+                }
+
+                ZCodeMetadataSettings = Helpers.JsonDeserializeObject<ZCodeMetadata>(entry.Open());
+
+                entry = inputFile.GetEntry("ResinGCodeData");
+                if (ReferenceEquals(entry, null))
+                {
+                    Clear();
+                    throw new FileLoadException("ResinGCodeData not found", fileFullPath);
+                }
+
+                Layers = new byte[LayerCount][];
+                GCode = string.Empty;
+                using (TextReader tr = new StreamReader(entry.Open()))
+                {
+                    string line;
+                    int layerIndex = 0;
+                    int layerFileIndex = 0;
+                    string layerimagePath = null;
+                    uint iLayer = 0;
+                    while (!ReferenceEquals(line = tr.ReadLine(), null))
                     {
-                        using (Stream stream = entity.Open())
+                        GCode += line + Environment.NewLine;
+                        if (line.StartsWith(GCodeKeywordSlice))
                         {
-                            Thumbnails[0] = Image.Load<Rgba32>(stream);
-                            stream.Close();
+                            layerFileIndex = int.Parse(line.Substring(GCodeKeywordSlice.Length));
+                            layerimagePath = $"{FolderImages}/{FolderImageName}{layerFileIndex:D5}.png";
+                            if (LayersSettings.Count - 1 < layerIndex) LayersSettings.Add(new Layer());
+                            continue;
                         }
 
-                        continue;
+                        if (line.StartsWith(GCodeKeywordDelaySupportPart))
+                        {
+                            LayersSettings[layerIndex].SupportLayerFileIndex = layerFileIndex;
+                            LayersSettings[layerIndex].SupportLayerEntry = inputFile.GetEntry(layerimagePath);
+                            continue;
+                        }
+
+                        if (line.StartsWith(GCodeKeywordDelaySupportFull) || line.StartsWith(GCodeKeywordDelayModel))
+                        {
+                            LayersSettings[layerIndex].LayerFileIndex = layerFileIndex;
+                            LayersSettings[layerIndex].LayerEntry = inputFile.GetEntry(layerimagePath);
+                            Layers[iLayer++] = CompressLayer(LayersSettings[layerIndex].LayerEntry.Open());
+                            layerIndex++;
+                            continue;
+                        }
                     }
 
-                    LayerEntries.Add(entity);
+                    tr.Close();
+                }
+
+                entry = inputFile.GetEntry("Preview.png");
+                if (!ReferenceEquals(entry, null))
+                {
+                    using (Stream stream = entry.Open())
+                    {
+                        Thumbnails[0] = Image.Load<Rgba32>(stream);
+                        stream.Close();
+                    }
                 }
             }
-        }
-
-        public override void Extract(string path, bool emptyFirst = true, bool genericConfigExtract = false, bool genericLayersExtract = false)
-        {
-            base.Extract(path, emptyFirst, genericConfigExtract, false);
-            InputFile?.ExtractToDirectory(path);
-        }
-
-        public override Image<Gray8> GetLayerImage(uint layerIndex)
-        {
-            return Image.Load<Gray8>(Layers[(int)layerIndex].LayerEntry.Open());
         }
 
         public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
@@ -424,7 +392,6 @@ namespace PrusaSL1Reader
 
         public override void SaveAs(string filePath = null)
         {
-            InputFile.Dispose();
             if (!string.IsNullOrEmpty(filePath))
             {
                 File.Copy(FileFullPath, filePath, true);
@@ -432,12 +399,12 @@ namespace PrusaSL1Reader
 
             }
 
-            using (InputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update))
+            using (var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update))
             {
-                InputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings));
-                InputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings));
-                InputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings));
-                InputFile.PutFileContent("ResinGCodeData", GCode);
+                outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings));
+                outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings));
+                outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings));
+                outputFile.PutFileContent("ResinGCodeData", GCode);
             }
 
             Decode(FileFullPath);

@@ -8,11 +8,16 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using PrusaSL1Reader.Extensions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using Size = System.Drawing.Size;
 
 namespace PrusaSL1Reader
 {
@@ -236,6 +241,8 @@ namespace PrusaSL1Reader
         public abstract Size[] ThumbnailsOriginalSize { get; }
 
         public Image<Rgba32>[] Thumbnails { get; set; }
+        
+        public byte[][] Layers { get; set; }
 
         public abstract uint ResolutionX { get; }
 
@@ -312,6 +319,7 @@ namespace PrusaSL1Reader
         public virtual void Clear()
         {
             FileFullPath = null;
+            Layers = null;
             if (!ReferenceEquals(Thumbnails, null))
             {
                 for (int i = 0; i < ThumbnailsCount; i++)
@@ -383,7 +391,41 @@ namespace PrusaSL1Reader
             }
         }
 
-        public virtual void BeginEncode(string fileFullPath)
+        public byte[] CompressLayer(Stream input)
+        {
+            return CompressLayer(input.ToArray());
+        }
+
+        public byte[] CompressLayer(byte[] input)
+        {
+            return input;
+            /*using (MemoryStream output = new MemoryStream())
+            {
+                using (DeflateStream dstream = new DeflateStream(output, CompressionLevel.Optimal))
+                {
+                    dstream.Write(input, 0, input.Length);
+                }
+                return output.ToArray();
+            }*/
+        }
+
+        public byte[] DecompressLayer(byte[] input)
+        {
+            return input;
+            /*using (MemoryStream ms = new MemoryStream(input))
+            {
+                using (MemoryStream output = new MemoryStream())
+                {
+                    using (DeflateStream dstream = new DeflateStream(ms, CompressionMode.Decompress))
+                    {
+                        dstream.CopyTo(output);
+                    }
+                    return output.ToArray();
+                }
+            }*/
+        }
+
+        public virtual void Encode(string fileFullPath)
         {
             if (File.Exists(fileFullPath))
             {
@@ -392,15 +434,20 @@ namespace PrusaSL1Reader
 
             for (var i = 0; i < Thumbnails.Length; i++)
             {
-                if(ReferenceEquals(Thumbnails[i], null)) continue;
+                if (ReferenceEquals(Thumbnails[i], null)) continue;
 
                 Thumbnails[i].Mutate(x => x.Resize(ThumbnailsOriginalSize[i].Width, ThumbnailsOriginalSize[i].Height));
             }
         }
 
-        public abstract void InsertLayerImageEncode(Image<Gray8> image, uint layerIndex);
+        /*public virtual void BeginEncode(string fileFullPath)
+        {
+        }
+               
 
-        public abstract void EndEncode();
+        public abstract void InsertLayerImageEncode(Image<L8> image, uint layerIndex);
+
+        public abstract void EndEncode();*/
 
         public virtual void Decode(string fileFullPath)
         {
@@ -409,7 +456,7 @@ namespace PrusaSL1Reader
             FileFullPath = fileFullPath;
         }
 
-        public virtual void Extract(string path, bool emptyFirst = true, bool genericConfigExtract = false, bool genericLayersExtract = false)
+        public virtual void Extract(string path, bool emptyFirst = true, bool genericConfigExtract = true, bool genericLayersExtract = true)
         {
             if (emptyFirst)
             {
@@ -426,6 +473,12 @@ namespace PrusaSL1Reader
                         dir.Delete(true);
                     }
                 }
+            }
+
+            if (FileType == FileFormatType.Archive)
+            {
+                ZipFile.ExtractToDirectory(FileFullPath, path);
+                return;
             }
 
             if (genericConfigExtract)
@@ -448,7 +501,6 @@ namespace PrusaSL1Reader
 
             if (genericLayersExtract)
             {
-                var encoder = new PngEncoder();
                 uint i = 0;
                 foreach (var thumbnail in Thumbnails)
                 {
@@ -456,19 +508,40 @@ namespace PrusaSL1Reader
                     {
                         continue;
                     }
-                    thumbnail.Save(Path.Combine(path, $"Thumbnail{i}.png"), encoder);
+                    thumbnail.Save(Path.Combine(path, $"Thumbnail{i}.png"), Helpers.PngEncoder);
                     i++;
                 }
-                for (i = 0; i < LayerCount; i++)
+
+                Parallel.For(0, LayerCount, layerIndex => {
+                        var byteArr = GetLayer((uint) layerIndex);
+                        using (FileStream stream = File.Create(Path.Combine(path, $"Layer{layerIndex}.png"), byteArr.Length))
+                        {
+                            stream.Write(byteArr, 0, byteArr.Length);
+                            stream.Close();
+                        }
+                    });
+                /*for (i = 0; i < LayerCount; i++)
                 {
-                    
-                    GetLayerImage(i).Save(Path.Combine(path, $"Layer{i}.png"), encoder);
-                }
+                    var byteArr = GetLayer(i);
+                    using (FileStream stream = File.Create(Path.Combine(path, $"Layer{i}.png"), byteArr.Length))
+                    {
+                        stream.Write(byteArr, 0, byteArr.Length);
+                        stream.Close();
+                    }
+                }*/
             }
         }
 
-        public abstract Image<Gray8> GetLayerImage(uint layerIndex);
+        public virtual byte[] GetLayer(uint layerIndex)
+        {
+            return layerIndex >= LayerCount ? null : DecompressLayer(Layers[layerIndex]);
+        }
 
+        public virtual Image<L8> GetLayerImage(uint layerIndex)
+        {
+            return layerIndex >= LayerCount ? null : Image.Load<L8>(GetLayer(layerIndex));
+        }
+        
         public virtual float GetHeightFromLayer(uint layerNum)
         {
             return (float)Math.Round(layerNum * LayerHeight, 2);

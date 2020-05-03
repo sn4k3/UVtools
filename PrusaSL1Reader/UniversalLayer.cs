@@ -49,12 +49,12 @@ namespace PrusaSL1Reader
 
         public List<LayerLine> Lines { get; } = new List<LayerLine>();
 
-        public UniversalLayer(Image<Gray8> image)
+        public UniversalLayer(Image<L8> image)
         {
             AddFromImage(image);
         }
 
-        public void AddFromImage(Image<Gray8> image)
+        public void AddFromImage(Image<L8> image)
         {
             for (int y = 0; y < image.Height; y++)
             {
@@ -74,16 +74,16 @@ namespace PrusaSL1Reader
             }
         }
 
-        public Image<Gray8> ToImage(int resolutionX, int resolutionY)
+        public Image<L8> ToImage(int resolutionX, int resolutionY)
         {
-            Image <Gray8> image = new Image<Gray8>(resolutionX, resolutionY);
+            Image <L8> image = new Image<L8>(resolutionX, resolutionY);
             
             foreach (var line in Lines)
             {
                 var span = image.GetPixelRowSpan((int)line.Y);
                 for (uint i = line.X; i <= line.X2; i++)
                 {
-                    span[(int)i] = Helpers.Gray8White;
+                    span[(int)i] = Helpers.L8White;
                 }
             }
             return image;

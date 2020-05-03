@@ -7,9 +7,9 @@
     <PackageProjectUrl>https://github.com/sn4k3/PrusaSL1Viewer</PackageProjectUrl>
     <PackageIcon></PackageIcon>
     <RepositoryUrl>https://github.com/sn4k3/PrusaSL1Viewer</RepositoryUrl>
-    <AssemblyVersion>0.3.1.0</AssemblyVersion>
-    <FileVersion>0.3.1.0</FileVersion>
-    <Version>0.3.1</Version>
+    <AssemblyVersion>0.3.2.0</AssemblyVersion>
+    <FileVersion>0.3.2.0</FileVersion>
+    <Version>0.3.2</Version>
     <Description>Open, view, edit, extract and convert DLP/SLA files generated from Slicers</Description>
   </PropertyGroup>
 
@@ -20,7 +20,7 @@
   <ItemGroup>
     <PackageReference Include="BinarySerializer" Version="8.5.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-rc0001" />
   </ItemGroup>
 
 </Project>

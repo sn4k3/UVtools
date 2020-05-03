@@ -59,6 +59,9 @@
             this.tsLayer = new System.Windows.Forms.ToolStrip();
             this.tsLayerImageExport = new System.Windows.Forms.ToolStripButton();
             this.tsLayerResolution = new System.Windows.Forms.ToolStripLabel();
+            this.tsLayerImageRotate = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsLayerImageLayerDifference = new System.Windows.Forms.ToolStripButton();
             this.pbLayers = new System.Windows.Forms.ProgressBar();
             this.tabControlLeft = new System.Windows.Forms.TabControl();
             this.tbpThumbnailsAndInfo = new System.Windows.Forms.TabPage();
@@ -86,7 +89,8 @@
             this.tsGcodeLabelChars = new System.Windows.Forms.ToolStripLabel();
             this.tsGCodeButtonSave = new System.Windows.Forms.ToolStripButton();
             this.imageList16x16 = new System.Windows.Forms.ImageList(this.components);
-            this.tsLayerImageRotate = new System.Windows.Forms.ToolStripButton();
+            this.tsLayerPreviewTime = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -397,7 +401,11 @@
             this.tsLayer.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsLayerImageExport,
             this.tsLayerResolution,
-            this.tsLayerImageRotate});
+            this.tsLayerImageRotate,
+            this.toolStripSeparator5,
+            this.tsLayerImageLayerDifference,
+            this.toolStripSeparator6,
+            this.tsLayerPreviewTime});
             this.tsLayer.Location = new System.Drawing.Point(0, 0);
             this.tsLayer.Name = "tsLayer";
             this.tsLayer.Size = new System.Drawing.Size(1095, 25);
@@ -424,6 +432,37 @@
             this.tsLayerResolution.Size = new System.Drawing.Size(63, 22);
             this.tsLayerResolution.Text = "Resolution";
             this.tsLayerResolution.ToolTipText = "Layer Resolution";
+            // 
+            // tsLayerImageRotate
+            // 
+            this.tsLayerImageRotate.Checked = true;
+            this.tsLayerImageRotate.CheckOnClick = true;
+            this.tsLayerImageRotate.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsLayerImageRotate.Image = global::PrusaSL1Viewer.Properties.Resources.Rotate_16x16;
+            this.tsLayerImageRotate.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerImageRotate.Name = "tsLayerImageRotate";
+            this.tsLayerImageRotate.Size = new System.Drawing.Size(117, 22);
+            this.tsLayerImageRotate.Text = "Rotate Image 90º";
+            this.tsLayerImageRotate.ToolTipText = "Auto rotate layer preview image at 90º (This can slow down the layer preview) [CT" +
+    "RL+R]";
+            this.tsLayerImageRotate.Click += new System.EventHandler(this.ItemClicked);
+            // 
+            // toolStripSeparator5
+            // 
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsLayerImageLayerDifference
+            // 
+            this.tsLayerImageLayerDifference.CheckOnClick = true;
+            this.tsLayerImageLayerDifference.Image = global::PrusaSL1Viewer.Properties.Resources.layers_16x16;
+            this.tsLayerImageLayerDifference.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerImageLayerDifference.Name = "tsLayerImageLayerDifference";
+            this.tsLayerImageLayerDifference.Size = new System.Drawing.Size(112, 22);
+            this.tsLayerImageLayerDifference.Text = "Layer Difference";
+            this.tsLayerImageLayerDifference.ToolTipText = "Show layer differences where daker pixels were also present on previous layer and" +
+    " the white pixels the difference between previous and current layer.";
+            this.tsLayerImageLayerDifference.Click += new System.EventHandler(this.ItemClicked);
             // 
             // pbLayers
             // 
@@ -702,19 +741,19 @@
             this.imageList16x16.Images.SetKeyName(1, "PhotoInfo-16x16.png");
             this.imageList16x16.Images.SetKeyName(2, "GCode-16x16.png");
             // 
-            // tsLayerImageRotate
+            // tsLayerPreviewTime
             // 
-            this.tsLayerImageRotate.Checked = true;
-            this.tsLayerImageRotate.CheckOnClick = true;
-            this.tsLayerImageRotate.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tsLayerImageRotate.Image = global::PrusaSL1Viewer.Properties.Resources.Rotate_16x16;
-            this.tsLayerImageRotate.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerImageRotate.Name = "tsLayerImageRotate";
-            this.tsLayerImageRotate.Size = new System.Drawing.Size(117, 22);
-            this.tsLayerImageRotate.Text = "Rotate Image 90º";
-            this.tsLayerImageRotate.ToolTipText = "Auto rotate layer preview image at 90º (This can slow down the layer preview) [CT" +
-    "RL+R]";
-            this.tsLayerImageRotate.Click += new System.EventHandler(this.ItemClicked);
+            this.tsLayerPreviewTime.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerPreviewTime.Name = "tsLayerPreviewTime";
+            this.tsLayerPreviewTime.Size = new System.Drawing.Size(77, 22);
+            this.tsLayerPreviewTime.Text = "Preview Time";
+            this.tsLayerPreviewTime.ToolTipText = "Layer Resolution";
+            // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 25);
             // 
             // FrmMain
             // 
@@ -828,6 +867,10 @@
         private System.Windows.Forms.ToolStripButton tsPropertiesButtonSave;
         private System.Windows.Forms.ToolStripMenuItem menuFileOpenNewWindow;
         private System.Windows.Forms.ToolStripButton tsLayerImageRotate;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
+        private System.Windows.Forms.ToolStripButton tsLayerImageLayerDifference;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+        private System.Windows.Forms.ToolStripLabel tsLayerPreviewTime;
     }
 }
 

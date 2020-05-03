@@ -17,7 +17,7 @@ namespace PrusaSL1Viewer
     public partial class ImageBox : UserControl
     {
         private static SolidBrush Brush { get; } = new SolidBrush(System.Drawing.Color.White);
-        public Image<Gray8> Image { get; private set; }
+        public Image<L8> Image { get; private set; }
 
         public ImageBox()
         {
@@ -56,7 +56,7 @@ namespace PrusaSL1Viewer
             }
         }
 
-        public void SetImage(Image<Gray8> image)
+        public void SetImage(Image<L8> image)
         {
             Image = image;
             

@@ -1,5 +1,13 @@
 # Changelog
 
+## ?? - v0.3.2 - Beta
+
+* (Add) Show layer differences where daker pixels were also present on previous layer and the white pixels the difference between previous and current layer.
+* (Add) Layer preview process time in milliseconds
+* (Improvement) Cache layers were possible for faster operation
+* (Improvement) As layer data is now cached, input file is closed after read, this way file wouldn't be locked for other programs
+* (Improvement) Speed up extraction with parallelism
+
 ## 30/04/2020 - v0.3.1 - Beta
 
 * (Add) Thumbnails to converted photon and cbddlp files

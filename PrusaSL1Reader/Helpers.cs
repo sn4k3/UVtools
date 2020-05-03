@@ -10,6 +10,8 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using BinarySerialization;
+using Newtonsoft.Json;
+using SixLabors.ImageSharp.Formats.Bmp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -21,15 +23,16 @@ namespace PrusaSL1Reader
     public static class Helpers
     {
         public static PngEncoder PngEncoder { get; } = new PngEncoder();
+        public static BmpEncoder BmpEncoder { get; } = new BmpEncoder();
         /// <summary>
         /// Gets the <see cref="BinarySerializer"/> instance
         /// </summary>
         public static BinarySerializer Serializer { get; } = new BinarySerializer {Endianness = Endianness.Little };
 
         /// <summary>
-        /// Gets a white color of <see cref="Gray8"/>
+        /// Gets a white color of <see cref="L8"/>
         /// </summary>
-        public static Gray8 Gray8White { get; } = new Gray8(255);
+        public static L8 L8White { get; } = new L8(255);
 
         /*public static T ByteToType<T>(BinaryReader reader)
         {
@@ -86,6 +89,14 @@ namespace PrusaSL1Reader
             using (MemoryStream stream = Helpers.Serialize(value))
             {
                 return WriteFileStream(fs, stream);
+            }
+        }
+
+        public static T JsonDeserializeObject<T>(Stream stream)
+        {
+            using (TextReader tr = new StreamReader(stream))
+            {
+                return JsonConvert.DeserializeObject<T>(tr.ReadToEnd());
             }
         }
 

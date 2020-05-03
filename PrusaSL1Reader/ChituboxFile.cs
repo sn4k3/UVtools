@@ -10,12 +10,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
+using System.Threading.Tasks;
 using BinarySerialization;
 using PrusaSL1Reader.Extensions;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace PrusaSL1Reader
@@ -398,6 +397,8 @@ namespace PrusaSL1Reader
             [FieldOrder(7)] public uint Unknown3             { get; set; }
             [FieldOrder(8)] public uint Unknown4             { get; set; }
 
+            [Ignore] public byte[] EncodedRle { get; set; }
+
             public override string ToString()
             {
                 return $"{nameof(LayerPositionZ)}: {LayerPositionZ}, {nameof(LayerExposure)}: {LayerExposure}, {nameof(LayerOffTimeSeconds)}: {LayerOffTimeSeconds}, {nameof(DataAddress)}: {DataAddress}, {nameof(DataSize)}: {DataSize}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}";
@@ -461,8 +462,7 @@ namespace PrusaSL1Reader
         #endregion
 
         #region Properties
-        public FileStream InputFile { get; private set; }
-        public FileStream OutputFile { get; private set; }
+
         public Header HeaderSettings { get; protected internal set; } = new Header();
         public PrintParameters PrintParametersSettings { get; protected internal set; } = new PrintParameters();
 
@@ -470,13 +470,9 @@ namespace PrusaSL1Reader
 
         public Preview[] Previews { get; protected internal set; }
 
-        public Layer[,] Layers { get; private set; }
+        public Layer[,] LayersDefinitions { get; private set; }
 
         public Dictionary<string, Layer> LayersHash { get; } = new Dictionary<string, Layer>();
-
-        private uint CurrentOffset { get; set; }
-        private uint LayerDataCurrentOffset { get; set; }
-
 
         public override FileFormatType FileType => FileFormatType.Binary;
 
@@ -506,7 +502,7 @@ namespace PrusaSL1Reader
 
         public override byte ThumbnailsCount { get; } = 2;
 
-        public override Size[] ThumbnailsOriginalSize { get; } = {new Size(400, 300), new Size(200, 125)};
+        public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = {new System.Drawing.Size(400, 300), new System.Drawing.Size(200, 125)};
 
         public override uint ResolutionX => HeaderSettings.ResolutionX;
 
@@ -536,6 +532,7 @@ namespace PrusaSL1Reader
         
         public override object[] Configs => new[] { (object)HeaderSettings, PrintParametersSettings, SlicerInfoSettings };
 
+        public bool IsCbddlpFile => HeaderSettings.Magic == MAGIC_CBDDLP;
         public bool IsCbtFile => HeaderSettings.Magic == MAGIC_CBT;
         #endregion
 
@@ -556,24 +553,12 @@ namespace PrusaSL1Reader
                 Previews[i] = new Preview();
             }
 
-            Layers = null;
-
-            if (!ReferenceEquals(InputFile, null))
-            {
-                InputFile.Close();
-                InputFile.Dispose();
-            }
-
-            if (!ReferenceEquals(OutputFile, null))
-            {
-                OutputFile.Close();
-                OutputFile.Dispose();
-            }
+            LayersDefinitions = null;
         }
 
-        public override void BeginEncode(string fileFullPath)
+        public override void Encode(string fileFullPath)
         {
-            base.BeginEncode(fileFullPath);
+            base.Encode(fileFullPath);
             LayersHash.Clear();
 
             HeaderSettings.Magic = fileFullPath.EndsWith(".ctb") ? MAGIC_CBT : MAGIC_CBDDLP;
@@ -586,214 +571,190 @@ namespace PrusaSL1Reader
                 SlicerInfoSettings.Unknown1 = 0x200;
             }
 
-            CurrentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
-            Layers = new Layer[HeaderSettings.LayerCount, HeaderSettings.AntiAliasLevel];
-            OutputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
-
-            OutputFile.Seek((int)CurrentOffset, SeekOrigin.Begin);
-
-            List<byte> rawData = new List<byte>();
-            ushort color15 = 0;
-            uint rep = 0;
-
-            void rleRGB15()
+            uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
+            LayersDefinitions = new Layer[HeaderSettings.LayerCount, HeaderSettings.AntiAliasLevel];
+            using (var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write))
             {
-                switch (rep)
+
+                outputFile.Seek((int) currentOffset, SeekOrigin.Begin);
+
+                List<byte> rawData = new List<byte>();
+                ushort color15 = 0;
+                uint rep = 0;
+
+                void rleRGB15()
                 {
-                    case 0:
-                        return;
-                    case 1:
-                        rawData.Add((byte) (color15 & ~REPEATRGB15MASK));
-                        rawData.Add((byte) ((color15 & ~REPEATRGB15MASK) >> 8));
-                        break;
-                    case 2:
-                        for (int i = 0; i < 2; i++)
-                        {
-                            rawData.Add((byte)(color15 & ~REPEATRGB15MASK));
-                            rawData.Add((byte)((color15 & ~REPEATRGB15MASK) >> 8));
-                        }
-                        break;
-                    default:
-                        rawData.Add((byte) (color15 | REPEATRGB15MASK));
-                        rawData.Add((byte) ((color15 | REPEATRGB15MASK) >> 8));
-                        rawData.Add((byte) ((rep - 1) | 0x3000));
-                        rawData.Add((byte) (((rep - 1) | 0x3000) >> 8));
-                        break;
-                }
-            }
-
-            for (byte i = 0; i < ThumbnailsCount; i++)
-            {
-                var image = Thumbnails[i];
-
-                color15 = 0;
-                rep = 0;
-                rawData.Clear();
-
-                
-                for (int y = 0; y < image.Height; y++)
-                {
-                    Span<Rgba32> pixelRowSpan = image.GetPixelRowSpan(y);
-                    for (int x = 0; x < image.Width; x++)
+                    switch (rep)
                     {
+                        case 0:
+                            return;
+                        case 1:
+                            rawData.Add((byte) (color15 & ~REPEATRGB15MASK));
+                            rawData.Add((byte) ((color15 & ~REPEATRGB15MASK) >> 8));
+                            break;
+                        case 2:
+                            for (int i = 0; i < 2; i++)
+                            {
+                                rawData.Add((byte) (color15 & ~REPEATRGB15MASK));
+                                rawData.Add((byte) ((color15 & ~REPEATRGB15MASK) >> 8));
+                            }
 
-                        /*var ncolor15 =
-                            (((pixelRowSpan[x].B >> (16 - 5)) & 0x1f))
-                            | (((pixelRowSpan[x].G >> (16 - 5)) & 0x1f) << 6)
-                            | (((pixelRowSpan[x].R >> (16 - 5)) & 0x1f) << 11);*/
+                            break;
+                        default:
+                            rawData.Add((byte) (color15 | REPEATRGB15MASK));
+                            rawData.Add((byte) ((color15 | REPEATRGB15MASK) >> 8));
+                            rawData.Add((byte) ((rep - 1) | 0x3000));
+                            rawData.Add((byte) (((rep - 1) | 0x3000) >> 8));
+                            break;
+                    }
+                }
 
-                        var ncolor15 = 
-                            (pixelRowSpan[x].B >> 3)
-                         | ((pixelRowSpan[x].G >> 2) << 5)
-                         | ((pixelRowSpan[x].R >> 3) << 11);
+                for (byte i = 0; i < ThumbnailsCount; i++)
+                {
+                    var image = Thumbnails[i];
 
-                        if (ncolor15 == color15)
+                    color15 = 0;
+                    rep = 0;
+                    rawData.Clear();
+
+
+                    for (int y = 0; y < image.Height; y++)
+                    {
+                        Span<Rgba32> pixelRowSpan = image.GetPixelRowSpan(y);
+                        for (int x = 0; x < image.Width; x++)
                         {
-                            rep++;
-                            if (rep == RLE16EncodingLimit)
+
+                            /*var ncolor15 =
+                                (((pixelRowSpan[x].B >> (16 - 5)) & 0x1f))
+                                | (((pixelRowSpan[x].G >> (16 - 5)) & 0x1f) << 6)
+                                | (((pixelRowSpan[x].R >> (16 - 5)) & 0x1f) << 11);*/
+
+                            var ncolor15 =
+                                (pixelRowSpan[x].B >> 3)
+                                | ((pixelRowSpan[x].G >> 2) << 5)
+                                | ((pixelRowSpan[x].R >> 3) << 11);
+
+                            if (ncolor15 == color15)
+                            {
+                                rep++;
+                                if (rep == RLE16EncodingLimit)
+                                {
+                                    rleRGB15();
+                                    rep = 0;
+                                }
+                            }
+                            else
                             {
                                 rleRGB15();
-                                rep = 0;
+                                color15 = (ushort) ncolor15;
+                                rep = 1;
                             }
                         }
-                        else
-                        {
-                            rleRGB15();
-                            color15 = (ushort) ncolor15;
-                            rep = 1;
-                        }
                     }
-                }
 
-                rleRGB15();
+                    rleRGB15();
 
-                if(rawData.Count == 0) continue;
+                    if (rawData.Count == 0) continue;
 
-                if (i == (byte) FileThumbnailSize.Small)
-                {
-                    HeaderSettings.PreviewSmallOffsetAddress = CurrentOffset;
-                }
-                else
-                {
-                    HeaderSettings.PreviewLargeOffsetAddress = CurrentOffset;
-                }
-
-                
-
-                Preview preview = new Preview
-                {
-                    ResolutionX = (uint) image.Width,
-                    ResolutionY = (uint) image.Height,
-                    ImageLength = (uint) rawData.Count,
-                };
-
-                CurrentOffset += (uint)Helpers.Serializer.SizeOf(preview);
-                preview.ImageOffset = CurrentOffset;
-
-                Helpers.SerializeWriteFileStream(OutputFile, preview);
-
-                CurrentOffset += (uint)rawData.Count;
-                OutputFile.Write(rawData.ToArray(), 0, rawData.Count);
-            }
-
-
-            /*for (int i = 0; i < ThumbnailsCount; i++)
-            {
-                if (i == 1)
-                {
-                    HeaderSettings.PreviewSmallOffsetAddress = CurrentOffset;
-                }
-                var image = Thumbnails[i];
-                Preview preview = new Preview {ResolutionX = (uint)image.Width, ResolutionY = (uint)image.Height};
-                List<byte> rawData = new List<byte>();
-
-                Rgba32 color;
-                byte nrOfColor = 0;
-                Rgba32? prevColor = null;
-
-                for (int y = 0; y < image.Height; y++)
-                {
-                    Span<Rgba32> pixelRowSpan = image.GetPixelRowSpan(y);
-                    for (int x = 0; x < image.Width; x++)
+                    if (i == (byte) FileThumbnailSize.Small)
                     {
-                        color = pixelRowSpan[x];
-                        if (prevColor == null) prevColor = color;
-                        bool isLastPixel = x == (image.Width - 1) && y == (image.Height - 1);
-                        if (color == prevColor && nrOfColor < 0x0FFF && !isLastPixel)
-                        {
-                            nrOfColor++;
-                        }
-                        else
-                        {
-
-                            byte R = prevColor.Value.R;
-                            byte G = prevColor.Value.G;
-                            byte B = prevColor.Value.B;
-                            byte X = nrOfColor > 1 ? (byte)1 : (byte)0;
-
-
-                            // build 2 or 4 bytes (depending on X
-                            // The color (R,G,B) of a pixel spans 2 bytes (little endian) and
-                            // each color component is 5 bits: RRRRR GGG GG X BBBBB
-                            R = (byte)Math.Round(R / 255f * 31f);
-                            G = (byte)Math.Round(G / 255f * 31f);
-                            B = (byte)Math.Round(B / 255f * 31f);
-
-                            byte encValue0 = (byte)(R << 3 | G >> 2);
-                            byte encValue1 = (byte) (((G & 0b00000011) << 6) | X << 5 | B);
-                            rawData.Add(encValue0);
-                            rawData.Add(encValue1);
-                            if (X == 1)
-                            {
-                                nrOfColor--;
-                                // write one less than nr of pixels
-                                byte encValue2 = (byte)(nrOfColor >> 8);
-                                byte encValue3 = (byte)(nrOfColor & 0b000000011111111);
-                                // seems like nr bytes pixels have 0011 as start
-                                encValue2 = (byte)(encValue2 | 0b00110000);
-                                rawData.Add(encValue2);
-                                rawData.Add(encValue3);
-                            }
-
-                            prevColor = color;
-                            nrOfColor = 1;
-                        }
+                        HeaderSettings.PreviewSmallOffsetAddress = currentOffset;
                     }
+                    else
+                    {
+                        HeaderSettings.PreviewLargeOffsetAddress = currentOffset;
+                    }
+
+
+
+                    Preview preview = new Preview
+                    {
+                        ResolutionX = (uint) image.Width,
+                        ResolutionY = (uint) image.Height,
+                        ImageLength = (uint) rawData.Count,
+                    };
+
+                    currentOffset += (uint) Helpers.Serializer.SizeOf(preview);
+                    preview.ImageOffset = currentOffset;
+
+                    Helpers.SerializeWriteFileStream(outputFile, preview);
+
+                    currentOffset += (uint) rawData.Count;
+                    outputFile.Write(rawData.ToArray(), 0, rawData.Count);
                 }
 
 
-                preview.ImageLength = (uint)rawData.Count;
-                CurrentOffset += (uint)Helpers.Serializer.SizeOf(preview);
-                preview.ImageOffset = CurrentOffset;
+                if (HeaderSettings.Version == 2)
+                {
+                    HeaderSettings.PrintParametersOffsetAddress = currentOffset;
 
-                Previews[i] = preview;
+                    currentOffset += Helpers.SerializeWriteFileStream(outputFile, PrintParametersSettings);
 
-                Helpers.SerializeWriteFileStream(OutputFile, preview);
-                CurrentOffset += Helpers.SerializeWriteFileStream(OutputFile, rawData.ToArray());
-            }*/
+                    HeaderSettings.SlicerOffset = currentOffset;
+                    HeaderSettings.SlicerSize = (uint) Helpers.Serializer.SizeOf(SlicerInfoSettings);
 
-
-            if (HeaderSettings.Version == 2)
-            {
-                HeaderSettings.PrintParametersOffsetAddress = CurrentOffset;
-
-                CurrentOffset += Helpers.SerializeWriteFileStream(OutputFile, PrintParametersSettings);
-
-                HeaderSettings.SlicerOffset = CurrentOffset;
-                HeaderSettings.SlicerSize = (uint) Helpers.Serializer.SizeOf(SlicerInfoSettings);
-
-                SlicerInfoSettings.MachineNameAddress = (uint)(CurrentOffset + Helpers.Serializer.SizeOf(SlicerInfoSettings) -
-                                                                SlicerInfoSettings.MachineNameSize);
+                    SlicerInfoSettings.MachineNameAddress =
+                        (uint) (currentOffset + Helpers.Serializer.SizeOf(SlicerInfoSettings) -
+                                SlicerInfoSettings.MachineNameSize);
 
 
-                CurrentOffset += Helpers.SerializeWriteFileStream(OutputFile, SlicerInfoSettings);
+                    currentOffset += Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
+                }
+
+                HeaderSettings.LayersDefinitionOffsetAddress = currentOffset;
+                uint layerDataCurrentOffset = currentOffset + (uint) Helpers.Serializer.SizeOf(new Layer()) * HeaderSettings.LayerCount * HeaderSettings.AntiAliasLevel;
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                {
+                    Layer layer = new Layer();
+                    Layer layerHash = null;
+                    var image = GetLayerImage(layerIndex);
+                    rawData = IsCbtFile ? EncodeCbtImage(image, layerIndex) : EncodeCbddlpImage(image);
+
+                    var byteArr = rawData.ToArray();
+
+                    if (HeaderSettings.EncryptionKey == 0)
+                    {
+                        string hash = Helpers.ComputeSHA1Hash(byteArr);
+                        if (!LayersHash.TryGetValue(hash, out layerHash))
+                        {
+                            LayersHash.Add(hash, layer);
+                        }
+                    }
+
+                    //layer.DataAddress = CurrentOffset + (uint)Helpers.Serializer.SizeOf(layer);
+                    layer.DataAddress = layerHash?.DataAddress ?? layerDataCurrentOffset;
+                    layer.DataSize = layerHash?.DataSize ?? (uint)byteArr.Length;
+                    layer.LayerPositionZ = layerIndex * HeaderSettings.LayerHeightMilimeter;
+                    layer.LayerOffTimeSeconds = layerIndex < HeaderSettings.BottomLayersCount ? PrintParametersSettings.BottomLightOffDelay : PrintParametersSettings.LightOffDelay;
+                    layer.LayerExposure = layerIndex < HeaderSettings.BottomLayersCount ? HeaderSettings.BottomExposureSeconds : HeaderSettings.LayerExposureSeconds;
+                    LayersDefinitions[layerIndex, 0] = layer;
+
+                    currentOffset += Helpers.SerializeWriteFileStream(outputFile, layer);
+
+                    if (!ReferenceEquals(layerHash, null)) return;
+
+                    outputFile.Seek(layerDataCurrentOffset, SeekOrigin.Begin);
+                    layerDataCurrentOffset += Helpers.WriteFileStream(outputFile, byteArr);
+                    outputFile.Seek(currentOffset, SeekOrigin.Begin);
+                }
+
+                outputFile.Seek(0, SeekOrigin.Begin);
+                Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+
+                outputFile.Close();
+                outputFile.Dispose();
+
+                Debug.WriteLine("Encode Results:");
+                Debug.WriteLine(HeaderSettings);
+                Debug.WriteLine(Previews[0]);
+                Debug.WriteLine(Previews[1]);
+                Debug.WriteLine(PrintParametersSettings);
+                Debug.WriteLine(SlicerInfoSettings);
+                Debug.WriteLine("-End-");
             }
-
-            HeaderSettings.LayersDefinitionOffsetAddress = CurrentOffset;
-            LayerDataCurrentOffset = CurrentOffset + (uint)Helpers.Serializer.SizeOf(new Layer()) * HeaderSettings.LayerCount * HeaderSettings.AntiAliasLevel;
         }
 
-        private List<byte> EncodeCbddlpImage(Image<Gray8> image)
+        private List<byte> EncodeCbddlpImage(Image<L8> image)
         {
             List<byte> rawData = new List<byte>();
 
@@ -806,7 +767,7 @@ namespace PrusaSL1Reader
 
             for (int y = 0; y < image.Height; y++)
             {
-                Span<Gray8> pixelRowSpan = image.GetPixelRowSpan(y);
+                Span<L8> pixelRowSpan = image.GetPixelRowSpan(y);
                 for (int x = 0; x < image.Width; x++)
                 {
                     color = pixelRowSpan[x].PackedValue < 128 ? black : white;
@@ -830,7 +791,7 @@ namespace PrusaSL1Reader
             return rawData;
         }
 
-        private List<byte> EncodeCbtImage(Image<Gray8> image, uint layerIndex)
+        private List<byte> EncodeCbtImage(Image<L8> image, uint layerIndex)
         {
             List<byte> rawData = new List<byte>();
             byte color = byte.MaxValue >> 1;
@@ -922,69 +883,15 @@ namespace PrusaSL1Reader
             return rawData;
         }
 
-
-        public override void InsertLayerImageEncode(Image<Gray8> image, uint layerIndex)
-        {
-            Layer layer = new Layer();
-            Layer layerHash = null;
-            List<byte> rawData = IsCbtFile ? EncodeCbtImage(image, layerIndex) : EncodeCbddlpImage(image);
-
-            var byteArr = rawData.ToArray();
-
-            if (HeaderSettings.EncryptionKey == 0)
-            {
-                string hash = Helpers.ComputeSHA1Hash(byteArr);
-                if (!LayersHash.TryGetValue(hash, out layerHash))
-                {
-                    LayersHash.Add(hash, layer);
-                }
-            }
-            
-
-            //layer.DataAddress = CurrentOffset + (uint)Helpers.Serializer.SizeOf(layer);
-            layer.DataAddress = layerHash?.DataAddress ?? LayerDataCurrentOffset;
-            layer.DataSize = layerHash?.DataSize ?? (uint)byteArr.Length;
-            layer.LayerPositionZ = layerIndex * HeaderSettings.LayerHeightMilimeter;
-            layer.LayerOffTimeSeconds = layerIndex < HeaderSettings.BottomLayersCount ? PrintParametersSettings.BottomLightOffDelay : PrintParametersSettings.LightOffDelay;
-            layer.LayerExposure = layerIndex < HeaderSettings.BottomLayersCount ? HeaderSettings.BottomExposureSeconds : HeaderSettings.LayerExposureSeconds;
-            Layers[layerIndex, 0] = layer;
-
-            CurrentOffset += Helpers.SerializeWriteFileStream(OutputFile, layer);
-
-            if (!ReferenceEquals(layerHash, null)) return;
-
-            OutputFile.Seek(LayerDataCurrentOffset, SeekOrigin.Begin);
-            LayerDataCurrentOffset += Helpers.WriteFileStream(OutputFile, byteArr);
-            OutputFile.Seek(CurrentOffset, SeekOrigin.Begin);
-        }
-
-        public override void EndEncode()
-        {
-
-            OutputFile.Seek(0, SeekOrigin.Begin);
-            Helpers.SerializeWriteFileStream(OutputFile, HeaderSettings);
-
-            OutputFile.Close();
-            OutputFile.Dispose();
-
-            Debug.WriteLine("Encode Results:");
-            Debug.WriteLine(HeaderSettings);
-            Debug.WriteLine(Previews[0]);
-            Debug.WriteLine(Previews[1]);
-            Debug.WriteLine(PrintParametersSettings);
-            Debug.WriteLine(SlicerInfoSettings);
-            Debug.WriteLine("-End-");
-        }
-
         public override void Decode(string fileFullPath)
         {
             base.Decode(fileFullPath);
 
-            InputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
 
             //HeaderSettings = Helpers.ByteToType<CbddlpFile.Header>(InputFile);
             //HeaderSettings = Helpers.Serializer.Deserialize<Header>(InputFile.ReadBytes(Helpers.Serializer.SizeOf(typeof(Header))));
-            HeaderSettings = Helpers.Deserialize<Header>(InputFile);
+            HeaderSettings = Helpers.Deserialize<Header>(inputFile);
             if (HeaderSettings.Magic != MAGIC_CBDDLP && HeaderSettings.Magic != MAGIC_CBT)
             {
                 throw new FileLoadException("Not a valid CBDDLP nor CTB nor Photon file!", fileFullPath);
@@ -1007,17 +914,17 @@ namespace PrusaSL1Reader
                 uint offsetAddress = i == 0 ? HeaderSettings.PreviewSmallOffsetAddress : HeaderSettings.PreviewLargeOffsetAddress;
                 if (offsetAddress == 0) continue;
 
-                InputFile.Seek(offsetAddress, SeekOrigin.Begin);
-                Previews[i] = Helpers.Deserialize<Preview>(InputFile);
+                inputFile.Seek(offsetAddress, SeekOrigin.Begin);
+                Previews[i] = Helpers.Deserialize<Preview>(inputFile);
 
                 Debug.Write($"Preview {i} -> ");
                 Debug.WriteLine(Previews[i]);
 
                 Thumbnails[i] = new Image<Rgba32>((int)Previews[i].ResolutionX, (int)Previews[i].ResolutionY);
 
-                InputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
+                inputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
                 byte[] rawImageData = new byte[Previews[i].ImageLength];
-                InputFile.Read(rawImageData, 0, (int)Previews[i].ImageLength);
+                inputFile.Read(rawImageData, 0, (int)Previews[i].ImageLength);
                 int x = 0;
                 int y = 0;
                 for (int n = 0; n < Previews[i].ImageLength; n++)
@@ -1052,8 +959,8 @@ namespace PrusaSL1Reader
             //{
             if (HeaderSettings.PrintParametersOffsetAddress > 0)
             {
-                InputFile.Seek(HeaderSettings.PrintParametersOffsetAddress, SeekOrigin.Begin);
-                PrintParametersSettings = Helpers.Deserialize<PrintParameters>(InputFile);
+                inputFile.Seek(HeaderSettings.PrintParametersOffsetAddress, SeekOrigin.Begin);
+                PrintParametersSettings = Helpers.Deserialize<PrintParameters>(inputFile);
                 Debug.Write("Print Parameters -> ");
                 Debug.WriteLine(PrintParametersSettings);
 
@@ -1062,8 +969,8 @@ namespace PrusaSL1Reader
 
             if (HeaderSettings.SlicerOffset > 0)
             {
-                InputFile.Seek(HeaderSettings.SlicerOffset, SeekOrigin.Begin);
-                SlicerInfoSettings = Helpers.Deserialize<SlicerInfo>(InputFile);
+                inputFile.Seek(HeaderSettings.SlicerOffset, SeekOrigin.Begin);
+                SlicerInfoSettings = Helpers.Deserialize<SlicerInfo>(inputFile);
                 Debug.Write("Slicer Info -> ");
                 Debug.WriteLine(SlicerInfoSettings);
             }
@@ -1074,11 +981,9 @@ namespace PrusaSL1Reader
             Debug.WriteLine($"{nameof(MachineName)}: {MachineName}");*/
             //}
 
-            Layers = new Layer[HeaderSettings.LayerCount, HeaderSettings.AntiAliasLevel];
+            LayersDefinitions = new Layer[HeaderSettings.LayerCount, HeaderSettings.AntiAliasLevel];
 
             uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
-
-            Image<Gray8> image = new Image<Gray8>((int)HeaderSettings.BedSizeX, (int)HeaderSettings.BedSizeY);
 
 
             for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
@@ -1086,36 +991,73 @@ namespace PrusaSL1Reader
                 Debug.WriteLine($"-Image GROUP {aaIndex}-");
                 for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
                 {
-                    InputFile.Seek(layerOffset, SeekOrigin.Begin);
-                    Layer layer = Helpers.Deserialize<Layer>(InputFile);
-                    Layers[layerIndex, aaIndex] = layer;
-                    //Layers.Add(layer);
+                    inputFile.Seek(layerOffset, SeekOrigin.Begin);
+                    Layer layer = Helpers.Deserialize<Layer>(inputFile);
+                    LayersDefinitions[layerIndex, aaIndex] = layer;
 
                     layerOffset += (uint)Helpers.Serializer.SizeOf(layer);
                     Debug.Write($"LAYER {layerIndex} -> ");
                     Debug.WriteLine(layer);
+
+                    layer.EncodedRle = new byte[layer.DataSize];
+                    inputFile.Seek(layer.DataAddress, SeekOrigin.Begin);
+                    inputFile.Read(layer.EncodedRle, 0, (int)layer.DataSize);
                 }
             }
+
+            Layers = new byte[LayerCount][];
+
+            Parallel.For(0, LayerCount, layerIndex => {
+                    var image = IsCbtFile ? DecodeCbtImage((uint) layerIndex) : DecodeCbddlpImage((uint) layerIndex);
+                    using (var ms = new MemoryStream())
+                    {
+                        image.Save(ms, Helpers.PngEncoder);
+                        Layers[layerIndex] = CompressLayer(ms.ToArray());
+                    }
+            });
+
+            /*byte[,][] rleArr = new byte[LayerCount, HeaderSettings.AntiAliasLevel][];
+            for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
+            {
+                //byte[][] rleArr = new byte[HeaderSettings.AntiAliasLevel][];
+                for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
+                {
+                    Layer layer = LayersDefinitions[layerIndex, aaIndex];
+                    inputFile.Seek(layer.DataAddress, SeekOrigin.Begin);
+                    rleArr[layerIndex, aaIndex] = new byte[(int)layer.DataSize];
+                    inputFile.Read(rleArr[layerIndex, aaIndex], 0, (int)layer.DataSize);
+                }
+
+                var image = IsCbtFile ? DecodeCbtImage(rleArr[0], layerIndex) : DecodeCbddlpImage(rleArr, layerIndex);
+                using (var ms = new MemoryStream())
+                {
+                    image.Save(ms, Helpers.PngEncoder);
+                    Layers[layerIndex] = ms.ToArray();
+                }
+            //}
+
+            /*for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
+            {
+                var image = IsCbtFile ? DecodeCbtImage(layerIndex) : DecodeCbddlpImage(layerIndex);
+                using (var ms = new MemoryStream())
+                {
+                    image.Save(ms, Helpers.BmpEncoder);
+                    Layers[layerIndex] = CompressLayer(ms.ToArray());
+                }
+            }*/
         }
 
-        public override void Extract(string path, bool emptyFirst = true, bool genericConfigExtract = false,
-            bool genericLayersExtract = false) => 
-            base.Extract(path, emptyFirst, true, true);
-
-        private Image<Gray8> DecodeCbddlpImage(uint layerIndex)
+        private Image<L8> DecodeCbddlpImage(uint layerIndex)
         {
-            Image<Gray8> image = new Image<Gray8>((int)HeaderSettings.ResolutionX, (int)HeaderSettings.ResolutionY);
+            Image<L8> image = new Image<L8>((int)HeaderSettings.ResolutionX, (int)HeaderSettings.ResolutionY);
 
             for (uint aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
             {
-                Layer layer = Layers[layerIndex, aaIndex];
-                InputFile.Seek(layer.DataAddress, SeekOrigin.Begin);
-                byte[] rawImageData = new byte[(int)layer.DataSize];
-                InputFile.Read(rawImageData, 0, (int)layer.DataSize);
+                //Layer layer = LayersDefinitions[layerIndex, aaIndex];
                 uint x = 0;
                 uint y = 0;
 
-                foreach (byte rle in rawImageData)
+                foreach (byte rle in LayersDefinitions[layerIndex, aaIndex].EncodedRle)
                 {
                     // From each byte retrieve color (highest bit) and number of pixels of that color (lowest 7 bits)
                     uint length = (uint)(rle & 0x7F);    // turn highest bit of
@@ -1145,7 +1087,7 @@ namespace PrusaSL1Reader
                             span = image.GetPixelRowSpan((int)y);
                         }
 
-                        span[(int)x] = Helpers.Gray8White;
+                        span[(int)x] = Helpers.L8White;
                         x++;
                     }
                 }
@@ -1154,23 +1096,20 @@ namespace PrusaSL1Reader
             return image;
         }
 
-        private Image<Gray8> DecodeCbtImage(uint layerIndex)
+        private Image<L8> DecodeCbtImage(uint layerIndex)
         {
-            Image<Gray8> image = new Image<Gray8>((int)HeaderSettings.ResolutionX, (int)HeaderSettings.ResolutionY);
-            Layer layer = Layers[layerIndex, 0];
-            
-            InputFile.Seek(layer.DataAddress, SeekOrigin.Begin);
-            byte[] encodedImageData = new byte[(int)layer.DataSize];
-            InputFile.Read(encodedImageData, 0, (int)layer.DataSize);
+            Image<L8> image = new Image<L8>((int)HeaderSettings.ResolutionX, (int)HeaderSettings.ResolutionY);
+            //Layer layer = LayersDefinitions[layerIndex, 0];
+
             uint x = 0;
             uint y = 0;
 
-            var rawImageData = encodedImageData;
+            var rawImageData = LayersDefinitions[layerIndex, 0].EncodedRle;
 
             if (HeaderSettings.EncryptionKey > 0)
             {
                 KeyRing kr = new KeyRing(HeaderSettings.EncryptionKey, layerIndex);
-                rawImageData = kr.Read(encodedImageData);
+                rawImageData = kr.Read(rawImageData);
             }
 
             for (var n = 0; n < rawImageData.Length; n++)
@@ -1246,15 +1185,61 @@ namespace PrusaSL1Reader
             return image;
         }
 
-        public override Image<Gray8> GetLayerImage(uint layerIndex)
+        /*public override byte[] GetLayer(uint layerIndex)
         {
-            if (layerIndex >= HeaderSettings.LayerCount)
+            if (layerIndex >= LayerCount) return null;
+            if (ReferenceEquals(Layers[layerIndex], null))
             {
-                throw new IndexOutOfRangeException($"Layer {layerIndex} doesn't exists, out of bounds.");
+                var image = GetLayerImage(layerIndex);
+                using (var ms = new MemoryStream())
+                {
+                    image.Save(ms, Helpers.PngEncoder);
+                    Layers[layerIndex] = CompressLayer(ms.ToArray());
+                }
+            }
+
+            return base.GetLayer(layerIndex);
+        }
+
+        public override Image<L8> GetLayerImage(uint layerIndex)
+        {
+            if (layerIndex >= LayerCount) return null;
+            if (ReferenceEquals(Layers[layerIndex], null))
+            {
+                var image = IsCbtFile ? DecodeCbtImage(layerIndex) : DecodeCbddlpImage(layerIndex);
+                /*using (var ms = new MemoryStream())
+                {
+                    image.Save(ms, Helpers.PngEncoder);
+                   Layers[layerIndex] = CompressLayer(ms.ToArray());
+                }*/
+                /*if (image.TryGetSinglePixelSpan(out var pixelSpan))
+                {
+                    byte[] rgbaBytes = MemoryMarshal.AsBytes(pixelSpan).ToArray();
+                    using (MemoryStream output = new MemoryStream())
+                    {
+                        using (DeflateStream dstream = new DeflateStream(output, CompressionLevel.Optimal))
+                        {
+                            dstream.Write(rgbaBytes, 0, rgbaBytes.Length);
+                        }
+                        var byes = output.ToArray();
+                    }
+                }*/
+               /* return image;
+            }
+
+            return base.GetLayerImage(layerIndex);
+        }*/
+
+        /*public override Image<L8> GetLayerImage(uint layerIndex)
+        {
+            if (layerIndex >= LayerCount)
+            {
+                return null;
+                //throw new IndexOutOfRangeException($"Layer {layerIndex} doesn't exists, out of bounds.");
             }
 
             return IsCbtFile ? DecodeCbtImage(layerIndex) : DecodeCbddlpImage(layerIndex);
-        }
+        }*/
 
         public override object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
         {
@@ -1285,8 +1270,8 @@ namespace PrusaSL1Reader
                     for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
                     {
                         // Bottom : others
-                        Layers[layerIndex, aaIndex].LayerExposure = layerIndex < HeaderSettings.BottomLayersCount ? HeaderSettings.BottomExposureSeconds : HeaderSettings.LayerExposureSeconds;
-                        Layers[layerIndex, aaIndex].LayerOffTimeSeconds = layerIndex < HeaderSettings.BottomLayersCount ? PrintParametersSettings.BottomLightOffDelay : PrintParametersSettings.LightOffDelay;
+                        LayersDefinitions[layerIndex, aaIndex].LayerExposure = layerIndex < HeaderSettings.BottomLayersCount ? HeaderSettings.BottomExposureSeconds : HeaderSettings.LayerExposureSeconds;
+                        LayersDefinitions[layerIndex, aaIndex].LayerOffTimeSeconds = layerIndex < HeaderSettings.BottomLayersCount ? PrintParametersSettings.BottomLightOffDelay : PrintParametersSettings.LightOffDelay;
                     }
                 }
             }
@@ -1367,25 +1352,23 @@ namespace PrusaSL1Reader
 
         public override void SaveAs(string filePath = null)
         {
-            InputFile.Dispose();
             if (!string.IsNullOrEmpty(filePath))
             {
                 File.Copy(FileFullPath, filePath, true);
                 FileFullPath = filePath;
-
             }
 
-            using (InputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write))
+            using (var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write))
             {
 
-                InputFile.Seek(0, SeekOrigin.Begin);
-                Helpers.SerializeWriteFileStream(InputFile, HeaderSettings);
+                outputFile.Seek(0, SeekOrigin.Begin);
+                Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 
                 if (HeaderSettings.Version == 2 && HeaderSettings.PrintParametersOffsetAddress > 0)
                 {
-                    InputFile.Seek(HeaderSettings.PrintParametersOffsetAddress, SeekOrigin.Begin);
-                    Helpers.SerializeWriteFileStream(InputFile, PrintParametersSettings);
-                    Helpers.SerializeWriteFileStream(InputFile, SlicerInfoSettings);
+                    outputFile.Seek(HeaderSettings.PrintParametersOffsetAddress, SeekOrigin.Begin);
+                    Helpers.SerializeWriteFileStream(outputFile, PrintParametersSettings);
+                    Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
                 }
 
                 uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
@@ -1393,12 +1376,12 @@ namespace PrusaSL1Reader
                 {
                     for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
                     {
-                        InputFile.Seek(layerOffset, SeekOrigin.Begin);
-                        Helpers.SerializeWriteFileStream(InputFile, Layers[layerIndex, aaIndex]);
-                        layerOffset += (uint)Helpers.Serializer.SizeOf(Layers[layerIndex, aaIndex]);
+                        outputFile.Seek(layerOffset, SeekOrigin.Begin);
+                        Helpers.SerializeWriteFileStream(outputFile, LayersDefinitions[layerIndex, aaIndex]);
+                        layerOffset += (uint)Helpers.Serializer.SizeOf(LayersDefinitions[layerIndex, aaIndex]);
                     }
                 }
-                InputFile.Close();
+                outputFile.Close();
             }
 
             Decode(FileFullPath);
