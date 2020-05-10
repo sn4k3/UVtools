@@ -8,24 +8,22 @@
 using System;
 using System.Collections;
 using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using PrusaSL1Reader;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using Image = SixLabors.ImageSharp.Image;
 
 namespace PrusaSL1Viewer
 {
     public partial class FrmMain : Form
     {
+        #region Properties
+        public FrmLoading FrmLoading { get; }
         public static FileFormat SlicerFile
         {
             get => Program.SlicerFile;
@@ -34,23 +32,31 @@ namespace PrusaSL1Viewer
 
         public uint ActualLayer => (uint)(sbLayers.Maximum - sbLayers.Value);
 
+        #endregion
+
         #region Constructors
         public FrmMain()
         {
             InitializeComponent();
+            FrmLoading = new FrmLoading();
             Program.SetAllControlsFontSize(Controls, 11);
+            Program.SetAllControlsFontSize(FrmLoading.Controls, 11);
 
             Clear();
 
             DragEnter += (s, e) => { if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy; };
             DragDrop += (s, e) => { ProcessFile((string[])e.Data.GetData(DataFormats.FileDrop)); };
-
-            ProcessFile(Program.Args);
         }
 
         #endregion
 
         #region Overrides
+
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+            ProcessFile(Program.Args);
+        }
 
         protected override void OnKeyUp(KeyEventArgs e)
         {
@@ -187,17 +193,34 @@ namespace PrusaSL1Viewer
                 {
                     using (FolderBrowserDialog folder = new FolderBrowserDialog())
                     {
+                        string fileNameNoExt = Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath);
+                        folder.SelectedPath = Path.GetDirectoryName(SlicerFile.FileFullPath);
+                        folder.Description = $"A \"{fileNameNoExt}\" folder will be created on your selected folder to dump the content.";
                         if (folder.ShowDialog() == DialogResult.OK)
                         {
+                            string finalPath = Path.Combine(folder.SelectedPath, fileNameNoExt);
                             try
                             {
-                                SlicerFile.Extract(folder.SelectedPath);
+                                DisableGUI();
+                                FrmLoading.SetDescription($"Extracting {Path.GetFileName(SlicerFile.FileFullPath)}");
+
+                                var task = Task.Factory.StartNew(() =>
+                                {
+                                    SlicerFile.Extract(finalPath);
+                                    Invoke((MethodInvoker)delegate {
+                                        // Running on the UI thread
+                                        EnableGUI(true);
+                                    });
+                                });
+
+                                FrmLoading.ShowDialog();
+                                
                                 if (MessageBox.Show(
-                                        $"Extraction was successful, browser folder to see it contents.\n{folder.SelectedPath}\nPress 'Yes' if you want open the target folder, otherwise select 'No' to continue.",
+                                        $"Extraction was successful, browser folder to see it contents.\n{finalPath}\nPress 'Yes' if you want open the target folder, otherwise select 'No' to continue.",
                                         "Extraction completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
                                     DialogResult.Yes)
                                 {
-                                    Process.Start(folder.SelectedPath);
+                                    Process.Start(finalPath);
                                 }
                             }
                             catch (Exception exception)
@@ -479,17 +502,30 @@ namespace PrusaSL1Viewer
             using (SaveFileDialog dialog = new SaveFileDialog())
             {
                 dialog.FileName = Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath);
+                dialog.Filter = fileFormat.FileFilter;
 
                 //using (FileFormat instance = (FileFormat)Activator.CreateInstance(type)) 
                 //using (CbddlpFile file = new CbddlpFile())
-                {
-                    dialog.Filter = fileFormat.FileFilter;
-                }
+
 
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    SlicerFile.Convert(fileFormat, dialog.FileName);
+                    DisableGUI();
+                    FrmLoading.SetDescription($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {Path.GetExtension(dialog.FileName)}");
+
+                    var task = Task.Factory.StartNew(() =>
+                    {
+                        SlicerFile.Convert(fileFormat, dialog.FileName);
+                        Invoke((MethodInvoker)delegate {
+                            // Running on the UI thread
+                            EnableGUI(true);
+                        });
+                    });
+
+                    FrmLoading.ShowDialog();
+
+                    
                     if (MessageBox.Show($"Convertion is completed: {Path.GetFileName(dialog.FileName)}\n" +
                                         "Do you want open the converted file in a new window?",
                         "Convertion completed", MessageBoxButtons.YesNo,
@@ -575,6 +611,20 @@ namespace PrusaSL1Viewer
             tabControlLeft.SelectedIndex = 0;
         }
 
+        void DisableGUI()
+        {
+            mainTable.Enabled = 
+            menu.Enabled = false;
+        }
+
+        void EnableGUI(bool closeLoading = false)
+        {
+            if(closeLoading)  FrmLoading.Close();
+
+            mainTable.Enabled = 
+            menu.Enabled = true;
+        }
+
         void ProcessFile()
         {
             if (ReferenceEquals(SlicerFile, null)) return;
@@ -605,7 +655,20 @@ namespace PrusaSL1Viewer
             Clear();
             SlicerFile = FileFormat.FindByExtension(fileName, true, true);
             if (ReferenceEquals(SlicerFile, null)) return;
-            SlicerFile.Decode(fileName);
+
+            DisableGUI();
+            FrmLoading.SetDescription($"Loading {Path.GetFileName(fileName)}");
+
+            var task = Task.Factory.StartNew(() =>
+            {
+                SlicerFile.Decode(fileName);
+                Invoke((MethodInvoker)delegate {
+                    // Running on the UI thread
+                    EnableGUI(true);
+                });
+            });
+
+            FrmLoading.ShowDialog();
 
             if (SlicerFile.LayerCount == 0)
             {
@@ -678,7 +741,7 @@ namespace PrusaSL1Viewer
 
             sbLayers.SmallChange = 1;
             sbLayers.Minimum = 0;
-            sbLayers.Maximum = (int)SlicerFile.LayerCount-1;
+            sbLayers.Maximum = (int)SlicerFile.LayerCount - 1;
             sbLayers.Value = sbLayers.Maximum;
 
             tabControlLeft.SelectedIndex = 0;
@@ -688,7 +751,7 @@ namespace PrusaSL1Viewer
 
             tsLayerResolution.Text = pbLayer.Image?.PhysicalDimension.ToString() ?? string.Empty;
 
-            Text = $"{FrmAbout.AssemblyTitle}   Version: {FrmAbout.AssemblyVersion}   File: {Path.GetFileName(fileName)}";
+            Text = $"{FrmAbout.AssemblyTitle}   Version: {FrmAbout.AssemblyVersion}   File: {Path.GetFileName(SlicerFile.FileFullPath)}";
         }
 
         void RefreshInfo()

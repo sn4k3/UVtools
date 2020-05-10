@@ -4,9 +4,13 @@
 
 * (Add) Show layer differences where daker pixels were also present on previous layer and the white pixels the difference between previous and current layer.
 * (Add) Layer preview process time in milliseconds
+* (Add) Long operations no longer freeze the GUI and a progress message will shown on those cases
 * (Improvement) Cache layers were possible for faster operation
 * (Improvement) As layer data is now cached, input file is closed after read, this way file wouldn't be locked for other programs
 * (Improvement) Speed up extraction with parallelism
+* (Improvement) Extract output folder dialog now open by default on from same folder as input file
+* (Improvement) Extract now create a folder with same file name to dump the content
+* (Fix) Extract to folder was wiping the target folder, this is now disabled to prevent acidental data lost, target files will be overwritten
 
 ## 30/04/2020 - v0.3.1 - Beta
 
@@ -24,7 +28,7 @@
 * (Change) Cbbdlp convertion name to Chitubox
 * (Change) On convert, thumbnails are now resized to match exactly the target thumbnail size
 * (Change) GUI will now show thumbnails from smaller to larger
-* (Fixed) RetractFeedrate was incorrectly used instead of LiftFeedrate on Zcodex gcode
+* (Fix) RetractFeedrate was incorrectly used instead of LiftFeedrate on Zcodex gcode
 
 ## 27/04/2020 - v0.3.0 - Beta
 

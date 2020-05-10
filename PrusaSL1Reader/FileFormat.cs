@@ -456,9 +456,9 @@ namespace PrusaSL1Reader
             FileFullPath = fileFullPath;
         }
 
-        public virtual void Extract(string path, bool emptyFirst = true, bool genericConfigExtract = true, bool genericLayersExtract = true)
+        public virtual void Extract(string path, bool genericConfigExtract = true, bool genericLayersExtract = true)
         {
-            if (emptyFirst)
+            /*if (emptyFirst)
             {
                 if (Directory.Exists(path))
                 {
@@ -473,17 +473,20 @@ namespace PrusaSL1Reader
                         dir.Delete(true);
                     }
                 }
-            }
+            }*/
+
+            if(!Directory.Exists(path)) Directory.CreateDirectory(path);
 
             if (FileType == FileFormatType.Archive)
             {
-                ZipFile.ExtractToDirectory(FileFullPath, path);
+                //ZipFile.ExtractToDirectory(FileFullPath, path);
+                ZipArchiveExtensions.ImprovedExtractToDirectory(FileFullPath, path, ZipArchiveExtensions.Overwrite.Always);
                 return;
             }
 
             if (genericConfigExtract)
             {
-                using (TextWriter tw = new StreamWriter(Path.Combine(path, $"{ExtractConfigFileName}.{ExtractConfigFileExtension}")))
+                using (TextWriter tw = new StreamWriter(Path.Combine(path, $"{ExtractConfigFileName}.{ExtractConfigFileExtension}"), false))
                 {
                     foreach (var config in Configs)
                     {

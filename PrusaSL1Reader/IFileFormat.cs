@@ -275,11 +275,9 @@ namespace PrusaSL1Reader
         /// Extract contents to a folder
         /// </summary>
         /// <param name="path">Path to folder where content will be extracted</param>
-        /// <param name="emptyFirst">Empty target folder first</param>
         /// <param name="genericConfigExtract"></param>
         /// <param name="genericLayersExtract"></param>
-        void Extract(string path, bool emptyFirst = true, bool genericConfigExtract = true,
-            bool genericLayersExtract = true);
+        void Extract(string path, bool genericConfigExtract = true, bool genericLayersExtract = true);
 
         /// <summary>
         /// Gets a byte array from layer
