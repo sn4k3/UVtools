@@ -53,9 +53,9 @@
             this.lbDescription.AutoSize = true;
             this.lbDescription.Location = new System.Drawing.Point(3, 12);
             this.lbDescription.Name = "lbDescription";
-            this.lbDescription.Size = new System.Drawing.Size(35, 13);
+            this.lbDescription.Size = new System.Drawing.Size(60, 13);
             this.lbDescription.TabIndex = 1;
-            this.lbDescription.Text = "label1";
+            this.lbDescription.Text = "Description";
             // 
             // timer
             // 

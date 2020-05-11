@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
@@ -475,7 +476,11 @@ namespace PrusaSL1Reader
                 }
             }*/
 
-            if(!Directory.Exists(path)) Directory.CreateDirectory(path);
+            //if (!Directory.Exists(path))
+            //{
+            Directory.CreateDirectory(path);
+            //}
+            
 
             if (FileType == FileFormatType.Archive)
             {

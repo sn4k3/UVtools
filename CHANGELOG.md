@@ -1,6 +1,6 @@
 # Changelog
 
-## ?? - v0.3.2 - Beta
+## 11/05/2020 - v0.3.2 - Beta
 
 * (Add) Show layer differences where daker pixels were also present on previous layer and the white pixels the difference between previous and current layer.
 * (Add) Layer preview process time in milliseconds
