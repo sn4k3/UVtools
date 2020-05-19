@@ -6,7 +6,7 @@ namespace PrusaSL1Viewer
 {
     public partial class FrmLoading : Form
     {
-        private Stopwatch StopWatch { get; } = new Stopwatch();
+        public Stopwatch StopWatch { get; } = new Stopwatch();
         public FrmLoading()
         {
             InitializeComponent();

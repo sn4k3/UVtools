@@ -6,16 +6,11 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
-using System.Diagnostics;
-using System.Drawing;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using PrusaSL1Reader.Extensions;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Size = System.Drawing.Size;
@@ -133,6 +128,7 @@ namespace PrusaSL1Reader
         {
             new SL1File(),      // Prusa SL1
             new ChituboxFile(), // cbddlp, cbt, photon
+            new PHZFile(), // phz
             new ZCodexFile(),   // zcodex
         };
 
@@ -172,6 +168,17 @@ namespace PrusaSL1Reader
         {
             return (from fileFormat in AvaliableFormats where fileFormat.IsExtensionValid(extension, isFilePath) select createNewInstance ? (FileFormat) Activator.CreateInstance(fileFormat.GetType()) : fileFormat).FirstOrDefault();
         }
+
+        /// <summary>
+        /// Find <see cref="FileFormat"/> by an type
+        /// </summary>
+        /// <param name="type">Type to find</param>
+        /// <param name="createNewInstance">True to create a new instance of found file format, otherwise will return a pre created one which should be used for read-only purpose</param>
+        /// <returns><see cref="FileFormat"/> object or null if not found</returns>
+        public static FileFormat FindByType(Type type, bool createNewInstance = false)
+        {
+            return (from t in AvaliableFormats where type == t.GetType() select createNewInstance ? (FileFormat) Activator.CreateInstance(type) : t).FirstOrDefault();
+        }
         #endregion
 
         #region Properties
@@ -179,6 +186,7 @@ namespace PrusaSL1Reader
         public abstract FileFormatType FileType { get; }
 
         public abstract FileExtension[] FileExtensions { get; }
+        public abstract Type[] ConvertToFormats { get; }
 
         public abstract PrintParameterModifier[] PrintParameterModifiers { get; }
 

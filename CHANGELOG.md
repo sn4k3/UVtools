@@ -1,5 +1,17 @@
 # Changelog
 
+## ? - v0.3.3 - Beta
+
+* (Add) PHZ file format
+* (Add) "Phrozen Sonic Mini" printer
+* (Add) Convert Chitubox files to PHZ files and otherwise
+* (Add) Convert Chitubox and PHZ files to ZCodex
+* (Add) Elapsed seconds to convertion and extract dialog
+* (Improvement) "Convert To" menu now only show available formats to convert to, if none menu is disabled
+* (Fixed) Enforce cbt encryption
+* (Fixed) Not implemented convertions stay processing forever
+
+
 ## 11/05/2020 - v0.3.2 - Beta
 
 * (Add) Show layer differences where daker pixels were also present on previous layer and the white pixels the difference between previous and current layer.

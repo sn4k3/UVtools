@@ -31,6 +31,11 @@ namespace PrusaSL1Reader
         FileExtension[] FileExtensions { get; }
 
         /// <summary>
+        /// Gets the implemented file formats able to convert to
+        /// </summary>
+        Type[] ConvertToFormats { get; }
+
+        /// <summary>
         /// Gets the available <see cref="FileFormat.PrintParameterModifier"/>
         /// </summary>
         FileFormat.PrintParameterModifier[] PrintParameterModifiers { get; }

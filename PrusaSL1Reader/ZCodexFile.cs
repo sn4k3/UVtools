@@ -149,6 +149,8 @@ namespace PrusaSL1Reader
             new FileExtension("zcodex", "ZCodex/Z-Suite Files")
         };
 
+        public override Type[] ConvertToFormats { get; } = null;
+
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
             PrintParameterModifier.InitialLayerCount,
             PrintParameterModifier.InitialExposureSeconds,

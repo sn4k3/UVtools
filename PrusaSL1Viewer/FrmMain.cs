@@ -216,7 +216,7 @@ namespace PrusaSL1Viewer
                                 FrmLoading.ShowDialog();
                                 
                                 if (MessageBox.Show(
-                                        $"Extraction was successful, browser folder to see it contents.\n{finalPath}\nPress 'Yes' if you want open the target folder, otherwise select 'No' to continue.",
+                                        $"Extraction was successful ({FrmLoading.StopWatch.ElapsedMilliseconds/1000}s), browser folder to see it contents.\n{finalPath}\nPress 'Yes' if you want open the target folder, otherwise select 'No' to continue.",
                                         "Extraction completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
                                     DialogResult.Yes)
                                 {
@@ -514,24 +514,42 @@ namespace PrusaSL1Viewer
                     DisableGUI();
                     FrmLoading.SetDescription($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {Path.GetExtension(dialog.FileName)}");
 
-                    var task = Task.Factory.StartNew(() =>
+                    Task<bool> task = Task<bool>.Factory.StartNew(() =>
                     {
-                        SlicerFile.Convert(fileFormat, dialog.FileName);
-                        Invoke((MethodInvoker)delegate {
-                            // Running on the UI thread
-                            EnableGUI(true);
-                        });
+                        bool result = false;
+                        try
+                        {
+                            result = SlicerFile.Convert(fileFormat, dialog.FileName);
+                        }
+                        catch (Exception)
+                        {
+                        }
+                        finally
+                        {
+                            Invoke((MethodInvoker)delegate {
+                                // Running on the UI thread
+                                EnableGUI(true);
+                            });
+                        }
+
+                        return result;
                     });
 
                     FrmLoading.ShowDialog();
-
                     
-                    if (MessageBox.Show($"Convertion is completed: {Path.GetFileName(dialog.FileName)}\n" +
-                                        "Do you want open the converted file in a new window?",
-                        "Convertion completed", MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Information) == DialogResult.Yes)
+                    if (task.Result)
                     {
-                        Program.NewInstance(dialog.FileName);
+                        if (MessageBox.Show($"Convertion is completed: {Path.GetFileName(dialog.FileName)} in {FrmLoading.StopWatch.ElapsedMilliseconds/1000}s\n" +
+                                            "Do you want open the converted file in a new window?",
+                            "Convertion completed", MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Information) == DialogResult.Yes)
+                        {
+                            Program.NewInstance(dialog.FileName);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Convertion was unsuccessful! Maybe not implemented...", "Convertion unsuccessful", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
 
@@ -682,18 +700,27 @@ namespace PrusaSL1Viewer
                 return;
             }
 
-            foreach (var fileFormat in FileFormat.AvaliableFormats)
+            if (!ReferenceEquals(SlicerFile.ConvertToFormats, null))
             {
-                if (fileFormat.GetType() == SlicerFile.GetType()) continue;
-
-                string extensions = fileFormat.FileExtensions.Length > 0 ? $" ({fileFormat.GetFileExtensions()})" : string.Empty;
-                ToolStripMenuItem menuItem = new ToolStripMenuItem(fileFormat.GetType().Name.Replace("File", extensions))
+                foreach (var fileFormatType in SlicerFile.ConvertToFormats)
                 {
-                    Tag = fileFormat,
-                    Image = Properties.Resources.layers_16x16
-                };
-                menuItem.Click += ConvertToItemOnClick;
-                menuFileConvert.DropDownItems.Add(menuItem);
+                    FileFormat fileFormat = FileFormat.FindByType(fileFormatType);
+                    //if (fileFormat.GetType() == SlicerFile.GetType()) continue;
+
+                    string extensions = fileFormat.FileExtensions.Length > 0
+                        ? $" ({fileFormat.GetFileExtensions()})"
+                        : string.Empty;
+                    ToolStripMenuItem menuItem =
+                        new ToolStripMenuItem(fileFormat.GetType().Name.Replace("File", extensions))
+                        {
+                            Tag = fileFormat,
+                            Image = Properties.Resources.layers_16x16
+                        };
+                    menuItem.Click += ConvertToItemOnClick;
+                    menuFileConvert.DropDownItems.Add(menuItem);
+                }
+
+                menuFileConvert.Enabled = menuFileConvert.DropDownItems.Count > 0;
             }
 
             scLeft.Panel1Collapsed = SlicerFile.CreatedThumbnailsCount == 0;
@@ -726,7 +753,7 @@ namespace PrusaSL1Viewer
             menuFileReload.Enabled =
             menuFileClose.Enabled =
             menuFileExtract.Enabled =
-            menuFileConvert.Enabled =
+            
             sbLayers.Enabled =
             pbLayers.Enabled =
             menuEdit.Enabled =
