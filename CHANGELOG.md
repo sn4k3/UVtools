@@ -1,6 +1,6 @@
 # Changelog
 
-## ? - v0.3.3 - Beta
+## 19/05/2020 - v0.3.3 - Beta
 
 * (Add) PHZ file format
 * (Add) "Phrozen Sonic Mini" printer
