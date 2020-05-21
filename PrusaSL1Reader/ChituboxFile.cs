@@ -743,7 +743,7 @@ namespace PrusaSL1Reader
 
                     currentOffset += Helpers.SerializeWriteFileStream(outputFile, layer);
 
-                    if (!ReferenceEquals(layerHash, null)) return;
+                    if (!ReferenceEquals(layerHash, null)) continue;
 
                     outputFile.Seek(layerDataCurrentOffset, SeekOrigin.Begin);
                     layerDataCurrentOffset += Helpers.WriteFileStream(outputFile, byteArr);

@@ -506,6 +506,7 @@ namespace PrusaSL1Reader
             base.Encode(fileFullPath);
             LayersHash.Clear();
 
+            
             uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
             LayersDefinitions = new Layer[HeaderSettings.LayerCount, HeaderSettings.AntiAliasLevel];
             using (var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write))
@@ -653,7 +654,7 @@ namespace PrusaSL1Reader
 
                     currentOffset += Helpers.SerializeWriteFileStream(outputFile, layer);
 
-                    if (!ReferenceEquals(layerHash, null)) return;
+                    if (!ReferenceEquals(layerHash, null)) continue;
 
                     outputFile.Seek(layerDataCurrentOffset, SeekOrigin.Begin);
                     layerDataCurrentOffset += Helpers.WriteFileStream(outputFile, byteArr);

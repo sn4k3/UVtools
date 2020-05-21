@@ -1,5 +1,9 @@
 # Changelog
 
+## 21/05/2020 - v0.3.3.1 - Beta
+
+* (Fix) Unable to convert Chitubox or PHZ files when enconter repeated layer images
+
 ## 19/05/2020 - v0.3.3 - Beta
 
 * (Add) PHZ file format
@@ -8,8 +12,8 @@
 * (Add) Convert Chitubox and PHZ files to ZCodex
 * (Add) Elapsed seconds to convertion and extract dialog
 * (Improvement) "Convert To" menu now only show available formats to convert to, if none menu is disabled
-* (Fixed) Enforce cbt encryption
-* (Fixed) Not implemented convertions stay processing forever
+* (Fix) Enforce cbt encryption
+* (Fix) Not implemented convertions stay processing forever
 
 
 ## 11/05/2020 - v0.3.2 - Beta
