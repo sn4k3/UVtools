@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.Net.Compilers.Toolset.3.6.0-4.final\build\Microsoft.Net.Compilers.Toolset.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.Toolset.3.6.0-4.final\build\Microsoft.Net.Compilers.Toolset.props')" />
+  <Import Project="..\packages\Microsoft.Net.Compilers.Toolset.3.7.0-1.final\build\Microsoft.Net.Compilers.Toolset.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.Toolset.3.7.0-1.final\build\Microsoft.Net.Compilers.Toolset.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -60,6 +60,15 @@
     <Reference Include="BinarySerializer, Version=8.5.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\BinarySerializer.8.5.1\lib\net46\BinarySerializer.dll</HintPath>
     </Reference>
+    <Reference Include="Cyotek.Windows.Forms.ImageBox, Version=1.2.0.0, Culture=neutral, PublicKeyToken=58daa28b0b2de221, processorArchitecture=MSIL">
+      <HintPath>..\packages\CyotekImageBox.1.3.0-Alpha1\lib\net20\Cyotek.Windows.Forms.ImageBox.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.UI, Version=4.2.0.3662, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
+      <HintPath>..\packages\Emgu.CV.runtime.windows.4.2.0.3662\lib\net461\Emgu.CV.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.World.NetStandard, Version=1.0.0.0, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
+      <HintPath>..\packages\Emgu.CV.4.2.0.3662\lib\netstandard2.0\Emgu.CV.World.NetStandard.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -116,7 +125,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0-preview.3.20214.6\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0-preview.4.20251.6\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Extensions, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.Extensions.4.3.1\lib\net462\System.Runtime.Extensions.dll</HintPath>
@@ -128,6 +137,9 @@
     <Reference Include="System.Threading.Thread" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="ZedGraph, Version=5.1.7.430, Culture=neutral, PublicKeyToken=02a83cbd123fcd60, processorArchitecture=MSIL">
+      <HintPath>..\packages\ZedGraph.5.1.7\lib\net35-Client\ZedGraph.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FrmInputBox.cs">
@@ -160,10 +172,10 @@
     <Compile Include="ImageBox.Designer.cs">
       <DependentUpon>ImageBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="EmguExtensions.cs" />
     <Compile Include="ImageSharpExtensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UniversalLayerExtensions.cs" />
     <EmbeddedResource Include="FrmAbout.resx">
       <DependentUpon>FrmAbout.cs</DependentUpon>
     </EmbeddedResource>
@@ -244,6 +256,11 @@
     <None Include="Images\Cancel-24x24.png" />
     <None Include="Images\Ok-24x24.png" />
     <None Include="Images\SaveAs-16x16.png" />
+    <None Include="Images\search-16x16.png" />
+    <None Include="Images\pixel-16x16.png" />
+    <None Include="Images\Geometry-16x16.png" />
+    <None Include="Images\CNCMachine-16x16.png" />
+    <Content Include="License-LGPL.txt" />
     <Content Include="PrusaSL1Viewer.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -260,12 +277,15 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /y $(ProjectDir)..\LICENSE $(ProjectDir)$(OutDir)</PostBuildEvent>
+    <PostBuildEvent>xcopy /y $(ProjectDir)..\LICENSE $(ProjectDir)$(OutDir)
+xcopy /i /e /y $(ProjectDir)..\PrusaSlicer $(ProjectDir)$(OutDir)\PrusaSlicer</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.Toolset.3.6.0-4.final\build\Microsoft.Net.Compilers.Toolset.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.Toolset.3.6.0-4.final\build\Microsoft.Net.Compilers.Toolset.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.Toolset.3.7.0-1.final\build\Microsoft.Net.Compilers.Toolset.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.Toolset.3.7.0-1.final\build\Microsoft.Net.Compilers.Toolset.props'))" />
+    <Error Condition="!Exists('..\packages\Emgu.CV.runtime.windows.4.2.0.3662\build\Emgu.CV.runtime.windows.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Emgu.CV.runtime.windows.4.2.0.3662\build\Emgu.CV.runtime.windows.targets'))" />
   </Target>
+  <Import Project="..\packages\Emgu.CV.runtime.windows.4.2.0.3662\build\Emgu.CV.runtime.windows.targets" Condition="Exists('..\packages\Emgu.CV.runtime.windows.4.2.0.3662\build\Emgu.CV.runtime.windows.targets')" />
 </Project>

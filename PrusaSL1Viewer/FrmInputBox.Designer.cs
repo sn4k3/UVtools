@@ -40,19 +40,21 @@
             // 
             // lbDescription
             // 
-            this.lbDescription.AutoSize = true;
+            this.lbDescription.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lbDescription.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbDescription.Location = new System.Drawing.Point(18, 14);
+            this.lbDescription.Location = new System.Drawing.Point(13, 14);
             this.lbDescription.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbDescription.Name = "lbDescription";
-            this.lbDescription.Size = new System.Drawing.Size(89, 20);
+            this.lbDescription.Size = new System.Drawing.Size(495, 128);
             this.lbDescription.TabIndex = 0;
             this.lbDescription.Text = "Description";
             // 
             // lbCurrentValue
             // 
             this.lbCurrentValue.AutoSize = true;
-            this.lbCurrentValue.Location = new System.Drawing.Point(20, 72);
+            this.lbCurrentValue.Location = new System.Drawing.Point(13, 150);
             this.lbCurrentValue.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbCurrentValue.Name = "lbCurrentValue";
             this.lbCurrentValue.Size = new System.Drawing.Size(111, 20);
@@ -64,17 +66,17 @@
             this.tbCurrentValue.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tbCurrentValue.CausesValidation = false;
-            this.tbCurrentValue.Location = new System.Drawing.Point(140, 68);
+            this.tbCurrentValue.Location = new System.Drawing.Point(132, 147);
             this.tbCurrentValue.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tbCurrentValue.Name = "tbCurrentValue";
             this.tbCurrentValue.ReadOnly = true;
-            this.tbCurrentValue.Size = new System.Drawing.Size(307, 26);
+            this.tbCurrentValue.Size = new System.Drawing.Size(376, 26);
             this.tbCurrentValue.TabIndex = 2;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(20, 111);
+            this.label1.Location = new System.Drawing.Point(13, 189);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(89, 20);
@@ -85,10 +87,11 @@
             // 
             this.numNewValue.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.numNewValue.Location = new System.Drawing.Point(140, 108);
+            this.numNewValue.DecimalPlaces = 2;
+            this.numNewValue.Location = new System.Drawing.Point(132, 187);
             this.numNewValue.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.numNewValue.Name = "numNewValue";
-            this.numNewValue.Size = new System.Drawing.Size(309, 26);
+            this.numNewValue.Size = new System.Drawing.Size(378, 26);
             this.numNewValue.TabIndex = 4;
             this.numNewValue.ValueChanged += new System.EventHandler(this.ValueChanged);
             // 
@@ -98,7 +101,7 @@
             this.btnModify.Enabled = false;
             this.btnModify.Image = global::PrusaSL1Viewer.Properties.Resources.Ok_24x24;
             this.btnModify.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnModify.Location = new System.Drawing.Point(139, 148);
+            this.btnModify.Location = new System.Drawing.Point(193, 227);
             this.btnModify.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnModify.Name = "btnModify";
             this.btnModify.Size = new System.Drawing.Size(150, 48);
@@ -114,7 +117,7 @@
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Image = global::PrusaSL1Viewer.Properties.Resources.Cancel_24x24;
             this.btnCancel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnCancel.Location = new System.Drawing.Point(298, 148);
+            this.btnCancel.Location = new System.Drawing.Point(359, 227);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(150, 48);
@@ -129,7 +132,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(466, 211);
+            this.ClientSize = new System.Drawing.Size(527, 298);
             this.Controls.Add(this.btnModify);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.numNewValue);

@@ -246,7 +246,7 @@ namespace PrusaSL1Reader
             /// Gets the parameter used to control encryption.
             /// Not totally understood. 0 for cbddlp files, 0xF for ctb files.
             /// </summary>
-            [FieldOrder(45)] public uint EncryptionMode { get; set; } = 0xF;
+            [FieldOrder(45)] public uint EncryptionMode { get; set; } = 28;
 
             /// <summary>
             /// Gets a number that increments with time or number of models sliced, or both. Zeroing it in output seems to have no effect. Possibly a user tracking bug.
@@ -506,7 +506,13 @@ namespace PrusaSL1Reader
             base.Encode(fileFullPath);
             LayersHash.Clear();
 
-            
+            /*if (HeaderSettings.EncryptionKey == 0)
+            {
+                Random rnd = new Random();
+                HeaderSettings.EncryptionKey = (uint)rnd.Next(short.MaxValue, int.MaxValue);
+            }*/
+
+
             uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
             LayersDefinitions = new Layer[HeaderSettings.LayerCount, HeaderSettings.AntiAliasLevel];
             using (var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write))
@@ -630,7 +636,7 @@ namespace PrusaSL1Reader
                 {
                     Layer layer = new Layer();
                     Layer layerHash = null;
-                    var image = GetLayerImage(layerIndex);
+                    var image = this[layerIndex].Image;
                     rawData = EncodePhzImage(image, layerIndex);
 
                     var byteArr = rawData.ToArray();
@@ -708,7 +714,7 @@ namespace PrusaSL1Reader
                 var pixelRowSpan = image.GetPixelRowSpan(y);
                 for (int x = 0; x < image.Width; x++)
                 {
-                    var grey7 = (byte)((pixelRowSpan[x].PackedValue >> 1) & 0x7c);
+                    var grey7 = (byte)((pixelRowSpan[x].PackedValue >> 1) & 0x7f);
 
                     if (color == byte.MaxValue)
                     {
@@ -844,46 +850,12 @@ namespace PrusaSL1Reader
                 }
             }
 
-            Layers = new byte[LayerCount][];
+            LayerManager = new LayerManager(LayerCount);
 
             Parallel.For(0, LayerCount, layerIndex => {
                     var image = DecodePhzImage((uint) layerIndex);
-                    using (var ms = new MemoryStream())
-                    {
-                        image.Save(ms, Helpers.PngEncoder);
-                        Layers[layerIndex] = CompressLayer(ms.ToArray());
-                    }
+                    this[layerIndex] = new LayerManager.Layer((uint) layerIndex, image);
             });
-
-            /*byte[,][] rleArr = new byte[LayerCount, HeaderSettings.AntiAliasLevel][];
-            for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
-            {
-                //byte[][] rleArr = new byte[HeaderSettings.AntiAliasLevel][];
-                for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
-                {
-                    Layer layer = LayersDefinitions[layerIndex, aaIndex];
-                    inputFile.Seek(layer.DataAddress, SeekOrigin.Begin);
-                    rleArr[layerIndex, aaIndex] = new byte[(int)layer.DataSize];
-                    inputFile.Read(rleArr[layerIndex, aaIndex], 0, (int)layer.DataSize);
-                }
-
-                var image = IsCbtFile ? DecodeCbtImage(rleArr[0], layerIndex) : DecodeCbddlpImage(rleArr, layerIndex);
-                using (var ms = new MemoryStream())
-                {
-                    image.Save(ms, Helpers.PngEncoder);
-                    Layers[layerIndex] = ms.ToArray();
-                }
-            //}
-
-            /*for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
-            {
-                var image = IsCbtFile ? DecodeCbtImage(layerIndex) : DecodeCbddlpImage(layerIndex);
-                using (var ms = new MemoryStream())
-                {
-                    image.Save(ms, Helpers.BmpEncoder);
-                    Layers[layerIndex] = CompressLayer(ms.ToArray());
-                }
-            }*/
         }
 
        private Image<L8> DecodePhzImage(uint layerIndex)
@@ -903,13 +875,13 @@ namespace PrusaSL1Reader
 
             image.TryGetSinglePixelSpan(out var span);
 
-            for (var n = 0; n < rawImageData.Length; n++)
+            foreach (var code in rawImageData)
             {
-                byte code = rawImageData[n];
-
-                if ((code & 0x80) != 0)
+                if ((code & 0x80) == 0x80)
                 {
-                    lastColor = (byte) (code << 1);
+                    //lastColor = (byte) (code << 1);
+                    // // Convert from 7bpp to 8bpp (extending the last bit)
+                    lastColor = (byte) (((code & 0x7f) << 1) | (code & 1));
                     if (index < limit)
                     {
                         span[index].PackedValue = lastColor;
@@ -1052,6 +1024,16 @@ namespace PrusaSL1Reader
 
         public override void SaveAs(string filePath = null)
         {
+            if (LayerManager.IsModified)
+            {
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    FileFullPath = filePath;
+                }
+                Encode(FileFullPath);
+                return;
+            }
+
             if (!string.IsNullOrEmpty(filePath))
             {
                 File.Copy(FileFullPath, filePath, true);
@@ -1084,7 +1066,7 @@ namespace PrusaSL1Reader
                 outputFile.Close();
             }
 
-            Decode(FileFullPath);
+            //Decode(FileFullPath);
         }
 
         public override bool Convert(Type to, string fileFullPath)
@@ -1093,7 +1075,7 @@ namespace PrusaSL1Reader
             {
                 ChituboxFile file = new ChituboxFile
                 {
-                    Layers = Layers
+                    LayerManager = LayerManager
                 };
 
 
@@ -1204,7 +1186,7 @@ namespace PrusaSL1Reader
                             }
                         },
                     },
-                    Layers = Layers
+                    LayerManager = LayerManager
                 };
 
                 float usedMaterial = UsedMaterial / LayerCount;

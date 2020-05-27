@@ -280,41 +280,54 @@ namespace PrusaSL1Reader.Extensions
         }
 
         /// <summary>
-        /// Create a file into archive and write content to it
+        /// Get or put a file into archive
+        /// </summary>
+        /// <param name="input"><see cref="ZipArchive"/></param>
+        /// <param name="filename">Filename to create</param>
+        /// <returns>Created <see cref="ZipArchiveEntry"/></returns>
+        public static ZipArchiveEntry GetPutFile(this ZipArchive input, string filename)
+        {
+            return input.GetEntry(filename) ?? input.CreateEntry(filename);
+        }
+
+        /// <summary>
+        /// Create or update a file into archive and write content to it
         /// </summary>
         /// <param name="input"><see cref="ZipArchive"/></param>
         /// <param name="filename">Filename to create</param>
         /// <param name="content">Content to write</param>
         /// <returns>Created <see cref="ZipArchiveEntry"/></returns>
-        public static ZipArchiveEntry PutFileContent(this ZipArchive input, string filename, string content, bool deleteFirst = true)
+        public static ZipArchiveEntry PutFileContent(this ZipArchive input, string filename, string content)
         {
-            if(deleteFirst) input.GetEntry(filename)?.Delete();
+            ZipArchiveEntry entry = input.GetEntry(filename) ?? input.CreateEntry(filename);
 
-            var entry = input.CreateEntry(filename);
-            if (ReferenceEquals(content, null)) return entry;
-            using (TextWriter tw = new StreamWriter(entry.Open()))
+            if (string.IsNullOrEmpty(content)) return entry;
+            Stream stream = entry.Open();
+            stream.SetLength(0);
+            using (TextWriter tw = new StreamWriter(stream))
             {
                 tw.Write(content);
                 tw.Close();
             }
-
             return entry;
         }
 
-        public static ZipArchiveEntry PutFileContent(this ZipArchive input, string filename, Stream content, bool deleteFirst = true)
+        /// <summary>
+        /// Create or update a file into archive and write content to it
+        /// </summary>
+        /// <param name="input"><see cref="ZipArchive"/></param>
+        /// <param name="filename">Filename to create</param>
+        /// <param name="content">Content to write</param>
+        /// <returns>Created <see cref="ZipArchiveEntry"/></returns>
+        public static ZipArchiveEntry PutFileContent(this ZipArchive input, string filename, byte[] content)
         {
-            if (deleteFirst) input.GetEntry(filename)?.Delete();
-            var entry = input.CreateEntry(filename);
-            if (ReferenceEquals(content, null)) return entry;
-            using (StreamWriter tw = new StreamWriter(entry.Open()))
-            {
-                tw.Write(content);
-                tw.Close();
-            }
+            ZipArchiveEntry entry = input.GetEntry(filename) ?? input.CreateEntry(filename);
 
+            if (ReferenceEquals(content, null)) return entry;
+            Stream stream = entry.Open();
+            stream.SetLength(0);
+            stream.Write(content, 0, content.Length);
             return entry;
         }
-
-
     }
 }

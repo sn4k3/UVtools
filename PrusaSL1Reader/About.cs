@@ -10,6 +10,7 @@ namespace PrusaSL1Reader
 {
     public static class About
     {
+        public static string Software = "PrusaSL1Viewer";
         public static string Author = "Tiago Conceição";
         public static string Company = "PTRTECH";
         public static string Website = "https://github.com/sn4k3/PrusaSL1Viewer";

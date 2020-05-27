@@ -6,8 +6,11 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using PrusaSL1Reader.Extensions;
 using SixLabors.ImageSharp;
@@ -20,7 +23,7 @@ namespace PrusaSL1Reader
     /// <summary>
     /// Slicer <see cref="FileFormat"/> representation
     /// </summary>
-    public abstract class FileFormat : IFileFormat, IDisposable, IEquatable<FileFormat>
+    public abstract class FileFormat : IFileFormat, IDisposable, IEquatable<FileFormat>, IEnumerable<LayerManager.Layer>
     {
         #region Enums
 
@@ -130,6 +133,7 @@ namespace PrusaSL1Reader
             new ChituboxFile(), // cbddlp, cbt, photon
             new PHZFile(), // phz
             new ZCodexFile(),   // zcodex
+            new CWSFile(),   // CWS
         };
 
         /// <summary>
@@ -250,8 +254,12 @@ namespace PrusaSL1Reader
         public abstract Size[] ThumbnailsOriginalSize { get; }
 
         public Image<Rgba32>[] Thumbnails { get; set; }
-        
-        public byte[][] Layers { get; set; }
+        public LayerManager LayerManager { get; set; }
+
+        /// <summary>
+        /// Gets if any layer got modified
+        /// </summary>
+        public bool ModifiedLayers => LayerManager.IsModified;
 
         public abstract uint ResolutionX { get; }
 
@@ -285,7 +293,7 @@ namespace PrusaSL1Reader
         
         public abstract string MachineName { get; }
 
-        public virtual string GCode { get; set; }
+        public StringBuilder GCode { get; set; }
 
         public abstract object[] Configs { get; }
 
@@ -296,6 +304,38 @@ namespace PrusaSL1Reader
         protected FileFormat()
         {
             Thumbnails = new Image<Rgba32>[ThumbnailsCount];
+        }
+        #endregion
+
+        #region Indexers
+        public LayerManager.Layer this[int index]
+        {
+            get => LayerManager[index];
+            set => LayerManager[index] = value;
+        }
+
+        public LayerManager.Layer this[uint index]
+        {
+            get => LayerManager[index];
+            set => LayerManager[index] = value;
+        }
+
+        public LayerManager.Layer this[long index]
+        {
+            get => LayerManager[index];
+            set => LayerManager[index] = value;
+        }
+        #endregion
+
+        #region Numerators
+        public IEnumerator<LayerManager.Layer> GetEnumerator()
+        {
+            return ((IEnumerable<LayerManager.Layer>)LayerManager.Layers).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
         #endregion
 
@@ -328,7 +368,9 @@ namespace PrusaSL1Reader
         public virtual void Clear()
         {
             FileFullPath = null;
-            Layers = null;
+            LayerManager = null;
+            GCode = null;
+
             if (!ReferenceEquals(Thumbnails, null))
             {
                 for (int i = 0; i < ThumbnailsCount; i++)
@@ -336,6 +378,8 @@ namespace PrusaSL1Reader
                     Thumbnails[i]?.Dispose();
                 }
             }
+
+            
         }
 
         public void FileValidation(string fileFullPath)
@@ -354,7 +398,7 @@ namespace PrusaSL1Reader
         public bool IsExtensionValid(string extension, bool isFilePath = false)
         {
             extension = isFilePath ? Path.GetExtension(extension)?.Remove(0, 1) : extension;
-            return FileExtensions.Any(fileExtension => fileExtension.Extension.Equals(extension));
+            return FileExtensions.Any(fileExtension => fileExtension.Extension.Equals(extension, StringComparison.InvariantCultureIgnoreCase));
         }
 
         public string GetFileExtensions(string prepend = ".", string separator = ", ")
@@ -399,41 +443,7 @@ namespace PrusaSL1Reader
                 Thumbnails[i] = image.Clone();
             }
         }
-
-        public byte[] CompressLayer(Stream input)
-        {
-            return CompressLayer(input.ToArray());
-        }
-
-        public byte[] CompressLayer(byte[] input)
-        {
-            return input;
-            /*using (MemoryStream output = new MemoryStream())
-            {
-                using (DeflateStream dstream = new DeflateStream(output, CompressionLevel.Optimal))
-                {
-                    dstream.Write(input, 0, input.Length);
-                }
-                return output.ToArray();
-            }*/
-        }
-
-        public byte[] DecompressLayer(byte[] input)
-        {
-            return input;
-            /*using (MemoryStream ms = new MemoryStream(input))
-            {
-                using (MemoryStream output = new MemoryStream())
-                {
-                    using (DeflateStream dstream = new DeflateStream(ms, CompressionMode.Decompress))
-                    {
-                        dstream.CopyTo(output);
-                    }
-                    return output.ToArray();
-                }
-            }*/
-        }
-
+        
         public virtual void Encode(string fileFullPath)
         {
             if (File.Exists(fileFullPath))
@@ -528,14 +538,23 @@ namespace PrusaSL1Reader
                     i++;
                 }
 
-                Parallel.For(0, LayerCount, layerIndex => {
-                        var byteArr = GetLayer((uint) layerIndex);
-                        using (FileStream stream = File.Create(Path.Combine(path, $"Layer{layerIndex}.png"), byteArr.Length))
-                        {
-                            stream.Write(byteArr, 0, byteArr.Length);
-                            stream.Close();
-                        }
-                    });
+                Parallel.ForEach(this, (layer) =>
+                {
+                    var byteArr = layer.RawData;
+                    using (FileStream stream = File.Create(Path.Combine(path, $"Layer{layer.Index}.png"), byteArr.Length))
+                    {
+                        stream.Write(byteArr, 0, byteArr.Length);
+                        stream.Close();
+                    }
+                });
+                /* Parallel.For(0, LayerCount, layerIndex => {
+                         var byteArr = this[layerIndex].RawData;
+                         using (FileStream stream = File.Create(Path.Combine(path, $"Layer{layerIndex}.png"), byteArr.Length))
+                         {
+                             stream.Write(byteArr, 0, byteArr.Length);
+                             stream.Close();
+                         }
+                     });*/
                 /*for (i = 0; i < LayerCount; i++)
                 {
                     var byteArr = GetLayer(i);
@@ -548,16 +567,6 @@ namespace PrusaSL1Reader
             }
         }
 
-        public virtual byte[] GetLayer(uint layerIndex)
-        {
-            return layerIndex >= LayerCount ? null : DecompressLayer(Layers[layerIndex]);
-        }
-
-        public virtual Image<L8> GetLayerImage(uint layerIndex)
-        {
-            return layerIndex >= LayerCount ? null : Image.Load<L8>(GetLayer(layerIndex));
-        }
-        
         public virtual float GetHeightFromLayer(uint layerNum)
         {
             return (float)Math.Round(layerNum * LayerHeight, 2);

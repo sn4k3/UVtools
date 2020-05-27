@@ -1,5 +1,27 @@
 # Changelog
 
+## 27/05/2020 - v0.4 - Beta
+
+* (Add) CWS file format
+* (Add) Nova3D Elfin printer
+* (Add) Zoom and pan functions to layer image
+* (Add) Pixel editor to add or remove pixels
+* (Add) Outline layer showing only borders
+* (Add) Image mutators, Erode, Dilate, PyrDownUp, Smooth
+* (Add) Task to save operation
+* (Add) Printers can be installed from GUI Menu -> About -> Install printers into PrusaSlicer
+* (Improvement) Layer Management
+* (Improvement) Faster Save and Save As operation
+* (Fix) Bad layer image when converting SL1 to PHZ
+* (Fix) Corrected EncryptionMode for PHZ files
+* (Fix) Save As can change file extension
+* (Fix) Save As no longer reload file
+* (Fix) SL1 files not accepting float numbers for exposures
+* (Fix) SL1 files was calculating the wrong layer count when using slow layer settings
+* (Fix) Modifiers can't accept float values
+* (Fix) Sonic Mini prints mirroed
+* (Fix) Layer resolution shows wrong values
+
 ## 21/05/2020 - v0.3.3.1 - Beta
 
 * (Fix) Unable to convert Chitubox or PHZ files when enconter repeated layer images

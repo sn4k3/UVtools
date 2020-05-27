@@ -124,8 +124,8 @@
   <data name="File-Refresh-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\File-Refresh-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Open-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Open-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Ok-24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Ok-24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="layers-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\layers-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -136,11 +136,14 @@
   <data name="Global-Network-icon-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Global-Network-icon-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="search-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\search-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Cancel-24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Cancel-24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Ok-24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Ok-24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SaveAs-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\SaveAs-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Back-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Back-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -154,6 +157,9 @@
   <data name="Convert-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Convert-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Open-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Open-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Button-Info-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Button-Info-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -162,6 +168,12 @@
   </data>
   <data name="Extract-object-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Extract-object-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Geometry-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Geometry-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pixel-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\pixel-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="PrusaSL1Viewer" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\PrusaSL1Viewer.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -178,7 +190,7 @@
   <data name="Cancel-32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Cancel-32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="SaveAs-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\SaveAs-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="CNCMachine-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\CNCMachine-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

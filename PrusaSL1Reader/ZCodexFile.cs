@@ -7,15 +7,13 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.IO.Compression;
-using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using PrusaSL1Reader.Extensions;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace PrusaSL1Reader
@@ -124,7 +122,7 @@ namespace PrusaSL1Reader
             public string MaterialUsages { get; set; }
         }
 
-        public class Layer
+        public class LayerData
         {
             public int SupportLayerFileIndex { get; set; } = -1;
             public int LayerFileIndex { get; set; } = -1;
@@ -141,7 +139,7 @@ namespace PrusaSL1Reader
         public UserSettingsdata UserSettings { get; set; }
         public ZCodeMetadata ZCodeMetadataSettings { get; set; }
 
-        public List<Layer> LayersSettings { get; } = new List<Layer>();
+        public List<LayerData> LayersSettings { get; } = new List<LayerData>();
 
         public override FileFormatType FileType => FileFormatType.Archive;
 
@@ -195,8 +193,6 @@ namespace PrusaSL1Reader
 
         public override string MachineName => ZCodeMetadataSettings.PrinterName;
 
-        public override string GCode { get; set; }
-
         public override object[] Configs => new[] {(object) ResinMetadataSettings, UserSettings, ZCodeMetadataSettings};
         #endregion
 
@@ -206,7 +202,6 @@ namespace PrusaSL1Reader
         {
             base.Clear();
             LayersSettings.Clear();
-            GCode = null;
         }
 
         public override void Encode(string fileFullPath)
@@ -215,9 +210,9 @@ namespace PrusaSL1Reader
             using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
             {
 
-                outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings), false);
-                outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings), false);
-                outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings), false);
+                outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings));
+                outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings));
+                outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings));
 
                 if (CreatedThumbnailsCount > 0)
                 {
@@ -228,31 +223,33 @@ namespace PrusaSL1Reader
                     }
                 }
 
-                GCode = GCodeStart;
+                GCode = new StringBuilder(GCodeStart);
 
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
-                    GCode += $"{GCodeKeywordSlice} {layerIndex}\n" +
-                             $"G1 Z{UserSettings.ZLiftDistance} F{UserSettings.ZLiftRetractRate}\n" +
-                             $"G1 Z-{UserSettings.ZLiftDistance - LayerHeight} F{UserSettings.ZLiftFeedRate}\n" +
-                             $"{GCodeKeywordDelayBlank}\n" +
-                             "M106 S255\n" +
-                             $"{GCodeKeywordDelayModel}\n" +
-                             "M106 S0\n";
+                    GCode.AppendLine($"{GCodeKeywordSlice} {layerIndex}");
+                    GCode.AppendLine($"G1 Z{LiftHeight} F{LiftSpeed}");
+                    GCode.AppendLine($"G1 Z-{LiftHeight - LayerHeight} F{RetractSpeed}");
+                    GCode.AppendLine(GCodeKeywordDelayBlank);
+                    GCode.AppendLine("M106 S255");
+                    GCode.AppendLine(GCodeKeywordDelayModel);
+                    GCode.AppendLine("M106 S0");
+
 
                     var layerimagePath = $"{FolderImages}/{FolderImageName}{layerIndex:D5}.png";
                     using (Stream stream = outputFile.CreateEntry(layerimagePath).Open())
                     {
                         //image.Save(stream, Helpers.PngEncoder);
-                        var byteArr = GetLayer(layerIndex);
+                        var byteArr = this[layerIndex].RawData;
                         stream.Write(byteArr, 0, byteArr.Length);
                         stream.Close();
                     }
                 }
 
-                GCode += $"G1 Z40.0 F{UserSettings.ZLiftFeedRate}\n" +
-                         "M18\n";
-                outputFile.PutFileContent("ResinGCodeData", GCode, false);
+                GCode.AppendLine($"G1 Z40.0 F{UserSettings.ZLiftFeedRate}");
+                GCode.AppendLine("M18");
+
+                outputFile.PutFileContent("ResinGCodeData", GCode.ToString());
             }
         }
 
@@ -297,23 +294,22 @@ namespace PrusaSL1Reader
                     throw new FileLoadException("ResinGCodeData not found", fileFullPath);
                 }
 
-                Layers = new byte[LayerCount][];
-                GCode = string.Empty;
+                LayerManager = new LayerManager(LayerCount);
+                GCode = new StringBuilder();
                 using (TextReader tr = new StreamReader(entry.Open()))
                 {
                     string line;
                     int layerIndex = 0;
                     int layerFileIndex = 0;
                     string layerimagePath = null;
-                    uint iLayer = 0;
                     while (!ReferenceEquals(line = tr.ReadLine(), null))
                     {
-                        GCode += line + Environment.NewLine;
+                        GCode.AppendLine(line);
                         if (line.StartsWith(GCodeKeywordSlice))
                         {
                             layerFileIndex = int.Parse(line.Substring(GCodeKeywordSlice.Length));
                             layerimagePath = $"{FolderImages}/{FolderImageName}{layerFileIndex:D5}.png";
-                            if (LayersSettings.Count - 1 < layerIndex) LayersSettings.Add(new Layer());
+                            if (LayersSettings.Count - 1 < layerIndex) LayersSettings.Add(new LayerData());
                             continue;
                         }
 
@@ -328,7 +324,7 @@ namespace PrusaSL1Reader
                         {
                             LayersSettings[layerIndex].LayerFileIndex = layerFileIndex;
                             LayersSettings[layerIndex].LayerEntry = inputFile.GetEntry(layerimagePath);
-                            Layers[iLayer++] = CompressLayer(LayersSettings[layerIndex].LayerEntry.Open());
+                            this[layerIndex] = new LayerManager.Layer((uint) layerIndex, LayersSettings[layerIndex].LayerEntry.Open(), LayersSettings[layerIndex].LayerEntry.Name);
                             layerIndex++;
                             continue;
                         }
@@ -406,10 +402,17 @@ namespace PrusaSL1Reader
                 outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings));
                 outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings));
                 outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings));
-                outputFile.PutFileContent("ResinGCodeData", GCode);
+                outputFile.PutFileContent("ResinGCodeData", GCode.ToString());
+
+                foreach (var layer in this)
+                {
+                    if (!layer.IsModified) continue;
+                    outputFile.PutFileContent(layer.Filename, layer.RawData);
+                    layer.IsModified = false;
+                }
             }
 
-            Decode(FileFullPath);
+            //Decode(FileFullPath);
         }
 
         public override bool Convert(Type to, string fileFullPath)
@@ -419,11 +422,15 @@ namespace PrusaSL1Reader
 
         private void UpdateGCode()
         {
-            GCode = Regex.Replace(GCode, @"Z[+]?([0-9]*\.[0-9]+|[0-9]+) F[+]?([0-9]*\.[0-9]+|[0-9]+)",
+            var gcode = GCode.ToString();
+            gcode = Regex.Replace(gcode, @"Z[+]?([0-9]*\.[0-9]+|[0-9]+) F[+]?([0-9]*\.[0-9]+|[0-9]+)",
                 $"Z{UserSettings.ZLiftDistance} F{UserSettings.ZLiftFeedRate}");
 
-            GCode = Regex.Replace(GCode, @"Z-[-]?([0-9]*\.[0-9]+|[0-9]+) F[+]?([0-9]*\.[0-9]+|[0-9]+)",
+            gcode = Regex.Replace(gcode, @"Z-[-]?([0-9]*\.[0-9]+|[0-9]+) F[+]?([0-9]*\.[0-9]+|[0-9]+)",
                 $"Z-{UserSettings.ZLiftDistance - LayerHeight} F{UserSettings.ZLiftRetractRate}");
+
+            GCode.Clear();
+            GCode.Append(gcode);
 
         }
         #endregion

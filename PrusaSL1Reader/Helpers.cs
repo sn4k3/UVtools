@@ -7,10 +7,15 @@
  */
 
 using System;
+using System.Globalization;
 using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using BinarySerialization;
 using Newtonsoft.Json;
+using PrusaSL1Reader.Extensions;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Bmp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
@@ -33,6 +38,12 @@ namespace PrusaSL1Reader
         /// Gets a white color of <see cref="L8"/>
         /// </summary>
         public static L8 L8White { get; } = new L8(255);
+        public static L8 L8Black { get; } = new L8(0);
+
+        public static byte[] ImageL8ToBytes(Image<L8> image)
+        {
+            return image.TryGetSinglePixelSpan(out var pixelSpan) ? MemoryMarshal.AsBytes(pixelSpan).ToArray() : null;
+        }
 
         /*public static T ByteToType<T>(BinaryReader reader)
         {
@@ -104,6 +115,43 @@ namespace PrusaSL1Reader
         public static string ComputeSHA1Hash(byte[] input)
         {
             return Convert.ToBase64String(SHA1.ComputeHash(input));
+        }
+
+        public static bool SetPropertyValue(PropertyInfo attribute, object obj, string value)
+        {
+            var name = attribute.PropertyType.Name.ToLower();
+            switch (name)
+            {
+                case "string":
+                    attribute.SetValue(obj, value.Convert<string>());
+                    return true;
+                case "boolean":
+                    if(char.IsDigit(value[0]))
+                        attribute.SetValue(obj, !value.Equals(0));
+                    else
+                        attribute.SetValue(obj, value.Equals("True", StringComparison.InvariantCultureIgnoreCase));
+                    return true;
+                case "byte":
+                    attribute.SetValue(obj, value.Convert<byte>());
+                    return true;
+                case "uint16":
+                    attribute.SetValue(obj, value.Convert<ushort>());
+                    return true;
+                case "uint32":
+                    attribute.SetValue(obj, value.Convert<uint>());
+                    return true;
+                case "single":
+                    attribute.SetValue(obj, (float)Math.Round(float.Parse(value, CultureInfo.InvariantCulture.NumberFormat), 3));
+                    return true;
+                case "double":
+                    attribute.SetValue(obj, Math.Round(double.Parse(value, CultureInfo.InvariantCulture.NumberFormat), 3));
+                    return true;
+                case "decimal":
+                    attribute.SetValue(obj, Math.Round(decimal.Parse(value, CultureInfo.InvariantCulture.NumberFormat), 3));
+                    return true;
+                default:
+                    throw new Exception($"Data type '{name}' not recognized, contact developer.");
+            }
         }
     }
 }

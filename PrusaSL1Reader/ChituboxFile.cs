@@ -719,7 +719,7 @@ namespace PrusaSL1Reader
                 {
                     Layer layer = new Layer();
                     Layer layerHash = null;
-                    var image = GetLayerImage(layerIndex);
+                    var image = this[layerIndex].Image;
                     rawData = IsCbtFile ? EncodeCbtImage(image, layerIndex) : EncodeCbddlpImage(image);
 
                     var byteArr = rawData.ToArray();
@@ -1014,15 +1014,11 @@ namespace PrusaSL1Reader
                 }
             }
 
-            Layers = new byte[LayerCount][];
+            LayerManager = new LayerManager(LayerCount);
 
             Parallel.For(0, LayerCount, layerIndex => {
                     var image = IsCbtFile ? DecodeCbtImage((uint) layerIndex) : DecodeCbddlpImage((uint) layerIndex);
-                    using (var ms = new MemoryStream())
-                    {
-                        image.Save(ms, Helpers.PngEncoder);
-                        Layers[layerIndex] = CompressLayer(ms.ToArray());
-                    }
+                    this[layerIndex] = new LayerManager.Layer((uint)layerIndex, image);
             });
 
             /*byte[,][] rleArr = new byte[LayerCount, HeaderSettings.AntiAliasLevel][];
@@ -1361,6 +1357,17 @@ namespace PrusaSL1Reader
 
         public override void SaveAs(string filePath = null)
         {
+            if (LayerManager.IsModified)
+            {
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    FileFullPath = filePath;
+                }
+                Encode(FileFullPath);
+                return;
+            }
+
+
             if (!string.IsNullOrEmpty(filePath))
             {
                 File.Copy(FileFullPath, filePath, true);
@@ -1393,7 +1400,7 @@ namespace PrusaSL1Reader
                 outputFile.Close();
             }
 
-            Decode(FileFullPath);
+            //Decode(FileFullPath);
         }
 
         public override bool Convert(Type to, string fileFullPath)
@@ -1402,7 +1409,7 @@ namespace PrusaSL1Reader
             {
                 PHZFile file = new PHZFile
                 {
-                    Layers = Layers
+                    LayerManager = LayerManager
                 };
 
 
@@ -1513,7 +1520,7 @@ namespace PrusaSL1Reader
                             }
                         },
                     },
-                    Layers = Layers
+                    LayerManager = LayerManager
                 };
 
                 float usedMaterial = UsedMaterial / LayerCount;

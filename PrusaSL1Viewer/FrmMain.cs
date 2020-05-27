@@ -7,22 +7,53 @@
  */
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Emgu.CV.Structure;
 using PrusaSL1Reader;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using Color = System.Drawing.Color;
+using Point = System.Drawing.Point;
 
 namespace PrusaSL1Viewer
 {
     public partial class FrmMain : Form
     {
+        #region Enums
+        public enum eMutate
+        {
+            Erode,
+            Dilate,
+            PyrDownUp,
+            SmoothMedian,
+            SmoothGaussian
+        }
+        #endregion
+
         #region Properties
+
+        public static readonly Dictionary<eMutate, string> MutateDescriptions = new Dictionary<eMutate, string>
+        {
+            {eMutate.Erode, "Erodes image using a 3x3 rectangular structuring element.\n" +
+                            "Erosion are applied several (iterations) times"},
+            {eMutate.Dilate, "Dilates image using a 3x3 rectangular structuring element.\n" +
+                             "Dilation are applied several (iterations) times"},
+            {eMutate.PyrDownUp, "Performs downsampling step of Gaussian pyramid decomposition.\n" +
+                                "First it convolves image with the specified filter and then downsamples the image by rejecting even rows and columns.\n" +
+                                "After performs up-sampling step of Gaussian pyramid decomposition\n" +
+                                "First it upsamples image by injecting even zero rows and columns and then convolves result with the specified filter multiplied by 4 for interpolation"},
+            {eMutate.SmoothMedian, "Finding median of size neighborhood"},
+            {eMutate.SmoothGaussian, "Perform Gaussian Smoothing"}
+        };
+
         public FrmLoading FrmLoading { get; }
         public static FileFormat SlicerFile
         {
@@ -31,6 +62,7 @@ namespace PrusaSL1Viewer
         }
 
         public uint ActualLayer => (uint)(sbLayers.Maximum - sbLayers.Value);
+        public Image<L8> ActualLayerImage { get; private set; }
 
         #endregion
 
@@ -46,6 +78,16 @@ namespace PrusaSL1Viewer
 
             DragEnter += (s, e) => { if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy; };
             DragDrop += (s, e) => { ProcessFile((string[])e.Data.GetData(DataFormats.FileDrop)); };
+
+            foreach (eMutate mutate in (eMutate[])Enum.GetValues(typeof(eMutate)))
+            {
+                var item = new ToolStripMenuItem(mutate.ToString())
+                {
+                    ToolTipText = MutateDescriptions[mutate], Tag = mutate, AutoToolTip = true
+                };
+                item.Click += ItemClicked;
+                menuMutate.DropDownItems.Add(item);
+            }
         }
 
         #endregion
@@ -68,6 +110,19 @@ namespace PrusaSL1Viewer
                 e.Handled = true;
                 return;
             }
+
+            if ((e.KeyCode == Keys.NumPad0 || e.KeyCode == Keys.D0) && e.Control)
+            {
+                pbLayer.ZoomToFit();
+                e.Handled = true;
+                return;
+            }
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            pbLayer.ZoomToFit();
         }
 
         #endregion
@@ -131,7 +186,33 @@ namespace PrusaSL1Viewer
 
                 if (ReferenceEquals(sender, menuFileSave))
                 {
-                    SlicerFile.Save();
+                    DisableGUI();
+                    FrmLoading.SetDescription($"Saving {Path.GetFileName(SlicerFile.FileFullPath)}");
+
+                    Task<bool> task = Task<bool>.Factory.StartNew(() =>
+                    {
+                        bool result = false;
+                        try
+                        {
+                            SlicerFile.Save();
+                            result = true;
+                        }
+                        catch (Exception)
+                        {
+                        }
+                        finally
+                        {
+                            Invoke((MethodInvoker)delegate {
+                                // Running on the UI thread
+                                EnableGUI(true);
+                            });
+                        }
+
+                        return result;
+                    });
+
+                    FrmLoading.ShowDialog();
+                    
                     menuFileSave.Enabled =
                     menuFileSaveAs.Enabled = false;
                     return;
@@ -141,16 +222,44 @@ namespace PrusaSL1Viewer
                 {
                     using (SaveFileDialog dialog = new SaveFileDialog())
                     {
-                        dialog.Filter = SlicerFile.FileFilter;
+                        var ext = Path.GetExtension(SlicerFile.FileFullPath);
+                        dialog.Filter = $"{ext.Remove(0, 1)} files (*{ext})|*{ext}";
                         dialog.AddExtension = true;
                         dialog.FileName =
                             $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_copy";
                         if (dialog.ShowDialog() == DialogResult.OK)
                         {
-                            SlicerFile.SaveAs(dialog.FileName);
+                            DisableGUI();
+                            FrmLoading.SetDescription($"Saving {Path.GetFileName(dialog.FileName)}");
+
+                            Task<bool> task = Task<bool>.Factory.StartNew(() =>
+                            {
+                                bool result = false;
+                                try
+                                {
+                                    SlicerFile.SaveAs(dialog.FileName);
+                                    result = true;
+                                }
+                                catch (Exception)
+                                {
+                                }
+                                finally
+                                {
+                                    Invoke((MethodInvoker)delegate {
+                                        // Running on the UI thread
+                                        EnableGUI(true);
+                                    });
+                                }
+
+                                return result;
+                            });
+
+                            FrmLoading.ShowDialog();
+                            
                             menuFileSave.Enabled =
                             menuFileSaveAs.Enabled = false;
-                            ProcessFile(dialog.FileName);
+                            UpdateTitle();
+                            //ProcessFile(dialog.FileName);
                         }
                     }
 
@@ -236,7 +345,7 @@ namespace PrusaSL1Viewer
                     return;
                 }
 
-                // Edit
+                // Edit & mutate
                 if (!ReferenceEquals(item.Tag, null))
                 {
                     if (item.Tag.GetType() == typeof(FileFormat.PrintParameterModifier))
@@ -264,25 +373,32 @@ namespace PrusaSL1Viewer
                         return;
 
                     }
+
+                    if (item.Tag.GetType() == typeof(eMutate))
+                    {
+                        eMutate mutate = (eMutate)item.Tag;
+                        MutateLayers(mutate);
+                        return;
+                    }
                 }
 
                 // View
 
 
                 // About
-                if (ReferenceEquals(sender, menuAboutAbout))
+                if (ReferenceEquals(sender, menuHelpAbout))
                 {
                     Program.FrmAbout.ShowDialog();
                     return;
                 }
 
-                if (ReferenceEquals(sender, menuAboutWebsite))
+                if (ReferenceEquals(sender, menuHelpWebsite))
                 {
                     Process.Start(About.Website);
                     return;
                 }
 
-                if (ReferenceEquals(sender, menuAboutDonate))
+                if (ReferenceEquals(sender, menuHelpDonate))
                 {
                     MessageBox.Show(
                         "All my work here is given for free (OpenSource), it took some hours to build, test and polish the program.\n" +
@@ -290,6 +406,60 @@ namespace PrusaSL1Viewer
                         "A browser window will be open and forward to my paypal address after you click 'OK'.\nHappy Printing!",
                         "Donation", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     Process.Start(About.Donate);
+                    return;
+                }
+
+                if (ReferenceEquals(sender, menuHelpInstallPrinters))
+                {
+                    string printerFolder = $"{Application.StartupPath}{Path.DirectorySeparatorChar}PrusaSlicer{Path.DirectorySeparatorChar}printer";
+                    try
+                    {
+                        string[] profiles = Directory.GetFiles(printerFolder);
+                        string profilesNames = String.Empty;
+
+                        foreach (var profile in profiles)
+                        {
+                            profilesNames += $"{Path.GetFileNameWithoutExtension(profile)}\n";
+                        }
+
+                        var result = MessageBox.Show(
+                            "This action will install following printer profiles into PrusaSlicer:\n" +
+                            "---------------\n" +
+                            profilesNames +
+                            "---------------\n" +
+                            "Click 'Yes' to override all profiles\n" +
+                            "Click 'No' to install only missing profiles without override\n" +
+                            "Clock 'Abort' to cancel this operation",
+                            "Install printers into PrusaSlicer", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+
+
+                        if (result == DialogResult.Abort)
+                        {
+                            return;
+                        }
+
+                        bool overwrite = result == DialogResult.Yes;
+                        string targetFolder = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}{Path.DirectorySeparatorChar}{Path.DirectorySeparatorChar}PrusaSlicer{Path.DirectorySeparatorChar}printer";
+
+                        foreach (var profile in profiles)
+                        {
+                            string targetFile = $"{targetFolder}{Path.DirectorySeparatorChar}{Path.GetFileName(profile)}";
+                            if (!overwrite && File.Exists(targetFile)) continue;
+                            File.Copy(profile, targetFile, overwrite);
+                        }
+
+                        MessageBox.Show(
+                            "Printers were installed.\nRestart PrusaSlicer and check if printers are present.",
+                            "Operation Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    }
+                    catch (Exception exception)
+                    {
+                        MessageBox.Show(exception.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    
+
+                    
                     return;
                 }
             }
@@ -453,7 +623,7 @@ namespace PrusaSL1Viewer
             /************************
              *      Layer Menu      *
              ***********************/
-            if (ReferenceEquals(sender, tsLayerImageRotate) || ReferenceEquals(sender, tsLayerImageLayerDifference)) 
+            if (ReferenceEquals(sender, tsLayerImageRotate) || ReferenceEquals(sender, tsLayerImageLayerDifference) || ReferenceEquals(sender, tsLayerImageLayerOutline)) 
             {
                 sbLayers_ValueChanged(sbLayers, null);
                 return;
@@ -585,10 +755,10 @@ namespace PrusaSL1Viewer
             menuFileConvert.DropDownItems.Clear();
 
             menuEdit.DropDownItems.Clear();
-            /*foreach (ToolStripItem item in menuEdit.DropDownItems)
+            foreach (ToolStripItem item in menuMutate.DropDownItems)
             {
                 item.Enabled = false;
-            }*/
+            }
 
             foreach (ToolStripItem item in tsThumbnails.Items)
             {
@@ -618,7 +788,8 @@ namespace PrusaSL1Viewer
             menuFileConvert.Enabled =
             sbLayers.Enabled = 
             pbLayers.Enabled = 
-            menuEdit.Enabled =
+            menuEdit.Enabled = 
+            menuMutate.Enabled =
 
                 false;
 
@@ -739,6 +910,11 @@ namespace PrusaSL1Viewer
                 tsThumbnailsNext.Enabled = SlicerFile.CreatedThumbnailsCount > 1;
                 AdjustThumbnailSplitter();
             }
+
+            foreach (ToolStripItem item in menuMutate.DropDownItems)
+            {
+                item.Enabled = true;
+            }
             foreach (ToolStripItem item in tsLayer.Items)
             {
                 item.Enabled = true;
@@ -756,10 +932,11 @@ namespace PrusaSL1Viewer
             
             sbLayers.Enabled =
             pbLayers.Enabled =
-            menuEdit.Enabled =
+            menuEdit.Enabled = 
+            menuMutate.Enabled =
                 true;
 
-            if (!string.IsNullOrEmpty(SlicerFile.GCode))
+            if (!ReferenceEquals(SlicerFile.GCode, null))
             {
                 tabControlLeft.TabPages.Add(tbpGCode);
             }
@@ -772,12 +949,18 @@ namespace PrusaSL1Viewer
             sbLayers.Value = sbLayers.Maximum;
 
             tabControlLeft.SelectedIndex = 0;
+            tsLayerResolution.Text = $"{{Width={SlicerFile.ResolutionX}, Height={SlicerFile.ResolutionY}}}";
 
 
             RefreshInfo();
 
-            tsLayerResolution.Text = pbLayer.Image?.PhysicalDimension.ToString() ?? string.Empty;
+            pbLayer.ZoomToFit();
 
+            UpdateTitle();
+        }
+
+        void UpdateTitle()
+        {
             Text = $"{FrmAbout.AssemblyTitle}   Version: {FrmAbout.AssemblyVersion}   File: {Path.GetFileName(SlicerFile.FileFullPath)}";
         }
 
@@ -830,9 +1013,9 @@ namespace PrusaSL1Viewer
             tsPropertiesLabelCount.Text = $"Properties: {lvProperties.Items.Count}";
             tsPropertiesLabelGroups.Text = $"Groups: {lvProperties.Groups.Count}";
 
-            if (!string.IsNullOrEmpty(SlicerFile.GCode))
+            if (!ReferenceEquals(SlicerFile.GCode, null))
             {
-                tbGCode.Text = SlicerFile.GCode;
+                tbGCode.Text = SlicerFile.GCode.ToString();
                 tsGCodeLabelLines.Text = $"Lines: {tbGCode.Lines.Length}";
                 tsGcodeLabelChars.Text = $"Chars: {tbGCode.Text.Length}";
             }
@@ -861,12 +1044,21 @@ namespace PrusaSL1Viewer
 
 
                 Stopwatch watch = Stopwatch.StartNew();
-                var image = SlicerFile.GetLayerImage(layerNum);
-                if (tsLayerImageLayerDifference.Checked)
+                var image = SlicerFile[layerNum].Image;
+                ActualLayerImage = image.Clone();
+
+                if (tsLayerImageLayerOutline.Checked)
+                {
+                    Emgu.CV.Image<Gray, byte> grayscale = image.ToEmguImage();
+                    grayscale = grayscale.Canny(100, 200, 3, true);
+                    image = grayscale.ToImageSharpL8();
+                    grayscale.Dispose();
+                }
+                else if (tsLayerImageLayerDifference.Checked)
                 {
                     if (layerNum > 0)
                     {
-                        var previousImage = SlicerFile.GetLayerImage(layerNum - 1);
+                        var previousImage = SlicerFile[layerNum-1].Image;
 
                         //var nextImage = SlicerFile.GetLayerImage(layerNum+1);
 
@@ -960,5 +1152,149 @@ namespace PrusaSL1Viewer
             scLeft.SplitterDistance = Math.Min(pbThumbnail.Image.Height + 5, 400);
         }
         #endregion
+
+        private void pbLayer_Zoomed(object sender, Cyotek.Windows.Forms.ImageBoxZoomEventArgs e)
+        {
+            tsLayerImageZoomValueLabel.Text = $"{e.NewZoom} %";
+        }
+
+        void DrawPixel(bool isAdd, Point location, Color color, L8 pixelL8)
+        {
+            var point = pbLayer.PointToImage(location);
+            int x = point.X;
+            int y = point.Y;
+
+            if (tsLayerImageRotate.Checked)
+            {
+                x = point.Y;
+                y = ActualLayerImage.Height - 1 - point.X;
+            }
+
+
+            if (isAdd && ActualLayerImage[x, y].PackedValue > byte.MaxValue / 2)
+            {
+                return;
+            }
+            if (!isAdd && ActualLayerImage[x, y].PackedValue < byte.MaxValue / 2)
+            {
+                return;
+            }
+
+            ActualLayerImage[x, y] = pixelL8;
+            Bitmap bmp = pbLayer.Image as Bitmap;
+            bmp.SetPixel(point.X, point.Y, color);
+
+            /*if (bmp.GetPixel(point.X, point.Y).GetBrightness() == returnif) return;
+            bmp.SetPixel(point.X, point.Y, color);
+            ActualLayerImage[point.X, point.Y] = pixelL8;
+            var newImage = ActualLayerImage.Clone();
+            if (tsLayerImageRotate.Checked)
+            {
+                newImage.Mutate(mut => mut.Rotate(RotateMode.Rotate270));
+            }
+            SlicerFile[ActualLayer].Image = newImage;*/
+            pbLayer.Invalidate();
+            menuFileSave.Enabled = menuFileSaveAs.Enabled = true;
+        }
+
+        private void pbLayer_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (!tsLayerImagePixelEdit.Checked || (e.Button & MouseButtons.Right) == 0) return;
+            if (!pbLayer.IsPointInImage(e.Location)) return;
+            
+
+            if (Control.ModifierKeys == Keys.Shift)
+            {
+                DrawPixel(false, e.Location, Color.DarkRed, Helpers.L8Black);
+            }
+            else
+            {
+                DrawPixel(true, e.Location, Color.Green, Helpers.L8White);
+            }
+
+            SlicerFile[ActualLayer].Image = ActualLayerImage;
+        }
+
+        private void pbLayer_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!tsLayerImagePixelEdit.Checked || (e.Button & MouseButtons.Right) == 0) return;
+            if (!pbLayer.IsPointInImage(e.Location)) return;
+
+            if (Control.ModifierKeys == Keys.Shift)
+            {
+                DrawPixel(false, e.Location, Color.DarkRed, Helpers.L8Black);
+                return;
+            }
+
+            DrawPixel(true, e.Location, Color.Green, Helpers.L8White);
+        }
+
+        public void MutateLayers(eMutate type)
+        {
+            decimal value = 0;
+            using (FrmInputBox inputBox = new FrmInputBox($"Mutate - {type}", MutateDescriptions[type], 0))
+            {
+                if (inputBox.ShowDialog() != DialogResult.OK) return;
+                value = inputBox.NewValue;
+                if (value == 0) return;
+            }
+
+            DisableGUI();
+            FrmLoading.SetDescription($"Mutating - {type}");
+
+            Task<bool> task = Task<bool>.Factory.StartNew(() =>
+            {
+                bool result = false;
+                try
+                {
+                    Parallel.ForEach(SlicerFile, (layer) =>
+                    {
+                        var image = layer.Image;
+                        var imageEgmu = image.ToEmguImage();
+                        switch (type)
+                        {
+                            case eMutate.Erode:
+                                imageEgmu = imageEgmu.Erode((int) value);
+                                break;
+                            case eMutate.Dilate:
+                                imageEgmu = imageEgmu.Dilate((int) value);
+                                break;
+                            case eMutate.PyrDownUp:
+                                imageEgmu = imageEgmu.PyrDown().PyrUp();
+                                break;
+                            case eMutate.SmoothMedian:
+                                imageEgmu = imageEgmu.SmoothMedian((int) value);
+                                break;
+                            case eMutate.SmoothGaussian:
+                                imageEgmu = imageEgmu.SmoothGaussian((int)value);
+                                break;
+                        }
+                        layer.Image = imageEgmu.ToImageSharpL8();
+                        imageEgmu.Dispose();
+                    });
+                    result = true;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"{ex.Message}\nPlease try diferent values for the mutation", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    Invoke((MethodInvoker)delegate {
+                        // Running on the UI thread
+                        EnableGUI(true);
+                    });
+                }
+
+                return result;
+            });
+
+            FrmLoading.ShowDialog();
+
+            ShowLayer(ActualLayer);
+
+            menuFileSave.Enabled =
+            menuFileSaveAs.Enabled = true;
+        }
     }
 }

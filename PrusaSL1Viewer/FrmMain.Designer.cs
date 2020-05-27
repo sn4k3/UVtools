@@ -44,24 +44,36 @@
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.menuFileExit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuEdit = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuMutate = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuAboutWebsite = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuAboutDonate = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuAboutAbout = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuHelpWebsite = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuHelpDonate = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuHelpAbout = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
+            this.menuHelpInstallPrinters = new System.Windows.Forms.ToolStripMenuItem();
             this.statusBar = new System.Windows.Forms.StatusStrip();
             this.sbLayers = new System.Windows.Forms.VScrollBar();
             this.mainTable = new System.Windows.Forms.TableLayoutPanel();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.lbLayers = new System.Windows.Forms.Label();
             this.scCenter = new System.Windows.Forms.SplitContainer();
-            this.pbLayer = new System.Windows.Forms.PictureBox();
+            this.pbLayer = new Cyotek.Windows.Forms.ImageBox();
             this.tsLayer = new System.Windows.Forms.ToolStrip();
             this.tsLayerImageExport = new System.Windows.Forms.ToolStripButton();
             this.tsLayerResolution = new System.Windows.Forms.ToolStripLabel();
             this.tsLayerImageRotate = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerImageLayerDifference = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsLayerPreviewTime = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsLayerImageLayerOutline = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsLayerImagePixelEdit = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsLayerImageZoomLabel = new System.Windows.Forms.ToolStripLabel();
+            this.tsLayerImageZoomValueLabel = new System.Windows.Forms.ToolStripLabel();
             this.pbLayers = new System.Windows.Forms.ProgressBar();
             this.tabControlLeft = new System.Windows.Forms.TabControl();
             this.tbpThumbnailsAndInfo = new System.Windows.Forms.TabPage();
@@ -89,8 +101,6 @@
             this.tsGcodeLabelChars = new System.Windows.Forms.ToolStripLabel();
             this.tsGCodeButtonSave = new System.Windows.Forms.ToolStripButton();
             this.imageList16x16 = new System.Windows.Forms.ImageList(this.components);
-            this.tsLayerPreviewTime = new System.Windows.Forms.ToolStripLabel();
-            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -101,7 +111,6 @@
             this.scCenter.Panel1.SuspendLayout();
             this.scCenter.Panel2.SuspendLayout();
             this.scCenter.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbLayer)).BeginInit();
             this.tsLayer.SuspendLayout();
             this.tabControlLeft.SuspendLayout();
             this.tbpThumbnailsAndInfo.SuspendLayout();
@@ -121,6 +130,7 @@
             this.menu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.menuEdit,
+            this.menuMutate,
             this.viewToolStripMenuItem,
             this.helpToolStripMenuItem});
             this.menu.Location = new System.Drawing.Point(0, 0);
@@ -216,8 +226,7 @@
             this.menuFileExtract.Enabled = false;
             this.menuFileExtract.Image = global::PrusaSL1Viewer.Properties.Resources.Extract_object_16x16;
             this.menuFileExtract.Name = "menuFileExtract";
-            this.menuFileExtract.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
-            | System.Windows.Forms.Keys.E)));
+            this.menuFileExtract.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.E)));
             this.menuFileExtract.Size = new System.Drawing.Size(261, 22);
             this.menuFileExtract.Text = "&Extract";
             this.menuFileExtract.Click += new System.EventHandler(this.ItemClicked);
@@ -251,6 +260,12 @@
             this.menuEdit.Size = new System.Drawing.Size(39, 20);
             this.menuEdit.Text = "&Edit";
             // 
+            // menuMutate
+            // 
+            this.menuMutate.Name = "menuMutate";
+            this.menuMutate.Size = new System.Drawing.Size(57, 20);
+            this.menuMutate.Text = "&Mutate";
+            // 
             // viewToolStripMenuItem
             // 
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
@@ -261,40 +276,55 @@
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuAboutWebsite,
-            this.menuAboutDonate,
-            this.menuAboutAbout});
+            this.menuHelpWebsite,
+            this.menuHelpDonate,
+            this.menuHelpAbout,
+            this.toolStripSeparator10,
+            this.menuHelpInstallPrinters});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.helpToolStripMenuItem.Text = "&Help";
             // 
-            // menuAboutWebsite
+            // menuHelpWebsite
             // 
-            this.menuAboutWebsite.Image = global::PrusaSL1Viewer.Properties.Resources.Global_Network_icon_16x16;
-            this.menuAboutWebsite.Name = "menuAboutWebsite";
-            this.menuAboutWebsite.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            this.menuHelpWebsite.Image = global::PrusaSL1Viewer.Properties.Resources.Global_Network_icon_16x16;
+            this.menuHelpWebsite.Name = "menuHelpWebsite";
+            this.menuHelpWebsite.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
             | System.Windows.Forms.Keys.W)));
-            this.menuAboutWebsite.Size = new System.Drawing.Size(193, 22);
-            this.menuAboutWebsite.Text = "&Website";
-            this.menuAboutWebsite.Click += new System.EventHandler(this.ItemClicked);
+            this.menuHelpWebsite.Size = new System.Drawing.Size(229, 22);
+            this.menuHelpWebsite.Text = "&Website";
+            this.menuHelpWebsite.Click += new System.EventHandler(this.ItemClicked);
             // 
-            // menuAboutDonate
+            // menuHelpDonate
             // 
-            this.menuAboutDonate.Image = global::PrusaSL1Viewer.Properties.Resources.Donate_16x16;
-            this.menuAboutDonate.Name = "menuAboutDonate";
-            this.menuAboutDonate.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D)));
-            this.menuAboutDonate.Size = new System.Drawing.Size(193, 22);
-            this.menuAboutDonate.Text = "&Donate";
-            this.menuAboutDonate.Click += new System.EventHandler(this.ItemClicked);
+            this.menuHelpDonate.Image = global::PrusaSL1Viewer.Properties.Resources.Donate_16x16;
+            this.menuHelpDonate.Name = "menuHelpDonate";
+            this.menuHelpDonate.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D)));
+            this.menuHelpDonate.Size = new System.Drawing.Size(229, 22);
+            this.menuHelpDonate.Text = "&Donate";
+            this.menuHelpDonate.Click += new System.EventHandler(this.ItemClicked);
             // 
-            // menuAboutAbout
+            // menuHelpAbout
             // 
-            this.menuAboutAbout.Image = global::PrusaSL1Viewer.Properties.Resources.Button_Info_16x16;
-            this.menuAboutAbout.Name = "menuAboutAbout";
-            this.menuAboutAbout.ShortcutKeys = System.Windows.Forms.Keys.F1;
-            this.menuAboutAbout.Size = new System.Drawing.Size(193, 22);
-            this.menuAboutAbout.Text = "&About";
-            this.menuAboutAbout.Click += new System.EventHandler(this.ItemClicked);
+            this.menuHelpAbout.Image = global::PrusaSL1Viewer.Properties.Resources.Button_Info_16x16;
+            this.menuHelpAbout.Name = "menuHelpAbout";
+            this.menuHelpAbout.ShortcutKeys = System.Windows.Forms.Keys.F1;
+            this.menuHelpAbout.Size = new System.Drawing.Size(229, 22);
+            this.menuHelpAbout.Text = "&About";
+            this.menuHelpAbout.Click += new System.EventHandler(this.ItemClicked);
+            // 
+            // toolStripSeparator10
+            // 
+            this.toolStripSeparator10.Name = "toolStripSeparator10";
+            this.toolStripSeparator10.Size = new System.Drawing.Size(226, 6);
+            // 
+            // menuHelpInstallPrinters
+            // 
+            this.menuHelpInstallPrinters.Image = global::PrusaSL1Viewer.Properties.Resources.CNCMachine_16x16;
+            this.menuHelpInstallPrinters.Name = "menuHelpInstallPrinters";
+            this.menuHelpInstallPrinters.Size = new System.Drawing.Size(229, 22);
+            this.menuHelpInstallPrinters.Text = "Instal printers into PrusaSlicer";
+            this.menuHelpInstallPrinters.Click += new System.EventHandler(this.ItemClicked);
             // 
             // statusBar
             // 
@@ -386,14 +416,17 @@
             // 
             // pbLayer
             // 
-            this.pbLayer.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.pbLayer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pbLayer.GridScale = Cyotek.Windows.Forms.ImageBoxGridScale.Large;
             this.pbLayer.Location = new System.Drawing.Point(0, 25);
             this.pbLayer.Name = "pbLayer";
+            this.pbLayer.PanMode = Cyotek.Windows.Forms.ImageBoxPanMode.Left;
+            this.pbLayer.ShowPixelGrid = true;
             this.pbLayer.Size = new System.Drawing.Size(1095, 677);
-            this.pbLayer.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pbLayer.TabIndex = 5;
-            this.pbLayer.TabStop = false;
+            this.pbLayer.TabIndex = 7;
+            this.pbLayer.Zoomed += new System.EventHandler<Cyotek.Windows.Forms.ImageBoxZoomEventArgs>(this.pbLayer_Zoomed);
+            this.pbLayer.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseMove);
+            this.pbLayer.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseUp);
             // 
             // tsLayer
             // 
@@ -405,7 +438,14 @@
             this.toolStripSeparator5,
             this.tsLayerImageLayerDifference,
             this.toolStripSeparator6,
-            this.tsLayerPreviewTime});
+            this.tsLayerPreviewTime,
+            this.toolStripSeparator7,
+            this.tsLayerImageLayerOutline,
+            this.toolStripSeparator9,
+            this.tsLayerImagePixelEdit,
+            this.toolStripSeparator8,
+            this.tsLayerImageZoomLabel,
+            this.tsLayerImageZoomValueLabel});
             this.tsLayer.Location = new System.Drawing.Point(0, 0);
             this.tsLayer.Name = "tsLayer";
             this.tsLayer.Size = new System.Drawing.Size(1095, 25);
@@ -458,11 +498,79 @@
             this.tsLayerImageLayerDifference.Image = global::PrusaSL1Viewer.Properties.Resources.layers_16x16;
             this.tsLayerImageLayerDifference.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsLayerImageLayerDifference.Name = "tsLayerImageLayerDifference";
-            this.tsLayerImageLayerDifference.Size = new System.Drawing.Size(112, 22);
-            this.tsLayerImageLayerDifference.Text = "Layer Difference";
+            this.tsLayerImageLayerDifference.Size = new System.Drawing.Size(81, 22);
+            this.tsLayerImageLayerDifference.Text = "Difference";
             this.tsLayerImageLayerDifference.ToolTipText = "Show layer differences where daker pixels were also present on previous layer and" +
     " the white pixels the difference between previous and current layer.";
             this.tsLayerImageLayerDifference.Click += new System.EventHandler(this.ItemClicked);
+            // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsLayerPreviewTime
+            // 
+            this.tsLayerPreviewTime.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerPreviewTime.Name = "tsLayerPreviewTime";
+            this.tsLayerPreviewTime.Size = new System.Drawing.Size(77, 22);
+            this.tsLayerPreviewTime.Text = "Preview Time";
+            this.tsLayerPreviewTime.ToolTipText = "Layer Resolution";
+            // 
+            // toolStripSeparator7
+            // 
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            this.toolStripSeparator7.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsLayerImageLayerOutline
+            // 
+            this.tsLayerImageLayerOutline.CheckOnClick = true;
+            this.tsLayerImageLayerOutline.Image = global::PrusaSL1Viewer.Properties.Resources.Geometry_16x16;
+            this.tsLayerImageLayerOutline.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerImageLayerOutline.Name = "tsLayerImageLayerOutline";
+            this.tsLayerImageLayerOutline.Size = new System.Drawing.Size(66, 22);
+            this.tsLayerImageLayerOutline.Text = "Outline";
+            this.tsLayerImageLayerOutline.ToolTipText = "Show layer outlines only";
+            this.tsLayerImageLayerOutline.Click += new System.EventHandler(this.ItemClicked);
+            // 
+            // toolStripSeparator9
+            // 
+            this.toolStripSeparator9.Name = "toolStripSeparator9";
+            this.toolStripSeparator9.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsLayerImagePixelEdit
+            // 
+            this.tsLayerImagePixelEdit.CheckOnClick = true;
+            this.tsLayerImagePixelEdit.Image = global::PrusaSL1Viewer.Properties.Resources.pixel_16x16;
+            this.tsLayerImagePixelEdit.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerImagePixelEdit.Name = "tsLayerImagePixelEdit";
+            this.tsLayerImagePixelEdit.Size = new System.Drawing.Size(75, 22);
+            this.tsLayerImagePixelEdit.Text = "Pixel Edit";
+            this.tsLayerImagePixelEdit.ToolTipText = "Edit layer image pixels (Righ click to add pixel and SHIFT + Right click to remov" +
+    "e pixel)\r\nRed pixels are removed pixels\r\nGreen pixels are added pixels";
+            // 
+            // toolStripSeparator8
+            // 
+            this.toolStripSeparator8.Name = "toolStripSeparator8";
+            this.toolStripSeparator8.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsLayerImageZoomLabel
+            // 
+            this.tsLayerImageZoomLabel.Image = global::PrusaSL1Viewer.Properties.Resources.search_16x16;
+            this.tsLayerImageZoomLabel.Name = "tsLayerImageZoomLabel";
+            this.tsLayerImageZoomLabel.Size = new System.Drawing.Size(58, 22);
+            this.tsLayerImageZoomLabel.Text = "Zoom:";
+            this.tsLayerImageZoomLabel.ToolTipText = "Layer image zoom level, use mouse scroll to zoom in/out into image\r\nCtrl + 0 to s" +
+    "cale to fit";
+            // 
+            // tsLayerImageZoomValueLabel
+            // 
+            this.tsLayerImageZoomValueLabel.Name = "tsLayerImageZoomValueLabel";
+            this.tsLayerImageZoomValueLabel.Size = new System.Drawing.Size(38, 22);
+            this.tsLayerImageZoomValueLabel.Text = "100 %";
+            this.tsLayerImageZoomValueLabel.ToolTipText = "Layer image zoom level, use mouse scroll to zoom in/out into image\r\nCtrl + 0 to s" +
+    "cale to fit";
             // 
             // pbLayers
             // 
@@ -741,20 +849,6 @@
             this.imageList16x16.Images.SetKeyName(1, "PhotoInfo-16x16.png");
             this.imageList16x16.Images.SetKeyName(2, "GCode-16x16.png");
             // 
-            // tsLayerPreviewTime
-            // 
-            this.tsLayerPreviewTime.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerPreviewTime.Name = "tsLayerPreviewTime";
-            this.tsLayerPreviewTime.Size = new System.Drawing.Size(77, 22);
-            this.tsLayerPreviewTime.Text = "Preview Time";
-            this.tsLayerPreviewTime.ToolTipText = "Layer Resolution";
-            // 
-            // toolStripSeparator6
-            // 
-            this.toolStripSeparator6.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 25);
-            // 
             // FrmMain
             // 
             this.AllowDrop = true;
@@ -783,7 +877,6 @@
             this.scCenter.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).EndInit();
             this.scCenter.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pbLayer)).EndInit();
             this.tsLayer.ResumeLayout(false);
             this.tsLayer.PerformLayout();
             this.tabControlLeft.ResumeLayout(false);
@@ -816,16 +909,15 @@
         private System.Windows.Forms.ToolStripMenuItem menuFileExit;
         private System.Windows.Forms.StatusStrip statusBar;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem menuAboutWebsite;
-        private System.Windows.Forms.ToolStripMenuItem menuAboutDonate;
-        private System.Windows.Forms.ToolStripMenuItem menuAboutAbout;
+        private System.Windows.Forms.ToolStripMenuItem menuHelpWebsite;
+        private System.Windows.Forms.ToolStripMenuItem menuHelpDonate;
+        private System.Windows.Forms.ToolStripMenuItem menuHelpAbout;
         private System.Windows.Forms.VScrollBar sbLayers;
         private System.Windows.Forms.TableLayoutPanel mainTable;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.Label lbLayers;
         private System.Windows.Forms.ToolStripMenuItem menuEdit;
         private System.Windows.Forms.SplitContainer scCenter;
-        private System.Windows.Forms.PictureBox pbLayer;
         private System.Windows.Forms.ProgressBar pbLayers;
         private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem menuFileClose;
@@ -871,6 +963,17 @@
         private System.Windows.Forms.ToolStripButton tsLayerImageLayerDifference;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private System.Windows.Forms.ToolStripLabel tsLayerPreviewTime;
+        private Cyotek.Windows.Forms.ImageBox pbLayer;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
+        private System.Windows.Forms.ToolStripLabel tsLayerImageZoomLabel;
+        private System.Windows.Forms.ToolStripLabel tsLayerImageZoomValueLabel;
+        private System.Windows.Forms.ToolStripButton tsLayerImagePixelEdit;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
+        private System.Windows.Forms.ToolStripButton tsLayerImageLayerOutline;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
+        private System.Windows.Forms.ToolStripMenuItem menuMutate;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
+        private System.Windows.Forms.ToolStripMenuItem menuHelpInstallPrinters;
     }
 }
 

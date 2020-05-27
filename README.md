@@ -44,10 +44,12 @@ But also, i need victims for test subject. Proceed at your own risk!
 ## Known Formats
 
 * SL1 (Prusa SL1)
+* Photon
 * CBDDLP (Chitubox DLP)
 * CBT (Chitubox)
-* Photon
+* PHZ
 * ZCodex
+* CWS
 
 ## Install and configure printer under PrusaSlicer
 
@@ -55,13 +57,8 @@ But also, i need victims for test subject. Proceed at your own risk!
 1. Start and configure PrusaSlicer (Wizard)
     * Choose SL1 printer
 1. Close PrusaSlicer
-1. On different operating systems open:
-    * Windows: "%AppData%\PrusaSlicer"
-    * macOS: "/Users/[Username]/Library/Application Support/PrusaSlicer"
-    * Linux:
-        * Stable build: "~/.PrusaSlicer/"
-        * Alpha build: "~/.PrusaSlicer-alpha/"
-1. Copy GitHub PrusaSlicer subfolder ("printer") to the folder above
+1. Open PrusaSL1Viewer
+1. Under Menu click -> About -> Install printers into PrusaSlicer
 1. Open PrusaSlicer and check if profiles are there
 1. To clean up interface remove printers that you will not use (OPTIONAL)
 1. Duplicate or create your printer and tune the values if required

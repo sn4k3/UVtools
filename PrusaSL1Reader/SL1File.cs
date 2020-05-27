@@ -8,7 +8,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -110,8 +109,8 @@ namespace PrusaSL1Reader
 
             #region Exposure
 
-            public byte ExposureTime { get; set; }
-            public ushort InitialExposureTime { get; set; }
+            public float ExposureTime { get; set; }
+            public float InitialExposureTime { get; set; }
             #endregion
 
             #region Corrections
@@ -230,8 +229,8 @@ namespace PrusaSL1Reader
         {
             public string Action { get; set; }
             public string JobDir { get; set; }
-            public byte ExpTime { get; set; }
-            public ushort ExpTimeFirst { get; set; }
+            public float ExpTime { get; set; }
+            public float ExpTimeFirst { get; set; }
             public string FileCreationTimestamp { get; set; }
             public float LayerHeight { get; set; }
             public string MaterialName { get; set; }
@@ -257,8 +256,6 @@ namespace PrusaSL1Reader
         #endregion
 
         #region Properties
-        public ZipArchive InputFile { get; private set; }
-
         public Printer PrinterSettings { get; private set; }
 
         public Material MaterialSettings { get; private set; }
@@ -281,6 +278,7 @@ namespace PrusaSL1Reader
             typeof(ChituboxFile),
             typeof(PHZFile),
             typeof(ZCodexFile),
+            typeof(CWSFile),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
@@ -300,7 +298,7 @@ namespace PrusaSL1Reader
 
         public override float LayerHeight => OutputConfigSettings.LayerHeight;
 
-        public override uint LayerCount => OutputConfigSettings.NumFast;
+        public override uint LayerCount => (uint) (OutputConfigSettings.NumFast + OutputConfigSettings.NumSlow);
 
         public override ushort InitialLayerCount => OutputConfigSettings.NumFade;
 
@@ -368,43 +366,13 @@ namespace PrusaSL1Reader
             return iniKey;
         }
 
-        public static bool SetValue(PropertyInfo attribute, object obj, string value)
-        {
-            var name = attribute.PropertyType.Name.ToLower();
-            switch (name)
-            {
-                case "string":
-                    attribute.SetValue(obj, value.Convert<string>());
-                    return true;
-                case "boolean":
-                    attribute.SetValue(obj, !value.Equals(0));
-                    return true;
-                case "byte":
-                    attribute.SetValue(obj, value.Convert<byte>());
-                    return true;
-                case "uint16":
-                    attribute.SetValue(obj, value.Convert<ushort>());
-                    return true;
-                case "single":
-                    attribute.SetValue(obj, (float)Math.Round(float.Parse(value, CultureInfo.InvariantCulture.NumberFormat), 2));
-                    return true;
-                case "double":
-                    attribute.SetValue(obj, Math.Round(double.Parse(value, CultureInfo.InvariantCulture.NumberFormat), 2));
-                    return true;
-                case "decimal":
-                    attribute.SetValue(obj, (decimal)Math.Round(decimal.Parse(value, CultureInfo.InvariantCulture.NumberFormat), 2));
-                    return true;
-                default:
-                    throw new Exception($"Data type '{name}' not recognized, contact developer.");
-            }
-        }
+        
         #endregion
 
         #region Methods
         public override void Clear()
         {
             base.Clear();
-            InputFile?.Dispose();
             Statistics.Clear();
         }
 
@@ -427,97 +395,71 @@ namespace PrusaSL1Reader
 
             Statistics.ExecutionTime.Restart();
 
-            InputFile = ZipFile.OpenRead(FileFullPath);
-
-            foreach (ZipArchiveEntry entity in InputFile.Entries)
+            using (var inputFile = ZipFile.OpenRead(FileFullPath))
             {
-                if (!entity.Name.EndsWith(".ini")) continue;
-                using (StreamReader streamReader = new StreamReader(entity.Open()))
+
+                foreach (ZipArchiveEntry entity in inputFile.Entries)
                 {
-                    string line = null;
-                    while ((line = streamReader.ReadLine()) != null)
+                    if (!entity.Name.EndsWith(".ini")) continue;
+                    using (StreamReader streamReader = new StreamReader(entity.Open()))
                     {
-                        string[] keyValue = line.Split(new[] {'='}, 2);
-                        if (keyValue.Length < 2) continue;
-                        keyValue[0] = keyValue[0].Trim();
-                        keyValue[1] = keyValue[1].Trim();
-
-                        var fieldName = IniKeyToMemberName(keyValue[0]);
-                        bool foundMember = false;
-
-                        foreach (var obj in Configs)
+                        string line = null;
+                        while ((line = streamReader.ReadLine()) != null)
                         {
-                            var attribute = obj.GetType().GetProperty(fieldName);
-                            if (ReferenceEquals(attribute, null)) continue;
-                            SetValue(attribute, obj, keyValue[1]);
-                            Statistics.ImplementedKeys.Add(keyValue[0]);
-                            foundMember = true;
+                            string[] keyValue = line.Split(new[] {'='}, 2);
+                            if (keyValue.Length < 2) continue;
+                            keyValue[0] = keyValue[0].Trim();
+                            keyValue[1] = keyValue[1].Trim();
+
+                            var fieldName = IniKeyToMemberName(keyValue[0]);
+                            bool foundMember = false;
+
+                            foreach (var obj in Configs)
+                            {
+                                var attribute = obj.GetType().GetProperty(fieldName);
+                                if (ReferenceEquals(attribute, null)) continue;
+                                Helpers.SetPropertyValue(attribute, obj, keyValue[1]);
+                                Statistics.ImplementedKeys.Add(keyValue[0]);
+                                foundMember = true;
+                            }
+
+                            if (!foundMember)
+                            {
+                                Statistics.MissingKeys.Add(keyValue[0]);
+                            }
+                        }
+                    }
+                }
+
+                LayerManager = new LayerManager(LayerCount);
+
+                foreach (ZipArchiveEntry entity in inputFile.Entries)
+                {
+                    if (!entity.Name.EndsWith(".png")) continue;
+                    if (entity.Name.StartsWith("thumbnail"))
+                    {
+                        using (Stream stream = entity.Open())
+                        {
+                            var image = Image.Load<Rgba32>(stream);
+                            byte thumbnailIndex =
+                                (byte) (image.Width == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Width &&
+                                        image.Height == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Height
+                                    ? FileThumbnailSize.Small
+                                    : FileThumbnailSize.Large);
+                            Thumbnails[thumbnailIndex] = image;
+                            stream.Close();
                         }
 
-                        if (!foundMember)
-                        {
-                            Statistics.MissingKeys.Add(keyValue[0]);
-                        }
-                    }
-                }
-            }
+                        //thumbnailIndex++;
 
-            Layers = new byte[LayerCount][];
-            uint iLayer = 0;
-
-
-            /*Parallel.ForEach(InputFile.Entries, (entity) =>
-            {
-                if (!entity.Name.EndsWith(".png")) return;
-                if (entity.Name.StartsWith("thumbnail"))
-                {
-                    using (Stream stream = entity.Open())
-                    {
-                        var image = Image.Load<Rgba32>(stream);
-                        byte thumbnailIndex =
-                            (byte)(image.Width == ThumbnailsOriginalSize[(int)FileThumbnailSize.Small].Width &&
-                                   image.Height == ThumbnailsOriginalSize[(int)FileThumbnailSize.Small].Height
-                                ? FileThumbnailSize.Small
-                                : FileThumbnailSize.Large);
-                        Thumbnails[thumbnailIndex] = image;
-                        stream.Close();
+                        continue;
                     }
 
-                    //thumbnailIndex++;
-
-                    return;
+                    // - .png - 5 numbers
+                    string layerStr = entity.Name.Substring(entity.Name.Length - 4 - 5, 5);
+                    uint iLayer = uint.Parse(layerStr);
+                    LayerManager[iLayer] = new LayerManager.Layer(iLayer, entity.Open(), entity.Name);
                 }
-
-                string stripName = entity.Name.Remove(0, OutputConfigSettings.JobDir.Length);
-                stripName = stripName.Remove(stripName.Length - 4);
-                Debug.WriteLine(uint.Parse(stripName));
-
-                Layers[uint.Parse(stripName)] = CompressLayer(entity.Open());
-            });*/
-            
-            foreach (ZipArchiveEntry entity in InputFile.Entries)
-            {
-                if (!entity.Name.EndsWith(".png")) continue;
-                if (entity.Name.StartsWith("thumbnail"))
-                {
-                    using (Stream stream = entity.Open())
-                    {
-                        var image = Image.Load<Rgba32>(stream);
-                        byte thumbnailIndex =
-                            (byte) (image.Width == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Width &&
-                                    image.Height == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Height
-                                ? FileThumbnailSize.Small
-                                : FileThumbnailSize.Large);
-                        Thumbnails[thumbnailIndex] = image;
-                        stream.Close();
-                    }
-
-                    //thumbnailIndex++;
-
-                    continue;
-                }
-
-                Layers[iLayer++] = CompressLayer(entity.Open());
             }
 
             Statistics.ExecutionTime.Stop();
@@ -547,13 +489,13 @@ namespace PrusaSL1Reader
             if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureSeconds))
             {
                 MaterialSettings.InitialExposureTime =
-                    OutputConfigSettings.ExpTimeFirst = value.Convert<ushort>();
+                    OutputConfigSettings.ExpTimeFirst = value.Convert<float>();
                 return true;
             }
             if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
             {
                 MaterialSettings.ExposureTime =
-                    OutputConfigSettings.ExpTime = value.Convert<byte>();
+                    OutputConfigSettings.ExpTime = value.Convert<float>();
                 return true;
             }
 
@@ -562,7 +504,6 @@ namespace PrusaSL1Reader
 
         public override void SaveAs(string filePath = null)
         {
-            InputFile.Dispose();
             if (!string.IsNullOrEmpty(filePath))
             {
                 File.Copy(FileFullPath, filePath, true);
@@ -570,13 +511,11 @@ namespace PrusaSL1Reader
 
             }
 
-            using (InputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update))
+            using (var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update))
             {
 
                 //InputFile.CreateEntry("Modified");
-                InputFile.GetEntry("config.ini")?.Delete();
-                var entry = InputFile.CreateEntry("config.ini");
-                using (TextWriter tw = new StreamWriter(entry.Open()))
+                using (TextWriter tw = new StreamWriter(outputFile.PutFileContent("config.ini", string.Empty).Open()))
                 {
                     var properties = OutputConfigSettings.GetType()
                         .GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -590,9 +529,7 @@ namespace PrusaSL1Reader
                     tw.Close();
                 }
 
-                InputFile.GetEntry("prusaslicer.ini")?.Delete();
-                entry = InputFile.CreateEntry("prusaslicer.ini");
-                using (TextWriter tw = new StreamWriter(entry.Open()))
+                using (TextWriter tw = new StreamWriter(outputFile.PutFileContent("prusaslicer.ini", string.Empty).Open()))
                 {
                     foreach (var config in Configs)
                     {
@@ -609,6 +546,13 @@ namespace PrusaSL1Reader
 
                     tw.Close();
                 }
+
+                foreach (var layer in this)
+                {
+                    if (!layer.IsModified) continue;
+                    outputFile.PutFileContent(layer.Filename, layer.RawData);
+                    layer.IsModified = false;
+                }
             }
 
             Decode(FileFullPath);
@@ -621,7 +565,10 @@ namespace PrusaSL1Reader
 
             if (to == typeof(ChituboxFile))
             {
-                ChituboxFile file = new ChituboxFile();
+                ChituboxFile file = new ChituboxFile
+                {
+                    LayerManager = LayerManager
+                };
 
 
                 file.HeaderSettings.Version = 2;
@@ -657,8 +604,6 @@ namespace PrusaSL1Reader
                 file.SlicerInfoSettings.MachineName = MachineName;
                 file.SlicerInfoSettings.MachineNameSize = (uint)MachineName.Length;
 
-                file.Layers = Layers;
-
                 if (LookupCustomValue<bool>("FLIP_XY", false, true))
                 {
                     file.HeaderSettings.ResolutionX = PrinterSettings.DisplayPixelsY;
@@ -675,7 +620,7 @@ namespace PrusaSL1Reader
             {
                 PHZFile file = new PHZFile
                 {
-                    Layers = Layers
+                    LayerManager = LayerManager
                 };
 
 
@@ -716,8 +661,8 @@ namespace PrusaSL1Reader
 
                 if (LookupCustomValue<bool>("FLIP_XY", false, true))
                 {
-                    file.HeaderSettings.ResolutionX = ResolutionX;
-                    file.HeaderSettings.ResolutionY = ResolutionY;
+                    file.HeaderSettings.ResolutionX = ResolutionY;
+                    file.HeaderSettings.ResolutionY = ResolutionX;
                 }
 
                 file.SetThumbnails(Thumbnails);
@@ -794,7 +739,7 @@ namespace PrusaSL1Reader
                             }
                         },
                     },
-                    Layers =  Layers
+                    LayerManager = LayerManager
                 };
                 
                 float usedMaterial = UsedMaterial / LayerCount;
@@ -809,6 +754,53 @@ namespace PrusaSL1Reader
 
                 file.SetThumbnails(Thumbnails);
                 file.Encode(fileFullPath);
+                return true;
+            }
+
+            if (to == typeof(CWSFile))
+            {
+                CWSFile file = new CWSFile
+                {
+                    LayerManager = LayerManager
+                };
+
+                file.SliceSettings.Xppm = file.OutputSettings.PixPermmX = (float) Math.Round(LookupCustomValue<float>("Xppm", file.SliceSettings.Xppm), 3);
+                file.SliceSettings.Yppm = file.OutputSettings.PixPermmY = (float) Math.Round(LookupCustomValue<float>("Yppm", file.SliceSettings.Xppm), 3);
+                file.SliceSettings.Xres = file.OutputSettings.XResolution = (ushort)ResolutionX;
+                file.SliceSettings.Yres = file.OutputSettings.YResolution = (ushort)ResolutionY;
+                file.SliceSettings.Thickness = file.OutputSettings.LayerThickness = LayerHeight;
+                file.SliceSettings.LayersNum = file.OutputSettings.LayersNum = LayerCount;
+                file.SliceSettings.HeadLayersNum = file.OutputSettings.NumberBottomLayers = InitialLayerCount;
+                file.SliceSettings.LayersExpoMs = file.OutputSettings.LayerTime = (uint) LayerExposureTime * 1000;
+                file.SliceSettings.HeadLayersExpoMs = file.OutputSettings.BottomLayersTime = (uint) InitialExposureTime * 1000;
+                file.SliceSettings.WaitBeforeExpoMs = LookupCustomValue<uint>("WaitBeforeExpoMs", file.SliceSettings.WaitBeforeExpoMs);
+                file.SliceSettings.LiftDistance = file.OutputSettings.LiftDistance = (float) Math.Round(LookupCustomValue<float>("LiftDistance", file.SliceSettings.LiftDistance), 2);
+                file.SliceSettings.LiftUpSpeed = file.OutputSettings.ZLiftFeedRate = file.OutputSettings.ZBottomLiftFeedRate = (float) Math.Round(LookupCustomValue<float>("LiftUpSpeed", file.SliceSettings.LiftUpSpeed), 2);
+                file.SliceSettings.LiftDownSpeed = file.OutputSettings.ZLiftRetractRate = (float) Math.Round(LookupCustomValue<float>("LiftDownSpeed", file.SliceSettings.LiftDownSpeed), 2);
+                file.SliceSettings.LiftWhenFinished = LookupCustomValue<byte>("LiftWhenFinished", file.SliceSettings.LiftWhenFinished);
+
+                file.OutputSettings.BlankingLayerTime = LookupCustomValue<uint>("BlankingLayerTime", file.OutputSettings.BlankingLayerTime);
+                //file.OutputSettings.RenderOutlines = false;
+                //file.OutputSettings.OutlineWidthInset = 0;
+                //file.OutputSettings.OutlineWidthOutset = 0;
+                file.OutputSettings.RenderOutlines = false;
+                //file.OutputSettings.TiltValue = 0;
+                //file.OutputSettings.UseMainliftGCodeTab = false;
+                //file.OutputSettings.AntiAliasing = 0;
+                //file.OutputSettings.AntiAliasingValue = 0;
+                file.OutputSettings.FlipX = PrinterSettings.DisplayMirrorX;
+                file.OutputSettings.FlipY = PrinterSettings.DisplayMirrorY;
+
+
+
+                if (LookupCustomValue<bool>("FLIP_XY", false, true))
+                {
+                    file.SliceSettings.Xres = file.OutputSettings.XResolution = (ushort) ResolutionY;
+                    file.SliceSettings.Yres = file.OutputSettings.YResolution = (ushort) ResolutionX;
+                }
+
+                file.Encode(fileFullPath);
+
                 return true;
             }
 

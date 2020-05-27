@@ -9,6 +9,7 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -79,8 +80,8 @@ namespace PrusaSL1Reader
         /// <summary>
         /// Gets the cached layers into compressed bytes
         /// </summary>
-        byte[][] Layers { get; set; }
-        
+        LayerManager LayerManager { get; set; }
+
         /// <summary>
         /// Gets the image width resolution
         /// </summary>
@@ -165,7 +166,7 @@ namespace PrusaSL1Reader
         /// <summary>
         /// Gets the GCode, returns null if not supported
         /// </summary>
-        string GCode { get; set; }
+        StringBuilder GCode { get; set; }
 
         /// <summary>
         /// Get all configuration objects with properties and values
@@ -225,27 +226,6 @@ namespace PrusaSL1Reader
         void SetThumbnails(Image<Rgba32> images);
 
         /// <summary>
-        /// Compress a layer from a <see cref="Stream"/>
-        /// </summary>
-        /// <param name="input"><see cref="Stream"/> to compress</param>
-        /// <returns>Compressed byte array</returns>
-        byte[] CompressLayer(Stream input);
-
-        /// <summary>
-        /// Compress a layer from a byte array
-        /// </summary>
-        /// <param name="input">byte array to compress</param>
-        /// <returns>Compressed byte array</returns>
-        byte[] CompressLayer(byte[] input);
-
-        /// <summary>
-        /// Decompress a layer from a byte array
-        /// </summary>
-        /// <param name="input">byte array to decompress</param>
-        /// <returns>Decompressed byte array</returns>
-        byte[] DecompressLayer(byte[] input);
-
-        /// <summary>
         /// Encode to an output file
         /// </summary>
         /// <param name="fileFullPath">Output file</param>
@@ -283,20 +263,6 @@ namespace PrusaSL1Reader
         /// <param name="genericConfigExtract"></param>
         /// <param name="genericLayersExtract"></param>
         void Extract(string path, bool genericConfigExtract = true, bool genericLayersExtract = true);
-
-        /// <summary>
-        /// Gets a byte array from layer
-        /// </summary>
-        /// <param name="layerIndex">The layer index</param>
-        /// <returns>Returns a byte array</returns>
-        byte[] GetLayer(uint layerIndex);
-
-        /// <summary>
-        /// Gets a image from layer
-        /// </summary>
-        /// <param name="layerIndex">The layer index</param>
-        /// <returns>Returns a image</returns>
-        Image<L8> GetLayerImage(uint layerIndex);
 
         /// <summary>
         /// Get height in mm from layer height

@@ -6,8 +6,11 @@
  *  of this license document, but changing it is not allowed.
  */
 using System.IO;
+using Emgu.CV;
+using Emgu.CV.Structure;
 using PrusaSL1Reader;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace PrusaSL1Viewer
 {
@@ -24,6 +27,15 @@ namespace PrusaSL1Viewer
 
                 return new System.Drawing.Bitmap(memoryStream);
             }
+        }
+
+        public static Image<Gray, byte> ToEmguImage(this Image<L8> image)
+        {
+            return 
+                new Image<Gray, byte>(image.Width, image.Height)
+                {
+                    Bytes = Helpers.ImageL8ToBytes(image)
+                };
         }
 
         /*public static Image<TPixel> ToImageSharpImage<TPixel>(this System.Drawing.Bitmap bitmap) where TPixel : struct, IPixel<TPixel>
