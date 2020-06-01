@@ -163,6 +163,26 @@ namespace PrusaSL1Viewer.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap eye_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("eye-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap eye_24x24 {
+            get {
+                object obj = ResourceManager.GetObject("eye-24x24", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap File_Close_16x16 {
             get {
                 object obj = ResourceManager.GetObject("File-Close-16x16", resourceCulture);
@@ -176,6 +196,16 @@ namespace PrusaSL1Viewer.Properties {
         internal static System.Drawing.Bitmap File_Refresh_16x16 {
             get {
                 object obj = ResourceManager.GetObject("File-Refresh-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap filter_filled_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("filter-filled-16x16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -206,6 +236,76 @@ namespace PrusaSL1Viewer.Properties {
         internal static System.Drawing.Bitmap layers_16x16 {
             get {
                 object obj = ResourceManager.GetObject("layers-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap mutation_blackhat {
+            get {
+                object obj = ResourceManager.GetObject("mutation_blackhat", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap mutation_closing {
+            get {
+                object obj = ResourceManager.GetObject("mutation_closing", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap mutation_dilation {
+            get {
+                object obj = ResourceManager.GetObject("mutation_dilation", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap mutation_erosion {
+            get {
+                object obj = ResourceManager.GetObject("mutation_erosion", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap mutation_gradient {
+            get {
+                object obj = ResourceManager.GetObject("mutation_gradient", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap mutation_opening {
+            get {
+                object obj = ResourceManager.GetObject("mutation_opening", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap mutation_tophat {
+            get {
+                object obj = ResourceManager.GetObject("mutation_tophat", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

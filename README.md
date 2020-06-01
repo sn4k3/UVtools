@@ -37,6 +37,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 * View and extract thumbnails
 * View all used settings
 * Edit print properties and save file
+* Mutate and filter layers
 * Export file to a folder
 * Convert SL1 format to another format
 * Portable (No installation needed)
@@ -58,7 +59,7 @@ But also, i need victims for test subject. Proceed at your own risk!
     * Choose SL1 printer
 1. Close PrusaSlicer
 1. Open PrusaSL1Viewer
-1. Under Menu click -> About -> Install printers into PrusaSlicer
+   * Under Menu click -> About -> Install printers into PrusaSlicer
 1. Open PrusaSlicer and check if profiles are there
 1. To clean up interface remove printers that you will not use (OPTIONAL)
 1. Duplicate or create your printer and tune the values if required
@@ -80,9 +81,11 @@ After some tests without failure you can increase your confidence and ignore thi
 
 1. Windows 7 or greater
 2. .NET Framework 4.8 installed (Comes pre-installed on Windows 10 with last updates)
+3. 2 GB RAM or higher
 
 ### Mac and Linux
 
+(Not tested nor compiled)
 1. Latest Mono
 
 ## How to use
@@ -100,8 +103,6 @@ Are you a developer? This project include a .NET Core library (PrusaSL1Reader) t
 
 
 ## TODO
-* Speed up layer preview
-* Put convert operation under a task (No GUI freeze)
 * More file formats
 * Clean up (always)
 

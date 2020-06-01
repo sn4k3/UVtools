@@ -14,6 +14,8 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using PrusaSL1Reader;
 using SixLabors.ImageSharp;
@@ -22,37 +24,66 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Color = System.Drawing.Color;
 using Point = System.Drawing.Point;
+using Size = System.Drawing.Size;
 
 namespace PrusaSL1Viewer
 {
     public partial class FrmMain : Form
     {
         #region Enums
-        public enum eMutate
-        {
-            Erode,
-            Dilate,
-            PyrDownUp,
-            SmoothMedian,
-            SmoothGaussian
-        }
         #endregion
 
         #region Properties
 
-        public static readonly Dictionary<eMutate, string> MutateDescriptions = new Dictionary<eMutate, string>
-        {
-            {eMutate.Erode, "Erodes image using a 3x3 rectangular structuring element.\n" +
-                            "Erosion are applied several (iterations) times"},
-            {eMutate.Dilate, "Dilates image using a 3x3 rectangular structuring element.\n" +
-                             "Dilation are applied several (iterations) times"},
-            {eMutate.PyrDownUp, "Performs downsampling step of Gaussian pyramid decomposition.\n" +
-                                "First it convolves image with the specified filter and then downsamples the image by rejecting even rows and columns.\n" +
-                                "After performs up-sampling step of Gaussian pyramid decomposition\n" +
-                                "First it upsamples image by injecting even zero rows and columns and then convolves result with the specified filter multiplied by 4 for interpolation"},
-            {eMutate.SmoothMedian, "Finding median of size neighborhood"},
-            {eMutate.SmoothGaussian, "Perform Gaussian Smoothing"}
-        };
+        public static readonly Dictionary<Mutation.Mutates, Mutation> Mutations =
+            new Dictionary<Mutation.Mutates, Mutation>
+            {
+                {Mutation.Mutates.Erode, new Mutation(Mutation.Mutates.Erode, 
+                "The basic idea of erosion is just like soil erosion only, it erodes away the boundaries of foreground object (Always try to keep foreground in white). " +
+                        "So what happends is that, all the pixels near boundary will be discarded depending upon the size of kernel. So the thickness or size of the foreground object decreases or simply white region decreases in the image. It is useful for removing small white noises, detach two connected objects, etc.",
+                        Properties.Resources.mutation_erosion
+                )},
+                {Mutation.Mutates.Dilate, new Mutation(Mutation.Mutates.Dilate,
+                    "It is just opposite of erosion. Here, a pixel element is '1' if atleast one pixel under the kernel is '1'. So it increases the white region in the image or size of foreground object increases. Normally, in cases like noise removal, erosion is followed by dilation. Because, erosion removes white noises, but it also shrinks our object. So we dilate it. Since noise is gone, they won't come back, but our object area increases. It is also useful in joining broken parts of an object.",
+                    Properties.Resources.mutation_dilation
+                )},
+                {Mutation.Mutates.Opening, new Mutation(Mutation.Mutates.Opening,
+                    "Opening is just another name of erosion followed by dilation. It is useful in removing noise.",
+                    Properties.Resources.mutation_opening
+                )},
+                {Mutation.Mutates.Closing, new Mutation(Mutation.Mutates.Closing,
+                    "Closing is reverse of Opening, Dilation followed by Erosion. It is useful in closing small holes inside the foreground objects, or small black points on the object.",
+                    Properties.Resources.mutation_closing
+                )},
+                {Mutation.Mutates.Gradient, new Mutation(Mutation.Mutates.Gradient,
+                    "It's the difference between dilation and erosion of an image.",
+                    Properties.Resources.mutation_gradient
+                )},
+                /*{Mutation.Mutates.TopHat, new Mutation(Mutation.Mutates.TopHat,
+                    "It's the difference between input image and Opening of the image.",
+                    Properties.Resources.mutation_tophat
+                )},
+                {Mutation.Mutates.BlackHat, new Mutation(Mutation.Mutates.BlackHat,
+                    "It's the difference between the closing of the input image and input image.",
+                    Properties.Resources.mutation_blackhat
+                )},*/
+                /*{Mutation.Mutates.HitMiss, new Mutation(Mutation.Mutates.HitMiss,
+                    "The Hit-or-Miss transformation is useful to find patterns in binary images. In particular, it finds those pixels whose neighbourhood matches the shape of a first structuring element B1 while not matching the shape of a second structuring element B2 at the same time.",
+                    null
+                )},*/
+                {Mutation.Mutates.PyrDownUp, new Mutation(Mutation.Mutates.PyrDownUp,
+                    "Performs downsampling step of Gaussian pyramid decomposition.\n" +
+                    "First it convolves image with the specified filter and then downsamples the image by rejecting even rows and columns.\n" +
+                    "After performs up-sampling step of Gaussian pyramid decomposition\n"
+                )},
+                {Mutation.Mutates.SmoothMedian, new Mutation(Mutation.Mutates.SmoothMedian,
+                    "Finding median of size neighborhood"
+                )},
+                {Mutation.Mutates.SmoothGaussian, new Mutation(Mutation.Mutates.SmoothGaussian,
+                    "Perform Gaussian Smoothing"
+                )},
+            };
+
 
         public FrmLoading FrmLoading { get; }
         public static FileFormat SlicerFile
@@ -79,11 +110,12 @@ namespace PrusaSL1Viewer
             DragEnter += (s, e) => { if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy; };
             DragDrop += (s, e) => { ProcessFile((string[])e.Data.GetData(DataFormats.FileDrop)); };
 
-            foreach (eMutate mutate in (eMutate[])Enum.GetValues(typeof(eMutate)))
+            foreach (Mutation.Mutates mutate in (Mutation.Mutates[])Enum.GetValues(typeof(Mutation.Mutates)))
             {
+                if(!Mutations.ContainsKey(mutate)) continue;
                 var item = new ToolStripMenuItem(mutate.ToString())
                 {
-                    ToolTipText = MutateDescriptions[mutate], Tag = mutate, AutoToolTip = true
+                    ToolTipText = Mutations[mutate].Description, Tag = mutate, AutoToolTip = true, Image = Properties.Resources.filter_filled_16x16
                 };
                 item.Click += ItemClicked;
                 menuMutate.DropDownItems.Add(item);
@@ -374,9 +406,9 @@ namespace PrusaSL1Viewer
 
                     }
 
-                    if (item.Tag.GetType() == typeof(eMutate))
+                    if (item.Tag.GetType() == typeof(Mutation.Mutates))
                     {
-                        eMutate mutate = (eMutate)item.Tag;
+                        Mutation.Mutates mutate = (Mutation.Mutates)item.Tag;
                         MutateLayers(mutate);
                         return;
                     }
@@ -1128,7 +1160,7 @@ namespace PrusaSL1Viewer
 
                 watch.Stop();
                 tsLayerPreviewTime.Text = $"{watch.ElapsedMilliseconds}ms";
-                lbLayers.Text = $"{SlicerFile.GetHeightFromLayer((uint)layerNum + 1)} / {SlicerFile.TotalHeight}mm\n{layerNum + 1} / {SlicerFile.LayerCount}\n{percent}%";
+                lbLayers.Text = $"{SlicerFile.GetHeightFromLayer((uint)layerNum + 1)} / {SlicerFile.TotalHeight}mm\n{layerNum} / {SlicerFile.LayerCount-1}\n{percent}%";
                 pbLayers.Value = percent;
             }
             catch (Exception e)
@@ -1229,14 +1261,29 @@ namespace PrusaSL1Viewer
             DrawPixel(true, e.Location, Color.Green, Helpers.L8White);
         }
 
-        public void MutateLayers(eMutate type)
+        public void MutateLayers(Mutation.Mutates type)
         {
-            decimal value = 0;
-            using (FrmInputBox inputBox = new FrmInputBox($"Mutate - {type}", MutateDescriptions[type], 0))
+            uint layerStart;
+            uint layerEnd;
+            uint iterationsStart;
+            uint iterationsEnd;
+            bool fade;
+            float iterationSteps = 0;
+            uint maxIteration = 0;
+            using (FrmMutation inputBox = new FrmMutation(Mutations[type]))
             {
                 if (inputBox.ShowDialog() != DialogResult.OK) return;
-                value = inputBox.NewValue;
-                if (value == 0) return;
+                iterationsStart = inputBox.Iterations;
+                if (iterationsStart == 0) return;
+                layerStart = inputBox.LayerRangeStart;
+                layerEnd = inputBox.LayerRangeEnd;
+                iterationsEnd = inputBox.IterationsEnd;
+                fade = layerStart != layerEnd && iterationsStart != iterationsEnd && inputBox.IterationsFade;
+                if (fade)
+                {
+                    iterationSteps = Math.Abs((float)iterationsStart - iterationsEnd) / (layerEnd - layerStart);
+                    maxIteration = Math.Max(iterationsStart, iterationsEnd);
+                }
             }
 
             DisableGUI();
@@ -1247,26 +1294,63 @@ namespace PrusaSL1Viewer
                 bool result = false;
                 try
                 {
-                    Parallel.ForEach(SlicerFile, (layer) =>
+                    Parallel.For(layerStart, layerEnd+1, i =>
                     {
+                        var iterations = iterationsStart;
+                        if (fade)
+                        {
+                            // calculate iterations based on range
+                            iterations = iterationsStart < iterationsEnd ? 
+                                (uint) ((i + 1 - layerStart) * iterationSteps) :
+                                (uint) (iterationsStart - (i - layerStart) * iterationSteps);
+
+                            // constrain
+                            iterations = Math.Min(Math.Max(1, iterations), maxIteration);
+                            //Debug.WriteLine($"A Layer: {i} = {iterations}");
+                        }
+                        LayerManager.Layer layer = SlicerFile[i];
                         var image = layer.Image;
                         var imageEgmu = image.ToEmguImage();
                         switch (type)
                         {
-                            case eMutate.Erode:
-                                imageEgmu = imageEgmu.Erode((int) value);
+                            case Mutation.Mutates.Erode:
+                                imageEgmu = imageEgmu.Erode((int) iterations);
                                 break;
-                            case eMutate.Dilate:
-                                imageEgmu = imageEgmu.Dilate((int) value);
+                            case Mutation.Mutates.Dilate:
+                                imageEgmu = imageEgmu.Dilate((int) iterations);
                                 break;
-                            case eMutate.PyrDownUp:
+                            case Mutation.Mutates.Opening:
+                                imageEgmu = imageEgmu.Erode((int)iterations);
+                                imageEgmu = imageEgmu.Dilate((int)iterations);
+                                break;
+                            case Mutation.Mutates.Closing:
+                                imageEgmu = imageEgmu.Dilate((int)iterations);
+                                imageEgmu = imageEgmu.Erode((int)iterations);
+                                break;
+                            case Mutation.Mutates.Gradient:
+                                imageEgmu = imageEgmu.MorphologyEx(MorphOp.Gradient, Program.KernelStar3x3, new Point(-1, -1), (int) iterations,
+                                    BorderType.Default, new MCvScalar());
+                                break;
+                            case Mutation.Mutates.TopHat:
+                                imageEgmu = imageEgmu.MorphologyEx(MorphOp.Tophat, CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(9, 9), new Point(-1, -1)), new Point(-1, -1), (int)iterations,
+                                    BorderType.Default, new MCvScalar());
+                                break;
+                            case Mutation.Mutates.BlackHat:
+                                imageEgmu = imageEgmu.MorphologyEx(MorphOp.Blackhat, CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(9, 9), new Point(-1, -1)), new Point(-1, -1), (int)iterations,
+                                    BorderType.Default, new MCvScalar());
+                                break;
+                            case Mutation.Mutates.HitMiss:
+                                imageEgmu = imageEgmu.MorphologyEx(MorphOp.HitMiss, Program.KernelFindIsolated, new Point(-1, -1), (int)iterations,
+                                    BorderType.Default, new MCvScalar());
+                                break;
+                            case Mutation.Mutates.PyrDownUp:
                                 imageEgmu = imageEgmu.PyrDown().PyrUp();
                                 break;
-                            case eMutate.SmoothMedian:
-                                imageEgmu = imageEgmu.SmoothMedian((int) value);
+                            case Mutation.Mutates.SmoothMedian:
+                                imageEgmu = imageEgmu.SmoothMedian((int) iterations);
                                 break;
-                            case eMutate.SmoothGaussian:
-                                imageEgmu = imageEgmu.SmoothGaussian((int)value);
+                            case Mutation.Mutates.SmoothGaussian:
+                                imageEgmu = imageEgmu.SmoothGaussian((int)iterations);
                                 break;
                         }
                         layer.Image = imageEgmu.ToImageSharpL8();

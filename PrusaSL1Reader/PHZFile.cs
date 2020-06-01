@@ -715,6 +715,10 @@ namespace PrusaSL1Reader
                 for (int x = 0; x < image.Width; x++)
                 {
                     var grey7 = (byte)((pixelRowSpan[x].PackedValue >> 1) & 0x7f);
+                    if (grey7 > 0x7c)
+                    {
+                        grey7 = 0x7c;
+                    }
 
                     if (color == byte.MaxValue)
                     {
@@ -882,6 +886,12 @@ namespace PrusaSL1Reader
                     //lastColor = (byte) (code << 1);
                     // // Convert from 7bpp to 8bpp (extending the last bit)
                     lastColor = (byte) (((code & 0x7f) << 1) | (code & 1));
+                    if (lastColor >= 0xfc) {
+                        // Make 'white' actually white
+                        lastColor = 0xff;
+
+                    }
+
                     if (index < limit)
                     {
                         span[index].PackedValue = lastColor;

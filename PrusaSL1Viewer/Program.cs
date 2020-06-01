@@ -11,6 +11,8 @@ using System.Drawing;
 using System.Globalization;
 using System.Threading;
 using System.Windows.Forms;
+using ApplicationManagement;
+using Emgu.CV;
 using PrusaSL1Reader;
 
 namespace PrusaSL1Viewer
@@ -61,9 +63,26 @@ namespace PrusaSL1Viewer
             };
         }
 
+        public static Matrix<byte> KernelStar3x3 { get; } = new Matrix<byte>(new byte[,]
+        {
+            { 0, 1, 0 },
+            { 1, 0, 1 }, 
+            { 0, 1, 0 }
+        });
+
+        public static Matrix<sbyte> KernelFindIsolated { get; } = new Matrix<sbyte>(new sbyte[,]
+        {
+            { 0, 1, 0 },
+            { 1, -1, 1 },
+            { 0, 1, 0 }
+        });
+
         public static FileFormat SlicerFile { get; set; }
         public static FrmMain FrmMain { get; private set; }
         public static FrmAbout FrmAbout { get; private set; }
+
+        public static ExceptionHandler ExceptionHandler { get; private set; }
+
         public static string[] Args { get; private set; }
         /// <summary>
         /// The main entry point for the application.
@@ -76,6 +95,9 @@ namespace PrusaSL1Viewer
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            ExceptionHandler = new ExceptionHandler {MessageBoxButtons = MessageBoxButtons.OK};
+            ExceptionHandler.StartHandlingExceptions();
 
             FrmMain = new FrmMain();
             FrmAbout = new FrmAbout();

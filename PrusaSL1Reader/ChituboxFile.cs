@@ -703,11 +703,9 @@ namespace PrusaSL1Reader
                     currentOffset += Helpers.SerializeWriteFileStream(outputFile, PrintParametersSettings);
 
                     HeaderSettings.SlicerOffset = currentOffset;
-                    HeaderSettings.SlicerSize = (uint) Helpers.Serializer.SizeOf(SlicerInfoSettings);
+                    HeaderSettings.SlicerSize = (uint) Helpers.Serializer.SizeOf(SlicerInfoSettings) - SlicerInfoSettings.MachineNameSize;
 
-                    SlicerInfoSettings.MachineNameAddress =
-                        (uint) (currentOffset + Helpers.Serializer.SizeOf(SlicerInfoSettings) -
-                                SlicerInfoSettings.MachineNameSize);
+                    SlicerInfoSettings.MachineNameAddress = currentOffset + HeaderSettings.SlicerSize;
 
 
                     currentOffset += Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);

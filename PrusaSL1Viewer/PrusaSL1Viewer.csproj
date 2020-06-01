@@ -57,6 +57,9 @@
     <ApplicationIcon>PrusaSL1Viewer.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ApplicationManagement">
+      <HintPath>Libraries\ApplicationManagement.dll</HintPath>
+    </Reference>
     <Reference Include="BinarySerializer, Version=8.5.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\BinarySerializer.8.5.1\lib\net46\BinarySerializer.dll</HintPath>
     </Reference>
@@ -104,6 +107,7 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Management" />
     <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
     </Reference>
@@ -142,6 +146,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\SplitButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="FrmMutation.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmMutation.Designer.cs">
+      <DependentUpon>FrmMutation.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrmInputBox.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -166,18 +179,16 @@
     <Compile Include="FrmMain.Designer.cs">
       <DependentUpon>FrmMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="ImageBox.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="ImageBox.Designer.cs">
-      <DependentUpon>ImageBox.cs</DependentUpon>
-    </Compile>
     <Compile Include="EmguExtensions.cs" />
     <Compile Include="ImageSharpExtensions.cs" />
+    <Compile Include="Mutation.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FrmAbout.resx">
       <DependentUpon>FrmAbout.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmMutation.resx">
+      <DependentUpon>FrmMutation.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FrmInputBox.resx">
       <DependentUpon>FrmInputBox.cs</DependentUpon>
@@ -187,9 +198,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FrmMain.resx">
       <DependentUpon>FrmMain.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ImageBox.resx">
-      <DependentUpon>ImageBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -260,6 +268,16 @@
     <None Include="Images\pixel-16x16.png" />
     <None Include="Images\Geometry-16x16.png" />
     <None Include="Images\CNCMachine-16x16.png" />
+    <None Include="Images\gui\mutation_blackhat.png" />
+    <None Include="Images\gui\mutation_closing.png" />
+    <None Include="Images\gui\mutation_dilation.png" />
+    <None Include="Images\gui\mutation_erosion.png" />
+    <None Include="Images\gui\mutation_gradient.png" />
+    <None Include="Images\gui\mutation_opening.png" />
+    <None Include="Images\gui\mutation_tophat.png" />
+    <None Include="Images\eye-16x16.png" />
+    <None Include="Images\filter-filled-16x16.png" />
+    <None Include="Images\eye-24x24.png" />
     <Content Include="License-LGPL.txt" />
     <Content Include="PrusaSL1Viewer.ico" />
   </ItemGroup>
@@ -275,6 +293,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /y $(ProjectDir)..\LICENSE $(ProjectDir)$(OutDir)

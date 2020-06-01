@@ -7,9 +7,9 @@
     <PackageProjectUrl>https://github.com/sn4k3/PrusaSL1Viewer</PackageProjectUrl>
     <PackageIcon></PackageIcon>
     <RepositoryUrl>https://github.com/sn4k3/PrusaSL1Viewer</RepositoryUrl>
-    <AssemblyVersion>0.4.0.0</AssemblyVersion>
-    <FileVersion>0.4.4.0</FileVersion>
-    <Version>0.4</Version>
+    <AssemblyVersion>0.4.1.0</AssemblyVersion>
+    <FileVersion>0.4.1.0</FileVersion>
+    <Version>0.4.1</Version>
     <Description>Open, view, edit, extract and convert DLP/SLA files generated from Slicers</Description>
   </PropertyGroup>
 

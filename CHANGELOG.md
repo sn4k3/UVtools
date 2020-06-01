@@ -1,5 +1,17 @@
 # Changelog
 
+## 01/06/2020 - v0.4.1 - Beta
+
+* (Add) Opening, Closing and Gradient Mutators
+* (Add) Choose layer range when appling a mutator #1
+* (Add) Choose iterations range/fading when appling a mutator (Thanks to Renos Makrosellis)
+* (Add) Global and unhandled exceptions are now logged to be easier to report a bug
+* (Change) Current layer and layer count text was reduced by 1 to match indexes on mutators
+* (Improvement) Better mutator dialogs and explanation
+* (Improvement) Compressed GUI images size
+* (Fix) SlicerHeader was with wrong data size and affecting .photon, .cbddlp and .cbt (Thanks to Renos Makrosellis)
+
+
 ## 27/05/2020 - v0.4 - Beta
 
 * (Add) CWS file format
