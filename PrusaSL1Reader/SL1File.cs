@@ -458,7 +458,7 @@ namespace PrusaSL1Reader
                     // - .png - 5 numbers
                     string layerStr = entity.Name.Substring(entity.Name.Length - 4 - 5, 5);
                     uint iLayer = uint.Parse(layerStr);
-                    LayerManager[iLayer] = new LayerManager.Layer(iLayer, entity.Open(), entity.Name);
+                    LayerManager[iLayer] = new Layer(iLayer, entity.Open(), entity.Name);
                 }
             }
 

@@ -315,7 +315,7 @@ namespace PrusaSL1Reader
         #endregion
 
         #region Layer
-        public class Layer
+        public class LayerData
         {
             /// <summary>
             /// Gets the build platform Z position for this layer, measured in millimeters.
@@ -413,9 +413,9 @@ namespace PrusaSL1Reader
 
         public Preview[] Previews { get; protected internal set; }
 
-        public Layer[,] LayersDefinitions { get; private set; }
+        public LayerData[,] LayersDefinitions { get; private set; }
 
-        public Dictionary<string, Layer> LayersHash { get; } = new Dictionary<string, Layer>();
+        public Dictionary<string, LayerData> LayersHash { get; } = new Dictionary<string, LayerData>();
 
         public override FileFormatType FileType => FileFormatType.Binary;
 
@@ -514,7 +514,7 @@ namespace PrusaSL1Reader
 
 
             uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
-            LayersDefinitions = new Layer[HeaderSettings.LayerCount, HeaderSettings.AntiAliasLevel];
+            LayersDefinitions = new LayerData[HeaderSettings.LayerCount, HeaderSettings.AntiAliasLevel];
             using (var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write))
             {
 
@@ -631,11 +631,11 @@ namespace PrusaSL1Reader
                 }
 
                 HeaderSettings.LayersDefinitionOffsetAddress = currentOffset;
-                uint layerDataCurrentOffset = currentOffset + (uint) Helpers.Serializer.SizeOf(new Layer()) * HeaderSettings.LayerCount * HeaderSettings.AntiAliasLevel;
+                uint layerDataCurrentOffset = currentOffset + (uint) Helpers.Serializer.SizeOf(new LayerData()) * HeaderSettings.LayerCount * HeaderSettings.AntiAliasLevel;
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
-                    Layer layer = new Layer();
-                    Layer layerHash = null;
+                    LayerData layerData = new LayerData();
+                    LayerData layerDataHash = null;
                     var image = this[layerIndex].Image;
                     rawData = EncodePhzImage(image, layerIndex);
 
@@ -644,23 +644,23 @@ namespace PrusaSL1Reader
                     if (HeaderSettings.EncryptionKey == 0)
                     {
                         string hash = Helpers.ComputeSHA1Hash(byteArr);
-                        if (!LayersHash.TryGetValue(hash, out layerHash))
+                        if (!LayersHash.TryGetValue(hash, out layerDataHash))
                         {
-                            LayersHash.Add(hash, layer);
+                            LayersHash.Add(hash, layerData);
                         }
                     }
 
                     //layer.DataAddress = CurrentOffset + (uint)Helpers.Serializer.SizeOf(layer);
-                    layer.DataAddress = layerHash?.DataAddress ?? layerDataCurrentOffset;
-                    layer.DataSize = layerHash?.DataSize ?? (uint)byteArr.Length;
-                    layer.LayerPositionZ = layerIndex * HeaderSettings.LayerHeightMilimeter;
-                    layer.LayerOffTimeSeconds = layerIndex < HeaderSettings.BottomLayersCount ? HeaderSettings.BottomLightOffDelay : HeaderSettings.LayerOffTime;
-                    layer.LayerExposure = layerIndex < HeaderSettings.BottomLayersCount ? HeaderSettings.BottomExposureSeconds : HeaderSettings.LayerExposureSeconds;
-                    LayersDefinitions[layerIndex, 0] = layer;
+                    layerData.DataAddress = layerDataHash?.DataAddress ?? layerDataCurrentOffset;
+                    layerData.DataSize = layerDataHash?.DataSize ?? (uint)byteArr.Length;
+                    layerData.LayerPositionZ = layerIndex * HeaderSettings.LayerHeightMilimeter;
+                    layerData.LayerOffTimeSeconds = layerIndex < HeaderSettings.BottomLayersCount ? HeaderSettings.BottomLightOffDelay : HeaderSettings.LayerOffTime;
+                    layerData.LayerExposure = layerIndex < HeaderSettings.BottomLayersCount ? HeaderSettings.BottomExposureSeconds : HeaderSettings.LayerExposureSeconds;
+                    LayersDefinitions[layerIndex, 0] = layerData;
 
-                    currentOffset += Helpers.SerializeWriteFileStream(outputFile, layer);
+                    currentOffset += Helpers.SerializeWriteFileStream(outputFile, layerData);
 
-                    if (!ReferenceEquals(layerHash, null)) continue;
+                    if (!ReferenceEquals(layerDataHash, null)) continue;
 
                     outputFile.Seek(layerDataCurrentOffset, SeekOrigin.Begin);
                     layerDataCurrentOffset += Helpers.WriteFileStream(outputFile, byteArr);
@@ -830,7 +830,7 @@ namespace PrusaSL1Reader
             }
 
 
-            LayersDefinitions = new Layer[HeaderSettings.LayerCount, HeaderSettings.AntiAliasLevel];
+            LayersDefinitions = new LayerData[HeaderSettings.LayerCount, HeaderSettings.AntiAliasLevel];
 
             uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
 
@@ -841,16 +841,16 @@ namespace PrusaSL1Reader
                 for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
                 {
                     inputFile.Seek(layerOffset, SeekOrigin.Begin);
-                    Layer layer = Helpers.Deserialize<Layer>(inputFile);
-                    LayersDefinitions[layerIndex, aaIndex] = layer;
+                    LayerData layerData = Helpers.Deserialize<LayerData>(inputFile);
+                    LayersDefinitions[layerIndex, aaIndex] = layerData;
 
-                    layerOffset += (uint)Helpers.Serializer.SizeOf(layer);
+                    layerOffset += (uint)Helpers.Serializer.SizeOf(layerData);
                     Debug.Write($"LAYER {layerIndex} -> ");
-                    Debug.WriteLine(layer);
+                    Debug.WriteLine(layerData);
 
-                    layer.EncodedRle = new byte[layer.DataSize];
-                    inputFile.Seek(layer.DataAddress, SeekOrigin.Begin);
-                    inputFile.Read(layer.EncodedRle, 0, (int)layer.DataSize);
+                    layerData.EncodedRle = new byte[layerData.DataSize];
+                    inputFile.Seek(layerData.DataAddress, SeekOrigin.Begin);
+                    inputFile.Read(layerData.EncodedRle, 0, (int)layerData.DataSize);
                 }
             }
 
@@ -858,7 +858,7 @@ namespace PrusaSL1Reader
 
             Parallel.For(0, LayerCount, layerIndex => {
                     var image = DecodePhzImage((uint) layerIndex);
-                    this[layerIndex] = new LayerManager.Layer((uint) layerIndex, image);
+                    this[layerIndex] = new Layer((uint) layerIndex, image);
             });
         }
 

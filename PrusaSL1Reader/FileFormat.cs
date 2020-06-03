@@ -8,8 +8,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using PrusaSL1Reader.Extensions;
@@ -23,7 +25,7 @@ namespace PrusaSL1Reader
     /// <summary>
     /// Slicer <see cref="FileFormat"/> representation
     /// </summary>
-    public abstract class FileFormat : IFileFormat, IDisposable, IEquatable<FileFormat>, IEnumerable<LayerManager.Layer>
+    public abstract class FileFormat : IFileFormat, IDisposable, IEquatable<FileFormat>, IEnumerable<Layer>
     {
         #region Enums
 
@@ -308,19 +310,19 @@ namespace PrusaSL1Reader
         #endregion
 
         #region Indexers
-        public LayerManager.Layer this[int index]
+        public Layer this[int index]
         {
             get => LayerManager[index];
             set => LayerManager[index] = value;
         }
 
-        public LayerManager.Layer this[uint index]
+        public Layer this[uint index]
         {
             get => LayerManager[index];
             set => LayerManager[index] = value;
         }
 
-        public LayerManager.Layer this[long index]
+        public Layer this[long index]
         {
             get => LayerManager[index];
             set => LayerManager[index] = value;
@@ -328,9 +330,9 @@ namespace PrusaSL1Reader
         #endregion
 
         #region Numerators
-        public IEnumerator<LayerManager.Layer> GetEnumerator()
+        public IEnumerator<Layer> GetEnumerator()
         {
-            return ((IEnumerable<LayerManager.Layer>)LayerManager.Layers).GetEnumerator();
+            return ((IEnumerable<Layer>)LayerManager.Layers).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -443,7 +445,7 @@ namespace PrusaSL1Reader
                 Thumbnails[i] = image.Clone();
             }
         }
-        
+
         public virtual void Encode(string fileFullPath)
         {
             if (File.Exists(fileFullPath))
@@ -567,9 +569,9 @@ namespace PrusaSL1Reader
             }
         }
 
-        public virtual float GetHeightFromLayer(uint layerNum)
+        public virtual float GetHeightFromLayer(uint layerIndex)
         {
-            return (float)Math.Round(layerNum * LayerHeight, 2);
+            return (float)Math.Round((layerIndex+1) * LayerHeight, 2);
         }
 
         public virtual object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)

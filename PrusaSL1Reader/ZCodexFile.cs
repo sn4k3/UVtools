@@ -324,7 +324,7 @@ namespace PrusaSL1Reader
                         {
                             LayersSettings[layerIndex].LayerFileIndex = layerFileIndex;
                             LayersSettings[layerIndex].LayerEntry = inputFile.GetEntry(layerimagePath);
-                            this[layerIndex] = new LayerManager.Layer((uint) layerIndex, LayersSettings[layerIndex].LayerEntry.Open(), LayersSettings[layerIndex].LayerEntry.Name);
+                            this[layerIndex] = new Layer((uint) layerIndex, LayersSettings[layerIndex].LayerEntry.Open(), LayersSettings[layerIndex].LayerEntry.Name);
                             layerIndex++;
                             continue;
                         }

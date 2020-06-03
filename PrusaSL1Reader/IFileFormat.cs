@@ -267,9 +267,9 @@ namespace PrusaSL1Reader
         /// <summary>
         /// Get height in mm from layer height
         /// </summary>
-        /// <param name="layerNum">The layer height</param>
+        /// <param name="layerIndex"></param>
         /// <returns>The height in mm</returns>
-        float GetHeightFromLayer(uint layerNum);
+        float GetHeightFromLayer(uint layerIndex);
 
         /// <summary>
         /// Gets the value attributed to <see cref="FileFormat.PrintParameterModifier"/>

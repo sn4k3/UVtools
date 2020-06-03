@@ -1,6 +1,6 @@
 # Prusa SL1 File Viewer
 
-Open, view, extract, edit and convert SL1 files generated from PrusaSlicer.
+Open, view, edit, extract, convert, mutate and island checker for DLP files generated from Slicers.
 
 This simple tool can give you insight of supports and find some failures. Did you forget what resin or orther settings you used on a project? This can also save you, check every setting that were used with or simply change them!
 
@@ -38,6 +38,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 * View all used settings
 * Edit print properties and save file
 * Mutate and filter layers
+* Check islands and repair/remove them
 * Export file to a folder
 * Convert SL1 format to another format
 * Portable (No installation needed)

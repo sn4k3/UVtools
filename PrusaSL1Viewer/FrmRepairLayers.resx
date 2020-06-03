@@ -117,103 +117,35 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <metadata name="menu.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+  <data name="lbDescription.Text" xml:space="preserve">
+    <value>Try to repair layers by removing noise/isolated pixels and fill lost pixels.
+Island repair are done by tring attach the island to another nearby island(s) in safe increments, if fails, next try to remove the island if it size is smaller than a threshold.
+In the end if island remains is not safe to perform any automatic operation and there before you must take care of if manually, in this case islands are too far from land and in many cases it will require a support to proper fix.</value>
+  </data>
+  <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>148, 17</value>
+  </metadata>
+  <data name="lbIterationsStart.ToolTip" xml:space="preserve">
+    <value>Selects the number of iterations/passes to perform on each layer.
+Choose 0 to disable this step.
+WARNING: Using high iteration values can destroy your model depending on the mutator being used, please use low values or with caution!</value>
+  </data>
+  <data name="lbLayerRange.ToolTip" xml:space="preserve">
+    <value>Selects the layers range within start layer and end layer where mutator will operate.
+Select same layer start as end to operate only within that layer.
+Note: "Layer Start" start can't be higher than "Layer End".</value>
+  </data>
+  <metadata name="cmLayerRange.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
-  <metadata name="statusBar.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>100, 17</value>
+  <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>148, 17</value>
   </metadata>
-  <metadata name="tsLayer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>201, 17</value>
-  </metadata>
-  <metadata name="tsGCode.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>551, 17</value>
-  </metadata>
-  <metadata name="tsIslands.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>765, 17</value>
-  </metadata>
-  <metadata name="imageList16x16.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>415, 17</value>
-  </metadata>
-  <data name="imageList16x16.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
-    <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
-        LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
-        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAK
-        DgAAAk1TRnQBSQFMAgEBBAEAAUgBAgFIAQIBEAEAARABAAT/ASEBAAj/AUIBTQE2BwABNgMAASgDAAFA
-        AwABIAMAAQEBAAEgBgABIP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8AZgADUAGjA1IBqQNS
-        AakDUgGpA1IBqQNSAakDUgGpA1IBqQNSAakDUgGpA1IBqQNSAakDUgGpA1ABo1wAAxYBHgMjATMDIwEz
-        AyMBMwMjATMDGAEhAwIBAwwAA1UBtANZAccDLwFJAwABAQMbASYDHAEnAxwBJwMcAScDHAEnAxwBJwMc
-        AScDHAEnAxwBJwMcAScDHAEnAwIBAwQAA1IBqTAAA1IBqRAAAycBOgMwAUwDMAFMAzABTAMwAUwDMAFM
-        AzABTAMwAUwDMAFMAycBOhwAAwQBBgMjATMDUgGpAbMBWAEeAf8BsgFXARwB/wGyAVYBHAH/AbMBVwEd
-        Af8CWAFWAbkDKQE/AwQBBgsAAf8DAAH/A0MBdwMpAT4DAAH/AwAB/wMAAf8DAAH/AwAB/wMAAf8DAAH/
-        AwAB/wMAAf8DAAH/AwAB/wMyAVEEAANSAakEAANQAZ0DUwGqA1MBqgNTAaoDUwGqA1MBqgNTAaoDUAGd
-        DAADUgGpEAADTgH7AwYB/wMGAf8DBgH/AwYB/wMGAf8DBgH/AwYB/wMGAf8DTgH7GAADBQEHAzABTAGz
-        AVcBHQH/AdkBswGMAf8B9QHfAcUB/wH+Ae4B2AH/Af4B7gHYAf8B+gHnAc8B/wHZAbMBjAH/AbMBVwEc
-        Af8CMQEwAU0DAgEDBAADUQGiA1YBtgMqAUAEAAMQARUDEQEXAxEBFwMRARcDEQEXAxEBFwMRARcDEQEX
-        AxEBFwMRARcDEAEWCAADUgGpBAADUAGdA1MBqgNTAaoDHwEsHAADUgGpEAADBgH/AwYB/wMGAf8DBgH/
-        AwYB/wMGAf8DBgH/AwYB/wMGAf8DBgH/GAACMQEwAU0BtwGBASYB/wHqAc0BrAH/AfoB5QHLAf8B+AHh
-        AcYB/wH2AeABxAH/AfYB3wHEAf8B9wHhAcUB/wH6AeUBywH/Ae8B1QG3Af8BswFXAR0B/wMgAS4EAAMK
-        AQ4DEQEXAwABATgAA1IBqTAAA1IBqRAAAwYB/wMGAf8DBgH/AwYB/wMGAf8DBgH/AwYB/wMGAf8DBgH/
-        AwYB/xgAAmoBRAH5AeUBxwGkAf8B9wHfAcIB/wHzAdsBuwH/AfMB2gG7Af8B8wHbAbwB/wHzAdsBvAH/
-        AfMB2wG8Af8B8wHcAb0B/wH2AeEBwwH/AdUBrwGEAf8CWAFWAbkEAANSAfQDAAH/Az4BbAMOARMDQgF2
-        A0MBdwNDAXcDQwF3A0MBdwNDAXcDQwF3A0MBdwNDAXcDQwF3A0IBdgMUARsEAANSAakDIgEyA1IBqQNS
-        AakDUgGpA1IBqQNSAakDUgGpA1IBqQNSAakDUgGpA1IBqQMiATIDUgGpEAADBgH/AwYB/wMGAf8DBgH/
-        AwYB/wMGAf8DBgH/AwYB/wMGAf8DBgH/GAABtAFZAR8C/wHwAdwC/wHvAdwB/wH+AesB1wH/AfkB5AHK
-        Af8B8QHWAbQB/wHxAdYBswH/AfEB1gG0Af8B8QHWAbQB/wHyAdgBtgH/AfMB2QG3Af8BswFZAR8B/wcA
-        Af4DAAH/A0MBdwMeASsDVwHFA1kBxwNZAccDWQHHA1kBxwNZAccDWQHHA1kBxwNZAccDWQHHA1gBxgMm
-        ATkEAANSAakDNAFVAzQBVSAAAzQBVQM0AVUDUgGpEAADBgH/AwYB/wMGAf8DBgH/AwYB/wMGAf8DBgH/
-        AwYB/wMGAf8DBgH/GAADSAGFAbgBggEmAf8BxwGXAUIB/wHPAaUBVAH/Ae0B0gG0Af8B/QHoAdIB/wHv
-        AdIBrQH/Ae4B0gGsAf8B7gHSAa0B/wHuAdIBrQH/AfUB3AG8Af8BswFXAR4B/wQAAzMBUwM8AWcDFAEc
-        OAADUgGpAzQBVQM0AVUDRgGAA1IBqQNSAakDUgGpA1IBqQNSAakDUgGpA0UBfwM0AVUDNAFVA1IBqRAA
-        AwYB/wMGAf8DBgH/AwYB/wMGAf8DBgH/AwYB/wMGAf8DBgH/AwYB/xAAAwoBDgMhATEDIwEzAyMBMwIx
-        ATABTQMzAVMBswFWARkB/wHjAcUBogH/AfkB4wHJAf8B6wHOAaQB/wHrAc4BpgH/AesBzgGlAf8B9wHf
-        AcAB/wGzAVcBHQH/BAADMwFTAzwBZwMUARw4AANSAakDNAFVAzQBVQM/AW4DMgFQEAADJwE7A0QBfAM0
-        AVUDNAFVA1IBqRAAAwYB/wMGAf8DBgH/AwYB/wMGAf8DBgH/AwYB/wMGAf8DBgH/AwYB/wwAAwoBDgM/
-        AW0DXAH4AYUBiQGNAf8BWQFcAYQB/wNfAfMDOgFiAwkBDAGzAVYBGQH/Ae0B0QG0Af8B6QHJAZ0B/wHp
-        AckBnQH/AekByAGbAf8B/AHoAdIB/wGzAVgBHgH/BwAB/gMAAf8DQwF3Ax8BLANXAcUDWQHHA1kBxwNZ
-        AccDWQHHA1kBxwNZAccDWQHHA1kBxwNZAccDWAHGAyYBOQQAA1IBqQM0AVUDNAFVAwUBBwNVAbUDEQEX
-        A1IBqQMpAT4EAANQAZ8DEQEXAzQBVQM0AVUDUgGpEAADBgH/AwYB/wMGAf8DBgH/AwYB/wMGAf8DBgH/
-        AwYB/wMGAf8DBgH/DAADPgFrA4AB/wLSAdEB/wHvAe4B7QH/Au8B7gH/AdIB0wHSAf8BWwGAAYEB/wM6
-        AWADMgFQAdABpwFZAf8B6gHJAZwB/wHkAcMBkgH/AfIB1wG1Af8B2gG2AZAB/wJTAVIBqAQAA1IB9AMA
-        Af8DPgFsAw4BEwNCAXUDQwF3A0MBdwNDAXcDQwF3A0MBdwNDAXcDQwF3A0MBdwNDAXcDQwF3AxQBGwQA
-        A1IBqQM0AVUDNAFVBAADPAFoA1YBvgMjATQDVQG1AxIBGQNRAaAEAAM0AVUDNAFVA1IBqRAAAwYB/wMG
-        Af8DBgH/AwYB/wMGAf8DBgH/AwoB/wMPAf8DDwH/A1wB3wwAA1wB+ALNAcwB/wHjAeIB4QH/Ad8B3gHd
-        Af8B3wHeAd0B/wHjAeIB4QH/A8wB/wNnAfIDGQEjAcgBmAFFAf8B8wHaAbcB/wHxAdYBsgH/Af4B7QHZ
-        Af8BtwGBASUB/wMKAQ0EAAMKAQ4DEQEXAwABATgAA1IBqQM0AVUDNAFVAwABAQMtAUYDCgEOBAADOQFf
-        A1wBzgMoATwEAAM0AVUDNAFVA1IBqRAAAwYB/wOCAf8DJQH/Aw8B/wMGAf8DBgH/AxkB/wMgAf8DXAHf
-        AxcBIAwAA1YB/wHjAeIB4QH/AdcB1gHUAf8B1wHWAdQB/wHXAdYB1AH/AdcB1gHUAf8B4gHhAeAB/wGD
-        AYgBjQH/BAABtwGAASIC/wHwAdwB/wH6AeYBzgH/AcEBkAE5Af8DQAFuCAADUQGiA1YBtgMqAUAEAAMQ
-        ARUDEQEXAxEBFwMRARcDEQEXAxEBFwMRARcDEQEXAxEBFwMRARcDEAEWCAADUgGpAzQBVQM0AVUDMwFT
-        A1IBpgNKAYwHAAEBA0cBgwgAAzQBVQM0AVUDUgGpEAADBgH/A5kB/wOFAf8DMgH/AwYB/wMGAf8DGQH/
-        A1wB3wMXASAQAANWAf8B8gHxAfAB/wHPAc0BywH/AdABzgHLAf8B0AHOAcsB/wHPAc0BywH/AfIC8AH/
-        AVoBgQGFAf8EAAM3AVsBtAFZAR8B/wG0AVkBHgH/A0ABbw8AAf8DAAH/A0MBdwMpAT4DAAH/AwAB/wMA
-        Af8DAAH/AwAB/wMAAf8DAAH/AwAB/wMAAf8DAAH/AwAB/wMyAVEEAANSAakDNAFVAzQBVQMRARcDUAGe
-        AyQBNhQAAzQBVQM0AVUDUgGpEAADUAH7AxEB/wMRAf8DEQH/AwYB/wMGAf8DXAHfAxcBIBQAA2IB9gHb
-        AtoB/wHoAecB5gH/AdEBzwHOAf8B0QHPAc4B/wHoAecB5gH/AdsC2gH/A2IB9iAAA1UBtANZAccDLwFJ
-        AwABAQMbASYDHAEnAxwBJwMcAScDHAEnAxwBJwMcAScDHAEnAxwBJwMcAScDHAEnAwIBAwQAA1IBqQMi
-        ATIDUgGpA1IBqQNSAakDUgGpA1IBqQNSAakDUgGpA1IBqQNSAakDUgGpAyIBMgNSAakQAAMgAS4DKQE/
-        AykBPwMpAT8DKQE/AykBPwMRARcYAAMuAUgDgAH/AdgC1wH/AfcC9gH/AfcC9gH/AdgC1wH/A4AB/wMu
-        AUhkAANQAaMDUgGpA1IBqQNSAakDUgGpA1IBqQNSAakDUgGpA1IBqQNSAakDUgGpA1IBqQNSAakDUAGj
-        SAADLgFIA2IB9gNVAf8DVQH/A2IB9gMuAUgkAAFCAU0BPgcAAT4DAAEoAwABQAMAASADAAEBAQABAQYA
-        AQEWAAP/gQAC/wGAAQEC/wH8AQcCAAG/Af0B4AEHAfABAwIAAaABHQHgAQcB4AEBARABAQGhAf0B4AEH
-        AeABAQEfAf8BvwH9AeABBwHgAQECAAGAAQEB4AEHAeABAQIAAY8B8QHgAQcB4AEBAR8B/wGAAQEB4AEH
-        AYABAQEfAf8BgwHBAeABBwEAAQECAAGAAUEB4AEHAQABAQIAAYgBEQHgAQcBAAEBAR8B/wGBAREB4AEH
-        AQABgwEQAQEBgQExAeABDwEAAYcCAAGBAfEB4AEfAQAB/wIAAYABAQHgAT8BAAP/AYABAQL/AYEB/ws=
-</value>
+  <data name="label1.ToolTip" xml:space="preserve">
+    <value>Selects the number of iterations/passes to perform on each layer.
+Choose 0 to disable this step.
+WARNING: Using high iteration values can destroy your model depending on the mutator being used, please use low values or with caution!</value>
   </data>
-  <metadata name="tsThumbnails.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>291, 17</value>
-  </metadata>
-  <metadata name="tsProperties.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>649, 17</value>
-  </metadata>
-  <metadata name="tsGCode.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>551, 17</value>
-  </metadata>
-  <metadata name="tsIslands.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>765, 17</value>
-  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>

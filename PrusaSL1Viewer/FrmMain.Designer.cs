@@ -45,6 +45,8 @@
             this.menuFileExit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuMutate = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuTools = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuToolsRepairLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuHelpWebsite = new System.Windows.Forms.ToolStripMenuItem();
@@ -72,8 +74,9 @@
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerImagePixelEdit = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImageZoomLabel = new System.Windows.Forms.ToolStripLabel();
-            this.tsLayerImageZoomValueLabel = new System.Windows.Forms.ToolStripLabel();
+            this.tsLayerImageZoom = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsLayerImageMouseLocation = new System.Windows.Forms.ToolStripLabel();
             this.pbLayers = new System.Windows.Forms.ProgressBar();
             this.tabControlLeft = new System.Windows.Forms.TabControl();
             this.tbpThumbnailsAndInfo = new System.Windows.Forms.TabPage();
@@ -93,13 +96,26 @@
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.tsPropertiesLabelGroups = new System.Windows.Forms.ToolStripLabel();
             this.tsPropertiesButtonSave = new System.Windows.Forms.ToolStripButton();
-            this.tbpGCode = new System.Windows.Forms.TabPage();
+            this.tabPageGCode = new System.Windows.Forms.TabPage();
             this.tbGCode = new System.Windows.Forms.TextBox();
             this.tsGCode = new System.Windows.Forms.ToolStrip();
             this.tsGCodeLabelLines = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.tsGcodeLabelChars = new System.Windows.Forms.ToolStripLabel();
             this.tsGCodeButtonSave = new System.Windows.Forms.ToolStripButton();
+            this.tabPageIslands = new System.Windows.Forms.TabPage();
+            this.lvIslands = new System.Windows.Forms.ListView();
+            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.tsIslands = new System.Windows.Forms.ToolStrip();
+            this.tsIslandsPrevious = new System.Windows.Forms.ToolStripButton();
+            this.tsIslandsCount = new System.Windows.Forms.ToolStripLabel();
+            this.tsIslandsNext = new System.Windows.Forms.ToolStripButton();
+            this.tsIslandsRefresh = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsIslandsRemove = new System.Windows.Forms.ToolStripButton();
             this.imageList16x16 = new System.Windows.Forms.ImageList(this.components);
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
@@ -121,8 +137,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbThumbnail)).BeginInit();
             this.tsThumbnails.SuspendLayout();
             this.tsProperties.SuspendLayout();
-            this.tbpGCode.SuspendLayout();
+            this.tabPageGCode.SuspendLayout();
             this.tsGCode.SuspendLayout();
+            this.tabPageIslands.SuspendLayout();
+            this.tsIslands.SuspendLayout();
             this.SuspendLayout();
             // 
             // menu
@@ -131,6 +149,7 @@
             this.fileToolStripMenuItem,
             this.menuEdit,
             this.menuMutate,
+            this.menuTools,
             this.viewToolStripMenuItem,
             this.helpToolStripMenuItem});
             this.menu.Location = new System.Drawing.Point(0, 0);
@@ -262,9 +281,29 @@
             // 
             // menuMutate
             // 
+            this.menuMutate.Enabled = false;
             this.menuMutate.Name = "menuMutate";
             this.menuMutate.Size = new System.Drawing.Size(57, 20);
             this.menuMutate.Text = "&Mutate";
+            // 
+            // menuTools
+            // 
+            this.menuTools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuToolsRepairLayers});
+            this.menuTools.Enabled = false;
+            this.menuTools.Name = "menuTools";
+            this.menuTools.Size = new System.Drawing.Size(46, 20);
+            this.menuTools.Text = "&Tools";
+            // 
+            // menuToolsRepairLayers
+            // 
+            this.menuToolsRepairLayers.Image = global::PrusaSL1Viewer.Properties.Resources.Wrench_16x16;
+            this.menuToolsRepairLayers.Name = "menuToolsRepairLayers";
+            this.menuToolsRepairLayers.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            | System.Windows.Forms.Keys.R)));
+            this.menuToolsRepairLayers.Size = new System.Drawing.Size(204, 22);
+            this.menuToolsRepairLayers.Text = "&Repair layers";
+            this.menuToolsRepairLayers.Click += new System.EventHandler(this.ItemClicked);
             // 
             // viewToolStripMenuItem
             // 
@@ -444,8 +483,9 @@
             this.toolStripSeparator9,
             this.tsLayerImagePixelEdit,
             this.toolStripSeparator8,
-            this.tsLayerImageZoomLabel,
-            this.tsLayerImageZoomValueLabel});
+            this.tsLayerImageZoom,
+            this.toolStripSeparator11,
+            this.tsLayerImageMouseLocation});
             this.tsLayer.Location = new System.Drawing.Point(0, 0);
             this.tsLayer.Name = "tsLayer";
             this.tsLayer.Size = new System.Drawing.Size(1095, 25);
@@ -555,22 +595,27 @@
             this.toolStripSeparator8.Name = "toolStripSeparator8";
             this.toolStripSeparator8.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsLayerImageZoomLabel
+            // tsLayerImageZoom
             // 
-            this.tsLayerImageZoomLabel.Image = global::PrusaSL1Viewer.Properties.Resources.search_16x16;
-            this.tsLayerImageZoomLabel.Name = "tsLayerImageZoomLabel";
-            this.tsLayerImageZoomLabel.Size = new System.Drawing.Size(58, 22);
-            this.tsLayerImageZoomLabel.Text = "Zoom:";
-            this.tsLayerImageZoomLabel.ToolTipText = "Layer image zoom level, use mouse scroll to zoom in/out into image\r\nCtrl + 0 to s" +
+            this.tsLayerImageZoom.Image = global::PrusaSL1Viewer.Properties.Resources.search_16x16;
+            this.tsLayerImageZoom.Name = "tsLayerImageZoom";
+            this.tsLayerImageZoom.Size = new System.Drawing.Size(89, 22);
+            this.tsLayerImageZoom.Text = "Zoom: 100%";
+            this.tsLayerImageZoom.ToolTipText = "Layer image zoom level, use mouse scroll to zoom in/out into image\r\nCtrl + 0 to s" +
     "cale to fit";
             // 
-            // tsLayerImageZoomValueLabel
+            // toolStripSeparator11
             // 
-            this.tsLayerImageZoomValueLabel.Name = "tsLayerImageZoomValueLabel";
-            this.tsLayerImageZoomValueLabel.Size = new System.Drawing.Size(38, 22);
-            this.tsLayerImageZoomValueLabel.Text = "100 %";
-            this.tsLayerImageZoomValueLabel.ToolTipText = "Layer image zoom level, use mouse scroll to zoom in/out into image\r\nCtrl + 0 to s" +
-    "cale to fit";
+            this.toolStripSeparator11.Name = "toolStripSeparator11";
+            this.toolStripSeparator11.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsLayerImageMouseLocation
+            // 
+            this.tsLayerImageMouseLocation.Image = global::PrusaSL1Viewer.Properties.Resources.pointer_16x16;
+            this.tsLayerImageMouseLocation.Name = "tsLayerImageMouseLocation";
+            this.tsLayerImageMouseLocation.Size = new System.Drawing.Size(79, 22);
+            this.tsLayerImageMouseLocation.Text = "{X=0, Y=0}";
+            this.tsLayerImageMouseLocation.ToolTipText = "Mouse over pixel location and pixel brightness";
             // 
             // pbLayers
             // 
@@ -584,7 +629,8 @@
             // tabControlLeft
             // 
             this.tabControlLeft.Controls.Add(this.tbpThumbnailsAndInfo);
-            this.tabControlLeft.Controls.Add(this.tbpGCode);
+            this.tabControlLeft.Controls.Add(this.tabPageGCode);
+            this.tabControlLeft.Controls.Add(this.tabPageIslands);
             this.tabControlLeft.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControlLeft.ImageList = this.imageList16x16;
             this.tabControlLeft.ItemSize = new System.Drawing.Size(130, 19);
@@ -671,6 +717,7 @@
             this.tsThumbnailsCount.Enabled = false;
             this.tsThumbnailsCount.Name = "tsThumbnailsCount";
             this.tsThumbnailsCount.Size = new System.Drawing.Size(24, 22);
+            this.tsThumbnailsCount.Tag = "";
             this.tsThumbnailsCount.Text = "0/0";
             // 
             // tsThumbnailsNext
@@ -776,17 +823,17 @@
             this.tsPropertiesButtonSave.ToolTipText = "Save properties to a file";
             this.tsPropertiesButtonSave.Click += new System.EventHandler(this.ItemClicked);
             // 
-            // tbpGCode
+            // tabPageGCode
             // 
-            this.tbpGCode.Controls.Add(this.tbGCode);
-            this.tbpGCode.Controls.Add(this.tsGCode);
-            this.tbpGCode.ImageKey = "GCode-16x16.png";
-            this.tbpGCode.Location = new System.Drawing.Point(4, 23);
-            this.tbpGCode.Name = "tbpGCode";
-            this.tbpGCode.Size = new System.Drawing.Size(386, 704);
-            this.tbpGCode.TabIndex = 2;
-            this.tbpGCode.Text = "GCode";
-            this.tbpGCode.UseVisualStyleBackColor = true;
+            this.tabPageGCode.Controls.Add(this.tbGCode);
+            this.tabPageGCode.Controls.Add(this.tsGCode);
+            this.tabPageGCode.ImageKey = "GCode-16x16.png";
+            this.tabPageGCode.Location = new System.Drawing.Point(4, 23);
+            this.tabPageGCode.Name = "tabPageGCode";
+            this.tabPageGCode.Size = new System.Drawing.Size(386, 704);
+            this.tabPageGCode.TabIndex = 2;
+            this.tabPageGCode.Text = "GCode";
+            this.tabPageGCode.UseVisualStyleBackColor = true;
             // 
             // tbGCode
             // 
@@ -841,6 +888,134 @@
             this.tsGCodeButtonSave.ToolTipText = "Save GCode to file";
             this.tsGCodeButtonSave.Click += new System.EventHandler(this.ItemClicked);
             // 
+            // tabPageIslands
+            // 
+            this.tabPageIslands.Controls.Add(this.lvIslands);
+            this.tabPageIslands.Controls.Add(this.tsIslands);
+            this.tabPageIslands.ImageKey = "island-16x16.png";
+            this.tabPageIslands.Location = new System.Drawing.Point(4, 23);
+            this.tabPageIslands.Name = "tabPageIslands";
+            this.tabPageIslands.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageIslands.Size = new System.Drawing.Size(386, 704);
+            this.tabPageIslands.TabIndex = 3;
+            this.tabPageIslands.Text = "Islands";
+            this.tabPageIslands.UseVisualStyleBackColor = true;
+            // 
+            // lvIslands
+            // 
+            this.lvIslands.Activation = System.Windows.Forms.ItemActivation.TwoClick;
+            this.lvIslands.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader1,
+            this.columnHeader4,
+            this.columnHeader2,
+            this.columnHeader3});
+            this.lvIslands.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lvIslands.FullRowSelect = true;
+            this.lvIslands.GridLines = true;
+            this.lvIslands.HideSelection = false;
+            this.lvIslands.Location = new System.Drawing.Point(3, 28);
+            this.lvIslands.Name = "lvIslands";
+            this.lvIslands.Size = new System.Drawing.Size(380, 673);
+            this.lvIslands.TabIndex = 8;
+            this.lvIslands.UseCompatibleStateImageBehavior = false;
+            this.lvIslands.View = System.Windows.Forms.View.Details;
+            this.lvIslands.ItemActivate += new System.EventHandler(this.lvIslands_ItemActivate);
+            this.lvIslands.SelectedIndexChanged += new System.EventHandler(this.lvIslands_SelectedIndexChanged);
+            // 
+            // columnHeader1
+            // 
+            this.columnHeader1.Text = "#";
+            // 
+            // columnHeader4
+            // 
+            this.columnHeader4.Text = "##";
+            // 
+            // columnHeader2
+            // 
+            this.columnHeader2.Text = "X, Y";
+            this.columnHeader2.Width = 100;
+            // 
+            // columnHeader3
+            // 
+            this.columnHeader3.Text = "Pixels";
+            this.columnHeader3.Width = 80;
+            // 
+            // tsIslands
+            // 
+            this.tsIslands.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.tsIslands.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsIslandsPrevious,
+            this.tsIslandsCount,
+            this.tsIslandsNext,
+            this.tsIslandsRefresh,
+            this.toolStripSeparator12,
+            this.tsIslandsRemove});
+            this.tsIslands.Location = new System.Drawing.Point(3, 3);
+            this.tsIslands.Name = "tsIslands";
+            this.tsIslands.Size = new System.Drawing.Size(380, 25);
+            this.tsIslands.TabIndex = 7;
+            this.tsIslands.Text = "Thumbnail Menu";
+            // 
+            // tsIslandsPrevious
+            // 
+            this.tsIslandsPrevious.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsIslandsPrevious.Enabled = false;
+            this.tsIslandsPrevious.Image = global::PrusaSL1Viewer.Properties.Resources.Back_16x16;
+            this.tsIslandsPrevious.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsIslandsPrevious.Name = "tsIslandsPrevious";
+            this.tsIslandsPrevious.Size = new System.Drawing.Size(23, 22);
+            this.tsIslandsPrevious.Text = "Previous";
+            this.tsIslandsPrevious.ToolTipText = "Show previous island";
+            this.tsIslandsPrevious.Click += new System.EventHandler(this.ItemClicked);
+            // 
+            // tsIslandsCount
+            // 
+            this.tsIslandsCount.Enabled = false;
+            this.tsIslandsCount.Name = "tsIslandsCount";
+            this.tsIslandsCount.Size = new System.Drawing.Size(24, 22);
+            this.tsIslandsCount.Text = "0/0";
+            // 
+            // tsIslandsNext
+            // 
+            this.tsIslandsNext.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsIslandsNext.Enabled = false;
+            this.tsIslandsNext.Image = global::PrusaSL1Viewer.Properties.Resources.Next_16x16;
+            this.tsIslandsNext.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsIslandsNext.Name = "tsIslandsNext";
+            this.tsIslandsNext.Size = new System.Drawing.Size(23, 22);
+            this.tsIslandsNext.Text = "tsIslandsNext";
+            this.tsIslandsNext.ToolTipText = "Show next island";
+            this.tsIslandsNext.Click += new System.EventHandler(this.ItemClicked);
+            // 
+            // tsIslandsRefresh
+            // 
+            this.tsIslandsRefresh.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsIslandsRefresh.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsIslandsRefresh.Enabled = false;
+            this.tsIslandsRefresh.Image = global::PrusaSL1Viewer.Properties.Resources.refresh_16x16;
+            this.tsIslandsRefresh.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsIslandsRefresh.Name = "tsIslandsRefresh";
+            this.tsIslandsRefresh.Size = new System.Drawing.Size(23, 22);
+            this.tsIslandsRefresh.Text = "Update";
+            this.tsIslandsRefresh.ToolTipText = "Compute Islands";
+            this.tsIslandsRefresh.Click += new System.EventHandler(this.ItemClicked);
+            // 
+            // toolStripSeparator12
+            // 
+            this.toolStripSeparator12.Name = "toolStripSeparator12";
+            this.toolStripSeparator12.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsIslandsRemove
+            // 
+            this.tsIslandsRemove.Enabled = false;
+            this.tsIslandsRemove.Image = global::PrusaSL1Viewer.Properties.Resources.delete_16x16;
+            this.tsIslandsRemove.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsIslandsRemove.Name = "tsIslandsRemove";
+            this.tsIslandsRemove.Size = new System.Drawing.Size(70, 22);
+            this.tsIslandsRemove.Text = "Remove";
+            this.tsIslandsRemove.ToolTipText = "Remove selected islands";
+            this.tsIslandsRemove.Click += new System.EventHandler(this.ItemClicked);
+            // 
             // imageList16x16
             // 
             this.imageList16x16.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList16x16.ImageStream")));
@@ -848,6 +1023,7 @@
             this.imageList16x16.Images.SetKeyName(0, "DataList-16x16.png");
             this.imageList16x16.Images.SetKeyName(1, "PhotoInfo-16x16.png");
             this.imageList16x16.Images.SetKeyName(2, "GCode-16x16.png");
+            this.imageList16x16.Images.SetKeyName(3, "island-16x16.png");
             // 
             // FrmMain
             // 
@@ -892,10 +1068,14 @@
             this.tsThumbnails.PerformLayout();
             this.tsProperties.ResumeLayout(false);
             this.tsProperties.PerformLayout();
-            this.tbpGCode.ResumeLayout(false);
-            this.tbpGCode.PerformLayout();
+            this.tabPageGCode.ResumeLayout(false);
+            this.tabPageGCode.PerformLayout();
             this.tsGCode.ResumeLayout(false);
             this.tsGCode.PerformLayout();
+            this.tabPageIslands.ResumeLayout(false);
+            this.tabPageIslands.PerformLayout();
+            this.tsIslands.ResumeLayout(false);
+            this.tsIslands.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -941,7 +1121,7 @@
         private System.Windows.Forms.ToolStripButton tsThumbnailsNext;
         private System.Windows.Forms.ToolStripButton tsThumbnailsExport;
         private System.Windows.Forms.ToolStripLabel tsThumbnailsResolution;
-        private System.Windows.Forms.TabPage tbpGCode;
+        private System.Windows.Forms.TabPage tabPageGCode;
         private System.Windows.Forms.ImageList imageList16x16;
         private System.Windows.Forms.TextBox tbGCode;
         private System.Windows.Forms.ToolStrip tsGCode;
@@ -965,8 +1145,7 @@
         private System.Windows.Forms.ToolStripLabel tsLayerPreviewTime;
         private Cyotek.Windows.Forms.ImageBox pbLayer;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
-        private System.Windows.Forms.ToolStripLabel tsLayerImageZoomLabel;
-        private System.Windows.Forms.ToolStripLabel tsLayerImageZoomValueLabel;
+        private System.Windows.Forms.ToolStripLabel tsLayerImageZoom;
         private System.Windows.Forms.ToolStripButton tsLayerImagePixelEdit;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
         private System.Windows.Forms.ToolStripButton tsLayerImageLayerOutline;
@@ -974,6 +1153,23 @@
         private System.Windows.Forms.ToolStripMenuItem menuMutate;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
         private System.Windows.Forms.ToolStripMenuItem menuHelpInstallPrinters;
+        private System.Windows.Forms.TabPage tabPageIslands;
+        private System.Windows.Forms.ToolStrip tsIslands;
+        private System.Windows.Forms.ToolStripButton tsIslandsPrevious;
+        private System.Windows.Forms.ToolStripButton tsIslandsNext;
+        private System.Windows.Forms.ToolStripLabel tsIslandsCount;
+        private System.Windows.Forms.ListView lvIslands;
+        private System.Windows.Forms.ColumnHeader columnHeader1;
+        private System.Windows.Forms.ColumnHeader columnHeader2;
+        private System.Windows.Forms.ColumnHeader columnHeader3;
+        private System.Windows.Forms.ToolStripButton tsIslandsRefresh;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
+        private System.Windows.Forms.ToolStripLabel tsLayerImageMouseLocation;
+        private System.Windows.Forms.ColumnHeader columnHeader4;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator12;
+        private System.Windows.Forms.ToolStripButton tsIslandsRemove;
+        private System.Windows.Forms.ToolStripMenuItem menuTools;
+        private System.Windows.Forms.ToolStripMenuItem menuToolsRepairLayers;
     }
 }
 

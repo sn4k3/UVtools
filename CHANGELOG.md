@@ -1,5 +1,15 @@
 # Changelog
 
+## 03/06/2020 - v0.4.2 - Beta
+
+* (Add) Zoom times information
+* (Add) Island checker, navigation and removal
+* (Add) Layer repair with island repair
+* (Add) Show mouse coordinates over layer image
+* (Fix) Pixel edit cant remove faded AA pixels
+* (Fix) Pixel edit cant add white pixels over faded AA pixels
+* (Change) Nova3D Elfin printer build volume from 130x70 to 132x74
+
 ## 01/06/2020 - v0.4.1 - Beta
 
 * (Add) Opening, Closing and Gradient Mutators

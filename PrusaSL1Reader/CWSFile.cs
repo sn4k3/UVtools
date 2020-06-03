@@ -195,7 +195,7 @@ namespace PrusaSL1Reader
 
                 for(uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
-                    LayerManager.Layer layer = this[layerIndex];
+                    Layer layer = this[layerIndex];
                     var layerimagePath = $"{Path.GetFileNameWithoutExtension(fileFullPath)}{layer.Index:D4}.png";
                     outputFile.PutFileContent(layerimagePath, layer.RawData);
                 }
@@ -289,7 +289,7 @@ namespace PrusaSL1Reader
                     // - .png - 4 numbers
                     string layerStr = zipArchiveEntry.Name.Substring(zipArchiveEntry.Name.Length - 4 - 4, 4);
                     uint iLayer = uint.Parse(layerStr);
-                    LayerManager[iLayer] = new LayerManager.Layer(iLayer, zipArchiveEntry.Open(), zipArchiveEntry.Name);
+                    LayerManager[iLayer] = new Layer(iLayer, zipArchiveEntry.Open(), zipArchiveEntry.Name);
                 }
                 
             }
@@ -419,7 +419,7 @@ namespace PrusaSL1Reader
 
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                LayerManager.Layer layer = this[layerIndex];
+                Layer layer = this[layerIndex];
                 GCode.AppendLine($"{GCodeKeywordSlice} {layerIndex}");
                 GCode.AppendLine("M106 S255");
                 GCode.AppendLine($"{GCodeKeywordDelay} " + (layerIndex < InitialLayerCount ? SliceSettings.HeadLayersExpoMs : SliceSettings.LayersExpoMs));

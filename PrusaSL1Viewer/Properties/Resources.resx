@@ -121,11 +121,14 @@
   <data name="Error-128x128" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Error-128x128.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Cancel-24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Cancel-24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="layers-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\layers-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="mutation_closing" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\gui\mutation_closing.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="eye-24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\eye-24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Back-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Back-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -147,6 +150,9 @@
   </data>
   <data name="mutation_erosion" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\gui\mutation_erosion.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="refresh-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\refresh-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Save-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Save-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -184,9 +190,6 @@
   <data name="eye-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\eye-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Rotate-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Rotate-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="mutation_tophat" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\gui\mutation_tophat.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -202,11 +205,17 @@
   <data name="mutation_gradient" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\gui\mutation_gradient.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Rotate-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Rotate-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="pixel-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\pixel-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="SaveAs-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\SaveAs-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pointer-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\pointer-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="mutation_opening" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\gui\mutation_opening.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -214,13 +223,13 @@
   <data name="mutation_blackhat" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\gui\mutation_blackhat.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Cancel-24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Cancel-24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="mutation_closing" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\gui\mutation_closing.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Donate-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Donate-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="eye-24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\eye-24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="delete-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\delete-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

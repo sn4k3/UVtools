@@ -153,5 +153,10 @@ namespace PrusaSL1Reader
                     throw new Exception($"Data type '{name}' not recognized, contact developer.");
             }
         }
+
+        public static uint CoordinatesToPixelIndex(uint x, uint y, uint width)
+        {
+            return y * width + x;
+        }
     }
 }
