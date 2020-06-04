@@ -26,6 +26,10 @@ If applicable, add screenshots to help explain your problem.
 **Desktop (please complete the following information):**
  - OS: [e.g. iOS]
  - Version [e.g. 22]
+ 
+**Exceptions Log file**
+In some unexpected exceptions errors will generate and save a log file under appfolder/Logs/AppErrors.
+If present you can attach the log file here. Check file name against date/time to be sure it's related to your problem.
 
 **Additional context**
 Add any other context about the problem here.
