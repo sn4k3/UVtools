@@ -244,24 +244,27 @@ namespace PrusaSL1Reader
 
         /// <summary>
         /// Gets all islands start pixel location for this layer
+        /// https://www.geeksforgeeks.org/find-number-of-islands/
         /// </summary>
         /// <returns><see cref="List{T}"/> holding all islands coordinates</returns>
-        public List<LayerIsland> GetIslandsLocation()
+        public List<LayerIsland> GetIslandsLocation(uint requiredPixelsToSupportIsland = 5)
         {
-            // https://www.geeksforgeeks.org/find-number-of-islands/
+            if (requiredPixelsToSupportIsland == 0)
+                requiredPixelsToSupportIsland = 1;
 
             // These arrays are used to 
             // get row and column numbers 
             // of 8 neighbors of a given cell 
             List<LayerIsland> result = new List<LayerIsland>();
-            List<System.Drawing.Point> pixels = new List<System.Drawing.Point>();
+            List<Point> pixels = new List<Point>();
             if (Index == 0) return result;
 
             sbyte[] rowNbr = { -1, -1, -1, 0, 0, 1, 1, 1 };
             sbyte[] colNbr = { -1, 0, 1, -1, 1, -1, 0, 1 };
             const uint minPixel = 10;
-            bool presetOnPrevious;
+            const uint minPixelForSupportIsland = 200;
             int pixelIndex;
+            uint islandSupportingPixels;
 
             var image = Image;
             byte[] bytes = null;
@@ -322,14 +325,15 @@ namespace PrusaSL1Reader
                             !visited[tempy2, tempx2])
                         {
                             visited[tempy2, tempx2] = true;
-                            point = new System.Drawing.Point(tempx2, tempy2);
+                            point = new Point(tempx2, tempy2);
                             pixels.Add(point);
                             queue.Enqueue(point);
 
-                            if (!presetOnPrevious && !ReferenceEquals(previousBytes, null))
+                            islandSupportingPixels += previousBytes[pixelIndex] >= minPixelForSupportIsland ? 1u : 0;
+                            /*if (!presetOnPrevious)
                             {
-                                if (previousBytes[pixelIndex] >= minPixel) presetOnPrevious = true;
-                            }
+                                if (previousBytes[pixelIndex] >= minPixelForSupportIsland) presetOnPrevious = true;
+                            }*/
                         }
                     }
                 }
@@ -351,18 +355,14 @@ namespace PrusaSL1Reader
                         // found, Visit all cells in this 
                         // island and increment island count 
                         pixels.Clear();
-                        pixels.Add(new System.Drawing.Point(x, y));
-                        presetOnPrevious = previousBytes[pixelIndex] >= minPixel;
+                        pixels.Add(new Point(x, y));
+                        islandSupportingPixels = previousBytes[pixelIndex] >= minPixelForSupportIsland ? 1u : 0;
                         DFS(y, x);
                         //count++;
 
-                        if (!presetOnPrevious)
-                        {
-                            result.Add(new LayerIsland(this, pixels.ToArray()));
-                            //count++;
-                        }
-
-                        presetOnPrevious = false;
+                        if (islandSupportingPixels >= requiredPixelsToSupportIsland) continue; // Not a island, bounding is strong
+                        if (islandSupportingPixels > 0 && pixels.Count < requiredPixelsToSupportIsland && islandSupportingPixels >= Math.Max(1, pixels.Count / 2)) continue; // Not a island
+                        result.Add(new LayerIsland(this, pixels.ToArray()));
                     }
                 }
             }

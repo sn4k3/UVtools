@@ -1,5 +1,34 @@
 # Changelog
 
+## 04/06/2020 - v0.4.2.1 - Beta
+
+* (Add) PrusaSlicer Printer "AnyCubic Photon"
+* (Add) PrusaSlicer Printer "Elegoo Mars Saturn"
+* (Add) PrusaSlicer Printer "Elegoo Mars"
+* (Add) PrusaSlicer Printer "EPAX X10"
+* (Add) PrusaSlicer Printer "EPAX X133 4K Mono"
+* (Add) PrusaSlicer Printer "EPAX X156 4K Color"
+* (Add) PrusaSlicer Printer "Peopoly Phenom L"
+* (Add) PrusaSlicer Printer "Peopoly Phenom Noir"
+* (Add) PrusaSlicer Printer "Peopoly Phenom"
+* (Add) PrusaSlicer Printer "Phrozen Shuffle 4K"
+* (Add) PrusaSlicer Printer "Phrozen Shuffle Lite"
+* (Add) PrusaSlicer Printer "Phrozen Shuffle XL"
+* (Add) PrusaSlicer Printer "Phrozen Shuffle"
+* (Add) PrusaSlicer Printer "Phrozen Sonic"
+* (Add) PrusaSlicer Printer "Phrozen Transform"
+* (Add) PrusaSlicer Printer "QIDI Shadow5.5"
+* (Add) PrusaSlicer Printer "QIDI Shadow6.0 Pro"
+* (Add) "Detect" text to compute layers button
+* (Add) "Repair" islands button on Islands tab
+* (Add) "Highlight islands" button on layer toolbar
+* (Add) Possible error cath on island computation
+* (Add) After load new file layer is rotated or not based on it width, landscape will not rotate while portrait will
+* (Improvement) Highlighted islands now also show AA pixels as a darker yellow
+* (Improvement) Island detection now need a certain number of touching pixels to consider a island or not, ie: i can't lay on only one pixel
+* (Fix) Island detection now don't consider dark fadded AA pixels as safe land
+* (Fix) Epax X1 printer properties
+
 ## 03/06/2020 - v0.4.2 - Beta
 
 * (Add) Zoom times information

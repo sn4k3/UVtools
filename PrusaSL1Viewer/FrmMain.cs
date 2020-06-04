@@ -735,13 +735,13 @@ namespace PrusaSL1Viewer
             /************************
              *     Islands Menu    *
              ***********************/
-            if(ReferenceEquals(sender, tsIslandsRefresh))
+            if (ReferenceEquals(sender, tsIslandsPrevious))
             {
-                if (MessageBox.Show("Are you sure you want to compute islands?", "Islands Compute",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
-
-                ComputeIslands();
-                
+                if (!tsIslandsPrevious.Enabled) return;
+                int index = Convert.ToInt32(tsIslandsCount.Tag);
+                lvIslands.SelectedItems.Clear();
+                lvIslands.Items[--index].Selected = true;
+                lvIslands_ItemActivate(lvIslands, null);
                 return;
             }
 
@@ -755,15 +755,6 @@ namespace PrusaSL1Viewer
                 return;
             }
 
-            if (ReferenceEquals(sender, tsIslandsPrevious))
-            {
-                if (!tsIslandsPrevious.Enabled) return;
-                int index = Convert.ToInt32(tsIslandsCount.Tag);
-                lvIslands.SelectedItems.Clear();
-                lvIslands.Items[--index].Selected = true;
-                lvIslands_ItemActivate(lvIslands, null);
-                return;
-            }
 
             if (ReferenceEquals(sender, tsIslandsRemove))
             {
@@ -813,10 +804,26 @@ namespace PrusaSL1Viewer
                 return;
             }
 
+            if (ReferenceEquals(sender, tsIslandsRepair))
+            {
+                ItemClicked(menuToolsRepairLayers, e);
+                return;
+            }
+
+            if (ReferenceEquals(sender, tsIslandsRefresh))
+            {
+                if (MessageBox.Show("Are you sure you want to compute islands?", "Islands Compute",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+
+                ComputeIslands();
+
+                return;
+            }
+
             /************************
              *      Layer Menu      *
              ***********************/
-            if (ReferenceEquals(sender, tsLayerImageRotate) || ReferenceEquals(sender, tsLayerImageLayerDifference) || ReferenceEquals(sender, tsLayerImageLayerOutline)) 
+            if (ReferenceEquals(sender, tsLayerImageRotate) || ReferenceEquals(sender, tsLayerImageLayerDifference) || ReferenceEquals(sender, tsLayerImageHighlightIslands) || ReferenceEquals(sender, tsLayerImageLayerOutline)) 
             {
                 sbLayers_ValueChanged(sbLayers, null);
                 return;
@@ -854,7 +861,6 @@ namespace PrusaSL1Viewer
 
         private void sbLayers_ValueChanged(object sender, EventArgs e)
         {
-            if (ReferenceEquals(SlicerFile, null)) return;
             ShowLayer(ActualLayer);
         }
 
@@ -1170,6 +1176,10 @@ namespace PrusaSL1Viewer
                 return;
             }
 
+
+            ActualLayerImage = SlicerFile[0].Image;
+            tsLayerImageRotate.Checked = ActualLayerImage.Height > ActualLayerImage.Width;
+
             if (!ReferenceEquals(SlicerFile.ConvertToFormats, null))
             {
                 foreach (var fileFormatType in SlicerFile.ConvertToFormats)
@@ -1239,6 +1249,7 @@ namespace PrusaSL1Viewer
             menuMutate.Enabled =
             menuTools.Enabled =
 
+            tsIslandsRepair.Enabled =
             tsIslandsRefresh.Enabled =
                 true;
 
@@ -1250,13 +1261,13 @@ namespace PrusaSL1Viewer
 
             //ShowLayer(0);
 
+            tabControlLeft.SelectedIndex = 0;
+            tsLayerResolution.Text = $"{{Width={SlicerFile.ResolutionX}, Height={SlicerFile.ResolutionY}}}";
+
             sbLayers.SmallChange = 1;
             sbLayers.Minimum = 0;
             sbLayers.Maximum = (int)SlicerFile.LayerCount - 1;
             sbLayers.Value = sbLayers.Maximum;
-
-            tabControlLeft.SelectedIndex = 0;
-            tsLayerResolution.Text = $"{{Width={SlicerFile.ResolutionX}, Height={SlicerFile.ResolutionY}}}";
 
 
             RefreshInfo();
@@ -1341,6 +1352,7 @@ namespace PrusaSL1Viewer
 
         void ShowLayer(uint layerNum)
         {
+            if (ReferenceEquals(SlicerFile, null)) return;
             try
             {
                 // OLD
@@ -1402,6 +1414,36 @@ namespace PrusaSL1Viewer
 
                 //watch.Restart();
                 var imageBmp = image.ToBitmap();
+
+
+                if (tsLayerImageHighlightIslands.Checked && !ReferenceEquals(Islands, null) && Islands.Count > ActualLayer)
+                {
+                    var islands = Islands[ActualLayer];
+
+                    foreach (var island in islands)
+                    {
+                        if (ReferenceEquals(island, null)) continue; // Removed islands
+                        foreach (var pixel in island)
+                        {
+                            int x = pixel.X;
+                            int y = pixel.Y;
+
+                            if (tsLayerImageRotate.Checked)
+                            {
+                                x = ActualLayerImage.Height - 1 - pixel.Y;
+                                y = pixel.X;
+                            }
+
+                            var alpha = ActualLayerImage[pixel.X, pixel.Y].PackedValue;
+                            if (alpha == 0) continue;
+                            // alpha, Color.Yellow
+                            alpha = Math.Max((byte)70, alpha);
+                            imageBmp.SetPixel(x, y, Color.FromArgb(alpha, alpha, 0));
+                        }
+                    }
+                }
+
+
                 pbLayer.Image = imageBmp;
                 pbLayer.Image.Tag = image;
                 //Debug.WriteLine(watch.ElapsedMilliseconds);
@@ -1435,33 +1477,6 @@ namespace PrusaSL1Viewer
                 byte percent = (byte)((layerNum + 1) * 100 / SlicerFile.LayerCount);
                 //var islands = SlicerFile.LayerManager.GetAllIslands();
                 //Debug.WriteLine(islands.Length);
-
-                if (!ReferenceEquals(Islands, null) && Islands.Count > ActualLayer)
-                {
-                    var islands = Islands[ActualLayer];
-
-                    foreach (var island in islands)
-                    {
-                        if(ReferenceEquals(island, null)) continue; // Removed islands
-                        foreach (var pixel in island)
-                        {
-                            int x = pixel.X;
-                            int y = pixel.Y;
-
-                            if (tsLayerImageRotate.Checked)
-                            {
-                                x = ActualLayerImage.Height - 1 - pixel.Y;
-                                y = pixel.X;
-                            }
-
-                            if(ActualLayerImage[pixel.X, pixel.Y].PackedValue == 0) continue;
-                            imageBmp.SetPixel(x, y, Color.Yellow);
-                        }
-                        
-                    }
-
-                    
-                }
 
                 watch.Stop();
                 tsLayerPreviewTime.Text = $"{watch.ElapsedMilliseconds}ms";
@@ -1706,8 +1721,10 @@ namespace PrusaSL1Viewer
                     Islands = SlicerFile.LayerManager.GetAllIslands();
                     result = true;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    MessageBox.Show(ex.Message, "Error while trying compute islands", MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                 }
                 finally
                 {
@@ -1724,23 +1741,34 @@ namespace PrusaSL1Viewer
 
             lvIslands.BeginUpdate();
             uint count = 0;
-            for (uint layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
+
+            try
             {
-                ListViewGroup group = new ListViewGroup($"Layer {layerIndex} - {Islands[layerIndex].Count} Islands");
-                for (var i = 0; i < Islands[layerIndex].Count; i++)
+                for (uint layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
                 {
-                    count++;
-                    var island = Islands[layerIndex][i];
-                    TotalIslands++;
-                    ListViewItem item = new ListViewItem(group) {Text = count.ToString()};
-                    item.SubItems.Add((i + 1).ToString());
-                    item.SubItems.Add($"{island.X}, {island.Y}");
-                    item.SubItems.Add(island.Size.ToString());
-                    item.Tag = island;
-                    lvIslands.Groups.Add(group);
-                    lvIslands.Items.Add(item);
+                    ListViewGroup group = new ListViewGroup($"Layer {layerIndex} - {Islands[layerIndex].Count} Islands");
+                    for (var i = 0; i < Islands[layerIndex].Count; i++)
+                    {
+                        count++;
+                        var island = Islands[layerIndex][i];
+                        TotalIslands++;
+                        ListViewItem item = new ListViewItem(group) { Text = count.ToString() };
+                        item.SubItems.Add((i + 1).ToString());
+                        item.SubItems.Add($"{island.X}, {island.Y}");
+                        item.SubItems.Add(island.Size.ToString());
+                        item.Tag = island;
+                        lvIslands.Groups.Add(group);
+                        lvIslands.Items.Add(item);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error while trying compute islands", MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                throw;
+            }
+            
             lvIslands.EndUpdate();
 
             UpdateIslandsInfo();
