@@ -25,7 +25,7 @@
 * (Add) Possible error cath on island computation
 * (Add) After load new file layer is rotated or not based on it width, landscape will not rotate while portrait will
 * (Improvement) Highlighted islands now also show AA pixels as a darker yellow
-* (Improvement) Island detection now need a certain number of touching pixels to consider a island or not, ie: i can't lay on only one pixel
+* (Improvement) Island detection now need a certain number of touching pixels to consider a island or not, ie: it can't lay on only one pixel
 * (Fix) Island detection now don't consider dark fadded AA pixels as safe land
 * (Fix) Epax X1 printer properties
 
