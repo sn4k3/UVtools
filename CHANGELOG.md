@@ -1,5 +1,16 @@
 # Changelog
 
+## 05/06/2020 - v0.4.2.2 - Beta
+
+* (Add) Shortcut "ESC" under Islands list view to deselect all items
+* (Add) Shortcut "CTRL+A" under Islands list view to select all items
+* (Add) Shortcut "*" under Islands list view to invert selection
+* (Add) Shortcut "CTRL+F" to go to a layer number
+* (Change) Layer image is now a RGB image for better manipulation and draws
+* (Change) Layer difference now shows previous and next layers (only pixels not present on current layer) were previous are pink and next are cyan, if a pixel are present in both layers a red pixel will be painted.
+* (Fix) Save modified layers on .cbddlp and .cbt corrupts the file to print when Anti-Aliasing is used (> 1)
+* (Fix) cbdlp layer encoding
+
 ## 04/06/2020 - v0.4.2.1 - Beta
 
 * (Add) PrusaSlicer Printer "AnyCubic Photon"

@@ -946,6 +946,7 @@
             this.lvIslands.View = System.Windows.Forms.View.Details;
             this.lvIslands.ItemActivate += new System.EventHandler(this.lvIslands_ItemActivate);
             this.lvIslands.SelectedIndexChanged += new System.EventHandler(this.lvIslands_SelectedIndexChanged);
+            this.lvIslands.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
             // 
             // columnHeader1
             // 

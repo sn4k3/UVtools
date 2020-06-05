@@ -713,39 +713,48 @@ namespace PrusaSL1Reader
 
                 HeaderSettings.LayersDefinitionOffsetAddress = currentOffset;
                 uint layerDataCurrentOffset = currentOffset + (uint) Helpers.Serializer.SizeOf(new LayerData()) * HeaderSettings.LayerCount * HeaderSettings.AntiAliasLevel;
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+
+                for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
                 {
-                    LayerData layerData = new LayerData();
-                    LayerData layerDataHash = null;
-                    var image = this[layerIndex].Image;
-                    rawData = IsCbtFile ? EncodeCbtImage(image, layerIndex) : EncodeCbddlpImage(image);
-
-                    var byteArr = rawData.ToArray();
-
-                    if (HeaderSettings.EncryptionKey == 0)
+                    for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                     {
-                        string hash = Helpers.ComputeSHA1Hash(byteArr);
-                        if (!LayersHash.TryGetValue(hash, out layerDataHash))
+
+                        LayerData layerData = new LayerData();
+                        LayerData layerDataHash = null;
+                        var image = this[layerIndex].Image;
+                        rawData = IsCbtFile ? EncodeCbtImage(image, layerIndex) : EncodeCbddlpImage(image, aaIndex);
+
+                        var byteArr = rawData.ToArray();
+
+                        if (HeaderSettings.EncryptionKey == 0)
                         {
-                            LayersHash.Add(hash, layerData);
+                            string hash = Helpers.ComputeSHA1Hash(byteArr);
+                            if (!LayersHash.TryGetValue(hash, out layerDataHash))
+                            {
+                                LayersHash.Add(hash, layerData);
+                            }
                         }
+
+                        //layer.DataAddress = CurrentOffset + (uint)Helpers.Serializer.SizeOf(layer);
+                        layerData.DataAddress = layerDataHash?.DataAddress ?? layerDataCurrentOffset;
+                        layerData.DataSize = layerDataHash?.DataSize ?? (uint) byteArr.Length;
+                        layerData.LayerPositionZ = layerIndex * HeaderSettings.LayerHeightMilimeter;
+                        layerData.LayerOffTimeSeconds = layerIndex < HeaderSettings.BottomLayersCount
+                            ? PrintParametersSettings.BottomLightOffDelay
+                            : PrintParametersSettings.LightOffDelay;
+                        layerData.LayerExposure = layerIndex < HeaderSettings.BottomLayersCount
+                            ? HeaderSettings.BottomExposureSeconds
+                            : HeaderSettings.LayerExposureSeconds;
+                        LayersDefinitions[layerIndex, aaIndex] = layerData;
+
+                        currentOffset += Helpers.SerializeWriteFileStream(outputFile, layerData);
+
+                        if (!ReferenceEquals(layerDataHash, null)) continue;
+
+                        outputFile.Seek(layerDataCurrentOffset, SeekOrigin.Begin);
+                        layerDataCurrentOffset += Helpers.WriteFileStream(outputFile, byteArr);
+                        outputFile.Seek(currentOffset, SeekOrigin.Begin);
                     }
-
-                    //layer.DataAddress = CurrentOffset + (uint)Helpers.Serializer.SizeOf(layer);
-                    layerData.DataAddress = layerDataHash?.DataAddress ?? layerDataCurrentOffset;
-                    layerData.DataSize = layerDataHash?.DataSize ?? (uint)byteArr.Length;
-                    layerData.LayerPositionZ = layerIndex * HeaderSettings.LayerHeightMilimeter;
-                    layerData.LayerOffTimeSeconds = layerIndex < HeaderSettings.BottomLayersCount ? PrintParametersSettings.BottomLightOffDelay : PrintParametersSettings.LightOffDelay;
-                    layerData.LayerExposure = layerIndex < HeaderSettings.BottomLayersCount ? HeaderSettings.BottomExposureSeconds : HeaderSettings.LayerExposureSeconds;
-                    LayersDefinitions[layerIndex, 0] = layerData;
-
-                    currentOffset += Helpers.SerializeWriteFileStream(outputFile, layerData);
-
-                    if (!ReferenceEquals(layerDataHash, null)) continue;
-
-                    outputFile.Seek(layerDataCurrentOffset, SeekOrigin.Begin);
-                    layerDataCurrentOffset += Helpers.WriteFileStream(outputFile, byteArr);
-                    outputFile.Seek(currentOffset, SeekOrigin.Begin);
                 }
 
                 outputFile.Seek(0, SeekOrigin.Begin);
@@ -764,11 +773,60 @@ namespace PrusaSL1Reader
             }
         }
 
-        private List<byte> EncodeCbddlpImage(Image<L8> image)
+        private List<byte> EncodeCbddlpImage(Image<L8> image, byte aalevel)
         {
             List<byte> rawData = new List<byte>();
 
-            byte color;
+            bool obit = false;
+            int rep = 0;
+
+            void AddRep()
+            {
+                if (rep <= 0) return;
+
+                byte by = (byte) rep;
+        
+                if (obit)
+                {
+                    by |= 0x80;
+                    //bitsOn += uint(rep)
+                }
+
+                rawData.Add(by);
+            }
+
+            for (int y = 0; y < image.Height; y++)
+            {
+                Span<L8> pixelRowSpan = image.GetPixelRowSpan(y);
+                for (int x = 0; x < image.Width; x++)
+                {
+                    //ngrey:= uint16(r | g | b)
+
+                    var nbit = (pixelRowSpan[x].PackedValue & (1 << (int)(8 - HeaderSettings.AntiAliasLevel + aalevel))) != 0;
+        
+                    if (nbit == obit)
+                    {
+                        rep++;
+
+                        if (rep == RLE8EncodingLimit)
+                        {
+                            AddRep();
+                            rep = 0;
+                        }
+                    }
+                    else
+                    {
+                        AddRep();
+                        obit = nbit;
+                        rep = 1;
+                    }
+                }
+            }
+
+            // Collect stragglers
+            AddRep();
+
+            /*byte color;
             byte black = 0;
             byte white = 1;
 
@@ -796,7 +854,7 @@ namespace PrusaSL1Reader
                         nrOfColor = 1;
                     }
                 }
-            }
+            }*/
 
             return rawData;
         }

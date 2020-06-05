@@ -21,6 +21,7 @@ namespace PrusaSL1Viewer
             using (var memoryStream = new MemoryStream())
             {
                 //var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(SixLabors.ImageSharp.Formats.Bmp.BmpFormat.Instance);
+                Helpers.BmpEncoder.SupportTransparency = true;
                 image.Save(memoryStream, Helpers.BmpEncoder);
 
                 //memoryStream.Seek(0, SeekOrigin.Begin);

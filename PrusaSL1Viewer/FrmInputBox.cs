@@ -50,17 +50,20 @@ namespace PrusaSL1Viewer
             
         }
 
-        public FrmInputBox(FileFormat.PrintParameterModifier modifier, decimal currentValue) : this(modifier.Name,
-            modifier.Description, currentValue, modifier.ValueUnit, modifier.Minimum, modifier.Maximum)
+        public FrmInputBox(FileFormat.PrintParameterModifier modifier, decimal currentValue, byte decimals = 2) : this(modifier.Name,
+            modifier.Description, currentValue, modifier.ValueUnit, modifier.Minimum, modifier.Maximum, decimals)
         { }
-        public FrmInputBox(string title, string description, decimal currentValue, string valueUnit = null, decimal minValue = 0, decimal maxValue = 100) : this()
+        public FrmInputBox(string title, string description, decimal currentValue, string valueUnit = null, decimal minValue = 0, decimal maxValue = 100, byte decimals = 2, string valueLabel = "Value") : this()
         {
             Text = title;
+            lbCurrentValue.Text = $"Current {valueLabel}";
+            lbNewValue.Text = $"New {valueLabel}";
             Description = description;
             ValueUint = valueUnit ?? string.Empty;
             CurrentValue = currentValue;
             numNewValue.Minimum = minValue;
             numNewValue.Maximum = maxValue;
+            numNewValue.DecimalPlaces = decimals;
             NewValue = currentValue;
         }
         #endregion

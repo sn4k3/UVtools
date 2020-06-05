@@ -28,7 +28,7 @@ namespace PrusaSL1Reader
     public static class Helpers
     {
         public static PngEncoder PngEncoder { get; } = new PngEncoder();
-        public static BmpEncoder BmpEncoder { get; } = new BmpEncoder();
+        public static BmpEncoder BmpEncoder { get; } = new BmpEncoder{SupportTransparency = true, BitsPerPixel = BmpBitsPerPixel.Pixel32};
         /// <summary>
         /// Gets the <see cref="BinarySerializer"/> instance
         /// </summary>

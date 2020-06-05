@@ -123,6 +123,11 @@ namespace PrusaSL1Reader
             }
         }
 
+        /// <summary>
+        /// Gets a new RGBA image instance
+        /// </summary>
+        public Image<Rgba32> ImageRbga32 => Image.CloneAs<Rgba32>();
+
         #endregion
 
         #region Constructor
