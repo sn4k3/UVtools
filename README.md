@@ -53,6 +53,30 @@ But also, i need victims for test subject. Proceed at your own risk!
 * ZCodex
 * CWS
 
+## Available printers for PrusaSlicer
+
+* EPAX X1
+* EPAX X10
+* EPAX X133 4K Mono
+* EPAX X156 4K Color
+* Zortrax Inkspire
+* Nova3D Elfin
+* AnyCubic Photon
+* Elegoo Mars
+* Elegoo Mars Saturn
+* Peopoly Phenom
+* Peopoly Phenom L
+* Peopoly Phenom Noir
+* QIDI Shadow5.5
+* QIDI Shadow6.0 Pro
+* Phrozen Shuffle
+* Phrozen Shuffle Lite
+* Phrozen Shuffle XL
+* Phrozen Shuffle 4K
+* Phrozen Sonic
+* Phrozen Sonic Mini
+* Phrozen Transform
+
 ## Install and configure printer under PrusaSlicer
 
 1. Download and install PrusaSlicer from: https://www.prusa3d.com/prusaslicer/
@@ -106,6 +130,7 @@ Are you a developer? This project include a .NET Core library (PrusaSL1Reader) t
 ## TODO
 * More file formats
 * Clean up (always)
+* See features request under Github
 
 ## Support my work / Donate
 
