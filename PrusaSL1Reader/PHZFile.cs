@@ -457,8 +457,6 @@ namespace PrusaSL1Reader
 
         public override float LayerHeight => HeaderSettings.LayerHeightMilimeter;
 
-        public override uint LayerCount => HeaderSettings.LayerCount;
-
         public override ushort InitialLayerCount => (ushort)HeaderSettings.BottomLayersCount;
 
         public override float InitialExposureTime => HeaderSettings.BottomExposureSeconds;
@@ -854,7 +852,7 @@ namespace PrusaSL1Reader
                 }
             }
 
-            LayerManager = new LayerManager(LayerCount);
+            LayerManager = new LayerManager(HeaderSettings.LayerCount);
 
             Parallel.For(0, LayerCount, layerIndex => {
                     var image = DecodePhzImage((uint) layerIndex);

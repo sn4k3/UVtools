@@ -24,7 +24,7 @@ namespace PrusaSL1Viewer
                 Helpers.BmpEncoder.SupportTransparency = true;
                 image.Save(memoryStream, Helpers.BmpEncoder);
 
-                //memoryStream.Seek(0, SeekOrigin.Begin);
+                memoryStream.Seek(0, SeekOrigin.Begin);
 
                 return new System.Drawing.Bitmap(memoryStream);
             }

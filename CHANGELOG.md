@@ -1,5 +1,23 @@
 # Changelog
 
+## ? - v0.4.3
+
+* (Add) PWS and PW0 file formats
+* (Add) Open image files as single layer and transform them in grayscale (jpg, jpeg, png, bmp, gif, tga)
+* (Add) Shortcut "Home" go to first layer                                 
+* (Add) Shortcut "End" go to last layer                                   
+* (Add) Shortcut "+" and button go to next layer                          
+* (Add) Shortcut "-" and button go to previous layer                      
+* (Add) Show current layer and height near tracker position               
+* (Change) Scroll bar to track bar
+* (Change) Keyword "LiftingSpeed" to "LiftSpeed" under PrusaSlicer notes (Please update printers notes or import them again)
+* (Change) Keywords For Nova3D Elfin printer under PrusaSlicer notes (Please update printers notes or import them again)
+* (Change) Keywords For Zortrax Inkspire printer under PrusaSlicer notes (Please update printers notes or import them again)
+* (Improvement) Much faster layer scroll display
+* (Improvement) Hide empty items for status bar, ie: if printer don't have them to display
+* (Fix) Save layer preview image trigger an error
+* (Fix) Implement missing "InheritsCummulative" key to SL1 files
+
 ## 05/06/2020 - v0.4.2.2 - Beta
 
 * (Add) Shortcut "ESC" under Islands list view to deselect all items

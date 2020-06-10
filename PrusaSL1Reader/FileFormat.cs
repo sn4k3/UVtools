@@ -8,10 +8,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using PrusaSL1Reader.Extensions;
@@ -134,8 +132,10 @@ namespace PrusaSL1Reader
             new SL1File(),      // Prusa SL1
             new ChituboxFile(), // cbddlp, cbt, photon
             new PHZFile(), // phz
+            new PWSFile(),   // PSW
             new ZCodexFile(),   // zcodex
             new CWSFile(),   // CWS
+            new ImageFile(),   // images
         };
 
         /// <summary>
@@ -271,7 +271,7 @@ namespace PrusaSL1Reader
 
         public float TotalHeight => (float)Math.Round(LayerCount * LayerHeight, 2);
 
-        public abstract uint LayerCount { get; }
+        public uint LayerCount => LayerManager.Count;
         
         public abstract ushort InitialLayerCount { get; }
         
@@ -448,6 +448,8 @@ namespace PrusaSL1Reader
 
         public virtual void Encode(string fileFullPath)
         {
+            FileFullPath = fileFullPath;
+
             if (File.Exists(fileFullPath))
             {
                 File.Delete(fileFullPath);
@@ -511,44 +513,58 @@ namespace PrusaSL1Reader
 
             if (genericConfigExtract)
             {
-                using (TextWriter tw = new StreamWriter(Path.Combine(path, $"{ExtractConfigFileName}.{ExtractConfigFileExtension}"), false))
+                if (!ReferenceEquals(Configs, null))
                 {
-                    foreach (var config in Configs)
+                    using (TextWriter tw = new StreamWriter(Path.Combine(path, $"{ExtractConfigFileName}.{ExtractConfigFileExtension}"), false))
                     {
-                        var type = config.GetType();
-                        tw.WriteLine($"[{type.Name}]");
-                        foreach (var property in type.GetProperties())
+                        foreach (var config in Configs)
                         {
-                            tw.WriteLine($"{property.Name} = {property.GetValue(config)}");
+                            var type = config.GetType();
+                            tw.WriteLine($"[{type.Name}]");
+                            foreach (var property in type.GetProperties())
+                            {
+                                tw.WriteLine($"{property.Name} = {property.GetValue(config)}");
+                            }
+
+                            tw.WriteLine();
                         }
-                        tw.WriteLine();
+
+                        tw.Close();
                     }
-                    tw.Close();
                 }
             }
 
             if (genericLayersExtract)
             {
                 uint i = 0;
-                foreach (var thumbnail in Thumbnails)
+                if (!ReferenceEquals(Thumbnails, null))
                 {
-                    if (ReferenceEquals(thumbnail, null))
+                    foreach (var thumbnail in Thumbnails)
                     {
-                        continue;
+                        if (ReferenceEquals(thumbnail, null))
+                        {
+                            continue;
+                        }
+
+                        thumbnail.Save(Path.Combine(path, $"Thumbnail{i}.png"), Helpers.PngEncoder);
+                        i++;
                     }
-                    thumbnail.Save(Path.Combine(path, $"Thumbnail{i}.png"), Helpers.PngEncoder);
-                    i++;
                 }
 
-                Parallel.ForEach(this, (layer) =>
+                if (LayerCount > 0)
                 {
-                    var byteArr = layer.RawData;
-                    using (FileStream stream = File.Create(Path.Combine(path, $"Layer{layer.Index}.png"), byteArr.Length))
+                    Parallel.ForEach(this, (layer) =>
                     {
-                        stream.Write(byteArr, 0, byteArr.Length);
-                        stream.Close();
-                    }
-                });
+                        var byteArr = layer.RawData;
+                        using (FileStream stream = File.Create(Path.Combine(path, $"Layer{layer.Index}.png"),
+                            byteArr.Length))
+                        {
+                            stream.Write(byteArr, 0, byteArr.Length);
+                            stream.Close();
+                        }
+                    });
+                }
+
                 /* Parallel.For(0, LayerCount, layerIndex => {
                          var byteArr = this[layerIndex].RawData;
                          using (FileStream stream = File.Create(Path.Combine(path, $"Layer{layerIndex}.png"), byteArr.Length))

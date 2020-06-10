@@ -291,6 +291,11 @@
     <None Include="Images\pointer-16x16.png" />
     <None Include="Images\delete-16x16.png" />
     <None Include="Images\island-16x16.png" />
+    <None Include="Images\plus.ico" />
+    <None Include="Images\arrow-up.ico" />
+    <None Include="Images\arrow-down.ico" />
+    <None Include="Images\arrow-up-16x16.png" />
+    <None Include="Images\arrow-down-16x16.png" />
     <Content Include="License-LGPL.txt" />
     <Content Include="PrusaSL1Viewer.ico" />
   </ItemGroup>

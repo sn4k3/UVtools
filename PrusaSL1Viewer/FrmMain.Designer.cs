@@ -55,10 +55,7 @@
             this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             this.menuHelpInstallPrinters = new System.Windows.Forms.ToolStripMenuItem();
             this.statusBar = new System.Windows.Forms.StatusStrip();
-            this.sbLayers = new System.Windows.Forms.VScrollBar();
             this.mainTable = new System.Windows.Forms.TableLayoutPanel();
-            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.lbLayers = new System.Windows.Forms.Label();
             this.scCenter = new System.Windows.Forms.SplitContainer();
             this.pbLayer = new Cyotek.Windows.Forms.ImageBox();
             this.tsLayer = new System.Windows.Forms.ToolStrip();
@@ -121,12 +118,16 @@
             this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
             this.tsIslandsRepair = new System.Windows.Forms.ToolStripButton();
             this.imageList16x16 = new System.Windows.Forms.ImageList(this.components);
+            this.tlRight = new System.Windows.Forms.TableLayoutPanel();
+            this.btnPreviousLayer = new System.Windows.Forms.Button();
+            this.btnNextLayer = new System.Windows.Forms.Button();
+            this.lbMaxLayer = new System.Windows.Forms.Label();
+            this.lbInitialLayer = new System.Windows.Forms.Label();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.lbLayerActual = new System.Windows.Forms.Label();
+            this.tbLayer = new System.Windows.Forms.TrackBar();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
-            this.splitContainer1.Panel1.SuspendLayout();
-            this.splitContainer1.Panel2.SuspendLayout();
-            this.splitContainer1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).BeginInit();
             this.scCenter.Panel1.SuspendLayout();
             this.scCenter.Panel2.SuspendLayout();
@@ -145,6 +146,9 @@
             this.tsGCode.SuspendLayout();
             this.tabPageIslands.SuspendLayout();
             this.tsIslands.SuspendLayout();
+            this.tlRight.SuspendLayout();
+            this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).BeginInit();
             this.SuspendLayout();
             // 
             // menu
@@ -187,7 +191,7 @@
             this.menuFileOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
             this.menuFileOpen.Size = new System.Drawing.Size(261, 22);
             this.menuFileOpen.Text = "&Open";
-            this.menuFileOpen.Click += new System.EventHandler(this.ItemClicked);
+            this.menuFileOpen.Click += new System.EventHandler(this.EventClick);
             // 
             // menuFileOpenNewWindow
             // 
@@ -197,7 +201,7 @@
             | System.Windows.Forms.Keys.O)));
             this.menuFileOpenNewWindow.Size = new System.Drawing.Size(261, 22);
             this.menuFileOpenNewWindow.Text = "Open in new window";
-            this.menuFileOpenNewWindow.Click += new System.EventHandler(this.ItemClicked);
+            this.menuFileOpenNewWindow.Click += new System.EventHandler(this.EventClick);
             // 
             // menuFileReload
             // 
@@ -206,7 +210,7 @@
             this.menuFileReload.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F5)));
             this.menuFileReload.Size = new System.Drawing.Size(261, 22);
             this.menuFileReload.Text = "&Reload";
-            this.menuFileReload.Click += new System.EventHandler(this.ItemClicked);
+            this.menuFileReload.Click += new System.EventHandler(this.EventClick);
             // 
             // menuFileSave
             // 
@@ -216,7 +220,7 @@
             this.menuFileSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
             this.menuFileSave.Size = new System.Drawing.Size(261, 22);
             this.menuFileSave.Text = "&Save";
-            this.menuFileSave.Click += new System.EventHandler(this.ItemClicked);
+            this.menuFileSave.Click += new System.EventHandler(this.EventClick);
             // 
             // menuFileSaveAs
             // 
@@ -227,7 +231,7 @@
             | System.Windows.Forms.Keys.S)));
             this.menuFileSaveAs.Size = new System.Drawing.Size(261, 22);
             this.menuFileSaveAs.Text = "Save As";
-            this.menuFileSaveAs.Click += new System.EventHandler(this.ItemClicked);
+            this.menuFileSaveAs.Click += new System.EventHandler(this.EventClick);
             // 
             // menuFileClose
             // 
@@ -237,7 +241,7 @@
             this.menuFileClose.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.W)));
             this.menuFileClose.Size = new System.Drawing.Size(261, 22);
             this.menuFileClose.Text = "&Close";
-            this.menuFileClose.Click += new System.EventHandler(this.ItemClicked);
+            this.menuFileClose.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator1
             // 
@@ -252,7 +256,7 @@
             this.menuFileExtract.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.E)));
             this.menuFileExtract.Size = new System.Drawing.Size(261, 22);
             this.menuFileExtract.Text = "&Extract";
-            this.menuFileExtract.Click += new System.EventHandler(this.ItemClicked);
+            this.menuFileExtract.Click += new System.EventHandler(this.EventClick);
             // 
             // menuFileConvert
             // 
@@ -274,7 +278,7 @@
             this.menuFileExit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
             this.menuFileExit.Size = new System.Drawing.Size(261, 22);
             this.menuFileExit.Text = "&Exit";
-            this.menuFileExit.Click += new System.EventHandler(this.ItemClicked);
+            this.menuFileExit.Click += new System.EventHandler(this.EventClick);
             // 
             // menuEdit
             // 
@@ -308,7 +312,7 @@
             | System.Windows.Forms.Keys.R)));
             this.menuToolsRepairLayers.Size = new System.Drawing.Size(204, 22);
             this.menuToolsRepairLayers.Text = "&Repair layers";
-            this.menuToolsRepairLayers.Click += new System.EventHandler(this.ItemClicked);
+            this.menuToolsRepairLayers.Click += new System.EventHandler(this.EventClick);
             // 
             // viewToolStripMenuItem
             // 
@@ -337,7 +341,7 @@
             | System.Windows.Forms.Keys.W)));
             this.menuHelpWebsite.Size = new System.Drawing.Size(229, 22);
             this.menuHelpWebsite.Text = "&Website";
-            this.menuHelpWebsite.Click += new System.EventHandler(this.ItemClicked);
+            this.menuHelpWebsite.Click += new System.EventHandler(this.EventClick);
             // 
             // menuHelpDonate
             // 
@@ -346,7 +350,7 @@
             this.menuHelpDonate.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D)));
             this.menuHelpDonate.Size = new System.Drawing.Size(229, 22);
             this.menuHelpDonate.Text = "&Donate";
-            this.menuHelpDonate.Click += new System.EventHandler(this.ItemClicked);
+            this.menuHelpDonate.Click += new System.EventHandler(this.EventClick);
             // 
             // menuHelpAbout
             // 
@@ -355,7 +359,7 @@
             this.menuHelpAbout.ShortcutKeys = System.Windows.Forms.Keys.F1;
             this.menuHelpAbout.Size = new System.Drawing.Size(229, 22);
             this.menuHelpAbout.Text = "&About";
-            this.menuHelpAbout.Click += new System.EventHandler(this.ItemClicked);
+            this.menuHelpAbout.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator10
             // 
@@ -368,7 +372,7 @@
             this.menuHelpInstallPrinters.Name = "menuHelpInstallPrinters";
             this.menuHelpInstallPrinters.Size = new System.Drawing.Size(229, 22);
             this.menuHelpInstallPrinters.Text = "Instal printers into PrusaSlicer";
-            this.menuHelpInstallPrinters.Click += new System.EventHandler(this.ItemClicked);
+            this.menuHelpInstallPrinters.Click += new System.EventHandler(this.EventClick);
             // 
             // statusBar
             // 
@@ -378,26 +382,15 @@
             this.statusBar.TabIndex = 1;
             this.statusBar.Text = "statusStrip1";
             // 
-            // sbLayers
-            // 
-            this.sbLayers.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.sbLayers.Enabled = false;
-            this.sbLayers.LargeChange = 1;
-            this.sbLayers.Location = new System.Drawing.Point(0, 0);
-            this.sbLayers.Name = "sbLayers";
-            this.sbLayers.Size = new System.Drawing.Size(124, 673);
-            this.sbLayers.TabIndex = 4;
-            this.sbLayers.ValueChanged += new System.EventHandler(this.sbLayers_ValueChanged);
-            // 
             // mainTable
             // 
             this.mainTable.ColumnCount = 3;
             this.mainTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 400F));
             this.mainTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.mainTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 130F));
-            this.mainTable.Controls.Add(this.splitContainer1, 2, 0);
             this.mainTable.Controls.Add(this.scCenter, 1, 0);
             this.mainTable.Controls.Add(this.tabControlLeft, 0, 0);
+            this.mainTable.Controls.Add(this.tlRight, 2, 0);
             this.mainTable.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mainTable.Location = new System.Drawing.Point(0, 24);
             this.mainTable.Name = "mainTable";
@@ -405,36 +398,6 @@
             this.mainTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.mainTable.Size = new System.Drawing.Size(1684, 740);
             this.mainTable.TabIndex = 5;
-            // 
-            // splitContainer1
-            // 
-            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
-            this.splitContainer1.IsSplitterFixed = true;
-            this.splitContainer1.Location = new System.Drawing.Point(1557, 3);
-            this.splitContainer1.Name = "splitContainer1";
-            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            // 
-            // splitContainer1.Panel1
-            // 
-            this.splitContainer1.Panel1.Controls.Add(this.sbLayers);
-            // 
-            // splitContainer1.Panel2
-            // 
-            this.splitContainer1.Panel2.Controls.Add(this.lbLayers);
-            this.splitContainer1.Size = new System.Drawing.Size(124, 734);
-            this.splitContainer1.SplitterDistance = 673;
-            this.splitContainer1.TabIndex = 0;
-            // 
-            // lbLayers
-            // 
-            this.lbLayers.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lbLayers.Location = new System.Drawing.Point(0, 0);
-            this.lbLayers.Name = "lbLayers";
-            this.lbLayers.Size = new System.Drawing.Size(124, 57);
-            this.lbLayers.TabIndex = 0;
-            this.lbLayers.Text = "Layers";
-            this.lbLayers.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // scCenter
             // 
@@ -510,7 +473,7 @@
             this.tsLayerImageExport.Size = new System.Drawing.Size(23, 22);
             this.tsLayerImageExport.Text = "Save Layer";
             this.tsLayerImageExport.ToolTipText = "Save layer image to file";
-            this.tsLayerImageExport.Click += new System.EventHandler(this.ItemClicked);
+            this.tsLayerImageExport.Click += new System.EventHandler(this.EventClick);
             // 
             // tsLayerResolution
             // 
@@ -532,7 +495,7 @@
             this.tsLayerImageRotate.Text = "Rotate Image 90º";
             this.tsLayerImageRotate.ToolTipText = "Auto rotate layer preview image at 90º (This can slow down the layer preview) [CT" +
     "RL+R]";
-            this.tsLayerImageRotate.Click += new System.EventHandler(this.ItemClicked);
+            this.tsLayerImageRotate.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator5
             // 
@@ -549,7 +512,7 @@
             this.tsLayerImageLayerDifference.Text = "Difference";
             this.tsLayerImageLayerDifference.ToolTipText = "Show layer differences where daker pixels were also present on previous layer and" +
     " the white pixels the difference between previous and current layer.";
-            this.tsLayerImageLayerDifference.Click += new System.EventHandler(this.ItemClicked);
+            this.tsLayerImageLayerDifference.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator6
             // 
@@ -581,7 +544,7 @@
             this.tsLayerImageHighlightIslands.Size = new System.Drawing.Size(63, 22);
             this.tsLayerImageHighlightIslands.Text = "Islands";
             this.tsLayerImageHighlightIslands.ToolTipText = "Highlight islands on current layer.\r\nValid only if Islands are calculated.";
-            this.tsLayerImageHighlightIslands.Click += new System.EventHandler(this.ItemClicked);
+            this.tsLayerImageHighlightIslands.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator7
             // 
@@ -597,7 +560,7 @@
             this.tsLayerImageLayerOutline.Size = new System.Drawing.Size(66, 22);
             this.tsLayerImageLayerOutline.Text = "Outline";
             this.tsLayerImageLayerOutline.ToolTipText = "Show layer outlines only";
-            this.tsLayerImageLayerOutline.Click += new System.EventHandler(this.ItemClicked);
+            this.tsLayerImageLayerOutline.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator9
             // 
@@ -735,7 +698,7 @@
             this.tsThumbnailsPrevious.Size = new System.Drawing.Size(23, 22);
             this.tsThumbnailsPrevious.Text = "toolStripButton1";
             this.tsThumbnailsPrevious.ToolTipText = "Show previous thumbnail";
-            this.tsThumbnailsPrevious.Click += new System.EventHandler(this.ItemClicked);
+            this.tsThumbnailsPrevious.Click += new System.EventHandler(this.EventClick);
             // 
             // tsThumbnailsCount
             // 
@@ -755,7 +718,7 @@
             this.tsThumbnailsNext.Size = new System.Drawing.Size(23, 22);
             this.tsThumbnailsNext.Text = "toolStripButton2";
             this.tsThumbnailsNext.ToolTipText = "Show next thumbnail";
-            this.tsThumbnailsNext.Click += new System.EventHandler(this.ItemClicked);
+            this.tsThumbnailsNext.Click += new System.EventHandler(this.EventClick);
             // 
             // tsThumbnailsExport
             // 
@@ -768,7 +731,7 @@
             this.tsThumbnailsExport.Size = new System.Drawing.Size(23, 22);
             this.tsThumbnailsExport.Text = "Save Thumbnail";
             this.tsThumbnailsExport.ToolTipText = "Save thumbnail to file";
-            this.tsThumbnailsExport.Click += new System.EventHandler(this.ItemClicked);
+            this.tsThumbnailsExport.Click += new System.EventHandler(this.EventClick);
             // 
             // tsThumbnailsResolution
             // 
@@ -846,7 +809,7 @@
             this.tsPropertiesButtonSave.Size = new System.Drawing.Size(23, 22);
             this.tsPropertiesButtonSave.Text = "Save Thumbnail";
             this.tsPropertiesButtonSave.ToolTipText = "Save properties to a file";
-            this.tsPropertiesButtonSave.Click += new System.EventHandler(this.ItemClicked);
+            this.tsPropertiesButtonSave.Click += new System.EventHandler(this.EventClick);
             // 
             // tabPageGCode
             // 
@@ -911,7 +874,7 @@
             this.tsGCodeButtonSave.Size = new System.Drawing.Size(23, 22);
             this.tsGCodeButtonSave.Text = "Save GCode";
             this.tsGCodeButtonSave.ToolTipText = "Save GCode to file";
-            this.tsGCodeButtonSave.Click += new System.EventHandler(this.ItemClicked);
+            this.tsGCodeButtonSave.Click += new System.EventHandler(this.EventClick);
             // 
             // tabPageIslands
             // 
@@ -994,7 +957,7 @@
             this.tsIslandsPrevious.Size = new System.Drawing.Size(23, 22);
             this.tsIslandsPrevious.Text = "Previous";
             this.tsIslandsPrevious.ToolTipText = "Show previous island";
-            this.tsIslandsPrevious.Click += new System.EventHandler(this.ItemClicked);
+            this.tsIslandsPrevious.Click += new System.EventHandler(this.EventClick);
             // 
             // tsIslandsCount
             // 
@@ -1013,7 +976,7 @@
             this.tsIslandsNext.Size = new System.Drawing.Size(23, 22);
             this.tsIslandsNext.Text = "tsIslandsNext";
             this.tsIslandsNext.ToolTipText = "Show next island";
-            this.tsIslandsNext.Click += new System.EventHandler(this.ItemClicked);
+            this.tsIslandsNext.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator13
             // 
@@ -1030,7 +993,7 @@
             this.tsIslandsRefresh.Size = new System.Drawing.Size(61, 22);
             this.tsIslandsRefresh.Text = "Detect";
             this.tsIslandsRefresh.ToolTipText = "Compute Islands";
-            this.tsIslandsRefresh.Click += new System.EventHandler(this.ItemClicked);
+            this.tsIslandsRefresh.Click += new System.EventHandler(this.EventClick);
             // 
             // tsIslandsRemove
             // 
@@ -1041,7 +1004,7 @@
             this.tsIslandsRemove.Size = new System.Drawing.Size(70, 22);
             this.tsIslandsRemove.Text = "Remove";
             this.tsIslandsRemove.ToolTipText = "Remove selected islands";
-            this.tsIslandsRemove.Click += new System.EventHandler(this.ItemClicked);
+            this.tsIslandsRemove.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator12
             // 
@@ -1059,7 +1022,7 @@
             this.tsIslandsRepair.Size = new System.Drawing.Size(60, 22);
             this.tsIslandsRepair.Text = "Repair";
             this.tsIslandsRepair.ToolTipText = "Attempt to repair islands";
-            this.tsIslandsRepair.Click += new System.EventHandler(this.ItemClicked);
+            this.tsIslandsRepair.Click += new System.EventHandler(this.EventClick);
             // 
             // imageList16x16
             // 
@@ -1069,6 +1032,103 @@
             this.imageList16x16.Images.SetKeyName(1, "PhotoInfo-16x16.png");
             this.imageList16x16.Images.SetKeyName(2, "GCode-16x16.png");
             this.imageList16x16.Images.SetKeyName(3, "island-16x16.png");
+            // 
+            // tlRight
+            // 
+            this.tlRight.ColumnCount = 1;
+            this.tlRight.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tlRight.Controls.Add(this.btnPreviousLayer, 0, 3);
+            this.tlRight.Controls.Add(this.btnNextLayer, 0, 1);
+            this.tlRight.Controls.Add(this.lbMaxLayer, 0, 0);
+            this.tlRight.Controls.Add(this.lbInitialLayer, 0, 4);
+            this.tlRight.Controls.Add(this.panel1, 0, 2);
+            this.tlRight.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tlRight.Location = new System.Drawing.Point(1557, 3);
+            this.tlRight.Name = "tlRight";
+            this.tlRight.RowCount = 5;
+            this.tlRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
+            this.tlRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 32F));
+            this.tlRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tlRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 32F));
+            this.tlRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
+            this.tlRight.Size = new System.Drawing.Size(124, 734);
+            this.tlRight.TabIndex = 6;
+            // 
+            // btnPreviousLayer
+            // 
+            this.btnPreviousLayer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnPreviousLayer.Enabled = false;
+            this.btnPreviousLayer.Image = global::PrusaSL1Viewer.Properties.Resources.arrow_down_16x16;
+            this.btnPreviousLayer.Location = new System.Drawing.Point(3, 655);
+            this.btnPreviousLayer.Name = "btnPreviousLayer";
+            this.btnPreviousLayer.Size = new System.Drawing.Size(118, 26);
+            this.btnPreviousLayer.TabIndex = 14;
+            this.btnPreviousLayer.Text = "-";
+            this.btnPreviousLayer.UseVisualStyleBackColor = true;
+            this.btnPreviousLayer.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnNextLayer
+            // 
+            this.btnNextLayer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnNextLayer.Enabled = false;
+            this.btnNextLayer.Image = global::PrusaSL1Viewer.Properties.Resources.arrow_up_16x16;
+            this.btnNextLayer.Location = new System.Drawing.Point(3, 53);
+            this.btnNextLayer.Name = "btnNextLayer";
+            this.btnNextLayer.Size = new System.Drawing.Size(118, 26);
+            this.btnNextLayer.TabIndex = 8;
+            this.btnNextLayer.Text = "+";
+            this.btnNextLayer.UseVisualStyleBackColor = true;
+            this.btnNextLayer.Click += new System.EventHandler(this.EventClick);
+            // 
+            // lbMaxLayer
+            // 
+            this.lbMaxLayer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lbMaxLayer.Location = new System.Drawing.Point(3, 0);
+            this.lbMaxLayer.Name = "lbMaxLayer";
+            this.lbMaxLayer.Size = new System.Drawing.Size(118, 50);
+            this.lbMaxLayer.TabIndex = 12;
+            this.lbMaxLayer.Text = "Layers";
+            this.lbMaxLayer.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lbInitialLayer
+            // 
+            this.lbInitialLayer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lbInitialLayer.Location = new System.Drawing.Point(3, 684);
+            this.lbInitialLayer.Name = "lbInitialLayer";
+            this.lbInitialLayer.Size = new System.Drawing.Size(118, 50);
+            this.lbInitialLayer.TabIndex = 11;
+            this.lbInitialLayer.Text = "Layers";
+            this.lbInitialLayer.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.lbLayerActual);
+            this.panel1.Controls.Add(this.tbLayer);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel1.Location = new System.Drawing.Point(3, 85);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(118, 564);
+            this.panel1.TabIndex = 13;
+            // 
+            // lbLayerActual
+            // 
+            this.lbLayerActual.AutoSize = true;
+            this.lbLayerActual.Location = new System.Drawing.Point(3, 551);
+            this.lbLayerActual.Name = "lbLayerActual";
+            this.lbLayerActual.Size = new System.Drawing.Size(13, 13);
+            this.lbLayerActual.TabIndex = 9;
+            this.lbLayerActual.Text = "?";
+            // 
+            // tbLayer
+            // 
+            this.tbLayer.Dock = System.Windows.Forms.DockStyle.Right;
+            this.tbLayer.Location = new System.Drawing.Point(73, 0);
+            this.tbLayer.Name = "tbLayer";
+            this.tbLayer.Orientation = System.Windows.Forms.Orientation.Vertical;
+            this.tbLayer.Size = new System.Drawing.Size(45, 564);
+            this.tbLayer.TabIndex = 8;
+            this.tbLayer.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
+            this.tbLayer.ValueChanged += new System.EventHandler(this.ValueChanged);
             // 
             // FrmMain
             // 
@@ -1089,10 +1149,6 @@
             this.menu.ResumeLayout(false);
             this.menu.PerformLayout();
             this.mainTable.ResumeLayout(false);
-            this.splitContainer1.Panel1.ResumeLayout(false);
-            this.splitContainer1.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
-            this.splitContainer1.ResumeLayout(false);
             this.scCenter.Panel1.ResumeLayout(false);
             this.scCenter.Panel1.PerformLayout();
             this.scCenter.Panel2.ResumeLayout(false);
@@ -1121,6 +1177,10 @@
             this.tabPageIslands.PerformLayout();
             this.tsIslands.ResumeLayout(false);
             this.tsIslands.PerformLayout();
+            this.tlRight.ResumeLayout(false);
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1137,10 +1197,7 @@
         private System.Windows.Forms.ToolStripMenuItem menuHelpWebsite;
         private System.Windows.Forms.ToolStripMenuItem menuHelpDonate;
         private System.Windows.Forms.ToolStripMenuItem menuHelpAbout;
-        private System.Windows.Forms.VScrollBar sbLayers;
         private System.Windows.Forms.TableLayoutPanel mainTable;
-        private System.Windows.Forms.SplitContainer splitContainer1;
-        private System.Windows.Forms.Label lbLayers;
         private System.Windows.Forms.ToolStripMenuItem menuEdit;
         private System.Windows.Forms.SplitContainer scCenter;
         private System.Windows.Forms.ProgressBar pbLayers;
@@ -1219,6 +1276,14 @@
         private System.Windows.Forms.ToolStripButton tsIslandsRepair;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator14;
         private System.Windows.Forms.ToolStripButton tsLayerImageHighlightIslands;
+        private System.Windows.Forms.TrackBar tbLayer;
+        private System.Windows.Forms.TableLayoutPanel tlRight;
+        private System.Windows.Forms.Label lbMaxLayer;
+        private System.Windows.Forms.Label lbInitialLayer;
+        private System.Windows.Forms.Button btnNextLayer;
+        private System.Windows.Forms.Button btnPreviousLayer;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Label lbLayerActual;
     }
 }
 

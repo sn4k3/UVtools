@@ -20,12 +20,27 @@ namespace PrusaSL1Reader
 {
     public class SL1File : FileFormat
     {
+        #region Constants
+
+        public const string Keyword_BottomLightOffDelay = "BottomLightOffDelay";
+        public const string Keyword_LayerOffTime        = "LayerOffTime";
+        public const string Keyword_LightOffDelay       = "LightOffDelay";
+        public const string Keyword_BottomLiftHeight    = "BottomLiftHeight";
+        public const string Keyword_BottomLiftSpeed     = "BottomLiftSpeed";
+        public const string Keyword_LiftHeight          = "LiftHeight";
+        public const string Keyword_LiftSpeed           = "LiftSpeed";
+        public const string Keyword_RetractSpeed        = "RetractSpeed";
+        public const string Keyword_BottomLightPWM      = "BottomLightPWM";
+        public const string Keyword_LightPWM            = "LightPWM";
+        #endregion
+
         #region Sub Classes 
 
         #region Printer
         public class Printer
         {
             #region Printer
+            public string InheritsCummulative { get; set; }
             public string PrinterSettingsId { get; set; }
             public string PrinterTechnology { get; set; }
             public string PrinterModel { get; set; }
@@ -276,6 +291,7 @@ namespace PrusaSL1Reader
         public override Type[] ConvertToFormats { get; } =
         {
             typeof(ChituboxFile),
+            typeof(PWSFile),
             typeof(PHZFile),
             typeof(ZCodexFile),
             typeof(CWSFile),
@@ -297,8 +313,6 @@ namespace PrusaSL1Reader
         public override uint ResolutionY => PrinterSettings.DisplayPixelsY;
 
         public override float LayerHeight => OutputConfigSettings.LayerHeight;
-
-        public override uint LayerCount => (uint) (OutputConfigSettings.NumFast + OutputConfigSettings.NumSlow);
 
         public override ushort InitialLayerCount => OutputConfigSettings.NumFade;
 
@@ -431,7 +445,7 @@ namespace PrusaSL1Reader
                     }
                 }
 
-                LayerManager = new LayerManager(LayerCount);
+                LayerManager = new LayerManager((uint) (OutputConfigSettings.NumSlow + OutputConfigSettings.NumFast));
 
                 foreach (ZipArchiveEntry entity in inputFile.Entries)
                 {
@@ -565,44 +579,55 @@ namespace PrusaSL1Reader
 
             if (to == typeof(ChituboxFile))
             {
+                ChituboxFile defaultFormat = (ChituboxFile)FindByType(typeof(ChituboxFile));
                 ChituboxFile file = new ChituboxFile
                 {
-                    LayerManager = LayerManager
+                    LayerManager = LayerManager,
+                    HeaderSettings =
+                    {
+                        Version = 2,
+                        BedSizeX = PrinterSettings.DisplayWidth,
+                        BedSizeY = PrinterSettings.DisplayHeight,
+                        BedSizeZ = PrinterSettings.MaxPrintHeight,
+                        OverallHeightMilimeter = TotalHeight,
+                        BottomExposureSeconds = InitialExposureTime,
+                        BottomLayersCount = InitialLayerCount,
+                        BottomLightPWM = LookupCustomValue<ushort>(Keyword_BottomLightPWM, defaultFormat.HeaderSettings.BottomLightPWM),
+                        LayerCount = LayerCount,
+                        LayerExposureSeconds = LayerExposureTime,
+                        LayerHeightMilimeter = LayerHeight,
+                        LayerOffTime = LookupCustomValue<float>(Keyword_LayerOffTime, defaultFormat.HeaderSettings.LayerOffTime),
+                        LightPWM = LookupCustomValue<ushort>(Keyword_LightPWM, defaultFormat.HeaderSettings.LightPWM),
+                        PrintTime = (uint) OutputConfigSettings.PrintTime,
+                        ProjectorType = PrinterSettings.DisplayMirrorX ? 1u : 0u,
+                        ResolutionX = ResolutionX,
+                        ResolutionY = ResolutionY
+                    },
+                    PrintParametersSettings =
+                    {
+                        BottomLayerCount = PrintSettings.FadedLayers,
+                        BottomLiftHeight = LookupCustomValue<float>(Keyword_BottomLiftHeight,
+                            defaultFormat.PrintParametersSettings.BottomLiftHeight),
+                        BottomLiftSpeed = LookupCustomValue<float>(Keyword_BottomLiftSpeed,
+                            defaultFormat.PrintParametersSettings.BottomLiftSpeed),
+                        BottomLightOffDelay = LookupCustomValue<float>(Keyword_BottomLightOffDelay,
+                            defaultFormat.PrintParametersSettings.BottomLightOffDelay),
+                        CostDollars = MaterialCost,
+                        LiftHeight = LookupCustomValue<float>(Keyword_LiftHeight,
+                            defaultFormat.PrintParametersSettings.LiftHeight),
+                        LiftingSpeed = LookupCustomValue<float>(Keyword_LiftSpeed,
+                            defaultFormat.PrintParametersSettings.LiftingSpeed),
+                        LightOffDelay = LookupCustomValue<float>(Keyword_LightOffDelay,
+                            defaultFormat.PrintParametersSettings.LightOffDelay),
+                        RetractSpeed = LookupCustomValue<float>(Keyword_RetractSpeed,
+                            defaultFormat.PrintParametersSettings.RetractSpeed),
+                        VolumeMl = UsedMaterial,
+                        WeightG = (float) Math.Round(
+                            OutputConfigSettings.UsedMaterial * MaterialSettings.MaterialDensity, 2)
+                    },
+                    SlicerInfoSettings = {MachineName = MachineName, MachineNameSize = (uint) MachineName.Length}
                 };
 
-
-                file.HeaderSettings.Version = 2;
-                file.HeaderSettings.BedSizeX = PrinterSettings.DisplayWidth;
-                file.HeaderSettings.BedSizeY = PrinterSettings.DisplayHeight;
-                file.HeaderSettings.BedSizeZ = PrinterSettings.MaxPrintHeight;
-                file.HeaderSettings.OverallHeightMilimeter = TotalHeight;
-                file.HeaderSettings.BottomExposureSeconds = InitialExposureTime;
-                file.HeaderSettings.BottomLayersCount = InitialLayerCount;
-                file.HeaderSettings.BottomLightPWM = LookupCustomValue<ushort>("BottomLightPWM", file.HeaderSettings.BottomLightPWM);
-                file.HeaderSettings.LayerCount = LayerCount;
-                file.HeaderSettings.LayerExposureSeconds = LayerExposureTime;
-                file.HeaderSettings.LayerHeightMilimeter = LayerHeight;
-                file.HeaderSettings.LayerOffTime = LookupCustomValue<float>("LayerOffTime", file.HeaderSettings.LayerOffTime);
-                file.HeaderSettings.LightPWM = LookupCustomValue<ushort>("LightPWM", file.HeaderSettings.LightPWM);
-                file.HeaderSettings.PrintTime = (uint) OutputConfigSettings.PrintTime;
-                file.HeaderSettings.ProjectorType = PrinterSettings.DisplayMirrorX ? 1u : 0u;
-                file.HeaderSettings.ResolutionX = ResolutionX;
-                file.HeaderSettings.ResolutionY = ResolutionY;
-
-                file.PrintParametersSettings.BottomLayerCount = PrintSettings.FadedLayers;
-                file.PrintParametersSettings.BottomLiftHeight = LookupCustomValue<float>("BottomLiftHeight", file.PrintParametersSettings.BottomLiftHeight);
-                file.PrintParametersSettings.BottomLiftSpeed = LookupCustomValue<float>("BottomLiftSpeed", file.PrintParametersSettings.BottomLiftSpeed);
-                file.PrintParametersSettings.BottomLightOffDelay = LookupCustomValue<float>("BottomLightOffDelay", file.PrintParametersSettings.BottomLightOffDelay);
-                file.PrintParametersSettings.CostDollars = MaterialCost;
-                file.PrintParametersSettings.LiftHeight = LookupCustomValue<float>("LiftHeight", file.PrintParametersSettings.LiftHeight);
-                file.PrintParametersSettings.LiftingSpeed = LookupCustomValue<float>("LiftingSpeed", file.PrintParametersSettings.LiftingSpeed);
-                file.PrintParametersSettings.LightOffDelay = LookupCustomValue<float>("LightOffDelay", file.PrintParametersSettings.LightOffDelay);
-                file.PrintParametersSettings.RetractSpeed = LookupCustomValue<float>("RetractSpeed", file.PrintParametersSettings.RetractSpeed);
-                file.PrintParametersSettings.VolumeMl = UsedMaterial;
-                file.PrintParametersSettings.WeightG = (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.MaterialDensity, 2);
-                
-                file.SlicerInfoSettings.MachineName = MachineName;
-                file.SlicerInfoSettings.MachineNameSize = (uint)MachineName.Length;
 
                 if (LookupCustomValue<bool>("FLIP_XY", false, true))
                 {
@@ -616,48 +641,82 @@ namespace PrusaSL1Reader
                 return true;
             }
 
-            if (to == typeof(PHZFile))
+            if (to == typeof(PWSFile))
             {
-                PHZFile file = new PHZFile
+                PWSFile defaultFormat = (PWSFile)FindByType(typeof(PWSFile));
+                PWSFile file = new PWSFile
                 {
-                    LayerManager = LayerManager
+                    LayerManager = LayerManager,
+                    HeaderSettings =
+                    {
+                        ResolutionX = ResolutionX,
+                        ResolutionY = ResolutionY,
+                        LayerHeight = LayerHeight,
+                        LayerExposureTime = LayerExposureTime,
+                        LiftHeight = LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.HeaderSettings.LiftHeight),
+                        LiftSpeed = LookupCustomValue<float>(Keyword_LiftSpeed, defaultFormat.HeaderSettings.LiftSpeed) / 60,
+                        RetractSpeed = LookupCustomValue<float>(Keyword_RetractSpeed, defaultFormat.HeaderSettings.RetractSpeed) / 60,
+                        LayerOffTime = LookupCustomValue<float>(Keyword_LayerOffTime, defaultFormat.HeaderSettings.LayerOffTime),
+                        BottomLayersCount = InitialLayerCount,
+                        BottomExposureSeconds = InitialExposureTime,
+                        Price = MaterialCost,
+                        Volume = UsedMaterial,
+                        Weight = (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.MaterialDensity, 2)
+                    }
                 };
 
 
-                file.HeaderSettings.Version = 2;
-                file.HeaderSettings.BedSizeX = PrinterSettings.DisplayWidth;
-                file.HeaderSettings.BedSizeY = PrinterSettings.DisplayHeight;
-                file.HeaderSettings.BedSizeZ = PrinterSettings.MaxPrintHeight;
-                file.HeaderSettings.OverallHeightMilimeter = TotalHeight;
-                file.HeaderSettings.BottomExposureSeconds = MaterialSettings.InitialExposureTime;
-                file.HeaderSettings.BottomLayersCount = PrintSettings.FadedLayers;
-                file.HeaderSettings.BottomLightPWM = LookupCustomValue<ushort>("BottomLightPWM", file.HeaderSettings.BottomLightPWM);
-                file.HeaderSettings.LayerCount = LayerCount;
-                file.HeaderSettings.LayerExposureSeconds = MaterialSettings.ExposureTime;
-                file.HeaderSettings.LayerHeightMilimeter = PrintSettings.LayerHeight;
-                file.HeaderSettings.LayerOffTime = LookupCustomValue<float>("LayerOffTime", file.HeaderSettings.LayerOffTime);
-                file.HeaderSettings.LightPWM = LookupCustomValue<ushort>("LightPWM", file.HeaderSettings.LightPWM);
-                file.HeaderSettings.PrintTime = (uint)OutputConfigSettings.PrintTime;
-                file.HeaderSettings.ProjectorType = PrinterSettings.DisplayMirrorX ? 1u : 0u;
-                file.HeaderSettings.ResolutionX = PrinterSettings.DisplayPixelsX;
-                file.HeaderSettings.ResolutionY = PrinterSettings.DisplayPixelsY;
+                if (LookupCustomValue<bool>("FLIP_XY", false, true))
+                {
+                    file.HeaderSettings.ResolutionX = PrinterSettings.DisplayPixelsY;
+                    file.HeaderSettings.ResolutionY = PrinterSettings.DisplayPixelsX;
+                }
 
+                file.SetThumbnails(Thumbnails);
+                file.Encode(fileFullPath);
 
-                file.HeaderSettings.BottomLayerCount = PrintSettings.FadedLayers;
-                file.HeaderSettings.BottomLiftHeight = LookupCustomValue<float>("BottomLiftHeight", file.HeaderSettings.BottomLiftHeight);
-                file.HeaderSettings.BottomLiftSpeed = LookupCustomValue<float>("BottomLiftSpeed", file.HeaderSettings.BottomLiftSpeed);
-                file.HeaderSettings.BottomLightOffDelay = LookupCustomValue<float>("BottomLightOffDelay", file.HeaderSettings.BottomLightOffDelay);
-                file.HeaderSettings.CostDollars = MaterialCost;
-                file.HeaderSettings.LiftHeight = LookupCustomValue<float>("LiftHeight", file.HeaderSettings.LiftHeight);
-                file.HeaderSettings.LiftingSpeed = LookupCustomValue<float>("LiftingSpeed", file.HeaderSettings.LiftingSpeed);
-                file.HeaderSettings.LayerOffTime = LookupCustomValue<float>("LayerOffTime", file.HeaderSettings.LayerOffTime);
-                file.HeaderSettings.RetractSpeed = LookupCustomValue<float>("RetractSpeed", file.HeaderSettings.RetractSpeed);
-                file.HeaderSettings.VolumeMl = OutputConfigSettings.UsedMaterial;
-                file.HeaderSettings.WeightG = (float)Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.MaterialDensity, 2);
+                return true;
+            }
 
-                
-                file.HeaderSettings.MachineName = MachineName;
-                file.HeaderSettings.MachineNameSize = (uint)MachineName.Length;
+            if (to == typeof(PHZFile))
+            {
+                PHZFile defaultFormat = (PHZFile)FindByType(typeof(PHZFile));
+                PHZFile file = new PHZFile
+                {
+                    LayerManager = LayerManager,
+                    HeaderSettings =
+                    {
+                        Version = 2,
+                        BedSizeX = PrinterSettings.DisplayWidth,
+                        BedSizeY = PrinterSettings.DisplayHeight,
+                        BedSizeZ = PrinterSettings.MaxPrintHeight,
+                        OverallHeightMilimeter = TotalHeight,
+                        BottomExposureSeconds = MaterialSettings.InitialExposureTime,
+                        BottomLayersCount = PrintSettings.FadedLayers,
+                        BottomLightPWM = LookupCustomValue<ushort>(Keyword_BottomLightPWM, defaultFormat.HeaderSettings.BottomLightPWM),
+                        LayerCount = LayerCount,
+                        LayerExposureSeconds = MaterialSettings.ExposureTime,
+                        LayerHeightMilimeter = PrintSettings.LayerHeight,
+                        LayerOffTime = LookupCustomValue<float>(Keyword_LayerOffTime, defaultFormat.HeaderSettings.LayerOffTime),
+                        LightPWM = LookupCustomValue<ushort>(Keyword_LightPWM, defaultFormat.HeaderSettings.LightPWM),
+                        PrintTime = (uint) OutputConfigSettings.PrintTime,
+                        ProjectorType = PrinterSettings.DisplayMirrorX ? 1u : 0u,
+                        ResolutionX = PrinterSettings.DisplayPixelsX,
+                        ResolutionY = PrinterSettings.DisplayPixelsY,
+                        BottomLayerCount = PrintSettings.FadedLayers,
+                        BottomLiftHeight = LookupCustomValue<float>(Keyword_BottomLiftHeight, defaultFormat.HeaderSettings.BottomLiftHeight),
+                        BottomLiftSpeed = LookupCustomValue<float>(Keyword_BottomLiftSpeed, defaultFormat.HeaderSettings.BottomLiftSpeed),
+                        BottomLightOffDelay = LookupCustomValue<float>(Keyword_BottomLightOffDelay, defaultFormat.HeaderSettings.BottomLightOffDelay),
+                        CostDollars = MaterialCost,
+                        LiftHeight = LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.HeaderSettings.LiftHeight),
+                        LiftingSpeed = LookupCustomValue<float>(Keyword_LiftSpeed, defaultFormat.HeaderSettings.LiftingSpeed),
+                        RetractSpeed = LookupCustomValue<float>(Keyword_RetractSpeed, defaultFormat.HeaderSettings.RetractSpeed),
+                        VolumeMl = OutputConfigSettings.UsedMaterial,
+                        WeightG = (float)Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.MaterialDensity, 2),
+                        MachineName = MachineName,
+                        MachineNameSize = (uint)MachineName.Length
+                    }
+                };
 
                 if (LookupCustomValue<bool>("FLIP_XY", false, true))
                 {
@@ -673,6 +732,7 @@ namespace PrusaSL1Reader
 
             if (to == typeof(ZCodexFile))
             {
+                ZCodexFile defaultFormat = (ZCodexFile)FindByType(typeof(ZCodexFile));
                 TimeSpan ts = new TimeSpan(0, 0, (int)PrintTime);
                 ZCodexFile file = new ZCodexFile
                 {
@@ -702,7 +762,7 @@ namespace PrusaSL1Reader
                         LayerThickness = $"{LayerHeight} mm",
                         AntiAliasing = 0,
                         CrossSupportEnabled = 1,
-                        ExposureOffTime = LookupCustomValue<uint>("ExposureOffTime", 5)*1000,
+                        ExposureOffTime = LookupCustomValue<uint>(Keyword_LayerOffTime, defaultFormat.UserSettings.ExposureOffTime) *1000,
                         HollowEnabled = PrintSettings.HollowingEnable ? (byte)1 : (byte)0,
                         HollowThickness = PrintSettings.HollowingMinThickness,
                         InfillDensity = 0,
@@ -719,9 +779,9 @@ namespace PrusaSL1Reader
                         SupportAdditionalExposureTime = 0,
                         XCorrection = PrinterSettings.AbsoluteCorrection,
                         YCorrection = PrinterSettings.AbsoluteCorrection,
-                        ZLiftDistance = (float)Math.Round(LookupCustomValue<float>("ZLiftDistance", 5), 2),
-                        ZLiftFeedRate = (float)Math.Round(LookupCustomValue<float>("ZLiftFeedRate", 100), 2),
-                        ZLiftRetractRate = (float)Math.Round(LookupCustomValue<float>("ZLiftRetractRate", 100), 2),
+                        ZLiftDistance = (float)Math.Round(LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.UserSettings.ZLiftDistance), 2),
+                        ZLiftFeedRate = (float)Math.Round(LookupCustomValue<float>(Keyword_LiftSpeed, defaultFormat.UserSettings.ZLiftFeedRate), 2),
+                        ZLiftRetractRate = (float)Math.Round(LookupCustomValue<float>(Keyword_RetractSpeed, defaultFormat.UserSettings.ZLiftRetractRate), 2),
                     },
                     ZCodeMetadataSettings = new ZCodexFile.ZCodeMetadata
                     {
@@ -774,9 +834,9 @@ namespace PrusaSL1Reader
                 file.SliceSettings.LayersExpoMs = file.OutputSettings.LayerTime = (uint) LayerExposureTime * 1000;
                 file.SliceSettings.HeadLayersExpoMs = file.OutputSettings.BottomLayersTime = (uint) InitialExposureTime * 1000;
                 file.SliceSettings.WaitBeforeExpoMs = LookupCustomValue<uint>("WaitBeforeExpoMs", file.SliceSettings.WaitBeforeExpoMs);
-                file.SliceSettings.LiftDistance = file.OutputSettings.LiftDistance = (float) Math.Round(LookupCustomValue<float>("LiftDistance", file.SliceSettings.LiftDistance), 2);
-                file.SliceSettings.LiftUpSpeed = file.OutputSettings.ZLiftFeedRate = file.OutputSettings.ZBottomLiftFeedRate = (float) Math.Round(LookupCustomValue<float>("LiftUpSpeed", file.SliceSettings.LiftUpSpeed), 2);
-                file.SliceSettings.LiftDownSpeed = file.OutputSettings.ZLiftRetractRate = (float) Math.Round(LookupCustomValue<float>("LiftDownSpeed", file.SliceSettings.LiftDownSpeed), 2);
+                file.SliceSettings.LiftDistance = file.OutputSettings.LiftDistance = (float) Math.Round(LookupCustomValue<float>(Keyword_LiftHeight, file.SliceSettings.LiftDistance), 2);
+                file.SliceSettings.LiftUpSpeed = file.OutputSettings.ZLiftFeedRate = file.OutputSettings.ZBottomLiftFeedRate = (float) Math.Round(LookupCustomValue<float>(Keyword_LiftSpeed, file.SliceSettings.LiftUpSpeed), 2);
+                file.SliceSettings.LiftDownSpeed = file.OutputSettings.ZLiftRetractRate = (float) Math.Round(LookupCustomValue<float>(Keyword_RetractSpeed, file.SliceSettings.LiftDownSpeed), 2);
                 file.SliceSettings.LiftWhenFinished = LookupCustomValue<byte>("LiftWhenFinished", file.SliceSettings.LiftWhenFinished);
 
                 file.OutputSettings.BlankingLayerTime = LookupCustomValue<uint>("BlankingLayerTime", file.OutputSettings.BlankingLayerTime);

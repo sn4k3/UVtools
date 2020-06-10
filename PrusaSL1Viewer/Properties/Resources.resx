@@ -121,11 +121,11 @@
   <data name="Error-128x128" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Error-128x128.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Cancel-24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Cancel-24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="layers-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\layers-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="mutation_closing" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\gui\mutation_closing.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="eye-24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\eye-24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -154,6 +154,9 @@
   <data name="refresh-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\refresh-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="arrow-up-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\arrow-up-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Save-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Save-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -162,6 +165,9 @@
   </data>
   <data name="PrusaSL1Viewer" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\PrusaSL1Viewer.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="arrow-up" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\arrow-up.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Ok-24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Ok-24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -181,6 +187,9 @@
   <data name="Open-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Open-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="pointer-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\pointer-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="File-Close-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\File-Close-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -193,8 +202,8 @@
   <data name="mutation_tophat" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\gui\mutation_tophat.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="CNCMachine-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\CNCMachine-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="plus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\plus.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Convert-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Convert-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -214,11 +223,11 @@
   <data name="SaveAs-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\SaveAs-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="CNCMachine-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\CNCMachine-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="delete-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\delete-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="pointer-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\pointer-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="mutation_opening" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\gui\mutation_opening.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -226,13 +235,19 @@
   <data name="mutation_blackhat" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\gui\mutation_blackhat.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Cancel-24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Cancel-24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="mutation_closing" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\gui\mutation_closing.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="arrow-down" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\arrow-down.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Donate-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Donate-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="island-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\island-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="arrow-down-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\arrow-down-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

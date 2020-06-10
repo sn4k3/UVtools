@@ -79,14 +79,14 @@ namespace PrusaSL1Reader
             public byte CrossSupportEnabled { get; set; }
             public uint LayerExposureTime { get; set; }
             //public uint LayerThicknessesDisplayTime { get; set; } arr
-            public uint ExposureOffTime { get; set; }
+            public uint ExposureOffTime { get; set; } = 5;
             public uint BottomLayerExposureTime { get; set; }
             public uint BottomLayersCount { get; set; }
             public byte SupportAdditionalExposureEnabled { get; set; }
             public uint SupportAdditionalExposureTime { get; set; }
-            public float ZLiftDistance { get; set; }
-            public float ZLiftRetractRate { get; set; }
-            public float ZLiftFeedRate { get; set; }
+            public float ZLiftDistance { get; set; } = 5;
+            public float ZLiftRetractRate { get; set; } = 100;
+            public float ZLiftFeedRate { get; set; } = 100;
             public byte AntiAliasing { get; set; }
             public byte XCorrection { get; set; }
             public byte YCorrection { get; set; }
@@ -169,8 +169,6 @@ namespace PrusaSL1Reader
         public override uint ResolutionY => 2560;
 
         public override float LayerHeight => ResinMetadataSettings.LayerThickness;
-
-        public override uint LayerCount => ResinMetadataSettings.TotalLayersCount;
 
         public override ushort InitialLayerCount => ResinMetadataSettings.BottomLayersNumber;
 
@@ -294,7 +292,7 @@ namespace PrusaSL1Reader
                     throw new FileLoadException("ResinGCodeData not found", fileFullPath);
                 }
 
-                LayerManager = new LayerManager(LayerCount);
+                LayerManager = new LayerManager(ResinMetadataSettings.TotalLayersCount);
                 GCode = new StringBuilder();
                 using (TextReader tr = new StreamReader(entry.Open()))
                 {

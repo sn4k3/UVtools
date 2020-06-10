@@ -12,7 +12,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 using PrusaSL1Reader.Extensions;
 
 namespace PrusaSL1Reader
@@ -131,8 +130,6 @@ namespace PrusaSL1Reader
         public override uint ResolutionY => SliceSettings.Yres;
 
         public override float LayerHeight => SliceSettings.Thickness;
-
-        public override uint LayerCount => SliceSettings.LayersNum;
 
         public override ushort InitialLayerCount => SliceSettings.HeadLayersNum;
 
@@ -280,7 +277,7 @@ namespace PrusaSL1Reader
                 }
 
 
-                LayerManager = new LayerManager(LayerCount);
+                LayerManager = new LayerManager(OutputSettings.LayersNum);
 
                 foreach (var zipArchiveEntry in inputFile.Entries)
                 {

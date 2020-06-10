@@ -25,11 +25,9 @@ namespace PrusaSL1Reader
         #region Constants
         private const uint MAGIC_CBDDLP = 0x12FD0019;
         private const uint MAGIC_CBT = 0x12FD0086;
-        private const int SPECIAL_BIT = 1 << 1;
-        private const int SPECIAL_BIT_MASK = ~SPECIAL_BIT;
         private const ushort REPEATRGB15MASK = 0x20;
 
-        private const byte RLE8EncodingLimit = 125;
+        private const byte RLE8EncodingLimit = 0x7d; // 125;
         private const ushort RLE16EncodingLimit = 0xFFF;
         #endregion
 
@@ -514,8 +512,6 @@ namespace PrusaSL1Reader
 
         public override float LayerHeight => HeaderSettings.LayerHeightMilimeter;
 
-        public override uint LayerCount => HeaderSettings.LayerCount;
-
         public override ushort InitialLayerCount => (ushort)HeaderSettings.BottomLayersCount;
 
         public override float InitialExposureTime => HeaderSettings.BottomExposureSeconds;
@@ -826,36 +822,6 @@ namespace PrusaSL1Reader
             // Collect stragglers
             AddRep();
 
-            /*byte color;
-            byte black = 0;
-            byte white = 1;
-
-            byte nrOfColor = 0;
-            byte prevColor = byte.MaxValue;
-
-            for (int y = 0; y < image.Height; y++)
-            {
-                Span<L8> pixelRowSpan = image.GetPixelRowSpan(y);
-                for (int x = 0; x < image.Width; x++)
-                {
-                    color = pixelRowSpan[x].PackedValue < 128 ? black : white;
-                    if (prevColor == byte.MaxValue) prevColor = color;
-                    bool isLastPixel = x == (image.Width - 1) && y == (image.Height - 1);
-
-                    if (color == prevColor && nrOfColor < 0x7D && !isLastPixel)
-                    {
-                        nrOfColor++;
-                    }
-                    else
-                    {
-                        byte encValue = (byte)((prevColor << 7) | nrOfColor); // push color (B/W) to highest bit and repetitions to lowest 7 bits.
-                        rawData.Add(encValue);
-                        prevColor = color;
-                        nrOfColor = 1;
-                    }
-                }
-            }*/
-
             return rawData;
         }
 
@@ -1070,7 +1036,7 @@ namespace PrusaSL1Reader
                 }
             }
 
-            LayerManager = new LayerManager(LayerCount);
+            LayerManager = new LayerManager(HeaderSettings.LayerCount);
 
             Parallel.For(0, LayerCount, layerIndex => {
                     var image = IsCbtFile ? DecodeCbtImage((uint) layerIndex) : DecodeCbddlpImage((uint) layerIndex);
