@@ -7,6 +7,7 @@ This simple tool can give you insight of supports and find some failures. Did yo
 Youtube video: https://www.youtube.com/watch?v=hJD2cgF5rxs
 
 ![GUI Screenshot](https://raw.githubusercontent.com/sn4k3/PrusaSL1Viewer/master/PrusaSL1Viewer/Images/Screenshots/PrusaSL1Viewer_GUI.png)
+![GUI Screenshot Islands](https://raw.githubusercontent.com/sn4k3/PrusaSL1Viewer/master/PrusaSL1Viewer/Images/Screenshots/PrusaSL1Viewer_GUI_Islands.png)
 ![Convertion Screenshot](https://raw.githubusercontent.com/sn4k3/PrusaSL1Viewer/master/PrusaSL1Viewer/Images/Screenshots/SL1ToCbddlp.png)
 
 ## Why this project?
