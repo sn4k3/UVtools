@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Windows.Forms;
 
-namespace PrusaSL1Viewer
+namespace PrusaSL1Viewer.Forms
 {
     public partial class FrmLoading : Form
     {

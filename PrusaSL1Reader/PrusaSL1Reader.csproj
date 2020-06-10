@@ -20,7 +20,7 @@
   <ItemGroup>
     <PackageReference Include="BinarySerializer" Version="8.5.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-rc0001" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-rc0002" />
   </ItemGroup>
 
 </Project>

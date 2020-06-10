@@ -18,8 +18,8 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using PrusaSL1Reader;
+using PrusaSL1Viewer.Forms;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Color = System.Drawing.Color;
@@ -39,6 +39,10 @@ namespace PrusaSL1Viewer
         public static readonly Dictionary<Mutation.Mutates, Mutation> Mutations =
             new Dictionary<Mutation.Mutates, Mutation>
             {
+                {Mutation.Mutates.Resize, new Mutation(Mutation.Mutates.Resize,
+                    "Resizes layer images in a X and/or Y factor, starting at 100% value\n" +
+                    "NOTE: Build volume bounds are not validated after operation, please ensure scaling stays inside your limits."
+                )},
                 {Mutation.Mutates.Erode, new Mutation(Mutation.Mutates.Erode, 
                 "The basic idea of erosion is just like soil erosion only, it erodes away the boundaries of foreground object (Always try to keep foreground in white). " +
                         "So what happends is that, all the pixels near boundary will be discarded depending upon the size of kernel. So the thickness or size of the foreground object decreases or simply white region decreases in the image. It is useful for removing small white noises, detach two connected objects, etc.",
@@ -1839,24 +1843,44 @@ namespace PrusaSL1Viewer
             uint layerEnd;
             uint iterationsStart;
             uint iterationsEnd;
-            bool fade;
+            bool fade = false;
             float iterationSteps = 0;
             uint maxIteration = 0;
-            using (FrmMutation inputBox = new FrmMutation(Mutations[type]))
+
+            switch (type)
             {
-                if (inputBox.ShowDialog() != DialogResult.OK) return;
-                iterationsStart = inputBox.Iterations;
-                if (iterationsStart == 0) return;
-                layerStart = inputBox.LayerRangeStart;
-                layerEnd = inputBox.LayerRangeEnd;
-                iterationsEnd = inputBox.IterationsEnd;
-                fade = layerStart != layerEnd && iterationsStart != iterationsEnd && inputBox.IterationsFade;
-                if (fade)
-                {
-                    iterationSteps = Math.Abs((float)iterationsStart - iterationsEnd) / (layerEnd - layerStart);
-                    maxIteration = Math.Max(iterationsStart, iterationsEnd);
-                }
+                case Mutation.Mutates.Resize:
+                    using (FrmMutationResize inputBox = new FrmMutationResize(Mutations[type]))
+                    {
+                        if (inputBox.ShowDialog() != DialogResult.OK) return;
+                        layerStart = inputBox.LayerRangeStart;
+                        layerEnd = inputBox.LayerRangeEnd;
+                        iterationsStart = inputBox.X;
+                        iterationsEnd = inputBox.Y;
+                    }
+
+                    break;
+                default:
+                    using (FrmMutation inputBox = new FrmMutation(Mutations[type]))
+                    {
+                        if (inputBox.ShowDialog() != DialogResult.OK) return;
+                        iterationsStart = inputBox.Iterations;
+                        if (iterationsStart == 0) return;
+                        layerStart = inputBox.LayerRangeStart;
+                        layerEnd = inputBox.LayerRangeEnd;
+                        iterationsEnd = inputBox.IterationsEnd;
+                        fade = layerStart != layerEnd && iterationsStart != iterationsEnd && inputBox.IterationsFade;
+                        if (fade)
+                        {
+                            iterationSteps = Math.Abs((float)iterationsStart - iterationsEnd) / (layerEnd - layerStart);
+                            maxIteration = Math.Max(iterationsStart, iterationsEnd);
+                        }
+                    }
+
+                    break;
             }
+
+            
 
             DisableGUI();
             FrmLoading.SetDescription($"Mutating - {type}");
@@ -1866,66 +1890,82 @@ namespace PrusaSL1Viewer
                 bool result = false;
                 try
                 {
-                    Parallel.For(layerStart, layerEnd+1, i =>
+                    if (type == Mutation.Mutates.Resize)
                     {
-                        var iterations = iterationsStart;
-                        if (fade)
+                        SlicerFile.Resize(layerStart, layerEnd, iterationsStart / 100f, iterationsEnd / 100f);
+                    }
+                    else
+                    {
+                        Parallel.For(layerStart, layerEnd + 1, i =>
                         {
-                            // calculate iterations based on range
-                            iterations = iterationsStart < iterationsEnd ? 
-                                (uint) ((i + 1 - layerStart) * iterationSteps) :
-                                (uint) (iterationsStart - (i - layerStart) * iterationSteps);
+                            var iterations = iterationsStart;
+                            if (fade)
+                            {
+                                // calculate iterations based on range
+                                iterations = iterationsStart < iterationsEnd
+                                    ? (uint) ((i + 1 - layerStart) * iterationSteps)
+                                    : (uint) (iterationsStart - (i - layerStart) * iterationSteps);
 
-                            // constrain
-                            iterations = Math.Min(Math.Max(1, iterations), maxIteration);
-                            //Debug.WriteLine($"A Layer: {i} = {iterations}");
-                        }
-                        Layer layer = SlicerFile[i];
-                        var image = layer.Image;
-                        var imageEgmu = image.ToEmguImage();
-                        switch (type)
-                        {
-                            case Mutation.Mutates.Erode:
-                                imageEgmu = imageEgmu.Erode((int) iterations);
-                                break;
-                            case Mutation.Mutates.Dilate:
-                                imageEgmu = imageEgmu.Dilate((int) iterations);
-                                break;
-                            case Mutation.Mutates.Opening:
-                                imageEgmu = imageEgmu.Erode((int)iterations).Dilate((int)iterations);
-                                break;
-                            case Mutation.Mutates.Closing:
-                                imageEgmu = imageEgmu.Dilate((int)iterations).Erode((int)iterations);
-                                break;
-                            case Mutation.Mutates.Gradient:
-                                imageEgmu = imageEgmu.MorphologyEx(MorphOp.Gradient, Program.KernelStar3x3, new Point(-1, -1), (int) iterations,
-                                    BorderType.Default, new MCvScalar());
-                                break;
-                            case Mutation.Mutates.TopHat:
-                                imageEgmu = imageEgmu.MorphologyEx(MorphOp.Tophat, CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(9, 9), new Point(-1, -1)), new Point(-1, -1), (int)iterations,
-                                    BorderType.Default, new MCvScalar());
-                                break;
-                            case Mutation.Mutates.BlackHat:
-                                imageEgmu = imageEgmu.MorphologyEx(MorphOp.Blackhat, CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(9, 9), new Point(-1, -1)), new Point(-1, -1), (int)iterations,
-                                    BorderType.Default, new MCvScalar());
-                                break;
-                            case Mutation.Mutates.HitMiss:
-                                imageEgmu = imageEgmu.MorphologyEx(MorphOp.HitMiss, Program.KernelFindIsolated, new Point(-1, -1), (int)iterations,
-                                    BorderType.Default, new MCvScalar());
-                                break;
-                            case Mutation.Mutates.PyrDownUp:
-                                imageEgmu = imageEgmu.PyrDown().PyrUp();
-                                break;
-                            case Mutation.Mutates.SmoothMedian:
-                                imageEgmu = imageEgmu.SmoothMedian((int) iterations);
-                                break;
-                            case Mutation.Mutates.SmoothGaussian:
-                                imageEgmu = imageEgmu.SmoothGaussian((int)iterations);
-                                break;
-                        }
-                        layer.Image = imageEgmu.ToImageSharpL8();
-                        imageEgmu.Dispose();
-                    });
+                                // constrain
+                                iterations = Math.Min(Math.Max(1, iterations), maxIteration);
+                                //Debug.WriteLine($"A Layer: {i} = {iterations}");
+                            }
+
+                            Layer layer = SlicerFile[i];
+                            var image = layer.Image;
+                            var imageEgmu = image.ToEmguImage();
+                            switch (type)
+                            {
+                                case Mutation.Mutates.Erode:
+                                    imageEgmu = imageEgmu.Erode((int) iterations);
+                                    break;
+                                case Mutation.Mutates.Dilate:
+                                    imageEgmu = imageEgmu.Dilate((int) iterations);
+                                    break;
+                                case Mutation.Mutates.Opening:
+                                    imageEgmu = imageEgmu.Erode((int) iterations).Dilate((int) iterations);
+                                    break;
+                                case Mutation.Mutates.Closing:
+                                    imageEgmu = imageEgmu.Dilate((int) iterations).Erode((int) iterations);
+                                    break;
+                                case Mutation.Mutates.Gradient:
+                                    imageEgmu = imageEgmu.MorphologyEx(MorphOp.Gradient, Program.KernelStar3x3,
+                                        new Point(-1, -1), (int) iterations,
+                                        BorderType.Default, new MCvScalar());
+                                    break;
+                                case Mutation.Mutates.TopHat:
+                                    imageEgmu = imageEgmu.MorphologyEx(MorphOp.Tophat,
+                                        CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(9, 9),
+                                            new Point(-1, -1)), new Point(-1, -1), (int) iterations,
+                                        BorderType.Default, new MCvScalar());
+                                    break;
+                                case Mutation.Mutates.BlackHat:
+                                    imageEgmu = imageEgmu.MorphologyEx(MorphOp.Blackhat,
+                                        CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(9, 9),
+                                            new Point(-1, -1)), new Point(-1, -1), (int) iterations,
+                                        BorderType.Default, new MCvScalar());
+                                    break;
+                                case Mutation.Mutates.HitMiss:
+                                    imageEgmu = imageEgmu.MorphologyEx(MorphOp.HitMiss, Program.KernelFindIsolated,
+                                        new Point(-1, -1), (int) iterations,
+                                        BorderType.Default, new MCvScalar());
+                                    break;
+                                case Mutation.Mutates.PyrDownUp:
+                                    imageEgmu = imageEgmu.PyrDown().PyrUp();
+                                    break;
+                                case Mutation.Mutates.SmoothMedian:
+                                    imageEgmu = imageEgmu.SmoothMedian((int) iterations);
+                                    break;
+                                case Mutation.Mutates.SmoothGaussian:
+                                    imageEgmu = imageEgmu.SmoothGaussian((int) iterations);
+                                    break;
+                            }
+
+                            layer.Image = imageEgmu.ToImageSharpL8();
+                            imageEgmu.Dispose();
+                        });
+                    }
+
                     result = true;
                 }
                 catch (Exception ex)

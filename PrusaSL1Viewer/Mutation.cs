@@ -15,6 +15,8 @@ namespace PrusaSL1Viewer
         #region Enum
         public enum Mutates : byte
         {
+            Resize,
+            LayerSmash,
             Erode,
             Dilate,
             Opening,

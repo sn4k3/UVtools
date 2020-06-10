@@ -320,6 +320,16 @@ namespace PrusaSL1Reader
         /// <param name="fileFullPath">Output path file</param>
         /// <returns>True if convert succeed, otherwise false</returns>
         bool Convert(FileFormat to, string fileFullPath);
+
+        /// <summary>
+        /// Resizes layer images in x and y factor, starting at 1 = 100%
+        /// </summary>
+        /// <param name="startLayerIndex">Layer index to start</param>
+        /// <param name="endLayerIndex">Layer index to end</param>
+        /// <param name="x">X factor</param>
+        /// <param name="y">Y factor</param>
+        void Resize(uint startLayerIndex, uint endLayerIndex, float x, float y);
+
         #endregion
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace PrusaSL1Viewer
+﻿namespace PrusaSL1Viewer.Forms
 {
     partial class FrmLoading
     {

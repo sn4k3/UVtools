@@ -8,12 +8,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PrusaSL1Reader.Extensions;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Size = System.Drawing.Size;
@@ -630,6 +632,44 @@ namespace PrusaSL1Reader
         {
             return Convert(to.GetType(), fileFullPath);
         }
+
+        public void Resize(uint startLayerIndex, uint endLayerIndex, float x, float y)
+        {
+            if (x == 1 && y == 1) return;
+            
+            /*Parallel.For(startLayerIndex, endLayerIndex+1, layerIndex =>
+            {
+                var image = this[layerIndex].Image;
+                var newImage = new Image<L8>(image.GetConfiguration(), image.Width, image.Height);
+
+                int width = (int)(image.Width * x);
+                int height = (int)(image.Height * y);
+                Point location = new Point(image.Width/2 - width/2, image.Height/2 - height/2);
+
+
+                image.Mutate(o => o.Resize(width, height));
+                newImage.Mutate(o => o.DrawImage(image, location, 1f));
+
+                this[layerIndex].Image = newImage;
+            }); */
+
+            for (uint layerIndex = startLayerIndex; layerIndex <= endLayerIndex; layerIndex++)
+            {
+                var image = this[layerIndex].Image;
+                var newImage = new Image<L8>(image.GetConfiguration(), image.Width, image.Height);
+
+                int width = (int)(image.Width * x);
+                int height = (int)(image.Height * y);
+                Point location = new Point(image.Width / 2 - width / 2, image.Height / 2 - height / 2);
+
+
+                image.Mutate(o => o.Resize(width, height));
+                newImage.Mutate(o => o.DrawImage(image, location, 1f));
+
+                this[layerIndex].Image = newImage;
+            }
+        }
+
         #endregion
     }
 }

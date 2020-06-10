@@ -1,4 +1,4 @@
-﻿namespace PrusaSL1Viewer
+﻿namespace PrusaSL1Viewer.Forms
 {
     partial class FrmAbout
     {
@@ -164,7 +164,7 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "FrmAbout";
-            this.Padding = new System.Windows.Forms.Padding(14, 14, 14, 14);
+            this.Padding = new System.Windows.Forms.Padding(14);
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;

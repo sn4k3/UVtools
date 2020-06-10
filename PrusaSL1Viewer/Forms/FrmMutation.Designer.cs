@@ -1,6 +1,6 @@
-﻿namespace PrusaSL1Viewer
+﻿namespace PrusaSL1Viewer.Forms
 {
-    partial class FrmRepairLayers
+    partial class FrmMutation
     {
         /// <summary>
         /// Required designer variable.
@@ -29,10 +29,10 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmRepairLayers));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMutation));
             this.lbDescription = new System.Windows.Forms.Label();
             this.lbIterationsStart = new System.Windows.Forms.Label();
-            this.numClosingIterations = new System.Windows.Forms.NumericUpDown();
+            this.numIterationsStart = new System.Windows.Forms.NumericUpDown();
             this.lbLayerRange = new System.Windows.Forms.Label();
             this.nmLayerRangeStart = new System.Windows.Forms.NumericUpDown();
             this.nmLayerRangeEnd = new System.Windows.Forms.NumericUpDown();
@@ -43,49 +43,58 @@
             this.btnLayerRangeBottomLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.btnLayerRangeNormalLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.btnRepair = new System.Windows.Forms.Button();
-            this.cbRepairLayers = new System.Windows.Forms.CheckBox();
+            this.btnPreview = new System.Windows.Forms.Button();
+            this.pbInfo = new System.Windows.Forms.PictureBox();
+            this.btnMutate = new System.Windows.Forms.Button();
+            this.lbIterationsStop = new System.Windows.Forms.Label();
+            this.nmIterationsEnd = new System.Windows.Forms.NumericUpDown();
+            this.cbIterationsFade = new System.Windows.Forms.CheckBox();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.cbRepairIslands = new System.Windows.Forms.CheckBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.numOpeningIterations = new System.Windows.Forms.NumericUpDown();
             this.btnLayerRangeSelect = new PrusaSL1Viewer.Controls.SplitButton();
-            ((System.ComponentModel.ISupportInitialize)(this.numClosingIterations)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numIterationsStart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeEnd)).BeginInit();
             this.cmLayerRange.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numOpeningIterations)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbInfo)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmIterationsEnd)).BeginInit();
             this.SuspendLayout();
             // 
             // lbDescription
             // 
+            this.lbDescription.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.lbDescription.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbDescription.Location = new System.Drawing.Point(13, 14);
             this.lbDescription.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbDescription.Name = "lbDescription";
-            this.lbDescription.Size = new System.Drawing.Size(584, 149);
+            this.lbDescription.Size = new System.Drawing.Size(584, 128);
             this.lbDescription.TabIndex = 0;
-            this.lbDescription.Text = resources.GetString("lbDescription.Text");
+            this.lbDescription.Text = "Description";
             // 
             // lbIterationsStart
             // 
             this.lbIterationsStart.AutoSize = true;
-            this.lbIterationsStart.Location = new System.Drawing.Point(13, 211);
+            this.lbIterationsStart.Location = new System.Drawing.Point(13, 190);
             this.lbIterationsStart.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbIterationsStart.Name = "lbIterationsStart";
-            this.lbIterationsStart.Size = new System.Drawing.Size(136, 20);
+            this.lbIterationsStart.Size = new System.Drawing.Size(80, 20);
             this.lbIterationsStart.TabIndex = 3;
-            this.lbIterationsStart.Text = "Closing Iterations:";
+            this.lbIterationsStart.Text = "Iterations:";
             this.toolTip.SetToolTip(this.lbIterationsStart, resources.GetString("lbIterationsStart.ToolTip"));
             // 
-            // numClosingIterations
+            // numIterationsStart
             // 
-            this.numClosingIterations.Location = new System.Drawing.Point(157, 208);
-            this.numClosingIterations.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.numClosingIterations.Name = "numClosingIterations";
-            this.numClosingIterations.Size = new System.Drawing.Size(124, 26);
-            this.numClosingIterations.TabIndex = 3;
-            this.numClosingIterations.Value = new decimal(new int[] {
+            this.numIterationsStart.Location = new System.Drawing.Point(132, 187);
+            this.numIterationsStart.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.numIterationsStart.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numIterationsStart.Name = "numIterationsStart";
+            this.numIterationsStart.Size = new System.Drawing.Size(149, 26);
+            this.numIterationsStart.TabIndex = 3;
+            this.numIterationsStart.Value = new decimal(new int[] {
             1,
             0,
             0,
@@ -94,7 +103,7 @@
             // lbLayerRange
             // 
             this.lbLayerRange.AutoSize = true;
-            this.lbLayerRange.Location = new System.Drawing.Point(13, 171);
+            this.lbLayerRange.Location = new System.Drawing.Point(13, 150);
             this.lbLayerRange.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbLayerRange.Name = "lbLayerRange";
             this.lbLayerRange.Size = new System.Drawing.Size(97, 20);
@@ -104,7 +113,7 @@
             // 
             // nmLayerRangeStart
             // 
-            this.nmLayerRangeStart.Location = new System.Drawing.Point(157, 168);
+            this.nmLayerRangeStart.Location = new System.Drawing.Point(132, 147);
             this.nmLayerRangeStart.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nmLayerRangeStart.Maximum = new decimal(new int[] {
             100000,
@@ -112,12 +121,12 @@
             0,
             0});
             this.nmLayerRangeStart.Name = "nmLayerRangeStart";
-            this.nmLayerRangeStart.Size = new System.Drawing.Size(124, 26);
+            this.nmLayerRangeStart.Size = new System.Drawing.Size(149, 26);
             this.nmLayerRangeStart.TabIndex = 0;
             // 
             // nmLayerRangeEnd
             // 
-            this.nmLayerRangeEnd.Location = new System.Drawing.Point(328, 168);
+            this.nmLayerRangeEnd.Location = new System.Drawing.Point(328, 147);
             this.nmLayerRangeEnd.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nmLayerRangeEnd.Maximum = new decimal(new int[] {
             100000,
@@ -125,13 +134,13 @@
             0,
             0});
             this.nmLayerRangeEnd.Name = "nmLayerRangeEnd";
-            this.nmLayerRangeEnd.Size = new System.Drawing.Size(124, 26);
+            this.nmLayerRangeEnd.Size = new System.Drawing.Size(149, 26);
             this.nmLayerRangeEnd.TabIndex = 1;
             // 
             // lbLayerRangeTo
             // 
             this.lbLayerRangeTo.AutoSize = true;
-            this.lbLayerRangeTo.Location = new System.Drawing.Point(289, 171);
+            this.lbLayerRangeTo.Location = new System.Drawing.Point(289, 150);
             this.lbLayerRangeTo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbLayerRangeTo.Name = "lbLayerRangeTo";
             this.lbLayerRangeTo.Size = new System.Drawing.Size(31, 20);
@@ -190,7 +199,7 @@
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Image = global::PrusaSL1Viewer.Properties.Resources.Cancel_24x24;
             this.btnCancel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnCancel.Location = new System.Drawing.Point(447, 246);
+            this.btnCancel.Location = new System.Drawing.Point(447, 230);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(150, 48);
@@ -200,33 +209,88 @@
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.ItemClicked);
             // 
-            // btnRepair
+            // btnPreview
             // 
-            this.btnRepair.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnRepair.Image = global::PrusaSL1Viewer.Properties.Resources.Ok_24x24;
-            this.btnRepair.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnRepair.Location = new System.Drawing.Point(289, 246);
-            this.btnRepair.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.btnRepair.Name = "btnRepair";
-            this.btnRepair.Size = new System.Drawing.Size(150, 48);
-            this.btnRepair.TabIndex = 5;
-            this.btnRepair.Text = "&Repair";
-            this.btnRepair.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.btnRepair.UseVisualStyleBackColor = true;
-            this.btnRepair.Click += new System.EventHandler(this.ItemClicked);
+            this.btnPreview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnPreview.Enabled = false;
+            this.btnPreview.Image = global::PrusaSL1Viewer.Properties.Resources.eye_24x24;
+            this.btnPreview.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnPreview.Location = new System.Drawing.Point(131, 230);
+            this.btnPreview.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnPreview.Name = "btnPreview";
+            this.btnPreview.Size = new System.Drawing.Size(150, 48);
+            this.btnPreview.TabIndex = 4;
+            this.btnPreview.Text = "&Preview";
+            this.btnPreview.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.btnPreview.UseVisualStyleBackColor = true;
             // 
-            // cbRepairLayers
+            // pbInfo
             // 
-            this.cbRepairLayers.AutoSize = true;
-            this.cbRepairLayers.Checked = true;
-            this.cbRepairLayers.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbRepairLayers.Enabled = false;
-            this.cbRepairLayers.Location = new System.Drawing.Point(17, 242);
-            this.cbRepairLayers.Name = "cbRepairLayers";
-            this.cbRepairLayers.Size = new System.Drawing.Size(126, 24);
-            this.cbRepairLayers.TabIndex = 15;
-            this.cbRepairLayers.Text = "Repair Layers";
-            this.cbRepairLayers.UseVisualStyleBackColor = true;
+            this.pbInfo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pbInfo.Location = new System.Drawing.Point(604, 14);
+            this.pbInfo.Name = "pbInfo";
+            this.pbInfo.Size = new System.Drawing.Size(311, 264);
+            this.pbInfo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pbInfo.TabIndex = 7;
+            this.pbInfo.TabStop = false;
+            this.pbInfo.Visible = false;
+            // 
+            // btnMutate
+            // 
+            this.btnMutate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnMutate.Image = global::PrusaSL1Viewer.Properties.Resources.Ok_24x24;
+            this.btnMutate.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnMutate.Location = new System.Drawing.Point(289, 230);
+            this.btnMutate.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnMutate.Name = "btnMutate";
+            this.btnMutate.Size = new System.Drawing.Size(150, 48);
+            this.btnMutate.TabIndex = 5;
+            this.btnMutate.Text = "&Mutate";
+            this.btnMutate.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.btnMutate.UseVisualStyleBackColor = true;
+            this.btnMutate.Click += new System.EventHandler(this.ItemClicked);
+            // 
+            // lbIterationsStop
+            // 
+            this.lbIterationsStop.AutoSize = true;
+            this.lbIterationsStop.Enabled = false;
+            this.lbIterationsStop.Location = new System.Drawing.Point(289, 190);
+            this.lbIterationsStop.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lbIterationsStop.Name = "lbIterationsStop";
+            this.lbIterationsStop.Size = new System.Drawing.Size(31, 20);
+            this.lbIterationsStop.TabIndex = 13;
+            this.lbIterationsStop.Text = "To:";
+            // 
+            // nmIterationsEnd
+            // 
+            this.nmIterationsEnd.Enabled = false;
+            this.nmIterationsEnd.Location = new System.Drawing.Point(328, 187);
+            this.nmIterationsEnd.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.nmIterationsEnd.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.nmIterationsEnd.Name = "nmIterationsEnd";
+            this.nmIterationsEnd.Size = new System.Drawing.Size(149, 26);
+            this.nmIterationsEnd.TabIndex = 14;
+            this.nmIterationsEnd.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // cbIterationsFade
+            // 
+            this.cbIterationsFade.AutoSize = true;
+            this.cbIterationsFade.Location = new System.Drawing.Point(484, 188);
+            this.cbIterationsFade.Name = "cbIterationsFade";
+            this.cbIterationsFade.Size = new System.Drawing.Size(108, 24);
+            this.cbIterationsFade.TabIndex = 15;
+            this.cbIterationsFade.Text = "Fade in/out";
+            this.cbIterationsFade.UseVisualStyleBackColor = true;
+            this.cbIterationsFade.CheckedChanged += new System.EventHandler(this.CheckedChanged);
             // 
             // toolTip
             // 
@@ -237,89 +301,53 @@
             this.toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             this.toolTip.ToolTipTitle = "Information";
             // 
-            // cbRepairIslands
-            // 
-            this.cbRepairIslands.AutoSize = true;
-            this.cbRepairIslands.Checked = true;
-            this.cbRepairIslands.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbRepairIslands.Enabled = false;
-            this.cbRepairIslands.Location = new System.Drawing.Point(17, 272);
-            this.cbRepairIslands.Name = "cbRepairIslands";
-            this.cbRepairIslands.Size = new System.Drawing.Size(130, 24);
-            this.cbRepairIslands.TabIndex = 16;
-            this.cbRepairIslands.Text = "Repair Islands";
-            this.cbRepairIslands.UseVisualStyleBackColor = true;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(307, 210);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(144, 20);
-            this.label1.TabIndex = 17;
-            this.label1.Text = "Opening Iterations:";
-            this.toolTip.SetToolTip(this.label1, resources.GetString("label1.ToolTip"));
-            // 
-            // numOpeningIterations
-            // 
-            this.numOpeningIterations.Location = new System.Drawing.Point(459, 208);
-            this.numOpeningIterations.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.numOpeningIterations.Name = "numOpeningIterations";
-            this.numOpeningIterations.Size = new System.Drawing.Size(138, 26);
-            this.numOpeningIterations.TabIndex = 18;
-            this.numOpeningIterations.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            // 
             // btnLayerRangeSelect
             // 
-            this.btnLayerRangeSelect.Location = new System.Drawing.Point(459, 168);
+            this.btnLayerRangeSelect.Location = new System.Drawing.Point(484, 147);
             this.btnLayerRangeSelect.Menu = this.cmLayerRange;
             this.btnLayerRangeSelect.Name = "btnLayerRangeSelect";
-            this.btnLayerRangeSelect.Size = new System.Drawing.Size(138, 26);
+            this.btnLayerRangeSelect.Size = new System.Drawing.Size(114, 26);
             this.btnLayerRangeSelect.TabIndex = 2;
             this.btnLayerRangeSelect.Text = "Select";
             this.btnLayerRangeSelect.UseVisualStyleBackColor = true;
             // 
-            // FrmRepairLayers
+            // FrmMutation
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(606, 308);
-            this.Controls.Add(this.numOpeningIterations);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.cbRepairIslands);
-            this.Controls.Add(this.cbRepairLayers);
+            this.ClientSize = new System.Drawing.Size(927, 292);
+            this.Controls.Add(this.cbIterationsFade);
+            this.Controls.Add(this.nmIterationsEnd);
+            this.Controls.Add(this.lbIterationsStop);
             this.Controls.Add(this.btnLayerRangeSelect);
             this.Controls.Add(this.lbLayerRangeTo);
             this.Controls.Add(this.nmLayerRangeEnd);
             this.Controls.Add(this.nmLayerRangeStart);
             this.Controls.Add(this.lbLayerRange);
-            this.Controls.Add(this.btnRepair);
+            this.Controls.Add(this.btnPreview);
+            this.Controls.Add(this.pbInfo);
+            this.Controls.Add(this.btnMutate);
             this.Controls.Add(this.btnCancel);
-            this.Controls.Add(this.numClosingIterations);
+            this.Controls.Add(this.numIterationsStart);
             this.Controls.Add(this.lbIterationsStart);
             this.Controls.Add(this.lbDescription);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "FrmRepairLayers";
+            this.Name = "FrmMutation";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
-            this.Text = "Repair Layers";
+            this.Text = "Form1";
             this.TopMost = true;
-            ((System.ComponentModel.ISupportInitialize)(this.numClosingIterations)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numIterationsStart)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeEnd)).EndInit();
             this.cmLayerRange.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.numOpeningIterations)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbInfo)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmIterationsEnd)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -329,9 +357,11 @@
 
         private System.Windows.Forms.Label lbDescription;
         private System.Windows.Forms.Label lbIterationsStart;
-        private System.Windows.Forms.NumericUpDown numClosingIterations;
+        private System.Windows.Forms.NumericUpDown numIterationsStart;
         private System.Windows.Forms.Button btnCancel;
-        private System.Windows.Forms.Button btnRepair;
+        private System.Windows.Forms.Button btnMutate;
+        private System.Windows.Forms.PictureBox pbInfo;
+        private System.Windows.Forms.Button btnPreview;
         private System.Windows.Forms.Label lbLayerRange;
         private System.Windows.Forms.NumericUpDown nmLayerRangeStart;
         private System.Windows.Forms.NumericUpDown nmLayerRangeEnd;
@@ -342,10 +372,9 @@
         private System.Windows.Forms.ToolStripMenuItem btnLayerRangeCurrentLayer;
         private System.Windows.Forms.ToolStripMenuItem btnLayerRangeBottomLayers;
         private System.Windows.Forms.ToolStripMenuItem btnLayerRangeNormalLayers;
-        private System.Windows.Forms.CheckBox cbRepairLayers;
+        private System.Windows.Forms.Label lbIterationsStop;
+        private System.Windows.Forms.NumericUpDown nmIterationsEnd;
+        private System.Windows.Forms.CheckBox cbIterationsFade;
         private System.Windows.Forms.ToolTip toolTip;
-        private System.Windows.Forms.CheckBox cbRepairIslands;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.NumericUpDown numOpeningIterations;
     }
 }

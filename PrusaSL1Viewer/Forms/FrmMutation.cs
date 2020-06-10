@@ -5,14 +5,17 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using System;
 using System.Windows.Forms;
 
-namespace PrusaSL1Viewer
+namespace PrusaSL1Viewer.Forms
 {
-    public partial class FrmRepairLayers : Form
+    public partial class FrmMutation : Form
     {
         #region Properties
+
+        private Mutation Mutation { get; }
 
         public uint LayerRangeStart
         {
@@ -26,35 +29,59 @@ namespace PrusaSL1Viewer
             set => nmLayerRangeEnd.Value = value;
         }
 
-        public uint ClosingIterations
+        public uint Iterations
         {
-            get => (uint) numClosingIterations.Value;
-            set => numClosingIterations.Value = value;
+            get => (uint) numIterationsStart.Value;
+            set => numIterationsStart.Value = value;
         }
 
-        public uint OpeningIterations
+        public uint IterationsEnd
         {
-            get => (uint)numOpeningIterations.Value;
-            set => numOpeningIterations.Value = value;
+            get => (uint)nmIterationsEnd.Value;
+            set => nmIterationsEnd.Value = value;
         }
 
-        public bool RepairIslands
+        public bool IterationsFade
         {
-            get => cbRepairIslands.Checked;
-            set => cbRepairIslands.Checked = value;
+            get => cbIterationsFade.Checked;
+            set => cbIterationsFade.Checked = value;
         }
         #endregion
 
         #region Constructors
-        public FrmRepairLayers(uint defaultClosingIterations = 1, uint defaultOpeningIterations = 1)
+        public FrmMutation(Mutation mutation, uint defaultIterations = 1)
         {
             InitializeComponent();
+            Mutation = mutation;
             DialogResult = DialogResult.Cancel;
 
-            
-            ClosingIterations = defaultClosingIterations;
-            OpeningIterations = defaultOpeningIterations;
-            numClosingIterations.Select();
+            if (defaultIterations == 0 || mutation.Mutate == Mutation.Mutates.PyrDownUp)
+            {
+                lbIterationsStart.Enabled =
+                numIterationsStart.Enabled =
+                lbIterationsStop.Enabled =
+                nmIterationsEnd.Enabled =
+                cbIterationsFade.Enabled =
+                        false;
+            }
+            else
+            {
+                Iterations = defaultIterations;
+                numIterationsStart.Select();
+            }
+
+            Text = $"Mutate: {mutation.Mutate}";
+            lbDescription.Text = Mutation.Description;
+
+            if (ReferenceEquals(mutation.Image, null))
+            {
+                Width = pbInfo.Location.X+25;
+            }
+            else
+            {
+                pbInfo.Image = mutation.Image;
+                pbInfo.Visible = true;
+            }
 
             nmLayerRangeEnd.Value = Program.SlicerFile.LayerCount-1;
 
@@ -67,7 +94,7 @@ namespace PrusaSL1Viewer
             base.OnKeyUp(e);
             if (e.KeyCode == Keys.Enter)
             {
-                btnRepair.PerformClick();
+                btnMutate.PerformClick();
                 e.Handled = true;
                 return;
             }
@@ -137,27 +164,20 @@ namespace PrusaSL1Viewer
                 return;
             }
 
-            if (ReferenceEquals(sender, btnRepair))
+            if (ReferenceEquals(sender, btnMutate))
             {
-                if (!btnRepair.Enabled) return;
+                if (!btnMutate.Enabled) return;
                 if (LayerRangeStart > LayerRangeEnd)
                 {
                     MessageBox.Show("Layer range start can't be higher than layer end.\nPlease fix and try again.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     nmLayerRangeStart.Select();
                     return;
                 }
-
-                if (OpeningIterations == 0 && ClosingIterations == 0)
-                {
-                    MessageBox.Show("Any of opening and closing iterations must be non 0.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    numClosingIterations.Select();
-                    return;
-                }
-                if (MessageBox.Show("Are you sure you want to attempt this repair?", Text, MessageBoxButtons.YesNo,
+                if (MessageBox.Show($"Are you sure you want to {Mutation.Mutate}?", Text, MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     DialogResult = DialogResult.OK;
-                    if (ClosingIterations <= 0) // Should never happen!
+                    if (Iterations <= 0) // Should never happen!
                     {
                         DialogResult = DialogResult.Cancel;
                     }
@@ -174,7 +194,17 @@ namespace PrusaSL1Viewer
             }
         }
 
-        
+        private void CheckedChanged(object sender, EventArgs e)
+        {
+            if (ReferenceEquals(sender, cbIterationsFade))
+            {
+                lbIterationsStop.Enabled =
+                    nmIterationsEnd.Enabled =
+                        cbIterationsFade.Checked;
+
+                return;
+            }
+        }
         #endregion
 
 

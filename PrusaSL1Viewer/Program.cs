@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using ApplicationManagement;
 using Emgu.CV;
 using PrusaSL1Reader;
+using PrusaSL1Viewer.Forms;
 
 namespace PrusaSL1Viewer
 {

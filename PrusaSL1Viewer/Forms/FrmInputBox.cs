@@ -5,12 +5,13 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using System;
 using System.Globalization;
 using System.Windows.Forms;
 using PrusaSL1Reader;
 
-namespace PrusaSL1Viewer
+namespace PrusaSL1Viewer.Forms
 {
     public partial class FrmInputBox : Form
     {
