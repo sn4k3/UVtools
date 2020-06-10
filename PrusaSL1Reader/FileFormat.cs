@@ -637,7 +637,7 @@ namespace PrusaSL1Reader
         {
             if (x == 1 && y == 1) return;
             
-            /*Parallel.For(startLayerIndex, endLayerIndex+1, layerIndex =>
+            Parallel.For(startLayerIndex, endLayerIndex+1, layerIndex =>
             {
                 var image = this[layerIndex].Image;
                 var newImage = new Image<L8>(image.GetConfiguration(), image.Width, image.Height);
@@ -651,9 +651,9 @@ namespace PrusaSL1Reader
                 newImage.Mutate(o => o.DrawImage(image, location, 1f));
 
                 this[layerIndex].Image = newImage;
-            }); */
+            });
 
-            for (uint layerIndex = startLayerIndex; layerIndex <= endLayerIndex; layerIndex++)
+            /*for (uint layerIndex = startLayerIndex; layerIndex <= endLayerIndex; layerIndex++)
             {
                 var image = this[layerIndex].Image;
                 var newImage = new Image<L8>(image.GetConfiguration(), image.Width, image.Height);
@@ -667,7 +667,7 @@ namespace PrusaSL1Reader
                 newImage.Mutate(o => o.DrawImage(image, location, 1f));
 
                 this[layerIndex].Image = newImage;
-            }
+            }*/
         }
 
         #endregion
