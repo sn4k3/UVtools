@@ -1,10 +1,10 @@
-# Prusa SL1 File Viewer
+# Prusa SL1 Viewer
 
 Open, view, edit, extract, convert, mutate and island checker for DLP files generated from Slicers.
 
 This simple tool can give you insight of supports and find some failures. Did you forget what resin or orther settings you used on a project? This can also save you, check every setting that were used with or simply change them!
 
-Youtube video: https://www.youtube.com/watch?v=hJD2cgF5rxs
+* Facebook group: https://www.facebook.com/groups/prusasl1viewer
 
 ![GUI Screenshot](https://raw.githubusercontent.com/sn4k3/PrusaSL1Viewer/master/PrusaSL1Viewer/Images/Screenshots/PrusaSL1Viewer_GUI.png)
 ![GUI Screenshot Islands](https://raw.githubusercontent.com/sn4k3/PrusaSL1Viewer/master/PrusaSL1Viewer/Images/Screenshots/PrusaSL1Viewer_GUI_Islands.png)
@@ -46,13 +46,15 @@ But also, i need victims for test subject. Proceed at your own risk!
 
 ## Known Formats
 
-* SL1 (Prusa SL1)
-* Photon
-* CBDDLP (Chitubox DLP)
+* SL1 (PrusaSlicer)
+* Photon (Chitubox)
+* CBDDLP (Chitubox)
 * CBT (Chitubox)
-* PHZ
-* ZCodex
-* CWS
+* PWS (Photon Workshop)
+* PW0 (Photon Workshop)
+* PHZ (Chitubox)
+* ZCodex (Z-Suite)
+* CWS (NovaMaker)
 
 ## Available printers for PrusaSlicer
 
@@ -63,6 +65,8 @@ But also, i need victims for test subject. Proceed at your own risk!
 * Zortrax Inkspire
 * Nova3D Elfin
 * AnyCubic Photon
+* AnyCubic Photon S
+* AnyCubic Photon Zero
 * Elegoo Mars
 * Elegoo Mars Saturn
 * Peopoly Phenom
@@ -78,17 +82,28 @@ But also, i need victims for test subject. Proceed at your own risk!
 * Phrozen Sonic Mini
 * Phrozen Transform
 
-## Install and configure printer under PrusaSlicer
+## Available profiles for PrusaSlicer
+
+* Universal 0.1 Fast - Heavy Supports
+* Universal 0.1 Fast - Medium Supports
+* Universal 0.05 Normal - Heavy Supports
+* Universal 0.05 Normal - Medium Supports
+* Universal 0.035 Detail - Heavy Supports
+* Universal 0.035 Detail - Medium Supports
+* Universal 0.025 UltraDetail - Heavy Supports
+* Universal 0.025 UltraDetail - Medium Supports
+
+## Install and configure profiles under PrusaSlicer
 
 1. Download and install PrusaSlicer from: https://www.prusa3d.com/prusaslicer/
 1. Start and configure PrusaSlicer (Wizard)
     * Choose SL1 printer
 1. Close PrusaSlicer
-1. Open PrusaSL1Viewer
-   * Under Menu click -> About -> Install printers into PrusaSlicer
+1. Open PrusaSL1Viewer if not already
+   * Under Menu click -> About -> Install profiles into PrusaSlicer
 1. Open PrusaSlicer and check if profiles are there
 1. To clean up interface remove printers that you will not use (OPTIONAL)
-1. Duplicate or create your printer and tune the values if required
+1. Duplicate and/or create your printer and tune the values if required
 1. Look up under "Printer -> Notes" and configure parameters to the target slicer
 1. Change only the value after the "_" (underscore)
 

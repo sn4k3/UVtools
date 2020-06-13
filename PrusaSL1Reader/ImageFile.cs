@@ -27,6 +27,7 @@ namespace PrusaSL1Reader
         public override Size[] ThumbnailsOriginalSize { get; } = null;
         public override uint ResolutionX => (uint)ImageL8.Width;
         public override uint ResolutionY => (uint)ImageL8.Height;
+        public override byte AntiAliasing { get; } = 1;
         public override float LayerHeight { get; } = 0;
         public override ushort InitialLayerCount { get; } = 1;
         public override float InitialExposureTime { get; } = 0;

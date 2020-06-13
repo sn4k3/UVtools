@@ -8,7 +8,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -268,6 +267,8 @@ namespace PrusaSL1Reader
         public abstract uint ResolutionX { get; }
 
         public abstract uint ResolutionY { get; }
+        public bool HaveAntiAliasing => AntiAliasing > 1;
+        public abstract byte AntiAliasing { get; }
 
         public abstract float LayerHeight { get; }
 
@@ -649,6 +650,7 @@ namespace PrusaSL1Reader
 
                 image.Mutate(o => o.Resize(width, height));
                 newImage.Mutate(o => o.DrawImage(image, location, 1f));
+                
 
                 this[layerIndex].Image = newImage;
             });
@@ -668,6 +670,13 @@ namespace PrusaSL1Reader
 
                 this[layerIndex].Image = newImage;
             }*/
+        }
+
+        public byte ValidateAntiAliasingLevel()
+        {
+            if (AntiAliasing < 2) return 1;
+            if(AntiAliasing % 2 != 0) throw new ArgumentException("AntiAliasing must be multiples of 2, otherwise use 0 or 1 to disable it", nameof(AntiAliasing));
+            return AntiAliasing;
         }
 
         #endregion

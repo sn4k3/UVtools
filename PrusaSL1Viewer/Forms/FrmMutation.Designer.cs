@@ -223,6 +223,7 @@
             this.btnPreview.Text = "&Preview";
             this.btnPreview.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnPreview.UseVisualStyleBackColor = true;
+            this.btnPreview.Visible = false;
             // 
             // pbInfo
             // 

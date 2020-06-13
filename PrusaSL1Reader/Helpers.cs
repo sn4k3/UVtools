@@ -74,32 +74,16 @@ namespace PrusaSL1Reader
             return stream;
         }
 
-        public static T Deserialize<T>(BinaryReader binaryReader)
-        {
-            return Deserialize<T>(binaryReader.BaseStream);
-        }
-
         public static T Deserialize<T>(Stream stream)
         {
             return Serializer.Deserialize<T>(stream);
         }
 
-        public static uint WriteFileStream(FileStream fs, MemoryStream stream, uint offset = 0)
-        {
-            return WriteFileStream(fs, stream.ToArray(), offset);
-        }
-
-        public static uint WriteFileStream(FileStream fs, byte[] bytes, uint offset = 0)
-        {
-            fs.Write(bytes, 0, bytes.Length);
-            return (uint)bytes.Length;
-        }
-
-        public static uint SerializeWriteFileStream(FileStream fs, object value, uint offset = 0)
+        public static uint SerializeWriteFileStream(FileStream fs, object value, int offset = 0)
         {
             using (MemoryStream stream = Helpers.Serialize(value))
             {
-                return WriteFileStream(fs, stream);
+                return fs.WriteStream(stream, offset);
             }
         }
 
@@ -152,11 +136,6 @@ namespace PrusaSL1Reader
                 default:
                     throw new Exception($"Data type '{name}' not recognized, contact developer.");
             }
-        }
-
-        public static uint CoordinatesToPixelIndex(uint x, uint y, uint width)
-        {
-            return y * width + x;
         }
     }
 }

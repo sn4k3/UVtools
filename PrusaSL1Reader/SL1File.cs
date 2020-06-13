@@ -22,6 +22,7 @@ namespace PrusaSL1Reader
     {
         #region Constants
 
+        public const string Keyword_AntiAliasing        = "AntiAliasing";
         public const string Keyword_BottomLightOffDelay = "BottomLightOffDelay";
         public const string Keyword_LayerOffTime        = "LayerOffTime";
         public const string Keyword_LightOffDelay       = "LightOffDelay";
@@ -285,7 +286,7 @@ namespace PrusaSL1Reader
         public override FileFormatType FileType => FileFormatType.Archive;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("sl1", "Prusa SL1 Files")
+            new FileExtension("sl1", "PrusaSlicer SL1 Files")
         };
 
         public override Type[] ConvertToFormats { get; } =
@@ -311,6 +312,7 @@ namespace PrusaSL1Reader
         public override uint ResolutionX => PrinterSettings.DisplayPixelsX;
 
         public override uint ResolutionY => PrinterSettings.DisplayPixelsY;
+        public override byte AntiAliasing => (byte) (PrinterSettings.GammaCorrection > 0 ? LookupCustomValue(Keyword_AntiAliasing, 4) : 1);
 
         public override float LayerHeight => OutputConfigSettings.LayerHeight;
 
@@ -601,7 +603,8 @@ namespace PrusaSL1Reader
                         PrintTime = (uint) OutputConfigSettings.PrintTime,
                         ProjectorType = PrinterSettings.DisplayMirrorX ? 1u : 0u,
                         ResolutionX = ResolutionX,
-                        ResolutionY = ResolutionY
+                        ResolutionY = ResolutionY,
+                        AntiAliasLevel = ValidateAntiAliasingLevel()
                     },
                     PrintParametersSettings =
                     {
@@ -661,7 +664,8 @@ namespace PrusaSL1Reader
                         BottomExposureSeconds = InitialExposureTime,
                         Price = MaterialCost,
                         Volume = UsedMaterial,
-                        Weight = (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.MaterialDensity, 2)
+                        Weight = (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.MaterialDensity, 2),
+                        AntiAliasing = ValidateAntiAliasingLevel()
                     }
                 };
 
@@ -714,7 +718,8 @@ namespace PrusaSL1Reader
                         VolumeMl = OutputConfigSettings.UsedMaterial,
                         WeightG = (float)Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.MaterialDensity, 2),
                         MachineName = MachineName,
-                        MachineNameSize = (uint)MachineName.Length
+                        MachineNameSize = (uint)MachineName.Length,
+                        AntiAliasLevelInfo = ValidateAntiAliasingLevel()
                     }
                 };
 
@@ -760,7 +765,7 @@ namespace PrusaSL1Reader
                         BottomLayerExposureTime = (uint)(InitialExposureTime * 1000),
                         MaterialId = 2,
                         LayerThickness = $"{LayerHeight} mm",
-                        AntiAliasing = 0,
+                        AntiAliasing = (byte) (ValidateAntiAliasingLevel() > 1 ? 1 : 0),
                         CrossSupportEnabled = 1,
                         ExposureOffTime = LookupCustomValue<uint>(Keyword_LayerOffTime, defaultFormat.UserSettings.ExposureOffTime) *1000,
                         HollowEnabled = PrintSettings.HollowingEnable ? (byte)1 : (byte)0,
@@ -819,6 +824,7 @@ namespace PrusaSL1Reader
 
             if (to == typeof(CWSFile))
             {
+                CWSFile defaultFormat = (CWSFile)FindByType(typeof(CWSFile));
                 CWSFile file = new CWSFile
                 {
                     LayerManager = LayerManager
@@ -850,6 +856,8 @@ namespace PrusaSL1Reader
                 //file.OutputSettings.AntiAliasingValue = 0;
                 file.OutputSettings.FlipX = PrinterSettings.DisplayMirrorX;
                 file.OutputSettings.FlipY = PrinterSettings.DisplayMirrorY;
+                file.OutputSettings.AntiAliasingValue = ValidateAntiAliasingLevel();
+                file.OutputSettings.AntiAliasing = file.OutputSettings.AntiAliasingValue > 1;
 
 
 

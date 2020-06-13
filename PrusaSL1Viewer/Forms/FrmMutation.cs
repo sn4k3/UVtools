@@ -55,7 +55,8 @@ namespace PrusaSL1Viewer.Forms
             Mutation = mutation;
             DialogResult = DialogResult.Cancel;
 
-            if (defaultIterations == 0 || mutation.Mutate == Mutation.Mutates.PyrDownUp)
+            if (defaultIterations == 0 ||
+                mutation.Mutate == Mutation.Mutates.PyrDownUp)
             {
                 lbIterationsStart.Enabled =
                 numIterationsStart.Enabled =
@@ -68,6 +69,15 @@ namespace PrusaSL1Viewer.Forms
             {
                 Iterations = defaultIterations;
                 numIterationsStart.Select();
+            }
+
+            if (Mutation.Mutate == Mutation.Mutates.SmoothGaussian ||
+                Mutation.Mutate == Mutation.Mutates.SmoothMedian)
+            {
+                lbIterationsStop.Enabled =
+                    nmIterationsEnd.Enabled =
+                        cbIterationsFade.Enabled =
+                            false;
             }
 
             Text = $"Mutate: {mutation.Mutate}";
@@ -173,6 +183,22 @@ namespace PrusaSL1Viewer.Forms
                     nmLayerRangeStart.Select();
                     return;
                 }
+
+                if (Mutation.Mutate == Mutation.Mutates.SmoothGaussian ||
+                    Mutation.Mutate == Mutation.Mutates.SmoothMedian)
+                {
+                    if (IterationsFade)
+                    {
+                        MessageBox.Show("Smooth doesn't support fading.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                    if (Iterations % 2 != 1)
+                    {
+                        MessageBox.Show("Iterations must be a odd number.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                }
+
                 if (MessageBox.Show($"Are you sure you want to {Mutation.Mutate}?", Text, MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question) == DialogResult.Yes)
                 {

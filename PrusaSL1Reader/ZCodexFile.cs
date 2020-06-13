@@ -87,7 +87,7 @@ namespace PrusaSL1Reader
             public float ZLiftDistance { get; set; } = 5;
             public float ZLiftRetractRate { get; set; } = 100;
             public float ZLiftFeedRate { get; set; } = 100;
-            public byte AntiAliasing { get; set; }
+            public byte AntiAliasing { get; set; } = 0;
             public byte XCorrection { get; set; }
             public byte YCorrection { get; set; }
             public byte HollowEnabled { get; set; }
@@ -144,7 +144,7 @@ namespace PrusaSL1Reader
         public override FileFormatType FileType => FileFormatType.Archive;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("zcodex", "ZCodex/Z-Suite Files")
+            new FileExtension("zcodex", "Z-Suite ZCodex Files")
         };
 
         public override Type[] ConvertToFormats { get; } = null;
@@ -167,6 +167,7 @@ namespace PrusaSL1Reader
         public override uint ResolutionX => 1440;
 
         public override uint ResolutionY => 2560;
+        public override byte AntiAliasing => UserSettings.AntiAliasing;
 
         public override float LayerHeight => ResinMetadataSettings.LayerThickness;
 

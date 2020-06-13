@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -18,40 +19,68 @@ using Point = System.Drawing.Point;
 
 namespace PrusaSL1Reader
 {
-    #region LayerIsland Class
-    public class LayerIsland : IEnumerable<Point>
+    #region LayerIssue Class
+
+    public class LayerIssue : IEnumerable<Point>
     {
+        public enum IssueType : byte
+        {
+            Island,
+            ResinTrap,
+            TouchingBound,
+            //HoleSandwich,
+        }
+
         /// <summary>
-        /// Gets the layer who own this island
+        /// Gets the parent layer
         /// </summary>
-        public Layer Owner { get; }
-
-        public uint X => (uint) Pixels[0].X;
-
-        public uint Y => (uint)Pixels[0].Y;
-
-        public Point Point => new Point((int) X, (int) Y);
+        public Layer Layer { get; }
 
         /// <summary>
-        /// Gets pixels locations
+        /// Gets the issue type associated
+        /// </summary>
+        public IssueType Type { get; }
+
+        /// <summary>
+        /// Gets the pixels containing the issue
         /// </summary>
         public Point[] Pixels { get; }
 
         /// <summary>
-        /// Gets the number of pixels on this island
+        /// Gets the X coordinate for the first point, -1 if doesn't exists
         /// </summary>
-        public uint Size => (uint) Pixels.Length;
+        public int X => HaveValidPoint ? Pixels[0].X : -1;
 
-        public LayerIsland(Layer owner, Point[] pixels)
+        /// <summary>
+        /// Gets the Y coordinate for the first point, -1 if doesn't exists
+        /// </summary>
+        public int Y => HaveValidPoint ? Pixels[0].Y : -1;
+
+        /// <summary>
+        /// Gets the XY point for first point
+        /// </summary>
+        public Point Point => HaveValidPoint ? Pixels[0] : new Point(-1, -1);
+
+        /// <summary>
+        /// Gets the number of pixels on this issue
+        /// </summary>
+        public uint Size => (uint) (Pixels?.Length ?? 0);
+
+        /// <summary>
+        /// Check if this issue have a valid start point to show
+        /// </summary>
+        public bool HaveValidPoint => !ReferenceEquals(Pixels, null) && Pixels.Length > 0;
+
+        public LayerIssue(Layer layer, IssueType type, Point[] pixels = null)
         {
-            Owner = owner;
+            Layer = layer;
+            Type = type;
             Pixels = pixels;
         }
 
         public Point this[uint index] => Pixels[index];
 
         public Point this[int index] => Pixels[index];
-
 
         public IEnumerator<Point> GetEnumerator()
         {
@@ -61,6 +90,11 @@ namespace PrusaSL1Reader
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        public override string ToString()
+        {
+            return $"{nameof(Type)}: {Type}";
         }
     }
     #endregion
@@ -225,7 +259,7 @@ namespace PrusaSL1Reader
         #region Formaters
         public override string ToString()
         {
-            return $"{nameof(Filename)}: {Filename}, {nameof(IsModified)}: {IsModified}";
+            return $"{nameof(Index)}: {Index}, {nameof(Filename)}: {Filename}, {nameof(IsModified)}: {IsModified}";
         }
         #endregion
 
@@ -252,7 +286,7 @@ namespace PrusaSL1Reader
         /// https://www.geeksforgeeks.org/find-number-of-islands/
         /// </summary>
         /// <returns><see cref="List{T}"/> holding all islands coordinates</returns>
-        public List<LayerIsland> GetIslandsLocation(uint requiredPixelsToSupportIsland = 5)
+        public List<LayerIssue> GetIssues(uint requiredPixelsToSupportIsland = 5)
         {
             if (requiredPixelsToSupportIsland == 0)
                 requiredPixelsToSupportIsland = 1;
@@ -260,16 +294,10 @@ namespace PrusaSL1Reader
             // These arrays are used to 
             // get row and column numbers 
             // of 8 neighbors of a given cell 
-            List<LayerIsland> result = new List<LayerIsland>();
+            List<LayerIssue> result = new List<LayerIssue>();
             List<Point> pixels = new List<Point>();
-            if (Index == 0) return result;
 
-            sbyte[] rowNbr = { -1, -1, -1, 0, 0, 1, 1, 1 };
-            sbyte[] colNbr = { -1, 0, 1, -1, 1, -1, 0, 1 };
-            const uint minPixel = 10;
-            const uint minPixelForSupportIsland = 200;
-            int pixelIndex;
-            uint islandSupportingPixels;
+            
 
             var image = Image;
             byte[] bytes = null;
@@ -288,99 +316,145 @@ namespace PrusaSL1Reader
                 }
             }
 
+            /*var nextLayerImage = NextLayer()?.Image;
+            byte[] nextBytes = null;
+            if (!ReferenceEquals(nextLayerImage, null))
+            {
+                if (nextLayerImage.TryGetSinglePixelSpan(out var nextPixelSpan))
+                {
+                    nextBytes = MemoryMarshal.AsBytes(nextPixelSpan).ToArray();
+                }
+            }*/
+
             // Make a bool array to
             // mark visited cells. 
             // Initially all cells 
             // are unvisited 
-            bool[,] visited = new bool[image.Height, image.Width];
+            bool[,] visited = new bool[image.Width, image.Height];
 
-            /*bool isSafe()
+            // Initialize count as 0 and 
+            // traverse through the all 
+            // cells of given matrix 
+            //uint count = 0;
+
+            // Island checker
+            sbyte[] rowNbr = { -1, -1, -1, 0, 0, 1, 1, 1 };
+            sbyte[] colNbr = { -1, 0, 1, -1, 1, -1, 0, 1 };
+            const uint minPixel = 10;
+            const uint minPixelForSupportIsland = 200;
+            int pixelIndex;
+            uint islandSupportingPixels;
+            if (Index > 0)
             {
-                // row number is in range, 
-                // column number is in range 
-                // and value is 1 and not 
-                // yet visited 
-                pixelIndex = y2 * image.Width + x2;
-                return (y2 >= 0) && (y2 < image.Height) && (x2 >= 0) && (x2 < image.Width) && (bytes[pixelIndex] >= minPixel && !visited[y2, x2]);
-            }*/
-
-
-            void DFS(int y2, int x2)
-            {
-                Queue<System.Drawing.Point> queue = new Queue<System.Drawing.Point>();
-                queue.Enqueue(new System.Drawing.Point(x2, y2));
-                // Mark this cell as visited 
-                visited[y2, x2] = true;
-
-                while (queue.Count > 0)
+                for (int y = 0; y < image.Height; y++)
                 {
-                    var point = queue.Dequeue();
-                    y2 = point.Y;
-                    x2 = point.X;
-                    for (byte k = 0; k < 8; k++)
+                    for (int x = 0; x < image.Width; x++)
                     {
-                        //if (isSafe(y2 + rowNbr[k], x2 + colNbr[k]))
-                        var tempy2 = y2 + rowNbr[k];
-                        var tempx2 = x2 + colNbr[k];
-                        pixelIndex = tempy2 * image.Width + tempx2;
-                        if (tempy2 >= 0 &&
-                            tempy2 < image.Height &&
-                            tempx2 >= 0 && tempx2 < image.Width &&
-                            bytes[pixelIndex] >= minPixel &&
-                            !visited[tempy2, tempx2])
-                        {
-                            visited[tempy2, tempx2] = true;
-                            point = new Point(tempx2, tempy2);
-                            pixels.Add(point);
-                            queue.Enqueue(point);
+                        pixelIndex = y * image.Width + x;
 
-                            islandSupportingPixels += previousBytes[pixelIndex] >= minPixelForSupportIsland ? 1u : 0;
-                            /*if (!presetOnPrevious)
+                        /*if (bytes[pixelIndex] == 0 && previousBytes?[pixelIndex] == byte.MaxValue &&
+                            nextBytes?[pixelIndex] == byte.MaxValue)
+                        {
+                            result.Add(new LayerIssue(this, LayerIssue.IssueType.HoleSandwich, new []{new Point(x, y)}));
+                        }*/
+
+                        if (bytes[pixelIndex] > minPixel && !visited[x, y])
+                        {
+                            // If a cell with value 1 is not 
+                            // visited yet, then new island 
+                            // found, Visit all cells in this 
+                            // island and increment island count 
+                            pixels.Clear();
+                            pixels.Add(new Point(x, y));
+                            islandSupportingPixels = previousBytes[pixelIndex] >= minPixelForSupportIsland ? 1u : 0;
+
+
+
+                            int x2;
+                            int y2;
+
+
+                            Queue<Point> queue = new Queue<Point>();
+                            queue.Enqueue(new Point(x, y));
+                            // Mark this cell as visited 
+                            visited[x, y] = true;
+
+                            while (queue.Count > 0)
                             {
-                                if (previousBytes[pixelIndex] >= minPixelForSupportIsland) presetOnPrevious = true;
-                            }*/
+                                var point = queue.Dequeue();
+                                y2 = point.Y;
+                                x2 = point.X;
+                                for (byte k = 0; k < 8; k++)
+                                {
+                                    //if (isSafe(y2 + rowNbr[k], x2 + colNbr[k]))
+                                    var tempy2 = y2 + rowNbr[k];
+                                    var tempx2 = x2 + colNbr[k];
+                                    pixelIndex = tempy2 * image.Width + tempx2;
+                                    if (tempy2 >= 0 &&
+                                        tempy2 < image.Height &&
+                                        tempx2 >= 0 && tempx2 < image.Width &&
+                                        bytes[pixelIndex] >= minPixel &&
+                                        !visited[tempx2, tempy2])
+                                    {
+                                        visited[tempx2, tempy2] = true;
+                                        point = new Point(tempx2, tempy2);
+                                        pixels.Add(point);
+                                        queue.Enqueue(point);
+
+                                        islandSupportingPixels += previousBytes[pixelIndex] >= minPixelForSupportIsland ? 1u : 0;
+                                    }
+                                }
+                            }
+                            //count++;
+
+                            if (islandSupportingPixels >= requiredPixelsToSupportIsland)
+                                continue; // Not a island, bounding is strong
+                            if (islandSupportingPixels > 0 && pixels.Count < requiredPixelsToSupportIsland &&
+                                islandSupportingPixels >= Math.Max(1, pixels.Count / 2)) continue; // Not a island
+                            result.Add(new LayerIssue(this, LayerIssue.IssueType.Island, pixels.ToArray()));
                         }
                     }
                 }
             }
 
-            // Initialize count as 0 and 
-            // travese through the all 
-            // cells of given matrix 
-            //uint count = 0;
-            for (int y = 0; y < image.Height; ++y)
-            {
-                for (int x = 0; x < image.Width; ++x)
-                {
-                    pixelIndex = y * image.Width + x;
-                    if (bytes[pixelIndex] > minPixel && !visited[y, x])
-                    {
-                        // If a cell with value 1 is not 
-                        // visited yet, then new island 
-                        // found, Visit all cells in this 
-                        // island and increment island count 
-                        pixels.Clear();
-                        pixels.Add(new Point(x, y));
-                        islandSupportingPixels = previousBytes[pixelIndex] >= minPixelForSupportIsland ? 1u : 0;
-                        DFS(y, x);
-                        //count++;
+            pixels.Clear();
 
-                        if (islandSupportingPixels >= requiredPixelsToSupportIsland) continue; // Not a island, bounding is strong
-                        if (islandSupportingPixels > 0 && pixels.Count < requiredPixelsToSupportIsland && islandSupportingPixels >= Math.Max(1, pixels.Count / 2)) continue; // Not a island
-                        result.Add(new LayerIsland(this, pixels.ToArray()));
-                    }
+            // TouchingBounds Checker
+            for (int x = 0; x < image.Width; x++) // Check Top and Bottom bounds
+            {
+                if (bytes[x] >= 200) // Top
+                {
+                    pixels.Add(new Point(x, 0));
+                }
+
+                if (bytes[image.Width * image.Height - image.Width + x] >= 200) // Bottom
+                {
+                    pixels.Add(new Point(x, image.Height-1));
                 }
             }
 
+            for (int y = 0; y < image.Height; y++) // Check Left and Right bounds
+            {
+                if (bytes[y * image.Width] >= 200) // Left
+                {
+                    pixels.Add(new Point(0, y));
+                }
+
+                if (bytes[y * image.Width + image.Width - 1] >= 200) // Right
+                {
+                    pixels.Add(new Point(image.Width-1, y));
+                }
+            }
+
+            if (pixels.Count > 0)
+            {
+                result.Add(new LayerIssue(this, LayerIssue.IssueType.TouchingBound, pixels.ToArray()));
+            }
+
+            pixels.Clear();
+
             return result;
         }
-
-        /// <summary>
-        /// Count the number of islands on this layer
-        /// </summary>
-        /// <returns>Number of islands</returns>
-        public uint CountIslands => (uint)GetIslandsLocation().Count;
-
 
         public Layer Clone()
         {
@@ -536,14 +610,80 @@ namespace PrusaSL1Reader
             return Layers[index];
         }
 
-        public Dictionary<uint, List<LayerIsland>> GetAllIslands()
+        public SortedDictionary<uint, List<LayerIssue>> GetAllIssues()
         {
-            var result = new Dictionary<uint, List<LayerIsland>>((int) Count);
+            var result = new SortedDictionary<uint, List<LayerIssue>>();
 
-            Parallel.ForEach(this, (layer) =>
+            Parallel.ForEach(this, layer =>
             {
-                result[layer.Index] = layer.GetIslandsLocation();
+                var issues = layer.GetIssues();
+                if (issues.Count > 0)
+                {
+                    result.Add(layer.Index, issues);
+                }
             });
+
+            /*const byte minPixel = 50;
+            sbyte[] rowNbr = { -1, -1, -1, 0, 0, 1, 1, 1 };
+            sbyte[] colNbr = { -1, 0, 1, -1, 1, -1, 0, 1 };
+
+            int pixelIndex;
+            for (uint layerindex = 0; layerindex < Count; layerindex++)
+            {
+                var image = this[layerindex].Image;
+                byte[] bytes = null;
+                if (image.TryGetSinglePixelSpan(out var pixelSpan))
+                {
+                    bytes = MemoryMarshal.AsBytes(pixelSpan).ToArray();
+                }
+
+                bool[,] visited = new bool[image.Width, image.Height];
+
+                for (int y = 0; y < image.Height; y++)
+                {
+                    for (int x = 0; x < image.Width; x++)
+                    {
+                        pixelIndex = y * image.Width + x;
+                        if (bytes[pixelIndex] > minPixel && !visited[y, x])
+                        {
+                            Queue<Point> queue = new Queue<Point>();
+                            queue.Enqueue(new Point(x, y));
+                            // Mark this cell as visited 
+                            visited[x, y] = true;
+
+                            var x2 = x;
+                            var y2 = y;
+
+                            while (queue.Count > 0)
+                            {
+                                var point = queue.Dequeue();
+                                y2 = point.Y;
+                                x2 = point.X;
+                                for (byte k = 0; k < 8; k++)
+                                {
+                                    //if (isSafe(y2 + rowNbr[k], x2 + colNbr[k]))
+                                    var tempy2 = y2 + rowNbr[k];
+                                    var tempx2 = x2 + colNbr[k];
+                                    pixelIndex = tempy2 * image.Width + tempx2;
+                                    if (tempy2 >= 0 &&
+                                        tempy2 < image.Height &&
+                                        tempx2 >= 0 && tempx2 < image.Width &&
+                                        bytes[pixelIndex] >= minPixel &&
+                                        !visited[tempx2, tempy2])
+                                    {
+                                        visited[tempx2, tempy2] = true;
+                                        point = new Point(tempx2, tempy2);
+                                        pixels.Add(point);
+                                        queue.Enqueue(point);
+
+                                        islandSupportingPixels += previousBytes[pixelIndex] >= minPixelForSupportIsland ? 1u : 0;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }*/
 
             return result;
         }

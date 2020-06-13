@@ -105,7 +105,7 @@ namespace PrusaSL1Reader
         public override FileFormatType FileType => FileFormatType.Archive;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("cws", "CWS Files")
+            new FileExtension("cws", "NovaMaker CWS Files")
         };
 
         public override Type[] ConvertToFormats { get; } = null;
@@ -128,6 +128,7 @@ namespace PrusaSL1Reader
         public override uint ResolutionX => SliceSettings.Xres;
 
         public override uint ResolutionY => SliceSettings.Yres;
+        public override byte AntiAliasing => (byte) OutputSettings.AntiAliasingValue;
 
         public override float LayerHeight => SliceSettings.Thickness;
 

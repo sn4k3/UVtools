@@ -67,7 +67,7 @@
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerPreviewTime = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator14 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImageHighlightIslands = new System.Windows.Forms.ToolStripButton();
+            this.tsLayerImageHighlightIssues = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerImageLayerOutline = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
@@ -102,30 +102,37 @@
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.tsGcodeLabelChars = new System.Windows.Forms.ToolStripLabel();
             this.tsGCodeButtonSave = new System.Windows.Forms.ToolStripButton();
-            this.tabPageIslands = new System.Windows.Forms.TabPage();
-            this.lvIslands = new System.Windows.Forms.ListView();
-            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.tsIslands = new System.Windows.Forms.ToolStrip();
-            this.tsIslandsPrevious = new System.Windows.Forms.ToolStripButton();
-            this.tsIslandsCount = new System.Windows.Forms.ToolStripLabel();
-            this.tsIslandsNext = new System.Windows.Forms.ToolStripButton();
+            this.tabPageIssues = new System.Windows.Forms.TabPage();
+            this.lvIssues = new System.Windows.Forms.ListView();
+            this.lvIssuesType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.lvIssuesCount = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.lvIssuesLayerHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.lvIssuesXY = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.lvIssuesPixels = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.tsIssues = new System.Windows.Forms.ToolStrip();
+            this.tsIssuePrevious = new System.Windows.Forms.ToolStripButton();
+            this.tsIssueCount = new System.Windows.Forms.ToolStripLabel();
+            this.tsIssueNext = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsIslandsRefresh = new System.Windows.Forms.ToolStripButton();
-            this.tsIslandsRemove = new System.Windows.Forms.ToolStripButton();
+            this.tsIsuesRefresh = new System.Windows.Forms.ToolStripButton();
+            this.tsIssueRemove = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsIslandsRepair = new System.Windows.Forms.ToolStripButton();
+            this.tsIssuesRepair = new System.Windows.Forms.ToolStripButton();
             this.imageList16x16 = new System.Windows.Forms.ImageList(this.components);
             this.tlRight = new System.Windows.Forms.TableLayoutPanel();
             this.btnPreviousLayer = new System.Windows.Forms.Button();
             this.btnNextLayer = new System.Windows.Forms.Button();
             this.lbMaxLayer = new System.Windows.Forms.Label();
-            this.lbInitialLayer = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
             this.lbLayerActual = new System.Windows.Forms.Label();
             this.tbLayer = new System.Windows.Forms.TrackBar();
+            this.lbInitialLayer = new System.Windows.Forms.Label();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.btnFindLayer = new System.Windows.Forms.Button();
+            this.btnLastLayer = new System.Windows.Forms.Button();
+            this.btnFirstLayer = new System.Windows.Forms.Button();
+            this.toolTipInformation = new System.Windows.Forms.ToolTip(this.components);
+            this.layerScrollTimer = new System.Windows.Forms.Timer(this.components);
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).BeginInit();
@@ -144,11 +151,12 @@
             this.tsProperties.SuspendLayout();
             this.tabPageGCode.SuspendLayout();
             this.tsGCode.SuspendLayout();
-            this.tabPageIslands.SuspendLayout();
-            this.tsIslands.SuspendLayout();
+            this.tabPageIssues.SuspendLayout();
+            this.tsIssues.SuspendLayout();
             this.tlRight.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).BeginInit();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // menu
@@ -337,9 +345,8 @@
             // 
             this.menuHelpWebsite.Image = global::PrusaSL1Viewer.Properties.Resources.Global_Network_icon_16x16;
             this.menuHelpWebsite.Name = "menuHelpWebsite";
-            this.menuHelpWebsite.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
-            | System.Windows.Forms.Keys.W)));
-            this.menuHelpWebsite.Size = new System.Drawing.Size(229, 22);
+            this.menuHelpWebsite.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F1)));
+            this.menuHelpWebsite.Size = new System.Drawing.Size(231, 22);
             this.menuHelpWebsite.Text = "&Website";
             this.menuHelpWebsite.Click += new System.EventHandler(this.EventClick);
             // 
@@ -347,8 +354,9 @@
             // 
             this.menuHelpDonate.Image = global::PrusaSL1Viewer.Properties.Resources.Donate_16x16;
             this.menuHelpDonate.Name = "menuHelpDonate";
-            this.menuHelpDonate.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D)));
-            this.menuHelpDonate.Size = new System.Drawing.Size(229, 22);
+            this.menuHelpDonate.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.F1)));
+            this.menuHelpDonate.Size = new System.Drawing.Size(231, 22);
             this.menuHelpDonate.Text = "&Donate";
             this.menuHelpDonate.Click += new System.EventHandler(this.EventClick);
             // 
@@ -357,21 +365,21 @@
             this.menuHelpAbout.Image = global::PrusaSL1Viewer.Properties.Resources.Button_Info_16x16;
             this.menuHelpAbout.Name = "menuHelpAbout";
             this.menuHelpAbout.ShortcutKeys = System.Windows.Forms.Keys.F1;
-            this.menuHelpAbout.Size = new System.Drawing.Size(229, 22);
+            this.menuHelpAbout.Size = new System.Drawing.Size(231, 22);
             this.menuHelpAbout.Text = "&About";
             this.menuHelpAbout.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator10
             // 
             this.toolStripSeparator10.Name = "toolStripSeparator10";
-            this.toolStripSeparator10.Size = new System.Drawing.Size(226, 6);
+            this.toolStripSeparator10.Size = new System.Drawing.Size(228, 6);
             // 
             // menuHelpInstallPrinters
             // 
             this.menuHelpInstallPrinters.Image = global::PrusaSL1Viewer.Properties.Resources.CNCMachine_16x16;
             this.menuHelpInstallPrinters.Name = "menuHelpInstallPrinters";
-            this.menuHelpInstallPrinters.Size = new System.Drawing.Size(229, 22);
-            this.menuHelpInstallPrinters.Text = "Instal printers into PrusaSlicer";
+            this.menuHelpInstallPrinters.Size = new System.Drawing.Size(231, 22);
+            this.menuHelpInstallPrinters.Text = "Install profiles into PrusaSlicer";
             this.menuHelpInstallPrinters.Click += new System.EventHandler(this.EventClick);
             // 
             // statusBar
@@ -447,7 +455,7 @@
             this.toolStripSeparator6,
             this.tsLayerPreviewTime,
             this.toolStripSeparator14,
-            this.tsLayerImageHighlightIslands,
+            this.tsLayerImageHighlightIssues,
             this.toolStripSeparator7,
             this.tsLayerImageLayerOutline,
             this.toolStripSeparator9,
@@ -533,18 +541,18 @@
             this.toolStripSeparator14.Name = "toolStripSeparator14";
             this.toolStripSeparator14.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsLayerImageHighlightIslands
+            // tsLayerImageHighlightIssues
             // 
-            this.tsLayerImageHighlightIslands.Checked = true;
-            this.tsLayerImageHighlightIslands.CheckOnClick = true;
-            this.tsLayerImageHighlightIslands.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tsLayerImageHighlightIslands.Image = global::PrusaSL1Viewer.Properties.Resources.island_16x16;
-            this.tsLayerImageHighlightIslands.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerImageHighlightIslands.Name = "tsLayerImageHighlightIslands";
-            this.tsLayerImageHighlightIslands.Size = new System.Drawing.Size(63, 22);
-            this.tsLayerImageHighlightIslands.Text = "Islands";
-            this.tsLayerImageHighlightIslands.ToolTipText = "Highlight islands on current layer.\r\nValid only if Islands are calculated.";
-            this.tsLayerImageHighlightIslands.Click += new System.EventHandler(this.EventClick);
+            this.tsLayerImageHighlightIssues.Checked = true;
+            this.tsLayerImageHighlightIssues.CheckOnClick = true;
+            this.tsLayerImageHighlightIssues.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsLayerImageHighlightIssues.Image = global::PrusaSL1Viewer.Properties.Resources.warning_16x16;
+            this.tsLayerImageHighlightIssues.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerImageHighlightIssues.Name = "tsLayerImageHighlightIssues";
+            this.tsLayerImageHighlightIssues.Size = new System.Drawing.Size(58, 22);
+            this.tsLayerImageHighlightIssues.Text = "Issues";
+            this.tsLayerImageHighlightIssues.ToolTipText = "Highlight Issues on current layer.\r\nValid only if Issues are calculated.";
+            this.tsLayerImageHighlightIssues.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator7
             // 
@@ -618,7 +626,7 @@
             // 
             this.tabControlLeft.Controls.Add(this.tbpThumbnailsAndInfo);
             this.tabControlLeft.Controls.Add(this.tabPageGCode);
-            this.tabControlLeft.Controls.Add(this.tabPageIslands);
+            this.tabControlLeft.Controls.Add(this.tabPageIssues);
             this.tabControlLeft.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControlLeft.ImageList = this.imageList16x16;
             this.tabControlLeft.ItemSize = new System.Drawing.Size(130, 19);
@@ -627,6 +635,7 @@
             this.tabControlLeft.SelectedIndex = 0;
             this.tabControlLeft.Size = new System.Drawing.Size(394, 734);
             this.tabControlLeft.TabIndex = 5;
+            this.tabControlLeft.SelectedIndexChanged += new System.EventHandler(this.EventSelectedIndexChanged);
             // 
             // tbpThumbnailsAndInfo
             // 
@@ -876,135 +885,143 @@
             this.tsGCodeButtonSave.ToolTipText = "Save GCode to file";
             this.tsGCodeButtonSave.Click += new System.EventHandler(this.EventClick);
             // 
-            // tabPageIslands
+            // tabPageIssues
             // 
-            this.tabPageIslands.Controls.Add(this.lvIslands);
-            this.tabPageIslands.Controls.Add(this.tsIslands);
-            this.tabPageIslands.ImageKey = "island-16x16.png";
-            this.tabPageIslands.Location = new System.Drawing.Point(4, 23);
-            this.tabPageIslands.Name = "tabPageIslands";
-            this.tabPageIslands.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageIslands.Size = new System.Drawing.Size(386, 707);
-            this.tabPageIslands.TabIndex = 3;
-            this.tabPageIslands.Text = "Islands";
-            this.tabPageIslands.UseVisualStyleBackColor = true;
+            this.tabPageIssues.Controls.Add(this.lvIssues);
+            this.tabPageIssues.Controls.Add(this.tsIssues);
+            this.tabPageIssues.ImageKey = "warning-16x16.png";
+            this.tabPageIssues.Location = new System.Drawing.Point(4, 23);
+            this.tabPageIssues.Name = "tabPageIssues";
+            this.tabPageIssues.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageIssues.Size = new System.Drawing.Size(386, 707);
+            this.tabPageIssues.TabIndex = 3;
+            this.tabPageIssues.Text = "Issues";
+            this.tabPageIssues.UseVisualStyleBackColor = true;
             // 
-            // lvIslands
+            // lvIssues
             // 
-            this.lvIslands.Activation = System.Windows.Forms.ItemActivation.TwoClick;
-            this.lvIslands.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1,
-            this.columnHeader4,
-            this.columnHeader2,
-            this.columnHeader3});
-            this.lvIslands.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lvIslands.FullRowSelect = true;
-            this.lvIslands.GridLines = true;
-            this.lvIslands.HideSelection = false;
-            this.lvIslands.Location = new System.Drawing.Point(3, 28);
-            this.lvIslands.Name = "lvIslands";
-            this.lvIslands.Size = new System.Drawing.Size(380, 676);
-            this.lvIslands.TabIndex = 8;
-            this.lvIslands.UseCompatibleStateImageBehavior = false;
-            this.lvIslands.View = System.Windows.Forms.View.Details;
-            this.lvIslands.ItemActivate += new System.EventHandler(this.lvIslands_ItemActivate);
-            this.lvIslands.SelectedIndexChanged += new System.EventHandler(this.lvIslands_SelectedIndexChanged);
-            this.lvIslands.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
+            this.lvIssues.Activation = System.Windows.Forms.ItemActivation.TwoClick;
+            this.lvIssues.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.lvIssuesType,
+            this.lvIssuesCount,
+            this.lvIssuesLayerHeader,
+            this.lvIssuesXY,
+            this.lvIssuesPixels});
+            this.lvIssues.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lvIssues.FullRowSelect = true;
+            this.lvIssues.GridLines = true;
+            this.lvIssues.HideSelection = false;
+            this.lvIssues.Location = new System.Drawing.Point(3, 28);
+            this.lvIssues.Name = "lvIssues";
+            this.lvIssues.Size = new System.Drawing.Size(380, 676);
+            this.lvIssues.TabIndex = 8;
+            this.lvIssues.UseCompatibleStateImageBehavior = false;
+            this.lvIssues.View = System.Windows.Forms.View.Details;
+            this.lvIssues.ItemActivate += new System.EventHandler(this.EventItemActivate);
+            this.lvIssues.SelectedIndexChanged += new System.EventHandler(this.EventSelectedIndexChanged);
+            this.lvIssues.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
             // 
-            // columnHeader1
+            // lvIssuesType
             // 
-            this.columnHeader1.Text = "#";
+            this.lvIssuesType.Text = "Type";
+            this.lvIssuesType.Width = 100;
             // 
-            // columnHeader4
+            // lvIssuesCount
             // 
-            this.columnHeader4.Text = "##";
+            this.lvIssuesCount.Text = "#";
+            this.lvIssuesCount.Width = 50;
             // 
-            // columnHeader2
+            // lvIssuesLayerHeader
             // 
-            this.columnHeader2.Text = "X, Y";
-            this.columnHeader2.Width = 100;
+            this.lvIssuesLayerHeader.Text = "Layer";
+            this.lvIssuesLayerHeader.Width = 50;
             // 
-            // columnHeader3
+            // lvIssuesXY
             // 
-            this.columnHeader3.Text = "Pixels";
-            this.columnHeader3.Width = 80;
+            this.lvIssuesXY.Text = "X, Y";
+            this.lvIssuesXY.Width = 100;
             // 
-            // tsIslands
+            // lvIssuesPixels
             // 
-            this.tsIslands.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.tsIslands.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsIslandsPrevious,
-            this.tsIslandsCount,
-            this.tsIslandsNext,
+            this.lvIssuesPixels.Text = "Pixels";
+            this.lvIssuesPixels.Width = 55;
+            // 
+            // tsIssues
+            // 
+            this.tsIssues.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.tsIssues.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsIssuePrevious,
+            this.tsIssueCount,
+            this.tsIssueNext,
             this.toolStripSeparator13,
-            this.tsIslandsRefresh,
-            this.tsIslandsRemove,
+            this.tsIsuesRefresh,
+            this.tsIssueRemove,
             this.toolStripSeparator12,
-            this.tsIslandsRepair});
-            this.tsIslands.Location = new System.Drawing.Point(3, 3);
-            this.tsIslands.Name = "tsIslands";
-            this.tsIslands.Size = new System.Drawing.Size(380, 25);
-            this.tsIslands.TabIndex = 7;
-            this.tsIslands.Text = "Thumbnail Menu";
+            this.tsIssuesRepair});
+            this.tsIssues.Location = new System.Drawing.Point(3, 3);
+            this.tsIssues.Name = "tsIssues";
+            this.tsIssues.Size = new System.Drawing.Size(380, 25);
+            this.tsIssues.TabIndex = 7;
+            this.tsIssues.Text = "Thumbnail Menu";
             // 
-            // tsIslandsPrevious
+            // tsIssuePrevious
             // 
-            this.tsIslandsPrevious.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsIslandsPrevious.Enabled = false;
-            this.tsIslandsPrevious.Image = global::PrusaSL1Viewer.Properties.Resources.Back_16x16;
-            this.tsIslandsPrevious.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsIslandsPrevious.Name = "tsIslandsPrevious";
-            this.tsIslandsPrevious.Size = new System.Drawing.Size(23, 22);
-            this.tsIslandsPrevious.Text = "Previous";
-            this.tsIslandsPrevious.ToolTipText = "Show previous island";
-            this.tsIslandsPrevious.Click += new System.EventHandler(this.EventClick);
+            this.tsIssuePrevious.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsIssuePrevious.Enabled = false;
+            this.tsIssuePrevious.Image = global::PrusaSL1Viewer.Properties.Resources.Back_16x16;
+            this.tsIssuePrevious.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsIssuePrevious.Name = "tsIssuePrevious";
+            this.tsIssuePrevious.Size = new System.Drawing.Size(23, 22);
+            this.tsIssuePrevious.Text = "Previous";
+            this.tsIssuePrevious.ToolTipText = "Show previous issue [CTRL+Left]";
+            this.tsIssuePrevious.Click += new System.EventHandler(this.EventClick);
             // 
-            // tsIslandsCount
+            // tsIssueCount
             // 
-            this.tsIslandsCount.Enabled = false;
-            this.tsIslandsCount.Name = "tsIslandsCount";
-            this.tsIslandsCount.Size = new System.Drawing.Size(24, 22);
-            this.tsIslandsCount.Text = "0/0";
+            this.tsIssueCount.Enabled = false;
+            this.tsIssueCount.Name = "tsIssueCount";
+            this.tsIssueCount.Size = new System.Drawing.Size(24, 22);
+            this.tsIssueCount.Text = "0/0";
             // 
-            // tsIslandsNext
+            // tsIssueNext
             // 
-            this.tsIslandsNext.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsIslandsNext.Enabled = false;
-            this.tsIslandsNext.Image = global::PrusaSL1Viewer.Properties.Resources.Next_16x16;
-            this.tsIslandsNext.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsIslandsNext.Name = "tsIslandsNext";
-            this.tsIslandsNext.Size = new System.Drawing.Size(23, 22);
-            this.tsIslandsNext.Text = "tsIslandsNext";
-            this.tsIslandsNext.ToolTipText = "Show next island";
-            this.tsIslandsNext.Click += new System.EventHandler(this.EventClick);
+            this.tsIssueNext.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsIssueNext.Enabled = false;
+            this.tsIssueNext.Image = global::PrusaSL1Viewer.Properties.Resources.Next_16x16;
+            this.tsIssueNext.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsIssueNext.Name = "tsIssueNext";
+            this.tsIssueNext.Size = new System.Drawing.Size(23, 22);
+            this.tsIssueNext.Text = "tsIslandsNext";
+            this.tsIssueNext.ToolTipText = "Show next issue [CTRL+Right]";
+            this.tsIssueNext.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator13
             // 
             this.toolStripSeparator13.Name = "toolStripSeparator13";
             this.toolStripSeparator13.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsIslandsRefresh
+            // tsIsuesRefresh
             // 
-            this.tsIslandsRefresh.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsIslandsRefresh.Enabled = false;
-            this.tsIslandsRefresh.Image = global::PrusaSL1Viewer.Properties.Resources.refresh_16x16;
-            this.tsIslandsRefresh.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsIslandsRefresh.Name = "tsIslandsRefresh";
-            this.tsIslandsRefresh.Size = new System.Drawing.Size(61, 22);
-            this.tsIslandsRefresh.Text = "Detect";
-            this.tsIslandsRefresh.ToolTipText = "Compute Islands";
-            this.tsIslandsRefresh.Click += new System.EventHandler(this.EventClick);
+            this.tsIsuesRefresh.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsIsuesRefresh.Enabled = false;
+            this.tsIsuesRefresh.Image = global::PrusaSL1Viewer.Properties.Resources.refresh_16x16;
+            this.tsIsuesRefresh.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsIsuesRefresh.Name = "tsIsuesRefresh";
+            this.tsIsuesRefresh.Size = new System.Drawing.Size(61, 22);
+            this.tsIsuesRefresh.Text = "Detect";
+            this.tsIsuesRefresh.ToolTipText = "Compute Issues";
+            this.tsIsuesRefresh.Click += new System.EventHandler(this.EventClick);
             // 
-            // tsIslandsRemove
+            // tsIssueRemove
             // 
-            this.tsIslandsRemove.Enabled = false;
-            this.tsIslandsRemove.Image = global::PrusaSL1Viewer.Properties.Resources.delete_16x16;
-            this.tsIslandsRemove.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsIslandsRemove.Name = "tsIslandsRemove";
-            this.tsIslandsRemove.Size = new System.Drawing.Size(70, 22);
-            this.tsIslandsRemove.Text = "Remove";
-            this.tsIslandsRemove.ToolTipText = "Remove selected islands";
-            this.tsIslandsRemove.Click += new System.EventHandler(this.EventClick);
+            this.tsIssueRemove.Enabled = false;
+            this.tsIssueRemove.Image = global::PrusaSL1Viewer.Properties.Resources.delete_16x16;
+            this.tsIssueRemove.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsIssueRemove.Name = "tsIssueRemove";
+            this.tsIssueRemove.Size = new System.Drawing.Size(70, 22);
+            this.tsIssueRemove.Text = "Remove";
+            this.tsIssueRemove.ToolTipText = "Remove selected issue when possible";
+            this.tsIssueRemove.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator12
             // 
@@ -1012,17 +1029,17 @@
             this.toolStripSeparator12.Name = "toolStripSeparator12";
             this.toolStripSeparator12.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsIslandsRepair
+            // tsIssuesRepair
             // 
-            this.tsIslandsRepair.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsIslandsRepair.Enabled = false;
-            this.tsIslandsRepair.Image = global::PrusaSL1Viewer.Properties.Resources.Wrench_16x16;
-            this.tsIslandsRepair.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsIslandsRepair.Name = "tsIslandsRepair";
-            this.tsIslandsRepair.Size = new System.Drawing.Size(60, 22);
-            this.tsIslandsRepair.Text = "Repair";
-            this.tsIslandsRepair.ToolTipText = "Attempt to repair islands";
-            this.tsIslandsRepair.Click += new System.EventHandler(this.EventClick);
+            this.tsIssuesRepair.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsIssuesRepair.Enabled = false;
+            this.tsIssuesRepair.Image = global::PrusaSL1Viewer.Properties.Resources.Wrench_16x16;
+            this.tsIssuesRepair.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsIssuesRepair.Name = "tsIssuesRepair";
+            this.tsIssuesRepair.Size = new System.Drawing.Size(60, 22);
+            this.tsIssuesRepair.Text = "Repair";
+            this.tsIssuesRepair.ToolTipText = "Attempt to repair issues";
+            this.tsIssuesRepair.Click += new System.EventHandler(this.EventClick);
             // 
             // imageList16x16
             // 
@@ -1031,7 +1048,7 @@
             this.imageList16x16.Images.SetKeyName(0, "DataList-16x16.png");
             this.imageList16x16.Images.SetKeyName(1, "PhotoInfo-16x16.png");
             this.imageList16x16.Images.SetKeyName(2, "GCode-16x16.png");
-            this.imageList16x16.Images.SetKeyName(3, "island-16x16.png");
+            this.imageList16x16.Images.SetKeyName(3, "warning-16x16.png");
             // 
             // tlRight
             // 
@@ -1040,15 +1057,17 @@
             this.tlRight.Controls.Add(this.btnPreviousLayer, 0, 3);
             this.tlRight.Controls.Add(this.btnNextLayer, 0, 1);
             this.tlRight.Controls.Add(this.lbMaxLayer, 0, 0);
-            this.tlRight.Controls.Add(this.lbInitialLayer, 0, 4);
             this.tlRight.Controls.Add(this.panel1, 0, 2);
+            this.tlRight.Controls.Add(this.lbInitialLayer, 0, 5);
+            this.tlRight.Controls.Add(this.panel2, 0, 4);
             this.tlRight.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tlRight.Location = new System.Drawing.Point(1557, 3);
             this.tlRight.Name = "tlRight";
-            this.tlRight.RowCount = 5;
+            this.tlRight.RowCount = 6;
             this.tlRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tlRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 32F));
             this.tlRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tlRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 32F));
             this.tlRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 32F));
             this.tlRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tlRight.Size = new System.Drawing.Size(124, 734);
@@ -1056,16 +1075,18 @@
             // 
             // btnPreviousLayer
             // 
-            this.btnPreviousLayer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnPreviousLayer.Enabled = false;
             this.btnPreviousLayer.Image = global::PrusaSL1Viewer.Properties.Resources.arrow_down_16x16;
-            this.btnPreviousLayer.Location = new System.Drawing.Point(3, 655);
+            this.btnPreviousLayer.Location = new System.Drawing.Point(3, 623);
             this.btnPreviousLayer.Name = "btnPreviousLayer";
             this.btnPreviousLayer.Size = new System.Drawing.Size(118, 26);
             this.btnPreviousLayer.TabIndex = 14;
+            this.btnPreviousLayer.Tag = "0";
             this.btnPreviousLayer.Text = "-";
             this.btnPreviousLayer.UseVisualStyleBackColor = true;
             this.btnPreviousLayer.Click += new System.EventHandler(this.EventClick);
+            this.btnPreviousLayer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.EventMouseDown);
+            this.btnPreviousLayer.MouseUp += new System.Windows.Forms.MouseEventHandler(this.EventMouseUp);
             // 
             // btnNextLayer
             // 
@@ -1076,9 +1097,12 @@
             this.btnNextLayer.Name = "btnNextLayer";
             this.btnNextLayer.Size = new System.Drawing.Size(118, 26);
             this.btnNextLayer.TabIndex = 8;
+            this.btnNextLayer.Tag = "1";
             this.btnNextLayer.Text = "+";
             this.btnNextLayer.UseVisualStyleBackColor = true;
             this.btnNextLayer.Click += new System.EventHandler(this.EventClick);
+            this.btnNextLayer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.EventMouseDown);
+            this.btnNextLayer.MouseUp += new System.Windows.Forms.MouseEventHandler(this.EventMouseUp);
             // 
             // lbMaxLayer
             // 
@@ -1090,16 +1114,6 @@
             this.lbMaxLayer.Text = "Layers";
             this.lbMaxLayer.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // lbInitialLayer
-            // 
-            this.lbInitialLayer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lbInitialLayer.Location = new System.Drawing.Point(3, 684);
-            this.lbInitialLayer.Name = "lbInitialLayer";
-            this.lbInitialLayer.Size = new System.Drawing.Size(118, 50);
-            this.lbInitialLayer.TabIndex = 11;
-            this.lbInitialLayer.Text = "Layers";
-            this.lbInitialLayer.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // panel1
             // 
             this.panel1.Controls.Add(this.lbLayerActual);
@@ -1107,7 +1121,7 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(3, 85);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(118, 564);
+            this.panel1.Size = new System.Drawing.Size(118, 532);
             this.panel1.TabIndex = 13;
             // 
             // lbLayerActual
@@ -1125,10 +1139,85 @@
             this.tbLayer.Location = new System.Drawing.Point(73, 0);
             this.tbLayer.Name = "tbLayer";
             this.tbLayer.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.tbLayer.Size = new System.Drawing.Size(45, 564);
+            this.tbLayer.Size = new System.Drawing.Size(45, 532);
             this.tbLayer.TabIndex = 8;
             this.tbLayer.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
             this.tbLayer.ValueChanged += new System.EventHandler(this.ValueChanged);
+            // 
+            // lbInitialLayer
+            // 
+            this.lbInitialLayer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lbInitialLayer.Location = new System.Drawing.Point(3, 684);
+            this.lbInitialLayer.Name = "lbInitialLayer";
+            this.lbInitialLayer.Size = new System.Drawing.Size(118, 50);
+            this.lbInitialLayer.TabIndex = 11;
+            this.lbInitialLayer.Text = "Layers";
+            this.lbInitialLayer.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.btnFindLayer);
+            this.panel2.Controls.Add(this.btnLastLayer);
+            this.panel2.Controls.Add(this.btnFirstLayer);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel2.Location = new System.Drawing.Point(3, 655);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(118, 26);
+            this.panel2.TabIndex = 15;
+            // 
+            // btnFindLayer
+            // 
+            this.btnFindLayer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnFindLayer.Enabled = false;
+            this.btnFindLayer.Image = global::PrusaSL1Viewer.Properties.Resources.search_16x16;
+            this.btnFindLayer.Location = new System.Drawing.Point(37, 0);
+            this.btnFindLayer.Name = "btnFindLayer";
+            this.btnFindLayer.Size = new System.Drawing.Size(44, 26);
+            this.btnFindLayer.TabIndex = 17;
+            this.btnFindLayer.Text = "-";
+            this.toolTipInformation.SetToolTip(this.btnFindLayer, "Go to a layer index [CTRL+F]");
+            this.btnFindLayer.UseVisualStyleBackColor = true;
+            this.btnFindLayer.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnLastLayer
+            // 
+            this.btnLastLayer.Dock = System.Windows.Forms.DockStyle.Right;
+            this.btnLastLayer.Enabled = false;
+            this.btnLastLayer.Image = global::PrusaSL1Viewer.Properties.Resources.arrow_top_16x16;
+            this.btnLastLayer.Location = new System.Drawing.Point(81, 0);
+            this.btnLastLayer.Name = "btnLastLayer";
+            this.btnLastLayer.Size = new System.Drawing.Size(37, 26);
+            this.btnLastLayer.TabIndex = 16;
+            this.btnLastLayer.Text = "-";
+            this.toolTipInformation.SetToolTip(this.btnLastLayer, "Go to the last layer [END]");
+            this.btnLastLayer.UseVisualStyleBackColor = true;
+            this.btnLastLayer.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnFirstLayer
+            // 
+            this.btnFirstLayer.Dock = System.Windows.Forms.DockStyle.Left;
+            this.btnFirstLayer.Enabled = false;
+            this.btnFirstLayer.Image = global::PrusaSL1Viewer.Properties.Resources.arrow_end_16x16;
+            this.btnFirstLayer.Location = new System.Drawing.Point(0, 0);
+            this.btnFirstLayer.Name = "btnFirstLayer";
+            this.btnFirstLayer.Size = new System.Drawing.Size(37, 26);
+            this.btnFirstLayer.TabIndex = 15;
+            this.btnFirstLayer.Text = "-";
+            this.toolTipInformation.SetToolTip(this.btnFirstLayer, "Go to the first layer [HOME]");
+            this.btnFirstLayer.UseVisualStyleBackColor = true;
+            this.btnFirstLayer.Click += new System.EventHandler(this.EventClick);
+            // 
+            // toolTipInformation
+            // 
+            this.toolTipInformation.AutoPopDelay = 10000;
+            this.toolTipInformation.InitialDelay = 500;
+            this.toolTipInformation.ReshowDelay = 100;
+            this.toolTipInformation.ToolTipTitle = "Information";
+            // 
+            // layerScrollTimer
+            // 
+            this.layerScrollTimer.Interval = 150;
+            this.layerScrollTimer.Tick += new System.EventHandler(this.EventTimerTick);
             // 
             // FrmMain
             // 
@@ -1173,14 +1262,15 @@
             this.tabPageGCode.PerformLayout();
             this.tsGCode.ResumeLayout(false);
             this.tsGCode.PerformLayout();
-            this.tabPageIslands.ResumeLayout(false);
-            this.tabPageIslands.PerformLayout();
-            this.tsIslands.ResumeLayout(false);
-            this.tsIslands.PerformLayout();
+            this.tabPageIssues.ResumeLayout(false);
+            this.tabPageIssues.PerformLayout();
+            this.tsIssues.ResumeLayout(false);
+            this.tsIssues.PerformLayout();
             this.tlRight.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).EndInit();
+            this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1255,27 +1345,27 @@
         private System.Windows.Forms.ToolStripMenuItem menuMutate;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
         private System.Windows.Forms.ToolStripMenuItem menuHelpInstallPrinters;
-        private System.Windows.Forms.TabPage tabPageIslands;
-        private System.Windows.Forms.ToolStrip tsIslands;
-        private System.Windows.Forms.ToolStripButton tsIslandsPrevious;
-        private System.Windows.Forms.ToolStripButton tsIslandsNext;
-        private System.Windows.Forms.ToolStripLabel tsIslandsCount;
-        private System.Windows.Forms.ListView lvIslands;
-        private System.Windows.Forms.ColumnHeader columnHeader1;
-        private System.Windows.Forms.ColumnHeader columnHeader2;
-        private System.Windows.Forms.ColumnHeader columnHeader3;
-        private System.Windows.Forms.ToolStripButton tsIslandsRefresh;
+        private System.Windows.Forms.TabPage tabPageIssues;
+        private System.Windows.Forms.ToolStrip tsIssues;
+        private System.Windows.Forms.ToolStripButton tsIssuePrevious;
+        private System.Windows.Forms.ToolStripButton tsIssueNext;
+        private System.Windows.Forms.ToolStripLabel tsIssueCount;
+        private System.Windows.Forms.ListView lvIssues;
+        private System.Windows.Forms.ColumnHeader lvIssuesCount;
+        private System.Windows.Forms.ColumnHeader lvIssuesXY;
+        private System.Windows.Forms.ColumnHeader lvIssuesPixels;
+        private System.Windows.Forms.ToolStripButton tsIsuesRefresh;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
         private System.Windows.Forms.ToolStripLabel tsLayerImageMouseLocation;
-        private System.Windows.Forms.ColumnHeader columnHeader4;
+        private System.Windows.Forms.ColumnHeader lvIssuesLayerHeader;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator12;
-        private System.Windows.Forms.ToolStripButton tsIslandsRemove;
+        private System.Windows.Forms.ToolStripButton tsIssueRemove;
         private System.Windows.Forms.ToolStripMenuItem menuTools;
         private System.Windows.Forms.ToolStripMenuItem menuToolsRepairLayers;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
-        private System.Windows.Forms.ToolStripButton tsIslandsRepair;
+        private System.Windows.Forms.ToolStripButton tsIssuesRepair;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator14;
-        private System.Windows.Forms.ToolStripButton tsLayerImageHighlightIslands;
+        private System.Windows.Forms.ToolStripButton tsLayerImageHighlightIssues;
         private System.Windows.Forms.TrackBar tbLayer;
         private System.Windows.Forms.TableLayoutPanel tlRight;
         private System.Windows.Forms.Label lbMaxLayer;
@@ -1284,6 +1374,13 @@
         private System.Windows.Forms.Button btnPreviousLayer;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label lbLayerActual;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Button btnFirstLayer;
+        private System.Windows.Forms.Button btnLastLayer;
+        private System.Windows.Forms.Button btnFindLayer;
+        private System.Windows.Forms.ToolTip toolTipInformation;
+        private System.Windows.Forms.ColumnHeader lvIssuesType;
+        private System.Windows.Forms.Timer layerScrollTimer;
     }
 }
 

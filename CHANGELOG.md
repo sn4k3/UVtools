@@ -1,22 +1,44 @@
 # Changelog
 
-## ? - v0.4.3
+## 13/06/2020 - v0.5
 
-* (Add) PWS and PW0 file formats
+* (Add) PWS and PW0 file formats (Thanks to Jason McMullan)
+* (Add) PrusaSlicer Printer "AnyCubic Photon S"
+* (Add) PrusaSlicer Printer "AnyCubic Photon Zero"
+* (Add) PrusaSlicer Universal Profiles optimized for non SL1 printers (Import them)
 * (Add) Open image files as single layer and transform them in grayscale (jpg, jpeg, png, bmp, gif, tga)
-* (Add) Shortcut "Home" go to first layer                                 
-* (Add) Shortcut "End" go to last layer                                   
-* (Add) Shortcut "+" and button go to next layer                          
-* (Add) Shortcut "-" and button go to previous layer                      
-* (Add) Show current layer and height near tracker position               
+* (Add) Resize mutator
+* (Add) Shortcut "F5" to reload current layer preview
+* (Add) Shortcut "Home" and button go to first layer
+* (Add) Shortcut "End" and button go to last layer
+* (Add) Shortcut "+" and button go to next layer
+* (Add) Shortcut "-" and button go to previous layer
+* (Add) Shortcut "CTRL+Left" go to previous issue if available
+* (Add) Shortcut "CTRL+Right" go to next issue if available
+* (Add) Shortcut "Delete" to remove selected issues
+* (Add) Button to jump to a layer number
+* (Add) Show current layer and height near tracker position
+* (Add) Auto compute issues when click "Issues" tab for the first time for the open file
+* (Add) "AntiAliasing_x" note under PrusaSlicer printer to enable AntiAliasing on supported formats, printers lacking this note are not supported
+* (Add) AntiAliasing capable convertions
+* (Add) Touching Bounds detection under issues
 * (Change) Scroll bar to track bar
 * (Change) Keyword "LiftingSpeed" to "LiftSpeed" under PrusaSlicer notes (Please update printers notes or import them again)
 * (Change) Keywords For Nova3D Elfin printer under PrusaSlicer notes (Please update printers notes or import them again)
 * (Change) Keywords For Zortrax Inkspire printer under PrusaSlicer notes (Please update printers notes or import them again)
+* (Change) Islands tab to Issues ab
+* (Improvement) Much faster photon, cbddlp, cbt and phz file encoding/convert and saves
 * (Improvement) Much faster layer scroll display
 * (Improvement) Hide empty items for status bar, ie: if printer don't have them to display
-* (Fix) Save layer preview image trigger an error
+* (Improvement) Smooth mutators descriptions
+* (Improvement) Disallow invalid iteration numbers for smooth mutators
+* (Improvement) File reload now reshow current layer after reload
+* (Improvement) Some dependecies were updated and ZedGraph removed
+* (Fix) AntiAlias decodes for photon and cbddlp
+* (Fix) AntiAlias encodes and decodes for cbt
+* (Fix) Save the preview thumbnail image trigger an error
 * (Fix) Implement missing "InheritsCummulative" key to SL1 files
+* (Fix) Install print profiles button, two typos and Cancel button doesn't really cancel the operation
 
 ## 05/06/2020 - v0.4.2.2 - Beta
 

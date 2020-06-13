@@ -29,16 +29,16 @@ namespace PrusaSL1Viewer.Forms
             set => nmLayerRangeEnd.Value = value;
         }
 
-        public uint X
+        public float X
         {
             get => (uint) nmX.Value;
-            set => nmX.Value = value;
+            set => nmX.Value = (decimal) value;
         }
 
-        public uint Y
+        public float Y
         {
             get => (uint)nmY.Value;
-            set => nmY.Value = value;
+            set => nmY.Value = (decimal) value;
         }
 
         public bool ConstrainXY
@@ -150,11 +150,18 @@ namespace PrusaSL1Viewer.Forms
                     nmLayerRangeStart.Select();
                     return;
                 }
-                if (MessageBox.Show($"Are you sure you want to {Mutation.Mutate}?", Text, MessageBoxButtons.YesNo,
+
+                if (X == 100 && Y == 100)
+                {
+                    MessageBox.Show($"X and Y cant be 100% together.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                if (MessageBox.Show($"Are you sure you want to {Mutation.Mutate}?\nX={X}%  Y={Y}%", Text, MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     DialogResult = DialogResult.OK;
-                    if (X <= 0) // Should never happen!
+                    if (X <= 0 || Y <= 0) // Should never happen!
                     {
                         DialogResult = DialogResult.Cancel;
                     }

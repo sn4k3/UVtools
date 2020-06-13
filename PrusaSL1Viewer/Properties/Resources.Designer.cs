@@ -83,6 +83,36 @@ namespace PrusaSL1Viewer.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap arrow_down_double_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("arrow-down-double-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap arrow_end_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("arrow-end-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap arrow_top_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("arrow-top-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap arrow_up {
             get {
                 object obj = ResourceManager.GetObject("arrow-up", resourceCulture);
@@ -486,6 +516,16 @@ namespace PrusaSL1Viewer.Properties {
         internal static System.Drawing.Bitmap search_16x16 {
             get {
                 object obj = ResourceManager.GetObject("search-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap warning_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("warning-16x16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

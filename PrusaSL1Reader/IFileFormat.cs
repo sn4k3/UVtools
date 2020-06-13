@@ -7,8 +7,6 @@
  */
 
 using System;
-using System.Drawing;
-using System.IO;
 using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -91,6 +89,13 @@ namespace PrusaSL1Reader
         /// Gets the image height resolution
         /// </summary>
         uint ResolutionY { get; }
+
+        bool HaveAntiAliasing { get; }
+
+        /// <summary>
+        /// Gets the AntiAliasing level
+        /// </summary>
+        byte AntiAliasing { get; }
 
         /// <summary>
         /// Gets Layer Height in mm
@@ -329,6 +334,11 @@ namespace PrusaSL1Reader
         /// <param name="x">X factor</param>
         /// <param name="y">Y factor</param>
         void Resize(uint startLayerIndex, uint endLayerIndex, float x, float y);
+
+        /// <summary>
+        /// Validate AntiAlias Level
+        /// </summary>
+        byte ValidateAntiAliasingLevel();
 
         #endregion
     }

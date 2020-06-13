@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using BinarySerialization;
+using PrusaSL1Reader.Extensions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -62,8 +63,8 @@ namespace PrusaSL1Reader
 
         #endregion
 
-    #region Enums
-    public enum LayerRleFormat
+        #region Enums
+        public enum LayerRleFormat
         {
             PWS,
             PW0
@@ -175,8 +176,7 @@ namespace PrusaSL1Reader
             {
                 if (!Mark.Equals(mark))
                 {
-                    throw new FileLoadException(
-                        $"'{Mark}' section expected, but got '{mark}'");
+                    throw new FileLoadException($"'{Mark}' section expected, but got '{mark}'");
                 }
 
                 if (!ReferenceEquals(obj, null))
@@ -186,8 +186,7 @@ namespace PrusaSL1Reader
 
                 if (length > 0 && Length != length)
                 {
-                    throw new FileLoadException(
-                        $"{Mark} section bytes: expected {Length}, got {length}, difference: {(int)Length - length}");
+                    throw new FileLoadException($"{Mark} section bytes: expected {Length}, got {length}, difference: {(int)Length - length}");
                 }
             }
 
@@ -220,7 +219,7 @@ namespace PrusaSL1Reader
             /// </summary>
             [FieldOrder(8)] public float RetractSpeed { get; set; } = 3; // mm/s
             [FieldOrder(9)] public float Volume { get; set; }
-            [FieldOrder(10)] public uint AntiAlias { get; set; } = 1;
+            [FieldOrder(10)] public uint AntiAliasing { get; set; } = 1;
             [FieldOrder(11)] public uint ResolutionX { get; set; }
             [FieldOrder(12)] public uint ResolutionY { get; set; }
             [FieldOrder(13)] public float Weight { get; set; }
@@ -236,7 +235,7 @@ namespace PrusaSL1Reader
                 Section = new Section(SectionMark, this);
             }
 
-            public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(PixelSize)}: {PixelSize}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(LayerExposureTime)}: {LayerExposureTime}, {nameof(LayerOffTime)}: {LayerOffTime}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Volume)}: {Volume}, {nameof(AntiAlias)}: {AntiAlias}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(Weight)}: {Weight}, {nameof(Price)}: {Price}, {nameof(ResinType)}: {ResinType}, {nameof(PerLayerOverride)}: {PerLayerOverride}, {nameof(Offset1)}: {Offset1}, {nameof(Offset2)}: {Offset2}, {nameof(Offset3)}: {Offset3}";
+            public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(PixelSize)}: {PixelSize}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(LayerExposureTime)}: {LayerExposureTime}, {nameof(LayerOffTime)}: {LayerOffTime}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Volume)}: {Volume}, {nameof(AntiAliasing)}: {AntiAliasing}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(Weight)}: {Weight}, {nameof(Price)}: {Price}, {nameof(ResinType)}: {ResinType}, {nameof(PerLayerOverride)}: {PerLayerOverride}, {nameof(Offset1)}: {Offset1}, {nameof(Offset2)}: {Offset2}, {nameof(Offset3)}: {Offset3}";
 
             public void Validate()
             {
@@ -291,17 +290,16 @@ namespace PrusaSL1Reader
                 int pixel = 0;
                 for (uint i = 0; i < Data.Length; i += 2)
                 {
-                    ushort color16 = (ushort)((Data[i]) + (Data[i+1] << 8));
-
-                    int r = (color16 >> 11) & 0x1f;
-                    int g = (color16 >> 5) & 0x3f;
-                    int b = (color16 >> 0) & 0x1f;
+                    ushort color16 = (ushort)(Data[i] + (Data[i+1] << 8));
+                    var r =(color16 >> 11) & 0x1f;
+                    var g = (color16 >> 5) & 0x3f;
+                    var b = (color16 >> 0) & 0x1f;
 
                     span[pixel++] = new Rgba32(
-                        (r << 3) | (r & 0x7), 
-                        (g << 2) | (g & 0x3), 
-                        (b << 3) | (b & 0x7), 
-                        byte.MaxValue);
+                        (byte)((r << 3) | (r & 0x7)), 
+                        (byte)((g << 2) | (g & 0x3)),
+                        (byte)((b << 3) | (b & 0x7))
+                        );
                 }
 
                 if (consumeData)
@@ -422,18 +420,16 @@ namespace PrusaSL1Reader
                 var image = new Image<L8>((int) Parent.ResolutionX, (int) Parent.ResolutionY);
                 image.TryGetSinglePixelSpan(out var span);
 
-
-                for (int bit = 0; bit < Parent.HeaderSettings.AntiAlias; bit++)
+                int index = 0;
+                for (byte bit = 0; bit < Parent.AntiAliasing; bit++)
                 {
-                    byte bitValue = (byte) (byte.MaxValue / ((1 << (byte) Parent.HeaderSettings.AntiAlias) - 1) *
-                                            (1 << bit));
+                    byte bitValue = (byte)(byte.MaxValue / ((1 << Parent.AntiAliasing) - 1) * (1 << bit));
 
                     int n = 0;
-                    for (int index = 0; index < EncodedRle.Length; index++)
+                    for (; index < EncodedRle.Length; index++)
                     {
                         // Lower 7 bits is the repeat count for the bit (0..127)
-                        int reps = (EncodedRle[index] & 0x7f);
-
+                        int reps = EncodedRle[index] & 0x7f;
 
                         // We only need to set the non-zero pixels
                         // High bit is on for white, off for black
@@ -447,15 +443,15 @@ namespace PrusaSL1Reader
 
                         n += reps;
 
-
                         if (n == span.Length)
                         {
+                            index++;
                             break;
                         }
 
                         if (n > span.Length)
                         {
-                            Debug.WriteLine("Error image ran off the end");
+                            throw new FileLoadException("Error image ran off the end");
                         }
                     }
                 }
@@ -467,33 +463,35 @@ namespace PrusaSL1Reader
             {
                 List<byte> rawData = new List<byte>();
 
-                for (byte aalevel = 0; aalevel < Parent.HeaderSettings.AntiAlias; aalevel++)
+                bool obit;
+                int rep;
+
+                void AddRep()
                 {
-                    bool obit = false;
-                    int rep = 0;
+                    if (rep <= 0) return;
 
-                    void AddRep()
+                    byte by = (byte)rep;
+
+                    if (obit)
                     {
-                        if (rep <= 0) return;
-
-                        byte by = (byte)rep;
-
-                        if (obit)
-                        {
-                            by |= 0x80;
-                            //bitsOn += uint(rep)
-                        }
-
-                        rawData.Add(by);
+                        by |= 0x80;
+                        //bitsOn += uint(rep)
                     }
+
+                    rawData.Add(by);
+                }
+
+                for (byte aalevel = 0; aalevel < Parent.AntiAliasing; aalevel++)
+                {
+                    obit = false;
+                    rep = 0;
 
                     for (int y = 0; y < image.Height; y++)
                     {
                         Span<L8> pixelRowSpan = image.GetPixelRowSpan(y);
                         for (int x = 0; x < image.Width; x++)
                         {
-                            var nbit = (pixelRowSpan[x].PackedValue &
-                                        (1 << (int)(8 - Parent.HeaderSettings.AntiAlias + aalevel))) != 0;
+                            var nbit = (pixelRowSpan[x].PackedValue & (1 << (8 - Parent.AntiAliasing + aalevel))) != 0;
 
                             if (nbit == obit)
                             {
@@ -518,6 +516,8 @@ namespace PrusaSL1Reader
                     AddRep();
                 }
 
+                DataLength = (uint) rawData.Count;
+
                 return rawData.ToArray();
             }
 
@@ -538,12 +538,12 @@ namespace PrusaSL1Reader
                         case 0x0:
                             color = 0x00;
                             index++;
-                            reps = (reps * 256) + EncodedRle[index];
+                            reps = reps * 256 + EncodedRle[index];
                             break;
                         case 0xf:
                             color = 0xff;
                             index++;
-                            reps = (reps * 256) + EncodedRle[index];
+                            reps = reps * 256 + EncodedRle[index];
                             break;
                         default:
                             color = (byte) ((code << 4) | code);
@@ -572,13 +572,13 @@ namespace PrusaSL1Reader
 
                     if (n > span.Length)
                     {
-                        Debug.WriteLine($"Error image ran off the end: {n-reps}({reps}) of {span.Length}");
+                        throw new FileLoadException($"Error image ran off the end: {n - reps}({reps}) of {span.Length}");
                     }
                 }
 
                 if (n != span.Length)
                 {
-                    Debug.WriteLine($"Error image ended short: {n} of {span.Length}");
+                    throw new FileLoadException($"Error image ended short: {n} of {span.Length}");
                 }
 
                 return image;
@@ -645,12 +645,14 @@ namespace PrusaSL1Reader
 
                 PutReps();
 
-                var bytes = rawData.ToArray();
-                ushort crc = CRCRle4(bytes);
+                EncodedRle = rawData.ToArray();
+                DataLength = (uint)rawData.Count;
+
+                ushort crc = CRCRle4(EncodedRle);
                 rawData.Add((byte)(crc >> 8));
                 rawData.Add((byte)crc);
 
-                return bytes;
+                return EncodedRle;
             }
 
             public static ushort CRCRle4(byte[] data)
@@ -697,12 +699,26 @@ namespace PrusaSL1Reader
                 Layers = new LayerData[layersCount];
             }
 
-            public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(LayersCount)}: {LayersCount}";
+            [Ignore]
+            public LayerData this[uint index]
+            {
+                get => Layers[index];
+                set => Layers[index] = value;
+            }
+
+            [Ignore]
+            public LayerData this[int index]
+            {
+                get => Layers[index];
+                set => Layers[index] = value;
+            }
 
             public void Validate()
             {
-                Section.Validate(SectionMark, (uint) (LayersCount * Helpers.Serializer.SizeOf(new LayerData())), this);
+                Section.Validate(SectionMark, (uint)(LayersCount * Helpers.Serializer.SizeOf(new LayerData())), this);
             }
+
+            public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(LayersCount)}: {LayersCount}";
         }
         #endregion
 
@@ -739,10 +755,10 @@ namespace PrusaSL1Reader
             PrintParameterModifier.InitialExposureSeconds,
             PrintParameterModifier.ExposureSeconds,
 
-            PrintParameterModifier.BottomLayerOffTime,
+            //PrintParameterModifier.BottomLayerOffTime,
             PrintParameterModifier.LayerOffTime,
-            PrintParameterModifier.BottomLiftHeight,
-            PrintParameterModifier.BottomLiftSpeed,
+            //PrintParameterModifier.BottomLiftHeight,
+            //PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
             PrintParameterModifier.RetractSpeed,
@@ -755,6 +771,7 @@ namespace PrusaSL1Reader
         public override uint ResolutionX => HeaderSettings.ResolutionX;
 
         public override uint ResolutionY => HeaderSettings.ResolutionY;
+        public override byte AntiAliasing => (byte) HeaderSettings.AntiAliasing;
 
         public override float LayerHeight => HeaderSettings.LayerHeight;
 
@@ -816,7 +833,7 @@ namespace PrusaSL1Reader
                     Preview preview = Preview.Encode(Thumbnails[0]);
                     currentOffset += Helpers.SerializeWriteFileStream(outputFile, preview.Section);
                     currentOffset += Helpers.SerializeWriteFileStream(outputFile, preview);
-                    currentOffset += Helpers.WriteFileStream(outputFile, preview.Data);
+                    currentOffset += outputFile.WriteBytes(preview.Data);
                 }
 
                 FileMarkSettings.LayerDefinitionAddress = currentOffset;
@@ -828,7 +845,7 @@ namespace PrusaSL1Reader
                     LayersDefinition.Layers[layerIndex] = layer;
                 });
 
-                LayersDefinition.Section.Length += (uint)Helpers.Serializer.SizeOf(LayersDefinition.Layers[0]) * LayerCount;
+                LayersDefinition.Section.Length += (uint)Helpers.Serializer.SizeOf(LayersDefinition[0]) * LayerCount;
                 currentOffset += Helpers.SerializeWriteFileStream(outputFile, LayersDefinition.Section);
                 uint offsetLayerRle = FileMarkSettings.LayerImageAddress = currentOffset + LayersDefinition.Section.Length;
 
@@ -837,7 +854,6 @@ namespace PrusaSL1Reader
                 
                 foreach (var layer in LayersDefinition.Layers)
                 {
-                    outputFile.Seek(offsetLayerRle, SeekOrigin.Begin);
                     string hash = Helpers.ComputeSHA1Hash(layer.EncodedRle);
 
                     if (LayersHash.TryGetValue(hash, out var layerDataHash))
@@ -847,10 +863,12 @@ namespace PrusaSL1Reader
                     }
                     else
                     {
-                        layer.DataAddress = offsetLayerRle;
-                        offsetLayerRle += Helpers.SerializeWriteFileStream(outputFile, layer.EncodedRle);
-                        layer.DataLength = (uint)layer.EncodedRle.Length;
                         LayersHash.Add(hash, layer);
+
+                        layer.DataAddress = offsetLayerRle;
+
+                        outputFile.Seek(offsetLayerRle, SeekOrigin.Begin);
+                        offsetLayerRle += Helpers.SerializeWriteFileStream(outputFile, layer.EncodedRle);
                     }
 
                     outputFile.Seek(currentOffset, SeekOrigin.Begin);
@@ -862,8 +880,6 @@ namespace PrusaSL1Reader
                 Helpers.SerializeWriteFileStream(outputFile, FileMarkSettings);
                
             }
-
-            
         }
 
         public override void Decode(string fileFullPath)
@@ -917,11 +933,10 @@ namespace PrusaSL1Reader
                 Debug.WriteLine(PreviewSettings);
 
                 uint datasize = PreviewSettings.Width * PreviewSettings.Height * 2;
-
                 PreviewSettings.Validate(datasize);
 
                 PreviewSettings.Data = new byte[datasize];
-                inputFile.Read(PreviewSettings.Data, 0, PreviewSettings.Data.Length);
+                inputFile.ReadBytes(PreviewSettings.Data);
 
                 Thumbnails[0] = PreviewSettings.Decode(true);
             }
@@ -942,15 +957,16 @@ namespace PrusaSL1Reader
 
             for (int i = 0; i < LayerCount; i++)
             {
-                LayersDefinition.Layers[i] = Helpers.Deserialize<LayerData>(inputFile);
-                LayersDefinition.Layers[i].Parent = this;
+                LayersDefinition[i] = Helpers.Deserialize<LayerData>(inputFile);
+                LayersDefinition[i].Parent = this;
             }
 
             for (int i = 0; i < LayerCount; i++)
             {
-                inputFile.Seek(LayersDefinition.Layers[i].DataAddress, SeekOrigin.Begin);
-                LayersDefinition.Layers[i].EncodedRle = new byte[LayersDefinition.Layers[i].DataLength];
-                inputFile.Read(LayersDefinition.Layers[i].EncodedRle, 0, LayersDefinition.Layers[i].EncodedRle.Length);
+                var layer = LayersDefinition[i];
+                inputFile.Seek(layer.DataAddress, SeekOrigin.Begin);
+                layer.EncodedRle = new byte[layer.DataLength];
+                inputFile.ReadBytes(layer.EncodedRle);
 
                 /*if (LayerFormat == LayerRleFormat.PW0)
                 {
@@ -967,15 +983,13 @@ namespace PrusaSL1Reader
             }
 
             Parallel.For(0, LayerCount, layerIndex => {
-                this[layerIndex] = new Layer((uint)layerIndex, LayersDefinition.Layers[layerIndex].Decode());
+                this[layerIndex] = new Layer((uint)layerIndex, LayersDefinition[(uint) layerIndex].Decode());
             });
         }
 
         public override object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
         {
             if (ReferenceEquals(modifier, PrintParameterModifier.LayerOffTime)) return HeaderSettings.LayerOffTime;
-            if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed)) return HeaderSettings.LiftSpeed * 60;
-            if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed)) return HeaderSettings.RetractSpeed * 60;
 
             var baseValue = base.GetValueFromPrintParameterModifier(modifier);
             return baseValue;
@@ -983,24 +997,21 @@ namespace PrusaSL1Reader
 
         public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
         {
-            /*
             void UpdateLayers()
             {
-                for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
-                    for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
-                    {
-                        // Bottom : others
-                        LayersDefinitions[layerIndex, aaIndex].LayerExposure = layerIndex < HeaderSettings.BottomLayersCount ? HeaderSettings.BottomExposureSeconds : HeaderSettings.LayerExposureSeconds;
-                        LayersDefinitions[layerIndex, aaIndex].LayerOffTimeSeconds = layerIndex < HeaderSettings.BottomLayersCount ? PrintParametersSettings.BottomLightOffDelay : PrintParametersSettings.LightOffDelay;
-                    }
+                    // Bottom : others
+                    LayersDefinition[layerIndex].LayerExposure = layerIndex < HeaderSettings.BottomLayersCount
+                        ? HeaderSettings.BottomExposureSeconds
+                        : HeaderSettings.LayerExposureTime;
                 }
             }
 
             if (ReferenceEquals(modifier, PrintParameterModifier.InitialLayerCount))
             {
                 HeaderSettings.BottomLayersCount =
-                PrintParametersSettings.BottomLayerCount = value.Convert<uint>();
+                HeaderSettings.BottomLayersCount = value.Convert<uint>();
                 UpdateLayers();
                 return true;
             }
@@ -1013,60 +1024,37 @@ namespace PrusaSL1Reader
 
             if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
             {
-                HeaderSettings.LayerExposureSeconds = value.Convert<float>();
+                HeaderSettings.LayerExposureTime = value.Convert<float>();
                 UpdateLayers();
                 return true;
             }
 
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerOffTime))
-            {
-                PrintParametersSettings.BottomLightOffDelay = value.Convert<float>();
-                UpdateLayers();
-                return true;
-            }
             if (ReferenceEquals(modifier, PrintParameterModifier.LayerOffTime))
             {
-                HeaderSettings.LayerOffTime =
-                PrintParametersSettings.LightOffDelay = value.Convert<float>();
+                HeaderSettings.LayerOffTime = value.Convert<float>();
                 UpdateLayers();
                 return true;
             }
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftHeight))
-            {
-                PrintParametersSettings.BottomLiftHeight = value.Convert<float>();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftSpeed))
-            {
-                PrintParametersSettings.BottomLiftSpeed = value.Convert<float>();
-                return true;
-            }
+
+
             if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight))
             {
-                PrintParametersSettings.LiftHeight = value.Convert<float>();
+                HeaderSettings.LiftHeight = value.Convert<float>();
+                UpdateLayers();
                 return true;
             }
             if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed))
             {
-                PrintParametersSettings.LiftingSpeed = value.Convert<float>();
+                HeaderSettings.LiftSpeed = value.Convert<float>() / 60f;
+                UpdateLayers();
                 return true;
             }
             if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
             {
-                PrintParametersSettings.RetractSpeed = value.Convert<float>();
+                HeaderSettings.RetractSpeed = value.Convert<float>() / 60f;
+                UpdateLayers();
                 return true;
             }
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightPWM))
-            {
-                HeaderSettings.BottomLightPWM = value.Convert<ushort>();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.LightPWM))
-            {
-                HeaderSettings.LightPWM = value.Convert<ushort>();
-                return true;
-            }*/
 
             return false;
         }
@@ -1093,26 +1081,15 @@ namespace PrusaSL1Reader
             using (var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write))
             {
 
-                outputFile.Seek(0, SeekOrigin.Begin);
-                /*Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+                outputFile.Seek(FileMarkSettings.HeaderAddress+Helpers.Serializer.SizeOf(HeaderSettings.Section), SeekOrigin.Begin);
+                Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 
-                if (HeaderSettings.Version == 2 && HeaderSettings.PrintParametersOffsetAddress > 0)
+
+                outputFile.Seek(FileMarkSettings.LayerDefinitionAddress + Helpers.Serializer.SizeOf(HeaderSettings.Section) + Helpers.Serializer.SizeOf(LayersDefinition), SeekOrigin.Begin);
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
-                    outputFile.Seek(HeaderSettings.PrintParametersOffsetAddress, SeekOrigin.Begin);
-                    Helpers.SerializeWriteFileStream(outputFile, PrintParametersSettings);
-                    Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
+                    Helpers.SerializeWriteFileStream(outputFile, LayersDefinition[layerIndex]);
                 }
-
-                uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
-                for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
-                {
-                    for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
-                    {
-                        outputFile.Seek(layerOffset, SeekOrigin.Begin);
-                        Helpers.SerializeWriteFileStream(outputFile, LayersDefinitions[layerIndex, aaIndex]);
-                        layerOffset += (uint)Helpers.Serializer.SizeOf(LayersDefinitions[layerIndex, aaIndex]);
-                    }
-                }*/
                 outputFile.Close();
             }
 

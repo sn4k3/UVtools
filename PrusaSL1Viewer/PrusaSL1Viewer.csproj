@@ -302,6 +302,10 @@
     <None Include="Images\arrow-down.ico" />
     <None Include="Images\arrow-up-16x16.png" />
     <None Include="Images\arrow-down-16x16.png" />
+    <None Include="Images\arrow-down-double-16x16.png" />
+    <None Include="Images\arrow-end-16x16.png" />
+    <None Include="Images\arrow-top-16x16.png" />
+    <None Include="Images\warning-16x16.png" />
     <Content Include="PrusaSL1Viewer.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -319,8 +323,8 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /y $(ProjectDir)..\LICENSE $(ProjectDir)$(OutDir)
-xcopy /i /e /y $(ProjectDir)..\PrusaSlicer $(ProjectDir)$(OutDir)\PrusaSlicer</PostBuildEvent>
+    <PostBuildEvent>xcopy /y /d $(ProjectDir)..\LICENSE $(ProjectDir)$(OutDir)
+xcopy /i /y /d /s $(ProjectDir)..\PrusaSlicer $(ProjectDir)$(OutDir)\PrusaSlicer</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

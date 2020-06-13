@@ -83,6 +83,7 @@
             // 
             // nmX
             // 
+            this.nmX.DecimalPlaces = 2;
             this.nmX.Location = new System.Drawing.Point(118, 187);
             this.nmX.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nmX.Maximum = new decimal(new int[] {
@@ -242,6 +243,7 @@
             // 
             // nmY
             // 
+            this.nmY.DecimalPlaces = 2;
             this.nmY.Enabled = false;
             this.nmY.Location = new System.Drawing.Point(314, 187);
             this.nmY.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);

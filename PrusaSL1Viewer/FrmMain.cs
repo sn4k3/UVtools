@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -25,6 +26,8 @@ using SixLabors.ImageSharp.Processing;
 using Color = System.Drawing.Color;
 using Image = SixLabors.ImageSharp.Image;
 using Point = System.Drawing.Point;
+using PointF = System.Drawing.PointF;
+using Rectangle = System.Drawing.Rectangle;
 using Size = System.Drawing.Size;
 
 namespace PrusaSL1Viewer
@@ -40,8 +43,9 @@ namespace PrusaSL1Viewer
             new Dictionary<Mutation.Mutates, Mutation>
             {
                 {Mutation.Mutates.Resize, new Mutation(Mutation.Mutates.Resize,
-                    "Resizes layer images in a X and/or Y factor, starting at 100% value\n" +
-                    "NOTE: Build volume bounds are not validated after operation, please ensure scaling stays inside your limits."
+                    "Resizes layer images in a X and/or Y factor, starting from 100% value\n" +
+                    "NOTE 1: Build volume bounds are not validated after operation, please ensure scaling stays inside your limits.\n" +
+                    "NOTE 2: X and Y are applied to original image, not to the rotated preview (If enabled)."
                 )},
                 {Mutation.Mutates.Erode, new Mutation(Mutation.Mutates.Erode, 
                 "The basic idea of erosion is just like soil erosion only, it erodes away the boundaries of foreground object (Always try to keep foreground in white). " +
@@ -82,10 +86,13 @@ namespace PrusaSL1Viewer
                     "After performs up-sampling step of Gaussian pyramid decomposition\n"
                 )},
                 {Mutation.Mutates.SmoothMedian, new Mutation(Mutation.Mutates.SmoothMedian,
-                    "Finding median of size neighborhood"
+                    "Each pixel becomes the median of its surrounding pixels. Also a good way to remove noise.\n" +
+                    "Note: Iterations must be a odd number."
                 )},
                 {Mutation.Mutates.SmoothGaussian, new Mutation(Mutation.Mutates.SmoothGaussian,
-                    "Perform Gaussian Smoothing"
+                    "Each pixel is a sum of fractions of each pixel in its neighborhood\n" +
+                    "Very fast, but does not preserve sharp edges well.\n" +
+                    "Note: Iterations must be a odd number."
                 )},
             };
 
@@ -102,9 +109,9 @@ namespace PrusaSL1Viewer
 
         public Image<L8> ActualLayerImage { get; private set; }
 
-        public Dictionary<uint, List<LayerIsland>> Islands { get; set; }
+        public SortedDictionary<uint, List<LayerIssue>> Issues { get; set; }
 
-        public uint TotalIslands { get; set; }
+        public uint TotalIssues { get; set; }
 
         public bool IsChagingLayer { get; set; }
 
@@ -132,6 +139,13 @@ namespace PrusaSL1Viewer
                 };
                 item.Click += EventClick;
                 menuMutate.DropDownItems.Add(item);
+            }
+
+            foreach (LayerIssue.IssueType issueType in (LayerIssue.IssueType[]) Enum.GetValues(
+                typeof(LayerIssue.IssueType)))
+            {
+                var group = new ListViewGroup(issueType.ToString(), $"{issueType}s"){HeaderAlignment = HorizontalAlignment.Center};
+                lvIssues.Groups.Add(group);
             }
         }
 
@@ -179,7 +193,7 @@ namespace PrusaSL1Viewer
 
             if (e.KeyCode == Keys.Home)
             {
-                ShowLayer(0);
+                btnFirstLayer.PerformClick();
                 e.Handled = true;
                 return;
             }
@@ -188,7 +202,7 @@ namespace PrusaSL1Viewer
 
             if (e.KeyCode == Keys.End)
             {
-                ShowLayer(SlicerFile.LayerCount-1);
+                btnLastLayer.PerformClick();
                 e.Handled = true;
                 return;
             }
@@ -197,13 +211,7 @@ namespace PrusaSL1Viewer
             {
                 if (e.KeyCode == Keys.F)
                 {
-                    using (FrmInputBox inputBox = new FrmInputBox("Go to layer", "Select a layer index to go to", ActualLayer, null, 0, SlicerFile.LayerCount-1, 0, "Layer"))
-                    {
-                        if (inputBox.ShowDialog() == DialogResult.OK)
-                        {
-                            ShowLayer((uint)inputBox.NewValue);
-                        }
-                    }
+                    btnFindLayer.PerformClick();
                     e.Handled = true;
                     return;
                 }
@@ -220,6 +228,27 @@ namespace PrusaSL1Viewer
                     pbLayer.ZoomToFit();
                     e.Handled = true;
                     return;
+                }
+
+                if (e.KeyCode == Keys.Left)
+                {
+                    tsIssuePrevious.PerformClick();
+                    e.Handled = true;
+                    return;
+                }
+
+                if (e.KeyCode == Keys.Right)
+                {
+                    tsIssueNext.PerformClick();
+                    e.Handled = true;
+                    return;
+                }
+            }
+            else
+            {
+                if (e.KeyCode == Keys.F5)
+                {
+                    ShowLayer();
                 }
             }
             base.OnKeyUp(e);
@@ -291,7 +320,7 @@ namespace PrusaSL1Viewer
 
                 if (ReferenceEquals(sender, menuFileReload))
                 {
-                    ProcessFile();
+                    ProcessFile(ActualLayer);
                     return;
                 }
 
@@ -571,7 +600,7 @@ namespace PrusaSL1Viewer
 
                     ShowLayer();
 
-                    ComputeIslands();
+                    ComputeIssues();
 
                     menuFileSave.Enabled =
                         menuFileSaveAs.Enabled = true;
@@ -606,29 +635,30 @@ namespace PrusaSL1Viewer
                 {
                     string printerFolder =
                         $"{Application.StartupPath}{Path.DirectorySeparatorChar}PrusaSlicer{Path.DirectorySeparatorChar}printer";
+                    string printFolder =
+                        $"{Application.StartupPath}{Path.DirectorySeparatorChar}PrusaSlicer{Path.DirectorySeparatorChar}sla_print";
                     try
                     {
-                        string[] profiles = Directory.GetFiles(printerFolder);
-                        string profilesNames = String.Empty;
-
-                        foreach (var profile in profiles)
-                        {
-                            profilesNames += $"{Path.GetFileNameWithoutExtension(profile)}\n";
-                        }
+                        string[] printProfiles = Directory.GetFiles(printFolder);
+                        string[] printerProfiles = Directory.GetFiles(printerFolder);
+                        string printsNames = printProfiles.Aggregate(string.Empty, (current, profile) => current + $"{Path.GetFileNameWithoutExtension(profile)}\n");
+                        string printerNames = printerProfiles.Aggregate(string.Empty, (current, profile) => current + $"{Path.GetFileNameWithoutExtension(profile)}\n");
 
                         var result = MessageBox.Show(
-                            "This action will install following printer profiles into PrusaSlicer:\n" +
-                            "---------------\n" +
-                            profilesNames +
+                            "This action will install following profiles into PrusaSlicer:\n" +
+                            "---------- PRINT PROFILES ----------\n" +
+                            printsNames +
+                            "--------- PRINTER PROFILES ---------\n" +
+                            printerNames +
                             "---------------\n" +
                             "Click 'Yes' to override all profiles\n" +
                             "Click 'No' to install only missing profiles without override\n" +
-                            "Clock 'Abort' to cancel this operation",
+                            "Click 'Cancel' to cancel this operation",
                             "Install printers into PrusaSlicer", MessageBoxButtons.YesNoCancel,
                             MessageBoxIcon.Question);
 
 
-                        if (result == DialogResult.Abort)
+                        if (result == DialogResult.Cancel)
                         {
                             return;
                         }
@@ -637,7 +667,7 @@ namespace PrusaSL1Viewer
                         string targetFolder =
                             $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}{Path.DirectorySeparatorChar}{Path.DirectorySeparatorChar}PrusaSlicer{Path.DirectorySeparatorChar}printer";
 
-                        foreach (var profile in profiles)
+                        foreach (var profile in printerProfiles)
                         {
                             string targetFile =
                                 $"{targetFolder}{Path.DirectorySeparatorChar}{Path.GetFileName(profile)}";
@@ -824,49 +854,51 @@ namespace PrusaSL1Viewer
             }
 
             /************************
-             *     Islands Menu    *
+             *     Issues Menu    *
              ***********************/
-            if (ReferenceEquals(sender, tsIslandsPrevious))
+            if (ReferenceEquals(sender, tsIssuePrevious))
             {
-                if (!tsIslandsPrevious.Enabled) return;
-                int index = Convert.ToInt32(tsIslandsCount.Tag);
-                lvIslands.SelectedItems.Clear();
-                lvIslands.Items[--index].Selected = true;
-                lvIslands_ItemActivate(lvIslands, null);
+                if (!tsIssuePrevious.Enabled) return;
+                int index = Convert.ToInt32(tsIssueCount.Tag);
+                lvIssues.SelectedItems.Clear();
+                lvIssues.Items[--index].Selected = true;
+                EventItemActivate(lvIssues, null);
                 return;
             }
 
-            if (ReferenceEquals(sender, tsIslandsNext))
+            if (ReferenceEquals(sender, tsIssueNext))
             {
-                if (!tsIslandsNext.Enabled) return;
-                int index = Convert.ToInt32(tsIslandsCount.Tag);
-                lvIslands.SelectedItems.Clear();
-                lvIslands.Items[++index].Selected = true;
-                lvIslands_ItemActivate(lvIslands, null);
+                if (!tsIssueNext.Enabled) return;
+                int index = Convert.ToInt32(tsIssueCount.Tag);
+                lvIssues.SelectedItems.Clear();
+                lvIssues.Items[++index].Selected = true;
+                EventItemActivate(lvIssues, null);
                 return;
             }
 
 
-            if (ReferenceEquals(sender, tsIslandsRemove))
+            if (ReferenceEquals(sender, tsIssueRemove))
             {
-                if (!tsIslandsRemove.Enabled || ReferenceEquals(Islands, null)) return;
+                if (!tsIssueRemove.Enabled || ReferenceEquals(Issues, null)) return;
 
-                if (MessageBox.Show("Are you sure you want to remove all selected islands from image?\n" +
-                                    "Warning: Removing a island can cause another island to appears if the next layer have land in top of the removed island.\n" +
+                if (MessageBox.Show("Are you sure you want to remove all selected issues from image?\n" +
+                                    "Warning: Removing a island can cause another issues to appears if the next layer have land in top of the removed island.\n" +
                                     "Always check previous and next layer before perform a island removal to ensure safe operation.",
                     "Remove islands?",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
 
-                foreach (ListViewItem item in lvIslands.SelectedItems)
+                foreach (ListViewItem item in lvIssues.SelectedItems)
                 {
-                    if (!(item.Tag is LayerIsland island)) continue;
+                    if (!(item.Tag is LayerIssue issue)) continue;
 
-                    var image = ActualLayer == island.Owner.Index ? ActualLayerImage : island.Owner.Image;
+                    var image = ActualLayer == issue.Layer.Index ? ActualLayerImage : issue.Layer.Image;
 
-                    foreach (var pixel in island)
+                    if(!issue.HaveValidPoint) continue;
+                        
+                    foreach (var pixel in issue)
                     {
                         image[pixel.X, pixel.Y] = Helpers.L8Black;
-                        if (ActualLayer == island.Owner.Index)
+                        if (ActualLayer == issue.Layer.Index)
                         {
                             int x = pixel.X;
                             int y = pixel.Y;
@@ -881,33 +913,33 @@ namespace PrusaSL1Viewer
                         }
                     }
 
-                    if (ActualLayer == island.Owner.Index) pbLayer.Invalidate();
+                    if (ActualLayer == issue.Layer.Index) pbLayer.Invalidate();
 
-                    island.Owner.Image = image;
-                    Islands[island.Owner.Index].Remove(island);
-                    TotalIslands--;
+                    issue.Layer.Image = image;
+                    Issues[issue.Layer.Index].Remove(issue);
+                    TotalIssues--;
                     item.Remove();
                 }
 
-                UpdateIslandsInfo();
+                UpdateIssuesInfo();
                 menuFileSave.Enabled =
                     menuFileSaveAs.Enabled = true;
 
                 return;
             }
 
-            if (ReferenceEquals(sender, tsIslandsRepair))
+            if (ReferenceEquals(sender, tsIssuesRepair))
             {
                 EventClick(menuToolsRepairLayers, e);
                 return;
             }
 
-            if (ReferenceEquals(sender, tsIslandsRefresh))
+            if (ReferenceEquals(sender, tsIsuesRefresh))
             {
-                if (MessageBox.Show("Are you sure you want to compute islands?", "Islands Compute",
+                if (MessageBox.Show("Are you sure you want to compute issues?", "Issues Compute",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
 
-                ComputeIslands();
+                ComputeIssues();
 
                 return;
             }
@@ -916,7 +948,7 @@ namespace PrusaSL1Viewer
              *      Layer Menu      *
              ***********************/
             if (ReferenceEquals(sender, tsLayerImageRotate) || ReferenceEquals(sender, tsLayerImageLayerDifference) ||
-                ReferenceEquals(sender, tsLayerImageHighlightIslands) ||
+                ReferenceEquals(sender, tsLayerImageHighlightIssues) ||
                 ReferenceEquals(sender, tsLayerImageLayerOutline))
             {
                 ShowLayer();
@@ -952,6 +984,12 @@ namespace PrusaSL1Viewer
                 }
             }
 
+            if (ReferenceEquals(sender, btnFirstLayer))
+            {
+                ShowLayer(0);
+                return;
+            }
+
             if (ReferenceEquals(sender, btnPreviousLayer))
             {
                 ShowLayer(false);
@@ -961,6 +999,24 @@ namespace PrusaSL1Viewer
             if (ReferenceEquals(sender, btnNextLayer))
             {
                 ShowLayer(true);
+                return;
+            }
+
+            if (ReferenceEquals(sender, btnLastLayer))
+            {
+                ShowLayer(SlicerFile.LayerCount-1);
+                return;
+            }
+
+            if (ReferenceEquals(sender, btnFindLayer))
+            {
+                using (FrmInputBox inputBox = new FrmInputBox("Go to layer", "Select a layer index to go to", ActualLayer, null, 0, SlicerFile.LayerCount - 1, 0, "Layer"))
+                {
+                    if (inputBox.ShowDialog() == DialogResult.OK)
+                    {
+                        ShowLayer((uint)inputBox.NewValue);
+                    }
+                }
                 return;
             }
         }
@@ -1092,39 +1148,44 @@ namespace PrusaSL1Viewer
             DrawPixel(true, location);
         }
 
-        private void lvIslands_ItemActivate(object sender, EventArgs e)
+        private void EventItemActivate(object sender, EventArgs e)
         {
-            if (lvIslands.SelectedItems.Count == 0) return;
-            var item = lvIslands.SelectedItems[0];
-
-            if (!(item.Tag is LayerIsland island)) return;
-            if (island.Owner.Index != ActualLayer)
+            if (ReferenceEquals(sender, lvIssues))
             {
-                ShowLayer(island.Owner.Index);
-                //ShowLayer(island.Owner.Index);
+                if (lvIssues.SelectedItems.Count == 0) return;
+                var item = lvIssues.SelectedItems[0];
+
+                if (!(item.Tag is LayerIssue issue)) return;
+                if (issue.Layer.Index != ActualLayer)
+                {
+                    ShowLayer(issue.Layer.Index);
+                }
+
+                if (issue.Type == LayerIssue.IssueType.TouchingBound)
+                {
+                    pbLayer.ZoomToFit();
+                }
+                else if (issue.X >= 0 && issue.Y >= 0)
+                {
+                    int x = issue.X;
+                    int y = issue.Y;
+
+                    if (tsLayerImageRotate.Checked)
+                    {
+                        x = ActualLayerImage.Height - 1 - issue.Y;
+                        y = issue.X;
+                    }
+
+                    //pbLayer.Zoom = 1200;
+                    pbLayer.ZoomToRegion(x, y, 5, 5);
+                    pbLayer.ZoomOut(true);
+                }
+
+                tsIssueCount.Tag = lvIssues.SelectedIndices[0];
+                UpdateIssuesInfo();
+                return;
             }
 
-            uint x = island.X;
-            uint y = island.Y;
-
-            if (tsLayerImageRotate.Checked)
-            {
-                //x = island.Y;
-                //y = SlicerFile.ResolutionX - 1 - island.X;
-                
-                //x = SlicerFile.ResolutionY - 1 - y;
-                //y = x;
-
-                x = (uint) (ActualLayerImage.Height - 1 - island.Y);
-                y = island.X;
-            }
-
-            //pbLayer.Zoom = 1200;
-            pbLayer.ZoomToRegion(x, y, 5, 5);
-            pbLayer.ZoomOut(true);
-
-            tsIslandsCount.Tag = lvIslands.SelectedIndices[0];
-            UpdateIslandsInfo();
         }
         #endregion
 
@@ -1145,14 +1206,14 @@ namespace PrusaSL1Viewer
             pbLayer.Image = null;
             pbThumbnail.Image = null;
             tbGCode.Clear();
+            tabPageIssues.Tag = null;
 
-            Islands = null;
-            TotalIslands = 0;
-            lvIslands.BeginUpdate();
-            lvIslands.Items.Clear();
-            lvIslands.Groups.Clear();
-            lvIslands.EndUpdate();
-            UpdateIslandsInfo();
+            Issues = null;
+            TotalIssues = 0;
+            lvIssues.BeginUpdate();
+            lvIssues.Items.Clear();
+            lvIssues.EndUpdate();
+            UpdateIssuesInfo();
 
             lbMaxLayer.Text = 
             lbLayerActual.Text = 
@@ -1190,7 +1251,7 @@ namespace PrusaSL1Viewer
             {
                 item.Enabled = false;
             }
-            foreach (ToolStripItem item in tsIslands.Items)
+            foreach (ToolStripItem item in tsIssues.Items)
             {
                 item.Enabled = false;
             }
@@ -1213,8 +1274,11 @@ namespace PrusaSL1Viewer
             menuEdit.Enabled = 
             menuMutate.Enabled =
             menuTools.Enabled =
+            btnFirstLayer.Enabled =
             btnNextLayer.Enabled =
             btnPreviousLayer.Enabled =
+            btnLastLayer.Enabled =
+            btnFindLayer.Enabled =
 
                 false;
 
@@ -1222,7 +1286,7 @@ namespace PrusaSL1Viewer
             tsThumbnailsCount.Tag = null;
 
             tabControlLeft.TabPages.Remove(tabPageGCode);
-            tabControlLeft.TabPages.Remove(tabPageIslands);
+            tabControlLeft.TabPages.Remove(tabPageIssues);
             tabControlLeft.SelectedIndex = 0;
         }
 
@@ -1240,10 +1304,10 @@ namespace PrusaSL1Viewer
             menu.Enabled = true;
         }
 
-        void ProcessFile()
+        void ProcessFile(uint actualLayer = 0)
         {
             if (ReferenceEquals(SlicerFile, null)) return;
-            ProcessFile(SlicerFile.FileFullPath);
+            ProcessFile(SlicerFile.FileFullPath, actualLayer);
         }
 
         void ProcessFile(string[] files)
@@ -1265,7 +1329,7 @@ namespace PrusaSL1Viewer
             }
         }
 
-        void ProcessFile(string fileName)
+        void ProcessFile(string fileName, uint actualLayer = 0)
         {
             Clear();
             SlicerFile = FileFormat.FindByExtension(fileName, true, true);
@@ -1299,7 +1363,7 @@ namespace PrusaSL1Viewer
 
 
             ActualLayerImage = SlicerFile[0].Image;
-            lbMaxLayer.Text = $"{SlicerFile.TotalHeight}mm\n{SlicerFile.LayerCount}";
+            lbMaxLayer.Text = $"{SlicerFile.TotalHeight}mm\n{SlicerFile.LayerCount-1}";
             lbInitialLayer.Text = $"{SlicerFile.LayerHeight}mm\n0";
 
 
@@ -1374,15 +1438,17 @@ namespace PrusaSL1Viewer
             menuMutate.Enabled =
             menuTools.Enabled =
 
-            tsIslandsRepair.Enabled =
-            tsIslandsRefresh.Enabled =
+            tsIssuesRepair.Enabled =
+            tsIsuesRefresh.Enabled =
+
+                btnFindLayer.Enabled =
                 true;
 
             if (!ReferenceEquals(SlicerFile.GCode, null))
             {
                 tabControlLeft.TabPages.Add(tabPageGCode);
             }
-            tabControlLeft.TabPages.Add(tabPageIslands);
+            tabControlLeft.TabPages.Add(tabPageIssues);
 
             //ShowLayer(0);
 
@@ -1390,7 +1456,7 @@ namespace PrusaSL1Viewer
             tsLayerResolution.Text = $"{{Width={SlicerFile.ResolutionX}, Height={SlicerFile.ResolutionY}}}";
 
             tbLayer.Maximum = (int)SlicerFile.LayerCount - 1;
-            ShowLayer();
+            ShowLayer(actualLayer);
             
 
 
@@ -1439,8 +1505,8 @@ namespace PrusaSL1Viewer
                     foreach (PropertyInfo propertyInfo in config.GetType()
                         .GetProperties(BindingFlags.Public | BindingFlags.Instance))
                     {
+                        if(propertyInfo.Name.Equals("Item")) continue;
                         ListViewItem item = new ListViewItem(propertyInfo.Name, group);
-                        object obj = new object();
                         var value = propertyInfo.GetValue(config);
                         if (!ReferenceEquals(value, null))
                         {
@@ -1526,8 +1592,8 @@ namespace PrusaSL1Viewer
             IsChagingLayer = true;
 
             ActualLayer = layerNum;
-            btnNextLayer.Enabled = layerNum < SlicerFile.LayerCount - 1;
-            btnPreviousLayer.Enabled = layerNum > 0;
+            btnLastLayer.Enabled = btnNextLayer.Enabled = layerNum < SlicerFile.LayerCount - 1;
+            btnFirstLayer.Enabled = btnPreviousLayer.Enabled = layerNum > 0;
 
             try
             {
@@ -1549,6 +1615,12 @@ namespace PrusaSL1Viewer
                 {
                     Image<Gray, byte> grayscale = ActualLayerImage.ToEmguImage();
                     grayscale = grayscale.Canny(80, 40, 3, true);
+
+
+
+                    var grayscaleinv = grayscale.ThresholdBinaryInv(new Gray(0), new Gray(255));
+
+                    grayscale = ActualLayerImage.ToEmguImage() & grayscaleinv;
                     /*grayscale = grayscale.Dilate(1).Erode(1);
 
                     Gray gray = new Gray(255);
@@ -1571,9 +1643,9 @@ namespace PrusaSL1Viewer
                     {
                         var previousImage = SlicerFile[layerNum-1].Image;
                         var nextImage = SlicerFile[layerNum+1].Image;
-                        /*var newImage = new Image<Rgba32>(previousImage.Width, previousImage.Height);
+                        var newImage = new Image<Rgba32>(previousImage.Width, previousImage.Height);
 
-                        Parallel.For(0, ActualLayerImage.Height, y => {
+                        /*Parallel.For(0, ActualLayerImage.Height, y => {
                             var newImageSpan = newImage.GetPixelRowSpan(y);
                             var previousImageSpan = previousImage.GetPixelRowSpan(y);
                             for (int x = 0; x < ActualLayerImage.Width; x++)
@@ -1586,11 +1658,12 @@ namespace PrusaSL1Viewer
 
                         imageRgba.Mutate(imgMaskIn =>
                         {
-                                imgMaskIn.DrawImage(newImage, PixelColorBlendingMode.Normal, 0.7f);
+                                imgMaskIn.DrawImage(newImage, PixelColorBlendingMode.Screen, 0.5f);
                         });*/
 
                         //var nextImage = SlicerFile.GetLayerImage(layerNum+1);
-                        Parallel.For(0, ActualLayerImage.Height, y => {
+                        Parallel.For(0, ActualLayerImage.Height, y =>
+                        {
                             var imageSpan = imageRgba.GetPixelRowSpan(y);
                             var previousImageSpan = previousImage.GetPixelRowSpan(y);
                             var nextImageSpan = nextImage.GetPixelRowSpan(y);
@@ -1638,22 +1711,33 @@ namespace PrusaSL1Viewer
                     }
                 }
 
-                if (tsLayerImageHighlightIslands.Checked && !ReferenceEquals(Islands, null) && Islands.Count > ActualLayer)
+                if (tsLayerImageHighlightIssues.Checked &&
+                    !ReferenceEquals(Issues, null) && 
+                    Issues.TryGetValue(ActualLayer, out var issues))
                 {
-                    var islands = Islands[ActualLayer];
-
-                    foreach (var island in islands)
+                    foreach (var issue in issues)
                     {
-                        if (ReferenceEquals(island, null)) continue; // Removed islands
-                        foreach (var pixel in island)
+                        if (ReferenceEquals(issue, null)) continue; // Removed issue
+                        if(!issue.HaveValidPoint) continue;
+                        foreach (var pixel in issue)
                         {
                             var alpha = ActualLayerImage[pixel.X, pixel.Y].PackedValue;
                             if (alpha == 0) continue;
                             // alpha, Color.Yellow
-                            alpha = Math.Max((byte)70, alpha);
-                            imageRgba[pixel.X, pixel.Y] = new Rgba32(alpha, alpha, 0);
+                            alpha = Math.Max((byte) 80, alpha);
+                            switch (issue.Type)
+                            {
+                                case LayerIssue.IssueType.Island:
+                                    imageRgba[pixel.X, pixel.Y] = new Rgba32(alpha, alpha, 0);
+                                    break;
+                                default:
+                                    imageRgba[pixel.X, pixel.Y] = new Rgba32(alpha, 0, 0);
+                                    break;
+                            }
+                            
                         }
                     }
+
                 }
 
                 if (tsLayerImageRotate.Checked)
@@ -1697,8 +1781,7 @@ namespace PrusaSL1Viewer
 
 
                 byte percent = (byte)((layerNum + 1) * 100 / SlicerFile.LayerCount);
-                //var islands = SlicerFile.LayerManager.GetAllIslands();
-                //Debug.WriteLine(islands.Length);
+
 
                 watch.Stop();
                 tsLayerPreviewTime.Text = $"{watch.ElapsedMilliseconds}ms";
@@ -1744,18 +1827,33 @@ namespace PrusaSL1Viewer
             scLeft.SplitterDistance = Math.Min(pbThumbnail.Image.Height + 5, 400);
         }
 
-        private void lvIslands_SelectedIndexChanged(object sender, EventArgs e)
+        private void EventSelectedIndexChanged(object sender, EventArgs e)
         {
-            tsIslandsRemove.Enabled = lvIslands.SelectedIndices.Count > 0;
+            if (ReferenceEquals(sender, lvIssues))
+            {
+                tsIssueRemove.Enabled = lvIssues.SelectedIndices.Count > 0;
+                return;
+            }
+
+            if (ReferenceEquals(sender, tabControlLeft))
+            {
+                if(ReferenceEquals(tabControlLeft.SelectedTab, tabPageIssues))
+                {
+                    if (!ReferenceEquals(tabPageIssues.Tag, null)) return;
+                    tabPageIssues.Tag = true;
+                    ComputeIssues();
+                }
+                return;
+            }
         }
 
         private void EventKeyUp(object sender, KeyEventArgs e)
         {
-            if (ReferenceEquals(sender, lvIslands))
+            if (ReferenceEquals(sender, lvIssues))
             {
                 if (e.KeyCode == Keys.Escape)
                 {
-                    foreach (ListViewItem item in lvIslands.Items)
+                    foreach (ListViewItem item in lvIssues.Items)
                     {
                         item.Selected = false;
                     }
@@ -1765,7 +1863,7 @@ namespace PrusaSL1Viewer
 
                 if (e.Control && e.KeyCode == Keys.A)
                 {
-                    foreach (ListViewItem item in lvIslands.Items)
+                    foreach (ListViewItem item in lvIssues.Items)
                     {
                         item.Selected = true;
                     }
@@ -1775,10 +1873,17 @@ namespace PrusaSL1Viewer
 
                 if (e.KeyCode == Keys.Multiply)
                 {
-                    foreach (ListViewItem item in lvIslands.Items)
+                    foreach (ListViewItem item in lvIssues.Items)
                     {
                         item.Selected = !item.Selected;
                     }
+                    e.Handled = true;
+                    return;
+                }
+
+                if (e.KeyCode == Keys.Delete)
+                {
+                    tsIssueRemove.PerformClick();
                     e.Handled = true;
                     return;
                 }
@@ -1841,11 +1946,14 @@ namespace PrusaSL1Viewer
         {
             uint layerStart;
             uint layerEnd;
-            uint iterationsStart;
-            uint iterationsEnd;
+            uint iterationsStart = 0;
+            uint iterationsEnd = 0;
             bool fade = false;
             float iterationSteps = 0;
             uint maxIteration = 0;
+
+            float x = 0;
+            float y = 0;
 
             switch (type)
             {
@@ -1855,8 +1963,8 @@ namespace PrusaSL1Viewer
                         if (inputBox.ShowDialog() != DialogResult.OK) return;
                         layerStart = inputBox.LayerRangeStart;
                         layerEnd = inputBox.LayerRangeEnd;
-                        iterationsStart = inputBox.X;
-                        iterationsEnd = inputBox.Y;
+                        x = inputBox.X;
+                        y = inputBox.Y;
                     }
 
                     break;
@@ -1892,7 +2000,7 @@ namespace PrusaSL1Viewer
                 {
                     if (type == Mutation.Mutates.Resize)
                     {
-                        SlicerFile.Resize(layerStart, layerEnd, iterationsStart / 100f, iterationsEnd / 100f);
+                        SlicerFile.Resize(layerStart, layerEnd, x / 100f, y / 100f);
                     }
                     else
                     {
@@ -1916,6 +2024,10 @@ namespace PrusaSL1Viewer
                             var imageEgmu = image.ToEmguImage();
                             switch (type)
                             {
+                                case Mutation.Mutates.Resize:
+                                    var resizedImage = imageEgmu.Resize( (int) (iterationsStart / 100.0 * image.Width), (int) (iterationsEnd / 100.0 * image.Height), Inter.Lanczos4);
+                                    imageEgmu = resizedImage.Copy(new Rectangle(0, 0, image.Width, image.Height));
+                                    break;
                                 case Mutation.Mutates.Erode:
                                     imageEgmu = imageEgmu.Erode((int) iterations);
                                     break;
@@ -1991,52 +2103,51 @@ namespace PrusaSL1Viewer
             menuFileSaveAs.Enabled = true;
         }
 
-        private void UpdateIslandsInfo()
+        private void UpdateIssuesInfo()
         {
-            if (TotalIslands == 0)
+            if (TotalIssues == 0)
             {
-                tsIslandsPrevious.Enabled =
-                    tsIslandsCount.Enabled =
-                        tsIslandsNext.Enabled = false;
+                tsIssuePrevious.Enabled =
+                    tsIssueCount.Enabled =
+                        tsIssueNext.Enabled = false;
 
-                tsIslandsCount.Text = "0/0";
-                tsIslandsCount.Tag = -1;
+                tsIssueCount.Text = "0/0";
+                tsIssueCount.Tag = -1;
             }
             else
             {
-                int currentIslandSelected = Convert.ToInt32(tsIslandsCount.Tag);
-                tsIslandsCount.Enabled = true;
-                tsIslandsCount.Text = $"{currentIslandSelected+1}/{TotalIslands}";
+                int currentIssueSelected = Convert.ToInt32(tsIssueCount.Tag);
+                tsIssueCount.Enabled = true;
+                tsIssueCount.Text = $"{currentIssueSelected+1}/{TotalIssues}";
 
-                tsIslandsPrevious.Enabled = currentIslandSelected > 0;
-                tsIslandsNext.Enabled = currentIslandSelected+1 < TotalIslands;
+                tsIssuePrevious.Enabled = currentIssueSelected > 0;
+                tsIssueNext.Enabled = currentIssueSelected+1 < TotalIssues;
             }
             
         }
 
-        private void ComputeIslands()
+        private void ComputeIssues()
         {
-            TotalIslands = 0;
-            lvIslands.BeginUpdate();
-            lvIslands.Items.Clear();
-            lvIslands.Groups.Clear();
-            lvIslands.EndUpdate();
-            UpdateIslandsInfo();
+            TotalIssues = 0;
+            lvIssues.BeginUpdate();
+            lvIssues.Items.Clear();
+            lvIssues.EndUpdate();
+            UpdateIssuesInfo();
 
             DisableGUI();
-            FrmLoading.SetDescription("Computing Islands");
+            FrmLoading.SetDescription("Computing Issues");
 
             Task<bool> task = Task<bool>.Factory.StartNew(() =>
             {
                 bool result = false;
                 try
                 {
-                    Islands = SlicerFile.LayerManager.GetAllIslands();
+                    Issues = SlicerFile.LayerManager.GetAllIssues();
                     result = true;
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message, "Error while trying compute islands", MessageBoxButtons.OK,
+                    MessageBox.Show(ex.Message, "Error while trying compute issues", MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                 }
                 finally
@@ -2052,39 +2163,65 @@ namespace PrusaSL1Viewer
 
             FrmLoading.ShowDialog();
 
-            lvIslands.BeginUpdate();
+            lvIssues.BeginUpdate();
             uint count = 0;
 
             try
             {
-                for (uint layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
+                foreach (var kv in Issues)
                 {
-                    ListViewGroup group = new ListViewGroup($"Layer {layerIndex} - {Islands[layerIndex].Count} Islands");
-                    for (var i = 0; i < Islands[layerIndex].Count; i++)
+                    foreach (var issue in kv.Value)
                     {
+                        TotalIssues++;
                         count++;
-                        var island = Islands[layerIndex][i];
-                        TotalIslands++;
-                        ListViewItem item = new ListViewItem(group) { Text = count.ToString() };
-                        item.SubItems.Add((i + 1).ToString());
-                        item.SubItems.Add($"{island.X}, {island.Y}");
-                        item.SubItems.Add(island.Size.ToString());
-                        item.Tag = island;
-                        lvIslands.Groups.Add(group);
-                        lvIslands.Items.Add(item);
+                        ListViewItem item = new ListViewItem(lvIssues.Groups[(int)issue.Type]) {Text = issue.Type.ToString() };
+                        item.SubItems.Add(count.ToString());
+                        item.SubItems.Add(kv.Key.ToString());
+                        item.SubItems.Add($"{issue.X}, {issue.Y}");
+                        item.SubItems.Add(issue.Size.ToString());
+                        item.Tag = issue;
+                        lvIssues.Items.Add(item);
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error while trying compute islands", MessageBoxButtons.OK,
+                MessageBox.Show(ex.Message, "Error while trying compute issues", MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
                 throw;
             }
             
-            lvIslands.EndUpdate();
+            lvIssues.EndUpdate();
 
-            UpdateIslandsInfo();
+            UpdateIssuesInfo();
+        }
+
+        private void EventMouseDown(object sender, MouseEventArgs e)
+        {
+            if (ReferenceEquals(sender, btnNextLayer) || ReferenceEquals(sender, btnPreviousLayer))
+            {
+                layerScrollTimer.Tag = ReferenceEquals(sender, btnNextLayer);
+                layerScrollTimer.Start();
+                return;
+            }
+        }
+
+        private void EventMouseUp(object sender, MouseEventArgs e)
+        {
+            if (ReferenceEquals(sender, btnNextLayer) || ReferenceEquals(sender, btnPreviousLayer))
+            {
+                layerScrollTimer.Stop();
+                return;
+            }
+        }
+
+        private void EventTimerTick(object sender, EventArgs e)
+        {
+            if (ReferenceEquals(sender, layerScrollTimer))
+            {
+                ShowLayer((bool)layerScrollTimer.Tag);
+                return;
+            }
         }
     }
 }
