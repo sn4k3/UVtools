@@ -210,7 +210,7 @@ namespace UVtools.Parser
             /// <summary>
             /// Gets the speed at which to lift the build platform away from the vat after normal layers, in millimeters per minute.
             /// </summary>
-            [FieldOrder(3)]  public float LiftingSpeed        { get; set; } = 300;
+            [FieldOrder(3)]  public float LiftSpeed        { get; set; } = 300;
 
             /// <summary>
             /// Gets the speed to use when the build platform re-approaches the vat after lift, in millimeters per minute.
@@ -253,7 +253,7 @@ namespace UVtools.Parser
 
             public override string ToString()
             {
-                return $"{nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftingSpeed)}: {LiftingSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(WeightG)}: {WeightG}, {nameof(CostDollars)}: {CostDollars}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}";
+                return $"{nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(WeightG)}: {WeightG}, {nameof(CostDollars)}: {CostDollars}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}";
             }
         }
         #endregion
@@ -294,7 +294,7 @@ namespace UVtools.Parser
             /// <summary>
             /// Gets the user-selected antialiasing level. For cbddlp files this will match the level_set_count. For ctb files, this number is essentially arbitrary.
             /// </summary>
-            [FieldOrder(11)] public uint AntialiasLevel { get; set; } = 1;
+            [FieldOrder(11)] public uint AntiAliasLevel { get; set; } = 1;
 
             /// <summary>
             /// Gets a version of software that generated this file, encoded with major, minor, and patch release in bytes starting from the MSB down.
@@ -319,7 +319,7 @@ namespace UVtools.Parser
 
             public override string ToString()
             {
-                return $"{nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(EncryptionMode)}: {EncryptionMode}, {nameof(MysteriousId)}: {MysteriousId}, {nameof(AntialiasLevel)}: {AntialiasLevel}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(Unknown1)}: {Unknown1}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(Padding11)}: {Padding11}, {nameof(Padding12)}: {Padding12}, {nameof(MachineName)}: {MachineName}";
+                return $"{nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(EncryptionMode)}: {EncryptionMode}, {nameof(MysteriousId)}: {MysteriousId}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(Unknown1)}: {Unknown1}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(Padding11)}: {Padding11}, {nameof(Padding12)}: {Padding12}, {nameof(MachineName)}: {MachineName}";
             }
         }
 
@@ -789,7 +789,7 @@ namespace UVtools.Parser
                 if (Parent.HeaderSettings.EncryptionKey > 0)
                 {
                     KeyRing kr = new KeyRing(Parent.HeaderSettings.EncryptionKey, layerIndex);
-                    EncodedRle = kr.Read(rawData).ToArray();
+                    EncodedRle = kr.Read(rawData.ToArray());
                 }
                 else
                 {
@@ -814,8 +814,8 @@ namespace UVtools.Parser
 
         public class KeyRing
         {
-            public ulong Init { get; }
-            public ulong Key { get; private set; }
+            public uint Init { get; }
+            public uint Key { get; private set; }
             public uint Index { get; private set; }
 
             public KeyRing(uint seed, uint layerIndex)
@@ -885,6 +885,7 @@ namespace UVtools.Parser
 
         public override Type[] ConvertToFormats { get; } =
         {
+            typeof(ChituboxZipFile),
             typeof(PWSFile),
             typeof(PHZFile),
             typeof(ZCodexFile),
@@ -915,7 +916,7 @@ namespace UVtools.Parser
         public override uint ResolutionX => HeaderSettings.ResolutionX;
 
         public override uint ResolutionY => HeaderSettings.ResolutionY;
-        public override byte AntiAliasing => (byte) HeaderSettings.AntiAliasLevel;
+        public override byte AntiAliasing => (byte) (IsCbtFile ? SlicerInfoSettings.AntiAliasLevel : HeaderSettings.AntiAliasLevel);
 
         public override float LayerHeight => HeaderSettings.LayerHeightMilimeter;
 
@@ -925,7 +926,7 @@ namespace UVtools.Parser
 
         public override float LayerExposureTime => HeaderSettings.LayerExposureSeconds;
         public override float LiftHeight => PrintParametersSettings.LiftHeight;
-        public override float LiftSpeed => PrintParametersSettings.LiftingSpeed;
+        public override float LiftSpeed => PrintParametersSettings.LiftSpeed;
         public override float RetractSpeed => PrintParametersSettings.RetractSpeed;
 
         public override float PrintTime => HeaderSettings.PrintTime;
@@ -938,8 +939,6 @@ namespace UVtools.Parser
         public override string MachineName => SlicerInfoSettings.MachineName;
         
         public override object[] Configs => new[] { (object)HeaderSettings, PrintParametersSettings, SlicerInfoSettings };
-
-        public byte AntiAliasingSize =>  (byte) (IsCbddlpFile ? HeaderSettings.AntiAliasLevel : 1);
 
         public bool IsCbddlpFile => HeaderSettings.Magic == MAGIC_CBDDLP;
         public bool IsCbtFile => HeaderSettings.Magic == MAGIC_CBT;
@@ -976,20 +975,23 @@ namespace UVtools.Parser
             
             if (IsCbtFile)
             {
+                SlicerInfoSettings.AntiAliasLevel = HeaderSettings.AntiAliasLevel;
+                HeaderSettings.AntiAliasLevel = 1;
                 PrintParametersSettings.Padding4 = 0x1234;
                 //SlicerInfoSettings.EncryptionMode = 0xf;
                 SlicerInfoSettings.EncryptionMode = 7;
+                SlicerInfoSettings.MysteriousId = 0x12345678;
                 SlicerInfoSettings.Unknown1 = 0x200;
 
                 if (HeaderSettings.EncryptionKey == 0)
                 {
                     Random rnd = new Random();
-                    HeaderSettings.EncryptionKey = (uint)rnd.Next(short.MaxValue, int.MaxValue);
+                    HeaderSettings.EncryptionKey = (uint)rnd.Next(byte.MaxValue, int.MaxValue);
                 }
             }
 
             uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
-            LayersDefinitions = new LayerData[AntiAliasingSize, HeaderSettings.LayerCount];
+            LayersDefinitions = new LayerData[HeaderSettings.AntiAliasLevel, HeaderSettings.LayerCount];
             using (var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write))
             {
 
@@ -1044,16 +1046,16 @@ namespace UVtools.Parser
                 }
 
                 HeaderSettings.LayersDefinitionOffsetAddress = currentOffset;
-                uint layerDataCurrentOffset = currentOffset + (uint)Helpers.Serializer.SizeOf(new LayerData()) * HeaderSettings.LayerCount * AntiAliasingSize;
+                uint layerDataCurrentOffset = currentOffset + (uint)Helpers.Serializer.SizeOf(new LayerData()) * HeaderSettings.LayerCount * HeaderSettings.AntiAliasLevel;
                 
-                for (byte aaIndex = 0; aaIndex < AntiAliasingSize; aaIndex++)
+                for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
                 {
-                    Parallel.For(0, LayerCount, layerIndex =>
+                    Parallel.For(0, LayerCount, /*new ParallelOptions{MaxDegreeOfParallelism = 1},*/ layerIndex =>
                     {
                         LayerData layerData = new LayerData(this, (uint) layerIndex);
-                        LayersDefinitions[aaIndex, layerIndex] = layerData;
                         var image = this[layerIndex].Image;
                         layerData.Encode(image, aaIndex, (uint) layerIndex);
+                        LayersDefinitions[aaIndex, layerIndex] = layerData;
                     });
 
                     for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
@@ -1061,7 +1063,7 @@ namespace UVtools.Parser
                         var layerData = LayersDefinitions[aaIndex, layerIndex];
                         LayerData layerDataHash = null;
 
-                        if (HeaderSettings.EncryptionKey == 0)
+                        if (!IsCbtFile && HeaderSettings.EncryptionKey == 0)
                         {
                             string hash = Helpers.ComputeSHA1Hash(layerData.EncodedRle);
                             if (LayersHash.TryGetValue(hash, out layerDataHash))
@@ -1176,12 +1178,12 @@ namespace UVtools.Parser
             Debug.WriteLine($"{nameof(MachineName)}: {MachineName}");*/
             //}
 
-            LayersDefinitions = new LayerData[AntiAliasingSize, HeaderSettings.LayerCount];
+            LayersDefinitions = new LayerData[HeaderSettings.AntiAliasLevel, HeaderSettings.LayerCount];
 
             uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
 
 
-            for (byte aaIndex = 0; aaIndex < AntiAliasingSize; aaIndex++)
+            for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
             {
                 Debug.WriteLine($"-Image GROUP {aaIndex}-");
                 for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
@@ -1234,7 +1236,7 @@ namespace UVtools.Parser
         {
             void UpdateLayers()
             {
-                for (byte aaIndex = 0; aaIndex < AntiAliasingSize; aaIndex++)
+                for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
                 {
                     for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
                     {
@@ -1296,7 +1298,7 @@ namespace UVtools.Parser
             }
             if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed))
             {
-                PrintParametersSettings.LiftingSpeed = value.Convert<float>();
+                PrintParametersSettings.LiftSpeed = value.Convert<float>();
                 return true;
             }
             if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
@@ -1352,7 +1354,7 @@ namespace UVtools.Parser
                 }
 
                 uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
-                for (byte aaIndex = 0; aaIndex < AntiAliasingSize; aaIndex++)
+                for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
                 {
                     for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
                     {
@@ -1368,6 +1370,58 @@ namespace UVtools.Parser
 
         public override bool Convert(Type to, string fileFullPath)
         {
+            if (to == typeof(ChituboxZipFile))
+            {
+                ChituboxZipFile file = new ChituboxZipFile
+                {
+                    LayerManager = LayerManager,
+                    HeaderSettings =
+                    {
+                        Filename = Path.GetFileName(FileFullPath),
+
+                        ResolutionX = ResolutionX,
+                        ResolutionY = ResolutionY,
+                        MachineX = HeaderSettings.BedSizeX,
+                        MachineY = HeaderSettings.BedSizeY,
+                        MachineZ = HeaderSettings.BedSizeZ,
+                        MachineType = MachineName,
+                        ProjectType = HeaderSettings.ProjectorType == 0 ? "Normal" : "LCD_mirror",
+
+                        Resin = MaterialName,
+                        Price = MaterialCost,
+                        Weight = PrintParametersSettings.WeightG,
+                        Volume = UsedMaterial,
+                        Mirror = (byte)  (HeaderSettings.ProjectorType == 0 ? 0 : 1),
+
+
+                        BottomLayerLiftHeight = PrintParametersSettings.BottomLiftHeight,
+                        LayerLiftHeight = PrintParametersSettings.LiftHeight,
+                        BottomLayerLiftSpeed = PrintParametersSettings.BottomLiftSpeed,
+                        LayerLiftSpeed = PrintParametersSettings.LiftSpeed,
+                        RetractSpeed = PrintParametersSettings.RetractSpeed,
+                        BottomLayCount = InitialLayerCount,
+                        BottomLayerCount = InitialLayerCount,
+                        BottomLightOffTime = PrintParametersSettings.BottomLightOffDelay,
+                        LayerLightOffTime = PrintParametersSettings.LightOffDelay,
+                        BottomLayExposureTime = InitialExposureTime,
+                        BottomLayerExposureTime = InitialExposureTime,
+                        LayerExposureTime = LayerExposureTime,
+                        LayerHeight = LayerHeight,
+                        LayerCount = LayerCount,
+                        AntiAliasing = ValidateAntiAliasingLevel(),
+                        BottomLightPWM = (byte) HeaderSettings.BottomLightPWM,
+                        LayerLightPWM = (byte) HeaderSettings.LightPWM,
+
+                        EstimatedPrintTime = PrintTime
+                    },
+                };
+
+                file.SetThumbnails(Thumbnails);
+                file.Encode(fileFullPath);
+
+                return true;
+            }
+
             if (to == typeof(PWSFile))
             {
                 PWSFile file = new PWSFile
@@ -1428,7 +1482,7 @@ namespace UVtools.Parser
                         BottomLightOffDelay = PrintParametersSettings.BottomLightOffDelay,
                         CostDollars = MaterialCost,
                         LiftHeight = PrintParametersSettings.LiftHeight,
-                        LiftingSpeed = PrintParametersSettings.LiftingSpeed,
+                        LiftSpeed = PrintParametersSettings.LiftSpeed,
                         RetractSpeed = PrintParametersSettings.RetractSpeed,
                         VolumeMl = UsedMaterial,
                         AntiAliasLevelInfo = ValidateAntiAliasingLevel(),
@@ -1475,7 +1529,7 @@ namespace UVtools.Parser
                         BottomLayerExposureTime = (uint)(InitialExposureTime * 1000),
                         MaterialId = 2,
                         LayerThickness = $"{LayerHeight} mm",
-                        AntiAliasing = (byte)(AntiAliasing > 1 ? 1 : 0),
+                        AntiAliasing = (byte)(ValidateAntiAliasingLevel() > 1 ? 1 : 0),
                         CrossSupportEnabled = 1,
                         ExposureOffTime = (uint) HeaderSettings.LayerOffTime,
                         HollowEnabled = 0,
@@ -1495,7 +1549,7 @@ namespace UVtools.Parser
                         XCorrection = 0,
                         YCorrection = 0,
                         ZLiftDistance = PrintParametersSettings.LiftHeight,
-                        ZLiftFeedRate = PrintParametersSettings.LiftingSpeed,
+                        ZLiftFeedRate = PrintParametersSettings.LiftSpeed,
                         ZLiftRetractRate = PrintParametersSettings.RetractSpeed,
                     },
                     ZCodeMetadataSettings = new ZCodexFile.ZCodeMetadata

@@ -192,7 +192,7 @@ namespace UVtools.Parser
             /// <summary>
             /// Gets the speed at which to lift the build platform away from the vat after normal layers, in millimeters per minute.
             /// </summary>
-            [FieldOrder(31)] public float LiftingSpeed { get; set; } = 300;
+            [FieldOrder(31)] public float LiftSpeed { get; set; } = 300;
 
             /// <summary>
             /// Gets the speed to use when the build platform re-approaches the vat after lift, in millimeters per minute.
@@ -267,7 +267,7 @@ namespace UVtools.Parser
 
             public override string ToString()
             {
-                return $"{nameof(Magic)}: {Magic}, {nameof(Version)}: {Version}, {nameof(LayerHeightMilimeter)}: {LayerHeightMilimeter}, {nameof(LayerExposureSeconds)}: {LayerExposureSeconds}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(PreviewLargeOffsetAddress)}: {PreviewLargeOffsetAddress}, {nameof(LayersDefinitionOffsetAddress)}: {LayersDefinitionOffsetAddress}, {nameof(LayerCount)}: {LayerCount}, {nameof(PreviewSmallOffsetAddress)}: {PreviewSmallOffsetAddress}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(OverallHeightMilimeter)}: {OverallHeightMilimeter}, {nameof(BedSizeX)}: {BedSizeX}, {nameof(BedSizeY)}: {BedSizeY}, {nameof(BedSizeZ)}: {BedSizeZ}, {nameof(EncryptionKey)}: {EncryptionKey}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(LayerOffTime)}: {LayerOffTime}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(Padding3)}: {Padding3}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftingSpeed)}: {LiftingSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(WeightG)}: {WeightG}, {nameof(CostDollars)}: {CostDollars}, {nameof(Padding4)}: {Padding4}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(MachineName)}: {MachineName}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(EncryptionMode)}: {EncryptionMode}, {nameof(MysteriousId)}: {MysteriousId}, {nameof(AntiAliasLevelInfo)}: {AntiAliasLevelInfo}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(Padding11)}: {Padding11}, {nameof(Padding12)}: {Padding12}, {nameof(Padding13)}: {Padding13}, {nameof(Padding14)}: {Padding14}, {nameof(Padding15)}: {Padding15}, {nameof(Padding16)}: {Padding16}";
+                return $"{nameof(Magic)}: {Magic}, {nameof(Version)}: {Version}, {nameof(LayerHeightMilimeter)}: {LayerHeightMilimeter}, {nameof(LayerExposureSeconds)}: {LayerExposureSeconds}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(PreviewLargeOffsetAddress)}: {PreviewLargeOffsetAddress}, {nameof(LayersDefinitionOffsetAddress)}: {LayersDefinitionOffsetAddress}, {nameof(LayerCount)}: {LayerCount}, {nameof(PreviewSmallOffsetAddress)}: {PreviewSmallOffsetAddress}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(OverallHeightMilimeter)}: {OverallHeightMilimeter}, {nameof(BedSizeX)}: {BedSizeX}, {nameof(BedSizeY)}: {BedSizeY}, {nameof(BedSizeZ)}: {BedSizeZ}, {nameof(EncryptionKey)}: {EncryptionKey}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(LayerOffTime)}: {LayerOffTime}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(Padding3)}: {Padding3}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(WeightG)}: {WeightG}, {nameof(CostDollars)}: {CostDollars}, {nameof(Padding4)}: {Padding4}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(MachineName)}: {MachineName}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(EncryptionMode)}: {EncryptionMode}, {nameof(MysteriousId)}: {MysteriousId}, {nameof(AntiAliasLevelInfo)}: {AntiAliasLevelInfo}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(Padding11)}: {Padding11}, {nameof(Padding12)}: {Padding12}, {nameof(Padding13)}: {Padding13}, {nameof(Padding14)}: {Padding14}, {nameof(Padding15)}: {Padding15}, {nameof(Padding16)}: {Padding16}";
             }
         }
         #endregion
@@ -670,6 +670,7 @@ namespace UVtools.Parser
         public override Type[] ConvertToFormats { get; } =
         {
             typeof(ChituboxFile),
+            typeof(ChituboxZipFile),
             typeof(PWSFile),
             typeof(ZCodexFile),
         };
@@ -709,7 +710,7 @@ namespace UVtools.Parser
 
         public override float LayerExposureTime => HeaderSettings.LayerExposureSeconds;
         public override float LiftHeight => HeaderSettings.LiftHeight;
-        public override float LiftSpeed => HeaderSettings.LiftingSpeed;
+        public override float LiftSpeed => HeaderSettings.LiftSpeed;
         public override float RetractSpeed => HeaderSettings.RetractSpeed;
 
         public override float PrintTime => HeaderSettings.PrintTime;
@@ -1023,7 +1024,7 @@ namespace UVtools.Parser
             }
             if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed))
             {
-                HeaderSettings.LiftingSpeed = value.Convert<float>();
+                HeaderSettings.LiftSpeed = value.Convert<float>();
                 return true;
             }
             if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
@@ -1127,7 +1128,7 @@ namespace UVtools.Parser
                         BottomLightOffDelay = HeaderSettings.BottomLightOffDelay,
                         CostDollars = MaterialCost,
                         LiftHeight = HeaderSettings.LiftHeight,
-                        LiftingSpeed = HeaderSettings.LiftingSpeed,
+                        LiftSpeed = HeaderSettings.LiftSpeed,
                         LightOffDelay = HeaderSettings.LayerOffTime,
                         RetractSpeed = HeaderSettings.RetractSpeed,
                         VolumeMl = UsedMaterial,
@@ -1139,6 +1140,58 @@ namespace UVtools.Parser
 
 
 
+
+                file.SetThumbnails(Thumbnails);
+                file.Encode(fileFullPath);
+
+                return true;
+            }
+
+            if (to == typeof(ChituboxZipFile))
+            {
+                ChituboxZipFile file = new ChituboxZipFile
+                {
+                    LayerManager = LayerManager,
+                    HeaderSettings =
+                    {
+                        Filename = Path.GetFileName(FileFullPath),
+
+                        ResolutionX = ResolutionX,
+                        ResolutionY = ResolutionY,
+                        MachineX = HeaderSettings.BedSizeX,
+                        MachineY = HeaderSettings.BedSizeY,
+                        MachineZ = HeaderSettings.BedSizeZ,
+                        MachineType = MachineName,
+                        ProjectType = HeaderSettings.ProjectorType == 0 ? "Normal" : "LCD_mirror",
+
+                        Resin = MaterialName,
+                        Price = MaterialCost,
+                        Weight = HeaderSettings.WeightG,
+                        Volume = UsedMaterial,
+                        Mirror = (byte)  (HeaderSettings.ProjectorType == 0 ? 0 : 1),
+
+
+                        BottomLayerLiftHeight = HeaderSettings.BottomLiftHeight,
+                        LayerLiftHeight = HeaderSettings.LiftHeight,
+                        BottomLayerLiftSpeed = HeaderSettings.BottomLiftSpeed,
+                        LayerLiftSpeed = HeaderSettings.LiftSpeed,
+                        RetractSpeed = HeaderSettings.RetractSpeed,
+                        BottomLayCount = InitialLayerCount,
+                        BottomLayerCount = InitialLayerCount,
+                        BottomLightOffTime = HeaderSettings.BottomLightOffDelay,
+                        LayerLightOffTime = HeaderSettings.LayerOffTime,
+                        BottomLayExposureTime = InitialExposureTime,
+                        BottomLayerExposureTime = InitialExposureTime,
+                        LayerExposureTime = LayerExposureTime,
+                        LayerHeight = LayerHeight,
+                        LayerCount = LayerCount,
+                        AntiAliasing = ValidateAntiAliasingLevel(),
+                        BottomLightPWM = (byte) HeaderSettings.BottomLightPWM,
+                        LayerLightPWM = (byte) HeaderSettings.LightPWM,
+
+                        EstimatedPrintTime = PrintTime
+                    },
+                };
 
                 file.SetThumbnails(Thumbnails);
                 file.Encode(fileFullPath);
@@ -1225,7 +1278,7 @@ namespace UVtools.Parser
                         XCorrection = 0,
                         YCorrection = 0,
                         ZLiftDistance = HeaderSettings.LiftHeight,
-                        ZLiftFeedRate = HeaderSettings.LiftingSpeed,
+                        ZLiftFeedRate = HeaderSettings.LiftSpeed,
                         ZLiftRetractRate = HeaderSettings.RetractSpeed,
                     },
                     ZCodeMetadataSettings = new ZCodexFile.ZCodeMetadata

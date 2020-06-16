@@ -1,5 +1,10 @@
 # Changelog
 
+## 16/06/2020 - v0.5.1.1
+
+* (Add) photon, cbddlp, ctb and phz can be converted to Zip
+* (Fix) CTB: When AntiAliasing is on it saves a bad file
+
 ## 16/06/2020 - v0.5.1
 
 * (Add) Zip file format compatible with chitubox zip

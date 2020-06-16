@@ -745,6 +745,7 @@ namespace UVtools.Parser
 
         public override Type[] ConvertToFormats { get; } =
         {
+            //typeof(ChituboxZipFile)
             //typeof(PHZFile),
             //typeof(ZCodexFile),
         };
