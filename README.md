@@ -1,14 +1,14 @@
 # Prusa SL1 Viewer
 
-Open, view, edit, extract, convert, mutate and island checker for DLP files generated from Slicers.
+MSLA/DLP, file analysis, repair, conversion and manipulation
 
-This simple tool can give you insight of supports and find some failures. Did you forget what resin or orther settings you used on a project? This can also save you, check every setting that were used with or simply change them!
+This simple tool can give you insight of supports and find some failures. Did you forget what resin or other settings you used on a project? This can also save you, check every setting that were used with or simply change them!
 
-* Facebook group: https://www.facebook.com/groups/prusasl1viewer
+* Facebook group: https://www.facebook.com/groups/uvtools
 
-![GUI Screenshot](https://raw.githubusercontent.com/sn4k3/PrusaSL1Viewer/master/PrusaSL1Viewer/Images/Screenshots/PrusaSL1Viewer_GUI.png)
-![GUI Screenshot Islands](https://raw.githubusercontent.com/sn4k3/PrusaSL1Viewer/master/PrusaSL1Viewer/Images/Screenshots/PrusaSL1Viewer_GUI_Islands.png)
-![Convertion Screenshot](https://raw.githubusercontent.com/sn4k3/PrusaSL1Viewer/master/PrusaSL1Viewer/Images/Screenshots/SL1ToCbddlp.png)
+![GUI Screenshot](https://raw.githubusercontent.com/sn4k3/UVtools/master/UVtools.GUI/Images/Screenshots/UVtools_GUI.png)
+![GUI Screenshot Islands](https://raw.githubusercontent.com/sn4k3/UVtools/master/UVtools.GUI/Images/Screenshots/UVtools_GUI_Islands.png)
+![Convertion Screenshot](https://raw.githubusercontent.com/sn4k3/UVtools/master/UVtools.GUI/Images/Screenshots/SL1ToCbddlp.png)
 
 ## Why this project?
 I don't own a Prusa SL1 or any other resin printer, for now I’m only a FDM user with 
@@ -39,20 +39,21 @@ But also, i need victims for test subject. Proceed at your own risk!
 * View all used settings
 * Edit print properties and save file
 * Mutate and filter layers
-* Check islands and repair/remove them
+* Check islands and repair/remove them as other issues
 * Export file to a folder
-* Convert SL1 format to another format
+* Convert format to another format
 * Portable (No installation needed)
 
 ## Known Formats
 
 * SL1 (PrusaSlicer)
+* Zip (Chitubox)
 * Photon (Chitubox)
 * CBDDLP (Chitubox)
 * CBT (Chitubox)
+* PHZ (Chitubox)
 * PWS (Photon Workshop)
 * PW0 (Photon Workshop)
-* PHZ (Chitubox)
 * ZCodex (Z-Suite)
 * CWS (NovaMaker)
 
@@ -81,6 +82,10 @@ But also, i need victims for test subject. Proceed at your own risk!
 * Phrozen Sonic
 * Phrozen Sonic Mini
 * Phrozen Transform
+* Kelant S400
+* Wanhao D7
+* Wanhao D8
+* Creality LD-002R
 
 ## Available profiles for PrusaSlicer
 
@@ -99,7 +104,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 1. Start and configure PrusaSlicer (Wizard)
     * Choose SL1 printer
 1. Close PrusaSlicer
-1. Open PrusaSL1Viewer if not already
+1. Open UVtools if not already
    * Under Menu click -> About -> Install profiles into PrusaSlicer
 1. Open PrusaSlicer and check if profiles are there
 1. To clean up interface remove printers that you will not use (OPTIONAL)
@@ -131,12 +136,12 @@ After some tests without failure you can increase your confidence and ignore thi
 
 ## How to use
 
-There are multiple ways to open your SL1 file:
+There are multiple ways to open your file:
 
-1. Open PrusaSL1Viewer.exe and load your file (CTRL + O) (File -> Open)
-2. Open PrusaSL1Viewer.exe and drag and drop your file inside window
-3. Drag and drop sl1 file into PrusaSL1Viewer.exe
-4. Set PrusaSL1Viewer.exe the default program to open .sl1 files
+1. Open UVtools.exe and load your file (CTRL + O) (File -> Open)
+2. Open UVtools.exe and drag and drop your file inside window
+3. Drag and drop file into UVtools.exe
+4. Set UVtools.exe the default program to open your files
 
 ## Library -> Developers
 

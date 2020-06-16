@@ -29,6 +29,10 @@ SET files[19]=Phrozen Shuffle 4K.ini
 SET files[20]=Phrozen Sonic.ini
 SET files[21]=Phrozen Sonic Mini.ini
 SET files[22]=Phrozen Transform.ini
+SET files[23]=Kelant S400.ini
+SET files[24]=Wanhao D7.ini
+SET files[25]=Wanhao D8.ini
+SET files[26]=Creality LD-002R.ini
 
 echo PrusaSlicer Printers Instalation
 echo This will replace printers, all changes will be discarded

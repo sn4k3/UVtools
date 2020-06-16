@@ -1,5 +1,26 @@
 # Changelog
 
+## 16/06/2020 - v0.5.1
+
+* (Add) Zip file format compatible with chitubox zip
+* (Add) PrusaSlicer Printer "Kelant S400"
+* (Add) PrusaSlicer Printer "Wanhao D7"
+* (Add) PrusaSlicer Printer "Wanhao D8"
+* (Add) PrusaSlicer Printer "Creality LD-002R"
+* (Add) Shortcut "CTRL+C" under Issues listview to copy all selected item text to clipboard
+* (Add) Shortcut "ESC" under Properties listview to deselect all items
+* (Add) Shortcut "CTRL+A" under Properties listview to select all items
+* (Add) Shortcut "*" under Properties listview to invert selection
+* (Add) Shortcut "CTRL+C" under Properties listview to copy all selected item text to clipboard
+* (Add) Resize function can now fade towards 100% (Chamfers)
+* (Add) Solidify mutator, solidifies the selected layers, closes all inner holes
+* (Change) Renamed the project: UVtools
+* (Change) On title bar show loaded filename first and program version after
+* (Improvement) Increased Pixel column width on Issues tab listview
+* (Fix) Resize function can't make use of decimal numbers
+* (Fix) CWS gcode was setting M106 SO instead of M106 S0
+* (Fix) CWS disable motors before raise Z after finish print
+
 ## 13/06/2020 - v0.5
 
 * (Add) PWS and PW0 file formats (Thanks to Jason McMullan)
@@ -42,9 +63,9 @@
 
 ## 05/06/2020 - v0.4.2.2 - Beta
 
-* (Add) Shortcut "ESC" under Islands list view to deselect all items
-* (Add) Shortcut "CTRL+A" under Islands list view to select all items
-* (Add) Shortcut "*" under Islands list view to invert selection
+* (Add) Shortcut "ESC" under Islands listview to deselect all items
+* (Add) Shortcut "CTRL+A" under Islands listview to select all items
+* (Add) Shortcut "*" under Islands listview to invert selection
 * (Add) Shortcut "CTRL+F" to go to a layer number
 * (Change) Layer image is now a RGB image for better manipulation and draws
 * (Change) Layer difference now shows previous and next layers (only pixels not present on current layer) were previous are pink and next are cyan, if a pixel are present in both layers a red pixel will be painted.
