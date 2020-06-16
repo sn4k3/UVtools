@@ -1,6 +1,5 @@
-# Prusa SL1 Viewer
-
-MSLA/DLP, file analysis, repair, conversion and manipulation
+# UVtools
+**MSLA/DLP, file analysis, repair, conversion and manipulation**
 
 This simple tool can give you insight of supports and find some failures. Did you forget what resin or other settings you used on a project? This can also save you, check every setting that were used with or simply change them!
 
