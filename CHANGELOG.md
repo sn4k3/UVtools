@@ -1,5 +1,14 @@
 # Changelog
 
+## 17/06/2020 - v0.5.1.2
+
+* (Add) Able to install only the desired profiles and not the whole lot (Suggested  by: Ingo Strohmenger)
+* (Add) Update manager for PrusaSlicer profiles
+* (Add) If PrusaSlicer not installed on system it prompt for installation (By open the official website)
+* (Fix) Prevent profiles instalation when PrusaSlicer is not installed on system
+* (Fix) The "Issues" computation sometimes fails triggering an error due the use of non concurrent dictionary
+* (Fix) Print profiles won't install into PrusaSlicer
+
 ## 16/06/2020 - v0.5.1.1
 
 * (Add) photon, cbddlp, ctb and phz can be converted to Zip

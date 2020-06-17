@@ -6,8 +6,8 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
-using System.Buffers;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -95,6 +95,77 @@ namespace UVtools.Parser
         public override string ToString()
         {
             return $"{nameof(Type)}: {Type}";
+        }
+    }
+    #endregion
+
+    #region LayerHollowArea
+
+    public class LayerHollowArea : IEnumerable<Point>
+    {
+        public enum AreaType : byte
+        {
+            Unknown = 0,
+            Trap,
+            Drain
+        }
+        /// <summary>
+        /// Gets area pixels
+        /// </summary>
+        public Point[] Pixels { get; set; }
+
+        public AreaType Type { get; set; } = AreaType.Unknown;
+
+        #region Indexers
+        public Point this[uint index]
+        {
+            get => index < Pixels.Length ? Pixels[index] : Point.Empty;
+            set => Pixels[index] = value;
+        }
+
+        public Point this[int index]
+        {
+            get => index < Pixels.Length ? Pixels[index] : Point.Empty;
+            set => Pixels[index] = value;
+        }
+
+        public Point this[uint x, uint y]
+        {
+            get
+            {
+                for (uint i = 0; i < Pixels.Length; i++)
+                {
+                    if (Pixels[i].X == x && Pixels[i].Y == y) return Pixels[i];
+                }
+                return Point.Empty;
+            }
+        }
+
+        public Point this[int x, int y] => this[(uint) x, (uint)y];
+
+        public Point this[Point point] => this[point.X, point.Y];
+
+        #endregion
+
+
+
+        public IEnumerator<Point> GetEnumerator()
+        {
+            return ((IEnumerable<Point>)Pixels).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public LayerHollowArea()
+        {
+        }
+
+        public LayerHollowArea(Point[] pixels)
+        {
+            Pixels = pixels;
         }
     }
     #endregion
@@ -610,16 +681,19 @@ namespace UVtools.Parser
             return Layers[index];
         }
 
-        public SortedDictionary<uint, List<LayerIssue>> GetAllIssues()
+        public ConcurrentDictionary<uint, List<LayerIssue>> GetAllIssues()
         {
-            var result = new SortedDictionary<uint, List<LayerIssue>>();
+            var result = new ConcurrentDictionary<uint, List<LayerIssue>>();
 
             Parallel.ForEach(this, layer =>
             {
                 var issues = layer.GetIssues();
                 if (issues.Count > 0)
                 {
-                    result.Add(layer.Index, issues);
+                    if (!result.TryAdd(layer.Index, issues))
+                    {
+                        throw new AccessViolationException("Error while trying to add an issue to the dictionary, please try again.");
+                    }
                 }
             });
 

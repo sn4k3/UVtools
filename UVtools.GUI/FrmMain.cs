@@ -7,6 +7,7 @@
  */
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -24,6 +25,7 @@ using Emgu.CV.Util;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using UVtools.GUI.Extensions;
 using UVtools.GUI.Forms;
 using UVtools.Parser;
 using Color = System.Drawing.Color;
@@ -117,7 +119,7 @@ namespace UVtools.GUI
 
         public Image<L8> ActualLayerImage { get; private set; }
 
-        public SortedDictionary<uint, List<LayerIssue>> Issues { get; set; }
+        public Dictionary<uint, List<LayerIssue>> Issues { get; set; }
 
         public uint TotalIssues { get; set; }
 
@@ -132,7 +134,7 @@ namespace UVtools.GUI
             FrmLoading = new FrmLoading();
             Program.SetAllControlsFontSize(Controls, 11);
             Program.SetAllControlsFontSize(FrmLoading.Controls, 11);
-
+            
             Clear();
 
             DragEnter += (s, e) => { if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy; };
@@ -641,59 +643,31 @@ namespace UVtools.GUI
 
                 if (ReferenceEquals(sender, menuHelpInstallPrinters))
                 {
-                    string printerFolder =
-                        $"{Application.StartupPath}{Path.DirectorySeparatorChar}PrusaSlicer{Path.DirectorySeparatorChar}printer";
-                    string printFolder =
-                        $"{Application.StartupPath}{Path.DirectorySeparatorChar}PrusaSlicer{Path.DirectorySeparatorChar}sla_print";
-                    try
+                    var PEFolder = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}{Path.DirectorySeparatorChar}{Path.DirectorySeparatorChar}PrusaSlicer";
+                    if (!Directory.Exists(PEFolder))
                     {
-                        string[] printProfiles = Directory.GetFiles(printFolder);
-                        string[] printerProfiles = Directory.GetFiles(printerFolder);
-                        string printsNames = printProfiles.Aggregate(string.Empty, (current, profile) => current + $"{Path.GetFileNameWithoutExtension(profile)}\n");
-                        string printerNames = printerProfiles.Aggregate(string.Empty, (current, profile) => current + $"{Path.GetFileNameWithoutExtension(profile)}\n");
-
                         var result = MessageBox.Show(
-                            "This action will install following profiles into PrusaSlicer:\n" +
-                            "---------- PRINT PROFILES ----------\n" +
-                            printsNames +
-                            "--------- PRINTER PROFILES ---------\n" +
-                            printerNames +
-                            "---------------\n" +
-                            "Click 'Yes' to override all profiles\n" +
-                            "Click 'No' to install only missing profiles without override\n" +
+                            "Unable to detect PrusaSlicer on your system, make sure you have lastest version installed on your system.\n" +
+                            "Click 'OK' to open PrusaSlicer webpage for program download\n" +
                             "Click 'Cancel' to cancel this operation",
-                            "Install printers into PrusaSlicer", MessageBoxButtons.YesNoCancel,
-                            MessageBoxIcon.Question);
+                            "Unable to detect PrusaSlicer on your system",
+                            MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
 
-
-                        if (result == DialogResult.Cancel)
+                        switch (result)
                         {
-                            return;
+                            case DialogResult.OK:
+                                Process.Start("https://www.prusa3d.com/prusaslicer/");
+                                return;
+                            default:
+                                return;
                         }
-
-                        bool overwrite = result == DialogResult.Yes;
-                        string targetFolder =
-                            $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}{Path.DirectorySeparatorChar}{Path.DirectorySeparatorChar}PrusaSlicer{Path.DirectorySeparatorChar}printer";
-
-                        foreach (var profile in printerProfiles)
-                        {
-                            string targetFile =
-                                $"{targetFolder}{Path.DirectorySeparatorChar}{Path.GetFileName(profile)}";
-                            if (!overwrite && File.Exists(targetFile)) continue;
-                            File.Copy(profile, targetFile, overwrite);
-                        }
-
-                        MessageBox.Show(
-                            "Printers were installed.\nRestart PrusaSlicer and check if printers are present.",
-                            "Operation Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
                     }
-                    catch (Exception exception)
+
+
+                    using (FrmInstallPEProfiles form = new FrmInstallPEProfiles())
                     {
-                        MessageBox.Show(exception.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        form.ShowDialog();
                     }
-
-
 
                     return;
                 }
@@ -1624,10 +1598,10 @@ namespace UVtools.GUI
                     Image<Gray, byte> grayscale = ActualLayerImage.ToEmguImage();
                     //ThresholdBinary(new Gray(127), new Gray(255) )
                     ListViewItem item = new ListViewItem();
-                    grayscale = grayscale.Canny(80, 40, 3, true);
+                    //grayscale = grayscale.Canny(80, 40, 3, true);
                     //var grayscaleInv = grayscale.ThresholdBinaryInv(new Gray(200), new Gray(255));
 
-                    /*VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
+                    VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
                     Mat external = new Mat();
                     
                     CvInvoke.FindContours(grayscale, contours, external, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
@@ -1645,13 +1619,10 @@ namespace UVtools.GUI
                     {
                         if ((int)arr.GetValue(0, i, 2) != -1 || (int)arr.GetValue(0, i, 3) == -1) continue;
                         var r = CvInvoke.BoundingRectangle(contours[i]);
+                        
                         //CvInvoke.Rectangle(grayscale, r, new MCvScalar(125), 5);
-
                         grayscale.FillConvexPoly(contours[i].ToArray(), new Gray(125), LineType.FourConnected);
-
-                        Debug.WriteLine(CvInvoke.PointPolygonTest(contours, new PointF(900, 2200), false));
-
-                    }/*
+                    }
 
 
                     //var grayscaleinv = grayscale.ThresholdBinaryInv(new Gray(200), new Gray(255));
@@ -2282,89 +2253,74 @@ namespace UVtools.GUI
                 bool result = false;
                 try
                 {
-                    Issues = SlicerFile.LayerManager.GetAllIssues();
-
-                    /*Dictionary<uint, List<Point[]>> LayersContours = new Dictionary<uint, List<Point[]>>();
+                    var issues = SlicerFile.LayerManager.GetAllIssues();
+                    Issues = new Dictionary<uint, List<LayerIssue>>();
 
                     for (uint i = 0; i < SlicerFile.LayerCount; i++)
                     {
-                        LayersContours.Add(i, new List<Point[]>());
+                        if (issues.TryGetValue(i, out var list))
+                        {
+                            Issues.Add(i, list);
+                        }
                     }
 
-                    Parallel.ForEach(SlicerFile, layer =>
-                    {
-                        Image<Gray, byte> grayscale = layer.Image.ToEmguImage().ThresholdBinary(new Gray(254), new Gray(255));
+                    /*var layerHollowAreas = new ConcurrentDictionary<uint, List<LayerHollowArea>>();
 
-                        //grayscale = grayscale.Canny(80, 40, 3, true);
-                        //var grayscaleInv = grayscale.ThresholdBinaryInv(new Gray(200), new Gray(255));
+                    Parallel.ForEach(SlicerFile,
+                    //new ParallelOptions{MaxDegreeOfParallelism = 1},
+                    layer =>
+                    {
+                        var image = layer.Image;
+                        Image<Gray, byte> grayscale = image.ToEmguImage().ThresholdBinary(new Gray(254), new Gray(255));
+
+                        var listHollowArea = new List<LayerHollowArea>();
 
                         VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-                        Mat external = new Mat();
+                        Mat hierarchy = new Mat();
 
-                        CvInvoke.FindContours(grayscale, contours, external, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
+                        CvInvoke.FindContours(grayscale, contours, hierarchy, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
 
-                        var arr = external.GetData();
+                        var arr = hierarchy.GetData();
                         //
                         //hierarchy[i][0]: the index of the next contour of the same level
                         //hierarchy[i][1]: the index of the previous contour of the same level
                         //hierarchy[i][2]: the index of the first child
                         //hierarchy[i][3]: the index of the parent
                         //
+                        Stopwatch sw = new Stopwatch();
+                        sw.Start();
                         for (int i = 0; i < contours.Size; i++)
                         {
-                            if ((int)arr.GetValue(0, i, 2) != -1 || (int)arr.GetValue(0, i, 3) == -1) continue;
+                            if ((int) arr.GetValue(0, i, 2) != -1 || (int) arr.GetValue(0, i, 3) == -1) continue;
 
-                            LayersContours[layer.Index].Add(contours[i].ToArray());
-                        }
-                    });
+                            grayscale.Dispose();
+                            grayscale = new Image<Gray, byte>(image.Width, image.Height);
+                            //grayscale = grayscale.CopyBlank();
+                            grayscale.FillConvexPoly(contours[i].ToArray(), new Gray(125));
+                            List<Point> points = new List<Point>();
 
-                    for (uint i = 0; i < SlicerFile.LayerCount; i++)
-                    {
-                        if (LayersContours[i].Count == 0)
-                            LayersContours.Remove(i);
-                    }
-
-                    Image<Gray, byte> emguCurrentImage;
-                    Image<Gray, byte> emguNextImage;
-
-                    for (uint i = 0; i < SlicerFile.LayerCount; i++)
-                    {
-                        if(!LayersContours.TryGetValue(i, out var currentPoints)) continue;
-                        var image = new Image<Gray, byte>((int) SlicerFile.ResolutionY, (int) SlicerFile.ResolutionX);
-                        foreach (var points in currentPoints)
-                        {
-                            VectorOfPoint  vec = new VectorOfPoint(points);
-                            CvInvoke.FillConvexPoly(image, vec, new MCvScalar(255));
-                        }
-
-                        SlicerFile[i].Image = image.ToImageSharpL8();
-
-                        /*if (!LayersContours.TryGetValue(i+1, out var nextPoints))
-                        {
-                            if (!LayersContours.TryGetValue(i - 1, out var PreviousPoints))
+                            var rect = CvInvoke.BoundingRectangle(contours[i]);
+                            byte[,,] data = grayscale.Data;
+                            for (int y = rect.Y; y < rect.Bottom; y++)
                             {
-                                if (!Issues.TryGetValue(i, out var layerIssues))
+                                for (int x = rect.X; x < rect.Right; x++)
                                 {
-                                    layerIssues = new List<LayerIssue>();
-                                    Issues.Add(i, layerIssues);
-                                }
 
-                                foreach (var points in currentPoints)
-                                {
-                                    Issues[i].Add(new LayerIssue(SlicerFile[i], LayerIssue.IssueType.ResinTrap,
-                                        points));
+                                    if (data[y, x, 0] != 125) continue;
+                                    points.Add(new Point(x, y)); // Gather pixels
                                 }
                             }
 
-                            continue;
-                        };
-                    }
-                    
-                    foreach (var layersContour in LayersContours)
-                    {
-                        emguCurrentImage = new Image<Gray, byte>((int)SlicerFile.ResolutionX, (int)SlicerFile.ResolutionY);
-                        emguNextImage = emguCurrentImage.CopyBlank();
-                    }*/
+
+                            listHollowArea.Add(new LayerHollowArea(points.ToArray()));
+                        }
+
+                        sw.Stop();
+                        Debug.WriteLine(sw.ElapsedMilliseconds);
+
+                        if (listHollowArea.Count > 0)
+                            layerHollowAreas.TryAdd(layer.Index, listHollowArea);
+                    });*/
 
                     result = true;
                 }

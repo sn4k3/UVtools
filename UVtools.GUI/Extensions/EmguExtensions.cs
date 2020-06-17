@@ -8,11 +8,10 @@
 
 using Emgu.CV;
 using Emgu.CV.Structure;
-using UVtools.Parser;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace UVtools.GUI
+namespace UVtools.GUI.Extensions
 {
     public static class EmguExtensions
     {

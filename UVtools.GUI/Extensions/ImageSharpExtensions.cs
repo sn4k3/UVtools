@@ -5,14 +5,15 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using System.IO;
 using Emgu.CV;
 using Emgu.CV.Structure;
-using UVtools.Parser;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using UVtools.Parser;
 
-namespace UVtools.GUI
+namespace UVtools.GUI.Extensions
 {
     public static class ImageSharpExtensions
     {

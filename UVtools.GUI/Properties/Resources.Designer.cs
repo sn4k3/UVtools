@@ -173,6 +173,26 @@ namespace UVtools.GUI.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap checkbox_marked_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("checkbox-marked-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap checkbox_unmarked_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("checkbox-unmarked-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap CNCMachine_16x16 {
             get {
                 object obj = ResourceManager.GetObject("CNCMachine-16x16", resourceCulture);
