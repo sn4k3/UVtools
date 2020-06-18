@@ -193,6 +193,16 @@ namespace UVtools.GUI.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap clipboard_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("clipboard-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap CNCMachine_16x16 {
             get {
                 object obj = ResourceManager.GetObject("CNCMachine-16x16", resourceCulture);
@@ -286,6 +296,16 @@ namespace UVtools.GUI.Properties {
         internal static System.Drawing.Bitmap File_Close_16x16 {
             get {
                 object obj = ResourceManager.GetObject("File-Close-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap file_image_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("file-image-16x16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

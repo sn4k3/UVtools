@@ -59,7 +59,9 @@
             this.scCenter = new System.Windows.Forms.SplitContainer();
             this.pbLayer = new Cyotek.Windows.Forms.ImageBox();
             this.tsLayer = new System.Windows.Forms.ToolStrip();
-            this.tsLayerImageExport = new System.Windows.Forms.ToolStripButton();
+            this.tsLayerImageExport = new System.Windows.Forms.ToolStripSplitButton();
+            this.tsLayerImageExportFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsLayerImageExportClipboard = new System.Windows.Forms.ToolStripMenuItem();
             this.tsLayerResolution = new System.Windows.Forms.ToolStripLabel();
             this.tsLayerImageRotate = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
@@ -170,7 +172,7 @@
             this.helpToolStripMenuItem});
             this.menu.Location = new System.Drawing.Point(0, 0);
             this.menu.Name = "menu";
-            this.menu.Size = new System.Drawing.Size(1684, 24);
+            this.menu.Size = new System.Drawing.Size(1784, 24);
             this.menu.TabIndex = 0;
             this.menu.Text = "menuStrip1";
             // 
@@ -384,9 +386,9 @@
             // 
             // statusBar
             // 
-            this.statusBar.Location = new System.Drawing.Point(0, 764);
+            this.statusBar.Location = new System.Drawing.Point(0, 789);
             this.statusBar.Name = "statusBar";
-            this.statusBar.Size = new System.Drawing.Size(1684, 22);
+            this.statusBar.Size = new System.Drawing.Size(1784, 22);
             this.statusBar.TabIndex = 1;
             this.statusBar.Text = "statusStrip1";
             // 
@@ -395,7 +397,7 @@
             this.mainTable.ColumnCount = 3;
             this.mainTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 400F));
             this.mainTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.mainTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 130F));
+            this.mainTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 150F));
             this.mainTable.Controls.Add(this.scCenter, 1, 0);
             this.mainTable.Controls.Add(this.tabControlLeft, 0, 0);
             this.mainTable.Controls.Add(this.tlRight, 2, 0);
@@ -404,7 +406,7 @@
             this.mainTable.Name = "mainTable";
             this.mainTable.RowCount = 1;
             this.mainTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.mainTable.Size = new System.Drawing.Size(1684, 740);
+            this.mainTable.Size = new System.Drawing.Size(1784, 765);
             this.mainTable.TabIndex = 5;
             // 
             // scCenter
@@ -425,8 +427,8 @@
             // 
             this.scCenter.Panel2.Controls.Add(this.pbLayers);
             this.scCenter.Panel2MinSize = 18;
-            this.scCenter.Size = new System.Drawing.Size(1148, 734);
-            this.scCenter.SplitterDistance = 705;
+            this.scCenter.Size = new System.Drawing.Size(1228, 759);
+            this.scCenter.SplitterDistance = 730;
             this.scCenter.TabIndex = 4;
             // 
             // pbLayer
@@ -437,7 +439,7 @@
             this.pbLayer.Name = "pbLayer";
             this.pbLayer.PanMode = Cyotek.Windows.Forms.ImageBoxPanMode.Left;
             this.pbLayer.ShowPixelGrid = true;
-            this.pbLayer.Size = new System.Drawing.Size(1148, 680);
+            this.pbLayer.Size = new System.Drawing.Size(1228, 705);
             this.pbLayer.TabIndex = 7;
             this.pbLayer.Zoomed += new System.EventHandler<Cyotek.Windows.Forms.ImageBoxZoomEventArgs>(this.pbLayer_Zoomed);
             this.pbLayer.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseMove);
@@ -466,7 +468,7 @@
             this.tsLayerImageMouseLocation});
             this.tsLayer.Location = new System.Drawing.Point(0, 0);
             this.tsLayer.Name = "tsLayer";
-            this.tsLayer.Size = new System.Drawing.Size(1148, 25);
+            this.tsLayer.Size = new System.Drawing.Size(1228, 25);
             this.tsLayer.TabIndex = 6;
             this.tsLayer.Text = "Layer Menu";
             // 
@@ -474,14 +476,32 @@
             // 
             this.tsLayerImageExport.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.tsLayerImageExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsLayerImageExport.Enabled = false;
+            this.tsLayerImageExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsLayerImageExportFile,
+            this.tsLayerImageExportClipboard});
             this.tsLayerImageExport.Image = global::UVtools.GUI.Properties.Resources.Save_16x16;
             this.tsLayerImageExport.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsLayerImageExport.Name = "tsLayerImageExport";
-            this.tsLayerImageExport.Size = new System.Drawing.Size(23, 22);
-            this.tsLayerImageExport.Text = "Save Layer";
-            this.tsLayerImageExport.ToolTipText = "Save layer image to file";
-            this.tsLayerImageExport.Click += new System.EventHandler(this.EventClick);
+            this.tsLayerImageExport.Size = new System.Drawing.Size(32, 22);
+            this.tsLayerImageExport.Text = "Save to";
+            this.tsLayerImageExport.ToolTipText = "Save layer image to a file or clipboard";
+            this.tsLayerImageExport.ButtonClick += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerImageExportFile
+            // 
+            this.tsLayerImageExportFile.Image = global::UVtools.GUI.Properties.Resources.file_image_16x16;
+            this.tsLayerImageExportFile.Name = "tsLayerImageExportFile";
+            this.tsLayerImageExportFile.Size = new System.Drawing.Size(141, 22);
+            this.tsLayerImageExportFile.Text = "To &File";
+            this.tsLayerImageExportFile.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerImageExportClipboard
+            // 
+            this.tsLayerImageExportClipboard.Image = global::UVtools.GUI.Properties.Resources.clipboard_16x16;
+            this.tsLayerImageExportClipboard.Name = "tsLayerImageExportClipboard";
+            this.tsLayerImageExportClipboard.Size = new System.Drawing.Size(141, 22);
+            this.tsLayerImageExportClipboard.Text = "To &Clipboard";
+            this.tsLayerImageExportClipboard.Click += new System.EventHandler(this.EventClick);
             // 
             // tsLayerResolution
             // 
@@ -618,7 +638,7 @@
             this.pbLayers.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pbLayers.Location = new System.Drawing.Point(0, 0);
             this.pbLayers.Name = "pbLayers";
-            this.pbLayers.Size = new System.Drawing.Size(1148, 25);
+            this.pbLayers.Size = new System.Drawing.Size(1228, 25);
             this.pbLayers.Step = 1;
             this.pbLayers.TabIndex = 6;
             // 
@@ -633,7 +653,7 @@
             this.tabControlLeft.Location = new System.Drawing.Point(3, 3);
             this.tabControlLeft.Name = "tabControlLeft";
             this.tabControlLeft.SelectedIndex = 0;
-            this.tabControlLeft.Size = new System.Drawing.Size(394, 734);
+            this.tabControlLeft.Size = new System.Drawing.Size(394, 759);
             this.tabControlLeft.TabIndex = 5;
             this.tabControlLeft.SelectedIndexChanged += new System.EventHandler(this.EventSelectedIndexChanged);
             // 
@@ -644,7 +664,7 @@
             this.tbpThumbnailsAndInfo.Location = new System.Drawing.Point(4, 23);
             this.tbpThumbnailsAndInfo.Name = "tbpThumbnailsAndInfo";
             this.tbpThumbnailsAndInfo.Padding = new System.Windows.Forms.Padding(3);
-            this.tbpThumbnailsAndInfo.Size = new System.Drawing.Size(386, 707);
+            this.tbpThumbnailsAndInfo.Size = new System.Drawing.Size(386, 732);
             this.tbpThumbnailsAndInfo.TabIndex = 0;
             this.tbpThumbnailsAndInfo.Text = "Information";
             this.tbpThumbnailsAndInfo.UseVisualStyleBackColor = true;
@@ -667,7 +687,7 @@
             // 
             this.scLeft.Panel2.Controls.Add(this.lvProperties);
             this.scLeft.Panel2.Controls.Add(this.tsProperties);
-            this.scLeft.Size = new System.Drawing.Size(380, 701);
+            this.scLeft.Size = new System.Drawing.Size(380, 726);
             this.scLeft.SplitterDistance = 425;
             this.scLeft.TabIndex = 4;
             // 
@@ -761,7 +781,7 @@
             this.lvProperties.HideSelection = false;
             this.lvProperties.Location = new System.Drawing.Point(0, 25);
             this.lvProperties.Name = "lvProperties";
-            this.lvProperties.Size = new System.Drawing.Size(380, 247);
+            this.lvProperties.Size = new System.Drawing.Size(380, 272);
             this.lvProperties.TabIndex = 1;
             this.lvProperties.UseCompatibleStateImageBehavior = false;
             this.lvProperties.View = System.Windows.Forms.View.Details;
@@ -828,7 +848,7 @@
             this.tabPageGCode.ImageKey = "GCode-16x16.png";
             this.tabPageGCode.Location = new System.Drawing.Point(4, 23);
             this.tabPageGCode.Name = "tabPageGCode";
-            this.tabPageGCode.Size = new System.Drawing.Size(386, 707);
+            this.tabPageGCode.Size = new System.Drawing.Size(386, 732);
             this.tabPageGCode.TabIndex = 2;
             this.tabPageGCode.Text = "GCode";
             this.tabPageGCode.UseVisualStyleBackColor = true;
@@ -841,7 +861,7 @@
             this.tbGCode.Name = "tbGCode";
             this.tbGCode.ReadOnly = true;
             this.tbGCode.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbGCode.Size = new System.Drawing.Size(386, 682);
+            this.tbGCode.Size = new System.Drawing.Size(386, 707);
             this.tbGCode.TabIndex = 1;
             // 
             // tsGCode
@@ -894,7 +914,7 @@
             this.tabPageIssues.Location = new System.Drawing.Point(4, 23);
             this.tabPageIssues.Name = "tabPageIssues";
             this.tabPageIssues.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageIssues.Size = new System.Drawing.Size(386, 707);
+            this.tabPageIssues.Size = new System.Drawing.Size(386, 732);
             this.tabPageIssues.TabIndex = 3;
             this.tabPageIssues.Text = "Issues";
             this.tabPageIssues.UseVisualStyleBackColor = true;
@@ -914,7 +934,7 @@
             this.lvIssues.HideSelection = false;
             this.lvIssues.Location = new System.Drawing.Point(3, 28);
             this.lvIssues.Name = "lvIssues";
-            this.lvIssues.Size = new System.Drawing.Size(380, 676);
+            this.lvIssues.Size = new System.Drawing.Size(380, 701);
             this.lvIssues.TabIndex = 8;
             this.lvIssues.UseCompatibleStateImageBehavior = false;
             this.lvIssues.View = System.Windows.Forms.View.Details;
@@ -1062,7 +1082,7 @@
             this.tlRight.Controls.Add(this.lbInitialLayer, 0, 5);
             this.tlRight.Controls.Add(this.panel2, 0, 4);
             this.tlRight.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tlRight.Location = new System.Drawing.Point(1557, 3);
+            this.tlRight.Location = new System.Drawing.Point(1637, 3);
             this.tlRight.Name = "tlRight";
             this.tlRight.RowCount = 6;
             this.tlRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
@@ -1071,16 +1091,17 @@
             this.tlRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 32F));
             this.tlRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 32F));
             this.tlRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
-            this.tlRight.Size = new System.Drawing.Size(124, 734);
+            this.tlRight.Size = new System.Drawing.Size(144, 759);
             this.tlRight.TabIndex = 6;
             // 
             // btnPreviousLayer
             // 
+            this.btnPreviousLayer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnPreviousLayer.Enabled = false;
             this.btnPreviousLayer.Image = global::UVtools.GUI.Properties.Resources.arrow_down_16x16;
-            this.btnPreviousLayer.Location = new System.Drawing.Point(3, 623);
+            this.btnPreviousLayer.Location = new System.Drawing.Point(3, 648);
             this.btnPreviousLayer.Name = "btnPreviousLayer";
-            this.btnPreviousLayer.Size = new System.Drawing.Size(118, 26);
+            this.btnPreviousLayer.Size = new System.Drawing.Size(138, 26);
             this.btnPreviousLayer.TabIndex = 14;
             this.btnPreviousLayer.Tag = "0";
             this.btnPreviousLayer.Text = "-";
@@ -1096,7 +1117,7 @@
             this.btnNextLayer.Image = global::UVtools.GUI.Properties.Resources.arrow_up_16x16;
             this.btnNextLayer.Location = new System.Drawing.Point(3, 53);
             this.btnNextLayer.Name = "btnNextLayer";
-            this.btnNextLayer.Size = new System.Drawing.Size(118, 26);
+            this.btnNextLayer.Size = new System.Drawing.Size(138, 26);
             this.btnNextLayer.TabIndex = 8;
             this.btnNextLayer.Tag = "1";
             this.btnNextLayer.Text = "+";
@@ -1110,7 +1131,7 @@
             this.lbMaxLayer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lbMaxLayer.Location = new System.Drawing.Point(3, 0);
             this.lbMaxLayer.Name = "lbMaxLayer";
-            this.lbMaxLayer.Size = new System.Drawing.Size(118, 50);
+            this.lbMaxLayer.Size = new System.Drawing.Size(138, 50);
             this.lbMaxLayer.TabIndex = 12;
             this.lbMaxLayer.Text = "Layers";
             this.lbMaxLayer.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -1122,25 +1143,26 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(3, 85);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(118, 532);
+            this.panel1.Size = new System.Drawing.Size(138, 557);
             this.panel1.TabIndex = 13;
             // 
             // lbLayerActual
             // 
             this.lbLayerActual.AutoSize = true;
-            this.lbLayerActual.Location = new System.Drawing.Point(3, 551);
+            this.lbLayerActual.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.lbLayerActual.Location = new System.Drawing.Point(3, 248);
             this.lbLayerActual.Name = "lbLayerActual";
-            this.lbLayerActual.Size = new System.Drawing.Size(13, 13);
+            this.lbLayerActual.Size = new System.Drawing.Size(15, 15);
             this.lbLayerActual.TabIndex = 9;
             this.lbLayerActual.Text = "?";
             // 
             // tbLayer
             // 
             this.tbLayer.Dock = System.Windows.Forms.DockStyle.Right;
-            this.tbLayer.Location = new System.Drawing.Point(73, 0);
+            this.tbLayer.Location = new System.Drawing.Point(93, 0);
             this.tbLayer.Name = "tbLayer";
             this.tbLayer.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.tbLayer.Size = new System.Drawing.Size(45, 532);
+            this.tbLayer.Size = new System.Drawing.Size(45, 557);
             this.tbLayer.TabIndex = 8;
             this.tbLayer.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
             this.tbLayer.ValueChanged += new System.EventHandler(this.ValueChanged);
@@ -1148,9 +1170,9 @@
             // lbInitialLayer
             // 
             this.lbInitialLayer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lbInitialLayer.Location = new System.Drawing.Point(3, 684);
+            this.lbInitialLayer.Location = new System.Drawing.Point(3, 709);
             this.lbInitialLayer.Name = "lbInitialLayer";
-            this.lbInitialLayer.Size = new System.Drawing.Size(118, 50);
+            this.lbInitialLayer.Size = new System.Drawing.Size(138, 50);
             this.lbInitialLayer.TabIndex = 11;
             this.lbInitialLayer.Text = "Layers";
             this.lbInitialLayer.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -1161,9 +1183,9 @@
             this.panel2.Controls.Add(this.btnLastLayer);
             this.panel2.Controls.Add(this.btnFirstLayer);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel2.Location = new System.Drawing.Point(3, 655);
+            this.panel2.Location = new System.Drawing.Point(3, 680);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(118, 26);
+            this.panel2.Size = new System.Drawing.Size(138, 26);
             this.panel2.TabIndex = 15;
             // 
             // btnFindLayer
@@ -1173,7 +1195,7 @@
             this.btnFindLayer.Image = global::UVtools.GUI.Properties.Resources.search_16x16;
             this.btnFindLayer.Location = new System.Drawing.Point(37, 0);
             this.btnFindLayer.Name = "btnFindLayer";
-            this.btnFindLayer.Size = new System.Drawing.Size(44, 26);
+            this.btnFindLayer.Size = new System.Drawing.Size(64, 26);
             this.btnFindLayer.TabIndex = 17;
             this.btnFindLayer.Text = "-";
             this.toolTipInformation.SetToolTip(this.btnFindLayer, "Go to a layer index [CTRL+F]");
@@ -1185,7 +1207,7 @@
             this.btnLastLayer.Dock = System.Windows.Forms.DockStyle.Right;
             this.btnLastLayer.Enabled = false;
             this.btnLastLayer.Image = global::UVtools.GUI.Properties.Resources.arrow_top_16x16;
-            this.btnLastLayer.Location = new System.Drawing.Point(81, 0);
+            this.btnLastLayer.Location = new System.Drawing.Point(101, 0);
             this.btnLastLayer.Name = "btnLastLayer";
             this.btnLastLayer.Size = new System.Drawing.Size(37, 26);
             this.btnLastLayer.TabIndex = 16;
@@ -1225,7 +1247,7 @@
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1684, 786);
+            this.ClientSize = new System.Drawing.Size(1784, 811);
             this.Controls.Add(this.mainTable);
             this.Controls.Add(this.statusBar);
             this.Controls.Add(this.menu);
@@ -1302,7 +1324,6 @@
         private System.Windows.Forms.ToolStripMenuItem menuFileSave;
         private System.Windows.Forms.ToolStripMenuItem menuFileSaveAs;
         private System.Windows.Forms.ToolStrip tsLayer;
-        private System.Windows.Forms.ToolStripButton tsLayerImageExport;
         private System.Windows.Forms.ToolStripLabel tsLayerResolution;
         private System.Windows.Forms.TabControl tabControlLeft;
         private System.Windows.Forms.TabPage tbpThumbnailsAndInfo;
@@ -1382,6 +1403,9 @@
         private System.Windows.Forms.ToolTip toolTipInformation;
         private System.Windows.Forms.ColumnHeader lvIssuesType;
         private System.Windows.Forms.Timer layerScrollTimer;
+        private System.Windows.Forms.ToolStripSplitButton tsLayerImageExport;
+        private System.Windows.Forms.ToolStripMenuItem tsLayerImageExportFile;
+        private System.Windows.Forms.ToolStripMenuItem tsLayerImageExportClipboard;
     }
 }
 

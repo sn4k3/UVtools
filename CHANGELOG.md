@@ -1,5 +1,17 @@
 # Changelog
 
+## 18/06/2020 - v0.5.1.3
+
+* (Add) Button save layer image to Clipboard 
+* (Change) Go to issue now zoom at bouding area instead of first pixels
+* (Change) Layer navigation panel width increased in 20 pixels, in some cases it was overlaping the slider
+* (Change) Actual layer information now have a depth border
+* (Change) Increased main GUI size to X: 1800 and Y: 850 pixels
+* (Change) If the GUI window is bigger than current screen resolution, it will start maximized istead
+* (Fix) cbddlp: AntiAlias is number of _greys_, not number of significant bits (ezrec/uv3dp#75)
+* (Fix) Outline not working as before, due a forget to remove test code
+
+
 ## 17/06/2020 - v0.5.1.2
 
 * (Add) Able to install only the desired profiles and not the whole lot (Suggested  by: Ingo Strohmenger)
@@ -12,7 +24,7 @@
 ## 16/06/2020 - v0.5.1.1
 
 * (Add) photon, cbddlp, ctb and phz can be converted to Zip
-* (Fix) CTB: When AntiAliasing is on it saves a bad file
+* (Fix) ctb: When AntiAliasing is on it saves a bad file
 
 ## 16/06/2020 - v0.5.1
 

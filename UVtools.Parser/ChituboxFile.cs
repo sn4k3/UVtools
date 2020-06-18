@@ -533,8 +533,6 @@ namespace UVtools.Parser
                 {
                     var layer = parent.LayersDefinitions[bit, layerIndex];
 
-                    byte bitValue = (byte)(byte.MaxValue / ((1 << parent.AntiAliasing) - 1) * (1 << bit));
-
                     int n = 0;
                     for (int index = 0; index < layer.DataSize; index++)
                     {
@@ -547,7 +545,7 @@ namespace UVtools.Parser
                         {
                             for (int i = 0; i < reps; i++)
                             {
-                                span[n + i].PackedValue |= bitValue;
+                                span[n + i].PackedValue++;
                             }
                         }
 
@@ -563,6 +561,20 @@ namespace UVtools.Parser
                             throw new FileLoadException("Error image ran off the end");
                         }
                     }
+                }
+
+                for (int i = 0; i < span.Length; i++)
+                {
+                    int newC = span[i].PackedValue * (256 / parent.AntiAliasing);
+
+                    if (newC > 0)
+                    {
+                        newC--;
+                    }
+
+                    span[i].PackedValue = (byte) newC;
+
+
                 }
 
                 return image;
@@ -655,6 +667,14 @@ namespace UVtools.Parser
                 bool obit = false;
                 int rep = 0;
 
+                //ngrey:= uint16(r | g | b)
+                // thresholds:
+                // aa 1:  127
+                // aa 2:  255 127
+                // aa 4:  255 191 127 63
+                // aa 8:  255 223 191 159 127 95 63 31
+                byte threshold = (byte)(256 / Parent.AntiAliasing * bit - 1);
+
                 void AddRep()
                 {
                     if (rep <= 0) return;
@@ -675,9 +695,7 @@ namespace UVtools.Parser
                     Span<L8> pixelRowSpan = image.GetPixelRowSpan(y);
                     for (int x = 0; x < image.Width; x++)
                     {
-                        //ngrey:= uint16(r | g | b)
-
-                        var nbit = (pixelRowSpan[x].PackedValue & (1 << (8 - Parent.AntiAliasing + bit))) != 0;
+                        var nbit = pixelRowSpan[x].PackedValue >= threshold;
 
                         if (nbit == obit)
                         {

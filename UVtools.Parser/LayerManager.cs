@@ -16,6 +16,7 @@ using UVtools.Parser.Extensions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Point = System.Drawing.Point;
+using Rectangle = System.Drawing.Rectangle;
 
 namespace UVtools.Parser
 {
@@ -47,6 +48,11 @@ namespace UVtools.Parser
         public Point[] Pixels { get; }
 
         /// <summary>
+        /// Gets the bounding rectangle of the pixel area
+        /// </summary>
+        public Rectangle BoundingRectangle { get; }
+
+        /// <summary>
         /// Gets the X coordinate for the first point, -1 if doesn't exists
         /// </summary>
         public int X => HaveValidPoint ? Pixels[0].X : -1;
@@ -71,11 +77,12 @@ namespace UVtools.Parser
         /// </summary>
         public bool HaveValidPoint => !ReferenceEquals(Pixels, null) && Pixels.Length > 0;
 
-        public LayerIssue(Layer layer, IssueType type, Point[] pixels = null)
+        public LayerIssue(Layer layer, IssueType type, Point[] pixels = null, Rectangle boundingRectangle = new Rectangle())
         {
             Layer = layer;
             Type = type;
             Pixels = pixels;
+            BoundingRectangle = boundingRectangle;
         }
 
         public Point this[uint index] => Pixels[index];
@@ -112,30 +119,32 @@ namespace UVtools.Parser
         /// <summary>
         /// Gets area pixels
         /// </summary>
-        public Point[] Pixels { get; set; }
+        public Point[] Contour { get; }
+
+        public System.Drawing.Rectangle BoundingRectangle { get; }
 
         public AreaType Type { get; set; } = AreaType.Unknown;
 
         #region Indexers
         public Point this[uint index]
         {
-            get => index < Pixels.Length ? Pixels[index] : Point.Empty;
-            set => Pixels[index] = value;
+            get => index < Contour.Length ? Contour[index] : Point.Empty;
+            set => Contour[index] = value;
         }
 
         public Point this[int index]
         {
-            get => index < Pixels.Length ? Pixels[index] : Point.Empty;
-            set => Pixels[index] = value;
+            get => index < Contour.Length ? Contour[index] : Point.Empty;
+            set => Contour[index] = value;
         }
 
         public Point this[uint x, uint y]
         {
             get
             {
-                for (uint i = 0; i < Pixels.Length; i++)
+                for (uint i = 0; i < Contour.Length; i++)
                 {
-                    if (Pixels[i].X == x && Pixels[i].Y == y) return Pixels[i];
+                    if (Contour[i].X == x && Contour[i].Y == y) return Contour[i];
                 }
                 return Point.Empty;
             }
@@ -147,11 +156,9 @@ namespace UVtools.Parser
 
         #endregion
 
-
-
         public IEnumerator<Point> GetEnumerator()
         {
-            return ((IEnumerable<Point>)Pixels).GetEnumerator();
+            return ((IEnumerable<Point>)Contour).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -163,9 +170,11 @@ namespace UVtools.Parser
         {
         }
 
-        public LayerHollowArea(Point[] pixels)
+        public LayerHollowArea(Point[] contour, System.Drawing.Rectangle boundingRectangle, AreaType type = AreaType.Unknown)
         {
-            Pixels = pixels;
+            Contour = contour;
+            BoundingRectangle = boundingRectangle;
+            Type = type;
         }
     }
     #endregion
@@ -439,7 +448,10 @@ namespace UVtools.Parser
                             pixels.Add(new Point(x, y));
                             islandSupportingPixels = previousBytes[pixelIndex] >= minPixelForSupportIsland ? 1u : 0;
 
-
+                            int minX = x;
+                            int maxX = x;
+                            int minY = y;
+                            int maxY = y;
 
                             int x2;
                             int y2;
@@ -472,6 +484,11 @@ namespace UVtools.Parser
                                         pixels.Add(point);
                                         queue.Enqueue(point);
 
+                                        minX = Math.Min(minX, tempx2);
+                                        maxX = Math.Max(maxX, tempx2);
+                                        minY = Math.Min(minY, tempy2);
+                                        maxY = Math.Max(maxY, tempy2);
+
                                         islandSupportingPixels += previousBytes[pixelIndex] >= minPixelForSupportIsland ? 1u : 0;
                                     }
                                 }
@@ -482,7 +499,7 @@ namespace UVtools.Parser
                                 continue; // Not a island, bounding is strong
                             if (islandSupportingPixels > 0 && pixels.Count < requiredPixelsToSupportIsland &&
                                 islandSupportingPixels >= Math.Max(1, pixels.Count / 2)) continue; // Not a island
-                            result.Add(new LayerIssue(this, LayerIssue.IssueType.Island, pixels.ToArray()));
+                            result.Add(new LayerIssue(this, LayerIssue.IssueType.Island, pixels.ToArray(), new Rectangle(minX, minY, maxX-minX, maxY-minY)));
                         }
                     }
                 }

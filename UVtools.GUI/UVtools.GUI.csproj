@@ -273,6 +273,8 @@
   <ItemGroup>
     <None Include="Images\checkbox-marked-16x16.png" />
     <None Include="Images\checkbox-unmarked-16x16.png" />
+    <None Include="Images\file-image-16x16.png" />
+    <None Include="Images\clipboard-16x16.png" />
     <Content Include="UVtools.ico" />
     <None Include="UVtools.png" />
     <None Include="Images\Exit-16x16.png" />
