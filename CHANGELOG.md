@@ -3,7 +3,7 @@
 ## 18/06/2020 - v0.5.1.3
 
 * (Add) Button save layer image to Clipboard 
-* (Change) Go to issue now zoom at bouding area instead of first pixels
+* (Change) Go to issue now zoom at bounding area instead of first pixels
 * (Change) Layer navigation panel width increased in 20 pixels, in some cases it was overlaping the slider
 * (Change) Actual layer information now have a depth border
 * (Change) Increased main GUI size to X: 1800 and Y: 850 pixels
