@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -70,7 +71,18 @@ namespace UVtools.Parser
         /// <summary>
         /// Gets the number of pixels on this issue
         /// </summary>
-        public uint Size => (uint) (Pixels?.Length ?? 0);
+        public uint Size {
+            get
+            {
+                if (Type == IssueType.ResinTrap && !BoundingRectangle.IsEmpty)
+                {
+                    return (uint) (BoundingRectangle.Width * BoundingRectangle.Height);
+                }
+
+                if (ReferenceEquals(Pixels, null)) return 0;
+                return (uint) Pixels.Length;
+            }
+        }
 
         /// <summary>
         /// Check if this issue have a valid start point to show
@@ -124,6 +136,8 @@ namespace UVtools.Parser
         public System.Drawing.Rectangle BoundingRectangle { get; }
 
         public AreaType Type { get; set; } = AreaType.Unknown;
+
+        public bool Processed { get; set; }
 
         #region Indexers
         public Point this[uint index]

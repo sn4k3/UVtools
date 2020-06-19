@@ -553,6 +553,8 @@ namespace UVtools.GUI
                     uint layerEnd;
                     uint closingIterations;
                     uint openingIterations;
+                    bool repairIslands;
+                    bool repairResinTraps;
                     using (var frmRepairLayers = new FrmRepairLayers(2))
                     {
                         if (frmRepairLayers.ShowDialog() != DialogResult.OK) return;
@@ -561,10 +563,17 @@ namespace UVtools.GUI
                         layerEnd = frmRepairLayers.LayerRangeEnd;
                         closingIterations = frmRepairLayers.ClosingIterations;
                         openingIterations = frmRepairLayers.OpeningIterations;
+                        repairIslands = frmRepairLayers.RepairIslands;
+                        repairResinTraps = frmRepairLayers.RepairResinTraps;
+                    }
+
+                    if (repairResinTraps && ReferenceEquals(Issues, null))
+                    {
+                        ComputeIssues();
                     }
 
                     DisableGUI();
-                    FrmLoading.SetDescription("Reparing Layers");
+                    FrmLoading.SetDescription("Reparing Layers and Issues");
 
                     Task<bool> task = Task<bool>.Factory.StartNew(() =>
                     {
@@ -572,26 +581,43 @@ namespace UVtools.GUI
                         try
                         {
 
-                            Parallel.For(layerStart, layerEnd + 1, i =>
+                            Parallel.For(layerStart, layerEnd + 1, layerIndex =>
                             {
-                                Layer layer = SlicerFile[i];
-                                var image = layer.Image;
-                                var imageEgmu = image.ToEmguImage();
-
-                                if (closingIterations > 0)
+                                Layer layer = SlicerFile[layerIndex];
+                                using (var image = layer.Image)
                                 {
-                                    imageEgmu = imageEgmu.Dilate((int) closingIterations);
-                                    imageEgmu = imageEgmu.Erode((int) closingIterations);
-                                }
+                                    var imageEgmu = image.ToEmguImage();
 
-                                if (openingIterations > 0)
-                                {
-                                    imageEgmu = imageEgmu.Erode((int) openingIterations);
-                                    imageEgmu = imageEgmu.Dilate((int) openingIterations);
-                                }
+                                    if (repairResinTraps)
+                                    {
+                                        if (Issues.TryGetValue((uint) layerIndex, out var issues))
+                                        {
+                                            foreach (var issue in issues)
+                                            {
+                                                if(issue.Type != LayerIssue.IssueType.ResinTrap) continue;
+                                                imageEgmu.Draw(new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)), -1, new Gray(255), -1);
+                                            }
+                                        }
+                                    }
 
-                                layer.Image = imageEgmu.ToImageSharpL8();
-                                imageEgmu.Dispose();
+                                    if (repairIslands)
+                                    {
+                                        if (closingIterations > 0)
+                                        {
+                                            imageEgmu = imageEgmu.Dilate((int) closingIterations);
+                                            imageEgmu = imageEgmu.Erode((int) closingIterations);
+                                        }
+
+                                        if (openingIterations > 0)
+                                        {
+                                            imageEgmu = imageEgmu.Erode((int) openingIterations);
+                                            imageEgmu = imageEgmu.Dilate((int) openingIterations);
+                                        }
+                                    }
+
+                                    layer.Image = imageEgmu.ToImageSharpL8();
+                                    imageEgmu.Dispose();
+                                }
                             });
                             result = true;
                         }
@@ -870,43 +896,105 @@ namespace UVtools.GUI
                 if (MessageBox.Show("Are you sure you want to remove all selected issues from image?\n" +
                                     "Warning: Removing a island can cause another issues to appears if the next layer have land in top of the removed island.\n" +
                                     "Always check previous and next layer before perform a island removal to ensure safe operation.",
-                    "Remove islands?",
+                    "Remove Issues?",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+
+                Dictionary<uint, List<LayerIssue>>  processIssues = new Dictionary<uint, List<LayerIssue>>();
 
                 foreach (ListViewItem item in lvIssues.SelectedItems)
                 {
                     if (!(item.Tag is LayerIssue issue)) continue;
+                    if (!issue.HaveValidPoint) continue;
 
-                    var image = ActualLayer == issue.Layer.Index ? ActualLayerImage : issue.Layer.Image;
-
-                    if(!issue.HaveValidPoint) continue;
-                        
-                    foreach (var pixel in issue)
+                    if (!processIssues.TryGetValue(issue.Layer.Index, out var issueList))
                     {
-                        image[pixel.X, pixel.Y] = Helpers.L8Black;
-                        if (ActualLayer == issue.Layer.Index)
-                        {
-                            int x = pixel.X;
-                            int y = pixel.Y;
-
-                            if (tsLayerImageRotate.Checked)
-                            {
-                                x = ActualLayerImage.Height - 1 - pixel.Y;
-                                y = pixel.X;
-                            }
-
-                            ((Bitmap) pbLayer.Image).SetPixel(x, y, Color.DarkRed);
-                        }
+                        issueList = new List<LayerIssue>();
+                        processIssues.Add(issue.Layer.Index, issueList);
                     }
 
-                    if (ActualLayer == issue.Layer.Index) pbLayer.Invalidate();
-
-                    issue.Layer.Image = image;
-                    Issues[issue.Layer.Index].Remove(issue);
-                    TotalIssues--;
-                    item.Remove();
+                    issueList.Add(issue);
                 }
 
+
+                DisableGUI();
+                FrmLoading.SetDescription("Removing selected issues");
+
+                Task<bool> task = Task<bool>.Factory.StartNew(() =>
+                {
+                    bool result = false;
+                    try
+                    {
+                        Parallel.ForEach(processIssues, layerIssues =>
+                        {
+                            using (var image = SlicerFile[layerIssues.Key].Image)
+                            {
+                                using (var imageEmgu = image.ToEmguImage())
+                                {
+                                    var data = imageEmgu.Data;
+
+                                    bool edited = false;
+
+                                    foreach (var issue in layerIssues.Value)
+                                    {
+                                        if (issue.Type == LayerIssue.IssueType.Island)
+                                        {
+                                            foreach (var pixel in issue)
+                                            {
+                                                data[pixel.Y, pixel.X, 0] = 0;
+                                            }
+
+                                            edited = true;
+                                        }
+                                        else if (issue.Type == LayerIssue.IssueType.ResinTrap)
+                                        {
+                                            imageEmgu.Draw(new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)),
+                                                -1, new Gray(255), -1);
+                                            edited = true;
+                                        }
+
+                                    }
+
+                                    if (!edited) return;
+                                    SlicerFile[layerIssues.Key].Image = imageEmgu.ToImageSharpL8();
+                                    result = true;
+                                }
+                            }
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Unsuccessful Removal", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    finally
+                    {
+                        Invoke((MethodInvoker)delegate {
+                            // Running on the UI thread
+                            EnableGUI(true);
+                        });
+                    }
+
+                    return result;
+                });
+
+                FrmLoading.ShowDialog();
+
+                if (!task.Result) return;
+
+                // Update GUI
+                lvIssues.BeginUpdate();
+                foreach (ListViewItem item in lvIssues.SelectedItems)
+                {
+                    if (!(item.Tag is LayerIssue issue)) continue;
+                    if (!issue.HaveValidPoint) continue;
+                    if (issue.Type == LayerIssue.IssueType.TouchingBound) continue;
+
+                    Issues[issue.Layer.Index].Remove(issue);
+                    item.Remove();
+                    TotalIssues--;
+                }
+                lvIssues.EndUpdate();
+
+                ShowLayer();
                 UpdateIssuesInfo();
                 menuFileSave.Enabled =
                     menuFileSaveAs.Enabled = true;
@@ -1181,7 +1269,7 @@ namespace UVtools.GUI
                         }
 
                         pbLayer.ZoomToRegion(x, y, 5, 5);
-                        //pbLayer.ZoomOut(true);
+                        pbLayer.ZoomOut(true);
                     }
                     else
                     {
@@ -1191,6 +1279,7 @@ namespace UVtools.GUI
                             tsLayerImageRotate.Checked ? issue.BoundingRectangle.Height : issue.BoundingRectangle.Width,
                             tsLayerImageRotate.Checked ? issue.BoundingRectangle.Width : issue.BoundingRectangle.Height
                             );
+                        pbLayer.ZoomOut(true);
                     }
                 }
 
@@ -1629,19 +1718,23 @@ namespace UVtools.GUI
                     Image<Gray, byte> greyscale = ActualLayerImage.ToEmguImage();
 
 #if DEBUG
-                    grayscale = grayscale.ThresholdBinary(new Gray(254), new Gray(255));
+                    greyscale = greyscale.ThresholdBinary(new Gray(254), new Gray(255));
                     VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
                     Mat external = new Mat();
 
-                    CvInvoke.FindContours(grayscale, contours, external, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
+                    CvInvoke.FindContours(greyscale, contours, external, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
 
                     var arr = external.GetData();
                     for (int i = 0; i < contours.Size; i++)
                     {
                         if ((int)arr.GetValue(0, i, 2) != -1 || (int)arr.GetValue(0, i, 3) == -1) continue;
                         var r = CvInvoke.BoundingRectangle(contours[i]);
-                        CvInvoke.Rectangle(grayscale, r, new MCvScalar(125), 10);
+                        CvInvoke.Rectangle(greyscale, r, new MCvScalar(80), 3);
+
+                        greyscale.Draw(contours, i, new Gray(125), -1);
+
                     }
+
 #else
                     greyscale = greyscale.Canny(80, 40, 3, true);
 #endif
@@ -1738,8 +1831,9 @@ namespace UVtools.GUI
                             using (var dummyImage = new Image<Gray, byte>(ActualLayerImage.Width,
                                 ActualLayerImage.Height))
                             {
-                                dummyImage.FillConvexPoly(issue.Pixels, new Gray(255));
-                                dummyImage.DrawPolyline(issue.Pixels, true, new Gray(125), 2);
+                                dummyImage.Draw(new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)), -1, new Gray(255), -1);
+                                //dummyImage.FillConvexPoly(issue.Pixels, new Gray(255));
+                                dummyImage.DrawPolyline(issue.Pixels, true, new Gray(125), 1);
                                 byte[,,] data = dummyImage.Data;
                                 for (int y = issue.BoundingRectangle.Y; y < issue.BoundingRectangle.Bottom; y++)
                                 {
@@ -1884,7 +1978,6 @@ namespace UVtools.GUI
                 if(ReferenceEquals(tabControlLeft.SelectedTab, tabPageIssues))
                 {
                     if (!ReferenceEquals(tabPageIssues.Tag, null)) return;
-                    tabPageIssues.Tag = true;
                     ComputeIssues();
                 }
                 return;
@@ -2144,7 +2237,7 @@ namespace UVtools.GUI
                                     imageEgmu = resizedImage.Copy(new Rectangle(0, 0, image.Width, image.Height));
                                     break;
                                 case Mutation.Mutates.Solidify:
-                                    for (byte pass = 0; pass < 2; pass++) // Passes
+                                    for (byte pass = 0; pass < 1; pass++) // Passes
                                     {
                                         var imageThreshold = imageEgmu.ThresholdBinary(new Gray(254), new Gray(255)); // Clean AA
                                         VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
@@ -2164,9 +2257,9 @@ namespace UVtools.GUI
                                         {
                                             if ((int)arr.GetValue(0, i, 2) != -1 || (int)arr.GetValue(0, i, 3) == -1) continue;
                                             var r = CvInvoke.BoundingRectangle(contours[i]);
-                                            imageEgmu.FillConvexPoly(contours[i].ToArray(), new Gray(255));
+                                            //imageEgmu.FillConvexPoly(contours[i].ToArray(), new Gray(255));
                                             //imageThreshold.FillConvexPoly(contours[i].ToArray(), new Gray(255));
-                                            //CvInvoke.po
+                                            imageEgmu.Draw(contours, i, new Gray(255), -1);
                                         }
 
                                         // Attempt to close any tiny region
@@ -2276,6 +2369,7 @@ namespace UVtools.GUI
 
         private void ComputeIssues()
         {
+            tabPageIssues.Tag = true;
             TotalIssues = 0;
             lvIssues.BeginUpdate();
             lvIssues.Items.Clear();
@@ -2290,23 +2384,24 @@ namespace UVtools.GUI
                 bool result = false;
                 try
                 {
-                    var issues = SlicerFile.LayerManager.GetAllIssues();
-                    Issues = new Dictionary<uint, List<LayerIssue>>();
-
-                    for (uint i = 0; i < SlicerFile.LayerCount; i++)
+                    Task taskGenericIssues = Task.Factory.StartNew(() =>
                     {
-                        if (issues.TryGetValue(i, out var list))
-                        {
-                            Issues.Add(i, list);
-                        }
-                    }
+                        var issues = SlicerFile.LayerManager.GetAllIssues();
+                        Issues = new Dictionary<uint, List<LayerIssue>>();
 
-                    return true;
+                        for (uint i = 0; i < SlicerFile.LayerCount; i++)
+                        {
+                            if (issues.TryGetValue(i, out var list))
+                            {
+                                Issues.Add(i, list);
+                            }
+                        }
+                    });
+
+
 
                     var layerHollowAreas = new ConcurrentDictionary<uint, List<LayerHollowArea>>();
                     
-                    Stopwatch sw = new Stopwatch();
-                    sw.Start();
                     Parallel.ForEach(SlicerFile,
                     //new ParallelOptions{MaxDegreeOfParallelism = 1},
                     layer =>
@@ -2344,95 +2439,119 @@ namespace UVtools.GUI
                         }
                     });
 
-                    List<LayerHollowArea> linkedAreas = new List<LayerHollowArea>();
-                    LayerHollowArea lastCheckedArea;
+                    
 
                     for (uint layerIndex = 1; layerIndex < SlicerFile.LayerCount-1; layerIndex++) // Ignore first and last layers, always drains
                     {
                         if(!layerHollowAreas.TryGetValue(layerIndex, out var areas)) continue; // No hollow areas in this layer, ignore
 
                         byte areaCount = 0;
-                        foreach (var area in areas)
+                        //foreach (var area in areas)
+                        Parallel.ForEach(areas, area =>
                         {
-                            if (area.Type != LayerHollowArea.AreaType.Unknown) continue; // processed, ignore
+                            if (area.Type != LayerHollowArea.AreaType.Unknown) return; // processed, ignore
                             area.Type = LayerHollowArea.AreaType.Trap;
 
                             areaCount++;
 
-                            linkedAreas.Clear();
-                            
+                            List<LayerHollowArea> linkedAreas = new List<LayerHollowArea>();
+
                             for (sbyte dir = 1; dir >= -1 && area.Type != LayerHollowArea.AreaType.Drain; dir -= 2)
+                                //Parallel.ForEach(dirs, new ParallelOptions {MaxDegreeOfParallelism = 2}, dir =>
                             {
                                 Queue<LayerHollowArea> queue = new Queue<LayerHollowArea>();
                                 queue.Enqueue(area);
+                                area.Processed = false;
                                 int nextLayerIndex = (int) layerIndex;
                                 while (queue.Count > 0 && area.Type != LayerHollowArea.AreaType.Drain)
                                 {
-                                    lastCheckedArea = queue.Dequeue();
+                                    LayerHollowArea checkArea = queue.Dequeue();
+                                    if (checkArea.Processed) continue;
+                                    checkArea.Processed = true;
                                     nextLayerIndex += dir;
-                                    Debug.WriteLine($"Area Count: {areaCount} | Layer: {layerIndex} | Next Layer: {nextLayerIndex} | Dir: {dir}");
-                                    if (nextLayerIndex < 0 && nextLayerIndex >= SlicerFile.LayerCount) break; // Exhaust layers
-                                    bool haveNextAreas = layerHollowAreas.TryGetValue((uint)nextLayerIndex, out var nextAreas);
+                                    Debug.WriteLine(
+                                        $"Area Count: {areaCount} | Layer: {layerIndex} | Next Layer: {nextLayerIndex} | Dir: {dir}");
+                                    if (nextLayerIndex < 0 && nextLayerIndex >= SlicerFile.LayerCount)
+                                        break; // Exhaust layers
+                                    bool haveNextAreas =
+                                        layerHollowAreas.TryGetValue((uint) nextLayerIndex, out var nextAreas);
 
                                     using (var image = SlicerFile[nextLayerIndex].Image)
                                     {
-                                        using (var emguImage = new Image<Gray, byte>(ActualLayerImage.Width, ActualLayerImage.Height))
+                                        using (var emguImage = new Image<Gray, byte>(ActualLayerImage.Width,
+                                            ActualLayerImage.Height))
                                         {
                                             image.TryGetSinglePixelSpan(out var span);
-                                            emguImage.FillConvexPoly(lastCheckedArea.Contour, new Gray(255));
+                                            //emguImage.FillConvexPoly(checkArea.Contour, new Gray(255));
+                                            emguImage.Draw(new VectorOfVectorOfPoint(new VectorOfPoint(checkArea.Contour)), -1,
+                                                new Gray(255), -1);
 
                                             bool exitPixelLoop = false;
+                                            uint blackCount = 0;
 
                                             byte[,,] data = emguImage.Data;
-                                            for (int y = lastCheckedArea.BoundingRectangle.Y;
-                                                y <= lastCheckedArea.BoundingRectangle.Bottom && area.Type != LayerHollowArea.AreaType.Drain && !exitPixelLoop;
+                                            for (int y = checkArea.BoundingRectangle.Y;
+                                                y <= checkArea.BoundingRectangle.Bottom &&
+                                                area.Type != LayerHollowArea.AreaType.Drain && !exitPixelLoop;
                                                 y++)
                                             {
-                                                for (int x = lastCheckedArea.BoundingRectangle.X;
-                                                    x <= lastCheckedArea.BoundingRectangle.Right && area.Type != LayerHollowArea.AreaType.Drain && !exitPixelLoop;
+                                                for (int x = checkArea.BoundingRectangle.X;
+                                                    x <= checkArea.BoundingRectangle.Right &&
+                                                    area.Type != LayerHollowArea.AreaType.Drain && !exitPixelLoop;
                                                     x++)
                                                 {
 
                                                     if (data[y, x, 0] != 255) continue;
+                                                    if (span[y * image.Width + x].PackedValue > 30) continue;
+                                                    blackCount++;
 
-                                                    if (span[y * image.Width + x] == Helpers.L8Black) // Found a black pixel: Drain or trap
+                                                    if (haveNextAreas
+                                                    ) // Have areas, can be on same area path or not
                                                     {
-                                                        if (haveNextAreas)
+                                                        foreach (var nextArea in nextAreas)
                                                         {
-                                                            foreach (var nextArea in nextAreas)
+                                                            /*if (!area.BoundingRectangle.IntersectsWith(nextArea.BoundingRectangle)) // If not intersect futher ispection is useless
                                                             {
-                                                                if (!area.BoundingRectangle.IntersectsWith(nextArea.BoundingRectangle)) // If not intersect futher ispection is useless
-                                                                {
-                                                                    continue;
-                                                                }
-                                                                if (CvInvoke.PointPolygonTest(new VectorOfPoint(nextArea.Contour),
-                                                                    new PointF(x, y), false) >= 0) 
-                                                                {
-                                                                    if (nextArea.Type == LayerHollowArea.AreaType.Drain) // Found a drain, stop query
-                                                                    {
-                                                                        area.Type = LayerHollowArea.AreaType.Drain;
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        queue.Enqueue(nextArea);
-                                                                    }
-
-                                                                    linkedAreas.Add(nextArea);
-                                                                    
-                                                                    exitPixelLoop = true;
-                                                                    break;
-                                                                }
+                                                                continue;
+                                                            }*/
+                                                            if (!(CvInvoke.PointPolygonTest(
+                                                                new VectorOfPoint(nextArea.Contour),
+                                                                new PointF(x, y), false) >= 0)) continue;
+                                                            if (nextArea.Type == LayerHollowArea.AreaType.Drain
+                                                            ) // Found a drain, stop query
+                                                            {
+                                                                area.Type = LayerHollowArea.AreaType.Drain;
                                                             }
-                                                        }
-                                                        else // Black pixel without next areas = Drain
-                                                        {
-                                                            area.Type = LayerHollowArea.AreaType.Drain;
+                                                            else
+                                                            {
+                                                                queue.Enqueue(nextArea);
+                                                            }
+
+                                                            linkedAreas.Add(nextArea);
+
                                                             exitPixelLoop = true;
                                                             break;
                                                         }
-                                                    } // black check
+                                                    }
+                                                    else if(blackCount > Math.Min(checkArea.Contour.Length / 2, 10)) // Black pixel without next areas = Drain
+                                                    {
+                                                        area.Type = LayerHollowArea.AreaType.Drain;
+                                                        exitPixelLoop = true;
+                                                        break;
+                                                    }
                                                 } // X loop
                                             } // Y loop
+
+                                            if (queue.Count == 0 && blackCount > Math.Min(checkArea.Contour.Length / 2, 10))
+                                            {
+                                                /*Invoke((MethodInvoker)delegate
+                                                {
+                                                    // Running on the UI thread
+                                                    ShowLayer((uint)nextLayerIndex);
+                                                });*/
+                                                area.Type = LayerHollowArea.AreaType.Drain;
+                                            }
+
                                         } // Dispose emgu image
                                     } // Dispose image
                                 } // Areas loop
@@ -2442,101 +2561,11 @@ namespace UVtools.GUI
                             {
                                 linkedArea.Type = area.Type;
                             }
-
-                            /*for (sbyte dir = 1; dir >= -1; dir-=2)
-                            {
-                                Debug.WriteLine($"dir: {dir}");
-                                for (int nextLayerIndex = (int) (layerIndex + dir); nextLayerIndex >= 0 && nextLayerIndex < SlicerFile.LayerCount; nextLayerIndex+= dir) // Search on next layer
-                                {
-                                    Debug.WriteLine($"Next Layer: {nextLayerIndex}");
-                                    bool nextHaveAreas = layerHollowAreas.TryGetValue((uint) nextLayerIndex, out var nextList);
-                                   // if (!layerHollowAreas.TryGetValue((uint) i, out var nextList)) // No areas found on next layer, check for tops
-                                   //  {
-                                        area.Type = LayerHollowArea.AreaType.Trap;
-                                        using (var image = SlicerFile[nextLayerIndex].Image)
-                                        {
-                                            using (var emguImage = new Image<Gray, byte>(ActualLayerImage.Width, ActualLayerImage.Height))
-                                            {
-                                                image.TryGetSinglePixelSpan(out var span);
-                                                emguImage.FillConvexPoly(lastCheckedArea.Contour, new Gray(255));
-
-                                                byte[,,] data = emguImage.Data;
-                                                for (int y = lastCheckedArea.BoundingRectangle.Y;
-                                                    y < lastCheckedArea.BoundingRectangle.Bottom && area.Type != LayerHollowArea.AreaType.Drain;
-                                                    y++)
-                                                {
-                                                    for (int x = lastCheckedArea.BoundingRectangle.X;
-                                                        x < lastCheckedArea.BoundingRectangle.Right && area.Type != LayerHollowArea.AreaType.Drain;
-                                                        x++)
-                                                    {
-
-                                                        if (data[y, x, 0] != 255) continue;
-
-                                                        var pixelIndex = y * image.Width + x;
-                                                        if (span[pixelIndex] == Helpers.L8Black) // Found a black pixel: Drain
-                                                        {
-                                                            if (nextHaveAreas)
-                                                            {
-                                                                foreach (var nextArea in nextList)
-                                                                {
-                                                                    if (CvInvoke.PointPolygonTest(new VectorOfPoint(nextArea.Contour), 
-                                                                        new PointF(x, y), false) > 0)
-                                                                    {
-                                                                        linkedAreas.Add(nextArea);
-                                                                        if (nextArea.Type == LayerHollowArea.AreaType.Drain) // Found a drain, stop query
-                                                                        {
-                                                                            area.Type = nextArea.Type;
-                                                                        }
-
-                                                                        break;
-                                                                    }
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                area.Type = LayerHollowArea.AreaType.Drain;
-                                                                break;
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-
-
-                                        if (area.Type == LayerHollowArea.AreaType.Drain) // Found a drain, stop query
-                                    {
-                                            break;
-                                        }
-                                        //}
-
-                                    /*foreach (var nextArea in nextList)
-                                    {
-                                        if (area.BoundingRectangle.IntersectsWith(nextArea.BoundingRectangle))
-                                        {
-                                            lastCheckedArea = nextArea;
-                                            linkedAreas.Add(nextArea);
-                                            if (nextArea.Type == LayerHollowArea.AreaType.Drain) // Found a drain, stop query
-                                            {
-                                                area.Type = nextArea.Type;
-                                                break;
-                                            }
-                                        }
-                                    }*/
-                            /*}
-
-                            if(area.Type == LayerHollowArea.AreaType.Drain) // Found a drain, stop query
-                                break;
-                        }
-
-                        foreach (var linkedArea in linkedAreas) // Update linked areas
-                        {
-                            linkedArea.Type = area.Type;
-                        }*/
-                        }
+                        });
                     }
 
-                    Issues = new Dictionary<uint, List<LayerIssue>>();
+                    taskGenericIssues.Wait();
+
                     for (uint layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
                     {
                         if (!layerHollowAreas.TryGetValue(layerIndex, out var list)) continue;
@@ -2552,15 +2581,20 @@ namespace UVtools.GUI
                                 }
                             }
 
-                            if (issues.Count > 0)
+                            if (issuesHollow.Count > 0)
                             {
-                                Issues.Add(layerIndex, issuesHollow);
+                                if (Issues.TryGetValue(layerIndex, out var currentIssue))
+                                {
+                                    currentIssue.AddRange(issuesHollow);
+                                }
+                                else
+                                {
+                                    Issues.Add(layerIndex, issuesHollow);
+                                }
                             }
                         }
                     }
 
-                    sw.Stop();
-                    Debug.WriteLine($"RectSearch: {sw.ElapsedMilliseconds}ms");
 
                     result = true;
                 }
@@ -2615,8 +2649,8 @@ namespace UVtools.GUI
             }
             
             lvIssues.EndUpdate();
-
             UpdateIssuesInfo();
+            ShowLayer();
         }
 
         private void EventMouseDown(object sender, MouseEventArgs e)

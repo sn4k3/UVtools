@@ -44,6 +44,12 @@ namespace UVtools.GUI.Forms
             get => cbRepairIslands.Checked;
             set => cbRepairIslands.Checked = value;
         }
+
+        public bool RepairResinTraps
+        {
+            get => cbRepairResinTraps.Checked;
+            set => cbRepairResinTraps.Checked = value;
+        }
         #endregion
 
         #region Constructors
@@ -154,6 +160,13 @@ namespace UVtools.GUI.Forms
                     numClosingIterations.Select();
                     return;
                 }
+
+                if (!cbRepairIslands.Enabled && !cbRepairResinTraps.Enabled)
+                {
+                    MessageBox.Show("You must select at least one repair operation.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
                 if (MessageBox.Show("Are you sure you want to attempt this repair?", Text, MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question) == DialogResult.Yes)
                 {

@@ -320,8 +320,8 @@
             this.menuToolsRepairLayers.Name = "menuToolsRepairLayers";
             this.menuToolsRepairLayers.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
             | System.Windows.Forms.Keys.R)));
-            this.menuToolsRepairLayers.Size = new System.Drawing.Size(204, 22);
-            this.menuToolsRepairLayers.Text = "&Repair layers";
+            this.menuToolsRepairLayers.Size = new System.Drawing.Size(261, 22);
+            this.menuToolsRepairLayers.Text = "&Repair layers and Issues";
             this.menuToolsRepairLayers.Click += new System.EventHandler(this.EventClick);
             // 
             // viewToolStripMenuItem
@@ -1041,7 +1041,9 @@
             this.tsIssueRemove.Name = "tsIssueRemove";
             this.tsIssueRemove.Size = new System.Drawing.Size(70, 22);
             this.tsIssueRemove.Text = "Remove";
-            this.tsIssueRemove.ToolTipText = "Remove selected issue when possible";
+            this.tsIssueRemove.ToolTipText = "Remove selected issue when possible\r\nIslands: All pixels are removed (turn black)" +
+    "\r\nResinTrap: All trap areas are filled with white pixels.\r\nTouchingBounds: No ac" +
+    "tion, need reslice.";
             this.tsIssueRemove.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator12

@@ -1,5 +1,13 @@
 # Changelog
 
+## 19/06/2020 - v0.5.2
+
+* (Add) Resin Trap issue validator and repairer - Experimental Feature (#3)
+* (Add) Layer Repair tool can now fix Resin Traps when selected
+* (Add) "Remove" issues button fix selected Resin traps, the operation now run under a thread and in a parallel way, preventing the GUI from freeze
+* (Change) "Repair Layers" button renamed to "Repair Layers and Issues"
+* (Fix) When do a "repair layers" before open the Issue tab, when open next it will recompute issues without the need
+
 ## 18/06/2020 - v0.5.1.3
 
 * (Add) Button save layer image to Clipboard 

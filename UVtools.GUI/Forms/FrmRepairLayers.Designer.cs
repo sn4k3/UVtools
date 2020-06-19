@@ -46,12 +46,12 @@ namespace UVtools.GUI.Forms
             this.btnLayerRangeNormalLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnRepair = new System.Windows.Forms.Button();
-            this.cbRepairLayers = new System.Windows.Forms.CheckBox();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.cbRepairIslands = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.cbRepairIslands = new System.Windows.Forms.CheckBox();
             this.numOpeningIterations = new System.Windows.Forms.NumericUpDown();
-            this.btnLayerRangeSelect = new SplitButton();
+            this.cbRepairResinTraps = new System.Windows.Forms.CheckBox();
+            this.btnLayerRangeSelect = new UVtools.GUI.Controls.SplitButton();
             ((System.ComponentModel.ISupportInitialize)(this.numClosingIterations)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeEnd)).BeginInit();
@@ -217,19 +217,6 @@ namespace UVtools.GUI.Forms
             this.btnRepair.UseVisualStyleBackColor = true;
             this.btnRepair.Click += new System.EventHandler(this.ItemClicked);
             // 
-            // cbRepairLayers
-            // 
-            this.cbRepairLayers.AutoSize = true;
-            this.cbRepairLayers.Checked = true;
-            this.cbRepairLayers.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbRepairLayers.Enabled = false;
-            this.cbRepairLayers.Location = new System.Drawing.Point(17, 242);
-            this.cbRepairLayers.Name = "cbRepairLayers";
-            this.cbRepairLayers.Size = new System.Drawing.Size(126, 24);
-            this.cbRepairLayers.TabIndex = 15;
-            this.cbRepairLayers.Text = "Repair Layers";
-            this.cbRepairLayers.UseVisualStyleBackColor = true;
-            // 
             // toolTip
             // 
             this.toolTip.AutoPopDelay = 32767;
@@ -238,19 +225,6 @@ namespace UVtools.GUI.Forms
             this.toolTip.ReshowDelay = 100;
             this.toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             this.toolTip.ToolTipTitle = "Information";
-            // 
-            // cbRepairIslands
-            // 
-            this.cbRepairIslands.AutoSize = true;
-            this.cbRepairIslands.Checked = true;
-            this.cbRepairIslands.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbRepairIslands.Enabled = false;
-            this.cbRepairIslands.Location = new System.Drawing.Point(17, 272);
-            this.cbRepairIslands.Name = "cbRepairIslands";
-            this.cbRepairIslands.Size = new System.Drawing.Size(130, 24);
-            this.cbRepairIslands.TabIndex = 16;
-            this.cbRepairIslands.Text = "Repair Islands";
-            this.cbRepairIslands.UseVisualStyleBackColor = true;
             // 
             // label1
             // 
@@ -262,6 +236,18 @@ namespace UVtools.GUI.Forms
             this.label1.TabIndex = 17;
             this.label1.Text = "Opening Iterations:";
             this.toolTip.SetToolTip(this.label1, resources.GetString("label1.ToolTip"));
+            // 
+            // cbRepairIslands
+            // 
+            this.cbRepairIslands.AutoSize = true;
+            this.cbRepairIslands.Checked = true;
+            this.cbRepairIslands.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbRepairIslands.Location = new System.Drawing.Point(17, 246);
+            this.cbRepairIslands.Name = "cbRepairIslands";
+            this.cbRepairIslands.Size = new System.Drawing.Size(194, 24);
+            this.cbRepairIslands.TabIndex = 16;
+            this.cbRepairIslands.Text = "Repair Layers + Islands";
+            this.cbRepairIslands.UseVisualStyleBackColor = true;
             // 
             // numOpeningIterations
             // 
@@ -275,6 +261,18 @@ namespace UVtools.GUI.Forms
             0,
             0,
             0});
+            // 
+            // cbRepairResinTraps
+            // 
+            this.cbRepairResinTraps.AutoSize = true;
+            this.cbRepairResinTraps.Checked = true;
+            this.cbRepairResinTraps.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbRepairResinTraps.Location = new System.Drawing.Point(17, 272);
+            this.cbRepairResinTraps.Name = "cbRepairResinTraps";
+            this.cbRepairResinTraps.Size = new System.Drawing.Size(164, 24);
+            this.cbRepairResinTraps.TabIndex = 19;
+            this.cbRepairResinTraps.Text = "Repair Resin Traps";
+            this.cbRepairResinTraps.UseVisualStyleBackColor = true;
             // 
             // btnLayerRangeSelect
             // 
@@ -292,10 +290,10 @@ namespace UVtools.GUI.Forms
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(606, 308);
+            this.Controls.Add(this.cbRepairResinTraps);
             this.Controls.Add(this.numOpeningIterations);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cbRepairIslands);
-            this.Controls.Add(this.cbRepairLayers);
             this.Controls.Add(this.btnLayerRangeSelect);
             this.Controls.Add(this.lbLayerRangeTo);
             this.Controls.Add(this.nmLayerRangeEnd);
@@ -344,10 +342,10 @@ namespace UVtools.GUI.Forms
         private System.Windows.Forms.ToolStripMenuItem btnLayerRangeCurrentLayer;
         private System.Windows.Forms.ToolStripMenuItem btnLayerRangeBottomLayers;
         private System.Windows.Forms.ToolStripMenuItem btnLayerRangeNormalLayers;
-        private System.Windows.Forms.CheckBox cbRepairLayers;
         private System.Windows.Forms.ToolTip toolTip;
         private System.Windows.Forms.CheckBox cbRepairIslands;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.NumericUpDown numOpeningIterations;
+        private System.Windows.Forms.CheckBox cbRepairResinTraps;
     }
 }
