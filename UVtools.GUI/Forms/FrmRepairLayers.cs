@@ -161,7 +161,7 @@ namespace UVtools.GUI.Forms
                     return;
                 }
 
-                if (!cbRepairIslands.Enabled && !cbRepairResinTraps.Enabled)
+                if (!RepairIslands && !RepairResinTraps)
                 {
                     MessageBox.Show("You must select at least one repair operation.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;

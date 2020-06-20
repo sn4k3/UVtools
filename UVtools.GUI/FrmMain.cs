@@ -1720,19 +1720,25 @@ namespace UVtools.GUI
 #if DEBUG
                     greyscale = greyscale.ThresholdBinary(new Gray(254), new Gray(255));
                     VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-                    Mat external = new Mat();
+                    Mat hierarchy = new Mat();
 
-                    CvInvoke.FindContours(greyscale, contours, external, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
+                    CvInvoke.FindContours(greyscale, contours, hierarchy, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
 
-                    var arr = external.GetData();
+                    /*
+                     * hierarchy[i][0]: the index of the next contour of the same level
+                     * hierarchy[i][1]: the index of the previous contour of the same level
+                     * hierarchy[i][2]: the index of the first child
+                     * hierarchy[i][3]: the index of the parent
+                     */
+                    var arr = hierarchy.GetData();
                     for (int i = 0; i < contours.Size; i++)
                     {
-                        if ((int)arr.GetValue(0, i, 2) != -1 || (int)arr.GetValue(0, i, 3) == -1) continue;
+                        if ((int)arr.GetValue(0, i, 3) >= 0) continue;
                         var r = CvInvoke.BoundingRectangle(contours[i]);
-                        CvInvoke.Rectangle(greyscale, r, new MCvScalar(80), 3);
+                        CvInvoke.Rectangle(greyscale, r, new MCvScalar(80), 2);
 
                         greyscale.Draw(contours, i, new Gray(125), -1);
-
+                        
                     }
 
 #else

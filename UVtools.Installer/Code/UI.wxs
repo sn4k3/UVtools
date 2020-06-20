@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <UI Id="UI">
+      
+      <!-- See http://wix.sourceforge.net/manual-wix3/WixUI_index.htm for more information-->
+      <UIRef Id="WixUI_FeatureTree"/>
+      
+      <!--Uncomment to inject a custom dialog into the install wizard loop -->
+      <!--<UIRef Id="CustomDlg"/>-->
+      
+    </UI>
+   </Fragment>
+</Wix>

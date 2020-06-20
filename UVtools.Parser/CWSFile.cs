@@ -21,7 +21,7 @@ namespace UVtools.Parser
     {
         #region Constants
 
-        public const string GCodeStart = "G28{0} ; Auto Home" +
+        public const string GCodeStart = "G28 ; Auto Home{0}" +
                                           "G21 ;Set units to be mm{0}" +
                                           "G91 ;Relative Positioning{0}" +
                                           "M17 ;Enable motors{0}" +
@@ -76,6 +76,10 @@ namespace UVtools.Parser
             [DisplayName("Max Y Feedrate")] public ushort MaxYFeedrate { get; set; } = 200;
             [DisplayName("Max Z Feedrate")] public ushort MaxZFeedrate { get; set; } = 200;
             [DisplayName("Machine Type")] public string MachineType { get; set; } = "UV_LCD";
+
+            // ;(****UVtools Configuration ******)  
+            [DisplayName("Bottom Layer Light PWM")] public byte BottomLayerLightPWM { get; set; } = 255;
+            [DisplayName("Layer Light PWM")] public byte LayerLightPWM { get; set; } = 255;
         }
 
         public class Slice
@@ -120,6 +124,9 @@ namespace UVtools.Parser
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.RetractSpeed,
             PrintParameterModifier.LiftSpeed,
+
+            PrintParameterModifier.BottomLightPWM,
+            PrintParameterModifier.LightPWM,
         };
 
         public override byte ThumbnailsCount { get; } = 0;
@@ -294,6 +301,17 @@ namespace UVtools.Parser
             }
         }
 
+        public override object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
+        {
+            var baseValue = base.GetValueFromPrintParameterModifier(modifier);
+            if (!ReferenceEquals(baseValue, null)) return baseValue;
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightPWM)) return OutputSettings.BottomLayerLightPWM;
+            if (ReferenceEquals(modifier, PrintParameterModifier.LightPWM)) return OutputSettings.LayerLightPWM;
+
+            return null;
+        }
+
         public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
         {
             if (ReferenceEquals(modifier, PrintParameterModifier.InitialLayerCount))
@@ -337,6 +355,20 @@ namespace UVtools.Parser
                 SliceSettings.LiftDownSpeed =
                 OutputSettings.ZLiftRetractRate =
                 OutputSettings.ZBottomLiftFeedRate = value.Convert<float>();
+                UpdateGCode();
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightPWM))
+            {
+                OutputSettings.BottomLayerLightPWM = value.Convert<byte>();
+                UpdateGCode();
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.LightPWM))
+            {
+                OutputSettings.BottomLayerLightPWM = value.Convert<byte>();
                 UpdateGCode();
                 return true;
             }
@@ -414,19 +446,20 @@ namespace UVtools.Parser
                 if (ReferenceEquals(displayNameAttribute, null)) continue;
                 GCode.AppendLine($";({displayNameAttribute.DisplayName.PadRight(24)} = {propertyInfo.GetValue(OutputSettings)})");
             }
-            GCode.AppendFormat($"{0}{GCodeStart}", Environment.NewLine);
+            GCode.AppendLine();
+            GCode.AppendFormat(GCodeStart, Environment.NewLine);
 
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                Layer layer = this[layerIndex];
+                //Layer layer = this[layerIndex];
                 GCode.AppendLine($"{GCodeKeywordSlice} {layerIndex}");
-                GCode.AppendLine("M106 S255");
-                GCode.AppendLine($"{GCodeKeywordDelay} " + (layerIndex < InitialLayerCount ? SliceSettings.HeadLayersExpoMs : SliceSettings.LayersExpoMs));
+                GCode.AppendLine($"M106 S{GetInitialLayerValueOrNormal(layerIndex, OutputSettings.BottomLayerLightPWM, OutputSettings.LayerLightPWM)}");
+                GCode.AppendLine($"{GCodeKeywordDelay} {GetInitialLayerValueOrNormal(layerIndex, SliceSettings.HeadLayersExpoMs, SliceSettings.LayersExpoMs)}");
                 GCode.AppendLine("M106 S0");
                 GCode.AppendLine(GCodeKeywordSliceBlank);
                 GCode.AppendLine($"G1 Z{LiftHeight} F{LiftSpeed}");
                 GCode.AppendLine($"G1 Z-{LiftHeight - LayerHeight} F{RetractSpeed}");
-                GCode.AppendLine($"{GCodeKeywordDelay} " + (layerIndex < InitialLayerCount ? SliceSettings.HeadLayersExpoMs : SliceSettings.LayersExpoMs));
+                GCode.AppendLine($"{GCodeKeywordDelay} {GetInitialLayerValueOrNormal(layerIndex, SliceSettings.HeadLayersExpoMs, SliceSettings.LayersExpoMs)}");
             }
 
             GCode.AppendFormat(GCodeEnd, Environment.NewLine, SliceSettings.LiftWhenFinished);

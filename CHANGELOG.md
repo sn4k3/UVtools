@@ -1,5 +1,14 @@
 # Changelog
 
+## 20/06/2020 - v0.5.2.1
+
+* (Add) cws: Allow change layer PWM value
+* (Update) Dependency ImageSharp from 1.0.0-rc0002 to 1.0.0-rc0003 (It fix a error on resize function)
+* (Fix) cws: GCode 0 before G29
+* (Fix) Phrozen Sonic Mini: Display Height from 66.04 to 68.04
+* (Fix) Zortrax Inkspire: Display and Volume to 74.67x132.88
+* (Fix) Layer repair tool allow operation when every repair checkbox is deselected
+
 ## 19/06/2020 - v0.5.2
 
 * (Add) Resin Trap issue validator and repairer - Experimental Feature (#3)

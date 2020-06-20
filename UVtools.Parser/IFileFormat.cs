@@ -278,6 +278,16 @@ namespace UVtools.Parser
         float GetHeightFromLayer(uint layerIndex, bool realHeight = true);
 
         /// <summary>
+        /// Gets the value for initial layer or normal layers based on layer index
+        /// </summary>
+        /// <typeparam name="T">Type of value</typeparam>
+        /// <param name="layerIndex">Layer index</param>
+        /// <param name="initialLayerValue">Initial value</param>
+        /// <param name="normalLayerValue">Normal value</param>
+        /// <returns></returns>
+        T GetInitialLayerValueOrNormal<T>(uint layerIndex, T initialLayerValue, T normalLayerValue);
+
+        /// <summary>
         /// Gets the value attributed to <see cref="FileFormat.PrintParameterModifier"/>
         /// </summary>
         /// <param name="modifier">Modifier to use</param>

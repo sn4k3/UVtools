@@ -595,6 +595,11 @@ namespace UVtools.Parser
             return (float)Math.Round((layerIndex+(realHeight ? 1 : 0)) * LayerHeight, 2);
         }
 
+        public T GetInitialLayerValueOrNormal<T>(uint layerIndex, T initialLayerValue, T normalLayerValue)
+        {
+            return layerIndex < InitialLayerCount ? initialLayerValue : normalLayerValue;
+        }
+
         public virtual object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
         {
             if (ReferenceEquals(modifier, PrintParameterModifier.InitialLayerCount))
