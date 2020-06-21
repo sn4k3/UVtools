@@ -1,5 +1,9 @@
 # Changelog
 
+## 21/06/2020 - v0.5.2.2
+
+* (Fix) phz: Files with encryption or sliced by chitubox produced black images after save due not setting the image address nor size (Spotted by Burak Cezairli)
+
 ## 20/06/2020 - v0.5.2.1
 
 * (Add) cws: Allow change layer PWM value

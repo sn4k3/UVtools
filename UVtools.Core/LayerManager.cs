@@ -9,14 +9,16 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using UVtools.Parser.Extensions;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using Point = System.Drawing.Point;
-using Rectangle = System.Drawing.Rectangle;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
+using Emgu.CV.Util;
+using UVtools.Core.Extensions;
 
 namespace UVtools.Parser
 {
@@ -210,16 +212,16 @@ namespace UVtools.Parser
         /// </summary>
         public uint Index { get; }
 
-        private byte[] _rawData;
+        private byte[] _compressedBytes;
         /// <summary>
         /// Gets or sets layer image compressed data
         /// </summary>
-        public byte[] RawData
+        public byte[] CompressedBytes
         {
-            get => LayerManager.DecompressLayer(_rawData);
+            get => LayerManager.DecompressLayer(_compressedBytes);
             set
             {
-                _rawData = LayerManager.CompressLayer(value);
+                _compressedBytes = LayerManager.CompressLayer(value);
                 IsModified = true;
             }
         }
@@ -237,39 +239,54 @@ namespace UVtools.Parser
         /// <summary>
         /// Gets or sets a new image instance
         /// </summary>
-        public Image<L8> Image
+        public Mat LayerMat
         {
-            get => SixLabors.ImageSharp.Image.Load<L8>(RawData);
+            get
+            {
+                Mat mat = new Mat();
+                CvInvoke.Imdecode(CompressedBytes, ImreadModes.Grayscale, mat);
+                return mat;
+            }
             set
             {
-                using (MemoryStream stream = new MemoryStream())
+                using (var vector = new VectorOfByte())
                 {
-                    value.Save(stream, Helpers.PngEncoder);
-                    RawData = stream.ToArray();
+                    CvInvoke.Imencode(".png", value, vector);
+                    CompressedBytes = vector.ToArray();
                 }
             }
         }
 
         /// <summary>
-        /// Gets a new RGBA image instance
+        /// Gets a new Brg image instance
         /// </summary>
-        public Image<Rgba32> ImageRbga32 => Image.CloneAs<Rgba32>();
+        public Mat BrgMat
+        {
+            get {
+                using (Mat image = LayerMat)
+                {
+                    Mat mat = new Mat();
+                    CvInvoke.CvtColor(image, mat, ColorConversion.Gray2Bgr);
+                    return mat;
+                }
+            }
+        }
 
         #endregion
 
         #region Constructor
-        public Layer(uint index, byte[] rawData, string filename = null, LayerManager pararentLayerManager = null)
+        public Layer(uint index, byte[] compressedBytes, string filename = null, LayerManager pararentLayerManager = null)
         {
             Index = index;
-            RawData = rawData;
+            CompressedBytes = compressedBytes;
             Filename = filename ?? $"Layer{index}.png";
             IsModified = false;
             ParentLayerManager = pararentLayerManager;
         }
 
-        public Layer(uint index, Image<L8> image, string filename = null, LayerManager pararentLayerManager = null) : this(index, new byte[0], filename, pararentLayerManager)
+        public Layer(uint index, Mat layerMat, string filename = null, LayerManager pararentLayerManager = null) : this(index, new byte[0], filename, pararentLayerManager)
         {
-            Image = image;
+            LayerMat = layerMat;
             IsModified = false;
         }
 
@@ -319,7 +336,7 @@ namespace UVtools.Parser
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return Equals(_rawData, other._rawData);
+            return Equals(_compressedBytes, other._compressedBytes);
         }
 
         public override bool Equals(object obj)
@@ -332,7 +349,7 @@ namespace UVtools.Parser
 
         public override int GetHashCode()
         {
-            return (_rawData != null ? _rawData.GetHashCode() : 0);
+            return (_compressedBytes != null ? _compressedBytes.GetHashCode() : 0);
         }
 
         private sealed class IndexRelationalComparer : IComparer<Layer>
@@ -392,22 +409,14 @@ namespace UVtools.Parser
 
             
 
-            var image = Image;
-            byte[] bytes = null;
-            if (image.TryGetSinglePixelSpan(out var pixelSpan))
-            {
-                bytes = MemoryMarshal.AsBytes(pixelSpan).ToArray();
-            }
+            var mat = LayerMat;
+            var bytes = mat.GetBytes();
 
-            var previousLayerImage = PreviousLayer()?.Image;
-            byte[] previousBytes = null;
-            if (!ReferenceEquals(previousLayerImage, null))
-            {
-                if (previousLayerImage.TryGetSinglePixelSpan(out var previousPixelSpan))
-                {
-                    previousBytes = MemoryMarshal.AsBytes(previousPixelSpan).ToArray();
-                }
-            }
+
+
+            var previousLayerImage = PreviousLayer()?.LayerMat;
+            byte[] previousBytes = previousLayerImage?.GetBytes();
+            
 
             /*var nextLayerImage = NextLayer()?.Image;
             byte[] nextBytes = null;
@@ -423,7 +432,7 @@ namespace UVtools.Parser
             // mark visited cells. 
             // Initially all cells 
             // are unvisited 
-            bool[,] visited = new bool[image.Width, image.Height];
+            bool[,] visited = new bool[mat.Width, mat.Height];
 
             // Initialize count as 0 and 
             // traverse through the all 
@@ -439,11 +448,11 @@ namespace UVtools.Parser
             uint islandSupportingPixels;
             if (Index > 0)
             {
-                for (int y = 0; y < image.Height; y++)
+                for (int y = 0; y < mat.Height; y++)
                 {
-                    for (int x = 0; x < image.Width; x++)
+                    for (int x = 0; x < mat.Width; x++)
                     {
-                        pixelIndex = y * image.Width + x;
+                        pixelIndex = y * mat.Width + x;
 
                         /*if (bytes[pixelIndex] == 0 && previousBytes?[pixelIndex] == byte.MaxValue &&
                             nextBytes?[pixelIndex] == byte.MaxValue)
@@ -485,10 +494,10 @@ namespace UVtools.Parser
                                     //if (isSafe(y2 + rowNbr[k], x2 + colNbr[k]))
                                     var tempy2 = y2 + rowNbr[k];
                                     var tempx2 = x2 + colNbr[k];
-                                    pixelIndex = tempy2 * image.Width + tempx2;
+                                    pixelIndex = tempy2 * mat.Width + tempx2;
                                     if (tempy2 >= 0 &&
-                                        tempy2 < image.Height &&
-                                        tempx2 >= 0 && tempx2 < image.Width &&
+                                        tempy2 < mat.Height &&
+                                        tempx2 >= 0 && tempx2 < mat.Width &&
                                         bytes[pixelIndex] >= minPixel &&
                                         !visited[tempx2, tempy2])
                                     {
@@ -521,29 +530,29 @@ namespace UVtools.Parser
             pixels.Clear();
 
             // TouchingBounds Checker
-            for (int x = 0; x < image.Width; x++) // Check Top and Bottom bounds
+            for (int x = 0; x < mat.Width; x++) // Check Top and Bottom bounds
             {
                 if (bytes[x] >= 200) // Top
                 {
                     pixels.Add(new Point(x, 0));
                 }
 
-                if (bytes[image.Width * image.Height - image.Width + x] >= 200) // Bottom
+                if (bytes[mat.Width * mat.Height - mat.Width + x] >= 200) // Bottom
                 {
-                    pixels.Add(new Point(x, image.Height-1));
+                    pixels.Add(new Point(x, mat.Height-1));
                 }
             }
 
-            for (int y = 0; y < image.Height; y++) // Check Left and Right bounds
+            for (int y = 0; y < mat.Height; y++) // Check Left and Right bounds
             {
-                if (bytes[y * image.Width] >= 200) // Left
+                if (bytes[y * mat.Width] >= 200) // Left
                 {
                     pixels.Add(new Point(0, y));
                 }
 
-                if (bytes[y * image.Width + image.Width - 1] >= 200) // Right
+                if (bytes[y * mat.Width + mat.Width - 1] >= 200) // Right
                 {
-                    pixels.Add(new Point(image.Width-1, y));
+                    pixels.Add(new Point(mat.Width-1, y));
                 }
             }
 
@@ -559,9 +568,27 @@ namespace UVtools.Parser
 
         public Layer Clone()
         {
-            return new Layer(Index, RawData, Filename, ParentLayerManager);
+            return new Layer(Index, CompressedBytes, Filename, ParentLayerManager);
         }
         #endregion
+
+        public void Resize(float newWidth, float newHeight)
+        {
+            using (var mat = LayerMat)
+            {
+                using (var resizedMat = new Mat())
+                {
+                    int width = (int)(mat.Width * newWidth);
+                    int height = (int)(mat.Height * newHeight);
+                    Point location = new Point(mat.Width / 2 - width / 2, mat.Height / 2 - height / 2);
+
+                    CvInvoke.Resize(mat, resizedMat, new Size(width, height));
+                    mat.SetTo(new MCvScalar(0));
+                    resizedMat.CopyTo(mat);
+                    LayerMat = mat;
+                }
+            }
+        }
     }
     #endregion
 

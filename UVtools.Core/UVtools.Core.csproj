@@ -2,23 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Authors>Tiago Conceição</Authors>
-    <Company>PTRTECH</Company>
-    <PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
-    <PackageIcon></PackageIcon>
-    <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
-    <AssemblyVersion>0.5.2.2</AssemblyVersion>
-    <FileVersion>0.5.2.2</FileVersion>
-    <Version>0.5.2.2</Version>
-    <Description>MSLA/DLP, file analysis, repair, conversion and manipulation</Description>
-    <PackageId>UVtools.Parser</PackageId>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <Product>UVtools.Parser</Product>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <Company>PTRTECH</Company>
+    <Authors>Tiago Conceição</Authors>
+    <RepositoryType>Git</RepositoryType>
+    <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
+    <Description>MSLA/DLP, file analysis, repair, conversion and manipulation</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\LICENSE" Link="LICENSE" />
     <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
@@ -27,8 +21,8 @@
 
   <ItemGroup>
     <PackageReference Include="BinarySerializer" Version="8.5.1" />
+    <PackageReference Include="Emgu.CV" Version="4.3.0.3890" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-rc0003" />
   </ItemGroup>
 
 </Project>

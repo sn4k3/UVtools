@@ -14,6 +14,8 @@ Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "UVtools.InstallerMM", "UVto
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "UVtools.Installer", "UVtools.Installer\UVtools.Installer.wixproj", "{41224896-08E9-4F22-9E56-5F9D46DEC7D2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UVtools.Core", "UVtools.Core\UVtools.Core.csproj", "{7C9927F8-132E-4A37-B894-440E0FD5AA3D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +52,14 @@ Global
 		{41224896-08E9-4F22-9E56-5F9D46DEC7D2}.Release|Any CPU.ActiveCfg = Release|x86
 		{41224896-08E9-4F22-9E56-5F9D46DEC7D2}.Release|x86.ActiveCfg = Release|x86
 		{41224896-08E9-4F22-9E56-5F9D46DEC7D2}.Release|x86.Build.0 = Release|x86
+		{7C9927F8-132E-4A37-B894-440E0FD5AA3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C9927F8-132E-4A37-B894-440E0FD5AA3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C9927F8-132E-4A37-B894-440E0FD5AA3D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7C9927F8-132E-4A37-B894-440E0FD5AA3D}.Debug|x86.Build.0 = Debug|Any CPU
+		{7C9927F8-132E-4A37-B894-440E0FD5AA3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C9927F8-132E-4A37-B894-440E0FD5AA3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C9927F8-132E-4A37-B894-440E0FD5AA3D}.Release|x86.ActiveCfg = Release|Any CPU
+		{7C9927F8-132E-4A37-B894-440E0FD5AA3D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

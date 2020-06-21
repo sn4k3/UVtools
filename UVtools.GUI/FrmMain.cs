@@ -1715,13 +1715,19 @@ namespace UVtools.GUI
 
                 if (tsLayerImageLayerOutline.Checked)
                 {
-                    Image<Gray, byte> greyscale = ActualLayerImage.ToEmguImage();
+                    Image<Gray, byte> greyscale = ActualLayerImage.ToEmguImage(); // 10ms
+                    SlicerFile[ActualLayer].Image = ActualLayerImage; // 127ms
+                    var mat = ActualLayerImage.ToEmguMat(); // 4ms
 
+                    var bytes = new VectorOfByte();
+                    CvInvoke.Imencode(".png", mat, bytes); // 9ms
+                    CvInvoke.Imdecode(bytes, ImreadModes.Grayscale, mat); // 10ms
+                    Debug.WriteLine(CvInvoke.UseOpenCL);
 #if DEBUG
                     greyscale = greyscale.ThresholdBinary(new Gray(254), new Gray(255));
                     VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
                     Mat hierarchy = new Mat();
-
+                    
                     CvInvoke.FindContours(greyscale, contours, hierarchy, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
 
                     /*
@@ -1735,10 +1741,9 @@ namespace UVtools.GUI
                     {
                         if ((int)arr.GetValue(0, i, 3) >= 0) continue;
                         var r = CvInvoke.BoundingRectangle(contours[i]);
-                        CvInvoke.Rectangle(greyscale, r, new MCvScalar(80), 2);
-
-                        greyscale.Draw(contours, i, new Gray(125), -1);
-                        
+                        //CvInvoke.Rectangle(greyscale, r, new MCvScalar(80), 2);
+                        greyscale.Draw(contours, -1, new Gray(125), -1);
+                        //CvInvoke.DrawContours(mat, contours, -1, new MCvScalar(255), -1);
                     }
 
 #else

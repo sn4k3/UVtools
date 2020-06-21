@@ -6,12 +6,16 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
+using System.Drawing;
 using System.IO;
 using Emgu.CV;
+using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using UVtools.Parser;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace UVtools.GUI.Extensions
 {
@@ -38,6 +42,13 @@ namespace UVtools.GUI.Extensions
                 {
                     Bytes = Helpers.ImageL8ToBytes(image)
                 };
+        }
+
+        public static Mat ToEmguMat(this Image<L8> image)
+        {
+            var mat = new Mat(new System.Drawing.Size(image.Width, image.Height), DepthType.Cv8U, 1);
+            mat.SetTo(Helpers.ImageL8ToBytes(image));
+            return mat;
         }
 
         /*public static Image<TPixel> ToImageSharpImage<TPixel>(this System.Drawing.Bitmap bitmap) where TPixel : struct, IPixel<TPixel>

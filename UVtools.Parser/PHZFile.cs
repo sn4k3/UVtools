@@ -586,10 +586,13 @@ namespace UVtools.Parser
                 {
                     KeyRing kr = new KeyRing(Parent.HeaderSettings.EncryptionKey, layerIndex);
                     EncodedRle = kr.Read(rawData).ToArray();
-                    return;
+                }
+                else
+                {
+                    EncodedRle = rawData.ToArray();
                 }
 
-                EncodedRle = rawData.ToArray();
+                DataSize = (uint) EncodedRle.Length;
             }
 
             public override string ToString()
@@ -603,8 +606,8 @@ namespace UVtools.Parser
 
         public class KeyRing
         {
-            public ulong Init { get; }
-            public ulong Key { get; private set; }
+            public uint Init { get; }
+            public uint Key { get; private set; }
             public uint Index { get; private set; }
 
             public KeyRing(uint seed, uint layerIndex)
@@ -819,11 +822,12 @@ namespace UVtools.Parser
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
                     LayerData layerData = LayersDefinitions[layerIndex];
+                    LayerData layerDataHash = null;
 
                     if (HeaderSettings.EncryptionKey == 0)
                     {
                         string hash = Helpers.ComputeSHA1Hash(layerData.EncodedRle);
-                        if (LayersHash.TryGetValue(hash, out var layerDataHash))
+                        if (LayersHash.TryGetValue(hash, out layerDataHash))
                         {
                             layerData.DataAddress = layerDataHash.DataAddress;
                             layerData.DataSize = layerDataHash.DataSize;
@@ -831,15 +835,18 @@ namespace UVtools.Parser
                         else
                         {
                             LayersHash.Add(hash, layerData);
-                            layerData.DataAddress = layerDataCurrentOffset;
-                            layerData.DataSize = (uint)layerData.EncodedRle.Length;
-
-                            outputFile.Seek(layerDataCurrentOffset, SeekOrigin.Begin);
-                            layerDataCurrentOffset += outputFile.WriteBytes(layerData.EncodedRle);
                         }
                     }
 
-                    
+                    if (ReferenceEquals(layerDataHash, null))
+                    {
+                        layerData.DataAddress = layerDataCurrentOffset;
+
+                        outputFile.Seek(layerDataCurrentOffset, SeekOrigin.Begin);
+                        layerDataCurrentOffset += outputFile.WriteBytes(layerData.EncodedRle);
+                    }
+
+
                     LayersDefinitions[layerIndex] = layerData;
 
                     outputFile.Seek(currentOffset, SeekOrigin.Begin);
