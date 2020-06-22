@@ -73,7 +73,7 @@ namespace UVtools.Core
         /// <summary>
         /// Gets the thumbnails for this <see cref="FileFormat"/>
         /// </summary>
-        Mat Thumbnails { get; set; }
+        Mat[] Thumbnails { get; set; }
 
         /// <summary>
         /// Gets the cached layers into compressed bytes

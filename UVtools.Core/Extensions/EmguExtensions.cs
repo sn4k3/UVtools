@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System.Drawing;
 using System.Runtime.InteropServices;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -23,6 +24,11 @@ namespace UVtools.Core.Extensions
             handle.Free();
 
             return data;
+        }
+
+        public static Mat CloneBlank(this Mat mat)
+        {
+            return new Mat(new Size(mat.Width, mat.Height), mat.Depth, mat.NumberOfChannels);
         }
     }
 }

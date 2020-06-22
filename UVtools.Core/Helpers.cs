@@ -97,5 +97,15 @@ namespace UVtools.Core
                     throw new Exception($"Data type '{name}' not recognized, contact developer.");
             }
         }
+
+        public static int GetPixelPosition(int width, int x, int y)
+        {
+            return width * y + x;
+        }
+
+        public static uint GetPixelPositionU(uint width, uint x, uint y)
+        {
+            return width * y + x;
+        }
     }
 }
