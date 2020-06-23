@@ -56,23 +56,19 @@ namespace UVtools.Core
             base.Decode(fileFullPath);
             var grayMat = new Mat();
 
-            using (ImageMat = CvInvoke.Imread(fileFullPath, ImreadModes.AnyColor))
+            ImageMat = CvInvoke.Imread(fileFullPath, ImreadModes.AnyColor);
+            const byte startDivisor = 2;
+            for (int i = 0; i < ThumbnailsCount; i++)
             {
-                const byte startDivisor = 2;
-                for (int i = 0; i < ThumbnailsCount; i++)
-                {
-                    Thumbnails[i] = new Mat();
-                    var divisor = i * startDivisor;
-                    CvInvoke.Resize(ImageMat, Thumbnails[i],
-                        new Size(ImageMat.Width / divisor, ImageMat.Height / divisor));
-                }
-                
-                CvInvoke.CvtColor(ImageMat, grayMat, ColorConversion.Bgr2Gray);
+                Thumbnails[i] = new Mat();
+                var divisor = (i + 1) * startDivisor;
+                CvInvoke.Resize(ImageMat, Thumbnails[i],
+                    new Size(ImageMat.Width / divisor, ImageMat.Height / divisor));
             }
 
-            ImageMat = grayMat;
+            CvInvoke.CvtColor(ImageMat, ImageMat, ColorConversion.Bgr2Gray);
 
-            LayerManager  = new LayerManager(1);
+            LayerManager = new LayerManager(1);
             this[0] = new Layer(0, ImageMat, Path.GetFileName(fileFullPath));
         }
 

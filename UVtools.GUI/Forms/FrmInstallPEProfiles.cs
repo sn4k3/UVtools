@@ -6,12 +6,9 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Text;
 using System.Windows.Forms;
-using SixLabors.ImageSharp.Formats.Tga;
 
 namespace UVtools.GUI.Forms
 {

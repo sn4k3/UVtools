@@ -10,19 +10,34 @@
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
     <Description>MSLA/DLP, file analysis, repair, conversion and manipulation</Description>
+    <Version>0.6</Version>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="MatBytes.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+    <None Include="MatBytes.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BinarySerializer" Version="8.5.1" />
     <PackageReference Include="Emgu.CV" Version="4.3.0.3890" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
   </ItemGroup>
 
 </Project>

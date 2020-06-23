@@ -461,9 +461,7 @@ namespace UVtools.Core
             for (var i = 0; i < Thumbnails.Length; i++)
             {
                 if (ReferenceEquals(Thumbnails[i], null)) continue;
-                Mat output = new Mat();
-                CvInvoke.Resize(Thumbnails[i], output, new Size(ThumbnailsOriginalSize[i].Width, ThumbnailsOriginalSize[i].Height));
-                Thumbnails[i] = output;
+                CvInvoke.Resize(Thumbnails[i], Thumbnails[i], new Size(ThumbnailsOriginalSize[i].Width, ThumbnailsOriginalSize[i].Height));
             }
         }
 

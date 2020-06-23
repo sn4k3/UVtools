@@ -309,7 +309,8 @@ namespace UVtools.Core
             public Mat Decode(byte[] rawImageData)
             {
                 var image = new Mat(new Size((int)ResolutionX, (int)ResolutionY), DepthType.Cv8U, 3);
-                var bytes = image.GetBytes();
+                var span = image.GetPixelSpan<byte>();
+                
 
                 int pixel = 0;
                 for (uint n = 0; n < ImageLength; n++)
@@ -328,11 +329,10 @@ namespace UVtools.Core
 
                     for (int j = 0; j < repeat; j++)
                     {
-                        bytes[pixel++] = blue;
-                        bytes[pixel++] = green;
-                        bytes[pixel++] = red;
+                        span[pixel++] = blue;
+                        span[pixel++] = green;
+                        span[pixel++] = red;
                         //span[pixel] = new Rgba32(red, green, blue, byte.MaxValue);
-                        pixel++;
                     }
                 }
 
@@ -342,7 +342,7 @@ namespace UVtools.Core
             public static byte[] Encode(Mat image)
             {
                 List<byte> rawData = new List<byte>();
-                var bytes = image.GetBytes();
+                var span = image.GetPixelSpan<byte>();
                 ushort color15 = 0;
                 uint rep = 0;
 
@@ -373,13 +373,13 @@ namespace UVtools.Core
                     }
                 }
 
-                uint pixel = 0;
-                while (pixel < bytes.Length)
+                int pixel = 0;
+                while (pixel < span.Length)
                 {
                     var ncolor15 =
-                        (bytes[pixel++] >> 3)
-                        | ((bytes[pixel++] >> 2) << 5)
-                        | ((bytes[pixel++] >> 3) << 11);
+                        (span[pixel++] >> 3)
+                        | ((span[pixel++] >> 2) << 5)
+                        | ((span[pixel++] >> 3) << 11);
 
                     if (ncolor15 == color15)
                     {
@@ -461,8 +461,8 @@ namespace UVtools.Core
 
             public Mat Decode(uint layerIndex, bool consumeData = true)
             {
-                Mat image = new Mat(new Size((int)Parent.ResolutionX, (int)Parent.ResolutionY), DepthType.Cv8U, 1);
-                var bytes = image.GetBytes();
+                var image = new Mat(new Size((int)Parent.ResolutionX, (int)Parent.ResolutionY), DepthType.Cv8U, 1);
+                var span = image.GetPixelSpan<byte>();
 
                 if (Parent.HeaderSettings.EncryptionKey > 0)
                 {
@@ -490,10 +490,11 @@ namespace UVtools.Core
 
                         if (index < limit)
                         {
-                            bytes[index] = lastColor;
+                            span[index] = lastColor;
                         }
                         else
                         {
+                            image.Dispose();
                             throw new FileLoadException("Corrupted RLE data.");
                         }
 
@@ -505,10 +506,11 @@ namespace UVtools.Core
                         {
                             if (index < limit)
                             {
-                                bytes[index] = lastColor;
+                                span[index] = lastColor;
                             }
                             else
                             {
+                                image.Dispose();
                                 throw new FileLoadException("Corrupted RLE data.");
                             }
                             index++;
@@ -525,7 +527,7 @@ namespace UVtools.Core
             public void Encode(Mat image, uint layerIndex)
             {
                 List<byte> rawData = new List<byte>();
-                var bytes = image.GetBytes();
+                var span = image.GetPixelSpan<byte>();
                 //byte color = byte.MaxValue >> 1;
                 byte color = byte.MaxValue;
                 uint stride = 0;
@@ -553,11 +555,11 @@ namespace UVtools.Core
                 int halfWidth = image.Width / 2;
 
 
-                for (int y = 0; y < bytes.Length; y++)
+                for (int y = 0; y < image.Height; y++)
                 {
                     for (int x = 0; x < image.Width; x++)
                     {
-                        var grey7 = (byte)((bytes[Helpers.GetPixelPosition(image.Width, x, y)] >> 1) & 0x7f);
+                        var grey7 = (byte)((span[image.GetPixelPos(x, y)] >> 1) & 0x7f);
                         if (grey7 > 0x7c)
                         {
                             grey7 = 0x7c;
@@ -946,8 +948,10 @@ namespace UVtools.Core
 
             Parallel.For(0, LayerCount, layerIndex =>
             {
-                var image = LayersDefinitions[layerIndex].Decode((uint) layerIndex, true);
-                this[layerIndex] = new Layer((uint) layerIndex, image);
+                using (var image = LayersDefinitions[layerIndex].Decode((uint) layerIndex, true))
+                {
+                    this[layerIndex] = new Layer((uint) layerIndex, image);
+                }
             });
         }
 

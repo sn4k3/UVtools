@@ -102,10 +102,5 @@ namespace UVtools.Core
         {
             return width * y + x;
         }
-
-        public static uint GetPixelPositionU(uint width, uint x, uint y)
-        {
-            return width * y + x;
-        }
     }
 }

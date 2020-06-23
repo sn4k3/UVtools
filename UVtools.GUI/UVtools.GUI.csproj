@@ -78,12 +78,6 @@
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="SixLabors.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SixLabors.Core.1.0.0-beta0008\lib\netstandard2.0\SixLabors.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="SixLabors.ImageSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
-      <HintPath>..\packages\SixLabors.ImageSharp.1.0.0-rc0003\lib\net472\SixLabors.ImageSharp.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -197,8 +191,6 @@
     <Compile Include="FrmMain.Designer.cs">
       <DependentUpon>FrmMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\EmguExtensions.cs" />
-    <Compile Include="Extensions\ImageSharpExtensions.cs" />
     <Compile Include="Forms\PEProfileFolder.cs" />
     <Compile Include="Mutation.cs" />
     <Compile Include="Program.cs" />
@@ -265,13 +257,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\UVtools.Parser\UVtools.Parser.csproj">
-      <Project>{53b884ca-e640-4171-8aa2-03935ac076d2}</Project>
-      <Name>UVtools.Parser</Name>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Images\checkbox-marked-16x16.png" />
@@ -341,7 +326,15 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\UVtools.Core\UVtools.Core.csproj">
+      <Project>{7c9927f8-132e-4a37-b894-440e0fd5aa3d}</Project>
+      <Name>UVtools.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /i /y /d /s $(ProjectDir)..\PrusaSlicer $(ProjectDir)$(OutDir)\PrusaSlicer</PostBuildEvent>
