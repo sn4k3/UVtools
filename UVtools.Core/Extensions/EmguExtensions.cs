@@ -30,46 +30,7 @@ namespace UVtools.Core.Extensions
 
         public static void CopyToCenter(this Mat src, Mat dst)
         {
-            /*
-             * // Create rect representing the image
-             *
-            auto image_rect = cv::Rect({}, image.size());
-
-            // Find intersection, i.e. valid crop region
-            auto intersection = image_rect & roi;
-
-            // Move intersection to the result coordinate space
-            auto inter_roi = intersection - roi.tl();
-
-            // Create black image and copy intersection
-            cv::Mat crop = cv::Mat::zeros(roi.size(), image.type());
-            image(intersection).copyTo(crop(inter_roi));
-
-            */
-            //var spanSrc = src.GetPixelSpan<byte>();
-            //var spanDst = dst.GetPixelSpan<byte>();
-
-            /*var dx = (dst.Step - src.Step) / 2;
-            var dy = (dst.Height - src.Height) / 2;
-            // Find intersection, i.e. valid crop region
-            var image_rect = new Rectangle(0, 0, src.Width, src.Height);
-            var intersection = new Rectangle(0, 0, dst.Width, dst.Height);
-            var roi = new Rectangle(dx, dy, src.Width, src.Height);
-
-            intersection.Intersect(roi);
-
-            var inter_roi = new Rectangle(intersection.Location, intersection.Size);
-            inter_roi.Offset(new Point(roi.Left, roi.Top));
-
-            //Mat crop = new Mat(roi.Size, dst.Depth, dst.NumberOfChannels);
-            //dst = crop
-            Mat destRoi = new Mat(dst, inter_roi);
-            Mat intersectionRoi = new Mat(src, intersection);
-            intersectionRoi.CopyTo(destRoi);
-
-            dst = destRoi;*/
-
-            /*if (dst.Step > src.Step && dst.Height > src.Height)
+            if (dst.Step > src.Step && dst.Height > src.Height)
             {
                 var dx = Math.Abs(dst.Step - src.Step) / 2;
                 var dy = Math.Abs(dst.Height - src.Height) / 2;
@@ -82,48 +43,7 @@ namespace UVtools.Core.Extensions
                 var dy = Math.Abs(dst.Height - src.Height) / 2;
                 Mat m = new Mat(src, new Rectangle(dx, dy, dst.Width, dst.Height));
                 m.CopyTo(dst);
-            }*/
-
-            
-
-            // Solution from George Kerwood, need same XY factor
-            // https://stackoverflow.com/questions/62524257/c-sharp-emgucv-resize-mat-but-keep-bounds-resolution/
-            /*if (spanDst.Length < spanSrc.Length) 
-            {
-                for (int y = 0; y < dst.Height; y++)
-                {
-                    for (int x = 0; x < dst.Step; x++)
-                    {
-                        spanDst[dst.GetPixelPos(x, y)] = spanSrc[src.GetPixelPos(x + dx, y + dy)];
-                    }
-                }
             }
-            else
-            {
-                for (int y = 0; y < src.Height; y++)
-                {
-                    for (int x = 0; x < src.Step; x++)
-                    {
-                        spanDst[dst.GetPixelPos(x + dx, y + dy)] = spanSrc[src.GetPixelPos(x, y)];
-                    }
-                }
-            }*/
-
-            /*int halfSizeSrc = spanSrc.Length / 2;
-            int halfSizeDst = spanDst.Length / 2;
-
-            for (int dir = 1; dir >= -1; dir-=2)
-            {
-                int pixelSrcPos = halfSizeSrc;
-                int pixelDstPos = halfSizeDst;
-
-                 do
-                 {
-                     spanDst[pixelDstPos] = spanSrc[pixelSrcPos];
-                     pixelSrcPos += dir;
-                     pixelDstPos += dir;
-                 } while (pixelSrcPos >= 0 && pixelDstPos >= 0 && pixelSrcPos < spanSrc.Length && pixelDstPos < spanDst.Length);
-            }*/
         }
 
         public static int GetLength(this Mat mat)
