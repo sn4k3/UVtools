@@ -16,6 +16,12 @@ namespace UVtools.Core.Extensions
 {
     public static class EmguExtensions
     {
+        /// <summary>
+        /// Gets a single pixel span to manipulate or read pixels
+        /// </summary>
+        /// <typeparam name="T">Pixel type</typeparam>
+        /// <param name="mat"><see cref="Mat"/> Input</param>
+        /// <returns>A <see cref="Span{T}"/> containing all pixels in data memory</returns>
         public static unsafe Span<T> GetPixelSpan<T>(this Mat mat)
         {
             return new Span<T>(mat.DataPointer.ToPointer(), mat.GetLength());
@@ -28,6 +34,16 @@ namespace UVtools.Core.Extensions
             return mat.GetPixelSpan<T>().Slice(offset, mat.Step);
         }
 
+        /// <summary>
+        /// Scale image from it center, preserving src bounds
+        /// https://stackoverflow.com/a/62543674/933976
+        /// </summary>
+        /// <param name="src"><see cref="Mat"/> to transform</param>
+        /// <param name="xScale">X scale factor</param>
+        /// <param name="yScale">Y scale factor</param>
+        /// <param name="xTrans">X translation</param>
+        /// <param name="yTrans">Y translation</param>
+        /// <param name="interpolation">Interpolation mode</param>
         public static void ScaleFromCenter(this Mat src, double xScale, double yScale, double xTrans = 0, double yTrans = 0, Inter interpolation = Inter.Linear)
         {
             //var dst = new Mat(src.Size, src.Depth, src.NumberOfChannels);
@@ -41,6 +57,11 @@ namespace UVtools.Core.Extensions
             CvInvoke.WarpAffine(src, src, translateTransform, src.Size, interpolation);
         }
 
+        /// <summary>
+        /// Copy a <see cref="Mat"/> to center of other <see cref="Mat"/>
+        /// </summary>
+        /// <param name="src">Source <see cref="Mat"/> to be copied to</param>
+        /// <param name="dst">Target <see cref="Mat"/> to paste the <param name="src"></param></param>
         public static void CopyToCenter(this Mat src, Mat dst)
         {
             if (dst.Step > src.Step && dst.Height > src.Height)
@@ -59,21 +80,44 @@ namespace UVtools.Core.Extensions
             }
         }
 
+        /// <summary>
+        /// Gets the total length of this <see cref="Mat"/></param>
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <returns>The total length of this <see cref="Mat"/></returns>
         public static int GetLength(this Mat mat)
         {
             return mat.Step * mat.Height;
         }
 
+        /// <summary>
+        /// Gets a pixel index position on a span given X and Y
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="x">X coordinate</param>
+        /// <param name="y">Y coordinate</param>
+        /// <returns>The pixel index position</returns>
         public static int GetPixelPos(this Mat mat, int x, int y)
         {
             return y * mat.Step + x * mat.NumberOfChannels;
         }
 
+        /// <summary>
+        /// Gets a pixel index position on a span given X and Y
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="point">X and Y Location</param>
+        /// <returns>The pixel index position</returns>
         public static int GetPixelPos(this Mat mat, Point point)
         {
             return point.Y * mat.Step + point.X * mat.NumberOfChannels;
         }
 
+        /// <summary>
+        /// Gets a byte array copy of this <see cref="Mat"/>
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <returns>Byte array </returns>
         public static byte[] GetBytes(this Mat mat)
         {
             byte[] data = new byte[mat.GetLength()];
@@ -90,11 +134,21 @@ namespace UVtools.Core.Extensions
 
         }
 
-        public static byte[] GetBytesBlank(this Mat mat)
+        /// <summary>
+        /// Create a byte array of size of this <see cref="Mat"/>
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <returns>Blank byte array</returns>
+        public static byte[] CreateByteArray(this Mat mat)
         {
             return new byte[mat.GetLength()];
         }
 
+        /// <summary>
+        /// Clone this <see cref="Mat"/> blanked (All zeros)
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <returns>Blanked <see cref="Mat"/></returns>
         public static Mat CloneBlank(this Mat mat)
         {
             return new Mat(new Size(mat.Width, mat.Height), mat.Depth, mat.NumberOfChannels);
