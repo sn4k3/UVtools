@@ -345,7 +345,7 @@ namespace UVtools.Core
         /// <param name="x">X factor, starts at 1</param>
         /// <param name="y">Y factor, starts at 1</param>
         /// <param name="fade">Fade X/Y towards 100%</param>
-        void Resize(uint startLayerIndex, uint endLayerIndex, float x, float y, bool fade);
+        void Resize(uint startLayerIndex, uint endLayerIndex, double x, double y, bool fade);
 
         /// <summary>
         /// Validate AntiAlias Level

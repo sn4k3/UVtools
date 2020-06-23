@@ -571,18 +571,11 @@ namespace UVtools.Parser
         }
         #endregion
 
-        public void Resize(float xScale, float yScale)
+        public void Resize(double xScale, double yScale)
         {
             using (var mat = LayerMat)
             {
-                var translateTransform = new Matrix<double>(2, 3)
-                {
-                    [0, 0] = xScale, // xScale
-                    [1, 1] = yScale, // yScale
-                    [0, 2] = (mat.Width - mat.Width * xScale) / 2.0, //x translation + compensation of  x scaling
-                    [1, 2] = (mat.Height - mat.Height * yScale) / 2.0 // y translation + compensation of y scaling
-                };
-                CvInvoke.WarpAffine(mat, mat, translateTransform, mat.Size);
+                mat.ScaleFromCenter(xScale, yScale);
                 LayerMat = mat;
             }
         }

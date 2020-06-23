@@ -2128,8 +2128,8 @@ namespace UVtools.GUI
             float iterationSteps = 0;
             uint maxIteration = 0;
 
-            float x = 0;
-            float y = 0;
+            double x = 0;
+            double y = 0;
 
             switch (type)
             {
@@ -2177,7 +2177,7 @@ namespace UVtools.GUI
                 {
                     if (type == Mutation.Mutates.Resize)
                     {
-                        SlicerFile.Resize(layerStart, layerEnd, x / 100f, y / 100f, fade);
+                        SlicerFile.Resize(layerStart, layerEnd, x / 100.0, y / 100.0, fade);
                     }
                     else
                     {

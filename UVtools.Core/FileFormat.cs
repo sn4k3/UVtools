@@ -638,9 +638,9 @@ namespace UVtools.Core
             return Convert(to.GetType(), fileFullPath);
         }
 
-        public void Resize(uint startLayerIndex, uint endLayerIndex, float x, float y, bool fade)
+        public void Resize(uint startLayerIndex, uint endLayerIndex, double x, double y, bool fade)
         {
-            if (x == 1f && y == 1f) return;
+            if (x == 1.0 && y == 1.0) return;
             
             Parallel.For(startLayerIndex, endLayerIndex+1, /*new ParallelOptions { MaxDegreeOfParallelism = 1 },*/ layerIndex =>
             {
@@ -648,12 +648,12 @@ namespace UVtools.Core
                 var newY = y;
                 if (fade)
                 {
-                    if (newX != 1f)
+                    if (newX != 1.0)
                     {
                         double steps = Math.Abs(newX - 1.0) / (endLayerIndex - startLayerIndex);
                         //maxIteration = Math.Max(iterationsStart, iterationsEnd);
 
-                        newX = (float) (newX < 1f
+                        newX = (float) (newX < 1.0
                             ? newX + (layerIndex - startLayerIndex) * steps
                             : newX - (layerIndex - startLayerIndex) * steps);
 
@@ -661,12 +661,12 @@ namespace UVtools.Core
                         //iterations = Math.Min(Math.Max(1, iterations), maxIteration);
                     }
 
-                    if (y != 1f)
+                    if (y != 1.0)
                     {
                         double steps = Math.Abs(newY - 1.0) / (endLayerIndex - startLayerIndex);
                         //maxIteration = Math.Max(iterationsStart, iterationsEnd);
 
-                        newY = (float) (newY < 1f
+                        newY = (float) (newY < 1.0
                             ? newY + (layerIndex - startLayerIndex) * steps
                             : newY - (layerIndex - startLayerIndex) * steps);
 
@@ -675,7 +675,7 @@ namespace UVtools.Core
                     }
                 }
 
-                if (newX == 1f && newY == 1f) return;
+                if (newX == 1.0 && newY == 1.0) return;
 
                
 
