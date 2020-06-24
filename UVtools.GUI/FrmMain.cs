@@ -7,7 +7,6 @@
  */
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -24,7 +23,6 @@ using Emgu.CV.Util;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.GUI.Forms;
-using UVtools.Parser;
 
 namespace UVtools.GUI
 {
@@ -592,11 +590,11 @@ namespace UVtools.GUI
                                                     -1,
                                                     new MCvScalar(255),
                                                     -1);
-                                                CvInvoke.DrawContours(image,
+                                                /*CvInvoke.DrawContours(image,
                                                     new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)),
                                                     -1,
                                                     new MCvScalar(255),
-                                                    2);
+                                                    2);*/
                                             }
                                         }
                                     }
@@ -942,7 +940,7 @@ namespace UVtools.GUI
                                     {
                                         var contours = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels));
                                         CvInvoke.DrawContours(image, contours, -1, new MCvScalar(255), -1);
-                                        CvInvoke.DrawContours(image, contours, -1, new MCvScalar(255), 2);
+                                        //CvInvoke.DrawContours(image, contours, -1, new MCvScalar(255), 2);
                                         edited = true;
                                     }
 
@@ -1185,14 +1183,7 @@ namespace UVtools.GUI
             if (!pbLayer.IsPointInImage(e.Location)) return;
             var location = pbLayer.PointToImage(e.Location);
 
-            if (Control.ModifierKeys == Keys.Shift)
-            {
-                DrawPixel(false, location);
-            }
-            else
-            {
-                DrawPixel(true, location);
-            }
+            DrawPixel(Control.ModifierKeys != Keys.Shift, location);
 
             SlicerFile[ActualLayer].LayerMat = ActualLayerImage;
         }
@@ -1710,39 +1701,41 @@ namespace UVtools.GUI
                     using (Mat grayscale = new Mat())
                     {
                         CvInvoke.Threshold(ActualLayerImage, grayscale, 1, 255, ThresholdType.Binary);
-                        VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-                        Mat hierarchy = new Mat();
-
-                        CvInvoke.FindContours(grayscale, contours, hierarchy, RetrType.Ccomp,
-                            ChainApproxMethod.ChainApproxSimple);
-
-                        /*
-                         * hierarchy[i][0]: the index of the next contour of the same level
-                         * hierarchy[i][1]: the index of the previous contour of the same level
-                         * hierarchy[i][2]: the index of the first child
-                         * hierarchy[i][3]: the index of the parent
-                         */
-                        var arr = hierarchy.GetData();
-                        for (int i = 0; i < contours.Size; i++)
+                        using (VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint())
                         {
-                            //if ((int)arr.GetValue(0, i, 2) == -1 && (int)arr.GetValue(0, i, 3) > -1) continue;
-                            Debug.WriteLine($"[0] {arr.GetValue(0, i, 0)}");
-                            Debug.WriteLine($"[1] {arr.GetValue(0, i, 1)}");
-                            Debug.WriteLine($"[2] {arr.GetValue(0, i, 2)}");
-                            Debug.WriteLine($"[3] {arr.GetValue(0, i, 3)}");
-                            //if ((int)arr.GetValue(0, i, 2) > -1 || (int)arr.GetValue(0, i, 3) > -1) continue;
-                            //if (((int)arr.GetValue(0, i, 2) > -1 && (int)arr.GetValue(0, i, 3) > -1)) continue;
+                            using (Mat hierarchy = new Mat())
+                            {
+                                CvInvoke.FindContours(grayscale, contours, hierarchy, RetrType.Ccomp,
+                                    ChainApproxMethod.ChainApproxSimple);
 
-                            //                          if ((int) arr.GetValue(0, i, 3) >= 0) continue;
-                            if ((int)arr.GetValue(0, i, 2) != -1 || (int)arr.GetValue(0, i, 3) == -1){
-                                //if ((int)arr.GetValue(0, i, 2) == -1 && (int)arr.GetValue(0, i, 3) != -1){
-                                var r = CvInvoke.BoundingRectangle(contours[i]);
-                                CvInvoke.Rectangle(ActualLayerImageBgr, r, new MCvScalar(0, 0, 255), 5);
-                                CvInvoke.DrawContours(ActualLayerImageBgr, contours, i, new MCvScalar(125, 125, 125),
-                                    -1);
+                                /*
+                                 * hierarchy[i][0]: the index of the next contour of the same level
+                                 * hierarchy[i][1]: the index of the previous contour of the same level
+                                 * hierarchy[i][2]: the index of the first child
+                                 * hierarchy[i][3]: the index of the parent
+                                 */
+                                var arr = hierarchy.GetData();
+                                for (int i = 0; i < contours.Size; i++)
+                                {
+                                    //if ((int)arr.GetValue(0, i, 2) == -1 && (int)arr.GetValue(0, i, 3) > -1) continue;
+                                    /*Debug.WriteLine($"[0] {arr.GetValue(0, i, 0)}");
+                                    Debug.WriteLine($"[1] {arr.GetValue(0, i, 1)}");
+                                    Debug.WriteLine($"[2] {arr.GetValue(0, i, 2)}");
+                                    Debug.WriteLine($"[3] {arr.GetValue(0, i, 3)}");*/
+                                    //if ((int)arr.GetValue(0, i, 2) > -1 || (int)arr.GetValue(0, i, 3) > -1) continue;
+                                    //if (((int)arr.GetValue(0, i, 2) > -1 && (int)arr.GetValue(0, i, 3) > -1)) continue;
+
+                                    //                          if ((int) arr.GetValue(0, i, 3) >= 0) continue;
+                                    if ((int)arr.GetValue(0, i, 2) != -1 || (int)arr.GetValue(0, i, 3) == -1)
+                                        continue;
+                                    var r = CvInvoke.BoundingRectangle(contours[i]);
+                                    CvInvoke.Rectangle(ActualLayerImageBgr, r, new MCvScalar(0, 0, 255), 5);
+                                    CvInvoke.DrawContours(ActualLayerImageBgr, contours, i, new MCvScalar(125, 125, 125), -1);
+
+                                    //if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1)
+                                    //    CvInvoke.DrawContours(ActualLayerImageBgr, contours, i, new MCvScalar(0, 0, 0), -1);
+                                }
                             }
-                            //if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1)
-                                //    CvInvoke.DrawContours(ActualLayerImageBgr, contours, i, new MCvScalar(0, 0, 0), -1);
                         }
                     }
 #else
@@ -1752,8 +1745,6 @@ namespace UVtools.GUI
                         CvInvoke.CvtColor(grayscale, ActualLayerImageBgr, ColorConversion.Gray2Bgr);
                     }
 #endif
-
-
                 }
                 else if (tsLayerImageLayerDifference.Checked)
                 {
@@ -1809,7 +1800,7 @@ namespace UVtools.GUI
                         if (issue.Type == LayerIssue.IssueType.ResinTrap)
                         {
                             CvInvoke.DrawContours(ActualLayerImageBgr, new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)), -1, new MCvScalar(0, 180, 255), -1);
-                            CvInvoke.DrawContours(ActualLayerImageBgr, new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)), -1, new MCvScalar(0, 0, 255), 1);
+                            //CvInvoke.DrawContours(ActualLayerImageBgr, new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)), -1, new MCvScalar(0, 0, 255), 1);
                             
                             continue;
                         }
@@ -2071,6 +2062,7 @@ namespace UVtools.GUI
 
         void DrawPixel(bool isAdd, Point location)
         {
+            //Stopwatch sw = Stopwatch.StartNew();
             //var point = pbLayer.PointToImage(location);
             int x = location.X;
             int y = location.Y;
@@ -2103,17 +2095,11 @@ namespace UVtools.GUI
             Bitmap bmp = pbLayer.Image as Bitmap;
             bmp.SetPixel(location.X, location.Y, color);
 
-            /*if (bmp.GetPixel(point.X, point.Y).GetBrightness() == returnif) return;
-            bmp.SetPixel(point.X, point.Y, color);
-            ActualLayerImage[point.X, point.Y] = pixelL8;
-            var newImage = ActualLayerImage.Clone();
-            if (tsLayerImageRotate.Checked)
-            {
-                newImage.Mutate(mut => mut.Rotate(RotateMode.Rotate270));
-            }
-            SlicerFile[ActualLayer].Image = newImage;*/
+
             pbLayer.Invalidate();
             menuFileSave.Enabled = menuFileSaveAs.Enabled = true;
+            //sw.Stop();
+            //Debug.WriteLine(sw.ElapsedMilliseconds);
         }
 
         
@@ -2125,8 +2111,6 @@ namespace UVtools.GUI
             uint iterationsStart = 0;
             uint iterationsEnd = 0;
             bool fade = false;
-            float iterationSteps = 0;
-            uint maxIteration = 0;
 
             double x = 0;
             double y = 0;
@@ -2154,12 +2138,6 @@ namespace UVtools.GUI
                         layerStart = inputBox.LayerRangeStart;
                         layerEnd = inputBox.LayerRangeEnd;
                         iterationsEnd = inputBox.IterationsEnd;
-                        fade = layerStart != layerEnd && iterationsStart != iterationsEnd && inputBox.IterationsFade;
-                        if (fade)
-                        {
-                            iterationSteps = Math.Abs((float)iterationsStart - iterationsEnd) / (layerEnd - layerStart);
-                            maxIteration = Math.Max(iterationsStart, iterationsEnd);
-                        }
                     }
 
                     break;
@@ -2175,119 +2153,61 @@ namespace UVtools.GUI
                 bool result = false;
                 try
                 {
-                    if (type == Mutation.Mutates.Resize)
+                    switch (type)
                     {
-                        SlicerFile.Resize(layerStart, layerEnd, x / 100.0, y / 100.0, fade);
-                    }
-                    else
-                    {
-                        Mat kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), new Point(1, 1));
-                        Parallel.For(layerStart, layerEnd + 1, layerIndex =>
-                        {
-                            var iterations = iterationsStart;
-                            if (fade)
-                            {
-                                // calculate iterations based on range
-                                iterations = iterationsStart < iterationsEnd
-                                    ? (uint) (iterationsStart + (layerIndex - layerStart) * iterationSteps)
-                                    : (uint) (iterationsStart - (layerIndex - layerStart) * iterationSteps);
-
-                                // constrain
-                                iterations = Math.Min(Math.Max(1, iterations), maxIteration);
-                                //Debug.WriteLine($"A Layer: {i} = {iterations}");
-                            }
-
-                            Layer layer = SlicerFile[layerIndex];
-                            var image = layer.LayerMat;
-                            switch (type)
-                            {
-                                case Mutation.Mutates.Resize:
-                                    //var resizedImage = imageEgmu.Resize( (int) (iterationsStart / 100.0 * image.Width), (int) (iterationsEnd / 100.0 * image.Height), Inter.Lanczos4);
-                                    //imageEgmu = resizedImage.Copy(new Rectangle(0, 0, image.Width, image.Height));
-                                    break;
-                                case Mutation.Mutates.Solidify:
-                                    for (byte pass = 0; pass < 1; pass++) // Passes
-                                    {
-                                        CvInvoke.Threshold(image, image, 254, 255, ThresholdType.Binary); // Clean AA
-                                        
-                                        VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-                                        Mat hierarchy = new Mat();
-
-                                        CvInvoke.FindContours(image, contours, hierarchy, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
-
-                                        var arr = hierarchy.GetData();
-
-                                        /*
-                                         * hierarchy[i][0]: the index of the next contour of the same level
-                                         * hierarchy[i][1]: the index of the previous contour of the same level
-                                         * hierarchy[i][2]: the index of the first child
-                                         * hierarchy[i][3]: the index of the parent
-                                         */
-                                        for (int i = 0; i < contours.Size; i++)
-                                        {
-                                            if ((int)arr.GetValue(0, i, 2) != -1 || (int)arr.GetValue(0, i, 3) == -1) continue;
-                                            var r = CvInvoke.BoundingRectangle(contours[i]);
-                                            //imageEgmu.FillConvexPoly(contours[i].ToArray(), new Gray(255));
-                                            //imageThreshold.FillConvexPoly(contours[i].ToArray(), new Gray(255));
-                                            //imageEgmu.Draw(contours, i, new Gray(255), -1);
-                                            CvInvoke.DrawContours(image, contours, i, new MCvScalar(255), -1);
-                                        }
-
-                                        // Attempt to close any tiny region
-                                        //imageEgmu = imageEgmu.Dilate(2).Erode(2);
-                                    }
-
-
-
-                                    break;
-                                case Mutation.Mutates.Erode:
-                                    CvInvoke.Erode(image, image, kernel, new Point(-1,-1), (int) iterations, BorderType.Default, new MCvScalar());
-                                    break;
-                                case Mutation.Mutates.Dilate:
-                                    CvInvoke.Dilate(image, image, kernel, new Point(-1, -1), (int)iterations, BorderType.Default, new MCvScalar());
-                                    break;
-                                case Mutation.Mutates.Opening:
-                                    CvInvoke.MorphologyEx(image, image, MorphOp.Open, kernel, new Point(-1, -1), (int)iterations, BorderType.Default, new MCvScalar());
-                                    break;
-                                case Mutation.Mutates.Closing:
-                                    CvInvoke.MorphologyEx(image, image, MorphOp.Close, kernel, new Point(-1, -1), (int)iterations, BorderType.Default, new MCvScalar());
-                                    break;
-                                case Mutation.Mutates.Gradient:
-                                    CvInvoke.MorphologyEx(image, image, MorphOp.Gradient, Program.KernelStar3x3, new Point(-1, -1), (int)iterations, BorderType.Default, new MCvScalar());
-                                    break;
-                                case Mutation.Mutates.TopHat:
-                                    kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(9, 9),
-                                        new Point(-1, -1));
-                                    CvInvoke.MorphologyEx(image, image, MorphOp.Tophat, kernel, new Point(-1, -1), (int)iterations, BorderType.Default, new MCvScalar());
-                                    break;
-                                case Mutation.Mutates.BlackHat:
-                                    kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(9, 9),
-                                        new Point(-1, -1));
-                                    CvInvoke.MorphologyEx(image, image, MorphOp.Blackhat, kernel, new Point(-1, -1), (int)iterations, BorderType.Default, new MCvScalar());
-                                    break;
-                                case Mutation.Mutates.HitMiss:
-                                    CvInvoke.MorphologyEx(image, image, MorphOp.HitMiss, Program.KernelFindIsolated, new Point(-1, -1), (int)iterations, BorderType.Default, new MCvScalar());
-                                    break;
-                                case Mutation.Mutates.PyrDownUp:
-                                    CvInvoke.PyrDown(image, image);
-                                    CvInvoke.PyrUp(image, image);
-                                    break;
-                                case Mutation.Mutates.SmoothMedian:
-                                    CvInvoke.MedianBlur(image, image, (int) iterations);
-                                    break;
-                                case Mutation.Mutates.SmoothGaussian:
-                                    CvInvoke.GaussianBlur(image, image, new Size((int)iterations, (int)iterations), 2);
-                                    break;
-                            }
-
-                            layer.LayerMat = image;
-                        });
+                        case Mutation.Mutates.Resize:
+                            SlicerFile.LayerManager.MutateResize(layerStart, layerEnd, x / 100.0, y / 100.0, fade);
+                            break;
+                        case Mutation.Mutates.Solidify:
+                            SlicerFile.LayerManager.MutateSolidify(layerStart, layerEnd);
+                            break;
+                        case Mutation.Mutates.Erode:
+                            SlicerFile.LayerManager.MutateErode(layerStart, layerEnd, (int) iterationsStart, (int) iterationsEnd, fade);
+                            break;
+                        case Mutation.Mutates.Dilate:
+                            SlicerFile.LayerManager.MutateDilate(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade);
+                            break;
+                        case Mutation.Mutates.Opening:
+                            SlicerFile.LayerManager.MutateOpen(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade);
+                            break;
+                        case Mutation.Mutates.Closing:
+                            SlicerFile.LayerManager.MutateClose(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade);
+                            break;
+                        case Mutation.Mutates.Gradient:
+                            SlicerFile.LayerManager.MutateGradient(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade);
+                            break;
+                        /*case Mutation.Mutates.TopHat:
+                            kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(9, 9),
+                                new Point(-1, -1));
+                            CvInvoke.MorphologyEx(image, image, MorphOp.Tophat, kernel, new Point(-1, -1),
+                                (int) iterations, BorderType.Default, new MCvScalar());
+                            break;
+                        case Mutation.Mutates.BlackHat:
+                            kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(9, 9),
+                                new Point(-1, -1));
+                            CvInvoke.MorphologyEx(image, image, MorphOp.Blackhat, kernel, new Point(-1, -1),
+                                (int) iterations, BorderType.Default, new MCvScalar());
+                            break;
+                        case Mutation.Mutates.HitMiss:
+                            CvInvoke.MorphologyEx(image, image, MorphOp.HitMiss, Program.KernelFindIsolated,
+                                new Point(-1, -1), (int) iterations, BorderType.Default, new MCvScalar());
+                            break;*/
+                        case Mutation.Mutates.PyrDownUp:
+                            SlicerFile.LayerManager.MutatePyrDownUp(layerStart, layerEnd);
+                            break;
+                        case Mutation.Mutates.SmoothMedian:
+                            SlicerFile.LayerManager.MutateMedianBlur(layerStart, layerEnd, (int)iterationsStart);
+                            break;
+                        case Mutation.Mutates.SmoothGaussian:
+                            SlicerFile.LayerManager.MutateGaussianBlur(layerStart, layerEnd, new Size((int) iterationsStart, (int) iterationsStart));
+                            break;
                     }
 
                     result = true;
                 }
                 catch (Exception ex)
                 {
+                    result = false;
                     MessageBox.Show($"{ex.Message}\nPlease try different values for the mutation", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 finally
@@ -2349,11 +2269,6 @@ namespace UVtools.GUI
                 bool result = false;
                 try
                 {
-                    /*Task taskGenericIssues = Task.Factory.StartNew(() =>
-                    {
-                        
-                    });*/
-
                     var issues = SlicerFile.LayerManager.GetAllIssues();
                     Issues = new Dictionary<uint, List<LayerIssue>>();
 
@@ -2364,194 +2279,6 @@ namespace UVtools.GUI
                             Issues.Add(i, list);
                         }
                     }
-
-
-                    /*var layerHollowAreas = new ConcurrentDictionary<uint, List<LayerHollowArea>>();
-                    
-                    Parallel.ForEach(SlicerFile,
-                    //new ParallelOptions{MaxDegreeOfParallelism = 1},
-                    layer =>
-                    {
-                        using (var image = layer.LayerMat)
-                        {
-                            using (Image<Gray, byte> grayscale = image.ToEmguImage().ThresholdBinary(new Gray(254), new Gray(255)))
-                            {
-                                var listHollowArea = new List<LayerHollowArea>();
-
-                                VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-                                Mat hierarchy = new Mat();
-
-                                CvInvoke.FindContours(grayscale, contours, hierarchy, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
-
-                                var arr = hierarchy.GetData();
-                                //
-                                //hierarchy[i][0]: the index of the next contour of the same level
-                                //hierarchy[i][1]: the index of the previous contour of the same level
-                                //hierarchy[i][2]: the index of the first child
-                                //hierarchy[i][3]: the index of the parent
-                                //
-
-                                for (int i = 0; i < contours.Size; i++)
-                                {
-                                    if ((int) arr.GetValue(0, i, 2) != -1 || (int) arr.GetValue(0, i, 3) == -1)
-                                        continue;
-
-                                    listHollowArea.Add(new LayerHollowArea(contours[i].ToArray(), CvInvoke.BoundingRectangle(contours[i]), layer.Index == 0 || layer.Index == SlicerFile.LayerCount-1 ? LayerHollowArea.AreaType.Drain : LayerHollowArea.AreaType.Unknown));
-
-                                    if (listHollowArea.Count > 0)
-                                        layerHollowAreas.TryAdd(layer.Index, listHollowArea);
-                                }
-                            }
-                        }
-                    });*/
-
-
-
-                    /*for (uint layerIndex = 1; layerIndex < SlicerFile.LayerCount-1; layerIndex++) // Ignore first and last layers, always drains
-                    {
-                        if(!layerHollowAreas.TryGetValue(layerIndex, out var areas)) continue; // No hollow areas in this layer, ignore
-
-                        byte areaCount = 0;
-                        //foreach (var area in areas)
-                        Parallel.ForEach(areas, area =>
-                        {
-                            if (area.Type != LayerHollowArea.AreaType.Unknown) return; // processed, ignore
-                            area.Type = LayerHollowArea.AreaType.Trap;
-
-                            areaCount++;
-
-                            List<LayerHollowArea> linkedAreas = new List<LayerHollowArea>();
-
-                            for (sbyte dir = 1; dir >= -1 && area.Type != LayerHollowArea.AreaType.Drain; dir -= 2)
-                                //Parallel.ForEach(dirs, new ParallelOptions {MaxDegreeOfParallelism = 2}, dir =>
-                            {
-                                Queue<LayerHollowArea> queue = new Queue<LayerHollowArea>();
-                                queue.Enqueue(area);
-                                area.Processed = false;
-                                int nextLayerIndex = (int) layerIndex;
-                                while (queue.Count > 0 && area.Type != LayerHollowArea.AreaType.Drain)
-                                {
-                                    LayerHollowArea checkArea = queue.Dequeue();
-                                    if (checkArea.Processed) continue;
-                                    checkArea.Processed = true;
-                                    nextLayerIndex += dir;
-                                    Debug.WriteLine(
-                                        $"Area Count: {areaCount} | Layer: {layerIndex} | Next Layer: {nextLayerIndex} | Dir: {dir}");
-                                    if (nextLayerIndex < 0 && nextLayerIndex >= SlicerFile.LayerCount)
-                                        break; // Exhaust layers
-                                    bool haveNextAreas =
-                                        layerHollowAreas.TryGetValue((uint) nextLayerIndex, out var nextAreas);
-
-                                    using (var image = SlicerFile[nextLayerIndex].LayerMat)
-                                    {
-                                        using (var emguImage = new Image<Gray, byte>(ActualLayerImage.Width,
-                                            ActualLayerImage.Height))
-                                        {
-                                            //emguImage.FillConvexPoly(checkArea.Contour, new Gray(255));
-                                            emguImage.Draw(new VectorOfVectorOfPoint(new VectorOfPoint(checkArea.Contour)), -1,
-                                                new Gray(255), -1);
-
-                                            bool exitPixelLoop = false;
-                                            uint blackCount = 0;
-
-                                            byte[,,] data = emguImage.Data;
-                                            for (int y = checkArea.BoundingRectangle.Y;
-                                                y <= checkArea.BoundingRectangle.Bottom &&
-                                                area.Type != LayerHollowArea.AreaType.Drain && !exitPixelLoop;
-                                                y++)
-                                            {
-                                                for (int x = checkArea.BoundingRectangle.X;
-                                                    x <= checkArea.BoundingRectangle.Right &&
-                                                    area.Type != LayerHollowArea.AreaType.Drain && !exitPixelLoop;
-                                                    x++)
-                                                {
-
-                                                    if (data[y, x, 0] != 255) continue;
-                                                    if (span[y * image.Width + x].PackedValue > 30) continue;
-                                                    blackCount++;
-
-                                                    if (haveNextAreas
-                                                    ) // Have areas, can be on same area path or not
-                                                    {
-                                                        foreach (var nextArea in nextAreas)
-                                                        {
-                                                            if (!(CvInvoke.PointPolygonTest(
-                                                                new VectorOfPoint(nextArea.Contour),
-                                                                new PointF(x, y), false) >= 0)) continue;
-                                                            if (nextArea.Type == LayerHollowArea.AreaType.Drain
-                                                            ) // Found a drain, stop query
-                                                            {
-                                                                area.Type = LayerHollowArea.AreaType.Drain;
-                                                            }
-                                                            else
-                                                            {
-                                                                queue.Enqueue(nextArea);
-                                                            }
-
-                                                            linkedAreas.Add(nextArea);
-
-                                                            exitPixelLoop = true;
-                                                            break;
-                                                        }
-                                                    }
-                                                    else if(blackCount > Math.Min(checkArea.Contour.Length / 2, 10)) // Black pixel without next areas = Drain
-                                                    {
-                                                        area.Type = LayerHollowArea.AreaType.Drain;
-                                                        exitPixelLoop = true;
-                                                        break;
-                                                    }
-                                                } // X loop
-                                            } // Y loop
-
-                                            if (queue.Count == 0 && blackCount > Math.Min(checkArea.Contour.Length / 2, 10))
-                                            {
-
-                                                area.Type = LayerHollowArea.AreaType.Drain;
-                                            }
-
-                                        } // Dispose emgu image
-                                    } // Dispose image
-                                } // Areas loop
-                            } // Dir layer loop
-
-                            foreach (var linkedArea in linkedAreas) // Update linked areas
-                            {
-                                linkedArea.Type = area.Type;
-                            }
-                        });
-                    }
-
-                    taskGenericIssues.Wait();
-
-                    for (uint layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
-                    {
-                        if (!layerHollowAreas.TryGetValue(layerIndex, out var list)) continue;
-                        if (list.Count > 0)
-                        {
-                            var issuesHollow = new List<LayerIssue>();
-                            
-                            foreach (var area in list)
-                            {
-                                if (area.Type == LayerHollowArea.AreaType.Trap)
-                                {
-                                    issuesHollow.Add(new LayerIssue(SlicerFile[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contour, area.BoundingRectangle));
-                                }
-                            }
-
-                            if (issuesHollow.Count > 0)
-                            {
-                                if (Issues.TryGetValue(layerIndex, out var currentIssue))
-                                {
-                                    currentIssue.AddRange(issuesHollow);
-                                }
-                                else
-                                {
-                                    Issues.Add(layerIndex, issuesHollow);
-                                }
-                            }
-                        }
-                    }*/
-
 
                     result = true;
                 }

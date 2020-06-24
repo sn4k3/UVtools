@@ -5,9 +5,10 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using System.Collections.Generic;
 
-namespace UVtools.Parser
+namespace UVtools.Core
 {
     /// <summary>
     /// Represents a file extension for slicer file formats

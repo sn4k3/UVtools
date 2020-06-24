@@ -16,7 +16,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
 using UVtools.Core.Extensions;
-using UVtools.Parser;
 
 namespace UVtools.Core
 {
@@ -636,51 +635,6 @@ namespace UVtools.Core
         public bool Convert(FileFormat to, string fileFullPath)
         {
             return Convert(to.GetType(), fileFullPath);
-        }
-
-        public void Resize(uint startLayerIndex, uint endLayerIndex, double x, double y, bool fade)
-        {
-            if (x == 1.0 && y == 1.0) return;
-            
-            Parallel.For(startLayerIndex, endLayerIndex+1, /*new ParallelOptions { MaxDegreeOfParallelism = 1 },*/ layerIndex =>
-            {
-                var newX = x;
-                var newY = y;
-                if (fade)
-                {
-                    if (newX != 1.0)
-                    {
-                        double steps = Math.Abs(newX - 1.0) / (endLayerIndex - startLayerIndex);
-                        //maxIteration = Math.Max(iterationsStart, iterationsEnd);
-
-                        newX = (float) (newX < 1.0
-                            ? newX + (layerIndex - startLayerIndex) * steps
-                            : newX - (layerIndex - startLayerIndex) * steps);
-
-                        // constrain
-                        //iterations = Math.Min(Math.Max(1, iterations), maxIteration);
-                    }
-
-                    if (y != 1.0)
-                    {
-                        double steps = Math.Abs(newY - 1.0) / (endLayerIndex - startLayerIndex);
-                        //maxIteration = Math.Max(iterationsStart, iterationsEnd);
-
-                        newY = (float) (newY < 1.0
-                            ? newY + (layerIndex - startLayerIndex) * steps
-                            : newY - (layerIndex - startLayerIndex) * steps);
-
-                        // constrain
-                        //iterations = Math.Min(Math.Max(1, iterations), maxIteration);
-                    }
-                }
-
-                if (newX == 1.0 && newY == 1.0) return;
-
-               
-
-                this[layerIndex].Resize(newX, newY);
-            });
         }
 
         public byte ValidateAntiAliasingLevel()

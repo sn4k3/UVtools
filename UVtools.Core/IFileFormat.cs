@@ -9,7 +9,6 @@
 using System;
 using System.Text;
 using Emgu.CV;
-using UVtools.Parser;
 
 namespace UVtools.Core
 {
@@ -336,16 +335,6 @@ namespace UVtools.Core
         /// <param name="fileFullPath">Output path file</param>
         /// <returns>True if convert succeed, otherwise false</returns>
         bool Convert(FileFormat to, string fileFullPath);
-
-        /// <summary>
-        /// Resizes layer images in x and y factor, starting at 1 = 100%
-        /// </summary>
-        /// <param name="startLayerIndex">Layer index to start</param>
-        /// <param name="endLayerIndex">Layer index to end</param>
-        /// <param name="x">X factor, starts at 1</param>
-        /// <param name="y">Y factor, starts at 1</param>
-        /// <param name="fade">Fade X/Y towards 100%</param>
-        void Resize(uint startLayerIndex, uint endLayerIndex, double x, double y, bool fade);
 
         /// <summary>
         /// Validate AntiAlias Level

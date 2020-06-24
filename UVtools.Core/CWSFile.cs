@@ -14,7 +14,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UVtools.Core.Extensions;
-using UVtools.Parser;
 
 namespace UVtools.Core
 {

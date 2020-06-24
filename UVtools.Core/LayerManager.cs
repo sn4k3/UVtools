@@ -5,6 +5,7 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -12,8 +13,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using System.Linq;
 using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -21,7 +21,7 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 
-namespace UVtools.Parser
+namespace UVtools.Core
 {
     #region LayerIssue Class
 
@@ -115,7 +115,7 @@ namespace UVtools.Parser
 
         public override string ToString()
         {
-            return $"{nameof(Type)}: {Type}";
+            return $"{nameof(Type)}: {Type}, Layer: {Layer.Index}, {nameof(X)}: {X}, {nameof(Y)}: {Y}, {nameof(Size)}: {Size}";
         }
     }
     #endregion
@@ -565,13 +565,8 @@ namespace UVtools.Parser
             return result;
         }
 
-        public Layer Clone()
-        {
-            return new Layer(Index, CompressedBytes, Filename, ParentLayerManager);
-        }
-        #endregion
 
-        public void Resize(double xScale, double yScale)
+        public void MutateResize(double xScale, double yScale)
         {
             using (var mat = LayerMat)
             {
@@ -579,6 +574,144 @@ namespace UVtools.Parser
                 LayerMat = mat;
             }
         }
+
+        public void MutateSolidify()
+        {
+            using (Mat mat = LayerMat)
+            {
+                using (Mat filteredMat = new Mat())
+                {
+                    CvInvoke.Threshold(mat, filteredMat, 254, 255, ThresholdType.Binary); // Clean AA
+
+                    using (VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint())
+                    {
+                        using (Mat hierarchy = new Mat())
+                        {
+                            CvInvoke.FindContours(filteredMat, contours, hierarchy, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
+                            var arr = hierarchy.GetData();
+                            for (int i = 0; i < contours.Size; i++)
+                            {
+                                if ((int) arr.GetValue(0, i, 2) != -1 || (int) arr.GetValue(0, i, 3) == -1) continue;
+                                CvInvoke.DrawContours(mat, contours, i, new MCvScalar(255), -1);
+                            }
+                        }
+                    }
+                }
+
+                LayerMat = mat;
+            }
+        }
+
+        public void MutateErode(int iterations = 1, IInputArray kernel = null, Point anchor = default, BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
+        {
+            if(anchor.IsEmpty) anchor = new Point(-1, -1);
+            if (ReferenceEquals(kernel, null))
+            {
+                kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+            }
+            using (Mat dst = LayerMat)
+            {
+                CvInvoke.Erode(dst, dst, kernel, anchor, iterations, borderType, borderValue);
+                LayerMat = dst;
+            }
+        }
+
+        public void MutateDilate(int iterations = 1, IInputArray kernel = null, Point anchor = default, BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
+        {
+            if (anchor.IsEmpty) anchor = new Point(-1, -1);
+            if (ReferenceEquals(kernel, null))
+            {
+                kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+            }
+            using (Mat dst = LayerMat)
+            {
+                CvInvoke.Dilate(dst, dst, kernel, anchor, iterations, borderType, borderValue);
+                LayerMat = dst;
+            }
+        }
+
+        public void MutateOpen(int iterations = 1, IInputArray kernel = null, Point anchor = default, BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
+        {
+            if (anchor.IsEmpty) anchor = new Point(-1, -1);
+            if (ReferenceEquals(kernel, null))
+            {
+                kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+            }
+            using (Mat dst = LayerMat)
+            {
+                CvInvoke.MorphologyEx(dst, dst, MorphOp.Open, kernel, anchor, iterations, borderType, borderValue);
+                LayerMat = dst;
+            }
+        }
+
+        public void MutateClose(int iterations = 1, IInputArray kernel = null, Point anchor = default, BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
+        {
+            if (anchor.IsEmpty) anchor = new Point(-1, -1);
+            if (ReferenceEquals(kernel, null))
+            {
+                kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+            }
+            using (Mat dst = LayerMat)
+            {
+                CvInvoke.MorphologyEx(dst, dst, MorphOp.Close, kernel, anchor, iterations, borderType, borderValue);
+                LayerMat = dst;
+            }
+        }
+
+        public void MutateGradient(int iterations = 1, IInputArray kernel = null, Point anchor = default, BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
+        {
+            if (anchor.IsEmpty) anchor = new Point(-1, -1);
+            if (ReferenceEquals(kernel, null))
+            {
+                kernel = CvInvoke.GetStructuringElement(ElementShape.Cross, new Size(3, 3), anchor);
+            }
+            using (Mat dst = LayerMat)
+            {
+                CvInvoke.MorphologyEx(dst, dst, MorphOp.Gradient, kernel, anchor, iterations, borderType, borderValue);
+                LayerMat = dst;
+            }
+        }
+
+        public void MutatePyrDownUp(BorderType borderType = BorderType.Reflect101)
+        {
+            using (Mat dst = LayerMat)
+            {
+                CvInvoke.PyrDown(dst, dst, borderType);
+                CvInvoke.PyrUp(dst, dst, borderType);
+                LayerMat = dst;
+            }
+        }
+
+        public void MutateMedianBlur(int aperture = 1)
+        {
+            using (Mat dst = LayerMat)
+            {
+                CvInvoke.MedianBlur(dst, dst, aperture);
+                LayerMat = dst;
+            }
+        }
+
+        public void MutateGaussianBlur(Size size = default, int sigmaX = 0, int sigmaY = 0, BorderType borderType = BorderType.Reflect101)
+        {
+            if(size.IsEmpty) size = new Size(5, 5);
+
+            using (Mat dst = LayerMat)
+            {
+                CvInvoke.GaussianBlur(dst, dst, size, sigmaX, sigmaY, borderType);
+                LayerMat = dst;
+            }
+        }
+
+
+
+        public Layer Clone()
+        {
+            return new Layer(Index, CompressedBytes, Filename, ParentLayerManager);
+        }
+       
+
+        
+        #endregion
     }
     #endregion
 
@@ -728,6 +861,219 @@ namespace UVtools.Parser
             return Layers[index];
         }
 
+        /// <summary>
+        /// Resizes layer images in x and y factor, starting at 1 = 100%
+        /// </summary>
+        /// <param name="startLayerIndex">Layer index to start</param>
+        /// <param name="endLayerIndex">Layer index to end</param>
+        /// <param name="x">X factor, starts at 1</param>
+        /// <param name="y">Y factor, starts at 1</param>
+        /// <param name="isFade">Fade X/Y towards 100%</param>
+        public void MutateResize(uint startLayerIndex, uint endLayerIndex, double x, double y, bool isFade)
+        {
+            if (x == 1.0 && y == 1.0) return;
+
+            double xSteps = Math.Abs(x - 1.0) / (endLayerIndex - startLayerIndex);
+            double ySteps = Math.Abs(y - 1.0) / (endLayerIndex - startLayerIndex);
+
+            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            {
+                var newX = x;
+                var newY = y;
+                if (isFade)
+                {
+                    if (newX != 1.0)
+                    {
+                        
+                        //maxIteration = Math.Max(iterationsStart, iterationsEnd);
+
+                        newX = (float)(newX < 1.0
+                            ? newX + (layerIndex - startLayerIndex) * xSteps
+                            : newX - (layerIndex - startLayerIndex) * xSteps);
+
+                        // constrain
+                        //iterations = Math.Min(Math.Max(1, iterations), maxIteration);
+                    }
+
+                    if (y != 1.0)
+                    {
+                        
+                        //maxIteration = Math.Max(iterationsStart, iterationsEnd);
+
+                        newY = (float)(newY < 1.0
+                            ? newY + (layerIndex - startLayerIndex) * ySteps
+                            : newY - (layerIndex - startLayerIndex) * ySteps);
+
+                        // constrain
+                        //iterations = Math.Min(Math.Max(1, iterations), maxIteration);
+                    }
+                }
+
+                if (newX == 1.0 && newY == 1.0) return;
+
+                this[layerIndex].MutateResize(newX, newY);
+            });
+        }
+
+        public void MutateSolidify(uint startLayerIndex, uint endLayerIndex)
+        {
+            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            {
+                this[layerIndex].MutateSolidify();
+            });
+        }
+
+        private void MutateGetVarsIterationFade(uint startLayerIndex, uint endLayerIndex, int iterationsStart, int iterationsEnd, ref bool isFade, out int iterationSteps, out int maxIteration)
+        {
+            iterationSteps = 0;
+            maxIteration = 0;
+            isFade = isFade && startLayerIndex != endLayerIndex && iterationsStart != iterationsEnd;
+            if (!isFade) return;
+            iterationSteps = (int)Math.Abs((double)(iterationsStart - iterationsEnd) / (endLayerIndex - startLayerIndex));
+            maxIteration = Math.Max(iterationsStart, iterationsEnd);
+        }
+
+        private int MutateGetIterationVar(bool isFade, int iterationsStart, int iterationsEnd, int iterationSteps, int maxIteration, uint startLayerIndex, uint layerIndex)
+        {
+            if(!isFade) return iterationsStart;
+            // calculate iterations based on range
+            int iterations = (int)(iterationsStart < iterationsEnd
+                ? iterationsStart + (layerIndex - startLayerIndex) * iterationSteps
+                : iterationsStart - (layerIndex - startLayerIndex) * iterationSteps);
+
+            // constrain
+            return Math.Min(Math.Max(1, iterations), maxIteration);
+        }
+
+        public void MutateErode(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false,
+            IInputArray kernel = null, Point anchor = default,
+            BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
+        {
+            MutateGetVarsIterationFade(
+                startLayerIndex, 
+                endLayerIndex, 
+                iterationsStart,
+                iterationsEnd, 
+                ref isFade,
+                out var iterationSteps, 
+                out var maxIteration
+                );
+
+            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            {
+                int iterations = MutateGetIterationVar(isFade, iterationsStart, iterationsEnd, iterationSteps, maxIteration, startLayerIndex, (uint) layerIndex);
+                this[layerIndex].MutateErode(iterations, kernel, anchor, borderType, borderValue);
+            });
+        }
+
+        public void MutateDilate(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false,
+            IInputArray kernel = null, Point anchor = default,
+            BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
+        {
+            MutateGetVarsIterationFade(
+                startLayerIndex,
+                endLayerIndex,
+                iterationsStart,
+                iterationsEnd,
+                ref isFade,
+                out var iterationSteps,
+                out var maxIteration
+            );
+
+            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            {
+                int iterations = MutateGetIterationVar(isFade, iterationsStart, iterationsEnd, iterationSteps, maxIteration, startLayerIndex, (uint)layerIndex);
+                this[layerIndex].MutateDilate(iterations, kernel, anchor, borderType, borderValue);
+            });
+        }
+
+        public void MutateOpen(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false,
+            IInputArray kernel = null, Point anchor = default,
+            BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
+        {
+            MutateGetVarsIterationFade(
+                startLayerIndex,
+                endLayerIndex,
+                iterationsStart,
+                iterationsEnd,
+                ref isFade,
+                out var iterationSteps,
+                out var maxIteration
+            );
+
+            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            {
+                int iterations = MutateGetIterationVar(isFade, iterationsStart, iterationsEnd, iterationSteps, maxIteration, startLayerIndex, (uint)layerIndex);
+                this[layerIndex].MutateOpen(iterations, kernel, anchor, borderType, borderValue);
+            });
+        }
+
+        public void MutateClose(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false,
+            IInputArray kernel = null, Point anchor = default,
+            BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
+        {
+            MutateGetVarsIterationFade(
+                startLayerIndex,
+                endLayerIndex,
+                iterationsStart,
+                iterationsEnd,
+                ref isFade,
+                out var iterationSteps,
+                out var maxIteration
+            );
+
+            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            {
+                int iterations = MutateGetIterationVar(isFade, iterationsStart, iterationsEnd, iterationSteps, maxIteration, startLayerIndex, (uint)layerIndex);
+                this[layerIndex].MutateClose(iterations, kernel, anchor, borderType, borderValue);
+            });
+        }
+
+        public void MutateGradient(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false,
+            IInputArray kernel = null, Point anchor = default,
+            BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
+        {
+            MutateGetVarsIterationFade(
+                startLayerIndex,
+                endLayerIndex,
+                iterationsStart,
+                iterationsEnd,
+                ref isFade,
+                out var iterationSteps,
+                out var maxIteration
+            );
+
+            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            {
+                int iterations = MutateGetIterationVar(isFade, iterationsStart, iterationsEnd, iterationSteps, maxIteration, startLayerIndex, (uint)layerIndex);
+                this[layerIndex].MutateGradient(iterations, kernel, anchor, borderType, borderValue);
+            });
+        }
+
+        public void MutatePyrDownUp(uint startLayerIndex, uint endLayerIndex, BorderType borderType = BorderType.Default)
+        {
+            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            {
+                this[layerIndex].MutatePyrDownUp(borderType);
+            });
+        }
+
+        public void MutateMedianBlur(uint startLayerIndex, uint endLayerIndex, int aperture = 1)
+        {
+            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            {
+                this[layerIndex].MutateMedianBlur(aperture);
+            });
+        }
+
+        public void MutateGaussianBlur(uint startLayerIndex, uint endLayerIndex, Size size = default, int sigmaX = 0, int sigmaY = 0, BorderType borderType = BorderType.Reflect101)
+        {
+            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            {
+                this[layerIndex].MutateGaussianBlur(size, sigmaX, sigmaY, borderType);
+            });
+        }
+
         public ConcurrentDictionary<uint, List<LayerIssue>> GetAllIssues()
         {
             const byte requiredPixelsToSupportIsland = 10;
@@ -749,296 +1095,370 @@ namespace UVtools.Parser
                 }
             });*/
 
-            var layerHollowAreas = new ConcurrentDictionary<uint, List<LayerHollowArea>>();
-
-            // Detect contours
-            Parallel.ForEach(this,
-            //new ParallelOptions{MaxDegreeOfParallelism = 1},
-            layer =>
+            var task1 = new TaskFactory().StartNew(() =>
             {
-                using (var image = layer.LayerMat)
-                {
-                    int step = image.Step;
-                    CvInvoke.Threshold(image, image, 1, 255, ThresholdType.Binary);
-
-                    var span = image.GetPixelSpan<byte>();
-
-                    // TouchingBounds Checker
-                    List<Point> pixels = new List<Point>();
-                    for (int x = 0; x < image.Width; x++) // Check Top and Bottom bounds
+                // Detect contours
+                Parallel.ForEach(this,
+                    //new ParallelOptions{MaxDegreeOfParallelism = 1},
+                    layer =>
                     {
-                        if (span[x] >= minTouchingBondsPixelColor) // Top
+                        using (var image = layer.LayerMat)
                         {
-                            pixels.Add(new Point(x, 0));
-                        }
+                            int step = image.Step;
+                            var span = image.GetPixelSpan<byte>();
 
-                        if (span[step * image.Height - step + x] >= minTouchingBondsPixelColor) // Bottom
-                        {
-                            pixels.Add(new Point(x, image.Height - 1));
-                        }
-                    }
-
-                    for (int y = 0; y < image.Height; y++) // Check Left and Right bounds
-                    {
-                        if (span[y * step] >= minTouchingBondsPixelColor) // Left
-                        {
-                            pixels.Add(new Point(0, y));
-                        }
-
-                        if (span[y * step + step - 1] >= minTouchingBondsPixelColor) // Right
-                        {
-                            pixels.Add(new Point(step - 1, y));
-                        }
-                    }
-
-                    if (pixels.Count > 0)
-                    {
-                        result.TryAdd(layer.Index, new List<LayerIssue>
-                        {
-                            new LayerIssue(layer, LayerIssue.IssueType.TouchingBound, pixels.ToArray())
-                        });
-                    }
-
-
-
-
-
-
-                    var listHollowArea = new List<LayerHollowArea>();
-
-                    VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-                    Mat hierarchy = new Mat();
-
-                    CvInvoke.FindContours(image, contours, hierarchy, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
-
-                    var arr = hierarchy.GetData();
-                    //
-                    //hierarchy[i][0]: the index of the next contour of the same level
-                    //hierarchy[i][1]: the index of the previous contour of the same level
-                    //hierarchy[i][2]: the index of the first child
-                    //hierarchy[i][3]: the index of the parent
-                    //
-                    
-                    Mat previousImage = null;
-                    Span<byte> previousSpan = null;
-                    Span<byte> imageSpan = null;
-                    for (int i = 0; i < contours.Size; i++)
-                    {
-                        if ((int) arr.GetValue(0, i, 2) != -1 || (int) arr.GetValue(0, i, 3) == -1) // Island
-                        {
-                            if(layer.Index == 0) continue;
-                            if (ReferenceEquals(previousImage, null))
+                            // TouchingBounds Checker
+                            List<Point> pixels = new List<Point>();
+                            for (int x = 0; x < image.Width; x++) // Check Top and Bottom bounds
                             {
-                                previousImage = this[layer.Index - 1].LayerMat;
-                                previousSpan = previousImage.GetPixelSpan<byte>();
-                                imageSpan = image.GetPixelSpan<byte>();
-                            }
-
-                            var rect = CvInvoke.BoundingRectangle(contours[i]);
-                            List<Point> points = new List<Point>();
-                            uint pixelsSupportingIsland = 0;
-
-                            using (Mat contourImage = image.CloneBlank())
-                            {
-                                CvInvoke.DrawContours(contourImage, contours, i, new MCvScalar(255), -1);
-                                var contourImageSpan = contourImage.GetPixelSpan<byte>();
-
-                                for (int y = rect.Y; y < rect.Bottom; y++)
+                                if (span[x] >= minTouchingBondsPixelColor) // Top
                                 {
-                                    for (int x = rect.X; x < rect.Right; x++)
-                                    {
-                                        //int pixel = image.GetPixelPos(x, y);
-                                        int pixel = step * y + x;
-                                        if (imageSpan[pixel] < minIslandPixelToCheck)
-                                            continue; // Low brightness, ignore
-                                        if (contourImageSpan[pixel] != 255) continue; // Not inside contour, ignore
+                                    pixels.Add(new Point(x, 0));
+                                }
 
-                                        //if (CvInvoke.PointPolygonTest(contours[i], new PointF(x, y), false) < 0) continue; // Out of contour SLOW!
-                                        //Debug.WriteLine($"Layer: {layer.Index}, Coutour: {i},  X:{x} Y:{y}");
-                                        points.Add(new Point(x, y));
-
-                                        if (previousSpan[pixel] >= minIslandSupportPixelColor)
-                                        {
-                                            pixelsSupportingIsland++;
-                                        }
-                                    }
+                                if (span[step * image.Height - step + x] >= minTouchingBondsPixelColor) // Bottom
+                                {
+                                    pixels.Add(new Point(x, image.Height - 1));
                                 }
                             }
 
-                            if (points.Count == 0) continue;
-                            if (pixelsSupportingIsland >= requiredPixelsToSupportIsland) continue; // Not a island, bounding is strong, i think...
-                            if (pixelsSupportingIsland > 0 && points.Count < requiredPixelsToSupportIsland &&
-                                pixelsSupportingIsland >= Math.Max(1, points.Count / 2)) continue; // Not a island, but maybe weak bounding...
-
-
-                            var issue = new LayerIssue(layer, LayerIssue.IssueType.Island, points.ToArray(), rect);
-                            result.AddOrUpdate(layer.Index, new List<LayerIssue>{ issue }, 
-                                (layerIndex, list) =>
+                            for (int y = 0; y < image.Height; y++) // Check Left and Right bounds
+                            {
+                                if (span[y * step] >= minTouchingBondsPixelColor) // Left
                                 {
-                                    list.Add(issue);
-                                    return list;
-                                });
-                        }
-                        else //if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1) // Hollow area
-                        {
-                            listHollowArea.Add(new LayerHollowArea(contours[i].ToArray(),
-                                CvInvoke.BoundingRectangle(contours[i]),
-                                layer.Index == 0 || layer.Index == Count - 1
-                                    ? LayerHollowArea.AreaType.Drain
-                                    : LayerHollowArea.AreaType.Unknown));
+                                    pixels.Add(new Point(0, y));
+                                }
 
-                            if (listHollowArea.Count > 0)
-                                layerHollowAreas.TryAdd(layer.Index, listHollowArea);
+                                if (span[y * step + step - 1] >= minTouchingBondsPixelColor) // Right
+                                {
+                                    pixels.Add(new Point(step - 1, y));
+                                }
+                            }
+
+                            if (pixels.Count > 0)
+                            {
+                                result.TryAdd(layer.Index, new List<LayerIssue>
+                                {
+                                    new LayerIssue(layer, LayerIssue.IssueType.TouchingBound, pixels.ToArray())
+                                });
+                            }
+
+                            if (layer.Index == 0) return; // No inslands for layer 0
+
+                            CvInvoke.Threshold(image, image, 1, 255, ThresholdType.Binary);
+                            VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
+                            Mat hierarchy = new Mat();
+
+                            CvInvoke.FindContours(image, contours, hierarchy, RetrType.Ccomp,
+                                ChainApproxMethod.ChainApproxSimple);
+
+                            var arr = hierarchy.GetData();
+                            //
+                            //hierarchy[i][0]: the index of the next contour of the same level
+                            //hierarchy[i][1]: the index of the previous contour of the same level
+                            //hierarchy[i][2]: the index of the first child
+                            //hierarchy[i][3]: the index of the parent
+                            //
+
+                            Mat previousImage = null;
+                            Span<byte> previousSpan = null;
+                            Span<byte> imageSpan = null;
+                            for (int i = 0; i < contours.Size; i++)
+                            {
+                                if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1) continue;
+                                if (ReferenceEquals(previousImage, null))
+                                {
+                                    previousImage = this[layer.Index - 1].LayerMat;
+                                    previousSpan = previousImage.GetPixelSpan<byte>();
+                                    imageSpan = image.GetPixelSpan<byte>();
+                                }
+
+                                var rect = CvInvoke.BoundingRectangle(contours[i]);
+                                List<Point> points = new List<Point>();
+                                uint pixelsSupportingIsland = 0;
+
+                                using (Mat contourImage = image.CloneBlank())
+                                {
+                                    CvInvoke.DrawContours(contourImage, contours, i, new MCvScalar(255), -1);
+                                    var contourImageSpan = contourImage.GetPixelSpan<byte>();
+
+                                    for (int y = rect.Y; y < rect.Bottom; y++)
+                                    {
+                                        for (int x = rect.X; x < rect.Right; x++)
+                                        {
+                                            //int pixel = image.GetPixelPos(x, y);
+                                            int pixel = step * y + x;
+                                            if (imageSpan[pixel] < minIslandPixelToCheck)
+                                                continue; // Low brightness, ignore
+                                            if (contourImageSpan[pixel] != 255)
+                                                continue; // Not inside contour, ignore
+
+                                            //if (CvInvoke.PointPolygonTest(contours[i], new PointF(x, y), false) < 0) continue; // Out of contour SLOW!
+                                            //Debug.WriteLine($"Layer: {layer.Index}, Coutour: {i},  X:{x} Y:{y}");
+                                            points.Add(new Point(x, y));
+
+                                            if (previousSpan[pixel] >= minIslandSupportPixelColor)
+                                            {
+                                                pixelsSupportingIsland++;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (points.Count == 0) continue;
+                                if (pixelsSupportingIsland >= requiredPixelsToSupportIsland)
+                                    continue; // Not a island, bounding is strong, i think...
+                                if (pixelsSupportingIsland > 0 && points.Count < requiredPixelsToSupportIsland &&
+                                    pixelsSupportingIsland >= Math.Max(1, points.Count / 2))
+                                    continue; // Not a island, but maybe weak bounding...
+
+
+                                var issue = new LayerIssue(layer, LayerIssue.IssueType.Island, points.ToArray(), rect);
+                                result.AddOrUpdate(layer.Index, new List<LayerIssue> {issue},
+                                    (layerIndex, list) =>
+                                    {
+                                        list.Add(issue);
+                                        return list;
+                                    });
+                            }
+
+                            contours.Dispose();
+                            hierarchy.Dispose();
+                            previousImage?.Dispose();
                         }
-                    }
-                    hierarchy.Dispose();
-                    previousImage?.Dispose();
-                }
+                    });
             });
 
-            for (uint layerIndex = 1; layerIndex < Count - 1; layerIndex++) // Ignore first and last layers, always drains
+            var layerHollowAreas = new ConcurrentDictionary<uint, List<LayerHollowArea>>();
+            var task2 = new TaskFactory().StartNew(() =>
             {
-                if (!layerHollowAreas.TryGetValue(layerIndex, out var areas)) continue; // No hollow areas in this layer, ignore
-
-                byte areaCount = 0;
-                //foreach (var area in areas)
-                Parallel.ForEach(areas, area =>
-                {
-                    if (area.Type != LayerHollowArea.AreaType.Unknown) return; // processed, ignore
-                    area.Type = LayerHollowArea.AreaType.Trap;
-
-                    areaCount++;
-
-                    List<LayerHollowArea> linkedAreas = new List<LayerHollowArea>();
-
-                    for (sbyte dir = 1; dir >= -1 && area.Type != LayerHollowArea.AreaType.Drain; dir -= 2)
-                    //Parallel.ForEach(dirs, new ParallelOptions {MaxDegreeOfParallelism = 2}, dir =>
+                // Detect contours
+                Parallel.ForEach(this,
+                    //new ParallelOptions{MaxDegreeOfParallelism = 1},
+                    layer =>
                     {
-                        Queue<LayerHollowArea> queue = new Queue<LayerHollowArea>();
-                        queue.Enqueue(area);
-                        area.Processed = false;
-                        int nextLayerIndex = (int)layerIndex;
-                        while (queue.Count > 0 && area.Type != LayerHollowArea.AreaType.Drain)
+                        using (var image = layer.LayerMat)
                         {
-                            LayerHollowArea checkArea = queue.Dequeue();
-                            if (checkArea.Processed) continue;
-                            checkArea.Processed = true;
-                            nextLayerIndex += dir;
-                            //Debug.WriteLine($"Area Count: {areaCount} | Layer: {layerIndex} | Next Layer: {nextLayerIndex} | Dir: {dir}");
-                            if (nextLayerIndex < 0 && nextLayerIndex >= Count)
-                                break; // Exhausted layers
-                            bool haveNextAreas =
-                                layerHollowAreas.TryGetValue((uint)nextLayerIndex, out var nextAreas);
+                            CvInvoke.Threshold(image, image, 254, 255, ThresholdType.Binary);
 
-                            using (var image = this[nextLayerIndex].LayerMat)
+                            var listHollowArea = new List<LayerHollowArea>();
+
+                            using (VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint())
                             {
-                                var span = image.GetPixelSpan<byte>();
-                                using (var emguImage = image.CloneBlank())
+                                using (Mat hierarchy = new Mat())
                                 {
-                                    //emguImage.FillConvexPoly(checkArea.Contour, new Gray(255));
-                                    CvInvoke.DrawContours(emguImage, new VectorOfVectorOfPoint(new VectorOfPoint(checkArea.Contour)), -1, new MCvScalar(255), -1);
 
-                                    bool exitPixelLoop = false;
-                                    uint blackCount = 0;
+                                    CvInvoke.FindContours(image, contours, hierarchy, RetrType.Ccomp,
+                                        ChainApproxMethod.ChainApproxSimple);
 
-                                    var spanContour = emguImage.GetPixelSpan<byte>();
-                                    for (int y = checkArea.BoundingRectangle.Y;
-                                        y <= checkArea.BoundingRectangle.Bottom &&
-                                        area.Type != LayerHollowArea.AreaType.Drain && !exitPixelLoop;
-                                        y++)
+                                    var arr = hierarchy.GetData();
+                                    //
+                                    //hierarchy[i][0]: the index of the next contour of the same level
+                                    //hierarchy[i][1]: the index of the previous contour of the same level
+                                    //hierarchy[i][2]: the index of the first child
+                                    //hierarchy[i][3]: the index of the parent
+                                    //
+
+                                    for (int i = 0; i < contours.Size; i++)
                                     {
-                                        for (int x = checkArea.BoundingRectangle.X;
-                                            x <= checkArea.BoundingRectangle.Right &&
-                                            area.Type != LayerHollowArea.AreaType.Drain && !exitPixelLoop;
-                                            x++)
+                                        if ((int) arr.GetValue(0, i, 2) != -1 || (int) arr.GetValue(0, i, 3) == -1)
+                                            continue;
+                                        listHollowArea.Add(new LayerHollowArea(contours[i].ToArray(),
+                                            CvInvoke.BoundingRectangle(contours[i]),
+                                            layer.Index == 0 || layer.Index == Count - 1
+                                                ? LayerHollowArea.AreaType.Drain
+                                                : LayerHollowArea.AreaType.Unknown));
+
+                                        if (listHollowArea.Count > 0)
+                                            layerHollowAreas.TryAdd(layer.Index, listHollowArea);
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+
+                for (uint layerIndex = 1; layerIndex < Count - 1; layerIndex++) // Ignore first and last layers, always drains
+                {
+                    if (!layerHollowAreas.TryGetValue(layerIndex, out var areas))
+                        continue; // No hollow areas in this layer, ignore
+
+                    byte areaCount = 0;
+                    //foreach (var area in areas)
+                    
+                    Parallel.ForEach(from t in areas where t.Type == LayerHollowArea.AreaType.Unknown select t, area =>
+                    {
+                        //if (area.Type != LayerHollowArea.AreaType.Unknown) return; // processed, ignore
+                        area.Type = LayerHollowArea.AreaType.Trap;
+
+                        areaCount++;
+
+                        List<LayerHollowArea> linkedAreas = new List<LayerHollowArea>();
+
+                        for (sbyte dir = 1; dir >= -1 && area.Type != LayerHollowArea.AreaType.Drain; dir -= 2) 
+                        //Parallel.ForEach(new sbyte[] {1, -1}, new ParallelOptions {MaxDegreeOfParallelism = 2}, dir =>
+                        {
+                            Queue<LayerHollowArea> queue = new Queue<LayerHollowArea>();
+                            queue.Enqueue(area);
+                            area.Processed = false;
+                            int nextLayerIndex = (int) layerIndex;
+                            while (queue.Count > 0 && area.Type != LayerHollowArea.AreaType.Drain)
+                            {
+                                LayerHollowArea checkArea = queue.Dequeue();
+                                if (checkArea.Processed) continue;
+                                checkArea.Processed = true;
+                                nextLayerIndex += dir;
+                                Debug.WriteLine($"Area Count: {areaCount} | Layer: {layerIndex} | Next Layer: {nextLayerIndex} | Dir: {dir}");
+                                if (nextLayerIndex < 0 && nextLayerIndex >= Count)
+                                    break; // Exhausted layers
+                                bool haveNextAreas = layerHollowAreas.TryGetValue((uint) nextLayerIndex, out var nextAreas);
+                                List<LayerHollowArea> intersectingAreas = new List<LayerHollowArea>();
+
+                                using (var image = this[nextLayerIndex].LayerMat)
+                                {
+                                    var span = image.GetPixelSpan<byte>();
+                                    using (var emguImage = image.CloneBlank())
+                                    {
+                                        using(var vec = new VectorOfVectorOfPoint(new VectorOfPoint(checkArea.Contour)))
                                         {
-                                            int pixelPos = image.GetPixelPos(x, y);
+                                            CvInvoke.DrawContours(emguImage, vec, -1, new MCvScalar(255), -1);
+                                        }
 
-                                            if (spanContour[pixelPos] != 255) continue;
-                                            if (span[pixelPos] > 30) continue;
-                                            blackCount++;
-
-                                            if (haveNextAreas
-                                            ) // Have areas, can be on same area path or not
+                                        if (haveNextAreas)
+                                        {
+                                            foreach (var nextArea in nextAreas)
                                             {
-                                                foreach (var nextArea in nextAreas)
+                                                if (!checkArea.BoundingRectangle.IntersectsWith(nextArea.BoundingRectangle)) continue;
+
+                                                intersectingAreas.Add(nextArea);
+                                                /*CvInvoke.DrawContours(emguImage,
+                                                    new VectorOfVectorOfPoint(new VectorOfPoint(nextArea.Contour)),
+                                                    -1,
+                                                    new MCvScalar(intersectingAreas.Count), -1);*/
+                                            }
+                                            if (intersectingAreas.Count == 0)
+                                            {
+                                                haveNextAreas = false;
+                                            }
+                                        }
+
+                                        bool exitPixelLoop = false;
+                                        uint blackCount = 0;
+
+                                        var spanContour = emguImage.GetPixelSpan<byte>();
+                                        for (int y = checkArea.BoundingRectangle.Y;
+                                            y <= checkArea.BoundingRectangle.Bottom &&
+                                            area.Type != LayerHollowArea.AreaType.Drain && !exitPixelLoop;
+                                            y++)
+                                        {
+                                            int pixelPos = image.GetPixelPos(checkArea.BoundingRectangle.X, y)-1;
+                                            for (int x = checkArea.BoundingRectangle.X;
+                                                x <= checkArea.BoundingRectangle.Right &&
+                                                area.Type != LayerHollowArea.AreaType.Drain && !exitPixelLoop;
+                                                x++)
+                                            {
+                                                pixelPos++;
+
+                                                if (spanContour[pixelPos] == 0) continue; // No contour
+                                                if (span[pixelPos] > 30) continue; // Threshold to ignore white area
+                                                blackCount++;
+
+                                                if (haveNextAreas) // Have areas, can be on same area path or not
                                                 {
-                                                    if (!(CvInvoke.PointPolygonTest(
-                                                        new VectorOfPoint(nextArea.Contour),
-                                                        new PointF(x, y), false) >= 0)) continue;
-                                                    if (nextArea.Type == LayerHollowArea.AreaType.Drain
-                                                    ) // Found a drain, stop query
+                                                    /*int i = spanContour[pixelPos] - 1;
+                                                    if (i == -1 || i >= 254)
+                                                        continue;
+
+                                                    //if(queue.Contains(intersectingAreas[i])) continue;
+                                                    //Debug.WriteLine($"BlackCount: {blackCount}, pixel color: {i}, layerindex: {layerIndex}");
+                                                    
+                                                    if (intersectingAreas[i].Type == LayerHollowArea.AreaType.Drain) // Found a drain, stop query
                                                     {
                                                         area.Type = LayerHollowArea.AreaType.Drain;
                                                     }
                                                     else
                                                     {
-                                                        queue.Enqueue(nextArea);
+                                                        queue.Enqueue(intersectingAreas[i]);
                                                     }
 
-                                                    linkedAreas.Add(nextArea);
+                                                    linkedAreas.Add(intersectingAreas[i]);
 
+                                                    exitPixelLoop = true;
+                                                    break;*/
+                                                    foreach (var nextAreaCheck in intersectingAreas)
+                                                    {
+                                                        using (var vec = new VectorOfPoint(nextAreaCheck.Contour))
+                                                        {
+                                                            //Debug.WriteLine(CvInvoke.PointPolygonTest(vec, new PointF(x, y), false));
+                                                            if (CvInvoke.PointPolygonTest(vec, new PointF(x, y), false) < 0) continue;
+                                                        }
+
+                                                        if (nextAreaCheck.Type == LayerHollowArea.AreaType.Drain
+                                                        ) // Found a drain, stop query
+                                                        {
+                                                            area.Type = LayerHollowArea.AreaType.Drain;
+                                                            exitPixelLoop = true;
+                                                        }
+                                                        else
+                                                        {
+                                                            queue.Enqueue(area);
+                                                        }
+
+                                                        linkedAreas.Add(nextAreaCheck);
+                                                        intersectingAreas.Remove(nextAreaCheck);
+                                                        haveNextAreas = intersectingAreas.Count > 0;
+                                                        break;
+                                                        //exitPixelLoop = true;
+                                                        //break;
+
+                                                    }
+                                                }
+                                                else if (blackCount > Math.Min(checkArea.Contour.Length / 2, 10)) // Black pixel without next areas = Drain
+                                                {
+                                                    area.Type = LayerHollowArea.AreaType.Drain;
                                                     exitPixelLoop = true;
                                                     break;
                                                 }
-                                            }
-                                            else if (blackCount > Math.Min(checkArea.Contour.Length / 2, 10)) // Black pixel without next areas = Drain
-                                            {
-                                                area.Type = LayerHollowArea.AreaType.Drain;
-                                                exitPixelLoop = true;
-                                                break;
-                                            }
-                                        } // X loop
-                                    } // Y loop
+                                            } // X loop
+                                        } // Y loop
 
-                                    if (queue.Count == 0 && blackCount > Math.Min(checkArea.Contour.Length / 2, 10))
-                                    {
+                                        if (queue.Count == 0 && blackCount > Math.Min(checkArea.Contour.Length / 2, 10))
+                                        {
 
-                                        area.Type = LayerHollowArea.AreaType.Drain;
-                                    }
+                                            area.Type = LayerHollowArea.AreaType.Drain;
+                                        }
 
-                                } // Dispose emgu image
-                            } // Dispose image
-                        } // Areas loop
-                    } // Dir layer loop
+                                    } // Dispose emgu image
+                                } // Dispose image
+                            } // Areas loop
+                        } // Dir layer loop
 
-                    foreach (var linkedArea in linkedAreas) // Update linked areas
-                    {
-                        linkedArea.Type = area.Type;
-                    }
-                });
-            }
+                        foreach (var linkedArea in linkedAreas) // Update linked areas
+                        {
+                            linkedArea.Type = area.Type;
+                        }
+                    });
+                }
+            });
+
+            task1.Wait(); // Islands & bounds
+            task2.Wait(); // Resin trap
 
             for (uint layerIndex = 0; layerIndex < Count; layerIndex++)
             {
                 if (!layerHollowAreas.TryGetValue(layerIndex, out var list)) continue;
-                if (list.Count > 0)
+                if (list.Count == 0) continue;
+                foreach (var issue in 
+                        from area 
+                        in list 
+                        where area.Type == LayerHollowArea.AreaType.Trap 
+                        select new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contour, area.BoundingRectangle))
                 {
-                    foreach (var area in list)
+                    result.AddOrUpdate(layerIndex, new List<LayerIssue> {issue}, (u, listIssues) =>
                     {
-                        if (area.Type == LayerHollowArea.AreaType.Trap)
-                        {
-                            var issue = new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contour, area.BoundingRectangle);
-                            result.AddOrUpdate(layerIndex, new List<LayerIssue> {issue}, (u, listIssues) =>
-                            {
-                                listIssues.Add(issue);
-                                return listIssues;
-                            });
-                            //issuesHollow.Add();
-                        }
-                    }
-
-                    /*if (issuesHollow.Count > 0)
-                    {
-                        if (Issues.TryGetValue(layerIndex, out var currentIssue))
-                        {
-                            currentIssue.AddRange(issuesHollow);
-                        }
-                        else
-                        {
-                            Issues.Add(layerIndex, issuesHollow);
-                        }
-                    }*/
+                        listIssues.Add(issue);
+                        return listIssues;
+                    });
                 }
             }
 

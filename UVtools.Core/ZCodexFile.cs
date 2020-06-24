@@ -17,7 +17,6 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
 using Newtonsoft.Json;
 using UVtools.Core.Extensions;
-using UVtools.Parser;
 
 namespace UVtools.Core
 {

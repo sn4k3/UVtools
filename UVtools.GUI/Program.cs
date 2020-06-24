@@ -14,7 +14,6 @@ using System.Windows.Forms;
 using ApplicationManagement;
 using Emgu.CV;
 using UVtools.Core;
-using UVtools.Parser;
 using UVtools.GUI.Forms;
 
 namespace UVtools.GUI

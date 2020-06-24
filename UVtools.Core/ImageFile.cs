@@ -4,7 +4,6 @@ using System.Net.Mime;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
-using UVtools.Parser;
 using Size = System.Drawing.Size;
 
 namespace UVtools.Core

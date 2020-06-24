@@ -10,7 +10,6 @@ using System;
 using System.Globalization;
 using System.Windows.Forms;
 using UVtools.Core;
-using UVtools.Parser;
 
 namespace UVtools.GUI.Forms
 {

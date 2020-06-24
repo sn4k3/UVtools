@@ -16,7 +16,6 @@ using System.Reflection;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
-using UVtools.Parser;
 
 namespace UVtools.Core
 {

@@ -1,5 +1,20 @@
 # Changelog
 
+## ? - v0.6
+
+* (Add) UVtoolsCmd, a terminal muti-platform aplication to run almost all operations as the GUI
+* (Improvement) Huge performance boost in layer reparing and in every mutator
+* (Improvement) Layer preview is now faster
+* (Improvement) Islands detection is now better and don't skip any pixel, more islands will show or the region will be bigger
+* (Improvement) ResinTrap performance
+* (Improvement) Better memory optimization by dispose all objects on operations
+* (Change) Image engine changed to use only OpenCV Mat instead of two and avoid converting from one to another, as result there's a huge performance gain in some operations
+* (Change) UVtools now rely on UVtools.Core, and drop the UVtools.Parser. The Core now perform all operations and transformations inplace of the GUI
+* (Change) Islands search are now faster, it will jump from island to insland instead of search in every pixel by pixel
+* (Removed) ImageSharp dependency
+* (Removed) UVtools.Parser project
+* (Fix) Fade resizes make image offset a pixel from layer to layer because of integer placement, now it matain the correct position
+
 ## 21/06/2020 - v0.5.2.2
 
 * (Fix) phz: Files with encryption or sliced by chitubox produced black images after save due not setting the image address nor size (Spotted by Burak Cezairli)
