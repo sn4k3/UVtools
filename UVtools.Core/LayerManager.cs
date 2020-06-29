@@ -478,9 +478,14 @@ namespace UVtools.Core
                 mat = LayerMat;
                 needDispose = true;
             }
-            CvInvoke.FindNonZero(mat, mat);
-            NonZeroPixelCount = (uint)mat.Rows / 2;
-            BoundingRectangle = CvInvoke.BoundingRectangle(mat);
+
+            using (var nonZeroMat = new Mat())
+            {
+                CvInvoke.FindNonZero(mat, nonZeroMat);
+                NonZeroPixelCount = (uint)nonZeroMat.Rows / 2;
+                BoundingRectangle = CvInvoke.BoundingRectangle(nonZeroMat);
+            }
+            
 
             if(needDispose) mat.Dispose();
 
@@ -1507,7 +1512,7 @@ namespace UVtools.Core
 
                                         listHollowArea.Add(new LayerHollowArea(contours[i].ToArray(),
                                             rect,
-                                            layer.Index == 0 || layer.Index == Count - 1
+                                            layer.Index == Count - 1
                                                 ? LayerHollowArea.AreaType.Drain
                                                 : LayerHollowArea.AreaType.Unknown));
 
@@ -1520,7 +1525,7 @@ namespace UVtools.Core
                     });
 
 
-                for (uint layerIndex = 1; layerIndex < Count - 1; layerIndex++) // Ignore first and last layers, always drains
+                for (uint layerIndex = 0; layerIndex < Count - 1; layerIndex++) // Last layers, always drains
                 {
                     if (!layerHollowAreas.TryGetValue(layerIndex, out var areas))
                         continue; // No hollow areas in this layer, ignore
@@ -1551,11 +1556,11 @@ namespace UVtools.Core
                                 checkArea.Processed = true;
                                 nextLayerIndex += dir;
                                 
-                                if (nextLayerIndex < 0 && nextLayerIndex >= Count)
+                                if (nextLayerIndex < 0 || nextLayerIndex >= Count)
                                     break; // Exhausted layers
                                 bool haveNextAreas = layerHollowAreas.TryGetValue((uint) nextLayerIndex, out var nextAreas);
                                 Dictionary<int, LayerHollowArea> intersectingAreas = new Dictionary<int, LayerHollowArea>();
-
+                                
                                 using (var image = this[nextLayerIndex].LayerMat)
                                 {
                                     var span = image.GetPixelSpan<byte>();

@@ -27,9 +27,20 @@ namespace UVtools.Core.Extensions
             return new Span<T>(mat.DataPointer.ToPointer(), mat.GetLength());
         }
 
-        public static unsafe Span<T> GetPixelRowSpan<T>(this Mat mat, int y)
+        public static unsafe Span<T> GetPixelSpan<T>(this Mat mat, int length, int offset = 0)
         {
-            return new Span<T>(IntPtr.Add(mat.DataPointer, y * mat.Step).ToPointer(), mat.Step);
+            return new Span<T>(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length);
+        }
+
+        public static Span<T> GetSinglePixelSpan<T>(this Mat mat, int x, int y)
+        {
+            return mat.GetPixelSpan<T>(mat.NumberOfChannels, mat.GetPixelPos(x, y));
+        }
+
+
+        public static unsafe Span<T> GetPixelRowSpan<T>(this Mat mat, int y, int length = 0, int offset = 0)
+        {
+            return new Span<T>(IntPtr.Add(mat.DataPointer, y * mat.Step + offset).ToPointer(), length == 0 ? mat.Step : length);
             //return mat.GetPixelSpan<T>().Slice(offset, mat.Step);
         }
 
@@ -157,19 +168,30 @@ namespace UVtools.Core.Extensions
 
         public static byte GetByte(this Mat mat, int pos)
         {
+            //return new Span<byte>(IntPtr.Add(mat.DataPointer, pos).ToPointer(), mat.Step)[0];
             var value = new byte[1];
-            Marshal.Copy(mat.DataPointer + pos * mat.ElementSize, value, 0, value.Length);
+            Marshal.Copy(mat.DataPointer + pos, value, 0, value.Length);
             return value[0];
         }
 
-        public static byte GetByte(this Mat mat, int x, int y) => GetByte(mat, y * mat.Cols + x);
+        public static byte GetByte(this Mat mat, int x, int y) => GetByte(mat, mat.GetPixelPos(x, y));
 
 
         public static void SetByte(this Mat mat, int pixel, byte value) => SetByte(mat, pixel, new[] {value});
 
         public static void SetByte(this Mat mat, int pixel, byte[] value)
         {
-            Marshal.Copy(value, 0, mat.DataPointer + pixel * mat.ElementSize, value.Length);
+            /*var sw = Stopwatch.StartNew();
+            var span = new Span<byte>(IntPtr.Add(mat.DataPointer, pixel).ToPointer(), value.Length);
+            for (int i = 0; i < value.Length; i++)
+            {
+                span[i] = value[i];
+            }
+            Debug.Write(sw.ElapsedMilliseconds);
+            Debug.Write(" - ");
+            sw.Restart();*/
+            Marshal.Copy(value, 0, mat.DataPointer + pixel, value.Length);
+            //Debug.Write(sw.ElapsedMilliseconds);
         }
 
         public static void SetByte(this Mat mat, int x, int y, byte value) =>

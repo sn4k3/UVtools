@@ -1,5 +1,12 @@
 # Changelog
 
+## 29/06/2020 - v0.6.0.1
+
+* (Improvement) Pixel edit now spare a memory cycle per pixel
+* (Fix) Resin trap detection was considering layer 0 black pixels as always a drain and skip potential traps on layer 0
+* (Fix) Resin trap was crashing when reach -1 layer index and pass the layer count
+* (Fix) Pixel edit was crashing the program
+
 ## 29/06/2020 - v0.6.0.0
 
 * (Add) UVtools now notify when a new version available is detected
@@ -14,7 +21,7 @@
 * (Improvement) Huge performance boost in layer reparing and in every mutator
 * (Improvement) Layer preview is now faster
 * (Improvement) Islands detection is now better and don't skip any pixel, more islands will show or the region will be bigger
-* (Improvement) Islands search are now faster, it will jump from island to insland instead of search in every pixel by pixel
+* (Improvement) Islands search are now faster, it will jump from island to island instead of search in every pixel by pixel
 * (Improvement) ResinTrap detection and corrected some cases where it can't detect a drain
 * (Improvement) Better memory optimization by dispose all objects on operations
 * (Improvement) Image engine changed to use only OpenCV Mat instead of two and avoid converting from one to another, as result there's a huge performance gain in some operations (#6)

@@ -2200,23 +2200,25 @@ namespace UVtools.GUI
 
             Color color;
             byte pixelColor;
-            int pixel = ActualLayerImage.GetPixelPos(x, y);
+            //int pixel = ActualLayerImage.GetPixelPos(x, y);
+            var span = ActualLayerImage.GetSinglePixelSpan<byte>(x, y);
 
             if (isAdd)
             {
-                if (ActualLayerImage.GetByte(pixel) > 200) return;
+                if (span[0] > 200) return;
                 color = Color.Green;
                 pixelColor = 255;
             }
             else
             {
-                if (ActualLayerImage.GetByte(pixel) == 0) return;
+                if (span[0] == 0) return;
                 color = Color.DarkRed;
                 pixelColor = 0;
             }
 
 
-            ActualLayerImage.SetByte(pixel, pixelColor);;
+            //ActualLayerImage.SetByte(pixel, pixelColor);;
+            span[0] = pixelColor;
             Bitmap bmp = pbLayer.Image as Bitmap;
             bmp.SetPixel(location.X, location.Y, color);
 
