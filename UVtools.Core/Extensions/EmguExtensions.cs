@@ -27,11 +27,10 @@ namespace UVtools.Core.Extensions
             return new Span<T>(mat.DataPointer.ToPointer(), mat.GetLength());
         }
 
-        public static Span<T> GetPixelRowSpan<T>(this Mat mat, int y)
+        public static unsafe Span<T> GetPixelRowSpan<T>(this Mat mat, int y)
         {
-            int offset = y * mat.Step;
-            //IntPtr ptr = IntPtr.Add(mat.DataPointer, offset);
-            return mat.GetPixelSpan<T>().Slice(offset, mat.Step);
+            return new Span<T>(IntPtr.Add(mat.DataPointer, y * mat.Step).ToPointer(), mat.Step);
+            //return mat.GetPixelSpan<T>().Slice(offset, mat.Step);
         }
 
         /// <summary>
@@ -44,17 +43,19 @@ namespace UVtools.Core.Extensions
         /// <param name="xTrans">X translation</param>
         /// <param name="yTrans">Y translation</param>
         /// <param name="interpolation">Interpolation mode</param>
-        public static void ScaleFromCenter(this Mat src, double xScale, double yScale, double xTrans = 0, double yTrans = 0, Inter interpolation = Inter.Linear)
+        public static void TransformFromCenter(this Mat src, double xScale, double yScale, double xTrans = 0, double yTrans = 0, Inter interpolation = Inter.Linear)
         {
             //var dst = new Mat(src.Size, src.Depth, src.NumberOfChannels);
-            var translateTransform = new Matrix<double>(2, 3)
+            using (var translateTransform = new Matrix<double>(2, 3)
             {
                 [0, 0] = xScale, // xScale
                 [1, 1] = yScale, // yScale
                 [0, 2] = xTrans + (src.Width - src.Width * xScale) / 2.0, //x translation + compensation of  x scaling
                 [1, 2] = yTrans + (src.Height - src.Height * yScale) / 2.0 // y translation + compensation of y scaling
-            };
-            CvInvoke.WarpAffine(src, src, translateTransform, src.Size, interpolation);
+            })
+            {
+                CvInvoke.WarpAffine(src, src, translateTransform, src.Size, interpolation);
+            }
         }
 
         /// <summary>

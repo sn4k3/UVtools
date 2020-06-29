@@ -42,6 +42,8 @@
             this.menuFileExtract = new System.Windows.Forms.ToolStripMenuItem();
             this.menuFileConvert = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.menuFileSettings = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator15 = new System.Windows.Forms.ToolStripSeparator();
             this.menuFileExit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuMutate = new System.Windows.Forms.ToolStripMenuItem();
@@ -54,6 +56,7 @@
             this.menuHelpAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             this.menuHelpInstallPrinters = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuNewVersion = new System.Windows.Forms.ToolStripMenuItem();
             this.statusBar = new System.Windows.Forms.StatusStrip();
             this.mainTable = new System.Windows.Forms.TableLayoutPanel();
             this.scCenter = new System.Windows.Forms.SplitContainer();
@@ -71,7 +74,11 @@
             this.toolStripSeparator14 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerImageHighlightIssues = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImageLayerOutline = new System.Windows.Forms.ToolStripButton();
+            this.tsLayerImageLayerOutline = new System.Windows.Forms.ToolStripSplitButton();
+            this.tsLayerImageLayerOutlinePrintVolumeBounds = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsLayerImageLayerOutlineLayerBounds = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsLayerImageLayerOutlineHollowAreas = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsLayerImageLayerOutlineEdgeDetection = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerImagePixelEdit = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
@@ -116,8 +123,10 @@
             this.tsIssueCount = new System.Windows.Forms.ToolStripLabel();
             this.tsIssueNext = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsIsuesRefresh = new System.Windows.Forms.ToolStripButton();
             this.tsIssueRemove = new System.Windows.Forms.ToolStripButton();
+            this.tsIsuesRefresh = new System.Windows.Forms.ToolStripSplitButton();
+            this.tsIsuesRefreshIslands = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsIsuesRefreshResinTraps = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
             this.tsIssuesRepair = new System.Windows.Forms.ToolStripButton();
             this.imageList16x16 = new System.Windows.Forms.ImageList(this.components);
@@ -169,7 +178,8 @@
             this.menuMutate,
             this.menuTools,
             this.viewToolStripMenuItem,
-            this.helpToolStripMenuItem});
+            this.helpToolStripMenuItem,
+            this.menuNewVersion});
             this.menu.Location = new System.Drawing.Point(0, 0);
             this.menu.Name = "menu";
             this.menu.Size = new System.Drawing.Size(1784, 24);
@@ -189,6 +199,8 @@
             this.menuFileExtract,
             this.menuFileConvert,
             this.toolStripSeparator2,
+            this.menuFileSettings,
+            this.toolStripSeparator15,
             this.menuFileExit});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
@@ -280,6 +292,20 @@
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
             this.toolStripSeparator2.Size = new System.Drawing.Size(258, 6);
+            // 
+            // menuFileSettings
+            // 
+            this.menuFileSettings.Image = global::UVtools.GUI.Properties.Resources.settings_16x16;
+            this.menuFileSettings.Name = "menuFileSettings";
+            this.menuFileSettings.ShortcutKeys = System.Windows.Forms.Keys.F12;
+            this.menuFileSettings.Size = new System.Drawing.Size(261, 22);
+            this.menuFileSettings.Text = "&Settings";
+            this.menuFileSettings.Click += new System.EventHandler(this.EventClick);
+            // 
+            // toolStripSeparator15
+            // 
+            this.toolStripSeparator15.Name = "toolStripSeparator15";
+            this.toolStripSeparator15.Size = new System.Drawing.Size(258, 6);
             // 
             // menuFileExit
             // 
@@ -384,6 +410,15 @@
             this.menuHelpInstallPrinters.Text = "Install profiles into PrusaSlicer";
             this.menuHelpInstallPrinters.Click += new System.EventHandler(this.EventClick);
             // 
+            // menuNewVersion
+            // 
+            this.menuNewVersion.BackColor = System.Drawing.Color.Lime;
+            this.menuNewVersion.Name = "menuNewVersion";
+            this.menuNewVersion.Size = new System.Drawing.Size(147, 20);
+            this.menuNewVersion.Text = "New version is available!";
+            this.menuNewVersion.Visible = false;
+            this.menuNewVersion.Click += new System.EventHandler(this.EventClick);
+            // 
             // statusBar
             // 
             this.statusBar.Location = new System.Drawing.Point(0, 789);
@@ -433,6 +468,7 @@
             // 
             // pbLayer
             // 
+            this.pbLayer.AllowDoubleClick = true;
             this.pbLayer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pbLayer.GridScale = Cyotek.Windows.Forms.ImageBoxGridScale.Large;
             this.pbLayer.Location = new System.Drawing.Point(0, 25);
@@ -442,6 +478,7 @@
             this.pbLayer.Size = new System.Drawing.Size(1228, 705);
             this.pbLayer.TabIndex = 7;
             this.pbLayer.Zoomed += new System.EventHandler<Cyotek.Windows.Forms.ImageBoxZoomEventArgs>(this.pbLayer_Zoomed);
+            this.pbLayer.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.EventMouseDoubleClick);
             this.pbLayer.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseMove);
             this.pbLayer.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseUp);
             // 
@@ -581,14 +618,49 @@
             // 
             // tsLayerImageLayerOutline
             // 
-            this.tsLayerImageLayerOutline.CheckOnClick = true;
+            this.tsLayerImageLayerOutline.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsLayerImageLayerOutlinePrintVolumeBounds,
+            this.tsLayerImageLayerOutlineLayerBounds,
+            this.tsLayerImageLayerOutlineHollowAreas,
+            this.tsLayerImageLayerOutlineEdgeDetection});
             this.tsLayerImageLayerOutline.Image = global::UVtools.GUI.Properties.Resources.Geometry_16x16;
             this.tsLayerImageLayerOutline.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsLayerImageLayerOutline.Name = "tsLayerImageLayerOutline";
-            this.tsLayerImageLayerOutline.Size = new System.Drawing.Size(66, 22);
+            this.tsLayerImageLayerOutline.Size = new System.Drawing.Size(78, 22);
             this.tsLayerImageLayerOutline.Text = "Outline";
-            this.tsLayerImageLayerOutline.ToolTipText = "Show layer outlines only";
-            this.tsLayerImageLayerOutline.Click += new System.EventHandler(this.EventClick);
+            this.tsLayerImageLayerOutline.ButtonClick += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerImageLayerOutlinePrintVolumeBounds
+            // 
+            this.tsLayerImageLayerOutlinePrintVolumeBounds.CheckOnClick = true;
+            this.tsLayerImageLayerOutlinePrintVolumeBounds.Name = "tsLayerImageLayerOutlinePrintVolumeBounds";
+            this.tsLayerImageLayerOutlinePrintVolumeBounds.Size = new System.Drawing.Size(185, 22);
+            this.tsLayerImageLayerOutlinePrintVolumeBounds.Text = "Print Volume Bounds";
+            this.tsLayerImageLayerOutlinePrintVolumeBounds.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerImageLayerOutlineLayerBounds
+            // 
+            this.tsLayerImageLayerOutlineLayerBounds.CheckOnClick = true;
+            this.tsLayerImageLayerOutlineLayerBounds.Name = "tsLayerImageLayerOutlineLayerBounds";
+            this.tsLayerImageLayerOutlineLayerBounds.Size = new System.Drawing.Size(185, 22);
+            this.tsLayerImageLayerOutlineLayerBounds.Text = "Layer Bounds";
+            this.tsLayerImageLayerOutlineLayerBounds.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerImageLayerOutlineHollowAreas
+            // 
+            this.tsLayerImageLayerOutlineHollowAreas.CheckOnClick = true;
+            this.tsLayerImageLayerOutlineHollowAreas.Name = "tsLayerImageLayerOutlineHollowAreas";
+            this.tsLayerImageLayerOutlineHollowAreas.Size = new System.Drawing.Size(185, 22);
+            this.tsLayerImageLayerOutlineHollowAreas.Text = "Hollow Areas";
+            this.tsLayerImageLayerOutlineHollowAreas.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerImageLayerOutlineEdgeDetection
+            // 
+            this.tsLayerImageLayerOutlineEdgeDetection.CheckOnClick = true;
+            this.tsLayerImageLayerOutlineEdgeDetection.Name = "tsLayerImageLayerOutlineEdgeDetection";
+            this.tsLayerImageLayerOutlineEdgeDetection.Size = new System.Drawing.Size(185, 22);
+            this.tsLayerImageLayerOutlineEdgeDetection.Text = "&Edge Detection";
+            this.tsLayerImageLayerOutlineEdgeDetection.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator9
             // 
@@ -975,8 +1047,8 @@
             this.tsIssueCount,
             this.tsIssueNext,
             this.toolStripSeparator13,
-            this.tsIsuesRefresh,
             this.tsIssueRemove,
+            this.tsIsuesRefresh,
             this.toolStripSeparator12,
             this.tsIssuesRepair});
             this.tsIssues.Location = new System.Drawing.Point(3, 3);
@@ -1021,18 +1093,6 @@
             this.toolStripSeparator13.Name = "toolStripSeparator13";
             this.toolStripSeparator13.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsIsuesRefresh
-            // 
-            this.tsIsuesRefresh.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsIsuesRefresh.Enabled = false;
-            this.tsIsuesRefresh.Image = global::UVtools.GUI.Properties.Resources.refresh_16x16;
-            this.tsIsuesRefresh.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsIsuesRefresh.Name = "tsIsuesRefresh";
-            this.tsIsuesRefresh.Size = new System.Drawing.Size(61, 22);
-            this.tsIsuesRefresh.Text = "Detect";
-            this.tsIsuesRefresh.ToolTipText = "Compute Issues";
-            this.tsIsuesRefresh.Click += new System.EventHandler(this.EventClick);
-            // 
             // tsIssueRemove
             // 
             this.tsIssueRemove.Enabled = false;
@@ -1045,6 +1105,38 @@
     "\r\nResinTrap: All trap areas are filled with white pixels.\r\nTouchingBounds: No ac" +
     "tion, need reslice.";
             this.tsIssueRemove.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsIsuesRefresh
+            // 
+            this.tsIsuesRefresh.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsIsuesRefresh.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsIsuesRefreshIslands,
+            this.tsIsuesRefreshResinTraps});
+            this.tsIsuesRefresh.Image = global::UVtools.GUI.Properties.Resources.refresh_16x16;
+            this.tsIsuesRefresh.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsIsuesRefresh.Name = "tsIsuesRefresh";
+            this.tsIsuesRefresh.Size = new System.Drawing.Size(73, 22);
+            this.tsIsuesRefresh.Text = "&Detect";
+            this.tsIsuesRefresh.ToolTipText = "Compute Issues";
+            this.tsIsuesRefresh.ButtonClick += new System.EventHandler(this.EventClick);
+            // 
+            // tsIsuesRefreshIslands
+            // 
+            this.tsIsuesRefreshIslands.Checked = true;
+            this.tsIsuesRefreshIslands.CheckOnClick = true;
+            this.tsIsuesRefreshIslands.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsIsuesRefreshIslands.Name = "tsIsuesRefreshIslands";
+            this.tsIsuesRefreshIslands.Size = new System.Drawing.Size(211, 22);
+            this.tsIsuesRefreshIslands.Text = "Islands && Touching Bonds";
+            // 
+            // tsIsuesRefreshResinTraps
+            // 
+            this.tsIsuesRefreshResinTraps.Checked = true;
+            this.tsIsuesRefreshResinTraps.CheckOnClick = true;
+            this.tsIsuesRefreshResinTraps.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsIsuesRefreshResinTraps.Name = "tsIsuesRefreshResinTraps";
+            this.tsIsuesRefreshResinTraps.Size = new System.Drawing.Size(211, 22);
+            this.tsIsuesRefreshResinTraps.Text = "Resin traps";
             // 
             // toolStripSeparator12
             // 
@@ -1364,7 +1456,6 @@
         private System.Windows.Forms.ToolStripLabel tsLayerImageZoom;
         private System.Windows.Forms.ToolStripButton tsLayerImagePixelEdit;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
-        private System.Windows.Forms.ToolStripButton tsLayerImageLayerOutline;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
         private System.Windows.Forms.ToolStripMenuItem menuMutate;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
@@ -1378,7 +1469,6 @@
         private System.Windows.Forms.ColumnHeader lvIssuesCount;
         private System.Windows.Forms.ColumnHeader lvIssuesXY;
         private System.Windows.Forms.ColumnHeader lvIssuesPixels;
-        private System.Windows.Forms.ToolStripButton tsIsuesRefresh;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
         private System.Windows.Forms.ToolStripLabel tsLayerImageMouseLocation;
         private System.Windows.Forms.ColumnHeader lvIssuesLayerHeader;
@@ -1408,6 +1498,17 @@
         private System.Windows.Forms.ToolStripSplitButton tsLayerImageExport;
         private System.Windows.Forms.ToolStripMenuItem tsLayerImageExportFile;
         private System.Windows.Forms.ToolStripMenuItem tsLayerImageExportClipboard;
+        private System.Windows.Forms.ToolStripMenuItem menuNewVersion;
+        private System.Windows.Forms.ToolStripMenuItem menuFileSettings;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator15;
+        private System.Windows.Forms.ToolStripSplitButton tsIsuesRefresh;
+        private System.Windows.Forms.ToolStripMenuItem tsIsuesRefreshIslands;
+        private System.Windows.Forms.ToolStripMenuItem tsIsuesRefreshResinTraps;
+        private System.Windows.Forms.ToolStripSplitButton tsLayerImageLayerOutline;
+        private System.Windows.Forms.ToolStripMenuItem tsLayerImageLayerOutlineEdgeDetection;
+        private System.Windows.Forms.ToolStripMenuItem tsLayerImageLayerOutlinePrintVolumeBounds;
+        private System.Windows.Forms.ToolStripMenuItem tsLayerImageLayerOutlineLayerBounds;
+        private System.Windows.Forms.ToolStripMenuItem tsLayerImageLayerOutlineHollowAreas;
     }
 }
 

@@ -6,35 +6,15 @@
  *  of this license document, but changing it is not allowed.
  */
 using System.Drawing;
+using UVtools.Core;
 
 
 namespace UVtools.GUI
 {
     public class Mutation
     {
-        #region Enum
-        public enum Mutates : byte
-        {
-            Resize,
-            Solidify,
-            //LayerSmash,
-            Erode,
-            Dilate,
-            Opening,
-            Closing,
-            Gradient,
-            TopHat,
-            BlackHat,
-            HitMiss,
-            PyrDownUp,
-            SmoothMedian,
-            SmoothGaussian,
-            
-        }
-        #endregion
-
         #region Properties
-        public Mutates Mutate { get; }
+        public LayerManager.Mutate Mutate { get; }
 
         public string Description { get; }
 
@@ -43,7 +23,7 @@ namespace UVtools.GUI
 
         #region Constructor
 
-        public Mutation(Mutates mutate, string description, Image image = null)
+        public Mutation(LayerManager.Mutate mutate, string description, Image image = null)
         {
             Mutate = mutate;
             Description = description;

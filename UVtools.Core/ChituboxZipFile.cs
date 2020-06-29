@@ -262,6 +262,8 @@ namespace UVtools.Core
                     CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[CreatedThumbnailsCount]);
                 }
             }
+
+            var rect = LayerManager.BoundingRectangle;
         }
 
         public override object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)

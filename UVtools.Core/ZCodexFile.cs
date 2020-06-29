@@ -90,8 +90,8 @@ namespace UVtools.Core
             public float ZLiftRetractRate { get; set; } = 100;
             public float ZLiftFeedRate { get; set; } = 100;
             public byte AntiAliasing { get; set; } = 0;
-            public byte XCorrection { get; set; }
-            public byte YCorrection { get; set; }
+            public float XCorrection { get; set; }
+            public float YCorrection { get; set; }
             public byte HollowEnabled { get; set; }
             public float HollowThickness { get; set; }
             public byte InfillDensity { get; set; }
@@ -346,6 +346,8 @@ namespace UVtools.Core
                     }
                 }
             }
+
+            var rect = LayerManager.BoundingRectangle;
         }
 
         public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)

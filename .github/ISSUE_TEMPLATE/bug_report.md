@@ -23,10 +23,12 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
+**Files**
+Were possible attach the problematic file, both source and output file if applicable
+
 **Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Version [e.g. 22]
- 
+ - OS: [e.g. Windows 10 x64 v2004]
+  
 **Exceptions Log file**
 In some unexpected exceptions errors will generate and save a log file under appfolder/Logs/AppErrors.
 If present you can attach the log file here. Check file name against date/time to be sure it's related to your problem.

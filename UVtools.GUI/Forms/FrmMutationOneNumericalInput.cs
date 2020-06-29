@@ -12,7 +12,7 @@ using UVtools.Core;
 
 namespace UVtools.GUI.Forms
 {
-    public partial class FrmMutation : Form
+    public partial class FrmMutationOneNumericalInput : Form
     {
         #region Properties
 
@@ -30,79 +30,36 @@ namespace UVtools.GUI.Forms
             set => nmLayerRangeEnd.Value = value;
         }
 
-        public uint Iterations
+        public decimal Value
         {
-            get => (uint) numIterationsStart.Value;
-            set => numIterationsStart.Value = value;
-        }
-
-        public uint IterationsEnd
-        {
-            get => (uint)nmIterationsEnd.Value;
-            set => nmIterationsEnd.Value = value;
-        }
-
-        public bool IterationsFade
-        {
-            get => cbIterationsFade.Checked;
-            set => cbIterationsFade.Checked = value;
+            get => nmValue.Value;
+            set => nmValue.Value = value;
         }
         #endregion
 
         #region Constructors
-
-        public FrmMutation()
+        public FrmMutationOneNumericalInput(Mutation mutation)
         {
             InitializeComponent();
-        }
-
-        public FrmMutation(Mutation mutation, uint defaultIterations = 1) : this()
-        {
-            
             Mutation = mutation;
             DialogResult = DialogResult.Cancel;
-
-            if (defaultIterations == 0 ||
-                mutation.Mutate == LayerManager.Mutate.PyrDownUp ||
-                mutation.Mutate == LayerManager.Mutate.Solidify)
-            {
-                lbIterationsStart.Enabled =
-                numIterationsStart.Enabled =
-                lbIterationsStop.Enabled =
-                nmIterationsEnd.Enabled =
-                cbIterationsFade.Enabled =
-                        false;
-            }
-            else
-            {
-                Iterations = defaultIterations;
-                numIterationsStart.Select();
-            }
-
-            if (Mutation.Mutate == LayerManager.Mutate.SmoothGaussian ||
-                Mutation.Mutate == LayerManager.Mutate.SmoothMedian)
-            {
-                lbIterationsStop.Enabled =
-                    nmIterationsEnd.Enabled =
-                        cbIterationsFade.Enabled =
-                            false;
-            }
 
             Text = $"Mutate: {mutation.Mutate}";
             lbDescription.Text = Mutation.Description;
 
-            if (ReferenceEquals(mutation.Image, null))
-            {
-                Width = pbInfo.Location.X+25;
-            }
-            else
-            {
-                pbInfo.Image = mutation.Image;
-                pbInfo.Visible = true;
-            }
-
             nmLayerRangeEnd.Value = Program.SlicerFile.LayerCount-1;
 
+            switch (mutation.Mutate)
+            {
+                case LayerManager.Mutate.Rotate:
+                    lbValue.Text = "Rotation degrees:";
+                    nmValue.Maximum = 360;
+                    nmValue.Minimum = -360;
+                    nmValue.DecimalPlaces = 2;
+
+                    Value = 90;
+                    break;
+            }
         }
         #endregion
 
@@ -192,29 +149,10 @@ namespace UVtools.GUI.Forms
                     return;
                 }
 
-                if (Mutation.Mutate == LayerManager.Mutate.SmoothGaussian ||
-                    Mutation.Mutate == LayerManager.Mutate.SmoothMedian)
-                {
-                    if (IterationsFade)
-                    {
-                        MessageBox.Show("Smooth doesn't support fading.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-                    if (Iterations % 2 != 1)
-                    {
-                        MessageBox.Show("Iterations must be a odd number.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-                }
-
                 if (MessageBox.Show($"Are you sure you want to {Mutation.Mutate}?", Text, MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     DialogResult = DialogResult.OK;
-                    if (Iterations <= 0) // Should never happen!
-                    {
-                        DialogResult = DialogResult.Cancel;
-                    }
                     Close();
                 }
 
@@ -228,17 +166,6 @@ namespace UVtools.GUI.Forms
             }
         }
 
-        private void CheckedChanged(object sender, EventArgs e)
-        {
-            if (ReferenceEquals(sender, cbIterationsFade))
-            {
-                lbIterationsStop.Enabled =
-                    nmIterationsEnd.Enabled =
-                        cbIterationsFade.Checked;
-
-                return;
-            }
-        }
         #endregion
 
 

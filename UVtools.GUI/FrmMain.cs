@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,6 +23,7 @@ using Emgu.CV.Util;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.GUI.Forms;
+using UVtools.GUI.Properties;
 
 namespace UVtools.GUI
 {
@@ -33,37 +34,43 @@ namespace UVtools.GUI
 
         #region Properties
 
-        public static readonly Dictionary<Mutation.Mutates, Mutation> Mutations =
-            new Dictionary<Mutation.Mutates, Mutation>
+        public static readonly Dictionary<LayerManager.Mutate, Mutation> Mutations =
+            new Dictionary<LayerManager.Mutate, Mutation>
             {
-                {Mutation.Mutates.Resize, new Mutation(Mutation.Mutates.Resize,
+                {LayerManager.Mutate.Resize, new Mutation(LayerManager.Mutate.Resize,
                     "Resizes layer images in a X and/or Y factor, starting from 100% value\n" +
                     "NOTE 1: Build volume bounds are not validated after operation, please ensure scaling stays inside your limits.\n" +
                     "NOTE 2: X and Y are applied to original image, not to the rotated preview (If enabled)."
                 )},
-                {Mutation.Mutates.Solidify, new Mutation(Mutation.Mutates.Solidify,
+                {LayerManager.Mutate.Flip, new Mutation(LayerManager.Mutate.Flip,
+                    "Flips layer images vertically and/or horizontally"
+                )},
+                {LayerManager.Mutate.Rotate, new Mutation(LayerManager.Mutate.Rotate,
+                    "Rotate layer images in a certain degrees"
+                )},
+                {LayerManager.Mutate.Solidify, new Mutation(LayerManager.Mutate.Solidify,
                     "Solidifies the selected layers, closes all inner holes.\n" +
                     "Warning: All surrounded holes are filled, no exceptions! Make sure you don't require any of holes in layer path.",
                     Properties.Resources.mutation_solidify
                 )},
-                {Mutation.Mutates.Erode, new Mutation(Mutation.Mutates.Erode, 
+                {LayerManager.Mutate.Erode, new Mutation(LayerManager.Mutate.Erode, 
                 "The basic idea of erosion is just like soil erosion only, it erodes away the boundaries of foreground object (Always try to keep foreground in white). " +
                         "So what happends is that, all the pixels near boundary will be discarded depending upon the size of kernel. So the thickness or size of the foreground object decreases or simply white region decreases in the image. It is useful for removing small white noises, detach two connected objects, etc.",
                         Properties.Resources.mutation_erosion
                 )},
-                {Mutation.Mutates.Dilate, new Mutation(Mutation.Mutates.Dilate,
+                {LayerManager.Mutate.Dilate, new Mutation(LayerManager.Mutate.Dilate,
                     "It is just opposite of erosion. Here, a pixel element is '1' if atleast one pixel under the kernel is '1'. So it increases the white region in the image or size of foreground object increases. Normally, in cases like noise removal, erosion is followed by dilation. Because, erosion removes white noises, but it also shrinks our object. So we dilate it. Since noise is gone, they won't come back, but our object area increases. It is also useful in joining broken parts of an object.",
                     Properties.Resources.mutation_dilation
                 )},
-                {Mutation.Mutates.Opening, new Mutation(Mutation.Mutates.Opening,
+                {LayerManager.Mutate.Opening, new Mutation(LayerManager.Mutate.Opening,
                     "Opening is just another name of erosion followed by dilation. It is useful in removing noise.",
                     Properties.Resources.mutation_opening
                 )},
-                {Mutation.Mutates.Closing, new Mutation(Mutation.Mutates.Closing,
+                {LayerManager.Mutate.Closing, new Mutation(LayerManager.Mutate.Closing,
                     "Closing is reverse of Opening, Dilation followed by Erosion. It is useful in closing small holes inside the foreground objects, or small black points on the object.",
                     Properties.Resources.mutation_closing
                 )},
-                {Mutation.Mutates.Gradient, new Mutation(Mutation.Mutates.Gradient,
+                {LayerManager.Mutate.Gradient, new Mutation(LayerManager.Mutate.Gradient,
                     "It's the difference between dilation and erosion of an image.",
                     Properties.Resources.mutation_gradient
                 )},
@@ -79,16 +86,16 @@ namespace UVtools.GUI
                     "The Hit-or-Miss transformation is useful to find patterns in binary images. In particular, it finds those pixels whose neighbourhood matches the shape of a first structuring element B1 while not matching the shape of a second structuring element B2 at the same time.",
                     null
                 )},*/
-                {Mutation.Mutates.PyrDownUp, new Mutation(Mutation.Mutates.PyrDownUp,
+                {LayerManager.Mutate.PyrDownUp, new Mutation(LayerManager.Mutate.PyrDownUp,
                     "Performs downsampling step of Gaussian pyramid decomposition.\n" +
                     "First it convolves image with the specified filter and then downsamples the image by rejecting even rows and columns.\n" +
                     "After performs up-sampling step of Gaussian pyramid decomposition\n"
                 )},
-                {Mutation.Mutates.SmoothMedian, new Mutation(Mutation.Mutates.SmoothMedian,
+                {LayerManager.Mutate.SmoothMedian, new Mutation(LayerManager.Mutate.SmoothMedian,
                     "Each pixel becomes the median of its surrounding pixels. Also a good way to remove noise.\n" +
                     "Note: Iterations must be a odd number."
                 )},
-                {Mutation.Mutates.SmoothGaussian, new Mutation(Mutation.Mutates.SmoothGaussian,
+                {LayerManager.Mutate.SmoothGaussian, new Mutation(LayerManager.Mutate.SmoothGaussian,
                     "Each pixel is a sum of fractions of each pixel in its neighborhood\n" +
                     "Very fast, but does not preserve sharp edges well.\n" +
                     "Note: Iterations must be a odd number."
@@ -108,7 +115,7 @@ namespace UVtools.GUI
 
         public Mat ActualLayerImage { get; private set; }
 
-        public Mat ActualLayerImageBgr { get; private set; }
+        public Mat ActualLayerImageBgr { get; private set; } = new Mat();
 
         public Dictionary<uint, List<LayerIssue>> Issues { get; set; }
 
@@ -125,10 +132,24 @@ namespace UVtools.GUI
             FrmLoading = new FrmLoading();
             Program.SetAllControlsFontSize(Controls, 11);
             Program.SetAllControlsFontSize(FrmLoading.Controls, 11);
-            
+
+            if (Settings.Default.UpdateSettings)
+            {
+                Settings.Default.Upgrade();
+                Settings.Default.UpdateSettings = false;
+                Settings.Default.Save();
+            }
+
             Clear();
 
-            if (Width >= Screen.FromControl(this).WorkingArea.Width ||
+            tsLayerImageLayerDifference.Checked = Settings.Default.LayerDifferenceDefault;
+            tsIsuesRefreshIslands.Checked = Settings.Default.ComputeIslands;
+            tsIsuesRefreshResinTraps.Checked = Settings.Default.ComputeResinTraps;
+            tsLayerImageLayerOutlinePrintVolumeBounds.Checked = Settings.Default.OutlinePrintVolumeBounds;
+            tsLayerImageLayerOutlineLayerBounds.Checked = Settings.Default.OutlineLayerBounds;
+            tsLayerImageLayerOutlineHollowAreas.Checked = Settings.Default.OutlineHollowAreas;
+
+            if (Settings.Default.StartMaximized || Width >= Screen.FromControl(this).WorkingArea.Width ||
                 Height >= Screen.FromControl(this).WorkingArea.Height)
             {
                 WindowState = FormWindowState.Maximized;
@@ -138,7 +159,7 @@ namespace UVtools.GUI
             DragEnter += (s, e) => { if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy; };
             DragDrop += (s, e) => { ProcessFile((string[])e.Data.GetData(DataFormats.FileDrop)); };
 
-            foreach (Mutation.Mutates mutate in (Mutation.Mutates[])Enum.GetValues(typeof(Mutation.Mutates)))
+            foreach (LayerManager.Mutate mutate in (LayerManager.Mutate[])Enum.GetValues(typeof(LayerManager.Mutate)))
             {
                 if(!Mutations.ContainsKey(mutate)) continue;
                 var item = new ToolStripMenuItem(mutate.ToString())
@@ -154,6 +175,41 @@ namespace UVtools.GUI
             {
                 var group = new ListViewGroup(issueType.ToString(), $"{issueType}s"){HeaderAlignment = HorizontalAlignment.Center};
                 lvIssues.Groups.Add(group);
+            }
+
+            if (Settings.Default.CheckForUpdatesOnStartup)
+            {
+                Task.Factory.StartNew(AppLoadTask);
+            }
+        }
+
+        private void AppLoadTask()
+        {
+            try
+            {
+                using (WebClient client = new WebClient())
+                {
+                    string htmlCode = client.DownloadString($"{About.Website}/releases");
+                    const string searchFor = "/releases/tag/";
+                    var startIndex = htmlCode.IndexOf(searchFor, StringComparison.InvariantCultureIgnoreCase) + searchFor.Length;
+                    var endIndex = htmlCode.IndexOf("\"", startIndex, StringComparison.InvariantCultureIgnoreCase);
+                    var version = htmlCode.Substring(startIndex, endIndex- startIndex);
+                    if (string.Compare(version, $"v{FrmAbout.AssemblyVersion}", StringComparison.OrdinalIgnoreCase) > 0)
+                    {
+                        Invoke((MethodInvoker)delegate
+                        {
+                            // Running on the UI thread
+                            menuNewVersion.Text = $"New version {version} is available!";
+                            menuNewVersion.Tag = $"{About.Website}/releases/tag/{version}";
+                            menuNewVersion.Visible = true;
+                        });
+                    }
+                    //Debug.WriteLine(version);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
             }
         }
 
@@ -233,7 +289,7 @@ namespace UVtools.GUI
 
                 if (e.KeyCode == Keys.NumPad0 || e.KeyCode == Keys.D0)
                 {
-                    pbLayer.ZoomToFit();
+                    ZoomToFit();
                     e.Handled = true;
                     return;
                 }
@@ -265,7 +321,11 @@ namespace UVtools.GUI
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-            pbLayer.ZoomToFit();
+            if (Settings.Default.LayerZoomToFit)
+            {
+                ZoomToFit();
+            }
+
             lbLayerActual.Location = new Point(lbLayerActual.Location.X,
                 Math.Max(1,
                     Math.Min(tbLayer.Height - 40,
@@ -273,6 +333,7 @@ namespace UVtools.GUI
                 ));
         }
 
+        
         #endregion
 
         #region Events
@@ -345,8 +406,10 @@ namespace UVtools.GUI
                             SlicerFile.Save();
                             result = true;
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
+                            MessageBox.Show(ex.Message, "Error while saving the file", MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
                         }
                         finally
                         {
@@ -389,8 +452,10 @@ namespace UVtools.GUI
                                     SlicerFile.SaveAs(dialog.FileName);
                                     result = true;
                                 }
-                                catch (Exception)
+                                catch (Exception ex)
                                 {
+                                    MessageBox.Show(ex.Message, "Error while saving the file", MessageBoxButtons.OK,
+                                        MessageBoxIcon.Error);
                                 }
                                 finally
                                 {
@@ -430,6 +495,15 @@ namespace UVtools.GUI
                     }
 
                     Clear();
+                    return;
+                }
+
+                if (ReferenceEquals(sender, menuFileSettings))
+                {
+                    using (FrmSettings frmSettings = new FrmSettings())
+                    {
+                        if (frmSettings.ShowDialog() != DialogResult.OK) return;
+                    }
                     return;
                 }
 
@@ -483,7 +557,7 @@ namespace UVtools.GUI
                                         "Extraction completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
                                     DialogResult.Yes)
                                 {
-                                    Process.Start(finalPath);
+                                    using (Process.Start(finalPath)){}
                                 }
                             }
                             catch (Exception exception)
@@ -529,9 +603,9 @@ namespace UVtools.GUI
 
                     }
 
-                    if (item.Tag.GetType() == typeof(Mutation.Mutates))
+                    if (item.Tag.GetType() == typeof(LayerManager.Mutate))
                     {
-                        Mutation.Mutates mutate = (Mutation.Mutates) item.Tag;
+                        LayerManager.Mutate mutate = (LayerManager.Mutate) item.Tag;
                         MutateLayers(mutate);
                         return;
                     }
@@ -562,7 +636,7 @@ namespace UVtools.GUI
 
                     if (repairResinTraps && ReferenceEquals(Issues, null))
                     {
-                        ComputeIssues();
+                        ComputeIssues(new IslandDetectionConfiguration {Enabled = false}); // Ignore islands as we dont require it
                     }
 
                     DisableGUI();
@@ -573,49 +647,7 @@ namespace UVtools.GUI
                         bool result = false;
                         try
                         {
-
-                            Parallel.For(layerStart, layerEnd + 1, layerIndex =>
-                            {
-                                Layer layer = SlicerFile[layerIndex];
-                                using (var image = layer.LayerMat)
-                                {
-                                    if (repairResinTraps)
-                                    {
-                                        if (Issues.TryGetValue((uint) layerIndex, out var issues))
-                                        {
-                                            foreach (var issue in issues.Where(issue => issue.Type == LayerIssue.IssueType.ResinTrap))
-                                            {
-                                                CvInvoke.DrawContours(image, 
-                                                    new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)),
-                                                    -1,
-                                                    new MCvScalar(255),
-                                                    -1);
-                                                /*CvInvoke.DrawContours(image,
-                                                    new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)),
-                                                    -1,
-                                                    new MCvScalar(255),
-                                                    2);*/
-                                            }
-                                        }
-                                    }
-
-                                    if (repairIslands)
-                                    {
-                                        Mat kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), new Point(1, 1));
-                                        if (closingIterations > 0)
-                                        {
-                                            CvInvoke.MorphologyEx(image, image, MorphOp.Close, kernel, new Point(-1, -1), (int) closingIterations, BorderType.Default, new MCvScalar());
-                                        }
-
-                                        if (openingIterations > 0)
-                                        {
-                                            CvInvoke.MorphologyEx(image, image, MorphOp.Open, kernel, new Point(-1, -1), (int)closingIterations, BorderType.Default, new MCvScalar());
-                                        }
-                                    }
-
-                                    layer.LayerMat = image;
-                                }
-                            });
+                            SlicerFile.LayerManager.RepairLayers(layerStart, layerEnd, closingIterations, openingIterations, repairIslands, repairResinTraps, Issues);
                             result = true;
                         }
                         catch (Exception ex)
@@ -638,7 +670,7 @@ namespace UVtools.GUI
 
                     ShowLayer();
 
-                    ComputeIssues();
+                    ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration());
 
                     menuFileSave.Enabled =
                         menuFileSaveAs.Enabled = true;
@@ -654,7 +686,7 @@ namespace UVtools.GUI
 
                 if (ReferenceEquals(sender, menuHelpWebsite))
                 {
-                    Process.Start(About.Website);
+                    using (Process.Start(About.Website)){}
                     return;
                 }
 
@@ -665,7 +697,7 @@ namespace UVtools.GUI
                         "If you're happy to contribute for a better program and for my work i will appreciate the tip.\n" +
                         "A browser window will be open and forward to my paypal address after you click 'OK'.\nHappy Printing!",
                         "Donation", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    Process.Start(About.Donate);
+                    using (Process.Start(About.Donate)){}
                     return;
                 }
 
@@ -684,7 +716,9 @@ namespace UVtools.GUI
                         switch (result)
                         {
                             case DialogResult.OK:
-                                Process.Start("https://www.prusa3d.com/prusaslicer/");
+                                using (Process.Start("https://www.prusa3d.com/prusaslicer/"))
+                                { }
+
                                 return;
                             default:
                                 return;
@@ -698,6 +732,12 @@ namespace UVtools.GUI
 
                     return;
                 }
+            }
+
+            if (ReferenceEquals(sender, menuNewVersion))
+            {
+                using (Process.Start(menuNewVersion.Tag.ToString())) { }
+                return;
             }
 
             /************************
@@ -818,7 +858,7 @@ namespace UVtools.GUI
                                 "Properties save completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
                             DialogResult.Yes)
                         {
-                            Process.Start(dialog.FileName);
+                            using (Process.Start(dialog.FileName)){}
                         }
                     }
 
@@ -850,7 +890,7 @@ namespace UVtools.GUI
                                 "GCode save completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
                             DialogResult.Yes)
                         {
-                            Process.Start(dialog.FileName);
+                            using (Process.Start(dialog.FileName)){}
                         }
                     }
 
@@ -938,9 +978,13 @@ namespace UVtools.GUI
                                     }
                                     else if (issue.Type == LayerIssue.IssueType.ResinTrap)
                                     {
-                                        var contours = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels));
-                                        CvInvoke.DrawContours(image, contours, -1, new MCvScalar(255), -1);
-                                        //CvInvoke.DrawContours(image, contours, -1, new MCvScalar(255), 2);
+                                        using (var contours =
+                                            new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
+                                        {
+                                            CvInvoke.DrawContours(image, contours, -1, new MCvScalar(255), -1);
+                                            //CvInvoke.DrawContours(image, contours, -1, new MCvScalar(255), 2);
+                                        }
+
                                         edited = true;
                                     }
 
@@ -1004,7 +1048,7 @@ namespace UVtools.GUI
                 if (MessageBox.Show("Are you sure you want to compute issues?", "Issues Compute",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
 
-                ComputeIssues();
+                ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration());
 
                 return;
             }
@@ -1012,11 +1056,27 @@ namespace UVtools.GUI
             /************************
              *      Layer Menu      *
              ***********************/
-            if (ReferenceEquals(sender, tsLayerImageRotate) || ReferenceEquals(sender, tsLayerImageLayerDifference) ||
+            if (ReferenceEquals(sender, tsLayerImageRotate) || 
+                ReferenceEquals(sender, tsLayerImageLayerDifference) ||
                 ReferenceEquals(sender, tsLayerImageHighlightIssues) ||
-                ReferenceEquals(sender, tsLayerImageLayerOutline))
+                ReferenceEquals(sender, tsLayerImageLayerOutlinePrintVolumeBounds) ||
+                ReferenceEquals(sender, tsLayerImageLayerOutlineLayerBounds) ||
+                ReferenceEquals(sender, tsLayerImageLayerOutlineHollowAreas) ||
+                ReferenceEquals(sender, tsLayerImageLayerOutlineEdgeDetection)
+
+                )
             {
                 ShowLayer();
+                if (ReferenceEquals(sender, tsLayerImageRotate))
+                {
+                    ZoomToFit();
+                }
+                return;
+            }
+
+            if (ReferenceEquals(sender, tsLayerImageLayerOutline))
+            {
+                tsLayerImageLayerOutline.ShowDropDown();
                 return;
             }
 
@@ -1231,7 +1291,7 @@ namespace UVtools.GUI
 
                 if (issue.Type == LayerIssue.IssueType.TouchingBound)
                 {
-                    pbLayer.ZoomToFit();
+                    ZoomToFit();
                 }
                 else if (issue.X >= 0 && issue.Y >= 0)
                 {
@@ -1448,7 +1508,10 @@ namespace UVtools.GUI
             lbInitialLayer.Text = $"{SlicerFile.LayerHeight}mm\n0";
 
 
-            tsLayerImageRotate.Checked = ActualLayerImage.Height > ActualLayerImage.Width;
+            if (Settings.Default.LayerAutoRotateBestView)
+            {
+                tsLayerImageRotate.Checked = ActualLayerImage.Height > ActualLayerImage.Width;
+            }
 
             if (!ReferenceEquals(SlicerFile.ConvertToFormats, null))
             {
@@ -1464,7 +1527,7 @@ namespace UVtools.GUI
                         new ToolStripMenuItem(fileFormat.GetType().Name.Replace("File", extensions))
                         {
                             Tag = fileFormat,
-                            Image = Properties.Resources.layers_16x16
+                            Image = Resources.layers_16x16
                         };
                     menuItem.Click += ConvertToItemOnClick;
                     menuFileConvert.DropDownItems.Add(menuItem);
@@ -1542,16 +1605,24 @@ namespace UVtools.GUI
 
             RefreshInfo();
 
-            pbLayer.ZoomToFit();
+            if (Settings.Default.LayerZoomToFit)
+            {
+                ZoomToFit();
+            }
 
             UpdateTitle();
+
+            if (Settings.Default.ComputeIssuesOnLoad)
+            {
+                ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration());
+            }
         }
 
         void UpdateTitle()
         {
-            Text = $"{FrmAbout.AssemblyTitle}   File: {Path.GetFileName(SlicerFile.FileFullPath)}   Version: {FrmAbout.AssemblyVersion}";
+            Text = $"{FrmAbout.AssemblyTitle}   File: {Path.GetFileName(SlicerFile.FileFullPath)} ({FrmLoading.StopWatch.ElapsedMilliseconds}ms)   Version: {FrmAbout.AssemblyVersion}";
         }
-
+        
         void RefreshInfo()
         {
             menuEdit.DropDownItems.Clear();
@@ -1686,65 +1757,22 @@ namespace UVtools.GUI
 
                 Stopwatch watch = Stopwatch.StartNew();
                 ActualLayerImage?.Dispose();
-                ActualLayerImageBgr?.Dispose();
 
                 ActualLayerImage = SlicerFile[layerNum].LayerMat;
-                ActualLayerImageBgr = new Mat();
+
                 CvInvoke.CvtColor(ActualLayerImage, ActualLayerImageBgr, ColorConversion.Gray2Bgr);
 
                 var imageSpan = ActualLayerImage.GetPixelSpan<byte>();
                 var imageBgrSpan = ActualLayerImageBgr.GetPixelSpan<byte>();
 
-                if (tsLayerImageLayerOutline.Checked)
+
+                if (tsLayerImageLayerOutlineEdgeDetection.Checked)
                 {
-#if DEBUG
-                    using (Mat grayscale = new Mat())
-                    {
-                        CvInvoke.Threshold(ActualLayerImage, grayscale, 1, 255, ThresholdType.Binary);
-                        using (VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint())
-                        {
-                            using (Mat hierarchy = new Mat())
-                            {
-                                CvInvoke.FindContours(grayscale, contours, hierarchy, RetrType.Ccomp,
-                                    ChainApproxMethod.ChainApproxSimple);
-
-                                /*
-                                 * hierarchy[i][0]: the index of the next contour of the same level
-                                 * hierarchy[i][1]: the index of the previous contour of the same level
-                                 * hierarchy[i][2]: the index of the first child
-                                 * hierarchy[i][3]: the index of the parent
-                                 */
-                                var arr = hierarchy.GetData();
-                                for (int i = 0; i < contours.Size; i++)
-                                {
-                                    //if ((int)arr.GetValue(0, i, 2) == -1 && (int)arr.GetValue(0, i, 3) > -1) continue;
-                                    /*Debug.WriteLine($"[0] {arr.GetValue(0, i, 0)}");
-                                    Debug.WriteLine($"[1] {arr.GetValue(0, i, 1)}");
-                                    Debug.WriteLine($"[2] {arr.GetValue(0, i, 2)}");
-                                    Debug.WriteLine($"[3] {arr.GetValue(0, i, 3)}");*/
-                                    //if ((int)arr.GetValue(0, i, 2) > -1 || (int)arr.GetValue(0, i, 3) > -1) continue;
-                                    //if (((int)arr.GetValue(0, i, 2) > -1 && (int)arr.GetValue(0, i, 3) > -1)) continue;
-
-                                    //                          if ((int) arr.GetValue(0, i, 3) >= 0) continue;
-                                    if ((int)arr.GetValue(0, i, 2) != -1 || (int)arr.GetValue(0, i, 3) == -1)
-                                        continue;
-                                    var r = CvInvoke.BoundingRectangle(contours[i]);
-                                    CvInvoke.Rectangle(ActualLayerImageBgr, r, new MCvScalar(0, 0, 255), 5);
-                                    CvInvoke.DrawContours(ActualLayerImageBgr, contours, i, new MCvScalar(125, 125, 125), -1);
-
-                                    //if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1)
-                                    //    CvInvoke.DrawContours(ActualLayerImageBgr, contours, i, new MCvScalar(0, 0, 0), -1);
-                                }
-                            }
-                        }
-                    }
-#else
                     using (var grayscale = new Mat())
                     {
                         CvInvoke.Canny(ActualLayerImage, grayscale, 80, 40, 3, true);
                         CvInvoke.CvtColor(grayscale, ActualLayerImageBgr, ColorConversion.Gray2Bgr);
                     }
-#endif
                 }
                 else if (tsLayerImageLayerDifference.Checked)
                 {
@@ -1759,27 +1787,26 @@ namespace UVtools.GUI
 
                                 for (int pixel = 0; pixel < imageSpan.Length; pixel++)
                                 {
-                                    if (imageSpan[pixel] == 0)
+                                    if (imageSpan[pixel] != 0) continue;
+                                    Color color = Color.Empty;
+                                    if (previousSpan[pixel] > 0 && nextSpan[pixel] > 0)
                                     {
-                                        if (previousSpan[pixel] > 0 && nextSpan[pixel] > 0)
-                                        {
-                                            imageBgrSpan[pixel * 3] = 0; // B
-                                            imageBgrSpan[pixel * 3 + 1] = 0; // G
-                                            imageBgrSpan[pixel * 3 + 2] = 255; // R
-                                        }
-                                        else if (previousSpan[pixel] > 0)
-                                        {
-                                            imageBgrSpan[pixel * 3] = previousSpan[pixel]; // B
-                                            imageBgrSpan[pixel * 3 + 1] = 0; // G
-                                            imageBgrSpan[pixel * 3 + 2] = previousSpan[pixel]; // R
-                                        }
-                                        else if (nextSpan[pixel] > 0)
-                                        {
-                                            imageBgrSpan[pixel * 3] = nextSpan[pixel]; // B
-                                            imageBgrSpan[pixel * 3 + 1] = nextSpan[pixel]; // G
-                                            imageBgrSpan[pixel * 3 + 2] = 0; // R
-                                        }
+                                        color = Settings.Default.PreviousNextLayerColor;
                                     }
+                                    else if (previousSpan[pixel] > 0)
+                                    {
+                                        color = Settings.Default.PreviousLayerColor;
+                                    }
+                                    else if (nextSpan[pixel] > 0)
+                                    {
+                                        color = Settings.Default.NextLayerColor;
+                                    }
+
+                                    if (color.IsEmpty) continue;
+                                    var bgrPixel = pixel * 3;
+                                    imageBgrSpan[bgrPixel] = color.B; // B
+                                    imageBgrSpan[++bgrPixel] = color.G; // G
+                                    imageBgrSpan[++bgrPixel] = color.R; // R
                                 }
                             }
                         }
@@ -1790,52 +1817,109 @@ namespace UVtools.GUI
                     !ReferenceEquals(Issues, null) && 
                     Issues.TryGetValue(ActualLayer, out var issues))
                 {
-                    byte brightness;
-                    
                     foreach (var issue in issues)
                     {
                         if (ReferenceEquals(issue, null)) continue; // Removed issue
                         if(!issue.HaveValidPoint) continue;
-                        
+                        Color color = Settings.Default.ResinTrapColor;
+
                         if (issue.Type == LayerIssue.IssueType.ResinTrap)
                         {
-                            CvInvoke.DrawContours(ActualLayerImageBgr, new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)), -1, new MCvScalar(0, 180, 255), -1);
-                            //CvInvoke.DrawContours(ActualLayerImageBgr, new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)), -1, new MCvScalar(0, 0, 255), 1);
-                            
+                            using (var vec = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
+                            {
+                                CvInvoke.DrawContours(ActualLayerImageBgr, vec, -1,
+                                    new MCvScalar(color.B, color.G, color.R), -1);
+                                //CvInvoke.DrawContours(ActualLayerImageBgr, new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)), -1, new MCvScalar(0, 0, 255), 1);
+                            }
+
                             continue;
                         }
 
                         foreach (var pixel in issue)
                         {
                             int pixelPos = ActualLayerImage.GetPixelPos(pixel);
+                            byte brightness = imageSpan[pixelPos];
+                            if (brightness == 0) continue;
+
                             int pixelBgrPos = pixelPos*ActualLayerImageBgr.NumberOfChannels;
+
+                            
                             switch (issue.Type)
                             {
-                                /*case LayerIssue.IssueType.ResinTrap:
-                                    break;*/
                                 case LayerIssue.IssueType.Island:
-                                    brightness = imageSpan[pixelPos];
-                                    if (brightness == 0) continue;
-                                    // alpha, Color.Yellow
-                                    brightness = Math.Max((byte)80, brightness);
-                                    imageBgrSpan[pixelBgrPos] = 0; // B
-                                    imageBgrSpan[pixelBgrPos + 1] = brightness; // G
-                                    imageBgrSpan[pixelBgrPos + 2] = brightness; // R
+                                    color = Settings.Default.IslandColor;
                                     break;
-                                default:
-                                    brightness = imageSpan[pixelPos];
-                                    if (brightness == 0) continue;
-                                    // alpha, Color.Yellow
-                                    brightness = Math.Max((byte)80, brightness);
-                                    imageBgrSpan[pixelBgrPos] = 0; // B
-                                    imageBgrSpan[pixelBgrPos + 1] = 0; // G
-                                    imageBgrSpan[pixelBgrPos + 2] = brightness; // R
+                                case LayerIssue.IssueType.TouchingBound:
+                                    color = Settings.Default.TouchingBoundsColor;
                                     break;
                             }
-                            
+
+
+                            var newColor = color.FactorColor(brightness, 80);
+
+                            imageBgrSpan[pixelBgrPos] = newColor.B; // B
+                            imageBgrSpan[pixelBgrPos + 1] = newColor.G; // G
+                            imageBgrSpan[pixelBgrPos + 2] = newColor.R; // R
                         }
                     }
 
+                }
+
+                if (tsLayerImageLayerOutlinePrintVolumeBounds.Checked)
+                {
+                    CvInvoke.Rectangle(ActualLayerImageBgr, SlicerFile.LayerManager.BoundingRectangle, 
+                        new MCvScalar(Settings.Default.OutlinePrintVolumeBoundsColor.B, Settings.Default.OutlinePrintVolumeBoundsColor.G, Settings.Default.OutlinePrintVolumeBoundsColor.R), Settings.Default.OutlinePrintVolumeBoundsLineThickness);
+                }
+
+                if (tsLayerImageLayerOutlineLayerBounds.Checked)
+                {
+                    CvInvoke.Rectangle(ActualLayerImageBgr, SlicerFile[layerNum].BoundingRectangle, 
+                        new MCvScalar(Settings.Default.OutlineLayerBoundsColor.B, Settings.Default.OutlineLayerBoundsColor.G, Settings.Default.OutlineLayerBoundsColor.R), Settings.Default.OutlineLayerBoundsLineThickness);
+                }
+
+                if (tsLayerImageLayerOutlineHollowAreas.Checked)
+                {
+                    using (Mat grayscale = new Mat())
+                    {
+                        //CvInvoke.Threshold(ActualLayerImage, grayscale, 1, 255, ThresholdType.Binary);
+                        using (VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint())
+                        {
+                            using (Mat hierarchy = new Mat())
+                            {
+                                CvInvoke.FindContours(ActualLayerImage, contours, hierarchy, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
+
+                                /*
+                                 * hierarchy[i][0]: the index of the next contour of the same level
+                                 * hierarchy[i][1]: the index of the previous contour of the same level
+                                 * hierarchy[i][2]: the index of the first child
+                                 * hierarchy[i][3]: the index of the parent
+                                 */
+                                var arr = hierarchy.GetData();
+                                for (int i = 0; i < contours.Size; i++)
+                                {
+                                    if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1)
+                                    {
+                                        //var r = CvInvoke.BoundingRectangle(contours[i]);
+                                        //CvInvoke.Rectangle(ActualLayerImageBgr, r, new MCvScalar(0, 0, 255), 2);
+                                        CvInvoke.DrawContours(ActualLayerImageBgr, contours, i,
+                                            new MCvScalar(Settings.Default.OutlineHollowAreasColor.B,
+                                                Settings.Default.OutlineHollowAreasColor.G, Settings.Default.OutlineHollowAreasColor.R),
+                                            Settings.Default.OutlineHollowAreasLineThickness);
+                                    }
+                                    /*else
+                                    {
+                                        CvInvoke.DrawContours(ActualLayerImageBgr, contours, i,
+                                            new MCvScalar(Settings.Default.ResinTrapColor.B,
+                                                Settings.Default.IslandColor.G, Settings.Default.IslandColor.R),
+                                            2);
+                                    }*/
+
+                                    //if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1)
+                                    //    CvInvoke.DrawContours(ActualLayerImageBgr, contours, i, new MCvScalar(0, 0, 0), -1);
+                                }
+                            }
+                        }
+                    }
                 }
 
                 if (tsLayerImageRotate.Checked)
@@ -1936,8 +2020,8 @@ namespace UVtools.GUI
             {
                 if(ReferenceEquals(tabControlLeft.SelectedTab, tabPageIssues))
                 {
-                    if (!ReferenceEquals(tabPageIssues.Tag, null)) return;
-                    ComputeIssues();
+                    if (!ReferenceEquals(tabPageIssues.Tag, null) || !Settings.Default.AutoComputeIssuesClickOnTab) return;
+                    ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration());
                 }
                 return;
             }
@@ -2056,7 +2140,48 @@ namespace UVtools.GUI
                 return;
             }
         }
-#endregion
+
+        private void EventMouseDown(object sender, MouseEventArgs e)
+        {
+            if (ReferenceEquals(sender, btnNextLayer) || ReferenceEquals(sender, btnPreviousLayer))
+            {
+                layerScrollTimer.Tag = ReferenceEquals(sender, btnNextLayer);
+                layerScrollTimer.Start();
+                return;
+            }
+        }
+
+        private void EventMouseUp(object sender, MouseEventArgs e)
+        {
+            if (ReferenceEquals(sender, btnNextLayer) || ReferenceEquals(sender, btnPreviousLayer))
+            {
+                layerScrollTimer.Stop();
+                return;
+            }
+        }
+
+        private void EventTimerTick(object sender, EventArgs e)
+        {
+            if (ReferenceEquals(sender, layerScrollTimer))
+            {
+                ShowLayer((bool)layerScrollTimer.Tag);
+                return;
+            }
+        }
+
+        private void EventMouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (ReferenceEquals(sender, pbLayer))
+            {
+                if ((e.Button & MouseButtons.Left) != 0)
+                {
+                    ZoomToFit();
+                    return;
+                }
+                return;
+            }
+        }
+        #endregion
 
 
 
@@ -2104,7 +2229,7 @@ namespace UVtools.GUI
 
         
 
-        public void MutateLayers(Mutation.Mutates type)
+        public void MutateLayers(LayerManager.Mutate mutator)
         {
             uint layerStart;
             uint layerEnd;
@@ -2115,10 +2240,10 @@ namespace UVtools.GUI
             double x = 0;
             double y = 0;
 
-            switch (type)
+            switch (mutator)
             {
-                case Mutation.Mutates.Resize:
-                    using (FrmMutationResize inputBox = new FrmMutationResize(Mutations[type]))
+                case LayerManager.Mutate.Resize:
+                    using (FrmMutationResize inputBox = new FrmMutationResize(Mutations[mutator]))
                     {
                         if (inputBox.ShowDialog() != DialogResult.OK) return;
                         layerStart = inputBox.LayerRangeStart;
@@ -2129,8 +2254,27 @@ namespace UVtools.GUI
                     }
 
                     break;
+                case LayerManager.Mutate.Flip:
+                    using (FrmMutationOneComboBox inputBox = new FrmMutationOneComboBox(Mutations[mutator]))
+                    {
+                        if (inputBox.ShowDialog() != DialogResult.OK) return;
+                        layerStart = inputBox.LayerRangeStart;
+                        layerEnd = inputBox.LayerRangeEnd;
+                        iterationsStart = (uint) inputBox.SelectedValue;
+                        fade = inputBox.MakeCopy;
+                    }
+                    break;
+                case LayerManager.Mutate.Rotate:
+                    using (FrmMutationOneNumericalInput inputBox = new FrmMutationOneNumericalInput(Mutations[mutator]))
+                    {
+                        if (inputBox.ShowDialog() != DialogResult.OK) return;
+                        layerStart = inputBox.LayerRangeStart;
+                        layerEnd = inputBox.LayerRangeEnd;
+                        x = (double) inputBox.Value;
+                    }
+                    break;
                 default:
-                    using (FrmMutation inputBox = new FrmMutation(Mutations[type]))
+                    using (FrmMutation inputBox = new FrmMutation(Mutations[mutator]))
                     {
                         if (inputBox.ShowDialog() != DialogResult.OK) return;
                         iterationsStart = inputBox.Iterations;
@@ -2146,34 +2290,53 @@ namespace UVtools.GUI
             
 
             DisableGUI();
-            FrmLoading.SetDescription($"Mutating - {type}");
+            FrmLoading.SetDescription($"Mutating - {mutator}");
 
             Task<bool> task = Task<bool>.Factory.StartNew(() =>
             {
                 bool result = false;
                 try
                 {
-                    switch (type)
+                    switch (mutator)
                     {
-                        case Mutation.Mutates.Resize:
+                        case LayerManager.Mutate.Resize:
                             SlicerFile.LayerManager.MutateResize(layerStart, layerEnd, x / 100.0, y / 100.0, fade);
                             break;
-                        case Mutation.Mutates.Solidify:
+                        case LayerManager.Mutate.Flip:
+                            FlipType flipType = FlipType.Horizontal;
+                            switch (iterationsStart)
+                            {
+                                case 0:
+                                    flipType = FlipType.Horizontal;
+                                    break;
+                                case 1:
+                                    flipType = FlipType.Vertical;
+                                    break;
+                                case 2:
+                                    flipType = FlipType.Horizontal | FlipType.Vertical;
+                                    break;
+                            }
+                            SlicerFile.LayerManager.MutateFlip(layerStart, layerEnd, flipType, fade);
+                            break;
+                        case LayerManager.Mutate.Rotate:
+                            SlicerFile.LayerManager.MutateRotate(layerStart, layerEnd, x);
+                            break;
+                        case LayerManager.Mutate.Solidify:
                             SlicerFile.LayerManager.MutateSolidify(layerStart, layerEnd);
                             break;
-                        case Mutation.Mutates.Erode:
+                        case LayerManager.Mutate.Erode:
                             SlicerFile.LayerManager.MutateErode(layerStart, layerEnd, (int) iterationsStart, (int) iterationsEnd, fade);
                             break;
-                        case Mutation.Mutates.Dilate:
+                        case LayerManager.Mutate.Dilate:
                             SlicerFile.LayerManager.MutateDilate(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade);
                             break;
-                        case Mutation.Mutates.Opening:
+                        case LayerManager.Mutate.Opening:
                             SlicerFile.LayerManager.MutateOpen(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade);
                             break;
-                        case Mutation.Mutates.Closing:
+                        case LayerManager.Mutate.Closing:
                             SlicerFile.LayerManager.MutateClose(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade);
                             break;
-                        case Mutation.Mutates.Gradient:
+                        case LayerManager.Mutate.Gradient:
                             SlicerFile.LayerManager.MutateGradient(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade);
                             break;
                         /*case Mutation.Mutates.TopHat:
@@ -2192,13 +2355,13 @@ namespace UVtools.GUI
                             CvInvoke.MorphologyEx(image, image, MorphOp.HitMiss, Program.KernelFindIsolated,
                                 new Point(-1, -1), (int) iterations, BorderType.Default, new MCvScalar());
                             break;*/
-                        case Mutation.Mutates.PyrDownUp:
+                        case LayerManager.Mutate.PyrDownUp:
                             SlicerFile.LayerManager.MutatePyrDownUp(layerStart, layerEnd);
                             break;
-                        case Mutation.Mutates.SmoothMedian:
+                        case LayerManager.Mutate.SmoothMedian:
                             SlicerFile.LayerManager.MutateMedianBlur(layerStart, layerEnd, (int)iterationsStart);
                             break;
-                        case Mutation.Mutates.SmoothGaussian:
+                        case LayerManager.Mutate.SmoothGaussian:
                             SlicerFile.LayerManager.MutateGaussianBlur(layerStart, layerEnd, new Size((int) iterationsStart, (int) iterationsStart));
                             break;
                     }
@@ -2252,7 +2415,7 @@ namespace UVtools.GUI
             
         }
 
-        private void ComputeIssues()
+        private void ComputeIssues(IslandDetectionConfiguration islandConfig = null, ResinTrapDetectionConfiguration resinTrapConfig = null)
         {
             tabPageIssues.Tag = true;
             TotalIssues = 0;
@@ -2269,7 +2432,7 @@ namespace UVtools.GUI
                 bool result = false;
                 try
                 {
-                    var issues = SlicerFile.LayerManager.GetAllIssues();
+                    var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig);
                     Issues = new Dictionary<uint, List<LayerIssue>>();
 
                     for (uint i = 0; i < SlicerFile.LayerCount; i++)
@@ -2337,32 +2500,53 @@ namespace UVtools.GUI
             ShowLayer();
         }
 
-        private void EventMouseDown(object sender, MouseEventArgs e)
+        private void ZoomToFit()
         {
-            if (ReferenceEquals(sender, btnNextLayer) || ReferenceEquals(sender, btnPreviousLayer))
+            if (ReferenceEquals(SlicerFile, null)) return;
+            if (Settings.Default.ZoomToFitPrintVolumeBounds)
             {
-                layerScrollTimer.Tag = ReferenceEquals(sender, btnNextLayer);
-                layerScrollTimer.Start();
-                return;
+                if (!tsLayerImageRotate.Checked)
+                {
+                    pbLayer.ZoomToRegion(SlicerFile.LayerManager.BoundingRectangle);
+                }
+                else
+                {
+                    pbLayer.ZoomToRegion(ActualLayerImage.Height - 1 - SlicerFile.LayerManager.BoundingRectangle.Bottom,
+                             SlicerFile.LayerManager.BoundingRectangle.X,
+                             SlicerFile.LayerManager.BoundingRectangle.Height,
+                             SlicerFile.LayerManager.BoundingRectangle.Width
+                    );
+                }
+            }
+            else
+            {
+                pbLayer.ZoomToFit();
             }
         }
 
-        private void EventMouseUp(object sender, MouseEventArgs e)
+        public IslandDetectionConfiguration GetIslandDetectionConfiguration()
         {
-            if (ReferenceEquals(sender, btnNextLayer) || ReferenceEquals(sender, btnPreviousLayer))
+            return new IslandDetectionConfiguration
             {
-                layerScrollTimer.Stop();
-                return;
-            }
+                Enabled = tsIsuesRefreshIslands.Checked,
+                BinaryThreshold = Settings.Default.IslandBinaryThreshold,
+                RequiredAreaToProcessCheck = Settings.Default.IslandRequiredAreaToProcessCheck,
+                RequiredPixelBrightnessToProcessCheck = Settings.Default.IslandRequiredPixelBrightnessToProcessCheck,
+                RequiredPixelsToSupport = Settings.Default.IslandRequiredPixelsToSupport,
+                RequiredPixelBrightnessToSupport = Settings.Default.IslandRequiredPixelBrightnessToSupport
+            };
         }
 
-        private void EventTimerTick(object sender, EventArgs e)
+        public ResinTrapDetectionConfiguration GetResinTrapDetectionConfiguration()
         {
-            if (ReferenceEquals(sender, layerScrollTimer))
+            return new ResinTrapDetectionConfiguration
             {
-                ShowLayer((bool)layerScrollTimer.Tag);
-                return;
-            }
+                Enabled = tsIsuesRefreshResinTraps.Checked,
+                BinaryThreshold = Settings.Default.ResinTrapBinaryThreshold,
+                RequiredAreaToProcessCheck = Settings.Default.ResinTrapRequiredAreaToProcessCheck,
+                RequiredBlackPixelsToDrain = Settings.Default.ResinTrapRequiredBlackPixelsToDrain,
+                MaximumPixelBrightnessToDrain = Settings.Default.ResinTrapMaximumPixelBrightnessToDrain
+            };
         }
     }
 }

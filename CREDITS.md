@@ -18,3 +18,8 @@
 
 * For ideas and permission to use his project (uv3dp)
 * https://github.com/ezrec/uv3dp
+
+# Supporters
+
+* Ingo Strohmenger
+* Sven Vogt

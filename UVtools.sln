@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.29926.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UVtools.GUI", "UVtools.GUI\UVtools.GUI.csproj", "{E7389EE3-CF56-464B-9BA1-816B31D1E6FF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{36E5877E-6AA6-4368-A9EA-46D7C7C90302} = {36E5877E-6AA6-4368-A9EA-46D7C7C90302}
+	EndProjectSection
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "UVtools.InstallerMM", "UVtools.InstallerMM\UVtools.InstallerMM.wixproj", "{E53BAA5D-29A8-4287-B3AA-1AFF5A4BDC6C}"
 EndProject

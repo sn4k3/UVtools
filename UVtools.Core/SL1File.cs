@@ -72,26 +72,26 @@ namespace UVtools.Core
             #endregion
 
             #region Tilt
-            public byte FastTiltTime { get; set; }
-            public byte SlowTiltTime { get; set; }
-            public byte AreaFill { get; set; }
+            public float FastTiltTime { get; set; }
+            public float SlowTiltTime { get; set; }
+            public float AreaFill { get; set; }
             #endregion
 
             #region Corrections
             public string RelativeCorrection { get; set; }
-            public byte AbsoluteCorrection { get; set; }
+            public float AbsoluteCorrection { get; set; }
             public float ElefantFootCompensation { get; set; }
             public float ElefantFootMinWidth { get; set; }
-            public byte GammaCorrection { get; set; }
+            public float GammaCorrection { get; set; }
 
             #endregion
 
             #region Exposure
 
-            public byte MinExposureTime { get; set; }
-            public byte MaxExposureTime { get; set; }
-            public byte MinInitialExposureTime { get; set; }
-            public ushort MaxInitialExposureTime { get; set; }
+            public float MinExposureTime { get; set; }
+            public float MaxExposureTime { get; set; }
+            public float MinInitialExposureTime { get; set; }
+            public float MaxInitialExposureTime { get; set; }
 
             #endregion
 
@@ -480,6 +480,8 @@ namespace UVtools.Core
                     LayerManager[iLayer] = new Layer(iLayer, entity.Open(), entity.Name);
                 }
             }
+
+            var rect = LayerManager.BoundingRectangle;
 
             Statistics.ExecutionTime.Stop();
 

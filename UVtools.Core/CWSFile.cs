@@ -202,7 +202,7 @@ namespace UVtools.Core
                 for(uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
                     Layer layer = this[layerIndex];
-                    var layerimagePath = $"{Path.GetFileNameWithoutExtension(fileFullPath)}{layer.Index:D4}.png";
+                    var layerimagePath = $"{Path.GetFileNameWithoutExtension(fileFullPath)}{layer.Index.ToString().PadLeft(LayerCount.ToString().Length, '0')}.png";
                     outputFile.PutFileContent(layerimagePath, layer.CompressedBytes);
                 }
 
@@ -293,12 +293,15 @@ namespace UVtools.Core
                     if (!zipArchiveEntry.Name.EndsWith(".png")) continue;
 
                     // - .png - 4 numbers
-                    string layerStr = zipArchiveEntry.Name.Substring(zipArchiveEntry.Name.Length - 4 - 4, 4);
+                    int layerSize = OutputSettings.LayersNum.ToString().Length;
+                    string layerStr = zipArchiveEntry.Name.Substring(zipArchiveEntry.Name.Length - 4 - layerSize, layerSize);
                     uint iLayer = uint.Parse(layerStr);
                     LayerManager[iLayer] = new Layer(iLayer, zipArchiveEntry.Open(), zipArchiveEntry.Name);
                 }
                 
             }
+
+            var rect = LayerManager.BoundingRectangle;
         }
 
         public override object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
@@ -437,7 +440,7 @@ namespace UVtools.Core
         {
             string arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
             GCode = new StringBuilder();
-            GCode.AppendLine($"# {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.Now}"); 
+            GCode.AppendLine($"; {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.Now}"); 
             GCode.AppendLine("(****Build and Slicing Parameters * ***)");
 
             foreach (var propertyInfo in OutputSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))

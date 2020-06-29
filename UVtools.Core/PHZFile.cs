@@ -372,13 +372,12 @@ namespace UVtools.Core
                     }
                 }
 
-                int pixel = 0;
-                while (pixel < span.Length)
+                for (int pixel = 0; pixel < span.Length; pixel += image.NumberOfChannels)
                 {
                     var ncolor15 =
-                        (span[pixel++] >> 3)
-                        | ((span[pixel++] >> 2) << 5)
-                        | ((span[pixel++] >> 3) << 11);
+                        (span[pixel] >> 3)
+                        | ((span[pixel+1] >> 2) << 5)
+                        | ((span[pixel+2] >> 3) << 11);
 
                     if (ncolor15 == color15)
                     {
@@ -526,7 +525,7 @@ namespace UVtools.Core
             public void Encode(Mat image, uint layerIndex)
             {
                 List<byte> rawData = new List<byte>();
-                var span = image.GetPixelSpan<byte>();
+                
                 //byte color = byte.MaxValue >> 1;
                 byte color = byte.MaxValue;
                 uint stride = 0;
@@ -553,12 +552,14 @@ namespace UVtools.Core
 
                 int halfWidth = image.Width / 2;
 
-
+                //int pixel = 0;
                 for (int y = 0; y < image.Height; y++)
                 {
-                    for (int x = 0; x < image.Width; x++)
+                    var span = image.GetPixelRowSpan<byte>(y);
+                    for (int x = 0; x < span.Length; x++)
                     {
-                        var grey7 = (byte)((span[image.GetPixelPos(x, y)] >> 1) & 0x7f);
+                        
+                        var grey7 = (byte)((span[x] >> 1) & 0x7f);
                         if (grey7 > 0x7c)
                         {
                             grey7 = 0x7c;
@@ -814,11 +815,14 @@ namespace UVtools.Core
                     currentOffset += (uint)machineBytes.Length;
                 }
 
-                Parallel.For(0, LayerCount, layerIndex =>
+                Parallel.For(0, LayerCount, /*new ParallelOptions{MaxDegreeOfParallelism = 1},*/ layerIndex =>
                 {
                     LayerData layer = new LayerData(this, (uint)layerIndex);
-                    layer.Encode(this[layerIndex].LayerMat, (uint) layerIndex);
-                    LayersDefinitions[layerIndex] = layer;
+                    using (var image = this[layerIndex].LayerMat)
+                    {
+                        layer.Encode(image, (uint) layerIndex);
+                        LayersDefinitions[layerIndex] = layer;
+                    }
                 });
 
                 HeaderSettings.LayersDefinitionOffsetAddress = currentOffset;

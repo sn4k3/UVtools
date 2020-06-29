@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
+using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using UVtools.Core;
 
@@ -14,6 +17,7 @@ namespace UVtools.Cmd
     {
         public static async Task<int> Main(params string[] args)
         {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-GB");
             Stopwatch sw = new Stopwatch();
             uint count = 0;
             var rootCommand = new RootCommand("MSLA/DLP, file analysis, repair, conversion and manipulation")
@@ -27,12 +31,17 @@ namespace UVtools.Cmd
                 {
                     Argument = new Argument<FileSystemInfo>("filepath")
                 },
+                new Option(new []{"-e", "--extract"}, "Extract file content to a folder")
+                {
+                    Argument = new Argument<DirectoryInfo>("folder")
+                },
                 new Option(new []{"-c", "--convert"}, "Converts input into a output file format by it extension")
                 {
                     Argument = new Argument<FileSystemInfo>("filepath")
                 },
 
                 new Option(new []{"-p", "--properties"}, "Print a list of all properties/settings"),
+                new Option(new []{"-gcode"}, "Print the GCode if available"),
                 new Option(new []{"-i", "--issues"}, "Compute and print a list of all issues"),
                 new Option(new []{"-r", "--repair"}, "Attempt to repair all issues"){
                     Argument = new Argument<int[]>("[start layer index] [end layer index]")
@@ -40,73 +49,58 @@ namespace UVtools.Cmd
 
                 new Option(new []{"-mr", "--mut-resize"}, "Resizes layer images in a X and/or Y factor, starting from 100% value")
                 {
-                    Argument = new Argument<int[]>("[x%] [y%] [start layer index] [end layer index] [fade 0/1]")
+                    Argument = new Argument<double[]>("[x%] [y%] [start layer index] [end layer index] [fade 0/1]")
                 },
                 new Option(new []{"-ms", "--mut-solidify"}, "Closes all inner holes")
                 {
-                    Argument = new Argument<int[]>("[start layer index] [end layer index]")
+                    Argument = new Argument<uint[]>("[start layer index] [end layer index]")
                 },
                 new Option(new []{"-me", "--mut-erode"}, "Erodes away the boundaries of foreground object")
                 {
-                    Argument = new Argument<int[]>("[start iterations] [end iterations] [start layer index] [end layer index] [fade 0/1]")
+                    Argument = new Argument<uint[]>("[start iterations] [end iterations] [start layer index] [end layer index] [fade 0/1]")
                 },
                 new Option(new []{"-md", "--mut-dilate"}, "It is just opposite of erosion")
                 {
-                    Argument = new Argument<int[]>("[start iterations] [end iterations] [start layer index] [end layer index] [fade 0/1]")
+                    Argument = new Argument<uint[]>("[start iterations] [end iterations] [start layer index] [end layer index] [fade 0/1]")
                 },
                 new Option(new []{"-mc", "--mut-close"}, "Dilation followed by Erosion")
                 {
-                    Argument = new Argument<int[]>("[start iterations] [end iterations] [start layer index] [end layer index] [fade 0/1]")
+                    Argument = new Argument<uint[]>("[start iterations] [end iterations] [start layer index] [end layer index] [fade 0/1]")
                 },
                 new Option(new []{"-mo", "--mut-open"}, "Erosion followed by Dilation")
                 {
-                    Argument = new Argument<int[]>("[start iterations] [end iterations] [start layer index] [end layer index] [fade 0/1]")
+                    Argument = new Argument<uint[]>("[start iterations] [end iterations] [start layer index] [end layer index] [fade 0/1]")
                 },
                 new Option(new []{"-mg", "--mut-gradient"}, "The difference between dilation and erosion of an image")
                 {
-                    Argument = new Argument<int[]>("[kernel size] [start layer index] [end layer index] [fade 0/1]")
+                    Argument = new Argument<uint[]>("[kernel size] [start layer index] [end layer index] [fade 0/1]")
                 },
                 
-                new Option(new []{"-mpyr", "--mut-pyr"}, "Performs downsampling step of Gaussian pyramid decomposition")
+                new Option(new []{"-mpy", "--mut-py"}, "Performs downsampling step of Gaussian pyramid decomposition")
                 {
-                    Argument = new Argument<int[]>("[start layer index] [end layer index]")
+                    Argument = new Argument<uint[]>("[start layer index] [end layer index]")
                 },
                 new Option(new []{"-mgb", "--mut-gaussian-blur"}, "Each pixel is a sum of fractions of each pixel in its neighborhood")
                 {
-                    Argument = new Argument<int[]>("[aperture] [sigmaX] [sigmaY]")
+                    Argument = new Argument<ushort[]>("[aperture] [sigmaX] [sigmaY]")
                 },
                 new Option(new []{"-mmb", "--mut-median-blur"}, "Each pixel becomes the median of its surrounding pixels")
                 {
                     Argument = new Argument<ushort>("[aperture]")
                 },
-
-                
-                
-
-                /*new Option(new []{"-ls", "--layer-start"}, "Specify a start layer index to use with some operations as a range")
-                {
-                    Argument = new Argument<uint>("Layer index")
-                },
-
-                new Option(new []{"-le", "--layer-end"}, "Specify a end layer index to use with some operations as a range")
-                {
-                    Argument = new Argument<uint>("Layer index")
-                },
-
-                new Option(new []{"-is", "--iteration-start"}, "Specify a start layer index to use with some operations as a range")
-                {
-                    Argument = new Argument<uint>("Layer index")
-                },
-
-                new Option(new []{"-fade"}, "Fade a start value towards a end value to use with some operations")*/
-
             };
 
             rootCommand.Handler = CommandHandler.Create(
-                (FileSystemInfo file, FileSystemInfo convert, bool properties, bool issues, bool repair, uint layerStartIndex, uint layerEndIndex) =>
+                (
+                    FileSystemInfo file,
+                    FileSystemInfo convert,
+                    DirectoryInfo extract,
+                    bool properties,
+                    bool gcode,
+                    bool issues,
+                    bool repair
+                    ) =>
             {
-                Console.WriteLine($"Reading: {file}");
-
                 var fileFormat = FileFormat.FindByExtension(file.FullName, true, true);
                 if (ReferenceEquals(fileFormat, null))
                 {
@@ -114,7 +108,35 @@ namespace UVtools.Cmd
                 }
                 else
                 {
+                    Console.Write($"Reading: {file}");
+                    sw.Restart();
                     fileFormat.Decode(file.FullName);
+                    sw.Stop();
+                    Console.WriteLine($", in {sw.ElapsedMilliseconds}ms");
+                    Console.WriteLine("----------------------");
+                    Console.WriteLine($"Layers: {fileFormat.LayerCount} x {fileFormat.LayerHeight}mm = {fileFormat.TotalHeight}mm");
+                    Console.WriteLine($"Resolution: {new Size((int) fileFormat.ResolutionX, (int) fileFormat.ResolutionY)}");
+                    Console.WriteLine($"AntiAlias: {fileFormat.ValidateAntiAliasingLevel()}");
+                    
+                    Console.WriteLine($"Bottom Layer Count: {fileFormat.InitialLayerCount}");
+                    Console.WriteLine($"Bottom Exposure Time: {fileFormat.InitialExposureTime}s");
+                    Console.WriteLine($"Layer Exposure Time: {fileFormat.LayerExposureTime}s");
+                    Console.WriteLine($"Print Time: {fileFormat.PrintTime}s");
+                    Console.WriteLine($"Cost: {fileFormat.MaterialCost}$");
+                    Console.WriteLine($"Resin Name: {fileFormat.MaterialName}");
+                    Console.WriteLine($"Machine Name: {fileFormat.MachineName}");
+
+                    Console.WriteLine($"Thumbnails: {fileFormat.CreatedThumbnailsCount}");
+                    Console.WriteLine("----------------------");
+                }
+
+                if (!ReferenceEquals(extract, null))
+                {
+                    Console.Write($"Extracting to {extract.FullName}");
+                    sw.Restart();
+                    fileFormat.Extract(extract.FullName);
+                    sw.Stop();
+                    Console.WriteLine($", finished in {sw.ElapsedMilliseconds}ms");
                 }
 
                 if (properties)
@@ -138,6 +160,22 @@ namespace UVtools.Cmd
 
                     Console.WriteLine("----------------------");
                     Console.WriteLine($"Total properties: {count}");
+                }
+
+                if (gcode)
+                {
+                    if (ReferenceEquals(fileFormat.GCode, null))
+                    {
+                        Console.WriteLine("No GCode available");
+                    }
+                    else
+                    {
+                        Console.WriteLine("----------------------");
+                        Console.WriteLine(fileFormat.GCode);
+                        Console.WriteLine("----------------------");
+                        Console.WriteLine($"Total lines: {fileFormat.GCode.Length}");
+                    }
+                    
                 }
 
                 if (issues)

@@ -1,19 +1,35 @@
 # Changelog
 
-## ? - v0.6
+## 29/06/2020 - v0.6.0.0
 
-* (Add) UVtoolsCmd, a terminal muti-platform aplication to run almost all operations as the GUI
+* (Add) UVtools now notify when a new version available is detected
+* (Add) Mutator "Flip"
+* (Add) Mutator "Rotate"
+* (Add) User Settings - Many parameters can now be customized to needs
+* (Add) File load elapsed time into Title bar
+* (Add) Outline - Print Volume bounds
+* (Add) Outline - Layer bounds
+* (Add) Outline - Hollow areas
+* (Add) Double click layer picture to Zoom To Fit
 * (Improvement) Huge performance boost in layer reparing and in every mutator
 * (Improvement) Layer preview is now faster
 * (Improvement) Islands detection is now better and don't skip any pixel, more islands will show or the region will be bigger
-* (Improvement) ResinTrap performance
+* (Improvement) Islands search are now faster, it will jump from island to insland instead of search in every pixel by pixel
+* (Improvement) ResinTrap detection and corrected some cases where it can't detect a drain
 * (Improvement) Better memory optimization by dispose all objects on operations
-* (Change) Image engine changed to use only OpenCV Mat instead of two and avoid converting from one to another, as result there's a huge performance gain in some operations
-* (Change) UVtools now rely on UVtools.Core, and drop the UVtools.Parser. The Core now perform all operations and transformations inplace of the GUI
-* (Change) Islands search are now faster, it will jump from island to insland instead of search in every pixel by pixel
+* (Improvement) Image engine changed to use only OpenCV Mat instead of two and avoid converting from one to another, as result there's a huge performance gain in some operations (#6)
+* (Improvement) UVtools now rely on UVtools.Core, and drop the UVtools.Parser. The Core now perform all operations and transformations inplace of the GUI
+* (Improvement) If error occur during save it will show a message with the error
+* (Improvement) When rotate layer it will zoom to fit
+* (Improvement) Allow zoom to fit to print volume area instead of whole build volume
 * (Removed) ImageSharp dependency
 * (Removed) UVtools.Parser project
+* (Fix) Nova3D Elfin printer values changed to Display Width : 131mm / Height : 73mm & Screen X: 2531 / Y: 1410 (#5)
 * (Fix) Fade resizes make image offset a pixel from layer to layer because of integer placement, now it matain the correct position
+* (Fix) sl1: AbsoluteCorrection, GammaCorrection, MinExposureTime, MaxExposureTime, FastTiltTime, SlowTiltTime and AreaFill was byte and float values prevents the file from open (#4)
+* (Fix) zcodex: XCorrection and YCorrection was byte and float values prevents the file from open (#4)
+* (Fix) cws: XCorrection and YCorrection was byte and float values prevents the file from open (#4)
+* (Fix) cws: Wrong # char on .gcode file prevent from printing (#4)
 
 ## 21/06/2020 - v0.5.2.2
 

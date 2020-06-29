@@ -3,7 +3,7 @@
   <?define ComponentRules="OneToOne"?>
   <!-- SourceDir instructs IsWiX the location of the directory that contains files for this merge module -->
   <?define SourceDir="..\UVtools.GUI\bin\Release"?>
-  <Module Id="UVtools" Language="1033" Version="0.5.2.2">
+  <Module Id="UVtools" Language="1033" Version="0.6.0.0">
     <Package Id="12aaa1cf-ff06-4a02-abd5-2ac01ac4f83b" Manufacturer="PTRTECH" InstallerVersion="200" Keywords="MSLA, DLP" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" />
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="DesktopFolder" />
@@ -26,6 +26,9 @@
         <Component Id="owc25ABE3DF1B281670E77FD3B882B58B9F" Guid="de5c6697-501a-2e10-da10-134ad4f060ad">
           <File Id="owf25ABE3DF1B281670E77FD3B882B58B9F" Source="$(var.SourceDir)\Cyotek.Windows.Forms.ImageBox.xml" KeyPath="yes" />
         </Component>
+        <Component Id="owc0F288E77993D555E272ECFA1DF023DDA" Guid="ad374cb5-9215-37cb-d59d-88e4b3bc61bb">
+          <File Id="owf0F288E77993D555E272ECFA1DF023DDA" Source="$(var.SourceDir)\Emgu.CV.Platform.NetCore.dll" KeyPath="yes" />
+        </Component>
         <Component Id="owc5A25DAF599EFAF9BDE0A414028049BB5" Guid="08486262-cc80-60a3-c6b2-f5c1bba4699d">
           <File Id="owf5A25DAF599EFAF9BDE0A414028049BB5" Source="$(var.SourceDir)\Emgu.CV.Platform.NetFramework.dll" KeyPath="yes" />
         </Component>
@@ -44,26 +47,14 @@
         <Component Id="owc3FC8434C1A84605AEEBC6A100CA2F3E1" Guid="47d7e276-db6d-424e-d797-1a69e1e24b3b">
           <File Id="owf3FC8434C1A84605AEEBC6A100CA2F3E1" Source="$(var.SourceDir)\Newtonsoft.Json.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owcDE8FDCCF922CA433A075036DF5C1BE38" Guid="3a65cb72-6e09-91ed-08ba-4f7eadd88867">
-          <File Id="owfDE8FDCCF922CA433A075036DF5C1BE38" Source="$(var.SourceDir)\Newtonsoft.Json.xml" KeyPath="yes" />
-        </Component>
-        <Component Id="owcCE9BC93A259754292A772FFBD0707880" Guid="0fd9f7f4-8ed5-a50f-352f-a7fcc169d9ee">
-          <File Id="owfCE9BC93A259754292A772FFBD0707880" Source="$(var.SourceDir)\SixLabors.Core.dll" KeyPath="yes" />
-        </Component>
-        <Component Id="owc2D7EC5C1FE4514E7C7CCB37E8D125A40" Guid="08ff79c4-bff0-c6d4-ffba-1f1fcbb32f8b">
-          <File Id="owf2D7EC5C1FE4514E7C7CCB37E8D125A40" Source="$(var.SourceDir)\SixLabors.Core.xml" KeyPath="yes" />
-        </Component>
-        <Component Id="owc36F067EBBAC4A5B55BCC215DAB0D892B" Guid="31c6f4c4-ace8-5e28-4ae1-0d8f4f7122b9">
-          <File Id="owf36F067EBBAC4A5B55BCC215DAB0D892B" Source="$(var.SourceDir)\SixLabors.ImageSharp.dll" KeyPath="yes" />
-        </Component>
-        <Component Id="owc71BB2593A187E41D45ACB014E6A21293" Guid="672fc09e-6ff6-3166-9614-516281a7e144">
-          <File Id="owf71BB2593A187E41D45ACB014E6A21293" Source="$(var.SourceDir)\SixLabors.ImageSharp.xml" KeyPath="yes" />
-        </Component>
         <Component Id="owc266C4DEC591C8A54CCC1D3C61FC512AA" Guid="2224179c-4d85-88a2-23e2-bc0c27cadd0e">
           <File Id="owf266C4DEC591C8A54CCC1D3C61FC512AA" Source="$(var.SourceDir)\System.Buffers.dll" KeyPath="yes" />
         </Component>
         <Component Id="owcB3975236E57AF3476C692D6E3C40D3A7" Guid="5d90e46b-650b-92f7-6d00-2dd61f8a4944">
           <File Id="owfB3975236E57AF3476C692D6E3C40D3A7" Source="$(var.SourceDir)\System.Buffers.xml" KeyPath="yes" />
+        </Component>
+        <Component Id="owc0517117239E80E566282BE4546F8180F" Guid="c6cee878-746b-dc34-9583-946f27cba26a">
+          <File Id="owf0517117239E80E566282BE4546F8180F" Source="$(var.SourceDir)\System.CommandLine.dll" KeyPath="yes" />
         </Component>
         <Component Id="owcF2B199C7800AE0BBCC0001E0A61F6988" Guid="405dfe99-fffe-4059-26e0-c7d1bd0a0bed">
           <File Id="owfF2B199C7800AE0BBCC0001E0A61F6988" Source="$(var.SourceDir)\System.Memory.dll" KeyPath="yes" />
@@ -89,17 +80,38 @@
         <Component Id="owc912B341D759C6D4043ED430D16F8011A" Guid="fab0f014-28b2-d48f-5aa8-5a8e3bcf3ffb">
           <File Id="owf912B341D759C6D4043ED430D16F8011A" Source="$(var.SourceDir)\System.Runtime.CompilerServices.Unsafe.xml" KeyPath="yes" />
         </Component>
+        <Component Id="owc540CF8CDBE6617C60879532E387E1716" Guid="bd0331df-7b7e-28be-f87a-809cdbfa07f0">
+          <File Id="owf540CF8CDBE6617C60879532E387E1716" Source="$(var.SourceDir)\UVtools.Core.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcBD6C2CB73106BCF8D5385465839D3344" Guid="efab6672-7297-cbab-c613-743b21593319">
+          <File Id="owfBD6C2CB73106BCF8D5385465839D3344" Source="$(var.SourceDir)\UVtools.Core.pdb" KeyPath="yes" />
+        </Component>
         <Component Id="owc21B8C8C0F69E3CD1398B9A0674DF07BD" Guid="1e472543-e636-904d-da5b-cddaac2d36b1">
-          <File Id="owf21B8C8C0F69E3CD1398B9A0674DF07BD" Source="$(var.SourceDir)\UVtools.exe" KeyPath="yes">
-            <Shortcut Id="sc6327849DA5C02D2396E91B8B1892E03C" Name="UVtools" Directory="DesktopFolder" />
-            <Shortcut Id="sc218BF75801887335D1B30BAFB94BA631" Name="UVtools" Directory="scd220707349D4C8FA275285514283F3E2A" />
-          </File>
+          <File Id="owf21B8C8C0F69E3CD1398B9A0674DF07BD" Source="$(var.SourceDir)\UVtools.exe" KeyPath="yes" />
         </Component>
         <Component Id="owcFD68A2B6BB01205FB923D13D9A1EB333" Guid="a2bfa40e-e0f8-47b6-2570-e609ea5e428d">
           <File Id="owfFD68A2B6BB01205FB923D13D9A1EB333" Source="$(var.SourceDir)\UVtools.exe.config" KeyPath="yes" />
         </Component>
-        <Component Id="owcB6603ABDC143C6488F777606A4A341B1" Guid="040f11b5-152d-c7f3-9cd1-5ad8b731e02a">
-          <File Id="owfB6603ABDC143C6488F777606A4A341B1" Source="$(var.SourceDir)\UVtools.Parser.dll" KeyPath="yes" />
+        <Component Id="owc0C1077539E2B54F2460D2C0993613EFB" Guid="fc6ae2db-2865-9eb4-5753-4f2f941fdf16">
+          <File Id="owf0C1077539E2B54F2460D2C0993613EFB" Source="$(var.SourceDir)\UVtools.pdb" KeyPath="yes" />
+        </Component>
+        <Component Id="owcE56A1A43062CD54830A538D93042A2F9" Guid="97edfcac-9e9e-3019-6b8f-d6377d7dc1a1">
+          <File Id="owfE56A1A43062CD54830A538D93042A2F9" Source="$(var.SourceDir)\UVtoolsCmd.deps.json" KeyPath="yes" />
+        </Component>
+        <Component Id="owc0E305B983BD1AF09581ED4997D7E85ED" Guid="c24bfcd6-55aa-0509-f1f0-86b87d4f7d17">
+          <File Id="owf0E305B983BD1AF09581ED4997D7E85ED" Source="$(var.SourceDir)\UVtoolsCmd.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcF3C69C370296234BECE8A6E9414BA938" Guid="91dd69f3-350b-ffc9-6030-3ec11aac16dc">
+          <File Id="owfF3C69C370296234BECE8A6E9414BA938" Source="$(var.SourceDir)\UVtoolsCmd.exe" KeyPath="yes" />
+        </Component>
+        <Component Id="owc0BA04EBA55A828242AC648F3806CE8F3" Guid="68bb485f-4b09-d863-394c-cd87049021a0">
+          <File Id="owf0BA04EBA55A828242AC648F3806CE8F3" Source="$(var.SourceDir)\UVtoolsCmd.pdb" KeyPath="yes" />
+        </Component>
+        <Component Id="owc59F6487971C89DDBCF40A8A690169334" Guid="b83137d1-2f79-c6e5-0e72-fb84e2059f28">
+          <File Id="owf59F6487971C89DDBCF40A8A690169334" Source="$(var.SourceDir)\UVtoolsCmd.runtimeconfig.dev.json" KeyPath="yes" />
+        </Component>
+        <Component Id="owc76C7AC737F3567A5F2C89DBE21A3BE39" Guid="01949189-492b-8d45-dc95-3e341f5d690c">
+          <File Id="owf76C7AC737F3567A5F2C89DBE21A3BE39" Source="$(var.SourceDir)\UVtoolsCmd.runtimeconfig.json" KeyPath="yes" />
         </Component>
         <Directory Id="owdF7EC390A16A84F49221C0816B06C7316" Name="PrusaSlicer">
           <Directory Id="owd6830BAD7B93348EE48856553BF6B1294" Name="printer">

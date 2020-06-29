@@ -321,22 +321,22 @@ namespace UVtools.Core
                     Width = (uint) image.Width,
                     Height = (uint) image.Height,
                     Resolution = 42,
-                    Data = new byte[span.Length * 2]
+                    Data = new byte[image.Width * image.Height * 2]
                 };
 
-                int pixel = 0;
-                for (int i = 0; i < span.Length; i++)
+                int i = 0;
+                for (int pixel = 0; pixel < span.Length; pixel += image.NumberOfChannels)
                 {
                     // BGR
-                    int b = span[pixel++] >> 3;
-                    int g = span[pixel++] >> 2;
-                    int r = span[pixel++] >> 3;
+                    int b = span[pixel] >> 3;
+                    int g = span[pixel+1] >> 2;
+                    int r = span[pixel+2] >> 3;
                     
 
                     ushort color = (ushort) ((r << 11) | (g << 5) | (b << 0));
 
-                    preview.Data[i * 2] = (byte) color;
-                    preview.Data[i * 2 + 1] = (byte) (color >> 8);
+                    preview.Data[i++] = (byte) color;
+                    preview.Data[i++] = (byte) (color >> 8);
                 }
 
                 preview.Section.Length += (uint) preview.Data.Length;
@@ -849,8 +849,11 @@ namespace UVtools.Core
                 Parallel.For(0, LayerCount, layerIndex =>
                 {
                     LayerData layer = new LayerData(this, (uint) layerIndex);
-                    layer.Encode(this[layerIndex].LayerMat);
-                    LayersDefinition.Layers[layerIndex] = layer;
+                    using (var image = this[layerIndex].LayerMat)
+                    {
+                        layer.Encode(image);
+                        LayersDefinition.Layers[layerIndex] = layer;
+                    }
                 });
 
                 LayersDefinition.Section.Length += (uint)Helpers.Serializer.SizeOf(LayersDefinition[0]) * LayerCount;

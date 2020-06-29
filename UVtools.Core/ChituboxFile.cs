@@ -1077,9 +1077,11 @@ namespace UVtools.Core
                     Parallel.For(0, LayerCount, /*new ParallelOptions{MaxDegreeOfParallelism = 1},*/ layerIndex =>
                     {
                         LayerData layerData = new LayerData(this, (uint) layerIndex);
-                        var image = this[layerIndex].LayerMat;
-                        layerData.Encode(image, aaIndex, (uint) layerIndex);
-                        LayersDefinitions[aaIndex, layerIndex] = layerData;
+                        using (var image = this[layerIndex].LayerMat)
+                        {
+                            layerData.Encode(image, aaIndex, (uint) layerIndex);
+                            LayersDefinitions[aaIndex, layerIndex] = layerData;
+                        }
                     });
 
                     for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
@@ -1218,8 +1220,8 @@ namespace UVtools.Core
                     LayersDefinitions[aaIndex, layerIndex] = layerData;
 
                     layerOffset += (uint)Helpers.Serializer.SizeOf(layerData);
-                    Debug.Write($"LAYER {layerIndex} -> ");
-                    Debug.WriteLine(layerData);
+                    //Debug.Write($"LAYER {layerIndex} -> ");
+                    //Debug.WriteLine(layerData);
 
                     layerData.EncodedRle = new byte[layerData.DataSize];
                     inputFile.Seek(layerData.DataAddress, SeekOrigin.Begin);
