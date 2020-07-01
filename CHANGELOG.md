@@ -1,6 +1,6 @@
 # Changelog
 
-## ? - v0.6.0.2
+## 01/07/2020 - v0.6.0.2
 
 * (Add) PrusaSlicer Printer "EPAX X10 4K Mono"
 * (Improvement) Better progress window with real progress and cancel button
