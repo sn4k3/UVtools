@@ -88,7 +88,7 @@ namespace UVtools.GUI.Forms
                             false;
             }
 
-            Text = $"Mutate: {mutation.Mutate}";
+            Text = $"Mutate: {mutation.MenuName}";
             lbDescription.Text = Mutation.Description;
 
             if (ReferenceEquals(mutation.Image, null))

@@ -13,6 +13,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core
@@ -173,15 +174,14 @@ namespace UVtools.Core
             GCode = null;
         }
 
-        public override void Encode(string fileFullPath)
+        public override void Encode(string fileFullPath, OperationProgress progress = null)
         {
-            base.Encode(fileFullPath);
-            using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Update))
+            base.Encode(fileFullPath, progress);
+            using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
             {
                 string arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
-                var entry = outputFile.GetPutFile("slice.conf");
+                var entry = outputFile.CreateEntry("slice.conf");
                 var stream = entry.Open();
-                stream.SetLength(0);
 
                 using (TextWriter tw = new StreamWriter(stream))
                 {
@@ -197,23 +197,25 @@ namespace UVtools.Core
                         tw.WriteLine($"{displayNameAttribute.DisplayName.PadRight(24)}= {propertyInfo.GetValue(SliceSettings)}");
                     }
                 }
+                
 
-
-                for(uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
+                    progress.Token.ThrowIfCancellationRequested();
                     Layer layer = this[layerIndex];
-                    var layerimagePath = $"{Path.GetFileNameWithoutExtension(fileFullPath)}{layer.Index.ToString().PadLeft(LayerCount.ToString().Length, '0')}.png";
-                    outputFile.PutFileContent(layerimagePath, layer.CompressedBytes);
+                    var layerImagePath = $"{Path.GetFileNameWithoutExtension(fileFullPath)}{layer.Index.ToString().PadLeft(LayerCount.ToString().Length, '0')}.png";
+                    outputFile.PutFileContent(layerImagePath, layer.CompressedBytes, ZipArchiveMode.Create);
+                    progress++;
                 }
 
                 UpdateGCode();
-                outputFile.PutFileContent($"{Path.GetFileNameWithoutExtension(fileFullPath)}.gcode", GCode.ToString());
+                outputFile.PutFileContent($"{Path.GetFileNameWithoutExtension(fileFullPath)}.gcode", GCode.ToString(), ZipArchiveMode.Create);
             }
         }
 
-        public override void Decode(string fileFullPath)
+        public override void Decode(string fileFullPath, OperationProgress progress = null)
         {
-            base.Decode(fileFullPath);
+            base.Decode(fileFullPath, progress);
 
             FileFullPath = fileFullPath;
             using (var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read))
@@ -298,10 +300,9 @@ namespace UVtools.Core
                     uint iLayer = uint.Parse(layerStr);
                     LayerManager[iLayer] = new Layer(iLayer, zipArchiveEntry.Open(), zipArchiveEntry.Name);
                 }
-                
             }
 
-            var rect = LayerManager.BoundingRectangle;
+            LayerManager.GetBoundingRectangle(progress);
         }
 
         public override object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
@@ -379,7 +380,7 @@ namespace UVtools.Core
             return false;
         }
 
-        public override void SaveAs(string filePath = null)
+        public override void SaveAs(string filePath = null, OperationProgress progress = null)
         {
             if (!string.IsNullOrEmpty(filePath))
             {
@@ -418,20 +419,20 @@ namespace UVtools.Core
                         break;
                     }
                 }
-                outputFile.PutFileContent($"{Path.GetFileNameWithoutExtension(FileFullPath)}.gcode", GCode.ToString());
+                outputFile.PutFileContent($"{Path.GetFileNameWithoutExtension(FileFullPath)}.gcode", GCode.ToString(), ZipArchiveMode.Update);
 
                 foreach (var layer in this)
                 {
                     if (!layer.IsModified) continue;
-                    outputFile.PutFileContent(layer.Filename, layer.CompressedBytes);
+                    outputFile.PutFileContent(layer.Filename, layer.CompressedBytes, ZipArchiveMode.Update);
                     layer.IsModified = false;
                 }
             }
 
-            //Decode(FileFullPath);
+            //Decode(FileFullPath, progress);
         }
 
-        public override bool Convert(Type to, string fileFullPath)
+        public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
         {
             throw new NotImplementedException();
         }

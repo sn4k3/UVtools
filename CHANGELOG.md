@@ -1,5 +1,20 @@
 # Changelog
 
+## ? - v0.6.0.2
+
+* (Add) PrusaSlicer Printer "EPAX X10 4K Mono"
+* (Improvement) Better progress window with real progress and cancel button
+* (Improvement) Mutators text and name
+* (Fix) sl1: After save file gets decoded again
+* (Fix) photon, cbddlp, ctb, phz, pws, pw0: Unable to save file, not closed from the decode session
+* (Fix) zcodex: Unable to convert file
+* (Fix) images: Wasn't opening
+* (Fix) images: Wasn't saving
+* (Fix) When click on button "New version is available" sometimes it crash the program
+* (Fix) Force 1 layer scroll when using Mouse Wheel to scroll the tracker bar
+* (Fix) PrusaSlicer printers: Mirror vertically instead to produce equal orientation compared with chitubox
+
+
 ## 29/06/2020 - v0.6.0.1
 
 * (Improvement) Pixel edit now spare a memory cycle per pixel

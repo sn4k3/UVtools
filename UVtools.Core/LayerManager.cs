@@ -928,25 +928,7 @@ namespace UVtools.Core
         private Rectangle _boundingRectangle = Rectangle.Empty;
         public Rectangle BoundingRectangle
         {
-            get
-            {
-                if(!_boundingRectangle.IsEmpty) return _boundingRectangle;
-                _boundingRectangle = this[0].BoundingRectangle;
-                if (_boundingRectangle.IsEmpty) // Safe checking
-                {
-                    Parallel.For(0, Count, layerIndex =>
-                    {
-                        this[layerIndex].GetBoundingRectangle();
-                    });
-                    _boundingRectangle = this[0].BoundingRectangle;
-                }
-                for (int i = 1; i < Count; i++)
-                {
-                    _boundingRectangle = Rectangle.Union(_boundingRectangle, this[i].BoundingRectangle);
-                }
-
-                return _boundingRectangle;
-            }
+            get => GetBoundingRectangle();
             set => _boundingRectangle = value;
         }
 
@@ -1066,6 +1048,49 @@ namespace UVtools.Core
 
         #region Methods
 
+        public Rectangle GetBoundingRectangle(OperationProgress progress = null)
+        {
+            if (!_boundingRectangle.IsEmpty) return _boundingRectangle;
+            _boundingRectangle = this[0].BoundingRectangle;
+            if (_boundingRectangle.IsEmpty) // Safe checking
+            {
+                progress?.Reset(OperationProgress.StatusOptimizingBounds, Count);
+                Parallel.For(0, Count, layerIndex =>
+                {
+                    if (!ReferenceEquals(progress, null) && progress.Token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                    
+                    this[layerIndex].GetBoundingRectangle();
+
+                    if (ReferenceEquals(progress, null)) return;
+                    lock (progress.Mutex)
+                    {
+                        progress++;
+                    }
+                });
+                _boundingRectangle = this[0].BoundingRectangle;
+
+                if (!ReferenceEquals(progress, null) && progress.Token.IsCancellationRequested)
+                {
+                    _boundingRectangle = Rectangle.Empty;
+                    progress.Token.ThrowIfCancellationRequested();
+                }
+                
+            }
+
+            progress?.Reset(OperationProgress.StatusCalculatingBounds, Count);
+            for (int i = 1; i < Count; i++)
+            {
+                _boundingRectangle = Rectangle.Union(_boundingRectangle, this[i].BoundingRectangle);
+                if (ReferenceEquals(progress, null)) continue;
+                progress++;
+            }
+
+            return _boundingRectangle;
+        }
+
         /// <summary>
         /// Add a layer
         /// </summary>
@@ -1095,15 +1120,19 @@ namespace UVtools.Core
         /// <param name="x">X factor, starts at 1</param>
         /// <param name="y">Y factor, starts at 1</param>
         /// <param name="isFade">Fade X/Y towards 100%</param>
-        public void MutateResize(uint startLayerIndex, uint endLayerIndex, double x, double y, bool isFade)
+        public void MutateResize(uint startLayerIndex, uint endLayerIndex, double x, double y, bool isFade, OperationProgress progress = null)
         {
             if (x == 1.0 && y == 1.0) return;
+
+            if(ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Resizing", Count);
 
             double xSteps = Math.Abs(x - 1.0) / (endLayerIndex - startLayerIndex);
             double ySteps = Math.Abs(y - 1.0) / (endLayerIndex - startLayerIndex);
 
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
+                if (progress.Token.IsCancellationRequested) return;
                 var newX = x;
                 var newY = y;
                 if (isFade)
@@ -1135,34 +1164,64 @@ namespace UVtools.Core
                     }
                 }
 
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+
                 if (newX == 1.0 && newY == 1.0) return;
 
                 this[layerIndex].MutateResize(newX, newY);
             });
+            progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutateFlip(uint startLayerIndex, uint endLayerIndex, FlipType flipType, bool makeCopy = false)
+        public void MutateFlip(uint startLayerIndex, uint endLayerIndex, FlipType flipType, bool makeCopy = false, OperationProgress progress = null)
         {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Fliping", Count);
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
+                if (progress.Token.IsCancellationRequested) return;
                 this[layerIndex].MutateFlip(flipType, makeCopy);
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
             });
+            progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutateRotate(uint startLayerIndex, uint endLayerIndex, double angle, Inter interpolation = Inter.Linear)
+        public void MutateRotate(uint startLayerIndex, uint endLayerIndex, double angle, Inter interpolation = Inter.Linear, OperationProgress progress = null)
         {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Rotating", Count);
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
+                if (progress.Token.IsCancellationRequested) return;
                 this[layerIndex].MutateRotate(angle, interpolation);
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
             });
+            progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutateSolidify(uint startLayerIndex, uint endLayerIndex)
+        public void MutateSolidify(uint startLayerIndex, uint endLayerIndex, OperationProgress progress = null)
         {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Solidifing", Count);
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
+                if (progress.Token.IsCancellationRequested) return;
                 this[layerIndex].MutateSolidify();
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
             });
+            progress.Token.ThrowIfCancellationRequested();
         }
 
         private void MutateGetVarsIterationFade(uint startLayerIndex, uint endLayerIndex, int iterationsStart, int iterationsEnd, ref bool isFade, out int iterationSteps, out int maxIteration)
@@ -1187,7 +1246,7 @@ namespace UVtools.Core
             return Math.Min(Math.Max(1, iterations), maxIteration);
         }
 
-        public void MutateErode(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false,
+        public void MutateErode(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false, OperationProgress progress = null,
             IInputArray kernel = null, Point anchor = default,
             BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
         {
@@ -1201,14 +1260,23 @@ namespace UVtools.Core
                 out var maxIteration
                 );
 
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Eroding", Count);
+
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
+                if (progress.Token.IsCancellationRequested) return;
                 int iterations = MutateGetIterationVar(isFade, iterationsStart, iterationsEnd, iterationSteps, maxIteration, startLayerIndex, (uint) layerIndex);
                 this[layerIndex].MutateErode(iterations, kernel, anchor, borderType, borderValue);
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
             });
+            progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutateDilate(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false,
+        public void MutateDilate(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false, OperationProgress progress = null,
             IInputArray kernel = null, Point anchor = default,
             BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
         {
@@ -1222,14 +1290,23 @@ namespace UVtools.Core
                 out var maxIteration
             );
 
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Dilating", Count);
+
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
+                if (progress.Token.IsCancellationRequested) return;
                 int iterations = MutateGetIterationVar(isFade, iterationsStart, iterationsEnd, iterationSteps, maxIteration, startLayerIndex, (uint)layerIndex);
                 this[layerIndex].MutateDilate(iterations, kernel, anchor, borderType, borderValue);
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
             });
+            progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutateOpen(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false,
+        public void MutateOpen(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false, OperationProgress progress = null,
             IInputArray kernel = null, Point anchor = default,
             BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
         {
@@ -1243,14 +1320,23 @@ namespace UVtools.Core
                 out var maxIteration
             );
 
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Removing Noise", Count);
+
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
+                if (progress.Token.IsCancellationRequested) return;
                 int iterations = MutateGetIterationVar(isFade, iterationsStart, iterationsEnd, iterationSteps, maxIteration, startLayerIndex, (uint)layerIndex);
                 this[layerIndex].MutateOpen(iterations, kernel, anchor, borderType, borderValue);
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
             });
+            progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutateClose(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false,
+        public void MutateClose(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false, OperationProgress progress = null,
             IInputArray kernel = null, Point anchor = default,
             BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
         {
@@ -1264,14 +1350,23 @@ namespace UVtools.Core
                 out var maxIteration
             );
 
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Gap Closing", Count);
+
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
+                if (progress.Token.IsCancellationRequested) return;
                 int iterations = MutateGetIterationVar(isFade, iterationsStart, iterationsEnd, iterationSteps, maxIteration, startLayerIndex, (uint)layerIndex);
                 this[layerIndex].MutateClose(iterations, kernel, anchor, borderType, borderValue);
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
             });
+            progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutateGradient(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false,
+        public void MutateGradient(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false, OperationProgress progress = null,
             IInputArray kernel = null, Point anchor = default,
             BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
         {
@@ -1285,54 +1380,100 @@ namespace UVtools.Core
                 out var maxIteration
             );
 
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Gradient", Count);
+
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
+                if (progress.Token.IsCancellationRequested) return;
                 int iterations = MutateGetIterationVar(isFade, iterationsStart, iterationsEnd, iterationSteps, maxIteration, startLayerIndex, (uint)layerIndex);
                 this[layerIndex].MutateGradient(iterations, kernel, anchor, borderType, borderValue);
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
             });
+            progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutatePyrDownUp(uint startLayerIndex, uint endLayerIndex, BorderType borderType = BorderType.Default)
+        public void MutatePyrDownUp(uint startLayerIndex, uint endLayerIndex, BorderType borderType = BorderType.Default, OperationProgress progress = null)
         {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("PryDownUp", Count);
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
+                if (progress.Token.IsCancellationRequested) return;
                 this[layerIndex].MutatePyrDownUp(borderType);
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
             });
+            progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutateMedianBlur(uint startLayerIndex, uint endLayerIndex, int aperture = 1)
+        public void MutateMedianBlur(uint startLayerIndex, uint endLayerIndex, int aperture = 1, OperationProgress progress = null)
         {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Bluring", Count);
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
+                if (progress.Token.IsCancellationRequested) return;
                 this[layerIndex].MutateMedianBlur(aperture);
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
             });
+            progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutateGaussianBlur(uint startLayerIndex, uint endLayerIndex, Size size = default, int sigmaX = 0, int sigmaY = 0, BorderType borderType = BorderType.Reflect101)
+        public void MutateGaussianBlur(uint startLayerIndex, uint endLayerIndex, Size size = default, int sigmaX = 0, int sigmaY = 0, BorderType borderType = BorderType.Reflect101, OperationProgress progress = null)
         {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Bluring", Count);
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
+                if (progress.Token.IsCancellationRequested) return;
                 this[layerIndex].MutateGaussianBlur(size, sigmaX, sigmaY, borderType);
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
             });
+            progress.Token.ThrowIfCancellationRequested();
         }
 
-        public ConcurrentDictionary<uint, List<LayerIssue>> GetAllIssues(IslandDetectionConfiguration islandConfig = null, ResinTrapDetectionConfiguration resinTrapConfig = null)
+        public ConcurrentDictionary<uint, List<LayerIssue>> GetAllIssues(
+            IslandDetectionConfiguration islandConfig = null, ResinTrapDetectionConfiguration resinTrapConfig = null,
+            OperationProgress progress = null)
         {
             if(ReferenceEquals(islandConfig, null)) islandConfig = new IslandDetectionConfiguration();
             if(ReferenceEquals(resinTrapConfig, null)) resinTrapConfig = new ResinTrapDetectionConfiguration();
+            if(ReferenceEquals(progress, null)) progress = new OperationProgress();
 
             const byte minTouchingBondsPixelColor = 200;
 
             var result = new ConcurrentDictionary<uint, List<LayerIssue>>();
             var layerHollowAreas = new ConcurrentDictionary<uint, List<LayerHollowArea>>();
+
+            bool islandsFinished = false;
+
+            progress.Reset(OperationProgress.StatusIslands, Count);
+
             Parallel.Invoke(() =>
             {
-                if (!islandConfig.Enabled) return;
+                if (!islandConfig.Enabled)
+                {
+                    islandsFinished = true;
+                    return;
+                }
                 // Detect contours
                 Parallel.ForEach(this,
                     //new ParallelOptions{MaxDegreeOfParallelism = 1},
                     layer =>
                     {
+                        if (progress.Token.IsCancellationRequested) return;
                         using (var image = layer.LayerMat)
                         {
                             int step = image.Step;
@@ -1407,6 +1548,7 @@ namespace UVtools.Core
                             Span<byte> previousSpan = null;
                             for (int i = 0; i < contours.Size; i++)
                             {
+
                                 if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1) continue;
                                 var rect = CvInvoke.BoundingRectangle(contours[i]);
                                 if (rect.GetArea() < islandConfig.RequiredAreaToProcessCheck)
@@ -1448,6 +1590,7 @@ namespace UVtools.Core
                                     }
                                 }
 
+                                
                                 if (points.Count == 0) continue;
                                 if (pixelsSupportingIsland >= islandConfig.RequiredPixelsToSupport)
                                     continue; // Not a island, bounding is strong, i think...
@@ -1469,7 +1612,13 @@ namespace UVtools.Core
                             hierarchy.Dispose();
                             previousImage?.Dispose();
                         }
+
+                        lock (progress.Mutex)
+                        {
+                            progress++;
+                        }
                     });
+                islandsFinished = true;
             }, () =>
             {
                 if (!resinTrapConfig.Enabled) return;
@@ -1478,6 +1627,7 @@ namespace UVtools.Core
                     //new ParallelOptions{MaxDegreeOfParallelism = 1},
                     layer =>
                     {
+                        if (progress.Token.IsCancellationRequested) return;
                         using (var image = layer.LayerMat)
                         {
                             if (resinTrapConfig.BinaryThreshold > 0)
@@ -1527,6 +1677,7 @@ namespace UVtools.Core
 
                 for (uint layerIndex = 0; layerIndex < Count - 1; layerIndex++) // Last layers, always drains
                 {
+                    if (progress.Token.IsCancellationRequested) break;
                     if (!layerHollowAreas.TryGetValue(layerIndex, out var areas))
                         continue; // No hollow areas in this layer, ignore
 
@@ -1535,6 +1686,7 @@ namespace UVtools.Core
                     
                     Parallel.ForEach(from t in areas where t.Type == LayerHollowArea.AreaType.Unknown select t, area =>
                     {
+                        if (progress.Token.IsCancellationRequested) return;
                         if (area.Type != LayerHollowArea.AreaType.Unknown) return; // processed, ignore
                         area.Type = LayerHollowArea.AreaType.Trap;
 
@@ -1551,6 +1703,8 @@ namespace UVtools.Core
                             int nextLayerIndex = (int) layerIndex;
                             while (queue.Count > 0 && area.Type != LayerHollowArea.AreaType.Drain)
                             {
+                                if (progress.Token.IsCancellationRequested) return;
+
                                 LayerHollowArea checkArea = queue.Dequeue();
                                 if (checkArea.Processed) continue;
                                 checkArea.Processed = true;
@@ -1560,7 +1714,12 @@ namespace UVtools.Core
                                     break; // Exhausted layers
                                 bool haveNextAreas = layerHollowAreas.TryGetValue((uint) nextLayerIndex, out var nextAreas);
                                 Dictionary<int, LayerHollowArea> intersectingAreas = new Dictionary<int, LayerHollowArea>();
-                                
+
+                                if (islandsFinished)
+                                {
+                                    progress.Reset(OperationProgress.StatusResinTraps, Count, (uint) nextLayerIndex);
+                                }
+
                                 using (var image = this[nextLayerIndex].LayerMat)
                                 {
                                     var span = image.GetPixelSpan<byte>();
@@ -1700,6 +1859,8 @@ namespace UVtools.Core
                 }
             });
 
+            if (progress.Token.IsCancellationRequested) return result;
+
             for (uint layerIndex = 0; layerIndex < Count; layerIndex++)
             {
                 if (!layerHollowAreas.TryGetValue(layerIndex, out var list)) continue;
@@ -1722,10 +1883,14 @@ namespace UVtools.Core
         }
 
         public void RepairLayers(uint layerStart, uint layerEnd, uint closingIterations = 1, uint openingIterations = 1,
-            bool repairIslands = true, bool repairResinTraps = true, Dictionary<uint, List<LayerIssue>> issues = null)
+            bool repairIslands = true, bool repairResinTraps = true, Dictionary<uint, List<LayerIssue>> issues = null,
+            OperationProgress progress = null)
         {
+            if(ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset(OperationProgress.StatusRepairLayers, layerEnd - layerStart + 1);
             Parallel.For(layerStart, layerEnd + 1, layerIndex =>
             {
+                if (progress.Token.IsCancellationRequested) return;
                 Layer layer = this[layerIndex];
                 using (var image = layer.LayerMat)
                 {
@@ -1773,8 +1938,14 @@ namespace UVtools.Core
                     }
 
                     layer.LayerMat = image;
+                    lock (progress.Mutex)
+                    {
+                        progress++;
+                    }
                 }
             });
+
+            progress.Token.ThrowIfCancellationRequested();
         }
 
         /// <summary>

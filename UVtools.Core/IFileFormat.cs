@@ -233,7 +233,8 @@ namespace UVtools.Core
         /// Encode to an output file
         /// </summary>
         /// <param name="fileFullPath">Output file</param>
-        void Encode(string fileFullPath);
+        /// <param name="progress"></param>
+        void Encode(string fileFullPath, OperationProgress progress = null);
 
         /*
         /// <summary>
@@ -258,7 +259,8 @@ namespace UVtools.Core
         /// Decode a slicer file
         /// </summary>
         /// <param name="fileFullPath"></param>
-        void Decode(string fileFullPath);
+        /// <param name="progress"></param>
+        void Decode(string fileFullPath, OperationProgress progress = null);
 
         /// <summary>
         /// Extract contents to a folder
@@ -266,7 +268,9 @@ namespace UVtools.Core
         /// <param name="path">Path to folder where content will be extracted</param>
         /// <param name="genericConfigExtract"></param>
         /// <param name="genericLayersExtract"></param>
-        void Extract(string path, bool genericConfigExtract = true, bool genericLayersExtract = true);
+        /// <param name="progress"></param>
+        void Extract(string path, bool genericConfigExtract = true, bool genericLayersExtract = true,
+            OperationProgress progress = null);
 
         /// <summary>
         /// Get height in mm from layer height
@@ -312,29 +316,33 @@ namespace UVtools.Core
         /// <summary>
         /// Saves current configuration on input file
         /// </summary>
-        void Save();
+        /// <param name="progress"></param>
+        void Save(OperationProgress progress = null);
 
         /// <summary>
         /// Saves current configuration on a copy
         /// </summary>
         /// <param name="filePath">File path to save copy as, use null to overwrite active file (Same as <see cref="Save"/>)</param>
-        void SaveAs(string filePath = null);
+        /// <param name="progress"></param>
+        void SaveAs(string filePath = null, OperationProgress progress = null);
 
         /// <summary>
         /// Converts this file type to another file type
         /// </summary>
         /// <param name="to">Target file format</param>
         /// <param name="fileFullPath">Output path file</param>
+        /// <param name="progress"></param>
         /// <returns>True if convert succeed, otherwise false</returns>
-        bool Convert(Type to, string fileFullPath);
+        bool Convert(Type to, string fileFullPath, OperationProgress progress = null);
 
         /// <summary>
         /// Converts this file type to another file type
         /// </summary>
         /// <param name="to">Target file format</param>
         /// <param name="fileFullPath">Output path file</param>
+        /// <param name="progress"></param>
         /// <returns>True if convert succeed, otherwise false</returns>
-        bool Convert(FileFormat to, string fileFullPath);
+        bool Convert(FileFormat to, string fileFullPath, OperationProgress progress = null);
 
         /// <summary>
         /// Validate AntiAlias Level

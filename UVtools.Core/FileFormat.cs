@@ -273,7 +273,7 @@ namespace UVtools.Core
 
         public float TotalHeight => (float)Math.Round(LayerCount * LayerHeight, 2);
 
-        public uint LayerCount => LayerManager.Count;
+        public uint LayerCount => LayerManager?.Count ?? 0;
         
         public abstract ushort InitialLayerCount { get; }
         
@@ -448,7 +448,7 @@ namespace UVtools.Core
             }
         }
 
-        public virtual void Encode(string fileFullPath)
+        public virtual void Encode(string fileFullPath, OperationProgress progress = null)
         {
             FileFullPath = fileFullPath;
 
@@ -462,6 +462,9 @@ namespace UVtools.Core
                 if (ReferenceEquals(Thumbnails[i], null)) continue;
                 CvInvoke.Resize(Thumbnails[i], Thumbnails[i], new Size(ThumbnailsOriginalSize[i].Width, ThumbnailsOriginalSize[i].Height));
             }
+
+            if(ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
         }
 
         /*public virtual void BeginEncode(string fileFullPath)
@@ -473,31 +476,36 @@ namespace UVtools.Core
 
         public abstract void EndEncode();*/
 
-        public virtual void Decode(string fileFullPath)
+        public virtual void Decode(string fileFullPath, OperationProgress progress = null)
         {
             Clear();
             FileValidation(fileFullPath);
             FileFullPath = fileFullPath;
+            if(ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.ItemName = OperationProgress.StatusGatherLayers;
         }
 
-        public virtual void Extract(string path, bool genericConfigExtract = true, bool genericLayersExtract = true)
+        public virtual void Extract(string path, bool genericConfigExtract = true, bool genericLayersExtract = true,
+            OperationProgress progress = null)
         {
-            /*if (emptyFirst)
-            {
-                if (Directory.Exists(path))
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.ItemName = OperationProgress.StatusExtracting;
+                /*if (emptyFirst)
                 {
-                    DirectoryInfo di = new DirectoryInfo(path);
+                    if (Directory.Exists(path))
+                    {
+                        DirectoryInfo di = new DirectoryInfo(path);
 
-                    foreach (FileInfo file in di.GetFiles())
-                    {
-                        file.Delete();
+                        foreach (FileInfo file in di.GetFiles())
+                        {
+                            file.Delete();
+                        }
+                        foreach (DirectoryInfo dir in di.GetDirectories())
+                        {
+                            dir.Delete(true);
+                        }
                     }
-                    foreach (DirectoryInfo dir in di.GetDirectories())
-                    {
-                        dir.Delete(true);
-                    }
-                }
-            }*/
+                }*/
 
             //if (!Directory.Exists(path))
             //{
@@ -507,10 +515,14 @@ namespace UVtools.Core
 
             if (FileType == FileFormatType.Archive)
             {
+                
+                progress.CanCancel = false;
                 //ZipFile.ExtractToDirectory(FileFullPath, path);
                 ZipArchiveExtensions.ImprovedExtractToDirectory(FileFullPath, path, ZipArchiveExtensions.Overwrite.Always);
                 return;
             }
+
+            progress.ItemCount = LayerCount;
 
             if (genericConfigExtract)
             {
@@ -556,12 +568,17 @@ namespace UVtools.Core
                 {
                     Parallel.ForEach(this, (layer) =>
                     {
+                        if (progress.Token.IsCancellationRequested) return;
                         var byteArr = layer.CompressedBytes;
                         using (FileStream stream = File.Create(Path.Combine(path, $"Layer{layer.Index}.png"),
                             byteArr.Length))
                         {
                             stream.Write(byteArr, 0, byteArr.Length);
                             stream.Close();
+                            lock (progress.Mutex)
+                            {
+                                progress++;
+                            }
                         }
                     });
                 }
@@ -624,17 +641,17 @@ namespace UVtools.Core
 
         public abstract bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value);
 
-        public void Save()
+        public void Save(OperationProgress progress = null)
         {
-            SaveAs();
+            SaveAs(null, progress);
         }
 
-        public abstract void SaveAs(string filePath = null);
+        public abstract void SaveAs(string filePath = null, OperationProgress progress = null);
 
-        public abstract bool Convert(Type to, string fileFullPath);
-        public bool Convert(FileFormat to, string fileFullPath)
+        public abstract bool Convert(Type to, string fileFullPath, OperationProgress progress = null);
+        public bool Convert(FileFormat to, string fileFullPath, OperationProgress progress = null)
         {
-            return Convert(to.GetType(), fileFullPath);
+            return Convert(to.GetType(), fileFullPath, progress);
         }
 
         public byte ValidateAntiAliasingLevel()

@@ -137,9 +137,9 @@ namespace UVtools.Core
         #endregion
 
         #region Properties
-        public ResinMetadata ResinMetadataSettings { get; set; }
-        public UserSettingsdata UserSettings { get; set; }
-        public ZCodeMetadata ZCodeMetadataSettings { get; set; }
+        public ResinMetadata ResinMetadataSettings { get; set; } = new ResinMetadata();
+        public UserSettingsdata UserSettings { get; set; } = new UserSettingsdata();
+        public ZCodeMetadata ZCodeMetadataSettings { get; set; } = new ZCodeMetadata();
 
         public List<LayerData> LayersSettings { get; } = new List<LayerData>();
 
@@ -205,15 +205,14 @@ namespace UVtools.Core
             LayersSettings.Clear();
         }
 
-        public override void Encode(string fileFullPath)
+        public override void Encode(string fileFullPath, OperationProgress progress = null)
         {
-            base.Encode(fileFullPath);
+            base.Encode(fileFullPath, progress);
             using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
             {
-
-                outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings));
-                outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings));
-                outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings));
+                outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings), ZipArchiveMode.Create);
+                outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings), ZipArchiveMode.Create);
+                outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings), ZipArchiveMode.Create);
 
                 if (CreatedThumbnailsCount > 0)
                 {
@@ -230,6 +229,8 @@ namespace UVtools.Core
 
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
+                    progress.Token.ThrowIfCancellationRequested();
+
                     GCode.AppendLine($"{GCodeKeywordSlice} {layerIndex}");
                     GCode.AppendLine($"G1 Z{LiftHeight} F{LiftSpeed}");
                     GCode.AppendLine($"G1 Z-{LiftHeight - LayerHeight} F{RetractSpeed}");
@@ -247,18 +248,20 @@ namespace UVtools.Core
                         stream.Write(byteArr, 0, byteArr.Length);
                         stream.Close();
                     }
+
+                    progress++;
                 }
 
                 GCode.AppendLine($"G1 Z40.0 F{UserSettings.ZLiftFeedRate}");
                 GCode.AppendLine("M18");
 
-                outputFile.PutFileContent("ResinGCodeData", GCode.ToString());
+                outputFile.PutFileContent("ResinGCodeData", GCode.ToString(), ZipArchiveMode.Create);
             }
         }
 
-        public override void Decode(string fileFullPath)
+        public override void Decode(string fileFullPath, OperationProgress progress = null)
         {
-            base.Decode(fileFullPath);
+            base.Decode(fileFullPath, progress);
 
             FileFullPath = fileFullPath;
             using (var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read))
@@ -341,13 +344,14 @@ namespace UVtools.Core
                 {
                     using (Stream stream = entry.Open())
                     {
-                        CvInvoke.Imdecode(stream.ReadBytes(), ImreadModes.AnyColor, Thumbnails[0]);
+                        
+                        CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, Thumbnails[0]);
                         stream.Close();
                     }
                 }
             }
 
-            var rect = LayerManager.BoundingRectangle;
+            LayerManager.GetBoundingRectangle(progress);
         }
 
         public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
@@ -393,7 +397,7 @@ namespace UVtools.Core
             return false;
         }
 
-        public override void SaveAs(string filePath = null)
+        public override void SaveAs(string filePath = null, OperationProgress progress = null)
         {
             if (!string.IsNullOrEmpty(filePath))
             {
@@ -404,23 +408,23 @@ namespace UVtools.Core
 
             using (var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update))
             {
-                outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings));
-                outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings));
-                outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings));
-                outputFile.PutFileContent("ResinGCodeData", GCode.ToString());
+                outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings), ZipArchiveMode.Update);
+                outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings), ZipArchiveMode.Update);
+                outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings), ZipArchiveMode.Update);
+                outputFile.PutFileContent("ResinGCodeData", GCode.ToString(), ZipArchiveMode.Update);
 
                 foreach (var layer in this)
                 {
                     if (!layer.IsModified) continue;
-                    outputFile.PutFileContent(layer.Filename, layer.CompressedBytes);
+                    outputFile.PutFileContent(layer.Filename, layer.CompressedBytes, ZipArchiveMode.Update);
                     layer.IsModified = false;
                 }
             }
 
-            //Decode(FileFullPath);
+            //Decode(FileFullPath, progress);
         }
 
-        public override bool Convert(Type to, string fileFullPath)
+        public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
         {
             throw new NotImplementedException();
         }

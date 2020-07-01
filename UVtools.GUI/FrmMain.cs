@@ -37,40 +37,40 @@ namespace UVtools.GUI
         public static readonly Dictionary<LayerManager.Mutate, Mutation> Mutations =
             new Dictionary<LayerManager.Mutate, Mutation>
             {
-                {LayerManager.Mutate.Resize, new Mutation(LayerManager.Mutate.Resize,
+                {LayerManager.Mutate.Resize, new Mutation(LayerManager.Mutate.Resize, null,
                     "Resizes layer images in a X and/or Y factor, starting from 100% value\n" +
                     "NOTE 1: Build volume bounds are not validated after operation, please ensure scaling stays inside your limits.\n" +
                     "NOTE 2: X and Y are applied to original image, not to the rotated preview (If enabled)."
                 )},
-                {LayerManager.Mutate.Flip, new Mutation(LayerManager.Mutate.Flip,
+                {LayerManager.Mutate.Flip, new Mutation(LayerManager.Mutate.Flip, null,
                     "Flips layer images vertically and/or horizontally"
                 )},
-                {LayerManager.Mutate.Rotate, new Mutation(LayerManager.Mutate.Rotate,
+                {LayerManager.Mutate.Rotate, new Mutation(LayerManager.Mutate.Rotate, null,
                     "Rotate layer images in a certain degrees"
                 )},
-                {LayerManager.Mutate.Solidify, new Mutation(LayerManager.Mutate.Solidify,
+                {LayerManager.Mutate.Solidify, new Mutation(LayerManager.Mutate.Solidify, null,
                     "Solidifies the selected layers, closes all inner holes.\n" +
                     "Warning: All surrounded holes are filled, no exceptions! Make sure you don't require any of holes in layer path.",
                     Properties.Resources.mutation_solidify
                 )},
-                {LayerManager.Mutate.Erode, new Mutation(LayerManager.Mutate.Erode, 
+                {LayerManager.Mutate.Erode, new Mutation(LayerManager.Mutate.Erode, null,
                 "The basic idea of erosion is just like soil erosion only, it erodes away the boundaries of foreground object (Always try to keep foreground in white). " +
                         "So what happends is that, all the pixels near boundary will be discarded depending upon the size of kernel. So the thickness or size of the foreground object decreases or simply white region decreases in the image. It is useful for removing small white noises, detach two connected objects, etc.",
                         Properties.Resources.mutation_erosion
                 )},
-                {LayerManager.Mutate.Dilate, new Mutation(LayerManager.Mutate.Dilate,
+                {LayerManager.Mutate.Dilate, new Mutation(LayerManager.Mutate.Dilate, null,
                     "It is just opposite of erosion. Here, a pixel element is '1' if atleast one pixel under the kernel is '1'. So it increases the white region in the image or size of foreground object increases. Normally, in cases like noise removal, erosion is followed by dilation. Because, erosion removes white noises, but it also shrinks our object. So we dilate it. Since noise is gone, they won't come back, but our object area increases. It is also useful in joining broken parts of an object.",
-                    Properties.Resources.mutation_dilation
+                    Resources.mutation_dilation
                 )},
-                {LayerManager.Mutate.Opening, new Mutation(LayerManager.Mutate.Opening,
-                    "Opening is just another name of erosion followed by dilation. It is useful in removing noise.",
+                {LayerManager.Mutate.Opening, new Mutation(LayerManager.Mutate.Opening, "Noise Removal",
+                    "Noise Removal/Opening is just another name of erosion followed by dilation. It is useful in removing noise.",
                     Properties.Resources.mutation_opening
                 )},
-                {LayerManager.Mutate.Closing, new Mutation(LayerManager.Mutate.Closing,
-                    "Closing is reverse of Opening, Dilation followed by Erosion. It is useful in closing small holes inside the foreground objects, or small black points on the object.",
+                {LayerManager.Mutate.Closing, new Mutation(LayerManager.Mutate.Closing, "Gap Closing",
+                    "Gap Closing is reverse of Opening, Dilation followed by Erosion. It is useful in closing small holes inside the foreground objects, or small black points on the object.",
                     Properties.Resources.mutation_closing
                 )},
-                {LayerManager.Mutate.Gradient, new Mutation(LayerManager.Mutate.Gradient,
+                {LayerManager.Mutate.Gradient, new Mutation(LayerManager.Mutate.Gradient, null,
                     "It's the difference between dilation and erosion of an image.",
                     Properties.Resources.mutation_gradient
                 )},
@@ -86,16 +86,16 @@ namespace UVtools.GUI
                     "The Hit-or-Miss transformation is useful to find patterns in binary images. In particular, it finds those pixels whose neighbourhood matches the shape of a first structuring element B1 while not matching the shape of a second structuring element B2 at the same time.",
                     null
                 )},*/
-                {LayerManager.Mutate.PyrDownUp, new Mutation(LayerManager.Mutate.PyrDownUp,
+                {LayerManager.Mutate.PyrDownUp, new Mutation(LayerManager.Mutate.PyrDownUp, null,
                     "Performs downsampling step of Gaussian pyramid decomposition.\n" +
                     "First it convolves image with the specified filter and then downsamples the image by rejecting even rows and columns.\n" +
                     "After performs up-sampling step of Gaussian pyramid decomposition\n"
                 )},
-                {LayerManager.Mutate.SmoothMedian, new Mutation(LayerManager.Mutate.SmoothMedian,
+                {LayerManager.Mutate.SmoothMedian, new Mutation(LayerManager.Mutate.SmoothMedian, "Smooth Median",
                     "Each pixel becomes the median of its surrounding pixels. Also a good way to remove noise.\n" +
                     "Note: Iterations must be a odd number."
                 )},
-                {LayerManager.Mutate.SmoothGaussian, new Mutation(LayerManager.Mutate.SmoothGaussian,
+                {LayerManager.Mutate.SmoothGaussian, new Mutation(LayerManager.Mutate.SmoothGaussian,  "Smooth Gaussian",
                     "Each pixel is a sum of fractions of each pixel in its neighborhood\n" +
                     "Very fast, but does not preserve sharp edges well.\n" +
                     "Note: Iterations must be a odd number."
@@ -162,7 +162,7 @@ namespace UVtools.GUI
             foreach (LayerManager.Mutate mutate in (LayerManager.Mutate[])Enum.GetValues(typeof(LayerManager.Mutate)))
             {
                 if(!Mutations.ContainsKey(mutate)) continue;
-                var item = new ToolStripMenuItem(mutate.ToString())
+                var item = new ToolStripMenuItem(Mutations[mutate].MenuName)
                 {
                     ToolTipText = Mutations[mutate].Description, Tag = mutate, AutoToolTip = true, Image = Properties.Resources.filter_filled_16x16
                 };
@@ -176,6 +176,8 @@ namespace UVtools.GUI
                 var group = new ListViewGroup(issueType.ToString(), $"{issueType}s"){HeaderAlignment = HorizontalAlignment.Center};
                 lvIssues.Groups.Add(group);
             }
+
+            tbLayer.MouseWheel += TbLayerOnMouseWheel;
 
             if (Settings.Default.CheckForUpdatesOnStartup)
             {
@@ -403,8 +405,12 @@ namespace UVtools.GUI
                         bool result = false;
                         try
                         {
-                            SlicerFile.Save();
+                            SlicerFile.Save(FrmLoading.RestartProgress());
                             result = true;
+                        }
+                        catch (OperationCanceledException)
+                        {
+
                         }
                         catch (Exception ex)
                         {
@@ -449,8 +455,12 @@ namespace UVtools.GUI
                                 bool result = false;
                                 try
                                 {
-                                    SlicerFile.SaveAs(dialog.FileName);
+                                    SlicerFile.SaveAs(dialog.FileName, FrmLoading.RestartProgress());
                                     result = true;
+                                }
+                                catch (OperationCanceledException)
+                                {
+
                                 }
                                 catch (Exception ex)
                                 {
@@ -542,15 +552,28 @@ namespace UVtools.GUI
 
                                 var task = Task.Factory.StartNew(() =>
                                 {
-                                    SlicerFile.Extract(finalPath);
-                                    Invoke((MethodInvoker) delegate
+                                    try
                                     {
-                                        // Running on the UI thread
-                                        EnableGUI(true);
-                                    });
+                                        SlicerFile.Extract(finalPath, true, true, FrmLoading.RestartProgress());
+                                    }
+                                    catch (OperationCanceledException)
+                                    {
+                                        
+                                    }
+                                    finally
+                                    {
+                                        Invoke((MethodInvoker)delegate {
+                                            // Running on the UI thread
+                                            EnableGUI(true);
+                                        });
+                                    }
                                 });
 
-                                FrmLoading.ShowDialog();
+                                var loadingResult = FrmLoading.ShowDialog();
+                                /*if (loadingResult != DialogResult.OK)
+                                {
+                                    return;
+                                }*/
 
                                 if (MessageBox.Show(
                                         $"Extraction was successful ({FrmLoading.StopWatch.ElapsedMilliseconds / 1000}s), browser folder to see it contents.\n{finalPath}\nPress 'Yes' if you want open the target folder, otherwise select 'No' to continue.",
@@ -640,15 +663,18 @@ namespace UVtools.GUI
                     }
 
                     DisableGUI();
-                    FrmLoading.SetDescription("Reparing Layers and Issues");
+                    FrmLoading.SetDescription("Repairing Layers and Issues");
 
-                    Task<bool> task = Task<bool>.Factory.StartNew(() =>
+                    var task = Task.Factory.StartNew(() =>
                     {
-                        bool result = false;
                         try
                         {
-                            SlicerFile.LayerManager.RepairLayers(layerStart, layerEnd, closingIterations, openingIterations, repairIslands, repairResinTraps, Issues);
-                            result = true;
+                            SlicerFile.LayerManager.RepairLayers(layerStart, layerEnd, closingIterations,
+                                openingIterations, repairIslands, repairResinTraps, Issues, FrmLoading.RestartProgress());
+                        }
+                        catch (OperationCanceledException)
+                        {
+
                         }
                         catch (Exception ex)
                         {
@@ -662,11 +688,14 @@ namespace UVtools.GUI
                                 EnableGUI(true);
                             });
                         }
-
-                        return result;
                     });
 
-                    FrmLoading.ShowDialog();
+                    var loadingResult = FrmLoading.ShowDialog();
+                        /*if (loadingResult != DialogResult.OK)
+                        {
+                            return;
+                        }*/
+
 
                     ShowLayer();
 
@@ -724,7 +753,7 @@ namespace UVtools.GUI
                                 return;
                         }
                     }
-
+                    
                     using (FrmInstallPEProfiles form = new FrmInstallPEProfiles())
                     {
                         form.ShowDialog();
@@ -736,7 +765,15 @@ namespace UVtools.GUI
 
             if (ReferenceEquals(sender, menuNewVersion))
             {
-                using (Process.Start(menuNewVersion.Tag.ToString())) { }
+                try
+                {
+                    using (Process.Start(menuNewVersion.Tag.ToString())) { }
+                }
+                catch (Exception exception)
+                {
+                    Debug.WriteLine(exception);
+                }
+                
                 return;
             }
 
@@ -951,7 +988,9 @@ namespace UVtools.GUI
 
                 DisableGUI();
                 FrmLoading.SetDescription("Removing selected issues");
+                var progress = FrmLoading.RestartProgress(false);
 
+                progress.Reset("Removing selected issues", (uint) processIssues.Count);
                 Task<bool> task = Task<bool>.Factory.StartNew(() =>
                 {
                     bool result = false;
@@ -959,6 +998,7 @@ namespace UVtools.GUI
                     {
                         Parallel.ForEach(processIssues, layerIssues =>
                         {
+                            if (progress.Token.IsCancellationRequested) return;
                             using (var image = SlicerFile[layerIssues.Key].LayerMat)
                             {
                                 var bytes = image.GetPixelSpan<byte>();
@@ -990,10 +1030,14 @@ namespace UVtools.GUI
 
                                 }
 
-                                if (!edited) return;
-                                SlicerFile[layerIssues.Key].LayerMat = image;
-                                result = true;
+                                if (edited)
+                                {
+                                    SlicerFile[layerIssues.Key].LayerMat = image;
+                                    result = true;
+                                }
                             }
+
+                            progress++;
                         });
                     }
                     catch (Exception ex)
@@ -1189,12 +1233,15 @@ namespace UVtools.GUI
                     DisableGUI();
                     FrmLoading.SetDescription($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {Path.GetExtension(dialog.FileName)}");
 
-                    Task<bool> task = Task<bool>.Factory.StartNew(() =>
+                    Task task = Task.Factory.StartNew(() =>
                     {
-                        bool result = false;
                         try
                         {
-                            result = SlicerFile.Convert(fileFormat, dialog.FileName);
+                            SlicerFile.Convert(fileFormat, dialog.FileName, FrmLoading.RestartProgress());
+                        }
+                        catch (OperationCanceledException)
+                        {
+
                         }
                         catch (Exception ex)
                         {
@@ -1207,13 +1254,9 @@ namespace UVtools.GUI
                                 EnableGUI(true);
                             });
                         }
-
-                        return result;
                     });
 
-                    FrmLoading.ShowDialog();
-
-                    if (task.Result)
+                    if (FrmLoading.ShowDialog() == DialogResult.OK)
                     {
                         if (MessageBox.Show($"Convertion is completed: {Path.GetFileName(dialog.FileName)} in {FrmLoading.StopWatch.ElapsedMilliseconds / 1000}s\n" +
                                             "Do you want open the converted file in a new window?",
@@ -1225,6 +1268,18 @@ namespace UVtools.GUI
                     }
                     else
                     {
+                        try
+                        {
+                            if (File.Exists(dialog.FileName))
+                            {
+                                File.Delete(dialog.FileName);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine(ex);
+                        }
+                        
                         //MessageBox.Show("Convertion was unsuccessful! Maybe not implemented...", "Convertion unsuccessful", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
@@ -1326,6 +1381,20 @@ namespace UVtools.GUI
                 return;
             }
 
+        }
+
+        private void TbLayerOnMouseWheel(object sender, MouseEventArgs e)
+        {
+            ((HandledMouseEventArgs)e).Handled = true;
+            if (!tbLayer.Enabled) return;
+            if (e.Delta > 0)
+            {
+                ShowLayer(true);
+            }
+            else if (e.Delta < 0)
+            {
+                ShowLayer(false);
+            }
         }
         #endregion
 
@@ -1438,7 +1507,19 @@ namespace UVtools.GUI
 
         void EnableGUI(bool closeLoading = false)
         {
-            if(closeLoading)  FrmLoading.Close();
+            if (closeLoading)
+            {
+                if (ReferenceEquals(FrmLoading.Progress, null))
+                {
+                    FrmLoading.DialogResult = DialogResult.OK;
+                }
+                else
+                {
+                    FrmLoading.DialogResult = FrmLoading.Progress.Token.IsCancellationRequested ? DialogResult.Cancel : DialogResult.OK;
+                }
+                
+                //FrmLoading.Close();
+            }
 
             mainTable.Enabled = 
             menu.Enabled = true;
@@ -1476,20 +1557,34 @@ namespace UVtools.GUI
             if (ReferenceEquals(SlicerFile, null)) return;
 
             DisableGUI();
-            FrmLoading.SetDescription($"Loading {Path.GetFileName(fileName)}");
-
+            FrmLoading.Description = $"Decoding {Path.GetFileName(fileName)}";
+            
             var task = Task.Factory.StartNew(() =>
             {
-                SlicerFile.Decode(fileName);
-                Invoke((MethodInvoker)delegate {
-                    // Running on the UI thread
-                    EnableGUI(true);
-                });
+                try
+                {
+                    SlicerFile.Decode(fileName, FrmLoading.RestartProgress());
+                }
+                catch (OperationCanceledException)
+                {
+                    SlicerFile.Clear();
+                }
+                finally
+                {
+                    Invoke((MethodInvoker)delegate {
+                        // Running on the UI thread
+                        EnableGUI(true);
+                    });
+                }
             });
 
-            FrmLoading.ShowDialog();
-
-            if (SlicerFile.LayerCount == 0)
+            var loadingResult = FrmLoading.ShowDialog();
+            if (loadingResult != DialogResult.OK)
+            {
+                return;
+            }
+            
+            if (SlicerFile.LayerCount == 0 )
             {
                 MessageBox.Show("It seens the file don't have any layer, the causes can be:\n" +
                                 "- Empty\n" +
@@ -1497,7 +1592,7 @@ namespace UVtools.GUI
                                 "- Lacking a sliced model\n" +
                                 "- A programing internal error\n\n" +
                                 "Please check your file and retry", "Error reading the file - Lacking of layers", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Clear();
+                //Clear();
                 return;
             }
 
@@ -2292,17 +2387,17 @@ namespace UVtools.GUI
             
 
             DisableGUI();
-            FrmLoading.SetDescription($"Mutating - {mutator}");
+            FrmLoading.SetDescription($"Mutating - {Mutations[mutator].MenuName}");
+            var progress = FrmLoading.RestartProgress();
 
-            Task<bool> task = Task<bool>.Factory.StartNew(() =>
+            var task = Task.Factory.StartNew(() =>
             {
-                bool result = false;
                 try
                 {
                     switch (mutator)
                     {
                         case LayerManager.Mutate.Resize:
-                            SlicerFile.LayerManager.MutateResize(layerStart, layerEnd, x / 100.0, y / 100.0, fade);
+                            SlicerFile.LayerManager.MutateResize(layerStart, layerEnd, x / 100.0, y / 100.0, fade, progress);
                             break;
                         case LayerManager.Mutate.Flip:
                             FlipType flipType = FlipType.Horizontal;
@@ -2318,28 +2413,28 @@ namespace UVtools.GUI
                                     flipType = FlipType.Horizontal | FlipType.Vertical;
                                     break;
                             }
-                            SlicerFile.LayerManager.MutateFlip(layerStart, layerEnd, flipType, fade);
+                            SlicerFile.LayerManager.MutateFlip(layerStart, layerEnd, flipType, fade, progress);
                             break;
                         case LayerManager.Mutate.Rotate:
-                            SlicerFile.LayerManager.MutateRotate(layerStart, layerEnd, x);
+                            SlicerFile.LayerManager.MutateRotate(layerStart, layerEnd, x, Inter.Linear, progress);
                             break;
                         case LayerManager.Mutate.Solidify:
-                            SlicerFile.LayerManager.MutateSolidify(layerStart, layerEnd);
+                            SlicerFile.LayerManager.MutateSolidify(layerStart, layerEnd, progress);
                             break;
                         case LayerManager.Mutate.Erode:
-                            SlicerFile.LayerManager.MutateErode(layerStart, layerEnd, (int) iterationsStart, (int) iterationsEnd, fade);
+                            SlicerFile.LayerManager.MutateErode(layerStart, layerEnd, (int) iterationsStart, (int) iterationsEnd, fade, progress);
                             break;
                         case LayerManager.Mutate.Dilate:
-                            SlicerFile.LayerManager.MutateDilate(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade);
+                            SlicerFile.LayerManager.MutateDilate(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade, progress);
                             break;
                         case LayerManager.Mutate.Opening:
-                            SlicerFile.LayerManager.MutateOpen(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade);
+                            SlicerFile.LayerManager.MutateOpen(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade, progress);
                             break;
                         case LayerManager.Mutate.Closing:
-                            SlicerFile.LayerManager.MutateClose(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade);
+                            SlicerFile.LayerManager.MutateClose(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade, progress);
                             break;
                         case LayerManager.Mutate.Gradient:
-                            SlicerFile.LayerManager.MutateGradient(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade);
+                            SlicerFile.LayerManager.MutateGradient(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade, progress);
                             break;
                         /*case Mutation.Mutates.TopHat:
                             kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(9, 9),
@@ -2358,21 +2453,23 @@ namespace UVtools.GUI
                                 new Point(-1, -1), (int) iterations, BorderType.Default, new MCvScalar());
                             break;*/
                         case LayerManager.Mutate.PyrDownUp:
-                            SlicerFile.LayerManager.MutatePyrDownUp(layerStart, layerEnd);
+                            SlicerFile.LayerManager.MutatePyrDownUp(layerStart, layerEnd, BorderType.Default, progress);
                             break;
                         case LayerManager.Mutate.SmoothMedian:
-                            SlicerFile.LayerManager.MutateMedianBlur(layerStart, layerEnd, (int)iterationsStart);
+                            SlicerFile.LayerManager.MutateMedianBlur(layerStart, layerEnd, (int)iterationsStart, progress);
                             break;
                         case LayerManager.Mutate.SmoothGaussian:
-                            SlicerFile.LayerManager.MutateGaussianBlur(layerStart, layerEnd, new Size((int) iterationsStart, (int) iterationsStart));
+                            SlicerFile.LayerManager.MutateGaussianBlur(layerStart, layerEnd, new Size((int) iterationsStart, (int) iterationsStart), 0,0, BorderType.Default, progress);
                             break;
                     }
 
-                    result = true;
+                }
+                catch (OperationCanceledException)
+                {
+
                 }
                 catch (Exception ex)
                 {
-                    result = false;
                     MessageBox.Show($"{ex.Message}\nPlease try different values for the mutation", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 finally
@@ -2382,8 +2479,6 @@ namespace UVtools.GUI
                         EnableGUI(true);
                     });
                 }
-
-                return result;
             });
 
             FrmLoading.ShowDialog();
@@ -2429,12 +2524,11 @@ namespace UVtools.GUI
             DisableGUI();
             FrmLoading.SetDescription("Computing Issues");
 
-            Task<bool> task = Task<bool>.Factory.StartNew(() =>
+            var task = Task.Factory.StartNew(() =>
             {
-                bool result = false;
                 try
                 {
-                    var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig);
+                    var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, FrmLoading.RestartProgress());
                     Issues = new Dictionary<uint, List<LayerIssue>>();
 
                     for (uint i = 0; i < SlicerFile.LayerCount; i++)
@@ -2444,8 +2538,10 @@ namespace UVtools.GUI
                             Issues.Add(i, list);
                         }
                     }
+                }
+                catch (OperationCanceledException)
+                {
 
-                    result = true;
                 }
                 catch (Exception ex)
                 {
@@ -2454,16 +2550,15 @@ namespace UVtools.GUI
                 }
                 finally
                 {
-                    Invoke((MethodInvoker)delegate {
+                    Invoke((MethodInvoker)delegate
+                    {
                         // Running on the UI thread
                         EnableGUI(true);
                     });
                 }
-
-                return result;
             });
 
-            FrmLoading.ShowDialog();
+            var loadingResult = FrmLoading.ShowDialog();
 
             lvIssues.BeginUpdate();
             uint count = 0;

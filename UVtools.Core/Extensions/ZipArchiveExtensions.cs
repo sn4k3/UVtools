@@ -296,14 +296,23 @@ namespace UVtools.Core.Extensions
         /// <param name="input"><see cref="ZipArchive"/></param>
         /// <param name="filename">Filename to create</param>
         /// <param name="content">Content to write</param>
+        /// <param name="checkExists"></param>
         /// <returns>Created <see cref="ZipArchiveEntry"/></returns>
-        public static ZipArchiveEntry PutFileContent(this ZipArchive input, string filename, string content)
+        public static ZipArchiveEntry PutFileContent(this ZipArchive input, string filename, string content, ZipArchiveMode mode)
         {
-            ZipArchiveEntry entry = input.GetEntry(filename) ?? input.CreateEntry(filename);
+            ZipArchiveEntry entry;
+            if (mode == ZipArchiveMode.Update)
+            {
+                entry = input.GetEntry(filename) ?? input.CreateEntry(filename);
+            }
+            else
+            {
+                entry = input.CreateEntry(filename);
+            }
 
             if (string.IsNullOrEmpty(content)) return entry;
             Stream stream = entry.Open();
-            stream.SetLength(0);
+            if (mode == ZipArchiveMode.Update) stream.SetLength(0);
             using (TextWriter tw = new StreamWriter(stream))
             {
                 tw.Write(content);
@@ -319,14 +328,23 @@ namespace UVtools.Core.Extensions
         /// <param name="filename">Filename to create</param>
         /// <param name="content">Content to write</param>
         /// <returns>Created <see cref="ZipArchiveEntry"/></returns>
-        public static ZipArchiveEntry PutFileContent(this ZipArchive input, string filename, byte[] content)
+        public static ZipArchiveEntry PutFileContent(this ZipArchive input, string filename, byte[] content, ZipArchiveMode mode)
         {
-            ZipArchiveEntry entry = input.GetEntry(filename) ?? input.CreateEntry(filename);
+            ZipArchiveEntry entry;
+            if (mode == ZipArchiveMode.Update)
+            {
+                entry = input.GetEntry(filename) ?? input.CreateEntry(filename);
+            }
+            else
+            {
+                entry = input.CreateEntry(filename);
+            }
 
             if (ReferenceEquals(content, null)) return entry;
             Stream stream = entry.Open();
-            stream.SetLength(0);
+            if (mode == ZipArchiveMode.Update) stream.SetLength(0);
             stream.Write(content, 0, content.Length);
+            stream.Close();
             return entry;
         }
     }

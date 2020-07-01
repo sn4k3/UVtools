@@ -16,6 +16,7 @@ namespace UVtools.GUI
         #region Properties
         public LayerManager.Mutate Mutate { get; }
 
+        public string MenuName { get; }
         public string Description { get; }
 
         public Image Image { get; }
@@ -23,9 +24,10 @@ namespace UVtools.GUI
 
         #region Constructor
 
-        public Mutation(LayerManager.Mutate mutate, string description, Image image = null)
+        public Mutation(LayerManager.Mutate mutate, string menuName, string description, Image image = null)
         {
             Mutate = mutate;
+            MenuName = menuName ?? mutate.ToString();
             Description = description;
             Image = image;
         }

@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Net.Mime;
+using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using UVtools.Core.Extensions;
 using Size = System.Drawing.Size;
 
 namespace UVtools.Core
@@ -50,10 +49,9 @@ namespace UVtools.Core
             throw new NotImplementedException();
         }
 
-        public override void Decode(string fileFullPath)
+        public override void Decode(string fileFullPath, OperationProgress progress = null)
         {
-            base.Decode(fileFullPath);
-            var grayMat = new Mat();
+            base.Decode(fileFullPath, progress);
 
             ImageMat = CvInvoke.Imread(fileFullPath, ImreadModes.AnyColor);
             const byte startDivisor = 2;
@@ -65,18 +63,21 @@ namespace UVtools.Core
                     new Size(ImageMat.Width / divisor, ImageMat.Height / divisor));
             }
 
-            CvInvoke.CvtColor(ImageMat, ImageMat, ColorConversion.Bgr2Gray);
+            if (ImageMat.NumberOfChannels > 1)
+            {
+                CvInvoke.CvtColor(ImageMat, ImageMat, ColorConversion.Bgr2Gray);
+            }
 
             LayerManager = new LayerManager(1);
             this[0] = new Layer(0, ImageMat, Path.GetFileName(fileFullPath));
         }
 
-        public override void SaveAs(string filePath = null)
+        public override void SaveAs(string filePath = null, OperationProgress progress = null)
         {
-            this[0].LayerMat.Save(filePath);
+            this[0].LayerMat.Save(filePath ?? FileFullPath);
         }
 
-        public override bool Convert(Type to, string fileFullPath)
+        public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
         {
             throw new NotImplementedException();
         }

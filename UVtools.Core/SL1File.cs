@@ -13,6 +13,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
@@ -353,10 +354,6 @@ namespace UVtools.Core
 
         #region Contructors
         public SL1File() { }
-        public SL1File(string fileFullPath) 
-        {
-            Decode(fileFullPath);
-        }
         #endregion
 
         #region Static Methods
@@ -394,15 +391,15 @@ namespace UVtools.Core
             Statistics.Clear();
         }
 
-        public override void Encode(string fileFullPath)
+        public override void Encode(string fileFullPath, OperationProgress progress = null)
         {
             throw new NotImplementedException();
         }
 
         
-        public override void Decode(string fileFullPath)
+        public override void Decode(string fileFullPath, OperationProgress progress = null)
         {
-            base.Decode(fileFullPath);
+            base.Decode(fileFullPath, progress);
 
             FileFullPath = fileFullPath;
 
@@ -451,6 +448,8 @@ namespace UVtools.Core
 
                 LayerManager = new LayerManager((uint) (OutputConfigSettings.NumSlow + OutputConfigSettings.NumFast));
 
+                progress.ItemCount = LayerCount;
+
                 foreach (ZipArchiveEntry entity in inputFile.Entries)
                 {
                     if (!entity.Name.EndsWith(".png")) continue;
@@ -459,7 +458,7 @@ namespace UVtools.Core
                         using (Stream stream = entity.Open())
                         {
                             Mat image = new Mat();
-                            CvInvoke.Imdecode(stream.ReadBytes(), ImreadModes.AnyColor, image);
+                            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
                             byte thumbnailIndex =
                                 (byte) (image.Width == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Width &&
                                         image.Height == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Height
@@ -478,10 +477,11 @@ namespace UVtools.Core
                     string layerStr = entity.Name.Substring(entity.Name.Length - 4 - 5, 5);
                     uint iLayer = uint.Parse(layerStr);
                     LayerManager[iLayer] = new Layer(iLayer, entity.Open(), entity.Name);
+                    progress.ProcessedItems++;
                 }
             }
 
-            var rect = LayerManager.BoundingRectangle;
+            LayerManager.GetBoundingRectangle(progress);
 
             Statistics.ExecutionTime.Stop();
 
@@ -523,7 +523,7 @@ namespace UVtools.Core
             return false;
         }
 
-        public override void SaveAs(string filePath = null)
+        public override void SaveAs(string filePath = null, OperationProgress progress = null)
         {
             if (!string.IsNullOrEmpty(filePath))
             {
@@ -536,7 +536,7 @@ namespace UVtools.Core
             {
 
                 //InputFile.CreateEntry("Modified");
-                using (TextWriter tw = new StreamWriter(outputFile.PutFileContent("config.ini", string.Empty).Open()))
+                using (TextWriter tw = new StreamWriter(outputFile.PutFileContent("config.ini", string.Empty, ZipArchiveMode.Update).Open()))
                 {
                     var properties = OutputConfigSettings.GetType()
                         .GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -550,7 +550,7 @@ namespace UVtools.Core
                     tw.Close();
                 }
 
-                using (TextWriter tw = new StreamWriter(outputFile.PutFileContent("prusaslicer.ini", string.Empty).Open()))
+                using (TextWriter tw = new StreamWriter(outputFile.PutFileContent("prusaslicer.ini", string.Empty, ZipArchiveMode.Update).Open()))
                 {
                     foreach (var config in Configs)
                     {
@@ -571,16 +571,16 @@ namespace UVtools.Core
                 foreach (var layer in this)
                 {
                     if (!layer.IsModified) continue;
-                    outputFile.PutFileContent(layer.Filename, layer.CompressedBytes);
+                    outputFile.PutFileContent(layer.Filename, layer.CompressedBytes, ZipArchiveMode.Update);
                     layer.IsModified = false;
                 }
             }
 
-            Decode(FileFullPath);
+            //Decode(FileFullPath, progress);
 
         }
 
-        public override bool Convert(Type to, string fileFullPath)
+        public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
         {
             if (!IsValid) return false;
 
@@ -606,7 +606,7 @@ namespace UVtools.Core
                         LayerOffTime = LookupCustomValue<float>(Keyword_LayerOffTime, defaultFormat.HeaderSettings.LayerOffTime),
                         LightPWM = LookupCustomValue<ushort>(Keyword_LightPWM, defaultFormat.HeaderSettings.LightPWM),
                         PrintTime = (uint) OutputConfigSettings.PrintTime,
-                        ProjectorType = PrinterSettings.DisplayMirrorX ? 1u : 0u,
+                        ProjectorType = PrinterSettings.DisplayMirrorX || PrinterSettings.DisplayMirrorY ? 1u : 0u,
                         ResolutionX = ResolutionX,
                         ResolutionY = ResolutionY,
                         AntiAliasLevel = ValidateAntiAliasingLevel()
@@ -644,7 +644,7 @@ namespace UVtools.Core
                 }
 
                 file.SetThumbnails(Thumbnails);
-                file.Encode(fileFullPath);
+                file.Encode(fileFullPath, progress);
                 
                 return true;
             }
@@ -665,13 +665,13 @@ namespace UVtools.Core
                         MachineY = PrinterSettings.DisplayHeight,
                         MachineZ = PrinterSettings.MaxPrintHeight,
                         MachineType = MachineName,
-                        ProjectType = PrinterSettings.DisplayMirrorX ? "LCD_mirror" : "Normal",
+                        ProjectType = PrinterSettings.DisplayMirrorX || PrinterSettings.DisplayMirrorY ? "LCD_mirror" : "Normal",
 
                         Resin = MaterialName,
                         Price = MaterialCost,
                         Weight = (float) Math.Round(UsedMaterial * MaterialSettings.MaterialDensity, 2),
                         Volume = UsedMaterial,
-                        Mirror = (byte) (PrinterSettings.DisplayMirrorX ? 1 : 0),
+                        Mirror = (byte) (PrinterSettings.DisplayMirrorX || PrinterSettings.DisplayMirrorY ? 1 : 0),
 
 
                         BottomLayerLiftHeight = LookupCustomValue<float>(Keyword_BottomLiftHeight, defaultFormat.HeaderSettings.BottomLayerLiftHeight),
@@ -704,7 +704,7 @@ namespace UVtools.Core
                 }
 
                 file.SetThumbnails(Thumbnails);
-                file.Encode(fileFullPath);
+                file.Encode(fileFullPath, progress);
 
                 return true;
             }
@@ -742,7 +742,7 @@ namespace UVtools.Core
                 }
 
                 file.SetThumbnails(Thumbnails);
-                file.Encode(fileFullPath);
+                file.Encode(fileFullPath, progress);
 
                 return true;
             }
@@ -769,7 +769,7 @@ namespace UVtools.Core
                         LayerOffTime = LookupCustomValue<float>(Keyword_LayerOffTime, defaultFormat.HeaderSettings.LayerOffTime),
                         LightPWM = LookupCustomValue<ushort>(Keyword_LightPWM, defaultFormat.HeaderSettings.LightPWM),
                         PrintTime = (uint) OutputConfigSettings.PrintTime,
-                        ProjectorType = PrinterSettings.DisplayMirrorX ? 1u : 0u,
+                        ProjectorType = PrinterSettings.DisplayMirrorX || PrinterSettings.DisplayMirrorY ? 1u : 0u,
                         ResolutionX = PrinterSettings.DisplayPixelsX,
                         ResolutionY = PrinterSettings.DisplayPixelsY,
                         BottomLayerCount = PrintSettings.FadedLayers,
@@ -795,7 +795,7 @@ namespace UVtools.Core
                 }
 
                 file.SetThumbnails(Thumbnails);
-                file.Encode(fileFullPath);
+                file.Encode(fileFullPath, progress);
 
                 return true;
             }
@@ -832,7 +832,7 @@ namespace UVtools.Core
                         LayerThickness = $"{LayerHeight} mm",
                         AntiAliasing = (byte) (ValidateAntiAliasingLevel() > 1 ? 1 : 0),
                         CrossSupportEnabled = 1,
-                        ExposureOffTime = LookupCustomValue<uint>(Keyword_LayerOffTime, defaultFormat.UserSettings.ExposureOffTime) *1000,
+                        ExposureOffTime = LookupCustomValue<uint>(Keyword_LayerOffTime, defaultFormat.UserSettings.ExposureOffTime) * 1000,
                         HollowEnabled = PrintSettings.HollowingEnable ? (byte)1 : (byte)0,
                         HollowThickness = PrintSettings.HollowingMinThickness,
                         InfillDensity = 0,
@@ -883,7 +883,7 @@ namespace UVtools.Core
                 }
 
                 file.SetThumbnails(Thumbnails);
-                file.Encode(fileFullPath);
+                file.Encode(fileFullPath, progress);
                 return true;
             }
 
@@ -932,7 +932,7 @@ namespace UVtools.Core
                     file.SliceSettings.Yres = file.OutputSettings.YResolution = (ushort) ResolutionX;
                 }
 
-                file.Encode(fileFullPath);
+                file.Encode(fileFullPath, progress);
 
                 return true;
             }

@@ -988,9 +988,9 @@ namespace UVtools.Core
             LayersDefinitions = null;
         }
 
-        public override void Encode(string fileFullPath)
+        public override void Encode(string fileFullPath, OperationProgress progress = null)
         {
-            base.Encode(fileFullPath);
+            base.Encode(fileFullPath, progress);
             LayersHash.Clear();
 
             HeaderSettings.Magic = fileFullPath.EndsWith(".ctb") ? MAGIC_CBT : MAGIC_CBDDLP;
@@ -1071,21 +1071,31 @@ namespace UVtools.Core
 
                 HeaderSettings.LayersDefinitionOffsetAddress = currentOffset;
                 uint layerDataCurrentOffset = currentOffset + (uint)Helpers.Serializer.SizeOf(new LayerData()) * HeaderSettings.LayerCount * HeaderSettings.AntiAliasLevel;
-                
+
+                progress.ItemCount *= 2 * HeaderSettings.AntiAliasLevel;
+
                 for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
                 {
+                    progress.Token.ThrowIfCancellationRequested();
                     Parallel.For(0, LayerCount, /*new ParallelOptions{MaxDegreeOfParallelism = 1},*/ layerIndex =>
                     {
+                        if (progress.Token.IsCancellationRequested) return;
                         LayerData layerData = new LayerData(this, (uint) layerIndex);
                         using (var image = this[layerIndex].LayerMat)
                         {
                             layerData.Encode(image, aaIndex, (uint) layerIndex);
                             LayersDefinitions[aaIndex, layerIndex] = layerData;
                         }
+
+                        lock (progress.Mutex)
+                        {
+                            progress++;
+                        }
                     });
 
                     for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                     {
+                        progress.Token.ThrowIfCancellationRequested();
                         var layerData = LayersDefinitions[aaIndex, layerIndex];
                         LayerData layerDataHash = null;
 
@@ -1113,14 +1123,13 @@ namespace UVtools.Core
 
                         outputFile.Seek(currentOffset, SeekOrigin.Begin);
                         currentOffset += Helpers.SerializeWriteFileStream(outputFile, layerData);
+
+                        progress++;
                     }
                 }
 
                 outputFile.Seek(0, SeekOrigin.Begin);
                 Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
-
-                outputFile.Close();
-                outputFile.Dispose();
 
                 Debug.WriteLine("Encode Results:");
                 Debug.WriteLine(HeaderSettings);
@@ -1134,110 +1143,131 @@ namespace UVtools.Core
 
         
 
-        public override void Decode(string fileFullPath)
+        public override void Decode(string fileFullPath, OperationProgress progress = null)
         {
-            base.Decode(fileFullPath);
+            base.Decode(fileFullPath, progress);
 
-            var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
-
-            //HeaderSettings = Helpers.ByteToType<CbddlpFile.Header>(InputFile);
-            //HeaderSettings = Helpers.Serializer.Deserialize<Header>(InputFile.ReadBytes(Helpers.Serializer.SizeOf(typeof(Header))));
-            HeaderSettings = Helpers.Deserialize<Header>(inputFile);
-            if (HeaderSettings.Magic != MAGIC_CBDDLP && HeaderSettings.Magic != MAGIC_CBT)
+            using (var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read))
             {
-                throw new FileLoadException("Not a valid CBDDLP nor CTB nor Photon file!", fileFullPath);
-            }
-
-            if (HeaderSettings.Version == 1 || HeaderSettings.AntiAliasLevel == 0)
-            {
-                HeaderSettings.AntiAliasLevel = 1;
-            }
-
-            FileFullPath = fileFullPath;
-
-
-
-            Debug.Write("Header -> ");
-            Debug.WriteLine(HeaderSettings);
-
-            for (byte i = 0; i < ThumbnailsCount; i++)
-            {
-                uint offsetAddress = i == 0 ? HeaderSettings.PreviewSmallOffsetAddress : HeaderSettings.PreviewLargeOffsetAddress;
-                if (offsetAddress == 0) continue;
-
-                inputFile.Seek(offsetAddress, SeekOrigin.Begin);
-                Previews[i] = Helpers.Deserialize<Preview>(inputFile);
-
-                Debug.Write($"Preview {i} -> ");
-                Debug.WriteLine(Previews[i]);
-
-                inputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
-                byte[] rawImageData = new byte[Previews[i].ImageLength];
-                inputFile.Read(rawImageData, 0, (int)Previews[i].ImageLength);
-
-                Thumbnails[i] = Previews[i].Decode(rawImageData);
-            }
-
-            //if (HeaderSettings.Version == 2)
-            //{
-            if (HeaderSettings.PrintParametersOffsetAddress > 0)
-            {
-                inputFile.Seek(HeaderSettings.PrintParametersOffsetAddress, SeekOrigin.Begin);
-                PrintParametersSettings = Helpers.Deserialize<PrintParameters>(inputFile);
-                Debug.Write("Print Parameters -> ");
-                Debug.WriteLine(PrintParametersSettings);
-
-                
-            }
-
-            if (HeaderSettings.SlicerOffset > 0)
-            {
-                inputFile.Seek(HeaderSettings.SlicerOffset, SeekOrigin.Begin);
-                SlicerInfoSettings = Helpers.Deserialize<SlicerInfo>(inputFile);
-                Debug.Write("Slicer Info -> ");
-                Debug.WriteLine(SlicerInfoSettings);
-            }
-
-            /*InputFile.BaseStream.Seek(MachineInfoSettings.MachineNameAddress, SeekOrigin.Begin);
-            byte[] bytes = InputFile.ReadBytes((int)MachineInfoSettings.MachineNameSize);
-            MachineName = System.Text.Encoding.UTF8.GetString(bytes);
-            Debug.WriteLine($"{nameof(MachineName)}: {MachineName}");*/
-            //}
-
-            LayersDefinitions = new LayerData[HeaderSettings.AntiAliasLevel, HeaderSettings.LayerCount];
-
-            uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
-
-
-            for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
-            {
-                Debug.WriteLine($"-Image GROUP {aaIndex}-");
-                for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
+                //HeaderSettings = Helpers.ByteToType<CbddlpFile.Header>(InputFile);
+                //HeaderSettings = Helpers.Serializer.Deserialize<Header>(InputFile.ReadBytes(Helpers.Serializer.SizeOf(typeof(Header))));
+                HeaderSettings = Helpers.Deserialize<Header>(inputFile);
+                if (HeaderSettings.Magic != MAGIC_CBDDLP && HeaderSettings.Magic != MAGIC_CBT)
                 {
-                    inputFile.Seek(layerOffset, SeekOrigin.Begin);
-                    LayerData layerData = Helpers.Deserialize<LayerData>(inputFile);
-                    layerData.Parent = this;
-                    LayersDefinitions[aaIndex, layerIndex] = layerData;
-
-                    layerOffset += (uint)Helpers.Serializer.SizeOf(layerData);
-                    //Debug.Write($"LAYER {layerIndex} -> ");
-                    //Debug.WriteLine(layerData);
-
-                    layerData.EncodedRle = new byte[layerData.DataSize];
-                    inputFile.Seek(layerData.DataAddress, SeekOrigin.Begin);
-                    inputFile.Read(layerData.EncodedRle, 0, (int)layerData.DataSize);
+                    throw new FileLoadException("Not a valid CBDDLP nor CTB nor Photon file!", fileFullPath);
                 }
+
+                if (HeaderSettings.Version == 1 || HeaderSettings.AntiAliasLevel == 0)
+                {
+                    HeaderSettings.AntiAliasLevel = 1;
+                }
+
+                FileFullPath = fileFullPath;
+
+                progress.Reset(OperationProgress.StatusDecodeThumbnails, ThumbnailsCount);
+
+                Debug.Write("Header -> ");
+                Debug.WriteLine(HeaderSettings);
+
+                for (byte i = 0; i < ThumbnailsCount; i++)
+                {
+                    uint offsetAddress = i == 0
+                        ? HeaderSettings.PreviewSmallOffsetAddress
+                        : HeaderSettings.PreviewLargeOffsetAddress;
+                    if (offsetAddress == 0) continue;
+
+                    inputFile.Seek(offsetAddress, SeekOrigin.Begin);
+                    Previews[i] = Helpers.Deserialize<Preview>(inputFile);
+
+                    Debug.Write($"Preview {i} -> ");
+                    Debug.WriteLine(Previews[i]);
+
+                    inputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
+                    byte[] rawImageData = new byte[Previews[i].ImageLength];
+                    inputFile.Read(rawImageData, 0, (int) Previews[i].ImageLength);
+
+                    Thumbnails[i] = Previews[i].Decode(rawImageData);
+                    progress++;
+                }
+
+                //if (HeaderSettings.Version == 2)
+                //{
+                if (HeaderSettings.PrintParametersOffsetAddress > 0)
+                {
+                    inputFile.Seek(HeaderSettings.PrintParametersOffsetAddress, SeekOrigin.Begin);
+                    PrintParametersSettings = Helpers.Deserialize<PrintParameters>(inputFile);
+                    Debug.Write("Print Parameters -> ");
+                    Debug.WriteLine(PrintParametersSettings);
+
+
+                }
+
+                if (HeaderSettings.SlicerOffset > 0)
+                {
+                    inputFile.Seek(HeaderSettings.SlicerOffset, SeekOrigin.Begin);
+                    SlicerInfoSettings = Helpers.Deserialize<SlicerInfo>(inputFile);
+                    Debug.Write("Slicer Info -> ");
+                    Debug.WriteLine(SlicerInfoSettings);
+                }
+
+                /*InputFile.BaseStream.Seek(MachineInfoSettings.MachineNameAddress, SeekOrigin.Begin);
+                byte[] bytes = InputFile.ReadBytes((int)MachineInfoSettings.MachineNameSize);
+                MachineName = System.Text.Encoding.UTF8.GetString(bytes);
+                Debug.WriteLine($"{nameof(MachineName)}: {MachineName}");*/
+                //}
+
+                LayersDefinitions = new LayerData[HeaderSettings.AntiAliasLevel, HeaderSettings.LayerCount];
+
+                uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
+
+                progress.Reset(OperationProgress.StatusGatherLayers,
+                    HeaderSettings.AntiAliasLevel * HeaderSettings.LayerCount);
+
+                for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
+                {
+                    Debug.WriteLine($"-Image GROUP {aaIndex}-");
+                    for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
+                    {
+                        inputFile.Seek(layerOffset, SeekOrigin.Begin);
+                        LayerData layerData = Helpers.Deserialize<LayerData>(inputFile);
+                        layerData.Parent = this;
+                        LayersDefinitions[aaIndex, layerIndex] = layerData;
+
+                        layerOffset += (uint) Helpers.Serializer.SizeOf(layerData);
+                        //Debug.Write($"LAYER {layerIndex} -> ");
+                        //Debug.WriteLine(layerData);
+
+                        layerData.EncodedRle = new byte[layerData.DataSize];
+                        inputFile.Seek(layerData.DataAddress, SeekOrigin.Begin);
+                        inputFile.Read(layerData.EncodedRle, 0, (int) layerData.DataSize);
+                        progress++;
+                        progress.Token.ThrowIfCancellationRequested();
+                    }
+                }
+
+                LayerManager = new LayerManager(HeaderSettings.LayerCount);
+
+                progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
+
+                Parallel.For(0, LayerCount, layerIndex =>
+                {
+                    if (progress.Token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    using (var image = LayersDefinitions[0, layerIndex].Decode((uint) layerIndex))
+                    {
+                        this[layerIndex] = new Layer((uint) layerIndex, image);
+                        lock (progress.Mutex)
+                        {
+                            progress++;
+                        }
+                    }
+                });
             }
 
-            LayerManager = new LayerManager(HeaderSettings.LayerCount);
-
-            Parallel.For(0, LayerCount, layerIndex =>
-            {
-                using (var image = LayersDefinitions[0, layerIndex].Decode((uint) layerIndex))
-                {
-                    this[layerIndex] = new Layer((uint) layerIndex, image);
-                }
-            });
+            progress.Token.ThrowIfCancellationRequested();
         }
 
         public override object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
@@ -1349,7 +1379,7 @@ namespace UVtools.Core
             return false;
         }
 
-        public override void SaveAs(string filePath = null)
+        public override void SaveAs(string filePath = null, OperationProgress progress = null)
         {
             if (LayerManager.IsModified)
             {
@@ -1357,7 +1387,7 @@ namespace UVtools.Core
                 {
                     FileFullPath = filePath;
                 }
-                Encode(FileFullPath);
+                Encode(FileFullPath, progress);
                 return;
             }
 
@@ -1390,13 +1420,12 @@ namespace UVtools.Core
                         layerOffset += Helpers.SerializeWriteFileStream(outputFile, LayersDefinitions[aaIndex, layerIndex]);
                     }
                 }
-                outputFile.Close();
             }
 
-            //Decode(FileFullPath);
+            //Decode(FileFullPath, progress);
         }
 
-        public override bool Convert(Type to, string fileFullPath)
+        public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
         {
             if (to == typeof(ChituboxZipFile))
             {
@@ -1445,7 +1474,7 @@ namespace UVtools.Core
                 };
 
                 file.SetThumbnails(Thumbnails);
-                file.Encode(fileFullPath);
+                file.Encode(fileFullPath, progress);
 
                 return true;
             }
@@ -1475,7 +1504,7 @@ namespace UVtools.Core
                 };
 
                 file.SetThumbnails(Thumbnails);
-                file.Encode(fileFullPath);
+                file.Encode(fileFullPath, progress);
 
                 return true;
             }
@@ -1523,7 +1552,7 @@ namespace UVtools.Core
                 
 
                 file.SetThumbnails(Thumbnails);
-                file.Encode(fileFullPath);
+                file.Encode(fileFullPath, progress);
 
                 return true;
             }
@@ -1610,7 +1639,7 @@ namespace UVtools.Core
                 }
 
                 file.SetThumbnails(Thumbnails);
-                file.Encode(fileFullPath);
+                file.Encode(fileFullPath, progress);
                 return true;
             }
 

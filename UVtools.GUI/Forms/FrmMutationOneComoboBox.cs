@@ -50,7 +50,7 @@ namespace UVtools.GUI.Forms
             Mutation = mutation;
             DialogResult = DialogResult.Cancel;
 
-            Text = $"Mutate: {mutation.Mutate}";
+            Text = $"Mutate: {mutation.MenuName}";
             lbDescription.Text = Mutation.Description;
 
             nmLayerRangeEnd.Value = Program.SlicerFile.LayerCount-1;

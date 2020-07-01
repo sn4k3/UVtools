@@ -17,13 +17,6 @@ namespace UVtools.Core.Extensions
             return (uint)fs.Read(bytes, offset, bytes.Length);
         }
 
-        public static byte[] ReadBytes(this Stream stream)
-        {
-            byte[] buff = new byte[stream.Length];
-            stream.Read(buff, 0, buff.Length);
-            return buff;
-        }
-
         public static uint WriteStream(this FileStream fs, MemoryStream stream, int offset = 0)
         {
             return fs.WriteBytes(stream.ToArray(), offset);

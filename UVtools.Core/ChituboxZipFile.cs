@@ -155,15 +155,17 @@ namespace UVtools.Core
             GCode = null;
         }
 
-        public override void Encode(string fileFullPath)
+        public override void Encode(string fileFullPath, OperationProgress progress = null)
         {
-            base.Encode(fileFullPath);
-            using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Update))
+            base.Encode(fileFullPath, progress);
+            using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
             {
                 for(uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
+                    progress.Token.ThrowIfCancellationRequested();
                     Layer layer = this[layerIndex];
-                    outputFile.PutFileContent($"{layerIndex+1}.png", layer.CompressedBytes);
+                    outputFile.PutFileContent($"{layerIndex+1}.png", layer.CompressedBytes, ZipArchiveMode.Create);
+                    progress++;
                 }
 
                 if (Thumbnails.Length > 0 && !ReferenceEquals(Thumbnails[0], null))
@@ -189,13 +191,13 @@ namespace UVtools.Core
                 }
 
                 UpdateGCode();
-                outputFile.PutFileContent("run.gcode", GCode.ToString());
+                outputFile.PutFileContent("run.gcode", GCode.ToString(), ZipArchiveMode.Create);
             }
         }
 
-        public override void Decode(string fileFullPath)
+        public override void Decode(string fileFullPath, OperationProgress progress = null)
         {
-            base.Decode(fileFullPath);
+            base.Decode(fileFullPath, progress);
 
             FileFullPath = fileFullPath;
             using (var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read))
@@ -238,6 +240,8 @@ namespace UVtools.Core
 
                 LayerManager = new LayerManager(HeaderSettings.LayerCount);
 
+                progress.ItemCount = LayerCount;
+
                 for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
                 {
                     entry = inputFile.GetEntry($"{layerIndex+1}.png");
@@ -248,6 +252,7 @@ namespace UVtools.Core
                     }
 
                     LayerManager[layerIndex] = new Layer(layerIndex, entry.Open(), entry.Name);
+                    progress++;
                 }
 
                 entry = inputFile.GetEntry("preview.png");
@@ -263,7 +268,7 @@ namespace UVtools.Core
                 }
             }
 
-            var rect = LayerManager.BoundingRectangle;
+            LayerManager.GetBoundingRectangle(progress);
         }
 
         public override object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
@@ -368,7 +373,7 @@ namespace UVtools.Core
             return false;
         }
 
-        public override void SaveAs(string filePath = null)
+        public override void SaveAs(string filePath = null, OperationProgress progress = null)
         {
             if (!string.IsNullOrEmpty(filePath))
             {
@@ -387,20 +392,20 @@ namespace UVtools.Core
                     }
                 }
 
-                outputFile.PutFileContent("run.gcode", GCode.ToString());
+                outputFile.PutFileContent("run.gcode", GCode.ToString(), ZipArchiveMode.Update);
 
                 foreach (var layer in this)
                 {
                     if (!layer.IsModified) continue;
-                    outputFile.PutFileContent(layer.Filename, layer.CompressedBytes);
+                    outputFile.PutFileContent(layer.Filename, layer.CompressedBytes, ZipArchiveMode.Update);
                     layer.IsModified = false;
                 }
             }
 
-            //Decode(FileFullPath);
+            //Decode(FileFullPath, progress);
         }
 
-        public override bool Convert(Type to, string fileFullPath)
+        public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
         {
             throw new NotImplementedException();
         }

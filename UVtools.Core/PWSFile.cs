@@ -821,9 +821,9 @@ namespace UVtools.Core
             LayersDefinition = null;
         }
 
-        public override void Encode(string fileFullPath)
+        public override void Encode(string fileFullPath, OperationProgress progress = null)
         {
-            base.Encode(fileFullPath);
+            base.Encode(fileFullPath, progress);
             LayersHash.Clear();
 
             LayersDefinition = new LayerDefinition(LayerCount);
@@ -848,11 +848,16 @@ namespace UVtools.Core
 
                 Parallel.For(0, LayerCount, layerIndex =>
                 {
+                    if (progress.Token.IsCancellationRequested) return;
                     LayerData layer = new LayerData(this, (uint) layerIndex);
                     using (var image = this[layerIndex].LayerMat)
                     {
                         layer.Encode(image);
                         LayersDefinition.Layers[layerIndex] = layer;
+                    }
+                    lock (progress.Mutex)
+                    {
+                        progress++;
                     }
                 });
 
@@ -862,9 +867,11 @@ namespace UVtools.Core
 
                 currentOffset += Helpers.SerializeWriteFileStream(outputFile, LayersDefinition);
 
-                
+                progress.Reset(OperationProgress.StatusWritingFile, LayerCount);
+
                 foreach (var layer in LayersDefinition.Layers)
                 {
+                    progress.Token.ThrowIfCancellationRequested();
                     string hash = Helpers.ComputeSHA1Hash(layer.EncodedRle);
 
                     if (LayersHash.TryGetValue(hash, out var layerDataHash))
@@ -884,122 +891,133 @@ namespace UVtools.Core
 
                     outputFile.Seek(currentOffset, SeekOrigin.Begin);
                     currentOffset += Helpers.SerializeWriteFileStream(outputFile, layer);
+
+                    progress++;
                 }
 
                 // Rewind
                 outputFile.Seek(0, SeekOrigin.Begin);
                 Helpers.SerializeWriteFileStream(outputFile, FileMarkSettings);
-               
             }
         }
 
-        public override void Decode(string fileFullPath)
+        public override void Decode(string fileFullPath, OperationProgress progress = null)
         {
-            base.Decode(fileFullPath);
+            base.Decode(fileFullPath, progress);
 
-            var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
-
-            //HeaderSettings = Helpers.ByteToType<CbddlpFile.Header>(InputFile);
-            //HeaderSettings = Helpers.Serializer.Deserialize<Header>(InputFile.ReadBytes(Helpers.Serializer.SizeOf(typeof(Header))));
-            FileMarkSettings = Helpers.Deserialize<FileMark>(inputFile);
-
-            Debug.Write("FileMark -> ");
-            Debug.WriteLine(FileMarkSettings);
-
-            if (!FileMarkSettings.Mark.Equals(FileMark.SectionMarkFile))
+            using (var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read))
             {
-                throw new FileLoadException($"Invalid Filemark {FileMarkSettings.Mark}, expected {FileMark.SectionMarkFile}", fileFullPath);
-            }
 
-            if (FileMarkSettings.Version != 1)
-            {
-                throw new FileLoadException($"Invalid Version {FileMarkSettings.Version}, expected 1", fileFullPath);
-            }
+                //HeaderSettings = Helpers.ByteToType<CbddlpFile.Header>(InputFile);
+                //HeaderSettings = Helpers.Serializer.Deserialize<Header>(InputFile.ReadBytes(Helpers.Serializer.SizeOf(typeof(Header))));
+                FileMarkSettings = Helpers.Deserialize<FileMark>(inputFile);
 
-            FileFullPath = fileFullPath;
+                Debug.Write("FileMark -> ");
+                Debug.WriteLine(FileMarkSettings);
 
-            inputFile.Seek(FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
-            //Section sectionHeader = Helpers.Deserialize<Section>(inputFile);
-            //Debug.Write("SectionHeader -> ");
-            //Debug.WriteLine(sectionHeader);
+                if (!FileMarkSettings.Mark.Equals(FileMark.SectionMarkFile))
+                {
+                    throw new FileLoadException(
+                        $"Invalid Filemark {FileMarkSettings.Mark}, expected {FileMark.SectionMarkFile}", fileFullPath);
+                }
 
-            var section = Helpers.Deserialize<Section>(inputFile);
-            HeaderSettings = Helpers.Deserialize<Header>(inputFile);
-            HeaderSettings.Section = section;
+                if (FileMarkSettings.Version != 1)
+                {
+                    throw new FileLoadException($"Invalid Version {FileMarkSettings.Version}, expected 1",
+                        fileFullPath);
+                }
+
+                FileFullPath = fileFullPath;
+
+                inputFile.Seek(FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
+                //Section sectionHeader = Helpers.Deserialize<Section>(inputFile);
+                //Debug.Write("SectionHeader -> ");
+                //Debug.WriteLine(sectionHeader);
+
+                var section = Helpers.Deserialize<Section>(inputFile);
+                HeaderSettings = Helpers.Deserialize<Header>(inputFile);
+                HeaderSettings.Section = section;
 
 
-            Debug.Write("Header -> ");
-            Debug.WriteLine(HeaderSettings);
+                Debug.Write("Header -> ");
+                Debug.WriteLine(HeaderSettings);
 
-            HeaderSettings.Validate();
+                HeaderSettings.Validate();
 
-            if (FileMarkSettings.PreviewAddress > 0)
-            {
-                inputFile.Seek(FileMarkSettings.PreviewAddress, SeekOrigin.Begin);
+                if (FileMarkSettings.PreviewAddress > 0)
+                {
+                    inputFile.Seek(FileMarkSettings.PreviewAddress, SeekOrigin.Begin);
+
+                    section = Helpers.Deserialize<Section>(inputFile);
+                    PreviewSettings = Helpers.Deserialize<Preview>(inputFile);
+                    PreviewSettings.Section = section;
+                    Debug.Write("Preview -> ");
+                    Debug.WriteLine(PreviewSettings);
+
+                    uint datasize = PreviewSettings.Width * PreviewSettings.Height * 2;
+                    PreviewSettings.Validate(datasize);
+
+                    PreviewSettings.Data = new byte[datasize];
+                    inputFile.ReadBytes(PreviewSettings.Data);
+
+                    Thumbnails[0] = PreviewSettings.Decode(true);
+                }
+
+                inputFile.Seek(FileMarkSettings.LayerDefinitionAddress, SeekOrigin.Begin);
 
                 section = Helpers.Deserialize<Section>(inputFile);
-                PreviewSettings = Helpers.Deserialize<Preview>(inputFile);
-                PreviewSettings.Section = section;
-                Debug.Write("Preview -> ");
-                Debug.WriteLine(PreviewSettings);
+                LayersDefinition = Helpers.Deserialize<LayerDefinition>(inputFile);
+                LayersDefinition.Section = section;
+                Debug.Write("LayersDefinition -> ");
+                Debug.WriteLine(LayersDefinition);
 
-                uint datasize = PreviewSettings.Width * PreviewSettings.Height * 2;
-                PreviewSettings.Validate(datasize);
+                LayerManager = new LayerManager(LayersDefinition.LayersCount);
+                LayersDefinition.Layers = new LayerData[LayerCount];
 
-                PreviewSettings.Data = new byte[datasize];
-                inputFile.ReadBytes(PreviewSettings.Data);
 
-                Thumbnails[0] = PreviewSettings.Decode(true);
-            }
+                LayersDefinition.Validate();
 
-            inputFile.Seek(FileMarkSettings.LayerDefinitionAddress, SeekOrigin.Begin);
-
-            section = Helpers.Deserialize<Section>(inputFile);
-            LayersDefinition = Helpers.Deserialize<LayerDefinition>(inputFile);
-            LayersDefinition.Section = section;
-            Debug.Write("LayersDefinition -> ");
-            Debug.WriteLine(LayersDefinition);
-
-            LayerManager = new LayerManager(LayersDefinition.LayersCount);
-            LayersDefinition.Layers = new LayerData[LayerCount];
-            
-
-            LayersDefinition.Validate();
-
-            for (int i = 0; i < LayerCount; i++)
-            {
-                LayersDefinition[i] = Helpers.Deserialize<LayerData>(inputFile);
-                LayersDefinition[i].Parent = this;
-            }
-
-            for (int i = 0; i < LayerCount; i++)
-            {
-                var layer = LayersDefinition[i];
-                inputFile.Seek(layer.DataAddress, SeekOrigin.Begin);
-                layer.EncodedRle = new byte[layer.DataLength];
-                inputFile.ReadBytes(layer.EncodedRle);
-
-                /*if (LayerFormat == LayerRleFormat.PW0)
+                for (int i = 0; i < LayerCount; i++)
                 {
-                    var crcBytes = new byte[2];
-                    inputFile.Read(crcBytes, 0, 2);
-                    ushort crcExpected = BitConverter.ToUInt16(crcBytes, 0);
-                    ushort crcEncodedRle = LayersDefinition.Layers[i].CRCEncodedRle();
-
-                    if (crcExpected != crcEncodedRle)
-                    {
-                        Debug.WriteLine($"Error: Checksum expected {crcExpected}, got {crcEncodedRle}");
-                    }
-                }*/
-            }
-
-            Parallel.For(0, LayerCount, layerIndex =>
-            {
-                using (var image = LayersDefinition[(uint) layerIndex].Decode())
-                {
-                    this[layerIndex] = new Layer((uint) layerIndex, image);
+                    LayersDefinition[i] = Helpers.Deserialize<LayerData>(inputFile);
+                    LayersDefinition[i].Parent = this;
                 }
-            });
+
+                progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
+
+                for (int i = 0; i < LayerCount; i++)
+                {
+                    var layer = LayersDefinition[i];
+                    inputFile.Seek(layer.DataAddress, SeekOrigin.Begin);
+                    layer.EncodedRle = new byte[layer.DataLength];
+                    inputFile.ReadBytes(layer.EncodedRle);
+
+                    progress++;
+                    progress.Token.ThrowIfCancellationRequested();
+                }
+
+                progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
+
+                Parallel.For(0, LayerCount, layerIndex =>
+                {
+                    if (progress.Token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    using (var image = LayersDefinition[(uint) layerIndex].Decode())
+                    {
+                        this[layerIndex] = new Layer((uint) layerIndex, image);
+                    }
+
+                    lock (progress.Mutex)
+                    {
+                        progress++;
+                    }
+                });
+            }
+
+            progress.Token.ThrowIfCancellationRequested();
         }
 
         public override object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
@@ -1074,7 +1092,7 @@ namespace UVtools.Core
             return false;
         }
 
-        public override void SaveAs(string filePath = null)
+        public override void SaveAs(string filePath = null, OperationProgress progress = null)
         {
             if (LayerManager.IsModified)
             {
@@ -1082,7 +1100,7 @@ namespace UVtools.Core
                 {
                     FileFullPath = filePath;
                 }
-                Encode(FileFullPath);
+                Encode(FileFullPath, progress);
                 return;
             }
 
@@ -1095,7 +1113,6 @@ namespace UVtools.Core
 
             using (var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write))
             {
-
                 outputFile.Seek(FileMarkSettings.HeaderAddress+Helpers.Serializer.SizeOf(HeaderSettings.Section), SeekOrigin.Begin);
                 Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 
@@ -1105,13 +1122,12 @@ namespace UVtools.Core
                 {
                     Helpers.SerializeWriteFileStream(outputFile, LayersDefinition[layerIndex]);
                 }
-                outputFile.Close();
             }
 
-            //Decode(FileFullPath);
+            //Decode(FileFullPath, progress);
         }
 
-        public override bool Convert(Type to, string fileFullPath)
+        public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
         {
             /*if (to == typeof(PHZFile))
             {
@@ -1155,7 +1171,7 @@ namespace UVtools.Core
                 file.HeaderSettings.MachineNameSize = (uint) MachineName.Length;
 
                 file.SetThumbnails(Thumbnails);
-                file.Encode(fileFullPath);
+                file.Encode(fileFullPath, progress);
 
                 return true;
             }
@@ -1242,7 +1258,7 @@ namespace UVtools.Core
                 }
 
                 file.SetThumbnails(Thumbnails);
-                file.Encode(fileFullPath);
+                file.Encode(fileFullPath, progress);
                 return true;
             }
             */

@@ -63,7 +63,7 @@ namespace UVtools.GUI.Forms
 
             nmX.Select();
 
-            Text = $"Mutate: {mutation.Mutate}";
+            Text = $"Mutate: {mutation.MenuName}";
             lbDescription.Text = Mutation.Description;
 
             nmLayerRangeEnd.Value = Program.SlicerFile.LayerCount-1;
