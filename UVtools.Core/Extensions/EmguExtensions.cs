@@ -44,6 +44,21 @@ namespace UVtools.Core.Extensions
             //return mat.GetPixelSpan<T>().Slice(offset, mat.Step);
         }
 
+        public static void Transform(this Mat src, double xScale, double yScale, double xTrans = 0, double yTrans = 0, Inter interpolation = Inter.Linear)
+        {
+            //var dst = new Mat(src.Size, src.Depth, src.NumberOfChannels);
+            using (var translateTransform = new Matrix<double>(2, 3)
+            {
+                [0, 0] = xScale, // xScale
+                [1, 1] = yScale, // yScale
+                [0, 2] = xTrans, //x translation + compensation of x scaling
+                [1, 2] = yTrans // y translation + compensation of y scaling
+            })
+            {
+                CvInvoke.WarpAffine(src, src, translateTransform, src.Size, interpolation);
+            }
+        }
+
         /// <summary>
         /// Scale image from it center, preserving src bounds
         /// https://stackoverflow.com/a/62543674/933976
@@ -56,7 +71,10 @@ namespace UVtools.Core.Extensions
         /// <param name="interpolation">Interpolation mode</param>
         public static void TransformFromCenter(this Mat src, double xScale, double yScale, double xTrans = 0, double yTrans = 0, Inter interpolation = Inter.Linear)
         {
-            //var dst = new Mat(src.Size, src.Depth, src.NumberOfChannels);
+            src.Transform(xScale, yScale,
+                xTrans + (src.Width - src.Width * xScale) / 2.0, 
+                yTrans + (src.Height - src.Height * yScale) / 2.0, interpolation);
+            /*//var dst = new Mat(src.Size, src.Depth, src.NumberOfChannels);
             using (var translateTransform = new Matrix<double>(2, 3)
             {
                 [0, 0] = xScale, // xScale
@@ -66,7 +84,7 @@ namespace UVtools.Core.Extensions
             })
             {
                 CvInvoke.WarpAffine(src, src, translateTransform, src.Size, interpolation);
-            }
+            }*/
         }
 
         /// <summary>

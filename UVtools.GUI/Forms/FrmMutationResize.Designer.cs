@@ -44,14 +44,14 @@ namespace UVtools.GUI.Forms
             this.btnLayerRangeBottomLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.btnLayerRangeNormalLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             this.btnLayerRangeSelect = new UVtools.GUI.Controls.SplitButton();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnMutate = new System.Windows.Forms.Button();
             this.nmX = new System.Windows.Forms.NumericUpDown();
-            this.label1 = new System.Windows.Forms.Label();
             this.lbY = new System.Windows.Forms.Label();
             this.nmY = new System.Windows.Forms.NumericUpDown();
-            this.label2 = new System.Windows.Forms.Label();
             this.cbConstrainXY = new System.Windows.Forms.CheckBox();
             this.cbFade = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).BeginInit();
@@ -186,6 +186,28 @@ namespace UVtools.GUI.Forms
             this.toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             this.toolTip.ToolTipTitle = "Information";
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(246, 190);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(23, 20);
+            this.label1.TabIndex = 16;
+            this.label1.Text = "%";
+            this.toolTip.SetToolTip(this.label1, resources.GetString("label1.ToolTip"));
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(442, 190);
+            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(23, 20);
+            this.label2.TabIndex = 17;
+            this.label2.Text = "%";
+            this.toolTip.SetToolTip(this.label2, resources.GetString("label2.ToolTip"));
+            // 
             // btnLayerRangeSelect
             // 
             this.btnLayerRangeSelect.Location = new System.Drawing.Point(446, 146);
@@ -252,17 +274,6 @@ namespace UVtools.GUI.Forms
             0});
             this.nmX.ValueChanged += new System.EventHandler(this.EventValueChanged);
             // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(246, 190);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(23, 20);
-            this.label1.TabIndex = 16;
-            this.label1.Text = "%";
-            this.toolTip.SetToolTip(this.label1, resources.GetString("label1.ToolTip"));
-            // 
             // lbY
             // 
             this.lbY.AutoSize = true;
@@ -298,17 +309,6 @@ namespace UVtools.GUI.Forms
             0,
             0,
             0});
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(442, 190);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(23, 20);
-            this.label2.TabIndex = 17;
-            this.label2.Text = "%";
-            this.toolTip.SetToolTip(this.label2, resources.GetString("label2.ToolTip"));
             // 
             // cbConstrainXY
             // 
@@ -362,6 +362,7 @@ namespace UVtools.GUI.Forms
             this.MinimizeBox = false;
             this.Name = "FrmMutationResize";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Form1";
             this.TopMost = true;
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).EndInit();

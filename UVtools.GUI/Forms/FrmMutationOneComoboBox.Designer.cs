@@ -263,6 +263,7 @@ namespace UVtools.GUI.Forms
             this.MinimizeBox = false;
             this.Name = "FrmMutationOneComboBox";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Form1";
             this.TopMost = true;
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).EndInit();

@@ -442,5 +442,17 @@ namespace UVtools.GUI.Properties {
                 this["IslandBinaryThreshold"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public byte DefaultOpenFileExtension {
+            get {
+                return ((byte)(this["DefaultOpenFileExtension"]));
+            }
+            set {
+                this["DefaultOpenFileExtension"] = value;
+            }
+        }
     }
 }

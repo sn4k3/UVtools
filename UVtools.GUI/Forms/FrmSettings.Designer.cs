@@ -44,10 +44,8 @@
             this.btnIslandColor = new System.Windows.Forms.Button();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.groupGeneral = new System.Windows.Forms.GroupBox();
             this.cbCheckForUpdatesOnStartup = new System.Windows.Forms.CheckBox();
             this.cbStartMaximized = new System.Windows.Forms.CheckBox();
-            this.groupLayerPreview = new System.Windows.Forms.GroupBox();
             this.cbZoomToFitPrintVolumeBounds = new System.Windows.Forms.CheckBox();
             this.cbOutlineHollowAreas = new System.Windows.Forms.CheckBox();
             this.label18 = new System.Windows.Forms.Label();
@@ -71,8 +69,9 @@
             this.btnReset = new System.Windows.Forms.Button();
             this.cbComputeIslands = new System.Windows.Forms.CheckBox();
             this.cbComputeResinTraps = new System.Windows.Forms.CheckBox();
-            this.gbIssues = new System.Windows.Forms.GroupBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.nmResinTrapBinaryThreshold = new System.Windows.Forms.NumericUpDown();
+            this.label20 = new System.Windows.Forms.Label();
             this.nmResinTrapMaximumPixelBrightnessToDrain = new System.Windows.Forms.NumericUpDown();
             this.label13 = new System.Windows.Forms.Label();
             this.nmResinTrapRequiredBlackPixelsToDrain = new System.Windows.Forms.NumericUpDown();
@@ -80,6 +79,8 @@
             this.nmResinTrapRequiredAreaToProcessCheck = new System.Windows.Forms.NumericUpDown();
             this.label11 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.nmIslandBinaryThreshold = new System.Windows.Forms.NumericUpDown();
+            this.label21 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.nmIslandRequiredPixelBrightnessToSupport = new System.Windows.Forms.NumericUpDown();
             this.label9 = new System.Windows.Forms.Label();
@@ -90,34 +91,39 @@
             this.nmIslandRequiredPixelBrightnessToProcessCheck = new System.Windows.Forms.NumericUpDown();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.cbAutoComputeIssuesClickOnTab = new System.Windows.Forms.CheckBox();
-            this.nmResinTrapBinaryThreshold = new System.Windows.Forms.NumericUpDown();
-            this.label20 = new System.Windows.Forms.Label();
-            this.nmIslandBinaryThreshold = new System.Windows.Forms.NumericUpDown();
-            this.label21 = new System.Windows.Forms.Label();
-            this.groupGeneral.SuspendLayout();
-            this.groupLayerPreview.SuspendLayout();
+            this.tabSettings = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.cbDefaultOpenFileExtension = new System.Windows.Forms.ComboBox();
+            this.label22 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineHollowAreasLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineLayerBoundsLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlinePrintVolumeBoundsLineThickness)).BeginInit();
-            this.gbIssues.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapBinaryThreshold)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapMaximumPixelBrightnessToDrain)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapRequiredBlackPixelsToDrain)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapRequiredAreaToProcessCheck)).BeginInit();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmIslandBinaryThreshold)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredPixelBrightnessToSupport)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredPixelsToSupport)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredAreaToProcessCheck)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredPixelBrightnessToProcessCheck)).BeginInit();
             this.groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapBinaryThreshold)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nmIslandBinaryThreshold)).BeginInit();
+            this.tabSettings.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
+            this.panel1.SuspendLayout();
+            this.tabPage3.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(7, 30);
+            this.label1.Location = new System.Drawing.Point(9, 15);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(202, 18);
@@ -130,7 +136,7 @@
             this.btnPreviousNextLayerColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnPreviousNextLayerColor.FlatAppearance.BorderSize = 2;
             this.btnPreviousNextLayerColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPreviousNextLayerColor.Location = new System.Drawing.Point(217, 23);
+            this.btnPreviousNextLayerColor.Location = new System.Drawing.Point(219, 8);
             this.btnPreviousNextLayerColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnPreviousNextLayerColor.Name = "btnPreviousNextLayerColor";
             this.btnPreviousNextLayerColor.Size = new System.Drawing.Size(32, 32);
@@ -149,7 +155,7 @@
             this.btnPreviousLayerColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnPreviousLayerColor.FlatAppearance.BorderSize = 2;
             this.btnPreviousLayerColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPreviousLayerColor.Location = new System.Drawing.Point(217, 63);
+            this.btnPreviousLayerColor.Location = new System.Drawing.Point(219, 48);
             this.btnPreviousLayerColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnPreviousLayerColor.Name = "btnPreviousLayerColor";
             this.btnPreviousLayerColor.Size = new System.Drawing.Size(32, 32);
@@ -160,7 +166,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(7, 70);
+            this.label2.Location = new System.Drawing.Point(9, 55);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(139, 18);
@@ -173,7 +179,7 @@
             this.btnNextLayerColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnNextLayerColor.FlatAppearance.BorderSize = 2;
             this.btnNextLayerColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNextLayerColor.Location = new System.Drawing.Point(217, 103);
+            this.btnNextLayerColor.Location = new System.Drawing.Point(219, 88);
             this.btnNextLayerColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnNextLayerColor.Name = "btnNextLayerColor";
             this.btnNextLayerColor.Size = new System.Drawing.Size(32, 32);
@@ -184,7 +190,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(7, 110);
+            this.label3.Location = new System.Drawing.Point(9, 95);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(111, 18);
@@ -198,7 +204,7 @@
             this.btnTouchingBoundsColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnTouchingBoundsColor.FlatAppearance.BorderSize = 2;
             this.btnTouchingBoundsColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnTouchingBoundsColor.Location = new System.Drawing.Point(566, 103);
+            this.btnTouchingBoundsColor.Location = new System.Drawing.Point(575, 88);
             this.btnTouchingBoundsColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnTouchingBoundsColor.Name = "btnTouchingBoundsColor";
             this.btnTouchingBoundsColor.Size = new System.Drawing.Size(32, 32);
@@ -210,7 +216,7 @@
             // 
             this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(402, 30);
+            this.label4.Location = new System.Drawing.Point(479, 15);
             this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(88, 18);
@@ -221,7 +227,7 @@
             // 
             this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(402, 70);
+            this.label5.Location = new System.Drawing.Point(450, 55);
             this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(117, 18);
@@ -232,7 +238,7 @@
             // 
             this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(402, 110);
+            this.label6.Location = new System.Drawing.Point(411, 95);
             this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(156, 18);
@@ -246,7 +252,7 @@
             this.btnResinTrapColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnResinTrapColor.FlatAppearance.BorderSize = 2;
             this.btnResinTrapColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnResinTrapColor.Location = new System.Drawing.Point(566, 63);
+            this.btnResinTrapColor.Location = new System.Drawing.Point(575, 48);
             this.btnResinTrapColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnResinTrapColor.Name = "btnResinTrapColor";
             this.btnResinTrapColor.Size = new System.Drawing.Size(32, 32);
@@ -261,7 +267,7 @@
             this.btnIslandColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnIslandColor.FlatAppearance.BorderSize = 2;
             this.btnIslandColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnIslandColor.Location = new System.Drawing.Point(566, 23);
+            this.btnIslandColor.Location = new System.Drawing.Point(575, 8);
             this.btnIslandColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnIslandColor.Name = "btnIslandColor";
             this.btnIslandColor.Size = new System.Drawing.Size(32, 32);
@@ -274,7 +280,7 @@
             this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSave.Image = global::UVtools.GUI.Properties.Resources.Ok_24x24;
             this.btnSave.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnSave.Location = new System.Drawing.Point(290, 891);
+            this.btnSave.Location = new System.Drawing.Point(303, 15);
             this.btnSave.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(150, 48);
@@ -290,7 +296,7 @@
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Image = global::UVtools.GUI.Properties.Resources.Cancel_24x24;
             this.btnCancel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnCancel.Location = new System.Drawing.Point(448, 891);
+            this.btnCancel.Location = new System.Drawing.Point(461, 15);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(150, 48);
@@ -299,22 +305,10 @@
             this.btnCancel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
-            // groupGeneral
-            // 
-            this.groupGeneral.Controls.Add(this.cbCheckForUpdatesOnStartup);
-            this.groupGeneral.Controls.Add(this.cbStartMaximized);
-            this.groupGeneral.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupGeneral.Location = new System.Drawing.Point(0, 0);
-            this.groupGeneral.Name = "groupGeneral";
-            this.groupGeneral.Size = new System.Drawing.Size(611, 88);
-            this.groupGeneral.TabIndex = 14;
-            this.groupGeneral.TabStop = false;
-            this.groupGeneral.Text = "General";
-            // 
             // cbCheckForUpdatesOnStartup
             // 
             this.cbCheckForUpdatesOnStartup.AutoSize = true;
-            this.cbCheckForUpdatesOnStartup.Location = new System.Drawing.Point(6, 51);
+            this.cbCheckForUpdatesOnStartup.Location = new System.Drawing.Point(9, 34);
             this.cbCheckForUpdatesOnStartup.Name = "cbCheckForUpdatesOnStartup";
             this.cbCheckForUpdatesOnStartup.Size = new System.Drawing.Size(218, 22);
             this.cbCheckForUpdatesOnStartup.TabIndex = 7;
@@ -324,58 +318,17 @@
             // cbStartMaximized
             // 
             this.cbStartMaximized.AutoSize = true;
-            this.cbStartMaximized.Location = new System.Drawing.Point(6, 23);
+            this.cbStartMaximized.Location = new System.Drawing.Point(9, 6);
             this.cbStartMaximized.Name = "cbStartMaximized";
             this.cbStartMaximized.Size = new System.Drawing.Size(133, 22);
             this.cbStartMaximized.TabIndex = 6;
             this.cbStartMaximized.Text = "Start maximized";
             this.cbStartMaximized.UseVisualStyleBackColor = true;
             // 
-            // groupLayerPreview
-            // 
-            this.groupLayerPreview.Controls.Add(this.cbZoomToFitPrintVolumeBounds);
-            this.groupLayerPreview.Controls.Add(this.cbOutlineHollowAreas);
-            this.groupLayerPreview.Controls.Add(this.label18);
-            this.groupLayerPreview.Controls.Add(this.nmOutlineHollowAreasLineThickness);
-            this.groupLayerPreview.Controls.Add(this.label19);
-            this.groupLayerPreview.Controls.Add(this.btnOutlineHollowAreasColor);
-            this.groupLayerPreview.Controls.Add(this.cbOutlineLayerBounds);
-            this.groupLayerPreview.Controls.Add(this.label16);
-            this.groupLayerPreview.Controls.Add(this.nmOutlineLayerBoundsLineThickness);
-            this.groupLayerPreview.Controls.Add(this.label17);
-            this.groupLayerPreview.Controls.Add(this.btnOutlineLayerBoundsColor);
-            this.groupLayerPreview.Controls.Add(this.cbOutlinePrintVolumeBounds);
-            this.groupLayerPreview.Controls.Add(this.label15);
-            this.groupLayerPreview.Controls.Add(this.nmOutlinePrintVolumeBoundsLineThickness);
-            this.groupLayerPreview.Controls.Add(this.label14);
-            this.groupLayerPreview.Controls.Add(this.btnOutlinePrintVolumeBoundsColor);
-            this.groupLayerPreview.Controls.Add(this.cbLayerZoomToFit);
-            this.groupLayerPreview.Controls.Add(this.cbLayerDifferenceDefault);
-            this.groupLayerPreview.Controls.Add(this.cbLayerAutoRotateBestView);
-            this.groupLayerPreview.Controls.Add(this.label1);
-            this.groupLayerPreview.Controls.Add(this.btnPreviousNextLayerColor);
-            this.groupLayerPreview.Controls.Add(this.label2);
-            this.groupLayerPreview.Controls.Add(this.btnPreviousLayerColor);
-            this.groupLayerPreview.Controls.Add(this.btnIslandColor);
-            this.groupLayerPreview.Controls.Add(this.label3);
-            this.groupLayerPreview.Controls.Add(this.btnResinTrapColor);
-            this.groupLayerPreview.Controls.Add(this.btnNextLayerColor);
-            this.groupLayerPreview.Controls.Add(this.label6);
-            this.groupLayerPreview.Controls.Add(this.label4);
-            this.groupLayerPreview.Controls.Add(this.label5);
-            this.groupLayerPreview.Controls.Add(this.btnTouchingBoundsColor);
-            this.groupLayerPreview.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupLayerPreview.Location = new System.Drawing.Point(0, 88);
-            this.groupLayerPreview.Name = "groupLayerPreview";
-            this.groupLayerPreview.Size = new System.Drawing.Size(611, 348);
-            this.groupLayerPreview.TabIndex = 15;
-            this.groupLayerPreview.TabStop = false;
-            this.groupLayerPreview.Text = "Layer Preview";
-            // 
             // cbZoomToFitPrintVolumeBounds
             // 
             this.cbZoomToFitPrintVolumeBounds.AutoSize = true;
-            this.cbZoomToFitPrintVolumeBounds.Location = new System.Drawing.Point(325, 292);
+            this.cbZoomToFitPrintVolumeBounds.Location = new System.Drawing.Point(327, 277);
             this.cbZoomToFitPrintVolumeBounds.Name = "cbZoomToFitPrintVolumeBounds";
             this.cbZoomToFitPrintVolumeBounds.Size = new System.Drawing.Size(276, 22);
             this.cbZoomToFitPrintVolumeBounds.TabIndex = 34;
@@ -384,8 +337,9 @@
             // 
             // cbOutlineHollowAreas
             // 
+            this.cbOutlineHollowAreas.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbOutlineHollowAreas.AutoSize = true;
-            this.cbOutlineHollowAreas.Location = new System.Drawing.Point(470, 228);
+            this.cbOutlineHollowAreas.Location = new System.Drawing.Point(479, 213);
             this.cbOutlineHollowAreas.Name = "cbOutlineHollowAreas";
             this.cbOutlineHollowAreas.Size = new System.Drawing.Size(131, 22);
             this.cbOutlineHollowAreas.TabIndex = 33;
@@ -395,7 +349,7 @@
             // label18
             // 
             this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(319, 230);
+            this.label18.Location = new System.Drawing.Point(321, 215);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(150, 18);
             this.label18.TabIndex = 32;
@@ -403,7 +357,7 @@
             // 
             // nmOutlineHollowAreasLineThickness
             // 
-            this.nmOutlineHollowAreasLineThickness.Location = new System.Drawing.Point(256, 227);
+            this.nmOutlineHollowAreasLineThickness.Location = new System.Drawing.Point(258, 212);
             this.nmOutlineHollowAreasLineThickness.Maximum = new decimal(new int[] {
             50,
             0,
@@ -426,7 +380,7 @@
             // label19
             // 
             this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(7, 230);
+            this.label19.Location = new System.Drawing.Point(9, 215);
             this.label19.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(183, 18);
@@ -439,7 +393,7 @@
             this.btnOutlineHollowAreasColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnOutlineHollowAreasColor.FlatAppearance.BorderSize = 2;
             this.btnOutlineHollowAreasColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnOutlineHollowAreasColor.Location = new System.Drawing.Point(217, 223);
+            this.btnOutlineHollowAreasColor.Location = new System.Drawing.Point(219, 208);
             this.btnOutlineHollowAreasColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnOutlineHollowAreasColor.Name = "btnOutlineHollowAreasColor";
             this.btnOutlineHollowAreasColor.Size = new System.Drawing.Size(32, 32);
@@ -449,8 +403,9 @@
             // 
             // cbOutlineLayerBounds
             // 
+            this.cbOutlineLayerBounds.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbOutlineLayerBounds.AutoSize = true;
-            this.cbOutlineLayerBounds.Location = new System.Drawing.Point(470, 188);
+            this.cbOutlineLayerBounds.Location = new System.Drawing.Point(479, 173);
             this.cbOutlineLayerBounds.Name = "cbOutlineLayerBounds";
             this.cbOutlineLayerBounds.Size = new System.Drawing.Size(131, 22);
             this.cbOutlineLayerBounds.TabIndex = 28;
@@ -460,7 +415,7 @@
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(319, 190);
+            this.label16.Location = new System.Drawing.Point(321, 175);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(145, 18);
             this.label16.TabIndex = 27;
@@ -468,7 +423,7 @@
             // 
             // nmOutlineLayerBoundsLineThickness
             // 
-            this.nmOutlineLayerBoundsLineThickness.Location = new System.Drawing.Point(256, 187);
+            this.nmOutlineLayerBoundsLineThickness.Location = new System.Drawing.Point(258, 172);
             this.nmOutlineLayerBoundsLineThickness.Maximum = new decimal(new int[] {
             50,
             0,
@@ -491,7 +446,7 @@
             // label17
             // 
             this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(7, 190);
+            this.label17.Location = new System.Drawing.Point(9, 175);
             this.label17.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(185, 18);
@@ -504,7 +459,7 @@
             this.btnOutlineLayerBoundsColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnOutlineLayerBoundsColor.FlatAppearance.BorderSize = 2;
             this.btnOutlineLayerBoundsColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnOutlineLayerBoundsColor.Location = new System.Drawing.Point(217, 183);
+            this.btnOutlineLayerBoundsColor.Location = new System.Drawing.Point(219, 168);
             this.btnOutlineLayerBoundsColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnOutlineLayerBoundsColor.Name = "btnOutlineLayerBoundsColor";
             this.btnOutlineLayerBoundsColor.Size = new System.Drawing.Size(32, 32);
@@ -514,8 +469,9 @@
             // 
             // cbOutlinePrintVolumeBounds
             // 
+            this.cbOutlinePrintVolumeBounds.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbOutlinePrintVolumeBounds.AutoSize = true;
-            this.cbOutlinePrintVolumeBounds.Location = new System.Drawing.Point(470, 148);
+            this.cbOutlinePrintVolumeBounds.Location = new System.Drawing.Point(479, 133);
             this.cbOutlinePrintVolumeBounds.Name = "cbOutlinePrintVolumeBounds";
             this.cbOutlinePrintVolumeBounds.Size = new System.Drawing.Size(131, 22);
             this.cbOutlinePrintVolumeBounds.TabIndex = 23;
@@ -525,7 +481,7 @@
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(319, 150);
+            this.label15.Location = new System.Drawing.Point(321, 135);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(145, 18);
             this.label15.TabIndex = 22;
@@ -533,7 +489,7 @@
             // 
             // nmOutlinePrintVolumeBoundsLineThickness
             // 
-            this.nmOutlinePrintVolumeBoundsLineThickness.Location = new System.Drawing.Point(256, 147);
+            this.nmOutlinePrintVolumeBoundsLineThickness.Location = new System.Drawing.Point(258, 132);
             this.nmOutlinePrintVolumeBoundsLineThickness.Maximum = new decimal(new int[] {
             50,
             0,
@@ -556,7 +512,7 @@
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(7, 150);
+            this.label14.Location = new System.Drawing.Point(9, 135);
             this.label14.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(181, 18);
@@ -569,7 +525,7 @@
             this.btnOutlinePrintVolumeBoundsColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnOutlinePrintVolumeBoundsColor.FlatAppearance.BorderSize = 2;
             this.btnOutlinePrintVolumeBoundsColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnOutlinePrintVolumeBoundsColor.Location = new System.Drawing.Point(217, 143);
+            this.btnOutlinePrintVolumeBoundsColor.Location = new System.Drawing.Point(219, 128);
             this.btnOutlinePrintVolumeBoundsColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnOutlinePrintVolumeBoundsColor.Name = "btnOutlinePrintVolumeBoundsColor";
             this.btnOutlinePrintVolumeBoundsColor.Size = new System.Drawing.Size(32, 32);
@@ -580,7 +536,7 @@
             // cbLayerZoomToFit
             // 
             this.cbLayerZoomToFit.AutoSize = true;
-            this.cbLayerZoomToFit.Location = new System.Drawing.Point(9, 292);
+            this.cbLayerZoomToFit.Location = new System.Drawing.Point(11, 277);
             this.cbLayerZoomToFit.Name = "cbLayerZoomToFit";
             this.cbLayerZoomToFit.Size = new System.Drawing.Size(313, 22);
             this.cbLayerZoomToFit.TabIndex = 15;
@@ -590,7 +546,7 @@
             // cbLayerDifferenceDefault
             // 
             this.cbLayerDifferenceDefault.AutoSize = true;
-            this.cbLayerDifferenceDefault.Location = new System.Drawing.Point(9, 320);
+            this.cbLayerDifferenceDefault.Location = new System.Drawing.Point(11, 305);
             this.cbLayerDifferenceDefault.Name = "cbLayerDifferenceDefault";
             this.cbLayerDifferenceDefault.Size = new System.Drawing.Size(234, 22);
             this.cbLayerDifferenceDefault.TabIndex = 13;
@@ -600,7 +556,7 @@
             // cbLayerAutoRotateBestView
             // 
             this.cbLayerAutoRotateBestView.AutoSize = true;
-            this.cbLayerAutoRotateBestView.Location = new System.Drawing.Point(9, 264);
+            this.cbLayerAutoRotateBestView.Location = new System.Drawing.Point(11, 249);
             this.cbLayerAutoRotateBestView.Name = "cbLayerAutoRotateBestView";
             this.cbLayerAutoRotateBestView.Size = new System.Drawing.Size(327, 22);
             this.cbLayerAutoRotateBestView.TabIndex = 12;
@@ -622,7 +578,7 @@
             this.btnReset.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnReset.Image = global::UVtools.GUI.Properties.Resources.Rotate_16x16;
             this.btnReset.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnReset.Location = new System.Drawing.Point(13, 891);
+            this.btnReset.Location = new System.Drawing.Point(13, 15);
             this.btnReset.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(158, 48);
@@ -652,19 +608,6 @@
             this.cbComputeResinTraps.Text = "Compute Resin Traps";
             this.cbComputeResinTraps.UseVisualStyleBackColor = true;
             // 
-            // gbIssues
-            // 
-            this.gbIssues.Controls.Add(this.groupBox3);
-            this.gbIssues.Controls.Add(this.groupBox2);
-            this.gbIssues.Controls.Add(this.groupBox1);
-            this.gbIssues.Dock = System.Windows.Forms.DockStyle.Top;
-            this.gbIssues.Location = new System.Drawing.Point(0, 436);
-            this.gbIssues.Name = "gbIssues";
-            this.gbIssues.Size = new System.Drawing.Size(611, 442);
-            this.gbIssues.TabIndex = 17;
-            this.gbIssues.TabStop = false;
-            this.gbIssues.Text = "Issues";
-            // 
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.nmResinTrapBinaryThreshold);
@@ -676,12 +619,39 @@
             this.groupBox3.Controls.Add(this.nmResinTrapRequiredAreaToProcessCheck);
             this.groupBox3.Controls.Add(this.label11);
             this.groupBox3.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox3.Location = new System.Drawing.Point(3, 279);
+            this.groupBox3.Location = new System.Drawing.Point(3, 262);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(605, 152);
+            this.groupBox3.Size = new System.Drawing.Size(610, 152);
             this.groupBox3.TabIndex = 24;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Resin Traps";
+            // 
+            // nmResinTrapBinaryThreshold
+            // 
+            this.nmResinTrapBinaryThreshold.Location = new System.Drawing.Point(10, 23);
+            this.nmResinTrapBinaryThreshold.Maximum = new decimal(new int[] {
+            254,
+            0,
+            0,
+            0});
+            this.nmResinTrapBinaryThreshold.Name = "nmResinTrapBinaryThreshold";
+            this.nmResinTrapBinaryThreshold.Size = new System.Drawing.Size(57, 24);
+            this.nmResinTrapBinaryThreshold.TabIndex = 26;
+            this.nmResinTrapBinaryThreshold.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Location = new System.Drawing.Point(73, 26);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(512, 18);
+            this.label20.TabIndex = 27;
+            this.label20.Text = "Pixels below this value will turn black, otherwise white. Value=0 to disable this" +
+    "";
             // 
             // nmResinTrapMaximumPixelBrightnessToDrain
             // 
@@ -784,12 +754,39 @@
             this.groupBox2.Controls.Add(this.label8);
             this.groupBox2.Controls.Add(this.nmIslandRequiredPixelBrightnessToProcessCheck);
             this.groupBox2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox2.Location = new System.Drawing.Point(3, 103);
+            this.groupBox2.Location = new System.Drawing.Point(3, 86);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(605, 176);
+            this.groupBox2.Size = new System.Drawing.Size(610, 176);
             this.groupBox2.TabIndex = 23;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Islands";
+            // 
+            // nmIslandBinaryThreshold
+            // 
+            this.nmIslandBinaryThreshold.Location = new System.Drawing.Point(10, 23);
+            this.nmIslandBinaryThreshold.Maximum = new decimal(new int[] {
+            254,
+            0,
+            0,
+            0});
+            this.nmIslandBinaryThreshold.Name = "nmIslandBinaryThreshold";
+            this.nmIslandBinaryThreshold.Size = new System.Drawing.Size(57, 24);
+            this.nmIslandBinaryThreshold.TabIndex = 28;
+            this.nmIslandBinaryThreshold.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(73, 26);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(512, 18);
+            this.label21.TabIndex = 29;
+            this.label21.Text = "Pixels below this value will turn black, otherwise white. Value=0 to disable this" +
+    "";
             // 
             // label10
             // 
@@ -922,9 +919,9 @@
             this.groupBox1.Controls.Add(this.cbComputeIslands);
             this.groupBox1.Controls.Add(this.cbComputeResinTraps);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox1.Location = new System.Drawing.Point(3, 20);
+            this.groupBox1.Location = new System.Drawing.Point(3, 3);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(605, 83);
+            this.groupBox1.Size = new System.Drawing.Size(610, 83);
             this.groupBox1.TabIndex = 22;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Commun";
@@ -939,71 +936,123 @@
             this.cbAutoComputeIssuesClickOnTab.Text = "Auto compute issues when click Issues tab for the first time";
             this.cbAutoComputeIssuesClickOnTab.UseVisualStyleBackColor = true;
             // 
-            // nmResinTrapBinaryThreshold
+            // tabSettings
             // 
-            this.nmResinTrapBinaryThreshold.Location = new System.Drawing.Point(10, 23);
-            this.nmResinTrapBinaryThreshold.Maximum = new decimal(new int[] {
-            254,
-            0,
-            0,
-            0});
-            this.nmResinTrapBinaryThreshold.Name = "nmResinTrapBinaryThreshold";
-            this.nmResinTrapBinaryThreshold.Size = new System.Drawing.Size(57, 24);
-            this.nmResinTrapBinaryThreshold.TabIndex = 26;
-            this.nmResinTrapBinaryThreshold.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+            this.tabSettings.Controls.Add(this.tabPage1);
+            this.tabSettings.Controls.Add(this.tabPage2);
+            this.tabSettings.Controls.Add(this.tabPage3);
+            this.tabSettings.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabSettings.Location = new System.Drawing.Point(0, 0);
+            this.tabSettings.Name = "tabSettings";
+            this.tabSettings.SelectedIndex = 0;
+            this.tabSettings.Size = new System.Drawing.Size(624, 529);
+            this.tabSettings.TabIndex = 18;
             // 
-            // label20
+            // tabPage1
             // 
-            this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(73, 26);
-            this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(512, 18);
-            this.label20.TabIndex = 27;
-            this.label20.Text = "Pixels below this value will turn black, otherwise white. Value=0 to disable this" +
-    "";
+            this.tabPage1.Controls.Add(this.label22);
+            this.tabPage1.Controls.Add(this.cbDefaultOpenFileExtension);
+            this.tabPage1.Controls.Add(this.cbCheckForUpdatesOnStartup);
+            this.tabPage1.Controls.Add(this.cbStartMaximized);
+            this.tabPage1.Location = new System.Drawing.Point(4, 27);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(616, 498);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "General";
+            this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // nmIslandBinaryThreshold
+            // tabPage2
             // 
-            this.nmIslandBinaryThreshold.Location = new System.Drawing.Point(10, 23);
-            this.nmIslandBinaryThreshold.Maximum = new decimal(new int[] {
-            254,
-            0,
-            0,
-            0});
-            this.nmIslandBinaryThreshold.Name = "nmIslandBinaryThreshold";
-            this.nmIslandBinaryThreshold.Size = new System.Drawing.Size(57, 24);
-            this.nmIslandBinaryThreshold.TabIndex = 28;
-            this.nmIslandBinaryThreshold.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+            this.tabPage2.Controls.Add(this.cbZoomToFitPrintVolumeBounds);
+            this.tabPage2.Controls.Add(this.label1);
+            this.tabPage2.Controls.Add(this.label2);
+            this.tabPage2.Controls.Add(this.cbOutlineHollowAreas);
+            this.tabPage2.Controls.Add(this.btnPreviousNextLayerColor);
+            this.tabPage2.Controls.Add(this.btnPreviousLayerColor);
+            this.tabPage2.Controls.Add(this.label18);
+            this.tabPage2.Controls.Add(this.btnIslandColor);
+            this.tabPage2.Controls.Add(this.cbLayerAutoRotateBestView);
+            this.tabPage2.Controls.Add(this.nmOutlineHollowAreasLineThickness);
+            this.tabPage2.Controls.Add(this.label3);
+            this.tabPage2.Controls.Add(this.cbLayerDifferenceDefault);
+            this.tabPage2.Controls.Add(this.label19);
+            this.tabPage2.Controls.Add(this.btnResinTrapColor);
+            this.tabPage2.Controls.Add(this.cbLayerZoomToFit);
+            this.tabPage2.Controls.Add(this.btnOutlineHollowAreasColor);
+            this.tabPage2.Controls.Add(this.btnNextLayerColor);
+            this.tabPage2.Controls.Add(this.btnOutlinePrintVolumeBoundsColor);
+            this.tabPage2.Controls.Add(this.cbOutlineLayerBounds);
+            this.tabPage2.Controls.Add(this.label6);
+            this.tabPage2.Controls.Add(this.label14);
+            this.tabPage2.Controls.Add(this.label16);
+            this.tabPage2.Controls.Add(this.label4);
+            this.tabPage2.Controls.Add(this.nmOutlinePrintVolumeBoundsLineThickness);
+            this.tabPage2.Controls.Add(this.nmOutlineLayerBoundsLineThickness);
+            this.tabPage2.Controls.Add(this.label5);
+            this.tabPage2.Controls.Add(this.label15);
+            this.tabPage2.Controls.Add(this.label17);
+            this.tabPage2.Controls.Add(this.btnTouchingBoundsColor);
+            this.tabPage2.Controls.Add(this.cbOutlinePrintVolumeBounds);
+            this.tabPage2.Controls.Add(this.btnOutlineLayerBoundsColor);
+            this.tabPage2.Location = new System.Drawing.Point(4, 27);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(616, 498);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "Layer Preview";
+            this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // label21
+            // panel1
             // 
-            this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(73, 26);
-            this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(512, 18);
-            this.label21.TabIndex = 29;
-            this.label21.Text = "Pixels below this value will turn black, otherwise white. Value=0 to disable this" +
-    "";
+            this.panel1.Controls.Add(this.btnCancel);
+            this.panel1.Controls.Add(this.btnSave);
+            this.panel1.Controls.Add(this.btnReset);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel1.Location = new System.Drawing.Point(0, 452);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(624, 77);
+            this.panel1.TabIndex = 19;
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.groupBox3);
+            this.tabPage3.Controls.Add(this.groupBox2);
+            this.tabPage3.Controls.Add(this.groupBox1);
+            this.tabPage3.Location = new System.Drawing.Point(4, 27);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage3.Size = new System.Drawing.Size(616, 498);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "Issues";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // cbDefaultOpenFileExtension
+            // 
+            this.cbDefaultOpenFileExtension.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbDefaultOpenFileExtension.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbDefaultOpenFileExtension.FormattingEnabled = true;
+            this.cbDefaultOpenFileExtension.Location = new System.Drawing.Point(225, 62);
+            this.cbDefaultOpenFileExtension.Name = "cbDefaultOpenFileExtension";
+            this.cbDefaultOpenFileExtension.Size = new System.Drawing.Size(382, 26);
+            this.cbDefaultOpenFileExtension.TabIndex = 8;
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(6, 66);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(213, 18);
+            this.label22.TabIndex = 9;
+            this.label22.Text = "Default file extension at file load";
             // 
             // FrmSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(611, 953);
-            this.Controls.Add(this.gbIssues);
-            this.Controls.Add(this.btnReset);
-            this.Controls.Add(this.groupLayerPreview);
-            this.Controls.Add(this.groupGeneral);
-            this.Controls.Add(this.btnSave);
-            this.Controls.Add(this.btnCancel);
+            this.ClientSize = new System.Drawing.Size(624, 529);
+            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.tabSettings);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -1014,29 +1063,31 @@
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Settings";
-            this.groupGeneral.ResumeLayout(false);
-            this.groupGeneral.PerformLayout();
-            this.groupLayerPreview.ResumeLayout(false);
-            this.groupLayerPreview.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineHollowAreasLineThickness)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineLayerBoundsLineThickness)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlinePrintVolumeBoundsLineThickness)).EndInit();
-            this.gbIssues.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapBinaryThreshold)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapMaximumPixelBrightnessToDrain)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapRequiredBlackPixelsToDrain)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapRequiredAreaToProcessCheck)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmIslandBinaryThreshold)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredPixelBrightnessToSupport)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredPixelsToSupport)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredAreaToProcessCheck)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredPixelBrightnessToProcessCheck)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapBinaryThreshold)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nmIslandBinaryThreshold)).EndInit();
+            this.tabSettings.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage1.PerformLayout();
+            this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
+            this.panel1.ResumeLayout(false);
+            this.tabPage3.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -1058,10 +1109,8 @@
         private System.Windows.Forms.Button btnIslandColor;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnCancel;
-        private System.Windows.Forms.GroupBox groupGeneral;
         private System.Windows.Forms.CheckBox cbStartMaximized;
         private System.Windows.Forms.CheckBox cbCheckForUpdatesOnStartup;
-        private System.Windows.Forms.GroupBox groupLayerPreview;
         private System.Windows.Forms.CheckBox cbLayerAutoRotateBestView;
         private System.Windows.Forms.Button btnReset;
         private System.Windows.Forms.CheckBox cbLayerDifferenceDefault;
@@ -1069,7 +1118,6 @@
         private System.Windows.Forms.CheckBox cbLayerZoomToFit;
         private System.Windows.Forms.CheckBox cbComputeResinTraps;
         private System.Windows.Forms.CheckBox cbComputeIslands;
-        private System.Windows.Forms.GroupBox gbIssues;
         private System.Windows.Forms.NumericUpDown nmIslandRequiredAreaToProcessCheck;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
@@ -1108,5 +1156,12 @@
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.NumericUpDown nmIslandBinaryThreshold;
         private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.TabControl tabSettings;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.ComboBox cbDefaultOpenFileExtension;
     }
 }

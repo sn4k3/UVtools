@@ -132,6 +132,12 @@
     <Compile Include="Forms\FrmInstallPEProfiles.Designer.cs">
       <DependentUpon>FrmInstallPEProfiles.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\FrmToolPattern.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmToolPattern.Designer.cs">
+      <DependentUpon>FrmToolPattern.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\FrmMutationOneNumericalInput.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -143,6 +149,12 @@
     </Compile>
     <Compile Include="Forms\FrmMutationOneComoboBox.Designer.cs">
       <DependentUpon>FrmMutationOneComoboBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FrmMutationMove.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmMutationMove.Designer.cs">
+      <DependentUpon>FrmMutationMove.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\FrmMutationResize.cs">
       <SubType>Form</SubType>
@@ -202,11 +214,17 @@
     <EmbeddedResource Include="Forms\FrmInstallPEProfiles.resx">
       <DependentUpon>FrmInstallPEProfiles.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmToolPattern.resx">
+      <DependentUpon>FrmToolPattern.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmMutationOneNumericalInput.resx">
       <DependentUpon>FrmMutationOneNumericalInput.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmMutationOneComoboBox.resx">
       <DependentUpon>FrmMutationOneComoboBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmMutationMove.resx">
+      <DependentUpon>FrmMutationMove.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmMutationResize.resx">
       <DependentUpon>FrmMutationResize.cs</DependentUpon>
@@ -274,6 +292,8 @@
     <None Include="Images\file-image-16x16.png" />
     <None Include="Images\clipboard-16x16.png" />
     <None Include="Images\settings-16x16.png" />
+    <None Include="Images\pattern-16x16.png" />
+    <None Include="Images\resize-16x16.png" />
     <Content Include="UVtools.ico" />
     <None Include="UVtools.png" />
     <None Include="Images\Exit-16x16.png" />

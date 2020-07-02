@@ -107,5 +107,8 @@
     <Setting Name="IslandBinaryThreshold" Type="System.Byte" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
+    <Setting Name="DefaultOpenFileExtension" Type="System.Byte" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

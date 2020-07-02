@@ -49,6 +49,7 @@
             this.menuMutate = new System.Windows.Forms.ToolStripMenuItem();
             this.menuTools = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsRepairLayers = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuToolsPattern = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuHelpWebsite = new System.Windows.Forms.ToolStripMenuItem();
@@ -94,7 +95,9 @@
             this.tsThumbnailsPrevious = new System.Windows.Forms.ToolStripButton();
             this.tsThumbnailsCount = new System.Windows.Forms.ToolStripLabel();
             this.tsThumbnailsNext = new System.Windows.Forms.ToolStripButton();
-            this.tsThumbnailsExport = new System.Windows.Forms.ToolStripButton();
+            this.tsThumbnailsExport = new System.Windows.Forms.ToolStripSplitButton();
+            this.tsThumbnailsExportFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsThumbnailsExportClipboard = new System.Windows.Forms.ToolStripMenuItem();
             this.tsThumbnailsResolution = new System.Windows.Forms.ToolStripLabel();
             this.lvProperties = new System.Windows.Forms.ListView();
             this.lvChKey = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -333,7 +336,8 @@
             // menuTools
             // 
             this.menuTools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuToolsRepairLayers});
+            this.menuToolsRepairLayers,
+            this.menuToolsPattern});
             this.menuTools.Enabled = false;
             this.menuTools.Name = "menuTools";
             this.menuTools.Size = new System.Drawing.Size(46, 20);
@@ -349,6 +353,17 @@
             this.menuToolsRepairLayers.Size = new System.Drawing.Size(261, 22);
             this.menuToolsRepairLayers.Text = "&Repair layers and Issues";
             this.menuToolsRepairLayers.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuToolsPattern
+            // 
+            this.menuToolsPattern.Enabled = false;
+            this.menuToolsPattern.Image = global::UVtools.GUI.Properties.Resources.pattern_16x16;
+            this.menuToolsPattern.Name = "menuToolsPattern";
+            this.menuToolsPattern.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            | System.Windows.Forms.Keys.P)));
+            this.menuToolsPattern.Size = new System.Drawing.Size(261, 22);
+            this.menuToolsPattern.Text = "&Pattern";
+            this.menuToolsPattern.Click += new System.EventHandler(this.EventClick);
             // 
             // viewToolStripMenuItem
             // 
@@ -825,14 +840,33 @@
             // 
             this.tsThumbnailsExport.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.tsThumbnailsExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsThumbnailsExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsThumbnailsExportFile,
+            this.tsThumbnailsExportClipboard});
             this.tsThumbnailsExport.Enabled = false;
             this.tsThumbnailsExport.Image = global::UVtools.GUI.Properties.Resources.Save_16x16;
             this.tsThumbnailsExport.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsThumbnailsExport.Name = "tsThumbnailsExport";
-            this.tsThumbnailsExport.Size = new System.Drawing.Size(23, 22);
-            this.tsThumbnailsExport.Text = "Save Thumbnail";
-            this.tsThumbnailsExport.ToolTipText = "Save thumbnail to file";
-            this.tsThumbnailsExport.Click += new System.EventHandler(this.EventClick);
+            this.tsThumbnailsExport.Size = new System.Drawing.Size(32, 22);
+            this.tsThumbnailsExport.Text = "Save to";
+            this.tsThumbnailsExport.ToolTipText = "Save thumbnail image to a file or clipboard";
+            this.tsThumbnailsExport.ButtonClick += new System.EventHandler(this.EventClick);
+            // 
+            // tsThumbnailsExportFile
+            // 
+            this.tsThumbnailsExportFile.Image = global::UVtools.GUI.Properties.Resources.file_image_16x16;
+            this.tsThumbnailsExportFile.Name = "tsThumbnailsExportFile";
+            this.tsThumbnailsExportFile.Size = new System.Drawing.Size(180, 22);
+            this.tsThumbnailsExportFile.Text = "To &File";
+            this.tsThumbnailsExportFile.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsThumbnailsExportClipboard
+            // 
+            this.tsThumbnailsExportClipboard.Image = global::UVtools.GUI.Properties.Resources.clipboard_16x16;
+            this.tsThumbnailsExportClipboard.Name = "tsThumbnailsExportClipboard";
+            this.tsThumbnailsExportClipboard.Size = new System.Drawing.Size(180, 22);
+            this.tsThumbnailsExportClipboard.Text = "To &Clipboard";
+            this.tsThumbnailsExportClipboard.Click += new System.EventHandler(this.EventClick);
             // 
             // tsThumbnailsResolution
             // 
@@ -1427,7 +1461,6 @@
         private System.Windows.Forms.ToolStripButton tsThumbnailsPrevious;
         private System.Windows.Forms.ToolStripLabel tsThumbnailsCount;
         private System.Windows.Forms.ToolStripButton tsThumbnailsNext;
-        private System.Windows.Forms.ToolStripButton tsThumbnailsExport;
         private System.Windows.Forms.ToolStripLabel tsThumbnailsResolution;
         private System.Windows.Forms.TabPage tabPageGCode;
         private System.Windows.Forms.ImageList imageList16x16;
@@ -1509,6 +1542,10 @@
         private System.Windows.Forms.ToolStripMenuItem tsLayerImageLayerOutlinePrintVolumeBounds;
         private System.Windows.Forms.ToolStripMenuItem tsLayerImageLayerOutlineLayerBounds;
         private System.Windows.Forms.ToolStripMenuItem tsLayerImageLayerOutlineHollowAreas;
+        private System.Windows.Forms.ToolStripMenuItem menuToolsPattern;
+        private System.Windows.Forms.ToolStripSplitButton tsThumbnailsExport;
+        private System.Windows.Forms.ToolStripMenuItem tsThumbnailsExportFile;
+        private System.Windows.Forms.ToolStripMenuItem tsThumbnailsExportClipboard;
     }
 }
 

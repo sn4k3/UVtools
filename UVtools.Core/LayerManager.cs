@@ -683,6 +683,29 @@ namespace UVtools.Core
             return result;
         }
 
+        public void MutateMove(OperationMove move)
+        {
+            using (var layer = LayerMat)
+            {
+                if (move.ImageWidth == 0) move.ImageWidth = (uint) layer.Width;
+                if (move.ImageHeight == 0) move.ImageHeight = (uint) layer.Height;
+
+                /*layer.Transform(1.0, 1.0, move.MarginLeft - move.MarginRight, move.MarginTop-move.MarginBottom);
+                LayerMat = layer;*/
+                using (var layerRoi = new Mat(layer, move.SrcRoi))
+                {
+                    using (var dstLayer = layer.CloneBlank())
+                    {
+                        using (var dstRoi = new Mat(dstLayer, move.DstRoi))
+                        {
+                            layerRoi.CopyTo(dstRoi);
+                            LayerMat = dstLayer;
+                        }
+                    }
+                }
+            }
+        }
+
 
         public void MutateResize(double xScale, double yScale)
         {
@@ -880,6 +903,31 @@ namespace UVtools.Core
             }
         }
 
+        public void ToolPattern(OperationPattern settings)
+        {
+            using (var layer = LayerMat)
+            {
+                using (var layerRoi = new Mat(layer, settings.SrcRoi))
+                {
+                    using (var dstLayer = layer.CloneBlank())
+                    {
+                        for (ushort col = 0; col < settings.Cols; col++)
+                        {
+                            for (ushort row = 0; row < settings.Rows; row++)
+                            {
+                                using (var dstRoi = new Mat(dstLayer, settings.GetRoi(col, row)))
+                                {
+                                    layerRoi.CopyTo(dstRoi);
+                                }
+                            }
+                        }
+
+                        LayerMat = dstLayer;
+                    }
+                }
+            }
+        }
+
 
 
         public Layer Clone()
@@ -890,7 +938,6 @@ namespace UVtools.Core
 
         
         #endregion
-
     }
     #endregion
 
@@ -900,6 +947,7 @@ namespace UVtools.Core
         #region Enums
         public enum Mutate : byte
         {
+            Move,
             Resize,
             Flip,
             Rotate,
@@ -1112,6 +1160,32 @@ namespace UVtools.Core
             return Layers[index];
         }
 
+        public void MutateMove(uint startLayerIndex, uint endLayerIndex, OperationMove move, OperationProgress progress = null)
+        {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Moving", endLayerIndex - startLayerIndex + 1);
+
+            if (move.SrcRoi == Rectangle.Empty) move.SrcRoi = GetBoundingRectangle(progress);
+
+            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+
+                this[layerIndex].MutateMove(move);
+
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+
+            _boundingRectangle = Rectangle.Empty;
+
+            progress.Token.ThrowIfCancellationRequested();
+
+
+        }
+
         /// <summary>
         /// Resizes layer images in x and y factor, starting at 1 = 100%
         /// </summary>
@@ -1125,7 +1199,7 @@ namespace UVtools.Core
             if (x == 1.0 && y == 1.0) return;
 
             if(ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Resizing", Count);
+            progress.Reset("Resizing", endLayerIndex - startLayerIndex + 1);
 
             double xSteps = Math.Abs(x - 1.0) / (endLayerIndex - startLayerIndex);
             double ySteps = Math.Abs(y - 1.0) / (endLayerIndex - startLayerIndex);
@@ -1179,7 +1253,7 @@ namespace UVtools.Core
         public void MutateFlip(uint startLayerIndex, uint endLayerIndex, FlipType flipType, bool makeCopy = false, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Fliping", Count);
+            progress.Reset("Fliping", endLayerIndex - startLayerIndex + 1);
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
@@ -1195,7 +1269,7 @@ namespace UVtools.Core
         public void MutateRotate(uint startLayerIndex, uint endLayerIndex, double angle, Inter interpolation = Inter.Linear, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Rotating", Count);
+            progress.Reset("Rotating", endLayerIndex - startLayerIndex+1);
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
@@ -1211,7 +1285,7 @@ namespace UVtools.Core
         public void MutateSolidify(uint startLayerIndex, uint endLayerIndex, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Solidifing", Count);
+            progress.Reset("Solidifing", endLayerIndex - startLayerIndex+1);
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
@@ -1261,7 +1335,7 @@ namespace UVtools.Core
                 );
 
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Eroding", Count);
+            progress.Reset("Eroding", endLayerIndex - startLayerIndex+1);
 
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
@@ -1291,7 +1365,7 @@ namespace UVtools.Core
             );
 
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Dilating", Count);
+            progress.Reset("Dilating", endLayerIndex - startLayerIndex+1);
 
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
@@ -1321,7 +1395,7 @@ namespace UVtools.Core
             );
 
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Removing Noise", Count);
+            progress.Reset("Removing Noise", endLayerIndex - startLayerIndex+1);
 
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
@@ -1351,7 +1425,7 @@ namespace UVtools.Core
             );
 
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Gap Closing", Count);
+            progress.Reset("Gap Closing", endLayerIndex - startLayerIndex+1);
 
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
@@ -1381,7 +1455,7 @@ namespace UVtools.Core
             );
 
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Gradient", Count);
+            progress.Reset("Gradient", endLayerIndex - startLayerIndex+1);
 
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
@@ -1399,7 +1473,7 @@ namespace UVtools.Core
         public void MutatePyrDownUp(uint startLayerIndex, uint endLayerIndex, BorderType borderType = BorderType.Default, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("PryDownUp", Count);
+            progress.Reset("PryDownUp", endLayerIndex - startLayerIndex+1);
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
@@ -1415,7 +1489,7 @@ namespace UVtools.Core
         public void MutateMedianBlur(uint startLayerIndex, uint endLayerIndex, int aperture = 1, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Bluring", Count);
+            progress.Reset("Bluring", endLayerIndex - startLayerIndex+1);
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
@@ -1431,7 +1505,7 @@ namespace UVtools.Core
         public void MutateGaussianBlur(uint startLayerIndex, uint endLayerIndex, Size size = default, int sigmaX = 0, int sigmaY = 0, BorderType borderType = BorderType.Reflect101, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Bluring", Count);
+            progress.Reset("Bluring", endLayerIndex - startLayerIndex+1);
             Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
@@ -1948,6 +2022,32 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
         }
 
+        public void ToolPattern(uint startLayerIndex, uint endLayerIndex, OperationPattern settings, OperationProgress progress = null)
+        {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Pattern", endLayerIndex - startLayerIndex + 1);
+
+            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+
+                this[layerIndex].ToolPattern(settings);
+
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+
+            _boundingRectangle = Rectangle.Empty;
+
+            progress.Token.ThrowIfCancellationRequested();
+
+            if (settings.Anchor == Anchor.None) return;
+            MutateMove(startLayerIndex, endLayerIndex, new OperationMove(BoundingRectangle, 0, 0, settings.Anchor), progress);
+
+        }
+
         /// <summary>
         /// Desmodify all layers
         /// </summary>
@@ -1976,7 +2076,6 @@ namespace UVtools.Core
 
 
         #endregion
-
     }
     #endregion
 }

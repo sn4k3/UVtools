@@ -313,6 +313,7 @@ namespace UVtools.GUI.Forms
             this.MinimizeBox = false;
             this.Name = "FrmRepairLayers";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Repair Layers";
             this.TopMost = true;
             ((System.ComponentModel.ISupportInitialize)(this.numClosingIterations)).EndInit();

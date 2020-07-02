@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
+using UVtools.Core;
 using UVtools.GUI.Properties;
 
 namespace UVtools.GUI.Forms
@@ -9,6 +12,14 @@ namespace UVtools.GUI.Forms
         public FrmSettings()
         {
             InitializeComponent();
+
+            var fileFormats = new List<string>
+            {
+                FileFormat.AllSlicerFiles.Replace("*", string.Empty)
+            };
+            fileFormats.AddRange(from format in FileFormat.AvaliableFormats from extension in format.FileExtensions select $"{extension.Description} (.{extension.Extension})");
+            cbDefaultOpenFileExtension.Items.AddRange(fileFormats.ToArray());
+
             Init();
         }
 
@@ -18,6 +29,7 @@ namespace UVtools.GUI.Forms
             {
                 cbCheckForUpdatesOnStartup.Checked = Settings.Default.CheckForUpdatesOnStartup;
                 cbStartMaximized.Checked = Settings.Default.StartMaximized;
+                cbDefaultOpenFileExtension.SelectedIndex = Settings.Default.DefaultOpenFileExtension;
 
                 btnPreviousNextLayerColor.BackColor = Settings.Default.PreviousNextLayerColor;
                 btnPreviousLayerColor.BackColor = Settings.Default.PreviousLayerColor;
@@ -108,6 +120,7 @@ namespace UVtools.GUI.Forms
             {
                 Settings.Default.CheckForUpdatesOnStartup = cbCheckForUpdatesOnStartup.Checked;
                 Settings.Default.StartMaximized = cbStartMaximized.Checked;
+                Settings.Default.DefaultOpenFileExtension = (byte) cbDefaultOpenFileExtension.SelectedIndex;
 
                 Settings.Default.PreviousNextLayerColor = btnPreviousNextLayerColor.BackColor;
                 Settings.Default.PreviousLayerColor = btnPreviousLayerColor.BackColor;

@@ -37,6 +37,10 @@ namespace UVtools.GUI
         public static readonly Dictionary<LayerManager.Mutate, Mutation> Mutations =
             new Dictionary<LayerManager.Mutate, Mutation>
             {
+                {LayerManager.Mutate.Move, new Mutation(LayerManager.Mutate.Move, null,
+                    "Moves the entire print volume around the plate.\n" +
+                    "Note: Margins are in pixel values"
+                )},
                 {LayerManager.Mutate.Resize, new Mutation(LayerManager.Mutate.Resize, null,
                     "Resizes layer images in a X and/or Y factor, starting from 100% value\n" +
                     "NOTE 1: Build volume bounds are not validated after operation, please ensure scaling stays inside your limits.\n" +
@@ -55,11 +59,11 @@ namespace UVtools.GUI
                 )},
                 {LayerManager.Mutate.Erode, new Mutation(LayerManager.Mutate.Erode, null,
                 "The basic idea of erosion is just like soil erosion only, it erodes away the boundaries of foreground object (Always try to keep foreground in white). " +
-                        "So what happends is that, all the pixels near boundary will be discarded depending upon the size of kernel. So the thickness or size of the foreground object decreases or simply white region decreases in the image. It is useful for removing small white noises, detach two connected objects, etc.",
+                        "So what happens is that, all the pixels near boundary will be discarded depending upon the size of kernel. So the thickness or size of the foreground object decreases or simply white region decreases in the image. It is useful for removing small white noises, detach two connected objects, etc.",
                         Properties.Resources.mutation_erosion
                 )},
                 {LayerManager.Mutate.Dilate, new Mutation(LayerManager.Mutate.Dilate, null,
-                    "It is just opposite of erosion. Here, a pixel element is '1' if atleast one pixel under the kernel is '1'. So it increases the white region in the image or size of foreground object increases. Normally, in cases like noise removal, erosion is followed by dilation. Because, erosion removes white noises, but it also shrinks our object. So we dilate it. Since noise is gone, they won't come back, but our object area increases. It is also useful in joining broken parts of an object.",
+                    "It is just opposite of erosion. Here, a pixel element is '1' if at least one pixel under the kernel is '1'. So it increases the white region in the image or size of foreground object increases. Normally, in cases like noise removal, erosion is followed by dilation. Because, erosion removes white noises, but it also shrinks our object. So we dilate it. Since noise is gone, they won't come back, but our object area increases. It is also useful in joining broken parts of an object.",
                     Resources.mutation_dilation
                 )},
                 {LayerManager.Mutate.Opening, new Mutation(LayerManager.Mutate.Opening, "Noise Removal",
@@ -354,8 +358,9 @@ namespace UVtools.GUI
                     using (OpenFileDialog openFile = new OpenFileDialog())
                     {
                         openFile.CheckFileExists = true;
+
                         openFile.Filter = FileFormat.AllFileFilters;
-                        openFile.FilterIndex = 0;
+                        openFile.FilterIndex = Settings.Default.DefaultOpenFileExtension+1;
                         if (openFile.ShowDialog() == DialogResult.OK)
                         {
                             try
@@ -379,7 +384,7 @@ namespace UVtools.GUI
                     {
                         openFile.CheckFileExists = true;
                         openFile.Filter = FileFormat.AllFileFilters;
-                        openFile.FilterIndex = 0;
+                        openFile.FilterIndex = Settings.Default.DefaultOpenFileExtension + 1;
                         if (openFile.ShowDialog() == DialogResult.OK)
                         {
                             Program.NewInstance(openFile.FileName);
@@ -706,6 +711,51 @@ namespace UVtools.GUI
                     return;
                 }
 
+                if (ReferenceEquals(sender, menuToolsPattern))
+                {
+                    using (var frm = new FrmToolPattern(SlicerFile.LayerManager.BoundingRectangle, (uint) ActualLayerImage.Width, (uint) ActualLayerImage.Height))
+                    {
+                        if (frm.ShowDialog() != DialogResult.OK) return;
+
+                        DisableGUI();
+                        FrmLoading.SetDescription("Pattern");
+
+                        var task = Task.Factory.StartNew(() =>
+                        {
+                            try
+                            {
+                                SlicerFile.LayerManager.ToolPattern(frm.LayerRangeStart, frm.LayerRangeEnd, frm.OperationPattern, FrmLoading.RestartProgress());
+                            }
+                            catch (OperationCanceledException)
+                            {
+
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
+                            finally
+                            {
+                                Invoke((MethodInvoker)delegate
+                                {
+                                    // Running on the UI thread
+                                    EnableGUI(true);
+                                });
+                            }
+                        });
+
+                        var loadingResult = FrmLoading.ShowDialog();
+
+                        ShowLayer();
+
+                        menuFileSave.Enabled =
+                            menuFileSaveAs.Enabled = true;
+
+
+                    }
+                    return;
+                }
+
                 // About
                 if (ReferenceEquals(sender, menuHelpAbout))
                 {
@@ -838,6 +888,12 @@ namespace UVtools.GUI
 
             if (ReferenceEquals(sender, tsThumbnailsExport))
             {
+                tsThumbnailsExport.ShowDropDown();
+                return;
+            }
+
+            if (ReferenceEquals(sender, tsThumbnailsExportFile))
+            {
                 using (SaveFileDialog dialog = new SaveFileDialog())
                 {
                     byte i = byte.Parse(tsThumbnailsCount.Tag.ToString());
@@ -855,9 +911,14 @@ namespace UVtools.GUI
                     {
                         SlicerFile.Thumbnails[i].Save(dialog.FileName);
                     }
-
-                    return;
                 }
+                return;
+            }
+
+            if (ReferenceEquals(sender, tsThumbnailsExportClipboard))
+            {
+                Clipboard.SetImage(pbThumbnail.Image);
+                return;
             }
 
             /************************
@@ -2273,6 +2334,11 @@ namespace UVtools.GUI
                     ZoomToFit();
                     return;
                 }
+                if ((e.Button & MouseButtons.Middle) != 0)
+                {
+                    pbLayer.ZoomToFit();
+                    return;
+                }
                 return;
             }
         }
@@ -2334,11 +2400,23 @@ namespace UVtools.GUI
             uint iterationsEnd = 0;
             bool fade = false;
 
+            OperationMove operationMove = null;
+
             double x = 0;
             double y = 0;
 
             switch (mutator)
             {
+                case LayerManager.Mutate.Move:
+                    using (FrmMutationMove inputBox = new FrmMutationMove(Mutations[mutator], SlicerFile.LayerManager.BoundingRectangle, (uint) ActualLayerImage.Width, (uint) ActualLayerImage.Height))
+                    {
+                        if (inputBox.ShowDialog() != DialogResult.OK) return;
+                        layerStart = inputBox.LayerRangeStart;
+                        layerEnd = inputBox.LayerRangeEnd;
+                        operationMove = inputBox.OperationMove;
+                    }
+
+                    break;
                 case LayerManager.Mutate.Resize:
                     using (FrmMutationResize inputBox = new FrmMutationResize(Mutations[mutator]))
                     {
@@ -2396,6 +2474,9 @@ namespace UVtools.GUI
                 {
                     switch (mutator)
                     {
+                        case LayerManager.Mutate.Move:
+                            SlicerFile.LayerManager.MutateMove(layerStart, layerEnd, operationMove, progress);
+                            break;
                         case LayerManager.Mutate.Resize:
                             SlicerFile.LayerManager.MutateResize(layerStart, layerEnd, x / 100.0, y / 100.0, fade, progress);
                             break;

@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
@@ -138,19 +139,21 @@ namespace UVtools.Core
             new ImageFile(),   // images
         };
 
+        public static string AllSlicerFiles => AvaliableFormats.Aggregate("All slicer files|",
+            (current, fileFormat) => current.EndsWith("|")
+                ? $"{current}{fileFormat.FileFilterExtensionsOnly}"
+                : $"{current}; {fileFormat.FileFilterExtensionsOnly}");
+
         /// <summary>
         /// Gets all filters for open and save file dialogs
         /// </summary>
         public static string AllFileFilters =>
-            AvaliableFormats.Aggregate(string.Empty,
-                (current, fileFormat) => string.IsNullOrEmpty(current)
-                    ? fileFormat.FileFilter
-                    : $"{current}|" + fileFormat.FileFilter)
+            AllSlicerFiles
             +
-            AvaliableFormats.Aggregate("|All slicer files|",
-                (current, fileFormat) => current.EndsWith("|")
-                    ? $"{current}{fileFormat.FileFilterExtensionsOnly}"
-                    : $"{current};{fileFormat.FileFilterExtensionsOnly}");
+            AvaliableFormats.Aggregate(string.Empty,
+                (current, fileFormat) => $"{current}|" + fileFormat.FileFilter);
+            
+            
 
         /// <summary>
         /// Gets the count of available file extensions
@@ -224,7 +227,7 @@ namespace UVtools.Core
                 {
                     if (!ReferenceEquals(result, string.Empty))
                     {
-                        result += ';';
+                        result += "; ";
                     }
                     result += $"*.{fileExt.Extension}";
                 }

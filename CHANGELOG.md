@@ -1,5 +1,15 @@
 # Changelog
 
+## 02/07/2020 - v0.6.1.0
+
+* (Add) Thumbnail image can now saved to clipboard
+* (Add) Setting to allow choose default file extension at load file dialog
+* (Add) Double click middle mouse to zoom to fit to image
+* (Add) Move mutator to move print volume around the plate
+* (Add) Pattern tool
+* (Change) Setting window now have tabs to compact the window height
+* (Fix) Progress for mutators always show layer count instead of selected range
+
 ## 01/07/2020 - v0.6.0.2
 
 * (Add) PrusaSlicer Printer "EPAX X10 4K Mono"
