@@ -19,8 +19,9 @@ using BinarySerialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
+using UVtools.Core.Operations;
 
-namespace UVtools.Core
+namespace UVtools.Core.FileFormats
 {
     public class ChituboxFile : FileFormat
     {
@@ -508,15 +509,16 @@ namespace UVtools.Core
             public LayerData(ChituboxFile parent, uint layerIndex)
             {
                 Parent = parent;
-                LayerPositionZ = parent.GetHeightFromLayer(layerIndex);
+                LayerPositionZ = parent[layerIndex].PositionZ;
+                LayerExposure = parent[layerIndex].ExposureTime;
 
-                LayerOffTimeSeconds = layerIndex < parent.HeaderSettings.BottomLayersCount
-                    ? parent.PrintParametersSettings.BottomLightOffDelay
-                    : parent.PrintParametersSettings.LightOffDelay;
+                LayerOffTimeSeconds = parent.GetInitialLayerValueOrNormal(layerIndex, 
+                    parent.PrintParametersSettings.BottomLightOffDelay, 
+                    parent.PrintParametersSettings.LightOffDelay);
 
-                LayerExposure = layerIndex < parent.HeaderSettings.BottomLayersCount
+                /*LayerExposure = layerIndex < parent.HeaderSettings.BottomLayersCount
                     ? parent.HeaderSettings.BottomExposureSeconds
-                    : parent.HeaderSettings.LayerExposureSeconds;
+                    : parent.HeaderSettings.LayerExposureSeconds;*/
             }
 
             public Mat Decode(uint layerIndex, bool consumeData = true)
@@ -531,9 +533,6 @@ namespace UVtools.Core
 
             public static Mat DecodeCbddlpImage(ChituboxFile parent, uint layerIndex)
             {
-                //Mat image = new Mat(new Size((int)parent.HeaderSettings.ResolutionX, (int)parent.HeaderSettings.ResolutionY), DepthType.Cv8U, 1);
-                //var bytes = image.GetBytesBlank();
-                //var image = EmguExtensions.CreateMat(out var bytes, new Size((int)parent.HeaderSettings.ResolutionX, (int)parent.HeaderSettings.ResolutionY));
                 var image = new Mat(new Size((int)parent.HeaderSettings.ResolutionX, (int)parent.HeaderSettings.ResolutionY), DepthType.Cv8U, 1);
                 var span = image.GetPixelSpan<byte>();
 
@@ -909,10 +908,12 @@ namespace UVtools.Core
 
         public override Type[] ConvertToFormats { get; } =
         {
+            typeof(ChituboxFile),
             typeof(ChituboxZipFile),
             typeof(PWSFile),
             typeof(PHZFile),
             typeof(ZCodexFile),
+            typeof(CWSFile),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
@@ -1013,6 +1014,10 @@ namespace UVtools.Core
                     HeaderSettings.EncryptionKey = (uint)rnd.Next(byte.MaxValue, int.MaxValue);
                 }
             }
+            else
+            {
+                HeaderSettings.EncryptionKey = 0;
+            }
 
             uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
             LayersDefinitions = new LayerData[HeaderSettings.AntiAliasLevel, HeaderSettings.LayerCount];
@@ -1099,7 +1104,7 @@ namespace UVtools.Core
                         var layerData = LayersDefinitions[aaIndex, layerIndex];
                         LayerData layerDataHash = null;
 
-                        if (!IsCbtFile && HeaderSettings.EncryptionKey == 0)
+                        if (!IsCbtFile /*&& HeaderSettings.EncryptionKey == 0*/)
                         {
                             string hash = Helpers.ComputeSHA1Hash(layerData.EncodedRle);
                             if (LayersHash.TryGetValue(hash, out layerDataHash))
@@ -1258,7 +1263,12 @@ namespace UVtools.Core
 
                     using (var image = LayersDefinitions[0, layerIndex].Decode((uint) layerIndex))
                     {
-                        this[layerIndex] = new Layer((uint) layerIndex, image);
+                        this[layerIndex] = new Layer((uint) layerIndex, image)
+                        {
+                            PositionZ = LayersDefinitions[0, layerIndex].LayerPositionZ,
+                            ExposureTime = LayersDefinitions[0, layerIndex].LayerExposure
+                        };
+
                         lock (progress.Mutex)
                         {
                             progress++;
@@ -1299,8 +1309,10 @@ namespace UVtools.Core
                     for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
                     {
                         // Bottom : others
-                        LayersDefinitions[aaIndex, layerIndex].LayerExposure = layerIndex < HeaderSettings.BottomLayersCount ? HeaderSettings.BottomExposureSeconds : HeaderSettings.LayerExposureSeconds;
-                        LayersDefinitions[aaIndex, layerIndex].LayerOffTimeSeconds = layerIndex < HeaderSettings.BottomLayersCount ? PrintParametersSettings.BottomLightOffDelay : PrintParametersSettings.LightOffDelay;
+                        this[layerIndex].ExposureTime =
+                            LayersDefinitions[aaIndex, layerIndex].LayerExposure = GetInitialLayerValueOrNormal(layerIndex, HeaderSettings.BottomExposureSeconds, HeaderSettings.LayerExposureSeconds);
+
+                        LayersDefinitions[aaIndex, layerIndex].LayerOffTimeSeconds = GetInitialLayerValueOrNormal(layerIndex, PrintParametersSettings.BottomLightOffDelay, HeaderSettings.LayerOffTime);
                     }
                 }
             }
@@ -1427,6 +1439,66 @@ namespace UVtools.Core
 
         public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
         {
+            if (to == typeof(ChituboxFile))
+            {
+                if (Path.GetExtension(FileFullPath).Equals(Path.GetExtension(fileFullPath)))
+                {
+                    return false;
+                }
+                ChituboxFile file = new ChituboxFile
+                {
+                    LayerManager = LayerManager,
+                    HeaderSettings =
+                    {
+                        ResolutionX = ResolutionX,
+                        ResolutionY = ResolutionY,
+                        BedSizeX = HeaderSettings.BedSizeX,
+                        BedSizeY = HeaderSettings.BedSizeY,
+                        BedSizeZ = HeaderSettings.BedSizeZ,
+                        ProjectorType = HeaderSettings.ProjectorType,
+                        LayerCount = LayerCount,
+                        AntiAliasLevel = ValidateAntiAliasingLevel(),
+                        BottomLightPWM = (byte) HeaderSettings.BottomLightPWM,
+                        LightPWM = (byte) HeaderSettings.LightPWM,
+                        LayerOffTime = HeaderSettings.LayerOffTime,
+                        PrintTime = HeaderSettings.PrintTime,
+                        BottomExposureSeconds = HeaderSettings.BottomExposureSeconds,
+                        BottomLayersCount = HeaderSettings.BottomLayersCount,
+                        //EncryptionKey = HeaderSettings.EncryptionKey,
+                        LayerExposureSeconds = HeaderSettings.LayerExposureSeconds,
+                        LayerHeightMilimeter = HeaderSettings.LayerHeightMilimeter,
+                        OverallHeightMilimeter = HeaderSettings.OverallHeightMilimeter,
+                    },
+                    PrintParametersSettings =
+                    {
+                        LiftSpeed = PrintParametersSettings.LiftSpeed,
+                        LiftHeight = PrintParametersSettings.LiftHeight,
+                        BottomLiftSpeed = PrintParametersSettings.BottomLiftSpeed,
+                        RetractSpeed = PrintParametersSettings.RetractSpeed,
+                        BottomLightOffDelay = PrintParametersSettings.BottomLightOffDelay,
+                        LightOffDelay = PrintParametersSettings.BottomLightOffDelay,
+                        BottomLayerCount = PrintParametersSettings.BottomLayerCount,
+                        VolumeMl = PrintParametersSettings.VolumeMl,
+                        BottomLiftHeight = PrintParametersSettings.BottomLiftHeight,
+                        CostDollars = PrintParametersSettings.CostDollars,
+                        WeightG = PrintParametersSettings.WeightG
+                    },
+                    SlicerInfoSettings =
+                    {
+                        AntiAliasLevel = SlicerInfoSettings.AntiAliasLevel,
+                        MachineName = SlicerInfoSettings.MachineName,
+                        //EncryptionMode = SlicerInfoSettings.EncryptionMode,
+                        MachineNameSize = SlicerInfoSettings.MachineNameSize,
+                    },
+                    Thumbnails = Thumbnails,
+                };
+
+                //file.SetThumbnails(Thumbnails);
+                file.Encode(fileFullPath, progress);
+
+                return true;
+            }
+
             if (to == typeof(ChituboxZipFile))
             {
                 ChituboxZipFile file = new ChituboxZipFile
@@ -1640,6 +1712,45 @@ namespace UVtools.Core
 
                 file.SetThumbnails(Thumbnails);
                 file.Encode(fileFullPath, progress);
+                return true;
+            }
+
+            if (to == typeof(CWSFile))
+            {
+                CWSFile defaultFormat = (CWSFile)FindByType(typeof(CWSFile));
+                CWSFile file = new CWSFile { LayerManager = LayerManager };
+
+                file.SliceSettings.Xppm = file.OutputSettings.PixPermmX = (float)Math.Round(ResolutionX / HeaderSettings.BedSizeX, 3);
+                file.SliceSettings.Yppm = file.OutputSettings.PixPermmY = (float)Math.Round(ResolutionY / HeaderSettings.BedSizeY, 3);
+                file.SliceSettings.Xres = file.OutputSettings.XResolution = (ushort)ResolutionX;
+                file.SliceSettings.Yres = file.OutputSettings.YResolution = (ushort)ResolutionY;
+                file.SliceSettings.Thickness = file.OutputSettings.LayerThickness = LayerHeight;
+                file.SliceSettings.LayersNum = file.OutputSettings.LayersNum = LayerCount;
+                file.SliceSettings.HeadLayersNum = file.OutputSettings.NumberBottomLayers = InitialLayerCount;
+                file.SliceSettings.LayersExpoMs = file.OutputSettings.LayerTime = (uint)LayerExposureTime * 1000;
+                file.SliceSettings.HeadLayersExpoMs = file.OutputSettings.BottomLayersTime = (uint)InitialExposureTime * 1000;
+                file.SliceSettings.WaitBeforeExpoMs = (uint)(PrintParametersSettings.LightOffDelay * 1000);
+                file.SliceSettings.LiftDistance = file.OutputSettings.LiftDistance = LiftHeight;
+                file.SliceSettings.LiftUpSpeed = file.OutputSettings.ZLiftFeedRate = LiftSpeed;
+                file.SliceSettings.LiftDownSpeed = file.OutputSettings.ZLiftRetractRate = RetractSpeed;
+                file.SliceSettings.LiftWhenFinished = defaultFormat.SliceSettings.LiftWhenFinished;
+
+                file.OutputSettings.BlankingLayerTime = (uint) (PrintParametersSettings.LightOffDelay * 1000);
+                //file.OutputSettings.RenderOutlines = false;
+                //file.OutputSettings.OutlineWidthInset = 0;
+                //file.OutputSettings.OutlineWidthOutset = 0;
+                file.OutputSettings.RenderOutlines = false;
+                //file.OutputSettings.TiltValue = 0;
+                //file.OutputSettings.UseMainliftGCodeTab = false;
+                //file.OutputSettings.AntiAliasing = 0;
+                //file.OutputSettings.AntiAliasingValue = 0;
+                file.OutputSettings.FlipX = HeaderSettings.ProjectorType != 0;
+                file.OutputSettings.FlipY = file.OutputSettings.FlipX;
+                file.OutputSettings.AntiAliasingValue = ValidateAntiAliasingLevel();
+                file.OutputSettings.AntiAliasing = file.OutputSettings.AntiAliasingValue > 1;
+
+                file.Encode(fileFullPath, progress);
+
                 return true;
             }
 

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using UVtools.Core;
+using UVtools.Core.Operations;
 
 namespace UVtools.GUI.Forms
 {

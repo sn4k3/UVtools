@@ -14,15 +14,15 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using BinarySerialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
+using UVtools.Core.Operations;
 
-namespace UVtools.Core
+namespace UVtools.Core.FileFormats
 {
     public class PHZFile : FileFormat
     {
@@ -453,9 +453,12 @@ namespace UVtools.Core
             public LayerData(PHZFile parent, uint layerIndex)
             {
                 Parent = parent;
-                LayerOffTimeSeconds = layerIndex < parent.HeaderSettings.BottomLayersCount ? parent.HeaderSettings.BottomLightOffDelay : parent.HeaderSettings.LayerOffTime;
-                LayerExposure = layerIndex < Parent.InitialLayerCount ? Parent.HeaderSettings.BottomExposureSeconds : Parent.HeaderSettings.LayerExposureSeconds;
-                LayerPositionZ = Parent.GetHeightFromLayer(layerIndex);
+                LayerPositionZ = parent[layerIndex].PositionZ;
+                LayerExposure = parent[layerIndex].ExposureTime;
+
+                LayerOffTimeSeconds = parent.GetInitialLayerValueOrNormal(layerIndex,
+                    parent.HeaderSettings.BottomLightOffDelay,
+                    parent.HeaderSettings.LayerOffTime);
             }
 
             public Mat Decode(uint layerIndex, bool consumeData = true)
@@ -682,6 +685,7 @@ namespace UVtools.Core
             typeof(ChituboxZipFile),
             typeof(PWSFile),
             typeof(ZCodexFile),
+            typeof(CWSFile),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
@@ -819,7 +823,7 @@ namespace UVtools.Core
                 Parallel.For(0, LayerCount, /*new ParallelOptions{MaxDegreeOfParallelism = 1},*/ layerIndex =>
                 {
                     if(progress.Token.IsCancellationRequested) return;
-                    LayerData layer = new LayerData(this, (uint)layerIndex);
+                    LayerData layer = new LayerData(this, (uint) layerIndex);
                     using (var image = this[layerIndex].LayerMat)
                     {
                         layer.Encode(image, (uint) layerIndex);
@@ -975,7 +979,11 @@ namespace UVtools.Core
 
                     using (var image = LayersDefinitions[layerIndex].Decode((uint) layerIndex, true))
                     {
-                        this[layerIndex] = new Layer((uint) layerIndex, image);
+                        this[layerIndex] = new Layer((uint) layerIndex, image)
+                        {
+                            PositionZ = LayersDefinitions[layerIndex].LayerPositionZ,
+                            ExposureTime = LayersDefinitions[layerIndex].LayerExposure
+                        };
                     }
 
                     lock (progress.Mutex)
@@ -1015,8 +1023,10 @@ namespace UVtools.Core
                 for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
                 {
                     // Bottom : others
-                    LayersDefinitions[layerIndex].LayerExposure = layerIndex < HeaderSettings.BottomLayersCount ? HeaderSettings.BottomExposureSeconds : HeaderSettings.LayerExposureSeconds;
-                    LayersDefinitions[layerIndex].LayerOffTimeSeconds = layerIndex < HeaderSettings.BottomLayersCount ? HeaderSettings.BottomLightOffDelay : HeaderSettings.LayerOffTime;
+                    this[layerIndex].ExposureTime =
+                    LayersDefinitions[layerIndex].LayerExposure = GetInitialLayerValueOrNormal(layerIndex, HeaderSettings.BottomExposureSeconds, HeaderSettings.LayerExposureSeconds);
+
+                    LayersDefinitions[layerIndex].LayerOffTimeSeconds = GetInitialLayerValueOrNormal(layerIndex, HeaderSettings.BottomLightOffDelay, HeaderSettings.LayerOffTime);
                 }
             }
 
@@ -1357,6 +1367,45 @@ namespace UVtools.Core
 
                 file.SetThumbnails(Thumbnails);
                 file.Encode(fileFullPath, progress);
+                return true;
+            }
+
+            if (to == typeof(CWSFile))
+            {
+                CWSFile defaultFormat = (CWSFile)FindByType(typeof(CWSFile));
+                CWSFile file = new CWSFile { LayerManager = LayerManager };
+
+                file.SliceSettings.Xppm = file.OutputSettings.PixPermmX = (float)Math.Round(ResolutionX / HeaderSettings.BedSizeX, 3);
+                file.SliceSettings.Yppm = file.OutputSettings.PixPermmY = (float)Math.Round(ResolutionY / HeaderSettings.BedSizeY, 3);
+                file.SliceSettings.Xres = file.OutputSettings.XResolution = (ushort)ResolutionX;
+                file.SliceSettings.Yres = file.OutputSettings.YResolution = (ushort)ResolutionY;
+                file.SliceSettings.Thickness = file.OutputSettings.LayerThickness = LayerHeight;
+                file.SliceSettings.LayersNum = file.OutputSettings.LayersNum = LayerCount;
+                file.SliceSettings.HeadLayersNum = file.OutputSettings.NumberBottomLayers = InitialLayerCount;
+                file.SliceSettings.LayersExpoMs = file.OutputSettings.LayerTime = (uint)LayerExposureTime * 1000;
+                file.SliceSettings.HeadLayersExpoMs = file.OutputSettings.BottomLayersTime = (uint)InitialExposureTime * 1000;
+                file.SliceSettings.WaitBeforeExpoMs = (uint)(HeaderSettings.LayerOffTime * 1000);
+                file.SliceSettings.LiftDistance = file.OutputSettings.LiftDistance = LiftHeight;
+                file.SliceSettings.LiftUpSpeed = file.OutputSettings.ZLiftFeedRate = LiftSpeed;
+                file.SliceSettings.LiftDownSpeed = file.OutputSettings.ZLiftRetractRate = RetractSpeed;
+                file.SliceSettings.LiftWhenFinished = defaultFormat.SliceSettings.LiftWhenFinished;
+
+                file.OutputSettings.BlankingLayerTime = (uint)(HeaderSettings.LayerOffTime * 1000);
+                //file.OutputSettings.RenderOutlines = false;
+                //file.OutputSettings.OutlineWidthInset = 0;
+                //file.OutputSettings.OutlineWidthOutset = 0;
+                file.OutputSettings.RenderOutlines = false;
+                //file.OutputSettings.TiltValue = 0;
+                //file.OutputSettings.UseMainliftGCodeTab = false;
+                //file.OutputSettings.AntiAliasing = 0;
+                //file.OutputSettings.AntiAliasingValue = 0;
+                file.OutputSettings.FlipX = HeaderSettings.ProjectorType != 0;
+                file.OutputSettings.FlipY = file.OutputSettings.FlipX;
+                file.OutputSettings.AntiAliasingValue = ValidateAntiAliasingLevel();
+                file.OutputSettings.AntiAliasing = file.OutputSettings.AntiAliasingValue > 1;
+
+                file.Encode(fileFullPath, progress);
+
                 return true;
             }
 

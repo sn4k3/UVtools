@@ -138,7 +138,7 @@
             this.btnNextLayer = new System.Windows.Forms.Button();
             this.lbMaxLayer = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.lbLayerActual = new System.Windows.Forms.Label();
+            this.lbActualLayer = new System.Windows.Forms.Label();
             this.tbLayer = new System.Windows.Forms.TrackBar();
             this.lbInitialLayer = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -1266,7 +1266,7 @@
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.lbLayerActual);
+            this.panel1.Controls.Add(this.lbActualLayer);
             this.panel1.Controls.Add(this.tbLayer);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(3, 85);
@@ -1276,13 +1276,13 @@
             // 
             // lbLayerActual
             // 
-            this.lbLayerActual.AutoSize = true;
-            this.lbLayerActual.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lbLayerActual.Location = new System.Drawing.Point(3, 248);
-            this.lbLayerActual.Name = "lbLayerActual";
-            this.lbLayerActual.Size = new System.Drawing.Size(15, 15);
-            this.lbLayerActual.TabIndex = 9;
-            this.lbLayerActual.Text = "?";
+            this.lbActualLayer.AutoSize = true;
+            this.lbActualLayer.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.lbActualLayer.Location = new System.Drawing.Point(3, 248);
+            this.lbActualLayer.Name = "lbActualLayer";
+            this.lbActualLayer.Size = new System.Drawing.Size(15, 15);
+            this.lbActualLayer.TabIndex = 9;
+            this.lbActualLayer.Text = "?";
             // 
             // tbLayer
             // 
@@ -1520,7 +1520,7 @@
         private System.Windows.Forms.Button btnNextLayer;
         private System.Windows.Forms.Button btnPreviousLayer;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Label lbLayerActual;
+        private System.Windows.Forms.Label lbActualLayer;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Button btnFirstLayer;
         private System.Windows.Forms.Button btnLastLayer;

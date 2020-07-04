@@ -8,7 +8,7 @@
 
 using System.Collections.Generic;
 
-namespace UVtools.Core
+namespace UVtools.Core.FileFormats
 {
     /// <summary>
     /// Represents a file extension for slicer file formats

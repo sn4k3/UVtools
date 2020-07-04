@@ -22,6 +22,8 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core;
 using UVtools.Core.Extensions;
+using UVtools.Core.FileFormats;
+using UVtools.Core.Operations;
 using UVtools.GUI.Forms;
 using UVtools.GUI.Properties;
 
@@ -332,10 +334,10 @@ namespace UVtools.GUI
                 ZoomToFit();
             }
 
-            lbLayerActual.Location = new Point(lbLayerActual.Location.X,
+            lbActualLayer.Location = new Point(lbActualLayer.Location.X,
                 Math.Max(1,
                     Math.Min(tbLayer.Height - 40,
-                        (int)(tbLayer.Height - tbLayer.Value * ((float)tbLayer.Height / tbLayer.Maximum)) - lbLayerActual.Height / 2)
+                        (int)(tbLayer.Height - tbLayer.Value * ((float)tbLayer.Height / tbLayer.Maximum)) - lbActualLayer.Height / 2)
                 ));
         }
 
@@ -1294,11 +1296,11 @@ namespace UVtools.GUI
                     DisableGUI();
                     FrmLoading.SetDescription($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {Path.GetExtension(dialog.FileName)}");
 
-                    Task task = Task.Factory.StartNew(() =>
+                    Task<bool> task = Task<bool>.Factory.StartNew(() =>
                     {
                         try
                         {
-                            SlicerFile.Convert(fileFormat, dialog.FileName, FrmLoading.RestartProgress());
+                            return SlicerFile.Convert(fileFormat, dialog.FileName, FrmLoading.RestartProgress());
                         }
                         catch (OperationCanceledException)
                         {
@@ -1315,9 +1317,11 @@ namespace UVtools.GUI
                                 EnableGUI(true);
                             });
                         }
+
+                        return false;
                     });
 
-                    if (FrmLoading.ShowDialog() == DialogResult.OK)
+                    if (FrmLoading.ShowDialog() == DialogResult.OK && task.Result)
                     {
                         if (MessageBox.Show($"Convertion is completed: {Path.GetFileName(dialog.FileName)} in {FrmLoading.StopWatch.ElapsedMilliseconds / 1000}s\n" +
                                             "Do you want open the converted file in a new window?",
@@ -1486,7 +1490,7 @@ namespace UVtools.GUI
             UpdateIssuesInfo();
 
             lbMaxLayer.Text = 
-            lbLayerActual.Text = 
+            lbActualLayer.Text = 
             lbInitialLayer.Text = "???";
             lvProperties.BeginUpdate();
             lvProperties.Items.Clear();
@@ -1902,6 +1906,8 @@ namespace UVtools.GUI
             btnLastLayer.Enabled = btnNextLayer.Enabled = layerNum < SlicerFile.LayerCount - 1;
             btnFirstLayer.Enabled = btnPreviousLayer.Enabled = layerNum > 0;
 
+            var layer = SlicerFile[ActualLayer];
+
             try
             {
                 // OLD
@@ -2123,17 +2129,17 @@ namespace UVtools.GUI
                 watch.Stop();
                 tsLayerPreviewTime.Text = $"{watch.ElapsedMilliseconds}ms";
                 //lbLayers.Text = $"{SlicerFile.GetHeightFromLayer(layerNum)} / {SlicerFile.TotalHeight}mm\n{layerNum} / {SlicerFile.LayerCount-1}\n{percent}%";
-                lbLayerActual.Text = $"{SlicerFile.GetHeightFromLayer(ActualLayer)}mm\n{ActualLayer}\n{percent}%";
-                lbLayerActual.Location = new Point(lbLayerActual.Location.X, 
+                lbActualLayer.Text = $"{layer.PositionZ}mm\n{ActualLayer}\n{percent}%";
+                lbActualLayer.Location = new Point(lbActualLayer.Location.X, 
                     Math.Max(1, 
-                        Math.Min(tbLayer.Height- lbLayerActual.Height, 
-                            (int)(tbLayer.Height - tbLayer.Value * ((float)tbLayer.Height / tbLayer.Maximum)) - lbLayerActual.Height/2)
+                        Math.Min(tbLayer.Height- lbActualLayer.Height, 
+                            (int)(tbLayer.Height - tbLayer.Value * ((float)tbLayer.Height / tbLayer.Maximum)) - lbActualLayer.Height/2)
                 ));
 
                 pbLayers.Value = percent;
-                lbLayerActual.Invalidate();
-                lbLayerActual.Update();
-                lbLayerActual.Refresh();
+                lbActualLayer.Invalidate();
+                lbActualLayer.Update();
+                lbActualLayer.Refresh();
                 pbLayer.Invalidate();
                 pbLayer.Update();
                 pbLayer.Refresh();

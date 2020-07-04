@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace UVtools.Core
+namespace UVtools.Core.Operations
 {
     public sealed class OperationProgress
     {

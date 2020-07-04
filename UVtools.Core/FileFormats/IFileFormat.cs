@@ -9,8 +9,9 @@
 using System;
 using System.Text;
 using Emgu.CV;
+using UVtools.Core.Operations;
 
-namespace UVtools.Core
+namespace UVtools.Core.FileFormats
 {
     /// <summary>
     /// Slicer file format representation interface

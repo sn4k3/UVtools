@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace UVtools.Core
+namespace UVtools.Core.Operations
 {
     public class OperationPattern
     {

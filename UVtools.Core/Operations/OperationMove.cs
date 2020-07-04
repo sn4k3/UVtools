@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
 
-namespace UVtools.Core
+namespace UVtools.Core.Operations
 {
     public enum Anchor : byte
     {

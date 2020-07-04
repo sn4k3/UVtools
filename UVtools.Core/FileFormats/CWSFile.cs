@@ -13,10 +13,11 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using UVtools.Core.Extensions;
+using UVtools.Core.Operations;
 
-namespace UVtools.Core
+namespace UVtools.Core.FileFormats
 {
     public class CWSFile : FileFormat
     {
@@ -290,6 +291,9 @@ namespace UVtools.Core
 
                 LayerManager = new LayerManager(OutputSettings.LayersNum);
 
+                var gcode = GCode.ToString();
+                float currentHeight = 0;
+
                 foreach (var zipArchiveEntry in inputFile.Entries)
                 {
                     if (!zipArchiveEntry.Name.EndsWith(".png")) continue;
@@ -297,8 +301,55 @@ namespace UVtools.Core
                     // - .png - 4 numbers
                     int layerSize = OutputSettings.LayersNum.ToString().Length;
                     string layerStr = zipArchiveEntry.Name.Substring(zipArchiveEntry.Name.Length - 4 - layerSize, layerSize);
-                    uint iLayer = uint.Parse(layerStr);
-                    LayerManager[iLayer] = new Layer(iLayer, zipArchiveEntry.Open(), zipArchiveEntry.Name);
+                    uint layerIndex = uint.Parse(layerStr);
+
+                    var startStr = $"{GCodeKeywordSlice} {layerIndex}";
+                    var stripGcode = gcode.Substring(gcode.IndexOf(startStr, StringComparison.InvariantCultureIgnoreCase) + startStr.Length);
+                    stripGcode = stripGcode.Substring(0, stripGcode.IndexOf(GCodeKeywordDelay, stripGcode.IndexOf(GCodeKeywordSlice))).Trim(' ', '\n', '\r', '\t');
+                    //var startCurrPos = stripGcode.Remove(0, ";currPos:".Length);
+
+                    /*
+                     * 
+;<Slice> 0
+M106 S255
+;<Delay> 45000
+M106 S0
+;<Slice> Blank
+G1 Z4 F120
+G1 Z-3.9 F120
+;<Delay> 45000
+                     */
+
+                    var currPos = Regex.Match(stripGcode, "G1 Z([+-]?([0-9]*[.])?[0-9]+)", RegexOptions.IgnoreCase);
+                    var exposureTime = Regex.Match(stripGcode, ";<Delay> (\\d+)", RegexOptions.IgnoreCase);
+                    /*var pwm = Regex.Match(stripGcode, "M106 S(\\d+)", RegexOptions.IgnoreCase);
+                    if (layerIndex < InitialLayerCount)
+                    {
+                        OutputSettings.BottomLayerLightPWM = byte.Parse(pwm.Groups[1].Value);
+                    }
+                    else
+                    {
+                        OutputSettings.LayerLightPWM = byte.Parse(pwm.Groups[1].Value);
+                    }*/
+
+                    if (currPos.Success)
+                    {
+                        var nextMatch = currPos.NextMatch();
+                        if (nextMatch.Success)
+                        {
+                            currentHeight = (float)Math.Round(currentHeight + float.Parse(currPos.Groups[1].Value) + float.Parse(currPos.NextMatch().Groups[1].Value), 2);
+                        }
+                        else
+                        {
+                            currentHeight = (float)Math.Round(currentHeight + float.Parse(currPos.Groups[1].Value), 2);
+                        }
+                    }
+
+                    LayerManager[layerIndex] = new Layer(layerIndex, zipArchiveEntry.Open(), zipArchiveEntry.Name)
+                    {
+                        PositionZ = currentHeight,
+                        ExposureTime = float.Parse(exposureTime.Groups[1].Value) / 1000f
+                    };
                 }
             }
 
@@ -318,10 +369,19 @@ namespace UVtools.Core
 
         public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
         {
+            void UpdateLayers()
+            {
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                {
+                    this[layerIndex].ExposureTime = GetInitialLayerValueOrNormal(layerIndex, InitialExposureTime, LayerExposureTime);
+                }
+            }
+
             if (ReferenceEquals(modifier, PrintParameterModifier.InitialLayerCount))
             {
                 SliceSettings.HeadLayersNum =
                 OutputSettings.NumberBottomLayers = value.Convert<ushort>();
+                UpdateLayers();
                 UpdateGCode();
                 return true;
             }
@@ -329,6 +389,7 @@ namespace UVtools.Core
             {
                 SliceSettings.HeadLayersExpoMs = 
                 OutputSettings.BottomLayersTime = value.Convert<uint>()*1000;
+                UpdateLayers();
                 UpdateGCode();
                 return true;
             }
@@ -336,6 +397,7 @@ namespace UVtools.Core
             {
                 SliceSettings.LayersExpoMs =
                 OutputSettings.LayerTime = value.Convert<uint>() * 1000;
+                UpdateLayers();
                 UpdateGCode();
                 return true;
             }
@@ -453,17 +515,33 @@ namespace UVtools.Core
             GCode.AppendLine();
             GCode.AppendFormat(GCodeStart, Environment.NewLine);
 
+            float lastZPosition = 0;
+
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                //Layer layer = this[layerIndex];
+                Layer layer = this[layerIndex];
                 GCode.AppendLine($"{GCodeKeywordSlice} {layerIndex}");
                 GCode.AppendLine($"M106 S{GetInitialLayerValueOrNormal(layerIndex, OutputSettings.BottomLayerLightPWM, OutputSettings.LayerLightPWM)}");
-                GCode.AppendLine($"{GCodeKeywordDelay} {GetInitialLayerValueOrNormal(layerIndex, SliceSettings.HeadLayersExpoMs, SliceSettings.LayersExpoMs)}");
+                GCode.AppendLine($"{GCodeKeywordDelay} {layer.ExposureTime}");
                 GCode.AppendLine("M106 S0");
                 GCode.AppendLine(GCodeKeywordSliceBlank);
-                GCode.AppendLine($"G1 Z{LiftHeight} F{LiftSpeed}");
-                GCode.AppendLine($"G1 Z-{LiftHeight - LayerHeight} F{RetractSpeed}");
-                GCode.AppendLine($"{GCodeKeywordDelay} {GetInitialLayerValueOrNormal(layerIndex, SliceSettings.HeadLayersExpoMs, SliceSettings.LayersExpoMs)}");
+
+                if (lastZPosition != layer.PositionZ)
+                {
+                    if (LiftHeight > 0)
+                    {
+                        GCode.AppendLine($"G1 Z{LiftHeight} F{LiftSpeed}");
+                        GCode.AppendLine($"G1 Z-{LiftHeight - layer.PositionZ + lastZPosition} F{RetractSpeed}");
+                    }
+                    else
+                    {
+                        GCode.AppendLine($"G1 Z{layer.PositionZ - lastZPosition} F{LiftSpeed}");
+                    }
+                }
+
+                GCode.AppendLine($"{GCodeKeywordDelay} {layer.ExposureTime}");
+
+                lastZPosition = layer.PositionZ;
             }
 
             GCode.AppendFormat(GCodeEnd, Environment.NewLine, SliceSettings.LiftWhenFinished);

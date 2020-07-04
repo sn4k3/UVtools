@@ -13,12 +13,12 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
+using UVtools.Core.Operations;
 
-namespace UVtools.Core
+namespace UVtools.Core.FileFormats
 {
     public class SL1File : FileFormat
     {
@@ -476,7 +476,11 @@ namespace UVtools.Core
                     // - .png - 5 numbers
                     string layerStr = entity.Name.Substring(entity.Name.Length - 4 - 5, 5);
                     uint iLayer = uint.Parse(layerStr);
-                    LayerManager[iLayer] = new Layer(iLayer, entity.Open(), entity.Name);
+                    LayerManager[iLayer] = new Layer(iLayer, entity.Open(), entity.Name)
+                    {
+                        PositionZ = GetHeightFromLayer(iLayer),
+                        ExposureTime = GetInitialLayerValueOrNormal(iLayer, InitialExposureTime, LayerExposureTime)
+                    };
                     progress.ProcessedItems++;
                 }
             }
@@ -501,22 +505,37 @@ namespace UVtools.Core
 
         public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
         {
+            void UpdateLayers()
+            {
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                {
+                    this[layerIndex].ExposureTime = GetInitialLayerValueOrNormal(layerIndex, InitialExposureTime, LayerExposureTime);
+                }
+            }
+
             if (ReferenceEquals(modifier, PrintParameterModifier.InitialLayerCount))
             {
                 PrintSettings.FadedLayers =
                     OutputConfigSettings.NumFade = value.Convert<byte>();
+                UpdateLayers();
                 return true;
             }
             if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureSeconds))
             {
                 MaterialSettings.InitialExposureTime =
                     OutputConfigSettings.ExpTimeFirst = value.Convert<float>();
+
+                UpdateLayers();
+
                 return true;
             }
             if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
             {
                 MaterialSettings.ExposureTime =
                     OutputConfigSettings.ExpTime = value.Convert<float>();
+
+                UpdateLayers();
+
                 return true;
             }
 
@@ -890,13 +909,10 @@ namespace UVtools.Core
             if (to == typeof(CWSFile))
             {
                 CWSFile defaultFormat = (CWSFile)FindByType(typeof(CWSFile));
-                CWSFile file = new CWSFile
-                {
-                    LayerManager = LayerManager
-                };
+                CWSFile file = new CWSFile {LayerManager = LayerManager};
 
-                file.SliceSettings.Xppm = file.OutputSettings.PixPermmX = (float) Math.Round(LookupCustomValue<float>("Xppm", file.SliceSettings.Xppm), 3);
-                file.SliceSettings.Yppm = file.OutputSettings.PixPermmY = (float) Math.Round(LookupCustomValue<float>("Yppm", file.SliceSettings.Xppm), 3);
+                file.SliceSettings.Xppm = file.OutputSettings.PixPermmX = (float) Math.Round(LookupCustomValue<float>("Xppm", defaultFormat.SliceSettings.Xppm), 3);
+                file.SliceSettings.Yppm = file.OutputSettings.PixPermmY = (float) Math.Round(LookupCustomValue<float>("Yppm", defaultFormat.SliceSettings.Xppm), 3);
                 file.SliceSettings.Xres = file.OutputSettings.XResolution = (ushort)ResolutionX;
                 file.SliceSettings.Yres = file.OutputSettings.YResolution = (ushort)ResolutionY;
                 file.SliceSettings.Thickness = file.OutputSettings.LayerThickness = LayerHeight;

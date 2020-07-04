@@ -12,13 +12,13 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
 using UVtools.Core.Extensions;
+using UVtools.Core.Operations;
 
-namespace UVtools.Core
+namespace UVtools.Core.FileFormats
 {
     /// <summary>
     /// Slicer <see cref="FileFormat"/> representation
@@ -274,7 +274,7 @@ namespace UVtools.Core
 
         public abstract float LayerHeight { get; }
 
-        public float TotalHeight => (float)Math.Round(LayerCount * LayerHeight, 2);
+        public float TotalHeight => LayerCount == 0 ? 0 : this[LayerCount - 1].PositionZ; //(float)Math.Round(LayerCount * LayerHeight, 2);
 
         public uint LayerCount => LayerManager?.Count ?? 0;
         

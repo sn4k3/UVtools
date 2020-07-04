@@ -1,11 +1,11 @@
 ﻿using System;
 using System.IO;
-using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using UVtools.Core.Operations;
 using Size = System.Drawing.Size;
 
-namespace UVtools.Core
+namespace UVtools.Core.FileFormats
 {
     public class ImageFile : FileFormat
     {

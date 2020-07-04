@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using UVtools.Core;
+using UVtools.Core.FileFormats;
 using UVtools.GUI.Properties;
 
 namespace UVtools.GUI.Forms

@@ -1,5 +1,15 @@
 # Changelog
 
+## 02/07/2020 - v0.6.1.1
+
+* (Add) Allow chitubox, phz, pws, pw0 files convert to cws
+* (Add) Allow convert between cbddlp, ctb and photon
+* (Add) Allow convert between pws and pw0
+* (Improvement) Layers can now have modified heights and independent parameters (#9)
+* (Improvement) UVtools now generate better gcode and detect the lack of Lift and same z position and optimize the commands
+* (Fix) zcodex: Wasn't reporting layer decoding progress
+
+
 ## 02/07/2020 - v0.6.1.0
 
 * (Add) Thumbnail image can now saved to clipboard

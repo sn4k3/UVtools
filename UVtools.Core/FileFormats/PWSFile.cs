@@ -16,8 +16,9 @@ using BinarySerialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
+using UVtools.Core.Operations;
 
-namespace UVtools.Core
+namespace UVtools.Core.FileFormats
 {
     public class PWSFile : FileFormat
     {
@@ -403,8 +404,9 @@ namespace UVtools.Core
                 Parent = parent;
                 LiftHeight = Parent.HeaderSettings.LiftHeight;
                 LiftSpeed = Parent.HeaderSettings.LiftSpeed;
-                LayerExposure = layerIndex < Parent.InitialLayerCount ? Parent.HeaderSettings.BottomExposureSeconds : Parent.HeaderSettings.LayerExposureTime;
-                LayerPositionZ = Parent.GetHeightFromLayer(layerIndex);
+
+                LayerPositionZ = parent[layerIndex].PositionZ;
+                LayerExposure = parent[layerIndex].ExposureTime;
             }
 
             public Mat Decode(bool consumeData = true)
@@ -754,7 +756,8 @@ namespace UVtools.Core
         {
             //typeof(ChituboxZipFile)
             //typeof(PHZFile),
-            //typeof(ZCodexFile),
+            typeof(PWSFile),
+            typeof(CWSFile),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
@@ -1007,7 +1010,11 @@ namespace UVtools.Core
 
                     using (var image = LayersDefinition[(uint) layerIndex].Decode())
                     {
-                        this[layerIndex] = new Layer((uint) layerIndex, image);
+                        this[layerIndex] = new Layer((uint) layerIndex, image)
+                        {
+                            PositionZ = LayersDefinition[(uint)layerIndex].LayerPositionZ,
+                            ExposureTime = LayersDefinition[(uint)layerIndex].LayerExposure
+                        };
                     }
 
                     lock (progress.Mutex)
@@ -1035,9 +1042,9 @@ namespace UVtools.Core
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
                     // Bottom : others
-                    LayersDefinition[layerIndex].LayerExposure = layerIndex < HeaderSettings.BottomLayersCount
-                        ? HeaderSettings.BottomExposureSeconds
-                        : HeaderSettings.LayerExposureTime;
+
+                    this[layerIndex].ExposureTime =
+                        LayersDefinition[layerIndex].LayerExposure = GetInitialLayerValueOrNormal(layerIndex, HeaderSettings.BottomExposureSeconds, HeaderSettings.LayerExposureTime);
                 }
             }
 
@@ -1129,6 +1136,39 @@ namespace UVtools.Core
 
         public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
         {
+            if (to == typeof(PWSFile))
+            {
+                if (Path.GetExtension(FileFullPath).Equals(Path.GetExtension(fileFullPath)))
+                {
+                    return false;
+                }
+                PWSFile file = new PWSFile
+                {
+                    LayerManager = LayerManager,
+                    HeaderSettings =
+                    {
+                        ResolutionX = ResolutionX,
+                        ResolutionY = ResolutionY,
+                        LayerHeight = LayerHeight,
+                        LayerExposureTime = LayerExposureTime,
+                        LiftHeight = LiftHeight,
+                        LiftSpeed = LiftSpeed / 60,
+                        RetractSpeed = RetractSpeed / 60,
+                        LayerOffTime = HeaderSettings.LayerOffTime,
+                        BottomLayersCount = InitialLayerCount,
+                        BottomExposureSeconds = InitialExposureTime,
+                        Price = MaterialCost,
+                        Volume = UsedMaterial,
+                        Weight = HeaderSettings.Weight,
+                        AntiAliasing = ValidateAntiAliasingLevel()
+                    }
+                };
+
+                file.SetThumbnails(Thumbnails);
+                file.Encode(fileFullPath, progress);
+
+                return true;
+            }
             /*if (to == typeof(PHZFile))
             {
                 PHZFile file = new PHZFile
@@ -1262,6 +1302,46 @@ namespace UVtools.Core
                 return true;
             }
             */
+
+            if (to == typeof(CWSFile))
+            {
+                CWSFile defaultFormat = (CWSFile)FindByType(typeof(CWSFile));
+                CWSFile file = new CWSFile { LayerManager = LayerManager };
+
+                //file.SliceSettings.Xppm = file.OutputSettings.PixPermmX = defaultFormat.OutputSettings.
+                //file.SliceSettings.Yppm = file.OutputSettings.PixPermmY = (float)Math.Round(ResolutionY / HeaderSettings.BedSizeY, 3);
+                file.SliceSettings.Xres = file.OutputSettings.XResolution = (ushort)ResolutionX;
+                file.SliceSettings.Yres = file.OutputSettings.YResolution = (ushort)ResolutionY;
+                file.SliceSettings.Thickness = file.OutputSettings.LayerThickness = LayerHeight;
+                file.SliceSettings.LayersNum = file.OutputSettings.LayersNum = LayerCount;
+                file.SliceSettings.HeadLayersNum = file.OutputSettings.NumberBottomLayers = InitialLayerCount;
+                file.SliceSettings.LayersExpoMs = file.OutputSettings.LayerTime = (uint)LayerExposureTime * 1000;
+                file.SliceSettings.HeadLayersExpoMs = file.OutputSettings.BottomLayersTime = (uint)InitialExposureTime * 1000;
+                file.SliceSettings.WaitBeforeExpoMs = (uint)(HeaderSettings.LayerOffTime * 1000);
+                file.SliceSettings.LiftDistance = file.OutputSettings.LiftDistance = LiftHeight;
+                file.SliceSettings.LiftUpSpeed = file.OutputSettings.ZLiftFeedRate = LiftSpeed;
+                file.SliceSettings.LiftDownSpeed = file.OutputSettings.ZLiftRetractRate = RetractSpeed;
+                file.SliceSettings.LiftWhenFinished = defaultFormat.SliceSettings.LiftWhenFinished;
+
+                file.OutputSettings.BlankingLayerTime = (uint)(HeaderSettings.LayerOffTime * 1000);
+                //file.OutputSettings.RenderOutlines = false;
+                //file.OutputSettings.OutlineWidthInset = 0;
+                //file.OutputSettings.OutlineWidthOutset = 0;
+                file.OutputSettings.RenderOutlines = false;
+                //file.OutputSettings.TiltValue = 0;
+                //file.OutputSettings.UseMainliftGCodeTab = false;
+                //file.OutputSettings.AntiAliasing = 0;
+                //file.OutputSettings.AntiAliasingValue = 0;
+                //file.OutputSettings.FlipX = HeaderSettings. != 0;
+                //file.OutputSettings.FlipY = file.OutputSettings.FlipX;
+                file.OutputSettings.AntiAliasingValue = ValidateAntiAliasingLevel();
+                file.OutputSettings.AntiAliasing = file.OutputSettings.AntiAliasingValue > 1;
+
+                file.Encode(fileFullPath, progress);
+
+                return true;
+            }
+
             return false;
         }
         #endregion
