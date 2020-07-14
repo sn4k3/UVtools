@@ -1060,7 +1060,7 @@ namespace UVtools.Core.FileFormats
                 }
 
 
-                if (HeaderSettings.Version == 2)
+                if (HeaderSettings.Version >= 2)
                 {
                     HeaderSettings.PrintParametersOffsetAddress = currentOffset;
 
@@ -1196,8 +1196,6 @@ namespace UVtools.Core.FileFormats
                     progress++;
                 }
 
-                //if (HeaderSettings.Version == 2)
-                //{
                 if (HeaderSettings.PrintParametersOffsetAddress > 0)
                 {
                     inputFile.Seek(HeaderSettings.PrintParametersOffsetAddress, SeekOrigin.Begin);
@@ -1417,7 +1415,7 @@ namespace UVtools.Core.FileFormats
                 outputFile.Seek(0, SeekOrigin.Begin);
                 Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 
-                if (HeaderSettings.Version == 2 && HeaderSettings.PrintParametersOffsetAddress > 0)
+                if (HeaderSettings.Version >= 2 && HeaderSettings.PrintParametersOffsetAddress > 0)
                 {
                     outputFile.Seek(HeaderSettings.PrintParametersOffsetAddress, SeekOrigin.Begin);
                     Helpers.SerializeWriteFileStream(outputFile, PrintParametersSettings);

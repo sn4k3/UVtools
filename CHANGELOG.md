@@ -1,5 +1,9 @@
 # Changelog
 
+## 14/07/2020 - v0.6.2.2
+
+* (Add) cbddlp, photon and ctb version 3 compability (Chitubox >= 1.6.5)
+
 ## 14/07/2020 - v0.6.2.1
 
 * (Fix) Mutator: Erode was doing pixel dimming
