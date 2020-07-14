@@ -1,14 +1,20 @@
-﻿using System;
+﻿/*
+ *                     GNU AFFERO GENERAL PUBLIC LICENSE
+ *                       Version 3, 19 November 2007
+ *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ *  Everyone is permitted to copy and distribute verbatim copies
+ *  of this license document, but changing it is not allowed.
+ */
+using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
-using System.Text;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
+using Stream = System.IO.Stream;
 
 namespace UVtools.Core
 {
@@ -18,6 +24,8 @@ namespace UVtools.Core
     public class Layer : IEquatable<Layer>, IEquatable<uint>
     {
         #region Properties
+
+        public object Mutex = new object();
 
         /// <summary>
         /// Gets the parent layer manager
@@ -492,6 +500,10 @@ namespace UVtools.Core
                 else
                 {
                     CvInvoke.Flip(mat, mat, flipType);
+                    /*GpuMat gpumat = new GpuMat();
+                    gpumat.Upload(mat);
+                    CudaInvoke.Flip(gpumat, gpumat, flipType);
+                    gpumat.Download(mat);*/
                 }
 
                 LayerMat = mat;
@@ -555,6 +567,91 @@ namespace UVtools.Core
             }
         }
 
+        public void MutatePixelDimming(Matrix<byte> evenPattern = null, Matrix<byte> oddPattern = null, ushort borderSize = 5)
+        {
+            var anchor = new Point(-1, -1);
+            var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+            if (ReferenceEquals(evenPattern, null))
+            {
+                evenPattern = new Matrix<byte>(2, 2)
+                {
+                    [0, 0] = 127,
+                    [0, 1] = 255,
+                    [1, 0] = 255,
+                    [1, 1] = 127,
+                };
+
+                if (ReferenceEquals(oddPattern, null))
+                {
+                    oddPattern = new Matrix<byte>(2, 2)
+                    {
+                        [0, 0] = 255,
+                        [0, 1] = 127,
+                        [1, 0] = 127,
+                        [1, 1] = 255,
+                    };
+                }
+            }
+
+            using (Mat dst = LayerMat)
+            {
+                using (Mat erode = new Mat())
+                {
+                    using (Mat diff = new Mat())
+                    {
+                        using (Mat mask = dst.CloneBlank())
+                        {
+                            CvInvoke.Erode(dst, erode, kernel, anchor, borderSize, BorderType.Default, default);
+                            CvInvoke.Subtract(dst, erode, diff);
+
+                            if (Index % 2 == 0)
+                            {
+                                CvInvoke.Repeat(evenPattern, dst.Rows / evenPattern.Rows + 1, dst.Cols / evenPattern.Cols + 1, mask);
+                            }
+                            else
+                            {
+                                CvInvoke.Repeat(oddPattern, dst.Rows / oddPattern.Rows + 1, dst.Cols / oddPattern.Cols + 1, mask);
+                            }
+
+                            using (var maskReshape = new Mat(mask, new Rectangle(0, 0, dst.Width, dst.Height)))
+                            {
+                                CvInvoke.BitwiseAnd(erode, maskReshape, dst);
+                            }
+
+                            CvInvoke.Add(dst, diff, dst);
+                            LayerMat = dst;
+                        }
+                    }
+                }
+            }
+        }
+
+        public void MutatePixelDimming(Mat evenPatternMask, Mat oddPatternMask = null, ushort borderSize = 5)
+        {
+            var anchor = new Point(-1, -1);
+            var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+            
+            if (ReferenceEquals(oddPatternMask, null))
+            {
+                oddPatternMask = evenPatternMask;
+            }
+
+            using (Mat dst = LayerMat)
+            {
+                using (Mat erode = new Mat())
+                {
+                    using (Mat diff = new Mat())
+                    {
+                        CvInvoke.Erode(dst, erode, kernel, anchor, borderSize, BorderType.Default, default);
+                        CvInvoke.Subtract(dst, erode, diff);
+                        CvInvoke.BitwiseAnd(erode, Index % 2 == 0 ? evenPatternMask : oddPatternMask, dst);
+                        CvInvoke.Add(dst, diff, dst);
+                        LayerMat = dst;
+                    }
+                }
+            }
+        }
+
         public void MutateErode(int iterations = 1, IInputArray kernel = null, Point anchor = default, BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
         {
             if (anchor.IsEmpty) anchor = new Point(-1, -1);
@@ -565,6 +662,28 @@ namespace UVtools.Core
             using (Mat dst = LayerMat)
             {
                 CvInvoke.Erode(dst, dst, kernel, anchor, iterations, borderType, borderValue);
+                var matrix = new Matrix<byte>(2, 4)
+                {
+                    [0, 0] = 255, [0, 1] = 255, [0, 2] = 125, [0, 3] = 255,
+                    [1, 0] = 125,   [1, 1] = 255, [1, 2] = 255, [1, 3] = 255
+                    //[0, 0] = 1,
+                    //[0, 0] = 1,
+                };
+
+                Mat erode = new Mat();
+                kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+                CvInvoke.Erode(dst, erode, kernel, anchor, 5, BorderType.Default, default);
+                Mat diff = new Mat();
+                CvInvoke.Subtract(dst, erode, diff);
+
+                Mat test = dst.CloneBlank();
+                CvInvoke.Repeat(matrix, dst.Rows/ matrix.Rows, dst.Cols/ matrix.Cols, test);
+
+                CvInvoke.BitwiseAnd(erode, test, dst);
+
+                CvInvoke.Add(dst, diff, dst);
+                
+                //CvInvoke.CopyMakeBorder(LayerMat, dst, 5, 5, 5, 5, BorderType.Wrap);
                 LayerMat = dst;
             }
         }

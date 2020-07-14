@@ -58,6 +58,26 @@
   <PropertyGroup>
     <StartupObject>UVtools.GUI.Program</StartupObject>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="ApplicationManagement">
       <HintPath>Libraries\ApplicationManagement.dll</HintPath>
@@ -131,6 +151,12 @@
     </Compile>
     <Compile Include="Forms\FrmInstallPEProfiles.Designer.cs">
       <DependentUpon>FrmInstallPEProfiles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FrmMutationPixelDimming.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmMutationPixelDimming.Designer.cs">
+      <DependentUpon>FrmMutationPixelDimming.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\FrmToolPattern.cs">
       <SubType>Form</SubType>
@@ -213,6 +239,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmInstallPEProfiles.resx">
       <DependentUpon>FrmInstallPEProfiles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmMutationPixelDimming.resx">
+      <DependentUpon>FrmMutationPixelDimming.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolPattern.resx">
       <DependentUpon>FrmToolPattern.cs</DependentUpon>

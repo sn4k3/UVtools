@@ -23,3 +23,4 @@
 
 * Ingo Strohmenger
 * Sven Vogt
+* Paul Hammerstrom

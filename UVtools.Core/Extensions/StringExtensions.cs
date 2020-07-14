@@ -9,6 +9,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 
 namespace UVtools.Core.Extensions
 {
@@ -28,6 +29,9 @@ namespace UVtools.Core.Extensions
                 default: return input.First().ToString().ToUpper() + input.Substring(1);
             }
         }
+
+        public static string Repeat(this string s, int n)
+            => n <= 0 ? string.Empty : new StringBuilder(s.Length * n).Insert(0, s, n).ToString();
 
         /// <summary>
         /// Converts a string into a target type

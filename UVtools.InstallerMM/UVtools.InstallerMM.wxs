@@ -124,8 +124,14 @@
             <Component Id="owc9F0ED1D4E7D104FE0DC61D9F7CFE999A" Guid="9d8198ed-268b-949f-3b40-9967c446da71">
               <File Id="owf9F0ED1D4E7D104FE0DC61D9F7CFE999A" Source="$(var.SourceDir)\PrusaSlicer\printer\AnyCubic Photon.ini" KeyPath="yes" />
             </Component>
+            <Component Id="owc2D65B5F143AFF68394B6D49E35F733CB" Guid="f40836a1-6896-dfa1-8626-d57f46549860">
+              <File Id="owf2D65B5F143AFF68394B6D49E35F733CB" Source="$(var.SourceDir)\PrusaSlicer\printer\Creality LD-002H.ini" KeyPath="yes" />
+            </Component>
             <Component Id="owc7EDB8251A3EA203AF2B7D4CA7ACE2CD2" Guid="ee32d320-1828-deba-29ca-a05a60720cfc">
               <File Id="owf7EDB8251A3EA203AF2B7D4CA7ACE2CD2" Source="$(var.SourceDir)\PrusaSlicer\printer\Creality LD-002R.ini" KeyPath="yes" />
+            </Component>
+            <Component Id="owc9F847F8652D12A49A3141CEED1453FBE" Guid="94d9a62e-4dd1-7b92-a5cd-2ba6b168a7fa">
+              <File Id="owf9F847F8652D12A49A3141CEED1453FBE" Source="$(var.SourceDir)\PrusaSlicer\printer\Elegoo Mars 2 Pro.ini" KeyPath="yes" />
             </Component>
             <Component Id="owc260A3135FA730F1E8324D011F6A1C4B0" Guid="7a4e2e49-81f9-7ad2-786a-4b4434c0707f">
               <File Id="owf260A3135FA730F1E8324D011F6A1C4B0" Source="$(var.SourceDir)\PrusaSlicer\printer\Elegoo Mars Saturn.ini" KeyPath="yes" />
@@ -135,6 +141,9 @@
             </Component>
             <Component Id="owc76AABDF1DF0C1F5E05FF1F07A1630357" Guid="e472beae-9800-814f-adcb-846954b58041">
               <File Id="owf76AABDF1DF0C1F5E05FF1F07A1630357" Source="$(var.SourceDir)\PrusaSlicer\printer\EPAX X1.ini" KeyPath="yes" />
+            </Component>
+            <Component Id="owcDA2EA6E2743E70BDDA7CAB980D1B2CEC" Guid="5ee7032c-2c78-95e0-56d7-695c7fff3ad9">
+              <File Id="owfDA2EA6E2743E70BDDA7CAB980D1B2CEC" Source="$(var.SourceDir)\PrusaSlicer\printer\EPAX X10 4K Mono.ini" KeyPath="yes" />
             </Component>
             <Component Id="owc96C59034EB76D71E85BCE617CECE04D8" Guid="c082b835-0284-a751-669b-6171ff55fd10">
               <File Id="owf96C59034EB76D71E85BCE617CECE04D8" Source="$(var.SourceDir)\PrusaSlicer\printer\EPAX X10.ini" KeyPath="yes" />
@@ -186,6 +195,9 @@
             </Component>
             <Component Id="owcA3F28F12E3289ECC5D85DE40DF866B26" Guid="509cc36e-f75c-132e-2c61-66f31434a7cb">
               <File Id="owfA3F28F12E3289ECC5D85DE40DF866B26" Source="$(var.SourceDir)\PrusaSlicer\printer\QIDI Shadow6.0 Pro.ini" KeyPath="yes" />
+            </Component>
+            <Component Id="owcA2B1227B6887F96BE420BAA2A0E92921" Guid="74a541bf-cf28-0f5f-60f4-7196cc1880ce">
+              <File Id="owfA2B1227B6887F96BE420BAA2A0E92921" Source="$(var.SourceDir)\PrusaSlicer\printer\Voxelab Polaris.ini" KeyPath="yes" />
             </Component>
             <Component Id="owcB527CA38F45FBB0A2DD46961788AE79C" Guid="743425a9-38e2-6c9a-c52e-f64281bf0ec5">
               <File Id="owfB527CA38F45FBB0A2DD46961788AE79C" Source="$(var.SourceDir)\PrusaSlicer\printer\Wanhao D7.ini" KeyPath="yes" />

@@ -1,5 +1,31 @@
 # Changelog
 
+## 14/07/2020 - v0.6.2.0
+
+* (Add) PrusaSlicer Printer: Elegoo Mars 2 Pro
+* (Add) PrusaSlicer Printer: Creality LD-002H
+* (Add) PrusaSlicer Printer: Voxelab Polaris
+* (Add) File Format: UVJ (#8)
+* (Add) Mutataor: Pixel Dimming
+* (Add) Pixel Editor tab with new drawing functions
+* (Add) Pixel Editor: Bursh area and shape
+* (Add) Pixel Editor: Supports
+* (Add) Pixel Editor: Drain holes
+* (Add) Settings for pixel editor
+* (Add) Setting: File open default directory
+* (Add) Setting: File save default directory
+* (Add) Setting: File extract default directory
+* (Add) Setting: File convert default directory
+* (Add) Setting: File save prompt for overwrite (#10)
+* (Add) Setting: File save preffix and suffix name
+* (Add) Setting: UVtools version to the title bar
+* (Improvement) Force same directory as input file on dialogs
+* (Improvement) Pattern: Better positioning when not using an anchor, now it's more center friendly
+* (Change) Setting: Start maximized defaults to true
+* (Fix) Pattern: Calculated volume was appending one margin width/height more
+* (Fix) When cancel a file load, some shortcuts can crash the program as it assume file is loaded
+* (Fix) pws: Encode using the same count-of-threshold method as CBDDLP (ezrec/uv3dp#79)
+
 ## 02/07/2020 - v0.6.1.1
 
 * (Add) Allow chitubox, phz, pws, pw0 files convert to cws
@@ -8,7 +34,6 @@
 * (Improvement) Layers can now have modified heights and independent parameters (#9)
 * (Improvement) UVtools now generate better gcode and detect the lack of Lift and same z position and optimize the commands
 * (Fix) zcodex: Wasn't reporting layer decoding progress
-
 
 ## 02/07/2020 - v0.6.1.0
 
@@ -33,7 +58,6 @@
 * (Fix) When click on button "New version is available" sometimes it crash the program
 * (Fix) Force 1 layer scroll when using Mouse Wheel to scroll the tracker bar
 * (Fix) PrusaSlicer printers: Mirror vertically instead to produce equal orientation compared with chitubox
-
 
 ## 29/06/2020 - v0.6.0.1
 
@@ -104,7 +128,6 @@
 * (Change) If the GUI window is bigger than current screen resolution, it will start maximized istead
 * (Fix) cbddlp: AntiAlias is number of _greys_, not number of significant bits (ezrec/uv3dp#75)
 * (Fix) Outline not working as before, due a forget to remove test code
-
 
 ## 17/06/2020 - v0.5.1.2
 

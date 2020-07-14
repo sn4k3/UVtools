@@ -686,6 +686,7 @@ namespace UVtools.Core.FileFormats
             typeof(PWSFile),
             typeof(ZCodexFile),
             typeof(CWSFile),
+            typeof(UVJFile),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
@@ -1226,15 +1227,15 @@ namespace UVtools.Core.FileFormats
                         Mirror = (byte)  (HeaderSettings.ProjectorType == 0 ? 0 : 1),
 
 
-                        BottomLayerLiftHeight = HeaderSettings.BottomLiftHeight,
-                        LayerLiftHeight = HeaderSettings.LiftHeight,
-                        BottomLayerLiftSpeed = HeaderSettings.BottomLiftSpeed,
-                        LayerLiftSpeed = HeaderSettings.LiftSpeed,
+                        BottomLiftHeight = HeaderSettings.BottomLiftHeight,
+                        LiftHeight = HeaderSettings.LiftHeight,
+                        BottomLiftSpeed = HeaderSettings.BottomLiftSpeed,
+                        LiftSpeed = HeaderSettings.LiftSpeed,
                         RetractSpeed = HeaderSettings.RetractSpeed,
                         BottomLayCount = InitialLayerCount,
                         BottomLayerCount = InitialLayerCount,
                         BottomLightOffTime = HeaderSettings.BottomLightOffDelay,
-                        LayerLightOffTime = HeaderSettings.LayerOffTime,
+                        LightOffTime = HeaderSettings.LayerOffTime,
                         BottomLayExposureTime = InitialExposureTime,
                         BottomLayerExposureTime = InitialExposureTime,
                         LayerExposureTime = LayerExposureTime,
@@ -1404,6 +1405,58 @@ namespace UVtools.Core.FileFormats
                 file.OutputSettings.AntiAliasingValue = ValidateAntiAliasingLevel();
                 file.OutputSettings.AntiAliasing = file.OutputSettings.AntiAliasingValue > 1;
 
+                file.Encode(fileFullPath, progress);
+
+                return true;
+            }
+
+            if (to == typeof(UVJFile))
+            {
+                UVJFile file = new UVJFile
+                {
+                    LayerManager = LayerManager,
+                    JsonSettings = new UVJFile.Settings
+                    {
+                        Properties = new UVJFile.Properties
+                        {
+                            Size = new UVJFile.Size
+                            {
+                                X = (ushort)ResolutionX,
+                                Y = (ushort)ResolutionY,
+                                Millimeter = new UVJFile.Millimeter
+                                {
+                                    X = HeaderSettings.BedSizeX,
+                                    Y = HeaderSettings.BedSizeY,
+                                },
+                                LayerHeight = LayerHeight,
+                                Layers = LayerCount
+                            },
+                            Bottom = new UVJFile.Bottom
+                            {
+                                LiftHeight = HeaderSettings.BottomLiftHeight,
+                                LiftSpeed = HeaderSettings.BottomLiftSpeed,
+                                LightOnTime = InitialExposureTime,
+                                LightOffTime = HeaderSettings.BottomLightOffDelay,
+                                LightPWM = (byte)HeaderSettings.BottomLightPWM,
+                                RetractSpeed = HeaderSettings.RetractSpeed,
+                                Count = InitialLayerCount
+                                //RetractHeight = LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.JsonSettings.Properties.Bottom.RetractHeight),
+                            },
+                            Exposure = new UVJFile.Exposure
+                            {
+                                LiftHeight = HeaderSettings.LiftHeight,
+                                LiftSpeed = HeaderSettings.LiftSpeed,
+                                LightOnTime = LayerExposureTime,
+                                LightOffTime = HeaderSettings.LayerOffTime,
+                                LightPWM = (byte)HeaderSettings.LightPWM,
+                                RetractSpeed = HeaderSettings.RetractSpeed,
+                            },
+                            AntiAliasLevel = ValidateAntiAliasingLevel()
+                        }
+                    }
+                };
+
+                file.SetThumbnails(Thumbnails);
                 file.Encode(fileFullPath, progress);
 
                 return true;

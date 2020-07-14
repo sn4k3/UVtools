@@ -136,6 +136,7 @@ namespace UVtools.Core.FileFormats
             new PWSFile(),   // PSW
             new ZCodexFile(),   // zcodex
             new CWSFile(),   // CWS
+            new UVJFile(),   // UVJ
             new ImageFile(),   // images
         };
 

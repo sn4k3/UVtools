@@ -299,6 +299,7 @@ namespace UVtools.Core.FileFormats
             typeof(PHZFile),
             typeof(ZCodexFile),
             typeof(CWSFile),
+            typeof(UVJFile),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
@@ -693,15 +694,15 @@ namespace UVtools.Core.FileFormats
                         Mirror = (byte) (PrinterSettings.DisplayMirrorX || PrinterSettings.DisplayMirrorY ? 1 : 0),
 
 
-                        BottomLayerLiftHeight = LookupCustomValue<float>(Keyword_BottomLiftHeight, defaultFormat.HeaderSettings.BottomLayerLiftHeight),
-                        LayerLiftHeight = LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.HeaderSettings.LayerLiftHeight),
-                        BottomLayerLiftSpeed = LookupCustomValue<float>(Keyword_BottomLiftSpeed, defaultFormat.HeaderSettings.BottomLayerLiftSpeed),
-                        LayerLiftSpeed = LookupCustomValue<float>(Keyword_LiftSpeed, defaultFormat.HeaderSettings.LayerLiftSpeed),
+                        BottomLiftHeight = LookupCustomValue<float>(Keyword_BottomLiftHeight, defaultFormat.HeaderSettings.BottomLiftHeight),
+                        LiftHeight = LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.HeaderSettings.LiftHeight),
+                        BottomLiftSpeed = LookupCustomValue<float>(Keyword_BottomLiftSpeed, defaultFormat.HeaderSettings.BottomLiftSpeed),
+                        LiftSpeed = LookupCustomValue<float>(Keyword_LiftSpeed, defaultFormat.HeaderSettings.LiftSpeed),
                         RetractSpeed = LookupCustomValue<float>(Keyword_RetractSpeed, defaultFormat.HeaderSettings.RetractSpeed),
                         BottomLayCount = InitialLayerCount,
                         BottomLayerCount = InitialLayerCount,
                         BottomLightOffTime = LookupCustomValue<float>(Keyword_BottomLightOffDelay, defaultFormat.HeaderSettings.BottomLightOffTime),
-                        LayerLightOffTime = LookupCustomValue<float>(Keyword_LightOffDelay, defaultFormat.HeaderSettings.LayerLightOffTime),
+                        LightOffTime = LookupCustomValue<float>(Keyword_LightOffDelay, defaultFormat.HeaderSettings.LightOffTime),
                         BottomLayExposureTime = InitialExposureTime,
                         BottomLayerExposureTime = InitialExposureTime,
                         LayerExposureTime = LayerExposureTime,
@@ -948,6 +949,65 @@ namespace UVtools.Core.FileFormats
                     file.SliceSettings.Yres = file.OutputSettings.YResolution = (ushort) ResolutionX;
                 }
 
+                file.Encode(fileFullPath, progress);
+
+                return true;
+            }
+
+            if (to == typeof(UVJFile))
+            {
+                UVJFile defaultFormat = (UVJFile)FindByType(typeof(UVJFile));
+                UVJFile file = new UVJFile
+                {
+                    LayerManager = LayerManager,
+                    JsonSettings = new UVJFile.Settings
+                    {
+                        Properties = new UVJFile.Properties
+                        {
+                            Size = new UVJFile.Size
+                            {
+                                X = (ushort)ResolutionX,
+                                Y = (ushort)ResolutionY,
+                                Millimeter = new UVJFile.Millimeter
+                                {
+                                    X = PrinterSettings.DisplayWidth,
+                                    Y = PrinterSettings.DisplayHeight,
+                                },
+                                LayerHeight = LayerHeight,
+                                Layers = LayerCount
+                            },
+                            Bottom = new UVJFile.Bottom
+                            {
+                                LiftHeight = LookupCustomValue<float>(Keyword_BottomLiftHeight, defaultFormat.JsonSettings.Properties.Bottom.LiftHeight),
+                                LiftSpeed = LookupCustomValue<float>(Keyword_BottomLiftSpeed, defaultFormat.JsonSettings.Properties.Bottom.LiftSpeed),
+                                LightOnTime = InitialExposureTime,
+                                LightOffTime = LookupCustomValue<float>(Keyword_BottomLightOffDelay, defaultFormat.JsonSettings.Properties.Bottom.LightOffTime),
+                                LightPWM = LookupCustomValue<byte>(Keyword_BottomLightPWM, defaultFormat.JsonSettings.Properties.Bottom.LightPWM),
+                                RetractSpeed = LookupCustomValue<float>(Keyword_RetractSpeed, defaultFormat.JsonSettings.Properties.Bottom.RetractSpeed),
+                                Count = InitialLayerCount
+                                //RetractHeight = LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.JsonSettings.Properties.Bottom.RetractHeight),
+                            },
+                            Exposure = new UVJFile.Exposure
+                            {
+                                LiftHeight = LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.JsonSettings.Properties.Exposure.LiftHeight),
+                                LiftSpeed = LookupCustomValue<float>(Keyword_LiftSpeed, defaultFormat.JsonSettings.Properties.Exposure.LiftSpeed),
+                                LightOnTime = LayerExposureTime,
+                                LightOffTime = LookupCustomValue<float>(Keyword_LightOffDelay, defaultFormat.JsonSettings.Properties.Exposure.LightOffTime),
+                                LightPWM = LookupCustomValue<byte>(Keyword_LightPWM, defaultFormat.JsonSettings.Properties.Exposure.LightPWM),
+                                RetractSpeed = LookupCustomValue<float>(Keyword_RetractSpeed, defaultFormat.JsonSettings.Properties.Exposure.RetractSpeed),
+                            },
+                            AntiAliasLevel = ValidateAntiAliasingLevel()
+                        }
+                    }
+                };
+
+                if (LookupCustomValue<bool>("FLIP_XY", false, true))
+                {
+                    file.JsonSettings.Properties.Size.X = (ushort) ResolutionY;
+                    file.JsonSettings.Properties.Size.Y = (ushort) ResolutionX;
+                }
+
+                file.SetThumbnails(Thumbnails);
                 file.Encode(fileFullPath, progress);
 
                 return true;

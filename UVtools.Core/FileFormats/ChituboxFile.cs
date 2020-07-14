@@ -914,6 +914,7 @@ namespace UVtools.Core.FileFormats
             typeof(PHZFile),
             typeof(ZCodexFile),
             typeof(CWSFile),
+            typeof(UVJFile),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
@@ -1523,15 +1524,15 @@ namespace UVtools.Core.FileFormats
                         Mirror = (byte)  (HeaderSettings.ProjectorType == 0 ? 0 : 1),
 
 
-                        BottomLayerLiftHeight = PrintParametersSettings.BottomLiftHeight,
-                        LayerLiftHeight = PrintParametersSettings.LiftHeight,
-                        BottomLayerLiftSpeed = PrintParametersSettings.BottomLiftSpeed,
-                        LayerLiftSpeed = PrintParametersSettings.LiftSpeed,
+                        BottomLiftHeight = PrintParametersSettings.BottomLiftHeight,
+                        LiftHeight = PrintParametersSettings.LiftHeight,
+                        BottomLiftSpeed = PrintParametersSettings.BottomLiftSpeed,
+                        LiftSpeed = PrintParametersSettings.LiftSpeed,
                         RetractSpeed = PrintParametersSettings.RetractSpeed,
                         BottomLayCount = InitialLayerCount,
                         BottomLayerCount = InitialLayerCount,
                         BottomLightOffTime = PrintParametersSettings.BottomLightOffDelay,
-                        LayerLightOffTime = PrintParametersSettings.LightOffDelay,
+                        LightOffTime = PrintParametersSettings.LightOffDelay,
                         BottomLayExposureTime = InitialExposureTime,
                         BottomLayerExposureTime = InitialExposureTime,
                         LayerExposureTime = LayerExposureTime,
@@ -1749,6 +1750,58 @@ namespace UVtools.Core.FileFormats
                 file.OutputSettings.AntiAliasingValue = ValidateAntiAliasingLevel();
                 file.OutputSettings.AntiAliasing = file.OutputSettings.AntiAliasingValue > 1;
 
+                file.Encode(fileFullPath, progress);
+
+                return true;
+            }
+
+            if (to == typeof(UVJFile))
+            {
+                UVJFile file = new UVJFile
+                {
+                    LayerManager = LayerManager,
+                    JsonSettings = new UVJFile.Settings
+                    {
+                        Properties = new UVJFile.Properties
+                        {
+                            Size = new UVJFile.Size
+                            {
+                                X = (ushort)ResolutionX,
+                                Y = (ushort)ResolutionY,
+                                Millimeter = new UVJFile.Millimeter
+                                {
+                                    X = HeaderSettings.BedSizeX,
+                                    Y = HeaderSettings.BedSizeY,
+                                },
+                                LayerHeight = LayerHeight,
+                                Layers = LayerCount
+                            },
+                            Bottom = new UVJFile.Bottom
+                            {
+                                LiftHeight = PrintParametersSettings.BottomLiftHeight,
+                                LiftSpeed = PrintParametersSettings.BottomLiftSpeed,
+                                LightOnTime = InitialExposureTime,
+                                LightOffTime = PrintParametersSettings.BottomLightOffDelay,
+                                LightPWM = (byte) HeaderSettings.BottomLightPWM,
+                                RetractSpeed = PrintParametersSettings.RetractSpeed,
+                                Count = InitialLayerCount
+                                //RetractHeight = LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.JsonSettings.Properties.Bottom.RetractHeight),
+                            },
+                            Exposure = new UVJFile.Exposure
+                            {
+                                LiftHeight = PrintParametersSettings.LiftHeight,
+                                LiftSpeed = PrintParametersSettings.LiftSpeed,
+                                LightOnTime = LayerExposureTime,
+                                LightOffTime = PrintParametersSettings.LightOffDelay,
+                                LightPWM = (byte) HeaderSettings.LightPWM,
+                                RetractSpeed = PrintParametersSettings.RetractSpeed,
+                            },
+                            AntiAliasLevel = ValidateAntiAliasingLevel()
+                        }
+                    }
+                };
+
+                file.SetThumbnails(Thumbnails);
                 file.Encode(fileFullPath, progress);
 
                 return true;

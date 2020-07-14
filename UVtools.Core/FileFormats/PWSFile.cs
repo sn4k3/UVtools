@@ -432,8 +432,6 @@ namespace UVtools.Core.FileFormats
                 int index = 0;
                 for (byte bit = 0; bit < Parent.AntiAliasing; bit++)
                 {
-                    byte bitValue = (byte)(byte.MaxValue / ((1 << Parent.AntiAliasing) - 1) * (1 << bit));
-
                     int pixel = 0;
                     for (; index < EncodedRle.Length; index++)
                     {
@@ -446,7 +444,7 @@ namespace UVtools.Core.FileFormats
                         {
                             for (int i = 0; i < reps; i++)
                             {
-                                span[pixel + i] |= bitValue;
+                                span[pixel + i]++;
                             }
                         }
 
@@ -464,6 +462,18 @@ namespace UVtools.Core.FileFormats
                             throw new FileLoadException("Error image ran off the end");
                         }
                     }
+                }
+
+                for (int i = 0; i < span.Length; i++)
+                {
+                    int newC = span[i] * (256 / Parent.AntiAliasing);
+
+                    if (newC > 0)
+                    {
+                        newC--;
+                    }
+
+                    span[i] = (byte)newC;
                 }
 
                 return image;
@@ -497,10 +507,18 @@ namespace UVtools.Core.FileFormats
                     obit = false;
                     rep = 0;
 
+                    //ngrey:= uint16(r | g | b)
+                    // thresholds:
+                    // aa 1:  127
+                    // aa 2:  255 127
+                    // aa 4:  255 191 127 63
+                    // aa 8:  255 223 191 159 127 95 63 31
+                    byte threshold = (byte)(256 / Parent.AntiAliasing * aalevel - 1);
+
 
                     for (int pixel = 0; pixel < span.Length; pixel++)
                     {
-                        var nbit = (span[pixel] & (1 << (8 - Parent.AntiAliasing + aalevel))) != 0;
+                        var nbit = span[pixel] >= threshold;
 
                         if (nbit == obit)
                         {
@@ -758,6 +776,7 @@ namespace UVtools.Core.FileFormats
             //typeof(PHZFile),
             typeof(PWSFile),
             typeof(CWSFile),
+            typeof(UVJFile),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
@@ -1337,6 +1356,58 @@ namespace UVtools.Core.FileFormats
                 file.OutputSettings.AntiAliasingValue = ValidateAntiAliasingLevel();
                 file.OutputSettings.AntiAliasing = file.OutputSettings.AntiAliasingValue > 1;
 
+                file.Encode(fileFullPath, progress);
+
+                return true;
+            }
+
+            if (to == typeof(UVJFile))
+            {
+                UVJFile file = new UVJFile
+                {
+                    LayerManager = LayerManager,
+                    JsonSettings = new UVJFile.Settings
+                    {
+                        Properties = new UVJFile.Properties
+                        {
+                            Size = new UVJFile.Size
+                            {
+                                X = (ushort)ResolutionX,
+                                Y = (ushort)ResolutionY,
+                                Millimeter = new UVJFile.Millimeter
+                                {
+                                    //X = HeaderSettings.BedSizeX,
+                                    //Y = HeaderSettings.BedSizeY,
+                                },
+                                LayerHeight = LayerHeight,
+                                Layers = LayerCount
+                            },
+                            Bottom = new UVJFile.Bottom
+                            {
+                                LiftHeight = HeaderSettings.LiftHeight,
+                                LiftSpeed = HeaderSettings.LiftSpeed,
+                                LightOnTime = InitialExposureTime,
+                                LightOffTime = HeaderSettings.LayerOffTime,
+                                //LightPWM = (byte)HeaderSettings.LightPWM,
+                                RetractSpeed = HeaderSettings.RetractSpeed,
+                                Count = InitialLayerCount
+                                //RetractHeight = LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.JsonSettings.Properties.Bottom.RetractHeight),
+                            },
+                            Exposure = new UVJFile.Exposure
+                            {
+                                LiftHeight = HeaderSettings.LiftHeight,
+                                LiftSpeed = HeaderSettings.LiftSpeed,
+                                LightOnTime = LayerExposureTime,
+                                LightOffTime = HeaderSettings.LayerOffTime,
+                                //LightPWM = (byte)HeaderSettings.LightPWM,
+                                RetractSpeed = HeaderSettings.RetractSpeed,
+                            },
+                            AntiAliasLevel = ValidateAntiAliasingLevel()
+                        }
+                    }
+                };
+
+                file.SetThumbnails(Thumbnails);
                 file.Encode(fileFullPath, progress);
 
                 return true;

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.GUI.Properties;
 
@@ -13,6 +12,8 @@ namespace UVtools.GUI.Forms
         public FrmSettings()
         {
             InitializeComponent();
+
+            Text = $"UVtools - Settings [v{FrmAbout.AssemblyVersion}]";
 
             var fileFormats = new List<string>
             {
@@ -31,6 +32,13 @@ namespace UVtools.GUI.Forms
                 cbCheckForUpdatesOnStartup.Checked = Settings.Default.CheckForUpdatesOnStartup;
                 cbStartMaximized.Checked = Settings.Default.StartMaximized;
                 cbDefaultOpenFileExtension.SelectedIndex = Settings.Default.DefaultOpenFileExtension;
+                tbFileOpenDefaultDirectory.Text = Settings.Default.FileOpenDefaultDirectory;
+                tbFileSaveDefaultDirectory.Text = Settings.Default.FileSaveDefaultDirectory;
+                tbFileExtractDefaultDirectory.Text = Settings.Default.FileExtractDefaultDirectory;
+                tbFileConvertDefaultDirectory.Text = Settings.Default.FileConvertDefaultDirectory;
+                cbFileSavePromptOverwrite.Checked = Settings.Default.FileSavePromptOverwrite;
+                tbFileSaveNamePreffix.Text = Settings.Default.FileSaveNamePreffix;
+                tbFileSaveNameSuffix.Text = Settings.Default.FileSaveNameSuffix;
 
                 btnPreviousNextLayerColor.BackColor = Settings.Default.PreviousNextLayerColor;
                 btnPreviousLayerColor.BackColor = Settings.Default.PreviousLayerColor;
@@ -70,6 +78,11 @@ namespace UVtools.GUI.Forms
                 nmResinTrapRequiredAreaToProcessCheck.Value = Settings.Default.ResinTrapRequiredAreaToProcessCheck;
                 nmResinTrapRequiredBlackPixelsToDrain.Value = Settings.Default.ResinTrapRequiredBlackPixelsToDrain;
                 nmResinTrapMaximumPixelBrightnessToDrain.Value = Settings.Default.ResinTrapMaximumPixelBrightnessToDrain;
+
+                btnPixelEditorAddPixelColor.BackColor = Settings.Default.PixelEditorAddPixelColor;
+                btnPixelEditorRemovePixelColor.BackColor = Settings.Default.PixelEditorRemovePixelColor;
+                btnPixelEditorSupportColor.BackColor = Settings.Default.PixelEditorSupportColor;
+                btnPixelEditorDrainHoleColor.BackColor = Settings.Default.PixelEditorDrainHoleColor;
             }
             catch (Exception ex)
             {
@@ -92,7 +105,11 @@ namespace UVtools.GUI.Forms
                 ReferenceEquals(sender, btnTouchingBoundsColor) ||
                 ReferenceEquals(sender, btnOutlinePrintVolumeBoundsColor) ||
                 ReferenceEquals(sender, btnOutlineLayerBoundsColor) ||
-                ReferenceEquals(sender, btnOutlineHollowAreasColor)
+                ReferenceEquals(sender, btnOutlineHollowAreasColor) ||
+                ReferenceEquals(sender, btnPixelEditorAddPixelColor) ||
+                ReferenceEquals(sender, btnPixelEditorRemovePixelColor) ||
+                ReferenceEquals(sender, btnPixelEditorSupportColor) ||
+                ReferenceEquals(sender, btnPixelEditorDrainHoleColor)
                 )
             {
                 Button btn = sender as Button;
@@ -103,6 +120,41 @@ namespace UVtools.GUI.Forms
 
                 return;
 
+            }
+
+            if (ReferenceEquals(sender, btnFileOpenDefaultDirectorySearch) || ReferenceEquals(sender, btnFileSaveDefaultDirectorySearch) || ReferenceEquals(sender, btnFileConvertDefaultDirectorySearch) || ReferenceEquals(sender, btnFileExtractDefaultDirectorySearch))
+            {
+                using (FolderBrowserDialog folder = new FolderBrowserDialog())
+                {
+                    if (folder.ShowDialog() != DialogResult.OK) return;
+                    if (ReferenceEquals(sender, btnFileOpenDefaultDirectorySearch)) tbFileOpenDefaultDirectory.Text = folder.SelectedPath;
+                    else if (ReferenceEquals(sender, btnFileSaveDefaultDirectorySearch)) tbFileSaveDefaultDirectory.Text = folder.SelectedPath;
+                    else if (ReferenceEquals(sender, btnFileExtractDefaultDirectorySearch)) tbFileExtractDefaultDirectory.Text = folder.SelectedPath;
+                    else if (ReferenceEquals(sender, btnFileConvertDefaultDirectorySearch)) tbFileConvertDefaultDirectory.Text = folder.SelectedPath;
+                }
+
+                return;
+            }
+
+            if (ReferenceEquals(sender, btnFileOpenDefaultDirectoryClear))
+            {
+                tbFileOpenDefaultDirectory.Text = string.Empty;
+                return;
+            }
+            if (ReferenceEquals(sender, btnFileSaveDefaultDirectoryClear))
+            {
+                tbFileSaveDefaultDirectory.Text = string.Empty;
+                return;
+            }
+            if (ReferenceEquals(sender, btnFileExtractDefaultDirectoryClear))
+            {
+                tbFileExtractDefaultDirectory.Text = string.Empty;
+                return;
+            }
+            if (ReferenceEquals(sender, btnFileConvertDefaultDirectoryClear))
+            {
+                tbFileConvertDefaultDirectory.Text = string.Empty;
+                return;
             }
 
             if (ReferenceEquals(sender, btnReset))
@@ -122,6 +174,13 @@ namespace UVtools.GUI.Forms
                 Settings.Default.CheckForUpdatesOnStartup = cbCheckForUpdatesOnStartup.Checked;
                 Settings.Default.StartMaximized = cbStartMaximized.Checked;
                 Settings.Default.DefaultOpenFileExtension = (byte) cbDefaultOpenFileExtension.SelectedIndex;
+                Settings.Default.FileOpenDefaultDirectory = tbFileOpenDefaultDirectory.Text;
+                Settings.Default.FileSaveDefaultDirectory = tbFileSaveDefaultDirectory.Text;
+                Settings.Default.FileExtractDefaultDirectory = tbFileExtractDefaultDirectory.Text;
+                Settings.Default.FileConvertDefaultDirectory = tbFileConvertDefaultDirectory.Text;
+                Settings.Default.FileSavePromptOverwrite = cbFileSavePromptOverwrite.Checked;
+                Settings.Default.FileSaveNamePreffix = tbFileSaveNamePreffix.Text.Trim();
+                Settings.Default.FileSaveNameSuffix = tbFileSaveNameSuffix.Text.Trim();
 
                 Settings.Default.PreviousNextLayerColor = btnPreviousNextLayerColor.BackColor;
                 Settings.Default.PreviousLayerColor = btnPreviousLayerColor.BackColor;
@@ -161,6 +220,11 @@ namespace UVtools.GUI.Forms
                 Settings.Default.ResinTrapRequiredAreaToProcessCheck = (byte)nmResinTrapRequiredAreaToProcessCheck.Value;
                 Settings.Default.ResinTrapRequiredBlackPixelsToDrain = (byte)nmResinTrapRequiredBlackPixelsToDrain.Value;
                 Settings.Default.ResinTrapMaximumPixelBrightnessToDrain = (byte)nmResinTrapMaximumPixelBrightnessToDrain.Value;
+
+                Settings.Default.PixelEditorAddPixelColor = btnPixelEditorAddPixelColor.BackColor;
+                Settings.Default.PixelEditorRemovePixelColor = btnPixelEditorRemovePixelColor.BackColor;
+                Settings.Default.PixelEditorSupportColor = btnPixelEditorSupportColor.BackColor;
+                Settings.Default.PixelEditorDrainHoleColor = btnPixelEditorDrainHoleColor.BackColor;
 
                 Settings.Default.Save();
                 DialogResult = DialogResult.OK;

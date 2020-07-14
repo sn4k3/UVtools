@@ -93,11 +93,43 @@
             this.cbAutoComputeIssuesClickOnTab = new System.Windows.Forms.CheckBox();
             this.tabSettings = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.cbDefaultOpenFileExtension = new System.Windows.Forms.ComboBox();
             this.label22 = new System.Windows.Forms.Label();
+            this.cbDefaultOpenFileExtension = new System.Windows.Forms.ComboBox();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.btnPixelEditorDrainHoleColor = new System.Windows.Forms.Button();
+            this.label26 = new System.Windows.Forms.Label();
+            this.btnPixelEditorSupportColor = new System.Windows.Forms.Button();
+            this.label25 = new System.Windows.Forms.Label();
+            this.btnPixelEditorRemovePixelColor = new System.Windows.Forms.Button();
+            this.label24 = new System.Windows.Forms.Label();
+            this.label23 = new System.Windows.Forms.Label();
+            this.btnPixelEditorAddPixelColor = new System.Windows.Forms.Button();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.cbFileSavePromptOverwrite = new System.Windows.Forms.CheckBox();
+            this.label27 = new System.Windows.Forms.Label();
+            this.tbFileSaveNamePreffix = new System.Windows.Forms.TextBox();
+            this.tbFileSaveNameSuffix = new System.Windows.Forms.TextBox();
+            this.label28 = new System.Windows.Forms.Label();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.tbFileOpenDefaultDirectory = new System.Windows.Forms.TextBox();
+            this.label29 = new System.Windows.Forms.Label();
+            this.btnFileOpenDefaultDirectorySearch = new System.Windows.Forms.Button();
+            this.btnFileOpenDefaultDirectoryClear = new System.Windows.Forms.Button();
+            this.btnFileSaveDefaultDirectoryClear = new System.Windows.Forms.Button();
+            this.btnFileSaveDefaultDirectorySearch = new System.Windows.Forms.Button();
+            this.label30 = new System.Windows.Forms.Label();
+            this.tbFileSaveDefaultDirectory = new System.Windows.Forms.TextBox();
+            this.btnFileConvertDefaultDirectoryClear = new System.Windows.Forms.Button();
+            this.btnFileConvertDefaultDirectorySearch = new System.Windows.Forms.Button();
+            this.label31 = new System.Windows.Forms.Label();
+            this.tbFileConvertDefaultDirectory = new System.Windows.Forms.TextBox();
+            this.btnFileExtractDefaultDirectoryClear = new System.Windows.Forms.Button();
+            this.btnFileExtractDefaultDirectorySearch = new System.Windows.Forms.Button();
+            this.label32 = new System.Windows.Forms.Label();
+            this.tbFileExtractDefaultDirectory = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineHollowAreasLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineLayerBoundsLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlinePrintVolumeBoundsLineThickness)).BeginInit();
@@ -116,8 +148,11 @@
             this.tabSettings.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
-            this.panel1.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.tabPage4.SuspendLayout();
+            this.panel1.SuspendLayout();
+            this.groupBox4.SuspendLayout();
+            this.groupBox5.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -308,7 +343,7 @@
             // cbCheckForUpdatesOnStartup
             // 
             this.cbCheckForUpdatesOnStartup.AutoSize = true;
-            this.cbCheckForUpdatesOnStartup.Location = new System.Drawing.Point(9, 34);
+            this.cbCheckForUpdatesOnStartup.Location = new System.Drawing.Point(6, 51);
             this.cbCheckForUpdatesOnStartup.Name = "cbCheckForUpdatesOnStartup";
             this.cbCheckForUpdatesOnStartup.Size = new System.Drawing.Size(218, 22);
             this.cbCheckForUpdatesOnStartup.TabIndex = 7;
@@ -318,7 +353,7 @@
             // cbStartMaximized
             // 
             this.cbStartMaximized.AutoSize = true;
-            this.cbStartMaximized.Location = new System.Drawing.Point(9, 6);
+            this.cbStartMaximized.Location = new System.Drawing.Point(6, 23);
             this.cbStartMaximized.Name = "cbStartMaximized";
             this.cbStartMaximized.Size = new System.Drawing.Size(133, 22);
             this.cbStartMaximized.TabIndex = 6;
@@ -941,6 +976,7 @@
             this.tabSettings.Controls.Add(this.tabPage1);
             this.tabSettings.Controls.Add(this.tabPage2);
             this.tabSettings.Controls.Add(this.tabPage3);
+            this.tabSettings.Controls.Add(this.tabPage4);
             this.tabSettings.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabSettings.Location = new System.Drawing.Point(0, 0);
             this.tabSettings.Name = "tabSettings";
@@ -950,10 +986,8 @@
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.label22);
-            this.tabPage1.Controls.Add(this.cbDefaultOpenFileExtension);
-            this.tabPage1.Controls.Add(this.cbCheckForUpdatesOnStartup);
-            this.tabPage1.Controls.Add(this.cbStartMaximized);
+            this.tabPage1.Controls.Add(this.groupBox5);
+            this.tabPage1.Controls.Add(this.groupBox4);
             this.tabPage1.Location = new System.Drawing.Point(4, 27);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
@@ -961,6 +995,25 @@
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "General";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(6, 27);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(214, 18);
+            this.label22.TabIndex = 9;
+            this.label22.Text = "File load default view extension:";
+            // 
+            // cbDefaultOpenFileExtension
+            // 
+            this.cbDefaultOpenFileExtension.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbDefaultOpenFileExtension.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbDefaultOpenFileExtension.FormattingEnabled = true;
+            this.cbDefaultOpenFileExtension.Location = new System.Drawing.Point(225, 23);
+            this.cbDefaultOpenFileExtension.Name = "cbDefaultOpenFileExtension";
+            this.cbDefaultOpenFileExtension.Size = new System.Drawing.Size(379, 26);
+            this.cbDefaultOpenFileExtension.TabIndex = 8;
             // 
             // tabPage2
             // 
@@ -1003,17 +1056,6 @@
             this.tabPage2.Text = "Layer Preview";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // panel1
-            // 
-            this.panel1.Controls.Add(this.btnCancel);
-            this.panel1.Controls.Add(this.btnSave);
-            this.panel1.Controls.Add(this.btnReset);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 452);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(624, 77);
-            this.panel1.TabIndex = 19;
-            // 
             // tabPage3
             // 
             this.tabPage3.Controls.Add(this.groupBox3);
@@ -1027,24 +1069,365 @@
             this.tabPage3.Text = "Issues";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
-            // cbDefaultOpenFileExtension
+            // tabPage4
             // 
-            this.cbDefaultOpenFileExtension.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cbDefaultOpenFileExtension.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbDefaultOpenFileExtension.FormattingEnabled = true;
-            this.cbDefaultOpenFileExtension.Location = new System.Drawing.Point(225, 62);
-            this.cbDefaultOpenFileExtension.Name = "cbDefaultOpenFileExtension";
-            this.cbDefaultOpenFileExtension.Size = new System.Drawing.Size(382, 26);
-            this.cbDefaultOpenFileExtension.TabIndex = 8;
+            this.tabPage4.Controls.Add(this.btnPixelEditorDrainHoleColor);
+            this.tabPage4.Controls.Add(this.label26);
+            this.tabPage4.Controls.Add(this.btnPixelEditorSupportColor);
+            this.tabPage4.Controls.Add(this.label25);
+            this.tabPage4.Controls.Add(this.btnPixelEditorRemovePixelColor);
+            this.tabPage4.Controls.Add(this.label24);
+            this.tabPage4.Controls.Add(this.label23);
+            this.tabPage4.Controls.Add(this.btnPixelEditorAddPixelColor);
+            this.tabPage4.Location = new System.Drawing.Point(4, 27);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage4.Size = new System.Drawing.Size(616, 498);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "Pixel Editor";
+            this.tabPage4.UseVisualStyleBackColor = true;
             // 
-            // label22
+            // btnPixelEditorDrainHoleColor
             // 
-            this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(6, 66);
-            this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(213, 18);
-            this.label22.TabIndex = 9;
-            this.label22.Text = "Default file extension at file load";
+            this.btnPixelEditorDrainHoleColor.BackColor = System.Drawing.Color.White;
+            this.btnPixelEditorDrainHoleColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnPixelEditorDrainHoleColor.FlatAppearance.BorderSize = 2;
+            this.btnPixelEditorDrainHoleColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPixelEditorDrainHoleColor.Location = new System.Drawing.Point(152, 131);
+            this.btnPixelEditorDrainHoleColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnPixelEditorDrainHoleColor.Name = "btnPixelEditorDrainHoleColor";
+            this.btnPixelEditorDrainHoleColor.Size = new System.Drawing.Size(32, 32);
+            this.btnPixelEditorDrainHoleColor.TabIndex = 9;
+            this.btnPixelEditorDrainHoleColor.UseVisualStyleBackColor = false;
+            this.btnPixelEditorDrainHoleColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Location = new System.Drawing.Point(9, 138);
+            this.label26.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(117, 18);
+            this.label26.TabIndex = 8;
+            this.label26.Text = "Drain hole color:";
+            // 
+            // btnPixelEditorSupportColor
+            // 
+            this.btnPixelEditorSupportColor.BackColor = System.Drawing.Color.White;
+            this.btnPixelEditorSupportColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnPixelEditorSupportColor.FlatAppearance.BorderSize = 2;
+            this.btnPixelEditorSupportColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPixelEditorSupportColor.Location = new System.Drawing.Point(152, 91);
+            this.btnPixelEditorSupportColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnPixelEditorSupportColor.Name = "btnPixelEditorSupportColor";
+            this.btnPixelEditorSupportColor.Size = new System.Drawing.Size(32, 32);
+            this.btnPixelEditorSupportColor.TabIndex = 7;
+            this.btnPixelEditorSupportColor.UseVisualStyleBackColor = false;
+            this.btnPixelEditorSupportColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(9, 98);
+            this.label25.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(102, 18);
+            this.label25.TabIndex = 6;
+            this.label25.Text = "Support color:";
+            // 
+            // btnPixelEditorRemovePixelColor
+            // 
+            this.btnPixelEditorRemovePixelColor.BackColor = System.Drawing.Color.White;
+            this.btnPixelEditorRemovePixelColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnPixelEditorRemovePixelColor.FlatAppearance.BorderSize = 2;
+            this.btnPixelEditorRemovePixelColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPixelEditorRemovePixelColor.Location = new System.Drawing.Point(152, 51);
+            this.btnPixelEditorRemovePixelColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnPixelEditorRemovePixelColor.Name = "btnPixelEditorRemovePixelColor";
+            this.btnPixelEditorRemovePixelColor.Size = new System.Drawing.Size(32, 32);
+            this.btnPixelEditorRemovePixelColor.TabIndex = 5;
+            this.btnPixelEditorRemovePixelColor.UseVisualStyleBackColor = false;
+            this.btnPixelEditorRemovePixelColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(9, 58);
+            this.label24.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(135, 18);
+            this.label24.TabIndex = 4;
+            this.label24.Text = "Pixel remove color:";
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(9, 17);
+            this.label23.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(109, 18);
+            this.label23.TabIndex = 2;
+            this.label23.Text = "Pixel add color:";
+            // 
+            // btnPixelEditorAddPixelColor
+            // 
+            this.btnPixelEditorAddPixelColor.BackColor = System.Drawing.Color.White;
+            this.btnPixelEditorAddPixelColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnPixelEditorAddPixelColor.FlatAppearance.BorderSize = 2;
+            this.btnPixelEditorAddPixelColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPixelEditorAddPixelColor.Location = new System.Drawing.Point(152, 10);
+            this.btnPixelEditorAddPixelColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnPixelEditorAddPixelColor.Name = "btnPixelEditorAddPixelColor";
+            this.btnPixelEditorAddPixelColor.Size = new System.Drawing.Size(32, 32);
+            this.btnPixelEditorAddPixelColor.TabIndex = 3;
+            this.btnPixelEditorAddPixelColor.UseVisualStyleBackColor = false;
+            this.btnPixelEditorAddPixelColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.btnCancel);
+            this.panel1.Controls.Add(this.btnSave);
+            this.panel1.Controls.Add(this.btnReset);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel1.Location = new System.Drawing.Point(0, 452);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(624, 77);
+            this.panel1.TabIndex = 19;
+            // 
+            // cbFileSavePromptOverwrite
+            // 
+            this.cbFileSavePromptOverwrite.AutoSize = true;
+            this.cbFileSavePromptOverwrite.Location = new System.Drawing.Point(9, 175);
+            this.cbFileSavePromptOverwrite.Name = "cbFileSavePromptOverwrite";
+            this.cbFileSavePromptOverwrite.Size = new System.Drawing.Size(381, 22);
+            this.cbFileSavePromptOverwrite.TabIndex = 10;
+            this.cbFileSavePromptOverwrite.Text = "On file \"Save\" prompt for file overwrite for the first time";
+            this.cbFileSavePromptOverwrite.UseVisualStyleBackColor = true;
+            // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Location = new System.Drawing.Point(9, 206);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(147, 18);
+            this.label27.TabIndex = 11;
+            this.label27.Text = "File \"Save as\" Preffix:";
+            // 
+            // tbFileSaveNamePreffix
+            // 
+            this.tbFileSaveNamePreffix.Location = new System.Drawing.Point(162, 203);
+            this.tbFileSaveNamePreffix.Name = "tbFileSaveNamePreffix";
+            this.tbFileSaveNamePreffix.Size = new System.Drawing.Size(184, 24);
+            this.tbFileSaveNamePreffix.TabIndex = 12;
+            // 
+            // tbFileSaveNameSuffix
+            // 
+            this.tbFileSaveNameSuffix.Location = new System.Drawing.Point(420, 203);
+            this.tbFileSaveNameSuffix.Name = "tbFileSaveNameSuffix";
+            this.tbFileSaveNameSuffix.Size = new System.Drawing.Size(184, 24);
+            this.tbFileSaveNameSuffix.TabIndex = 13;
+            // 
+            // label28
+            // 
+            this.label28.AutoSize = true;
+            this.label28.Location = new System.Drawing.Point(361, 206);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(48, 18);
+            this.label28.TabIndex = 14;
+            this.label28.Text = "Suffix:";
+            // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.cbStartMaximized);
+            this.groupBox4.Controls.Add(this.cbCheckForUpdatesOnStartup);
+            this.groupBox4.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBox4.Location = new System.Drawing.Point(3, 3);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(610, 83);
+            this.groupBox4.TabIndex = 15;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "Startup";
+            // 
+            // groupBox5
+            // 
+            this.groupBox5.Controls.Add(this.btnFileExtractDefaultDirectoryClear);
+            this.groupBox5.Controls.Add(this.btnFileExtractDefaultDirectorySearch);
+            this.groupBox5.Controls.Add(this.label32);
+            this.groupBox5.Controls.Add(this.tbFileExtractDefaultDirectory);
+            this.groupBox5.Controls.Add(this.btnFileConvertDefaultDirectoryClear);
+            this.groupBox5.Controls.Add(this.btnFileConvertDefaultDirectorySearch);
+            this.groupBox5.Controls.Add(this.label31);
+            this.groupBox5.Controls.Add(this.tbFileConvertDefaultDirectory);
+            this.groupBox5.Controls.Add(this.btnFileSaveDefaultDirectoryClear);
+            this.groupBox5.Controls.Add(this.btnFileSaveDefaultDirectorySearch);
+            this.groupBox5.Controls.Add(this.label30);
+            this.groupBox5.Controls.Add(this.tbFileSaveDefaultDirectory);
+            this.groupBox5.Controls.Add(this.btnFileOpenDefaultDirectoryClear);
+            this.groupBox5.Controls.Add(this.btnFileOpenDefaultDirectorySearch);
+            this.groupBox5.Controls.Add(this.label29);
+            this.groupBox5.Controls.Add(this.tbFileOpenDefaultDirectory);
+            this.groupBox5.Controls.Add(this.label22);
+            this.groupBox5.Controls.Add(this.cbDefaultOpenFileExtension);
+            this.groupBox5.Controls.Add(this.label28);
+            this.groupBox5.Controls.Add(this.cbFileSavePromptOverwrite);
+            this.groupBox5.Controls.Add(this.tbFileSaveNameSuffix);
+            this.groupBox5.Controls.Add(this.label27);
+            this.groupBox5.Controls.Add(this.tbFileSaveNamePreffix);
+            this.groupBox5.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBox5.Location = new System.Drawing.Point(3, 86);
+            this.groupBox5.Name = "groupBox5";
+            this.groupBox5.Size = new System.Drawing.Size(610, 250);
+            this.groupBox5.TabIndex = 16;
+            this.groupBox5.TabStop = false;
+            this.groupBox5.Text = "File operations";
+            // 
+            // tbFileOpenDefaultDirectory
+            // 
+            this.tbFileOpenDefaultDirectory.Location = new System.Drawing.Point(225, 55);
+            this.tbFileOpenDefaultDirectory.Name = "tbFileOpenDefaultDirectory";
+            this.tbFileOpenDefaultDirectory.ReadOnly = true;
+            this.tbFileOpenDefaultDirectory.Size = new System.Drawing.Size(307, 24);
+            this.tbFileOpenDefaultDirectory.TabIndex = 15;
+            // 
+            // label29
+            // 
+            this.label29.AutoSize = true;
+            this.label29.Location = new System.Drawing.Point(6, 58);
+            this.label29.Name = "label29";
+            this.label29.Size = new System.Drawing.Size(180, 18);
+            this.label29.TabIndex = 16;
+            this.label29.Text = "File open default directory:";
+            // 
+            // btnFileOpenDefaultDirectorySearch
+            // 
+            this.btnFileOpenDefaultDirectorySearch.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
+            this.btnFileOpenDefaultDirectorySearch.Location = new System.Drawing.Point(538, 55);
+            this.btnFileOpenDefaultDirectorySearch.Name = "btnFileOpenDefaultDirectorySearch";
+            this.btnFileOpenDefaultDirectorySearch.Size = new System.Drawing.Size(30, 24);
+            this.btnFileOpenDefaultDirectorySearch.TabIndex = 17;
+            this.btnFileOpenDefaultDirectorySearch.UseVisualStyleBackColor = true;
+            this.btnFileOpenDefaultDirectorySearch.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnFileOpenDefaultDirectoryClear
+            // 
+            this.btnFileOpenDefaultDirectoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.btnFileOpenDefaultDirectoryClear.Location = new System.Drawing.Point(574, 55);
+            this.btnFileOpenDefaultDirectoryClear.Name = "btnFileOpenDefaultDirectoryClear";
+            this.btnFileOpenDefaultDirectoryClear.Size = new System.Drawing.Size(30, 24);
+            this.btnFileOpenDefaultDirectoryClear.TabIndex = 18;
+            this.btnFileOpenDefaultDirectoryClear.UseVisualStyleBackColor = true;
+            this.btnFileOpenDefaultDirectoryClear.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnFileSaveDefaultDirectoryClear
+            // 
+            this.btnFileSaveDefaultDirectoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.btnFileSaveDefaultDirectoryClear.Location = new System.Drawing.Point(574, 85);
+            this.btnFileSaveDefaultDirectoryClear.Name = "btnFileSaveDefaultDirectoryClear";
+            this.btnFileSaveDefaultDirectoryClear.Size = new System.Drawing.Size(30, 24);
+            this.btnFileSaveDefaultDirectoryClear.TabIndex = 22;
+            this.btnFileSaveDefaultDirectoryClear.UseVisualStyleBackColor = true;
+            this.btnFileSaveDefaultDirectoryClear.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnFileSaveDefaultDirectorySearch
+            // 
+            this.btnFileSaveDefaultDirectorySearch.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
+            this.btnFileSaveDefaultDirectorySearch.Location = new System.Drawing.Point(538, 85);
+            this.btnFileSaveDefaultDirectorySearch.Name = "btnFileSaveDefaultDirectorySearch";
+            this.btnFileSaveDefaultDirectorySearch.Size = new System.Drawing.Size(30, 24);
+            this.btnFileSaveDefaultDirectorySearch.TabIndex = 21;
+            this.btnFileSaveDefaultDirectorySearch.UseVisualStyleBackColor = true;
+            this.btnFileSaveDefaultDirectorySearch.Click += new System.EventHandler(this.EventClick);
+            // 
+            // label30
+            // 
+            this.label30.AutoSize = true;
+            this.label30.Location = new System.Drawing.Point(6, 88);
+            this.label30.Name = "label30";
+            this.label30.Size = new System.Drawing.Size(198, 18);
+            this.label30.TabIndex = 20;
+            this.label30.Text = "File save as default directory:";
+            // 
+            // tbFileSaveDefaultDirectory
+            // 
+            this.tbFileSaveDefaultDirectory.Location = new System.Drawing.Point(225, 85);
+            this.tbFileSaveDefaultDirectory.Name = "tbFileSaveDefaultDirectory";
+            this.tbFileSaveDefaultDirectory.ReadOnly = true;
+            this.tbFileSaveDefaultDirectory.Size = new System.Drawing.Size(307, 24);
+            this.tbFileSaveDefaultDirectory.TabIndex = 19;
+            // 
+            // btnFileConvertDefaultDirectoryClear
+            // 
+            this.btnFileConvertDefaultDirectoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.btnFileConvertDefaultDirectoryClear.Location = new System.Drawing.Point(574, 145);
+            this.btnFileConvertDefaultDirectoryClear.Name = "btnFileConvertDefaultDirectoryClear";
+            this.btnFileConvertDefaultDirectoryClear.Size = new System.Drawing.Size(30, 24);
+            this.btnFileConvertDefaultDirectoryClear.TabIndex = 26;
+            this.btnFileConvertDefaultDirectoryClear.UseVisualStyleBackColor = true;
+            this.btnFileConvertDefaultDirectoryClear.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnFileConvertDefaultDirectorySearch
+            // 
+            this.btnFileConvertDefaultDirectorySearch.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
+            this.btnFileConvertDefaultDirectorySearch.Location = new System.Drawing.Point(538, 145);
+            this.btnFileConvertDefaultDirectorySearch.Name = "btnFileConvertDefaultDirectorySearch";
+            this.btnFileConvertDefaultDirectorySearch.Size = new System.Drawing.Size(30, 24);
+            this.btnFileConvertDefaultDirectorySearch.TabIndex = 25;
+            this.btnFileConvertDefaultDirectorySearch.UseVisualStyleBackColor = true;
+            this.btnFileConvertDefaultDirectorySearch.Click += new System.EventHandler(this.EventClick);
+            // 
+            // label31
+            // 
+            this.label31.AutoSize = true;
+            this.label31.Location = new System.Drawing.Point(6, 148);
+            this.label31.Name = "label31";
+            this.label31.Size = new System.Drawing.Size(196, 18);
+            this.label31.TabIndex = 24;
+            this.label31.Text = "File convert default directory:";
+            // 
+            // tbFileConvertDefaultDirectory
+            // 
+            this.tbFileConvertDefaultDirectory.Location = new System.Drawing.Point(225, 145);
+            this.tbFileConvertDefaultDirectory.Name = "tbFileConvertDefaultDirectory";
+            this.tbFileConvertDefaultDirectory.ReadOnly = true;
+            this.tbFileConvertDefaultDirectory.Size = new System.Drawing.Size(307, 24);
+            this.tbFileConvertDefaultDirectory.TabIndex = 23;
+            // 
+            // btnFileExtractDefaultDirectoryClear
+            // 
+            this.btnFileExtractDefaultDirectoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.btnFileExtractDefaultDirectoryClear.Location = new System.Drawing.Point(574, 115);
+            this.btnFileExtractDefaultDirectoryClear.Name = "btnFileExtractDefaultDirectoryClear";
+            this.btnFileExtractDefaultDirectoryClear.Size = new System.Drawing.Size(30, 24);
+            this.btnFileExtractDefaultDirectoryClear.TabIndex = 30;
+            this.btnFileExtractDefaultDirectoryClear.UseVisualStyleBackColor = true;
+            this.btnFileExtractDefaultDirectoryClear.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnFileExtractDefaultDirectorySearch
+            // 
+            this.btnFileExtractDefaultDirectorySearch.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
+            this.btnFileExtractDefaultDirectorySearch.Location = new System.Drawing.Point(538, 115);
+            this.btnFileExtractDefaultDirectorySearch.Name = "btnFileExtractDefaultDirectorySearch";
+            this.btnFileExtractDefaultDirectorySearch.Size = new System.Drawing.Size(30, 24);
+            this.btnFileExtractDefaultDirectorySearch.TabIndex = 29;
+            this.btnFileExtractDefaultDirectorySearch.UseVisualStyleBackColor = true;
+            this.btnFileExtractDefaultDirectorySearch.Click += new System.EventHandler(this.EventClick);
+            // 
+            // label32
+            // 
+            this.label32.AutoSize = true;
+            this.label32.Location = new System.Drawing.Point(6, 118);
+            this.label32.Name = "label32";
+            this.label32.Size = new System.Drawing.Size(191, 18);
+            this.label32.TabIndex = 28;
+            this.label32.Text = "File extract default directory:";
+            // 
+            // tbFileExtractDefaultDirectory
+            // 
+            this.tbFileExtractDefaultDirectory.Location = new System.Drawing.Point(225, 115);
+            this.tbFileExtractDefaultDirectory.Name = "tbFileExtractDefaultDirectory";
+            this.tbFileExtractDefaultDirectory.ReadOnly = true;
+            this.tbFileExtractDefaultDirectory.Size = new System.Drawing.Size(307, 24);
+            this.tbFileExtractDefaultDirectory.TabIndex = 27;
             // 
             // FrmSettings
             // 
@@ -1083,11 +1466,16 @@
             this.groupBox1.PerformLayout();
             this.tabSettings.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
-            this.tabPage1.PerformLayout();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
-            this.panel1.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
+            this.tabPage4.ResumeLayout(false);
+            this.tabPage4.PerformLayout();
+            this.panel1.ResumeLayout(false);
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
+            this.groupBox5.ResumeLayout(false);
+            this.groupBox5.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1163,5 +1551,37 @@
         private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.Label label22;
         private System.Windows.Forms.ComboBox cbDefaultOpenFileExtension;
+        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.Button btnPixelEditorRemovePixelColor;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.Button btnPixelEditorAddPixelColor;
+        private System.Windows.Forms.Button btnPixelEditorSupportColor;
+        private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.Button btnPixelEditorDrainHoleColor;
+        private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.CheckBox cbFileSavePromptOverwrite;
+        private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.Label label28;
+        private System.Windows.Forms.TextBox tbFileSaveNameSuffix;
+        private System.Windows.Forms.TextBox tbFileSaveNamePreffix;
+        private System.Windows.Forms.GroupBox groupBox4;
+        private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.Button btnFileOpenDefaultDirectoryClear;
+        private System.Windows.Forms.Button btnFileOpenDefaultDirectorySearch;
+        private System.Windows.Forms.Label label29;
+        private System.Windows.Forms.TextBox tbFileOpenDefaultDirectory;
+        private System.Windows.Forms.Button btnFileSaveDefaultDirectoryClear;
+        private System.Windows.Forms.Button btnFileSaveDefaultDirectorySearch;
+        private System.Windows.Forms.Label label30;
+        private System.Windows.Forms.TextBox tbFileSaveDefaultDirectory;
+        private System.Windows.Forms.Button btnFileConvertDefaultDirectoryClear;
+        private System.Windows.Forms.Button btnFileConvertDefaultDirectorySearch;
+        private System.Windows.Forms.Label label31;
+        private System.Windows.Forms.TextBox tbFileConvertDefaultDirectory;
+        private System.Windows.Forms.Button btnFileExtractDefaultDirectoryClear;
+        private System.Windows.Forms.Button btnFileExtractDefaultDirectorySearch;
+        private System.Windows.Forms.Label label32;
+        private System.Windows.Forms.TextBox tbFileExtractDefaultDirectory;
     }
 }

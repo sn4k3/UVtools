@@ -80,8 +80,8 @@ namespace UVtools.Core.FileFormats
             [DisplayName("Machine Type")] public string MachineType { get; set; } = "UV_LCD";
 
             // ;(****UVtools Configuration ******)  
-            [DisplayName("Bottom Layer Light PWM")] public byte BottomLayerLightPWM { get; set; } = 255;
-            [DisplayName("Layer Light PWM")] public byte LayerLightPWM { get; set; } = 255;
+            [DisplayName("Bottom Layer Light PWM")] public byte BottomLightPWM { get; set; } = 255;
+            [DisplayName("Layer Light PWM")] public byte LightPWM { get; set; } = 255;
         }
 
         public class Slice
@@ -115,7 +115,10 @@ namespace UVtools.Core.FileFormats
             new FileExtension("cws", "NovaMaker CWS Files")
         };
 
-        public override Type[] ConvertToFormats { get; } = null;
+        public override Type[] ConvertToFormats { get; } =
+        {
+            typeof(UVJFile)
+        };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
             PrintParameterModifier.InitialLayerCount,
@@ -361,8 +364,8 @@ G1 Z-3.9 F120
             var baseValue = base.GetValueFromPrintParameterModifier(modifier);
             if (!ReferenceEquals(baseValue, null)) return baseValue;
 
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightPWM)) return OutputSettings.BottomLayerLightPWM;
-            if (ReferenceEquals(modifier, PrintParameterModifier.LightPWM)) return OutputSettings.LayerLightPWM;
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightPWM)) return OutputSettings.BottomLightPWM;
+            if (ReferenceEquals(modifier, PrintParameterModifier.LightPWM)) return OutputSettings.LightPWM;
 
             return null;
         }
@@ -427,14 +430,14 @@ G1 Z-3.9 F120
 
             if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightPWM))
             {
-                OutputSettings.BottomLayerLightPWM = value.Convert<byte>();
+                OutputSettings.BottomLightPWM = value.Convert<byte>();
                 UpdateGCode();
                 return true;
             }
 
             if (ReferenceEquals(modifier, PrintParameterModifier.LightPWM))
             {
-                OutputSettings.BottomLayerLightPWM = value.Convert<byte>();
+                OutputSettings.BottomLightPWM = value.Convert<byte>();
                 UpdateGCode();
                 return true;
             }
@@ -496,7 +499,60 @@ G1 Z-3.9 F120
 
         public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
         {
-            throw new NotImplementedException();
+            if (to == typeof(UVJFile))
+            {
+                UVJFile defaultFormat = (UVJFile)FindByType(typeof(UVJFile));
+                UVJFile file = new UVJFile
+                {
+                    LayerManager = LayerManager,
+                    JsonSettings = new UVJFile.Settings
+                    {
+                        Properties = new UVJFile.Properties
+                        {
+                            Size = new UVJFile.Size
+                            {
+                                X = (ushort)ResolutionX,
+                                Y = (ushort)ResolutionY,
+                                Millimeter = new UVJFile.Millimeter
+                                {
+                                    X = OutputSettings.PlatformXSize,
+                                    Y = OutputSettings.PlatformYSize,
+                                },
+                                LayerHeight = LayerHeight,
+                                Layers = LayerCount
+                            },
+                            Bottom = new UVJFile.Bottom
+                            {
+                                LiftHeight = SliceSettings.LiftDistance,
+                                LiftSpeed = SliceSettings.LiftUpSpeed,
+                                LightOnTime = InitialExposureTime,
+                                //LightOffTime = SliceSettings.BottomLightOffDelay,
+                                LightPWM = OutputSettings.BottomLightPWM,
+                                RetractSpeed = OutputSettings.ZBottomLiftFeedRate,
+                                Count = InitialLayerCount
+                                //RetractHeight = LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.JsonSettings.Properties.Bottom.RetractHeight),
+                            },
+                            Exposure = new UVJFile.Exposure
+                            {
+                                LiftHeight = SliceSettings.LiftDistance,
+                                LiftSpeed = SliceSettings.LiftUpSpeed,
+                                LightOnTime = InitialExposureTime,
+                                //LightOffTime = SliceSettings.BottomLightOffDelay,
+                                LightPWM = OutputSettings.BottomLightPWM,
+                                RetractSpeed = SliceSettings.LiftDownSpeed,
+                            },
+                            AntiAliasLevel = ValidateAntiAliasingLevel()
+                        }
+                    }
+                };
+
+                file.SetThumbnails(Thumbnails);
+                file.Encode(fileFullPath, progress);
+
+                return true;
+            }
+
+            return false;
         }
 
         private void UpdateGCode()
@@ -521,7 +577,7 @@ G1 Z-3.9 F120
             {
                 Layer layer = this[layerIndex];
                 GCode.AppendLine($"{GCodeKeywordSlice} {layerIndex}");
-                GCode.AppendLine($"M106 S{GetInitialLayerValueOrNormal(layerIndex, OutputSettings.BottomLayerLightPWM, OutputSettings.LayerLightPWM)}");
+                GCode.AppendLine($"M106 S{GetInitialLayerValueOrNormal(layerIndex, OutputSettings.BottomLightPWM, OutputSettings.LightPWM)}");
                 GCode.AppendLine($"{GCodeKeywordDelay} {layer.ExposureTime}");
                 GCode.AppendLine("M106 S0");
                 GCode.AppendLine(GCodeKeywordSliceBlank);

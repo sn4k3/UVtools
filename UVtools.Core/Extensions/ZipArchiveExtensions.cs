@@ -311,13 +311,16 @@ namespace UVtools.Core.Extensions
             }
 
             if (string.IsNullOrEmpty(content)) return entry;
-            Stream stream = entry.Open();
-            if (mode == ZipArchiveMode.Update) stream.SetLength(0);
-            using (TextWriter tw = new StreamWriter(stream))
+            using (Stream stream = entry.Open())
             {
-                tw.Write(content);
-                tw.Close();
+                if (mode == ZipArchiveMode.Update) stream.SetLength(0);
+                using (TextWriter tw = new StreamWriter(stream))
+                {
+                    tw.Write(content);
+                    tw.Close();
+                }
             }
+
             return entry;
         }
 
@@ -341,10 +344,12 @@ namespace UVtools.Core.Extensions
             }
 
             if (ReferenceEquals(content, null)) return entry;
-            Stream stream = entry.Open();
-            if (mode == ZipArchiveMode.Update) stream.SetLength(0);
-            stream.Write(content, 0, content.Length);
-            stream.Close();
+            using (Stream stream = entry.Open())
+            {
+                if (mode == ZipArchiveMode.Update) stream.SetLength(0);
+                stream.Write(content, 0, content.Length);
+                stream.Close();
+            }
             return entry;
         }
     }

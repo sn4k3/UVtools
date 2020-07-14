@@ -109,7 +109,7 @@ namespace UVtools.GUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool StartMaximized {
             get {
                 return ((bool)(this["StartMaximized"]));
@@ -452,6 +452,138 @@ namespace UVtools.GUI.Properties {
             }
             set {
                 this["DefaultOpenFileExtension"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Green")]
+        public global::System.Drawing.Color PixelEditorAddPixelColor {
+            get {
+                return ((global::System.Drawing.Color)(this["PixelEditorAddPixelColor"]));
+            }
+            set {
+                this["PixelEditorAddPixelColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("DarkRed")]
+        public global::System.Drawing.Color PixelEditorRemovePixelColor {
+            get {
+                return ((global::System.Drawing.Color)(this["PixelEditorRemovePixelColor"]));
+            }
+            set {
+                this["PixelEditorRemovePixelColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Cyan")]
+        public global::System.Drawing.Color PixelEditorSupportColor {
+            get {
+                return ((global::System.Drawing.Color)(this["PixelEditorSupportColor"]));
+            }
+            set {
+                this["PixelEditorSupportColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Purple")]
+        public global::System.Drawing.Color PixelEditorDrainHoleColor {
+            get {
+                return ((global::System.Drawing.Color)(this["PixelEditorDrainHoleColor"]));
+            }
+            set {
+                this["PixelEditorDrainHoleColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string FileSaveNamePreffix {
+            get {
+                return ((string)(this["FileSaveNamePreffix"]));
+            }
+            set {
+                this["FileSaveNamePreffix"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("_copy")]
+        public string FileSaveNameSuffix {
+            get {
+                return ((string)(this["FileSaveNameSuffix"]));
+            }
+            set {
+                this["FileSaveNameSuffix"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool FileSavePromptOverwrite {
+            get {
+                return ((bool)(this["FileSavePromptOverwrite"]));
+            }
+            set {
+                this["FileSavePromptOverwrite"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string FileOpenDefaultDirectory {
+            get {
+                return ((string)(this["FileOpenDefaultDirectory"]));
+            }
+            set {
+                this["FileOpenDefaultDirectory"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string FileSaveDefaultDirectory {
+            get {
+                return ((string)(this["FileSaveDefaultDirectory"]));
+            }
+            set {
+                this["FileSaveDefaultDirectory"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string FileConvertDefaultDirectory {
+            get {
+                return ((string)(this["FileConvertDefaultDirectory"]));
+            }
+            set {
+                this["FileConvertDefaultDirectory"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string FileExtractDefaultDirectory {
+            get {
+                return ((string)(this["FileExtractDefaultDirectory"]));
+            }
+            set {
+                this["FileExtractDefaultDirectory"] = value;
             }
         }
     }

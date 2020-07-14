@@ -1,4 +1,11 @@
-﻿using System.Drawing;
+﻿/*
+ *                     GNU AFFERO GENERAL PUBLIC LICENSE
+ *                       Version 3, 19 November 2007
+ *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ *  Everyone is permitted to copy and distribute verbatim copies
+ *  of this license document, but changing it is not allowed.
+ */
+using System.Drawing;
 
 namespace UVtools.Core.Operations
 {
@@ -10,18 +17,20 @@ namespace UVtools.Core.Operations
         public uint ImageWidth { get; }
         public uint ImageHeight { get; }
 
-        public ushort MarginCol { get; set; } = 0;
-        public ushort MarginRow { get; set; } = 0;
+        public ushort MarginCol { get; set; }
+        public ushort MarginRow { get; set; }
 
-        public ushort MaxMarginCol => CalculateMarginCol(MaxCols);
-        public ushort MaxMarginRow => CalculateMarginRow(MaxRows);
+        public ushort MaxMarginCol { get; }
+        public ushort MaxMarginRow { get; }
 
         public ushort Cols { get; set; } = 1;
         public ushort Rows { get; set; } = 1;
 
         public ushort MaxCols { get; }
         public ushort MaxRows { get; }
-    
+
+        public Size GetPatternVolume => new Size(Cols * SrcRoi.Width + (Cols - 1) * MarginCol, Rows * SrcRoi.Height + (Rows - 1) * MarginRow);
+
 
         public OperationPattern(Rectangle srcRoi, uint imageWidth, uint imageHeight)
         {
@@ -31,6 +40,9 @@ namespace UVtools.Core.Operations
 
             MaxCols = (ushort) (imageWidth / srcRoi.Width);
             MaxRows = (ushort) (imageHeight / srcRoi.Height);
+
+            MaxMarginCol = CalculateMarginCol(MaxCols);
+            MaxMarginRow = CalculateMarginRow(MaxRows);
         }
 
 
@@ -94,19 +106,19 @@ namespace UVtools.Core.Operations
 
         public ushort CalculateMarginCol(ushort cols)
         {
+            if (cols <= 1) return 0;
             return (ushort)((ImageWidth - SrcRoi.Width * cols) / cols);
         }
 
         public ushort CalculateMarginRow(ushort rows)
         {
+            if (rows <= 1) return 0;
             return (ushort)((ImageHeight - SrcRoi.Height * rows) / rows);
         }
 
-        public Size CalculatePatternVolume => new Size(Cols * SrcRoi.Width + Cols * MarginCol, Rows * SrcRoi.Height + Rows * MarginRow);
-
         public Rectangle GetRoi(ushort col, ushort row)
         {
-            var patternVolume = CalculatePatternVolume;
+            var patternVolume = GetPatternVolume;
 
             return new Rectangle(new Point(
                 (int) (col * SrcRoi.Width + col * MarginCol + (ImageWidth - patternVolume.Width) / 2), 

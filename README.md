@@ -55,6 +55,8 @@ But also, i need victims for test subject. Proceed at your own risk!
 * PW0 (Photon Workshop)
 * ZCodex (Z-Suite)
 * CWS (NovaMaker)
+* UVJ
+* Image files (png, jpg, jpeg, gif, bmp)
 
 ## Available printers for PrusaSlicer
 
@@ -68,6 +70,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 * AnyCubic Photon S
 * AnyCubic Photon Zero
 * Elegoo Mars
+* Elegoo Mars 2 Pro
 * Elegoo Mars Saturn
 * Peopoly Phenom
 * Peopoly Phenom L
@@ -85,6 +88,8 @@ But also, i need victims for test subject. Proceed at your own risk!
 * Wanhao D7
 * Wanhao D8
 * Creality LD-002R
+* Creality LD-002H
+* Voxelab Polaris
 
 ## Available profiles for PrusaSlicer
 
@@ -130,8 +135,8 @@ After some tests without failure you can increase your confidence and ignore thi
 
 ### Mac and Linux
 
-(Not tested nor compiled)
-1. Latest Mono
+(Not supported yet)
+
 
 ## How to use
 

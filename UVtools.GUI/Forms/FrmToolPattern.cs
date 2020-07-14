@@ -228,8 +228,8 @@ namespace UVtools.GUI.Forms
             var insideBounds = btnPattern.Enabled = ValidateBounds();
             lbInsideBounds.Text = "Inside Bounds: " + (insideBounds ? "Yes" : "No");
 
-            lbVolumeWidth.Text = $"Volume/Pattern Width: {_operation.SrcRoi.Width} / {_operation.CalculatePatternVolume.Width} / {_operation.ImageWidth}";
-            lbVolumeHeight.Text = $"Volume/Pattern Height: {_operation.SrcRoi.Height} / {_operation.CalculatePatternVolume.Height} / {_operation.ImageHeight}";
+            lbVolumeWidth.Text = $"Volume/Pattern Width: {_operation.SrcRoi.Width} / {_operation.GetPatternVolume.Width} / {_operation.ImageWidth}";
+            lbVolumeHeight.Text = $"Volume/Pattern Height: {_operation.SrcRoi.Height} / {_operation.GetPatternVolume.Height} / {_operation.ImageHeight}";
             
             lbCols.Text = $"Columns: {nmCols.Value} / {_operation.MaxCols}";
             lbRows.Text = $"Rows: {nmRows.Value} / {_operation.MaxRows}";
@@ -241,7 +241,7 @@ namespace UVtools.GUI.Forms
 
         public bool ValidateBounds()
         {
-            var volume = OperationPattern.CalculatePatternVolume;
+            var volume = OperationPattern.GetPatternVolume;
             if (volume.Width > _operation.ImageWidth) return false;
             if (volume.Height > _operation.ImageHeight) return false;
 

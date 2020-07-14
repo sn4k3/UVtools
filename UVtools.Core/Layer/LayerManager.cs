@@ -20,6 +20,7 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
+using UVtools.Core.PixelEditor;
 
 namespace UVtools.Core
 {
@@ -33,6 +34,7 @@ namespace UVtools.Core
             Flip,
             Rotate,
             Solidify,
+            PixelDimming,
             //LayerSmash,
             Erode,
             Dilate,
@@ -376,6 +378,65 @@ namespace UVtools.Core
                     progress++;
                 }
             });
+            progress.Token.ThrowIfCancellationRequested();
+        }
+
+        public void MutatePixelDimming(uint startLayerIndex, uint endLayerIndex, Matrix<byte> evenPattern = null, Matrix<byte> oddPattern = null, ushort borderSize = 5, OperationProgress progress = null)
+        {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Dimming pixels", endLayerIndex - startLayerIndex + 1);
+
+            if (ReferenceEquals(evenPattern, null))
+            {
+                evenPattern = new Matrix<byte>(2, 2)
+                {
+                    [0, 0] = 127, [0, 1] = 255,
+                    [1, 0] = 255, [1, 1] = 127,
+                };
+
+                if (ReferenceEquals(oddPattern, null))
+                {
+                    oddPattern = new Matrix<byte>(2, 2)
+                    {
+                        [0, 0] = 255, [0, 1] = 127,
+                        [1, 0] = 127, [1, 1] = 255,
+                    };
+                }
+            }
+
+            if (ReferenceEquals(oddPattern, null))
+            {
+                oddPattern = evenPattern;
+            }
+
+            using (Mat mat = this[0].LayerMat)
+            {
+                using (var matEven = mat.CloneBlank())
+                {
+                    using (Mat matOdd = mat.CloneBlank())
+                    {
+                        CvInvoke.Repeat(evenPattern, mat.Rows / evenPattern.Rows + 1, mat.Cols / evenPattern.Cols + 1, matEven);
+                        CvInvoke.Repeat(oddPattern, mat.Rows / oddPattern.Rows + 1, mat.Cols / oddPattern.Cols + 1, matOdd);
+
+                        using (var evenPatternMask = new Mat(matEven, new Rectangle(0, 0, mat.Width, mat.Height)))
+                        {
+                            using (var oddPatternMask = new Mat(matOdd, new Rectangle(0, 0, mat.Width, mat.Height)))
+                            {
+                                Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+                                {
+                                    if (progress.Token.IsCancellationRequested) return;
+                                    this[layerIndex].MutatePixelDimming(evenPatternMask, oddPatternMask, borderSize);
+                                    lock (progress.Mutex)
+                                    {
+                                        progress++;
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
             progress.Token.ThrowIfCancellationRequested();
         }
 
@@ -1127,6 +1188,127 @@ namespace UVtools.Core
             if (settings.Anchor == Anchor.None) return;
             MutateMove(startLayerIndex, endLayerIndex, new OperationMove(BoundingRectangle, 0, 0, settings.Anchor), progress);
 
+        }
+
+        public void DrawModifications(PixelHistory pixelHistory, OperationProgress progress = null)
+        {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Drawings", (uint) pixelHistory.Count);
+
+            ConcurrentDictionary<uint, Mat> modfiedLayers = new ConcurrentDictionary<uint, Mat>();
+            for (var layerIndex = 0; layerIndex < pixelHistory.Count; layerIndex++)
+            {
+                var operation = pixelHistory[layerIndex];
+                if (operation.OperationType == PixelOperation.PixelOperationType.Drawing)
+                {
+                    var operationDrawing = (PixelDrawing) operation;
+                    var mat = modfiedLayers.GetOrAdd(operation.LayerIndex, u => this[operation.LayerIndex].LayerMat);
+
+                    if (operationDrawing.Rectangle.Size.GetArea() == 1)
+                    {
+                        mat.SetByte(operation.Location.X, operation.Location.Y, operationDrawing.Color);
+                        continue;
+                    }
+
+                    switch (operationDrawing.BrushShape)
+                    {
+                        case PixelDrawing.BrushShapeType.Rectangle:
+                            CvInvoke.Rectangle(mat, operationDrawing.Rectangle, new MCvScalar(operationDrawing.Color),
+                                -1);
+                            break;
+                        case PixelDrawing.BrushShapeType.Circle:
+                            CvInvoke.Circle(mat, operation.Location, operationDrawing.BrushSize / 2,
+                                new MCvScalar(operationDrawing.Color), -1);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+                else if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
+                {
+                    var operationSupport = (PixelSupport)operation;
+                    int drawnLayers = 0;
+                    for (int operationLayer = (int)operation.LayerIndex-1; operationLayer >= 0; operationLayer--)
+                    {
+                        var mat = modfiedLayers.GetOrAdd((uint) operationLayer, u => this[operationLayer].LayerMat);
+                        int radius = (operationLayer > 10 ? Math.Min(operationSupport.TipDiameter + drawnLayers, operationSupport.PillarDiameter) : operationSupport.BaseDiameter) / 2;
+                        uint whitePixels;
+
+                        int yStart = Math.Max(0, operation.Location.Y - operationSupport.TipDiameter / 2);
+                        int xStart = Math.Max(0, operation.Location.X - operationSupport.TipDiameter / 2);
+
+                        using (Mat matCircleRoi = new Mat(mat, new Rectangle(xStart, yStart, operationSupport.TipDiameter, operationSupport.TipDiameter)))
+                        {
+                            using (Mat matCircleMask = matCircleRoi.CloneBlank())
+                            {
+                                CvInvoke.Circle(matCircleMask, new Point(operationSupport.TipDiameter / 2, operationSupport.TipDiameter / 2),
+                                    operationSupport.TipDiameter / 2, new MCvScalar(255), -1);
+                                CvInvoke.BitwiseAnd(matCircleRoi, matCircleMask, matCircleMask);
+                                whitePixels = (uint) CvInvoke.CountNonZero(matCircleMask);
+                            }
+                        }
+
+                        if (whitePixels >= Math.Pow(operationSupport.TipDiameter, 2) / 3)
+                        {
+                            //CvInvoke.Circle(mat, operation.Location, radius, new MCvScalar(255), -1);
+                            if (drawnLayers == 0) continue; // Supports nonexistent, keep digging
+                            break; // White area end supporting
+                        }
+
+                        CvInvoke.Circle(mat, operation.Location, radius, new MCvScalar(255), -1);
+                        drawnLayers++;
+                    }
+                }
+                else if (operation.OperationType == PixelOperation.PixelOperationType.DrainHole)
+                {
+                    uint drawnLayers = 0;
+                    var operationDrainHole = (PixelDrainHole)operation;
+                    for (int operationLayer = (int)operation.LayerIndex; operationLayer >= 0; operationLayer--)
+                    {
+                        var mat = modfiedLayers.GetOrAdd((uint)operationLayer, u => this[operationLayer].LayerMat);
+                        int radius =  operationDrainHole.Diameter / 2;
+                        uint blackPixels;
+
+                        int yStart = Math.Max(0, operation.Location.Y - radius);
+                        int xStart = Math.Max(0, operation.Location.X - radius);
+
+                        using (Mat matCircleRoi = new Mat(mat, new Rectangle(xStart, yStart, operationDrainHole.Diameter, operationDrainHole.Diameter)))
+                        {
+                            using (Mat matCircleRoiInv = new Mat())
+                            {
+                                CvInvoke.Threshold(matCircleRoi, matCircleRoiInv, 100, 255, ThresholdType.BinaryInv);
+                                using (Mat matCircleMask = matCircleRoi.CloneBlank())
+                                {
+                                    CvInvoke.Circle(matCircleMask, new Point(radius, radius), radius, new MCvScalar(255), -1);
+                                    CvInvoke.BitwiseAnd(matCircleRoiInv, matCircleMask, matCircleMask);
+                                    blackPixels = (uint) CvInvoke.CountNonZero(matCircleMask);
+                                }
+                            }
+                        }
+
+                        if (blackPixels >= Math.Pow(operationDrainHole.Diameter, 2) / 3) // Enough area to drain?
+                        {
+                            if (drawnLayers == 0) continue; // Drill not found a target yet, keep digging
+                            break; // Stop drill drain found!
+                        }
+                        
+                        CvInvoke.Circle(mat, operation.Location, radius, new MCvScalar(0), -1);
+                        drawnLayers++;
+                    }
+                }
+
+                progress++;
+            }
+
+            progress.Reset("Saving", (uint) modfiedLayers.Count);
+            foreach (var modfiedLayer in modfiedLayers)
+            {
+                this[modfiedLayer.Key].LayerMat = modfiedLayer.Value;
+                modfiedLayer.Value.Dispose();
+                progress++;
+            }
+
+            pixelHistory.Clear();
         }
 
         /// <summary>
