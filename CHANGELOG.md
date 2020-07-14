@@ -1,5 +1,9 @@
 # Changelog
 
+## 14/07/2020 - v0.6.2.1
+
+* (Fix) Mutator: Erode was doing pixel dimming
+
 ## 14/07/2020 - v0.6.2.0
 
 * (Add) PrusaSlicer Printer: Elegoo Mars 2 Pro

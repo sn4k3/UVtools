@@ -662,28 +662,6 @@ namespace UVtools.Core
             using (Mat dst = LayerMat)
             {
                 CvInvoke.Erode(dst, dst, kernel, anchor, iterations, borderType, borderValue);
-                var matrix = new Matrix<byte>(2, 4)
-                {
-                    [0, 0] = 255, [0, 1] = 255, [0, 2] = 125, [0, 3] = 255,
-                    [1, 0] = 125,   [1, 1] = 255, [1, 2] = 255, [1, 3] = 255
-                    //[0, 0] = 1,
-                    //[0, 0] = 1,
-                };
-
-                Mat erode = new Mat();
-                kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
-                CvInvoke.Erode(dst, erode, kernel, anchor, 5, BorderType.Default, default);
-                Mat diff = new Mat();
-                CvInvoke.Subtract(dst, erode, diff);
-
-                Mat test = dst.CloneBlank();
-                CvInvoke.Repeat(matrix, dst.Rows/ matrix.Rows, dst.Cols/ matrix.Cols, test);
-
-                CvInvoke.BitwiseAnd(erode, test, dst);
-
-                CvInvoke.Add(dst, diff, dst);
-                
-                //CvInvoke.CopyMakeBorder(LayerMat, dst, 5, 5, 5, 5, BorderType.Wrap);
                 LayerMat = dst;
             }
         }
