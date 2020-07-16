@@ -1503,6 +1503,7 @@ namespace UVtools.GUI
         private void pbLayer_Zoomed(object sender, Cyotek.Windows.Forms.ImageBoxZoomEventArgs e)
         {
             tsLayerImageZoom.Text = $"Zoom: {e.NewZoom}% ({e.NewZoom/100f}x)";
+            pbLayer_PanEnd(pbLayer, null);
         }
 
         private void pbLayer_MouseUp(object sender, MouseEventArgs e)
@@ -1563,7 +1564,7 @@ namespace UVtools.GUI
                     ShowLayer(issue.Layer.Index);
                 }
 
-                if (issue.Type == LayerIssue.IssueType.TouchingBound)
+                if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||  (issue.X == -1 && issue.Y == -1))
                 {
                     ZoomToFit();
                 }
@@ -1579,7 +1580,7 @@ namespace UVtools.GUI
                             x = ActualLayerImage.Height - 1 - issue.Y;
                             y = issue.X;
                         }
-
+                        
                         pbLayer.ZoomToRegion(x, y, 5, 5);
                         pbLayer.ZoomOut(true);
                     }
@@ -1679,6 +1680,10 @@ namespace UVtools.GUI
             {
                 item.Enabled = false;
             }
+            foreach (ToolStripItem item in tsLayerInfo.Items)
+            {
+                item.Enabled = false;
+            }
             foreach (ToolStripItem item in tsProperties.Items)
             {
                 item.Enabled = false;
@@ -1687,6 +1692,10 @@ namespace UVtools.GUI
             {
                 item.Enabled = false;
             }
+
+            tsLayerImagePixelCount.Text = "Pixels: 0";
+            tsLayerBounds.Text = "Bounds:";
+            tsLayerImageMouseLocation.Text = "{X=0, Y=0}";
 
             tsThumbnailsResolution.Text = 
             tsLayerPreviewTime.Text =
@@ -1884,6 +1893,10 @@ namespace UVtools.GUI
                 item.Enabled = true;
             }
             foreach (ToolStripItem item in tsLayer.Items)
+            {
+                item.Enabled = true;
+            }
+            foreach (ToolStripItem item in tsLayerInfo.Items)
             {
                 item.Enabled = true;
             }
@@ -2311,6 +2324,15 @@ namespace UVtools.GUI
 
 
                 byte percent = (byte)((layerNum + 1) * 100 / SlicerFile.LayerCount);
+
+                float pixelPercent = (float) Math.Round(layer.NonZeroPixelCount * 100f / (SlicerFile.ResolutionX * SlicerFile.ResolutionY), 2);
+                tsLayerImagePixelCount.Text = $"Pixels: {layer.NonZeroPixelCount} ({pixelPercent}%)";
+                tsLayerBounds.Text = $"Bounds: {layer.BoundingRectangle}";
+                tsLayerImagePixelCount.Invalidate();
+                tsLayerBounds.Invalidate();
+                tsLayerInfo.Update();
+                tsLayerInfo.Refresh();
+                
 
 
                 watch.Stop();
@@ -3081,6 +3103,11 @@ namespace UVtools.GUI
                 RequiredBlackPixelsToDrain = Settings.Default.ResinTrapRequiredBlackPixelsToDrain,
                 MaximumPixelBrightnessToDrain = Settings.Default.ResinTrapMaximumPixelBrightnessToDrain
             };
+        }
+
+        private void pbLayer_PanEnd(object sender, EventArgs e)
+        {
+            //tsLayerImagePanLocation.Text = $"{pbLayer.AutoScrollPosition}";
         }
     }
 }

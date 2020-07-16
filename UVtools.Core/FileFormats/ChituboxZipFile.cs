@@ -241,6 +241,17 @@ namespace UVtools.Core.FileFormats
                     tr.Close();
                 }
 
+                if (HeaderSettings.LayerCount == 0)
+                {
+                    foreach (var zipEntry in inputFile.Entries)
+                    {
+                        if(!zipEntry.Name.EndsWith(".png")) continue;
+                        var filename = Path.GetFileNameWithoutExtension(zipEntry.Name);
+                        if (!filename.All(char.IsDigit)) continue;
+                        if (!uint.TryParse(filename, out var layerIndex)) continue;
+                        HeaderSettings.LayerCount = Math.Max(HeaderSettings.LayerCount, layerIndex);
+                    }
+                }
 
                 LayerManager = new LayerManager(HeaderSettings.LayerCount);
 
@@ -280,6 +291,15 @@ namespace UVtools.Core.FileFormats
                         ExposureTime = float.Parse(exposureTime.NextMatch().Groups[1].Value) / 1000f
                     };
                     progress++;
+                }
+
+                if (HeaderSettings.LayerCount > 0 && ResolutionX == 0)
+                {
+                    using (var mat = this[0].LayerMat)
+                    {
+                        HeaderSettings.ResolutionX = (uint)mat.Width;
+                        HeaderSettings.ResolutionY = (uint)mat.Height;
+                    }
                 }
 
                 entry = inputFile.GetEntry("preview.png");

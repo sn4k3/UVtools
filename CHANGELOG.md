@@ -1,5 +1,13 @@
 # Changelog
 
+## 17/07/2020 - v0.6.2.3
+
+* (Add) Issue: EmptyLayer - Detects empty layers were image is all black with 0 pixels to cure
+* (Add) Toolbar and pushed layer information to bottom
+* (Add) Information: Cure pixel count per layer and percentage against total lcd pixels
+* (Add) Information: Bounds per layer
+* (Add) Zip: Compability with Formware zip files
+
 ## 14/07/2020 - v0.6.2.2
 
 * (Add) cbddlp, photon and ctb version 3 compability (Chitubox >= 1.6.5)

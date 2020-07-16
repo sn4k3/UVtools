@@ -323,6 +323,7 @@
     <None Include="Images\settings-16x16.png" />
     <None Include="Images\pattern-16x16.png" />
     <None Include="Images\resize-16x16.png" />
+    <None Include="Images\cursor-16x16.png" />
     <Content Include="UVtools.ico" />
     <None Include="UVtools.png" />
     <None Include="Images\Exit-16x16.png" />

@@ -62,16 +62,26 @@
             this.mainTable = new System.Windows.Forms.TableLayoutPanel();
             this.scCenter = new System.Windows.Forms.SplitContainer();
             this.pbLayer = new Cyotek.Windows.Forms.ImageBox();
+            this.tsLayerInfo = new System.Windows.Forms.ToolStrip();
+            this.tsLayerPreviewTime = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsLayerResolution = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsLayerImageZoom = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsLayerImagePanLocation = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripSeparator16 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsLayerImageMouseLocation = new System.Windows.Forms.ToolStripLabel();
+            this.tsLayerImagePixelCount = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripSeparator17 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsLayerBounds = new System.Windows.Forms.ToolStripLabel();
             this.tsLayer = new System.Windows.Forms.ToolStrip();
             this.tsLayerImageExport = new System.Windows.Forms.ToolStripSplitButton();
             this.tsLayerImageExportFile = new System.Windows.Forms.ToolStripMenuItem();
             this.tsLayerImageExportClipboard = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsLayerResolution = new System.Windows.Forms.ToolStripLabel();
             this.tsLayerImageRotate = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerImageLayerDifference = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerPreviewTime = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator14 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerImageHighlightIssues = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
@@ -82,10 +92,6 @@
             this.tsLayerImageLayerOutlineEdgeDetection = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerImagePixelEdit = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImageZoom = new System.Windows.Forms.ToolStripLabel();
-            this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImageMouseLocation = new System.Windows.Forms.ToolStripLabel();
             this.pbLayers = new System.Windows.Forms.ProgressBar();
             this.tabControlLeft = new System.Windows.Forms.TabControl();
             this.tbpThumbnailsAndInfo = new System.Windows.Forms.TabPage();
@@ -189,6 +195,7 @@
             this.scCenter.Panel1.SuspendLayout();
             this.scCenter.Panel2.SuspendLayout();
             this.scCenter.SuspendLayout();
+            this.tsLayerInfo.SuspendLayout();
             this.tsLayer.SuspendLayout();
             this.tabControlLeft.SuspendLayout();
             this.tbpThumbnailsAndInfo.SuspendLayout();
@@ -521,6 +528,7 @@
             // scCenter.Panel1
             // 
             this.scCenter.Panel1.Controls.Add(this.pbLayer);
+            this.scCenter.Panel1.Controls.Add(this.tsLayerInfo);
             this.scCenter.Panel1.Controls.Add(this.tsLayer);
             // 
             // scCenter.Panel2
@@ -540,34 +548,144 @@
             this.pbLayer.Name = "pbLayer";
             this.pbLayer.PanMode = Cyotek.Windows.Forms.ImageBoxPanMode.Left;
             this.pbLayer.ShowPixelGrid = true;
-            this.pbLayer.Size = new System.Drawing.Size(1228, 700);
+            this.pbLayer.Size = new System.Drawing.Size(1228, 675);
             this.pbLayer.TabIndex = 7;
+            this.pbLayer.PanEnd += new System.EventHandler(this.pbLayer_PanEnd);
             this.pbLayer.Zoomed += new System.EventHandler<Cyotek.Windows.Forms.ImageBoxZoomEventArgs>(this.pbLayer_Zoomed);
             this.pbLayer.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.EventMouseDoubleClick);
             this.pbLayer.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseMove);
             this.pbLayer.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseUp);
+            // 
+            // tsLayerInfo
+            // 
+            this.tsLayerInfo.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.tsLayerInfo.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.tsLayerInfo.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsLayerPreviewTime,
+            this.toolStripSeparator6,
+            this.tsLayerResolution,
+            this.toolStripSeparator11,
+            this.tsLayerImageZoom,
+            this.toolStripSeparator8,
+            this.tsLayerImagePanLocation,
+            this.toolStripSeparator16,
+            this.tsLayerImageMouseLocation,
+            this.tsLayerImagePixelCount,
+            this.toolStripSeparator17,
+            this.tsLayerBounds});
+            this.tsLayerInfo.Location = new System.Drawing.Point(0, 700);
+            this.tsLayerInfo.Name = "tsLayerInfo";
+            this.tsLayerInfo.Size = new System.Drawing.Size(1228, 25);
+            this.tsLayerInfo.TabIndex = 8;
+            this.tsLayerInfo.Text = "tsLayerInfo";
+            // 
+            // tsLayerPreviewTime
+            // 
+            this.tsLayerPreviewTime.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerPreviewTime.Name = "tsLayerPreviewTime";
+            this.tsLayerPreviewTime.Size = new System.Drawing.Size(77, 22);
+            this.tsLayerPreviewTime.Text = "Preview Time";
+            this.tsLayerPreviewTime.ToolTipText = "Layer preview computation time";
+            // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsLayerResolution
+            // 
+            this.tsLayerResolution.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerResolution.Image = global::UVtools.GUI.Properties.Resources.resize_16x16;
+            this.tsLayerResolution.Name = "tsLayerResolution";
+            this.tsLayerResolution.Size = new System.Drawing.Size(79, 22);
+            this.tsLayerResolution.Text = "Resolution";
+            this.tsLayerResolution.ToolTipText = "Layer Resolution";
+            // 
+            // toolStripSeparator11
+            // 
+            this.toolStripSeparator11.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripSeparator11.Name = "toolStripSeparator11";
+            this.toolStripSeparator11.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsLayerImageZoom
+            // 
+            this.tsLayerImageZoom.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerImageZoom.Image = global::UVtools.GUI.Properties.Resources.search_16x16;
+            this.tsLayerImageZoom.Name = "tsLayerImageZoom";
+            this.tsLayerImageZoom.Size = new System.Drawing.Size(89, 22);
+            this.tsLayerImageZoom.Text = "Zoom: 100%";
+            this.tsLayerImageZoom.ToolTipText = "Layer image zoom level, use mouse scroll to zoom in/out into image\r\nCtrl + 0 to s" +
+    "cale to fit";
+            // 
+            // toolStripSeparator8
+            // 
+            this.toolStripSeparator8.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripSeparator8.Name = "toolStripSeparator8";
+            this.toolStripSeparator8.Size = new System.Drawing.Size(6, 25);
+            this.toolStripSeparator8.Visible = false;
+            // 
+            // tsLayerImagePanLocation
+            // 
+            this.tsLayerImagePanLocation.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerImagePanLocation.Image = global::UVtools.GUI.Properties.Resources.cursor_16x16;
+            this.tsLayerImagePanLocation.Name = "tsLayerImagePanLocation";
+            this.tsLayerImagePanLocation.Size = new System.Drawing.Size(79, 22);
+            this.tsLayerImagePanLocation.Text = "{X=0, Y=0}";
+            this.tsLayerImagePanLocation.ToolTipText = "Image pan location";
+            this.tsLayerImagePanLocation.Visible = false;
+            // 
+            // toolStripSeparator16
+            // 
+            this.toolStripSeparator16.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripSeparator16.Name = "toolStripSeparator16";
+            this.toolStripSeparator16.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsLayerImageMouseLocation
+            // 
+            this.tsLayerImageMouseLocation.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerImageMouseLocation.Image = global::UVtools.GUI.Properties.Resources.pointer_16x16;
+            this.tsLayerImageMouseLocation.Name = "tsLayerImageMouseLocation";
+            this.tsLayerImageMouseLocation.Size = new System.Drawing.Size(79, 22);
+            this.tsLayerImageMouseLocation.Text = "{X=0, Y=0}";
+            this.tsLayerImageMouseLocation.ToolTipText = "Mouse over pixel location and pixel brightness";
+            // 
+            // tsLayerImagePixelCount
+            // 
+            this.tsLayerImagePixelCount.Image = global::UVtools.GUI.Properties.Resources.pixel_16x16;
+            this.tsLayerImagePixelCount.Name = "tsLayerImagePixelCount";
+            this.tsLayerImagePixelCount.Size = new System.Drawing.Size(65, 22);
+            this.tsLayerImagePixelCount.Text = "Pixels: 0";
+            this.tsLayerImagePixelCount.ToolTipText = "Number of pixels to cure on this layer image and the percetange of them against t" +
+    "otal lcd pixels";
+            // 
+            // toolStripSeparator17
+            // 
+            this.toolStripSeparator17.Name = "toolStripSeparator17";
+            this.toolStripSeparator17.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsLayerBounds
+            // 
+            this.tsLayerBounds.Image = global::UVtools.GUI.Properties.Resources.resize_16x16;
+            this.tsLayerBounds.Name = "tsLayerBounds";
+            this.tsLayerBounds.Size = new System.Drawing.Size(66, 22);
+            this.tsLayerBounds.Text = "Bounds:";
+            this.tsLayerBounds.ToolTipText = "Image bounds for this layer only, position and size";
             // 
             // tsLayer
             // 
             this.tsLayer.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.tsLayer.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsLayerImageExport,
-            this.tsLayerResolution,
             this.tsLayerImageRotate,
             this.toolStripSeparator5,
             this.tsLayerImageLayerDifference,
-            this.toolStripSeparator6,
-            this.tsLayerPreviewTime,
             this.toolStripSeparator14,
             this.tsLayerImageHighlightIssues,
             this.toolStripSeparator7,
             this.tsLayerImageLayerOutline,
             this.toolStripSeparator9,
-            this.tsLayerImagePixelEdit,
-            this.toolStripSeparator8,
-            this.tsLayerImageZoom,
-            this.toolStripSeparator11,
-            this.tsLayerImageMouseLocation});
+            this.tsLayerImagePixelEdit});
             this.tsLayer.Location = new System.Drawing.Point(0, 0);
             this.tsLayer.Name = "tsLayer";
             this.tsLayer.Size = new System.Drawing.Size(1228, 25);
@@ -605,14 +723,6 @@
             this.tsLayerImageExportClipboard.Text = "To &Clipboard";
             this.tsLayerImageExportClipboard.Click += new System.EventHandler(this.EventClick);
             // 
-            // tsLayerResolution
-            // 
-            this.tsLayerResolution.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerResolution.Name = "tsLayerResolution";
-            this.tsLayerResolution.Size = new System.Drawing.Size(63, 22);
-            this.tsLayerResolution.Text = "Resolution";
-            this.tsLayerResolution.ToolTipText = "Layer Resolution";
-            // 
             // tsLayerImageRotate
             // 
             this.tsLayerImageRotate.Checked = true;
@@ -643,20 +753,6 @@
             this.tsLayerImageLayerDifference.ToolTipText = "Show layer differences where daker pixels were also present on previous layer and" +
     " the white pixels the difference between previous and current layer.";
             this.tsLayerImageLayerDifference.Click += new System.EventHandler(this.EventClick);
-            // 
-            // toolStripSeparator6
-            // 
-            this.toolStripSeparator6.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsLayerPreviewTime
-            // 
-            this.tsLayerPreviewTime.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerPreviewTime.Name = "tsLayerPreviewTime";
-            this.tsLayerPreviewTime.Size = new System.Drawing.Size(77, 22);
-            this.tsLayerPreviewTime.Text = "Preview Time";
-            this.tsLayerPreviewTime.ToolTipText = "Layer Resolution";
             // 
             // toolStripSeparator14
             // 
@@ -743,33 +839,6 @@
             this.tsLayerImagePixelEdit.ToolTipText = "Edit layer image pixels (Righ click to add pixel and SHIFT + Right click to remov" +
     "e pixel)\r\nRed pixels are removed pixels\r\nGreen pixels are added pixels";
             this.tsLayerImagePixelEdit.Click += new System.EventHandler(this.EventClick);
-            // 
-            // toolStripSeparator8
-            // 
-            this.toolStripSeparator8.Name = "toolStripSeparator8";
-            this.toolStripSeparator8.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsLayerImageZoom
-            // 
-            this.tsLayerImageZoom.Image = global::UVtools.GUI.Properties.Resources.search_16x16;
-            this.tsLayerImageZoom.Name = "tsLayerImageZoom";
-            this.tsLayerImageZoom.Size = new System.Drawing.Size(89, 22);
-            this.tsLayerImageZoom.Text = "Zoom: 100%";
-            this.tsLayerImageZoom.ToolTipText = "Layer image zoom level, use mouse scroll to zoom in/out into image\r\nCtrl + 0 to s" +
-    "cale to fit";
-            // 
-            // toolStripSeparator11
-            // 
-            this.toolStripSeparator11.Name = "toolStripSeparator11";
-            this.toolStripSeparator11.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsLayerImageMouseLocation
-            // 
-            this.tsLayerImageMouseLocation.Image = global::UVtools.GUI.Properties.Resources.pointer_16x16;
-            this.tsLayerImageMouseLocation.Name = "tsLayerImageMouseLocation";
-            this.tsLayerImageMouseLocation.Size = new System.Drawing.Size(79, 22);
-            this.tsLayerImageMouseLocation.Text = "{X=0, Y=0}";
-            this.tsLayerImageMouseLocation.ToolTipText = "Mouse over pixel location and pixel brightness";
             // 
             // pbLayers
             // 
@@ -1892,6 +1961,8 @@
             this.scCenter.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).EndInit();
             this.scCenter.ResumeLayout(false);
+            this.tsLayerInfo.ResumeLayout(false);
+            this.tsLayerInfo.PerformLayout();
             this.tsLayer.ResumeLayout(false);
             this.tsLayer.PerformLayout();
             this.tabControlLeft.ResumeLayout(false);
@@ -1972,7 +2043,6 @@
         private System.Windows.Forms.ToolStripMenuItem menuFileSave;
         private System.Windows.Forms.ToolStripMenuItem menuFileSaveAs;
         private System.Windows.Forms.ToolStrip tsLayer;
-        private System.Windows.Forms.ToolStripLabel tsLayerResolution;
         private System.Windows.Forms.TabControl tabControlLeft;
         private System.Windows.Forms.TabPage tbpThumbnailsAndInfo;
         private System.Windows.Forms.SplitContainer scLeft;
@@ -2002,13 +2072,9 @@
         private System.Windows.Forms.ToolStripButton tsLayerImageRotate;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripButton tsLayerImageLayerDifference;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
-        private System.Windows.Forms.ToolStripLabel tsLayerPreviewTime;
         private Cyotek.Windows.Forms.ImageBox pbLayer;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
-        private System.Windows.Forms.ToolStripLabel tsLayerImageZoom;
         private System.Windows.Forms.ToolStripButton tsLayerImagePixelEdit;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
         private System.Windows.Forms.ToolStripMenuItem menuMutate;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
@@ -2022,8 +2088,6 @@
         private System.Windows.Forms.ColumnHeader lvIssuesCount;
         private System.Windows.Forms.ColumnHeader lvIssuesXY;
         private System.Windows.Forms.ColumnHeader lvIssuesPixels;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
-        private System.Windows.Forms.ToolStripLabel tsLayerImageMouseLocation;
         private System.Windows.Forms.ColumnHeader lvIssuesLayerHeader;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator12;
         private System.Windows.Forms.ToolStripButton tsIssueRemove;
@@ -2102,6 +2166,19 @@
         private System.Windows.Forms.NumericUpDown nmPixelEditorDrainHoleDiameter;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.ToolStripButton btnPixelHistoryRemove;
+        private System.Windows.Forms.ToolStrip tsLayerInfo;
+        private System.Windows.Forms.ToolStripLabel tsLayerImageMouseLocation;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
+        private System.Windows.Forms.ToolStripLabel tsLayerImageZoom;
+        private System.Windows.Forms.ToolStripLabel tsLayerPreviewTime;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+        private System.Windows.Forms.ToolStripLabel tsLayerResolution;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
+        private System.Windows.Forms.ToolStripLabel tsLayerImagePanLocation;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator16;
+        private System.Windows.Forms.ToolStripLabel tsLayerImagePixelCount;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator17;
+        private System.Windows.Forms.ToolStripLabel tsLayerBounds;
     }
 }
 

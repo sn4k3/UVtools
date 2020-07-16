@@ -85,6 +85,7 @@ namespace UVtools.Core
             Island,
             ResinTrap,
             TouchingBound,
+            EmptyLayer,
             //HoleSandwich,
         }
 

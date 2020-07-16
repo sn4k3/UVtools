@@ -242,7 +242,7 @@ namespace UVtools.Core
             using (var nonZeroMat = new Mat())
             {
                 CvInvoke.FindNonZero(mat, nonZeroMat);
-                NonZeroPixelCount = (uint)nonZeroMat.Rows / 2;
+                NonZeroPixelCount = (uint)nonZeroMat.Height;
                 BoundingRectangle = CvInvoke.BoundingRectangle(nonZeroMat);
             }
 
