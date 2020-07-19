@@ -695,6 +695,7 @@ namespace UVtools.GUI
                     uint closingIterations;
                     uint openingIterations;
                     bool repairIslands;
+                    bool removeEmptyLayers;
                     bool repairResinTraps;
                     using (var frmRepairLayers = new FrmRepairLayers(2))
                     {
@@ -705,6 +706,7 @@ namespace UVtools.GUI
                         closingIterations = frmRepairLayers.ClosingIterations;
                         openingIterations = frmRepairLayers.OpeningIterations;
                         repairIslands = frmRepairLayers.RepairIslands;
+                        removeEmptyLayers = frmRepairLayers.RemoveEmptyLayers;
                         repairResinTraps = frmRepairLayers.RepairResinTraps;
                     }
 
@@ -722,7 +724,7 @@ namespace UVtools.GUI
                         try
                         {
                             SlicerFile.LayerManager.RepairLayers(layerStart, layerEnd, closingIterations,
-                                openingIterations, repairIslands, repairResinTraps, Issues,
+                                openingIterations, repairIslands, removeEmptyLayers, repairResinTraps, Issues,
                                 FrmLoading.RestartProgress());
                         }
                         catch (OperationCanceledException)
@@ -749,6 +751,11 @@ namespace UVtools.GUI
                         return;
                     }*/
 
+                    if (removeEmptyLayers)
+                    {
+                        UpdateLayerLimits();
+                        RefreshInfo();
+                    }
 
                     ShowLayer();
 
@@ -756,6 +763,51 @@ namespace UVtools.GUI
 
                     menuFileSave.Enabled =
                         menuFileSaveAs.Enabled = true;
+                    return;
+                }
+
+                if (ReferenceEquals(sender, menuToolsLayerRemoval))
+                {
+                    using (var frm = new FrmToolEmpty(ActualLayer, "Layer Removal", "Removes layer(s) in a given range", "Remove"))
+                    {
+                        if (frm.ShowDialog() != DialogResult.OK) return;
+                        DisableGUI();
+                        FrmLoading.SetDescription("Layer Removal");
+
+                        var task = Task.Factory.StartNew(() =>
+                        {
+                            try
+                            {
+                                SlicerFile.LayerManager.RemoveLayer(frm.LayerRangeStart, frm.LayerRangeEnd);
+                            }
+                            catch (OperationCanceledException)
+                            {
+
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
+                            finally
+                            {
+                                Invoke((MethodInvoker)delegate
+                                {
+                                    // Running on the UI thread
+                                    EnableGUI(true);
+                                });
+                            }
+                        });
+
+                        var loadingResult = FrmLoading.ShowDialog();
+
+                        UpdateLayerLimits();
+                        RefreshInfo();
+                        ShowLayer();
+
+                        menuFileSave.Enabled =
+                            menuFileSaveAs.Enabled = true;
+                    }
+
                     return;
                 }
 
@@ -1097,11 +1149,13 @@ namespace UVtools.GUI
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
 
                 Dictionary<uint, List<LayerIssue>> processIssues = new Dictionary<uint, List<LayerIssue>>();
+                List<uint> layersRemove = new List<uint>();
 
                 foreach (ListViewItem item in lvIssues.SelectedItems)
                 {
                     if (!(item.Tag is LayerIssue issue)) continue;
-                    if (!issue.HaveValidPoint) continue;
+                    //if (!issue.HaveValidPoint) continue;
+                    if (issue.Type == LayerIssue.IssueType.TouchingBound) continue;
 
                     if (!processIssues.TryGetValue(issue.Layer.Index, out var issueList))
                     {
@@ -1110,6 +1164,10 @@ namespace UVtools.GUI
                     }
 
                     issueList.Add(issue);
+                    if (issue.Type == LayerIssue.IssueType.EmptyLayer)
+                    {
+                        layersRemove.Add(issue.Layer.Index);
+                    }
                 }
 
 
@@ -1166,6 +1224,13 @@ namespace UVtools.GUI
 
                             progress++;
                         });
+
+                        if (layersRemove.Count > 0)
+                        {
+                            SlicerFile.LayerManager.RemoveLayer(layersRemove);
+                            result = true;
+                        }
+
                     }
                     catch (Exception ex)
                     {
@@ -1192,7 +1257,7 @@ namespace UVtools.GUI
                 foreach (ListViewItem item in lvIssues.SelectedItems)
                 {
                     if (!(item.Tag is LayerIssue issue)) continue;
-                    if (!issue.HaveValidPoint) continue;
+                    //if (!issue.HaveValidPoint) continue;
                     if (issue.Type == LayerIssue.IssueType.TouchingBound) continue;
 
                     Issues[issue.Layer.Index].Remove(issue);
@@ -1202,6 +1267,12 @@ namespace UVtools.GUI
 
                 lvIssues.EndUpdate();
 
+                if (layersRemove.Count > 0)
+                {
+                    UpdateLayerLimits();
+                    RefreshInfo();
+                }
+                
                 ShowLayer();
                 UpdateIssuesInfo();
                 menuFileSave.Enabled =
@@ -1331,6 +1402,21 @@ namespace UVtools.GUI
 
                     tabControlLeft.TabPages.Remove(tabPagePixelEditor);
                 }
+                return;
+            }
+
+            if (ReferenceEquals(sender, tsLayerRmove))
+            {
+                if (MessageBox.Show("Are you sure you want to remove current layer?\nThis operation is irreversible!",
+                        "Remove current layer?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) !=
+                    DialogResult.Yes) return;
+
+                SlicerFile.LayerManager.RemoveLayer(ActualLayer);
+                UpdateLayerLimits();
+                RefreshInfo();
+                ShowLayer();
+                menuFileSave.Enabled = menuFileSaveAs.Enabled = true;
+
                 return;
             }
 
@@ -1835,10 +1921,6 @@ namespace UVtools.GUI
             ActualLayerImage?.Dispose();
             ActualLayerImage = SlicerFile[0].LayerMat;
 
-            lbMaxLayer.Text = $"{SlicerFile.TotalHeight}mm\n{SlicerFile.LayerCount-1}";
-            lbInitialLayer.Text = $"{SlicerFile.LayerHeight}mm\n0";
-
-
             if (Settings.Default.LayerAutoRotateBestView)
             {
                 tsLayerImageRotate.Checked = ActualLayerImage.Height > ActualLayerImage.Width;
@@ -1933,7 +2015,7 @@ namespace UVtools.GUI
             tabControlLeft.SelectedIndex = 0;
             tsLayerResolution.Text = $"{{Width={SlicerFile.ResolutionX}, Height={SlicerFile.ResolutionY}}}";
 
-            tbLayer.Maximum = (int)SlicerFile.LayerCount - 1;
+            UpdateLayerLimits();
             ShowLayer(actualLayer);
             
 
@@ -1951,6 +2033,13 @@ namespace UVtools.GUI
             {
                 ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration());
             }
+        }
+
+        private void UpdateLayerLimits()
+        {
+            lbMaxLayer.Text = $"{SlicerFile.TotalHeight}mm\n{SlicerFile.LayerCount - 1}";
+            lbInitialLayer.Text = $"{SlicerFile.LayerHeight}mm\n0";
+            tbLayer.Maximum = (int)SlicerFile.LayerCount - 1;
         }
 
         private void UpdateTitle()
@@ -2045,7 +2134,7 @@ namespace UVtools.GUI
         /// <summary>
         /// Reshow current layer
         /// </summary>
-        void ShowLayer() => ShowLayer(ActualLayer);
+        void ShowLayer() => ShowLayer(Math.Min(ActualLayer, SlicerFile.LayerCount-1));
 
         void ShowLayer(bool direction)
         {
@@ -2222,44 +2311,43 @@ namespace UVtools.GUI
 
                 if (tsLayerImageLayerOutlineHollowAreas.Checked)
                 {
-                    using (Mat grayscale = new Mat())
+                    //CvInvoke.Threshold(ActualLayerImage, grayscale, 1, 255, ThresholdType.Binary);
+                    using (VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint())
                     {
-                        //CvInvoke.Threshold(ActualLayerImage, grayscale, 1, 255, ThresholdType.Binary);
-                        using (VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint())
+                        using (Mat hierarchy = new Mat())
                         {
-                            using (Mat hierarchy = new Mat())
+                            CvInvoke.FindContours(ActualLayerImage, contours, hierarchy, RetrType.Ccomp,
+                                ChainApproxMethod.ChainApproxSimple);
+
+                            /*
+                             * hierarchy[i][0]: the index of the next contour of the same level
+                             * hierarchy[i][1]: the index of the previous contour of the same level
+                             * hierarchy[i][2]: the index of the first child
+                             * hierarchy[i][3]: the index of the parent
+                             */
+                            var arr = hierarchy.GetData();
+                            for (int i = 0; i < contours.Size; i++)
                             {
-                                CvInvoke.FindContours(ActualLayerImage, contours, hierarchy, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
-
-                                /*
-                                 * hierarchy[i][0]: the index of the next contour of the same level
-                                 * hierarchy[i][1]: the index of the previous contour of the same level
-                                 * hierarchy[i][2]: the index of the first child
-                                 * hierarchy[i][3]: the index of the parent
-                                 */
-                                var arr = hierarchy.GetData();
-                                for (int i = 0; i < contours.Size; i++)
+                                if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1)
                                 {
-                                    if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1)
-                                    {
-                                        //var r = CvInvoke.BoundingRectangle(contours[i]);
-                                        //CvInvoke.Rectangle(ActualLayerImageBgr, r, new MCvScalar(0, 0, 255), 2);
-                                        CvInvoke.DrawContours(ActualLayerImageBgr, contours, i,
-                                            new MCvScalar(Settings.Default.OutlineHollowAreasColor.B,
-                                                Settings.Default.OutlineHollowAreasColor.G, Settings.Default.OutlineHollowAreasColor.R),
-                                            Settings.Default.OutlineHollowAreasLineThickness);
-                                    }
-                                    /*else
-                                    {
-                                        CvInvoke.DrawContours(ActualLayerImageBgr, contours, i,
-                                            new MCvScalar(Settings.Default.ResinTrapColor.B,
-                                                Settings.Default.IslandColor.G, Settings.Default.IslandColor.R),
-                                            2);
-                                    }*/
-
-                                    //if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1)
-                                    //    CvInvoke.DrawContours(ActualLayerImageBgr, contours, i, new MCvScalar(0, 0, 0), -1);
+                                    //var r = CvInvoke.BoundingRectangle(contours[i]);
+                                    //CvInvoke.Rectangle(ActualLayerImageBgr, r, new MCvScalar(0, 0, 255), 2);
+                                    CvInvoke.DrawContours(ActualLayerImageBgr, contours, i,
+                                        new MCvScalar(Settings.Default.OutlineHollowAreasColor.B,
+                                            Settings.Default.OutlineHollowAreasColor.G,
+                                            Settings.Default.OutlineHollowAreasColor.R),
+                                        Settings.Default.OutlineHollowAreasLineThickness);
                                 }
+                                /*else
+                                {
+                                    CvInvoke.DrawContours(ActualLayerImageBgr, contours, i,
+                                        new MCvScalar(Settings.Default.ResinTrapColor.B,
+                                            Settings.Default.IslandColor.G, Settings.Default.IslandColor.R),
+                                        2);
+                                }*/
+
+                                //if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1)
+                                //    CvInvoke.DrawContours(ActualLayerImageBgr, contours, i, new MCvScalar(0, 0, 0), -1);
                             }
                         }
                     }
@@ -2277,7 +2365,7 @@ namespace UVtools.GUI
                             : Settings.Default.PixelEditorRemovePixelColor;
 
 
-                        if (operationDrawing.Rectangle.Size.GetArea() == 1)
+                        if (operationDrawing.BrushSize == 1)
                         {
                             ActualLayerImageBgr.SetByte(operation.Location.X, operation.Location.Y, new []{ color.B, color.G, color.R });
                             continue;

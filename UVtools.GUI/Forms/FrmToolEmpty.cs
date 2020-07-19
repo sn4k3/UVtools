@@ -7,11 +7,14 @@
  */
 
 using System;
+using System.Drawing;
 using System.Windows.Forms;
+using UVtools.Core;
+using UVtools.Core.Operations;
 
 namespace UVtools.GUI.Forms
 {
-    public partial class FrmRepairLayers : Form
+    public partial class FrmToolEmpty : Form
     {
         #region Properties
 
@@ -27,50 +30,21 @@ namespace UVtools.GUI.Forms
             set => nmLayerRangeEnd.Value = value;
         }
 
-        public uint ClosingIterations
-        {
-            get => (uint) numClosingIterations.Value;
-            set => numClosingIterations.Value = value;
-        }
-
-        public uint OpeningIterations
-        {
-            get => (uint)numOpeningIterations.Value;
-            set => numOpeningIterations.Value = value;
-        }
-
-        public bool RepairIslands
-        {
-            get => cbRepairIslands.Checked;
-            set => cbRepairIslands.Checked = value;
-        }
-
-        public bool RemoveEmptyLayers
-        {
-            get => cbRemoveEmptyLayers.Checked;
-            set => cbRemoveEmptyLayers.Checked = value;
-        }
-
-        public bool RepairResinTraps
-        {
-            get => cbRepairResinTraps.Checked;
-            set => cbRepairResinTraps.Checked = value;
-        }
         #endregion
 
         #region Constructors
-        public FrmRepairLayers(uint defaultClosingIterations = 1, uint defaultOpeningIterations = 1)
+        public FrmToolEmpty(uint layerIndex, string text, string description, string btnOkText)
         {
             InitializeComponent();
             DialogResult = DialogResult.Cancel;
 
-            
-            ClosingIterations = defaultClosingIterations;
-            OpeningIterations = defaultOpeningIterations;
-            numClosingIterations.Select();
+            nmLayerRangeStart.Value = layerIndex;
+            nmLayerRangeEnd.Value = layerIndex;
 
-            nmLayerRangeEnd.Value = Program.SlicerFile.LayerCount-1;
+            lbDescription.Text = description;
+            btnOk.Text = btnOkText;
 
+            Text = text;
         }
         #endregion
 
@@ -80,7 +54,7 @@ namespace UVtools.GUI.Forms
             base.OnKeyUp(e);
             if (e.KeyCode == Keys.Enter)
             {
-                btnRepair.PerformClick();
+                btnOk.PerformClick();
                 e.Handled = true;
                 return;
             }
@@ -120,7 +94,7 @@ namespace UVtools.GUI.Forms
         #endregion
 
         #region Events
-        private void ItemClicked(object sender, EventArgs e)
+        private void EventClick(object sender, EventArgs e)
         {
             if (ReferenceEquals(sender, btnLayerRangeAllLayers))
             {
@@ -150,9 +124,9 @@ namespace UVtools.GUI.Forms
                 return;
             }
 
-            if (ReferenceEquals(sender, btnRepair))
+            if (ReferenceEquals(sender, btnOk))
             {
-                if (!btnRepair.Enabled) return;
+                if (!btnOk.Enabled) return;
                 if (LayerRangeStart > LayerRangeEnd)
                 {
                     MessageBox.Show("Layer range start can't be higher than layer end.\nPlease fix and try again.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -160,27 +134,10 @@ namespace UVtools.GUI.Forms
                     return;
                 }
 
-                if (OpeningIterations == 0 && ClosingIterations == 0)
-                {
-                    MessageBox.Show("Any of opening and closing iterations must be non 0.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    numClosingIterations.Select();
-                    return;
-                }
-
-                if (!RepairIslands && !RemoveEmptyLayers && !RepairResinTraps)
-                {
-                    MessageBox.Show("You must select at least one repair operation.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                if (MessageBox.Show("Are you sure you want to attempt this repair?", Text, MessageBoxButtons.YesNo,
+                if (MessageBox.Show($"Are you sure you want to {Text}?", Text, MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     DialogResult = DialogResult.OK;
-                    if (ClosingIterations <= 0) // Should never happen!
-                    {
-                        DialogResult = DialogResult.Cancel;
-                    }
                     Close();
                 }
 
@@ -194,9 +151,13 @@ namespace UVtools.GUI.Forms
             }
         }
 
-        
         #endregion
 
+        #region Methods
 
+
+        #endregion
+
+        
     }
 }

@@ -10,8 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Text;
-using System.Text.RegularExpressions;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
@@ -165,6 +163,15 @@ namespace UVtools.Core.FileFormats
 
         public override float LayerHeight => JsonSettings.Properties.Size.LayerHeight;
 
+        public override uint LayerCount
+        {
+            set
+            {
+                JsonSettings.Properties.Size.Layers = LayerCount;
+                JsonSettings.Layers.Clear();
+            }
+        }
+
         public override ushort InitialLayerCount => JsonSettings.Properties.Bottom.Count;
 
         public override float InitialExposureTime => JsonSettings.Properties.Bottom.LightOnTime;
@@ -263,6 +270,7 @@ namespace UVtools.Core.FileFormats
                     progress++;
                 }
             }
+            AfterEncode();
         }
 
         public override void Decode(string fileFullPath, OperationProgress progress = null)
@@ -281,7 +289,7 @@ namespace UVtools.Core.FileFormats
 
                 JsonSettings = Helpers.JsonDeserializeObject<Settings>(entry.Open());
 
-                LayerManager = new LayerManager(JsonSettings.Properties.Size.Layers);
+                LayerManager = new LayerManager(JsonSettings.Properties.Size.Layers, this);
 
                 entry = inputFile.GetEntry(FilePreviewTinyName);
                 if (!ReferenceEquals(entry, null))
@@ -443,6 +451,16 @@ namespace UVtools.Core.FileFormats
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)
         {
+            if (RequireFullEncode)
+            {
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    FileFullPath = filePath;
+                }
+                Encode(FileFullPath, progress);
+                return;
+            }
+
             if (!string.IsNullOrEmpty(filePath))
             {
                 File.Copy(FileFullPath, filePath, true);
@@ -453,13 +471,6 @@ namespace UVtools.Core.FileFormats
             using (var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update))
             {
                 outputFile.PutFileContent(FileConfigName, JsonConvert.SerializeObject(JsonSettings), ZipArchiveMode.Update);
-
-                foreach (var layer in this)
-                {
-                    if (!layer.IsModified) continue;
-                    outputFile.PutFileContent(layer.Filename, layer.CompressedBytes, ZipArchiveMode.Update);
-                    layer.IsModified = false;
-                }
             }
 
             //Decode(FileFullPath, progress);

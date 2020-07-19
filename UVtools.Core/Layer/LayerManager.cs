@@ -10,6 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -19,6 +20,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
 
@@ -51,10 +53,12 @@ namespace UVtools.Core
         #endregion
 
         #region Properties
+        public FileFormats.FileFormat SlicerFile { get; private set; }
+
         /// <summary>
         /// Layers List
         /// </summary>
-        public Layer[] Layers { get; }
+        public Layer[] Layers { get; private set; }
 
         private Rectangle _boundingRectangle = Rectangle.Empty;
         public Rectangle BoundingRectangle
@@ -83,12 +87,15 @@ namespace UVtools.Core
             }
         }
 
+        public float LayerHeight => Layers[0].PositionZ;
+
 
         #endregion
 
         #region Constructors
-        public LayerManager(uint layerCount)
+        public LayerManager(uint layerCount, FileFormat slicerFile)
         {
+            SlicerFile = slicerFile;
             Layers = new Layer[layerCount];
         }
         #endregion
@@ -229,6 +236,7 @@ namespace UVtools.Core
         /// <param name="layer">Layer to add</param>
         public void AddLayer(uint index, Layer layer)
         {
+            //layer.Index = index;
             Layers[index] = layer;
             layer.ParentLayerManager = this;
         }
@@ -1113,67 +1121,89 @@ namespace UVtools.Core
         }
 
         public void RepairLayers(uint layerStart, uint layerEnd, uint closingIterations = 1, uint openingIterations = 1,
-            bool repairIslands = true, bool repairResinTraps = true, Dictionary<uint, List<LayerIssue>> issues = null,
+            bool repairIslands = true, bool removeEmptyLayers = true, bool repairResinTraps = true, Dictionary<uint, List<LayerIssue>> issues = null,
             OperationProgress progress = null)
         {
             if(ReferenceEquals(progress, null)) progress = new OperationProgress();
             progress.Reset(OperationProgress.StatusRepairLayers, layerEnd - layerStart + 1);
-            Parallel.For(layerStart, layerEnd + 1, layerIndex =>
+
+            if (repairIslands || repairResinTraps)
             {
-                if (progress.Token.IsCancellationRequested) return;
-                Layer layer = this[layerIndex];
-                using (var image = layer.LayerMat)
+                Parallel.For(layerStart, layerEnd + 1, layerIndex =>
                 {
-                    if (repairResinTraps && !ReferenceEquals(issues, null))
+                    if (progress.Token.IsCancellationRequested) return;
+                    Layer layer = this[layerIndex];
+                    using (var image = layer.LayerMat)
                     {
-                        if (issues.TryGetValue((uint)layerIndex, out var issueList))
+                        if (repairResinTraps && !ReferenceEquals(issues, null))
                         {
-                            foreach (var issue in issueList.Where(issue => issue.Type == LayerIssue.IssueType.ResinTrap))
+                            if (issues.TryGetValue((uint) layerIndex, out var issueList))
                             {
-                                using (var vec = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
+                                foreach (var issue in issueList.Where(issue =>
+                                    issue.Type == LayerIssue.IssueType.ResinTrap))
                                 {
-                                    CvInvoke.DrawContours(image,
-                                        vec,
+                                    using (var vec = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
+                                    {
+                                        CvInvoke.DrawContours(image,
+                                            vec,
+                                            -1,
+                                            new MCvScalar(255),
+                                            -1);
+                                    }
+
+                                    /*CvInvoke.DrawContours(image,
+                                        new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)),
                                         -1,
                                         new MCvScalar(255),
-                                        -1);
+                                        2);*/
+                                }
+                            }
+                        }
+
+                        if (repairIslands)
+                        {
+                            using (Mat kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3),
+                                new Point(-1, -1)))
+                            {
+                                if (closingIterations > 0)
+                                {
+                                    CvInvoke.MorphologyEx(image, image, MorphOp.Close, kernel, new Point(-1, -1),
+                                        (int) closingIterations, BorderType.Default, new MCvScalar());
                                 }
 
-                                /*CvInvoke.DrawContours(image,
-                                    new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)),
-                                    -1,
-                                    new MCvScalar(255),
-                                    2);*/
+                                if (openingIterations > 0)
+                                {
+                                    CvInvoke.MorphologyEx(image, image, MorphOp.Open, kernel, new Point(-1, -1),
+                                        (int) closingIterations, BorderType.Default, new MCvScalar());
+                                }
                             }
                         }
-                    }
 
-                    if (repairIslands)
-                    {
-                        using (Mat kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3),
-                            new Point(-1, -1)))
+                        layer.LayerMat = image;
+                        lock (progress.Mutex)
                         {
-                            if (closingIterations > 0)
-                            {
-                                CvInvoke.MorphologyEx(image, image, MorphOp.Close, kernel, new Point(-1, -1),
-                                    (int) closingIterations, BorderType.Default, new MCvScalar());
-                            }
-
-                            if (openingIterations > 0)
-                            {
-                                CvInvoke.MorphologyEx(image, image, MorphOp.Open, kernel, new Point(-1, -1),
-                                    (int) closingIterations, BorderType.Default, new MCvScalar());
-                            }
+                            progress++;
                         }
                     }
+                });
+            }
 
-                    layer.LayerMat = image;
-                    lock (progress.Mutex)
+            if (removeEmptyLayers)
+            {
+                List<uint> removeLayers = new List<uint>();
+                for (uint layerIndex = layerStart; layerIndex <= layerEnd; layerIndex++)
+                {
+                    if (this[layerIndex].NonZeroPixelCount == 0)
                     {
-                        progress++;
+                        removeLayers.Add(layerIndex);
                     }
                 }
-            });
+
+                if (removeLayers.Count > 0)
+                {
+                    RemoveLayer(removeLayers);
+                }
+            }
 
             progress.Token.ThrowIfCancellationRequested();
         }
@@ -1218,7 +1248,7 @@ namespace UVtools.Core
                     var operationDrawing = (PixelDrawing) operation;
                     var mat = modfiedLayers.GetOrAdd(operation.LayerIndex, u => this[operation.LayerIndex].LayerMat);
 
-                    if (operationDrawing.Rectangle.Size.GetArea() == 1)
+                    if (operationDrawing.BrushSize == 1)
                     {
                         mat.SetByte(operation.Location.X, operation.Location.Y, operationDrawing.Color);
                         continue;
@@ -1227,8 +1257,7 @@ namespace UVtools.Core
                     switch (operationDrawing.BrushShape)
                     {
                         case PixelDrawing.BrushShapeType.Rectangle:
-                            CvInvoke.Rectangle(mat, operationDrawing.Rectangle, new MCvScalar(operationDrawing.Color),
-                                -1);
+                            CvInvoke.Rectangle(mat, operationDrawing.Rectangle, new MCvScalar(operationDrawing.Color), -1);
                             break;
                         case PixelDrawing.BrushShapeType.Circle:
                             CvInvoke.Circle(mat, operation.Location, operationDrawing.BrushSize / 2,
@@ -1342,7 +1371,7 @@ namespace UVtools.Core
         /// <returns></returns>
         public LayerManager Clone()
         {
-            LayerManager layerManager = new LayerManager(Count);
+            LayerManager layerManager = new LayerManager(Count, SlicerFile);
             foreach (var layer in this)
             {
                 layerManager[layer.Index] = layer.Clone();
@@ -1353,5 +1382,60 @@ namespace UVtools.Core
 
 
         #endregion
+
+        public void RemoveLayer(uint layerIndex) => RemoveLayer(layerIndex, layerIndex);
+
+        public void RemoveLayer(uint layerIndexStart, uint layerIndexEnd)
+        {
+            var layersRemove = new List<uint>();
+            for (uint layerIndex = layerIndexStart; layerIndex <= layerIndexEnd; layerIndex++)
+            {
+                layersRemove.Add(layerIndex);
+            }
+
+            RemoveLayer(layersRemove);
+        }
+
+        public void RemoveLayer(List<uint> layersRemove)
+        {
+            if (layersRemove.Count == 0) return;
+
+            var oldLayers = Layers;
+            float layerHeight = SlicerFile.LayerHeight;
+
+            Layers = new Layer[Count - layersRemove.Count];
+
+            // Re-set
+            uint newLayerIndex = 0;
+            for (uint layerIndex = 0; layerIndex < oldLayers.Length; layerIndex++)
+            {
+                if (layersRemove.Contains(layerIndex)) continue;
+                Layers[newLayerIndex] = oldLayers[layerIndex];
+                Layers[newLayerIndex].Index = newLayerIndex;
+
+                // Re-Z
+                float posZ = layerHeight;
+                if (newLayerIndex > 0)
+                {
+                    if (oldLayers[layerIndex - 1].PositionZ == oldLayers[layerIndex].PositionZ)
+                    {
+                        posZ = Layers[newLayerIndex - 1].PositionZ;
+                    }
+                    else
+                    {
+                        posZ = (float)Math.Round(Layers[newLayerIndex - 1].PositionZ + layerHeight, 2);
+                    }
+                }
+
+                Layers[newLayerIndex].PositionZ = posZ;
+                Layers[newLayerIndex].IsModified = true;
+
+                newLayerIndex++;
+            }
+
+            SlicerFile.LayerCount = Count;
+            BoundingRectangle = Rectangle.Empty;
+            SlicerFile.RequireFullEncode = true;
+        }
     }
 }

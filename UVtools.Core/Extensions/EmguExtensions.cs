@@ -197,31 +197,17 @@ namespace UVtools.Core.Extensions
 
         public static void SetByte(this Mat mat, int pixel, byte value) => SetByte(mat, pixel, new[] {value});
 
-        public static void SetByte(this Mat mat, int pixel, byte[] value)
-        {
-            /*var sw = Stopwatch.StartNew();
-            var span = new Span<byte>(IntPtr.Add(mat.DataPointer, pixel).ToPointer(), value.Length);
-            for (int i = 0; i < value.Length; i++)
-            {
-                span[i] = value[i];
-            }
-            Debug.Write(sw.ElapsedMilliseconds);
-            Debug.Write(" - ");
-            sw.Restart();*/
+        public static void SetByte(this Mat mat, int pixel, byte[] value) =>
             Marshal.Copy(value, 0, mat.DataPointer + pixel, value.Length);
-            //Debug.Write(sw.ElapsedMilliseconds);
-        }
 
         public static void SetByte(this Mat mat, int x, int y, byte value) =>
             SetByte(mat, x, y, new[] {value});
 
         public static void SetByte(this Mat mat, int x, int y, byte[] value) =>
-            SetByte(mat, y * mat.Cols + x, value);
+            SetByte(mat, y * mat.Step + x * mat.NumberOfChannels, value);
 
-        public static void SetBytes(this Mat mat, byte[] value)
-        {
+        public static void SetBytes(this Mat mat, byte[] value) =>
             Marshal.Copy(value, 0, mat.DataPointer, value.Length);
-        }
 
     }
 }

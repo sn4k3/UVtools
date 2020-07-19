@@ -126,6 +126,14 @@ namespace UVtools.Core.FileFormats
 
         public override float LayerHeight => HeaderSettings.LayerHeight;
 
+        public override uint LayerCount
+        {
+            set
+            {
+                HeaderSettings.LayerCount = LayerCount;
+            }
+        }
+
         public override ushort InitialLayerCount => HeaderSettings.BottomLayerCount;
 
         public override float InitialExposureTime => HeaderSettings.BottomLayerExposureTime;
@@ -164,14 +172,6 @@ namespace UVtools.Core.FileFormats
             base.Encode(fileFullPath, progress);
             using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
             {
-                for(uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    progress.Token.ThrowIfCancellationRequested();
-                    Layer layer = this[layerIndex];
-                    outputFile.PutFileContent($"{layerIndex+1}.png", layer.CompressedBytes, ZipArchiveMode.Create);
-                    progress++;
-                }
-
                 if (Thumbnails.Length > 0 && !ReferenceEquals(Thumbnails[0], null))
                 {
                     using (Stream stream = outputFile.CreateEntry("preview.png").Open())
@@ -196,7 +196,17 @@ namespace UVtools.Core.FileFormats
 
                 UpdateGCode();
                 outputFile.PutFileContent("run.gcode", GCode.ToString(), ZipArchiveMode.Create);
+
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                {
+                    progress.Token.ThrowIfCancellationRequested();
+                    Layer layer = this[layerIndex];
+                    outputFile.PutFileContent($"{layerIndex + 1}.png", layer.CompressedBytes, ZipArchiveMode.Create);
+                    progress++;
+                }
             }
+
+            AfterEncode();
         }
 
         public override void Decode(string fileFullPath, OperationProgress progress = null)
@@ -253,7 +263,7 @@ namespace UVtools.Core.FileFormats
                     }
                 }
 
-                LayerManager = new LayerManager(HeaderSettings.LayerCount);
+                LayerManager = new LayerManager(HeaderSettings.LayerCount, this);
 
                 progress.ItemCount = LayerCount;
 
@@ -433,6 +443,16 @@ namespace UVtools.Core.FileFormats
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)
         {
+            if (RequireFullEncode)
+            {
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    FileFullPath = filePath;
+                }
+                Encode(FileFullPath, progress);
+                return;
+            }
+
             if (!string.IsNullOrEmpty(filePath))
             {
                 File.Copy(FileFullPath, filePath, true);
@@ -451,13 +471,6 @@ namespace UVtools.Core.FileFormats
                 }
 
                 outputFile.PutFileContent("run.gcode", GCode.ToString(), ZipArchiveMode.Update);
-
-                foreach (var layer in this)
-                {
-                    if (!layer.IsModified) continue;
-                    outputFile.PutFileContent(layer.Filename, layer.CompressedBytes, ZipArchiveMode.Update);
-                    layer.IsModified = false;
-                }
             }
 
             //Decode(FileFullPath, progress);

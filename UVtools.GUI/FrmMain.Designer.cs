@@ -92,6 +92,8 @@
             this.tsLayerImageLayerOutlineEdgeDetection = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerImagePixelEdit = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator18 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsLayerRmove = new System.Windows.Forms.ToolStripButton();
             this.pbLayers = new System.Windows.Forms.ProgressBar();
             this.tabControlLeft = new System.Windows.Forms.TabControl();
             this.tbpThumbnailsAndInfo = new System.Windows.Forms.TabPage();
@@ -189,6 +191,7 @@
             this.btnFirstLayer = new System.Windows.Forms.Button();
             this.toolTipInformation = new System.Windows.Forms.ToolTip(this.components);
             this.layerScrollTimer = new System.Windows.Forms.Timer(this.components);
+            this.menuToolsLayerRemoval = new System.Windows.Forms.ToolStripMenuItem();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).BeginInit();
@@ -394,6 +397,7 @@
             // 
             this.menuTools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuToolsRepairLayers,
+            this.menuToolsLayerRemoval,
             this.menuToolsPattern});
             this.menuTools.Enabled = false;
             this.menuTools.Name = "menuTools";
@@ -685,7 +689,9 @@
             this.toolStripSeparator7,
             this.tsLayerImageLayerOutline,
             this.toolStripSeparator9,
-            this.tsLayerImagePixelEdit});
+            this.tsLayerImagePixelEdit,
+            this.toolStripSeparator18,
+            this.tsLayerRmove});
             this.tsLayer.Location = new System.Drawing.Point(0, 0);
             this.tsLayer.Name = "tsLayer";
             this.tsLayer.Size = new System.Drawing.Size(1228, 25);
@@ -732,7 +738,7 @@
             this.tsLayerImageRotate.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsLayerImageRotate.Name = "tsLayerImageRotate";
             this.tsLayerImageRotate.Size = new System.Drawing.Size(117, 22);
-            this.tsLayerImageRotate.Text = "Rotate Image 90º";
+            this.tsLayerImageRotate.Text = "&Rotate Image 90º";
             this.tsLayerImageRotate.ToolTipText = "Auto rotate layer preview image at 90º (This can slow down the layer preview) [CT" +
     "RL+R]";
             this.tsLayerImageRotate.Click += new System.EventHandler(this.EventClick);
@@ -749,7 +755,7 @@
             this.tsLayerImageLayerDifference.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsLayerImageLayerDifference.Name = "tsLayerImageLayerDifference";
             this.tsLayerImageLayerDifference.Size = new System.Drawing.Size(81, 22);
-            this.tsLayerImageLayerDifference.Text = "Difference";
+            this.tsLayerImageLayerDifference.Text = "&Difference";
             this.tsLayerImageLayerDifference.ToolTipText = "Show layer differences where daker pixels were also present on previous layer and" +
     " the white pixels the difference between previous and current layer.";
             this.tsLayerImageLayerDifference.Click += new System.EventHandler(this.EventClick);
@@ -768,7 +774,7 @@
             this.tsLayerImageHighlightIssues.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsLayerImageHighlightIssues.Name = "tsLayerImageHighlightIssues";
             this.tsLayerImageHighlightIssues.Size = new System.Drawing.Size(58, 22);
-            this.tsLayerImageHighlightIssues.Text = "Issues";
+            this.tsLayerImageHighlightIssues.Text = "&Issues";
             this.tsLayerImageHighlightIssues.ToolTipText = "Highlight Issues on current layer.\r\nValid only if Issues are calculated.";
             this.tsLayerImageHighlightIssues.Click += new System.EventHandler(this.EventClick);
             // 
@@ -788,7 +794,7 @@
             this.tsLayerImageLayerOutline.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsLayerImageLayerOutline.Name = "tsLayerImageLayerOutline";
             this.tsLayerImageLayerOutline.Size = new System.Drawing.Size(78, 22);
-            this.tsLayerImageLayerOutline.Text = "Outline";
+            this.tsLayerImageLayerOutline.Text = "&Outline";
             this.tsLayerImageLayerOutline.ButtonClick += new System.EventHandler(this.EventClick);
             // 
             // tsLayerImageLayerOutlinePrintVolumeBounds
@@ -835,10 +841,27 @@
             this.tsLayerImagePixelEdit.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsLayerImagePixelEdit.Name = "tsLayerImagePixelEdit";
             this.tsLayerImagePixelEdit.Size = new System.Drawing.Size(75, 22);
-            this.tsLayerImagePixelEdit.Text = "Pixel Edit";
+            this.tsLayerImagePixelEdit.Text = "Pixel &Edit";
             this.tsLayerImagePixelEdit.ToolTipText = "Edit layer image pixels (Righ click to add pixel and SHIFT + Right click to remov" +
     "e pixel)\r\nRed pixels are removed pixels\r\nGreen pixels are added pixels";
             this.tsLayerImagePixelEdit.Click += new System.EventHandler(this.EventClick);
+            // 
+            // toolStripSeparator18
+            // 
+            this.toolStripSeparator18.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripSeparator18.Name = "toolStripSeparator18";
+            this.toolStripSeparator18.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsLayerRmove
+            // 
+            this.tsLayerRmove.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerRmove.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.tsLayerRmove.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerRmove.Name = "tsLayerRmove";
+            this.tsLayerRmove.Size = new System.Drawing.Size(101, 22);
+            this.tsLayerRmove.Text = "Remove Layer";
+            this.tsLayerRmove.ToolTipText = "Delete current layer";
+            this.tsLayerRmove.Click += new System.EventHandler(this.EventClick);
             // 
             // pbLayers
             // 
@@ -1937,6 +1960,15 @@
             this.layerScrollTimer.Interval = 150;
             this.layerScrollTimer.Tick += new System.EventHandler(this.EventTimerTick);
             // 
+            // menuToolsLayerRemoval
+            // 
+            this.menuToolsLayerRemoval.Enabled = false;
+            this.menuToolsLayerRemoval.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.menuToolsLayerRemoval.Name = "menuToolsLayerRemoval";
+            this.menuToolsLayerRemoval.Size = new System.Drawing.Size(261, 22);
+            this.menuToolsLayerRemoval.Text = "Layer Re&moval";
+            this.menuToolsLayerRemoval.Click += new System.EventHandler(this.EventClick);
+            // 
             // FrmMain
             // 
             this.AllowDrop = true;
@@ -2179,6 +2211,9 @@
         private System.Windows.Forms.ToolStripLabel tsLayerImagePixelCount;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator17;
         private System.Windows.Forms.ToolStripLabel tsLayerBounds;
+        private System.Windows.Forms.ToolStripButton tsLayerRmove;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator18;
+        private System.Windows.Forms.ToolStripMenuItem menuToolsLayerRemoval;
     }
 }
 

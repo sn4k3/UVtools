@@ -45,7 +45,7 @@ namespace UVtools.Core
         /// <summary>
         /// Gets the layer index
         /// </summary>
-        public uint Index { get; }
+        public uint Index { get; set; }
 
         /// <summary>
         /// Gets or sets the exposure time in seconds

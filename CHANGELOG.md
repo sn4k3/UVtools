@@ -1,5 +1,14 @@
 # Changelog
 
+## 19/07/2020 - v0.6.3.0
+
+* (Add) Layer remove button
+* (Add) Tool: Layer removal
+* (Add) Layer Repair tool: Remove empty layers
+* (Add) Issues: Remove a empty layer will effectively remove the layer
+* (Fix) SL1: When converting to other format in some cases the parameters on Printer Notes were not respected nor exported (#12)
+* (Fix) Pixel Editor: Draw pixels was painting on wrong positions after apply, when refreshing layer some pixels disappear (Spotted by Nicholas Taylor)
+
 ## 17/07/2020 - v0.6.2.3
 
 * (Add) Issue: EmptyLayer - Detects empty layers were image is all black with 0 pixels to cure

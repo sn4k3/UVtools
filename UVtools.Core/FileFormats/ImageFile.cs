@@ -68,7 +68,7 @@ namespace UVtools.Core.FileFormats
                 CvInvoke.CvtColor(ImageMat, ImageMat, ColorConversion.Bgr2Gray);
             }
 
-            LayerManager = new LayerManager(1);
+            LayerManager = new LayerManager(1, this);
             this[0] = new Layer(0, ImageMat, Path.GetFileName(fileFullPath));
         }
 

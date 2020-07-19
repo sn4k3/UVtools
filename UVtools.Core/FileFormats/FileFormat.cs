@@ -262,10 +262,16 @@ namespace UVtools.Core.FileFormats
         public Mat[] Thumbnails { get; set; }
         public LayerManager LayerManager { get; set; }
 
+        private bool _haveModifiedLayers;
+
         /// <summary>
-        /// Gets if any layer got modified
+        /// Gets or sets if modifications require a full encode to save
         /// </summary>
-        public bool ModifiedLayers => LayerManager.IsModified;
+        public bool RequireFullEncode
+        {
+            get => _haveModifiedLayers || LayerManager.IsModified;
+            set => _haveModifiedLayers = value;
+        } // => LayerManager.IsModified;
 
         public abstract uint ResolutionX { get; }
 
@@ -277,8 +283,12 @@ namespace UVtools.Core.FileFormats
 
         public float TotalHeight => LayerCount == 0 ? 0 : this[LayerCount - 1].PositionZ; //(float)Math.Round(LayerCount * LayerHeight, 2);
 
-        public uint LayerCount => LayerManager?.Count ?? 0;
-        
+        public virtual uint LayerCount
+        {
+            get => LayerManager?.Count ?? 0;
+            set => throw new NotImplementedException();
+        }
+
         public abstract ushort InitialLayerCount { get; }
         
         public abstract float InitialExposureTime { get; }
@@ -464,6 +474,7 @@ namespace UVtools.Core.FileFormats
             for (var i = 0; i < Thumbnails.Length; i++)
             {
                 if (ReferenceEquals(Thumbnails[i], null)) continue;
+                if(Thumbnails[i].Size == ThumbnailsOriginalSize[i]) continue;
                 CvInvoke.Resize(Thumbnails[i], Thumbnails[i], new Size(ThumbnailsOriginalSize[i].Width, ThumbnailsOriginalSize[i].Height));
             }
 
@@ -471,14 +482,11 @@ namespace UVtools.Core.FileFormats
             progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
         }
 
-        /*public virtual void BeginEncode(string fileFullPath)
+        public void AfterEncode()
         {
+            LayerManager.Desmodify();
+            RequireFullEncode = false;
         }
-               
-
-        public abstract void InsertLayerImageEncode(Image<L8> image, uint layerIndex);
-
-        public abstract void EndEncode();*/
 
         public virtual void Decode(string fileFullPath, OperationProgress progress = null)
         {

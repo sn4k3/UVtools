@@ -805,6 +805,11 @@ namespace UVtools.Core.FileFormats
 
         public override float LayerHeight => HeaderSettings.LayerHeight;
 
+        public override uint LayerCount
+        {
+            set => LayersDefinition.LayersCount = LayerCount;
+        }
+
         public override ushort InitialLayerCount => (ushort)HeaderSettings.BottomLayersCount;
 
         public override float InitialExposureTime => HeaderSettings.BottomExposureSeconds;
@@ -921,6 +926,8 @@ namespace UVtools.Core.FileFormats
                 outputFile.Seek(0, SeekOrigin.Begin);
                 Helpers.SerializeWriteFileStream(outputFile, FileMarkSettings);
             }
+
+            AfterEncode();
         }
 
         public override void Decode(string fileFullPath, OperationProgress progress = null)
@@ -993,7 +1000,7 @@ namespace UVtools.Core.FileFormats
                 Debug.Write("LayersDefinition -> ");
                 Debug.WriteLine(LayersDefinition);
 
-                LayerManager = new LayerManager(LayersDefinition.LayersCount);
+                LayerManager = new LayerManager(LayersDefinition.LayersCount, this);
                 LayersDefinition.Layers = new LayerData[LayerCount];
 
 
@@ -1120,7 +1127,7 @@ namespace UVtools.Core.FileFormats
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)
         {
-            if (LayerManager.IsModified)
+            if (RequireFullEncode)
             {
                 if (!string.IsNullOrEmpty(filePath))
                 {

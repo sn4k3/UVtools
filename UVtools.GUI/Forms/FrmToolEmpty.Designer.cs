@@ -1,8 +1,7 @@
-﻿using UVtools.GUI.Controls;
-
+﻿
 namespace UVtools.GUI.Forms
 {
-    partial class FrmRepairLayers
+    partial class FrmToolEmpty
     {
         /// <summary>
         /// Required designer variable.
@@ -31,10 +30,8 @@ namespace UVtools.GUI.Forms
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmRepairLayers));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmToolEmpty));
             this.lbDescription = new System.Windows.Forms.Label();
-            this.lbIterationsStart = new System.Windows.Forms.Label();
-            this.numClosingIterations = new System.Windows.Forms.NumericUpDown();
             this.lbLayerRange = new System.Windows.Forms.Label();
             this.nmLayerRangeStart = new System.Windows.Forms.NumericUpDown();
             this.nmLayerRangeEnd = new System.Windows.Forms.NumericUpDown();
@@ -45,19 +42,11 @@ namespace UVtools.GUI.Forms
             this.btnLayerRangeBottomLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.btnLayerRangeNormalLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.btnRepair = new System.Windows.Forms.Button();
-            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.label1 = new System.Windows.Forms.Label();
-            this.cbRepairIslands = new System.Windows.Forms.CheckBox();
-            this.numOpeningIterations = new System.Windows.Forms.NumericUpDown();
-            this.cbRepairResinTraps = new System.Windows.Forms.CheckBox();
+            this.btnOk = new System.Windows.Forms.Button();
             this.btnLayerRangeSelect = new UVtools.GUI.Controls.SplitButton();
-            this.cbRemoveEmptyLayers = new System.Windows.Forms.CheckBox();
-            ((System.ComponentModel.ISupportInitialize)(this.numClosingIterations)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeEnd)).BeginInit();
             this.cmLayerRange.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numOpeningIterations)).BeginInit();
             this.SuspendLayout();
             // 
             // lbDescription
@@ -66,48 +55,23 @@ namespace UVtools.GUI.Forms
             this.lbDescription.Location = new System.Drawing.Point(13, 14);
             this.lbDescription.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbDescription.Name = "lbDescription";
-            this.lbDescription.Size = new System.Drawing.Size(584, 149);
+            this.lbDescription.Size = new System.Drawing.Size(584, 39);
             this.lbDescription.TabIndex = 0;
-            this.lbDescription.Text = resources.GetString("lbDescription.Text");
-            // 
-            // lbIterationsStart
-            // 
-            this.lbIterationsStart.AutoSize = true;
-            this.lbIterationsStart.Location = new System.Drawing.Point(13, 211);
-            this.lbIterationsStart.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lbIterationsStart.Name = "lbIterationsStart";
-            this.lbIterationsStart.Size = new System.Drawing.Size(171, 20);
-            this.lbIterationsStart.TabIndex = 3;
-            this.lbIterationsStart.Text = "Gap Closing Iterations:";
-            this.toolTip.SetToolTip(this.lbIterationsStart, resources.GetString("lbIterationsStart.ToolTip"));
-            // 
-            // numClosingIterations
-            // 
-            this.numClosingIterations.Location = new System.Drawing.Point(192, 208);
-            this.numClosingIterations.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.numClosingIterations.Name = "numClosingIterations";
-            this.numClosingIterations.Size = new System.Drawing.Size(89, 26);
-            this.numClosingIterations.TabIndex = 3;
-            this.numClosingIterations.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+            this.lbDescription.Text = "Description";
             // 
             // lbLayerRange
             // 
             this.lbLayerRange.AutoSize = true;
-            this.lbLayerRange.Location = new System.Drawing.Point(13, 171);
+            this.lbLayerRange.Location = new System.Drawing.Point(13, 62);
             this.lbLayerRange.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbLayerRange.Name = "lbLayerRange";
             this.lbLayerRange.Size = new System.Drawing.Size(97, 20);
             this.lbLayerRange.TabIndex = 9;
             this.lbLayerRange.Text = "Layer range:";
-            this.toolTip.SetToolTip(this.lbLayerRange, resources.GetString("lbLayerRange.ToolTip"));
             // 
             // nmLayerRangeStart
             // 
-            this.nmLayerRangeStart.Location = new System.Drawing.Point(157, 168);
+            this.nmLayerRangeStart.Location = new System.Drawing.Point(118, 59);
             this.nmLayerRangeStart.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nmLayerRangeStart.Maximum = new decimal(new int[] {
             100000,
@@ -115,12 +79,12 @@ namespace UVtools.GUI.Forms
             0,
             0});
             this.nmLayerRangeStart.Name = "nmLayerRangeStart";
-            this.nmLayerRangeStart.Size = new System.Drawing.Size(124, 26);
+            this.nmLayerRangeStart.Size = new System.Drawing.Size(120, 26);
             this.nmLayerRangeStart.TabIndex = 0;
             // 
             // nmLayerRangeEnd
             // 
-            this.nmLayerRangeEnd.Location = new System.Drawing.Point(328, 168);
+            this.nmLayerRangeEnd.Location = new System.Drawing.Point(314, 59);
             this.nmLayerRangeEnd.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nmLayerRangeEnd.Maximum = new decimal(new int[] {
             100000,
@@ -128,13 +92,13 @@ namespace UVtools.GUI.Forms
             0,
             0});
             this.nmLayerRangeEnd.Name = "nmLayerRangeEnd";
-            this.nmLayerRangeEnd.Size = new System.Drawing.Size(124, 26);
+            this.nmLayerRangeEnd.Size = new System.Drawing.Size(120, 26);
             this.nmLayerRangeEnd.TabIndex = 1;
             // 
             // lbLayerRangeTo
             // 
             this.lbLayerRangeTo.AutoSize = true;
-            this.lbLayerRangeTo.Location = new System.Drawing.Point(289, 171);
+            this.lbLayerRangeTo.Location = new System.Drawing.Point(275, 62);
             this.lbLayerRangeTo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbLayerRangeTo.Name = "lbLayerRangeTo";
             this.lbLayerRangeTo.Size = new System.Drawing.Size(31, 20);
@@ -158,7 +122,7 @@ namespace UVtools.GUI.Forms
             | System.Windows.Forms.Keys.A)));
             this.btnLayerRangeAllLayers.Size = new System.Drawing.Size(225, 22);
             this.btnLayerRangeAllLayers.Text = "&All Layers";
-            this.btnLayerRangeAllLayers.Click += new System.EventHandler(this.ItemClicked);
+            this.btnLayerRangeAllLayers.Click += new System.EventHandler(this.EventClick);
             // 
             // btnLayerRangeCurrentLayer
             // 
@@ -167,7 +131,7 @@ namespace UVtools.GUI.Forms
             | System.Windows.Forms.Keys.C)));
             this.btnLayerRangeCurrentLayer.Size = new System.Drawing.Size(225, 22);
             this.btnLayerRangeCurrentLayer.Text = "&Current Layer";
-            this.btnLayerRangeCurrentLayer.Click += new System.EventHandler(this.ItemClicked);
+            this.btnLayerRangeCurrentLayer.Click += new System.EventHandler(this.EventClick);
             // 
             // btnLayerRangeBottomLayers
             // 
@@ -176,7 +140,7 @@ namespace UVtools.GUI.Forms
             | System.Windows.Forms.Keys.B)));
             this.btnLayerRangeBottomLayers.Size = new System.Drawing.Size(225, 22);
             this.btnLayerRangeBottomLayers.Text = "&Bottom Layers";
-            this.btnLayerRangeBottomLayers.Click += new System.EventHandler(this.ItemClicked);
+            this.btnLayerRangeBottomLayers.Click += new System.EventHandler(this.EventClick);
             // 
             // btnLayerRangeNormalLayers
             // 
@@ -185,7 +149,7 @@ namespace UVtools.GUI.Forms
             | System.Windows.Forms.Keys.N)));
             this.btnLayerRangeNormalLayers.Size = new System.Drawing.Size(225, 22);
             this.btnLayerRangeNormalLayers.Text = "&Normal Layers";
-            this.btnLayerRangeNormalLayers.Click += new System.EventHandler(this.ItemClicked);
+            this.btnLayerRangeNormalLayers.Click += new System.EventHandler(this.EventClick);
             // 
             // btnCancel
             // 
@@ -193,7 +157,7 @@ namespace UVtools.GUI.Forms
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Image = global::UVtools.GUI.Properties.Resources.Cancel_24x24;
             this.btnCancel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnCancel.Location = new System.Drawing.Point(447, 278);
+            this.btnCancel.Location = new System.Drawing.Point(434, 102);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(150, 48);
@@ -201,83 +165,26 @@ namespace UVtools.GUI.Forms
             this.btnCancel.Text = "&Cancel";
             this.btnCancel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnCancel.UseVisualStyleBackColor = true;
-            this.btnCancel.Click += new System.EventHandler(this.ItemClicked);
+            this.btnCancel.Click += new System.EventHandler(this.EventClick);
             // 
-            // btnRepair
+            // btnOk
             // 
-            this.btnRepair.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnRepair.Image = global::UVtools.GUI.Properties.Resources.Ok_24x24;
-            this.btnRepair.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnRepair.Location = new System.Drawing.Point(289, 278);
-            this.btnRepair.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.btnRepair.Name = "btnRepair";
-            this.btnRepair.Size = new System.Drawing.Size(150, 48);
-            this.btnRepair.TabIndex = 5;
-            this.btnRepair.Text = "&Repair";
-            this.btnRepair.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.btnRepair.UseVisualStyleBackColor = true;
-            this.btnRepair.Click += new System.EventHandler(this.ItemClicked);
-            // 
-            // toolTip
-            // 
-            this.toolTip.AutoPopDelay = 32767;
-            this.toolTip.InitialDelay = 500;
-            this.toolTip.IsBalloon = true;
-            this.toolTip.ReshowDelay = 100;
-            this.toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
-            this.toolTip.ToolTipTitle = "Information";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(307, 210);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(190, 20);
-            this.label1.TabIndex = 17;
-            this.label1.Text = "Noise Removal Iterations:";
-            this.toolTip.SetToolTip(this.label1, resources.GetString("label1.ToolTip"));
-            // 
-            // cbRepairIslands
-            // 
-            this.cbRepairIslands.AutoSize = true;
-            this.cbRepairIslands.Checked = true;
-            this.cbRepairIslands.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbRepairIslands.Location = new System.Drawing.Point(17, 246);
-            this.cbRepairIslands.Name = "cbRepairIslands";
-            this.cbRepairIslands.Size = new System.Drawing.Size(204, 24);
-            this.cbRepairIslands.TabIndex = 16;
-            this.cbRepairIslands.Text = "Repair layers and islands";
-            this.cbRepairIslands.UseVisualStyleBackColor = true;
-            // 
-            // numOpeningIterations
-            // 
-            this.numOpeningIterations.Location = new System.Drawing.Point(505, 208);
-            this.numOpeningIterations.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.numOpeningIterations.Name = "numOpeningIterations";
-            this.numOpeningIterations.Size = new System.Drawing.Size(92, 26);
-            this.numOpeningIterations.TabIndex = 18;
-            this.numOpeningIterations.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            // 
-            // cbRepairResinTraps
-            // 
-            this.cbRepairResinTraps.AutoSize = true;
-            this.cbRepairResinTraps.Checked = true;
-            this.cbRepairResinTraps.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbRepairResinTraps.Location = new System.Drawing.Point(17, 305);
-            this.cbRepairResinTraps.Name = "cbRepairResinTraps";
-            this.cbRepairResinTraps.Size = new System.Drawing.Size(164, 24);
-            this.cbRepairResinTraps.TabIndex = 19;
-            this.cbRepairResinTraps.Text = "Repair Resin Traps";
-            this.cbRepairResinTraps.UseVisualStyleBackColor = true;
+            this.btnOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnOk.Image = global::UVtools.GUI.Properties.Resources.Ok_24x24;
+            this.btnOk.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnOk.Location = new System.Drawing.Point(276, 102);
+            this.btnOk.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnOk.Name = "btnOk";
+            this.btnOk.Size = new System.Drawing.Size(150, 48);
+            this.btnOk.TabIndex = 5;
+            this.btnOk.Text = "Ok";
+            this.btnOk.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.btnOk.UseVisualStyleBackColor = true;
+            this.btnOk.Click += new System.EventHandler(this.EventClick);
             // 
             // btnLayerRangeSelect
             // 
-            this.btnLayerRangeSelect.Location = new System.Drawing.Point(459, 168);
+            this.btnLayerRangeSelect.Location = new System.Drawing.Point(446, 58);
             this.btnLayerRangeSelect.Menu = this.cmLayerRange;
             this.btnLayerRangeSelect.Name = "btnLayerRangeSelect";
             this.btnLayerRangeSelect.Size = new System.Drawing.Size(138, 26);
@@ -285,38 +192,19 @@ namespace UVtools.GUI.Forms
             this.btnLayerRangeSelect.Text = "Select";
             this.btnLayerRangeSelect.UseVisualStyleBackColor = true;
             // 
-            // cbRemoveEmptyLayers
-            // 
-            this.cbRemoveEmptyLayers.AutoSize = true;
-            this.cbRemoveEmptyLayers.Checked = true;
-            this.cbRemoveEmptyLayers.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbRemoveEmptyLayers.Location = new System.Drawing.Point(17, 276);
-            this.cbRemoveEmptyLayers.Name = "cbRemoveEmptyLayers";
-            this.cbRemoveEmptyLayers.Size = new System.Drawing.Size(179, 24);
-            this.cbRemoveEmptyLayers.TabIndex = 20;
-            this.cbRemoveEmptyLayers.Text = "Remove empty layers";
-            this.cbRemoveEmptyLayers.UseVisualStyleBackColor = true;
-            // 
-            // FrmRepairLayers
+            // FrmToolEmpty
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(606, 340);
-            this.Controls.Add(this.cbRemoveEmptyLayers);
-            this.Controls.Add(this.cbRepairResinTraps);
-            this.Controls.Add(this.numOpeningIterations);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.cbRepairIslands);
+            this.ClientSize = new System.Drawing.Size(599, 164);
             this.Controls.Add(this.btnLayerRangeSelect);
             this.Controls.Add(this.lbLayerRangeTo);
             this.Controls.Add(this.nmLayerRangeEnd);
             this.Controls.Add(this.nmLayerRangeStart);
             this.Controls.Add(this.lbLayerRange);
-            this.Controls.Add(this.btnRepair);
+            this.Controls.Add(this.btnOk);
             this.Controls.Add(this.btnCancel);
-            this.Controls.Add(this.numClosingIterations);
-            this.Controls.Add(this.lbIterationsStart);
             this.Controls.Add(this.lbDescription);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -325,16 +213,14 @@ namespace UVtools.GUI.Forms
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "FrmRepairLayers";
+            this.Name = "FrmToolEmpty";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Repair Layers";
+            this.Text = "Pattern";
             this.TopMost = true;
-            ((System.ComponentModel.ISupportInitialize)(this.numClosingIterations)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeEnd)).EndInit();
             this.cmLayerRange.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.numOpeningIterations)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -343,10 +229,8 @@ namespace UVtools.GUI.Forms
         #endregion
 
         private System.Windows.Forms.Label lbDescription;
-        private System.Windows.Forms.Label lbIterationsStart;
-        private System.Windows.Forms.NumericUpDown numClosingIterations;
         private System.Windows.Forms.Button btnCancel;
-        private System.Windows.Forms.Button btnRepair;
+        private System.Windows.Forms.Button btnOk;
         private System.Windows.Forms.Label lbLayerRange;
         private System.Windows.Forms.NumericUpDown nmLayerRangeStart;
         private System.Windows.Forms.NumericUpDown nmLayerRangeEnd;
@@ -357,11 +241,5 @@ namespace UVtools.GUI.Forms
         private System.Windows.Forms.ToolStripMenuItem btnLayerRangeCurrentLayer;
         private System.Windows.Forms.ToolStripMenuItem btnLayerRangeBottomLayers;
         private System.Windows.Forms.ToolStripMenuItem btnLayerRangeNormalLayers;
-        private System.Windows.Forms.ToolTip toolTip;
-        private System.Windows.Forms.CheckBox cbRepairIslands;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.NumericUpDown numOpeningIterations;
-        private System.Windows.Forms.CheckBox cbRepairResinTraps;
-        private System.Windows.Forms.CheckBox cbRemoveEmptyLayers;
     }
 }

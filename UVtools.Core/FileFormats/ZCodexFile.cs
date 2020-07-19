@@ -174,6 +174,15 @@ namespace UVtools.Core.FileFormats
 
         public override float LayerHeight => ResinMetadataSettings.LayerThickness;
 
+        public override uint LayerCount
+        {
+            set
+            {
+                UserSettings.MaxLayer = LayerCount - 1;
+                ResinMetadataSettings.TotalLayersCount = LayerCount;
+            }
+        }
+
         public override ushort InitialLayerCount => ResinMetadataSettings.BottomLayersNumber;
 
         public override float InitialExposureTime => UserSettings.BottomLayerExposureTime / 1000f;
@@ -281,6 +290,7 @@ namespace UVtools.Core.FileFormats
 
                 outputFile.PutFileContent("ResinGCodeData", GCode.ToString(), ZipArchiveMode.Create);
             }
+            AfterEncode();
         }
 
         public override void Decode(string fileFullPath, OperationProgress progress = null)
@@ -324,7 +334,7 @@ namespace UVtools.Core.FileFormats
                     throw new FileLoadException("ResinGCodeData not found", fileFullPath);
                 }
 
-                LayerManager = new LayerManager(ResinMetadataSettings.TotalLayersCount);
+                LayerManager = new LayerManager(ResinMetadataSettings.TotalLayersCount, this);
                 GCode = new StringBuilder();
                 using (TextReader tr = new StreamReader(entry.Open()))
                 {
@@ -485,6 +495,16 @@ M106 S0
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)
         {
+            if (RequireFullEncode)
+            {
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    FileFullPath = filePath;
+                }
+                Encode(FileFullPath, progress);
+                return;
+            }
+
             if (!string.IsNullOrEmpty(filePath))
             {
                 File.Copy(FileFullPath, filePath, true);
@@ -498,13 +518,6 @@ M106 S0
                 outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings), ZipArchiveMode.Update);
                 outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings), ZipArchiveMode.Update);
                 outputFile.PutFileContent("ResinGCodeData", GCode.ToString(), ZipArchiveMode.Update);
-
-                foreach (var layer in this)
-                {
-                    if (!layer.IsModified) continue;
-                    outputFile.PutFileContent(layer.Filename, layer.CompressedBytes, ZipArchiveMode.Update);
-                    layer.IsModified = false;
-                }
             }
 
             //Decode(FileFullPath, progress);

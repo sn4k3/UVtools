@@ -15,6 +15,7 @@ using System.Linq;
 using System.Reflection;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 
@@ -320,6 +321,11 @@ namespace UVtools.Core.FileFormats
 
         public override float LayerHeight => OutputConfigSettings.LayerHeight;
 
+        public override uint LayerCount
+        {
+            set => OutputConfigSettings.NumFast = (ushort) (LayerCount - OutputConfigSettings.NumSlow);
+        }
+
         public override ushort InitialLayerCount => OutputConfigSettings.NumFade;
 
         public override float InitialExposureTime => OutputConfigSettings.ExpTimeFirst;
@@ -394,7 +400,68 @@ namespace UVtools.Core.FileFormats
 
         public override void Encode(string fileFullPath, OperationProgress progress = null)
         {
-            throw new NotImplementedException();
+            base.Encode(fileFullPath, progress);
+
+            using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
+            {
+                var entry = outputFile.CreateEntry("config.ini");
+                using (TextWriter tw = new StreamWriter(entry.Open()))
+                {
+                    var properties = OutputConfigSettings.GetType()
+                        .GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+                    foreach (var property in properties)
+                    {
+                        var name = char.ToLowerInvariant(property.Name[0]) + property.Name.Substring(1);
+                        tw.WriteLine($"{name} = {property.GetValue(OutputConfigSettings)}");
+                    }
+
+                    tw.Close();
+                }
+
+                entry = outputFile.CreateEntry("prusaslicer.ini");
+                using (TextWriter tw = new StreamWriter(entry.Open()))
+                {
+                    foreach (var config in Configs)
+                    {
+                        if (ReferenceEquals(config, OutputConfigSettings))
+                            continue;
+
+                        var properties = config.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+                        foreach (var property in properties)
+                        {
+                            tw.WriteLine($"{MemberNameToIniKey(property.Name)} = {property.GetValue(config)}");
+                        }
+                    }
+
+                    tw.Close();
+                }
+
+                foreach (var thumbnail in Thumbnails)
+                {
+                    if (ReferenceEquals(thumbnail, null)) continue;
+                    using (var stream = outputFile.CreateEntry($"thumbnail/thumbnail{thumbnail.Width}x{thumbnail.Height}.png").Open())
+                    {
+                        var vec = new VectorOfByte();
+                        CvInvoke.Imencode(".png", thumbnail, vec);
+                        stream.WriteBytes(vec.ToArray());
+                        stream.Close();
+                    }
+                }
+
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                {
+                    progress.Token.ThrowIfCancellationRequested();
+                    Layer layer = this[layerIndex];
+                    var layerImagePath = $"{Path.GetFileNameWithoutExtension(fileFullPath)}{layerIndex:D5}.png";
+                    layer.Filename = layerImagePath;
+                    outputFile.PutFileContent(layerImagePath, layer.CompressedBytes, ZipArchiveMode.Create);
+                    progress++;
+                }
+            }
+
+            AfterEncode();
         }
 
         
@@ -447,7 +514,7 @@ namespace UVtools.Core.FileFormats
                     }
                 }
 
-                LayerManager = new LayerManager((uint) (OutputConfigSettings.NumSlow + OutputConfigSettings.NumFast));
+                LayerManager = new LayerManager((uint) (OutputConfigSettings.NumSlow + OutputConfigSettings.NumFast), this);
 
                 progress.ItemCount = LayerCount;
 
@@ -545,6 +612,17 @@ namespace UVtools.Core.FileFormats
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)
         {
+            if (RequireFullEncode)
+            {
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    FileFullPath = filePath;
+                }
+                Encode(FileFullPath, progress);
+                return;
+            }
+
+
             if (!string.IsNullOrEmpty(filePath))
             {
                 File.Copy(FileFullPath, filePath, true);
@@ -586,13 +664,6 @@ namespace UVtools.Core.FileFormats
                     }
 
                     tw.Close();
-                }
-
-                foreach (var layer in this)
-                {
-                    if (!layer.IsModified) continue;
-                    outputFile.PutFileContent(layer.Filename, layer.CompressedBytes, ZipArchiveMode.Update);
-                    layer.IsModified = false;
                 }
             }
 
@@ -1023,20 +1094,25 @@ namespace UVtools.Core.FileFormats
             if(!existsOnly)
                 name += '_';
 
-            int index = PrinterSettings.PrinterNotes.IndexOf(name, StringComparison.Ordinal);
-            int startIndex = index + name.Length;
-            
-            if (index < 0 || PrinterSettings.PrinterNotes.Length < startIndex) return defaultValue;
-            if (existsOnly) return "true".Convert<T>();
-            for (int i = startIndex; i < PrinterSettings.PrinterNotes.Length; i++)
+            var lines = PrinterSettings.PrinterNotes.Split(new[] { "\\r\\n", "\\r", "\\n" },
+                StringSplitOptions.RemoveEmptyEntries);
+
+            for (var i = 0; i < lines.Length; i++)
             {
-                char c = PrinterSettings.PrinterNotes[i];
-                if (!char.IsLetterOrDigit(c) && c != '.')
+                var line = lines[i].Trim();
+                if (!line.StartsWith(name)) continue;
+                if (existsOnly || line == name) return "true".Convert<T>();
+                var value = line.Remove(0, name.Length);
+                for (int x = 0; x < value.Length; x++)
                 {
-                    break;
+                    char c = value[x];
+                    if (!char.IsLetterOrDigit(c) && c != '.')
+                    {
+                        break;
+                    }
+
+                    result += c;
                 }
-                
-                result += c;
             }
 
             return string.IsNullOrWhiteSpace(result) ? defaultValue : result.Convert<T>();

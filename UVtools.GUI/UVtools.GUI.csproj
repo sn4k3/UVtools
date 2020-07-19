@@ -78,6 +78,12 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>false</SignManifests>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="ApplicationManagement">
       <HintPath>Libraries\ApplicationManagement.dll</HintPath>
@@ -157,6 +163,12 @@
     </Compile>
     <Compile Include="Forms\FrmMutationPixelDimming.Designer.cs">
       <DependentUpon>FrmMutationPixelDimming.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FrmToolEmpty.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmToolEmpty.Designer.cs">
+      <DependentUpon>FrmToolEmpty.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\FrmToolPattern.cs">
       <SubType>Form</SubType>
@@ -242,6 +254,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmMutationPixelDimming.resx">
       <DependentUpon>FrmMutationPixelDimming.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmToolEmpty.resx">
+      <DependentUpon>FrmToolEmpty.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolPattern.resx">
       <DependentUpon>FrmToolPattern.cs</DependentUpon>

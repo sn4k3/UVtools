@@ -937,7 +937,7 @@ namespace UVtools.Core.FileFormats
 
         public override byte ThumbnailsCount { get; } = 2;
 
-        public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = {new System.Drawing.Size(400, 300), new System.Drawing.Size(200, 125)};
+        public override Size[] ThumbnailsOriginalSize { get; } = {new Size(400, 300), new Size(200, 125)};
 
         public override uint ResolutionX => HeaderSettings.ResolutionX;
 
@@ -945,6 +945,15 @@ namespace UVtools.Core.FileFormats
         public override byte AntiAliasing => (byte) (IsCbtFile ? SlicerInfoSettings.AntiAliasLevel : HeaderSettings.AntiAliasLevel);
 
         public override float LayerHeight => HeaderSettings.LayerHeightMilimeter;
+
+        public override uint LayerCount
+        {
+            set
+            {
+                HeaderSettings.LayerCount = LayerCount;
+                HeaderSettings.OverallHeightMilimeter = TotalHeight;
+            }
+        }
 
         public override ushort InitialLayerCount => (ushort)HeaderSettings.BottomLayersCount;
 
@@ -1137,6 +1146,8 @@ namespace UVtools.Core.FileFormats
                 outputFile.Seek(0, SeekOrigin.Begin);
                 Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 
+                AfterEncode();
+
                 Debug.WriteLine("Encode Results:");
                 Debug.WriteLine(HeaderSettings);
                 Debug.WriteLine(Previews[0]);
@@ -1249,7 +1260,7 @@ namespace UVtools.Core.FileFormats
                     }
                 }
 
-                LayerManager = new LayerManager(HeaderSettings.LayerCount);
+                LayerManager = new LayerManager(HeaderSettings.LayerCount, this);
 
                 progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
@@ -1392,7 +1403,7 @@ namespace UVtools.Core.FileFormats
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)
         {
-            if (LayerManager.IsModified)
+            if (RequireFullEncode)
             {
                 if (!string.IsNullOrEmpty(filePath))
                 {

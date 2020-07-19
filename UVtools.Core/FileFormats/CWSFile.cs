@@ -145,6 +145,15 @@ namespace UVtools.Core.FileFormats
 
         public override float LayerHeight => SliceSettings.Thickness;
 
+        public override uint LayerCount
+        {
+            set
+            {
+                OutputSettings.LayersNum = LayerCount;
+                SliceSettings.LayersNum = LayerCount;
+            }
+        }
+
         public override ushort InitialLayerCount => SliceSettings.HeadLayersNum;
 
         public override float InitialExposureTime => SliceSettings.HeadLayersExpoMs / 1000f;
@@ -207,7 +216,7 @@ namespace UVtools.Core.FileFormats
                 {
                     progress.Token.ThrowIfCancellationRequested();
                     Layer layer = this[layerIndex];
-                    var layerImagePath = $"{Path.GetFileNameWithoutExtension(fileFullPath)}{layer.Index.ToString().PadLeft(LayerCount.ToString().Length, '0')}.png";
+                    var layerImagePath = $"{Path.GetFileNameWithoutExtension(fileFullPath)}{layerIndex.ToString().PadLeft(LayerCount.ToString().Length, '0')}.png";
                     outputFile.PutFileContent(layerImagePath, layer.CompressedBytes, ZipArchiveMode.Create);
                     progress++;
                 }
@@ -215,6 +224,8 @@ namespace UVtools.Core.FileFormats
                 UpdateGCode();
                 outputFile.PutFileContent($"{Path.GetFileNameWithoutExtension(fileFullPath)}.gcode", GCode.ToString(), ZipArchiveMode.Create);
             }
+
+            AfterEncode();
         }
 
         public override void Decode(string fileFullPath, OperationProgress progress = null)
@@ -292,7 +303,7 @@ namespace UVtools.Core.FileFormats
                 }
 
 
-                LayerManager = new LayerManager(OutputSettings.LayersNum);
+                LayerManager = new LayerManager(OutputSettings.LayersNum, this);
 
                 var gcode = GCode.ToString();
                 float currentHeight = 0;
@@ -447,6 +458,16 @@ G1 Z-3.9 F120
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)
         {
+            if (RequireFullEncode)
+            {
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    FileFullPath = filePath;
+                }
+                Encode(FileFullPath, progress);
+                return;
+            }
+
             if (!string.IsNullOrEmpty(filePath))
             {
                 File.Copy(FileFullPath, filePath, true);
@@ -486,12 +507,12 @@ G1 Z-3.9 F120
                 }
                 outputFile.PutFileContent($"{Path.GetFileNameWithoutExtension(FileFullPath)}.gcode", GCode.ToString(), ZipArchiveMode.Update);
 
-                foreach (var layer in this)
+                /*foreach (var layer in this)
                 {
                     if (!layer.IsModified) continue;
                     outputFile.PutFileContent(layer.Filename, layer.CompressedBytes, ZipArchiveMode.Update);
                     layer.IsModified = false;
-                }
+                }*/
             }
 
             //Decode(FileFullPath, progress);

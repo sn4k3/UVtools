@@ -110,7 +110,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the number of layers present in this file
         /// </summary>
-        uint LayerCount { get; }
+        uint LayerCount { get; set; }
 
         /// <summary>
         /// Gets the number of initial layer count
@@ -236,7 +236,8 @@ namespace UVtools.Core.FileFormats
         /// <param name="fileFullPath">Output file</param>
         /// <param name="progress"></param>
         void Encode(string fileFullPath, OperationProgress progress = null);
-
+        void AfterEncode();
+        
         /*
         /// <summary>
         /// Begin encode to an output file
