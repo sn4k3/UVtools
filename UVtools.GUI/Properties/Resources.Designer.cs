@@ -63,6 +63,16 @@ namespace UVtools.GUI.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap accept_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("accept-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap arrow_down {
             get {
                 object obj = ResourceManager.GetObject("arrow-down", resourceCulture);
@@ -373,6 +383,16 @@ namespace UVtools.GUI.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap ladder_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("ladder-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap layers_16x16 {
             get {
                 object obj = ResourceManager.GetObject("layers-16x16", resourceCulture);
@@ -496,6 +516,16 @@ namespace UVtools.GUI.Properties {
         internal static System.Drawing.Bitmap pattern_16x16 {
             get {
                 object obj = ResourceManager.GetObject("pattern-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap photo_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("photo-16x16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

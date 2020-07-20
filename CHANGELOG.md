@@ -1,5 +1,16 @@
 # Changelog
 
+## 20/07/2020 - v0.6.3.1
+
+* (Add) Preview: Allow import images from disk and replace preview image
+* (Add) Issue and Pixel Editor ListView can now reorder columns
+* (Add) Pixel Editor: Button "Clear" remove all the modifications
+* (Add) Pixel Editor: Button "Apply All" to apply the modifications
+* (Add) Pixel Editor: Double click items will track and position over the draw
+* (Fix) Pixel Editor: Label "Operations" was not reset to 0 after apply the modifications
+* (Fix) Pixel Editor: Button "Remove" tooltip
+* (Fix) Pixel Editor: Drawing - Bursh Area - px to px²
+
 ## 19/07/2020 - v0.6.3.0
 
 * (Add) Layer remove button

@@ -22,6 +22,7 @@ namespace UVtools.Core.PixelEditor
             TipDiameter = tipDiameter;
             PillarDiameter = pillarDiameter;
             BaseDiameter = baseDiameter;
+            Size = new Size(TipDiameter, TipDiameter);
         }
     }
 }

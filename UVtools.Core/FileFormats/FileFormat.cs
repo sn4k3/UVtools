@@ -15,6 +15,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
+using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 
@@ -459,6 +460,15 @@ namespace UVtools.Core.FileFormats
             for (var i = 0; i < ThumbnailsCount; i++)
             {
                 Thumbnails[i] = image.Clone();
+            }
+        }
+
+        public void SetThumbnail(int index, string filePath)
+        {
+            Thumbnails[index] = CvInvoke.Imread(filePath, ImreadModes.AnyColor);
+            if (Thumbnails[index].Size != ThumbnailsOriginalSize[index])
+            {
+                CvInvoke.Resize(Thumbnails[index], Thumbnails[index], ThumbnailsOriginalSize[index]);
             }
         }
 

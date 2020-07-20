@@ -49,6 +49,8 @@
             this.menuMutate = new System.Windows.Forms.ToolStripMenuItem();
             this.menuTools = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsRepairLayers = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuToolsLayerReHeight = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuToolsLayerRemoval = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsPattern = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -106,6 +108,9 @@
             this.tsThumbnailsExport = new System.Windows.Forms.ToolStripSplitButton();
             this.tsThumbnailsExportFile = new System.Windows.Forms.ToolStripMenuItem();
             this.tsThumbnailsExportClipboard = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator21 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsThumbnailsImport = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator22 = new System.Windows.Forms.ToolStripSeparator();
             this.tsThumbnailsResolution = new System.Windows.Forms.ToolStripLabel();
             this.lvProperties = new System.Windows.Forms.ListView();
             this.lvChKey = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -149,6 +154,10 @@
             this.tsPixelEditorHistory = new System.Windows.Forms.ToolStrip();
             this.lbPixelHistoryOperations = new System.Windows.Forms.ToolStripLabel();
             this.btnPixelHistoryRemove = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator19 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnPixelHistoryApply = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator20 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnPixelHistoryClear = new System.Windows.Forms.ToolStripButton();
             this.tabControlPixelEditor = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.label6 = new System.Windows.Forms.Label();
@@ -191,7 +200,6 @@
             this.btnFirstLayer = new System.Windows.Forms.Button();
             this.toolTipInformation = new System.Windows.Forms.ToolTip(this.components);
             this.layerScrollTimer = new System.Windows.Forms.Timer(this.components);
-            this.menuToolsLayerRemoval = new System.Windows.Forms.ToolStripMenuItem();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).BeginInit();
@@ -397,6 +405,7 @@
             // 
             this.menuTools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuToolsRepairLayers,
+            this.menuToolsLayerReHeight,
             this.menuToolsLayerRemoval,
             this.menuToolsPattern});
             this.menuTools.Enabled = false;
@@ -414,6 +423,25 @@
             this.menuToolsRepairLayers.Size = new System.Drawing.Size(261, 22);
             this.menuToolsRepairLayers.Text = "&Repair layers and Issues";
             this.menuToolsRepairLayers.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuToolsLayerReHeight
+            // 
+            this.menuToolsLayerReHeight.Enabled = false;
+            this.menuToolsLayerReHeight.Image = global::UVtools.GUI.Properties.Resources.ladder_16x16;
+            this.menuToolsLayerReHeight.Name = "menuToolsLayerReHeight";
+            this.menuToolsLayerReHeight.Size = new System.Drawing.Size(261, 22);
+            this.menuToolsLayerReHeight.Text = "Layer Re-Height";
+            this.menuToolsLayerReHeight.Visible = false;
+            this.menuToolsLayerReHeight.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuToolsLayerRemoval
+            // 
+            this.menuToolsLayerRemoval.Enabled = false;
+            this.menuToolsLayerRemoval.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.menuToolsLayerRemoval.Name = "menuToolsLayerRemoval";
+            this.menuToolsLayerRemoval.Size = new System.Drawing.Size(261, 22);
+            this.menuToolsLayerRemoval.Text = "Layer Re&moval";
+            this.menuToolsLayerRemoval.Click += new System.EventHandler(this.EventClick);
             // 
             // menuToolsPattern
             // 
@@ -941,6 +969,9 @@
             this.tsThumbnailsCount,
             this.tsThumbnailsNext,
             this.tsThumbnailsExport,
+            this.toolStripSeparator21,
+            this.tsThumbnailsImport,
+            this.toolStripSeparator22,
             this.tsThumbnailsResolution});
             this.tsThumbnails.Location = new System.Drawing.Point(0, 0);
             this.tsThumbnails.Name = "tsThumbnails";
@@ -956,7 +987,6 @@
             this.tsThumbnailsPrevious.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsThumbnailsPrevious.Name = "tsThumbnailsPrevious";
             this.tsThumbnailsPrevious.Size = new System.Drawing.Size(23, 22);
-            this.tsThumbnailsPrevious.Text = "toolStripButton1";
             this.tsThumbnailsPrevious.ToolTipText = "Show previous thumbnail";
             this.tsThumbnailsPrevious.Click += new System.EventHandler(this.EventClick);
             // 
@@ -976,7 +1006,6 @@
             this.tsThumbnailsNext.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsThumbnailsNext.Name = "tsThumbnailsNext";
             this.tsThumbnailsNext.Size = new System.Drawing.Size(23, 22);
-            this.tsThumbnailsNext.Text = "toolStripButton2";
             this.tsThumbnailsNext.ToolTipText = "Show next thumbnail";
             this.tsThumbnailsNext.Click += new System.EventHandler(this.EventClick);
             // 
@@ -1011,6 +1040,30 @@
             this.tsThumbnailsExportClipboard.Size = new System.Drawing.Size(141, 22);
             this.tsThumbnailsExportClipboard.Text = "To &Clipboard";
             this.tsThumbnailsExportClipboard.Click += new System.EventHandler(this.EventClick);
+            // 
+            // toolStripSeparator21
+            // 
+            this.toolStripSeparator21.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripSeparator21.Name = "toolStripSeparator21";
+            this.toolStripSeparator21.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsThumbnailsImport
+            // 
+            this.tsThumbnailsImport.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsThumbnailsImport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsThumbnailsImport.Image = global::UVtools.GUI.Properties.Resources.photo_16x16;
+            this.tsThumbnailsImport.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsThumbnailsImport.Name = "tsThumbnailsImport";
+            this.tsThumbnailsImport.Size = new System.Drawing.Size(23, 22);
+            this.tsThumbnailsImport.Text = "toolStripButton1";
+            this.tsThumbnailsImport.ToolTipText = "Replace the current preview image";
+            this.tsThumbnailsImport.Click += new System.EventHandler(this.EventClick);
+            // 
+            // toolStripSeparator22
+            // 
+            this.toolStripSeparator22.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripSeparator22.Name = "toolStripSeparator22";
+            this.toolStripSeparator22.Size = new System.Drawing.Size(6, 25);
             // 
             // tsThumbnailsResolution
             // 
@@ -1172,6 +1225,7 @@
             // lvIssues
             // 
             this.lvIssues.Activation = System.Windows.Forms.ItemActivation.TwoClick;
+            this.lvIssues.AllowColumnReorder = true;
             this.lvIssues.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.lvIssuesType,
             this.lvIssuesCount,
@@ -1350,6 +1404,7 @@
             // 
             // lvPixelHistory
             // 
+            this.lvPixelHistory.AllowColumnReorder = true;
             this.lvPixelHistory.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader5,
             this.columnHeader1,
@@ -1393,7 +1448,11 @@
             this.tsPixelEditorHistory.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.tsPixelEditorHistory.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.lbPixelHistoryOperations,
-            this.btnPixelHistoryRemove});
+            this.btnPixelHistoryRemove,
+            this.toolStripSeparator19,
+            this.btnPixelHistoryApply,
+            this.toolStripSeparator20,
+            this.btnPixelHistoryClear});
             this.tsPixelEditorHistory.Location = new System.Drawing.Point(3, 325);
             this.tsPixelEditorHistory.Name = "tsPixelEditorHistory";
             this.tsPixelEditorHistory.Size = new System.Drawing.Size(380, 25);
@@ -1414,10 +1473,42 @@
             this.btnPixelHistoryRemove.Name = "btnPixelHistoryRemove";
             this.btnPixelHistoryRemove.Size = new System.Drawing.Size(70, 22);
             this.btnPixelHistoryRemove.Text = "Remove";
-            this.btnPixelHistoryRemove.ToolTipText = "Remove selected issue when possible\r\nIslands: All pixels are removed (turn black)" +
-    "\r\nResinTrap: All trap areas are filled with white pixels.\r\nTouchingBounds: No ac" +
-    "tion, need reslice.";
+            this.btnPixelHistoryRemove.ToolTipText = "Remove selected operations\r\n";
             this.btnPixelHistoryRemove.Click += new System.EventHandler(this.EventClick);
+            // 
+            // toolStripSeparator19
+            // 
+            this.toolStripSeparator19.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripSeparator19.Name = "toolStripSeparator19";
+            this.toolStripSeparator19.Size = new System.Drawing.Size(6, 25);
+            // 
+            // btnPixelHistoryApply
+            // 
+            this.btnPixelHistoryApply.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.btnPixelHistoryApply.Enabled = false;
+            this.btnPixelHistoryApply.Image = global::UVtools.GUI.Properties.Resources.accept_16x16;
+            this.btnPixelHistoryApply.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnPixelHistoryApply.Name = "btnPixelHistoryApply";
+            this.btnPixelHistoryApply.Size = new System.Drawing.Size(75, 22);
+            this.btnPixelHistoryApply.Text = "&Apply All";
+            this.btnPixelHistoryApply.ToolTipText = "Apply all operations/modifications";
+            this.btnPixelHistoryApply.Click += new System.EventHandler(this.EventClick);
+            // 
+            // toolStripSeparator20
+            // 
+            this.toolStripSeparator20.Name = "toolStripSeparator20";
+            this.toolStripSeparator20.Size = new System.Drawing.Size(6, 25);
+            // 
+            // btnPixelHistoryClear
+            // 
+            this.btnPixelHistoryClear.Enabled = false;
+            this.btnPixelHistoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.btnPixelHistoryClear.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnPixelHistoryClear.Name = "btnPixelHistoryClear";
+            this.btnPixelHistoryClear.Size = new System.Drawing.Size(54, 22);
+            this.btnPixelHistoryClear.Text = "Clear";
+            this.btnPixelHistoryClear.ToolTipText = "Clears all operations";
+            this.btnPixelHistoryClear.Click += new System.EventHandler(this.EventClick);
             // 
             // tabControlPixelEditor
             // 
@@ -1451,11 +1542,11 @@
             // 
             this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(343, 101);
+            this.label6.Location = new System.Drawing.Point(338, 101);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(23, 18);
+            this.label6.Size = new System.Drawing.Size(28, 18);
             this.label6.TabIndex = 6;
-            this.label6.Text = "px";
+            this.label6.Text = "px²";
             // 
             // nmPixelEditorBrushSize
             // 
@@ -1473,7 +1564,7 @@
             0,
             0});
             this.nmPixelEditorBrushSize.Name = "nmPixelEditorBrushSize";
-            this.nmPixelEditorBrushSize.Size = new System.Drawing.Size(229, 24);
+            this.nmPixelEditorBrushSize.Size = new System.Drawing.Size(224, 24);
             this.nmPixelEditorBrushSize.TabIndex = 5;
             this.nmPixelEditorBrushSize.Value = new decimal(new int[] {
             1,
@@ -1960,15 +2051,6 @@
             this.layerScrollTimer.Interval = 150;
             this.layerScrollTimer.Tick += new System.EventHandler(this.EventTimerTick);
             // 
-            // menuToolsLayerRemoval
-            // 
-            this.menuToolsLayerRemoval.Enabled = false;
-            this.menuToolsLayerRemoval.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
-            this.menuToolsLayerRemoval.Name = "menuToolsLayerRemoval";
-            this.menuToolsLayerRemoval.Size = new System.Drawing.Size(261, 22);
-            this.menuToolsLayerRemoval.Text = "Layer Re&moval";
-            this.menuToolsLayerRemoval.Click += new System.EventHandler(this.EventClick);
-            // 
             // FrmMain
             // 
             this.AllowDrop = true;
@@ -2214,6 +2296,14 @@
         private System.Windows.Forms.ToolStripButton tsLayerRmove;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator18;
         private System.Windows.Forms.ToolStripMenuItem menuToolsLayerRemoval;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator19;
+        private System.Windows.Forms.ToolStripButton btnPixelHistoryApply;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator20;
+        private System.Windows.Forms.ToolStripButton btnPixelHistoryClear;
+        private System.Windows.Forms.ToolStripButton tsThumbnailsImport;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator21;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator22;
+        private System.Windows.Forms.ToolStripMenuItem menuToolsLayerReHeight;
     }
 }
 

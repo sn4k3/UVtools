@@ -93,8 +93,31 @@
             this.cbAutoComputeIssuesClickOnTab = new System.Windows.Forms.CheckBox();
             this.tabSettings = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.btnFileExtractDefaultDirectoryClear = new System.Windows.Forms.Button();
+            this.btnFileExtractDefaultDirectorySearch = new System.Windows.Forms.Button();
+            this.label32 = new System.Windows.Forms.Label();
+            this.tbFileExtractDefaultDirectory = new System.Windows.Forms.TextBox();
+            this.btnFileConvertDefaultDirectoryClear = new System.Windows.Forms.Button();
+            this.btnFileConvertDefaultDirectorySearch = new System.Windows.Forms.Button();
+            this.label31 = new System.Windows.Forms.Label();
+            this.tbFileConvertDefaultDirectory = new System.Windows.Forms.TextBox();
+            this.btnFileSaveDefaultDirectoryClear = new System.Windows.Forms.Button();
+            this.btnFileSaveDefaultDirectorySearch = new System.Windows.Forms.Button();
+            this.label30 = new System.Windows.Forms.Label();
+            this.tbFileSaveDefaultDirectory = new System.Windows.Forms.TextBox();
+            this.btnFileOpenDefaultDirectoryClear = new System.Windows.Forms.Button();
+            this.btnFileOpenDefaultDirectorySearch = new System.Windows.Forms.Button();
+            this.label29 = new System.Windows.Forms.Label();
+            this.tbFileOpenDefaultDirectory = new System.Windows.Forms.TextBox();
             this.label22 = new System.Windows.Forms.Label();
             this.cbDefaultOpenFileExtension = new System.Windows.Forms.ComboBox();
+            this.label28 = new System.Windows.Forms.Label();
+            this.cbFileSavePromptOverwrite = new System.Windows.Forms.CheckBox();
+            this.tbFileSaveNameSuffix = new System.Windows.Forms.TextBox();
+            this.label27 = new System.Windows.Forms.Label();
+            this.tbFileSaveNamePreffix = new System.Windows.Forms.TextBox();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.tabPage4 = new System.Windows.Forms.TabPage();
@@ -107,29 +130,7 @@
             this.label23 = new System.Windows.Forms.Label();
             this.btnPixelEditorAddPixelColor = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.cbFileSavePromptOverwrite = new System.Windows.Forms.CheckBox();
-            this.label27 = new System.Windows.Forms.Label();
-            this.tbFileSaveNamePreffix = new System.Windows.Forms.TextBox();
-            this.tbFileSaveNameSuffix = new System.Windows.Forms.TextBox();
-            this.label28 = new System.Windows.Forms.Label();
-            this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.groupBox5 = new System.Windows.Forms.GroupBox();
-            this.tbFileOpenDefaultDirectory = new System.Windows.Forms.TextBox();
-            this.label29 = new System.Windows.Forms.Label();
-            this.btnFileOpenDefaultDirectorySearch = new System.Windows.Forms.Button();
-            this.btnFileOpenDefaultDirectoryClear = new System.Windows.Forms.Button();
-            this.btnFileSaveDefaultDirectoryClear = new System.Windows.Forms.Button();
-            this.btnFileSaveDefaultDirectorySearch = new System.Windows.Forms.Button();
-            this.label30 = new System.Windows.Forms.Label();
-            this.tbFileSaveDefaultDirectory = new System.Windows.Forms.TextBox();
-            this.btnFileConvertDefaultDirectoryClear = new System.Windows.Forms.Button();
-            this.btnFileConvertDefaultDirectorySearch = new System.Windows.Forms.Button();
-            this.label31 = new System.Windows.Forms.Label();
-            this.tbFileConvertDefaultDirectory = new System.Windows.Forms.TextBox();
-            this.btnFileExtractDefaultDirectoryClear = new System.Windows.Forms.Button();
-            this.btnFileExtractDefaultDirectorySearch = new System.Windows.Forms.Button();
-            this.label32 = new System.Windows.Forms.Label();
-            this.tbFileExtractDefaultDirectory = new System.Windows.Forms.TextBox();
+            this.cbAutoZoomIssues = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineHollowAreasLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineLayerBoundsLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlinePrintVolumeBoundsLineThickness)).BeginInit();
@@ -147,12 +148,12 @@
             this.groupBox1.SuspendLayout();
             this.tabSettings.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            this.groupBox5.SuspendLayout();
+            this.groupBox4.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.tabPage4.SuspendLayout();
             this.panel1.SuspendLayout();
-            this.groupBox4.SuspendLayout();
-            this.groupBox5.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -581,7 +582,7 @@
             // cbLayerDifferenceDefault
             // 
             this.cbLayerDifferenceDefault.AutoSize = true;
-            this.cbLayerDifferenceDefault.Location = new System.Drawing.Point(11, 305);
+            this.cbLayerDifferenceDefault.Location = new System.Drawing.Point(11, 333);
             this.cbLayerDifferenceDefault.Name = "cbLayerDifferenceDefault";
             this.cbLayerDifferenceDefault.Size = new System.Drawing.Size(234, 22);
             this.cbLayerDifferenceDefault.TabIndex = 13;
@@ -996,6 +997,187 @@
             this.tabPage1.Text = "General";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
+            // groupBox5
+            // 
+            this.groupBox5.Controls.Add(this.btnFileExtractDefaultDirectoryClear);
+            this.groupBox5.Controls.Add(this.btnFileExtractDefaultDirectorySearch);
+            this.groupBox5.Controls.Add(this.label32);
+            this.groupBox5.Controls.Add(this.tbFileExtractDefaultDirectory);
+            this.groupBox5.Controls.Add(this.btnFileConvertDefaultDirectoryClear);
+            this.groupBox5.Controls.Add(this.btnFileConvertDefaultDirectorySearch);
+            this.groupBox5.Controls.Add(this.label31);
+            this.groupBox5.Controls.Add(this.tbFileConvertDefaultDirectory);
+            this.groupBox5.Controls.Add(this.btnFileSaveDefaultDirectoryClear);
+            this.groupBox5.Controls.Add(this.btnFileSaveDefaultDirectorySearch);
+            this.groupBox5.Controls.Add(this.label30);
+            this.groupBox5.Controls.Add(this.tbFileSaveDefaultDirectory);
+            this.groupBox5.Controls.Add(this.btnFileOpenDefaultDirectoryClear);
+            this.groupBox5.Controls.Add(this.btnFileOpenDefaultDirectorySearch);
+            this.groupBox5.Controls.Add(this.label29);
+            this.groupBox5.Controls.Add(this.tbFileOpenDefaultDirectory);
+            this.groupBox5.Controls.Add(this.label22);
+            this.groupBox5.Controls.Add(this.cbDefaultOpenFileExtension);
+            this.groupBox5.Controls.Add(this.label28);
+            this.groupBox5.Controls.Add(this.cbFileSavePromptOverwrite);
+            this.groupBox5.Controls.Add(this.tbFileSaveNameSuffix);
+            this.groupBox5.Controls.Add(this.label27);
+            this.groupBox5.Controls.Add(this.tbFileSaveNamePreffix);
+            this.groupBox5.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBox5.Location = new System.Drawing.Point(3, 86);
+            this.groupBox5.Name = "groupBox5";
+            this.groupBox5.Size = new System.Drawing.Size(610, 250);
+            this.groupBox5.TabIndex = 16;
+            this.groupBox5.TabStop = false;
+            this.groupBox5.Text = "File operations";
+            // 
+            // btnFileExtractDefaultDirectoryClear
+            // 
+            this.btnFileExtractDefaultDirectoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.btnFileExtractDefaultDirectoryClear.Location = new System.Drawing.Point(574, 115);
+            this.btnFileExtractDefaultDirectoryClear.Name = "btnFileExtractDefaultDirectoryClear";
+            this.btnFileExtractDefaultDirectoryClear.Size = new System.Drawing.Size(30, 24);
+            this.btnFileExtractDefaultDirectoryClear.TabIndex = 30;
+            this.btnFileExtractDefaultDirectoryClear.UseVisualStyleBackColor = true;
+            this.btnFileExtractDefaultDirectoryClear.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnFileExtractDefaultDirectorySearch
+            // 
+            this.btnFileExtractDefaultDirectorySearch.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
+            this.btnFileExtractDefaultDirectorySearch.Location = new System.Drawing.Point(538, 115);
+            this.btnFileExtractDefaultDirectorySearch.Name = "btnFileExtractDefaultDirectorySearch";
+            this.btnFileExtractDefaultDirectorySearch.Size = new System.Drawing.Size(30, 24);
+            this.btnFileExtractDefaultDirectorySearch.TabIndex = 29;
+            this.btnFileExtractDefaultDirectorySearch.UseVisualStyleBackColor = true;
+            this.btnFileExtractDefaultDirectorySearch.Click += new System.EventHandler(this.EventClick);
+            // 
+            // label32
+            // 
+            this.label32.AutoSize = true;
+            this.label32.Location = new System.Drawing.Point(6, 118);
+            this.label32.Name = "label32";
+            this.label32.Size = new System.Drawing.Size(191, 18);
+            this.label32.TabIndex = 28;
+            this.label32.Text = "File extract default directory:";
+            // 
+            // tbFileExtractDefaultDirectory
+            // 
+            this.tbFileExtractDefaultDirectory.Location = new System.Drawing.Point(225, 115);
+            this.tbFileExtractDefaultDirectory.Name = "tbFileExtractDefaultDirectory";
+            this.tbFileExtractDefaultDirectory.ReadOnly = true;
+            this.tbFileExtractDefaultDirectory.Size = new System.Drawing.Size(307, 24);
+            this.tbFileExtractDefaultDirectory.TabIndex = 27;
+            // 
+            // btnFileConvertDefaultDirectoryClear
+            // 
+            this.btnFileConvertDefaultDirectoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.btnFileConvertDefaultDirectoryClear.Location = new System.Drawing.Point(574, 145);
+            this.btnFileConvertDefaultDirectoryClear.Name = "btnFileConvertDefaultDirectoryClear";
+            this.btnFileConvertDefaultDirectoryClear.Size = new System.Drawing.Size(30, 24);
+            this.btnFileConvertDefaultDirectoryClear.TabIndex = 26;
+            this.btnFileConvertDefaultDirectoryClear.UseVisualStyleBackColor = true;
+            this.btnFileConvertDefaultDirectoryClear.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnFileConvertDefaultDirectorySearch
+            // 
+            this.btnFileConvertDefaultDirectorySearch.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
+            this.btnFileConvertDefaultDirectorySearch.Location = new System.Drawing.Point(538, 145);
+            this.btnFileConvertDefaultDirectorySearch.Name = "btnFileConvertDefaultDirectorySearch";
+            this.btnFileConvertDefaultDirectorySearch.Size = new System.Drawing.Size(30, 24);
+            this.btnFileConvertDefaultDirectorySearch.TabIndex = 25;
+            this.btnFileConvertDefaultDirectorySearch.UseVisualStyleBackColor = true;
+            this.btnFileConvertDefaultDirectorySearch.Click += new System.EventHandler(this.EventClick);
+            // 
+            // label31
+            // 
+            this.label31.AutoSize = true;
+            this.label31.Location = new System.Drawing.Point(6, 148);
+            this.label31.Name = "label31";
+            this.label31.Size = new System.Drawing.Size(196, 18);
+            this.label31.TabIndex = 24;
+            this.label31.Text = "File convert default directory:";
+            // 
+            // tbFileConvertDefaultDirectory
+            // 
+            this.tbFileConvertDefaultDirectory.Location = new System.Drawing.Point(225, 145);
+            this.tbFileConvertDefaultDirectory.Name = "tbFileConvertDefaultDirectory";
+            this.tbFileConvertDefaultDirectory.ReadOnly = true;
+            this.tbFileConvertDefaultDirectory.Size = new System.Drawing.Size(307, 24);
+            this.tbFileConvertDefaultDirectory.TabIndex = 23;
+            // 
+            // btnFileSaveDefaultDirectoryClear
+            // 
+            this.btnFileSaveDefaultDirectoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.btnFileSaveDefaultDirectoryClear.Location = new System.Drawing.Point(574, 85);
+            this.btnFileSaveDefaultDirectoryClear.Name = "btnFileSaveDefaultDirectoryClear";
+            this.btnFileSaveDefaultDirectoryClear.Size = new System.Drawing.Size(30, 24);
+            this.btnFileSaveDefaultDirectoryClear.TabIndex = 22;
+            this.btnFileSaveDefaultDirectoryClear.UseVisualStyleBackColor = true;
+            this.btnFileSaveDefaultDirectoryClear.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnFileSaveDefaultDirectorySearch
+            // 
+            this.btnFileSaveDefaultDirectorySearch.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
+            this.btnFileSaveDefaultDirectorySearch.Location = new System.Drawing.Point(538, 85);
+            this.btnFileSaveDefaultDirectorySearch.Name = "btnFileSaveDefaultDirectorySearch";
+            this.btnFileSaveDefaultDirectorySearch.Size = new System.Drawing.Size(30, 24);
+            this.btnFileSaveDefaultDirectorySearch.TabIndex = 21;
+            this.btnFileSaveDefaultDirectorySearch.UseVisualStyleBackColor = true;
+            this.btnFileSaveDefaultDirectorySearch.Click += new System.EventHandler(this.EventClick);
+            // 
+            // label30
+            // 
+            this.label30.AutoSize = true;
+            this.label30.Location = new System.Drawing.Point(6, 88);
+            this.label30.Name = "label30";
+            this.label30.Size = new System.Drawing.Size(198, 18);
+            this.label30.TabIndex = 20;
+            this.label30.Text = "File save as default directory:";
+            // 
+            // tbFileSaveDefaultDirectory
+            // 
+            this.tbFileSaveDefaultDirectory.Location = new System.Drawing.Point(225, 85);
+            this.tbFileSaveDefaultDirectory.Name = "tbFileSaveDefaultDirectory";
+            this.tbFileSaveDefaultDirectory.ReadOnly = true;
+            this.tbFileSaveDefaultDirectory.Size = new System.Drawing.Size(307, 24);
+            this.tbFileSaveDefaultDirectory.TabIndex = 19;
+            // 
+            // btnFileOpenDefaultDirectoryClear
+            // 
+            this.btnFileOpenDefaultDirectoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.btnFileOpenDefaultDirectoryClear.Location = new System.Drawing.Point(574, 55);
+            this.btnFileOpenDefaultDirectoryClear.Name = "btnFileOpenDefaultDirectoryClear";
+            this.btnFileOpenDefaultDirectoryClear.Size = new System.Drawing.Size(30, 24);
+            this.btnFileOpenDefaultDirectoryClear.TabIndex = 18;
+            this.btnFileOpenDefaultDirectoryClear.UseVisualStyleBackColor = true;
+            this.btnFileOpenDefaultDirectoryClear.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnFileOpenDefaultDirectorySearch
+            // 
+            this.btnFileOpenDefaultDirectorySearch.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
+            this.btnFileOpenDefaultDirectorySearch.Location = new System.Drawing.Point(538, 55);
+            this.btnFileOpenDefaultDirectorySearch.Name = "btnFileOpenDefaultDirectorySearch";
+            this.btnFileOpenDefaultDirectorySearch.Size = new System.Drawing.Size(30, 24);
+            this.btnFileOpenDefaultDirectorySearch.TabIndex = 17;
+            this.btnFileOpenDefaultDirectorySearch.UseVisualStyleBackColor = true;
+            this.btnFileOpenDefaultDirectorySearch.Click += new System.EventHandler(this.EventClick);
+            // 
+            // label29
+            // 
+            this.label29.AutoSize = true;
+            this.label29.Location = new System.Drawing.Point(6, 58);
+            this.label29.Name = "label29";
+            this.label29.Size = new System.Drawing.Size(180, 18);
+            this.label29.TabIndex = 16;
+            this.label29.Text = "File open default directory:";
+            // 
+            // tbFileOpenDefaultDirectory
+            // 
+            this.tbFileOpenDefaultDirectory.Location = new System.Drawing.Point(225, 55);
+            this.tbFileOpenDefaultDirectory.Name = "tbFileOpenDefaultDirectory";
+            this.tbFileOpenDefaultDirectory.ReadOnly = true;
+            this.tbFileOpenDefaultDirectory.Size = new System.Drawing.Size(307, 24);
+            this.tbFileOpenDefaultDirectory.TabIndex = 15;
+            // 
             // label22
             // 
             this.label22.AutoSize = true;
@@ -1015,8 +1197,63 @@
             this.cbDefaultOpenFileExtension.Size = new System.Drawing.Size(379, 26);
             this.cbDefaultOpenFileExtension.TabIndex = 8;
             // 
+            // label28
+            // 
+            this.label28.AutoSize = true;
+            this.label28.Location = new System.Drawing.Point(361, 206);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(48, 18);
+            this.label28.TabIndex = 14;
+            this.label28.Text = "Suffix:";
+            // 
+            // cbFileSavePromptOverwrite
+            // 
+            this.cbFileSavePromptOverwrite.AutoSize = true;
+            this.cbFileSavePromptOverwrite.Location = new System.Drawing.Point(9, 175);
+            this.cbFileSavePromptOverwrite.Name = "cbFileSavePromptOverwrite";
+            this.cbFileSavePromptOverwrite.Size = new System.Drawing.Size(381, 22);
+            this.cbFileSavePromptOverwrite.TabIndex = 10;
+            this.cbFileSavePromptOverwrite.Text = "On file \"Save\" prompt for file overwrite for the first time";
+            this.cbFileSavePromptOverwrite.UseVisualStyleBackColor = true;
+            // 
+            // tbFileSaveNameSuffix
+            // 
+            this.tbFileSaveNameSuffix.Location = new System.Drawing.Point(420, 203);
+            this.tbFileSaveNameSuffix.Name = "tbFileSaveNameSuffix";
+            this.tbFileSaveNameSuffix.Size = new System.Drawing.Size(184, 24);
+            this.tbFileSaveNameSuffix.TabIndex = 13;
+            // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Location = new System.Drawing.Point(9, 206);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(147, 18);
+            this.label27.TabIndex = 11;
+            this.label27.Text = "File \"Save as\" Preffix:";
+            // 
+            // tbFileSaveNamePreffix
+            // 
+            this.tbFileSaveNamePreffix.Location = new System.Drawing.Point(162, 203);
+            this.tbFileSaveNamePreffix.Name = "tbFileSaveNamePreffix";
+            this.tbFileSaveNamePreffix.Size = new System.Drawing.Size(184, 24);
+            this.tbFileSaveNamePreffix.TabIndex = 12;
+            // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.cbStartMaximized);
+            this.groupBox4.Controls.Add(this.cbCheckForUpdatesOnStartup);
+            this.groupBox4.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBox4.Location = new System.Drawing.Point(3, 3);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(610, 83);
+            this.groupBox4.TabIndex = 15;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "Startup";
+            // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.cbAutoZoomIssues);
             this.tabPage2.Controls.Add(this.cbZoomToFitPrintVolumeBounds);
             this.tabPage2.Controls.Add(this.label1);
             this.tabPage2.Controls.Add(this.label2);
@@ -1194,240 +1431,15 @@
             this.panel1.Size = new System.Drawing.Size(624, 77);
             this.panel1.TabIndex = 19;
             // 
-            // cbFileSavePromptOverwrite
+            // cbAutoZoomIssues
             // 
-            this.cbFileSavePromptOverwrite.AutoSize = true;
-            this.cbFileSavePromptOverwrite.Location = new System.Drawing.Point(9, 175);
-            this.cbFileSavePromptOverwrite.Name = "cbFileSavePromptOverwrite";
-            this.cbFileSavePromptOverwrite.Size = new System.Drawing.Size(381, 22);
-            this.cbFileSavePromptOverwrite.TabIndex = 10;
-            this.cbFileSavePromptOverwrite.Text = "On file \"Save\" prompt for file overwrite for the first time";
-            this.cbFileSavePromptOverwrite.UseVisualStyleBackColor = true;
-            // 
-            // label27
-            // 
-            this.label27.AutoSize = true;
-            this.label27.Location = new System.Drawing.Point(9, 206);
-            this.label27.Name = "label27";
-            this.label27.Size = new System.Drawing.Size(147, 18);
-            this.label27.TabIndex = 11;
-            this.label27.Text = "File \"Save as\" Preffix:";
-            // 
-            // tbFileSaveNamePreffix
-            // 
-            this.tbFileSaveNamePreffix.Location = new System.Drawing.Point(162, 203);
-            this.tbFileSaveNamePreffix.Name = "tbFileSaveNamePreffix";
-            this.tbFileSaveNamePreffix.Size = new System.Drawing.Size(184, 24);
-            this.tbFileSaveNamePreffix.TabIndex = 12;
-            // 
-            // tbFileSaveNameSuffix
-            // 
-            this.tbFileSaveNameSuffix.Location = new System.Drawing.Point(420, 203);
-            this.tbFileSaveNameSuffix.Name = "tbFileSaveNameSuffix";
-            this.tbFileSaveNameSuffix.Size = new System.Drawing.Size(184, 24);
-            this.tbFileSaveNameSuffix.TabIndex = 13;
-            // 
-            // label28
-            // 
-            this.label28.AutoSize = true;
-            this.label28.Location = new System.Drawing.Point(361, 206);
-            this.label28.Name = "label28";
-            this.label28.Size = new System.Drawing.Size(48, 18);
-            this.label28.TabIndex = 14;
-            this.label28.Text = "Suffix:";
-            // 
-            // groupBox4
-            // 
-            this.groupBox4.Controls.Add(this.cbStartMaximized);
-            this.groupBox4.Controls.Add(this.cbCheckForUpdatesOnStartup);
-            this.groupBox4.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox4.Location = new System.Drawing.Point(3, 3);
-            this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(610, 83);
-            this.groupBox4.TabIndex = 15;
-            this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "Startup";
-            // 
-            // groupBox5
-            // 
-            this.groupBox5.Controls.Add(this.btnFileExtractDefaultDirectoryClear);
-            this.groupBox5.Controls.Add(this.btnFileExtractDefaultDirectorySearch);
-            this.groupBox5.Controls.Add(this.label32);
-            this.groupBox5.Controls.Add(this.tbFileExtractDefaultDirectory);
-            this.groupBox5.Controls.Add(this.btnFileConvertDefaultDirectoryClear);
-            this.groupBox5.Controls.Add(this.btnFileConvertDefaultDirectorySearch);
-            this.groupBox5.Controls.Add(this.label31);
-            this.groupBox5.Controls.Add(this.tbFileConvertDefaultDirectory);
-            this.groupBox5.Controls.Add(this.btnFileSaveDefaultDirectoryClear);
-            this.groupBox5.Controls.Add(this.btnFileSaveDefaultDirectorySearch);
-            this.groupBox5.Controls.Add(this.label30);
-            this.groupBox5.Controls.Add(this.tbFileSaveDefaultDirectory);
-            this.groupBox5.Controls.Add(this.btnFileOpenDefaultDirectoryClear);
-            this.groupBox5.Controls.Add(this.btnFileOpenDefaultDirectorySearch);
-            this.groupBox5.Controls.Add(this.label29);
-            this.groupBox5.Controls.Add(this.tbFileOpenDefaultDirectory);
-            this.groupBox5.Controls.Add(this.label22);
-            this.groupBox5.Controls.Add(this.cbDefaultOpenFileExtension);
-            this.groupBox5.Controls.Add(this.label28);
-            this.groupBox5.Controls.Add(this.cbFileSavePromptOverwrite);
-            this.groupBox5.Controls.Add(this.tbFileSaveNameSuffix);
-            this.groupBox5.Controls.Add(this.label27);
-            this.groupBox5.Controls.Add(this.tbFileSaveNamePreffix);
-            this.groupBox5.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox5.Location = new System.Drawing.Point(3, 86);
-            this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(610, 250);
-            this.groupBox5.TabIndex = 16;
-            this.groupBox5.TabStop = false;
-            this.groupBox5.Text = "File operations";
-            // 
-            // tbFileOpenDefaultDirectory
-            // 
-            this.tbFileOpenDefaultDirectory.Location = new System.Drawing.Point(225, 55);
-            this.tbFileOpenDefaultDirectory.Name = "tbFileOpenDefaultDirectory";
-            this.tbFileOpenDefaultDirectory.ReadOnly = true;
-            this.tbFileOpenDefaultDirectory.Size = new System.Drawing.Size(307, 24);
-            this.tbFileOpenDefaultDirectory.TabIndex = 15;
-            // 
-            // label29
-            // 
-            this.label29.AutoSize = true;
-            this.label29.Location = new System.Drawing.Point(6, 58);
-            this.label29.Name = "label29";
-            this.label29.Size = new System.Drawing.Size(180, 18);
-            this.label29.TabIndex = 16;
-            this.label29.Text = "File open default directory:";
-            // 
-            // btnFileOpenDefaultDirectorySearch
-            // 
-            this.btnFileOpenDefaultDirectorySearch.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
-            this.btnFileOpenDefaultDirectorySearch.Location = new System.Drawing.Point(538, 55);
-            this.btnFileOpenDefaultDirectorySearch.Name = "btnFileOpenDefaultDirectorySearch";
-            this.btnFileOpenDefaultDirectorySearch.Size = new System.Drawing.Size(30, 24);
-            this.btnFileOpenDefaultDirectorySearch.TabIndex = 17;
-            this.btnFileOpenDefaultDirectorySearch.UseVisualStyleBackColor = true;
-            this.btnFileOpenDefaultDirectorySearch.Click += new System.EventHandler(this.EventClick);
-            // 
-            // btnFileOpenDefaultDirectoryClear
-            // 
-            this.btnFileOpenDefaultDirectoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
-            this.btnFileOpenDefaultDirectoryClear.Location = new System.Drawing.Point(574, 55);
-            this.btnFileOpenDefaultDirectoryClear.Name = "btnFileOpenDefaultDirectoryClear";
-            this.btnFileOpenDefaultDirectoryClear.Size = new System.Drawing.Size(30, 24);
-            this.btnFileOpenDefaultDirectoryClear.TabIndex = 18;
-            this.btnFileOpenDefaultDirectoryClear.UseVisualStyleBackColor = true;
-            this.btnFileOpenDefaultDirectoryClear.Click += new System.EventHandler(this.EventClick);
-            // 
-            // btnFileSaveDefaultDirectoryClear
-            // 
-            this.btnFileSaveDefaultDirectoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
-            this.btnFileSaveDefaultDirectoryClear.Location = new System.Drawing.Point(574, 85);
-            this.btnFileSaveDefaultDirectoryClear.Name = "btnFileSaveDefaultDirectoryClear";
-            this.btnFileSaveDefaultDirectoryClear.Size = new System.Drawing.Size(30, 24);
-            this.btnFileSaveDefaultDirectoryClear.TabIndex = 22;
-            this.btnFileSaveDefaultDirectoryClear.UseVisualStyleBackColor = true;
-            this.btnFileSaveDefaultDirectoryClear.Click += new System.EventHandler(this.EventClick);
-            // 
-            // btnFileSaveDefaultDirectorySearch
-            // 
-            this.btnFileSaveDefaultDirectorySearch.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
-            this.btnFileSaveDefaultDirectorySearch.Location = new System.Drawing.Point(538, 85);
-            this.btnFileSaveDefaultDirectorySearch.Name = "btnFileSaveDefaultDirectorySearch";
-            this.btnFileSaveDefaultDirectorySearch.Size = new System.Drawing.Size(30, 24);
-            this.btnFileSaveDefaultDirectorySearch.TabIndex = 21;
-            this.btnFileSaveDefaultDirectorySearch.UseVisualStyleBackColor = true;
-            this.btnFileSaveDefaultDirectorySearch.Click += new System.EventHandler(this.EventClick);
-            // 
-            // label30
-            // 
-            this.label30.AutoSize = true;
-            this.label30.Location = new System.Drawing.Point(6, 88);
-            this.label30.Name = "label30";
-            this.label30.Size = new System.Drawing.Size(198, 18);
-            this.label30.TabIndex = 20;
-            this.label30.Text = "File save as default directory:";
-            // 
-            // tbFileSaveDefaultDirectory
-            // 
-            this.tbFileSaveDefaultDirectory.Location = new System.Drawing.Point(225, 85);
-            this.tbFileSaveDefaultDirectory.Name = "tbFileSaveDefaultDirectory";
-            this.tbFileSaveDefaultDirectory.ReadOnly = true;
-            this.tbFileSaveDefaultDirectory.Size = new System.Drawing.Size(307, 24);
-            this.tbFileSaveDefaultDirectory.TabIndex = 19;
-            // 
-            // btnFileConvertDefaultDirectoryClear
-            // 
-            this.btnFileConvertDefaultDirectoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
-            this.btnFileConvertDefaultDirectoryClear.Location = new System.Drawing.Point(574, 145);
-            this.btnFileConvertDefaultDirectoryClear.Name = "btnFileConvertDefaultDirectoryClear";
-            this.btnFileConvertDefaultDirectoryClear.Size = new System.Drawing.Size(30, 24);
-            this.btnFileConvertDefaultDirectoryClear.TabIndex = 26;
-            this.btnFileConvertDefaultDirectoryClear.UseVisualStyleBackColor = true;
-            this.btnFileConvertDefaultDirectoryClear.Click += new System.EventHandler(this.EventClick);
-            // 
-            // btnFileConvertDefaultDirectorySearch
-            // 
-            this.btnFileConvertDefaultDirectorySearch.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
-            this.btnFileConvertDefaultDirectorySearch.Location = new System.Drawing.Point(538, 145);
-            this.btnFileConvertDefaultDirectorySearch.Name = "btnFileConvertDefaultDirectorySearch";
-            this.btnFileConvertDefaultDirectorySearch.Size = new System.Drawing.Size(30, 24);
-            this.btnFileConvertDefaultDirectorySearch.TabIndex = 25;
-            this.btnFileConvertDefaultDirectorySearch.UseVisualStyleBackColor = true;
-            this.btnFileConvertDefaultDirectorySearch.Click += new System.EventHandler(this.EventClick);
-            // 
-            // label31
-            // 
-            this.label31.AutoSize = true;
-            this.label31.Location = new System.Drawing.Point(6, 148);
-            this.label31.Name = "label31";
-            this.label31.Size = new System.Drawing.Size(196, 18);
-            this.label31.TabIndex = 24;
-            this.label31.Text = "File convert default directory:";
-            // 
-            // tbFileConvertDefaultDirectory
-            // 
-            this.tbFileConvertDefaultDirectory.Location = new System.Drawing.Point(225, 145);
-            this.tbFileConvertDefaultDirectory.Name = "tbFileConvertDefaultDirectory";
-            this.tbFileConvertDefaultDirectory.ReadOnly = true;
-            this.tbFileConvertDefaultDirectory.Size = new System.Drawing.Size(307, 24);
-            this.tbFileConvertDefaultDirectory.TabIndex = 23;
-            // 
-            // btnFileExtractDefaultDirectoryClear
-            // 
-            this.btnFileExtractDefaultDirectoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
-            this.btnFileExtractDefaultDirectoryClear.Location = new System.Drawing.Point(574, 115);
-            this.btnFileExtractDefaultDirectoryClear.Name = "btnFileExtractDefaultDirectoryClear";
-            this.btnFileExtractDefaultDirectoryClear.Size = new System.Drawing.Size(30, 24);
-            this.btnFileExtractDefaultDirectoryClear.TabIndex = 30;
-            this.btnFileExtractDefaultDirectoryClear.UseVisualStyleBackColor = true;
-            this.btnFileExtractDefaultDirectoryClear.Click += new System.EventHandler(this.EventClick);
-            // 
-            // btnFileExtractDefaultDirectorySearch
-            // 
-            this.btnFileExtractDefaultDirectorySearch.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
-            this.btnFileExtractDefaultDirectorySearch.Location = new System.Drawing.Point(538, 115);
-            this.btnFileExtractDefaultDirectorySearch.Name = "btnFileExtractDefaultDirectorySearch";
-            this.btnFileExtractDefaultDirectorySearch.Size = new System.Drawing.Size(30, 24);
-            this.btnFileExtractDefaultDirectorySearch.TabIndex = 29;
-            this.btnFileExtractDefaultDirectorySearch.UseVisualStyleBackColor = true;
-            this.btnFileExtractDefaultDirectorySearch.Click += new System.EventHandler(this.EventClick);
-            // 
-            // label32
-            // 
-            this.label32.AutoSize = true;
-            this.label32.Location = new System.Drawing.Point(6, 118);
-            this.label32.Name = "label32";
-            this.label32.Size = new System.Drawing.Size(191, 18);
-            this.label32.TabIndex = 28;
-            this.label32.Text = "File extract default directory:";
-            // 
-            // tbFileExtractDefaultDirectory
-            // 
-            this.tbFileExtractDefaultDirectory.Location = new System.Drawing.Point(225, 115);
-            this.tbFileExtractDefaultDirectory.Name = "tbFileExtractDefaultDirectory";
-            this.tbFileExtractDefaultDirectory.ReadOnly = true;
-            this.tbFileExtractDefaultDirectory.Size = new System.Drawing.Size(307, 24);
-            this.tbFileExtractDefaultDirectory.TabIndex = 27;
+            this.cbAutoZoomIssues.AutoSize = true;
+            this.cbAutoZoomIssues.Location = new System.Drawing.Point(11, 305);
+            this.cbAutoZoomIssues.Name = "cbAutoZoomIssues";
+            this.cbAutoZoomIssues.Size = new System.Drawing.Size(395, 22);
+            this.cbAutoZoomIssues.TabIndex = 35;
+            this.cbAutoZoomIssues.Text = "Auto zoom to issues and drawings portrait area (best fit)";
+            this.cbAutoZoomIssues.UseVisualStyleBackColor = true;
             // 
             // FrmSettings
             // 
@@ -1466,16 +1478,16 @@
             this.groupBox1.PerformLayout();
             this.tabSettings.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
+            this.groupBox5.ResumeLayout(false);
+            this.groupBox5.PerformLayout();
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
             this.tabPage3.ResumeLayout(false);
             this.tabPage4.ResumeLayout(false);
             this.tabPage4.PerformLayout();
             this.panel1.ResumeLayout(false);
-            this.groupBox4.ResumeLayout(false);
-            this.groupBox4.PerformLayout();
-            this.groupBox5.ResumeLayout(false);
-            this.groupBox5.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1583,5 +1595,6 @@
         private System.Windows.Forms.Button btnFileExtractDefaultDirectorySearch;
         private System.Windows.Forms.Label label32;
         private System.Windows.Forms.TextBox tbFileExtractDefaultDirectory;
+        private System.Windows.Forms.CheckBox cbAutoZoomIssues;
     }
 }

@@ -75,6 +75,8 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         Mat[] Thumbnails { get; set; }
 
+
+
         /// <summary>
         /// Gets the cached layers into compressed bytes
         /// </summary>
@@ -229,6 +231,13 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         /// <param name="images">Image to set</param>
         void SetThumbnails(Mat images);
+
+        /// <summary>
+        /// Sets a thumbnail from a disk file
+        /// </summary>
+        /// <param name="index">Thumbnail index</param>
+        /// <param name="filePath"></param>
+        void SetThumbnail(int index, string filePath);
 
         /// <summary>
         /// Encode to an output file

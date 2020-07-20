@@ -766,6 +766,14 @@ namespace UVtools.GUI
                     return;
                 }
 
+                if (ReferenceEquals(sender, menuToolsLayerReHeight))
+                {
+                    using (var frm = new FrmToolLayerReHeight(SlicerFile.LayerCount, SlicerFile.LayerHeight))
+                    {
+                        if (frm.ShowDialog() != DialogResult.OK) return;
+                    }
+                }
+
                 if (ReferenceEquals(sender, menuToolsLayerRemoval))
                 {
                     using (var frm = new FrmToolEmpty(ActualLayer, "Layer Removal", "Removes layer(s) in a given range", "Remove"))
@@ -997,6 +1005,23 @@ namespace UVtools.GUI
 
                 AdjustThumbnailSplitter();
                 return;
+            }
+
+            if (ReferenceEquals(sender, tsThumbnailsImport))
+            {
+                using (var fileOpen = new OpenFileDialog
+                {
+                    CheckFileExists = true,
+                    Filter = "Image Files(*.PNG;*.BMP;*.JPEG;*.JPG;*.GIF)|*.PNG;*.BMP;*.JPEG;*.JPG;*.GIF"
+                })
+                {
+                    if (fileOpen.ShowDialog() != DialogResult.OK) return;
+                    byte i = byte.Parse(tsThumbnailsCount.Tag.ToString());
+                    SlicerFile.SetThumbnail(i, fileOpen.FileName);
+                    pbThumbnail.Image = SlicerFile.Thumbnails[i].ToBitmap();
+                    SlicerFile.RequireFullEncode = true;
+                    menuFileSave.Enabled = menuFileSaveAs.Enabled = true;
+                }
             }
 
             if (ReferenceEquals(sender, tsThumbnailsExport))
@@ -1312,7 +1337,68 @@ namespace UVtools.GUI
 
                 ShowLayer();
             }
-        
+
+            if (ReferenceEquals(sender, btnPixelHistoryClear))
+            {
+                if (!btnPixelHistoryApply.Enabled) return;
+                if (PixelHistory.Count == 0) return;
+                if (MessageBox.Show(
+                    "Are you sure you want to clear all operations?",
+                    "Clear operations?", MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question) != DialogResult.Yes) return;
+
+                PixelHistory.Clear();
+                RefreshPixelHistory();
+                ShowLayer();
+
+            }
+
+            if (ReferenceEquals(sender, btnPixelHistoryApply))
+            {
+                if (!btnPixelHistoryApply.Enabled) return;
+                if (PixelHistory.Count == 0) return;
+                if (MessageBox.Show(
+                    "There are unsaved changes on image editor, do you want to apply modifications?",
+                    "Unsaved changes on image editor", MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question) != DialogResult.Yes) return;
+
+                btnPixelHistoryApply.Enabled = false;
+                DisableGUI();
+                FrmLoading.SetDescription("Drawing pixels");
+
+                Task task = Task.Factory.StartNew(() =>
+                {
+                    try
+                    {
+                        SlicerFile.LayerManager.DrawModifications(PixelHistory, FrmLoading.RestartProgress());
+                    }
+                    catch (OperationCanceledException)
+                    {
+
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"{ex.Message}", "Drawing was unsuccessful!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    finally
+                    {
+                        Invoke((MethodInvoker)delegate {
+                            // Running on the UI thread
+                            EnableGUI(true);
+                        });
+                    }
+
+                    return false;
+                });
+
+                FrmLoading.ShowDialog();
+
+                //lvPixelHistory.Items.Clear();
+                PixelHistory.Clear();
+                RefreshPixelHistory();
+                ShowLayer();
+            }
+
 
             /************************
              *      Layer Menu      *
@@ -1395,8 +1481,9 @@ namespace UVtools.GUI
                             FrmLoading.ShowDialog();
                         }
 
-                        lvPixelHistory.Items.Clear();
+                        //lvPixelHistory.Items.Clear();
                         PixelHistory.Clear();
+                        RefreshPixelHistory();
                         ShowLayer();
                     }
 
@@ -1666,25 +1753,79 @@ namespace UVtools.GUI
                             x = ActualLayerImage.Height - 1 - issue.Y;
                             y = issue.X;
                         }
-                        
-                        pbLayer.ZoomToRegion(x, y, 5, 5);
-                        pbLayer.ZoomOut(true);
+
+                        if (Settings.Default.AutoZoomIssues)
+                        {
+                            pbLayer.ZoomToRegion(x, y, 5, 5);
+                            pbLayer.ZoomOut(true);
+                        }
+                        else
+                        {
+                            pbLayer.CenterAt(x, y);
+                        }
                     }
                     else
                     {
-                        pbLayer.ZoomToRegion(
-                            tsLayerImageRotate.Checked ? ActualLayerImage.Height - 1 - issue.BoundingRectangle.Bottom : issue.BoundingRectangle.X,
-                            tsLayerImageRotate.Checked ? issue.BoundingRectangle.X : issue.BoundingRectangle.Y,
-                            tsLayerImageRotate.Checked ? issue.BoundingRectangle.Height : issue.BoundingRectangle.Width,
-                            tsLayerImageRotate.Checked ? issue.BoundingRectangle.Width : issue.BoundingRectangle.Height
+                        int x = tsLayerImageRotate.Checked
+                            ? ActualLayerImage.Height - 1 - issue.BoundingRectangle.Bottom
+                            : issue.BoundingRectangle.X;
+                        int y = tsLayerImageRotate.Checked ? issue.BoundingRectangle.X : issue.BoundingRectangle.Y;
+                        if (Settings.Default.AutoZoomIssues)
+                        {
+                            
+                            pbLayer.ZoomToRegion(
+                                x,
+                                y,
+                                tsLayerImageRotate.Checked
+                                    ? issue.BoundingRectangle.Height
+                                    : issue.BoundingRectangle.Width,
+                                tsLayerImageRotate.Checked
+                                    ? issue.BoundingRectangle.Width
+                                    : issue.BoundingRectangle.Height
                             );
-                        pbLayer.ZoomOut(true);
+                            pbLayer.ZoomOut(true);
+                        }
+                        else
+                        {
+                            pbLayer.CenterAt(x, y);
+                        }
                     }
                 }
 
                 tsIssueCount.Tag = lvIssues.SelectedIndices[0];
                 UpdateIssuesInfo();
                 return;
+            }
+
+            if (ReferenceEquals(sender, lvPixelHistory))
+            {
+                if (lvPixelHistory.SelectedItems.Count == 0) return;
+                var item = lvPixelHistory.SelectedItems[0];
+
+                if (!(item.Tag is PixelOperation operation)) return;
+                if (operation.LayerIndex != ActualLayer)
+                {
+                    ShowLayer(operation.LayerIndex);
+                }
+
+                int x = operation.Location.X;
+                int y = operation.Location.Y;
+
+                if (tsLayerImageRotate.Checked)
+                {
+                    x = ActualLayerImage.Height - 1 - operation.Location.Y;
+                    y = operation.Location.X;
+                }
+                
+                if (Settings.Default.AutoZoomIssues)
+                {
+                    pbLayer.ZoomToRegion(x, y, operation.Size.Width, operation.Size.Height);
+                    pbLayer.ZoomOut(true);
+                }
+                else
+                {
+                    pbLayer.CenterAt(x, y);
+                }
             }
 
         }
@@ -2837,6 +2978,8 @@ namespace UVtools.GUI
 
             lvPixelHistory.EndUpdate();
             btnPixelHistoryRemove.Enabled = false;
+            btnPixelHistoryClear.Enabled =
+            btnPixelHistoryApply.Enabled = PixelHistory.Count > 0;
         }
 
         

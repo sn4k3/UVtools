@@ -586,5 +586,17 @@ namespace UVtools.GUI.Properties {
                 this["FileExtractDefaultDirectory"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AutoZoomIssues {
+            get {
+                return ((bool)(this["AutoZoomIssues"]));
+            }
+            set {
+                this["AutoZoomIssues"] = value;
+            }
+        }
     }
 }

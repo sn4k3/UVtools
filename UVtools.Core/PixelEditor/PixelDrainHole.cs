@@ -16,6 +16,7 @@ namespace UVtools.Core.PixelEditor
         public PixelDrainHole(uint layerIndex, Point location, byte diameter) : base(PixelOperationType.DrainHole, layerIndex, location)
         {
             Diameter = diameter;
+            Size = new Size(diameter, diameter);
         }
     }
 }

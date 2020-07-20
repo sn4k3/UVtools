@@ -40,6 +40,7 @@ namespace UVtools.Core.PixelEditor
 
             int shiftPos = brushSize / 2;
             Rectangle = new Rectangle(Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos), brushSize-1, brushSize-1);
+            Size = new Size(BrushSize, BrushSize);
         }
     }
 }

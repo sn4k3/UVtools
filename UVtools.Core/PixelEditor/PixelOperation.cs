@@ -23,6 +23,8 @@ namespace UVtools.Core.PixelEditor
 
         public Point Location { get; }
 
+        public Size Size { get; private protected set; } = Size.Empty;
+
 
         public PixelOperation(PixelOperationType operationType, uint layerIndex, Point location)
         {

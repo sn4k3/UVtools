@@ -62,6 +62,7 @@ namespace UVtools.GUI.Forms
                 cbLayerAutoRotateBestView.Checked = Settings.Default.LayerAutoRotateBestView;
                 cbLayerZoomToFit.Checked = Settings.Default.LayerZoomToFit;
                 cbZoomToFitPrintVolumeBounds.Checked = Settings.Default.ZoomToFitPrintVolumeBounds;
+                cbAutoZoomIssues.Checked = Settings.Default.AutoZoomIssues;
                 cbLayerDifferenceDefault.Checked = Settings.Default.LayerDifferenceDefault;
                 cbComputeIssuesOnLoad.Checked = Settings.Default.ComputeIssuesOnLoad;
                 cbComputeIslands.Checked = Settings.Default.ComputeIslands;
@@ -204,6 +205,7 @@ namespace UVtools.GUI.Forms
                 Settings.Default.LayerAutoRotateBestView = cbLayerAutoRotateBestView.Checked;
                 Settings.Default.LayerZoomToFit = cbLayerZoomToFit.Checked;
                 Settings.Default.ZoomToFitPrintVolumeBounds = cbZoomToFitPrintVolumeBounds.Checked;
+                Settings.Default.AutoZoomIssues = cbAutoZoomIssues.Checked;
                 Settings.Default.LayerDifferenceDefault = cbLayerDifferenceDefault.Checked;
                 Settings.Default.ComputeIssuesOnLoad = cbComputeIssuesOnLoad.Checked;
                 Settings.Default.ComputeIslands = cbComputeIslands.Checked;

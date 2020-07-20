@@ -164,6 +164,12 @@
     <Compile Include="Forms\FrmMutationPixelDimming.Designer.cs">
       <DependentUpon>FrmMutationPixelDimming.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\FrmToolLayerReHeight.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmToolLayerReHeight.Designer.cs">
+      <DependentUpon>FrmToolLayerReHeight.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\FrmToolEmpty.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -255,6 +261,9 @@
     <EmbeddedResource Include="Forms\FrmMutationPixelDimming.resx">
       <DependentUpon>FrmMutationPixelDimming.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmToolLayerReHeight.resx">
+      <DependentUpon>FrmToolLayerReHeight.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolEmpty.resx">
       <DependentUpon>FrmToolEmpty.cs</DependentUpon>
     </EmbeddedResource>
@@ -339,6 +348,9 @@
     <None Include="Images\pattern-16x16.png" />
     <None Include="Images\resize-16x16.png" />
     <None Include="Images\cursor-16x16.png" />
+    <None Include="Images\accept-16x16.png" />
+    <None Include="Images\photo-16x16.png" />
+    <None Include="Images\ladder-16x16.png" />
     <Content Include="UVtools.ico" />
     <None Include="UVtools.png" />
     <None Include="Images\Exit-16x16.png" />
