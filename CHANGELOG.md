@@ -3,6 +3,7 @@
 ## 20/07/2020 - v0.6.3.1
 
 * (Add) Preview: Allow import images from disk and replace preview image
+* (Add) Setting: Auto zoom to issues and drawings portrait area (best fit)
 * (Add) Issue and Pixel Editor ListView can now reorder columns
 * (Add) Pixel Editor: Button "Clear" remove all the modifications
 * (Add) Pixel Editor: Button "Apply All" to apply the modifications
