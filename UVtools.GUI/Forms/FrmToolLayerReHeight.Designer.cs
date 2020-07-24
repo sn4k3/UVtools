@@ -44,7 +44,7 @@ namespace UVtools.GUI.Forms
             this.lbDescription.Location = new System.Drawing.Point(13, 14);
             this.lbDescription.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbDescription.Name = "lbDescription";
-            this.lbDescription.Size = new System.Drawing.Size(584, 95);
+            this.lbDescription.Size = new System.Drawing.Size(584, 118);
             this.lbDescription.TabIndex = 0;
             this.lbDescription.Text = resources.GetString("lbDescription.Text");
             // 
@@ -54,7 +54,7 @@ namespace UVtools.GUI.Forms
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Image = global::UVtools.GUI.Properties.Resources.Cancel_24x24;
             this.btnCancel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnCancel.Location = new System.Drawing.Point(434, 324);
+            this.btnCancel.Location = new System.Drawing.Point(434, 202);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(150, 48);
@@ -69,7 +69,7 @@ namespace UVtools.GUI.Forms
             this.btnOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnOk.Image = global::UVtools.GUI.Properties.Resources.Ok_24x24;
             this.btnOk.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnOk.Location = new System.Drawing.Point(276, 324);
+            this.btnOk.Location = new System.Drawing.Point(276, 202);
             this.btnOk.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(150, 48);
@@ -82,7 +82,7 @@ namespace UVtools.GUI.Forms
             // lbCurrent
             // 
             this.lbCurrent.AutoSize = true;
-            this.lbCurrent.Location = new System.Drawing.Point(13, 109);
+            this.lbCurrent.Location = new System.Drawing.Point(13, 132);
             this.lbCurrent.Name = "lbCurrent";
             this.lbCurrent.Size = new System.Drawing.Size(234, 20);
             this.lbCurrent.TabIndex = 7;
@@ -91,19 +91,19 @@ namespace UVtools.GUI.Forms
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 136);
+            this.label2.Location = new System.Drawing.Point(13, 159);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(75, 20);
+            this.label2.Size = new System.Drawing.Size(69, 20);
             this.label2.TabIndex = 8;
-            this.label2.Text = "Multiplier:";
+            this.label2.Text = "Modifier:";
             // 
             // cbMultiplier
             // 
             this.cbMultiplier.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbMultiplier.FormattingEnabled = true;
-            this.cbMultiplier.Location = new System.Drawing.Point(126, 132);
+            this.cbMultiplier.Location = new System.Drawing.Point(126, 155);
             this.cbMultiplier.Name = "cbMultiplier";
-            this.cbMultiplier.Size = new System.Drawing.Size(121, 28);
+            this.cbMultiplier.Size = new System.Drawing.Size(458, 28);
             this.cbMultiplier.TabIndex = 9;
             // 
             // FrmToolLayerReHeight
@@ -111,7 +111,7 @@ namespace UVtools.GUI.Forms
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(599, 386);
+            this.ClientSize = new System.Drawing.Size(599, 264);
             this.Controls.Add(this.cbMultiplier);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.lbCurrent);

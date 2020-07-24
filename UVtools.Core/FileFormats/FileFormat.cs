@@ -280,7 +280,7 @@ namespace UVtools.Core.FileFormats
         public bool HaveAntiAliasing => AntiAliasing > 1;
         public abstract byte AntiAliasing { get; }
 
-        public abstract float LayerHeight { get; }
+        public abstract float LayerHeight { get; set; }
 
         public float TotalHeight => LayerCount == 0 ? 0 : this[LayerCount - 1].PositionZ; //(float)Math.Round(LayerCount * LayerHeight, 2);
 

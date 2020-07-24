@@ -697,7 +697,7 @@ namespace UVtools.GUI
                     bool repairIslands;
                     bool removeEmptyLayers;
                     bool repairResinTraps;
-                    using (var frmRepairLayers = new FrmRepairLayers(2))
+                    using (var frmRepairLayers = new FrmRepairLayers())
                     {
                         if (frmRepairLayers.ShowDialog() != DialogResult.OK) return;
 
@@ -768,10 +768,48 @@ namespace UVtools.GUI
 
                 if (ReferenceEquals(sender, menuToolsLayerReHeight))
                 {
+                    OperationLayerReHeight operation = null;
                     using (var frm = new FrmToolLayerReHeight(SlicerFile.LayerCount, SlicerFile.LayerHeight))
                     {
-                        if (frm.ShowDialog() != DialogResult.OK) return;
+                        if (frm.IsDisposed || frm.ShowDialog() != DialogResult.OK) return;
+                        operation = frm.Operation;
                     }
+
+                    DisableGUI();
+                    FrmLoading.SetDescription($"Layer Re-Height from {SlicerFile.LayerHeight}mm to {operation.LayerHeight}mm");
+
+                    var task = Task.Factory.StartNew(() =>
+                    {
+                        try
+                        {
+                            SlicerFile.LayerManager.ReHeight(operation, FrmLoading.RestartProgress());
+                        }
+                        catch (OperationCanceledException)
+                        {
+
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        finally
+                        {
+                            Invoke((MethodInvoker)delegate
+                            {
+                                // Running on the UI thread
+                                EnableGUI(true);
+                            });
+                        }
+                    });
+
+                    var loadingResult = FrmLoading.ShowDialog();
+
+                    UpdateLayerLimits();
+                    RefreshInfo();
+                    ShowLayer();
+
+                    menuFileSave.Enabled =
+                        menuFileSaveAs.Enabled = true;
                 }
 
                 if (ReferenceEquals(sender, menuToolsLayerRemoval))
@@ -2157,7 +2195,7 @@ namespace UVtools.GUI
             tsLayerResolution.Text = $"{{Width={SlicerFile.ResolutionX}, Height={SlicerFile.ResolutionY}}}";
 
             UpdateLayerLimits();
-            ShowLayer(actualLayer);
+            ShowLayer(Math.Min(actualLayer, SlicerFile.LayerCount-1));
             
 
 

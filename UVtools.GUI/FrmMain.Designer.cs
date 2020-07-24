@@ -431,7 +431,6 @@
             this.menuToolsLayerReHeight.Name = "menuToolsLayerReHeight";
             this.menuToolsLayerReHeight.Size = new System.Drawing.Size(261, 22);
             this.menuToolsLayerReHeight.Text = "Layer Re-Height";
-            this.menuToolsLayerReHeight.Visible = false;
             this.menuToolsLayerReHeight.Click += new System.EventHandler(this.EventClick);
             // 
             // menuToolsLayerRemoval

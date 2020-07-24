@@ -120,7 +120,8 @@
   <data name="lbDescription.Text" xml:space="preserve">
     <value>Changes layer height.
 Going lower doesn't give you better XYZ accuracy but will reduce Z lines, layers will be cloned and repeated over Z for the effect.
-Going higher will reduce detail, layers will sum times the multiplier for the effect.</value>
+Going higher will reduce detail, layers will sum times the modifier for the effect.
+Note: Reslice with the new layer height is always preferable</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

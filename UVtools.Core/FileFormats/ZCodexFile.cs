@@ -172,7 +172,11 @@ namespace UVtools.Core.FileFormats
         public override uint ResolutionY => 2560;
         public override byte AntiAliasing => UserSettings.AntiAliasing;
 
-        public override float LayerHeight => ResinMetadataSettings.LayerThickness;
+        public override float LayerHeight
+        {
+            get => ResinMetadataSettings.LayerThickness;
+            set => ResinMetadataSettings.LayerThickness = value;
+        }
 
         public override uint LayerCount
         {
@@ -180,6 +184,7 @@ namespace UVtools.Core.FileFormats
             {
                 UserSettings.MaxLayer = LayerCount - 1;
                 ResinMetadataSettings.TotalLayersCount = LayerCount;
+                UpdateGCode();
             }
         }
 

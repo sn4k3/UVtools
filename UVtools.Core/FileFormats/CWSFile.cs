@@ -143,7 +143,11 @@ namespace UVtools.Core.FileFormats
         public override uint ResolutionY => SliceSettings.Yres;
         public override byte AntiAliasing => (byte) OutputSettings.AntiAliasingValue;
 
-        public override float LayerHeight => SliceSettings.Thickness;
+        public override float LayerHeight
+        {
+            get => SliceSettings.Thickness;
+            set => OutputSettings.LayerThickness = SliceSettings.Thickness = value; 
+        }
 
         public override uint LayerCount
         {
@@ -151,6 +155,7 @@ namespace UVtools.Core.FileFormats
             {
                 OutputSettings.LayersNum = LayerCount;
                 SliceSettings.LayersNum = LayerCount;
+                UpdateGCode();
             }
         }
 
@@ -581,7 +586,7 @@ G1 Z-3.9 F120
             string arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
             GCode = new StringBuilder();
             GCode.AppendLine($"; {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.Now}"); 
-            GCode.AppendLine("(****Build and Slicing Parameters * ***)");
+            GCode.AppendLine(";(****Build and Slicing Parameters ****)");
 
             foreach (var propertyInfo in OutputSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {

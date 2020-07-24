@@ -598,5 +598,65 @@ namespace UVtools.GUI.Properties {
                 this["AutoZoomIssues"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public byte LayerRepairDefaultClosingIterations {
+            get {
+                return ((byte)(this["LayerRepairDefaultClosingIterations"]));
+            }
+            set {
+                this["LayerRepairDefaultClosingIterations"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public byte LayerRepairDefaultOpeningIterations {
+            get {
+                return ((byte)(this["LayerRepairDefaultOpeningIterations"]));
+            }
+            set {
+                this["LayerRepairDefaultOpeningIterations"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool LayerRepairLayersIslands {
+            get {
+                return ((bool)(this["LayerRepairLayersIslands"]));
+            }
+            set {
+                this["LayerRepairLayersIslands"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool LayerRepairResinTraps {
+            get {
+                return ((bool)(this["LayerRepairResinTraps"]));
+            }
+            set {
+                this["LayerRepairResinTraps"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool LayerRepairRemoveEmptyLayers {
+            get {
+                return ((bool)(this["LayerRepairRemoveEmptyLayers"]));
+            }
+            set {
+                this["LayerRepairRemoveEmptyLayers"] = value;
+            }
+        }
     }
 }

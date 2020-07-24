@@ -1,5 +1,16 @@
 # Changelog
 
+## 24/07/2020 - v0.6.3.2
+
+* (Add) Tool: Layer Re-Height - Allow change layer height
+* (Add) Setting: Gap closing default iterations
+* (Add) Setting: Noise removal default iterations
+* (Add) Setting: Repair layers and islands by default
+* (Add) Setting: Remove empty layers by default
+* (Add) Setting: Repair resin traps by default
+* (Change) Setting: "Reset to Defaults" changed to "Reset All Settings"
+* (Fix) CWS: Lack of ';' on GCode was preventing printer from printing
+
 ## 20/07/2020 - v0.6.3.1
 
 * (Add) Preview: Allow import images from disk and replace preview image

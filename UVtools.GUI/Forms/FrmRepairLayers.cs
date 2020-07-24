@@ -59,14 +59,17 @@ namespace UVtools.GUI.Forms
         #endregion
 
         #region Constructors
-        public FrmRepairLayers(uint defaultClosingIterations = 1, uint defaultOpeningIterations = 1)
+        public FrmRepairLayers()
         {
             InitializeComponent();
             DialogResult = DialogResult.Cancel;
 
             
-            ClosingIterations = defaultClosingIterations;
-            OpeningIterations = defaultOpeningIterations;
+            ClosingIterations = Properties.Settings.Default.LayerRepairDefaultClosingIterations;
+            OpeningIterations = Properties.Settings.Default.LayerRepairDefaultOpeningIterations;
+            RepairIslands = Properties.Settings.Default.LayerRepairLayersIslands;
+            RemoveEmptyLayers = Properties.Settings.Default.LayerRepairRemoveEmptyLayers;
+            RepairResinTraps = Properties.Settings.Default.LayerRepairResinTraps;
             numClosingIterations.Select();
 
             nmLayerRangeEnd.Value = Program.SlicerFile.LayerCount-1;

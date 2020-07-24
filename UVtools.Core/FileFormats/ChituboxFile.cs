@@ -944,7 +944,11 @@ namespace UVtools.Core.FileFormats
         public override uint ResolutionY => HeaderSettings.ResolutionY;
         public override byte AntiAliasing => (byte) (IsCbtFile ? SlicerInfoSettings.AntiAliasLevel : HeaderSettings.AntiAliasLevel);
 
-        public override float LayerHeight => HeaderSettings.LayerHeightMilimeter;
+        public override float LayerHeight
+        {
+            get => HeaderSettings.LayerHeightMilimeter;
+            set => HeaderSettings.LayerHeightMilimeter = value;
+        }
 
         public override uint LayerCount
         {

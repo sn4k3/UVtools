@@ -319,7 +319,11 @@ namespace UVtools.Core.FileFormats
         public override uint ResolutionY => PrinterSettings.DisplayPixelsY;
         public override byte AntiAliasing => (byte) (PrinterSettings.GammaCorrection > 0 ? LookupCustomValue(Keyword_AntiAliasing, 4) : 1);
 
-        public override float LayerHeight => OutputConfigSettings.LayerHeight;
+        public override float LayerHeight
+        {
+            get => OutputConfigSettings.LayerHeight;
+            set => OutputConfigSettings.LayerHeight = value;
+        }
 
         public override uint LayerCount
         {

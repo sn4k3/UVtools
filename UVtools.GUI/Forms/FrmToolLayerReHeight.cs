@@ -9,6 +9,7 @@
 using System;
 using System.Globalization;
 using System.Windows.Forms;
+using UVtools.Core.Operations;
 
 
 namespace UVtools.GUI.Forms
@@ -17,6 +18,8 @@ namespace UVtools.GUI.Forms
     {
         private uint LayerCount { get; }
         private decimal LayerHeight { get; }
+
+        public OperationLayerReHeight Operation => cbMultiplier.SelectedItem as OperationLayerReHeight;
 
         #region Constructors
         public FrmToolLayerReHeight(uint layerCount, float layerHeight)
@@ -29,28 +32,42 @@ namespace UVtools.GUI.Forms
 
             lbCurrent.Text = $"Current layers: {LayerCount} at {layerHeight}mm";
 
-            for (byte i = 2; i < 255; i++)
+            for (byte i = 2; i < 255; i++) // Lower
             {
-                var countStr = (LayerCount / (decimal)i).ToString();
-                if (countStr.IndexOf(".") >= 0) continue; // Cant multiply layers
-                countStr = (LayerHeight / i).ToString();
-                int decimalCount = countStr.Substring(countStr.IndexOf(".")).Length;
-                if (decimalCount > 2) continue; // Cant multiply height
-
-                cbMultiplier.Items.Add($"/ {i}");
-            }
-
-            for (byte i = 2; i < 255; i++)
-            {
+                if (LayerHeight / i < 0.01m) break;
                 var countStr = (LayerCount / (decimal)i).ToString(CultureInfo.InvariantCulture);
                 if (countStr.IndexOf(".", StringComparison.Ordinal) >= 0) continue; // Cant multiply layers
-                if(LayerHeight * i > 0.2m) break;
-
-                countStr = (LayerHeight * i).ToString(CultureInfo.InvariantCulture);
-                int decimalCount = countStr.Substring(countStr.IndexOf(".", StringComparison.Ordinal)).Length;
+                countStr = (LayerHeight / i).ToString(CultureInfo.InvariantCulture);
+                int decimalCount = countStr.Substring(countStr.IndexOf(".", StringComparison.Ordinal)).Length-1;
                 if (decimalCount > 2) continue; // Cant multiply height
 
-                cbMultiplier.Items.Add($"x {i}");
+                OperationLayerReHeight operation = new OperationLayerReHeight(false, i, LayerHeight / i, LayerCount * i);
+                cbMultiplier.Items.Add(operation);
+            }
+
+            for (byte i = 2; i < 255; i++) // Higher
+            {
+                if (LayerHeight * i > 0.2m) break;
+                var countStr = (LayerCount / (decimal)i).ToString(CultureInfo.InvariantCulture);
+                if (countStr.IndexOf(".", StringComparison.Ordinal) >= 0) continue; // Cant multiply layers
+                
+
+                countStr = (LayerHeight * i).ToString(CultureInfo.InvariantCulture);
+                int decimalCount = countStr.Substring(countStr.IndexOf(".", StringComparison.Ordinal)).Length-1;
+                if (decimalCount > 2) continue; // Cant multiply height
+
+                OperationLayerReHeight operation = new OperationLayerReHeight(true, i, LayerHeight * i, LayerCount / i);
+                cbMultiplier.Items.Add(operation);
+            }
+
+            if (cbMultiplier.Items.Count == 0)
+            {
+                MessageBox.Show("No valid configuration to be able to re-height, closing this tool now.", "Not possible to re-height", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Close();
+            }
+            else
+            {
+                cbMultiplier.SelectedIndex = 0;
             }
         }
         #endregion

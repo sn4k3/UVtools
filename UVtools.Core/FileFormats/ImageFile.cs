@@ -28,7 +28,7 @@ namespace UVtools.Core.FileFormats
         public override uint ResolutionX => (uint)ImageMat.Width;
         public override uint ResolutionY => (uint)ImageMat.Height;
         public override byte AntiAliasing { get; } = 1;
-        public override float LayerHeight { get; } = 0;
+        public override float LayerHeight { get; set; } = 0;
         public override ushort InitialLayerCount { get; } = 1;
         public override float InitialExposureTime { get; } = 0;
         public override float LayerExposureTime { get; } = 0;

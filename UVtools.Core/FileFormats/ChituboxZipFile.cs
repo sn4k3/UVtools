@@ -124,13 +124,18 @@ namespace UVtools.Core.FileFormats
         public override uint ResolutionY => HeaderSettings.ResolutionY;
         public override byte AntiAliasing => HeaderSettings.AntiAliasing;
 
-        public override float LayerHeight => HeaderSettings.LayerHeight;
+        public override float LayerHeight
+        {
+            get => HeaderSettings.LayerHeight;
+            set => HeaderSettings.LayerHeight = value;
+        }
 
         public override uint LayerCount
         {
             set
             {
                 HeaderSettings.LayerCount = LayerCount;
+                UpdateGCode();
             }
         }
 

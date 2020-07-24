@@ -40,7 +40,7 @@ namespace UVtools.Core
         /// <summary>
         /// Gets the bounding rectangle for the image area
         /// </summary>
-        public Rectangle BoundingRectangle { get; private protected set; } = Rectangle.Empty;
+        public Rectangle BoundingRectangle { get; internal set; } = Rectangle.Empty;
 
         /// <summary>
         /// Gets the layer index
@@ -781,7 +781,13 @@ namespace UVtools.Core
 
         public Layer Clone()
         {
-            return new Layer(Index, CompressedBytes, Filename, ParentLayerManager);
+            return new Layer(Index, CompressedBytes, Filename, ParentLayerManager)
+            {
+                PositionZ = PositionZ,
+                ExposureTime = ExposureTime,
+                BoundingRectangle = BoundingRectangle,
+                NonZeroPixelCount = NonZeroPixelCount,
+            };
         }
 
         #endregion

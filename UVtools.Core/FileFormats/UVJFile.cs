@@ -161,7 +161,11 @@ namespace UVtools.Core.FileFormats
         public override uint ResolutionY => JsonSettings.Properties.Size.Y;
         public override byte AntiAliasing => JsonSettings.Properties.AntiAliasLevel;
 
-        public override float LayerHeight => JsonSettings.Properties.Size.LayerHeight;
+        public override float LayerHeight
+        {
+            get => JsonSettings.Properties.Size.LayerHeight;
+            set => JsonSettings.Properties.Size.LayerHeight = value;
+        }
 
         public override uint LayerCount
         {

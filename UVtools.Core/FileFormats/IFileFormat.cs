@@ -102,7 +102,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets Layer Height in mm
         /// </summary>
-        float LayerHeight { get; }
+        float LayerHeight { get; set; }
 
         /// <summary>
         /// Gets Total Height in mm

@@ -84,6 +84,12 @@ namespace UVtools.GUI.Forms
                 btnPixelEditorRemovePixelColor.BackColor = Settings.Default.PixelEditorRemovePixelColor;
                 btnPixelEditorSupportColor.BackColor = Settings.Default.PixelEditorSupportColor;
                 btnPixelEditorDrainHoleColor.BackColor = Settings.Default.PixelEditorDrainHoleColor;
+
+                nmLayerRepairDefaultClosingIterations.Value = Settings.Default.LayerRepairDefaultClosingIterations;
+                nmLayerRepairDefaultOpeningIterations.Value = Settings.Default.LayerRepairDefaultOpeningIterations;
+                cbLayerRepairLayersIslands.Checked = Settings.Default.LayerRepairLayersIslands;
+                cbLayerRepairRemoveEmptyLayers.Checked = Settings.Default.LayerRepairRemoveEmptyLayers;
+                cbLayerRepairResinTraps.Checked = Settings.Default.LayerRepairResinTraps;
             }
             catch (Exception ex)
             {
@@ -227,6 +233,12 @@ namespace UVtools.GUI.Forms
                 Settings.Default.PixelEditorRemovePixelColor = btnPixelEditorRemovePixelColor.BackColor;
                 Settings.Default.PixelEditorSupportColor = btnPixelEditorSupportColor.BackColor;
                 Settings.Default.PixelEditorDrainHoleColor = btnPixelEditorDrainHoleColor.BackColor;
+
+                Settings.Default.LayerRepairDefaultClosingIterations = (byte) nmLayerRepairDefaultClosingIterations.Value;
+                Settings.Default.LayerRepairDefaultOpeningIterations = (byte) nmLayerRepairDefaultOpeningIterations.Value;
+                Settings.Default.LayerRepairLayersIslands = cbLayerRepairLayersIslands.Checked;
+                Settings.Default.LayerRepairRemoveEmptyLayers = cbLayerRepairRemoveEmptyLayers.Checked;
+                Settings.Default.LayerRepairResinTraps = cbLayerRepairResinTraps.Checked;
 
                 Settings.Default.Save();
                 DialogResult = DialogResult.OK;
