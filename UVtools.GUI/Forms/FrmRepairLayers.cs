@@ -39,6 +39,12 @@ namespace UVtools.GUI.Forms
             set => numOpeningIterations.Value = value;
         }
 
+        public byte RemoveIslandsBelowEqualPixels
+        {
+            get => (byte)nmRemoveIslandsBelowEqualPixels.Value;
+            set => nmRemoveIslandsBelowEqualPixels.Value = value;
+        }
+
         public bool RepairIslands
         {
             get => cbRepairIslands.Checked;
@@ -70,6 +76,7 @@ namespace UVtools.GUI.Forms
             RepairIslands = Properties.Settings.Default.LayerRepairLayersIslands;
             RemoveEmptyLayers = Properties.Settings.Default.LayerRepairRemoveEmptyLayers;
             RepairResinTraps = Properties.Settings.Default.LayerRepairResinTraps;
+            nmRemoveIslandsBelowEqualPixels.Value = Properties.Settings.Default.LayerRepairRemoveIslandsBelowEqualPixelsDefault;
             numClosingIterations.Select();
 
             nmLayerRangeEnd.Value = Program.SlicerFile.LayerCount-1;

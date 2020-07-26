@@ -1120,7 +1120,7 @@ namespace UVtools.Core
             return result;
         }
 
-        public void RepairLayers(uint layerStart, uint layerEnd, uint closingIterations = 1, uint openingIterations = 1,
+        public void RepairLayers(uint layerStart, uint layerEnd, uint closingIterations = 1, uint openingIterations = 1, byte removeIslandsBelowEqualPixels = 4,
             bool repairIslands = true, bool removeEmptyLayers = true, bool repairResinTraps = true, Dictionary<uint, List<LayerIssue>> issues = null,
             OperationProgress progress = null)
         {
@@ -1135,27 +1135,46 @@ namespace UVtools.Core
                     Layer layer = this[layerIndex];
                     using (var image = layer.LayerMat)
                     {
-                        if (repairResinTraps && !ReferenceEquals(issues, null))
+                        if (!ReferenceEquals(issues, null))
                         {
-                            if (issues.TryGetValue((uint) layerIndex, out var issueList))
+                            if (repairIslands && removeIslandsBelowEqualPixels > 0)
                             {
-                                foreach (var issue in issueList.Where(issue =>
-                                    issue.Type == LayerIssue.IssueType.ResinTrap))
+                                if (issues.TryGetValue((uint)layerIndex, out var issueList))
                                 {
-                                    using (var vec = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
+                                    var bytes = image.GetPixelSpan<byte>();
+                                    foreach (var issue in issueList.Where(issue =>
+                                        issue.Type == LayerIssue.IssueType.Island && issue.Pixels.Length <= removeIslandsBelowEqualPixels))
                                     {
-                                        CvInvoke.DrawContours(image,
-                                            vec,
+                                        foreach (var issuePixel in issue.Pixels)
+                                        {
+                                            bytes[image.GetPixelPos(issuePixel)] = 0;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (repairResinTraps)
+                            {
+                                if (issues.TryGetValue((uint) layerIndex, out var issueList))
+                                {
+                                    foreach (var issue in issueList.Where(issue =>
+                                        issue.Type == LayerIssue.IssueType.ResinTrap))
+                                    {
+                                        using (var vec = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
+                                        {
+                                            CvInvoke.DrawContours(image,
+                                                vec,
+                                                -1,
+                                                new MCvScalar(255),
+                                                -1);
+                                        }
+
+                                        /*CvInvoke.DrawContours(image,
+                                            new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)),
                                             -1,
                                             new MCvScalar(255),
-                                            -1);
+                                            2);*/
                                     }
-
-                                    /*CvInvoke.DrawContours(image,
-                                        new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)),
-                                        -1,
-                                        new MCvScalar(255),
-                                        2);*/
                                 }
                             }
                         }

@@ -138,6 +138,9 @@ Note: "Layer Start" start can't be higher than "Layer End".</value>
   <metadata name="cmLayerRange.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>148, 17</value>
+  </metadata>
   <data name="label1.ToolTip" xml:space="preserve">
     <value>Selects the number of iterations/passes to perform on each layer.
 Choose 0 to disable this step.

@@ -130,15 +130,17 @@
             this.label24 = new System.Windows.Forms.Label();
             this.label23 = new System.Windows.Forms.Label();
             this.btnPixelEditorAddPixelColor = new System.Windows.Forms.Button();
-            this.panel1 = new System.Windows.Forms.Panel();
             this.tabPage5 = new System.Windows.Forms.TabPage();
-            this.cbLayerRepairLayersIslands = new System.Windows.Forms.CheckBox();
-            this.cbLayerRepairRemoveEmptyLayers = new System.Windows.Forms.CheckBox();
-            this.cbLayerRepairResinTraps = new System.Windows.Forms.CheckBox();
-            this.nmLayerRepairDefaultClosingIterations = new System.Windows.Forms.NumericUpDown();
-            this.label33 = new System.Windows.Forms.Label();
             this.nmLayerRepairDefaultOpeningIterations = new System.Windows.Forms.NumericUpDown();
             this.label34 = new System.Windows.Forms.Label();
+            this.nmLayerRepairDefaultClosingIterations = new System.Windows.Forms.NumericUpDown();
+            this.label33 = new System.Windows.Forms.Label();
+            this.cbLayerRepairResinTraps = new System.Windows.Forms.CheckBox();
+            this.cbLayerRepairRemoveEmptyLayers = new System.Windows.Forms.CheckBox();
+            this.cbLayerRepairLayersIslands = new System.Windows.Forms.CheckBox();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault = new System.Windows.Forms.NumericUpDown();
+            this.label35 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineHollowAreasLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineLayerBoundsLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlinePrintVolumeBoundsLineThickness)).BeginInit();
@@ -161,10 +163,11 @@
             this.tabPage2.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.tabPage4.SuspendLayout();
-            this.panel1.SuspendLayout();
             this.tabPage5.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultClosingIterations)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultOpeningIterations)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultClosingIterations)).BeginInit();
+            this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -1442,19 +1445,10 @@
             this.btnPixelEditorAddPixelColor.UseVisualStyleBackColor = false;
             this.btnPixelEditorAddPixelColor.Click += new System.EventHandler(this.EventClick);
             // 
-            // panel1
-            // 
-            this.panel1.Controls.Add(this.btnCancel);
-            this.panel1.Controls.Add(this.btnSave);
-            this.panel1.Controls.Add(this.btnReset);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 452);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(624, 77);
-            this.panel1.TabIndex = 19;
-            // 
             // tabPage5
             // 
+            this.tabPage5.Controls.Add(this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault);
+            this.tabPage5.Controls.Add(this.label35);
             this.tabPage5.Controls.Add(this.nmLayerRepairDefaultOpeningIterations);
             this.tabPage5.Controls.Add(this.label34);
             this.tabPage5.Controls.Add(this.nmLayerRepairDefaultClosingIterations);
@@ -1470,35 +1464,31 @@
             this.tabPage5.Text = "Layer Repair";
             this.tabPage5.UseVisualStyleBackColor = true;
             // 
-            // cbLayerRepairLayersIslands
+            // nmLayerRepairDefaultOpeningIterations
             // 
-            this.cbLayerRepairLayersIslands.AutoSize = true;
-            this.cbLayerRepairLayersIslands.Location = new System.Drawing.Point(6, 66);
-            this.cbLayerRepairLayersIslands.Name = "cbLayerRepairLayersIslands";
-            this.cbLayerRepairLayersIslands.Size = new System.Drawing.Size(257, 22);
-            this.cbLayerRepairLayersIslands.TabIndex = 15;
-            this.cbLayerRepairLayersIslands.Text = "Repair layers and islands by default";
-            this.cbLayerRepairLayersIslands.UseVisualStyleBackColor = true;
+            this.nmLayerRepairDefaultOpeningIterations.Location = new System.Drawing.Point(6, 36);
+            this.nmLayerRepairDefaultOpeningIterations.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+            this.nmLayerRepairDefaultOpeningIterations.Name = "nmLayerRepairDefaultOpeningIterations";
+            this.nmLayerRepairDefaultOpeningIterations.Size = new System.Drawing.Size(57, 24);
+            this.nmLayerRepairDefaultOpeningIterations.TabIndex = 32;
+            this.nmLayerRepairDefaultOpeningIterations.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
-            // cbLayerRepairRemoveEmptyLayers
+            // label34
             // 
-            this.cbLayerRepairRemoveEmptyLayers.AutoSize = true;
-            this.cbLayerRepairRemoveEmptyLayers.Location = new System.Drawing.Point(6, 94);
-            this.cbLayerRepairRemoveEmptyLayers.Name = "cbLayerRepairRemoveEmptyLayers";
-            this.cbLayerRepairRemoveEmptyLayers.Size = new System.Drawing.Size(236, 22);
-            this.cbLayerRepairRemoveEmptyLayers.TabIndex = 16;
-            this.cbLayerRepairRemoveEmptyLayers.Text = "Remove empty layers by default";
-            this.cbLayerRepairRemoveEmptyLayers.UseVisualStyleBackColor = true;
-            // 
-            // cbLayerRepairResinTraps
-            // 
-            this.cbLayerRepairResinTraps.AutoSize = true;
-            this.cbLayerRepairResinTraps.Location = new System.Drawing.Point(6, 122);
-            this.cbLayerRepairResinTraps.Name = "cbLayerRepairResinTraps";
-            this.cbLayerRepairResinTraps.Size = new System.Drawing.Size(209, 22);
-            this.cbLayerRepairResinTraps.TabIndex = 17;
-            this.cbLayerRepairResinTraps.Text = "Repair resin traps by default";
-            this.cbLayerRepairResinTraps.UseVisualStyleBackColor = true;
+            this.label34.AutoSize = true;
+            this.label34.Location = new System.Drawing.Point(69, 39);
+            this.label34.Name = "label34";
+            this.label34.Size = new System.Drawing.Size(215, 18);
+            this.label34.TabIndex = 33;
+            this.label34.Text = "Noise removal default iterations";
             // 
             // nmLayerRepairDefaultClosingIterations
             // 
@@ -1526,31 +1516,72 @@
             this.label33.TabIndex = 31;
             this.label33.Text = "Gap closing default iterations";
             // 
-            // nmLayerRepairDefaultOpeningIterations
+            // cbLayerRepairResinTraps
             // 
-            this.nmLayerRepairDefaultOpeningIterations.Location = new System.Drawing.Point(6, 36);
-            this.nmLayerRepairDefaultOpeningIterations.Maximum = new decimal(new int[] {
+            this.cbLayerRepairResinTraps.AutoSize = true;
+            this.cbLayerRepairResinTraps.Location = new System.Drawing.Point(6, 152);
+            this.cbLayerRepairResinTraps.Name = "cbLayerRepairResinTraps";
+            this.cbLayerRepairResinTraps.Size = new System.Drawing.Size(209, 22);
+            this.cbLayerRepairResinTraps.TabIndex = 17;
+            this.cbLayerRepairResinTraps.Text = "Repair resin traps by default";
+            this.cbLayerRepairResinTraps.UseVisualStyleBackColor = true;
+            // 
+            // cbLayerRepairRemoveEmptyLayers
+            // 
+            this.cbLayerRepairRemoveEmptyLayers.AutoSize = true;
+            this.cbLayerRepairRemoveEmptyLayers.Location = new System.Drawing.Point(6, 124);
+            this.cbLayerRepairRemoveEmptyLayers.Name = "cbLayerRepairRemoveEmptyLayers";
+            this.cbLayerRepairRemoveEmptyLayers.Size = new System.Drawing.Size(236, 22);
+            this.cbLayerRepairRemoveEmptyLayers.TabIndex = 16;
+            this.cbLayerRepairRemoveEmptyLayers.Text = "Remove empty layers by default";
+            this.cbLayerRepairRemoveEmptyLayers.UseVisualStyleBackColor = true;
+            // 
+            // cbLayerRepairLayersIslands
+            // 
+            this.cbLayerRepairLayersIslands.AutoSize = true;
+            this.cbLayerRepairLayersIslands.Location = new System.Drawing.Point(6, 96);
+            this.cbLayerRepairLayersIslands.Name = "cbLayerRepairLayersIslands";
+            this.cbLayerRepairLayersIslands.Size = new System.Drawing.Size(257, 22);
+            this.cbLayerRepairLayersIslands.TabIndex = 15;
+            this.cbLayerRepairLayersIslands.Text = "Repair layers and islands by default";
+            this.cbLayerRepairLayersIslands.UseVisualStyleBackColor = true;
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.btnCancel);
+            this.panel1.Controls.Add(this.btnSave);
+            this.panel1.Controls.Add(this.btnReset);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel1.Location = new System.Drawing.Point(0, 452);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(624, 77);
+            this.panel1.TabIndex = 19;
+            // 
+            // nmLayerRepairRemoveIslandsBelowEqualPixelsDefault
+            // 
+            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.Location = new System.Drawing.Point(6, 66);
+            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.Maximum = new decimal(new int[] {
             255,
             0,
             0,
             0});
-            this.nmLayerRepairDefaultOpeningIterations.Name = "nmLayerRepairDefaultOpeningIterations";
-            this.nmLayerRepairDefaultOpeningIterations.Size = new System.Drawing.Size(57, 24);
-            this.nmLayerRepairDefaultOpeningIterations.TabIndex = 32;
-            this.nmLayerRepairDefaultOpeningIterations.Value = new decimal(new int[] {
+            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.Name = "nmLayerRepairRemoveIslandsBelowEqualPixelsDefault";
+            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.Size = new System.Drawing.Size(57, 24);
+            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.TabIndex = 34;
+            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.Value = new decimal(new int[] {
             1,
             0,
             0,
             0});
             // 
-            // label34
+            // label35
             // 
-            this.label34.AutoSize = true;
-            this.label34.Location = new System.Drawing.Point(69, 39);
-            this.label34.Name = "label34";
-            this.label34.Size = new System.Drawing.Size(215, 18);
-            this.label34.TabIndex = 33;
-            this.label34.Text = "Noise removal default iterations";
+            this.label35.AutoSize = true;
+            this.label35.Location = new System.Drawing.Point(69, 69);
+            this.label35.Name = "label35";
+            this.label35.Size = new System.Drawing.Size(357, 18);
+            this.label35.TabIndex = 35;
+            this.label35.Text = "Remove islands below or equal to pixels default value";
             // 
             // FrmSettings
             // 
@@ -1598,11 +1629,12 @@
             this.tabPage3.ResumeLayout(false);
             this.tabPage4.ResumeLayout(false);
             this.tabPage4.PerformLayout();
-            this.panel1.ResumeLayout(false);
             this.tabPage5.ResumeLayout(false);
             this.tabPage5.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultClosingIterations)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultOpeningIterations)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultClosingIterations)).EndInit();
+            this.panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1719,5 +1751,7 @@
         private System.Windows.Forms.Label label33;
         private System.Windows.Forms.NumericUpDown nmLayerRepairDefaultOpeningIterations;
         private System.Windows.Forms.Label label34;
+        private System.Windows.Forms.NumericUpDown nmLayerRepairRemoveIslandsBelowEqualPixelsDefault;
+        private System.Windows.Forms.Label label35;
     }
 }

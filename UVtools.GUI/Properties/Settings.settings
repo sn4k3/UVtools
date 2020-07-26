@@ -161,5 +161,8 @@
     <Setting Name="LayerRepairRemoveEmptyLayers" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="LayerRepairRemoveIslandsBelowEqualPixelsDefault" Type="System.Byte" Scope="User">
+      <Value Profile="(Default)">10</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

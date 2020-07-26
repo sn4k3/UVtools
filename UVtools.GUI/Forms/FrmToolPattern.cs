@@ -67,13 +67,15 @@ namespace UVtools.GUI.Forms
         #endregion
 
         #region Constructors
-        public FrmToolPattern(Rectangle srcRoi, uint imageWidth, uint imageHeight)
+        public FrmToolPattern(Rectangle srcRoi, uint imageWidth, uint imageHeight) : this(new OperationPattern(srcRoi, imageWidth, imageHeight)) {}
+
+        public FrmToolPattern(OperationPattern operation)
         {
             InitializeComponent();
-            _operation = new OperationPattern(srcRoi, imageWidth, imageHeight);
+            _operation = operation;
             DialogResult = DialogResult.Cancel;
 
-            nmLayerRangeEnd.Value = Program.SlicerFile.LayerCount-1;
+            nmLayerRangeEnd.Value = Program.SlicerFile.LayerCount - 1;
 
             EventClick(btnResetDefaults, null);
             //EventValueChanged(this, null);

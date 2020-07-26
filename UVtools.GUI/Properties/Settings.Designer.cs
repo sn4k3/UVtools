@@ -658,5 +658,17 @@ namespace UVtools.GUI.Properties {
                 this["LayerRepairRemoveEmptyLayers"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public byte LayerRepairRemoveIslandsBelowEqualPixelsDefault {
+            get {
+                return ((byte)(this["LayerRepairRemoveIslandsBelowEqualPixelsDefault"]));
+            }
+            set {
+                this["LayerRepairRemoveIslandsBelowEqualPixelsDefault"] = value;
+            }
+        }
     }
 }

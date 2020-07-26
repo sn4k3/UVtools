@@ -119,7 +119,9 @@
             this.tsPropertiesLabelCount = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.tsPropertiesLabelGroups = new System.Windows.Forms.ToolStripLabel();
-            this.tsPropertiesButtonSave = new System.Windows.Forms.ToolStripButton();
+            this.tsPropertiesExport = new System.Windows.Forms.ToolStripSplitButton();
+            this.tsPropertiesExportFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsPropertiesExportClipboard = new System.Windows.Forms.ToolStripMenuItem();
             this.tabPageGCode = new System.Windows.Forms.TabPage();
             this.tbGCode = new System.Windows.Forms.TextBox();
             this.tsGCode = new System.Windows.Forms.ToolStrip();
@@ -581,7 +583,6 @@
             this.pbLayer.ShowPixelGrid = true;
             this.pbLayer.Size = new System.Drawing.Size(1228, 675);
             this.pbLayer.TabIndex = 7;
-            this.pbLayer.PanEnd += new System.EventHandler(this.pbLayer_PanEnd);
             this.pbLayer.Zoomed += new System.EventHandler<Cyotek.Windows.Forms.ImageBoxZoomEventArgs>(this.pbLayer_Zoomed);
             this.pbLayer.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.EventMouseDoubleClick);
             this.pbLayer.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseMove);
@@ -1106,7 +1107,7 @@
             this.tsPropertiesLabelCount,
             this.toolStripSeparator4,
             this.tsPropertiesLabelGroups,
-            this.tsPropertiesButtonSave});
+            this.tsPropertiesExport});
             this.tsProperties.Location = new System.Drawing.Point(0, 0);
             this.tsProperties.Name = "tsProperties";
             this.tsProperties.Size = new System.Drawing.Size(380, 25);
@@ -1130,18 +1131,37 @@
             this.tsPropertiesLabelGroups.Size = new System.Drawing.Size(45, 22);
             this.tsPropertiesLabelGroups.Text = "Groups";
             // 
-            // tsPropertiesButtonSave
+            // tsPropertiesExport
             // 
-            this.tsPropertiesButtonSave.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsPropertiesButtonSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsPropertiesButtonSave.Enabled = false;
-            this.tsPropertiesButtonSave.Image = global::UVtools.GUI.Properties.Resources.Save_16x16;
-            this.tsPropertiesButtonSave.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsPropertiesButtonSave.Name = "tsPropertiesButtonSave";
-            this.tsPropertiesButtonSave.Size = new System.Drawing.Size(23, 22);
-            this.tsPropertiesButtonSave.Text = "Save Thumbnail";
-            this.tsPropertiesButtonSave.ToolTipText = "Save properties to a file";
-            this.tsPropertiesButtonSave.Click += new System.EventHandler(this.EventClick);
+            this.tsPropertiesExport.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsPropertiesExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsPropertiesExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsPropertiesExportFile,
+            this.tsPropertiesExportClipboard});
+            this.tsPropertiesExport.Enabled = false;
+            this.tsPropertiesExport.Image = global::UVtools.GUI.Properties.Resources.Save_16x16;
+            this.tsPropertiesExport.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsPropertiesExport.Name = "tsPropertiesExport";
+            this.tsPropertiesExport.Size = new System.Drawing.Size(32, 22);
+            this.tsPropertiesExport.Text = "Save to";
+            this.tsPropertiesExport.ToolTipText = "Save properties to a file or clipboard";
+            this.tsPropertiesExport.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsPropertiesExportFile
+            // 
+            this.tsPropertiesExportFile.Image = global::UVtools.GUI.Properties.Resources.file_image_16x16;
+            this.tsPropertiesExportFile.Name = "tsPropertiesExportFile";
+            this.tsPropertiesExportFile.Size = new System.Drawing.Size(180, 22);
+            this.tsPropertiesExportFile.Text = "To &File";
+            this.tsPropertiesExportFile.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsPropertiesExportClipboard
+            // 
+            this.tsPropertiesExportClipboard.Image = global::UVtools.GUI.Properties.Resources.clipboard_16x16;
+            this.tsPropertiesExportClipboard.Name = "tsPropertiesExportClipboard";
+            this.tsPropertiesExportClipboard.Size = new System.Drawing.Size(180, 22);
+            this.tsPropertiesExportClipboard.Text = "To &Clipboard";
+            this.tsPropertiesExportClipboard.Click += new System.EventHandler(this.EventClick);
             // 
             // tabPageGCode
             // 
@@ -1241,6 +1261,7 @@
             this.lvIssues.TabIndex = 8;
             this.lvIssues.UseCompatibleStateImageBehavior = false;
             this.lvIssues.View = System.Windows.Forms.View.Details;
+            this.lvIssues.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.EventColumnClick);
             this.lvIssues.ItemActivate += new System.EventHandler(this.EventItemActivate);
             this.lvIssues.SelectedIndexChanged += new System.EventHandler(this.EventSelectedIndexChanged);
             this.lvIssues.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
@@ -2180,7 +2201,6 @@
         private System.Windows.Forms.ToolStripLabel tsPropertiesLabelCount;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripLabel tsPropertiesLabelGroups;
-        private System.Windows.Forms.ToolStripButton tsPropertiesButtonSave;
         private System.Windows.Forms.ToolStripMenuItem menuFileOpenNewWindow;
         private System.Windows.Forms.ToolStripButton tsLayerImageRotate;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
@@ -2303,6 +2323,9 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator21;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator22;
         private System.Windows.Forms.ToolStripMenuItem menuToolsLayerReHeight;
+        private System.Windows.Forms.ToolStripSplitButton tsPropertiesExport;
+        private System.Windows.Forms.ToolStripMenuItem tsPropertiesExportFile;
+        private System.Windows.Forms.ToolStripMenuItem tsPropertiesExportClipboard;
     }
 }
 

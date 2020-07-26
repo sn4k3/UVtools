@@ -53,11 +53,15 @@ namespace UVtools.GUI.Forms
             this.cbRepairResinTraps = new System.Windows.Forms.CheckBox();
             this.btnLayerRangeSelect = new UVtools.GUI.Controls.SplitButton();
             this.cbRemoveEmptyLayers = new System.Windows.Forms.CheckBox();
+            this.nmRemoveIslandsBelowEqualPixels = new System.Windows.Forms.NumericUpDown();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numClosingIterations)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeEnd)).BeginInit();
             this.cmLayerRange.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numOpeningIterations)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmRemoveIslandsBelowEqualPixels)).BeginInit();
             this.SuspendLayout();
             // 
             // lbDescription
@@ -193,7 +197,7 @@ namespace UVtools.GUI.Forms
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Image = global::UVtools.GUI.Properties.Resources.Cancel_24x24;
             this.btnCancel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnCancel.Location = new System.Drawing.Point(447, 278);
+            this.btnCancel.Location = new System.Drawing.Point(447, 286);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(150, 48);
@@ -208,7 +212,7 @@ namespace UVtools.GUI.Forms
             this.btnRepair.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnRepair.Image = global::UVtools.GUI.Properties.Resources.Ok_24x24;
             this.btnRepair.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnRepair.Location = new System.Drawing.Point(289, 278);
+            this.btnRepair.Location = new System.Drawing.Point(289, 286);
             this.btnRepair.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnRepair.Name = "btnRepair";
             this.btnRepair.Size = new System.Drawing.Size(150, 48);
@@ -297,12 +301,45 @@ namespace UVtools.GUI.Forms
             this.cbRemoveEmptyLayers.Text = "Remove empty layers";
             this.cbRemoveEmptyLayers.UseVisualStyleBackColor = true;
             // 
+            // nmRemoveIslandsBelowEqual
+            // 
+            this.nmRemoveIslandsBelowEqualPixels.Location = new System.Drawing.Point(505, 245);
+            this.nmRemoveIslandsBelowEqualPixels.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+            this.nmRemoveIslandsBelowEqualPixels.Name = "nmRemoveIslandsBelowEqualPixels";
+            this.nmRemoveIslandsBelowEqualPixels.Size = new System.Drawing.Size(58, 26);
+            this.nmRemoveIslandsBelowEqualPixels.TabIndex = 21;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(248, 248);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(249, 20);
+            this.label2.TabIndex = 22;
+            this.label2.Text = "Remove islands below or equal to:";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(569, 248);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(25, 20);
+            this.label3.TabIndex = 23;
+            this.label3.Text = "px";
+            // 
             // FrmRepairLayers
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(606, 340);
+            this.ClientSize = new System.Drawing.Size(606, 348);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.nmRemoveIslandsBelowEqualPixels);
             this.Controls.Add(this.cbRemoveEmptyLayers);
             this.Controls.Add(this.cbRepairResinTraps);
             this.Controls.Add(this.numOpeningIterations);
@@ -335,6 +372,7 @@ namespace UVtools.GUI.Forms
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeEnd)).EndInit();
             this.cmLayerRange.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.numOpeningIterations)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmRemoveIslandsBelowEqualPixels)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -363,5 +401,8 @@ namespace UVtools.GUI.Forms
         private System.Windows.Forms.NumericUpDown numOpeningIterations;
         private System.Windows.Forms.CheckBox cbRepairResinTraps;
         private System.Windows.Forms.CheckBox cbRemoveEmptyLayers;
+        private System.Windows.Forms.NumericUpDown nmRemoveIslandsBelowEqualPixels;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label3;
     }
 }

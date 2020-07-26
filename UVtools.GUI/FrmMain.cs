@@ -26,6 +26,7 @@ using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
+using UVtools.GUI.Controls;
 using UVtools.GUI.Forms;
 using UVtools.GUI.Properties;
 
@@ -142,6 +143,8 @@ namespace UVtools.GUI
 
         public uint SavesCount { get; set; } = 0;
 
+        private readonly ListViewColumnSorter lvIssuesColumnSorter;
+
         #endregion
 
         #region Constructors
@@ -205,6 +208,9 @@ namespace UVtools.GUI
             cbPixelEditorBrushShape.SelectedIndex = 0;
 
             tbLayer.MouseWheel += TbLayerOnMouseWheel;
+
+            lvIssuesColumnSorter = new ListViewColumnSorter();
+            this.lvIssues.ListViewItemSorter = lvIssuesColumnSorter;
 
             if (Settings.Default.CheckForUpdatesOnStartup)
             {
@@ -694,6 +700,7 @@ namespace UVtools.GUI
                     uint layerEnd;
                     uint closingIterations;
                     uint openingIterations;
+                    byte removeIslandsBelowEqualPixels;
                     bool repairIslands;
                     bool removeEmptyLayers;
                     bool repairResinTraps;
@@ -705,17 +712,23 @@ namespace UVtools.GUI
                         layerEnd = frmRepairLayers.LayerRangeEnd;
                         closingIterations = frmRepairLayers.ClosingIterations;
                         openingIterations = frmRepairLayers.OpeningIterations;
+                        removeIslandsBelowEqualPixels = frmRepairLayers.RemoveIslandsBelowEqualPixels;
                         repairIslands = frmRepairLayers.RepairIslands;
                         removeEmptyLayers = frmRepairLayers.RemoveEmptyLayers;
                         repairResinTraps = frmRepairLayers.RepairResinTraps;
                     }
 
-                    if (repairResinTraps && ReferenceEquals(Issues, null))
+                    if (ReferenceEquals(Issues, null))
                     {
-                        ComputeIssues(new IslandDetectionConfiguration
-                            {Enabled = false}); // Ignore islands as we dont require it
-                    }
+                        var islandConfig = GetIslandDetectionConfiguration();
+                        islandConfig.Enabled = repairIslands && removeIslandsBelowEqualPixels > 0;
+                        var resinTrapConfig = GetResinTrapDetectionConfiguration();
+                        resinTrapConfig.Enabled = repairResinTraps;
 
+                        if(islandConfig.Enabled || resinTrapConfig.Enabled)
+                            ComputeIssues(islandConfig, resinTrapConfig);
+                    }
+                    
                     DisableGUI();
                     FrmLoading.SetDescription("Repairing Layers and Issues");
 
@@ -724,7 +737,7 @@ namespace UVtools.GUI
                         try
                         {
                             SlicerFile.LayerManager.RepairLayers(layerStart, layerEnd, closingIterations,
-                                openingIterations, repairIslands, removeEmptyLayers, repairResinTraps, Issues,
+                                openingIterations, removeIslandsBelowEqualPixels, repairIslands, removeEmptyLayers, repairResinTraps, Issues,
                                 FrmLoading.RestartProgress());
                         }
                         catch (OperationCanceledException)
@@ -859,8 +872,17 @@ namespace UVtools.GUI
 
                 if (ReferenceEquals(sender, menuToolsPattern))
                 {
-                    using (var frm = new FrmToolPattern(SlicerFile.LayerManager.BoundingRectangle,
-                        (uint) ActualLayerImage.Width, (uint) ActualLayerImage.Height))
+                    OperationPattern operation = new OperationPattern(SlicerFile.LayerManager.BoundingRectangle,
+                        (uint)ActualLayerImage.Width, (uint)ActualLayerImage.Height);
+
+                    if (operation.MaxRows < 2 && operation.MaxCols < 2)
+                    {
+                        MessageBox.Show("The available free volume is not enough to pattern this object.\n" +
+                                        "To run this tool the free space must allow at least 1 copy.", "Unable to pattern", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    using (var frm = new FrmToolPattern(operation))
                     {
                         if (frm.ShowDialog() != DialogResult.OK) return;
 
@@ -1101,7 +1123,13 @@ namespace UVtools.GUI
             /************************
              *   Properties Menu    *
              ***********************/
-            if (ReferenceEquals(sender, tsPropertiesButtonSave))
+            if (ReferenceEquals(sender, tsPropertiesExport))
+            {
+                tsPropertiesExport.ShowDropDown();
+                return;
+            }
+
+            if (ReferenceEquals(sender, tsPropertiesExportFile))
             {
                 using (SaveFileDialog dialog = new SaveFileDialog())
                 {
@@ -1141,6 +1169,24 @@ namespace UVtools.GUI
 
                     return;
                 }
+            }
+
+            if (ReferenceEquals(sender, tsPropertiesExportClipboard))
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (var config in SlicerFile.Configs)
+                {
+                    var type = config.GetType();
+                    sb.AppendLine($"[{type.Name}]");
+                    foreach (var property in type.GetProperties())
+                    {
+                        sb.AppendLine($"{property.Name} = {property.GetValue(config)}");
+                    }
+
+                    sb.AppendLine();
+                }
+                Clipboard.SetText(sb.ToString());
+                return;
             }
 
             /************************
@@ -1714,7 +1760,6 @@ namespace UVtools.GUI
         private void pbLayer_Zoomed(object sender, Cyotek.Windows.Forms.ImageBoxZoomEventArgs e)
         {
             tsLayerImageZoom.Text = $"Zoom: {e.NewZoom}% ({e.NewZoom/100f}x)";
-            pbLayer_PanEnd(pbLayer, null);
         }
 
         private void pbLayer_MouseUp(object sender, MouseEventArgs e)
@@ -3374,9 +3419,36 @@ namespace UVtools.GUI
             };
         }
 
-        private void pbLayer_PanEnd(object sender, EventArgs e)
+
+        private void EventColumnClick(object sender, ColumnClickEventArgs e)
         {
-            //tsLayerImagePanLocation.Text = $"{pbLayer.AutoScrollPosition}";
+            if (ReferenceEquals(sender, lvIssues))
+            {
+                ListView myListView = (ListView)sender;
+
+                // Determine if clicked column is already the column that is being sorted.
+                if (e.Column == lvIssuesColumnSorter.SortColumn)
+                {
+                    // Reverse the current sort direction for this column.
+                    if (lvIssuesColumnSorter.Order == SortOrder.Ascending)
+                    {
+                        lvIssuesColumnSorter.Order = SortOrder.Descending;
+                    }
+                    else
+                    {
+                        lvIssuesColumnSorter.Order = SortOrder.Ascending;
+                    }
+                }
+                else
+                {
+                    // Set the column number that is to be sorted; default to ascending.
+                    lvIssuesColumnSorter.SortColumn = e.Column;
+                    lvIssuesColumnSorter.Order = SortOrder.Ascending;
+                }
+
+                // Perform the sort with these new sort options.
+                myListView.Sort();
+            }
         }
     }
 }

@@ -10,7 +10,9 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using UVtools.Core;
+using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Operations;
 
 namespace UVtools.Cmd
 {
@@ -19,13 +21,14 @@ namespace UVtools.Cmd
         public static async Task<int> Main(params string[] args)
         {
             Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-GB");
+            OperationProgress progress = new OperationProgress();
             Stopwatch sw = new Stopwatch();
             uint count = 0;
             var rootCommand = new RootCommand("MSLA/DLP, file analysis, repair, conversion and manipulation")
             {
                 new Option(new []{"-f", "--file"}, "Input file to read")
                 {
-                    Required = true,
+                    IsRequired = true,
                     Argument = new Argument<FileSystemInfo>("filepath").ExistingOnly()
                 },
                 new Option(new []{"-o", "--output"}, "Output file to save the modifications, if aware, it saves to the same input file")
@@ -38,19 +41,19 @@ namespace UVtools.Cmd
                 },
                 new Option(new []{"-c", "--convert"}, "Converts input into a output file format by it extension")
                 {
-                    Argument = new Argument<FileSystemInfo>("filepath")
+                    Argument = new Argument<FileSystemInfo>("filepath"),
                 },
 
                 new Option(new []{"-p", "--properties"}, "Print a list of all properties/settings"),
                 new Option(new []{"-gcode"}, "Print the GCode if available"),
                 new Option(new []{"-i", "--issues"}, "Compute and print a list of all issues"),
                 new Option(new []{"-r", "--repair"}, "Attempt to repair all issues"){
-                    Argument = new Argument<int[]>("[start layer index] [end layer index]")
+                    Argument = new Argument<int[]>("[start layer index] [end layer index] [islands 0/1] [remove empty layers 0/1] [resin traps 0/1]"),
                 },
 
                 new Option(new []{"-mr", "--mut-resize"}, "Resizes layer images in a X and/or Y factor, starting from 100% value")
                 {
-                    Argument = new Argument<double[]>("[x%] [y%] [start layer index] [end layer index] [fade 0/1]")
+                    Argument = new Argument<decimal[]>("[x%] [y%] [start layer index] [end layer index] [fade 0/1]")
                 },
                 new Option(new []{"-ms", "--mut-solidify"}, "Closes all inner holes")
                 {
@@ -77,7 +80,7 @@ namespace UVtools.Cmd
                     Argument = new Argument<uint[]>("[kernel size] [start layer index] [end layer index] [fade 0/1]")
                 },
                 
-                new Option(new []{"-mpy", "--mut-py"}, "Performs downsampling step of Gaussian pyramid decomposition")
+                new Option(new []{"-mpy", "--mut-py"}, "Performs down-sampling step of Gaussian pyramid decomposition")
                 {
                     Argument = new Argument<uint[]>("[start layer index] [end layer index]")
                 },
@@ -99,7 +102,8 @@ namespace UVtools.Cmd
                     bool properties,
                     bool gcode,
                     bool issues,
-                    bool repair
+                    int[] repair
+                    //decimal[] mutResize
                     ) =>
             {
                 var fileFormat = FileFormat.FindByExtension(file.FullName, true, true);
@@ -111,7 +115,7 @@ namespace UVtools.Cmd
                 {
                     Console.Write($"Reading: {file}");
                     sw.Restart();
-                    fileFormat.Decode(file.FullName);
+                    fileFormat.Decode(file.FullName, progress);
                     sw.Stop();
                     Console.WriteLine($", in {sw.ElapsedMilliseconds}ms");
                     Console.WriteLine("----------------------");
@@ -135,7 +139,7 @@ namespace UVtools.Cmd
                 {
                     Console.Write($"Extracting to {extract.FullName}");
                     sw.Restart();
-                    fileFormat.Extract(extract.FullName);
+                    fileFormat.Extract(extract.FullName, true, true, progress);
                     sw.Stop();
                     Console.WriteLine($", finished in {sw.ElapsedMilliseconds}ms");
                 }
@@ -183,7 +187,7 @@ namespace UVtools.Cmd
                 {
                     Console.WriteLine("Computing Issues, please wait.");
                     sw.Restart();
-                    var issuesDict = fileFormat.LayerManager.GetAllIssues();
+                    var issuesDict = fileFormat.LayerManager.GetAllIssues(null, null, progress);
                     sw.Stop();
                     
                     Console.WriteLine("Issues:");
@@ -217,7 +221,7 @@ namespace UVtools.Cmd
                         try
                         {
                             sw.Restart();
-                            fileFormat.Convert(fileConvert, convert.FullName);
+                            fileFormat.Convert(fileConvert, convert.FullName, progress);
                             sw.Stop();
                             Console.WriteLine($"Convertion done in {sw.ElapsedMilliseconds}ms");
                         }
@@ -230,12 +234,22 @@ namespace UVtools.Cmd
                     
                 }
 
+                if (!ReferenceEquals(repair, null))
+                {
+                    uint layerStartIndex = (uint) (repair.Length >= 1 ? Math.Max(0, repair[0]) : 0);
+                    uint layerEndIndex = repair.Length >= 2 ? (uint) repair[1].Clamp(0, (int) (fileFormat.LayerCount - 1)) : fileFormat.LayerCount-1;
+                    bool repairIslands = repair.Length < 3 || repair[2] > 0 || repair[2] < 0;
+                    bool removeEmptyLayers = repair.Length < 4 || repair[3] > 0 || repair[3] < 0;
+                    bool repairResinTraps = repair.Length < 5 || repair[4] > 0 || repair[4] < 0;
+
+                    fileFormat.LayerManager.RepairLayers(layerStartIndex, layerEndIndex, 2, 1, 4, repairIslands, removeEmptyLayers, repairResinTraps, null, progress);
+                }
                 
             });
 
 
-            await rootCommand.InvokeAsync(args);
-            //await rootCommand.InvokeAsync("-f body_Tough0.1mm_SL1_5h16m_HOLLOW_DRAIN.sl1 -i");
+            //await rootCommand.InvokeAsync(args);
+            await rootCommand.InvokeAsync("-f body_Tough0.1mm_SL1_5h16m_HOLLOW_DRAIN.sl1 -r -1");
 
             return 1;
 

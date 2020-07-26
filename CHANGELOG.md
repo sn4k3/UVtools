@@ -1,5 +1,13 @@
 # Changelog
 
+## 26/07/2020 - v0.6.3.3
+
+* (Add) Allow to save properties to clipboard
+* (Add) Tool: Layer Repair - Allow remove islands below or equal to a pixel count (Suggested by: Nicholas Taylor)
+* (Add) Issues: Allow sort columns by click them (Suggested by: Nicholas Taylor)
+* (Improvement) Tool: Pattern - Prevent open this tool when unable to pattern due lack of space
+* (Fix) Tool: Layer Repair - When issues are not caculated before, they are computed but user settings are ignored
+
 ## 24/07/2020 - v0.6.3.2
 
 * (Add) Tool: Layer Re-Height - Allow change layer height
@@ -179,7 +187,7 @@
 
 ## 17/06/2020 - v0.5.1.2
 
-* (Add) Able to install only the desired profiles and not the whole lot (Suggested  by: Ingo Strohmenger)
+* (Add) Able to install only the desired profiles and not the whole lot (Suggested by: Ingo Strohmenger)
 * (Add) Update manager for PrusaSlicer profiles
 * (Add) If PrusaSlicer not installed on system it prompt for installation (By open the official website)
 * (Fix) Prevent profiles instalation when PrusaSlicer is not installed on system
