@@ -1,5 +1,15 @@
 # Changelog
 
+## 28/07/2020 - v0.6.3.4
+
+* (Add) Mutator: Threshold pixels
+* (Change) Mutator: PyrDownUp - Name to "Big Blur" and add better description of the effect
+* (Change) Mutator: SmoothMedian - Better description
+* (Change) Mutator: SmoothGaussian - Better description
+* (Fix) Tool: Layer Re-Height - When go lower heights the pixels count per layer statistics are lost
+* (Fix) "Pixel Edit" has the old tooltip text (#14)
+* (Fix) Readme: Text fixes (#14)
+
 ## 26/07/2020 - v0.6.3.3
 
 * (Add) Allow to save properties to clipboard

@@ -159,6 +159,12 @@
     <Compile Include="Forms\FrmInstallPEProfiles.Designer.cs">
       <DependentUpon>FrmInstallPEProfiles.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\FrmMutationThreshold.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmMutationThreshold.Designer.cs">
+      <DependentUpon>FrmMutationThreshold.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\FrmMutationPixelDimming.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -258,6 +264,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmInstallPEProfiles.resx">
       <DependentUpon>FrmInstallPEProfiles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmMutationThreshold.resx">
+      <DependentUpon>FrmMutationThreshold.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmMutationPixelDimming.resx">
       <DependentUpon>FrmMutationPixelDimming.cs</DependentUpon>

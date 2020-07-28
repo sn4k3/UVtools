@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO.Compression;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -35,7 +36,7 @@ namespace UVtools.Core
         /// <summary>
         /// Gets the number of non zero pixels on this layer image
         /// </summary>
-        public uint NonZeroPixelCount { get; private protected set; }
+        public uint NonZeroPixelCount { get; internal set; }
 
         /// <summary>
         /// Gets the bounding rectangle for the image area
@@ -718,6 +719,15 @@ namespace UVtools.Core
             using (Mat dst = LayerMat)
             {
                 CvInvoke.MorphologyEx(dst, dst, MorphOp.Gradient, kernel, anchor, iterations, borderType, borderValue);
+                LayerMat = dst;
+            }
+        }
+
+        public void MutateThresholdPixels(byte threshold, byte maximum, ThresholdType thresholdType)
+        {
+            using (Mat dst = LayerMat)
+            {
+                CvInvoke.Threshold(dst, dst, threshold, maximum, thresholdType);
                 LayerMat = dst;
             }
         }

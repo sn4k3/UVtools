@@ -37,7 +37,6 @@ namespace UVtools.Core
             Rotate,
             Solidify,
             PixelDimming,
-            //LayerSmash,
             Erode,
             Dilate,
             Opening,
@@ -46,6 +45,7 @@ namespace UVtools.Core
             TopHat,
             BlackHat,
             HitMiss,
+            ThresholdPixels,
             PyrDownUp,
             SmoothMedian,
             SmoothGaussian,
@@ -53,7 +53,7 @@ namespace UVtools.Core
         #endregion
 
         #region Properties
-        public FileFormats.FileFormat SlicerFile { get; private set; }
+        public FileFormat SlicerFile { get; private set; }
 
         /// <summary>
         /// Layers List
@@ -612,6 +612,22 @@ namespace UVtools.Core
                 if (progress.Token.IsCancellationRequested) return;
                 int iterations = MutateGetIterationVar(isFade, iterationsStart, iterationsEnd, iterationSteps, maxIteration, startLayerIndex, (uint)layerIndex);
                 this[layerIndex].MutateGradient(iterations, kernel, anchor, borderType, borderValue);
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+            progress.Token.ThrowIfCancellationRequested();
+        }
+
+        public void MutateThresholdPixels(uint startLayerIndex, uint endLayerIndex, byte threshold, byte maximum, ThresholdType thresholdType, OperationProgress progress)
+        {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Thresholding", endLayerIndex - startLayerIndex + 1);
+            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+                this[layerIndex].MutateThresholdPixels(threshold, maximum, thresholdType);
                 lock (progress.Mutex)
                 {
                     progress++;
@@ -1480,6 +1496,8 @@ namespace UVtools.Core
                                 PositionZ = (float) (operation.LayerHeight * (newLayerIndex + 1)),
                                 ExposureTime = oldLayer.ExposureTime,
                                 BoundingRectangle = oldLayer.BoundingRectangle,
+                                NonZeroPixelCount = oldLayer.NonZeroPixelCount
+                                
                             };
                         newLayerIndex++;
                         progress++;

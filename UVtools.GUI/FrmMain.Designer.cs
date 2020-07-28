@@ -870,8 +870,7 @@
             this.tsLayerImagePixelEdit.Name = "tsLayerImagePixelEdit";
             this.tsLayerImagePixelEdit.Size = new System.Drawing.Size(75, 22);
             this.tsLayerImagePixelEdit.Text = "Pixel &Edit";
-            this.tsLayerImagePixelEdit.ToolTipText = "Edit layer image pixels (Righ click to add pixel and SHIFT + Right click to remov" +
-    "e pixel)\r\nRed pixels are removed pixels\r\nGreen pixels are added pixels";
+            this.tsLayerImagePixelEdit.ToolTipText = "Edit layer image: Draw pixels, add supports and/or drain holes";
             this.tsLayerImagePixelEdit.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator18
@@ -1151,7 +1150,7 @@
             // 
             this.tsPropertiesExportFile.Image = global::UVtools.GUI.Properties.Resources.file_image_16x16;
             this.tsPropertiesExportFile.Name = "tsPropertiesExportFile";
-            this.tsPropertiesExportFile.Size = new System.Drawing.Size(180, 22);
+            this.tsPropertiesExportFile.Size = new System.Drawing.Size(141, 22);
             this.tsPropertiesExportFile.Text = "To &File";
             this.tsPropertiesExportFile.Click += new System.EventHandler(this.EventClick);
             // 
@@ -1159,7 +1158,7 @@
             // 
             this.tsPropertiesExportClipboard.Image = global::UVtools.GUI.Properties.Resources.clipboard_16x16;
             this.tsPropertiesExportClipboard.Name = "tsPropertiesExportClipboard";
-            this.tsPropertiesExportClipboard.Size = new System.Drawing.Size(180, 22);
+            this.tsPropertiesExportClipboard.Size = new System.Drawing.Size(141, 22);
             this.tsPropertiesExportClipboard.Text = "To &Clipboard";
             this.tsPropertiesExportClipboard.Click += new System.EventHandler(this.EventClick);
             // 

@@ -109,7 +109,7 @@ But also, i need victims for test subject. Proceed at your own risk!
     * Choose SL1 printer
 1. Close PrusaSlicer
 1. Open UVtools if not already
-   * Under Menu click -> About -> Install profiles into PrusaSlicer
+   * Under Menu click -> Help -> Install profiles into PrusaSlicer
 1. Open PrusaSlicer and check if profiles are there
 1. To clean up interface remove printers that you will not use (OPTIONAL)
 1. Duplicate and/or create your printer and tune the values if required
@@ -149,7 +149,7 @@ There are multiple ways to open your file:
 
 ## Library -> Developers
 
-Are you a developer? This project include a .NET Core library (PrusaSL1Reader) that can be referenced in your application to make use of my work. Easy to use calls that allow you work with the formats. For more information navigate main code.
+Are you a developer? This project include a .NET Standard library (UVtools.Core) that can be referenced in your application to make use of my work. Easy to use calls that allow you work with the formats. For more information navigate main code.
 
 
 ## TODO

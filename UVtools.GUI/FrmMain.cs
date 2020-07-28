@@ -102,19 +102,29 @@ namespace UVtools.GUI
                     "The Hit-or-Miss transformation is useful to find patterns in binary images. In particular, it finds those pixels whose neighbourhood matches the shape of a first structuring element B1 while not matching the shape of a second structuring element B2 at the same time.",
                     null
                 )},*/
-                {LayerManager.Mutate.PyrDownUp, new Mutation(LayerManager.Mutate.PyrDownUp, null,
-                    "Performs downsampling step of Gaussian pyramid decomposition.\n" +
-                    "First it convolves image with the specified filter and then downsamples the image by rejecting even rows and columns.\n" +
-                    "After performs up-sampling step of Gaussian pyramid decomposition\n"
+                {LayerManager.Mutate.ThresholdPixels, new Mutation(LayerManager.Mutate.ThresholdPixels, "Threshold Pixels",
+                    "Manipulates pixels values giving a threshold, maximum and a operation type.\n" +
+                    "If a pixel brightness is less or equal to the threshold value, set this pixel to 0, otherwise set to defined maximum value.\n" +
+                    "More info: https://docs.opencv.org/master/d7/d4d/tutorial_py_thresholding.html"
+                )},
+                {LayerManager.Mutate.PyrDownUp, new Mutation(LayerManager.Mutate.PyrDownUp, "Big Blur",
+                    "Performs down/up-sampling step of Gaussian pyramid decomposition.\n" +
+                    "First down-samples the image by rejecting even rows and columns, after performs up-sampling step of Gaussian pyramid decomposition.\n" +
+                    "This operation will add a big blur to edges, creating a over-exaggerated anti-aliasing and as result can make edges smoother\n" +
+                    "Note: Printer must support AntiAliasing on firmware to able to use this function."
                 )},
                 {LayerManager.Mutate.SmoothMedian, new Mutation(LayerManager.Mutate.SmoothMedian, "Smooth Median",
-                    "Each pixel becomes the median of its surrounding pixels. Also a good way to remove noise.\n" +
-                    "Note: Iterations must be a odd number."
+                    "Each pixel becomes the median of its surrounding pixels.\n" +
+                    "A good way to remove noise and can be used to reconstruct or intensify the antialiasing level.\n" +
+                    "Note 1: Printer must support AntiAliasing on firmware to able to use this function.\n" +
+                    "Note 2: Iterations must be a odd number."
                 )},
                 {LayerManager.Mutate.SmoothGaussian, new Mutation(LayerManager.Mutate.SmoothGaussian,  "Smooth Gaussian",
                     "Each pixel is a sum of fractions of each pixel in its neighborhood\n" +
+                    "A good way to remove noise and can be used to reconstruct or intensify the antialiasing level.\n" +
                     "Very fast, but does not preserve sharp edges well.\n" +
-                    "Note: Iterations must be a odd number."
+                    "Note 1: Printer must support AntiAliasing on firmware to able to use this function.\n" +
+                    "Note 2: Iterations must be a odd number."
                 )},
             };
 
@@ -161,7 +171,6 @@ namespace UVtools.GUI
                 Settings.Default.UpdateSettings = false;
                 Settings.Default.Save();
             }
-
             Clear();
 
             tsLayerImageLayerDifference.Checked = Settings.Default.LayerDifferenceDefault;
@@ -3075,6 +3084,8 @@ namespace UVtools.GUI
             uint iterationsEnd = 0;
             bool fade = false;
 
+            ThresholdType thresholdType = ThresholdType.Binary;
+
             OperationMove operationMove = null;
 
             double x = 0;
@@ -3135,6 +3146,17 @@ namespace UVtools.GUI
                         iterationsStart = inputBox.BorderSize;
                         evenPattern = inputBox.EvenPattern;
                         oddPattern = inputBox.OddPattern;
+                    }
+                    break;
+                case LayerManager.Mutate.ThresholdPixels:
+                    using (FrmMutationThreshold inputBox = new FrmMutationThreshold(Mutations[mutator]))
+                    {
+                        if (inputBox.ShowDialog() != DialogResult.OK) return;
+                        layerStart = inputBox.LayerRangeStart;
+                        layerEnd = inputBox.LayerRangeEnd;
+                        iterationsStart = inputBox.Threshold;
+                        iterationsEnd = inputBox.Maximum;
+                        thresholdType = inputBox.ThresholdTypeValue;
                     }
                     break;
                 default:
@@ -3225,6 +3247,9 @@ namespace UVtools.GUI
                             CvInvoke.MorphologyEx(image, image, MorphOp.HitMiss, Program.KernelFindIsolated,
                                 new Point(-1, -1), (int) iterations, BorderType.Default, new MCvScalar());
                             break;*/
+                        case LayerManager.Mutate.ThresholdPixels:
+                            SlicerFile.LayerManager.MutateThresholdPixels(layerStart, layerEnd, (byte) iterationsStart, (byte) iterationsEnd, thresholdType, progress);
+                            break;
                         case LayerManager.Mutate.PyrDownUp:
                             SlicerFile.LayerManager.MutatePyrDownUp(layerStart, layerEnd, BorderType.Default, progress);
                             break;

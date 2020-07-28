@@ -8,11 +8,11 @@
 
 using System;
 using System.Windows.Forms;
-using UVtools.Core;
+using Emgu.CV.CvEnum;
 
 namespace UVtools.GUI.Forms
 {
-    public partial class FrmMutation : Form
+    public partial class FrmMutationThreshold : Form
     {
         #region Properties
 
@@ -30,79 +30,43 @@ namespace UVtools.GUI.Forms
             set => nmLayerRangeEnd.Value = value;
         }
 
-        public uint Iterations
+        public byte Threshold
         {
-            get => (uint) numIterationsStart.Value;
-            set => numIterationsStart.Value = value;
+            get => (byte)nmThreshold.Value;
+            set => nmThreshold.Value = value;
         }
 
-        public uint IterationsEnd
+        public byte Maximum
         {
-            get => (uint)nmIterationsEnd.Value;
-            set => nmIterationsEnd.Value = value;
+            get => (byte) nmMaximum.Value;
+            set => nmMaximum.Value = value;
         }
 
-        public bool IterationsFade
+        public ThresholdType ThresholdTypeValue
         {
-            get => cbIterationsFade.Checked;
-            set => cbIterationsFade.Checked = value;
+            get => cbThresholdType.SelectedItem is ThresholdType item ? item : ThresholdType.Binary;
+            set => cbThresholdType.SelectedItem = value;
         }
         #endregion
 
         #region Constructors
-
-        public FrmMutation()
+        public FrmMutationThreshold(Mutation mutation)
         {
             InitializeComponent();
-        }
-
-        public FrmMutation(Mutation mutation, uint defaultIterations = 1) : this()
-        {
-            
             Mutation = mutation;
             DialogResult = DialogResult.Cancel;
-
-            if (defaultIterations == 0 ||
-                mutation.Mutate == LayerManager.Mutate.PyrDownUp ||
-                mutation.Mutate == LayerManager.Mutate.Solidify)
-            {
-                lbIterationsStart.Enabled =
-                numIterationsStart.Enabled =
-                lbIterationsStop.Enabled =
-                nmIterationsEnd.Enabled =
-                cbIterationsFade.Enabled =
-                        false;
-            }
-            else
-            {
-                Iterations = defaultIterations;
-                numIterationsStart.Select();
-            }
-
-            if (Mutation.Mutate == LayerManager.Mutate.SmoothGaussian ||
-                Mutation.Mutate == LayerManager.Mutate.SmoothMedian)
-            {
-                lbIterationsStop.Enabled =
-                    nmIterationsEnd.Enabled =
-                        cbIterationsFade.Enabled =
-                            false;
-            }
 
             Text = $"Mutate: {mutation.MenuName}";
             lbDescription.Text = Mutation.Description;
 
-            if (ReferenceEquals(mutation.Image, null))
-            {
-                Width = pbInfo.Location.X+25;
-            }
-            else
-            {
-                pbInfo.Image = mutation.Image;
-                pbInfo.Visible = true;
-            }
-
             nmLayerRangeEnd.Value = Program.SlicerFile.LayerCount-1;
 
+            foreach (var thresholdType in (ThresholdType[])Enum.GetValues(typeof(ThresholdType)))
+            {
+                cbThresholdType.Items.Add(thresholdType);
+            }
+
+            cbThresholdType.SelectedItem = ThresholdType.Binary;
         }
         #endregion
 
@@ -182,6 +146,39 @@ namespace UVtools.GUI.Forms
                 return;
             }
 
+            if (ReferenceEquals(sender, btnPresetFreeUse))
+            {
+                nmThreshold.Enabled =
+                nmMaximum.Enabled =
+                cbThresholdType.Enabled = true;
+                return;
+            }
+
+            if (ReferenceEquals(sender, btnPresetStripAntiAliasing))
+            {
+                ItemClicked(btnPresetFreeUse, e);
+                nmMaximum.Enabled = cbThresholdType.Enabled = false;
+
+                nmThreshold.Value = 127;
+                nmMaximum.Value = 255;
+                cbThresholdType.SelectedItem = ThresholdType.Binary;
+                nmThreshold.Focus();
+                return;
+            }
+
+            if (ReferenceEquals(sender, btnPresetSetPixelsBrightness))
+            {
+                ItemClicked(btnPresetFreeUse, e);
+                nmThreshold.Enabled = cbThresholdType.Enabled = false;
+
+                nmThreshold.Value = 254;
+                nmMaximum.Value = 254;
+                cbThresholdType.SelectedItem = ThresholdType.Binary;
+                nmMaximum.Focus();
+                return;
+            }
+
+
             if (ReferenceEquals(sender, btnMutate))
             {
                 if (!btnMutate.Enabled) return;
@@ -192,30 +189,10 @@ namespace UVtools.GUI.Forms
                     return;
                 }
 
-                if (Mutation.Mutate == LayerManager.Mutate.SmoothGaussian ||
-                    Mutation.Mutate == LayerManager.Mutate.SmoothMedian)
-                {
-                    if (IterationsFade)
-                    {
-                        MessageBox.Show("Smooth doesn't support fading.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-                    if (Iterations % 2 != 1)
-                    {
-                        MessageBox.Show("Iterations must be a odd number.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-                }
-
-                var operationName = string.IsNullOrEmpty(Mutation.MenuName) ? Mutation.Mutate.ToString() : Mutation.MenuName;
-                if (MessageBox.Show($"Are you sure you want to {operationName}?", Text, MessageBoxButtons.YesNo,
+                if (MessageBox.Show($"Are you sure you want to {Mutation.Mutate}?", Text, MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     DialogResult = DialogResult.OK;
-                    if (Iterations <= 0) // Should never happen!
-                    {
-                        DialogResult = DialogResult.Cancel;
-                    }
                     Close();
                 }
 
@@ -229,17 +206,6 @@ namespace UVtools.GUI.Forms
             }
         }
 
-        private void CheckedChanged(object sender, EventArgs e)
-        {
-            if (ReferenceEquals(sender, cbIterationsFade))
-            {
-                lbIterationsStop.Enabled =
-                    nmIterationsEnd.Enabled =
-                        cbIterationsFade.Checked;
-
-                return;
-            }
-        }
         #endregion
 
 
