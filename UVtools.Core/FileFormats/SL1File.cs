@@ -314,9 +314,18 @@ namespace UVtools.Core.FileFormats
         public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = { new System.Drawing.Size(400, 400), new System.Drawing.Size(800, 480) };
         //public override Image<Rgba32>[] Thumbnails { get; set; }
 
-        public override uint ResolutionX => PrinterSettings.DisplayPixelsX;
+        public override uint ResolutionX
+        {
+            get => PrinterSettings.DisplayPixelsX;
+            set => PrinterSettings.DisplayPixelsX = value;
+        }
 
-        public override uint ResolutionY => PrinterSettings.DisplayPixelsY;
+        public override uint ResolutionY
+        {
+            get => PrinterSettings.DisplayPixelsY;
+            set => PrinterSettings.DisplayPixelsY = value;
+        }
+
         public override byte AntiAliasing => (byte) (PrinterSettings.GammaCorrection > 0 ? LookupCustomValue(Keyword_AntiAliasing, 4) : 1);
 
         public override float LayerHeight

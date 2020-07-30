@@ -97,6 +97,9 @@
     <Reference Include="Emgu.CV.Platform.NetStandard, Version=4.3.0.3890, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
       <HintPath>..\packages\Emgu.CV.4.3.0.3890\lib\net461\Emgu.CV.Platform.NetStandard.dll</HintPath>
     </Reference>
+    <Reference Include="ObjectListView, Version=2.9.1.25410, Culture=neutral, PublicKeyToken=b1c5bf581481bcd4, processorArchitecture=MSIL">
+      <HintPath>..\packages\ObjectListView.Official.2.9.2-alpha2\lib\net20\ObjectListView.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -150,6 +153,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controls\ListViewColumnSorter.cs" />
+    <Compile Include="Controls\Log.cs" />
     <Compile Include="Controls\SplitButton.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -170,6 +174,12 @@
     </Compile>
     <Compile Include="Forms\FrmMutationPixelDimming.Designer.cs">
       <DependentUpon>FrmMutationPixelDimming.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FrmToolChangeResolution.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmToolChangeResolution.Designer.cs">
+      <DependentUpon>FrmToolChangeResolution.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\FrmToolLayerReHeight.cs">
       <SubType>Form</SubType>
@@ -270,6 +280,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmMutationPixelDimming.resx">
       <DependentUpon>FrmMutationPixelDimming.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmToolChangeResolution.resx">
+      <DependentUpon>FrmToolChangeResolution.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolLayerReHeight.resx">
       <DependentUpon>FrmToolLayerReHeight.cs</DependentUpon>

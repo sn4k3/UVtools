@@ -82,6 +82,7 @@ namespace UVtools.GUI.Forms
         {
             Text =
             lbDescription.Text = description;
+            Program.FrmMain.AddLog(description);
         }
 
         public void SetProgress(int value)

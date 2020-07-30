@@ -49,6 +49,7 @@
             this.menuMutate = new System.Windows.Forms.ToolStripMenuItem();
             this.menuTools = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsRepairLayers = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuToolsChangeResolution = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsLayerReHeight = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsLayerRemoval = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsPattern = new System.Windows.Forms.ToolStripMenuItem();
@@ -187,6 +188,11 @@
             this.label14 = new System.Windows.Forms.Label();
             this.panel5 = new System.Windows.Forms.Panel();
             this.label12 = new System.Windows.Forms.Label();
+            this.tabPageLog = new System.Windows.Forms.TabPage();
+            this.lvLog = new BrightIdeasSoftware.ObjectListView();
+            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+            this.btnLogClear = new System.Windows.Forms.ToolStripButton();
+            this.lbLogOperations = new System.Windows.Forms.ToolStripLabel();
             this.imageList16x16 = new System.Windows.Forms.ImageList(this.components);
             this.tlRight = new System.Windows.Forms.TableLayoutPanel();
             this.btnPreviousLayer = new System.Windows.Forms.Button();
@@ -237,6 +243,9 @@
             this.tabPage3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorDrainHoleDiameter)).BeginInit();
             this.panel5.SuspendLayout();
+            this.tabPageLog.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.lvLog)).BeginInit();
+            this.toolStrip1.SuspendLayout();
             this.tlRight.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).BeginInit();
@@ -407,6 +416,7 @@
             // 
             this.menuTools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuToolsRepairLayers,
+            this.menuToolsChangeResolution,
             this.menuToolsLayerReHeight,
             this.menuToolsLayerRemoval,
             this.menuToolsPattern});
@@ -426,13 +436,22 @@
             this.menuToolsRepairLayers.Text = "&Repair layers and Issues";
             this.menuToolsRepairLayers.Click += new System.EventHandler(this.EventClick);
             // 
+            // menuToolsChangeResolution
+            // 
+            this.menuToolsChangeResolution.Enabled = false;
+            this.menuToolsChangeResolution.Image = global::UVtools.GUI.Properties.Resources.resize_16x16;
+            this.menuToolsChangeResolution.Name = "menuToolsChangeResolution";
+            this.menuToolsChangeResolution.Size = new System.Drawing.Size(261, 22);
+            this.menuToolsChangeResolution.Text = "Change Re&solution";
+            this.menuToolsChangeResolution.Click += new System.EventHandler(this.EventClick);
+            // 
             // menuToolsLayerReHeight
             // 
             this.menuToolsLayerReHeight.Enabled = false;
             this.menuToolsLayerReHeight.Image = global::UVtools.GUI.Properties.Resources.ladder_16x16;
             this.menuToolsLayerReHeight.Name = "menuToolsLayerReHeight";
             this.menuToolsLayerReHeight.Size = new System.Drawing.Size(261, 22);
-            this.menuToolsLayerReHeight.Text = "Layer Re-Height";
+            this.menuToolsLayerReHeight.Text = "Layer Re-&Height";
             this.menuToolsLayerReHeight.Click += new System.EventHandler(this.EventClick);
             // 
             // menuToolsLayerRemoval
@@ -905,10 +924,12 @@
             this.tabControlLeft.Controls.Add(this.tabPageGCode);
             this.tabControlLeft.Controls.Add(this.tabPageIssues);
             this.tabControlLeft.Controls.Add(this.tabPagePixelEditor);
+            this.tabControlLeft.Controls.Add(this.tabPageLog);
             this.tabControlLeft.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControlLeft.ImageList = this.imageList16x16;
             this.tabControlLeft.ItemSize = new System.Drawing.Size(130, 19);
             this.tabControlLeft.Location = new System.Drawing.Point(3, 3);
+            this.tabControlLeft.Multiline = true;
             this.tabControlLeft.Name = "tabControlLeft";
             this.tabControlLeft.SelectedIndex = 0;
             this.tabControlLeft.Size = new System.Drawing.Size(394, 759);
@@ -919,10 +940,10 @@
             // 
             this.tbpThumbnailsAndInfo.Controls.Add(this.scLeft);
             this.tbpThumbnailsAndInfo.ImageKey = "PhotoInfo-16x16.png";
-            this.tbpThumbnailsAndInfo.Location = new System.Drawing.Point(4, 23);
+            this.tbpThumbnailsAndInfo.Location = new System.Drawing.Point(4, 42);
             this.tbpThumbnailsAndInfo.Name = "tbpThumbnailsAndInfo";
             this.tbpThumbnailsAndInfo.Padding = new System.Windows.Forms.Padding(3);
-            this.tbpThumbnailsAndInfo.Size = new System.Drawing.Size(386, 732);
+            this.tbpThumbnailsAndInfo.Size = new System.Drawing.Size(386, 713);
             this.tbpThumbnailsAndInfo.TabIndex = 0;
             this.tbpThumbnailsAndInfo.Text = "Information";
             this.tbpThumbnailsAndInfo.UseVisualStyleBackColor = true;
@@ -945,7 +966,7 @@
             // 
             this.scLeft.Panel2.Controls.Add(this.lvProperties);
             this.scLeft.Panel2.Controls.Add(this.tsProperties);
-            this.scLeft.Size = new System.Drawing.Size(380, 726);
+            this.scLeft.Size = new System.Drawing.Size(380, 707);
             this.scLeft.SplitterDistance = 425;
             this.scLeft.TabIndex = 4;
             // 
@@ -1083,7 +1104,7 @@
             this.lvProperties.HideSelection = false;
             this.lvProperties.Location = new System.Drawing.Point(0, 25);
             this.lvProperties.Name = "lvProperties";
-            this.lvProperties.Size = new System.Drawing.Size(380, 272);
+            this.lvProperties.Size = new System.Drawing.Size(380, 253);
             this.lvProperties.TabIndex = 1;
             this.lvProperties.UseCompatibleStateImageBehavior = false;
             this.lvProperties.View = System.Windows.Forms.View.Details;
@@ -1167,9 +1188,9 @@
             this.tabPageGCode.Controls.Add(this.tbGCode);
             this.tabPageGCode.Controls.Add(this.tsGCode);
             this.tabPageGCode.ImageKey = "GCode-16x16.png";
-            this.tabPageGCode.Location = new System.Drawing.Point(4, 23);
+            this.tabPageGCode.Location = new System.Drawing.Point(4, 42);
             this.tabPageGCode.Name = "tabPageGCode";
-            this.tabPageGCode.Size = new System.Drawing.Size(386, 732);
+            this.tabPageGCode.Size = new System.Drawing.Size(386, 713);
             this.tabPageGCode.TabIndex = 2;
             this.tabPageGCode.Text = "GCode";
             this.tabPageGCode.UseVisualStyleBackColor = true;
@@ -1182,7 +1203,7 @@
             this.tbGCode.Name = "tbGCode";
             this.tbGCode.ReadOnly = true;
             this.tbGCode.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbGCode.Size = new System.Drawing.Size(386, 707);
+            this.tbGCode.Size = new System.Drawing.Size(386, 688);
             this.tbGCode.TabIndex = 1;
             // 
             // tsGCode
@@ -1232,10 +1253,10 @@
             this.tabPageIssues.Controls.Add(this.lvIssues);
             this.tabPageIssues.Controls.Add(this.tsIssues);
             this.tabPageIssues.ImageKey = "warning-16x16.png";
-            this.tabPageIssues.Location = new System.Drawing.Point(4, 23);
+            this.tabPageIssues.Location = new System.Drawing.Point(4, 42);
             this.tabPageIssues.Name = "tabPageIssues";
             this.tabPageIssues.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageIssues.Size = new System.Drawing.Size(386, 732);
+            this.tabPageIssues.Size = new System.Drawing.Size(386, 713);
             this.tabPageIssues.TabIndex = 3;
             this.tabPageIssues.Text = "Issues";
             this.tabPageIssues.UseVisualStyleBackColor = true;
@@ -1256,7 +1277,7 @@
             this.lvIssues.HideSelection = false;
             this.lvIssues.Location = new System.Drawing.Point(3, 28);
             this.lvIssues.Name = "lvIssues";
-            this.lvIssues.Size = new System.Drawing.Size(380, 701);
+            this.lvIssues.Size = new System.Drawing.Size(380, 682);
             this.lvIssues.TabIndex = 8;
             this.lvIssues.UseCompatibleStateImageBehavior = false;
             this.lvIssues.View = System.Windows.Forms.View.Details;
@@ -1413,10 +1434,10 @@
             this.tabPagePixelEditor.Controls.Add(this.tsPixelEditorHistory);
             this.tabPagePixelEditor.Controls.Add(this.tabControlPixelEditor);
             this.tabPagePixelEditor.ImageKey = "pixel-16x16.png";
-            this.tabPagePixelEditor.Location = new System.Drawing.Point(4, 23);
+            this.tabPagePixelEditor.Location = new System.Drawing.Point(4, 42);
             this.tabPagePixelEditor.Name = "tabPagePixelEditor";
             this.tabPagePixelEditor.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPagePixelEditor.Size = new System.Drawing.Size(386, 732);
+            this.tabPagePixelEditor.Size = new System.Drawing.Size(386, 713);
             this.tabPagePixelEditor.TabIndex = 4;
             this.tabPagePixelEditor.Text = "Pixel Editor";
             this.tabPagePixelEditor.UseVisualStyleBackColor = true;
@@ -1435,7 +1456,7 @@
             this.lvPixelHistory.HideSelection = false;
             this.lvPixelHistory.Location = new System.Drawing.Point(3, 350);
             this.lvPixelHistory.Name = "lvPixelHistory";
-            this.lvPixelHistory.Size = new System.Drawing.Size(380, 379);
+            this.lvPixelHistory.Size = new System.Drawing.Size(380, 360);
             this.lvPixelHistory.TabIndex = 1;
             this.lvPixelHistory.UseCompatibleStateImageBehavior = false;
             this.lvPixelHistory.View = System.Windows.Forms.View.Details;
@@ -1889,6 +1910,64 @@
             this.label12.Text = "Right click to add a vertical drain hole.\r\nNote: This operation can\'t be previewe" +
     "d.";
             // 
+            // tabPageLog
+            // 
+            this.tabPageLog.Controls.Add(this.lvLog);
+            this.tabPageLog.Controls.Add(this.toolStrip1);
+            this.tabPageLog.ImageKey = "log-16x16.png";
+            this.tabPageLog.Location = new System.Drawing.Point(4, 42);
+            this.tabPageLog.Name = "tabPageLog";
+            this.tabPageLog.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageLog.Size = new System.Drawing.Size(386, 713);
+            this.tabPageLog.TabIndex = 5;
+            this.tabPageLog.Text = "Log";
+            this.tabPageLog.UseVisualStyleBackColor = true;
+            // 
+            // lvLog
+            // 
+            this.lvLog.AllowColumnReorder = true;
+            this.lvLog.Cursor = System.Windows.Forms.Cursors.Default;
+            this.lvLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lvLog.FullRowSelect = true;
+            this.lvLog.GridLines = true;
+            this.lvLog.HideSelection = false;
+            this.lvLog.Location = new System.Drawing.Point(3, 28);
+            this.lvLog.Name = "lvLog";
+            this.lvLog.ShowGroups = false;
+            this.lvLog.Size = new System.Drawing.Size(380, 682);
+            this.lvLog.TabIndex = 1;
+            this.lvLog.UseCompatibleStateImageBehavior = false;
+            this.lvLog.View = System.Windows.Forms.View.Details;
+            // 
+            // toolStrip1
+            // 
+            this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.btnLogClear,
+            this.lbLogOperations});
+            this.toolStrip1.Location = new System.Drawing.Point(3, 3);
+            this.toolStrip1.Name = "toolStrip1";
+            this.toolStrip1.Size = new System.Drawing.Size(380, 25);
+            this.toolStrip1.TabIndex = 0;
+            this.toolStrip1.Text = "toolStrip1";
+            // 
+            // btnLogClear
+            // 
+            this.btnLogClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.btnLogClear.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnLogClear.Name = "btnLogClear";
+            this.btnLogClear.Size = new System.Drawing.Size(54, 22);
+            this.btnLogClear.Text = "Clear";
+            this.btnLogClear.ToolTipText = "Clears all operations";
+            this.btnLogClear.Click += new System.EventHandler(this.EventClick);
+            // 
+            // lbLogOperations
+            // 
+            this.lbLogOperations.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.lbLogOperations.Name = "lbLogOperations";
+            this.lbLogOperations.Size = new System.Drawing.Size(77, 22);
+            this.lbLogOperations.Text = "Operations: 0";
+            // 
             // imageList16x16
             // 
             this.imageList16x16.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList16x16.ImageStream")));
@@ -1898,6 +1977,7 @@
             this.imageList16x16.Images.SetKeyName(2, "GCode-16x16.png");
             this.imageList16x16.Images.SetKeyName(3, "warning-16x16.png");
             this.imageList16x16.Images.SetKeyName(4, "pixel-16x16.png");
+            this.imageList16x16.Images.SetKeyName(5, "log-16x16.png");
             // 
             // tlRight
             // 
@@ -2141,6 +2221,11 @@
             ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorDrainHoleDiameter)).EndInit();
             this.panel5.ResumeLayout(false);
             this.panel5.PerformLayout();
+            this.tabPageLog.ResumeLayout(false);
+            this.tabPageLog.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.lvLog)).EndInit();
+            this.toolStrip1.ResumeLayout(false);
+            this.toolStrip1.PerformLayout();
             this.tlRight.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
@@ -2325,6 +2410,12 @@
         private System.Windows.Forms.ToolStripSplitButton tsPropertiesExport;
         private System.Windows.Forms.ToolStripMenuItem tsPropertiesExportFile;
         private System.Windows.Forms.ToolStripMenuItem tsPropertiesExportClipboard;
+        private System.Windows.Forms.ToolStripMenuItem menuToolsChangeResolution;
+        private System.Windows.Forms.TabPage tabPageLog;
+        private BrightIdeasSoftware.ObjectListView lvLog;
+        private System.Windows.Forms.ToolStrip toolStrip1;
+        private System.Windows.Forms.ToolStripButton btnLogClear;
+        private System.Windows.Forms.ToolStripLabel lbLogOperations;
     }
 }
 

@@ -762,6 +762,27 @@ namespace UVtools.Core
             }
         }
 
+        public void ChangeResolution(uint newResolutionX, uint newResolutionY, Rectangle roi)
+        {
+            using (var mat = LayerMat)
+            {
+                //mat.Transform(1, 1, newResolutionX-mat.Width+roi.Width, newResolutionY-mat.Height - roi.Height/2, new Size((int) newResolutionX, (int) newResolutionY));
+                using (var matRoi = new Mat(mat, roi))
+                {
+                    using (var matDst = new Mat(new Size((int) newResolutionX, (int) newResolutionY), mat.Depth,
+                        mat.NumberOfChannels))
+                    {
+                        using (var matDstRoi = new Mat(matDst,
+                            new Rectangle((int) (newResolutionX / 2 - roi.Width / 2), (int) newResolutionY / 2 - roi.Height / 2, roi.Width, roi.Height)))
+                        {
+                            matRoi.CopyTo(matDstRoi);
+                            LayerMat = matDst;
+                        }
+                    }
+                }
+            }
+        }
+
         public void ToolPattern(OperationPattern settings)
         {
             using (var layer = LayerMat)
@@ -801,5 +822,7 @@ namespace UVtools.Core
         }
 
         #endregion
+
+        
     }
 }

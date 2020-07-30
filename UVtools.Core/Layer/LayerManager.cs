@@ -1533,5 +1533,28 @@ namespace UVtools.Core
             BoundingRectangle = Rectangle.Empty;
             SlicerFile.RequireFullEncode = true;
         }
+
+        public void ChangeResolution(uint newResolutionX, uint newResolutionY, OperationProgress progress)
+        {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Resolution", Count);
+
+            var bounds = BoundingRectangle;
+
+            Parallel.For(0, Count, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+
+                this[layerIndex].ChangeResolution(newResolutionX, newResolutionY, bounds);
+
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+
+            SlicerFile.ResolutionX = newResolutionX;
+            SlicerFile.ResolutionY = newResolutionY;
+        }
     }
 }

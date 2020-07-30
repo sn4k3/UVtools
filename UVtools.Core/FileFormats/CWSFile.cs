@@ -138,9 +138,18 @@ namespace UVtools.Core.FileFormats
 
         public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = null;
 
-        public override uint ResolutionX => SliceSettings.Xres;
+        public override uint ResolutionX
+        {
+            get => SliceSettings.Xres;
+            set => OutputSettings.XResolution = SliceSettings.Xres = (ushort) value;
+        }
 
-        public override uint ResolutionY => SliceSettings.Yres;
+        public override uint ResolutionY
+        {
+            get => SliceSettings.Yres;
+            set => OutputSettings.YResolution = SliceSettings.Yres = (ushort) value;
+        }
+
         public override byte AntiAliasing => (byte) OutputSettings.AntiAliasingValue;
 
         public override float LayerHeight

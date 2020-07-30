@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using BrightIdeasSoftware;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -219,7 +220,9 @@ namespace UVtools.GUI
             tbLayer.MouseWheel += TbLayerOnMouseWheel;
 
             lvIssuesColumnSorter = new ListViewColumnSorter();
-            this.lvIssues.ListViewItemSorter = lvIssuesColumnSorter;
+            lvIssues.ListViewItemSorter = lvIssuesColumnSorter;
+
+            Generator.GenerateColumns(lvLog, typeof(Log), true);
 
             if (Settings.Default.CheckForUpdatesOnStartup)
             {
@@ -264,6 +267,8 @@ namespace UVtools.GUI
         protected override void OnShown(EventArgs e)
         {
             base.OnShown(e);
+            AddLog("UVtools Start");
+            lvLog.Sort(lvLog.AllColumns[0], SortOrder.Descending);
             ProcessFile(Program.Args);
         }
 
@@ -737,7 +742,9 @@ namespace UVtools.GUI
                         if(islandConfig.Enabled || resinTrapConfig.Enabled)
                             ComputeIssues(islandConfig, resinTrapConfig);
                     }
-                    
+
+                    AddLog("Repair Layers and Issues");
+
                     DisableGUI();
                     FrmLoading.SetDescription("Repairing Layers and Issues");
 
@@ -788,6 +795,57 @@ namespace UVtools.GUI
                     return;
                 }
 
+                if (ReferenceEquals(sender, menuToolsChangeResolution))
+                {
+                    uint newResolutionX;
+                    uint newResolutionY;
+                    using (var frm = new FrmToolChangeResolution(SlicerFile.ResolutionX, SlicerFile.ResolutionY, SlicerFile.LayerManager.BoundingRectangle))
+                    {
+                        if (frm.IsDisposed || frm.ShowDialog() != DialogResult.OK) return;
+                        newResolutionX = frm.NewResolutionX;
+                        newResolutionY = frm.NewResolutionY;
+                    }
+
+                    DisableGUI();
+                    FrmLoading.SetDescription($"Change Resolution from {SlicerFile.ResolutionX} x {SlicerFile.ResolutionY} to {newResolutionX} x {newResolutionY}");
+
+                    var task = Task.Factory.StartNew(() =>
+                    {
+                        try
+                        {
+                            SlicerFile.LayerManager.ChangeResolution(newResolutionX, newResolutionY, FrmLoading.RestartProgress(false));
+                        }
+                        catch (OperationCanceledException)
+                        {
+
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        finally
+                        {
+                            Invoke((MethodInvoker)delegate
+                            {
+                                // Running on the UI thread
+                                EnableGUI(true);
+                            });
+                        }
+                    });
+
+                    var loadingResult = FrmLoading.ShowDialog();
+
+                    //UpdateLayerLimits();
+                    RefreshInfo();
+                    ShowLayer();
+                    tsLayerResolution.Text = ActualLayerImage.Size.ToString();
+
+                    menuFileSave.Enabled =
+                        menuFileSaveAs.Enabled = true;
+
+                    return;
+                }
+
                 if (ReferenceEquals(sender, menuToolsLayerReHeight))
                 {
                     OperationLayerReHeight operation = null;
@@ -832,6 +890,8 @@ namespace UVtools.GUI
 
                     menuFileSave.Enabled =
                         menuFileSaveAs.Enabled = true;
+
+                    return;
                 }
 
                 if (ReferenceEquals(sender, menuToolsLayerRemoval))
@@ -839,8 +899,9 @@ namespace UVtools.GUI
                     using (var frm = new FrmToolEmpty(ActualLayer, "Layer Removal", "Removes layer(s) in a given range", "Remove"))
                     {
                         if (frm.ShowDialog() != DialogResult.OK) return;
+
                         DisableGUI();
-                        FrmLoading.SetDescription("Layer Removal");
+                        FrmLoading.SetDescription($"Layer Removal from {frm.LayerRangeStart} to {frm.LayerRangeEnd}");
 
                         var task = Task.Factory.StartNew(() =>
                         {
@@ -896,7 +957,7 @@ namespace UVtools.GUI
                         if (frm.ShowDialog() != DialogResult.OK) return;
 
                         DisableGUI();
-                        FrmLoading.SetDescription("Pattern");
+                        FrmLoading.SetDescription($"Pattern {frm.OperationPattern.Cols} x {frm.OperationPattern.Rows}");
 
                         var task = Task.Factory.StartNew(() =>
                         {
@@ -1490,6 +1551,17 @@ namespace UVtools.GUI
                 PixelHistory.Clear();
                 RefreshPixelHistory();
                 ShowLayer();
+            }
+
+            if (ReferenceEquals(sender, btnLogClear))
+            {
+                if (MessageBox.Show(
+                    "Are you sure you want to clear the log?",
+                    "Clear log?", MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question) != DialogResult.Yes) return;
+
+                lvLog.ClearObjects();
+                AddLog("Log cleared");
             }
 
 
@@ -2107,11 +2179,13 @@ namespace UVtools.GUI
         void ProcessFile(string fileName, uint actualLayer = 0)
         {
             Clear();
+
+            var fileNameOnly = Path.GetFileName(fileName);
             SlicerFile = FileFormat.FindByExtension(fileName, true, true);
             if (ReferenceEquals(SlicerFile, null)) return;
 
             DisableGUI();
-            FrmLoading.Description = $"Decoding {Path.GetFileName(fileName)}";
+            FrmLoading.SetDescription($"Decoding {fileNameOnly}");
             
             var task = Task.Factory.StartNew(() =>
             {
@@ -2238,11 +2312,13 @@ namespace UVtools.GUI
                 btnFindLayer.Enabled =
                 true;
 
+
+            tabControlLeft.TabPages.Insert(1, tabPageIssues);
             if (!ReferenceEquals(SlicerFile.GCode, null))
             {
-                tabControlLeft.TabPages.Add(tabPageGCode);
+                tabControlLeft.TabPages.Insert(1, tabPageGCode);
             }
-            tabControlLeft.TabPages.Add(tabPageIssues);
+            
 
 
             tabControlLeft.SelectedIndex = 0;
@@ -2250,8 +2326,6 @@ namespace UVtools.GUI
 
             UpdateLayerLimits();
             ShowLayer(Math.Min(actualLayer, SlicerFile.LayerCount-1));
-            
-
 
             RefreshInfo();
 
@@ -3173,8 +3247,6 @@ namespace UVtools.GUI
                     break;
             }
 
-            
-
             DisableGUI();
             FrmLoading.SetDescription($"Mutating - {Mutations[mutator].MenuName}");
             var progress = FrmLoading.RestartProgress();
@@ -3442,6 +3514,13 @@ namespace UVtools.GUI
                 RequiredBlackPixelsToDrain = Settings.Default.ResinTrapRequiredBlackPixelsToDrain,
                 MaximumPixelBrightnessToDrain = Settings.Default.ResinTrapMaximumPixelBrightnessToDrain
             };
+        }
+
+        public void AddLog(string description)
+        {
+            int count = lvLog.GetItemCount()+1;
+            lvLog.AddObject(new Log(count, description));
+            lbLogOperations.Text = $"Operations: {count}";
         }
 
 

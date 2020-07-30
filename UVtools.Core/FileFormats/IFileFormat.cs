@@ -85,12 +85,12 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the image width resolution
         /// </summary>
-        uint ResolutionX { get; }
+        uint ResolutionX { get; set; }
 
         /// <summary>
         /// Gets the image height resolution
         /// </summary>
-        uint ResolutionY { get; }
+        uint ResolutionY { get; set; }
 
         bool HaveAntiAliasing { get; }
 

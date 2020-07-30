@@ -1,5 +1,10 @@
 # Changelog
 
+## 30/07/2020 - v0.6.4.0
+
+* (Add) Tool: Change resolution
+* (Add) Log: Track every action you do on the program
+
 ## 28/07/2020 - v0.6.3.4
 
 * (Add) Mutator: Threshold pixels

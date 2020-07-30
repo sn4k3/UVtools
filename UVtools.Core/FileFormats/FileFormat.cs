@@ -274,9 +274,9 @@ namespace UVtools.Core.FileFormats
             set => _haveModifiedLayers = value;
         } // => LayerManager.IsModified;
 
-        public abstract uint ResolutionX { get; }
+        public abstract uint ResolutionX { get; set; }
 
-        public abstract uint ResolutionY { get; }
+        public abstract uint ResolutionY { get; set; }
         public bool HaveAntiAliasing => AntiAliasing > 1;
         public abstract byte AntiAliasing { get; }
 

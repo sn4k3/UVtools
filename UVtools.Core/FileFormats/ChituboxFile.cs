@@ -939,9 +939,18 @@ namespace UVtools.Core.FileFormats
 
         public override Size[] ThumbnailsOriginalSize { get; } = {new Size(400, 300), new Size(200, 125)};
 
-        public override uint ResolutionX => HeaderSettings.ResolutionX;
+        public override uint ResolutionX
+        {
+            get => HeaderSettings.ResolutionX;
+            set => HeaderSettings.ResolutionX = value;
+        }
 
-        public override uint ResolutionY => HeaderSettings.ResolutionY;
+        public override uint ResolutionY
+        {
+            get => HeaderSettings.ResolutionY;
+            set => HeaderSettings.ResolutionY = value;
+        }
+
         public override byte AntiAliasing => (byte) (IsCbtFile ? SlicerInfoSettings.AntiAliasLevel : HeaderSettings.AntiAliasLevel);
 
         public override float LayerHeight

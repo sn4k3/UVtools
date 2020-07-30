@@ -119,9 +119,18 @@ namespace UVtools.Core.FileFormats
 
         public override Size[] ThumbnailsOriginalSize { get; } = {new Size(954, 850), new Size(168, 150)};
 
-        public override uint ResolutionX => HeaderSettings.ResolutionX;
+        public override uint ResolutionX
+        {
+            get => HeaderSettings.ResolutionX;
+            set => HeaderSettings.ResolutionX = value;
+        }
 
-        public override uint ResolutionY => HeaderSettings.ResolutionY;
+        public override uint ResolutionY
+        {
+            get => HeaderSettings.ResolutionY;
+            set => HeaderSettings.ResolutionY = value;
+        }
+
         public override byte AntiAliasing => HeaderSettings.AntiAliasing;
 
         public override float LayerHeight

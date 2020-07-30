@@ -25,8 +25,18 @@ namespace UVtools.Core.FileFormats
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = null;
         public override byte ThumbnailsCount { get; } = 4;
         public override Size[] ThumbnailsOriginalSize { get; } = null;
-        public override uint ResolutionX => (uint)ImageMat.Width;
-        public override uint ResolutionY => (uint)ImageMat.Height;
+        public override uint ResolutionX
+        {
+            get => (uint) ImageMat.Width;
+            set => throw new NotImplementedException();
+        }
+
+        public override uint ResolutionY
+        {
+            get => (uint) ImageMat.Height;
+            set => throw new NotImplementedException();
+        }
+
         public override byte AntiAliasing { get; } = 1;
         public override float LayerHeight { get; set; } = 0;
         public override ushort InitialLayerCount { get; } = 1;

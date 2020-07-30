@@ -44,7 +44,7 @@ namespace UVtools.Core.Extensions
             //return mat.GetPixelSpan<T>().Slice(offset, mat.Step);
         }
 
-        public static void Transform(this Mat src, double xScale, double yScale, double xTrans = 0, double yTrans = 0, Inter interpolation = Inter.Linear)
+        public static void Transform(this Mat src, double xScale, double yScale, double xTrans = 0, double yTrans = 0, Size dstSize = default, Inter interpolation = Inter.Linear)
         {
             //var dst = new Mat(src.Size, src.Depth, src.NumberOfChannels);
             using (var translateTransform = new Matrix<double>(2, 3)
@@ -55,7 +55,7 @@ namespace UVtools.Core.Extensions
                 [1, 2] = yTrans // y translation + compensation of y scaling
             })
             {
-                CvInvoke.WarpAffine(src, src, translateTransform, src.Size, interpolation);
+                CvInvoke.WarpAffine(src, src, translateTransform, dstSize.IsEmpty ? src.Size : dstSize, interpolation);
             }
         }
 
@@ -68,23 +68,13 @@ namespace UVtools.Core.Extensions
         /// <param name="yScale">Y scale factor</param>
         /// <param name="xTrans">X translation</param>
         /// <param name="yTrans">Y translation</param>
+        /// <param name="dstSize">Destination size</param>
         /// <param name="interpolation">Interpolation mode</param>
-        public static void TransformFromCenter(this Mat src, double xScale, double yScale, double xTrans = 0, double yTrans = 0, Inter interpolation = Inter.Linear)
+        public static void TransformFromCenter(this Mat src, double xScale, double yScale, double xTrans = 0, double yTrans = 0, Size dstSize = default, Inter interpolation = Inter.Linear)
         {
             src.Transform(xScale, yScale,
                 xTrans + (src.Width - src.Width * xScale) / 2.0, 
-                yTrans + (src.Height - src.Height * yScale) / 2.0, interpolation);
-            /*//var dst = new Mat(src.Size, src.Depth, src.NumberOfChannels);
-            using (var translateTransform = new Matrix<double>(2, 3)
-            {
-                [0, 0] = xScale, // xScale
-                [1, 1] = yScale, // yScale
-                [0, 2] = xTrans + (src.Width - src.Width * xScale) / 2.0, //x translation + compensation of  x scaling
-                [1, 2] = yTrans + (src.Height - src.Height * yScale) / 2.0 // y translation + compensation of y scaling
-            })
-            {
-                CvInvoke.WarpAffine(src, src, translateTransform, src.Size, interpolation);
-            }*/
+                yTrans + (src.Height - src.Height * yScale) / 2.0, dstSize, interpolation);
         }
 
         /// <summary>

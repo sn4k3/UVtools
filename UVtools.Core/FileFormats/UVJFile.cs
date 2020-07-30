@@ -156,9 +156,18 @@ namespace UVtools.Core.FileFormats
 
         public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = {new System.Drawing.Size(400, 400), new System.Drawing.Size(800, 480) };
 
-        public override uint ResolutionX => JsonSettings.Properties.Size.X;
+        public override uint ResolutionX
+        {
+            get => JsonSettings.Properties.Size.X;
+            set => JsonSettings.Properties.Size.X = (ushort) value;
+        }
 
-        public override uint ResolutionY => JsonSettings.Properties.Size.Y;
+        public override uint ResolutionY
+        {
+            get => JsonSettings.Properties.Size.Y;
+            set => JsonSettings.Properties.Size.Y = (ushort) value;
+        }
+
         public override byte AntiAliasing => JsonSettings.Properties.AntiAliasLevel;
 
         public override float LayerHeight
