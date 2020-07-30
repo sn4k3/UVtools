@@ -47,6 +47,12 @@
         <Component Id="owc3FC8434C1A84605AEEBC6A100CA2F3E1" Guid="47d7e276-db6d-424e-d797-1a69e1e24b3b">
           <File Id="owf3FC8434C1A84605AEEBC6A100CA2F3E1" Source="$(var.SourceDir)\Newtonsoft.Json.dll" KeyPath="yes" />
         </Component>
+        <Component Id="owc13D7087665CB79E62B3952E7D228D5FE" Guid="822b90ba-24c8-485d-2215-c7181ec77ef7">
+          <File Id="owf13D7087665CB79E62B3952E7D228D5FE" Source="$(var.SourceDir)\ObjectListView.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcA212B04CC70B85A277AD8BBCCFCAA000" Guid="e632fc42-27d5-3b03-28f0-0408861fef13">
+          <File Id="owfA212B04CC70B85A277AD8BBCCFCAA000" Source="$(var.SourceDir)\ObjectListView.xml" KeyPath="yes" />
+        </Component>
         <Component Id="owc266C4DEC591C8A54CCC1D3C61FC512AA" Guid="2224179c-4d85-88a2-23e2-bc0c27cadd0e">
           <File Id="owf266C4DEC591C8A54CCC1D3C61FC512AA" Source="$(var.SourceDir)\System.Buffers.dll" KeyPath="yes" />
         </Component>
