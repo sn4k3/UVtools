@@ -670,5 +670,17 @@ namespace UVtools.GUI.Properties {
                 this["LayerRepairRemoveIslandsBelowEqualPixelsDefault"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool PartialUpdateIslandsOnEditing {
+            get {
+                return ((bool)(this["PartialUpdateIslandsOnEditing"]));
+            }
+            set {
+                this["PartialUpdateIslandsOnEditing"] = value;
+            }
+        }
     }
 }

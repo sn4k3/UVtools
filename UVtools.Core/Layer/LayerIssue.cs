@@ -8,7 +8,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
+using System.Runtime.CompilerServices;
 
 namespace UVtools.Core
 {
@@ -20,6 +20,12 @@ namespace UVtools.Core
         /// Gets if the detection is enabled
         /// </summary>
         public bool Enabled { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a list of layers to check for islands, absent layers will not be checked.
+        /// Set to null to check every layer
+        /// </summary>
+        public List<uint> WhiteListLayers { get; set; } = null;
 
         /// <summary>
         /// Gets or sets the binary threshold, all pixels below this value will turn in black, otherwise white
@@ -77,6 +83,19 @@ namespace UVtools.Core
         public byte MaximumPixelBrightnessToDrain { get; set; } = 30;
     }
 
+    public class TouchingBoundDetectionConfiguration
+    {
+        /// <summary>
+        /// Gets if the detection is enabled
+        /// </summary>
+        public bool Enabled { get; set; } = true;
+
+        /// <summary>
+        /// Gets the maximum pixel brightness to be a touching bound
+        /// </summary>
+        public byte MaximumPixelBrightness { get; set; } = 200;
+    }
+
 
     public class LayerIssue : IEnumerable<Point>
     {
@@ -95,14 +114,21 @@ namespace UVtools.Core
         public Layer Layer { get; }
 
         /// <summary>
+        /// Gets the layer index
+        /// </summary>
+        public uint LayerIndex => Layer.Index;
+
+        /// <summary>
         /// Gets the issue type associated
         /// </summary>
         public IssueType Type { get; }
 
         /// <summary>
-        /// Gets the pixels containing the issue
+        /// Gets the pixels points containing the issue
         /// </summary>
         public Point[] Pixels { get; }
+
+        public int PixelsCount => Pixels?.Length ?? 0;
 
         /// <summary>
         /// Gets the bounding rectangle of the pixel area
@@ -122,7 +148,8 @@ namespace UVtools.Core
         /// <summary>
         /// Gets the XY point for first point
         /// </summary>
-        public Point Point => HaveValidPoint ? Pixels[0] : new Point(-1, -1);
+        public Point FirstPoint => HaveValidPoint ? Pixels[0] : new Point(-1, -1);
+        public string FirstPointStr => $"{FirstPoint.X}, {FirstPoint.Y}";
 
         /// <summary>
         /// Gets the number of pixels on this issue

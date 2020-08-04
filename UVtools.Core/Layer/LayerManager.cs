@@ -684,17 +684,19 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
         }
 
-        public ConcurrentDictionary<uint, List<LayerIssue>> GetAllIssues(
+        public List<LayerIssue> GetAllIssues(
             IslandDetectionConfiguration islandConfig = null, ResinTrapDetectionConfiguration resinTrapConfig = null,
+            TouchingBoundDetectionConfiguration touchBoundConfig = null,
             OperationProgress progress = null)
         {
             if(ReferenceEquals(islandConfig, null)) islandConfig = new IslandDetectionConfiguration();
             if(ReferenceEquals(resinTrapConfig, null)) resinTrapConfig = new ResinTrapDetectionConfiguration();
+            if(ReferenceEquals(touchBoundConfig, null)) touchBoundConfig = new TouchingBoundDetectionConfiguration();
             if(ReferenceEquals(progress, null)) progress = new OperationProgress();
 
             const byte minTouchingBondsPixelColor = 200;
 
-            var result = new ConcurrentDictionary<uint, List<LayerIssue>>();
+            var result = new ConcurrentBag<LayerIssue>();
             var layerHollowAreas = new ConcurrentDictionary<uint, List<LayerHollowArea>>();
 
             bool islandsFinished = false;
@@ -703,7 +705,7 @@ namespace UVtools.Core
 
             Parallel.Invoke(() =>
             {
-                if (!islandConfig.Enabled)
+                if (!islandConfig.Enabled && !resinTrapConfig.Enabled)
                 {
                     islandsFinished = true;
                     return;
@@ -722,43 +724,53 @@ namespace UVtools.Core
                                 int step = image.Step;
                                 var span = image.GetPixelSpan<byte>();
 
-                                // TouchingBounds Checker
-                                List<Point> pixels = new List<Point>();
-                                for (int x = 0; x < image.Width; x++) // Check Top and Bottom bounds
+                                if (resinTrapConfig.Enabled)
                                 {
-                                    if (span[x] >= minTouchingBondsPixelColor) // Top
+                                    // TouchingBounds Checker
+                                    List<Point> pixels = new List<Point>();
+                                    for (int x = 0; x < image.Width; x++) // Check Top and Bottom bounds
                                     {
-                                        pixels.Add(new Point(x, 0));
+                                        if (span[x] >= minTouchingBondsPixelColor) // Top
+                                        {
+                                            pixels.Add(new Point(x, 0));
+                                        }
+
+                                        if (span[step * image.Height - step + x] >=
+                                            minTouchingBondsPixelColor) // Bottom
+                                        {
+                                            pixels.Add(new Point(x, image.Height - 1));
+                                        }
                                     }
 
-                                    if (span[step * image.Height - step + x] >= minTouchingBondsPixelColor) // Bottom
+                                    for (int y = 0; y < image.Height; y++) // Check Left and Right bounds
                                     {
-                                        pixels.Add(new Point(x, image.Height - 1));
+                                        if (span[y * step] >= minTouchingBondsPixelColor) // Left
+                                        {
+                                            pixels.Add(new Point(0, y));
+                                        }
+
+                                        if (span[y * step + step - 1] >= minTouchingBondsPixelColor) // Right
+                                        {
+                                            pixels.Add(new Point(step - 1, y));
+                                        }
+                                    }
+
+                                    if (pixels.Count > 0)
+                                    {
+                                        result.Add(new LayerIssue(layer, LayerIssue.IssueType.TouchingBound, pixels.ToArray()));
+                                        /*result.TryAdd(layer.Index, new List<LayerIssue>
+                                        {
+                                            new LayerIssue(layer, LayerIssue.IssueType.TouchingBound, pixels.ToArray())
+                                        });*/
                                     }
                                 }
 
-                                for (int y = 0; y < image.Height; y++) // Check Left and Right bounds
+                                if (layer.Index == 0 || !islandConfig.Enabled) return; // No islands for layer 0
+
+                                if (!ReferenceEquals(islandConfig.WhiteListLayers, null)) // Check white list
                                 {
-                                    if (span[y * step] >= minTouchingBondsPixelColor) // Left
-                                    {
-                                        pixels.Add(new Point(0, y));
-                                    }
-
-                                    if (span[y * step + step - 1] >= minTouchingBondsPixelColor) // Right
-                                    {
-                                        pixels.Add(new Point(step - 1, y));
-                                    }
+                                    if (!islandConfig.WhiteListLayers.Contains(layer.Index)) return;
                                 }
-
-                                if (pixels.Count > 0)
-                                {
-                                    result.TryAdd(layer.Index, new List<LayerIssue>
-                                    {
-                                        new LayerIssue(layer, LayerIssue.IssueType.TouchingBound, pixels.ToArray())
-                                    });
-                                }
-
-                                if (layer.Index == 0) return; // No islands for layer 0
 
                                 VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
                                 Mat hierarchy = new Mat();
@@ -846,12 +858,13 @@ namespace UVtools.Core
 
                                     var issue = new LayerIssue(layer, LayerIssue.IssueType.Island, points.ToArray(),
                                         rect);
-                                    result.AddOrUpdate(layer.Index, new List<LayerIssue> {issue},
+                                    result.Add(issue);
+                                    /*result.AddOrUpdate(layer.Index, new List<LayerIssue> {issue},
                                         (layerIndex, list) =>
                                         {
                                             list.Add(issue);
                                             return list;
-                                        });
+                                        });*/
                                 }
 
                                 contours.Dispose();
@@ -861,17 +874,18 @@ namespace UVtools.Core
                         }
                         else
                         {
-                            result.TryAdd(layer.Index, new List<LayerIssue>
+                            result.Add(new LayerIssue(layer, LayerIssue.IssueType.EmptyLayer));
+                            /*result.TryAdd(layer.Index, new List<LayerIssue>
                             {
                                 new LayerIssue(layer, LayerIssue.IssueType.EmptyLayer)
-                            });
+                            });*/
                         }
 
                         lock (progress.Mutex)
                         {
                             progress++;
                         }
-                    });
+                    }); // Parallel end
                 islandsFinished = true;
             }, () =>
             {
@@ -1113,7 +1127,13 @@ namespace UVtools.Core
                 }
             });
 
-            if (progress.Token.IsCancellationRequested) return result;
+            /*var resultSorted = result.ToList();
+            resultSorted.Sort((issue, layerIssue) =>
+            {
+                int ret = issue.Type.CompareTo(layerIssue.Type);
+                return ret != 0 ? ret : issue.LayerIndex.CompareTo(layerIssue.LayerIndex);
+            });*/
+            if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.PixelsCount).ToList();
 
             for (uint layerIndex = 0; layerIndex < Count; layerIndex++)
             {
@@ -1125,19 +1145,26 @@ namespace UVtools.Core
                         where area.Type == LayerHollowArea.AreaType.Trap 
                         select new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contour, area.BoundingRectangle))
                 {
-                    result.AddOrUpdate(layerIndex, new List<LayerIssue> {issue}, (u, listIssues) =>
+                    result.Add(issue);
+                    /*result.AddOrUpdate(layerIndex, new List<LayerIssue> {issue}, (u, listIssues) =>
                     {
                         listIssues.Add(issue);
                         return listIssues;
-                    });
+                    });*/
                 }
             }
 
-            return result;
+            //resultSorted = resultSorted.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex);
+            /*resultSorted.Sort((issue, layerIssue) =>
+            {
+                int ret = issue.Type.CompareTo(layerIssue.Type);
+                return ret != 0 ? ret : issue.LayerIndex.CompareTo(layerIssue.LayerIndex);
+            });*/
+            return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.PixelsCount).ToList();
         }
 
         public void RepairLayers(uint layerStart, uint layerEnd, uint closingIterations = 1, uint openingIterations = 1, byte removeIslandsBelowEqualPixels = 4,
-            bool repairIslands = true, bool removeEmptyLayers = true, bool repairResinTraps = true, Dictionary<uint, List<LayerIssue>> issues = null,
+            bool repairIslands = true, bool removeEmptyLayers = true, bool repairResinTraps = true, List<LayerIssue> issues = null,
             OperationProgress progress = null)
         {
             if(ReferenceEquals(progress, null)) progress = new OperationProgress();
@@ -1155,7 +1182,20 @@ namespace UVtools.Core
                         {
                             if (repairIslands && removeIslandsBelowEqualPixels > 0)
                             {
-                                if (issues.TryGetValue((uint)layerIndex, out var issueList))
+                                var bytes = image.GetPixelSpan<byte>();
+                                foreach (var issue in issues)
+                                {
+                                    if (
+                                        issue.LayerIndex != layerIndex ||
+                                        issue.Type != LayerIssue.IssueType.Island ||
+                                        issue.Pixels.Length > removeIslandsBelowEqualPixels) continue;
+
+                                    foreach (var issuePixel in issue.Pixels)
+                                    {
+                                        bytes[image.GetPixelPos(issuePixel)] = 0;
+                                    }
+                                }
+                                /*if (issues.TryGetValue((uint)layerIndex, out var issueList))
                                 {
                                     var bytes = image.GetPixelSpan<byte>();
                                     foreach (var issue in issueList.Where(issue =>
@@ -1166,30 +1206,20 @@ namespace UVtools.Core
                                             bytes[image.GetPixelPos(issuePixel)] = 0;
                                         }
                                     }
-                                }
+                                }*/
                             }
 
                             if (repairResinTraps)
                             {
-                                if (issues.TryGetValue((uint) layerIndex, out var issueList))
+                                foreach (var issue in issues.Where(issue => issue.LayerIndex == layerIndex && issue.Type == LayerIssue.IssueType.ResinTrap))
                                 {
-                                    foreach (var issue in issueList.Where(issue =>
-                                        issue.Type == LayerIssue.IssueType.ResinTrap))
+                                    using (var vec = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
                                     {
-                                        using (var vec = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
-                                        {
-                                            CvInvoke.DrawContours(image,
-                                                vec,
-                                                -1,
-                                                new MCvScalar(255),
-                                                -1);
-                                        }
-
-                                        /*CvInvoke.DrawContours(image,
-                                            new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)),
+                                        CvInvoke.DrawContours(image,
+                                            vec,
                                             -1,
                                             new MCvScalar(255),
-                                            2);*/
+                                            -1);
                                     }
                                 }
                             }
@@ -1386,7 +1416,7 @@ namespace UVtools.Core
                 progress++;
             }
 
-            pixelHistory.Clear();
+            //pixelHistory.Clear();
         }
 
         /// <summary>

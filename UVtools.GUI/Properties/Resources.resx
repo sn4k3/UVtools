@@ -118,8 +118,53 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="delete-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\delete-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="th-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\th-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="search-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\search-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Wrench-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Wrench-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Error-128x128" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Error-128x128.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="island-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\island-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="layers-alt-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\layers-alt-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Back-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Back-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="move-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\move-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="filter-filled-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\filter-filled-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Cancel-32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Cancel-32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="crop-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\crop-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="checkbox-unmarked-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\checkbox-unmarked-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="arrow-up" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\arrow-up.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="warning-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\warning-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CNCMachine-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\CNCMachine-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="UVtools" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\UVtools.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -127,175 +172,187 @@
   <data name="resize-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\resize-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Cancel-24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Cancel-24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="arrow-top-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\arrow-top-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="mutation_solidify" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\gui\mutation_solidify.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="eye-24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\eye-24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Back-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Back-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Extract-object-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Extract-object-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="File-Refresh-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\File-Refresh-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="pointer-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\pointer-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Exit-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Exit-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Global-Network-icon-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Global-Network-icon-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="refresh-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\refresh-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="mutation_erosion" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\gui\mutation_erosion.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="arrow-up-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\arrow-up-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="file-image-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\file-image-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="warning-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\warning-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Wrench-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Wrench-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="pattern-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\pattern-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="arrow-down-double-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\arrow-down-double-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="mutation_opening" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\gui\mutation_opening.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="arrow-up" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\arrow-up.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="mutation_closing" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\gui\mutation_closing.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Ok-24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Ok-24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Button-Info-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Button-Info-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="arrow-down-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\arrow-down-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Next-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Next-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="accept-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\accept-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="filter-filled-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\filter-filled-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="blur-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\blur-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Save-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Save-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Open-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Open-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="arrow-up-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\arrow-up-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="cursor-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\cursor-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="pointer-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\pointer-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="File-Close-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\File-Close-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="search-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\search-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="mutation_blackhat" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\gui\mutation_blackhat.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Cancel-32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Cancel-32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="eye-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\eye-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Geometry-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Geometry-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="mutation_tophat" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\gui\mutation_tophat.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="plus" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\plus.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Convert-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Convert-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="layers-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\layers-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="mutation_erosion" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\gui\mutation_erosion.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="mutation_dilation" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\gui\mutation_dilation.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="settings-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\settings-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="mutation_gradient" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\gui\mutation_gradient.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Rotate-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Rotate-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="pixel-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\pixel-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="arrow-end-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\arrow-end-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="File-Refresh-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\File-Refresh-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="SaveAs-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\SaveAs-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="CNCMachine-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\CNCMachine-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="pixel-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\pixel-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="delete-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\delete-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="mutation_tophat" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\gui\mutation_tophat.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="checkbox-marked-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\checkbox-marked-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="cursor-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\cursor-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="checkbox-unmarked-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\checkbox-unmarked-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Rotate-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Rotate-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="mutation_closing" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\gui\mutation_closing.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="settings-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\settings-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="arrow-down-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\arrow-down-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="arrow-end-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\arrow-end-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="mutation_solidify" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\gui\mutation_solidify.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="clipboard-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\clipboard-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Exit-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Exit-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="layers-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\layers-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="mutation_gradient" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\gui\mutation_gradient.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pattern-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\pattern-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="plus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\plus.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Extract-object-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Extract-object-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="checkbox-marked-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\checkbox-marked-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="arrow-down" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\arrow-down.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Donate-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Donate-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="sort-alpha-up-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\sort-alpha-up-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="island-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\island-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="trash-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\trash-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="accept-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\accept-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="file-image-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\file-image-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="refresh-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\refresh-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="eye-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\eye-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="compress-alt-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\compress-alt-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Convert-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Convert-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="bowling-ball-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\bowling-ball-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="square-solid-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\square-solid-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="burn-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\burn-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="map-marker-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\map-marker-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="arrow-down-double-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\arrow-down-double-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Cancel-24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Cancel-24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Button-Info-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Button-Info-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Global-Network-icon-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Global-Network-icon-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="photo-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\photo-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Open-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Open-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="flip-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\flip-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="mutation_blackhat" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\gui\mutation_blackhat.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="arrow-top-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\arrow-top-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Next-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Next-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="File-Close-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\File-Close-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="expand-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\expand-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Geometry-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Geometry-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="toolbox-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\toolbox-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Donate-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Donate-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="internet-explorer-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\internet-explorer-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="mutation_opening" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\gui\mutation_opening.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="eye-24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\eye-24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="ladder-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\ladder-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="chessboard-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\chessboard-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="expand-alt-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\expand-alt-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="list-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\list-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

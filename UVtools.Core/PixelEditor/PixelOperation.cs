@@ -18,11 +18,29 @@ namespace UVtools.Core.PixelEditor
             DrainHole,
         }
 
+        /// <summary>
+        /// Gets or sets the index number to show on GUI
+        /// </summary>
+        public uint Index { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="PixelOperationType"/>
+        /// </summary>
         public PixelOperationType OperationType { get; }
+
+        /// <summary>
+        /// Gets the layer index
+        /// </summary>
         public uint LayerIndex { get; }
 
+        /// <summary>
+        /// Gets the location of the operation
+        /// </summary>
         public Point Location { get; }
 
+        /// <summary>
+        /// Gets the total size of the operation
+        /// </summary>
         public Size Size { get; private protected set; } = Size.Empty;
 
 

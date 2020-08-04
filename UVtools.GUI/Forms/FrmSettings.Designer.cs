@@ -131,6 +131,8 @@
             this.label23 = new System.Windows.Forms.Label();
             this.btnPixelEditorAddPixelColor = new System.Windows.Forms.Button();
             this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault = new System.Windows.Forms.NumericUpDown();
+            this.label35 = new System.Windows.Forms.Label();
             this.nmLayerRepairDefaultOpeningIterations = new System.Windows.Forms.NumericUpDown();
             this.label34 = new System.Windows.Forms.Label();
             this.nmLayerRepairDefaultClosingIterations = new System.Windows.Forms.NumericUpDown();
@@ -139,8 +141,7 @@
             this.cbLayerRepairRemoveEmptyLayers = new System.Windows.Forms.CheckBox();
             this.cbLayerRepairLayersIslands = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault = new System.Windows.Forms.NumericUpDown();
-            this.label35 = new System.Windows.Forms.Label();
+            this.cbPartialUpdateIslandsOnEditing = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineHollowAreasLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineLayerBoundsLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlinePrintVolumeBoundsLineThickness)).BeginInit();
@@ -164,10 +165,10 @@
             this.tabPage3.SuspendLayout();
             this.tabPage4.SuspendLayout();
             this.tabPage5.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultOpeningIterations)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultClosingIterations)).BeginInit();
             this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -1333,6 +1334,7 @@
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.cbPartialUpdateIslandsOnEditing);
             this.tabPage4.Controls.Add(this.btnPixelEditorDrainHoleColor);
             this.tabPage4.Controls.Add(this.label26);
             this.tabPage4.Controls.Add(this.btnPixelEditorSupportColor);
@@ -1464,6 +1466,32 @@
             this.tabPage5.Text = "Layer Repair";
             this.tabPage5.UseVisualStyleBackColor = true;
             // 
+            // nmLayerRepairRemoveIslandsBelowEqualPixelsDefault
+            // 
+            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.Location = new System.Drawing.Point(6, 66);
+            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.Name = "nmLayerRepairRemoveIslandsBelowEqualPixelsDefault";
+            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.Size = new System.Drawing.Size(57, 24);
+            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.TabIndex = 34;
+            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // label35
+            // 
+            this.label35.AutoSize = true;
+            this.label35.Location = new System.Drawing.Point(69, 69);
+            this.label35.Name = "label35";
+            this.label35.Size = new System.Drawing.Size(357, 18);
+            this.label35.TabIndex = 35;
+            this.label35.Text = "Remove islands below or equal to pixels default value";
+            // 
             // nmLayerRepairDefaultOpeningIterations
             // 
             this.nmLayerRepairDefaultOpeningIterations.Location = new System.Drawing.Point(6, 36);
@@ -1557,31 +1585,16 @@
             this.panel1.Size = new System.Drawing.Size(624, 77);
             this.panel1.TabIndex = 19;
             // 
-            // nmLayerRepairRemoveIslandsBelowEqualPixelsDefault
+            // cbPartialUpdateIslandsOnEditing
             // 
-            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.Location = new System.Drawing.Point(6, 66);
-            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.Maximum = new decimal(new int[] {
-            255,
-            0,
-            0,
-            0});
-            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.Name = "nmLayerRepairRemoveIslandsBelowEqualPixelsDefault";
-            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.Size = new System.Drawing.Size(57, 24);
-            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.TabIndex = 34;
-            this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            // 
-            // label35
-            // 
-            this.label35.AutoSize = true;
-            this.label35.Location = new System.Drawing.Point(69, 69);
-            this.label35.Name = "label35";
-            this.label35.Size = new System.Drawing.Size(357, 18);
-            this.label35.TabIndex = 35;
-            this.label35.Text = "Remove islands below or equal to pixels default value";
+            this.cbPartialUpdateIslandsOnEditing.AutoSize = true;
+            this.cbPartialUpdateIslandsOnEditing.Location = new System.Drawing.Point(9, 170);
+            this.cbPartialUpdateIslandsOnEditing.Name = "cbPartialUpdateIslandsOnEditing";
+            this.cbPartialUpdateIslandsOnEditing.Size = new System.Drawing.Size(565, 40);
+            this.cbPartialUpdateIslandsOnEditing.TabIndex = 19;
+            this.cbPartialUpdateIslandsOnEditing.Text = "Partial update islands for the affected layers after apply the modifications and " +
+    "when\r\nremove a island";
+            this.cbPartialUpdateIslandsOnEditing.UseVisualStyleBackColor = true;
             // 
             // FrmSettings
             // 
@@ -1631,10 +1644,10 @@
             this.tabPage4.PerformLayout();
             this.tabPage5.ResumeLayout(false);
             this.tabPage5.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultOpeningIterations)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultClosingIterations)).EndInit();
             this.panel1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1753,5 +1766,6 @@
         private System.Windows.Forms.Label label34;
         private System.Windows.Forms.NumericUpDown nmLayerRepairRemoveIslandsBelowEqualPixelsDefault;
         private System.Windows.Forms.Label label35;
+        private System.Windows.Forms.CheckBox cbPartialUpdateIslandsOnEditing;
     }
 }

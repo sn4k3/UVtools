@@ -152,8 +152,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controls\ListViewColumnSorter.cs" />
     <Compile Include="Controls\Log.cs" />
+    <Compile Include="Controls\SlicerPropertyItem.cs" />
     <Compile Include="Controls\SplitButton.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -374,6 +374,25 @@
     <None Include="Images\accept-16x16.png" />
     <None Include="Images\photo-16x16.png" />
     <None Include="Images\ladder-16x16.png" />
+    <None Include="Images\sort-alpha-up-16x16.png" />
+    <None Include="Images\trash-16x16.png" />
+    <None Include="Images\internet-explorer-16x16.png" />
+    <None Include="Images\toolbox-16x16.png" />
+    <None Include="Images\expand-16x16.png" />
+    <None Include="Images\map-marker-16x16.png" />
+    <None Include="Images\layers-alt-16x16.png" />
+    <None Include="Images\move-16x16.png" />
+    <None Include="Images\crop-16x16.png" />
+    <None Include="Images\flip-16x16.png" />
+    <None Include="Images\square-solid-16x16.png" />
+    <None Include="Images\chessboard-16x16.png" />
+    <None Include="Images\blur-16x16.png" />
+    <None Include="Images\compress-alt-16x16.png" />
+    <None Include="Images\expand-alt-16x16.png" />
+    <None Include="Images\bowling-ball-16x16.png" />
+    <None Include="Images\burn-16x16.png" />
+    <None Include="Images\th-16x16.png" />
+    <None Include="Images\list-16x16.png" />
     <Content Include="UVtools.ico" />
     <None Include="UVtools.png" />
     <None Include="Images\Exit-16x16.png" />

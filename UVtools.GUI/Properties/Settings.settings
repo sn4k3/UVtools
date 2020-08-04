@@ -164,5 +164,8 @@
     <Setting Name="LayerRepairRemoveIslandsBelowEqualPixelsDefault" Type="System.Byte" Scope="User">
       <Value Profile="(Default)">10</Value>
     </Setting>
+    <Setting Name="PartialUpdateIslandsOnEditing" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

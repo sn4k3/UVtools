@@ -84,6 +84,7 @@ namespace UVtools.GUI.Forms
                 btnPixelEditorRemovePixelColor.BackColor = Settings.Default.PixelEditorRemovePixelColor;
                 btnPixelEditorSupportColor.BackColor = Settings.Default.PixelEditorSupportColor;
                 btnPixelEditorDrainHoleColor.BackColor = Settings.Default.PixelEditorDrainHoleColor;
+                cbPartialUpdateIslandsOnEditing.Checked = Settings.Default.PartialUpdateIslandsOnEditing;
 
                 nmLayerRepairDefaultClosingIterations.Value = Settings.Default.LayerRepairDefaultClosingIterations;
                 nmLayerRepairDefaultOpeningIterations.Value = Settings.Default.LayerRepairDefaultOpeningIterations;
@@ -234,6 +235,7 @@ namespace UVtools.GUI.Forms
                 Settings.Default.PixelEditorRemovePixelColor = btnPixelEditorRemovePixelColor.BackColor;
                 Settings.Default.PixelEditorSupportColor = btnPixelEditorSupportColor.BackColor;
                 Settings.Default.PixelEditorDrainHoleColor = btnPixelEditorDrainHoleColor.BackColor;
+                Settings.Default.PartialUpdateIslandsOnEditing = cbPartialUpdateIslandsOnEditing.Checked;
 
                 Settings.Default.LayerRepairDefaultClosingIterations = (byte) nmLayerRepairDefaultClosingIterations.Value;
                 Settings.Default.LayerRepairDefaultOpeningIterations = (byte) nmLayerRepairDefaultOpeningIterations.Value;

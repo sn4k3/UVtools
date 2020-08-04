@@ -5,6 +5,8 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -57,5 +59,12 @@ namespace UVtools.Core.PixelEditor
 
         #endregion
 
+        public void Renumber()
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                Items[i].Index = (uint) (i + 1);
+            }
+        }
     }
 }

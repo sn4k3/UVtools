@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
@@ -43,53 +44,53 @@ namespace UVtools.GUI
         public static readonly Dictionary<LayerManager.Mutate, Mutation> Mutations =
             new Dictionary<LayerManager.Mutate, Mutation>
             {
-                {LayerManager.Mutate.Move, new Mutation(LayerManager.Mutate.Move, null,
+                {LayerManager.Mutate.Move, new Mutation(LayerManager.Mutate.Move, null, Resources.move_16x16,
                     "Moves the entire print volume around the plate.\n" +
                     "Note: Margins are in pixel values"
                 )},
-                {LayerManager.Mutate.Resize, new Mutation(LayerManager.Mutate.Resize, null,
+                {LayerManager.Mutate.Resize, new Mutation(LayerManager.Mutate.Resize, null, Resources.crop_16x16,
                     "Resizes layer images in a X and/or Y factor, starting from 100% value\n" +
                     "NOTE 1: Build volume bounds are not validated after operation, please ensure scaling stays inside your limits.\n" +
                     "NOTE 2: X and Y are applied to original image, not to the rotated preview (If enabled)."
                 )},
-                {LayerManager.Mutate.Flip, new Mutation(LayerManager.Mutate.Flip, null,
+                {LayerManager.Mutate.Flip, new Mutation(LayerManager.Mutate.Flip, null, Resources.flip_16x16,
                     "Flips layer images vertically and/or horizontally"
                 )},
-                {LayerManager.Mutate.Rotate, new Mutation(LayerManager.Mutate.Rotate, null,
+                {LayerManager.Mutate.Rotate, new Mutation(LayerManager.Mutate.Rotate, null, Resources.refresh_16x16,
                     "Rotate layer images in a certain degrees"
                 )},
-                {LayerManager.Mutate.Solidify, new Mutation(LayerManager.Mutate.Solidify, null,
+                {LayerManager.Mutate.Solidify, new Mutation(LayerManager.Mutate.Solidify, null, Resources.square_solid_16x16,
                     "Solidifies the selected layers, closes all inner holes.\n" +
                     "Warning: All surrounded holes are filled, no exceptions! Make sure you don't require any of holes in layer path.",
                     Resources.mutation_solidify
                 )},
-                {LayerManager.Mutate.PixelDimming, new Mutation(LayerManager.Mutate.PixelDimming, "Pixel Dimming",
+                {LayerManager.Mutate.PixelDimming, new Mutation(LayerManager.Mutate.PixelDimming, "Pixel Dimming", Resources.chessboard_16x16,
                     "Dims pixels in a chosen pattern over white pixels neighborhood. The selected pattern will be repeated over the image width and height as a mask. Benefits are:\n" +
                     "1) Reduce layer expansion in big masses\n" +
                     "2) Reduce cross layer exposure\n" +
                     "3) Extend pixels life\n" +
                     "NOTE: Run only this tool after all repairs and other transformations"
                 )},
-                {LayerManager.Mutate.Erode, new Mutation(LayerManager.Mutate.Erode, null,
+                {LayerManager.Mutate.Erode, new Mutation(LayerManager.Mutate.Erode, null, Resources.compress_alt_16x16,
                 "The basic idea of erosion is just like soil erosion only, it erodes away the boundaries of foreground object (Always try to keep foreground in white). " +
                         "So what happens is that, all the pixels near boundary will be discarded depending upon the size of kernel. So the thickness or size of the foreground object decreases or simply white region decreases in the image. It is useful for removing small white noises, detach two connected objects, etc.",
-                        Properties.Resources.mutation_erosion
+                        Resources.mutation_erosion
                 )},
-                {LayerManager.Mutate.Dilate, new Mutation(LayerManager.Mutate.Dilate, null,
+                {LayerManager.Mutate.Dilate, new Mutation(LayerManager.Mutate.Dilate, null, Resources.expand_alt_16x16,
                     "It is just opposite of erosion. Here, a pixel element is '1' if at least one pixel under the kernel is '1'. So it increases the white region in the image or size of foreground object increases. Normally, in cases like noise removal, erosion is followed by dilation. Because, erosion removes white noises, but it also shrinks our object. So we dilate it. Since noise is gone, they won't come back, but our object area increases. It is also useful in joining broken parts of an object.",
                     Resources.mutation_dilation
                 )},
-                {LayerManager.Mutate.Opening, new Mutation(LayerManager.Mutate.Opening, "Noise Removal",
+                {LayerManager.Mutate.Opening, new Mutation(LayerManager.Mutate.Opening, "Noise Removal", null,
                     "Noise Removal/Opening is just another name of erosion followed by dilation. It is useful in removing noise.",
-                    Properties.Resources.mutation_opening
+                    Resources.mutation_opening
                 )},
-                {LayerManager.Mutate.Closing, new Mutation(LayerManager.Mutate.Closing, "Gap Closing",
+                {LayerManager.Mutate.Closing, new Mutation(LayerManager.Mutate.Closing, "Gap Closing", Resources.bowling_ball_16x16,
                     "Gap Closing is reverse of Opening, Dilation followed by Erosion. It is useful in closing small holes inside the foreground objects, or small black points on the object.",
-                    Properties.Resources.mutation_closing
+                    Resources.mutation_closing
                 )},
-                {LayerManager.Mutate.Gradient, new Mutation(LayerManager.Mutate.Gradient, null,
+                {LayerManager.Mutate.Gradient, new Mutation(LayerManager.Mutate.Gradient, null, Resources.burn_16x16,
                     "It's the difference between dilation and erosion of an image.",
-                    Properties.Resources.mutation_gradient
+                    Resources.mutation_gradient
                 )},
                 /*{Mutation.Mutates.TopHat, new Mutation(Mutation.Mutates.TopHat,
                     "It's the difference between input image and Opening of the image.",
@@ -103,24 +104,24 @@ namespace UVtools.GUI
                     "The Hit-or-Miss transformation is useful to find patterns in binary images. In particular, it finds those pixels whose neighbourhood matches the shape of a first structuring element B1 while not matching the shape of a second structuring element B2 at the same time.",
                     null
                 )},*/
-                {LayerManager.Mutate.ThresholdPixels, new Mutation(LayerManager.Mutate.ThresholdPixels, "Threshold Pixels",
+                {LayerManager.Mutate.ThresholdPixels, new Mutation(LayerManager.Mutate.ThresholdPixels, "Threshold Pixels", Resources.th_16x16,
                     "Manipulates pixels values giving a threshold, maximum and a operation type.\n" +
                     "If a pixel brightness is less or equal to the threshold value, set this pixel to 0, otherwise set to defined maximum value.\n" +
                     "More info: https://docs.opencv.org/master/d7/d4d/tutorial_py_thresholding.html"
                 )},
-                {LayerManager.Mutate.PyrDownUp, new Mutation(LayerManager.Mutate.PyrDownUp, "Big Blur",
+                {LayerManager.Mutate.PyrDownUp, new Mutation(LayerManager.Mutate.PyrDownUp, "Big Blur", Resources.blur_16x16,
                     "Performs down/up-sampling step of Gaussian pyramid decomposition.\n" +
                     "First down-samples the image by rejecting even rows and columns, after performs up-sampling step of Gaussian pyramid decomposition.\n" +
                     "This operation will add a big blur to edges, creating a over-exaggerated anti-aliasing and as result can make edges smoother\n" +
                     "Note: Printer must support AntiAliasing on firmware to able to use this function."
                 )},
-                {LayerManager.Mutate.SmoothMedian, new Mutation(LayerManager.Mutate.SmoothMedian, "Smooth Median",
+                {LayerManager.Mutate.SmoothMedian, new Mutation(LayerManager.Mutate.SmoothMedian, "Smooth Median", Resources.blur_16x16,
                     "Each pixel becomes the median of its surrounding pixels.\n" +
                     "A good way to remove noise and can be used to reconstruct or intensify the antialiasing level.\n" +
                     "Note 1: Printer must support AntiAliasing on firmware to able to use this function.\n" +
                     "Note 2: Iterations must be a odd number."
                 )},
-                {LayerManager.Mutate.SmoothGaussian, new Mutation(LayerManager.Mutate.SmoothGaussian,  "Smooth Gaussian",
+                {LayerManager.Mutate.SmoothGaussian, new Mutation(LayerManager.Mutate.SmoothGaussian,  "Smooth Gaussian", Resources.blur_16x16,
                     "Each pixel is a sum of fractions of each pixel in its neighborhood\n" +
                     "A good way to remove noise and can be used to reconstruct or intensify the antialiasing level.\n" +
                     "Very fast, but does not preserve sharp edges well.\n" +
@@ -144,17 +145,15 @@ namespace UVtools.GUI
 
         public Mat ActualLayerImageBgr { get; private set; } = new Mat();
 
-        public Dictionary<uint, List<LayerIssue>> Issues { get; set; }
+        public List<LayerIssue> Issues { get; set; }
 
-        public uint TotalIssues { get; set; }
+        public int TotalIssues => Issues?.Count ?? 0;
 
         public bool IsChagingLayer { get; set; }
 
         public PixelHistory PixelHistory { get; } = new PixelHistory();
 
         public uint SavesCount { get; set; } = 0;
-
-        private readonly ListViewColumnSorter lvIssuesColumnSorter;
 
         #endregion
 
@@ -175,8 +174,8 @@ namespace UVtools.GUI
             Clear();
 
             tsLayerImageLayerDifference.Checked = Settings.Default.LayerDifferenceDefault;
-            tsIsuesRefreshIslands.Checked = Settings.Default.ComputeIslands;
-            tsIsuesRefreshResinTraps.Checked = Settings.Default.ComputeResinTraps;
+            tsIssuesRefreshIslands.Checked = Settings.Default.ComputeIslands;
+            tsIssuesRefreshResinTraps.Checked = Settings.Default.ComputeResinTraps;
             tsLayerImageLayerOutlinePrintVolumeBounds.Checked = Settings.Default.OutlinePrintVolumeBounds;
             tsLayerImageLayerOutlineLayerBounds.Checked = Settings.Default.OutlineLayerBounds;
             tsLayerImageLayerOutlineHollowAreas.Checked = Settings.Default.OutlineHollowAreas;
@@ -196,19 +195,13 @@ namespace UVtools.GUI
                 if(!Mutations.ContainsKey(mutate)) continue;
                 var item = new ToolStripMenuItem(Mutations[mutate].MenuName)
                 {
-                    ToolTipText = Mutations[mutate].Description, Tag = mutate, AutoToolTip = true, Image = Properties.Resources.filter_filled_16x16
+                    ToolTipText = Mutations[mutate].Description, Tag = mutate, AutoToolTip = true, Image = Mutations[mutate].MenuImage
                 };
                 item.Click += EventClick;
                 menuMutate.DropDownItems.Add(item);
             }
 
-            foreach (LayerIssue.IssueType issueType in (LayerIssue.IssueType[]) Enum.GetValues(
-                typeof(LayerIssue.IssueType)))
-            {
-                var group = new ListViewGroup(issueType.ToString(), $"{issueType}s"){HeaderAlignment = HorizontalAlignment.Center};
-                lvIssues.Groups.Add(group);
-            }
-
+            
             foreach (PixelDrawing.BrushShapeType brushShape in (PixelDrawing.BrushShapeType[])Enum.GetValues(
                 typeof(PixelDrawing.BrushShapeType)))
             {
@@ -219,10 +212,25 @@ namespace UVtools.GUI
 
             tbLayer.MouseWheel += TbLayerOnMouseWheel;
 
-            lvIssuesColumnSorter = new ListViewColumnSorter();
-            lvIssues.ListViewItemSorter = lvIssuesColumnSorter;
+            flvIssues.ShowGroups = btnIssueGroup.Checked;
+            flvIssues.AlwaysGroupByColumn = flvIssuesColType;
+            flvIssues.PrimarySortColumn = flvIssuesColType;
+            flvIssues.PrimarySortOrder = SortOrder.Ascending;
+            flvIssues.SecondarySortColumn = flvIssuesColLayerIndex;
+            flvIssues.SecondarySortOrder = SortOrder.Ascending;
 
             Generator.GenerateColumns(lvLog, typeof(Log), true);
+            lvLog.PrimarySortColumn = lvLog.AllColumns[0];
+            lvLog.PrimarySortOrder = SortOrder.Descending;
+
+            flvPixelHistory.ShowGroups = true;
+            flvPixelHistory.AlwaysGroupByColumn = flvPixelHistoryColOperation;
+            flvPixelHistory.PrimarySortColumn = flvPixelHistoryColNumber;
+            flvPixelHistory.PrimarySortOrder = SortOrder.Descending;
+
+            Generator.GenerateColumns(flvProperties, typeof(SlicerPropertyItem), true);
+            flvProperties.ShowGroups = true;
+            flvProperties.AlwaysGroupByColumn = flvProperties.AllColumns[2];
 
             if (Settings.Default.CheckForUpdatesOnStartup)
             {
@@ -268,7 +276,6 @@ namespace UVtools.GUI
         {
             base.OnShown(e);
             AddLog("UVtools Start");
-            lvLog.Sort(lvLog.AllColumns[0], SortOrder.Descending);
             ProcessFile(Program.Args);
         }
 
@@ -1300,9 +1307,10 @@ namespace UVtools.GUI
             {
                 if (!tsIssuePrevious.Enabled) return;
                 int index = Convert.ToInt32(tsIssueCount.Tag);
-                lvIssues.SelectedItems.Clear();
-                lvIssues.Items[--index].Selected = true;
-                EventItemActivate(lvIssues, null);
+                flvIssues.SelectedIndices.Clear();
+                //flvIssues.SelectObject(Issues[--index]);
+                flvIssues.SelectedIndex = --index;
+                EventItemActivate(flvIssues, null);
                 return;
             }
 
@@ -1310,9 +1318,10 @@ namespace UVtools.GUI
             {
                 if (!tsIssueNext.Enabled) return;
                 int index = Convert.ToInt32(tsIssueCount.Tag);
-                lvIssues.SelectedItems.Clear();
-                lvIssues.Items[++index].Selected = true;
-                EventItemActivate(lvIssues, null);
+                flvIssues.SelectedIndices.Clear();
+                //flvIssues.SelectObject(Issues[++index]);
+                flvIssues.SelectedIndex = ++index;
+                EventItemActivate(flvIssues, null);
                 return;
             }
 
@@ -1330,9 +1339,9 @@ namespace UVtools.GUI
                 Dictionary<uint, List<LayerIssue>> processIssues = new Dictionary<uint, List<LayerIssue>>();
                 List<uint> layersRemove = new List<uint>();
 
-                foreach (ListViewItem item in lvIssues.SelectedItems)
+
+                foreach (LayerIssue issue in flvIssues.SelectedObjects)
                 {
-                    if (!(item.Tag is LayerIssue issue)) continue;
                     //if (!issue.HaveValidPoint) continue;
                     if (issue.Type == LayerIssue.IssueType.TouchingBound) continue;
 
@@ -1431,27 +1440,38 @@ namespace UVtools.GUI
 
                 if (!task.Result) return;
 
+                var whiteListLayers = new List<uint>();
+
                 // Update GUI
-                lvIssues.BeginUpdate();
-                foreach (ListViewItem item in lvIssues.SelectedItems)
+                List<LayerIssue> removeList = new List<LayerIssue>();
+                foreach (LayerIssue issue in flvIssues.SelectedObjects)
                 {
-                    if (!(item.Tag is LayerIssue issue)) continue;
                     //if (!issue.HaveValidPoint) continue;
                     if (issue.Type == LayerIssue.IssueType.TouchingBound) continue;
+                    if (issue.Type == LayerIssue.IssueType.Island)
+                    {
+                        var nextLayer = issue.Layer.Index + 1;
+                        if (nextLayer >= SlicerFile.LayerCount) continue;
+                        if (whiteListLayers.Contains(nextLayer)) continue;
+                        whiteListLayers.Add(nextLayer);
+                    }
 
-                    Issues[issue.Layer.Index].Remove(issue);
-                    item.Remove();
-                    TotalIssues--;
+                    Issues.Remove(issue);
+                    removeList.Add(issue);
                 }
-
-                lvIssues.EndUpdate();
+                flvIssues.RemoveObjects(removeList);
 
                 if (layersRemove.Count > 0)
                 {
                     UpdateLayerLimits();
                     RefreshInfo();
                 }
-                
+
+                if (Settings.Default.PartialUpdateIslandsOnEditing)
+                {
+                    UpdateIslands(whiteListLayers);
+                }
+
                 ShowLayer();
                 UpdateIssuesInfo();
                 menuFileSave.Enabled =
@@ -1466,7 +1486,7 @@ namespace UVtools.GUI
                 return;
             }
 
-            if (ReferenceEquals(sender, tsIsuesRefresh))
+            if (ReferenceEquals(sender, tsIssuesRefresh))
             {
                 if (MessageBox.Show("Are you sure you want to compute issues?", "Issues Compute",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
@@ -1476,18 +1496,33 @@ namespace UVtools.GUI
                 return;
             }
 
+            if (ReferenceEquals(sender, btnIssueGroup))
+            {
+                flvIssues.ClearObjects();
+                flvIssues.ShowGroups = btnIssueGroup.Checked;
+                UpdateIssuesList();
+                return;
+            }
+
+            if (ReferenceEquals(sender, btnIssueResort))
+            {
+                flvIssues.PrimarySortColumn = flvIssuesColType;
+                flvIssues.PrimarySortOrder = SortOrder.Ascending;
+                flvIssues.SecondarySortColumn = flvIssuesColLayerIndex;
+                flvIssues.SecondarySortOrder = SortOrder.Ascending;
+                flvIssues.RebuildColumns();
+                return;
+            }
+
             if (ReferenceEquals(sender, btnPixelHistoryRemove))
             {
                 if (!btnPixelHistoryRemove.Enabled) return;
-                lvPixelHistory.BeginUpdate();
-                foreach (ListViewItem item in lvPixelHistory.SelectedItems)
+                if (flvPixelHistory.SelectedIndices.Count == 0) return;
+                foreach (PixelOperation item in flvPixelHistory.SelectedObjects)
                 {
-                    PixelOperation operation = item.Tag as PixelOperation;
-                    item.Remove();
-                    PixelHistory.Items.Remove(operation);
+                    PixelHistory.Items.Remove(item);
                 }
-                lvPixelHistory.EndUpdate();
-                lbPixelHistoryOperations.Text = $"Operations: {PixelHistory.Count}";
+                RefreshPixelHistory();
 
                 ShowLayer();
             }
@@ -1510,47 +1545,7 @@ namespace UVtools.GUI
             if (ReferenceEquals(sender, btnPixelHistoryApply))
             {
                 if (!btnPixelHistoryApply.Enabled) return;
-                if (PixelHistory.Count == 0) return;
-                if (MessageBox.Show(
-                    "There are unsaved changes on image editor, do you want to apply modifications?",
-                    "Unsaved changes on image editor", MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question) != DialogResult.Yes) return;
-
-                btnPixelHistoryApply.Enabled = false;
-                DisableGUI();
-                FrmLoading.SetDescription("Drawing pixels");
-
-                Task task = Task.Factory.StartNew(() =>
-                {
-                    try
-                    {
-                        SlicerFile.LayerManager.DrawModifications(PixelHistory, FrmLoading.RestartProgress());
-                    }
-                    catch (OperationCanceledException)
-                    {
-
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"{ex.Message}", "Drawing was unsuccessful!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                    finally
-                    {
-                        Invoke((MethodInvoker)delegate {
-                            // Running on the UI thread
-                            EnableGUI(true);
-                        });
-                    }
-
-                    return false;
-                });
-
-                FrmLoading.ShowDialog();
-
-                //lvPixelHistory.Items.Clear();
-                PixelHistory.Clear();
-                RefreshPixelHistory();
-                ShowLayer();
+                DrawModifications(false);
             }
 
             if (ReferenceEquals(sender, btnLogClear))
@@ -1601,58 +1596,7 @@ namespace UVtools.GUI
                 }
                 else
                 {
-                    if (PixelHistory.Count > 0)
-                    {
-                        var result =
-                            MessageBox.Show(
-                                "There are unsaved changes on image editor, do you want to apply modifications?",
-                                "Unsaved changes on image editor", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-
-                        if (result == DialogResult.Cancel)
-                        {
-                            tsLayerImagePixelEdit.Checked = true;
-                            return;
-                        }
-                        if (result == DialogResult.Yes)
-                        {
-                            DisableGUI();
-                            FrmLoading.SetDescription($"Drawing pixels");
-
-                            Task task = Task.Factory.StartNew(() =>
-                            {
-                                try
-                                {
-                                    SlicerFile.LayerManager.DrawModifications(PixelHistory, FrmLoading.RestartProgress());
-                                }
-                                catch (OperationCanceledException)
-                                {
-
-                                }
-                                catch (Exception ex)
-                                {
-                                    MessageBox.Show($"{ex.Message}", "Drawing was unsuccessful!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                }
-                                finally
-                                {
-                                    Invoke((MethodInvoker)delegate {
-                                        // Running on the UI thread
-                                        EnableGUI(true);
-                                    });
-                                }
-
-                                return false;
-                            });
-
-                            FrmLoading.ShowDialog();
-                        }
-
-                        //lvPixelHistory.Items.Clear();
-                        PixelHistory.Clear();
-                        RefreshPixelHistory();
-                        ShowLayer();
-                    }
-
-                    tabControlLeft.TabPages.Remove(tabPagePixelEditor);
+                    DrawModifications(true);
                 }
                 return;
             }
@@ -1890,13 +1834,11 @@ namespace UVtools.GUI
 
         private void EventItemActivate(object sender, EventArgs e)
         {
-            if (ReferenceEquals(sender, lvIssues))
+            if (ReferenceEquals(sender, flvIssues))
             {
-                if (lvIssues.SelectedItems.Count == 0) return;
-                var item = lvIssues.SelectedItems[0];
+                if(!(flvIssues.SelectedObject is LayerIssue issue)) return;
 
-                if (!(item.Tag is LayerIssue issue)) return;
-                if (issue.Layer.Index != ActualLayer)
+                if (issue.LayerIndex != ActualLayer)
                 {
                     ShowLayer(issue.Layer.Index);
                 }
@@ -1956,17 +1898,16 @@ namespace UVtools.GUI
                     }
                 }
 
-                tsIssueCount.Tag = lvIssues.SelectedIndices[0];
+                tsIssueCount.Tag = flvIssues.SelectedIndices[0];
                 UpdateIssuesInfo();
                 return;
             }
 
-            if (ReferenceEquals(sender, lvPixelHistory))
+            if (ReferenceEquals(sender, flvPixelHistory))
             {
-                if (lvPixelHistory.SelectedItems.Count == 0) return;
-                var item = lvPixelHistory.SelectedItems[0];
+                //if (flvPixelHistory.SelectedIndices.Count == 0) return;
 
-                if (!(item.Tag is PixelOperation operation)) return;
+                if (!(flvPixelHistory.SelectedObject is PixelOperation operation)) return;
                 if (operation.LayerIndex != ActualLayer)
                 {
                     ShowLayer(operation.LayerIndex);
@@ -2030,10 +1971,7 @@ namespace UVtools.GUI
             tabPageIssues.Tag = null;
 
             Issues = null;
-            TotalIssues = 0;
-            lvIssues.BeginUpdate();
-            lvIssues.Items.Clear();
-            lvIssues.EndUpdate();
+            flvIssues.ClearObjects();
             UpdateIssuesInfo();
 
             PixelHistory.Clear();
@@ -2042,10 +1980,7 @@ namespace UVtools.GUI
             lbMaxLayer.Text = 
             lbActualLayer.Text = 
             lbInitialLayer.Text = "???";
-            lvProperties.BeginUpdate();
-            lvProperties.Items.Clear();
-            lvProperties.Groups.Clear();
-            lvProperties.EndUpdate();
+            flvProperties.ClearObjects();
             pbLayers.Value = 0;
             tbLayer.Value = 0;
 
@@ -2293,8 +2228,8 @@ namespace UVtools.GUI
             {
                 item.Enabled = true;
             }
-            tsPropertiesLabelCount.Text = $"Properties: {lvProperties.Items.Count}";
-            tsPropertiesLabelGroups.Text = $"Groups: {lvProperties.Groups.Count}";
+            tsPropertiesLabelCount.Text = $"Properties: {flvProperties.GetItemCount()}";
+            tsPropertiesLabelGroups.Text = $"Groups: {flvProperties.OLVGroups?.Count ?? 0}";
 
             menuFileReload.Enabled =
             menuFileClose.Enabled =
@@ -2307,7 +2242,7 @@ namespace UVtools.GUI
             menuTools.Enabled =
 
             tsIssuesRepair.Enabled =
-            tsIsuesRefresh.Enabled =
+            tsIssuesRefresh.Enabled =
 
                 btnFindLayer.Enabled =
                 true;
@@ -2381,43 +2316,34 @@ namespace UVtools.GUI
                 }
             }
 
-            lvProperties.BeginUpdate();
-            lvProperties.Items.Clear();
+            flvProperties.ClearObjects();
 
             if (!ReferenceEquals(SlicerFile.Configs, null))
             {
+                List<SlicerPropertyItem> items = new List<SlicerPropertyItem>();
                 foreach (object config in SlicerFile.Configs)
                 {
-                    ListViewGroup group = new ListViewGroup(config.GetType().Name);
-                    lvProperties.Groups.Add(group);
                     foreach (PropertyInfo propertyInfo in config.GetType()
                         .GetProperties(BindingFlags.Public | BindingFlags.Instance))
                     {
                         if(propertyInfo.Name.Equals("Item")) continue;
-                        ListViewItem item = new ListViewItem(propertyInfo.Name, group);
                         var value = propertyInfo.GetValue(config);
-                        if (!ReferenceEquals(value, null))
+                        if (ReferenceEquals(value, null)) continue;
+                        if (value is IList list)
                         {
-                            if (value is IList list)
-                            {
-                                item.SubItems.Add(list.Count.ToString());
-                            }
-                            else
-                            {
-                                item.SubItems.Add(value.ToString());
-                            }
-
+                            items.Add(new SlicerPropertyItem(propertyInfo.Name, list.Count.ToString(), config.GetType().Name));
                         }
-
-                        lvProperties.Items.Add(item);
+                        else
+                        {
+                            items.Add(new SlicerPropertyItem(propertyInfo.Name, value.ToString(), config.GetType().Name));
+                        }
                     }
                 }
+                flvProperties.SetObjects(items);
             }
 
-            lvProperties.EndUpdate();
-
-            tsPropertiesLabelCount.Text = $"Properties: {lvProperties.Items.Count}";
-            tsPropertiesLabelGroups.Text = $"Groups: {lvProperties.Groups.Count}";
+            tsPropertiesLabelCount.Text = $"Properties: {flvProperties.GetItemCount()}";
+            tsPropertiesLabelGroups.Text = $"Groups: {flvProperties.OLVGroups.Count}";
 
             if (!ReferenceEquals(SlicerFile.GCode, null))
             {
@@ -2553,12 +2479,11 @@ namespace UVtools.GUI
                 }
 
                 if (tsLayerImageHighlightIssues.Checked &&
-                    !ReferenceEquals(Issues, null) && 
-                    Issues.TryGetValue(ActualLayer, out var issues))
+                    !ReferenceEquals(Issues, null))
                 {
-                    foreach (var issue in issues)
+                    foreach (var issue in Issues)
                     {
-                        if (ReferenceEquals(issue, null)) continue; // Removed issue
+                        if(issue.LayerIndex != ActualLayer) continue;
                         if(!issue.HaveValidPoint) continue;
                         Color color = Settings.Default.ResinTrapColor;
 
@@ -2776,15 +2701,15 @@ namespace UVtools.GUI
 
         private void EventSelectedIndexChanged(object sender, EventArgs e)
         {
-            if (ReferenceEquals(sender, lvIssues))
+            if (ReferenceEquals(sender, flvIssues))
             {
-                tsIssueRemove.Enabled = lvIssues.SelectedIndices.Count > 0;
+                tsIssueRemove.Enabled = flvIssues.SelectedIndices.Count > 0;
                 return;
             }
 
-            if (ReferenceEquals(sender, lvPixelHistory))
+            if (ReferenceEquals(sender, flvPixelHistory))
             {
-                btnPixelHistoryRemove.Enabled = lvPixelHistory.SelectedIndices.Count > 0;
+                btnPixelHistoryRemove.Enabled = flvPixelHistory.SelectedIndices.Count > 0;
                 return;
             }
 
@@ -2816,88 +2741,59 @@ namespace UVtools.GUI
 
         private void EventKeyUp(object sender, KeyEventArgs e)
         {
-            if (ReferenceEquals(sender, lvProperties))
+            if (ReferenceEquals(sender, flvProperties))
             {
                 if (e.KeyCode == Keys.Escape)
                 {
-                    foreach (ListViewItem item in lvProperties.Items)
-                    {
-                        item.Selected = false;
-                    }
+                    flvProperties.SelectedIndices.Clear();
                     e.Handled = true;
                     return;
                 }
 
-                if (e.Control && e.KeyCode == Keys.A)
-                {
-                    foreach (ListViewItem item in lvProperties.Items)
-                    {
-                        item.Selected = true;
-                    }
-                    e.Handled = true;
-                    return;
-                }
 
                 if (e.KeyCode == Keys.Multiply)
                 {
-                    foreach (ListViewItem item in lvProperties.Items)
+                    int[] selectedArray = new int[flvProperties.SelectedIndices.Count];
+                    flvProperties.SelectedIndices.CopyTo(selectedArray, 0);
+                    flvProperties.SelectedIndices.Clear();
+                    for (int i = 0; i < flvProperties.GetItemCount(); i++)
                     {
-                        item.Selected = !item.Selected;
+                        if (selectedArray.Contains(i)) continue;
+                        flvProperties.SelectedIndices.Add(i);
                     }
+
                     e.Handled = true;
                     return;
                 }
 
-                if (e.Control && e.KeyCode == Keys.C)
-                {
-                    StringBuilder clip = new StringBuilder();
-                    foreach (ListViewItem item in lvProperties.Items)
-                    {
-                        if(!item.Selected) continue;
-                        if (clip.Length > 0) clip.AppendLine();
-                        clip.Append($"{item.Text}: {item.SubItems[1].Text}");
-                    }
-
-                    if (clip.Length > 0)
-                    {
-                        Clipboard.SetText(clip.ToString());
-                    }
-                    e.Handled = true;
-                    return;
-                }
+                
                 return;
             }
 
-            if (ReferenceEquals(sender, lvIssues))
+            if (ReferenceEquals(sender, flvIssues))
             {
                 if (e.KeyCode == Keys.Escape)
                 {
-                    lvIssues.SelectedItems.Clear();
-                    e.Handled = true;
-                    return;
-                }
-
-                if (e.Control && e.KeyCode == Keys.A)
-                {
-                    foreach (ListViewItem item in lvIssues.Items)
-                    {
-                        item.Selected = true;
-                    }
+                    flvIssues.SelectedIndices.Clear();
                     e.Handled = true;
                     return;
                 }
 
                 if (e.KeyCode == Keys.Multiply)
                 {
-                    foreach (ListViewItem item in lvIssues.Items)
+                    int[] selectedArray = new int[flvIssues.SelectedIndices.Count];
+                    flvIssues.SelectedIndices.CopyTo(selectedArray, 0);
+                    flvIssues.SelectedIndices.Clear();
+                    for (int i = 0; i < flvIssues.GetItemCount(); i++)
                     {
-                        item.Selected = !item.Selected;
+                        if (selectedArray.Contains(i)) continue;
+                        flvIssues.SelectedIndices.Add(i);
                     }
                     e.Handled = true;
                     return;
                 }
 
-                if (e.Control && e.KeyCode == Keys.C)
+                /*if (e.Control && e.KeyCode == Keys.C)
                 {
                     StringBuilder clip = new StringBuilder();
                     foreach (ListViewItem item in lvIssues.Items)
@@ -2913,7 +2809,7 @@ namespace UVtools.GUI
                     }
                     e.Handled = true;
                     return;
-                }
+                }*/
 
                 if (e.KeyCode == Keys.Delete)
                 {
@@ -2924,39 +2820,34 @@ namespace UVtools.GUI
                 return;
             }
 
-            if (ReferenceEquals(sender, lvPixelHistory))
+            if (ReferenceEquals(sender, flvPixelHistory))
             {
                 if (e.KeyCode == Keys.Escape)
                 {
-                    lvPixelHistory.SelectedItems.Clear();
-                    e.Handled = true;
-                    return;
-                }
-
-                if (e.Control && e.KeyCode == Keys.A)
-                {
-                    foreach (ListViewItem item in lvPixelHistory.Items)
-                    {
-                        item.Selected = true;
-                    }
+                    flvPixelHistory.SelectedIndices.Clear();
                     e.Handled = true;
                     return;
                 }
 
                 if (e.KeyCode == Keys.Multiply)
                 {
-                    foreach (ListViewItem item in lvPixelHistory.Items)
+                    int[] selectedArray = new int[flvPixelHistory.SelectedIndices.Count];
+                    flvPixelHistory.SelectedIndices.CopyTo(selectedArray, 0);
+                    flvPixelHistory.SelectedIndices.Clear();
+                    for (int i = 0; i < flvPixelHistory.GetItemCount(); i++)
                     {
-                        item.Selected = !item.Selected;
+                        if (selectedArray.Contains(i)) continue;
+                        flvPixelHistory.SelectedIndices.Add(i);
                     }
+
                     e.Handled = true;
                     return;
                 }
 
-                if (e.Control && e.KeyCode == Keys.C)
+                /*if (e.Control && e.KeyCode == Keys.C)
                 {
                     StringBuilder clip = new StringBuilder();
-                    foreach (ListViewItem item in lvPixelHistory.Items)
+                    foreach (ListViewItem item in flvPixelHistory.Items)
                     {
                         if (!item.Selected) continue;
                         if (clip.Length > 0) clip.AppendLine();
@@ -2969,7 +2860,7 @@ namespace UVtools.GUI
                     }
                     e.Handled = true;
                     return;
-                }
+                }*/
 
                 if (e.KeyCode == Keys.Delete)
                 {
@@ -3116,34 +3007,19 @@ namespace UVtools.GUI
             pbLayer.Invalidate();
             //pbLayer.Update();
             //pbLayer.Refresh();
-            menuFileSave.Enabled = menuFileSaveAs.Enabled = true;
+            //menuFileSave.Enabled = menuFileSaveAs.Enabled = true;
             //sw.Stop();
             //Debug.WriteLine(sw.ElapsedMilliseconds);
         }
 
         public void RefreshPixelHistory()
         {
+            PixelHistory.Renumber();
+            flvPixelHistory.SetObjects(PixelHistory);
+            
             lbPixelHistoryOperations.Text = $"Operations: {PixelHistory.Count}";
-            lvPixelHistory.BeginUpdate();
-            lvPixelHistory.Items.Clear();
-            for (var i = PixelHistory.Count-1; i >= 0; i--)
-            {
-                var operation = PixelHistory[i];
-                var item = new ListViewItem
-                {
-                    Text = i.ToString(),
-                    Tag = operation
-                };
-                item.SubItems.Add(operation.OperationType.ToString());
-                item.SubItems.Add(operation.LayerIndex.ToString());
-                item.SubItems.Add(operation.Location.ToString());
-                //item.SubItems.Add(operation.BrushSize.ToString());
-
-                lvPixelHistory.Items.Add(item);
-            }
-
-            lvPixelHistory.EndUpdate();
-            btnPixelHistoryRemove.Enabled = false;
+            
+            btnPixelHistoryRemove.Enabled = flvPixelHistory.SelectedIndices.Count > 0;
             btnPixelHistoryClear.Enabled =
             btnPixelHistoryApply.Enabled = PixelHistory.Count > 0;
         }
@@ -3385,10 +3261,7 @@ namespace UVtools.GUI
         private void ComputeIssues(IslandDetectionConfiguration islandConfig = null, ResinTrapDetectionConfiguration resinTrapConfig = null)
         {
             tabPageIssues.Tag = true;
-            TotalIssues = 0;
-            lvIssues.BeginUpdate();
-            lvIssues.Items.Clear();
-            lvIssues.EndUpdate();
+            flvIssues.ClearObjects();
             UpdateIssuesInfo();
 
             DisableGUI();
@@ -3398,16 +3271,7 @@ namespace UVtools.GUI
             {
                 try
                 {
-                    var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, FrmLoading.RestartProgress());
-                    Issues = new Dictionary<uint, List<LayerIssue>>();
-
-                    for (uint i = 0; i < SlicerFile.LayerCount; i++)
-                    {
-                        if (issues.TryGetValue(i, out var list))
-                        {
-                            Issues.Add(i, list);
-                        }
-                    }
+                    Issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, null, FrmLoading.RestartProgress());
                 }
                 catch (OperationCanceledException)
                 {
@@ -3430,41 +3294,7 @@ namespace UVtools.GUI
 
             var loadingResult = FrmLoading.ShowDialog();
 
-            lvIssues.BeginUpdate();
-            uint count = 0;
-
-            try
-            {
-                if (!ReferenceEquals(Issues, null))
-                {
-                    foreach (var kv in Issues)
-                    {
-                        foreach (var issue in kv.Value)
-                        {
-                            TotalIssues++;
-                            count++;
-                            ListViewItem item = new ListViewItem(lvIssues.Groups[(int) issue.Type])
-                                {Text = issue.Type.ToString()};
-                            item.SubItems.Add(count.ToString());
-                            item.SubItems.Add(kv.Key.ToString());
-                            item.SubItems.Add($"{issue.X}, {issue.Y}");
-                            item.SubItems.Add(issue.Size.ToString());
-                            item.Tag = issue;
-                            lvIssues.Items.Add(item);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error while trying compute issues", MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-                throw;
-            }
-            
-            lvIssues.EndUpdate();
-            UpdateIssuesInfo();
-            ShowLayer();
+            UpdateIssuesList();
         }
 
         private void ZoomToFit()
@@ -3495,7 +3325,7 @@ namespace UVtools.GUI
         {
             return new IslandDetectionConfiguration
             {
-                Enabled = tsIsuesRefreshIslands.Checked,
+                Enabled = tsIssuesRefreshIslands.Checked,
                 BinaryThreshold = Settings.Default.IslandBinaryThreshold,
                 RequiredAreaToProcessCheck = Settings.Default.IslandRequiredAreaToProcessCheck,
                 RequiredPixelBrightnessToProcessCheck = Settings.Default.IslandRequiredPixelBrightnessToProcessCheck,
@@ -3508,7 +3338,7 @@ namespace UVtools.GUI
         {
             return new ResinTrapDetectionConfiguration
             {
-                Enabled = tsIsuesRefreshResinTraps.Checked,
+                Enabled = tsIssuesRefreshResinTraps.Checked,
                 BinaryThreshold = Settings.Default.ResinTrapBinaryThreshold,
                 RequiredAreaToProcessCheck = Settings.Default.ResinTrapRequiredAreaToProcessCheck,
                 RequiredBlackPixelsToDrain = Settings.Default.ResinTrapRequiredBlackPixelsToDrain,
@@ -3523,36 +3353,158 @@ namespace UVtools.GUI
             lbLogOperations.Text = $"Operations: {count}";
         }
 
-
-        private void EventColumnClick(object sender, ColumnClickEventArgs e)
+        public void DrawModifications(bool exitEditor)
         {
-            if (ReferenceEquals(sender, lvIssues))
+            if (PixelHistory.Count == 0)
             {
-                ListView myListView = (ListView)sender;
-
-                // Determine if clicked column is already the column that is being sorted.
-                if (e.Column == lvIssuesColumnSorter.SortColumn)
+                if (exitEditor)
                 {
-                    // Reverse the current sort direction for this column.
-                    if (lvIssuesColumnSorter.Order == SortOrder.Ascending)
-                    {
-                        lvIssuesColumnSorter.Order = SortOrder.Descending;
-                    }
-                    else
-                    {
-                        lvIssuesColumnSorter.Order = SortOrder.Ascending;
-                    }
+                    tabControlLeft.TabPages.Remove(tabPagePixelEditor);
                 }
-                else
-                {
-                    // Set the column number that is to be sorted; default to ascending.
-                    lvIssuesColumnSorter.SortColumn = e.Column;
-                    lvIssuesColumnSorter.Order = SortOrder.Ascending;
-                }
-
-                // Perform the sort with these new sort options.
-                myListView.Sort();
+                return;
             }
+            var result = MessageBox.Show(
+                                "There are unsaved changes on image editor, do you want to apply modifications?",
+                                "Unsaved changes on image editor", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+
+            if (result == DialogResult.Cancel)
+            {
+                tsLayerImagePixelEdit.Checked = true;
+                return;
+            }
+            if (result == DialogResult.Yes)
+            {
+                DisableGUI();
+                FrmLoading.SetDescription("Drawing pixels");
+
+                Task task = Task.Factory.StartNew(() =>
+                {
+                    try
+                    {
+                        SlicerFile.LayerManager.DrawModifications(PixelHistory, FrmLoading.RestartProgress());
+                    }
+                    catch (OperationCanceledException)
+                    {
+
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"{ex.Message}", "Drawing was unsuccessful!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    finally
+                    {
+                        Invoke((MethodInvoker)delegate {
+                            // Running on the UI thread
+                            EnableGUI(true);
+                        });
+                    }
+
+                    return false;
+                });
+
+                FrmLoading.ShowDialog();
+
+                if (Settings.Default.PartialUpdateIslandsOnEditing)
+                {
+                    List<uint> whiteListLayers = new List<uint>();
+                    foreach (var item in PixelHistory.Items)
+                    {
+                        if (item.OperationType != PixelOperation.PixelOperationType.Drawing &&
+                            item.OperationType != PixelOperation.PixelOperationType.Supports) continue;
+                        if (whiteListLayers.Contains(item.LayerIndex)) continue;
+                        whiteListLayers.Add(item.LayerIndex);
+
+                        uint nextLayer = item.LayerIndex + 1;
+                        if (SlicerFile.LayerCount < nextLayer &&
+                            !whiteListLayers.Contains(nextLayer))
+                        {
+                            whiteListLayers.Add(nextLayer);
+                        }
+                    }
+
+                    UpdateIslands(whiteListLayers);
+                }
+            }
+
+            if (exitEditor)
+            {
+                tabControlLeft.TabPages.Remove(tabPagePixelEditor);
+            }
+
+            PixelHistory.Clear();
+            RefreshPixelHistory();
+            ShowLayer();
+
+            menuFileSave.Enabled = menuFileSaveAs.Enabled = true;
+        }
+
+        private void UpdateIslands(List<uint> whiteListLayers)
+        {
+            if (whiteListLayers.Count == 0) return;
+            var islandConfig = GetIslandDetectionConfiguration();
+            var resinTrapConfig = new ResinTrapDetectionConfiguration { Enabled = false };
+            islandConfig.Enabled = true;
+            islandConfig.WhiteListLayers = whiteListLayers;
+            
+            if (ReferenceEquals(Issues, null))
+            {
+                ComputeIssues(islandConfig, resinTrapConfig);
+            }
+            else
+            {
+                DisableGUI();
+                FrmLoading.SetDescription("Updating Issues");
+
+                foreach (var layerIndex in islandConfig.WhiteListLayers)
+                {
+                    Issues.RemoveAll(issue => issue.LayerIndex == layerIndex && issue.Type == LayerIssue.IssueType.Island); // Remove all islands for update
+                }
+
+                Task.Factory.StartNew(() =>
+                {
+                    try
+                    {
+                        var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, null,
+                            FrmLoading.RestartProgress());
+
+                        issues.RemoveAll(issue => issue.Type != LayerIssue.IssueType.Island); // Remove all non islands
+                        Issues.AddRange(issues);
+                        Issues = Issues.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.PixelsCount).ToList();
+                    }
+                    catch (OperationCanceledException)
+                    {
+
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Error while trying compute issues",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+                    }
+                    finally
+                    {
+                        Invoke((MethodInvoker)delegate
+                        {
+                            // Running on the UI thread
+                            EnableGUI(true);
+                        });
+                    }
+                });
+
+                FrmLoading.ShowDialog();
+                UpdateIssuesList();
+            }
+        }
+
+        void UpdateIssuesList()
+        {
+            flvIssues.ClearObjects();
+            if (!ReferenceEquals(Issues, null))
+            {
+                flvIssues.SetObjects(Issues);
+            }
+            UpdateIssuesInfo();
+            ShowLayer();
         }
     }
 }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 04/07/2020 - v0.6.4.1
+
+* (Add) Partial update islands from current working layer and next layer when using pixel editor or island remove
+* (Add) Setting: To enable or disable partial update islands
+* (Change) Properties, Issues, Pixel Editor: ListView upgraded to a FastObjectListView, resulting in faster renders, sorting capabilities, column order, groups with counter, selection, hot tracking, filtering and empty list message
+* (Change) Log: ObjectListView upgraded to a FastObjectListView
+* (Change) Bunch of icons
+
 ## 30/07/2020 - v0.6.4.0
 
 * (Add) Tool: Change resolution

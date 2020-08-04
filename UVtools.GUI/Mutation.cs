@@ -20,16 +20,17 @@ namespace UVtools.GUI
         public string Description { get; }
 
         public Image Image { get; }
+        public Image MenuImage { get; }
         #endregion
 
         #region Constructor
 
-        public Mutation(LayerManager.Mutate mutate, string menuName, string description, Image image = null)
+        public Mutation(LayerManager.Mutate mutate, string menuName, Image menuImage, string description, Image image = null)
         {
             Mutate = mutate;
             MenuName = menuName ?? mutate.ToString();
             Description = description;
-            Image = image;
+            MenuImage = menuImage ?? Properties.Resources.filter_filled_16x16;
         }
 
         #endregion

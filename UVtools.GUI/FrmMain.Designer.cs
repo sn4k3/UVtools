@@ -53,13 +53,13 @@
             this.menuToolsLayerReHeight = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsLayerRemoval = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsPattern = new System.Windows.Forms.ToolStripMenuItem();
-            this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuHelpWebsite = new System.Windows.Forms.ToolStripMenuItem();
             this.menuHelpDonate = new System.Windows.Forms.ToolStripMenuItem();
             this.menuHelpAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             this.menuHelpInstallPrinters = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuNewVersion = new System.Windows.Forms.ToolStripMenuItem();
             this.statusBar = new System.Windows.Forms.StatusStrip();
             this.mainTable = new System.Windows.Forms.TableLayoutPanel();
@@ -113,9 +113,7 @@
             this.tsThumbnailsImport = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator22 = new System.Windows.Forms.ToolStripSeparator();
             this.tsThumbnailsResolution = new System.Windows.Forms.ToolStripLabel();
-            this.lvProperties = new System.Windows.Forms.ListView();
-            this.lvChKey = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.lvChValue = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.flvProperties = new BrightIdeasSoftware.FastObjectListView();
             this.tsProperties = new System.Windows.Forms.ToolStrip();
             this.tsPropertiesLabelCount = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
@@ -131,29 +129,32 @@
             this.tsGcodeLabelChars = new System.Windows.Forms.ToolStripLabel();
             this.tsGCodeButtonSave = new System.Windows.Forms.ToolStripButton();
             this.tabPageIssues = new System.Windows.Forms.TabPage();
-            this.lvIssues = new System.Windows.Forms.ListView();
-            this.lvIssuesType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.lvIssuesCount = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.lvIssuesLayerHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.lvIssuesXY = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.lvIssuesPixels = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.flvIssues = new BrightIdeasSoftware.FastObjectListView();
+            this.flvIssuesColType = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.flvIssuesColLayerIndex = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.flvIssuesColPosition = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.flvIssuesColPixels = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.tsIssuesLv = new System.Windows.Forms.ToolStrip();
+            this.btnIssueGroup = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator23 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnIssueResort = new System.Windows.Forms.ToolStripButton();
             this.tsIssues = new System.Windows.Forms.ToolStrip();
             this.tsIssuePrevious = new System.Windows.Forms.ToolStripButton();
             this.tsIssueCount = new System.Windows.Forms.ToolStripLabel();
             this.tsIssueNext = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
             this.tsIssueRemove = new System.Windows.Forms.ToolStripButton();
-            this.tsIsuesRefresh = new System.Windows.Forms.ToolStripSplitButton();
-            this.tsIsuesRefreshIslands = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsIsuesRefreshResinTraps = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsIssuesRefresh = new System.Windows.Forms.ToolStripSplitButton();
+            this.tsIssuesRefreshIslands = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsIssuesRefreshResinTraps = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
             this.tsIssuesRepair = new System.Windows.Forms.ToolStripButton();
             this.tabPagePixelEditor = new System.Windows.Forms.TabPage();
-            this.lvPixelHistory = new System.Windows.Forms.ListView();
-            this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.flvPixelHistory = new BrightIdeasSoftware.FastObjectListView();
+            this.flvPixelHistoryColNumber = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.flvPixelHistoryColOperation = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.olvColumn3 = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.olvColumn4 = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.tsPixelEditorHistory = new System.Windows.Forms.ToolStrip();
             this.lbPixelHistoryOperations = new System.Windows.Forms.ToolStripLabel();
             this.btnPixelHistoryRemove = new System.Windows.Forms.ToolStripButton();
@@ -189,8 +190,8 @@
             this.panel5 = new System.Windows.Forms.Panel();
             this.label12 = new System.Windows.Forms.Label();
             this.tabPageLog = new System.Windows.Forms.TabPage();
-            this.lvLog = new BrightIdeasSoftware.ObjectListView();
-            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+            this.lvLog = new BrightIdeasSoftware.FastObjectListView();
+            this.tsLog = new System.Windows.Forms.ToolStrip();
             this.btnLogClear = new System.Windows.Forms.ToolStripButton();
             this.lbLogOperations = new System.Windows.Forms.ToolStripLabel();
             this.imageList16x16 = new System.Windows.Forms.ImageList(this.components);
@@ -224,12 +225,16 @@
             this.scLeft.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbThumbnail)).BeginInit();
             this.tsThumbnails.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.flvProperties)).BeginInit();
             this.tsProperties.SuspendLayout();
             this.tabPageGCode.SuspendLayout();
             this.tsGCode.SuspendLayout();
             this.tabPageIssues.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.flvIssues)).BeginInit();
+            this.tsIssuesLv.SuspendLayout();
             this.tsIssues.SuspendLayout();
             this.tabPagePixelEditor.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.flvPixelHistory)).BeginInit();
             this.tsPixelEditorHistory.SuspendLayout();
             this.tabControlPixelEditor.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -245,7 +250,7 @@
             this.panel5.SuspendLayout();
             this.tabPageLog.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.lvLog)).BeginInit();
-            this.toolStrip1.SuspendLayout();
+            this.tsLog.SuspendLayout();
             this.tlRight.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).BeginInit();
@@ -259,8 +264,8 @@
             this.menuEdit,
             this.menuMutate,
             this.menuTools,
-            this.viewToolStripMenuItem,
             this.helpToolStripMenuItem,
+            this.viewToolStripMenuItem,
             this.menuNewVersion});
             this.menu.Location = new System.Drawing.Point(0, 0);
             this.menu.Name = "menu";
@@ -428,7 +433,7 @@
             // menuToolsRepairLayers
             // 
             this.menuToolsRepairLayers.Enabled = false;
-            this.menuToolsRepairLayers.Image = global::UVtools.GUI.Properties.Resources.Wrench_16x16;
+            this.menuToolsRepairLayers.Image = global::UVtools.GUI.Properties.Resources.toolbox_16x16;
             this.menuToolsRepairLayers.Name = "menuToolsRepairLayers";
             this.menuToolsRepairLayers.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
             | System.Windows.Forms.Keys.R)));
@@ -457,7 +462,7 @@
             // menuToolsLayerRemoval
             // 
             this.menuToolsLayerRemoval.Enabled = false;
-            this.menuToolsLayerRemoval.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.menuToolsLayerRemoval.Image = global::UVtools.GUI.Properties.Resources.layers_alt_16x16;
             this.menuToolsLayerRemoval.Name = "menuToolsLayerRemoval";
             this.menuToolsLayerRemoval.Size = new System.Drawing.Size(261, 22);
             this.menuToolsLayerRemoval.Text = "Layer Re&moval";
@@ -474,13 +479,6 @@
             this.menuToolsPattern.Text = "&Pattern";
             this.menuToolsPattern.Click += new System.EventHandler(this.EventClick);
             // 
-            // viewToolStripMenuItem
-            // 
-            this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
-            this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
-            this.viewToolStripMenuItem.Text = "&View";
-            this.viewToolStripMenuItem.Visible = false;
-            // 
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -495,7 +493,7 @@
             // 
             // menuHelpWebsite
             // 
-            this.menuHelpWebsite.Image = global::UVtools.GUI.Properties.Resources.Global_Network_icon_16x16;
+            this.menuHelpWebsite.Image = global::UVtools.GUI.Properties.Resources.internet_explorer_16x16;
             this.menuHelpWebsite.Name = "menuHelpWebsite";
             this.menuHelpWebsite.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F1)));
             this.menuHelpWebsite.Size = new System.Drawing.Size(231, 22);
@@ -533,6 +531,13 @@
             this.menuHelpInstallPrinters.Size = new System.Drawing.Size(231, 22);
             this.menuHelpInstallPrinters.Text = "Install profiles into PrusaSlicer";
             this.menuHelpInstallPrinters.Click += new System.EventHandler(this.EventClick);
+            // 
+            // viewToolStripMenuItem
+            // 
+            this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.viewToolStripMenuItem.Text = "&View";
+            this.viewToolStripMenuItem.Visible = false;
             // 
             // menuNewVersion
             // 
@@ -647,7 +652,7 @@
             // tsLayerResolution
             // 
             this.tsLayerResolution.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerResolution.Image = global::UVtools.GUI.Properties.Resources.resize_16x16;
+            this.tsLayerResolution.Image = global::UVtools.GUI.Properties.Resources.expand_16x16;
             this.tsLayerResolution.Name = "tsLayerResolution";
             this.tsLayerResolution.Size = new System.Drawing.Size(79, 22);
             this.tsLayerResolution.Text = "Resolution";
@@ -679,7 +684,7 @@
             // tsLayerImagePanLocation
             // 
             this.tsLayerImagePanLocation.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerImagePanLocation.Image = global::UVtools.GUI.Properties.Resources.cursor_16x16;
+            this.tsLayerImagePanLocation.Image = global::UVtools.GUI.Properties.Resources.map_marker_16x16;
             this.tsLayerImagePanLocation.Name = "tsLayerImagePanLocation";
             this.tsLayerImagePanLocation.Size = new System.Drawing.Size(79, 22);
             this.tsLayerImagePanLocation.Text = "{X=0, Y=0}";
@@ -695,7 +700,7 @@
             // tsLayerImageMouseLocation
             // 
             this.tsLayerImageMouseLocation.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerImageMouseLocation.Image = global::UVtools.GUI.Properties.Resources.pointer_16x16;
+            this.tsLayerImageMouseLocation.Image = global::UVtools.GUI.Properties.Resources.map_marker_16x16;
             this.tsLayerImageMouseLocation.Name = "tsLayerImageMouseLocation";
             this.tsLayerImageMouseLocation.Size = new System.Drawing.Size(79, 22);
             this.tsLayerImageMouseLocation.Text = "{X=0, Y=0}";
@@ -717,7 +722,7 @@
             // 
             // tsLayerBounds
             // 
-            this.tsLayerBounds.Image = global::UVtools.GUI.Properties.Resources.resize_16x16;
+            this.tsLayerBounds.Image = global::UVtools.GUI.Properties.Resources.expand_16x16;
             this.tsLayerBounds.Name = "tsLayerBounds";
             this.tsLayerBounds.Size = new System.Drawing.Size(66, 22);
             this.tsLayerBounds.Text = "Bounds:";
@@ -901,7 +906,7 @@
             // tsLayerRmove
             // 
             this.tsLayerRmove.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerRmove.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.tsLayerRmove.Image = global::UVtools.GUI.Properties.Resources.trash_16x16;
             this.tsLayerRmove.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsLayerRmove.Name = "tsLayerRmove";
             this.tsLayerRmove.Size = new System.Drawing.Size(101, 22);
@@ -939,7 +944,7 @@
             // tbpThumbnailsAndInfo
             // 
             this.tbpThumbnailsAndInfo.Controls.Add(this.scLeft);
-            this.tbpThumbnailsAndInfo.ImageKey = "PhotoInfo-16x16.png";
+            this.tbpThumbnailsAndInfo.ImageKey = "Button-Info-16x16.png";
             this.tbpThumbnailsAndInfo.Location = new System.Drawing.Point(4, 42);
             this.tbpThumbnailsAndInfo.Name = "tbpThumbnailsAndInfo";
             this.tbpThumbnailsAndInfo.Padding = new System.Windows.Forms.Padding(3);
@@ -964,7 +969,7 @@
             // 
             // scLeft.Panel2
             // 
-            this.scLeft.Panel2.Controls.Add(this.lvProperties);
+            this.scLeft.Panel2.Controls.Add(this.flvProperties);
             this.scLeft.Panel2.Controls.Add(this.tsProperties);
             this.scLeft.Size = new System.Drawing.Size(380, 707);
             this.scLeft.SplitterDistance = 425;
@@ -1075,7 +1080,7 @@
             this.tsThumbnailsImport.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsThumbnailsImport.Name = "tsThumbnailsImport";
             this.tsThumbnailsImport.Size = new System.Drawing.Size(23, 22);
-            this.tsThumbnailsImport.Text = "toolStripButton1";
+            this.tsThumbnailsImport.Text = "Change Preview";
             this.tsThumbnailsImport.ToolTipText = "Replace the current preview image";
             this.tsThumbnailsImport.Click += new System.EventHandler(this.EventClick);
             // 
@@ -1093,32 +1098,30 @@
             this.tsThumbnailsResolution.Text = "Resolution";
             this.tsThumbnailsResolution.ToolTipText = "Thumbnail Resolution";
             // 
-            // lvProperties
+            // flvProperties
             // 
-            this.lvProperties.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.lvChKey,
-            this.lvChValue});
-            this.lvProperties.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lvProperties.FullRowSelect = true;
-            this.lvProperties.GridLines = true;
-            this.lvProperties.HideSelection = false;
-            this.lvProperties.Location = new System.Drawing.Point(0, 25);
-            this.lvProperties.Name = "lvProperties";
-            this.lvProperties.Size = new System.Drawing.Size(380, 253);
-            this.lvProperties.TabIndex = 1;
-            this.lvProperties.UseCompatibleStateImageBehavior = false;
-            this.lvProperties.View = System.Windows.Forms.View.Details;
-            this.lvProperties.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
-            // 
-            // lvChKey
-            // 
-            this.lvChKey.Text = "Key";
-            this.lvChKey.Width = 183;
-            // 
-            // lvChValue
-            // 
-            this.lvChValue.Text = "Value";
-            this.lvChValue.Width = 205;
+            this.flvProperties.AllowColumnReorder = true;
+            this.flvProperties.Cursor = System.Windows.Forms.Cursors.Default;
+            this.flvProperties.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.flvProperties.EmptyListMsg = "No properties";
+            this.flvProperties.FullRowSelect = true;
+            this.flvProperties.GridLines = true;
+            this.flvProperties.HideSelection = false;
+            this.flvProperties.IncludeColumnHeadersInCopy = true;
+            this.flvProperties.Location = new System.Drawing.Point(0, 25);
+            this.flvProperties.Name = "flvProperties";
+            this.flvProperties.ShowGroups = false;
+            this.flvProperties.ShowItemCountOnGroups = true;
+            this.flvProperties.Size = new System.Drawing.Size(380, 253);
+            this.flvProperties.TabIndex = 9;
+            this.flvProperties.UseCompatibleStateImageBehavior = false;
+            this.flvProperties.UseExplorerTheme = true;
+            this.flvProperties.UseFilterIndicator = true;
+            this.flvProperties.UseFiltering = true;
+            this.flvProperties.UseHotItem = true;
+            this.flvProperties.View = System.Windows.Forms.View.Details;
+            this.flvProperties.VirtualMode = true;
+            this.flvProperties.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
             // 
             // tsProperties
             // 
@@ -1187,7 +1190,7 @@
             // 
             this.tabPageGCode.Controls.Add(this.tbGCode);
             this.tabPageGCode.Controls.Add(this.tsGCode);
-            this.tabPageGCode.ImageKey = "GCode-16x16.png";
+            this.tabPageGCode.ImageKey = "code-16x16.png";
             this.tabPageGCode.Location = new System.Drawing.Point(4, 42);
             this.tabPageGCode.Name = "tabPageGCode";
             this.tabPageGCode.Size = new System.Drawing.Size(386, 713);
@@ -1250,7 +1253,8 @@
             // 
             // tabPageIssues
             // 
-            this.tabPageIssues.Controls.Add(this.lvIssues);
+            this.tabPageIssues.Controls.Add(this.flvIssues);
+            this.tabPageIssues.Controls.Add(this.tsIssuesLv);
             this.tabPageIssues.Controls.Add(this.tsIssues);
             this.tabPageIssues.ImageKey = "warning-16x16.png";
             this.tabPageIssues.Location = new System.Drawing.Point(4, 42);
@@ -1261,55 +1265,104 @@
             this.tabPageIssues.Text = "Issues";
             this.tabPageIssues.UseVisualStyleBackColor = true;
             // 
-            // lvIssues
+            // flvIssues
             // 
-            this.lvIssues.Activation = System.Windows.Forms.ItemActivation.TwoClick;
-            this.lvIssues.AllowColumnReorder = true;
-            this.lvIssues.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.lvIssuesType,
-            this.lvIssuesCount,
-            this.lvIssuesLayerHeader,
-            this.lvIssuesXY,
-            this.lvIssuesPixels});
-            this.lvIssues.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lvIssues.FullRowSelect = true;
-            this.lvIssues.GridLines = true;
-            this.lvIssues.HideSelection = false;
-            this.lvIssues.Location = new System.Drawing.Point(3, 28);
-            this.lvIssues.Name = "lvIssues";
-            this.lvIssues.Size = new System.Drawing.Size(380, 682);
-            this.lvIssues.TabIndex = 8;
-            this.lvIssues.UseCompatibleStateImageBehavior = false;
-            this.lvIssues.View = System.Windows.Forms.View.Details;
-            this.lvIssues.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.EventColumnClick);
-            this.lvIssues.ItemActivate += new System.EventHandler(this.EventItemActivate);
-            this.lvIssues.SelectedIndexChanged += new System.EventHandler(this.EventSelectedIndexChanged);
-            this.lvIssues.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
+            this.flvIssues.AllColumns.Add(this.flvIssuesColType);
+            this.flvIssues.AllColumns.Add(this.flvIssuesColLayerIndex);
+            this.flvIssues.AllColumns.Add(this.flvIssuesColPosition);
+            this.flvIssues.AllColumns.Add(this.flvIssuesColPixels);
+            this.flvIssues.AllowColumnReorder = true;
+            this.flvIssues.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.flvIssuesColType,
+            this.flvIssuesColLayerIndex,
+            this.flvIssuesColPosition,
+            this.flvIssuesColPixels});
+            this.flvIssues.Cursor = System.Windows.Forms.Cursors.Default;
+            this.flvIssues.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.flvIssues.EmptyListMsg = "No issues";
+            this.flvIssues.FullRowSelect = true;
+            this.flvIssues.GridLines = true;
+            this.flvIssues.HideSelection = false;
+            this.flvIssues.IncludeColumnHeadersInCopy = true;
+            this.flvIssues.Location = new System.Drawing.Point(3, 53);
+            this.flvIssues.Name = "flvIssues";
+            this.flvIssues.ShowGroups = false;
+            this.flvIssues.ShowItemCountOnGroups = true;
+            this.flvIssues.Size = new System.Drawing.Size(380, 657);
+            this.flvIssues.TabIndex = 9;
+            this.flvIssues.UseCompatibleStateImageBehavior = false;
+            this.flvIssues.UseExplorerTheme = true;
+            this.flvIssues.UseFilterIndicator = true;
+            this.flvIssues.UseFiltering = true;
+            this.flvIssues.UseHotItem = true;
+            this.flvIssues.View = System.Windows.Forms.View.Details;
+            this.flvIssues.VirtualMode = true;
+            this.flvIssues.SelectionChanged += new System.EventHandler(this.EventSelectedIndexChanged);
+            this.flvIssues.ItemActivate += new System.EventHandler(this.EventItemActivate);
+            this.flvIssues.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
             // 
-            // lvIssuesType
+            // flvIssuesColType
             // 
-            this.lvIssuesType.Text = "Type";
-            this.lvIssuesType.Width = 100;
+            this.flvIssuesColType.AspectName = "Type";
+            this.flvIssuesColType.Text = "Type";
+            this.flvIssuesColType.Width = 100;
             // 
-            // lvIssuesCount
+            // flvIssuesColLayerIndex
             // 
-            this.lvIssuesCount.Text = "#";
-            this.lvIssuesCount.Width = 50;
+            this.flvIssuesColLayerIndex.AspectName = "LayerIndex";
+            this.flvIssuesColLayerIndex.Text = "Layer";
+            this.flvIssuesColLayerIndex.Width = 56;
             // 
-            // lvIssuesLayerHeader
+            // flvIssuesColPosition
             // 
-            this.lvIssuesLayerHeader.Text = "Layer";
-            this.lvIssuesLayerHeader.Width = 50;
+            this.flvIssuesColPosition.AspectName = "FirstPointStr";
+            this.flvIssuesColPosition.Text = "Position (X,Y)";
+            this.flvIssuesColPosition.Width = 110;
             // 
-            // lvIssuesXY
+            // flvIssuesColPixels
             // 
-            this.lvIssuesXY.Text = "X, Y";
-            this.lvIssuesXY.Width = 100;
+            this.flvIssuesColPixels.AspectName = "PixelsCount";
+            this.flvIssuesColPixels.Text = "Pixels";
+            this.flvIssuesColPixels.Width = 100;
             // 
-            // lvIssuesPixels
+            // tsIssuesLv
             // 
-            this.lvIssuesPixels.Text = "Pixels";
-            this.lvIssuesPixels.Width = 70;
+            this.tsIssuesLv.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.tsIssuesLv.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.btnIssueGroup,
+            this.toolStripSeparator23,
+            this.btnIssueResort});
+            this.tsIssuesLv.Location = new System.Drawing.Point(3, 28);
+            this.tsIssuesLv.Name = "tsIssuesLv";
+            this.tsIssuesLv.Size = new System.Drawing.Size(380, 25);
+            this.tsIssuesLv.TabIndex = 10;
+            this.tsIssuesLv.Text = "Thumbnail Menu";
+            // 
+            // btnIssueGroup
+            // 
+            this.btnIssueGroup.CheckOnClick = true;
+            this.btnIssueGroup.Image = global::UVtools.GUI.Properties.Resources.list_16x16;
+            this.btnIssueGroup.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnIssueGroup.Name = "btnIssueGroup";
+            this.btnIssueGroup.Size = new System.Drawing.Size(60, 22);
+            this.btnIssueGroup.Text = "Group";
+            this.btnIssueGroup.ToolTipText = "Group items by issue type";
+            this.btnIssueGroup.Click += new System.EventHandler(this.EventClick);
+            // 
+            // toolStripSeparator23
+            // 
+            this.toolStripSeparator23.Name = "toolStripSeparator23";
+            this.toolStripSeparator23.Size = new System.Drawing.Size(6, 25);
+            // 
+            // btnIssueResort
+            // 
+            this.btnIssueResort.Image = global::UVtools.GUI.Properties.Resources.sort_alpha_up_16x16;
+            this.btnIssueResort.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnIssueResort.Name = "btnIssueResort";
+            this.btnIssueResort.Size = new System.Drawing.Size(60, 22);
+            this.btnIssueResort.Text = "Resort";
+            this.btnIssueResort.ToolTipText = "Reset sorting on issues";
+            this.btnIssueResort.Click += new System.EventHandler(this.EventClick);
             // 
             // tsIssues
             // 
@@ -1320,7 +1373,7 @@
             this.tsIssueNext,
             this.toolStripSeparator13,
             this.tsIssueRemove,
-            this.tsIsuesRefresh,
+            this.tsIssuesRefresh,
             this.toolStripSeparator12,
             this.tsIssuesRepair});
             this.tsIssues.Location = new System.Drawing.Point(3, 3);
@@ -1368,7 +1421,7 @@
             // tsIssueRemove
             // 
             this.tsIssueRemove.Enabled = false;
-            this.tsIssueRemove.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.tsIssueRemove.Image = global::UVtools.GUI.Properties.Resources.trash_16x16;
             this.tsIssueRemove.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsIssueRemove.Name = "tsIssueRemove";
             this.tsIssueRemove.Size = new System.Drawing.Size(70, 22);
@@ -1378,37 +1431,37 @@
     "tion, need reslice.";
             this.tsIssueRemove.Click += new System.EventHandler(this.EventClick);
             // 
-            // tsIsuesRefresh
+            // tsIssuesRefresh
             // 
-            this.tsIsuesRefresh.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsIsuesRefresh.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsIsuesRefreshIslands,
-            this.tsIsuesRefreshResinTraps});
-            this.tsIsuesRefresh.Image = global::UVtools.GUI.Properties.Resources.refresh_16x16;
-            this.tsIsuesRefresh.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsIsuesRefresh.Name = "tsIsuesRefresh";
-            this.tsIsuesRefresh.Size = new System.Drawing.Size(73, 22);
-            this.tsIsuesRefresh.Text = "&Detect";
-            this.tsIsuesRefresh.ToolTipText = "Compute Issues";
-            this.tsIsuesRefresh.ButtonClick += new System.EventHandler(this.EventClick);
+            this.tsIssuesRefresh.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsIssuesRefresh.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsIssuesRefreshIslands,
+            this.tsIssuesRefreshResinTraps});
+            this.tsIssuesRefresh.Image = global::UVtools.GUI.Properties.Resources.refresh_16x16;
+            this.tsIssuesRefresh.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsIssuesRefresh.Name = "tsIssuesRefresh";
+            this.tsIssuesRefresh.Size = new System.Drawing.Size(73, 22);
+            this.tsIssuesRefresh.Text = "&Detect";
+            this.tsIssuesRefresh.ToolTipText = "Compute Issues";
+            this.tsIssuesRefresh.ButtonClick += new System.EventHandler(this.EventClick);
             // 
-            // tsIsuesRefreshIslands
+            // tsIssuesRefreshIslands
             // 
-            this.tsIsuesRefreshIslands.Checked = true;
-            this.tsIsuesRefreshIslands.CheckOnClick = true;
-            this.tsIsuesRefreshIslands.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tsIsuesRefreshIslands.Name = "tsIsuesRefreshIslands";
-            this.tsIsuesRefreshIslands.Size = new System.Drawing.Size(211, 22);
-            this.tsIsuesRefreshIslands.Text = "Islands && Touching Bonds";
+            this.tsIssuesRefreshIslands.Checked = true;
+            this.tsIssuesRefreshIslands.CheckOnClick = true;
+            this.tsIssuesRefreshIslands.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsIssuesRefreshIslands.Name = "tsIssuesRefreshIslands";
+            this.tsIssuesRefreshIslands.Size = new System.Drawing.Size(211, 22);
+            this.tsIssuesRefreshIslands.Text = "Islands && Touching Bonds";
             // 
-            // tsIsuesRefreshResinTraps
+            // tsIssuesRefreshResinTraps
             // 
-            this.tsIsuesRefreshResinTraps.Checked = true;
-            this.tsIsuesRefreshResinTraps.CheckOnClick = true;
-            this.tsIsuesRefreshResinTraps.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tsIsuesRefreshResinTraps.Name = "tsIsuesRefreshResinTraps";
-            this.tsIsuesRefreshResinTraps.Size = new System.Drawing.Size(211, 22);
-            this.tsIsuesRefreshResinTraps.Text = "Resin traps";
+            this.tsIssuesRefreshResinTraps.Checked = true;
+            this.tsIssuesRefreshResinTraps.CheckOnClick = true;
+            this.tsIssuesRefreshResinTraps.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsIssuesRefreshResinTraps.Name = "tsIssuesRefreshResinTraps";
+            this.tsIssuesRefreshResinTraps.Size = new System.Drawing.Size(211, 22);
+            this.tsIssuesRefreshResinTraps.Text = "Resin traps";
             // 
             // toolStripSeparator12
             // 
@@ -1430,7 +1483,7 @@
             // 
             // tabPagePixelEditor
             // 
-            this.tabPagePixelEditor.Controls.Add(this.lvPixelHistory);
+            this.tabPagePixelEditor.Controls.Add(this.flvPixelHistory);
             this.tabPagePixelEditor.Controls.Add(this.tsPixelEditorHistory);
             this.tabPagePixelEditor.Controls.Add(this.tabControlPixelEditor);
             this.tabPagePixelEditor.ImageKey = "pixel-16x16.png";
@@ -1442,46 +1495,64 @@
             this.tabPagePixelEditor.Text = "Pixel Editor";
             this.tabPagePixelEditor.UseVisualStyleBackColor = true;
             // 
-            // lvPixelHistory
+            // flvPixelHistory
             // 
-            this.lvPixelHistory.AllowColumnReorder = true;
-            this.lvPixelHistory.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader5,
-            this.columnHeader1,
-            this.columnHeader2,
-            this.columnHeader3});
-            this.lvPixelHistory.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lvPixelHistory.FullRowSelect = true;
-            this.lvPixelHistory.GridLines = true;
-            this.lvPixelHistory.HideSelection = false;
-            this.lvPixelHistory.Location = new System.Drawing.Point(3, 350);
-            this.lvPixelHistory.Name = "lvPixelHistory";
-            this.lvPixelHistory.Size = new System.Drawing.Size(380, 360);
-            this.lvPixelHistory.TabIndex = 1;
-            this.lvPixelHistory.UseCompatibleStateImageBehavior = false;
-            this.lvPixelHistory.View = System.Windows.Forms.View.Details;
-            this.lvPixelHistory.ItemActivate += new System.EventHandler(this.EventItemActivate);
-            this.lvPixelHistory.SelectedIndexChanged += new System.EventHandler(this.EventSelectedIndexChanged);
-            this.lvPixelHistory.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
+            this.flvPixelHistory.AllColumns.Add(this.flvPixelHistoryColNumber);
+            this.flvPixelHistory.AllColumns.Add(this.flvPixelHistoryColOperation);
+            this.flvPixelHistory.AllColumns.Add(this.olvColumn3);
+            this.flvPixelHistory.AllColumns.Add(this.olvColumn4);
+            this.flvPixelHistory.AllowColumnReorder = true;
+            this.flvPixelHistory.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.flvPixelHistoryColNumber,
+            this.flvPixelHistoryColOperation,
+            this.olvColumn3,
+            this.olvColumn4});
+            this.flvPixelHistory.Cursor = System.Windows.Forms.Cursors.Default;
+            this.flvPixelHistory.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.flvPixelHistory.EmptyListMsg = "No operations";
+            this.flvPixelHistory.FullRowSelect = true;
+            this.flvPixelHistory.GridLines = true;
+            this.flvPixelHistory.HideSelection = false;
+            this.flvPixelHistory.IncludeColumnHeadersInCopy = true;
+            this.flvPixelHistory.Location = new System.Drawing.Point(3, 350);
+            this.flvPixelHistory.Name = "flvPixelHistory";
+            this.flvPixelHistory.ShowGroups = false;
+            this.flvPixelHistory.ShowItemCountOnGroups = true;
+            this.flvPixelHistory.Size = new System.Drawing.Size(380, 360);
+            this.flvPixelHistory.TabIndex = 8;
+            this.flvPixelHistory.UseCompatibleStateImageBehavior = false;
+            this.flvPixelHistory.UseExplorerTheme = true;
+            this.flvPixelHistory.UseFilterIndicator = true;
+            this.flvPixelHistory.UseFiltering = true;
+            this.flvPixelHistory.UseHotItem = true;
+            this.flvPixelHistory.View = System.Windows.Forms.View.Details;
+            this.flvPixelHistory.VirtualMode = true;
+            this.flvPixelHistory.SelectionChanged += new System.EventHandler(this.EventSelectedIndexChanged);
+            this.flvPixelHistory.ItemActivate += new System.EventHandler(this.EventItemActivate);
+            this.flvPixelHistory.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
             // 
-            // columnHeader5
+            // flvPixelHistoryColNumber
             // 
-            this.columnHeader5.Text = "#";
-            this.columnHeader5.Width = 50;
+            this.flvPixelHistoryColNumber.AspectName = "Index";
+            this.flvPixelHistoryColNumber.Text = "#";
+            this.flvPixelHistoryColNumber.Width = 46;
             // 
-            // columnHeader1
+            // flvPixelHistoryColOperation
             // 
-            this.columnHeader1.Text = "Operation";
-            this.columnHeader1.Width = 100;
+            this.flvPixelHistoryColOperation.AspectName = "OperationType";
+            this.flvPixelHistoryColOperation.Text = "Operation";
+            this.flvPixelHistoryColOperation.Width = 98;
             // 
-            // columnHeader2
+            // olvColumn3
             // 
-            this.columnHeader2.Text = "Layer";
+            this.olvColumn3.AspectName = "LayerIndex";
+            this.olvColumn3.Text = "Layer";
             // 
-            // columnHeader3
+            // olvColumn4
             // 
-            this.columnHeader3.Text = "Position";
-            this.columnHeader3.Width = 130;
+            this.olvColumn4.AspectName = "Location";
+            this.olvColumn4.Text = "Position";
+            this.olvColumn4.Width = 149;
             // 
             // tsPixelEditorHistory
             // 
@@ -1913,7 +1984,7 @@
             // tabPageLog
             // 
             this.tabPageLog.Controls.Add(this.lvLog);
-            this.tabPageLog.Controls.Add(this.toolStrip1);
+            this.tabPageLog.Controls.Add(this.tsLog);
             this.tabPageLog.ImageKey = "log-16x16.png";
             this.tabPageLog.Location = new System.Drawing.Point(4, 42);
             this.tabPageLog.Name = "tabPageLog";
@@ -1928,32 +1999,40 @@
             this.lvLog.AllowColumnReorder = true;
             this.lvLog.Cursor = System.Windows.Forms.Cursors.Default;
             this.lvLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lvLog.EmptyListMsg = "No operations";
             this.lvLog.FullRowSelect = true;
             this.lvLog.GridLines = true;
             this.lvLog.HideSelection = false;
+            this.lvLog.IncludeColumnHeadersInCopy = true;
             this.lvLog.Location = new System.Drawing.Point(3, 28);
             this.lvLog.Name = "lvLog";
             this.lvLog.ShowGroups = false;
+            this.lvLog.ShowItemCountOnGroups = true;
             this.lvLog.Size = new System.Drawing.Size(380, 682);
             this.lvLog.TabIndex = 1;
             this.lvLog.UseCompatibleStateImageBehavior = false;
+            this.lvLog.UseExplorerTheme = true;
+            this.lvLog.UseFilterIndicator = true;
+            this.lvLog.UseFiltering = true;
+            this.lvLog.UseHotItem = true;
             this.lvLog.View = System.Windows.Forms.View.Details;
+            this.lvLog.VirtualMode = true;
             // 
-            // toolStrip1
+            // tsLog
             // 
-            this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsLog.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.tsLog.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.btnLogClear,
             this.lbLogOperations});
-            this.toolStrip1.Location = new System.Drawing.Point(3, 3);
-            this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(380, 25);
-            this.toolStrip1.TabIndex = 0;
-            this.toolStrip1.Text = "toolStrip1";
+            this.tsLog.Location = new System.Drawing.Point(3, 3);
+            this.tsLog.Name = "tsLog";
+            this.tsLog.Size = new System.Drawing.Size(380, 25);
+            this.tsLog.TabIndex = 0;
+            this.tsLog.Text = "Log";
             // 
             // btnLogClear
             // 
-            this.btnLogClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.btnLogClear.Image = global::UVtools.GUI.Properties.Resources.trash_16x16;
             this.btnLogClear.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnLogClear.Name = "btnLogClear";
             this.btnLogClear.Size = new System.Drawing.Size(54, 22);
@@ -1972,9 +2051,9 @@
             // 
             this.imageList16x16.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList16x16.ImageStream")));
             this.imageList16x16.TransparentColor = System.Drawing.Color.Transparent;
-            this.imageList16x16.Images.SetKeyName(0, "DataList-16x16.png");
+            this.imageList16x16.Images.SetKeyName(0, "Button-Info-16x16.png");
             this.imageList16x16.Images.SetKeyName(1, "PhotoInfo-16x16.png");
-            this.imageList16x16.Images.SetKeyName(2, "GCode-16x16.png");
+            this.imageList16x16.Images.SetKeyName(2, "code-16x16.png");
             this.imageList16x16.Images.SetKeyName(3, "warning-16x16.png");
             this.imageList16x16.Images.SetKeyName(4, "pixel-16x16.png");
             this.imageList16x16.Images.SetKeyName(5, "log-16x16.png");
@@ -2189,6 +2268,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbThumbnail)).EndInit();
             this.tsThumbnails.ResumeLayout(false);
             this.tsThumbnails.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.flvProperties)).EndInit();
             this.tsProperties.ResumeLayout(false);
             this.tsProperties.PerformLayout();
             this.tabPageGCode.ResumeLayout(false);
@@ -2197,10 +2277,14 @@
             this.tsGCode.PerformLayout();
             this.tabPageIssues.ResumeLayout(false);
             this.tabPageIssues.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.flvIssues)).EndInit();
+            this.tsIssuesLv.ResumeLayout(false);
+            this.tsIssuesLv.PerformLayout();
             this.tsIssues.ResumeLayout(false);
             this.tsIssues.PerformLayout();
             this.tabPagePixelEditor.ResumeLayout(false);
             this.tabPagePixelEditor.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.flvPixelHistory)).EndInit();
             this.tsPixelEditorHistory.ResumeLayout(false);
             this.tsPixelEditorHistory.PerformLayout();
             this.tabControlPixelEditor.ResumeLayout(false);
@@ -2224,8 +2308,8 @@
             this.tabPageLog.ResumeLayout(false);
             this.tabPageLog.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.lvLog)).EndInit();
-            this.toolStrip1.ResumeLayout(false);
-            this.toolStrip1.PerformLayout();
+            this.tsLog.ResumeLayout(false);
+            this.tsLog.PerformLayout();
             this.tlRight.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
@@ -2278,9 +2362,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripLabel tsGcodeLabelChars;
         private System.Windows.Forms.ToolStripButton tsGCodeButtonSave;
-        private System.Windows.Forms.ListView lvProperties;
-        private System.Windows.Forms.ColumnHeader lvChKey;
-        private System.Windows.Forms.ColumnHeader lvChValue;
         private System.Windows.Forms.ToolStrip tsProperties;
         private System.Windows.Forms.ToolStripLabel tsPropertiesLabelCount;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
@@ -2301,11 +2382,6 @@
         private System.Windows.Forms.ToolStripButton tsIssuePrevious;
         private System.Windows.Forms.ToolStripButton tsIssueNext;
         private System.Windows.Forms.ToolStripLabel tsIssueCount;
-        private System.Windows.Forms.ListView lvIssues;
-        private System.Windows.Forms.ColumnHeader lvIssuesCount;
-        private System.Windows.Forms.ColumnHeader lvIssuesXY;
-        private System.Windows.Forms.ColumnHeader lvIssuesPixels;
-        private System.Windows.Forms.ColumnHeader lvIssuesLayerHeader;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator12;
         private System.Windows.Forms.ToolStripButton tsIssueRemove;
         private System.Windows.Forms.ToolStripMenuItem menuTools;
@@ -2327,7 +2403,6 @@
         private System.Windows.Forms.Button btnLastLayer;
         private System.Windows.Forms.Button btnFindLayer;
         private System.Windows.Forms.ToolTip toolTipInformation;
-        private System.Windows.Forms.ColumnHeader lvIssuesType;
         private System.Windows.Forms.Timer layerScrollTimer;
         private System.Windows.Forms.ToolStripSplitButton tsLayerImageExport;
         private System.Windows.Forms.ToolStripMenuItem tsLayerImageExportFile;
@@ -2335,9 +2410,9 @@
         private System.Windows.Forms.ToolStripMenuItem menuNewVersion;
         private System.Windows.Forms.ToolStripMenuItem menuFileSettings;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator15;
-        private System.Windows.Forms.ToolStripSplitButton tsIsuesRefresh;
-        private System.Windows.Forms.ToolStripMenuItem tsIsuesRefreshIslands;
-        private System.Windows.Forms.ToolStripMenuItem tsIsuesRefreshResinTraps;
+        private System.Windows.Forms.ToolStripSplitButton tsIssuesRefresh;
+        private System.Windows.Forms.ToolStripMenuItem tsIssuesRefreshIslands;
+        private System.Windows.Forms.ToolStripMenuItem tsIssuesRefreshResinTraps;
         private System.Windows.Forms.ToolStripSplitButton tsLayerImageLayerOutline;
         private System.Windows.Forms.ToolStripMenuItem tsLayerImageLayerOutlineEdgeDetection;
         private System.Windows.Forms.ToolStripMenuItem tsLayerImageLayerOutlinePrintVolumeBounds;
@@ -2351,7 +2426,6 @@
         private System.Windows.Forms.TabControl tabControlPixelEditor;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
-        private System.Windows.Forms.ListView lvPixelHistory;
         private System.Windows.Forms.ToolStrip tsPixelEditorHistory;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ComboBox cbPixelEditorBrushShape;
@@ -2359,10 +2433,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.NumericUpDown nmPixelEditorBrushSize;
-        private System.Windows.Forms.ColumnHeader columnHeader5;
-        private System.Windows.Forms.ColumnHeader columnHeader1;
-        private System.Windows.Forms.ColumnHeader columnHeader2;
-        private System.Windows.Forms.ColumnHeader columnHeader3;
         private System.Windows.Forms.ToolStripLabel lbPixelHistoryOperations;
         private System.Windows.Forms.Panel panel4;
         private System.Windows.Forms.Label label4;
@@ -2412,10 +2482,25 @@
         private System.Windows.Forms.ToolStripMenuItem tsPropertiesExportClipboard;
         private System.Windows.Forms.ToolStripMenuItem menuToolsChangeResolution;
         private System.Windows.Forms.TabPage tabPageLog;
-        private BrightIdeasSoftware.ObjectListView lvLog;
-        private System.Windows.Forms.ToolStrip toolStrip1;
+        private BrightIdeasSoftware.FastObjectListView lvLog;
+        private System.Windows.Forms.ToolStrip tsLog;
         private System.Windows.Forms.ToolStripButton btnLogClear;
         private System.Windows.Forms.ToolStripLabel lbLogOperations;
+        private BrightIdeasSoftware.FastObjectListView flvPixelHistory;
+        private BrightIdeasSoftware.OLVColumn flvPixelHistoryColNumber;
+        private BrightIdeasSoftware.OLVColumn flvPixelHistoryColOperation;
+        private BrightIdeasSoftware.OLVColumn olvColumn3;
+        private BrightIdeasSoftware.OLVColumn olvColumn4;
+        private BrightIdeasSoftware.FastObjectListView flvProperties;
+        private BrightIdeasSoftware.FastObjectListView flvIssues;
+        private BrightIdeasSoftware.OLVColumn flvIssuesColType;
+        private BrightIdeasSoftware.OLVColumn flvIssuesColLayerIndex;
+        private BrightIdeasSoftware.OLVColumn flvIssuesColPosition;
+        private BrightIdeasSoftware.OLVColumn flvIssuesColPixels;
+        private System.Windows.Forms.ToolStrip tsIssuesLv;
+        private System.Windows.Forms.ToolStripButton btnIssueGroup;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator23;
+        private System.Windows.Forms.ToolStripButton btnIssueResort;
     }
 }
 

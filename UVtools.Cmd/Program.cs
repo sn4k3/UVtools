@@ -187,13 +187,18 @@ namespace UVtools.Cmd
                 {
                     Console.WriteLine("Computing Issues, please wait.");
                     sw.Restart();
-                    var issuesDict = fileFormat.LayerManager.GetAllIssues(null, null, progress);
+                    var issueList = fileFormat.LayerManager.GetAllIssues(null, null, null, progress);
                     sw.Stop();
                     
                     Console.WriteLine("Issues:");
                     Console.WriteLine("----------------------");
                     count = 0;
-                    for (uint layerIndex = 0; layerIndex < fileFormat.LayerCount; layerIndex++)
+                    foreach (var issue in issueList)
+                    {
+                        Console.WriteLine(issue);
+                        count++;
+                    }
+                    /*for (uint layerIndex = 0; layerIndex < fileFormat.LayerCount; layerIndex++)
                     {
                         if(!issuesDict.TryGetValue(layerIndex, out var list)) continue;
                         foreach (var issue in list)
@@ -201,7 +206,7 @@ namespace UVtools.Cmd
                             Console.WriteLine(issue);
                             count++;
                         }
-                    }
+                    }*/
 
                     Console.WriteLine("----------------------");
                     Console.WriteLine($"Total Issues: {count} in {sw.ElapsedMilliseconds}ms");
