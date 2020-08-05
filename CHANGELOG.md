@@ -1,5 +1,10 @@
 # Changelog
 
+## 05/07/2020 - v0.6.4.2
+
+* (Add) Hold "ALT" key when double clicking over items to invert AutoZoom setting, prevent or do zoom in issues or pixels, this will behave as !AutoZoom as long key is held
+* (Improvement) Partial island update speed, huge boost performance over large files
+
 ## 04/07/2020 - v0.6.4.1
 
 * (Add) Partial update islands from current working layer and next layer when using pixel editor or island remove

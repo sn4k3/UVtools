@@ -1860,7 +1860,7 @@ namespace UVtools.GUI
                             y = issue.X;
                         }
 
-                        if (Settings.Default.AutoZoomIssues)
+                        if (Settings.Default.AutoZoomIssues ^ (ModifierKeys & Keys.Alt) != 0)
                         {
                             pbLayer.ZoomToRegion(x, y, 5, 5);
                             pbLayer.ZoomOut(true);
@@ -1876,7 +1876,7 @@ namespace UVtools.GUI
                             ? ActualLayerImage.Height - 1 - issue.BoundingRectangle.Bottom
                             : issue.BoundingRectangle.X;
                         int y = tsLayerImageRotate.Checked ? issue.BoundingRectangle.X : issue.BoundingRectangle.Y;
-                        if (Settings.Default.AutoZoomIssues)
+                        if (Settings.Default.AutoZoomIssues ^ (ModifierKeys & Keys.Alt) != 0)
                         {
                             
                             pbLayer.ZoomToRegion(
@@ -1921,8 +1921,8 @@ namespace UVtools.GUI
                     x = ActualLayerImage.Height - 1 - operation.Location.Y;
                     y = operation.Location.X;
                 }
-                
-                if (Settings.Default.AutoZoomIssues)
+
+                if (Settings.Default.AutoZoomIssues ^ (ModifierKeys & Keys.Alt) != 0)
                 {
                     pbLayer.ZoomToRegion(x, y, operation.Size.Width, operation.Size.Height);
                     pbLayer.ZoomOut(true);

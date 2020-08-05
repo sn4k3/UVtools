@@ -10,7 +10,6 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -694,8 +693,6 @@ namespace UVtools.Core
             if(ReferenceEquals(touchBoundConfig, null)) touchBoundConfig = new TouchingBoundDetectionConfiguration();
             if(ReferenceEquals(progress, null)) progress = new OperationProgress();
 
-            const byte minTouchingBondsPixelColor = 200;
-
             var result = new ConcurrentBag<LayerIssue>();
             var layerHollowAreas = new ConcurrentDictionary<uint, List<LayerHollowArea>>();
 
@@ -717,168 +714,190 @@ namespace UVtools.Core
                     layer =>
                     {
                         if (progress.Token.IsCancellationRequested) return;
-                        if (layer.NonZeroPixelCount > 0)
+                        if (layer.NonZeroPixelCount == 0)
                         {
-                            using (var image = layer.LayerMat)
+                            result.Add(new LayerIssue(layer, LayerIssue.IssueType.EmptyLayer));
+                            lock (progress.Mutex)
                             {
-                                int step = image.Step;
-                                var span = image.GetPixelSpan<byte>();
+                                progress++;
+                            }
 
-                                if (resinTrapConfig.Enabled)
+                            return;
+                        }
+
+                        // Spare a decoding cycle
+                        if (!resinTrapConfig.Enabled && 
+                            (layer.Index == 0 || 
+                             (!ReferenceEquals(islandConfig.WhiteListLayers, null) && !islandConfig.WhiteListLayers.Contains(layer.Index)))
+                            )
+                        {
+                            lock (progress.Mutex)
+                            {
+                                progress++;
+                            }
+                            return;
+                        }
+
+                        using (var image = layer.LayerMat)
+                        {
+                            int step = image.Step;
+                            var span = image.GetPixelSpan<byte>();
+
+                            if (resinTrapConfig.Enabled)
+                            {
+                                // TouchingBounds Checker
+                                List<Point> pixels = new List<Point>();
+                                for (int x = 0; x < image.Width; x++) // Check Top and Bottom bounds
                                 {
-                                    // TouchingBounds Checker
-                                    List<Point> pixels = new List<Point>();
-                                    for (int x = 0; x < image.Width; x++) // Check Top and Bottom bounds
+                                    if (span[x] >= touchBoundConfig.MaximumPixelBrightness) // Top
                                     {
-                                        if (span[x] >= minTouchingBondsPixelColor) // Top
-                                        {
-                                            pixels.Add(new Point(x, 0));
-                                        }
-
-                                        if (span[step * image.Height - step + x] >=
-                                            minTouchingBondsPixelColor) // Bottom
-                                        {
-                                            pixels.Add(new Point(x, image.Height - 1));
-                                        }
+                                        pixels.Add(new Point(x, 0));
                                     }
 
-                                    for (int y = 0; y < image.Height; y++) // Check Left and Right bounds
+                                    if (span[step * image.Height - step + x] >=
+                                        touchBoundConfig.MaximumPixelBrightness) // Bottom
                                     {
-                                        if (span[y * step] >= minTouchingBondsPixelColor) // Left
-                                        {
-                                            pixels.Add(new Point(0, y));
-                                        }
+                                        pixels.Add(new Point(x, image.Height - 1));
+                                    }
+                                }
 
-                                        if (span[y * step + step - 1] >= minTouchingBondsPixelColor) // Right
-                                        {
-                                            pixels.Add(new Point(step - 1, y));
-                                        }
+                                for (int y = 0; y < image.Height; y++) // Check Left and Right bounds
+                                {
+                                    if (span[y * step] >= touchBoundConfig.MaximumPixelBrightness) // Left
+                                    {
+                                        pixels.Add(new Point(0, y));
                                     }
 
-                                    if (pixels.Count > 0)
+                                    if (span[y * step + step - 1] >= touchBoundConfig.MaximumPixelBrightness) // Right
                                     {
-                                        result.Add(new LayerIssue(layer, LayerIssue.IssueType.TouchingBound, pixels.ToArray()));
-                                        /*result.TryAdd(layer.Index, new List<LayerIssue>
+                                        pixels.Add(new Point(step - 1, y));
+                                    }
+                                }
+
+                                if (pixels.Count > 0)
+                                {
+                                    result.Add(new LayerIssue(layer, LayerIssue.IssueType.TouchingBound,
+                                        pixels.ToArray()));
+                                    /*result.TryAdd(layer.Index, new List<LayerIssue>
                                         {
                                             new LayerIssue(layer, LayerIssue.IssueType.TouchingBound, pixels.ToArray())
                                         });*/
-                                    }
                                 }
+                            }
 
-                                if (layer.Index == 0 || !islandConfig.Enabled) return; // No islands for layer 0
-
-                                if (!ReferenceEquals(islandConfig.WhiteListLayers, null)) // Check white list
+                            if (layer.Index == 0 || !islandConfig.Enabled)
+                            {
+                                lock (progress.Mutex)
                                 {
-                                    if (!islandConfig.WhiteListLayers.Contains(layer.Index)) return;
+                                    progress++;
                                 }
+                                return; // No islands for layer 0
+                            }
 
-                                VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-                                Mat hierarchy = new Mat();
-
-                                if (islandConfig.BinaryThreshold > 0)
+                            if (!ReferenceEquals(islandConfig.WhiteListLayers, null)) // Check white list
+                            {
+                                if (!islandConfig.WhiteListLayers.Contains(layer.Index))
                                 {
-                                    using (var thresholdImage = new Mat())
+                                    lock (progress.Mutex)
                                     {
-                                        CvInvoke.Threshold(image, thresholdImage, 1, 255, ThresholdType.Binary);
-                                        CvInvoke.FindContours(thresholdImage, contours, hierarchy, RetrType.Ccomp,
-                                            ChainApproxMethod.ChainApproxSimple);
+                                        progress++;
                                     }
+                                    return;
                                 }
-                                else
+                            }
+
+                            VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
+                            Mat hierarchy = new Mat();
+
+                            if (islandConfig.BinaryThreshold > 0)
+                            {
+                                using (var thresholdImage = new Mat())
                                 {
-                                    CvInvoke.FindContours(image, contours, hierarchy, RetrType.Ccomp,
+                                    CvInvoke.Threshold(image, thresholdImage, 1, 255, ThresholdType.Binary);
+                                    CvInvoke.FindContours(thresholdImage, contours, hierarchy, RetrType.Ccomp,
                                         ChainApproxMethod.ChainApproxSimple);
                                 }
+                            }
+                            else
+                            {
+                                CvInvoke.FindContours(image, contours, hierarchy, RetrType.Ccomp,
+                                    ChainApproxMethod.ChainApproxSimple);
+                            }
 
-                                var arr = hierarchy.GetData();
-                                //
-                                //hierarchy[i][0]: the index of the next contour of the same level
-                                //hierarchy[i][1]: the index of the previous contour of the same level
-                                //hierarchy[i][2]: the index of the first child
-                                //hierarchy[i][3]: the index of the parent
-                                //
+                            var arr = hierarchy.GetData();
+                            //
+                            //hierarchy[i][0]: the index of the next contour of the same level
+                            //hierarchy[i][1]: the index of the previous contour of the same level
+                            //hierarchy[i][2]: the index of the first child
+                            //hierarchy[i][3]: the index of the parent
+                            //
 
-                                Mat previousImage = null;
-                                Span<byte> previousSpan = null;
-                                for (int i = 0; i < contours.Size; i++)
+                            Mat previousImage = null;
+                            Span<byte> previousSpan = null;
+                            
+                            for (int i = 0; i < contours.Size; i++)
+                            {
+                                if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1)
+                                    continue;
+                                var rect = CvInvoke.BoundingRectangle(contours[i]);
+                                if (rect.GetArea() < islandConfig.RequiredAreaToProcessCheck)
+                                    continue;
+
+                                if (ReferenceEquals(previousImage, null))
                                 {
+                                    previousImage = this[layer.Index - 1].LayerMat;
+                                    previousSpan = previousImage.GetPixelSpan<byte>();
+                                }
 
-                                    if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1)
-                                        continue;
-                                    var rect = CvInvoke.BoundingRectangle(contours[i]);
-                                    if (rect.GetArea() < islandConfig.RequiredAreaToProcessCheck)
-                                        continue;
+                                List<Point> points = new List<Point>();
+                                uint pixelsSupportingIsland = 0;
 
-                                    if (ReferenceEquals(previousImage, null))
+                                using (Mat contourImage = image.CloneBlank())
+                                {
+                                    CvInvoke.DrawContours(contourImage, contours, i, new MCvScalar(255), -1);
+                                    var contourImageSpan = contourImage.GetPixelSpan<byte>();
+
+                                    for (int y = rect.Y; y < rect.Bottom; y++)
                                     {
-                                        previousImage = this[layer.Index - 1].LayerMat;
-                                        previousSpan = previousImage.GetPixelSpan<byte>();
-                                    }
-
-                                    List<Point> points = new List<Point>();
-                                    uint pixelsSupportingIsland = 0;
-
-                                    using (Mat contourImage = image.CloneBlank())
-                                    {
-                                        CvInvoke.DrawContours(contourImage, contours, i, new MCvScalar(255), -1);
-                                        var contourImageSpan = contourImage.GetPixelSpan<byte>();
-
-                                        for (int y = rect.Y; y < rect.Bottom; y++)
+                                        for (int x = rect.X; x < rect.Right; x++)
                                         {
-                                            for (int x = rect.X; x < rect.Right; x++)
+                                            int pixel = step * y + x;
+                                            if (span[pixel] < islandConfig.RequiredPixelBrightnessToProcessCheck)
+                                                continue; // Low brightness, ignore
+                                            if (contourImageSpan[pixel] != 255)
+                                                continue; // Not inside contour, ignore
+
+                                            //if (CvInvoke.PointPolygonTest(contours[i], new PointF(x, y), false) < 0) continue; // Out of contour SLOW!
+                                            //Debug.WriteLine($"Layer: {layer.Index}, Coutour: {i},  X:{x} Y:{y}");
+                                            points.Add(new Point(x, y));
+
+                                            if (previousSpan[pixel] >=
+                                                islandConfig.RequiredPixelBrightnessToSupport)
                                             {
-                                                int pixel = step * y + x;
-                                                if (span[pixel] < islandConfig.RequiredPixelBrightnessToProcessCheck)
-                                                    continue; // Low brightness, ignore
-                                                if (contourImageSpan[pixel] != 255)
-                                                    continue; // Not inside contour, ignore
-
-                                                //if (CvInvoke.PointPolygonTest(contours[i], new PointF(x, y), false) < 0) continue; // Out of contour SLOW!
-                                                //Debug.WriteLine($"Layer: {layer.Index}, Coutour: {i},  X:{x} Y:{y}");
-                                                points.Add(new Point(x, y));
-
-                                                if (previousSpan[pixel] >=
-                                                    islandConfig.RequiredPixelBrightnessToSupport)
-                                                {
-                                                    pixelsSupportingIsland++;
-                                                }
+                                                pixelsSupportingIsland++;
                                             }
                                         }
                                     }
-
-
-                                    if (points.Count == 0) continue;
-                                    if (pixelsSupportingIsland >= islandConfig.RequiredPixelsToSupport)
-                                        continue; // Not a island, bounding is strong, i think...
-                                    if (pixelsSupportingIsland > 0 &&
-                                        points.Count < islandConfig.RequiredPixelsToSupport &&
-                                        pixelsSupportingIsland >= Math.Max(1, points.Count / 2))
-                                        continue; // Not a island, but maybe weak bounding...
-
-
-                                    var issue = new LayerIssue(layer, LayerIssue.IssueType.Island, points.ToArray(),
-                                        rect);
-                                    result.Add(issue);
-                                    /*result.AddOrUpdate(layer.Index, new List<LayerIssue> {issue},
-                                        (layerIndex, list) =>
-                                        {
-                                            list.Add(issue);
-                                            return list;
-                                        });*/
                                 }
 
-                                contours.Dispose();
-                                hierarchy.Dispose();
-                                previousImage?.Dispose();
+
+                                if (points.Count == 0) continue;
+                                if (pixelsSupportingIsland >= islandConfig.RequiredPixelsToSupport)
+                                    continue; // Not a island, bounding is strong, i think...
+                                if (pixelsSupportingIsland > 0 &&
+                                    points.Count < islandConfig.RequiredPixelsToSupport &&
+                                    pixelsSupportingIsland >= Math.Max(1, points.Count / 2))
+                                    continue; // Not a island, but maybe weak bounding...
+
+
+                                var issue = new LayerIssue(layer, LayerIssue.IssueType.Island, points.ToArray(),
+                                    rect);
+                                result.Add(issue);
                             }
-                        }
-                        else
-                        {
-                            result.Add(new LayerIssue(layer, LayerIssue.IssueType.EmptyLayer));
-                            /*result.TryAdd(layer.Index, new List<LayerIssue>
-                            {
-                                new LayerIssue(layer, LayerIssue.IssueType.EmptyLayer)
-                            });*/
+
+                            contours.Dispose();
+                            hierarchy.Dispose();
+                            previousImage?.Dispose();
                         }
 
                         lock (progress.Mutex)
@@ -1146,20 +1165,9 @@ namespace UVtools.Core
                         select new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contour, area.BoundingRectangle))
                 {
                     result.Add(issue);
-                    /*result.AddOrUpdate(layerIndex, new List<LayerIssue> {issue}, (u, listIssues) =>
-                    {
-                        listIssues.Add(issue);
-                        return listIssues;
-                    });*/
                 }
             }
 
-            //resultSorted = resultSorted.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex);
-            /*resultSorted.Sort((issue, layerIssue) =>
-            {
-                int ret = issue.Type.CompareTo(layerIssue.Type);
-                return ret != 0 ? ret : issue.LayerIndex.CompareTo(layerIssue.LayerIndex);
-            });*/
             return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.PixelsCount).ToList();
         }
 
