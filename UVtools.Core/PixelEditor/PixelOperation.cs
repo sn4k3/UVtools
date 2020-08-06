@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 using System.Drawing;
+using Emgu.CV.CvEnum;
 
 namespace UVtools.Core.PixelEditor
 {
@@ -14,6 +15,7 @@ namespace UVtools.Core.PixelEditor
         public enum PixelOperationType : byte
         {
             Drawing,
+            Text,
             Supports,
             DrainHole,
         }
@@ -39,16 +41,21 @@ namespace UVtools.Core.PixelEditor
         public Point Location { get; }
 
         /// <summary>
+        /// Gets the <see cref="LineType"/> for the draw operation
+        /// </summary>
+        public LineType LineType { get; }
+
+        /// <summary>
         /// Gets the total size of the operation
         /// </summary>
         public Size Size { get; private protected set; } = Size.Empty;
 
-
-        public PixelOperation(PixelOperationType operationType, uint layerIndex, Point location)
+        public PixelOperation(PixelOperationType operationType, uint layerIndex, Point location, LineType lineType = LineType.AntiAlias)
         {
             OperationType = operationType;
             Location = location;
             LayerIndex = layerIndex;
+            LineType = lineType;
         }
     }
 }

@@ -1330,15 +1330,22 @@ namespace UVtools.Core
                     switch (operationDrawing.BrushShape)
                     {
                         case PixelDrawing.BrushShapeType.Rectangle:
-                            CvInvoke.Rectangle(mat, operationDrawing.Rectangle, new MCvScalar(operationDrawing.Color), -1);
+                            CvInvoke.Rectangle(mat, operationDrawing.Rectangle, new MCvScalar(operationDrawing.Color), operationDrawing.Thickness, operationDrawing.LineType);
                             break;
                         case PixelDrawing.BrushShapeType.Circle:
                             CvInvoke.Circle(mat, operation.Location, operationDrawing.BrushSize / 2,
-                                new MCvScalar(operationDrawing.Color), -1);
+                                new MCvScalar(operationDrawing.Color), operationDrawing.Thickness, operationDrawing.LineType);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
+                }
+                else if (operation.OperationType == PixelOperation.PixelOperationType.Text)
+                {
+                    var operationText = (PixelText)operation;
+                    var mat = modfiedLayers.GetOrAdd(operation.LayerIndex, u => this[operation.LayerIndex].LayerMat);
+
+                    CvInvoke.PutText(mat, operationText.Text, operationText.Location, operationText.Font, operationText.FontScale, new MCvScalar(operationText.Color), operationText.Thickness, operationText.LineType, operationText.Mirror);
                 }
                 else if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
                 {
@@ -1371,7 +1378,7 @@ namespace UVtools.Core
                             break; // White area end supporting
                         }
 
-                        CvInvoke.Circle(mat, operation.Location, radius, new MCvScalar(255), -1);
+                        CvInvoke.Circle(mat, operation.Location, radius, new MCvScalar(255), -1, operationSupport.LineType);
                         drawnLayers++;
                     }
                 }
@@ -1408,7 +1415,7 @@ namespace UVtools.Core
                             break; // Stop drill drain found!
                         }
                         
-                        CvInvoke.Circle(mat, operation.Location, radius, new MCvScalar(0), -1);
+                        CvInvoke.Circle(mat, operation.Location, radius, new MCvScalar(0), -1, operationDrainHole.LineType);
                         drawnLayers++;
                     }
                 }

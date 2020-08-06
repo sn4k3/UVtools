@@ -164,13 +164,42 @@
             this.btnPixelHistoryClear = new System.Windows.Forms.ToolStripButton();
             this.tabControlPixelEditor = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.label29 = new System.Windows.Forms.Label();
+            this.label28 = new System.Windows.Forms.Label();
+            this.nmPixelEditorDrawingThickness = new System.Windows.Forms.NumericUpDown();
+            this.label27 = new System.Windows.Forms.Label();
+            this.cbPixelEditorDrawingLineType = new System.Windows.Forms.ComboBox();
+            this.label17 = new System.Windows.Forms.Label();
+            this.nmPixelEditorDrawingLayersAbove = new System.Windows.Forms.NumericUpDown();
+            this.label16 = new System.Windows.Forms.Label();
+            this.nmPixelEditorDrawingLayersBelow = new System.Windows.Forms.NumericUpDown();
+            this.label15 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
-            this.nmPixelEditorBrushSize = new System.Windows.Forms.NumericUpDown();
+            this.nmPixelEditorDrawingBrushSize = new System.Windows.Forms.NumericUpDown();
             this.label3 = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.cbPixelEditorBrushShape = new System.Windows.Forms.ComboBox();
+            this.cbPixelEditorDrawingBrushShape = new System.Windows.Forms.ComboBox();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.label21 = new System.Windows.Forms.Label();
+            this.cbPixelEditorTextLineType = new System.Windows.Forms.ComboBox();
+            this.cbPixelEditorTextMirror = new System.Windows.Forms.CheckBox();
+            this.label26 = new System.Windows.Forms.Label();
+            this.nmPixelEditorTextThickness = new System.Windows.Forms.NumericUpDown();
+            this.label25 = new System.Windows.Forms.Label();
+            this.tbPixelEditorTextText = new System.Windows.Forms.TextBox();
+            this.label18 = new System.Windows.Forms.Label();
+            this.nmPixelEditorTextLayersAbove = new System.Windows.Forms.NumericUpDown();
+            this.label19 = new System.Windows.Forms.Label();
+            this.nmPixelEditorTextLayersBelow = new System.Windows.Forms.NumericUpDown();
+            this.label20 = new System.Windows.Forms.Label();
+            this.nmPixelEditorTextFontScale = new System.Windows.Forms.NumericUpDown();
+            this.label22 = new System.Windows.Forms.Label();
+            this.panel6 = new System.Windows.Forms.Panel();
+            this.label23 = new System.Windows.Forms.Label();
+            this.label24 = new System.Windows.Forms.Label();
+            this.cbPixelEditorTextFontFace = new System.Windows.Forms.ComboBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.label10 = new System.Windows.Forms.Label();
             this.nmPixelEditorSupportsBaseDiameter = new System.Windows.Forms.NumericUpDown();
@@ -238,8 +267,17 @@
             this.tsPixelEditorHistory.SuspendLayout();
             this.tabControlPixelEditor.SuspendLayout();
             this.tabPage1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorBrushSize)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorDrawingThickness)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorDrawingLayersAbove)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorDrawingLayersBelow)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorDrawingBrushSize)).BeginInit();
             this.panel3.SuspendLayout();
+            this.tabPage4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorTextThickness)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorTextLayersAbove)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorTextLayersBelow)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorTextFontScale)).BeginInit();
+            this.panel6.SuspendLayout();
             this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorSupportsBaseDiameter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorSupportsPillarDiameter)).BeginInit();
@@ -1624,6 +1662,7 @@
             // tabControlPixelEditor
             // 
             this.tabControlPixelEditor.Controls.Add(this.tabPage1);
+            this.tabControlPixelEditor.Controls.Add(this.tabPage4);
             this.tabControlPixelEditor.Controls.Add(this.tabPage2);
             this.tabControlPixelEditor.Controls.Add(this.tabPage3);
             this.tabControlPixelEditor.Dock = System.Windows.Forms.DockStyle.Top;
@@ -1635,12 +1674,22 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.label29);
+            this.tabPage1.Controls.Add(this.label28);
+            this.tabPage1.Controls.Add(this.nmPixelEditorDrawingThickness);
+            this.tabPage1.Controls.Add(this.label27);
+            this.tabPage1.Controls.Add(this.cbPixelEditorDrawingLineType);
+            this.tabPage1.Controls.Add(this.label17);
+            this.tabPage1.Controls.Add(this.nmPixelEditorDrawingLayersAbove);
+            this.tabPage1.Controls.Add(this.label16);
+            this.tabPage1.Controls.Add(this.nmPixelEditorDrawingLayersBelow);
+            this.tabPage1.Controls.Add(this.label15);
             this.tabPage1.Controls.Add(this.label6);
-            this.tabPage1.Controls.Add(this.nmPixelEditorBrushSize);
+            this.tabPage1.Controls.Add(this.nmPixelEditorDrawingBrushSize);
             this.tabPage1.Controls.Add(this.label3);
             this.tabPage1.Controls.Add(this.panel3);
             this.tabPage1.Controls.Add(this.label2);
-            this.tabPage1.Controls.Add(this.cbPixelEditorBrushShape);
+            this.tabPage1.Controls.Add(this.cbPixelEditorDrawingBrushShape);
             this.tabPage1.Location = new System.Drawing.Point(4, 27);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
@@ -1649,35 +1698,153 @@
             this.tabPage1.Text = "Drawing";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
+            // label29
+            // 
+            this.label29.AutoSize = true;
+            this.label29.Location = new System.Drawing.Point(7, 163);
+            this.label29.Name = "label29";
+            this.label29.Size = new System.Drawing.Size(80, 18);
+            this.label29.TabIndex = 34;
+            this.label29.Text = "Thickness:";
+            // 
+            // label28
+            // 
+            this.label28.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label28.AutoSize = true;
+            this.label28.Location = new System.Drawing.Point(338, 163);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(23, 18);
+            this.label28.TabIndex = 33;
+            this.label28.Text = "px";
+            // 
+            // nmPixelEditorDrawingThickness
+            // 
+            this.nmPixelEditorDrawingThickness.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.nmPixelEditorDrawingThickness.Location = new System.Drawing.Point(108, 160);
+            this.nmPixelEditorDrawingThickness.Maximum = new decimal(new int[] {
+            200,
+            0,
+            0,
+            0});
+            this.nmPixelEditorDrawingThickness.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            -2147483648});
+            this.nmPixelEditorDrawingThickness.Name = "nmPixelEditorDrawingThickness";
+            this.nmPixelEditorDrawingThickness.Size = new System.Drawing.Size(224, 24);
+            this.nmPixelEditorDrawingThickness.TabIndex = 32;
+            this.nmPixelEditorDrawingThickness.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            -2147483648});
+            // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Location = new System.Drawing.Point(7, 70);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(70, 18);
+            this.label27.TabIndex = 31;
+            this.label27.Text = "Line type:";
+            // 
+            // cbPixelEditorDrawingLineType
+            // 
+            this.cbPixelEditorDrawingLineType.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbPixelEditorDrawingLineType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbPixelEditorDrawingLineType.FormattingEnabled = true;
+            this.cbPixelEditorDrawingLineType.Location = new System.Drawing.Point(108, 66);
+            this.cbPixelEditorDrawingLineType.Name = "cbPixelEditorDrawingLineType";
+            this.cbPixelEditorDrawingLineType.Size = new System.Drawing.Size(258, 26);
+            this.cbPixelEditorDrawingLineType.TabIndex = 30;
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(268, 217);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(49, 18);
+            this.label17.TabIndex = 11;
+            this.label17.Text = "Above";
+            // 
+            // nmPixelEditorDrawingLayersAbove
+            // 
+            this.nmPixelEditorDrawingLayersAbove.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.nmPixelEditorDrawingLayersAbove.Location = new System.Drawing.Point(259, 190);
+            this.nmPixelEditorDrawingLayersAbove.Maximum = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
+            this.nmPixelEditorDrawingLayersAbove.Name = "nmPixelEditorDrawingLayersAbove";
+            this.nmPixelEditorDrawingLayersAbove.Size = new System.Drawing.Size(73, 24);
+            this.nmPixelEditorDrawingLayersAbove.TabIndex = 10;
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(114, 217);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(49, 18);
+            this.label16.TabIndex = 9;
+            this.label16.Text = "Below";
+            // 
+            // nmPixelEditorDrawingLayersBelow
+            // 
+            this.nmPixelEditorDrawingLayersBelow.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.nmPixelEditorDrawingLayersBelow.Location = new System.Drawing.Point(108, 190);
+            this.nmPixelEditorDrawingLayersBelow.Maximum = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
+            this.nmPixelEditorDrawingLayersBelow.Name = "nmPixelEditorDrawingLayersBelow";
+            this.nmPixelEditorDrawingLayersBelow.Size = new System.Drawing.Size(73, 24);
+            this.nmPixelEditorDrawingLayersBelow.TabIndex = 8;
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(7, 193);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(96, 18);
+            this.label15.TabIndex = 7;
+            this.label15.Text = "Layers depth:";
+            // 
             // label6
             // 
             this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(338, 101);
+            this.label6.Location = new System.Drawing.Point(338, 133);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(28, 18);
             this.label6.TabIndex = 6;
             this.label6.Text = "px²";
             // 
-            // nmPixelEditorBrushSize
+            // nmPixelEditorDrawingBrushSize
             // 
-            this.nmPixelEditorBrushSize.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.nmPixelEditorDrawingBrushSize.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.nmPixelEditorBrushSize.Location = new System.Drawing.Point(108, 98);
-            this.nmPixelEditorBrushSize.Maximum = new decimal(new int[] {
+            this.nmPixelEditorDrawingBrushSize.Location = new System.Drawing.Point(108, 130);
+            this.nmPixelEditorDrawingBrushSize.Maximum = new decimal(new int[] {
             200,
             0,
             0,
             0});
-            this.nmPixelEditorBrushSize.Minimum = new decimal(new int[] {
+            this.nmPixelEditorDrawingBrushSize.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
-            this.nmPixelEditorBrushSize.Name = "nmPixelEditorBrushSize";
-            this.nmPixelEditorBrushSize.Size = new System.Drawing.Size(224, 24);
-            this.nmPixelEditorBrushSize.TabIndex = 5;
-            this.nmPixelEditorBrushSize.Value = new decimal(new int[] {
+            this.nmPixelEditorDrawingBrushSize.Name = "nmPixelEditorDrawingBrushSize";
+            this.nmPixelEditorDrawingBrushSize.Size = new System.Drawing.Size(224, 24);
+            this.nmPixelEditorDrawingBrushSize.TabIndex = 5;
+            this.nmPixelEditorDrawingBrushSize.Value = new decimal(new int[] {
             1,
             0,
             0,
@@ -1686,7 +1853,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(16, 101);
+            this.label3.Location = new System.Drawing.Point(7, 133);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(84, 18);
             this.label3.TabIndex = 4;
@@ -1715,23 +1882,254 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 70);
+            this.label2.Location = new System.Drawing.Point(7, 102);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(95, 18);
             this.label2.TabIndex = 2;
             this.label2.Text = "Brush shape:";
             // 
-            // cbPixelEditorBrushShape
+            // cbPixelEditorDrawingBrushShape
             // 
-            this.cbPixelEditorBrushShape.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.cbPixelEditorDrawingBrushShape.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.cbPixelEditorBrushShape.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbPixelEditorBrushShape.FormattingEnabled = true;
-            this.cbPixelEditorBrushShape.Location = new System.Drawing.Point(108, 66);
-            this.cbPixelEditorBrushShape.Name = "cbPixelEditorBrushShape";
-            this.cbPixelEditorBrushShape.Size = new System.Drawing.Size(258, 26);
-            this.cbPixelEditorBrushShape.TabIndex = 0;
-            this.cbPixelEditorBrushShape.SelectedIndexChanged += new System.EventHandler(this.EventSelectedIndexChanged);
+            this.cbPixelEditorDrawingBrushShape.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbPixelEditorDrawingBrushShape.FormattingEnabled = true;
+            this.cbPixelEditorDrawingBrushShape.Location = new System.Drawing.Point(108, 98);
+            this.cbPixelEditorDrawingBrushShape.Name = "cbPixelEditorDrawingBrushShape";
+            this.cbPixelEditorDrawingBrushShape.Size = new System.Drawing.Size(258, 26);
+            this.cbPixelEditorDrawingBrushShape.TabIndex = 0;
+            this.cbPixelEditorDrawingBrushShape.SelectedIndexChanged += new System.EventHandler(this.EventSelectedIndexChanged);
+            // 
+            // tabPage4
+            // 
+            this.tabPage4.Controls.Add(this.label21);
+            this.tabPage4.Controls.Add(this.cbPixelEditorTextLineType);
+            this.tabPage4.Controls.Add(this.cbPixelEditorTextMirror);
+            this.tabPage4.Controls.Add(this.label26);
+            this.tabPage4.Controls.Add(this.nmPixelEditorTextThickness);
+            this.tabPage4.Controls.Add(this.label25);
+            this.tabPage4.Controls.Add(this.tbPixelEditorTextText);
+            this.tabPage4.Controls.Add(this.label18);
+            this.tabPage4.Controls.Add(this.nmPixelEditorTextLayersAbove);
+            this.tabPage4.Controls.Add(this.label19);
+            this.tabPage4.Controls.Add(this.nmPixelEditorTextLayersBelow);
+            this.tabPage4.Controls.Add(this.label20);
+            this.tabPage4.Controls.Add(this.nmPixelEditorTextFontScale);
+            this.tabPage4.Controls.Add(this.label22);
+            this.tabPage4.Controls.Add(this.panel6);
+            this.tabPage4.Controls.Add(this.label24);
+            this.tabPage4.Controls.Add(this.cbPixelEditorTextFontFace);
+            this.tabPage4.Location = new System.Drawing.Point(4, 27);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage4.Size = new System.Drawing.Size(372, 291);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "Text";
+            this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(7, 70);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(70, 18);
+            this.label21.TabIndex = 29;
+            this.label21.Text = "Line type:";
+            // 
+            // cbPixelEditorTextLineType
+            // 
+            this.cbPixelEditorTextLineType.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbPixelEditorTextLineType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbPixelEditorTextLineType.FormattingEnabled = true;
+            this.cbPixelEditorTextLineType.Location = new System.Drawing.Point(109, 66);
+            this.cbPixelEditorTextLineType.Name = "cbPixelEditorTextLineType";
+            this.cbPixelEditorTextLineType.Size = new System.Drawing.Size(257, 26);
+            this.cbPixelEditorTextLineType.TabIndex = 28;
+            // 
+            // cbPixelEditorTextMirror
+            // 
+            this.cbPixelEditorTextMirror.AutoSize = true;
+            this.cbPixelEditorTextMirror.Location = new System.Drawing.Point(109, 190);
+            this.cbPixelEditorTextMirror.Name = "cbPixelEditorTextMirror";
+            this.cbPixelEditorTextMirror.Size = new System.Drawing.Size(137, 22);
+            this.cbPixelEditorTextMirror.TabIndex = 27;
+            this.cbPixelEditorTextMirror.Text = "Flip text vertically";
+            this.cbPixelEditorTextMirror.UseVisualStyleBackColor = true;
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Location = new System.Drawing.Point(207, 133);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(80, 18);
+            this.label26.TabIndex = 26;
+            this.label26.Text = "Thickness:";
+            // 
+            // nmPixelEditorTextThickness
+            // 
+            this.nmPixelEditorTextThickness.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.nmPixelEditorTextThickness.Location = new System.Drawing.Point(293, 130);
+            this.nmPixelEditorTextThickness.Maximum = new decimal(new int[] {
+            200,
+            0,
+            0,
+            0});
+            this.nmPixelEditorTextThickness.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.nmPixelEditorTextThickness.Name = "nmPixelEditorTextThickness";
+            this.nmPixelEditorTextThickness.Size = new System.Drawing.Size(73, 24);
+            this.nmPixelEditorTextThickness.TabIndex = 25;
+            this.nmPixelEditorTextThickness.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(8, 163);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(40, 18);
+            this.label25.TabIndex = 24;
+            this.label25.Text = "Text:";
+            // 
+            // tbPixelEditorTextText
+            // 
+            this.tbPixelEditorTextText.Location = new System.Drawing.Point(109, 160);
+            this.tbPixelEditorTextText.Name = "tbPixelEditorTextText";
+            this.tbPixelEditorTextText.Size = new System.Drawing.Size(257, 24);
+            this.tbPixelEditorTextText.TabIndex = 23;
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(302, 245);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(49, 18);
+            this.label18.TabIndex = 22;
+            this.label18.Text = "Above";
+            // 
+            // nmPixelEditorTextLayersAbove
+            // 
+            this.nmPixelEditorTextLayersAbove.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.nmPixelEditorTextLayersAbove.Location = new System.Drawing.Point(293, 218);
+            this.nmPixelEditorTextLayersAbove.Maximum = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
+            this.nmPixelEditorTextLayersAbove.Name = "nmPixelEditorTextLayersAbove";
+            this.nmPixelEditorTextLayersAbove.Size = new System.Drawing.Size(73, 24);
+            this.nmPixelEditorTextLayersAbove.TabIndex = 21;
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(115, 245);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(49, 18);
+            this.label19.TabIndex = 20;
+            this.label19.Text = "Below";
+            // 
+            // nmPixelEditorTextLayersBelow
+            // 
+            this.nmPixelEditorTextLayersBelow.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.nmPixelEditorTextLayersBelow.Location = new System.Drawing.Point(109, 218);
+            this.nmPixelEditorTextLayersBelow.Maximum = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
+            this.nmPixelEditorTextLayersBelow.Name = "nmPixelEditorTextLayersBelow";
+            this.nmPixelEditorTextLayersBelow.Size = new System.Drawing.Size(73, 24);
+            this.nmPixelEditorTextLayersBelow.TabIndex = 19;
+            // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Location = new System.Drawing.Point(7, 221);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(96, 18);
+            this.label20.TabIndex = 18;
+            this.label20.Text = "Layers depth:";
+            // 
+            // nmPixelEditorTextFontScale
+            // 
+            this.nmPixelEditorTextFontScale.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.nmPixelEditorTextFontScale.DecimalPlaces = 2;
+            this.nmPixelEditorTextFontScale.Location = new System.Drawing.Point(109, 130);
+            this.nmPixelEditorTextFontScale.Maximum = new decimal(new int[] {
+            200,
+            0,
+            0,
+            0});
+            this.nmPixelEditorTextFontScale.Name = "nmPixelEditorTextFontScale";
+            this.nmPixelEditorTextFontScale.Size = new System.Drawing.Size(73, 24);
+            this.nmPixelEditorTextFontScale.TabIndex = 16;
+            this.nmPixelEditorTextFontScale.Value = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(7, 133);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(81, 18);
+            this.label22.TabIndex = 15;
+            this.label22.Text = "Font scale:";
+            // 
+            // panel6
+            // 
+            this.panel6.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.panel6.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel6.Controls.Add(this.label23);
+            this.panel6.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel6.Location = new System.Drawing.Point(3, 3);
+            this.panel6.Name = "panel6";
+            this.panel6.Size = new System.Drawing.Size(366, 57);
+            this.panel6.TabIndex = 14;
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(3, 9);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(299, 36);
+            this.label23.TabIndex = 1;
+            this.label23.Text = "Right click to add white pixels text\r\nShift + Right click to remove white pixels " +
+    "text";
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(7, 102);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(74, 18);
+            this.label24.TabIndex = 13;
+            this.label24.Text = "Font face:";
+            // 
+            // cbPixelEditorTextFontFace
+            // 
+            this.cbPixelEditorTextFontFace.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbPixelEditorTextFontFace.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbPixelEditorTextFontFace.FormattingEnabled = true;
+            this.cbPixelEditorTextFontFace.Location = new System.Drawing.Point(109, 98);
+            this.cbPixelEditorTextFontFace.Name = "cbPixelEditorTextFontFace";
+            this.cbPixelEditorTextFontFace.Size = new System.Drawing.Size(257, 26);
+            this.cbPixelEditorTextFontFace.TabIndex = 12;
             // 
             // tabPage2
             // 
@@ -1790,7 +2188,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(6, 128);
+            this.label11.Location = new System.Drawing.Point(6, 129);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(161, 18);
             this.label11.TabIndex = 12;
@@ -1833,7 +2231,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(6, 98);
+            this.label9.Location = new System.Drawing.Point(6, 99);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(159, 18);
             this.label9.TabIndex = 9;
@@ -1876,7 +2274,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(6, 68);
+            this.label5.Location = new System.Drawing.Point(6, 69);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(144, 18);
             this.label5.TabIndex = 6;
@@ -1954,7 +2352,7 @@
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(4, 68);
+            this.label14.Location = new System.Drawing.Point(4, 69);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(140, 18);
             this.label14.TabIndex = 12;
@@ -2290,9 +2688,20 @@
             this.tabControlPixelEditor.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorBrushSize)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorDrawingThickness)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorDrawingLayersAbove)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorDrawingLayersBelow)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorDrawingBrushSize)).EndInit();
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();
+            this.tabPage4.ResumeLayout(false);
+            this.tabPage4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorTextThickness)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorTextLayersAbove)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorTextLayersBelow)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorTextFontScale)).EndInit();
+            this.panel6.ResumeLayout(false);
+            this.panel6.PerformLayout();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorSupportsBaseDiameter)).EndInit();
@@ -2428,11 +2837,11 @@
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.ToolStrip tsPixelEditorHistory;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ComboBox cbPixelEditorBrushShape;
+        private System.Windows.Forms.ComboBox cbPixelEditorDrawingBrushShape;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.NumericUpDown nmPixelEditorBrushSize;
+        private System.Windows.Forms.NumericUpDown nmPixelEditorDrawingBrushSize;
         private System.Windows.Forms.ToolStripLabel lbPixelHistoryOperations;
         private System.Windows.Forms.Panel panel4;
         private System.Windows.Forms.Label label4;
@@ -2501,6 +2910,35 @@
         private System.Windows.Forms.ToolStripButton btnIssueGroup;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator23;
         private System.Windows.Forms.ToolStripButton btnIssueResort;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.NumericUpDown nmPixelEditorDrawingLayersAbove;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.NumericUpDown nmPixelEditorDrawingLayersBelow;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.NumericUpDown nmPixelEditorTextLayersAbove;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.NumericUpDown nmPixelEditorTextLayersBelow;
+        private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.NumericUpDown nmPixelEditorTextFontScale;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.Panel panel6;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.ComboBox cbPixelEditorTextFontFace;
+        private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.TextBox tbPixelEditorTextText;
+        private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.NumericUpDown nmPixelEditorTextThickness;
+        private System.Windows.Forms.CheckBox cbPixelEditorTextMirror;
+        private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.ComboBox cbPixelEditorTextLineType;
+        private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.ComboBox cbPixelEditorDrawingLineType;
+        private System.Windows.Forms.Label label29;
+        private System.Windows.Forms.Label label28;
+        private System.Windows.Forms.NumericUpDown nmPixelEditorDrawingThickness;
     }
 }
 

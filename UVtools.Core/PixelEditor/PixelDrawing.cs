@@ -7,6 +7,7 @@
  */
 using System;
 using System.Drawing;
+using Emgu.CV.CvEnum;
 
 namespace UVtools.Core.PixelEditor
 {
@@ -23,6 +24,11 @@ namespace UVtools.Core.PixelEditor
         public BrushShapeType BrushShape { get; }
 
         public ushort BrushSize { get; }
+        public short Thickness { get; }
+
+        //public ushort LayersBelow { get; }
+
+        //public ushort LayersAbove { get; }
 
         public bool IsAdd { get; }
 
@@ -30,11 +36,13 @@ namespace UVtools.Core.PixelEditor
 
         public Rectangle Rectangle { get; }
 
-        public PixelDrawing(uint layerIndex, Point location, BrushShapeType brushShape, ushort brushSize, bool isAdd) : base(PixelOperationType.Drawing, layerIndex, location)
+        public PixelDrawing(uint layerIndex, Point location, LineType lineType, BrushShapeType brushShape, ushort brushSize, short thickness,  bool isAdd) : base(PixelOperationType.Drawing, layerIndex, location, lineType)
         {
             BrushShape = brushShape;
             BrushSize = brushSize;
+            Thickness = thickness;
             IsAdd = isAdd;
+            
 
             Color = (byte) (isAdd ? 255 : 0);
 

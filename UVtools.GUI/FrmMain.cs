@@ -205,10 +205,26 @@ namespace UVtools.GUI
             foreach (PixelDrawing.BrushShapeType brushShape in (PixelDrawing.BrushShapeType[])Enum.GetValues(
                 typeof(PixelDrawing.BrushShapeType)))
             {
-                cbPixelEditorBrushShape.Items.Add(brushShape);
+                cbPixelEditorDrawingBrushShape.Items.Add(brushShape);
             }
+            cbPixelEditorDrawingBrushShape.SelectedIndex = 0;
 
-            cbPixelEditorBrushShape.SelectedIndex = 0;
+            foreach (LineType lineType in (LineType[])Enum.GetValues(
+                typeof(LineType)))
+            {
+                if(lineType == LineType.Filled) continue;
+                cbPixelEditorDrawingLineType.Items.Add(lineType);
+                cbPixelEditorTextLineType.Items.Add(lineType);
+            }
+            cbPixelEditorDrawingLineType.SelectedItem = LineType.AntiAlias;
+            cbPixelEditorTextLineType.SelectedItem = LineType.AntiAlias;
+
+            foreach (FontFace font in (FontFace[])Enum.GetValues(
+                typeof(FontFace)))
+            {
+                cbPixelEditorTextFontFace.Items.Add(font);
+            }
+            cbPixelEditorTextFontFace.SelectedIndex = 0;
 
             tbLayer.MouseWheel += TbLayerOnMouseWheel;
 
@@ -2606,14 +2622,23 @@ namespace UVtools.GUI
                         switch (operationDrawing.BrushShape)
                         {
                             case PixelDrawing.BrushShapeType.Rectangle:
-                                CvInvoke.Rectangle(ActualLayerImageBgr, operationDrawing.Rectangle, new MCvScalar(color.B, color.G, color.R), -1);
+                                CvInvoke.Rectangle(ActualLayerImageBgr, operationDrawing.Rectangle, new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness, operationDrawing.LineType);
                                 break;
                             case PixelDrawing.BrushShapeType.Circle:
-                                CvInvoke.Circle(ActualLayerImageBgr, operation.Location, operationDrawing.BrushSize / 2, new MCvScalar(color.B, color.G, color.R), -1);
+                                CvInvoke.Circle(ActualLayerImageBgr, operation.Location, operationDrawing.BrushSize / 2, new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness, operationDrawing.LineType);
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }
+                    }
+                    else if (operation.OperationType == PixelOperation.PixelOperationType.Text)
+                    {
+                        var operationText = (PixelText)operation;
+                        var color = operationText.IsAdd
+                            ? Settings.Default.PixelEditorAddPixelColor
+                            : Settings.Default.PixelEditorRemovePixelColor;
+
+                        CvInvoke.PutText(ActualLayerImageBgr, operationText.Text, operationText.Location, operationText.Font, operationText.FontScale, new MCvScalar(color.B, color.G, color.R), operationText.Thickness, operationText.LineType, operationText.Mirror);
                     }
                     else if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
                     {
@@ -2723,16 +2748,16 @@ namespace UVtools.GUI
                 return;
             }
 
-            if (ReferenceEquals(sender, cbPixelEditorBrushShape))
+            if (ReferenceEquals(sender, cbPixelEditorDrawingBrushShape))
             {
-                if (cbPixelEditorBrushShape.SelectedIndex == (int) PixelDrawing.BrushShapeType.Rectangle)
+                if (cbPixelEditorDrawingBrushShape.SelectedIndex == (int) PixelDrawing.BrushShapeType.Rectangle)
                 {
-                    nmPixelEditorBrushSize.Minimum = PixelDrawing.MinRectangleBrush;
+                    nmPixelEditorDrawingBrushSize.Minimum = PixelDrawing.MinRectangleBrush;
                     return;
                 }
-                if (cbPixelEditorBrushShape.SelectedIndex == (int)PixelDrawing.BrushShapeType.Circle)
+                if (cbPixelEditorDrawingBrushShape.SelectedIndex == (int)PixelDrawing.BrushShapeType.Circle)
                 {
-                    nmPixelEditorBrushSize.Minimum = PixelDrawing.MinCircleBrush;
+                    nmPixelEditorDrawingBrushSize.Minimum = PixelDrawing.MinCircleBrush;
                     return;
                 }
                 return;
@@ -2937,34 +2962,76 @@ namespace UVtools.GUI
 
             if (tabControlPixelEditor.SelectedIndex == (int) PixelOperation.PixelOperationType.Drawing)
             {
+                LineType lineType = (LineType)cbPixelEditorDrawingLineType.SelectedItem;
                 PixelDrawing.BrushShapeType shapeType =
-                    (PixelDrawing.BrushShapeType) cbPixelEditorBrushShape.SelectedIndex;
-                operation = new PixelDrawing(ActualLayer, new Point(x, y),
-                    shapeType, (ushort) nmPixelEditorBrushSize.Value, isAdd);
+                    (PixelDrawing.BrushShapeType) cbPixelEditorDrawingBrushShape.SelectedIndex;
 
-                if (PixelHistory.Contains(operation)) return;
+                ushort brushSize = (ushort) nmPixelEditorDrawingBrushSize.Value;
+                short thickness = (short) (nmPixelEditorDrawingThickness.Value == 0 ? 1 : nmPixelEditorDrawingThickness.Value);
 
-                using (var gfx = Graphics.FromImage(bmp))
+                uint minLayer = (uint) Math.Max(0, ActualLayer - nmPixelEditorDrawingLayersBelow.Value);
+                uint maxLayer = (uint) Math.Min(SlicerFile.LayerCount-1, ActualLayer+nmPixelEditorDrawingLayersAbove.Value);
+                for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
                 {
-                    int shiftPos = (int)nmPixelEditorBrushSize.Value / 2;
-                    gfx.SmoothingMode = SmoothingMode.HighSpeed;
+                    operation = new PixelDrawing(layerIndex, new Point(x, y), lineType,
+                        shapeType, brushSize, thickness, isAdd);
 
-                    var color = isAdd ? Settings.Default.PixelEditorAddPixelColor : Settings.Default.PixelEditorRemovePixelColor;
-                    SolidBrush brush = new SolidBrush(color);
+                    if (PixelHistory.Contains(operation)) continue;
+                    PixelHistory.Add(operation);
 
-                    switch (shapeType)
+                    if (layerIndex == ActualLayer)
                     {
-                        case PixelDrawing.BrushShapeType.Rectangle:
-                            gfx.FillRectangle(brush, Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos), (int)nmPixelEditorBrushSize.Value, (int)nmPixelEditorBrushSize.Value);
-                            break;
-                        case PixelDrawing.BrushShapeType.Circle:
-                            gfx.FillEllipse(brush, Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos), (int)nmPixelEditorBrushSize.Value, (int)nmPixelEditorBrushSize.Value);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                        using (var gfx = Graphics.FromImage(bmp))
+                        {
+                            int shiftPos = brushSize / 2;
+                            gfx.SmoothingMode = SmoothingMode.HighSpeed;
 
+                            var color = isAdd ? Settings.Default.PixelEditorAddPixelColor : Settings.Default.PixelEditorRemovePixelColor;
+                            if (lineType == LineType.AntiAlias && brushSize > 1)
+                            {
+                                gfx.SmoothingMode = SmoothingMode.AntiAlias;
+                            }
+
+                            switch (shapeType)
+                            {
+                                case PixelDrawing.BrushShapeType.Rectangle:
+                                    if (thickness > 0)
+                                        gfx.DrawRectangle(new Pen(color, thickness), Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos), (int)nmPixelEditorDrawingBrushSize.Value, (int)nmPixelEditorDrawingBrushSize.Value);
+                                    else
+                                        gfx.FillRectangle(new SolidBrush(color), Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos), (int)nmPixelEditorDrawingBrushSize.Value, (int)nmPixelEditorDrawingBrushSize.Value);
+                                    break;
+                                case PixelDrawing.BrushShapeType.Circle:
+                                    if (thickness > 0)
+                                        gfx.DrawEllipse(new Pen(color, thickness), Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos), (int)nmPixelEditorDrawingBrushSize.Value, (int)nmPixelEditorDrawingBrushSize.Value);
+                                    else
+                                        gfx.FillEllipse(new SolidBrush(color), Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos), (int)nmPixelEditorDrawingBrushSize.Value, (int)nmPixelEditorDrawingBrushSize.Value);
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+                        }
+                    }
                 }
+            }
+            else if (tabControlPixelEditor.SelectedIndex == (int)PixelOperation.PixelOperationType.Text)
+            {
+                if (string.IsNullOrEmpty(tbPixelEditorTextText.Text) || nmPixelEditorTextFontScale.Value < 0.2m) return;
+
+                LineType lineType = (LineType)cbPixelEditorTextLineType.SelectedItem;
+                FontFace fontFace = (FontFace)cbPixelEditorTextFontFace.SelectedItem;
+
+                uint minLayer = (uint)Math.Max(0, ActualLayer - nmPixelEditorTextLayersBelow.Value);
+                uint maxLayer = (uint)Math.Min(SlicerFile.LayerCount - 1, ActualLayer + nmPixelEditorTextLayersAbove.Value);
+                for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
+                {
+                    operation = new PixelText(layerIndex, new Point(x, y), lineType,
+                        fontFace, (double) nmPixelEditorTextFontScale.Value, (ushort) nmPixelEditorTextThickness.Value, tbPixelEditorTextText.Text, cbPixelEditorTextMirror.Checked, isAdd);
+
+                    if (PixelHistory.Contains(operation)) continue;
+                    PixelHistory.Add(operation);
+                }
+                ShowLayer();
+                return;
             }
             else if (tabControlPixelEditor.SelectedIndex == (int) PixelOperation.PixelOperationType.Supports)
             {
@@ -2973,6 +3040,7 @@ namespace UVtools.GUI
                     (byte) nmPixelEditorSupportsTipDiameter.Value, (byte)nmPixelEditorSupportsPillarDiameter.Value, (byte)nmPixelEditorSupportsBaseDiameter.Value);
 
                 if (PixelHistory.Contains(operation)) return;
+                PixelHistory.Add(operation);
 
                 SolidBrush brush = new SolidBrush(Settings.Default.PixelEditorSupportColor);
                 using (var gfx = Graphics.FromImage(bmp))
@@ -2988,6 +3056,7 @@ namespace UVtools.GUI
                 operation = new PixelDrainHole(ActualLayer, new Point(x, y), (byte)nmPixelEditorDrainHoleDiameter.Value);
 
                 if (PixelHistory.Contains(operation)) return;
+                PixelHistory.Add(operation);
 
                 SolidBrush brush = new SolidBrush(Settings.Default.PixelEditorDrainHoleColor);
                 using (var gfx = Graphics.FromImage(bmp))
@@ -3002,7 +3071,7 @@ namespace UVtools.GUI
                 throw new NotImplementedException("Missing pixel operation");
             }
 
-            PixelHistory.Add(operation);
+            
             
             pbLayer.Invalidate();
             //pbLayer.Update();
@@ -3410,6 +3479,7 @@ namespace UVtools.GUI
                     foreach (var item in PixelHistory.Items)
                     {
                         if (item.OperationType != PixelOperation.PixelOperationType.Drawing &&
+                            item.OperationType != PixelOperation.PixelOperationType.Text &&
                             item.OperationType != PixelOperation.PixelOperationType.Supports) continue;
                         if (whiteListLayers.Contains(item.LayerIndex)) continue;
                         whiteListLayers.Add(item.LayerIndex);

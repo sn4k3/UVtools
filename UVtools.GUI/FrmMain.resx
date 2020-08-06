@@ -129,6 +129,12 @@
   <metadata name="tsLayer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>201, 17</value>
   </metadata>
+  <metadata name="tsThumbnails.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>291, 17</value>
+  </metadata>
+  <metadata name="tsProperties.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>649, 17</value>
+  </metadata>
   <metadata name="tsGCode.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>551, 17</value>
   </metadata>
@@ -152,7 +158,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAABk
-        FAAAAk1TRnQBSQFMAgEBBgEAAWABCAFgAQgBEAEAARABAAT/ASEBAAj/AUIBTQE2BwABNgMAASgDAAFA
+        FAAAAk1TRnQBSQFMAgEBBgEAAbgBCAG4AQgBEAEAARABAAT/ASEBAAj/AUIBTQE2BwABNgMAASgDAAFA
         AwABIAMAAQEBAAEgBgABIC4AAxgBIgMwAUsDMAFMAzIBUDMAAQEDJAE2AysBQqwAAyIBMQNWAbkDXQHi
         AwAB/wMAAf8BKgEtASgB/gNTAawDTQGVAwABARgAAwkBDAMzAVIDUAGdA1cB6AMAAf4DKwH8Ay8BSqQA
         AyEBMANZAewBKwEuASkB+gNRAfcDUgH0A1MB8QNIAfYDQQH5AwAB/wNPAZsDAAEBCAADFQEdAz8BbgNV
@@ -175,7 +181,7 @@
         AdMDRwGDAywBRAMIAQsEAAMRARcDWQHEAwAB/wNaAdMDCwEPgAADBwEJA1UBtAMJAQwEAANBAXMDKgFB
         A0IBdgM8AWcDUQGnA1oBygNbAdYDJAE2Ax8BLRwAAyoBQAM+AfgDWAHAAx8BLAM4AVwDUAGaA1oB2AMA
         Af4DAAH/AwAB/wMAAf8DVQG3hAADAQECA1MBrAMOARMDOwFlBAADMAFNAwcBCQMEAQUwAAM0AVUDKwH8
-        AwAB/wMAAf8DAAH/AwAB/wMAAf8DAAH/Az4B/QNcAdQDSAGHiAADPwFuAwYBCAMxAU8DAwEEA1MBsDwA
+        AwAB/wMAAf8DAAH/AwAB/wMAAf8DAAH/A0AB/QNcAdQDSAGHiAADPwFuAwYBCAMxAU8DAwEEA1MBsDwA
         Az8BbQMAAf8DAAH/A04B8ANWAbkDRgGAAy4BRwMLAQ+QAAMxAU8DAQECTAADKwFDAx8BLAMBAQKoAAMH
         AQkDNwFaA0gBhANTAawDUwGsA0gBhAM3AVoDBwEJFAADUAGjA1IBqQNSAakDUgGpA1IBqQNSAakDUgGp
         A1IBqQNSAakDUgGpA1IBqQNSAakDUgGpA1ABo1wAAxUBHQFCAlkB9QFRAm0B9wNDAXcDWwHIAkIBWQH1
@@ -200,7 +206,7 @@
         BAADUgGpAzQBVQM0AVUgAAM0AVUDNAFVA1IBqQgAA0oBiwMAAf8DAAH/A08BnAQAA00BlQMAAf8DVAGr
         CAADTwGcAwAB/wMAAf8DSgGLBAADUQGgAQABzAH3Af8BAAHMAfcB/wEAAcwB9wH/AQABzAH3Af8DQwF3
         CAADSgGNAgAB7AH/AgAB7AH/AgAB7wH/AgAB7AH/AgAB7AH/AgAB7QH/AVICUwGoA1IBqAMAAf8DAAH/
-        AwAB/wM7AfcDEwH9A1ABnwsAAf8DAAH/AwAB/wMAAf8DAAH/AwAB/wNSAagEAANSAakDNAFVAzQBVQNG
+        AwAB/wNMAfcDHgH9A1ABnwsAAf8DAAH/AwAB/wMAAf8DAAH/AwAB/wNSAagEAANSAakDNAFVAzQBVQNG
         AYADUgGpA1IBqQNSAakDUgGpA1IBqQNSAakDRQF/AzQBVQM0AVUDUgGpBAADUQGiAwAB/wMAAf8DSQGJ
         CAADLwFKAwAB/wNUAe4MAANJAYkDAAH/AwAB/wNRAaIDAAEBAT8CQAFvAT4CXAH4AQABzQH3Af8BAAHN
         AfcB/wMSARgIAAMBAQIDRgF+AlIBXQHwAgAB7gH/AgAB7gH/AkABqAH9AUUCRgF+AwMBBANSAagDAAH/
@@ -242,24 +248,6 @@
         AfwBPws=
 </value>
   </data>
-  <metadata name="tsThumbnails.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>291, 17</value>
-  </metadata>
-  <metadata name="tsProperties.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>649, 17</value>
-  </metadata>
-  <metadata name="tsGCode.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>551, 17</value>
-  </metadata>
-  <metadata name="tsPixelEditorHistory.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1155, 17</value>
-  </metadata>
-  <metadata name="tsLog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1423, 17</value>
-  </metadata>
-  <metadata name="toolTipInformation.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>863, 17</value>
-  </metadata>
   <metadata name="toolTipInformation.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>863, 17</value>
   </metadata>
