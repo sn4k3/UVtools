@@ -2,7 +2,7 @@
 
 namespace UVtools.GUI.Forms
 {
-    partial class FrmMutation
+    partial class FrmMutationBlur
     {
         /// <summary>
         /// Required designer variable.
@@ -31,10 +31,10 @@ namespace UVtools.GUI.Forms
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMutation));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMutationBlur));
             this.lbDescription = new System.Windows.Forms.Label();
             this.lbIterationsStart = new System.Windows.Forms.Label();
-            this.numIterationsStart = new System.Windows.Forms.NumericUpDown();
+            this.nmSize = new System.Windows.Forms.NumericUpDown();
             this.lbLayerRange = new System.Windows.Forms.Label();
             this.nmLayerRangeStart = new System.Windows.Forms.NumericUpDown();
             this.nmLayerRangeEnd = new System.Windows.Forms.NumericUpDown();
@@ -44,60 +44,56 @@ namespace UVtools.GUI.Forms
             this.btnLayerRangeCurrentLayer = new System.Windows.Forms.ToolStripMenuItem();
             this.btnLayerRangeBottomLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.btnLayerRangeNormalLayers = new System.Windows.Forms.ToolStripMenuItem();
-            this.lbIterationsStop = new System.Windows.Forms.Label();
-            this.nmIterationsEnd = new System.Windows.Forms.NumericUpDown();
-            this.cbIterationsFade = new System.Windows.Forms.CheckBox();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnPreview = new System.Windows.Forms.Button();
             this.pbInfo = new System.Windows.Forms.PictureBox();
             this.btnMutate = new System.Windows.Forms.Button();
+            this.cbAlgorithm = new System.Windows.Forms.ComboBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.ctrlKernel = new UVtools.GUI.Controls.CtrlKernel();
             this.btnLayerRangeSelect = new UVtools.GUI.Controls.SplitButton();
-            ((System.ComponentModel.ISupportInitialize)(this.numIterationsStart)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmSize)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeEnd)).BeginInit();
             this.cmLayerRange.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nmIterationsEnd)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbInfo)).BeginInit();
             this.SuspendLayout();
             // 
             // lbDescription
             // 
-            this.lbDescription.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
             this.lbDescription.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbDescription.Location = new System.Drawing.Point(13, 14);
             this.lbDescription.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbDescription.Name = "lbDescription";
-            this.lbDescription.Size = new System.Drawing.Size(584, 323);
+            this.lbDescription.Size = new System.Drawing.Size(584, 128);
             this.lbDescription.TabIndex = 0;
             this.lbDescription.Text = "Description";
             // 
             // lbIterationsStart
             // 
             this.lbIterationsStart.AutoSize = true;
-            this.lbIterationsStart.Location = new System.Drawing.Point(13, 190);
+            this.lbIterationsStart.Location = new System.Drawing.Point(66, 220);
             this.lbIterationsStart.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbIterationsStart.Name = "lbIterationsStart";
-            this.lbIterationsStart.Size = new System.Drawing.Size(80, 20);
+            this.lbIterationsStart.Size = new System.Drawing.Size(44, 20);
             this.lbIterationsStart.TabIndex = 3;
-            this.lbIterationsStart.Text = "Iterations:";
+            this.lbIterationsStart.Text = "Size:";
             this.toolTip.SetToolTip(this.lbIterationsStart, resources.GetString("lbIterationsStart.ToolTip"));
             // 
-            // numIterationsStart
+            // nmSize
             // 
-            this.numIterationsStart.Location = new System.Drawing.Point(132, 187);
-            this.numIterationsStart.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.numIterationsStart.Minimum = new decimal(new int[] {
+            this.nmSize.Location = new System.Drawing.Point(118, 217);
+            this.nmSize.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.nmSize.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
-            this.numIterationsStart.Name = "numIterationsStart";
-            this.numIterationsStart.Size = new System.Drawing.Size(149, 26);
-            this.numIterationsStart.TabIndex = 3;
-            this.numIterationsStart.Value = new decimal(new int[] {
+            this.nmSize.Name = "nmSize";
+            this.nmSize.Size = new System.Drawing.Size(149, 26);
+            this.nmSize.TabIndex = 3;
+            this.nmSize.Value = new decimal(new int[] {
             1,
             0,
             0,
@@ -116,7 +112,7 @@ namespace UVtools.GUI.Forms
             // 
             // nmLayerRangeStart
             // 
-            this.nmLayerRangeStart.Location = new System.Drawing.Point(132, 147);
+            this.nmLayerRangeStart.Location = new System.Drawing.Point(118, 147);
             this.nmLayerRangeStart.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nmLayerRangeStart.Maximum = new decimal(new int[] {
             100000,
@@ -129,7 +125,7 @@ namespace UVtools.GUI.Forms
             // 
             // nmLayerRangeEnd
             // 
-            this.nmLayerRangeEnd.Location = new System.Drawing.Point(328, 147);
+            this.nmLayerRangeEnd.Location = new System.Drawing.Point(314, 147);
             this.nmLayerRangeEnd.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nmLayerRangeEnd.Maximum = new decimal(new int[] {
             100000,
@@ -143,7 +139,7 @@ namespace UVtools.GUI.Forms
             // lbLayerRangeTo
             // 
             this.lbLayerRangeTo.AutoSize = true;
-            this.lbLayerRangeTo.Location = new System.Drawing.Point(289, 150);
+            this.lbLayerRangeTo.Location = new System.Drawing.Point(275, 150);
             this.lbLayerRangeTo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbLayerRangeTo.Name = "lbLayerRangeTo";
             this.lbLayerRangeTo.Size = new System.Drawing.Size(31, 20);
@@ -196,47 +192,6 @@ namespace UVtools.GUI.Forms
             this.btnLayerRangeNormalLayers.Text = "&Normal Layers";
             this.btnLayerRangeNormalLayers.Click += new System.EventHandler(this.ItemClicked);
             // 
-            // lbIterationsStop
-            // 
-            this.lbIterationsStop.AutoSize = true;
-            this.lbIterationsStop.Enabled = false;
-            this.lbIterationsStop.Location = new System.Drawing.Point(289, 190);
-            this.lbIterationsStop.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lbIterationsStop.Name = "lbIterationsStop";
-            this.lbIterationsStop.Size = new System.Drawing.Size(31, 20);
-            this.lbIterationsStop.TabIndex = 13;
-            this.lbIterationsStop.Text = "To:";
-            // 
-            // nmIterationsEnd
-            // 
-            this.nmIterationsEnd.Enabled = false;
-            this.nmIterationsEnd.Location = new System.Drawing.Point(328, 187);
-            this.nmIterationsEnd.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.nmIterationsEnd.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.nmIterationsEnd.Name = "nmIterationsEnd";
-            this.nmIterationsEnd.Size = new System.Drawing.Size(149, 26);
-            this.nmIterationsEnd.TabIndex = 14;
-            this.nmIterationsEnd.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            // 
-            // cbIterationsFade
-            // 
-            this.cbIterationsFade.AutoSize = true;
-            this.cbIterationsFade.Location = new System.Drawing.Point(484, 188);
-            this.cbIterationsFade.Name = "cbIterationsFade";
-            this.cbIterationsFade.Size = new System.Drawing.Size(108, 24);
-            this.cbIterationsFade.TabIndex = 15;
-            this.cbIterationsFade.Text = "Fade in/out";
-            this.cbIterationsFade.UseVisualStyleBackColor = true;
-            this.cbIterationsFade.CheckedChanged += new System.EventHandler(this.CheckedChanged);
-            // 
             // toolTip
             // 
             this.toolTip.AutoPopDelay = 32767;
@@ -252,7 +207,7 @@ namespace UVtools.GUI.Forms
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Image = global::UVtools.GUI.Properties.Resources.Cancel_24x24;
             this.btnCancel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnCancel.Location = new System.Drawing.Point(447, 451);
+            this.btnCancel.Location = new System.Drawing.Point(447, 476);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(150, 48);
@@ -268,7 +223,7 @@ namespace UVtools.GUI.Forms
             this.btnPreview.Enabled = false;
             this.btnPreview.Image = global::UVtools.GUI.Properties.Resources.eye_24x24;
             this.btnPreview.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnPreview.Location = new System.Drawing.Point(131, 451);
+            this.btnPreview.Location = new System.Drawing.Point(131, 476);
             this.btnPreview.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnPreview.Name = "btnPreview";
             this.btnPreview.Size = new System.Drawing.Size(150, 48);
@@ -294,7 +249,7 @@ namespace UVtools.GUI.Forms
             this.btnMutate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnMutate.Image = global::UVtools.GUI.Properties.Resources.Ok_24x24;
             this.btnMutate.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnMutate.Location = new System.Drawing.Point(289, 451);
+            this.btnMutate.Location = new System.Drawing.Point(289, 476);
             this.btnMutate.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnMutate.Name = "btnMutate";
             this.btnMutate.Size = new System.Drawing.Size(150, 48);
@@ -304,34 +259,54 @@ namespace UVtools.GUI.Forms
             this.btnMutate.UseVisualStyleBackColor = true;
             this.btnMutate.Click += new System.EventHandler(this.ItemClicked);
             // 
+            // cbAlgorithm
+            // 
+            this.cbAlgorithm.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbAlgorithm.DropDownWidth = 600;
+            this.cbAlgorithm.FormattingEnabled = true;
+            this.cbAlgorithm.Location = new System.Drawing.Point(118, 181);
+            this.cbAlgorithm.Name = "cbAlgorithm";
+            this.cbAlgorithm.Size = new System.Drawing.Size(479, 28);
+            this.cbAlgorithm.TabIndex = 17;
+            this.cbAlgorithm.SelectedIndexChanged += new System.EventHandler(this.EventSelectedIndexChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(30, 185);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(80, 20);
+            this.label1.TabIndex = 18;
+            this.label1.Text = "Algorithm:";
+            // 
             // ctrlKernel
             // 
             this.ctrlKernel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ctrlKernel.Location = new System.Drawing.Point(12, 221);
+            this.ctrlKernel.Location = new System.Drawing.Point(12, 251);
             this.ctrlKernel.Name = "ctrlKernel";
-            this.ctrlKernel.Size = new System.Drawing.Size(585, 217);
+            this.ctrlKernel.Size = new System.Drawing.Size(586, 217);
             this.ctrlKernel.TabIndex = 16;
             // 
             // btnLayerRangeSelect
             // 
-            this.btnLayerRangeSelect.Location = new System.Drawing.Point(484, 147);
+            this.btnLayerRangeSelect.Location = new System.Drawing.Point(470, 147);
             this.btnLayerRangeSelect.Menu = this.cmLayerRange;
             this.btnLayerRangeSelect.Name = "btnLayerRangeSelect";
-            this.btnLayerRangeSelect.Size = new System.Drawing.Size(114, 26);
+            this.btnLayerRangeSelect.Size = new System.Drawing.Size(128, 26);
             this.btnLayerRangeSelect.TabIndex = 2;
             this.btnLayerRangeSelect.Text = "Select";
             this.btnLayerRangeSelect.UseVisualStyleBackColor = true;
             // 
-            // FrmMutation
+            // FrmMutationBlur
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(927, 513);
+            this.ClientSize = new System.Drawing.Size(927, 538);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.cbAlgorithm);
             this.Controls.Add(this.ctrlKernel);
-            this.Controls.Add(this.cbIterationsFade);
-            this.Controls.Add(this.nmIterationsEnd);
-            this.Controls.Add(this.lbIterationsStop);
             this.Controls.Add(this.btnLayerRangeSelect);
             this.Controls.Add(this.lbLayerRangeTo);
             this.Controls.Add(this.nmLayerRangeEnd);
@@ -341,7 +316,7 @@ namespace UVtools.GUI.Forms
             this.Controls.Add(this.pbInfo);
             this.Controls.Add(this.btnMutate);
             this.Controls.Add(this.btnCancel);
-            this.Controls.Add(this.numIterationsStart);
+            this.Controls.Add(this.nmSize);
             this.Controls.Add(this.lbIterationsStart);
             this.Controls.Add(this.lbDescription);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -350,16 +325,15 @@ namespace UVtools.GUI.Forms
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "FrmMutation";
+            this.Name = "FrmMutationBlur";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Form1";
             this.TopMost = true;
-            ((System.ComponentModel.ISupportInitialize)(this.numIterationsStart)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmSize)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeEnd)).EndInit();
             this.cmLayerRange.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.nmIterationsEnd)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbInfo)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -370,7 +344,7 @@ namespace UVtools.GUI.Forms
 
         private System.Windows.Forms.Label lbDescription;
         private System.Windows.Forms.Label lbIterationsStart;
-        private System.Windows.Forms.NumericUpDown numIterationsStart;
+        private System.Windows.Forms.NumericUpDown nmSize;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button btnMutate;
         private System.Windows.Forms.PictureBox pbInfo;
@@ -385,10 +359,9 @@ namespace UVtools.GUI.Forms
         private System.Windows.Forms.ToolStripMenuItem btnLayerRangeCurrentLayer;
         private System.Windows.Forms.ToolStripMenuItem btnLayerRangeBottomLayers;
         private System.Windows.Forms.ToolStripMenuItem btnLayerRangeNormalLayers;
-        private System.Windows.Forms.Label lbIterationsStop;
-        private System.Windows.Forms.NumericUpDown nmIterationsEnd;
-        private System.Windows.Forms.CheckBox cbIterationsFade;
         private System.Windows.Forms.ToolTip toolTip;
         public CtrlKernel ctrlKernel;
+        private System.Windows.Forms.ComboBox cbAlgorithm;
+        private System.Windows.Forms.Label label1;
     }
 }

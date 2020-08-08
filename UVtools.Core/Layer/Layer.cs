@@ -732,6 +732,18 @@ namespace UVtools.Core
             }
         }
 
+        public void MutateBlur(Size size = default, Point anchor = default, BorderType borderType = BorderType.Reflect101)
+        {
+            if (size.IsEmpty) size = new Size(3, 3);
+            if (anchor.IsEmpty) anchor = new Point(-1, -1);
+            using (Mat dst = LayerMat)
+            {
+                CvInvoke.Blur(dst, dst, size, anchor, borderType);
+                LayerMat = dst;
+            }
+        }
+
+
         public void MutatePyrDownUp(BorderType borderType = BorderType.Reflect101)
         {
             using (Mat dst = LayerMat)
@@ -758,6 +770,20 @@ namespace UVtools.Core
             using (Mat dst = LayerMat)
             {
                 CvInvoke.GaussianBlur(dst, dst, size, sigmaX, sigmaY, borderType);
+                LayerMat = dst;
+            }
+        }
+
+        public void MutateFilter2D(IInputArray kernel = null, Point anchor = default, BorderType borderType = BorderType.Reflect101)
+        {
+            if (anchor.IsEmpty) anchor = new Point(-1, -1);
+            if (ReferenceEquals(kernel, null))
+            {
+                kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+            }
+            using (Mat dst = LayerMat)
+            {
+                CvInvoke.Filter2D(dst, dst, kernel, anchor, 0, borderType);
                 LayerMat = dst;
             }
         }

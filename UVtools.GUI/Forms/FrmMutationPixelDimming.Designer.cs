@@ -45,11 +45,11 @@ namespace UVtools.GUI.Forms
             this.btnLayerRangeNormalLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.label1 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnMutate = new System.Windows.Forms.Button();
@@ -68,6 +68,10 @@ namespace UVtools.GUI.Forms
             this.btnDimPatternChessBoard = new System.Windows.Forms.Button();
             this.tbOddPattern = new System.Windows.Forms.TextBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label13 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.nmInfillSpacing = new System.Windows.Forms.NumericUpDown();
+            this.label12 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.btnInfillPatternWaves = new System.Windows.Forms.Button();
             this.btnInfillPatternSquareGrid = new System.Windows.Forms.Button();
@@ -75,10 +79,6 @@ namespace UVtools.GUI.Forms
             this.nmInfillThickness = new System.Windows.Forms.NumericUpDown();
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
-            this.nmInfillSpacing = new System.Windows.Forms.NumericUpDown();
-            this.label12 = new System.Windows.Forms.Label();
-            this.label13 = new System.Windows.Forms.Label();
             this.btnLayerRangeSelect = new UVtools.GUI.Controls.SplitButton();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeEnd)).BeginInit();
@@ -87,8 +87,8 @@ namespace UVtools.GUI.Forms
             ((System.ComponentModel.ISupportInitialize)(this.nmPixelDimBrightness)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nmInfillThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmInfillSpacing)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmInfillThickness)).BeginInit();
             this.SuspendLayout();
             // 
             // lbDescription
@@ -225,6 +225,17 @@ namespace UVtools.GUI.Forms
             this.label1.Text = "px";
             this.toolTip.SetToolTip(this.label1, resources.GetString("label1.ToolTip"));
             // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(19, 478);
+            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(548, 20);
+            this.label6.TabIndex = 25;
+            this.label6.Text = "(Leave this field empty to use only the even layer pattern for the layers range)";
+            this.toolTip.SetToolTip(this.label6, resources.GetString("label6.ToolTip"));
+            // 
             // label2
             // 
             this.label2.AutoSize = true;
@@ -264,17 +275,6 @@ namespace UVtools.GUI.Forms
             this.label5.Size = new System.Drawing.Size(94, 100);
             this.label5.TabIndex = 24;
             this.label5.Text = "Odd Layer\r\nPattern:\r\n0 = Black\r\n255 = White\r\n(Optional)";
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(19, 478);
-            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(548, 20);
-            this.label6.TabIndex = 25;
-            this.label6.Text = "(Leave this field empty to use only the even layer pattern for the layers range)";
-            this.toolTip.SetToolTip(this.label6, resources.GetString("label6.ToolTip"));
             // 
             // label7
             // 
@@ -344,6 +344,7 @@ namespace UVtools.GUI.Forms
             this.tbEvenPattern.Size = new System.Drawing.Size(469, 124);
             this.tbEvenPattern.TabIndex = 17;
             this.tbEvenPattern.Text = "127 255 255 255\r\n255 255 127 255";
+            this.tbEvenPattern.WordWrap = false;
             // 
             // nmPixelDimBrightness
             // 
@@ -485,6 +486,7 @@ namespace UVtools.GUI.Forms
             this.tbOddPattern.Size = new System.Drawing.Size(469, 124);
             this.tbOddPattern.TabIndex = 23;
             this.tbOddPattern.Text = "255 255 127 255\r\n127 255 255 255";
+            this.tbOddPattern.WordWrap = false;
             // 
             // groupBox2
             // 
@@ -505,6 +507,60 @@ namespace UVtools.GUI.Forms
             this.groupBox2.TabIndex = 26;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Infill generator";
+            // 
+            // label13
+            // 
+            this.label13.Location = new System.Drawing.Point(7, 22);
+            this.label13.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(561, 46);
+            this.label13.TabIndex = 34;
+            this.label13.Text = "The infill function can create a ton of resin traps, use only this tool if you kn" +
+    "ow what are you doing or for specific parts. You always need to ensure the drain" +
+    "s.";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(543, 76);
+            this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(25, 20);
+            this.label11.TabIndex = 33;
+            this.label11.Text = "px";
+            // 
+            // nmInfillSpacing
+            // 
+            this.nmInfillSpacing.Location = new System.Drawing.Point(422, 73);
+            this.nmInfillSpacing.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.nmInfillSpacing.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
+            this.nmInfillSpacing.Minimum = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.nmInfillSpacing.Name = "nmInfillSpacing";
+            this.nmInfillSpacing.Size = new System.Drawing.Size(113, 26);
+            this.nmInfillSpacing.TabIndex = 31;
+            this.nmInfillSpacing.Value = new decimal(new int[] {
+            20,
+            0,
+            0,
+            0});
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(343, 76);
+            this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(71, 20);
+            this.label12.TabIndex = 32;
+            this.label12.Text = "Spacing:";
             // 
             // label8
             // 
@@ -589,60 +645,6 @@ namespace UVtools.GUI.Forms
             this.label10.TabIndex = 21;
             this.label10.Text = "Thickness:";
             // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(543, 76);
-            this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(25, 20);
-            this.label11.TabIndex = 33;
-            this.label11.Text = "px";
-            // 
-            // nmInfillSpacing
-            // 
-            this.nmInfillSpacing.Location = new System.Drawing.Point(422, 73);
-            this.nmInfillSpacing.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.nmInfillSpacing.Maximum = new decimal(new int[] {
-            10000,
-            0,
-            0,
-            0});
-            this.nmInfillSpacing.Minimum = new decimal(new int[] {
-            5,
-            0,
-            0,
-            0});
-            this.nmInfillSpacing.Name = "nmInfillSpacing";
-            this.nmInfillSpacing.Size = new System.Drawing.Size(113, 26);
-            this.nmInfillSpacing.TabIndex = 31;
-            this.nmInfillSpacing.Value = new decimal(new int[] {
-            20,
-            0,
-            0,
-            0});
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(343, 76);
-            this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(71, 20);
-            this.label12.TabIndex = 32;
-            this.label12.Text = "Spacing:";
-            // 
-            // label13
-            // 
-            this.label13.Location = new System.Drawing.Point(7, 22);
-            this.label13.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(561, 46);
-            this.label13.TabIndex = 34;
-            this.label13.Text = "The infill function can create a ton of resin traps, use only this tool if you kn" +
-    "ow what are you doing or for specific parts. You always need to ensure the drain" +
-    "s.";
-            // 
             // btnLayerRangeSelect
             // 
             this.btnLayerRangeSelect.Location = new System.Drawing.Point(446, 146);
@@ -697,8 +699,8 @@ namespace UVtools.GUI.Forms
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nmInfillThickness)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmInfillSpacing)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmInfillThickness)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 

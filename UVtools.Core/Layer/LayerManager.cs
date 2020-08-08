@@ -45,9 +45,10 @@ namespace UVtools.Core
             BlackHat,
             HitMiss,
             ThresholdPixels,
-            PyrDownUp,
+            Blur
+            /*PyrDownUp,
             SmoothMedian,
-            SmoothGaussian,
+            SmoothGaussian,*/
         }
         #endregion
 
@@ -635,7 +636,23 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutatePyrDownUp(uint startLayerIndex, uint endLayerIndex, BorderType borderType = BorderType.Default, OperationProgress progress = null)
+        public void MutateBlur(uint startLayerIndex, uint endLayerIndex, Size size, Point kernelAnchor = default, BorderType borderType = BorderType.Reflect101, OperationProgress progress = null)
+        {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Box Blur", endLayerIndex - startLayerIndex + 1);
+            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+                this[layerIndex].MutateBlur(size, kernelAnchor, borderType);
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+            progress.Token.ThrowIfCancellationRequested();
+        }
+
+        public void MutatePyrDownUp(uint startLayerIndex, uint endLayerIndex, BorderType borderType = BorderType.Reflect101, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
             progress.Reset("PryDownUp", endLayerIndex - startLayerIndex+1);
@@ -675,6 +692,22 @@ namespace UVtools.Core
             {
                 if (progress.Token.IsCancellationRequested) return;
                 this[layerIndex].MutateGaussianBlur(size, sigmaX, sigmaY, borderType);
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+            progress.Token.ThrowIfCancellationRequested();
+        }
+
+        public void MutateFilter2D(uint startLayerIndex, uint endLayerIndex, IInputArray kernel = null, Point kernelAnchor = default, BorderType borderType = BorderType.Reflect101, OperationProgress progress = null)
+        {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Filter 2D", endLayerIndex - startLayerIndex + 1);
+            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+                this[layerIndex].MutateFilter2D(kernel, kernelAnchor, borderType);
                 lock (progress.Mutex)
                 {
                     progress++;
@@ -1281,6 +1314,145 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
         }
 
+        public void RemoveLayer(uint layerIndex) => RemoveLayer(layerIndex, layerIndex);
+
+        public void RemoveLayer(uint layerIndexStart, uint layerIndexEnd)
+        {
+            var layersRemove = new List<uint>();
+            for (uint layerIndex = layerIndexStart; layerIndex <= layerIndexEnd; layerIndex++)
+            {
+                layersRemove.Add(layerIndex);
+            }
+
+            RemoveLayer(layersRemove);
+        }
+
+        public void RemoveLayer(List<uint> layersRemove)
+        {
+            if (layersRemove.Count == 0) return;
+
+            var oldLayers = Layers;
+            float layerHeight = SlicerFile.LayerHeight;
+
+            Layers = new Layer[Count - layersRemove.Count];
+
+            // Re-set
+            uint newLayerIndex = 0;
+            for (uint layerIndex = 0; layerIndex < oldLayers.Length; layerIndex++)
+            {
+                if (layersRemove.Contains(layerIndex)) continue;
+                Layers[newLayerIndex] = oldLayers[layerIndex];
+                Layers[newLayerIndex].Index = newLayerIndex;
+
+                // Re-Z
+                float posZ = layerHeight;
+                if (newLayerIndex > 0)
+                {
+                    if (oldLayers[layerIndex - 1].PositionZ == oldLayers[layerIndex].PositionZ)
+                    {
+                        posZ = Layers[newLayerIndex - 1].PositionZ;
+                    }
+                    else
+                    {
+                        posZ = (float)Math.Round(Layers[newLayerIndex - 1].PositionZ + layerHeight, 2);
+                    }
+                }
+
+                Layers[newLayerIndex].PositionZ = posZ;
+                Layers[newLayerIndex].IsModified = true;
+
+                newLayerIndex++;
+            }
+
+            SlicerFile.LayerCount = Count;
+            BoundingRectangle = Rectangle.Empty;
+            SlicerFile.RequireFullEncode = true;
+        }
+
+        public void ReHeight(OperationLayerReHeight operation, OperationProgress progress = null)
+        {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Re-Height", operation.LayerCount);
+
+            var oldLayers = Layers;
+
+            Layers = new Layer[operation.LayerCount];
+
+            uint newLayerIndex = 0;
+            for (uint layerIndex = 0; layerIndex < oldLayers.Length; layerIndex++)
+            {
+                var oldLayer = oldLayers[layerIndex];
+                if (operation.IsDivision)
+                {
+                    for (byte i = 0; i < operation.Modifier; i++)
+                    {
+                        Layers[newLayerIndex] =
+                            new Layer(newLayerIndex, oldLayer.CompressedBytes, null, this)
+                            {
+                                PositionZ = (float)(operation.LayerHeight * (newLayerIndex + 1)),
+                                ExposureTime = oldLayer.ExposureTime,
+                                BoundingRectangle = oldLayer.BoundingRectangle,
+                                NonZeroPixelCount = oldLayer.NonZeroPixelCount
+
+                            };
+                        newLayerIndex++;
+                        progress++;
+                    }
+                }
+                else
+                {
+                    using (var mat = oldLayers[layerIndex++].LayerMat)
+                    {
+                        for (byte i = 1; i < operation.Modifier; i++)
+                        {
+                            using (var nextMat = oldLayers[layerIndex++].LayerMat)
+                            {
+                                CvInvoke.Add(mat, nextMat, mat);
+                            }
+                        }
+
+                        Layers[newLayerIndex] = new Layer(newLayerIndex, mat, null, this)
+                        {
+                            PositionZ = (float)(operation.LayerHeight * (newLayerIndex + 1)),
+                            ExposureTime = oldLayer.ExposureTime
+                        };
+                        newLayerIndex++;
+                        layerIndex--;
+                        progress++;
+                    }
+                }
+            }
+
+
+            SlicerFile.LayerHeight = (float)operation.LayerHeight;
+            SlicerFile.LayerCount = Count;
+            BoundingRectangle = Rectangle.Empty;
+            SlicerFile.RequireFullEncode = true;
+        }
+
+        public void ChangeResolution(uint newResolutionX, uint newResolutionY, OperationProgress progress)
+        {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Resolution", Count);
+
+            var bounds = BoundingRectangle;
+
+            Parallel.For(0, Count, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+
+                this[layerIndex].ChangeResolution(newResolutionX, newResolutionY, bounds);
+
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+
+            SlicerFile.ResolutionX = newResolutionX;
+            SlicerFile.ResolutionY = newResolutionY;
+        }
+
         public void ToolPattern(uint startLayerIndex, uint endLayerIndex, OperationPattern settings, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
@@ -1462,144 +1634,5 @@ namespace UVtools.Core
 
 
         #endregion
-
-        public void RemoveLayer(uint layerIndex) => RemoveLayer(layerIndex, layerIndex);
-
-        public void RemoveLayer(uint layerIndexStart, uint layerIndexEnd)
-        {
-            var layersRemove = new List<uint>();
-            for (uint layerIndex = layerIndexStart; layerIndex <= layerIndexEnd; layerIndex++)
-            {
-                layersRemove.Add(layerIndex);
-            }
-
-            RemoveLayer(layersRemove);
-        }
-
-        public void RemoveLayer(List<uint> layersRemove)
-        {
-            if (layersRemove.Count == 0) return;
-
-            var oldLayers = Layers;
-            float layerHeight = SlicerFile.LayerHeight;
-
-            Layers = new Layer[Count - layersRemove.Count];
-
-            // Re-set
-            uint newLayerIndex = 0;
-            for (uint layerIndex = 0; layerIndex < oldLayers.Length; layerIndex++)
-            {
-                if (layersRemove.Contains(layerIndex)) continue;
-                Layers[newLayerIndex] = oldLayers[layerIndex];
-                Layers[newLayerIndex].Index = newLayerIndex;
-
-                // Re-Z
-                float posZ = layerHeight;
-                if (newLayerIndex > 0)
-                {
-                    if (oldLayers[layerIndex - 1].PositionZ == oldLayers[layerIndex].PositionZ)
-                    {
-                        posZ = Layers[newLayerIndex - 1].PositionZ;
-                    }
-                    else
-                    {
-                        posZ = (float)Math.Round(Layers[newLayerIndex - 1].PositionZ + layerHeight, 2);
-                    }
-                }
-
-                Layers[newLayerIndex].PositionZ = posZ;
-                Layers[newLayerIndex].IsModified = true;
-
-                newLayerIndex++;
-            }
-
-            SlicerFile.LayerCount = Count;
-            BoundingRectangle = Rectangle.Empty;
-            SlicerFile.RequireFullEncode = true;
-        }
-
-        public void ReHeight(OperationLayerReHeight operation, OperationProgress progress = null)
-        {
-            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Re-Height", operation.LayerCount);
-
-            var oldLayers = Layers;
-
-            Layers = new Layer[operation.LayerCount];
-
-            uint newLayerIndex = 0;
-            for (uint layerIndex = 0; layerIndex < oldLayers.Length; layerIndex++)
-            {
-                var oldLayer = oldLayers[layerIndex];
-                if (operation.IsDivision)
-                {
-                    for (byte i = 0; i < operation.Modifier; i++)
-                    {
-                        Layers[newLayerIndex] =
-                            new Layer(newLayerIndex, oldLayer.CompressedBytes, null, this)
-                            {
-                                PositionZ = (float) (operation.LayerHeight * (newLayerIndex + 1)),
-                                ExposureTime = oldLayer.ExposureTime,
-                                BoundingRectangle = oldLayer.BoundingRectangle,
-                                NonZeroPixelCount = oldLayer.NonZeroPixelCount
-                                
-                            };
-                        newLayerIndex++;
-                        progress++;
-                    }
-                }
-                else
-                {
-                    using (var mat = oldLayers[layerIndex++].LayerMat)
-                    {
-                        for (byte i = 1; i < operation.Modifier; i++)
-                        {
-                            using (var nextMat = oldLayers[layerIndex++].LayerMat)
-                            {
-                                CvInvoke.Add(mat, nextMat, mat);
-                            }
-                        }
-
-                        Layers[newLayerIndex] = new Layer(newLayerIndex, mat, null, this)
-                        {
-                            PositionZ = (float)(operation.LayerHeight * (newLayerIndex + 1)),
-                            ExposureTime = oldLayer.ExposureTime
-                        };
-                        newLayerIndex++;
-                        layerIndex--;
-                        progress++;
-                    }
-                }
-            }
-
-
-            SlicerFile.LayerHeight = (float) operation.LayerHeight;
-            SlicerFile.LayerCount = Count;
-            BoundingRectangle = Rectangle.Empty;
-            SlicerFile.RequireFullEncode = true;
-        }
-
-        public void ChangeResolution(uint newResolutionX, uint newResolutionY, OperationProgress progress)
-        {
-            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Resolution", Count);
-
-            var bounds = BoundingRectangle;
-
-            Parallel.For(0, Count, layerIndex =>
-            {
-                if (progress.Token.IsCancellationRequested) return;
-
-                this[layerIndex].ChangeResolution(newResolutionX, newResolutionY, bounds);
-
-                lock (progress.Mutex)
-                {
-                    progress++;
-                }
-            });
-
-            SlicerFile.ResolutionX = newResolutionX;
-            SlicerFile.ResolutionY = newResolutionY;
-        }
     }
 }

@@ -33,11 +33,22 @@ namespace UVtools.GUI.Forms
         #endregion
 
         #region Constructors
-        public FrmToolEmpty(uint layerIndex, string text, string description, string btnOkText)
+        public FrmToolEmpty()
         {
             InitializeComponent();
-            DialogResult = DialogResult.Cancel;
+        }
 
+        public FrmToolEmpty(Mutation mutation) : this()
+        {
+            btnOk.Text = "Mutate";
+
+            Text = $"Mutate: {mutation.MenuName}";
+            lbDescription.Text = mutation.Description;
+            nmLayerRangeEnd.Value = Program.SlicerFile.LayerCount - 1;
+        }
+
+        public FrmToolEmpty(uint layerIndex, string text, string description, string btnOkText) : this()
+        {
             nmLayerRangeStart.Value = layerIndex;
             nmLayerRangeEnd.Value = layerIndex;
 

@@ -14,8 +14,32 @@ using UVtools.Core;
 
 namespace UVtools.GUI.Forms
 {
-    public partial class FrmMutation : Form
+    public partial class FrmMutationBlur : Form
     {
+        public enum BlurAlgorithm
+        {
+            Blur,
+            Pyramid,
+            MedianBlur,
+            GaussianBlur,
+            Filter2D
+        }
+        public struct BlurAlgorithmDescription
+        {
+            public BlurAlgorithm BlurAlgorithm;
+            public string Description;
+
+            public BlurAlgorithmDescription(BlurAlgorithm blurAlgorithm, string description)
+            {
+                BlurAlgorithm = blurAlgorithm;
+                Description = description;
+            }
+
+            public override string ToString()
+            {
+                return Description;
+            }
+        }
         #region Properties
 
         private Mutation Mutation { get; }
@@ -32,22 +56,12 @@ namespace UVtools.GUI.Forms
             set => nmLayerRangeEnd.Value = value;
         }
 
-        public uint Iterations
-        {
-            get => (uint) numIterationsStart.Value;
-            set => numIterationsStart.Value = value;
-        }
+        public BlurAlgorithm BlurAlgorithmType => ((BlurAlgorithmDescription) cbAlgorithm.SelectedItem).BlurAlgorithm;
 
-        public uint IterationsEnd
+        public uint KSize
         {
-            get => (uint)nmIterationsEnd.Value;
-            set => nmIterationsEnd.Value = value;
-        }
-
-        public bool IterationsFade
-        {
-            get => cbIterationsFade.Checked;
-            set => cbIterationsFade.Checked = value;
+            get => (uint) nmSize.Value;
+            set => nmSize.Value = value;
         }
 
         public Matrix<byte> KernelMatrix { get; private set; }
@@ -56,31 +70,25 @@ namespace UVtools.GUI.Forms
 
         #region Constructors
 
-        public FrmMutation()
+        public FrmMutationBlur()
         {
             InitializeComponent();
+            nmLayerRangeEnd.Value = Program.SlicerFile.LayerCount - 1;
+            cbAlgorithm.Items.AddRange(new object[]
+            {
+                new BlurAlgorithmDescription(BlurAlgorithm.Blur, "Blur: Normalized box filter"), 
+                new BlurAlgorithmDescription(BlurAlgorithm.Pyramid, "Pyramid: Down/up-sampling step of Gaussian pyramid decomposition"), 
+                new BlurAlgorithmDescription(BlurAlgorithm.MedianBlur, "Median Blur: Each pixel becomes the median of its surrounding pixels"), 
+                new BlurAlgorithmDescription(BlurAlgorithm.GaussianBlur, "Gaussian Blur: Each pixel is a sum of fractions of each pixel in its neighborhood"),
+                new BlurAlgorithmDescription(BlurAlgorithm.Filter2D, "Filter 2D: Applies an arbitrary linear filter to an image"), 
+            });
+            cbAlgorithm.SelectedIndex = 0;
         }
 
-        public FrmMutation(Mutation mutation, uint defaultIterations = 1) : this()
+        public FrmMutationBlur(Mutation mutation) : this()
         {
             
             Mutation = mutation;
-            DialogResult = DialogResult.Cancel;
-
-            if (defaultIterations == 0)
-            {
-                lbIterationsStart.Enabled =
-                numIterationsStart.Enabled =
-                lbIterationsStop.Enabled =
-                nmIterationsEnd.Enabled =
-                cbIterationsFade.Enabled =
-                        false;
-            }
-            else
-            {
-                Iterations = defaultIterations;
-                numIterationsStart.Select();
-            }
 
             Text = $"Mutate: {mutation.MenuName}";
             lbDescription.Text = Mutation.Description;
@@ -94,9 +102,6 @@ namespace UVtools.GUI.Forms
                 pbInfo.Image = mutation.Image;
                 pbInfo.Visible = true;
             }
-
-            nmLayerRangeEnd.Value = Program.SlicerFile.LayerCount-1;
-
         }
         #endregion
 
@@ -187,8 +192,21 @@ namespace UVtools.GUI.Forms
                     return;
                 }
 
-                KernelMatrix = ctrlKernel.GetMatrix();
-                if (ReferenceEquals(KernelMatrix, null)) return;
+                if (BlurAlgorithmType == BlurAlgorithm.GaussianBlur ||
+                    BlurAlgorithmType == BlurAlgorithm.MedianBlur)
+                {
+                    if (KSize % 2 != 1)
+                    {
+                        MessageBox.Show("Size must be a odd number", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                }
+
+                if (BlurAlgorithmType == BlurAlgorithm.Filter2D)
+                {
+                    KernelMatrix = ctrlKernel.GetMatrix();
+                    if (ReferenceEquals(KernelMatrix, null)) return;
+                }
 
 
                 var operationName = string.IsNullOrEmpty(Mutation.MenuName) ? Mutation.Mutate.ToString() : Mutation.MenuName;
@@ -196,7 +214,7 @@ namespace UVtools.GUI.Forms
                     MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     DialogResult = DialogResult.OK;
-                    if (Iterations <= 0) // Should never happen!
+                    if (KSize <= 0) // Should never happen!
                     {
                         DialogResult = DialogResult.Cancel;
                     }
@@ -213,17 +231,16 @@ namespace UVtools.GUI.Forms
             }
         }
 
-        private void CheckedChanged(object sender, EventArgs e)
+        private void EventSelectedIndexChanged(object sender, EventArgs e)
         {
-            if (ReferenceEquals(sender, cbIterationsFade))
+            if (ReferenceEquals(sender, cbAlgorithm))
             {
-                lbIterationsStop.Enabled =
-                    nmIterationsEnd.Enabled =
-                        cbIterationsFade.Checked;
-
+                ctrlKernel.Enabled = BlurAlgorithmType == BlurAlgorithm.Filter2D;
+                nmSize.Enabled = BlurAlgorithmType != BlurAlgorithm.Pyramid && BlurAlgorithmType != BlurAlgorithm.Filter2D;
                 return;
             }
         }
+
         #endregion
 
 

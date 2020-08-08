@@ -31,6 +31,7 @@ namespace UVtools.GUI
             MenuName = menuName ?? mutate.ToString();
             Description = description;
             MenuImage = menuImage ?? Properties.Resources.filter_filled_16x16;
+            Image = image;
         }
 
         #endregion

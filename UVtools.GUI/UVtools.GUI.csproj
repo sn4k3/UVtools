@@ -145,6 +145,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\CtrlKernel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\CtrlKernel.Designer.cs">
+      <DependentUpon>CtrlKernel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Log.cs" />
     <Compile Include="Controls\SlicerPropertyItem.cs" />
     <Compile Include="Controls\SplitButton.cs">
@@ -155,6 +161,12 @@
     </Compile>
     <Compile Include="Forms\FrmInstallPEProfiles.Designer.cs">
       <DependentUpon>FrmInstallPEProfiles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FrmMutationBlur.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmMutationBlur.Designer.cs">
+      <DependentUpon>FrmMutationBlur.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\FrmMutationThreshold.cs">
       <SubType>Form</SubType>
@@ -262,11 +274,17 @@
     <Compile Include="Mutation.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Controls\CtrlKernel.resx">
+      <DependentUpon>CtrlKernel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmAbout.resx">
       <DependentUpon>FrmAbout.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmInstallPEProfiles.resx">
       <DependentUpon>FrmInstallPEProfiles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmMutationBlur.resx">
+      <DependentUpon>FrmMutationBlur.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmMutationThreshold.resx">
       <DependentUpon>FrmMutationThreshold.cs</DependentUpon>

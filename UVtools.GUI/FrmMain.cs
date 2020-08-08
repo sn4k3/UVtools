@@ -109,7 +109,12 @@ namespace UVtools.GUI
                     "If a pixel brightness is less or equal to the threshold value, set this pixel to 0, otherwise set to defined maximum value.\n" +
                     "More info: https://docs.opencv.org/master/d7/d4d/tutorial_py_thresholding.html"
                 )},
-                {LayerManager.Mutate.PyrDownUp, new Mutation(LayerManager.Mutate.PyrDownUp, "Big Blur", Resources.blur_16x16,
+                {LayerManager.Mutate.Blur, new Mutation(LayerManager.Mutate.Blur, "Blur", Resources.blur_16x16,
+                    "Blur and averaging images with various low pass filters\n" +
+                    "Note: Printer must support AntiAliasing on firmware to able to use this function\n" +
+                    "More information: https://docs.opencv.org/master/d4/d13/tutorial_py_filtering.html "
+                )},
+                /*{LayerManager.Mutate.PyrDownUp, new Mutation(LayerManager.Mutate.PyrDownUp, "Big Blur", Resources.blur_16x16,
                     "Performs down/up-sampling step of Gaussian pyramid decomposition.\n" +
                     "First down-samples the image by rejecting even rows and columns, after performs up-sampling step of Gaussian pyramid decomposition.\n" +
                     "This operation will add a big blur to edges, creating a over-exaggerated anti-aliasing and as result can make edges smoother\n" +
@@ -127,7 +132,7 @@ namespace UVtools.GUI
                     "Very fast, but does not preserve sharp edges well.\n" +
                     "Note 1: Printer must support AntiAliasing on firmware to able to use this function.\n" +
                     "Note 2: Iterations must be a odd number."
-                )},
+                )},*/
             };
 
 
@@ -3103,6 +3108,9 @@ namespace UVtools.GUI
             uint iterationsEnd = 0;
             bool fade = false;
 
+            Matrix<byte> kernel = null;
+            Point kernelAnchor = Point.Empty;
+
             ThresholdType thresholdType = ThresholdType.Binary;
 
             OperationMove operationMove = null;
@@ -3112,6 +3120,8 @@ namespace UVtools.GUI
 
             Matrix<byte> evenPattern = null;
             Matrix<byte> oddPattern = null;
+
+            FrmMutationBlur.BlurAlgorithm blurAlgorithm = FrmMutationBlur.BlurAlgorithm.Blur;
 
             switch (mutator)
             {
@@ -3156,6 +3166,14 @@ namespace UVtools.GUI
                         x = (double) inputBox.Value;
                     }
                     break;
+                case LayerManager.Mutate.Solidify:
+                    using (FrmToolEmpty inputBox = new FrmToolEmpty(Mutations[mutator]))
+                    {
+                        if (inputBox.ShowDialog() != DialogResult.OK) return;
+                        layerStart = inputBox.LayerRangeStart;
+                        layerEnd = inputBox.LayerRangeEnd;
+                    }
+                    break;
                 case LayerManager.Mutate.PixelDimming:
                     using (FrmMutationPixelDimming inputBox = new FrmMutationPixelDimming(Mutations[mutator]))
                     {
@@ -3178,6 +3196,25 @@ namespace UVtools.GUI
                         thresholdType = inputBox.ThresholdTypeValue;
                     }
                     break;
+                case LayerManager.Mutate.Blur:
+                    using (FrmMutationBlur inputBox = new FrmMutationBlur(Mutations[mutator]))
+                    {
+                        if (inputBox.ShowDialog() != DialogResult.OK) return;
+                        iterationsStart = inputBox.KSize;
+                        if (iterationsStart == 0) return;
+                        layerStart = inputBox.LayerRangeStart;
+                        layerEnd = inputBox.LayerRangeEnd;
+
+                        blurAlgorithm = inputBox.BlurAlgorithmType;
+
+                        if (blurAlgorithm == FrmMutationBlur.BlurAlgorithm.Filter2D)
+                        {
+                            kernel = inputBox.KernelMatrix;
+                            kernelAnchor = inputBox.KernelAnchor;
+                        }
+                    }
+
+                    break;
                 default:
                     using (FrmMutation inputBox = new FrmMutation(Mutations[mutator]))
                     {
@@ -3187,6 +3224,9 @@ namespace UVtools.GUI
                         layerStart = inputBox.LayerRangeStart;
                         layerEnd = inputBox.LayerRangeEnd;
                         iterationsEnd = inputBox.IterationsEnd;
+
+                        kernel = inputBox.KernelMatrix;
+                        kernelAnchor = inputBox.KernelAnchor;
                     }
 
                     break;
@@ -3234,19 +3274,19 @@ namespace UVtools.GUI
                             SlicerFile.LayerManager.MutatePixelDimming(layerStart, layerEnd, evenPattern, oddPattern, (ushort) iterationsStart, progress);
                             break;
                         case LayerManager.Mutate.Erode:
-                            SlicerFile.LayerManager.MutateErode(layerStart, layerEnd, (int) iterationsStart, (int) iterationsEnd, fade, progress);
+                            SlicerFile.LayerManager.MutateErode(layerStart, layerEnd, (int) iterationsStart, (int) iterationsEnd, fade, progress, kernel, kernelAnchor);
                             break;
                         case LayerManager.Mutate.Dilate:
-                            SlicerFile.LayerManager.MutateDilate(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade, progress);
+                            SlicerFile.LayerManager.MutateDilate(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade, progress, kernel, kernelAnchor);
                             break;
                         case LayerManager.Mutate.Opening:
-                            SlicerFile.LayerManager.MutateOpen(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade, progress);
+                            SlicerFile.LayerManager.MutateOpen(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade, progress, kernel, kernelAnchor);
                             break;
                         case LayerManager.Mutate.Closing:
-                            SlicerFile.LayerManager.MutateClose(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade, progress);
+                            SlicerFile.LayerManager.MutateClose(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade, progress, kernel, kernelAnchor);
                             break;
                         case LayerManager.Mutate.Gradient:
-                            SlicerFile.LayerManager.MutateGradient(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade, progress);
+                            SlicerFile.LayerManager.MutateGradient(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade, progress, kernel, kernelAnchor);
                             break;
                         /*case Mutation.Mutates.TopHat:
                             kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(9, 9),
@@ -3267,21 +3307,42 @@ namespace UVtools.GUI
                         case LayerManager.Mutate.ThresholdPixels:
                             SlicerFile.LayerManager.MutateThresholdPixels(layerStart, layerEnd, (byte) iterationsStart, (byte) iterationsEnd, thresholdType, progress);
                             break;
-                        case LayerManager.Mutate.PyrDownUp:
-                            SlicerFile.LayerManager.MutatePyrDownUp(layerStart, layerEnd, BorderType.Default, progress);
+                        case LayerManager.Mutate.Blur:
+                            switch (blurAlgorithm)
+                            {
+                                case FrmMutationBlur.BlurAlgorithm.Blur:
+                                    SlicerFile.LayerManager.MutateBlur(layerStart, layerEnd, new Size((int)iterationsStart, (int)iterationsStart), kernelAnchor, BorderType.Reflect101, progress);
+                                    break;
+                                case FrmMutationBlur.BlurAlgorithm.Pyramid:
+                                    SlicerFile.LayerManager.MutatePyrDownUp(layerStart, layerEnd, BorderType.Default, progress);
+                                    break;
+                                case FrmMutationBlur.BlurAlgorithm.MedianBlur:
+                                    SlicerFile.LayerManager.MutateMedianBlur(layerStart, layerEnd, (int) iterationsStart, progress);
+                                    break;
+                                case FrmMutationBlur.BlurAlgorithm.GaussianBlur:
+                                    SlicerFile.LayerManager.MutateGaussianBlur(layerStart, layerEnd, new Size((int)iterationsStart, (int)iterationsStart), 0, 0, BorderType.Reflect101, progress);
+                                    break;
+                                case FrmMutationBlur.BlurAlgorithm.Filter2D:
+                                    SlicerFile.LayerManager.MutateFilter2D(layerStart, layerEnd, kernel, kernelAnchor, BorderType.Reflect101, progress);
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
                             break;
-                        case LayerManager.Mutate.SmoothMedian:
-                            SlicerFile.LayerManager.MutateMedianBlur(layerStart, layerEnd, (int)iterationsStart, progress);
-                            break;
-                        case LayerManager.Mutate.SmoothGaussian:
-                            SlicerFile.LayerManager.MutateGaussianBlur(layerStart, layerEnd, new Size((int) iterationsStart, (int) iterationsStart), 0,0, BorderType.Default, progress);
-                            break;
+                            /*case LayerManager.Mutate.PyrDownUp:
+                                SlicerFile.LayerManager.MutatePyrDownUp(layerStart, layerEnd, BorderType.Default, progress);
+                                break;
+                            case LayerManager.Mutate.SmoothMedian:
+                                SlicerFile.LayerManager.MutateMedianBlur(layerStart, layerEnd, (int)iterationsStart, progress);
+                                break;
+                            case LayerManager.Mutate.SmoothGaussian:
+                                SlicerFile.LayerManager.MutateGaussianBlur(layerStart, layerEnd, new Size((int) iterationsStart, (int) iterationsStart), 0,0, BorderType.Default, progress);
+                                break;*/
                     }
 
                 }
                 catch (OperationCanceledException)
                 {
-
                 }
                 catch (Exception ex)
                 {

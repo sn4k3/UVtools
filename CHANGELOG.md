@@ -1,5 +1,15 @@
 # Changelog
 
+## 08/08/2020 - v0.6.5.0
+
+* (Add) Mutators: Custom kernels, auto kernels and anchor where applicable
+* (Add) Mutator - Blur: Box Blur
+* (Add) Mutator - Blur: Filter2D
+* (Improvement) Mutator: Group all blurs into one window
+* (Fix) Mutators: Sample images was gone
+* (Fix) Mutator - Solidify: Remove the disabled input box
+* (Fix) Mutator - Pixel Dimming: Disable word wrap on pattern text box
+
 ## 06/08/2020 - v0.6.4.3
 
 * (Add) Pixel Editor - Supports and Drain holes: AntiAliasing
