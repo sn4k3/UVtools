@@ -53,8 +53,8 @@ namespace UVtools.GUI.Forms
             
         }
 
-        public FrmInputBox(FileFormat.PrintParameterModifier modifier, decimal currentValue, byte decimals = 2) : this(modifier.Name,
-            modifier.Description, currentValue, modifier.ValueUnit, modifier.Minimum, modifier.Maximum, decimals)
+        public FrmInputBox(FileFormat.PrintParameterModifier modifier, decimal currentValue) : this(modifier.Name,
+            modifier.Description, currentValue, modifier.ValueUnit, modifier.Minimum, modifier.Maximum, modifier.DecimalPlates)
         { }
         public FrmInputBox(string title, string description, decimal currentValue, string valueUnit = null, decimal minValue = 0, decimal maxValue = 100, byte decimals = 2, string valueLabel = "Value") : this()
         {

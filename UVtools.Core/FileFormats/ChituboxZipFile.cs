@@ -571,7 +571,7 @@ namespace UVtools.Core.FileFormats
                 var liftHeight = GetInitialLayerValueOrNormal(layerIndex, HeaderSettings.BottomLiftHeight,
                     HeaderSettings.LiftHeight);
 
-                var liftZHeight = liftHeight + this[layerIndex].PositionZ;
+                float liftZHeight = (float) Math.Round(liftHeight + this[layerIndex].PositionZ, 2);
 
                 var liftZSpeed = GetInitialLayerValueOrNormal(layerIndex, HeaderSettings.BottomLiftSpeed,
                     HeaderSettings.LiftSpeed);
@@ -580,7 +580,7 @@ namespace UVtools.Core.FileFormats
                     HeaderSettings.LightOffTime) * 1000;
 
                 var pwmValue = GetInitialLayerValueOrNormal(layerIndex, HeaderSettings.BottomLightPWM, HeaderSettings.LayerLightPWM);
-                var exposureTime = GetInitialLayerValueOrNormal(layerIndex, InitialExposureTime, LayerExposureTime) * 1000;
+                var exposureTime = this[layerIndex].ExposureTime * 1000;
 
                 GCode.AppendLine($";LAYER_START:{layerIndex}");
                 GCode.AppendLine($";currPos:{this[layerIndex].PositionZ}");

@@ -56,7 +56,7 @@ namespace UVtools.Core.FileFormats
             [DisplayName("Outline Width Outset")] public ushort OutlineWidthOutset { get; set; } = 0;
             [DisplayName("Bottom Layers Time")] public uint BottomLayersTime { get; set; } = 35000;
             [DisplayName("Number of Bottom Layers")] public ushort NumberBottomLayers { get; set; } = 3;
-            [DisplayName("Blanking Layer Time")] public uint BlankingLayerTime { get; set; }
+            [DisplayName("Blanking Layer Time")] public uint BlankingLayerTime { get; set; } = 1000;
             [DisplayName("BuildDirection")] public string BuildDirection { get; set; } = "Bottom_Up";
             [DisplayName("Lift Distance")] public float LiftDistance { get; set; } = 4;
             [DisplayName("Slide/Tilt Value")] public byte TiltValue { get; set; }
@@ -416,7 +416,7 @@ G1 Z-3.9 F120
             if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureSeconds))
             {
                 SliceSettings.HeadLayersExpoMs = 
-                OutputSettings.BottomLayersTime = value.Convert<uint>()*1000;
+                OutputSettings.BottomLayersTime = (uint) (value.Convert<float>()*1000);
                 UpdateLayers();
                 UpdateGCode();
                 return true;
@@ -424,7 +424,7 @@ G1 Z-3.9 F120
             if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
             {
                 SliceSettings.LayersExpoMs =
-                OutputSettings.LayerTime = value.Convert<uint>() * 1000;
+                OutputSettings.LayerTime = (uint) (value.Convert<float>() * 1000);
                 UpdateLayers();
                 UpdateGCode();
                 return true;
@@ -433,7 +433,7 @@ G1 Z-3.9 F120
             if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight))
             {
                 SliceSettings.LiftDistance =
-                OutputSettings.LiftDistance = value.Convert<byte>();
+                OutputSettings.LiftDistance = value.Convert<float>();
                 UpdateGCode();
                 return true;
             }
@@ -613,7 +613,7 @@ G1 Z-3.9 F120
                 Layer layer = this[layerIndex];
                 GCode.AppendLine($"{GCodeKeywordSlice} {layerIndex}");
                 GCode.AppendLine($"M106 S{GetInitialLayerValueOrNormal(layerIndex, OutputSettings.BottomLightPWM, OutputSettings.LightPWM)}");
-                GCode.AppendLine($"{GCodeKeywordDelay} {layer.ExposureTime}");
+                GCode.AppendLine($"{GCodeKeywordDelay} {layer.ExposureTime * 1000}");
                 GCode.AppendLine("M106 S0");
                 GCode.AppendLine(GCodeKeywordSliceBlank);
 
@@ -622,15 +622,26 @@ G1 Z-3.9 F120
                     if (LiftHeight > 0)
                     {
                         GCode.AppendLine($"G1 Z{LiftHeight} F{LiftSpeed}");
-                        GCode.AppendLine($"G1 Z-{LiftHeight - layer.PositionZ + lastZPosition} F{RetractSpeed}");
+                        GCode.AppendLine($"G1 Z-{Math.Round(LiftHeight - layer.PositionZ + lastZPosition, 2)} F{RetractSpeed}");
                     }
                     else
                     {
-                        GCode.AppendLine($"G1 Z{layer.PositionZ - lastZPosition} F{LiftSpeed}");
+                        GCode.AppendLine($"G1 Z{Math.Round(layer.PositionZ - lastZPosition, 2)} F{LiftSpeed}");
                     }
                 }
+                // delay = max(extra['wait'], 500) + int(((int(lift)/(extra['lift_feed']/60)) + (int(lift)/(extra['lift_retract']/60)))*1000)
+                uint extraDelay = (uint) (((LiftHeight / (LiftSpeed / 60f)) + (LiftHeight / (RetractSpeed / 60f))) * 1000);
+                if (layerIndex < InitialLayerCount)
+                {
+                    extraDelay = (uint) Math.Max(extraDelay + 10000, layer.ExposureTime * 1000);
+                }
+                else
+                {
+                    extraDelay += Math.Max(OutputSettings.BlankingLayerTime, 500);
+                }
 
-                GCode.AppendLine($"{GCodeKeywordDelay} {layer.ExposureTime}");
+                GCode.AppendLine($"{GCodeKeywordDelay} {extraDelay}");
+                GCode.AppendLine();
 
                 lastZPosition = layer.PositionZ;
             }

@@ -55,7 +55,7 @@ namespace UVtools.Core.FileFormats
         {
             
             #region Instances
-            public static PrintParameterModifier InitialLayerCount { get; } = new PrintParameterModifier("Initial Layer Count", @"Modify 'Initial Layer Count' value", null,0, ushort.MaxValue);
+            public static PrintParameterModifier InitialLayerCount { get; } = new PrintParameterModifier("Initial Layer Count", @"Modify 'Initial Layer Count' value", null,0, ushort.MaxValue, 0);
             public static PrintParameterModifier InitialExposureSeconds { get; } = new PrintParameterModifier("Initial Exposure Time", @"Modify 'Initial Exposure Time' seconds", "s", 0.1M, byte.MaxValue);
             public static PrintParameterModifier ExposureSeconds { get; } = new PrintParameterModifier("Exposure Time", @"Modify 'Exposure Time' seconds", "s", 0.1M, byte.MaxValue);
             
@@ -67,8 +67,8 @@ namespace UVtools.Core.FileFormats
             public static PrintParameterModifier LiftSpeed { get; } = new PrintParameterModifier("Lift Speed", @"Modify 'Lift Speed' mm/min between layers", "mm/min", 10, 5000);
             public static PrintParameterModifier RetractSpeed { get; } = new PrintParameterModifier("Retract Speed", @"Modify 'Retract Speed' mm/min between layers", "mm/min", 10, 5000);
 
-            public static PrintParameterModifier BottomLightPWM { get; } = new PrintParameterModifier("Bottom Light PWM", @"Modify 'Bottom Light PWM' value", null, 50, byte.MaxValue);
-            public static PrintParameterModifier LightPWM { get; } = new PrintParameterModifier("Light PWM", @"Modify 'Light PWM' value", null, 50, byte.MaxValue);
+            public static PrintParameterModifier BottomLightPWM { get; } = new PrintParameterModifier("Bottom Light PWM", @"Modify 'Bottom Light PWM' value", null, 50, byte.MaxValue, 0);
+            public static PrintParameterModifier LightPWM { get; } = new PrintParameterModifier("Light PWM", @"Modify 'Light PWM' value", null, 50, byte.MaxValue, 0);
             #endregion
 
             #region Properties
@@ -97,16 +97,22 @@ namespace UVtools.Core.FileFormats
             /// Gets the maximum value
             /// </summary>
             public decimal Maximum { get; }
+
+            /// <summary>
+            /// Gets the number of decimal plates
+            /// </summary>
+            public byte DecimalPlates { get; }
             #endregion
 
             #region Constructor
-            public PrintParameterModifier(string name, string description, string valueUnit = null, decimal minimum = 0, decimal maximum = 1000)
+            public PrintParameterModifier(string name, string description, string valueUnit = null, decimal minimum = 0, decimal maximum = 1000, byte decimalPlates = 2)
             {
                 Name = name;
                 Description = description;
                 ValueUnit = valueUnit ?? string.Empty;
                 Minimum = minimum;
                 Maximum = maximum;
+                DecimalPlates = decimalPlates;
             }
             #endregion
 

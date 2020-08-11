@@ -1485,9 +1485,12 @@ namespace UVtools.Core
             progress.Reset("Drawings", (uint) pixelHistory.Count);
 
             ConcurrentDictionary<uint, Mat> modfiedLayers = new ConcurrentDictionary<uint, Mat>();
-            for (var layerIndex = 0; layerIndex < pixelHistory.Count; layerIndex++)
+            for (var i = 0; i < pixelHistory.Count; i++)
             {
-                var operation = pixelHistory[layerIndex];
+                var operation = pixelHistory[i];
+                VectorOfVectorOfPoint layerContours = null;
+                Mat layerHierarchy = null;
+
                 if (operation.OperationType == PixelOperation.PixelOperationType.Drawing)
                 {
                     var operationDrawing = (PixelDrawing) operation;
@@ -1518,6 +1521,30 @@ namespace UVtools.Core
                     var mat = modfiedLayers.GetOrAdd(operation.LayerIndex, u => this[operation.LayerIndex].LayerMat);
 
                     CvInvoke.PutText(mat, operationText.Text, operationText.Location, operationText.Font, operationText.FontScale, new MCvScalar(operationText.Color), operationText.Thickness, operationText.LineType, operationText.Mirror);
+                }
+                else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
+                {
+                    var mat = modfiedLayers.GetOrAdd(operation.LayerIndex, u => this[operation.LayerIndex].LayerMat);
+
+                    if (ReferenceEquals(layerContours, null))
+                    {
+                        layerContours = new VectorOfVectorOfPoint();
+                        layerHierarchy = new Mat();
+
+                        CvInvoke.FindContours(mat, layerContours, layerHierarchy, RetrType.Ccomp,
+                            ChainApproxMethod.ChainApproxSimple);
+                    }
+
+                    if (mat.GetByte(operation.Location) >= 10)
+                    {
+                        for (int contourIdx = 0; contourIdx < layerContours.Size; contourIdx++)
+                        {
+                            if (!(CvInvoke.PointPolygonTest(layerContours[contourIdx], operation.Location, false) >= 0))
+                                continue;
+                            CvInvoke.DrawContours(mat, layerContours, contourIdx, new MCvScalar(0, 0, 0), -1);
+                            break;
+                        }
+                    }
                 }
                 else if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
                 {
@@ -1592,16 +1619,29 @@ namespace UVtools.Core
                     }
                 }
 
+                layerContours?.Dispose();
+                layerHierarchy?.Dispose();
+
                 progress++;
             }
 
             progress.Reset("Saving", (uint) modfiedLayers.Count);
-            foreach (var modfiedLayer in modfiedLayers)
+            Parallel.ForEach(modfiedLayers, (modfiedLayer, state) =>
+            {
+                this[modfiedLayer.Key].LayerMat = modfiedLayer.Value;
+                modfiedLayer.Value.Dispose();
+
+                lock (progress)
+                {
+                    progress++;
+                }
+            });
+            /*foreach (var modfiedLayer in modfiedLayers)
             {
                 this[modfiedLayer.Key].LayerMat = modfiedLayer.Value;
                 modfiedLayer.Value.Dispose();
                 progress++;
-            }
+            }*/
 
             //pixelHistory.Clear();
         }

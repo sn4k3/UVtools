@@ -150,7 +150,7 @@
       <Value Profile="(Default)">2</Value>
     </Setting>
     <Setting Name="LayerRepairDefaultOpeningIterations" Type="System.Byte" Scope="User">
-      <Value Profile="(Default)">1</Value>
+      <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="LayerRepairLayersIslands" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

@@ -1,5 +1,18 @@
 # Changelog
 
+## 11/08/2020 - v0.6.6.0
+
+* (Add) Pixel Editor: Eraser - Right click over a white pixel to remove it whole linked area (Fill with black) (#7)
+* (Add) Pixel Editor: Parallel layer image save when apply modifications 
+* (Add) GCode: Save to clipboard
+* (Change) Issues Repair: Default noise removal iterations to 0
+* (Fix) Edit: Remove decimal plates for integer properties
+* (Fix) cws: Exposure time was in seconds, changed to ms (#17)
+* (Fix) cws: Calculate blanking time (#17)
+* (Fix) cws: Edit LiftHeight and Exposure Time was enforcing integer number
+* (Fix) cws: GCode extra space between slices
+* (Fix) cws and zcodex: Precision errors on retract height
+
 ## 08/08/2020 - v0.6.5.0
 
 * (Add) Mutators: Custom kernels, auto kernels and anchor where applicable
@@ -16,7 +29,7 @@
 * (Add) Pixel Editor - Drawing: Line type and defaults to AntiAliasing
 * (Add) Pixel Editor - Drawing: Line thickness to allow hollow shapes
 * (Add) Pixel Editor - Drawing: Layer depth, to add pixels at multiple layers at once
-* (Add) Pixel Editor: Text writing
+* (Add) Pixel Editor: Text writing (#7)
 
 ## 05/08/2020 - v0.6.4.2
 

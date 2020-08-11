@@ -16,6 +16,7 @@ namespace UVtools.Core.PixelEditor
         {
             Drawing,
             Text,
+            Eraser,
             Supports,
             DrainHole,
         }

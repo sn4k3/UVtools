@@ -1292,6 +1292,11 @@ namespace UVtools.GUI
              ***********************/
             if (ReferenceEquals(sender, tsGCodeButtonSave))
             {
+                tsGCodeButtonSave.ShowDropDown();
+                return;
+            }
+            if (ReferenceEquals(sender, tsGCodeButtonSaveFile))
+            {
                 using (SaveFileDialog dialog = new SaveFileDialog())
                 {
                     dialog.Filter = "Text Files|.*txt";
@@ -1319,6 +1324,11 @@ namespace UVtools.GUI
 
                     return;
                 }
+            }
+            if (ReferenceEquals(sender, tsGCodeButtonSaveClipboard))
+            {
+                Clipboard.SetText(SlicerFile.GCode.ToString());
+                return;
             }
 
             /************************
@@ -2431,6 +2441,19 @@ namespace UVtools.GUI
             btnFirstLayer.Enabled = btnPreviousLayer.Enabled = layerNum > 0;
 
             var layer = SlicerFile[ActualLayer];
+            VectorOfVectorOfPoint layerContours = null;
+            Mat layerHierarchy = null;
+            Array layerHierarchyJagged = null;
+
+            void iniContours()
+            {
+                if (!ReferenceEquals(layerContours, null)) return;
+                layerContours = new VectorOfVectorOfPoint();
+                layerHierarchy = new Mat();
+                CvInvoke.FindContours(ActualLayerImage, layerContours, layerHierarchy, RetrType.Ccomp,
+                    ChainApproxMethod.ChainApproxSimple);
+                layerHierarchyJagged = layerHierarchy.GetData();
+            }
 
             try
             {
@@ -2440,10 +2463,11 @@ namespace UVtools.GUI
                 //pbLayer.Image = Image.FromStream(SlicerFile.LayerEntries[layerNum].Open());
                 //pbLayer.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
 
-
+                
                 Stopwatch watch = Stopwatch.StartNew();
-                ActualLayerImage?.Dispose();
+                
 
+                ActualLayerImage?.Dispose();
                 ActualLayerImage = SlicerFile[layerNum].LayerMat;
 
                 CvInvoke.CvtColor(ActualLayerImage, ActualLayerImageBgr, ColorConversion.Gray2Bgr);
@@ -2565,44 +2589,36 @@ namespace UVtools.GUI
                 if (tsLayerImageLayerOutlineHollowAreas.Checked)
                 {
                     //CvInvoke.Threshold(ActualLayerImage, grayscale, 1, 255, ThresholdType.Binary);
-                    using (VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint())
+                    iniContours();
+
+                    /*
+                     * hierarchy[i][0]: the index of the next contour of the same level
+                     * hierarchy[i][1]: the index of the previous contour of the same level
+                     * hierarchy[i][2]: the index of the first child
+                     * hierarchy[i][3]: the index of the parent
+                     */
+                    for (int i = 0; i < layerContours.Size; i++)
                     {
-                        using (Mat hierarchy = new Mat())
+                        if ((int)layerHierarchyJagged.GetValue(0, i, 2) == -1 && (int)layerHierarchyJagged.GetValue(0, i, 3) != -1)
                         {
-                            CvInvoke.FindContours(ActualLayerImage, contours, hierarchy, RetrType.Ccomp,
-                                ChainApproxMethod.ChainApproxSimple);
-
-                            /*
-                             * hierarchy[i][0]: the index of the next contour of the same level
-                             * hierarchy[i][1]: the index of the previous contour of the same level
-                             * hierarchy[i][2]: the index of the first child
-                             * hierarchy[i][3]: the index of the parent
-                             */
-                            var arr = hierarchy.GetData();
-                            for (int i = 0; i < contours.Size; i++)
-                            {
-                                if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1)
-                                {
-                                    //var r = CvInvoke.BoundingRectangle(contours[i]);
-                                    //CvInvoke.Rectangle(ActualLayerImageBgr, r, new MCvScalar(0, 0, 255), 2);
-                                    CvInvoke.DrawContours(ActualLayerImageBgr, contours, i,
-                                        new MCvScalar(Settings.Default.OutlineHollowAreasColor.B,
-                                            Settings.Default.OutlineHollowAreasColor.G,
-                                            Settings.Default.OutlineHollowAreasColor.R),
-                                        Settings.Default.OutlineHollowAreasLineThickness);
-                                }
-                                /*else
-                                {
-                                    CvInvoke.DrawContours(ActualLayerImageBgr, contours, i,
-                                        new MCvScalar(Settings.Default.ResinTrapColor.B,
-                                            Settings.Default.IslandColor.G, Settings.Default.IslandColor.R),
-                                        2);
-                                }*/
-
-                                //if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1)
-                                //    CvInvoke.DrawContours(ActualLayerImageBgr, contours, i, new MCvScalar(0, 0, 0), -1);
-                            }
+                            //var r = CvInvoke.BoundingRectangle(contours[i]);
+                            //CvInvoke.Rectangle(ActualLayerImageBgr, r, new MCvScalar(0, 0, 255), 2);
+                            CvInvoke.DrawContours(ActualLayerImageBgr, layerContours, i,
+                                new MCvScalar(Settings.Default.OutlineHollowAreasColor.B,
+                                    Settings.Default.OutlineHollowAreasColor.G,
+                                    Settings.Default.OutlineHollowAreasColor.R),
+                                Settings.Default.OutlineHollowAreasLineThickness);
                         }
+                        /*else
+                        {
+                            CvInvoke.DrawContours(ActualLayerImageBgr, contours, i,
+                                new MCvScalar(Settings.Default.ResinTrapColor.B,
+                                    Settings.Default.IslandColor.G, Settings.Default.IslandColor.R),
+                                2);
+                        }*/
+
+                        //if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1)
+                        //    CvInvoke.DrawContours(ActualLayerImageBgr, contours, i, new MCvScalar(0, 0, 0), -1);
                     }
                 }
 
@@ -2645,6 +2661,20 @@ namespace UVtools.GUI
 
                         CvInvoke.PutText(ActualLayerImageBgr, operationText.Text, operationText.Location, operationText.Font, operationText.FontScale, new MCvScalar(color.B, color.G, color.R), operationText.Thickness, operationText.LineType, operationText.Mirror);
                     }
+                    else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
+                    {
+                        iniContours();
+                        if(imageSpan[ActualLayerImage.GetPixelPos(operation.Location)] < 10) continue;
+                        var color = Settings.Default.PixelEditorRemovePixelColor;
+                        for (int i = 0; i < layerContours.Size; i++)
+                        {
+                            if (CvInvoke.PointPolygonTest(layerContours[i], operation.Location, false) >= 0)
+                            {
+                                CvInvoke.DrawContours(ActualLayerImageBgr, layerContours, i, new MCvScalar(color.B, color.G, color.R), -1);
+                                break;
+                            }
+                        }
+                    }
                     else if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
                     {
                         var operationSupport = (PixelSupport)operation;
@@ -2682,7 +2712,9 @@ namespace UVtools.GUI
                 tsLayerBounds.Invalidate();
                 tsLayerInfo.Update();
                 tsLayerInfo.Refresh();
-                
+
+                layerContours?.Dispose();
+                layerHierarchy?.Dispose();
 
 
                 watch.Stop();
@@ -2965,7 +2997,7 @@ namespace UVtools.GUI
             PixelOperation operation = null;
             Bitmap bmp = pbLayer.Image as Bitmap;
 
-            if (tabControlPixelEditor.SelectedIndex == (int) PixelOperation.PixelOperationType.Drawing)
+            if (tabControlPixelEditor.SelectedIndex == (byte) PixelOperation.PixelOperationType.Drawing)
             {
                 LineType lineType = (LineType)cbPixelEditorDrawingLineType.SelectedItem;
                 PixelDrawing.BrushShapeType shapeType =
@@ -3018,7 +3050,7 @@ namespace UVtools.GUI
                     }
                 }
             }
-            else if (tabControlPixelEditor.SelectedIndex == (int)PixelOperation.PixelOperationType.Text)
+            else if (tabControlPixelEditor.SelectedIndex == (byte)PixelOperation.PixelOperationType.Text)
             {
                 if (string.IsNullOrEmpty(tbPixelEditorTextText.Text) || nmPixelEditorTextFontScale.Value < 0.2m) return;
 
@@ -3038,7 +3070,22 @@ namespace UVtools.GUI
                 ShowLayer();
                 return;
             }
-            else if (tabControlPixelEditor.SelectedIndex == (int) PixelOperation.PixelOperationType.Supports)
+            else if (tabControlPixelEditor.SelectedIndex == (byte) PixelOperation.PixelOperationType.Eraser)
+            {
+                if (ActualLayerImage.GetByte(x, y) < 10) return;
+                uint minLayer = (uint)Math.Max(0, ActualLayer - nmPixelEditorEraserLayersBelow.Value);
+                uint maxLayer = (uint)Math.Min(SlicerFile.LayerCount - 1, ActualLayer + nmPixelEditorEraserLayersAbove.Value);
+                for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
+                {
+                    operation = new PixelEraser(layerIndex, new Point(x, y));
+
+                    if (PixelHistory.Contains(operation)) continue;
+                    PixelHistory.Add(operation);
+                }
+                ShowLayer();
+                return;
+            }
+            else if (tabControlPixelEditor.SelectedIndex == (byte) PixelOperation.PixelOperationType.Supports)
             {
                 if (ActualLayer == 0) return;
                 operation = new PixelSupport(ActualLayer, new Point(x, y),
@@ -3055,7 +3102,7 @@ namespace UVtools.GUI
                     gfx.FillEllipse(brush, Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos), (int)nmPixelEditorSupportsTipDiameter.Value, (int)nmPixelEditorSupportsTipDiameter.Value);
                 }
             }
-            else if (tabControlPixelEditor.SelectedIndex == (int)PixelOperation.PixelOperationType.DrainHole)
+            else if (tabControlPixelEditor.SelectedIndex == (byte)PixelOperation.PixelOperationType.DrainHole)
             {
                 if (ActualLayer == 0) return;
                 operation = new PixelDrainHole(ActualLayer, new Point(x, y), (byte)nmPixelEditorDrainHoleDiameter.Value);
@@ -3541,6 +3588,7 @@ namespace UVtools.GUI
                     {
                         if (item.OperationType != PixelOperation.PixelOperationType.Drawing &&
                             item.OperationType != PixelOperation.PixelOperationType.Text &&
+                            item.OperationType != PixelOperation.PixelOperationType.Eraser &&
                             item.OperationType != PixelOperation.PixelOperationType.Supports) continue;
                         if (whiteListLayers.Contains(item.LayerIndex)) continue;
                         whiteListLayers.Add(item.LayerIndex);
@@ -3636,6 +3684,11 @@ namespace UVtools.GUI
             }
             UpdateIssuesInfo();
             ShowLayer();
+        }
+
+        private void tsGCodeButtonSave_ButtonClick(object sender, EventArgs e)
+        {
+
         }
     }
 }

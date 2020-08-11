@@ -183,6 +183,7 @@ namespace UVtools.Core.Extensions
         }
 
         public static byte GetByte(this Mat mat, int x, int y) => GetByte(mat, mat.GetPixelPos(x, y));
+        public static byte GetByte(this Mat mat, Point pos) => GetByte(mat, mat.GetPixelPos(pos.X, pos.Y));
 
 
         public static void SetByte(this Mat mat, int pixel, byte value) => SetByte(mat, pixel, new[] {value});

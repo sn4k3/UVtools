@@ -127,7 +127,9 @@
             this.tsGCodeLabelLines = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.tsGcodeLabelChars = new System.Windows.Forms.ToolStripLabel();
-            this.tsGCodeButtonSave = new System.Windows.Forms.ToolStripButton();
+            this.tsGCodeButtonSave = new System.Windows.Forms.ToolStripSplitButton();
+            this.tsGCodeButtonSaveFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsGCodeButtonSaveClipboard = new System.Windows.Forms.ToolStripMenuItem();
             this.tabPageIssues = new System.Windows.Forms.TabPage();
             this.flvIssues = new BrightIdeasSoftware.FastObjectListView();
             this.flvIssuesColType = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
@@ -200,6 +202,9 @@
             this.label23 = new System.Windows.Forms.Label();
             this.label24 = new System.Windows.Forms.Label();
             this.cbPixelEditorTextFontFace = new System.Windows.Forms.ComboBox();
+            this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.panel7 = new System.Windows.Forms.Panel();
+            this.label30 = new System.Windows.Forms.Label();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.label10 = new System.Windows.Forms.Label();
             this.nmPixelEditorSupportsBaseDiameter = new System.Windows.Forms.NumericUpDown();
@@ -238,6 +243,11 @@
             this.btnFirstLayer = new System.Windows.Forms.Button();
             this.toolTipInformation = new System.Windows.Forms.ToolTip(this.components);
             this.layerScrollTimer = new System.Windows.Forms.Timer(this.components);
+            this.label31 = new System.Windows.Forms.Label();
+            this.nmPixelEditorEraserLayersAbove = new System.Windows.Forms.NumericUpDown();
+            this.label32 = new System.Windows.Forms.Label();
+            this.nmPixelEditorEraserLayersBelow = new System.Windows.Forms.NumericUpDown();
+            this.label33 = new System.Windows.Forms.Label();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).BeginInit();
@@ -278,6 +288,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorTextLayersBelow)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorTextFontScale)).BeginInit();
             this.panel6.SuspendLayout();
+            this.tabPage5.SuspendLayout();
+            this.panel7.SuspendLayout();
             this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorSupportsBaseDiameter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorSupportsPillarDiameter)).BeginInit();
@@ -293,6 +305,8 @@
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).BeginInit();
             this.panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorEraserLayersAbove)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorEraserLayersBelow)).BeginInit();
             this.SuspendLayout();
             // 
             // menu
@@ -1281,13 +1295,33 @@
             // 
             this.tsGCodeButtonSave.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.tsGCodeButtonSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsGCodeButtonSave.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsGCodeButtonSaveFile,
+            this.tsGCodeButtonSaveClipboard});
             this.tsGCodeButtonSave.Image = global::UVtools.GUI.Properties.Resources.Save_16x16;
             this.tsGCodeButtonSave.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsGCodeButtonSave.Name = "tsGCodeButtonSave";
-            this.tsGCodeButtonSave.Size = new System.Drawing.Size(23, 22);
-            this.tsGCodeButtonSave.Text = "Save GCode";
-            this.tsGCodeButtonSave.ToolTipText = "Save GCode to file";
+            this.tsGCodeButtonSave.Size = new System.Drawing.Size(32, 22);
+            this.tsGCodeButtonSave.Text = "Save to";
+            this.tsGCodeButtonSave.ToolTipText = "Save GCode to a file or clipboard";
+            this.tsGCodeButtonSave.ButtonClick += new System.EventHandler(this.tsGCodeButtonSave_ButtonClick);
             this.tsGCodeButtonSave.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsGCodeButtonSaveFile
+            // 
+            this.tsGCodeButtonSaveFile.Image = global::UVtools.GUI.Properties.Resources.file_image_16x16;
+            this.tsGCodeButtonSaveFile.Name = "tsGCodeButtonSaveFile";
+            this.tsGCodeButtonSaveFile.Size = new System.Drawing.Size(141, 22);
+            this.tsGCodeButtonSaveFile.Text = "To &File";
+            this.tsGCodeButtonSaveFile.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsGCodeButtonSaveClipboard
+            // 
+            this.tsGCodeButtonSaveClipboard.Image = global::UVtools.GUI.Properties.Resources.clipboard_16x16;
+            this.tsGCodeButtonSaveClipboard.Name = "tsGCodeButtonSaveClipboard";
+            this.tsGCodeButtonSaveClipboard.Size = new System.Drawing.Size(141, 22);
+            this.tsGCodeButtonSaveClipboard.Text = "To &Clipboard";
+            this.tsGCodeButtonSaveClipboard.Click += new System.EventHandler(this.EventClick);
             // 
             // tabPageIssues
             // 
@@ -1663,6 +1697,7 @@
             // 
             this.tabControlPixelEditor.Controls.Add(this.tabPage1);
             this.tabControlPixelEditor.Controls.Add(this.tabPage4);
+            this.tabControlPixelEditor.Controls.Add(this.tabPage5);
             this.tabControlPixelEditor.Controls.Add(this.tabPage2);
             this.tabControlPixelEditor.Controls.Add(this.tabPage3);
             this.tabControlPixelEditor.Dock = System.Windows.Forms.DockStyle.Top;
@@ -2130,6 +2165,43 @@
             this.cbPixelEditorTextFontFace.Name = "cbPixelEditorTextFontFace";
             this.cbPixelEditorTextFontFace.Size = new System.Drawing.Size(257, 26);
             this.cbPixelEditorTextFontFace.TabIndex = 12;
+            // 
+            // tabPage5
+            // 
+            this.tabPage5.Controls.Add(this.label31);
+            this.tabPage5.Controls.Add(this.nmPixelEditorEraserLayersAbove);
+            this.tabPage5.Controls.Add(this.label32);
+            this.tabPage5.Controls.Add(this.nmPixelEditorEraserLayersBelow);
+            this.tabPage5.Controls.Add(this.label33);
+            this.tabPage5.Controls.Add(this.panel7);
+            this.tabPage5.Location = new System.Drawing.Point(4, 27);
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage5.Size = new System.Drawing.Size(372, 291);
+            this.tabPage5.TabIndex = 4;
+            this.tabPage5.Text = "Eraser";
+            this.tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // panel7
+            // 
+            this.panel7.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.panel7.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel7.Controls.Add(this.label30);
+            this.panel7.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel7.Location = new System.Drawing.Point(3, 3);
+            this.panel7.Name = "panel7";
+            this.panel7.Size = new System.Drawing.Size(366, 57);
+            this.panel7.TabIndex = 4;
+            // 
+            // label30
+            // 
+            this.label30.AutoSize = true;
+            this.label30.Location = new System.Drawing.Point(3, 9);
+            this.label30.Name = "label30";
+            this.label30.Size = new System.Drawing.Size(321, 36);
+            this.label30.TabIndex = 1;
+            this.label30.Text = "Right click over a white pixel to remove it whole \r\nlinked area (Fill with black)" +
+    "";
             // 
             // tabPage2
             // 
@@ -2627,6 +2699,61 @@
             this.layerScrollTimer.Interval = 150;
             this.layerScrollTimer.Tick += new System.EventHandler(this.EventTimerTick);
             // 
+            // label31
+            // 
+            this.label31.AutoSize = true;
+            this.label31.Location = new System.Drawing.Point(302, 93);
+            this.label31.Name = "label31";
+            this.label31.Size = new System.Drawing.Size(49, 18);
+            this.label31.TabIndex = 27;
+            this.label31.Text = "Above";
+            // 
+            // nmPixelEditorEraserLayersAbove
+            // 
+            this.nmPixelEditorEraserLayersAbove.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.nmPixelEditorEraserLayersAbove.Location = new System.Drawing.Point(293, 66);
+            this.nmPixelEditorEraserLayersAbove.Maximum = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
+            this.nmPixelEditorEraserLayersAbove.Name = "nmPixelEditorEraserLayersAbove";
+            this.nmPixelEditorEraserLayersAbove.Size = new System.Drawing.Size(73, 24);
+            this.nmPixelEditorEraserLayersAbove.TabIndex = 26;
+            // 
+            // label32
+            // 
+            this.label32.AutoSize = true;
+            this.label32.Location = new System.Drawing.Point(115, 93);
+            this.label32.Name = "label32";
+            this.label32.Size = new System.Drawing.Size(49, 18);
+            this.label32.TabIndex = 25;
+            this.label32.Text = "Below";
+            // 
+            // nmPixelEditorEraserLayersBelow
+            // 
+            this.nmPixelEditorEraserLayersBelow.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.nmPixelEditorEraserLayersBelow.Location = new System.Drawing.Point(109, 66);
+            this.nmPixelEditorEraserLayersBelow.Maximum = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
+            this.nmPixelEditorEraserLayersBelow.Name = "nmPixelEditorEraserLayersBelow";
+            this.nmPixelEditorEraserLayersBelow.Size = new System.Drawing.Size(73, 24);
+            this.nmPixelEditorEraserLayersBelow.TabIndex = 24;
+            // 
+            // label33
+            // 
+            this.label33.AutoSize = true;
+            this.label33.Location = new System.Drawing.Point(7, 69);
+            this.label33.Name = "label33";
+            this.label33.Size = new System.Drawing.Size(96, 18);
+            this.label33.TabIndex = 23;
+            this.label33.Text = "Layers depth:";
+            // 
             // FrmMain
             // 
             this.AllowDrop = true;
@@ -2702,6 +2829,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorTextFontScale)).EndInit();
             this.panel6.ResumeLayout(false);
             this.panel6.PerformLayout();
+            this.tabPage5.ResumeLayout(false);
+            this.tabPage5.PerformLayout();
+            this.panel7.ResumeLayout(false);
+            this.panel7.PerformLayout();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorSupportsBaseDiameter)).EndInit();
@@ -2724,6 +2855,8 @@
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).EndInit();
             this.panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorEraserLayersAbove)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmPixelEditorEraserLayersBelow)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -2770,7 +2903,6 @@
         private System.Windows.Forms.ToolStripLabel tsGCodeLabelLines;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripLabel tsGcodeLabelChars;
-        private System.Windows.Forms.ToolStripButton tsGCodeButtonSave;
         private System.Windows.Forms.ToolStrip tsProperties;
         private System.Windows.Forms.ToolStripLabel tsPropertiesLabelCount;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
@@ -2939,6 +3071,17 @@
         private System.Windows.Forms.Label label29;
         private System.Windows.Forms.Label label28;
         private System.Windows.Forms.NumericUpDown nmPixelEditorDrawingThickness;
+        private System.Windows.Forms.ToolStripSplitButton tsGCodeButtonSave;
+        private System.Windows.Forms.ToolStripMenuItem tsGCodeButtonSaveFile;
+        private System.Windows.Forms.ToolStripMenuItem tsGCodeButtonSaveClipboard;
+        private System.Windows.Forms.TabPage tabPage5;
+        private System.Windows.Forms.Panel panel7;
+        private System.Windows.Forms.Label label30;
+        private System.Windows.Forms.Label label31;
+        private System.Windows.Forms.NumericUpDown nmPixelEditorEraserLayersAbove;
+        private System.Windows.Forms.Label label32;
+        private System.Windows.Forms.NumericUpDown nmPixelEditorEraserLayersBelow;
+        private System.Windows.Forms.Label label33;
     }
 }
 

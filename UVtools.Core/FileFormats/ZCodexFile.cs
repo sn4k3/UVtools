@@ -264,11 +264,11 @@ namespace UVtools.Core.FileFormats
                         if (LiftHeight > 0)
                         {
                             GCode.AppendLine($"G1 Z{LiftHeight} F{LiftSpeed}");
-                            GCode.AppendLine($"G1 Z-{LiftHeight - layer.PositionZ + lastZPosition} F{RetractSpeed}");
+                            GCode.AppendLine($"G1 Z-{Math.Round(LiftHeight - layer.PositionZ + lastZPosition, 2)} F{RetractSpeed}");
                         }
                         else
                         {
-                            GCode.AppendLine($"G1 Z{layer.PositionZ- lastZPosition} F{LiftSpeed}");
+                            GCode.AppendLine($"G1 Z{Math.Round(layer.PositionZ- lastZPosition, 2)} F{LiftSpeed}");
                         }
                     }
                     /*else
