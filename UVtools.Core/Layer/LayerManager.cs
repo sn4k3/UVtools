@@ -22,6 +22,7 @@ using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
+using System.Runtime.InteropServices;
 
 namespace UVtools.Core
 {
@@ -839,56 +840,60 @@ namespace UVtools.Core
                                 }
                             }
 
-                            VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-                            Mat hierarchy = new Mat();
-
-                            if (islandConfig.BinaryThreshold > 0)
+                            using (Mat labels = new Mat())
+                            using (Mat stats = new Mat())
+                            using (Mat centroids = new Mat())
                             {
-                                using (var thresholdImage = new Mat())
+
+                                int numLabels;
+
+                                if (islandConfig.BinaryThreshold > 0)
                                 {
-                                    CvInvoke.Threshold(image, thresholdImage, 1, 255, ThresholdType.Binary);
-                                    CvInvoke.FindContours(thresholdImage, contours, hierarchy, RetrType.Ccomp,
-                                        ChainApproxMethod.ChainApproxSimple);
+                                    using (var thresholdImage = new Mat())
+                                    {
+                                        CvInvoke.Threshold(image, thresholdImage, 1, 255, ThresholdType.Binary);
+                                        // Evaluate number of connected components using the 4-connected neighbor approach
+                                        numLabels = CvInvoke.ConnectedComponentsWithStats(thresholdImage, labels, stats, centroids,
+                                            islandConfig.AllowDiagonalBonds ? LineType.EightConnected : LineType.FourConnected);
+                                    }
                                 }
-                            }
-                            else
-                            {
-                                CvInvoke.FindContours(image, contours, hierarchy, RetrType.Ccomp,
-                                    ChainApproxMethod.ChainApproxSimple);
-                            }
-
-                            var arr = hierarchy.GetData();
-                            //
-                            //hierarchy[i][0]: the index of the next contour of the same level
-                            //hierarchy[i][1]: the index of the previous contour of the same level
-                            //hierarchy[i][2]: the index of the first child
-                            //hierarchy[i][3]: the index of the parent
-                            //
-
-                            Mat previousImage = null;
-                            Span<byte> previousSpan = null;
-                            
-                            for (int i = 0; i < contours.Size; i++)
-                            {
-                                if ((int) arr.GetValue(0, i, 2) == -1 && (int) arr.GetValue(0, i, 3) != -1)
-                                    continue;
-                                var rect = CvInvoke.BoundingRectangle(contours[i]);
-                                if (rect.GetArea() < islandConfig.RequiredAreaToProcessCheck)
-                                    continue;
-
-                                if (ReferenceEquals(previousImage, null))
+                                else
                                 {
-                                    previousImage = this[layer.Index - 1].LayerMat;
-                                    previousSpan = previousImage.GetPixelSpan<byte>();
+                                    // Evaluate number of connected components 4-connected neighbor approach
+                                    numLabels = CvInvoke.ConnectedComponentsWithStats(image, labels, stats, centroids, 
+                                        islandConfig.AllowDiagonalBonds?LineType.EightConnected:LineType.FourConnected);
                                 }
 
-                                List<Point> points = new List<Point>();
-                                uint pixelsSupportingIsland = 0;
+                                // Get array that contains details of each connected component
+                                var ccStats = stats.GetData();
+                                //stats[i][0]: Left Edge of Connected Component
+                                //stats[i][1]: Top Edge of Connected Component 
+                                //stats[i][2]: Width of Connected Component
+                                //stats[i][3]: Height of Connected Component
+                                //stats[i][4]: Total Area (in pixels) in Connected Component
 
-                                using (Mat contourImage = image.CloneBlank())
+                                Span<int> labelSpan = MemoryMarshal.Cast<byte, int>(labels.GetPixelSpan<byte>());
+                                Mat previousImage = null;
+                                Span<byte> previousSpan = null;
+
+                                for (int i = 1; i < numLabels; i++)
                                 {
-                                    CvInvoke.DrawContours(contourImage, contours, i, new MCvScalar(255), -1);
-                                    var contourImageSpan = contourImage.GetPixelSpan<byte>();
+                                    Rectangle rect = new Rectangle((int)ccStats.GetValue(i, (int)ConnectedComponentsTypes.Left),
+                                                                   (int)ccStats.GetValue(i, (int)ConnectedComponentsTypes.Top),
+                                                                   (int)ccStats.GetValue(i, (int)ConnectedComponentsTypes.Width),
+                                                                   (int)ccStats.GetValue(i, (int)ConnectedComponentsTypes.Height));
+                                    
+                                    if (rect.GetArea() < islandConfig.RequiredAreaToProcessCheck)
+                                        continue;
+
+                                    if (ReferenceEquals(previousImage, null))
+                                    {
+                                        previousImage = this[layer.Index - 1].LayerMat;
+                                        previousSpan = previousImage.GetPixelSpan<byte>();
+                                    }
+
+                                    List<Point> points = new List<Point>();
+                                    uint pixelsSupportingIsland = 0;
 
                                     for (int y = rect.Y; y < rect.Bottom; y++)
                                     {
@@ -897,11 +902,10 @@ namespace UVtools.Core
                                             int pixel = step * y + x;
                                             if (span[pixel] < islandConfig.RequiredPixelBrightnessToProcessCheck)
                                                 continue; // Low brightness, ignore
-                                            if (contourImageSpan[pixel] != 255)
-                                                continue; // Not inside contour, ignore
 
-                                            //if (CvInvoke.PointPolygonTest(contours[i], new PointF(x, y), false) < 0) continue; // Out of contour SLOW!
-                                            //Debug.WriteLine($"Layer: {layer.Index}, Coutour: {i},  X:{x} Y:{y}");
+                                            if (labelSpan[pixel] != i)
+                                                continue; // Background pixel or a pixel from another component within the bounding rectangle
+
                                             points.Add(new Point(x, y));
 
                                             if (previousSpan[pixel] >=
@@ -911,26 +915,24 @@ namespace UVtools.Core
                                             }
                                         }
                                     }
+
+                                    if (points.Count == 0) continue;
+                                    if (pixelsSupportingIsland >= islandConfig.RequiredPixelsToSupport)
+                                        continue; // Not a island, bounding is strong, i think...
+                                    if (pixelsSupportingIsland > 0 &&
+                                        points.Count < islandConfig.RequiredPixelsToSupport &&
+                                        pixelsSupportingIsland >= Math.Max(1, points.Count / 2))
+                                        continue; // Not a island, but maybe weak bounding...
+
+
+                                    var issue = new LayerIssue(layer, LayerIssue.IssueType.Island, points.ToArray(),
+                                        rect);
+                                    result.Add(issue);
                                 }
 
 
-                                if (points.Count == 0) continue;
-                                if (pixelsSupportingIsland >= islandConfig.RequiredPixelsToSupport)
-                                    continue; // Not a island, bounding is strong, i think...
-                                if (pixelsSupportingIsland > 0 &&
-                                    points.Count < islandConfig.RequiredPixelsToSupport &&
-                                    pixelsSupportingIsland >= Math.Max(1, points.Count / 2))
-                                    continue; // Not a island, but maybe weak bounding...
-
-
-                                var issue = new LayerIssue(layer, LayerIssue.IssueType.Island, points.ToArray(),
-                                    rect);
-                                result.Add(issue);
+                                previousImage?.Dispose();
                             }
-
-                            contours.Dispose();
-                            hierarchy.Dispose();
-                            previousImage?.Dispose();
                         }
 
                         lock (progress.Mutex)
