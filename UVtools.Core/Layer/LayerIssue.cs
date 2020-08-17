@@ -52,6 +52,15 @@ namespace UVtools.Core
         /// Gets the required brightness of supporting pixels to count as a valid support (0-255)
         /// </summary>
         public byte RequiredPixelBrightnessToSupport { get; set; } = 150;
+
+        /// <summary>
+        /// Gets the setting for whether or not diagonal bonds are considered when evaluation islands.
+        /// If true, all 8 neighbors of a pixel (including diagonals) will be considered when finding
+        /// individual components on the layer, if false only 4 neighbors (right, left, above, below)
+        /// will be considered..
+        /// </summary>
+        /// 
+        public bool AllowDiagonalBonds  { get; set; } = false;
     }
 
     public class ResinTrapDetectionConfiguration
