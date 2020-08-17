@@ -151,7 +151,7 @@
     <Compile Include="Controls\CtrlKernel.Designer.cs">
       <DependentUpon>CtrlKernel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Controls\Log.cs" />
+    <Compile Include="Controls\LogItem.cs" />
     <Compile Include="Controls\SlicerPropertyItem.cs" />
     <Compile Include="Controls\SplitButton.cs">
       <SubType>Component</SubType>
@@ -228,11 +228,11 @@
     <Compile Include="Forms\FrmMutationResize.Designer.cs">
       <DependentUpon>FrmMutationResize.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\FrmRepairLayers.cs">
+    <Compile Include="Forms\FrmToolRepairLayers.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\FrmRepairLayers.Designer.cs">
-      <DependentUpon>FrmRepairLayers.cs</DependentUpon>
+    <Compile Include="Forms\FrmToolRepairLayers.Designer.cs">
+      <DependentUpon>FrmToolRepairLayers.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\FrmMutation.cs">
       <SubType>Form</SubType>
@@ -316,8 +316,8 @@
     <EmbeddedResource Include="Forms\FrmMutationResize.resx">
       <DependentUpon>FrmMutationResize.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\FrmRepairLayers.resx">
-      <DependentUpon>FrmRepairLayers.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\FrmToolRepairLayers.resx">
+      <DependentUpon>FrmToolRepairLayers.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmMutation.resx">
       <DependentUpon>FrmMutation.cs</DependentUpon>

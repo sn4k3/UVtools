@@ -7,11 +7,11 @@
  */
 
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.Windows.Forms;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
+using UVtools.GUI.Controls;
 
 namespace UVtools.GUI.Forms
 {
@@ -41,6 +41,7 @@ namespace UVtools.GUI.Forms
             get => _currentValue;
             set { _currentValue = value; tbCurrentValue.Text = value.ToString(CultureInfo.InvariantCulture)+ValueUint; }
         }
+
         #endregion
 
         #region Constructors
@@ -49,8 +50,6 @@ namespace UVtools.GUI.Forms
             InitializeComponent();
             DialogResult = DialogResult.Cancel;
             numNewValue.Select();
-
-            
         }
 
         public FrmInputBox(FileFormat.PrintParameterModifier modifier, decimal currentValue) : this(modifier.Name,

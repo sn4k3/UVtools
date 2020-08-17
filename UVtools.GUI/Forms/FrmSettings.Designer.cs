@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmSettings));
             this.label1 = new System.Windows.Forms.Label();
             this.btnPreviousNextLayerColor = new System.Windows.Forms.Button();
@@ -122,6 +123,7 @@
             this.cbAutoZoomIssues = new System.Windows.Forms.CheckBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.cbPartialUpdateIslandsOnEditing = new System.Windows.Forms.CheckBox();
             this.btnPixelEditorDrainHoleColor = new System.Windows.Forms.Button();
             this.label26 = new System.Windows.Forms.Label();
             this.btnPixelEditorSupportColor = new System.Windows.Forms.Button();
@@ -141,7 +143,8 @@
             this.cbLayerRepairRemoveEmptyLayers = new System.Windows.Forms.CheckBox();
             this.cbLayerRepairLayersIslands = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.cbPartialUpdateIslandsOnEditing = new System.Windows.Forms.CheckBox();
+            this.cbIslandAllowDiagonalBonds = new System.Windows.Forms.CheckBox();
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineHollowAreasLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineLayerBoundsLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlinePrintVolumeBoundsLineThickness)).BeginInit();
@@ -670,7 +673,7 @@
             this.groupBox3.Controls.Add(this.nmResinTrapRequiredAreaToProcessCheck);
             this.groupBox3.Controls.Add(this.label11);
             this.groupBox3.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox3.Location = new System.Drawing.Point(3, 262);
+            this.groupBox3.Location = new System.Drawing.Point(3, 300);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(610, 152);
             this.groupBox3.TabIndex = 24;
@@ -794,6 +797,7 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.cbIslandAllowDiagonalBonds);
             this.groupBox2.Controls.Add(this.nmIslandBinaryThreshold);
             this.groupBox2.Controls.Add(this.label21);
             this.groupBox2.Controls.Add(this.label10);
@@ -807,14 +811,14 @@
             this.groupBox2.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBox2.Location = new System.Drawing.Point(3, 86);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(610, 176);
+            this.groupBox2.Size = new System.Drawing.Size(610, 214);
             this.groupBox2.TabIndex = 23;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Islands";
             // 
             // nmIslandBinaryThreshold
             // 
-            this.nmIslandBinaryThreshold.Location = new System.Drawing.Point(10, 23);
+            this.nmIslandBinaryThreshold.Location = new System.Drawing.Point(10, 51);
             this.nmIslandBinaryThreshold.Maximum = new decimal(new int[] {
             254,
             0,
@@ -823,16 +827,11 @@
             this.nmIslandBinaryThreshold.Name = "nmIslandBinaryThreshold";
             this.nmIslandBinaryThreshold.Size = new System.Drawing.Size(57, 24);
             this.nmIslandBinaryThreshold.TabIndex = 28;
-            this.nmIslandBinaryThreshold.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
             // 
             // label21
             // 
             this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(73, 26);
+            this.label21.Location = new System.Drawing.Point(73, 54);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(512, 18);
             this.label21.TabIndex = 29;
@@ -842,7 +841,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(73, 146);
+            this.label10.Location = new System.Drawing.Point(73, 174);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(507, 18);
             this.label10.TabIndex = 25;
@@ -850,7 +849,7 @@
             // 
             // nmIslandRequiredPixelBrightnessToSupport
             // 
-            this.nmIslandRequiredPixelBrightnessToSupport.Location = new System.Drawing.Point(10, 143);
+            this.nmIslandRequiredPixelBrightnessToSupport.Location = new System.Drawing.Point(10, 171);
             this.nmIslandRequiredPixelBrightnessToSupport.Maximum = new decimal(new int[] {
             255,
             0,
@@ -873,7 +872,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(73, 116);
+            this.label9.Location = new System.Drawing.Point(73, 144);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(385, 18);
             this.label9.TabIndex = 23;
@@ -881,7 +880,7 @@
             // 
             // nmIslandRequiredPixelsToSupport
             // 
-            this.nmIslandRequiredPixelsToSupport.Location = new System.Drawing.Point(10, 113);
+            this.nmIslandRequiredPixelsToSupport.Location = new System.Drawing.Point(10, 141);
             this.nmIslandRequiredPixelsToSupport.Maximum = new decimal(new int[] {
             255,
             0,
@@ -903,7 +902,7 @@
             // 
             // nmIslandRequiredAreaToProcessCheck
             // 
-            this.nmIslandRequiredAreaToProcessCheck.Location = new System.Drawing.Point(10, 53);
+            this.nmIslandRequiredAreaToProcessCheck.Location = new System.Drawing.Point(10, 81);
             this.nmIslandRequiredAreaToProcessCheck.Maximum = new decimal(new int[] {
             255,
             0,
@@ -926,7 +925,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(73, 56);
+            this.label7.Location = new System.Drawing.Point(73, 84);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(481, 18);
             this.label7.TabIndex = 19;
@@ -935,7 +934,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(73, 86);
+            this.label8.Location = new System.Drawing.Point(73, 114);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(439, 18);
             this.label8.TabIndex = 21;
@@ -943,7 +942,7 @@
             // 
             // nmIslandRequiredPixelBrightnessToProcessCheck
             // 
-            this.nmIslandRequiredPixelBrightnessToProcessCheck.Location = new System.Drawing.Point(10, 83);
+            this.nmIslandRequiredPixelBrightnessToProcessCheck.Location = new System.Drawing.Point(10, 111);
             this.nmIslandRequiredPixelBrightnessToProcessCheck.Maximum = new decimal(new int[] {
             255,
             0,
@@ -998,7 +997,7 @@
             this.tabSettings.Location = new System.Drawing.Point(0, 0);
             this.tabSettings.Name = "tabSettings";
             this.tabSettings.SelectedIndex = 0;
-            this.tabSettings.Size = new System.Drawing.Size(624, 529);
+            this.tabSettings.Size = new System.Drawing.Size(624, 577);
             this.tabSettings.TabIndex = 18;
             // 
             // tabPage1
@@ -1327,7 +1326,7 @@
             this.tabPage3.Location = new System.Drawing.Point(4, 27);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(616, 498);
+            this.tabPage3.Size = new System.Drawing.Size(616, 546);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Issues";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -1350,6 +1349,17 @@
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Pixel Editor";
             this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // cbPartialUpdateIslandsOnEditing
+            // 
+            this.cbPartialUpdateIslandsOnEditing.AutoSize = true;
+            this.cbPartialUpdateIslandsOnEditing.Location = new System.Drawing.Point(9, 170);
+            this.cbPartialUpdateIslandsOnEditing.Name = "cbPartialUpdateIslandsOnEditing";
+            this.cbPartialUpdateIslandsOnEditing.Size = new System.Drawing.Size(565, 40);
+            this.cbPartialUpdateIslandsOnEditing.TabIndex = 19;
+            this.cbPartialUpdateIslandsOnEditing.Text = "Partial update islands for the affected layers after apply the modifications and " +
+    "when\r\nremove a island";
+            this.cbPartialUpdateIslandsOnEditing.UseVisualStyleBackColor = true;
             // 
             // btnPixelEditorDrainHoleColor
             // 
@@ -1580,27 +1590,37 @@
             this.panel1.Controls.Add(this.btnSave);
             this.panel1.Controls.Add(this.btnReset);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 452);
+            this.panel1.Location = new System.Drawing.Point(0, 500);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(624, 77);
             this.panel1.TabIndex = 19;
             // 
-            // cbPartialUpdateIslandsOnEditing
+            // cbIslandAllowDiagonalBonds
             // 
-            this.cbPartialUpdateIslandsOnEditing.AutoSize = true;
-            this.cbPartialUpdateIslandsOnEditing.Location = new System.Drawing.Point(9, 170);
-            this.cbPartialUpdateIslandsOnEditing.Name = "cbPartialUpdateIslandsOnEditing";
-            this.cbPartialUpdateIslandsOnEditing.Size = new System.Drawing.Size(565, 40);
-            this.cbPartialUpdateIslandsOnEditing.TabIndex = 19;
-            this.cbPartialUpdateIslandsOnEditing.Text = "Partial update islands for the affected layers after apply the modifications and " +
-    "when\r\nremove a island";
-            this.cbPartialUpdateIslandsOnEditing.UseVisualStyleBackColor = true;
+            this.cbIslandAllowDiagonalBonds.AutoSize = true;
+            this.cbIslandAllowDiagonalBonds.Location = new System.Drawing.Point(10, 23);
+            this.cbIslandAllowDiagonalBonds.Name = "cbIslandAllowDiagonalBonds";
+            this.cbIslandAllowDiagonalBonds.Size = new System.Drawing.Size(166, 22);
+            this.cbIslandAllowDiagonalBonds.TabIndex = 30;
+            this.cbIslandAllowDiagonalBonds.Text = "Allow diagonal bonds";
+            this.toolTip.SetToolTip(this.cbIslandAllowDiagonalBonds, " If true, all 8 neighbors of a pixel (including diagonals) will be considered whe" +
+        "n finding individual components on the layer.\r\nif false only 4 neighbors (right," +
+        " left, above, below) will be considered");
+            this.cbIslandAllowDiagonalBonds.UseVisualStyleBackColor = true;
+            // 
+            // toolTip
+            // 
+            this.toolTip.AutoPopDelay = 32767;
+            this.toolTip.InitialDelay = 500;
+            this.toolTip.ReshowDelay = 100;
+            this.toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
+            this.toolTip.ToolTipTitle = "Information";
             // 
             // FrmSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(624, 529);
+            this.ClientSize = new System.Drawing.Size(624, 577);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.tabSettings);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -1767,5 +1787,7 @@
         private System.Windows.Forms.NumericUpDown nmLayerRepairRemoveIslandsBelowEqualPixelsDefault;
         private System.Windows.Forms.Label label35;
         private System.Windows.Forms.CheckBox cbPartialUpdateIslandsOnEditing;
+        private System.Windows.Forms.CheckBox cbIslandAllowDiagonalBonds;
+        private System.Windows.Forms.ToolTip toolTip;
     }
 }

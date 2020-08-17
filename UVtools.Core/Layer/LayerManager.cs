@@ -10,6 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -844,25 +845,25 @@ namespace UVtools.Core
                             using (Mat stats = new Mat())
                             using (Mat centroids = new Mat())
                             {
-
-                                int numLabels;
-
                                 if (islandConfig.BinaryThreshold > 0)
                                 {
-                                    using (var thresholdImage = new Mat())
+                                    CvInvoke.Threshold(image, image, islandConfig.BinaryThreshold, 255, ThresholdType.Binary);
+                                    /*using (var thresholdImage = new Mat())
                                     {
-                                        CvInvoke.Threshold(image, thresholdImage, 1, 255, ThresholdType.Binary);
+                                        CvInvoke.Threshold(image, thresholdImage, islandConfig.BinaryThreshold, 255, ThresholdType.Binary);
                                         // Evaluate number of connected components using the 4-connected neighbor approach
                                         numLabels = CvInvoke.ConnectedComponentsWithStats(thresholdImage, labels, stats, centroids,
                                             islandConfig.AllowDiagonalBonds ? LineType.EightConnected : LineType.FourConnected);
-                                    }
+                                    }*/
                                 }
-                                else
+                                /*else
                                 {
                                     // Evaluate number of connected components 4-connected neighbor approach
                                     numLabels = CvInvoke.ConnectedComponentsWithStats(image, labels, stats, centroids, 
-                                        islandConfig.AllowDiagonalBonds?LineType.EightConnected:LineType.FourConnected);
-                                }
+                                        islandConfig.AllowDiagonalBonds ? LineType.EightConnected : LineType.FourConnected);
+                                }*/
+                                var numLabels = CvInvoke.ConnectedComponentsWithStats(image, labels, stats, centroids,
+                                    islandConfig.AllowDiagonalBonds ? LineType.EightConnected : LineType.FourConnected);
 
                                 // Get array that contains details of each connected component
                                 var ccStats = stats.GetData();
@@ -872,7 +873,7 @@ namespace UVtools.Core
                                 //stats[i][3]: Height of Connected Component
                                 //stats[i][4]: Total Area (in pixels) in Connected Component
 
-                                Span<int> labelSpan = MemoryMarshal.Cast<byte, int>(labels.GetPixelSpan<byte>());
+                                Span<int> labelSpan = labels.GetPixelSpan<int>();
                                 Mat previousImage = null;
                                 Span<byte> previousSpan = null;
 
@@ -900,16 +901,14 @@ namespace UVtools.Core
                                         for (int x = rect.X; x < rect.Right; x++)
                                         {
                                             int pixel = step * y + x;
-                                            if (span[pixel] < islandConfig.RequiredPixelBrightnessToProcessCheck)
-                                                continue; // Low brightness, ignore
-
-                                            if (labelSpan[pixel] != i)
-                                                continue; // Background pixel or a pixel from another component within the bounding rectangle
+                                            if (
+                                                labelSpan[pixel] != i || // Background pixel or a pixel from another component within the bounding rectangle
+                                                span[pixel] < islandConfig.RequiredPixelBrightnessToProcessCheck // Low brightness, ignore
+                                            ) continue;
 
                                             points.Add(new Point(x, y));
 
-                                            if (previousSpan[pixel] >=
-                                                islandConfig.RequiredPixelBrightnessToSupport)
+                                            if (previousSpan[pixel] >= islandConfig.RequiredPixelBrightnessToSupport)
                                             {
                                                 pixelsSupportingIsland++;
                                             }
@@ -1206,7 +1205,7 @@ namespace UVtools.Core
             return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.PixelsCount).ToList();
         }
 
-        public void RepairLayers(uint layerStart, uint layerEnd, uint closingIterations = 1, uint openingIterations = 1, byte removeIslandsBelowEqualPixels = 4,
+        public void RepairLayers(uint layerStart, uint layerEnd, uint closingIterations = 1, uint openingIterations = 0, byte removeIslandsBelowEqualPixels = 4,
             bool repairIslands = true, bool removeEmptyLayers = true, bool repairResinTraps = true, List<LayerIssue> issues = null,
             OperationProgress progress = null)
         {
@@ -1219,79 +1218,95 @@ namespace UVtools.Core
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     Layer layer = this[layerIndex];
-                    using (var image = layer.LayerMat)
+                    Mat image = null;
+
+                    void initImage()
                     {
-                        if (!ReferenceEquals(issues, null))
+                        if(ReferenceEquals(image, null))
+                            image = layer.LayerMat;
+                    }
+
+                    if (!ReferenceEquals(issues, null))
+                    {
+                        if (repairIslands && removeIslandsBelowEqualPixels > 0)
                         {
-                            if (repairIslands && removeIslandsBelowEqualPixels > 0)
+                            Span<byte> bytes = null;
+                            foreach (var issue in issues)
+                            {
+                                if (
+                                    issue.LayerIndex != layerIndex ||
+                                    issue.Type != LayerIssue.IssueType.Island ||
+                                    issue.Pixels.Length > removeIslandsBelowEqualPixels) continue;
+
+                                initImage();
+                                if(bytes == null)
+                                    bytes = image.GetPixelSpan<byte>();
+
+                                foreach (var issuePixel in issue.Pixels)
+                                {
+                                    bytes[image.GetPixelPos(issuePixel)] = 0;
+                                }
+                            }
+                            /*if (issues.TryGetValue((uint)layerIndex, out var issueList))
                             {
                                 var bytes = image.GetPixelSpan<byte>();
-                                foreach (var issue in issues)
+                                foreach (var issue in issueList.Where(issue =>
+                                    issue.Type == LayerIssue.IssueType.Island && issue.Pixels.Length <= removeIslandsBelowEqualPixels))
                                 {
-                                    if (
-                                        issue.LayerIndex != layerIndex ||
-                                        issue.Type != LayerIssue.IssueType.Island ||
-                                        issue.Pixels.Length > removeIslandsBelowEqualPixels) continue;
-
                                     foreach (var issuePixel in issue.Pixels)
                                     {
                                         bytes[image.GetPixelPos(issuePixel)] = 0;
                                     }
                                 }
-                                /*if (issues.TryGetValue((uint)layerIndex, out var issueList))
-                                {
-                                    var bytes = image.GetPixelSpan<byte>();
-                                    foreach (var issue in issueList.Where(issue =>
-                                        issue.Type == LayerIssue.IssueType.Island && issue.Pixels.Length <= removeIslandsBelowEqualPixels))
-                                    {
-                                        foreach (var issuePixel in issue.Pixels)
-                                        {
-                                            bytes[image.GetPixelPos(issuePixel)] = 0;
-                                        }
-                                    }
-                                }*/
-                            }
-
-                            if (repairResinTraps)
-                            {
-                                foreach (var issue in issues.Where(issue => issue.LayerIndex == layerIndex && issue.Type == LayerIssue.IssueType.ResinTrap))
-                                {
-                                    using (var vec = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
-                                    {
-                                        CvInvoke.DrawContours(image,
-                                            vec,
-                                            -1,
-                                            new MCvScalar(255),
-                                            -1);
-                                    }
-                                }
-                            }
+                            }*/
                         }
 
-                        if (repairIslands)
+                        if (repairResinTraps)
                         {
-                            using (Mat kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3),
-                                new Point(-1, -1)))
+                            foreach (var issue in issues.Where(issue => issue.LayerIndex == layerIndex && issue.Type == LayerIssue.IssueType.ResinTrap))
                             {
-                                if (closingIterations > 0)
+                                initImage();
+                                using (var vec = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
                                 {
-                                    CvInvoke.MorphologyEx(image, image, MorphOp.Close, kernel, new Point(-1, -1),
-                                        (int) closingIterations, BorderType.Default, new MCvScalar());
-                                }
-
-                                if (openingIterations > 0)
-                                {
-                                    CvInvoke.MorphologyEx(image, image, MorphOp.Open, kernel, new Point(-1, -1),
-                                        (int) closingIterations, BorderType.Default, new MCvScalar());
+                                    CvInvoke.DrawContours(image,
+                                        vec,
+                                        -1,
+                                        new MCvScalar(255),
+                                        -1);
                                 }
                             }
                         }
+                    }
 
+                    if (repairIslands && (closingIterations > 0 || openingIterations > 0))
+                    {
+                        initImage();
+                        using (Mat kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3),
+                            new Point(-1, -1)))
+                        {
+                            if (closingIterations > 0)
+                            {
+                                CvInvoke.MorphologyEx(image, image, MorphOp.Close, kernel, new Point(-1, -1),
+                                    (int) closingIterations, BorderType.Default, new MCvScalar());
+                            }
+
+                            if (openingIterations > 0)
+                            {
+                                CvInvoke.MorphologyEx(image, image, MorphOp.Open, kernel, new Point(-1, -1),
+                                    (int) closingIterations, BorderType.Default, new MCvScalar());
+                            }
+                        }
+                    }
+
+                    if (!ReferenceEquals(image, null))
+                    {
                         layer.LayerMat = image;
-                        lock (progress.Mutex)
-                        {
-                            progress++;
-                        }
+                        image.Dispose();
+                    }
+
+                    lock (progress.Mutex)
+                    {
+                        progress++;
                     }
                 });
             }

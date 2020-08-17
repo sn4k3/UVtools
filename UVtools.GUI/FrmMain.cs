@@ -240,7 +240,7 @@ namespace UVtools.GUI
             flvIssues.SecondarySortColumn = flvIssuesColLayerIndex;
             flvIssues.SecondarySortOrder = SortOrder.Ascending;
 
-            Generator.GenerateColumns(lvLog, typeof(Log), true);
+            Generator.GenerateColumns(lvLog, typeof(LogItem), true);
             lvLog.PrimarySortColumn = lvLog.AllColumns[0];
             lvLog.PrimarySortOrder = SortOrder.Descending;
 
@@ -746,7 +746,7 @@ namespace UVtools.GUI
                     bool repairIslands;
                     bool removeEmptyLayers;
                     bool repairResinTraps;
-                    using (var frmRepairLayers = new FrmRepairLayers())
+                    using (var frmRepairLayers = new FrmToolRepairLayers())
                     {
                         if (frmRepairLayers.ShowDialog() != DialogResult.OK) return;
 
@@ -770,8 +770,6 @@ namespace UVtools.GUI
                         if(islandConfig.Enabled || resinTrapConfig.Enabled)
                             ComputeIssues(islandConfig, resinTrapConfig);
                     }
-
-                    AddLog("Repair Layers and Issues");
 
                     DisableGUI();
                     FrmLoading.SetDescription("Repairing Layers and Issues");
@@ -2319,7 +2317,7 @@ namespace UVtools.GUI
         {
             Text = ReferenceEquals(SlicerFile, null) ?
                 $"{FrmAbout.AssemblyTitle}   Version: {FrmAbout.AssemblyVersion}" : 
-                $"{FrmAbout.AssemblyTitle}   File: {Path.GetFileName(SlicerFile.FileFullPath)} ({FrmLoading.StopWatch.ElapsedMilliseconds}ms)   Version: {FrmAbout.AssemblyVersion}";
+                $"{FrmAbout.AssemblyTitle}   File: {Path.GetFileName(SlicerFile.FileFullPath)} ({Math.Round(FrmLoading.StopWatch.ElapsedMilliseconds/1000m, 2)}s)   Version: {FrmAbout.AssemblyVersion}";
 
 #if  DEBUG
             Text += "   [DEBUG]";
@@ -3503,6 +3501,7 @@ namespace UVtools.GUI
             return new IslandDetectionConfiguration
             {
                 Enabled = tsIssuesRefreshIslands.Checked,
+                AllowDiagonalBonds = Settings.Default.IslandAllowDiagonalBonds,
                 BinaryThreshold = Settings.Default.IslandBinaryThreshold,
                 RequiredAreaToProcessCheck = Settings.Default.IslandRequiredAreaToProcessCheck,
                 RequiredPixelBrightnessToProcessCheck = Settings.Default.IslandRequiredPixelBrightnessToProcessCheck,
@@ -3523,11 +3522,23 @@ namespace UVtools.GUI
             };
         }
 
-        public void AddLog(string description)
+        public void AddLog(LogItem log)
+        {
+            int count = log.Index = lvLog.GetItemCount()+1;
+            lvLog.AddObject(log);
+            lbLogOperations.Text = $"Operations: {count}";
+        }
+        
+        public void AddLog(string description, decimal elapsedTime = 0)
         {
             int count = lvLog.GetItemCount()+1;
-            lvLog.AddObject(new Log(count, description));
+            lvLog.AddObject(new LogItem(count, description));
             lbLogOperations.Text = $"Operations: {count}";
+        }
+
+        public void EditLastLogElapsedTime(decimal elapsedTime = 0)
+        {
+            if (lvLog.GetModelObject(lvLog.GetItemCount() - 1) is LogItem log) log.ElapsedTime = elapsedTime;
         }
 
         public void DrawModifications(bool exitEditor)

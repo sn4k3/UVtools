@@ -2,7 +2,7 @@
 
 namespace UVtools.GUI.Forms
 {
-    partial class FrmRepairLayers
+    partial class FrmToolRepairLayers
     {
         /// <summary>
         /// Required designer variable.
@@ -31,7 +31,7 @@ namespace UVtools.GUI.Forms
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmRepairLayers));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmToolRepairLayers));
             this.lbDescription = new System.Windows.Forms.Label();
             this.lbIterationsStart = new System.Windows.Forms.Label();
             this.numClosingIterations = new System.Windows.Forms.NumericUpDown();

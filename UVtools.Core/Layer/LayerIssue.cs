@@ -59,7 +59,6 @@ namespace UVtools.Core
         /// individual components on the layer, if false only 4 neighbors (right, left, above, below)
         /// will be considered..
         /// </summary>
-        /// 
         public bool AllowDiagonalBonds  { get; set; } = false;
     }
 

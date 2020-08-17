@@ -1,5 +1,15 @@
 # Changelog
 
+## 17/08/2020 - v0.6.6.1
+
+* (Add) Elapsed time to the Log list
+* (Add) Setting - Issues - Islands: Allow diagonal bonds with default to false (#22)
+* (Change) Tool - Repair Layers: Allow set both iterations to 0 to skip closing and opening operations and allow remove islands independently
+* (Change) Title - file open time from miliseconds to seconds
+* (Improvement) Tool - Repair Layers: Layer image will only read/save if required and if current layer got modified
+* (Fix) Setting - Issues - Islands: "Pixels below this value will turn black, otherwise white" (Threshold) was not using the set value and was forcing 1
+* (Fix) Remove duplicated log for repair layers and issues
+
 ## 11/08/2020 - v0.6.6.0
 
 * (Add) Pixel Editor: Eraser - Right click over a white pixel to remove it whole linked area (Fill with black) (#7)

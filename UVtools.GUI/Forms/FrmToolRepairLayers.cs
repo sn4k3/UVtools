@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace UVtools.GUI.Forms
 {
-    public partial class FrmRepairLayers : Form
+    public partial class FrmToolRepairLayers : Form
     {
         #region Properties
 
@@ -65,7 +65,7 @@ namespace UVtools.GUI.Forms
         #endregion
 
         #region Constructors
-        public FrmRepairLayers()
+        public FrmToolRepairLayers()
         {
             InitializeComponent();
             DialogResult = DialogResult.Cancel;
@@ -170,12 +170,12 @@ namespace UVtools.GUI.Forms
                     return;
                 }
 
-                if (OpeningIterations == 0 && ClosingIterations == 0)
+                /*if (OpeningIterations == 0 && ClosingIterations == 0)
                 {
                     MessageBox.Show("Any of opening and closing iterations must be non 0.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     numClosingIterations.Select();
                     return;
-                }
+                }*/
 
                 if (!RepairIslands && !RemoveEmptyLayers && !RepairResinTraps)
                 {
@@ -187,10 +187,10 @@ namespace UVtools.GUI.Forms
                     MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     DialogResult = DialogResult.OK;
-                    if (ClosingIterations <= 0) // Should never happen!
+                    /*if (ClosingIterations <= 0) // Should never happen!
                     {
                         DialogResult = DialogResult.Cancel;
-                    }
+                    }*/
                     Close();
                 }
 

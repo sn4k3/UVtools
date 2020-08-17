@@ -6,24 +6,32 @@ using BrightIdeasSoftware;
 
 namespace UVtools.GUI.Controls
 {
-    public sealed class Log : INotifyPropertyChanged
+    public sealed class LogItem : INotifyPropertyChanged
     {
         private int _index;
-        private string _time;
+        private string _startTime;
+        private decimal _elapsedTime;
         private string _description;
 
-        [OLVColumn(Width = 50, Title = "#")]
+        [OLVColumn(Width = 40, Title = "#")]
         public int Index
         {
             get => _index;
             set => SetField(ref _index, value);
         }
 
-        [OLVColumn(Width = 90)]
-        public string Time
+        [OLVColumn(Width = 80, Title = "Started")]
+        public string StartTime
         {
-            get => _time;
-            set => SetField(ref _time, value);
+            get => _startTime;
+            set => SetField(ref _startTime, value);
+        }
+
+        [OLVColumn(Width = 70, Title = "Time(s)")]
+        public decimal ElapsedTime
+        {
+            get => _elapsedTime;
+            set => SetField(ref _elapsedTime, Math.Round(value, 2));
         }
 
         [OLVColumn(Width = 0)]
@@ -33,12 +41,16 @@ namespace UVtools.GUI.Controls
             set => SetField(ref _description, value);
         }
 
-        public Log(int index, string description)
+        public LogItem(int index, string description, decimal elapsedTime = 0)
         {
             _index = index;
             _description = description;
-            _time = DateTime.Now.ToString("HH:mm:ss");
+            _elapsedTime = elapsedTime;
+            _startTime = DateTime.Now.ToString("HH:mm:ss");
         }
+
+        public LogItem(string description, uint elapsedTime = 0) : this(0, description, elapsedTime)
+        { }
 
         public event PropertyChangedEventHandler PropertyChanged;
 

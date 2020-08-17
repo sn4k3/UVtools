@@ -682,5 +682,17 @@ namespace UVtools.GUI.Properties {
                 this["PartialUpdateIslandsOnEditing"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IslandAllowDiagonalBonds {
+            get {
+                return ((bool)(this["IslandAllowDiagonalBonds"]));
+            }
+            set {
+                this["IslandAllowDiagonalBonds"] = value;
+            }
+        }
     }
 }

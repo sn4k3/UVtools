@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using UVtools.Core;
 using UVtools.Core.Operations;
+using UVtools.GUI.Controls;
 
 namespace UVtools.GUI.Forms
 {
@@ -11,6 +12,9 @@ namespace UVtools.GUI.Forms
     {
         public Stopwatch StopWatch { get; } = new Stopwatch();
         public OperationProgress Progress { get; set; }
+
+        private LogItem OperationLog;
+
 
         //public Task RunningTask { get; set; }
 
@@ -70,6 +74,7 @@ namespace UVtools.GUI.Forms
             timer.Stop();
             StopWatch.Stop();
             Progress = null;
+            OperationLog.ElapsedTime = (uint) StopWatch.ElapsedMilliseconds / 1000m;
         }
 
         public OperationProgress RestartProgress(bool canCancel = true)
@@ -82,7 +87,8 @@ namespace UVtools.GUI.Forms
         {
             Text =
             lbDescription.Text = description;
-            Program.FrmMain.AddLog(description);
+            OperationLog = new LogItem(description);
+            Program.FrmMain.AddLog(OperationLog);
         }
 
         public void SetProgress(int value)

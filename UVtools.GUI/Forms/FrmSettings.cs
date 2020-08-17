@@ -69,6 +69,7 @@ namespace UVtools.GUI.Forms
                 cbComputeResinTraps.Checked = Settings.Default.ComputeResinTraps;
                 cbAutoComputeIssuesClickOnTab.Checked = Settings.Default.AutoComputeIssuesClickOnTab;
 
+                cbIslandAllowDiagonalBonds.Checked = Settings.Default.IslandAllowDiagonalBonds;
                 nmIslandBinaryThreshold.Value = Settings.Default.IslandBinaryThreshold;
                 nmIslandRequiredAreaToProcessCheck.Value = Settings.Default.IslandRequiredAreaToProcessCheck;
                 nmIslandRequiredPixelBrightnessToProcessCheck.Value = Settings.Default.IslandRequiredPixelBrightnessToProcessCheck;
@@ -220,6 +221,7 @@ namespace UVtools.GUI.Forms
                 Settings.Default.ComputeResinTraps = cbComputeResinTraps.Checked;
                 Settings.Default.AutoComputeIssuesClickOnTab = cbAutoComputeIssuesClickOnTab.Checked;
 
+                Settings.Default.IslandAllowDiagonalBonds = cbIslandAllowDiagonalBonds.Checked;
                 Settings.Default.IslandBinaryThreshold = (byte)nmIslandBinaryThreshold.Value;
                 Settings.Default.IslandRequiredAreaToProcessCheck = (byte) nmIslandRequiredAreaToProcessCheck.Value;
                 Settings.Default.IslandRequiredPixelBrightnessToProcessCheck = (byte)nmIslandRequiredPixelBrightnessToProcessCheck.Value;
