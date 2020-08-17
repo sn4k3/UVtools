@@ -80,6 +80,7 @@
             this.nmResinTrapRequiredAreaToProcessCheck = new System.Windows.Forms.NumericUpDown();
             this.label11 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.cbIslandAllowDiagonalBonds = new System.Windows.Forms.CheckBox();
             this.nmIslandBinaryThreshold = new System.Windows.Forms.NumericUpDown();
             this.label21 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
@@ -143,7 +144,6 @@
             this.cbLayerRepairRemoveEmptyLayers = new System.Windows.Forms.CheckBox();
             this.cbLayerRepairLayersIslands = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.cbIslandAllowDiagonalBonds = new System.Windows.Forms.CheckBox();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineHollowAreasLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineLayerBoundsLineThickness)).BeginInit();
@@ -816,6 +816,17 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Islands";
             // 
+            // cbIslandAllowDiagonalBonds
+            // 
+            this.cbIslandAllowDiagonalBonds.AutoSize = true;
+            this.cbIslandAllowDiagonalBonds.Location = new System.Drawing.Point(10, 23);
+            this.cbIslandAllowDiagonalBonds.Name = "cbIslandAllowDiagonalBonds";
+            this.cbIslandAllowDiagonalBonds.Size = new System.Drawing.Size(166, 22);
+            this.cbIslandAllowDiagonalBonds.TabIndex = 30;
+            this.cbIslandAllowDiagonalBonds.Text = "Allow diagonal bonds";
+            this.toolTip.SetToolTip(this.cbIslandAllowDiagonalBonds, resources.GetString("cbIslandAllowDiagonalBonds.ToolTip"));
+            this.cbIslandAllowDiagonalBonds.UseVisualStyleBackColor = true;
+            // 
             // nmIslandBinaryThreshold
             // 
             this.nmIslandBinaryThreshold.Location = new System.Drawing.Point(10, 51);
@@ -1007,7 +1018,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 27);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(616, 498);
+            this.tabPage1.Size = new System.Drawing.Size(616, 546);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "General";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -1303,7 +1314,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 27);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(616, 498);
+            this.tabPage2.Size = new System.Drawing.Size(616, 546);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Layer Preview";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -1345,7 +1356,7 @@
             this.tabPage4.Location = new System.Drawing.Point(4, 27);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(616, 498);
+            this.tabPage4.Size = new System.Drawing.Size(616, 546);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Pixel Editor";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -1471,7 +1482,7 @@
             this.tabPage5.Location = new System.Drawing.Point(4, 27);
             this.tabPage5.Name = "tabPage5";
             this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(616, 498);
+            this.tabPage5.Size = new System.Drawing.Size(616, 546);
             this.tabPage5.TabIndex = 4;
             this.tabPage5.Text = "Layer Repair";
             this.tabPage5.UseVisualStyleBackColor = true;
@@ -1594,19 +1605,6 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(624, 77);
             this.panel1.TabIndex = 19;
-            // 
-            // cbIslandAllowDiagonalBonds
-            // 
-            this.cbIslandAllowDiagonalBonds.AutoSize = true;
-            this.cbIslandAllowDiagonalBonds.Location = new System.Drawing.Point(10, 23);
-            this.cbIslandAllowDiagonalBonds.Name = "cbIslandAllowDiagonalBonds";
-            this.cbIslandAllowDiagonalBonds.Size = new System.Drawing.Size(166, 22);
-            this.cbIslandAllowDiagonalBonds.TabIndex = 30;
-            this.cbIslandAllowDiagonalBonds.Text = "Allow diagonal bonds";
-            this.toolTip.SetToolTip(this.cbIslandAllowDiagonalBonds, " If true, all 8 neighbors of a pixel (including diagonals) will be considered whe" +
-        "n finding individual components on the layer.\r\nif false only 4 neighbors (right," +
-        " left, above, below) will be considered");
-            this.cbIslandAllowDiagonalBonds.UseVisualStyleBackColor = true;
             // 
             // toolTip
             // 

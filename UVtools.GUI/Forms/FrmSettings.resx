@@ -123,6 +123,10 @@
   <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>131, 17</value>
   </metadata>
+  <data name="cbIslandAllowDiagonalBonds.ToolTip" xml:space="preserve">
+    <value> If true, all 8 neighbors of a pixel (including diagonals) will be considered when finding individual components on the layer.
+If false only 4 neighbors (right, left, above, below) will be considered. (Slower but more islands)</value>
+  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
