@@ -1,5 +1,9 @@
 # Changelog
 
+## ?/08/2020 - v0.6.6.2
+
+* (Remove) Bottom progress bar
+
 ## 17/08/2020 - v0.6.6.1
 
 * (Add) Elapsed time to the Log list

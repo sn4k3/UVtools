@@ -2010,7 +2010,7 @@ namespace UVtools.GUI
             lbActualLayer.Text = 
             lbInitialLayer.Text = "???";
             flvProperties.ClearObjects();
-            pbLayers.Value = 0;
+            //pbLayers.Value = 0;
             tbLayer.Value = 0;
 
             statusBar.Items.Clear();
@@ -2066,7 +2066,7 @@ namespace UVtools.GUI
             menuFileExtract.Enabled =
             menuFileConvert.Enabled =
             tbLayer.Enabled = 
-            pbLayers.Enabled = 
+            //pbLayers.Enabled = 
             menuEdit.Enabled = 
             menuMutate.Enabled =
             menuTools.Enabled =
@@ -2265,7 +2265,7 @@ namespace UVtools.GUI
             menuFileExtract.Enabled =
                 
             tbLayer.Enabled =
-            pbLayers.Enabled =
+            //pbLayers.Enabled =
             menuEdit.Enabled = 
             menuMutate.Enabled =
             menuTools.Enabled =
@@ -2725,7 +2725,7 @@ namespace UVtools.GUI
                             (int)(tbLayer.Height - tbLayer.Value * ((float)tbLayer.Height / tbLayer.Maximum)) - lbActualLayer.Height/2)
                 ));
 
-                pbLayers.Value = percent;
+                //pbLayers.Value = percent;
                 lbActualLayer.Invalidate();
                 lbActualLayer.Update();
                 lbActualLayer.Refresh();
