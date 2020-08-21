@@ -63,7 +63,7 @@ namespace UVtools.Core.FileFormats
         {
             base.Decode(fileFullPath, progress);
 
-            ImageMat = CvInvoke.Imread(fileFullPath, ImreadModes.AnyColor);
+            ImageMat = CvInvoke.Imread(fileFullPath, ImreadModes.Grayscale);
             const byte startDivisor = 2;
             for (int i = 0; i < ThumbnailsCount; i++)
             {
@@ -73,10 +73,10 @@ namespace UVtools.Core.FileFormats
                     new Size(ImageMat.Width / divisor, ImageMat.Height / divisor));
             }
 
-            if (ImageMat.NumberOfChannels > 1)
+            /*if (ImageMat.NumberOfChannels > 1)
             {
                 CvInvoke.CvtColor(ImageMat, ImageMat, ColorConversion.Bgr2Gray);
-            }
+            }*/
 
             LayerManager = new LayerManager(1, this);
             this[0] = new Layer(0, ImageMat, Path.GetFileName(fileFullPath));

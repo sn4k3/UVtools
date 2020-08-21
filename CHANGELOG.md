@@ -1,7 +1,10 @@
 # Changelog
 
-## ?/08/2020 - v0.6.6.2
+## 21/08/2020 - v0.6.7.0
 
+* (Add) Tool: Layer Clone
+* (Add) Mutator: Mask
+* (Add) Mutator - Pixel Dimming: "Strips" pattern
 * (Remove) Bottom progress bar
 
 ## 17/08/2020 - v0.6.6.1

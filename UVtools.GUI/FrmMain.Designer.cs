@@ -51,6 +51,7 @@
             this.menuToolsRepairLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsChangeResolution = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsLayerReHeight = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuToolsLayerClone = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsLayerRemoval = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsPattern = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -84,6 +85,7 @@
             this.tsLayerImagePixelEdit = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator18 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerRmove = new System.Windows.Forms.ToolStripButton();
+            this.tsLayerClone = new System.Windows.Forms.ToolStripButton();
             this.tsLayerInfo = new System.Windows.Forms.ToolStrip();
             this.tsLayerPreviewTime = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
@@ -474,6 +476,7 @@
             this.menuToolsRepairLayers,
             this.menuToolsChangeResolution,
             this.menuToolsLayerReHeight,
+            this.menuToolsLayerClone,
             this.menuToolsLayerRemoval,
             this.menuToolsPattern});
             this.menuTools.Enabled = false;
@@ -509,6 +512,15 @@
             this.menuToolsLayerReHeight.Size = new System.Drawing.Size(261, 22);
             this.menuToolsLayerReHeight.Text = "Layer Re-&Height";
             this.menuToolsLayerReHeight.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuToolsLayerClone
+            // 
+            this.menuToolsLayerClone.Enabled = false;
+            this.menuToolsLayerClone.Image = global::UVtools.GUI.Properties.Resources.layers_alt_16x16;
+            this.menuToolsLayerClone.Name = "menuToolsLayerClone";
+            this.menuToolsLayerClone.Size = new System.Drawing.Size(261, 22);
+            this.menuToolsLayerClone.Text = "Layer &Clone";
+            this.menuToolsLayerClone.Click += new System.EventHandler(this.EventClick);
             // 
             // menuToolsLayerRemoval
             // 
@@ -677,7 +689,8 @@
             this.toolStripSeparator9,
             this.tsLayerImagePixelEdit,
             this.toolStripSeparator18,
-            this.tsLayerRmove});
+            this.tsLayerRmove,
+            this.tsLayerClone});
             this.tsLayer.Location = new System.Drawing.Point(0, 0);
             this.tsLayer.Name = "tsLayer";
             this.tsLayer.Size = new System.Drawing.Size(1228, 25);
@@ -847,6 +860,17 @@
             this.tsLayerRmove.Text = "Remove Layer";
             this.tsLayerRmove.ToolTipText = "Delete current layer";
             this.tsLayerRmove.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerClone
+            // 
+            this.tsLayerClone.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerClone.Image = global::UVtools.GUI.Properties.Resources.copy_16x16;
+            this.tsLayerClone.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerClone.Name = "tsLayerClone";
+            this.tsLayerClone.Size = new System.Drawing.Size(89, 22);
+            this.tsLayerClone.Text = "Clone Layer";
+            this.tsLayerClone.ToolTipText = "Clone current layer";
+            this.tsLayerClone.Click += new System.EventHandler(this.EventClick);
             // 
             // tsLayerInfo
             // 
@@ -3071,6 +3095,8 @@
         private System.Windows.Forms.ToolStripLabel tsLayerImagePixelCount;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator17;
         private System.Windows.Forms.ToolStripLabel tsLayerBounds;
+        private System.Windows.Forms.ToolStripButton tsLayerClone;
+        private System.Windows.Forms.ToolStripMenuItem menuToolsLayerClone;
     }
 }
 

@@ -46,30 +46,36 @@ namespace UVtools.GUI
             {
                 {LayerManager.Mutate.Move, new Mutation(LayerManager.Mutate.Move, null, Resources.move_16x16,
                     "Moves the entire print volume around the plate.\n" +
-                    "Note: Margins are in pixel values"
+                    "Note: Margins are in pixel values."
                 )},
                 {LayerManager.Mutate.Resize, new Mutation(LayerManager.Mutate.Resize, null, Resources.crop_16x16,
-                    "Resizes layer images in a X and/or Y factor, starting from 100% value\n" +
+                    "Resizes layer images in a X and/or Y factor, starting from 100% value.\n" +
                     "NOTE 1: Build volume bounds are not validated after operation, please ensure scaling stays inside your limits.\n" +
                     "NOTE 2: X and Y are applied to original image, not to the rotated preview (If enabled)."
                 )},
                 {LayerManager.Mutate.Flip, new Mutation(LayerManager.Mutate.Flip, null, Resources.flip_16x16,
-                    "Flips layer images vertically and/or horizontally"
+                    "Flips layer images vertically and/or horizontally."
                 )},
                 {LayerManager.Mutate.Rotate, new Mutation(LayerManager.Mutate.Rotate, null, Resources.refresh_16x16,
-                    "Rotate layer images in a certain degrees"
+                    "Rotate layer images in a certain degrees."
                 )},
                 {LayerManager.Mutate.Solidify, new Mutation(LayerManager.Mutate.Solidify, null, Resources.square_solid_16x16,
                     "Solidifies the selected layers, closes all inner holes.\n" +
                     "Warning: All surrounded holes are filled, no exceptions! Make sure you don't require any of holes in layer path.",
                     Resources.mutation_solidify
                 )},
+                {LayerManager.Mutate.Mask, new Mutation(LayerManager.Mutate.Mask, "Mask", Resources.mask_16x16,
+                    "Masks the LCD output image given a greyscale (0-255) pixel input image.\n" +
+                    "Useful to correct light uniformity, but a proper mask must be created first based on real measurements per printer.\n" +
+                    "NOTE 1: Masks should respect printer resolution or they will be resized to fit.\n" +
+                    "NOTE 2: Run only this tool after all repairs and other transformations."
+                )},
                 {LayerManager.Mutate.PixelDimming, new Mutation(LayerManager.Mutate.PixelDimming, "Pixel Dimming", Resources.chessboard_16x16,
                     "Dims pixels in a chosen pattern over white pixels neighborhood. The selected pattern will be repeated over the image width and height as a mask. Benefits are:\n" +
                     "1) Reduce layer expansion in big masses\n" +
                     "2) Reduce cross layer exposure\n" +
                     "3) Extend pixels life\n" +
-                    "NOTE: Run only this tool after all repairs and other transformations"
+                    "NOTE: Run only this tool after all repairs and other transformations."
                 )},
                 {LayerManager.Mutate.Erode, new Mutation(LayerManager.Mutate.Erode, null, Resources.compress_alt_16x16,
                 "The basic idea of erosion is just like soil erosion only, it erodes away the boundaries of foreground object (Always try to keep foreground in white). " +
@@ -1086,6 +1092,52 @@ namespace UVtools.GUI
 
                     return;
                 }
+            }
+
+            if (ReferenceEquals(sender, menuToolsLayerClone) || ReferenceEquals(sender, tsLayerClone))
+            {
+                using (var frm = new FrmToolLayerClone(ReferenceEquals(sender, menuToolsLayerClone) ? -1 : (int)ActualLayer))
+                {
+                    if (frm.ShowDialog() != DialogResult.OK) return;
+
+                    DisableGUI();
+                    FrmLoading.SetDescription($"Layer clone from {frm.LayerRangeStart} to {frm.LayerRangeEnd}");
+
+                    var task = Task.Factory.StartNew(() =>
+                    {
+                        try
+                        {
+                            SlicerFile.LayerManager.CloneLayer(frm.LayerRangeStart, frm.LayerRangeEnd, frm.Clones, FrmLoading.RestartProgress());
+                        }
+                        catch (OperationCanceledException)
+                        {
+
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        finally
+                        {
+                            Invoke((MethodInvoker)delegate
+                            {
+                                // Running on the UI thread
+                                EnableGUI(true);
+                            });
+                        }
+                    });
+
+                    var loadingResult = FrmLoading.ShowDialog();
+
+                    UpdateLayerLimits();
+                    RefreshInfo();
+                    ShowLayer();
+
+                    menuFileSave.Enabled =
+                        menuFileSaveAs.Enabled = true;
+                }
+
+                return;
             }
 
             if (ReferenceEquals(sender, menuNewVersion))
@@ -3163,6 +3215,8 @@ namespace UVtools.GUI
             double x = 0;
             double y = 0;
 
+            Mat mat = null;
+
             Matrix<byte> evenPattern = null;
             Matrix<byte> oddPattern = null;
 
@@ -3217,6 +3271,15 @@ namespace UVtools.GUI
                         if (inputBox.ShowDialog() != DialogResult.OK) return;
                         layerStart = inputBox.LayerRangeStart;
                         layerEnd = inputBox.LayerRangeEnd;
+                    }
+                    break;
+                case LayerManager.Mutate.Mask:
+                    using (FrmMutationMask inputBox = new FrmMutationMask(Mutations[mutator]))
+                    {
+                        if (inputBox.ShowDialog() != DialogResult.OK) return;
+                        layerStart = inputBox.LayerRangeStart;
+                        layerEnd = inputBox.LayerRangeEnd;
+                        mat = inputBox.Mask;
                     }
                     break;
                 case LayerManager.Mutate.PixelDimming:
@@ -3314,6 +3377,10 @@ namespace UVtools.GUI
                             break;
                         case LayerManager.Mutate.Solidify:
                             SlicerFile.LayerManager.MutateSolidify(layerStart, layerEnd, progress);
+                            break;
+                        case LayerManager.Mutate.Mask:
+                            SlicerFile.LayerManager.MutateMask(layerStart, layerEnd, mat, progress);
+                            mat?.Dispose();
                             break;
                         case LayerManager.Mutate.PixelDimming:
                             SlicerFile.LayerManager.MutatePixelDimming(layerStart, layerEnd, evenPattern, oddPattern, (ushort) iterationsStart, progress);

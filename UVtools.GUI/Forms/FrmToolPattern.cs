@@ -250,7 +250,5 @@ namespace UVtools.GUI.Forms
             return true;
         }
         #endregion
-
-        
     }
 }

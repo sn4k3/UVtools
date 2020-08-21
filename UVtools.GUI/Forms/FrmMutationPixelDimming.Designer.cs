@@ -79,7 +79,9 @@ namespace UVtools.GUI.Forms
             this.nmInfillThickness = new System.Windows.Forms.NumericUpDown();
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
+            this.btnImportImageMask = new System.Windows.Forms.Button();
             this.btnLayerRangeSelect = new UVtools.GUI.Controls.SplitButton();
+            this.btnDimPatternStrips = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeEnd)).BeginInit();
             this.cmLayerRange.SuspendLayout();
@@ -366,6 +368,7 @@ namespace UVtools.GUI.Forms
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.btnDimPatternStrips);
             this.groupBox1.Controls.Add(this.label7);
             this.groupBox1.Controls.Add(this.btnDimPatternWaves);
             this.groupBox1.Controls.Add(this.btnPatternRandom);
@@ -645,6 +648,17 @@ namespace UVtools.GUI.Forms
             this.label10.TabIndex = 21;
             this.label10.Text = "Thickness:";
             // 
+            // btnImportImageMask
+            // 
+            this.btnImportImageMask.Location = new System.Drawing.Point(314, 181);
+            this.btnImportImageMask.Name = "btnImportImageMask";
+            this.btnImportImageMask.Size = new System.Drawing.Size(273, 32);
+            this.btnImportImageMask.TabIndex = 30;
+            this.btnImportImageMask.Text = "Import grayscale image as mask";
+            this.btnImportImageMask.UseVisualStyleBackColor = true;
+            this.btnImportImageMask.Visible = false;
+            this.btnImportImageMask.Click += new System.EventHandler(this.ItemClicked);
+            // 
             // btnLayerRangeSelect
             // 
             this.btnLayerRangeSelect.Location = new System.Drawing.Point(446, 146);
@@ -655,12 +669,23 @@ namespace UVtools.GUI.Forms
             this.btnLayerRangeSelect.Text = "Select";
             this.btnLayerRangeSelect.UseVisualStyleBackColor = true;
             // 
+            // btnDimPatternStrips
+            // 
+            this.btnDimPatternStrips.Location = new System.Drawing.Point(332, 25);
+            this.btnDimPatternStrips.Name = "btnDimPatternStrips";
+            this.btnDimPatternStrips.Size = new System.Drawing.Size(94, 35);
+            this.btnDimPatternStrips.TabIndex = 31;
+            this.btnDimPatternStrips.Text = "Strips";
+            this.btnDimPatternStrips.UseVisualStyleBackColor = true;
+            this.btnDimPatternStrips.Click += new System.EventHandler(this.ItemClicked);
+            // 
             // FrmMutationPixelDimming
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(599, 916);
+            this.Controls.Add(this.btnImportImageMask);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
@@ -756,5 +781,7 @@ namespace UVtools.GUI.Forms
         private System.Windows.Forms.NumericUpDown nmInfillSpacing;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.Button btnImportImageMask;
+        private System.Windows.Forms.Button btnDimPatternStrips;
     }
 }

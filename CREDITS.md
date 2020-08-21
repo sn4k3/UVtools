@@ -25,3 +25,4 @@
 * Sven Vogt
 * Paul Hammerstrom
 * Jeremy Lauzon
+* Peter Teal

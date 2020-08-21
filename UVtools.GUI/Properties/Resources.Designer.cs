@@ -283,6 +283,16 @@ namespace UVtools.GUI.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap copy_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("copy_16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap crop_16x16 {
             get {
                 object obj = ResourceManager.GetObject("crop-16x16", resourceCulture);
@@ -526,6 +536,16 @@ namespace UVtools.GUI.Properties {
         internal static System.Drawing.Bitmap map_marker_16x16 {
             get {
                 object obj = ResourceManager.GetObject("map-marker-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap mask_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("mask-16x16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

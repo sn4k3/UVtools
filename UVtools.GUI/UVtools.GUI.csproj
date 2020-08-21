@@ -168,6 +168,12 @@
     <Compile Include="Forms\FrmMutationBlur.Designer.cs">
       <DependentUpon>FrmMutationBlur.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\FrmMutationMask.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmMutationMask.Designer.cs">
+      <DependentUpon>FrmMutationMask.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\FrmMutationThreshold.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -197,6 +203,12 @@
     </Compile>
     <Compile Include="Forms\FrmToolEmpty.Designer.cs">
       <DependentUpon>FrmToolEmpty.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FrmToolLayerClone.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmToolLayerClone.Designer.cs">
+      <DependentUpon>FrmToolLayerClone.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\FrmToolPattern.cs">
       <SubType>Form</SubType>
@@ -286,6 +298,9 @@
     <EmbeddedResource Include="Forms\FrmMutationBlur.resx">
       <DependentUpon>FrmMutationBlur.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmMutationMask.resx">
+      <DependentUpon>FrmMutationMask.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmMutationThreshold.resx">
       <DependentUpon>FrmMutationThreshold.cs</DependentUpon>
     </EmbeddedResource>
@@ -300,6 +315,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolEmpty.resx">
       <DependentUpon>FrmToolEmpty.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmToolLayerClone.resx">
+      <DependentUpon>FrmToolLayerClone.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolPattern.resx">
       <DependentUpon>FrmToolPattern.cs</DependentUpon>
@@ -404,6 +422,8 @@
     <None Include="Images\burn-16x16.png" />
     <None Include="Images\th-16x16.png" />
     <None Include="Images\list-16x16.png" />
+    <None Include="Images\mask-16x16.png" />
+    <None Include="Images\copy_16x16.png" />
     <Content Include="UVtools.ico" />
     <None Include="UVtools.png" />
     <None Include="Images\Exit-16x16.png" />

@@ -11,6 +11,7 @@ using System.Globalization;
 using System.Text;
 using System.Windows.Forms;
 using Emgu.CV;
+using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
 
 namespace UVtools.GUI.Forms
@@ -151,6 +152,43 @@ namespace UVtools.GUI.Forms
                 return;
             }
 
+            if (ReferenceEquals(sender, btnImportImageMask))
+            {
+                using (var fileOpen = new OpenFileDialog
+                {
+                    CheckFileExists = true,
+                    Filter = "Image Files(*.PNG;*.BMP;*.JPEG;*.JPG;*.GIF)|*.PNG;*.BMP;*.JPEG;*.JPG;*.GIF"
+                })
+                {
+                    if (fileOpen.ShowDialog() != DialogResult.OK) return;
+
+                    using (var image = CvInvoke.Imread(fileOpen.FileName, ImreadModes.Grayscale))
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        for (int y = 0; y < image.Height; y++)
+                        {
+                            var span = image.GetPixelRowSpan<byte>(y);
+                            string line = string.Empty;
+                            for (int x = 0; x < span.Length; x++)
+                            {
+                                line += $"{span[x]} ";
+                            }
+
+                            line = line.Trim();
+                            sb.Append(line);
+
+                            if(y < image.Height-1)
+                                sb.AppendLine();
+                        }
+
+                        tbEvenPattern.Text = sb.ToString();
+                        tbOddPattern.Text = string.Empty;
+                    }
+
+                }
+                return;
+            }
+
             if (ReferenceEquals(sender, btnDimPatternChessBoard))
             {
                 tbEvenPattern.Text = string.Format(
@@ -194,6 +232,21 @@ namespace UVtools.GUI.Forms
                     "{0} 255 {0} 255{1}" +
                     "255 {0} 255 255{1}" +
                     "{0} 255 {0} 255"
+                    , nmPixelDimBrightness.Value, Environment.NewLine);
+
+                return;
+            }
+
+            if (ReferenceEquals(sender, btnDimPatternStrips))
+            {
+                tbEvenPattern.Text = string.Format(
+                    "{0}{1}" +
+                    "255"
+                    , nmPixelDimBrightness.Value, Environment.NewLine);
+
+                tbOddPattern.Text = string.Format(
+                    "255{1}" +
+                    "{0}"
                     , nmPixelDimBrightness.Value, Environment.NewLine);
 
                 return;

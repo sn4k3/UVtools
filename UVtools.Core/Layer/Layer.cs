@@ -568,6 +568,15 @@ namespace UVtools.Core
             }
         }
 
+        public void MutateMask(Mat mask)
+        {
+            using (var mat = LayerMat)
+            {
+                CvInvoke.BitwiseAnd(mat, mask, mat);
+                LayerMat = mat;
+            }
+        }
+
         public void MutatePixelDimming(Matrix<byte> evenPattern = null, Matrix<byte> oddPattern = null, ushort borderSize = 5)
         {
             var anchor = new Point(-1, -1);
@@ -602,7 +611,7 @@ namespace UVtools.Core
                     {
                         using (Mat mask = dst.CloneBlank())
                         {
-                            CvInvoke.Erode(dst, erode, kernel, anchor, borderSize, BorderType.Default, default);
+                            CvInvoke.Erode(dst, erode, kernel, anchor, borderSize, BorderType.Reflect101, default);
                             CvInvoke.Subtract(dst, erode, diff);
 
                             if (Index % 2 == 0)
@@ -643,7 +652,7 @@ namespace UVtools.Core
                 {
                     using (Mat diff = new Mat())
                     {
-                        CvInvoke.Erode(dst, erode, kernel, anchor, borderSize, BorderType.Default, default);
+                        CvInvoke.Erode(dst, erode, kernel, anchor, borderSize, BorderType.Reflect101, default);
                         CvInvoke.Subtract(dst, erode, diff);
                         CvInvoke.BitwiseAnd(erode, Index % 2 == 0 ? evenPatternMask : oddPatternMask, dst);
                         CvInvoke.Add(dst, diff, dst);
@@ -834,8 +843,6 @@ namespace UVtools.Core
             }
         }
 
-
-
         public Layer Clone()
         {
             return new Layer(Index, CompressedBytes, Filename, ParentLayerManager)
@@ -848,6 +855,7 @@ namespace UVtools.Core
         }
 
         #endregion
+
 
         
     }

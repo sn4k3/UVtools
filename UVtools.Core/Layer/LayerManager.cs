@@ -37,6 +37,7 @@ namespace UVtools.Core
             Flip,
             Rotate,
             Solidify,
+            Mask,
             PixelDimming,
             Erode,
             Dilate,
@@ -187,6 +188,21 @@ namespace UVtools.Core
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Rebuild layer properties based on slice settings
+        /// </summary>
+        public void RebuildLayersProperties()
+        {
+            var layerHeight = SlicerFile.LayerHeight;
+            for (uint layerIndex = 0; layerIndex < Count; layerIndex++)
+            {
+                var layer = this[layerIndex];
+                layer.Index = layerIndex;
+                layer.PositionZ = (float) Math.Round(layerHeight * (layerIndex + 1), 2);
+                layer.ExposureTime = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.InitialExposureTime, SlicerFile.LayerExposureTime);
+            }
+        }
 
         public Rectangle GetBoundingRectangle(OperationProgress progress = null)
         {
@@ -388,6 +404,24 @@ namespace UVtools.Core
                     progress++;
                 }
             });
+            progress.Token.ThrowIfCancellationRequested();
+        }
+
+        public void MutateMask(uint startLayerIndex, uint endLayerIndex, Mat mask, OperationProgress progress = null)
+        {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset("Masking pixels", endLayerIndex - startLayerIndex + 1);
+
+            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+                this[layerIndex].MutateMask(mask);
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+
             progress.Token.ThrowIfCancellationRequested();
         }
 
@@ -1327,6 +1361,45 @@ namespace UVtools.Core
                     RemoveLayer(removeLayers);
                 }
             }
+
+            progress.Token.ThrowIfCancellationRequested();
+        }
+
+        public void CloneLayer(uint layerIndexStart, uint layerIndexEnd, uint clones = 1, OperationProgress progress = null)
+        {
+            
+            var oldLayers = Layers;
+
+            uint totalClones = (layerIndexEnd - layerIndexStart + 1) * clones;
+            uint newLayerCount = Count + totalClones;
+            Layers = new Layer[newLayerCount];
+
+            progress.Reset("Cloned layers", totalClones);
+
+            uint newLayerIndex = 0;
+            for (uint layerIndex = 0; layerIndex < oldLayers.Length; layerIndex++)
+            {
+                Layers[newLayerIndex] = oldLayers[layerIndex];
+                if (layerIndex >= layerIndexStart && layerIndex <= layerIndexEnd)
+                {
+                    for (uint i = 0; i < clones; i++)
+                    {
+                        newLayerIndex++;
+                        Layers[newLayerIndex] = oldLayers[layerIndex].Clone();
+                        Layers[newLayerIndex].IsModified = true;
+
+                        progress++;
+                    }
+                }
+
+                newLayerIndex++;
+            }
+
+            SlicerFile.LayerCount = Count;
+            BoundingRectangle = Rectangle.Empty;
+            SlicerFile.RequireFullEncode = true;
+
+            RebuildLayersProperties();
 
             progress.Token.ThrowIfCancellationRequested();
         }
