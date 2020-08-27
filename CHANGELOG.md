@@ -1,5 +1,11 @@
 # Changelog
 
+## 27/08/2020 - v0.6.7.1
+
+* (Add) Menu - Help - Benchmark: Run benchmark test to measure system performance 
+* (Fix) Properties listview trigger an error when there are no groups to show
+* (Fix) Elfin: "(Number of Slices = x)" to ";Number of Slices = x" (#24)
+
 ## 21/08/2020 - v0.6.7.0
 
 * (Add) Tool: Layer Clone

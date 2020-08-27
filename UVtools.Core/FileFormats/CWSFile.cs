@@ -601,7 +601,15 @@ G1 Z-3.9 F120
             {
                 var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
                 if (ReferenceEquals(displayNameAttribute, null)) continue;
-                GCode.AppendLine($";({displayNameAttribute.DisplayName.PadRight(24)} = {propertyInfo.GetValue(OutputSettings)})");
+                if (propertyInfo.Name.Equals(nameof(OutputSettings.LayersNum)))
+                {
+                    GCode.AppendLine($";{displayNameAttribute.DisplayName.PadRight(24)} = {propertyInfo.GetValue(OutputSettings)}");
+                }
+                else
+                {
+                    GCode.AppendLine($";({displayNameAttribute.DisplayName.PadRight(24)} = {propertyInfo.GetValue(OutputSettings)})");
+                }
+                
             }
             GCode.AppendLine();
             GCode.AppendFormat(GCodeStart, Environment.NewLine);

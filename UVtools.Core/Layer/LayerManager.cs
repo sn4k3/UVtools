@@ -875,30 +875,19 @@ namespace UVtools.Core
                                 }
                             }
 
+                            if (islandConfig.BinaryThreshold > 0)
+                            {
+                                CvInvoke.Threshold(image, image, islandConfig.BinaryThreshold, 255,
+                                    ThresholdType.Binary);
+                            }
+
                             using (Mat labels = new Mat())
                             using (Mat stats = new Mat())
                             using (Mat centroids = new Mat())
                             {
-                                if (islandConfig.BinaryThreshold > 0)
-                                {
-                                    CvInvoke.Threshold(image, image, islandConfig.BinaryThreshold, 255, ThresholdType.Binary);
-                                    /*using (var thresholdImage = new Mat())
-                                    {
-                                        CvInvoke.Threshold(image, thresholdImage, islandConfig.BinaryThreshold, 255, ThresholdType.Binary);
-                                        // Evaluate number of connected components using the 4-connected neighbor approach
-                                        numLabels = CvInvoke.ConnectedComponentsWithStats(thresholdImage, labels, stats, centroids,
-                                            islandConfig.AllowDiagonalBonds ? LineType.EightConnected : LineType.FourConnected);
-                                    }*/
-                                }
-                                /*else
-                                {
-                                    // Evaluate number of connected components 4-connected neighbor approach
-                                    numLabels = CvInvoke.ConnectedComponentsWithStats(image, labels, stats, centroids, 
-                                        islandConfig.AllowDiagonalBonds ? LineType.EightConnected : LineType.FourConnected);
-                                }*/
                                 var numLabels = CvInvoke.ConnectedComponentsWithStats(image, labels, stats, centroids,
                                     islandConfig.AllowDiagonalBonds ? LineType.EightConnected : LineType.FourConnected);
-
+                                
                                 // Get array that contains details of each connected component
                                 var ccStats = stats.GetData();
                                 //stats[i][0]: Left Edge of Connected Component
@@ -1012,6 +1001,7 @@ namespace UVtools.Core
                                     {
                                         if ((int) arr.GetValue(0, i, 2) != -1 || (int) arr.GetValue(0, i, 3) == -1)
                                             continue;
+
                                         var rect = CvInvoke.BoundingRectangle(contours[i]);
                                         if(rect.GetArea() < resinTrapConfig.RequiredAreaToProcessCheck) continue;
 
@@ -1574,7 +1564,7 @@ namespace UVtools.Core
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
             progress.Reset("Drawings", (uint) pixelHistory.Count);
 
-            ConcurrentDictionary<uint, Mat> modfiedLayers = new ConcurrentDictionary<uint, Mat>();
+            ConcurrentDictionary<uint, Mat> modifiedLayers = new ConcurrentDictionary<uint, Mat>();
             for (var i = 0; i < pixelHistory.Count; i++)
             {
                 var operation = pixelHistory[i];
@@ -1584,7 +1574,7 @@ namespace UVtools.Core
                 if (operation.OperationType == PixelOperation.PixelOperationType.Drawing)
                 {
                     var operationDrawing = (PixelDrawing) operation;
-                    var mat = modfiedLayers.GetOrAdd(operation.LayerIndex, u => this[operation.LayerIndex].LayerMat);
+                    var mat = modifiedLayers.GetOrAdd(operation.LayerIndex, u => this[operation.LayerIndex].LayerMat);
 
                     if (operationDrawing.BrushSize == 1)
                     {
@@ -1608,13 +1598,13 @@ namespace UVtools.Core
                 else if (operation.OperationType == PixelOperation.PixelOperationType.Text)
                 {
                     var operationText = (PixelText)operation;
-                    var mat = modfiedLayers.GetOrAdd(operation.LayerIndex, u => this[operation.LayerIndex].LayerMat);
+                    var mat = modifiedLayers.GetOrAdd(operation.LayerIndex, u => this[operation.LayerIndex].LayerMat);
 
                     CvInvoke.PutText(mat, operationText.Text, operationText.Location, operationText.Font, operationText.FontScale, new MCvScalar(operationText.Color), operationText.Thickness, operationText.LineType, operationText.Mirror);
                 }
                 else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
                 {
-                    var mat = modfiedLayers.GetOrAdd(operation.LayerIndex, u => this[operation.LayerIndex].LayerMat);
+                    var mat = modifiedLayers.GetOrAdd(operation.LayerIndex, u => this[operation.LayerIndex].LayerMat);
 
                     if (ReferenceEquals(layerContours, null))
                     {
@@ -1642,7 +1632,7 @@ namespace UVtools.Core
                     int drawnLayers = 0;
                     for (int operationLayer = (int)operation.LayerIndex-1; operationLayer >= 0; operationLayer--)
                     {
-                        var mat = modfiedLayers.GetOrAdd((uint) operationLayer, u => this[operationLayer].LayerMat);
+                        var mat = modifiedLayers.GetOrAdd((uint) operationLayer, u => this[operationLayer].LayerMat);
                         int radius = (operationLayer > 10 ? Math.Min(operationSupport.TipDiameter + drawnLayers, operationSupport.PillarDiameter) : operationSupport.BaseDiameter) / 2;
                         uint whitePixels;
 
@@ -1677,7 +1667,7 @@ namespace UVtools.Core
                     var operationDrainHole = (PixelDrainHole)operation;
                     for (int operationLayer = (int)operation.LayerIndex; operationLayer >= 0; operationLayer--)
                     {
-                        var mat = modfiedLayers.GetOrAdd((uint)operationLayer, u => this[operationLayer].LayerMat);
+                        var mat = modifiedLayers.GetOrAdd((uint)operationLayer, u => this[operationLayer].LayerMat);
                         int radius =  operationDrainHole.Diameter / 2;
                         uint blackPixels;
 
@@ -1715,8 +1705,8 @@ namespace UVtools.Core
                 progress++;
             }
 
-            progress.Reset("Saving", (uint) modfiedLayers.Count);
-            Parallel.ForEach(modfiedLayers, (modfiedLayer, state) =>
+            progress.Reset("Saving", (uint) modifiedLayers.Count);
+            Parallel.ForEach(modifiedLayers, (modfiedLayer, state) =>
             {
                 this[modfiedLayer.Key].LayerMat = modfiedLayer.Value;
                 modfiedLayer.Value.Dispose();

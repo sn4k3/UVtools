@@ -1059,6 +1059,15 @@ namespace UVtools.GUI
                     return;
                 }
 
+                if (ReferenceEquals(sender, menuHelpBenchmark))
+                {
+                    using (var frmBenchmark = new FrmBenchmark())
+                    {
+                        frmBenchmark.ShowDialog();
+                    }
+                    return;
+                }
+
                 if (ReferenceEquals(sender, menuHelpInstallPrinters))
                 {
                     var PEFolder =
@@ -2424,7 +2433,7 @@ namespace UVtools.GUI
             }
 
             tsPropertiesLabelCount.Text = $"Properties: {flvProperties.GetItemCount()}";
-            tsPropertiesLabelGroups.Text = $"Groups: {flvProperties.OLVGroups.Count}";
+            tsPropertiesLabelGroups.Text = $"Groups: {flvProperties.OLVGroups?.Count ?? 0}";
 
             if (!ReferenceEquals(SlicerFile.GCode, null))
             {

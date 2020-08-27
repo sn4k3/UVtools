@@ -32,34 +32,14 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMain));
             this.menu = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuFileOpen = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuFileOpenNewWindow = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuFileReload = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuFileSave = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuFileSaveAs = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuFileClose = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.menuFileExtract = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuFileConvert = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.menuFileSettings = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator15 = new System.Windows.Forms.ToolStripSeparator();
-            this.menuFileExit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuMutate = new System.Windows.Forms.ToolStripMenuItem();
             this.menuTools = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuToolsRepairLayers = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuToolsChangeResolution = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuToolsLayerReHeight = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuToolsLayerClone = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuToolsLayerRemoval = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuToolsPattern = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuHelpWebsite = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuHelpDonate = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuHelpAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
-            this.menuHelpInstallPrinters = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuNewVersion = new System.Windows.Forms.ToolStripMenuItem();
             this.statusBar = new System.Windows.Forms.StatusStrip();
@@ -67,51 +47,24 @@
             this.scCenter = new System.Windows.Forms.SplitContainer();
             this.pbLayer = new Cyotek.Windows.Forms.ImageBox();
             this.tsLayer = new System.Windows.Forms.ToolStrip();
-            this.tsLayerImageExport = new System.Windows.Forms.ToolStripSplitButton();
-            this.tsLayerImageExportFile = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsLayerImageExportClipboard = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsLayerImageRotate = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImageLayerDifference = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator14 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImageHighlightIssues = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImageLayerOutline = new System.Windows.Forms.ToolStripSplitButton();
-            this.tsLayerImageLayerOutlinePrintVolumeBounds = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsLayerImageLayerOutlineLayerBounds = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsLayerImageLayerOutlineHollowAreas = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsLayerImageLayerOutlineEdgeDetection = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImagePixelEdit = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator18 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerRmove = new System.Windows.Forms.ToolStripButton();
-            this.tsLayerClone = new System.Windows.Forms.ToolStripButton();
             this.tsLayerInfo = new System.Windows.Forms.ToolStrip();
             this.tsLayerPreviewTime = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerResolution = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImageZoom = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImagePanLocation = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator16 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImageMouseLocation = new System.Windows.Forms.ToolStripLabel();
-            this.tsLayerImagePixelCount = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator17 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerBounds = new System.Windows.Forms.ToolStripLabel();
             this.tabControlLeft = new System.Windows.Forms.TabControl();
             this.tbpThumbnailsAndInfo = new System.Windows.Forms.TabPage();
             this.scLeft = new System.Windows.Forms.SplitContainer();
-            this.pbThumbnail = new System.Windows.Forms.PictureBox();
             this.tsThumbnails = new System.Windows.Forms.ToolStrip();
-            this.tsThumbnailsPrevious = new System.Windows.Forms.ToolStripButton();
             this.tsThumbnailsCount = new System.Windows.Forms.ToolStripLabel();
-            this.tsThumbnailsNext = new System.Windows.Forms.ToolStripButton();
-            this.tsThumbnailsExport = new System.Windows.Forms.ToolStripSplitButton();
-            this.tsThumbnailsExportFile = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsThumbnailsExportClipboard = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator21 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsThumbnailsImport = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator22 = new System.Windows.Forms.ToolStripSeparator();
             this.tsThumbnailsResolution = new System.Windows.Forms.ToolStripLabel();
             this.flvProperties = new BrightIdeasSoftware.FastObjectListView();
@@ -119,18 +72,12 @@
             this.tsPropertiesLabelCount = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.tsPropertiesLabelGroups = new System.Windows.Forms.ToolStripLabel();
-            this.tsPropertiesExport = new System.Windows.Forms.ToolStripSplitButton();
-            this.tsPropertiesExportFile = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsPropertiesExportClipboard = new System.Windows.Forms.ToolStripMenuItem();
             this.tabPageGCode = new System.Windows.Forms.TabPage();
             this.tbGCode = new System.Windows.Forms.TextBox();
             this.tsGCode = new System.Windows.Forms.ToolStrip();
             this.tsGCodeLabelLines = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.tsGcodeLabelChars = new System.Windows.Forms.ToolStripLabel();
-            this.tsGCodeButtonSave = new System.Windows.Forms.ToolStripSplitButton();
-            this.tsGCodeButtonSaveFile = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsGCodeButtonSaveClipboard = new System.Windows.Forms.ToolStripMenuItem();
             this.tabPageIssues = new System.Windows.Forms.TabPage();
             this.flvIssues = new BrightIdeasSoftware.FastObjectListView();
             this.flvIssuesColType = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
@@ -138,20 +85,11 @@
             this.flvIssuesColPosition = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.flvIssuesColPixels = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.tsIssuesLv = new System.Windows.Forms.ToolStrip();
-            this.btnIssueGroup = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator23 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnIssueResort = new System.Windows.Forms.ToolStripButton();
             this.tsIssues = new System.Windows.Forms.ToolStrip();
-            this.tsIssuePrevious = new System.Windows.Forms.ToolStripButton();
             this.tsIssueCount = new System.Windows.Forms.ToolStripLabel();
-            this.tsIssueNext = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsIssueRemove = new System.Windows.Forms.ToolStripButton();
-            this.tsIssuesRefresh = new System.Windows.Forms.ToolStripSplitButton();
-            this.tsIssuesRefreshIslands = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsIssuesRefreshResinTraps = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsIssuesRepair = new System.Windows.Forms.ToolStripButton();
             this.tabPagePixelEditor = new System.Windows.Forms.TabPage();
             this.flvPixelHistory = new BrightIdeasSoftware.FastObjectListView();
             this.flvPixelHistoryColNumber = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
@@ -160,11 +98,8 @@
             this.olvColumn4 = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.tsPixelEditorHistory = new System.Windows.Forms.ToolStrip();
             this.lbPixelHistoryOperations = new System.Windows.Forms.ToolStripLabel();
-            this.btnPixelHistoryRemove = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator19 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnPixelHistoryApply = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator20 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnPixelHistoryClear = new System.Windows.Forms.ToolStripButton();
             this.tabControlPixelEditor = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.label29 = new System.Windows.Forms.Label();
@@ -232,23 +167,89 @@
             this.tabPageLog = new System.Windows.Forms.TabPage();
             this.lvLog = new BrightIdeasSoftware.FastObjectListView();
             this.tsLog = new System.Windows.Forms.ToolStrip();
-            this.btnLogClear = new System.Windows.Forms.ToolStripButton();
             this.lbLogOperations = new System.Windows.Forms.ToolStripLabel();
             this.imageList16x16 = new System.Windows.Forms.ImageList(this.components);
             this.tlRight = new System.Windows.Forms.TableLayoutPanel();
-            this.btnPreviousLayer = new System.Windows.Forms.Button();
-            this.btnNextLayer = new System.Windows.Forms.Button();
             this.lbMaxLayer = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
             this.lbActualLayer = new System.Windows.Forms.Label();
             this.tbLayer = new System.Windows.Forms.TrackBar();
             this.lbInitialLayer = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.toolTipInformation = new System.Windows.Forms.ToolTip(this.components);
+            this.layerScrollTimer = new System.Windows.Forms.Timer(this.components);
+            this.tsLayerImageExport = new System.Windows.Forms.ToolStripSplitButton();
+            this.tsLayerImageExportFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsLayerImageExportClipboard = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsLayerImageRotate = new System.Windows.Forms.ToolStripButton();
+            this.tsLayerImageLayerDifference = new System.Windows.Forms.ToolStripButton();
+            this.tsLayerImageHighlightIssues = new System.Windows.Forms.ToolStripButton();
+            this.tsLayerImageLayerOutline = new System.Windows.Forms.ToolStripSplitButton();
+            this.tsLayerImageLayerOutlinePrintVolumeBounds = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsLayerImageLayerOutlineLayerBounds = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsLayerImageLayerOutlineHollowAreas = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsLayerImageLayerOutlineEdgeDetection = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsLayerImagePixelEdit = new System.Windows.Forms.ToolStripButton();
+            this.tsLayerRmove = new System.Windows.Forms.ToolStripButton();
+            this.tsLayerClone = new System.Windows.Forms.ToolStripButton();
+            this.tsLayerResolution = new System.Windows.Forms.ToolStripLabel();
+            this.tsLayerImageZoom = new System.Windows.Forms.ToolStripLabel();
+            this.tsLayerImagePanLocation = new System.Windows.Forms.ToolStripLabel();
+            this.tsLayerImageMouseLocation = new System.Windows.Forms.ToolStripLabel();
+            this.tsLayerImagePixelCount = new System.Windows.Forms.ToolStripLabel();
+            this.tsLayerBounds = new System.Windows.Forms.ToolStripLabel();
+            this.pbThumbnail = new System.Windows.Forms.PictureBox();
+            this.tsThumbnailsPrevious = new System.Windows.Forms.ToolStripButton();
+            this.tsThumbnailsNext = new System.Windows.Forms.ToolStripButton();
+            this.tsThumbnailsExport = new System.Windows.Forms.ToolStripSplitButton();
+            this.tsThumbnailsExportFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsThumbnailsExportClipboard = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsThumbnailsImport = new System.Windows.Forms.ToolStripButton();
+            this.tsPropertiesExport = new System.Windows.Forms.ToolStripSplitButton();
+            this.tsPropertiesExportFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsPropertiesExportClipboard = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsGCodeButtonSave = new System.Windows.Forms.ToolStripSplitButton();
+            this.tsGCodeButtonSaveFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsGCodeButtonSaveClipboard = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnIssueGroup = new System.Windows.Forms.ToolStripButton();
+            this.btnIssueResort = new System.Windows.Forms.ToolStripButton();
+            this.tsIssuePrevious = new System.Windows.Forms.ToolStripButton();
+            this.tsIssueNext = new System.Windows.Forms.ToolStripButton();
+            this.tsIssueRemove = new System.Windows.Forms.ToolStripButton();
+            this.tsIssuesRefresh = new System.Windows.Forms.ToolStripSplitButton();
+            this.tsIssuesRefreshIslands = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsIssuesRefreshResinTraps = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsIssuesRepair = new System.Windows.Forms.ToolStripButton();
+            this.btnPixelHistoryRemove = new System.Windows.Forms.ToolStripButton();
+            this.btnPixelHistoryApply = new System.Windows.Forms.ToolStripButton();
+            this.btnPixelHistoryClear = new System.Windows.Forms.ToolStripButton();
+            this.btnLogClear = new System.Windows.Forms.ToolStripButton();
+            this.btnPreviousLayer = new System.Windows.Forms.Button();
+            this.btnNextLayer = new System.Windows.Forms.Button();
             this.btnFindLayer = new System.Windows.Forms.Button();
             this.btnLastLayer = new System.Windows.Forms.Button();
             this.btnFirstLayer = new System.Windows.Forms.Button();
-            this.toolTipInformation = new System.Windows.Forms.ToolTip(this.components);
-            this.layerScrollTimer = new System.Windows.Forms.Timer(this.components);
+            this.menuFileOpen = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileOpenNewWindow = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileReload = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileSave = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileSaveAs = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileClose = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileExtract = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileConvert = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileSettings = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileExit = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuToolsRepairLayers = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuToolsChangeResolution = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuToolsLayerReHeight = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuToolsLayerClone = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuToolsLayerRemoval = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuToolsPattern = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuHelpWebsite = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuHelpDonate = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuHelpAbout = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuHelpBenchmark = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuHelpInstallPrinters = new System.Windows.Forms.ToolStripMenuItem();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).BeginInit();
@@ -263,7 +264,6 @@
             this.scLeft.Panel1.SuspendLayout();
             this.scLeft.Panel2.SuspendLayout();
             this.scLeft.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbThumbnail)).BeginInit();
             this.tsThumbnails.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.flvProperties)).BeginInit();
             this.tsProperties.SuspendLayout();
@@ -308,6 +308,7 @@
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).BeginInit();
             this.panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbThumbnail)).BeginInit();
             this.SuspendLayout();
             // 
             // menu
@@ -346,115 +347,20 @@
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "&File";
             // 
-            // menuFileOpen
-            // 
-            this.menuFileOpen.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
-            this.menuFileOpen.Name = "menuFileOpen";
-            this.menuFileOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.menuFileOpen.Size = new System.Drawing.Size(261, 22);
-            this.menuFileOpen.Text = "&Open";
-            this.menuFileOpen.Click += new System.EventHandler(this.EventClick);
-            // 
-            // menuFileOpenNewWindow
-            // 
-            this.menuFileOpenNewWindow.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
-            this.menuFileOpenNewWindow.Name = "menuFileOpenNewWindow";
-            this.menuFileOpenNewWindow.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
-            | System.Windows.Forms.Keys.O)));
-            this.menuFileOpenNewWindow.Size = new System.Drawing.Size(261, 22);
-            this.menuFileOpenNewWindow.Text = "Open in new window";
-            this.menuFileOpenNewWindow.Click += new System.EventHandler(this.EventClick);
-            // 
-            // menuFileReload
-            // 
-            this.menuFileReload.Image = global::UVtools.GUI.Properties.Resources.File_Refresh_16x16;
-            this.menuFileReload.Name = "menuFileReload";
-            this.menuFileReload.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F5)));
-            this.menuFileReload.Size = new System.Drawing.Size(261, 22);
-            this.menuFileReload.Text = "&Reload";
-            this.menuFileReload.Click += new System.EventHandler(this.EventClick);
-            // 
-            // menuFileSave
-            // 
-            this.menuFileSave.Enabled = false;
-            this.menuFileSave.Image = global::UVtools.GUI.Properties.Resources.Save_16x16;
-            this.menuFileSave.Name = "menuFileSave";
-            this.menuFileSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.menuFileSave.Size = new System.Drawing.Size(261, 22);
-            this.menuFileSave.Text = "&Save";
-            this.menuFileSave.Click += new System.EventHandler(this.EventClick);
-            // 
-            // menuFileSaveAs
-            // 
-            this.menuFileSaveAs.Enabled = false;
-            this.menuFileSaveAs.Image = global::UVtools.GUI.Properties.Resources.SaveAs_16x16;
-            this.menuFileSaveAs.Name = "menuFileSaveAs";
-            this.menuFileSaveAs.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
-            | System.Windows.Forms.Keys.S)));
-            this.menuFileSaveAs.Size = new System.Drawing.Size(261, 22);
-            this.menuFileSaveAs.Text = "Save As";
-            this.menuFileSaveAs.Click += new System.EventHandler(this.EventClick);
-            // 
-            // menuFileClose
-            // 
-            this.menuFileClose.Enabled = false;
-            this.menuFileClose.Image = global::UVtools.GUI.Properties.Resources.File_Close_16x16;
-            this.menuFileClose.Name = "menuFileClose";
-            this.menuFileClose.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.W)));
-            this.menuFileClose.Size = new System.Drawing.Size(261, 22);
-            this.menuFileClose.Text = "&Close";
-            this.menuFileClose.Click += new System.EventHandler(this.EventClick);
-            // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(258, 6);
-            // 
-            // menuFileExtract
-            // 
-            this.menuFileExtract.Enabled = false;
-            this.menuFileExtract.Image = global::UVtools.GUI.Properties.Resources.Extract_object_16x16;
-            this.menuFileExtract.Name = "menuFileExtract";
-            this.menuFileExtract.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.E)));
-            this.menuFileExtract.Size = new System.Drawing.Size(261, 22);
-            this.menuFileExtract.Text = "&Extract";
-            this.menuFileExtract.Click += new System.EventHandler(this.EventClick);
-            // 
-            // menuFileConvert
-            // 
-            this.menuFileConvert.Enabled = false;
-            this.menuFileConvert.Image = global::UVtools.GUI.Properties.Resources.Convert_16x16;
-            this.menuFileConvert.Name = "menuFileConvert";
-            this.menuFileConvert.Size = new System.Drawing.Size(261, 22);
-            this.menuFileConvert.Text = "&Convert To";
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
             this.toolStripSeparator2.Size = new System.Drawing.Size(258, 6);
             // 
-            // menuFileSettings
-            // 
-            this.menuFileSettings.Image = global::UVtools.GUI.Properties.Resources.settings_16x16;
-            this.menuFileSettings.Name = "menuFileSettings";
-            this.menuFileSettings.ShortcutKeys = System.Windows.Forms.Keys.F12;
-            this.menuFileSettings.Size = new System.Drawing.Size(261, 22);
-            this.menuFileSettings.Text = "&Settings";
-            this.menuFileSettings.Click += new System.EventHandler(this.EventClick);
-            // 
             // toolStripSeparator15
             // 
             this.toolStripSeparator15.Name = "toolStripSeparator15";
             this.toolStripSeparator15.Size = new System.Drawing.Size(258, 6);
-            // 
-            // menuFileExit
-            // 
-            this.menuFileExit.Image = global::UVtools.GUI.Properties.Resources.Exit_16x16;
-            this.menuFileExit.Name = "menuFileExit";
-            this.menuFileExit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.menuFileExit.Size = new System.Drawing.Size(261, 22);
-            this.menuFileExit.Text = "&Exit";
-            this.menuFileExit.Click += new System.EventHandler(this.EventClick);
             // 
             // menuEdit
             // 
@@ -484,116 +390,23 @@
             this.menuTools.Size = new System.Drawing.Size(46, 20);
             this.menuTools.Text = "&Tools";
             // 
-            // menuToolsRepairLayers
-            // 
-            this.menuToolsRepairLayers.Enabled = false;
-            this.menuToolsRepairLayers.Image = global::UVtools.GUI.Properties.Resources.toolbox_16x16;
-            this.menuToolsRepairLayers.Name = "menuToolsRepairLayers";
-            this.menuToolsRepairLayers.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
-            | System.Windows.Forms.Keys.R)));
-            this.menuToolsRepairLayers.Size = new System.Drawing.Size(261, 22);
-            this.menuToolsRepairLayers.Text = "&Repair layers and Issues";
-            this.menuToolsRepairLayers.Click += new System.EventHandler(this.EventClick);
-            // 
-            // menuToolsChangeResolution
-            // 
-            this.menuToolsChangeResolution.Enabled = false;
-            this.menuToolsChangeResolution.Image = global::UVtools.GUI.Properties.Resources.resize_16x16;
-            this.menuToolsChangeResolution.Name = "menuToolsChangeResolution";
-            this.menuToolsChangeResolution.Size = new System.Drawing.Size(261, 22);
-            this.menuToolsChangeResolution.Text = "Change Re&solution";
-            this.menuToolsChangeResolution.Click += new System.EventHandler(this.EventClick);
-            // 
-            // menuToolsLayerReHeight
-            // 
-            this.menuToolsLayerReHeight.Enabled = false;
-            this.menuToolsLayerReHeight.Image = global::UVtools.GUI.Properties.Resources.ladder_16x16;
-            this.menuToolsLayerReHeight.Name = "menuToolsLayerReHeight";
-            this.menuToolsLayerReHeight.Size = new System.Drawing.Size(261, 22);
-            this.menuToolsLayerReHeight.Text = "Layer Re-&Height";
-            this.menuToolsLayerReHeight.Click += new System.EventHandler(this.EventClick);
-            // 
-            // menuToolsLayerClone
-            // 
-            this.menuToolsLayerClone.Enabled = false;
-            this.menuToolsLayerClone.Image = global::UVtools.GUI.Properties.Resources.layers_alt_16x16;
-            this.menuToolsLayerClone.Name = "menuToolsLayerClone";
-            this.menuToolsLayerClone.Size = new System.Drawing.Size(261, 22);
-            this.menuToolsLayerClone.Text = "Layer &Clone";
-            this.menuToolsLayerClone.Click += new System.EventHandler(this.EventClick);
-            // 
-            // menuToolsLayerRemoval
-            // 
-            this.menuToolsLayerRemoval.Enabled = false;
-            this.menuToolsLayerRemoval.Image = global::UVtools.GUI.Properties.Resources.layers_alt_16x16;
-            this.menuToolsLayerRemoval.Name = "menuToolsLayerRemoval";
-            this.menuToolsLayerRemoval.Size = new System.Drawing.Size(261, 22);
-            this.menuToolsLayerRemoval.Text = "Layer Re&moval";
-            this.menuToolsLayerRemoval.Click += new System.EventHandler(this.EventClick);
-            // 
-            // menuToolsPattern
-            // 
-            this.menuToolsPattern.Enabled = false;
-            this.menuToolsPattern.Image = global::UVtools.GUI.Properties.Resources.pattern_16x16;
-            this.menuToolsPattern.Name = "menuToolsPattern";
-            this.menuToolsPattern.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
-            | System.Windows.Forms.Keys.P)));
-            this.menuToolsPattern.Size = new System.Drawing.Size(261, 22);
-            this.menuToolsPattern.Text = "&Pattern";
-            this.menuToolsPattern.Click += new System.EventHandler(this.EventClick);
-            // 
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuHelpWebsite,
             this.menuHelpDonate,
             this.menuHelpAbout,
+            this.menuHelpBenchmark,
             this.toolStripSeparator10,
             this.menuHelpInstallPrinters});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.helpToolStripMenuItem.Text = "&Help";
             // 
-            // menuHelpWebsite
-            // 
-            this.menuHelpWebsite.Image = global::UVtools.GUI.Properties.Resources.internet_explorer_16x16;
-            this.menuHelpWebsite.Name = "menuHelpWebsite";
-            this.menuHelpWebsite.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F1)));
-            this.menuHelpWebsite.Size = new System.Drawing.Size(231, 22);
-            this.menuHelpWebsite.Text = "&Website";
-            this.menuHelpWebsite.Click += new System.EventHandler(this.EventClick);
-            // 
-            // menuHelpDonate
-            // 
-            this.menuHelpDonate.Image = global::UVtools.GUI.Properties.Resources.Donate_16x16;
-            this.menuHelpDonate.Name = "menuHelpDonate";
-            this.menuHelpDonate.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
-            | System.Windows.Forms.Keys.F1)));
-            this.menuHelpDonate.Size = new System.Drawing.Size(231, 22);
-            this.menuHelpDonate.Text = "&Donate";
-            this.menuHelpDonate.Click += new System.EventHandler(this.EventClick);
-            // 
-            // menuHelpAbout
-            // 
-            this.menuHelpAbout.Image = global::UVtools.GUI.Properties.Resources.Button_Info_16x16;
-            this.menuHelpAbout.Name = "menuHelpAbout";
-            this.menuHelpAbout.ShortcutKeys = System.Windows.Forms.Keys.F1;
-            this.menuHelpAbout.Size = new System.Drawing.Size(231, 22);
-            this.menuHelpAbout.Text = "&About";
-            this.menuHelpAbout.Click += new System.EventHandler(this.EventClick);
-            // 
             // toolStripSeparator10
             // 
             this.toolStripSeparator10.Name = "toolStripSeparator10";
             this.toolStripSeparator10.Size = new System.Drawing.Size(228, 6);
-            // 
-            // menuHelpInstallPrinters
-            // 
-            this.menuHelpInstallPrinters.Image = global::UVtools.GUI.Properties.Resources.CNCMachine_16x16;
-            this.menuHelpInstallPrinters.Name = "menuHelpInstallPrinters";
-            this.menuHelpInstallPrinters.Size = new System.Drawing.Size(231, 22);
-            this.menuHelpInstallPrinters.Text = "Install profiles into PrusaSlicer";
-            this.menuHelpInstallPrinters.Click += new System.EventHandler(this.EventClick);
             // 
             // viewToolStripMenuItem
             // 
@@ -697,180 +510,31 @@
             this.tsLayer.TabIndex = 6;
             this.tsLayer.Text = "Layer Menu";
             // 
-            // tsLayerImageExport
-            // 
-            this.tsLayerImageExport.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerImageExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsLayerImageExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsLayerImageExportFile,
-            this.tsLayerImageExportClipboard});
-            this.tsLayerImageExport.Image = global::UVtools.GUI.Properties.Resources.Save_16x16;
-            this.tsLayerImageExport.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerImageExport.Name = "tsLayerImageExport";
-            this.tsLayerImageExport.Size = new System.Drawing.Size(32, 22);
-            this.tsLayerImageExport.Text = "Save to";
-            this.tsLayerImageExport.ToolTipText = "Save layer image to a file or clipboard";
-            this.tsLayerImageExport.ButtonClick += new System.EventHandler(this.EventClick);
-            // 
-            // tsLayerImageExportFile
-            // 
-            this.tsLayerImageExportFile.Image = global::UVtools.GUI.Properties.Resources.file_image_16x16;
-            this.tsLayerImageExportFile.Name = "tsLayerImageExportFile";
-            this.tsLayerImageExportFile.Size = new System.Drawing.Size(141, 22);
-            this.tsLayerImageExportFile.Text = "To &File";
-            this.tsLayerImageExportFile.Click += new System.EventHandler(this.EventClick);
-            // 
-            // tsLayerImageExportClipboard
-            // 
-            this.tsLayerImageExportClipboard.Image = global::UVtools.GUI.Properties.Resources.clipboard_16x16;
-            this.tsLayerImageExportClipboard.Name = "tsLayerImageExportClipboard";
-            this.tsLayerImageExportClipboard.Size = new System.Drawing.Size(141, 22);
-            this.tsLayerImageExportClipboard.Text = "To &Clipboard";
-            this.tsLayerImageExportClipboard.Click += new System.EventHandler(this.EventClick);
-            // 
-            // tsLayerImageRotate
-            // 
-            this.tsLayerImageRotate.Checked = true;
-            this.tsLayerImageRotate.CheckOnClick = true;
-            this.tsLayerImageRotate.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tsLayerImageRotate.Image = global::UVtools.GUI.Properties.Resources.Rotate_16x16;
-            this.tsLayerImageRotate.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerImageRotate.Name = "tsLayerImageRotate";
-            this.tsLayerImageRotate.Size = new System.Drawing.Size(117, 22);
-            this.tsLayerImageRotate.Text = "&Rotate Image 90º";
-            this.tsLayerImageRotate.ToolTipText = "Auto rotate layer preview image at 90º (This can slow down the layer preview) [CT" +
-    "RL+R]";
-            this.tsLayerImageRotate.Click += new System.EventHandler(this.EventClick);
-            // 
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsLayerImageLayerDifference
-            // 
-            this.tsLayerImageLayerDifference.CheckOnClick = true;
-            this.tsLayerImageLayerDifference.Image = global::UVtools.GUI.Properties.Resources.layers_16x16;
-            this.tsLayerImageLayerDifference.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerImageLayerDifference.Name = "tsLayerImageLayerDifference";
-            this.tsLayerImageLayerDifference.Size = new System.Drawing.Size(81, 22);
-            this.tsLayerImageLayerDifference.Text = "&Difference";
-            this.tsLayerImageLayerDifference.ToolTipText = "Show layer differences where daker pixels were also present on previous layer and" +
-    " the white pixels the difference between previous and current layer.";
-            this.tsLayerImageLayerDifference.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator14
             // 
             this.toolStripSeparator14.Name = "toolStripSeparator14";
             this.toolStripSeparator14.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsLayerImageHighlightIssues
-            // 
-            this.tsLayerImageHighlightIssues.Checked = true;
-            this.tsLayerImageHighlightIssues.CheckOnClick = true;
-            this.tsLayerImageHighlightIssues.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tsLayerImageHighlightIssues.Image = global::UVtools.GUI.Properties.Resources.warning_16x16;
-            this.tsLayerImageHighlightIssues.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerImageHighlightIssues.Name = "tsLayerImageHighlightIssues";
-            this.tsLayerImageHighlightIssues.Size = new System.Drawing.Size(58, 22);
-            this.tsLayerImageHighlightIssues.Text = "&Issues";
-            this.tsLayerImageHighlightIssues.ToolTipText = "Highlight Issues on current layer.\r\nValid only if Issues are calculated.";
-            this.tsLayerImageHighlightIssues.Click += new System.EventHandler(this.EventClick);
-            // 
             // toolStripSeparator7
             // 
             this.toolStripSeparator7.Name = "toolStripSeparator7";
             this.toolStripSeparator7.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsLayerImageLayerOutline
-            // 
-            this.tsLayerImageLayerOutline.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsLayerImageLayerOutlinePrintVolumeBounds,
-            this.tsLayerImageLayerOutlineLayerBounds,
-            this.tsLayerImageLayerOutlineHollowAreas,
-            this.tsLayerImageLayerOutlineEdgeDetection});
-            this.tsLayerImageLayerOutline.Image = global::UVtools.GUI.Properties.Resources.Geometry_16x16;
-            this.tsLayerImageLayerOutline.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerImageLayerOutline.Name = "tsLayerImageLayerOutline";
-            this.tsLayerImageLayerOutline.Size = new System.Drawing.Size(78, 22);
-            this.tsLayerImageLayerOutline.Text = "&Outline";
-            this.tsLayerImageLayerOutline.ButtonClick += new System.EventHandler(this.EventClick);
-            // 
-            // tsLayerImageLayerOutlinePrintVolumeBounds
-            // 
-            this.tsLayerImageLayerOutlinePrintVolumeBounds.CheckOnClick = true;
-            this.tsLayerImageLayerOutlinePrintVolumeBounds.Name = "tsLayerImageLayerOutlinePrintVolumeBounds";
-            this.tsLayerImageLayerOutlinePrintVolumeBounds.Size = new System.Drawing.Size(185, 22);
-            this.tsLayerImageLayerOutlinePrintVolumeBounds.Text = "Print Volume Bounds";
-            this.tsLayerImageLayerOutlinePrintVolumeBounds.Click += new System.EventHandler(this.EventClick);
-            // 
-            // tsLayerImageLayerOutlineLayerBounds
-            // 
-            this.tsLayerImageLayerOutlineLayerBounds.CheckOnClick = true;
-            this.tsLayerImageLayerOutlineLayerBounds.Name = "tsLayerImageLayerOutlineLayerBounds";
-            this.tsLayerImageLayerOutlineLayerBounds.Size = new System.Drawing.Size(185, 22);
-            this.tsLayerImageLayerOutlineLayerBounds.Text = "Layer Bounds";
-            this.tsLayerImageLayerOutlineLayerBounds.Click += new System.EventHandler(this.EventClick);
-            // 
-            // tsLayerImageLayerOutlineHollowAreas
-            // 
-            this.tsLayerImageLayerOutlineHollowAreas.CheckOnClick = true;
-            this.tsLayerImageLayerOutlineHollowAreas.Name = "tsLayerImageLayerOutlineHollowAreas";
-            this.tsLayerImageLayerOutlineHollowAreas.Size = new System.Drawing.Size(185, 22);
-            this.tsLayerImageLayerOutlineHollowAreas.Text = "Hollow Areas";
-            this.tsLayerImageLayerOutlineHollowAreas.Click += new System.EventHandler(this.EventClick);
-            // 
-            // tsLayerImageLayerOutlineEdgeDetection
-            // 
-            this.tsLayerImageLayerOutlineEdgeDetection.CheckOnClick = true;
-            this.tsLayerImageLayerOutlineEdgeDetection.Name = "tsLayerImageLayerOutlineEdgeDetection";
-            this.tsLayerImageLayerOutlineEdgeDetection.Size = new System.Drawing.Size(185, 22);
-            this.tsLayerImageLayerOutlineEdgeDetection.Text = "&Edge Detection";
-            this.tsLayerImageLayerOutlineEdgeDetection.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator9
             // 
             this.toolStripSeparator9.Name = "toolStripSeparator9";
             this.toolStripSeparator9.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsLayerImagePixelEdit
-            // 
-            this.tsLayerImagePixelEdit.CheckOnClick = true;
-            this.tsLayerImagePixelEdit.Image = global::UVtools.GUI.Properties.Resources.pixel_16x16;
-            this.tsLayerImagePixelEdit.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerImagePixelEdit.Name = "tsLayerImagePixelEdit";
-            this.tsLayerImagePixelEdit.Size = new System.Drawing.Size(75, 22);
-            this.tsLayerImagePixelEdit.Text = "Pixel &Edit";
-            this.tsLayerImagePixelEdit.ToolTipText = "Edit layer image: Draw pixels, add supports and/or drain holes";
-            this.tsLayerImagePixelEdit.Click += new System.EventHandler(this.EventClick);
-            // 
             // toolStripSeparator18
             // 
             this.toolStripSeparator18.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripSeparator18.Name = "toolStripSeparator18";
             this.toolStripSeparator18.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsLayerRmove
-            // 
-            this.tsLayerRmove.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerRmove.Image = global::UVtools.GUI.Properties.Resources.trash_16x16;
-            this.tsLayerRmove.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerRmove.Name = "tsLayerRmove";
-            this.tsLayerRmove.Size = new System.Drawing.Size(101, 22);
-            this.tsLayerRmove.Text = "Remove Layer";
-            this.tsLayerRmove.ToolTipText = "Delete current layer";
-            this.tsLayerRmove.Click += new System.EventHandler(this.EventClick);
-            // 
-            // tsLayerClone
-            // 
-            this.tsLayerClone.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerClone.Image = global::UVtools.GUI.Properties.Resources.copy_16x16;
-            this.tsLayerClone.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerClone.Name = "tsLayerClone";
-            this.tsLayerClone.Size = new System.Drawing.Size(89, 22);
-            this.tsLayerClone.Text = "Clone Layer";
-            this.tsLayerClone.ToolTipText = "Clone current layer";
-            this.tsLayerClone.Click += new System.EventHandler(this.EventClick);
             // 
             // tsLayerInfo
             // 
@@ -909,30 +573,11 @@
             this.toolStripSeparator6.Name = "toolStripSeparator6";
             this.toolStripSeparator6.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsLayerResolution
-            // 
-            this.tsLayerResolution.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerResolution.Image = global::UVtools.GUI.Properties.Resources.expand_16x16;
-            this.tsLayerResolution.Name = "tsLayerResolution";
-            this.tsLayerResolution.Size = new System.Drawing.Size(79, 22);
-            this.tsLayerResolution.Text = "Resolution";
-            this.tsLayerResolution.ToolTipText = "Layer Resolution";
-            // 
             // toolStripSeparator11
             // 
             this.toolStripSeparator11.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripSeparator11.Name = "toolStripSeparator11";
             this.toolStripSeparator11.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsLayerImageZoom
-            // 
-            this.tsLayerImageZoom.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerImageZoom.Image = global::UVtools.GUI.Properties.Resources.search_16x16;
-            this.tsLayerImageZoom.Name = "tsLayerImageZoom";
-            this.tsLayerImageZoom.Size = new System.Drawing.Size(89, 22);
-            this.tsLayerImageZoom.Text = "Zoom: 100%";
-            this.tsLayerImageZoom.ToolTipText = "Layer image zoom level, use mouse scroll to zoom in/out into image\r\nCtrl + 0 to s" +
-    "cale to fit";
             // 
             // toolStripSeparator8
             // 
@@ -941,52 +586,16 @@
             this.toolStripSeparator8.Size = new System.Drawing.Size(6, 25);
             this.toolStripSeparator8.Visible = false;
             // 
-            // tsLayerImagePanLocation
-            // 
-            this.tsLayerImagePanLocation.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerImagePanLocation.Image = global::UVtools.GUI.Properties.Resources.map_marker_16x16;
-            this.tsLayerImagePanLocation.Name = "tsLayerImagePanLocation";
-            this.tsLayerImagePanLocation.Size = new System.Drawing.Size(79, 22);
-            this.tsLayerImagePanLocation.Text = "{X=0, Y=0}";
-            this.tsLayerImagePanLocation.ToolTipText = "Image pan location";
-            this.tsLayerImagePanLocation.Visible = false;
-            // 
             // toolStripSeparator16
             // 
             this.toolStripSeparator16.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripSeparator16.Name = "toolStripSeparator16";
             this.toolStripSeparator16.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsLayerImageMouseLocation
-            // 
-            this.tsLayerImageMouseLocation.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerImageMouseLocation.Image = global::UVtools.GUI.Properties.Resources.map_marker_16x16;
-            this.tsLayerImageMouseLocation.Name = "tsLayerImageMouseLocation";
-            this.tsLayerImageMouseLocation.Size = new System.Drawing.Size(79, 22);
-            this.tsLayerImageMouseLocation.Text = "{X=0, Y=0}";
-            this.tsLayerImageMouseLocation.ToolTipText = "Mouse over pixel location and pixel brightness";
-            // 
-            // tsLayerImagePixelCount
-            // 
-            this.tsLayerImagePixelCount.Image = global::UVtools.GUI.Properties.Resources.pixel_16x16;
-            this.tsLayerImagePixelCount.Name = "tsLayerImagePixelCount";
-            this.tsLayerImagePixelCount.Size = new System.Drawing.Size(65, 22);
-            this.tsLayerImagePixelCount.Text = "Pixels: 0";
-            this.tsLayerImagePixelCount.ToolTipText = "Number of pixels to cure on this layer image and the percetange of them against t" +
-    "otal lcd pixels";
-            // 
             // toolStripSeparator17
             // 
             this.toolStripSeparator17.Name = "toolStripSeparator17";
             this.toolStripSeparator17.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsLayerBounds
-            // 
-            this.tsLayerBounds.Image = global::UVtools.GUI.Properties.Resources.expand_16x16;
-            this.tsLayerBounds.Name = "tsLayerBounds";
-            this.tsLayerBounds.Size = new System.Drawing.Size(66, 22);
-            this.tsLayerBounds.Text = "Bounds:";
-            this.tsLayerBounds.ToolTipText = "Image bounds for this layer only, position and size";
             // 
             // tabControlLeft
             // 
@@ -1040,17 +649,6 @@
             this.scLeft.SplitterDistance = 425;
             this.scLeft.TabIndex = 4;
             // 
-            // pbThumbnail
-            // 
-            this.pbThumbnail.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pbThumbnail.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbThumbnail.Location = new System.Drawing.Point(0, 25);
-            this.pbThumbnail.Name = "pbThumbnail";
-            this.pbThumbnail.Size = new System.Drawing.Size(380, 400);
-            this.pbThumbnail.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pbThumbnail.TabIndex = 4;
-            this.pbThumbnail.TabStop = false;
-            // 
             // tsThumbnails
             // 
             this.tsThumbnails.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
@@ -1069,17 +667,6 @@
             this.tsThumbnails.TabIndex = 5;
             this.tsThumbnails.Text = "Thumbnail Menu";
             // 
-            // tsThumbnailsPrevious
-            // 
-            this.tsThumbnailsPrevious.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsThumbnailsPrevious.Enabled = false;
-            this.tsThumbnailsPrevious.Image = global::UVtools.GUI.Properties.Resources.Back_16x16;
-            this.tsThumbnailsPrevious.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsThumbnailsPrevious.Name = "tsThumbnailsPrevious";
-            this.tsThumbnailsPrevious.Size = new System.Drawing.Size(23, 22);
-            this.tsThumbnailsPrevious.ToolTipText = "Show previous thumbnail";
-            this.tsThumbnailsPrevious.Click += new System.EventHandler(this.EventClick);
-            // 
             // tsThumbnailsCount
             // 
             this.tsThumbnailsCount.Enabled = false;
@@ -1088,66 +675,11 @@
             this.tsThumbnailsCount.Tag = "";
             this.tsThumbnailsCount.Text = "0/0";
             // 
-            // tsThumbnailsNext
-            // 
-            this.tsThumbnailsNext.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsThumbnailsNext.Enabled = false;
-            this.tsThumbnailsNext.Image = global::UVtools.GUI.Properties.Resources.Next_16x16;
-            this.tsThumbnailsNext.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsThumbnailsNext.Name = "tsThumbnailsNext";
-            this.tsThumbnailsNext.Size = new System.Drawing.Size(23, 22);
-            this.tsThumbnailsNext.ToolTipText = "Show next thumbnail";
-            this.tsThumbnailsNext.Click += new System.EventHandler(this.EventClick);
-            // 
-            // tsThumbnailsExport
-            // 
-            this.tsThumbnailsExport.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsThumbnailsExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsThumbnailsExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsThumbnailsExportFile,
-            this.tsThumbnailsExportClipboard});
-            this.tsThumbnailsExport.Enabled = false;
-            this.tsThumbnailsExport.Image = global::UVtools.GUI.Properties.Resources.Save_16x16;
-            this.tsThumbnailsExport.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsThumbnailsExport.Name = "tsThumbnailsExport";
-            this.tsThumbnailsExport.Size = new System.Drawing.Size(32, 22);
-            this.tsThumbnailsExport.Text = "Save to";
-            this.tsThumbnailsExport.ToolTipText = "Save thumbnail image to a file or clipboard";
-            this.tsThumbnailsExport.ButtonClick += new System.EventHandler(this.EventClick);
-            // 
-            // tsThumbnailsExportFile
-            // 
-            this.tsThumbnailsExportFile.Image = global::UVtools.GUI.Properties.Resources.file_image_16x16;
-            this.tsThumbnailsExportFile.Name = "tsThumbnailsExportFile";
-            this.tsThumbnailsExportFile.Size = new System.Drawing.Size(141, 22);
-            this.tsThumbnailsExportFile.Text = "To &File";
-            this.tsThumbnailsExportFile.Click += new System.EventHandler(this.EventClick);
-            // 
-            // tsThumbnailsExportClipboard
-            // 
-            this.tsThumbnailsExportClipboard.Image = global::UVtools.GUI.Properties.Resources.clipboard_16x16;
-            this.tsThumbnailsExportClipboard.Name = "tsThumbnailsExportClipboard";
-            this.tsThumbnailsExportClipboard.Size = new System.Drawing.Size(141, 22);
-            this.tsThumbnailsExportClipboard.Text = "To &Clipboard";
-            this.tsThumbnailsExportClipboard.Click += new System.EventHandler(this.EventClick);
-            // 
             // toolStripSeparator21
             // 
             this.toolStripSeparator21.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripSeparator21.Name = "toolStripSeparator21";
             this.toolStripSeparator21.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsThumbnailsImport
-            // 
-            this.tsThumbnailsImport.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsThumbnailsImport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsThumbnailsImport.Image = global::UVtools.GUI.Properties.Resources.photo_16x16;
-            this.tsThumbnailsImport.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsThumbnailsImport.Name = "tsThumbnailsImport";
-            this.tsThumbnailsImport.Size = new System.Drawing.Size(23, 22);
-            this.tsThumbnailsImport.Text = "Change Preview";
-            this.tsThumbnailsImport.ToolTipText = "Replace the current preview image";
-            this.tsThumbnailsImport.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator22
             // 
@@ -1219,38 +751,6 @@
             this.tsPropertiesLabelGroups.Size = new System.Drawing.Size(45, 22);
             this.tsPropertiesLabelGroups.Text = "Groups";
             // 
-            // tsPropertiesExport
-            // 
-            this.tsPropertiesExport.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsPropertiesExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsPropertiesExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsPropertiesExportFile,
-            this.tsPropertiesExportClipboard});
-            this.tsPropertiesExport.Enabled = false;
-            this.tsPropertiesExport.Image = global::UVtools.GUI.Properties.Resources.Save_16x16;
-            this.tsPropertiesExport.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsPropertiesExport.Name = "tsPropertiesExport";
-            this.tsPropertiesExport.Size = new System.Drawing.Size(32, 22);
-            this.tsPropertiesExport.Text = "Save to";
-            this.tsPropertiesExport.ToolTipText = "Save properties to a file or clipboard";
-            this.tsPropertiesExport.Click += new System.EventHandler(this.EventClick);
-            // 
-            // tsPropertiesExportFile
-            // 
-            this.tsPropertiesExportFile.Image = global::UVtools.GUI.Properties.Resources.file_image_16x16;
-            this.tsPropertiesExportFile.Name = "tsPropertiesExportFile";
-            this.tsPropertiesExportFile.Size = new System.Drawing.Size(141, 22);
-            this.tsPropertiesExportFile.Text = "To &File";
-            this.tsPropertiesExportFile.Click += new System.EventHandler(this.EventClick);
-            // 
-            // tsPropertiesExportClipboard
-            // 
-            this.tsPropertiesExportClipboard.Image = global::UVtools.GUI.Properties.Resources.clipboard_16x16;
-            this.tsPropertiesExportClipboard.Name = "tsPropertiesExportClipboard";
-            this.tsPropertiesExportClipboard.Size = new System.Drawing.Size(141, 22);
-            this.tsPropertiesExportClipboard.Text = "To &Clipboard";
-            this.tsPropertiesExportClipboard.Click += new System.EventHandler(this.EventClick);
-            // 
             // tabPageGCode
             // 
             this.tabPageGCode.Controls.Add(this.tbGCode);
@@ -1303,38 +803,6 @@
             this.tsGcodeLabelChars.Name = "tsGcodeLabelChars";
             this.tsGcodeLabelChars.Size = new System.Drawing.Size(37, 22);
             this.tsGcodeLabelChars.Text = "Chars";
-            // 
-            // tsGCodeButtonSave
-            // 
-            this.tsGCodeButtonSave.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsGCodeButtonSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsGCodeButtonSave.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsGCodeButtonSaveFile,
-            this.tsGCodeButtonSaveClipboard});
-            this.tsGCodeButtonSave.Image = global::UVtools.GUI.Properties.Resources.Save_16x16;
-            this.tsGCodeButtonSave.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsGCodeButtonSave.Name = "tsGCodeButtonSave";
-            this.tsGCodeButtonSave.Size = new System.Drawing.Size(32, 22);
-            this.tsGCodeButtonSave.Text = "Save to";
-            this.tsGCodeButtonSave.ToolTipText = "Save GCode to a file or clipboard";
-            this.tsGCodeButtonSave.ButtonClick += new System.EventHandler(this.tsGCodeButtonSave_ButtonClick);
-            this.tsGCodeButtonSave.Click += new System.EventHandler(this.EventClick);
-            // 
-            // tsGCodeButtonSaveFile
-            // 
-            this.tsGCodeButtonSaveFile.Image = global::UVtools.GUI.Properties.Resources.file_image_16x16;
-            this.tsGCodeButtonSaveFile.Name = "tsGCodeButtonSaveFile";
-            this.tsGCodeButtonSaveFile.Size = new System.Drawing.Size(141, 22);
-            this.tsGCodeButtonSaveFile.Text = "To &File";
-            this.tsGCodeButtonSaveFile.Click += new System.EventHandler(this.EventClick);
-            // 
-            // tsGCodeButtonSaveClipboard
-            // 
-            this.tsGCodeButtonSaveClipboard.Image = global::UVtools.GUI.Properties.Resources.clipboard_16x16;
-            this.tsGCodeButtonSaveClipboard.Name = "tsGCodeButtonSaveClipboard";
-            this.tsGCodeButtonSaveClipboard.Size = new System.Drawing.Size(141, 22);
-            this.tsGCodeButtonSaveClipboard.Text = "To &Clipboard";
-            this.tsGCodeButtonSaveClipboard.Click += new System.EventHandler(this.EventClick);
             // 
             // tabPageIssues
             // 
@@ -1423,31 +891,10 @@
             this.tsIssuesLv.TabIndex = 10;
             this.tsIssuesLv.Text = "Thumbnail Menu";
             // 
-            // btnIssueGroup
-            // 
-            this.btnIssueGroup.CheckOnClick = true;
-            this.btnIssueGroup.Image = global::UVtools.GUI.Properties.Resources.list_16x16;
-            this.btnIssueGroup.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnIssueGroup.Name = "btnIssueGroup";
-            this.btnIssueGroup.Size = new System.Drawing.Size(60, 22);
-            this.btnIssueGroup.Text = "Group";
-            this.btnIssueGroup.ToolTipText = "Group items by issue type";
-            this.btnIssueGroup.Click += new System.EventHandler(this.EventClick);
-            // 
             // toolStripSeparator23
             // 
             this.toolStripSeparator23.Name = "toolStripSeparator23";
             this.toolStripSeparator23.Size = new System.Drawing.Size(6, 25);
-            // 
-            // btnIssueResort
-            // 
-            this.btnIssueResort.Image = global::UVtools.GUI.Properties.Resources.sort_alpha_up_16x16;
-            this.btnIssueResort.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnIssueResort.Name = "btnIssueResort";
-            this.btnIssueResort.Size = new System.Drawing.Size(60, 22);
-            this.btnIssueResort.Text = "Resort";
-            this.btnIssueResort.ToolTipText = "Reset sorting on issues";
-            this.btnIssueResort.Click += new System.EventHandler(this.EventClick);
             // 
             // tsIssues
             // 
@@ -1467,18 +914,6 @@
             this.tsIssues.TabIndex = 7;
             this.tsIssues.Text = "Thumbnail Menu";
             // 
-            // tsIssuePrevious
-            // 
-            this.tsIssuePrevious.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsIssuePrevious.Enabled = false;
-            this.tsIssuePrevious.Image = global::UVtools.GUI.Properties.Resources.Back_16x16;
-            this.tsIssuePrevious.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsIssuePrevious.Name = "tsIssuePrevious";
-            this.tsIssuePrevious.Size = new System.Drawing.Size(23, 22);
-            this.tsIssuePrevious.Text = "Previous";
-            this.tsIssuePrevious.ToolTipText = "Show previous issue [CTRL+Left]";
-            this.tsIssuePrevious.Click += new System.EventHandler(this.EventClick);
-            // 
             // tsIssueCount
             // 
             this.tsIssueCount.Enabled = false;
@@ -1486,85 +921,16 @@
             this.tsIssueCount.Size = new System.Drawing.Size(24, 22);
             this.tsIssueCount.Text = "0/0";
             // 
-            // tsIssueNext
-            // 
-            this.tsIssueNext.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsIssueNext.Enabled = false;
-            this.tsIssueNext.Image = global::UVtools.GUI.Properties.Resources.Next_16x16;
-            this.tsIssueNext.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsIssueNext.Name = "tsIssueNext";
-            this.tsIssueNext.Size = new System.Drawing.Size(23, 22);
-            this.tsIssueNext.Text = "tsIslandsNext";
-            this.tsIssueNext.ToolTipText = "Show next issue [CTRL+Right]";
-            this.tsIssueNext.Click += new System.EventHandler(this.EventClick);
-            // 
             // toolStripSeparator13
             // 
             this.toolStripSeparator13.Name = "toolStripSeparator13";
             this.toolStripSeparator13.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsIssueRemove
-            // 
-            this.tsIssueRemove.Enabled = false;
-            this.tsIssueRemove.Image = global::UVtools.GUI.Properties.Resources.trash_16x16;
-            this.tsIssueRemove.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsIssueRemove.Name = "tsIssueRemove";
-            this.tsIssueRemove.Size = new System.Drawing.Size(70, 22);
-            this.tsIssueRemove.Text = "Remove";
-            this.tsIssueRemove.ToolTipText = "Remove selected issue when possible\r\nIslands: All pixels are removed (turn black)" +
-    "\r\nResinTrap: All trap areas are filled with white pixels.\r\nTouchingBounds: No ac" +
-    "tion, need reslice.";
-            this.tsIssueRemove.Click += new System.EventHandler(this.EventClick);
-            // 
-            // tsIssuesRefresh
-            // 
-            this.tsIssuesRefresh.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsIssuesRefresh.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsIssuesRefreshIslands,
-            this.tsIssuesRefreshResinTraps});
-            this.tsIssuesRefresh.Image = global::UVtools.GUI.Properties.Resources.refresh_16x16;
-            this.tsIssuesRefresh.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsIssuesRefresh.Name = "tsIssuesRefresh";
-            this.tsIssuesRefresh.Size = new System.Drawing.Size(73, 22);
-            this.tsIssuesRefresh.Text = "&Detect";
-            this.tsIssuesRefresh.ToolTipText = "Compute Issues";
-            this.tsIssuesRefresh.ButtonClick += new System.EventHandler(this.EventClick);
-            // 
-            // tsIssuesRefreshIslands
-            // 
-            this.tsIssuesRefreshIslands.Checked = true;
-            this.tsIssuesRefreshIslands.CheckOnClick = true;
-            this.tsIssuesRefreshIslands.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tsIssuesRefreshIslands.Name = "tsIssuesRefreshIslands";
-            this.tsIssuesRefreshIslands.Size = new System.Drawing.Size(211, 22);
-            this.tsIssuesRefreshIslands.Text = "Islands && Touching Bonds";
-            // 
-            // tsIssuesRefreshResinTraps
-            // 
-            this.tsIssuesRefreshResinTraps.Checked = true;
-            this.tsIssuesRefreshResinTraps.CheckOnClick = true;
-            this.tsIssuesRefreshResinTraps.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tsIssuesRefreshResinTraps.Name = "tsIssuesRefreshResinTraps";
-            this.tsIssuesRefreshResinTraps.Size = new System.Drawing.Size(211, 22);
-            this.tsIssuesRefreshResinTraps.Text = "Resin traps";
             // 
             // toolStripSeparator12
             // 
             this.toolStripSeparator12.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripSeparator12.Name = "toolStripSeparator12";
             this.toolStripSeparator12.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsIssuesRepair
-            // 
-            this.tsIssuesRepair.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsIssuesRepair.Enabled = false;
-            this.tsIssuesRepair.Image = global::UVtools.GUI.Properties.Resources.Wrench_16x16;
-            this.tsIssuesRepair.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsIssuesRepair.Name = "tsIssuesRepair";
-            this.tsIssuesRepair.Size = new System.Drawing.Size(60, 22);
-            this.tsIssuesRepair.Text = "Repair";
-            this.tsIssuesRepair.ToolTipText = "Attempt to repair issues";
-            this.tsIssuesRepair.Click += new System.EventHandler(this.EventClick);
             // 
             // tabPagePixelEditor
             // 
@@ -1661,50 +1027,16 @@
             this.lbPixelHistoryOperations.Size = new System.Drawing.Size(77, 22);
             this.lbPixelHistoryOperations.Text = "Operations: 0";
             // 
-            // btnPixelHistoryRemove
-            // 
-            this.btnPixelHistoryRemove.Enabled = false;
-            this.btnPixelHistoryRemove.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
-            this.btnPixelHistoryRemove.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnPixelHistoryRemove.Name = "btnPixelHistoryRemove";
-            this.btnPixelHistoryRemove.Size = new System.Drawing.Size(70, 22);
-            this.btnPixelHistoryRemove.Text = "Remove";
-            this.btnPixelHistoryRemove.ToolTipText = "Remove selected operations\r\n";
-            this.btnPixelHistoryRemove.Click += new System.EventHandler(this.EventClick);
-            // 
             // toolStripSeparator19
             // 
             this.toolStripSeparator19.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripSeparator19.Name = "toolStripSeparator19";
             this.toolStripSeparator19.Size = new System.Drawing.Size(6, 25);
             // 
-            // btnPixelHistoryApply
-            // 
-            this.btnPixelHistoryApply.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.btnPixelHistoryApply.Enabled = false;
-            this.btnPixelHistoryApply.Image = global::UVtools.GUI.Properties.Resources.accept_16x16;
-            this.btnPixelHistoryApply.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnPixelHistoryApply.Name = "btnPixelHistoryApply";
-            this.btnPixelHistoryApply.Size = new System.Drawing.Size(75, 22);
-            this.btnPixelHistoryApply.Text = "&Apply All";
-            this.btnPixelHistoryApply.ToolTipText = "Apply all operations/modifications";
-            this.btnPixelHistoryApply.Click += new System.EventHandler(this.EventClick);
-            // 
             // toolStripSeparator20
             // 
             this.toolStripSeparator20.Name = "toolStripSeparator20";
             this.toolStripSeparator20.Size = new System.Drawing.Size(6, 25);
-            // 
-            // btnPixelHistoryClear
-            // 
-            this.btnPixelHistoryClear.Enabled = false;
-            this.btnPixelHistoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
-            this.btnPixelHistoryClear.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnPixelHistoryClear.Name = "btnPixelHistoryClear";
-            this.btnPixelHistoryClear.Size = new System.Drawing.Size(54, 22);
-            this.btnPixelHistoryClear.Text = "Clear";
-            this.btnPixelHistoryClear.ToolTipText = "Clears all operations";
-            this.btnPixelHistoryClear.Click += new System.EventHandler(this.EventClick);
             // 
             // tabControlPixelEditor
             // 
@@ -2568,16 +1900,6 @@
             this.tsLog.TabIndex = 0;
             this.tsLog.Text = "Log";
             // 
-            // btnLogClear
-            // 
-            this.btnLogClear.Image = global::UVtools.GUI.Properties.Resources.trash_16x16;
-            this.btnLogClear.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnLogClear.Name = "btnLogClear";
-            this.btnLogClear.Size = new System.Drawing.Size(54, 22);
-            this.btnLogClear.Text = "Clear";
-            this.btnLogClear.ToolTipText = "Clears all operations";
-            this.btnLogClear.Click += new System.EventHandler(this.EventClick);
-            // 
             // lbLogOperations
             // 
             this.lbLogOperations.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
@@ -2618,38 +1940,6 @@
             this.tlRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tlRight.Size = new System.Drawing.Size(144, 759);
             this.tlRight.TabIndex = 6;
-            // 
-            // btnPreviousLayer
-            // 
-            this.btnPreviousLayer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnPreviousLayer.Enabled = false;
-            this.btnPreviousLayer.Image = global::UVtools.GUI.Properties.Resources.arrow_down_16x16;
-            this.btnPreviousLayer.Location = new System.Drawing.Point(3, 648);
-            this.btnPreviousLayer.Name = "btnPreviousLayer";
-            this.btnPreviousLayer.Size = new System.Drawing.Size(138, 26);
-            this.btnPreviousLayer.TabIndex = 14;
-            this.btnPreviousLayer.Tag = "0";
-            this.btnPreviousLayer.Text = "-";
-            this.btnPreviousLayer.UseVisualStyleBackColor = true;
-            this.btnPreviousLayer.Click += new System.EventHandler(this.EventClick);
-            this.btnPreviousLayer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.EventMouseDown);
-            this.btnPreviousLayer.MouseUp += new System.Windows.Forms.MouseEventHandler(this.EventMouseUp);
-            // 
-            // btnNextLayer
-            // 
-            this.btnNextLayer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnNextLayer.Enabled = false;
-            this.btnNextLayer.Image = global::UVtools.GUI.Properties.Resources.arrow_up_16x16;
-            this.btnNextLayer.Location = new System.Drawing.Point(3, 53);
-            this.btnNextLayer.Name = "btnNextLayer";
-            this.btnNextLayer.Size = new System.Drawing.Size(138, 26);
-            this.btnNextLayer.TabIndex = 8;
-            this.btnNextLayer.Tag = "1";
-            this.btnNextLayer.Text = "+";
-            this.btnNextLayer.UseVisualStyleBackColor = true;
-            this.btnNextLayer.Click += new System.EventHandler(this.EventClick);
-            this.btnNextLayer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.EventMouseDown);
-            this.btnNextLayer.MouseUp += new System.Windows.Forms.MouseEventHandler(this.EventMouseUp);
             // 
             // lbMaxLayer
             // 
@@ -2713,6 +2003,541 @@
             this.panel2.Size = new System.Drawing.Size(138, 26);
             this.panel2.TabIndex = 15;
             // 
+            // toolTipInformation
+            // 
+            this.toolTipInformation.AutoPopDelay = 10000;
+            this.toolTipInformation.InitialDelay = 500;
+            this.toolTipInformation.ReshowDelay = 100;
+            this.toolTipInformation.ToolTipTitle = "Information";
+            // 
+            // layerScrollTimer
+            // 
+            this.layerScrollTimer.Interval = 150;
+            this.layerScrollTimer.Tick += new System.EventHandler(this.EventTimerTick);
+            // 
+            // tsLayerImageExport
+            // 
+            this.tsLayerImageExport.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerImageExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsLayerImageExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsLayerImageExportFile,
+            this.tsLayerImageExportClipboard});
+            this.tsLayerImageExport.Image = global::UVtools.GUI.Properties.Resources.Save_16x16;
+            this.tsLayerImageExport.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerImageExport.Name = "tsLayerImageExport";
+            this.tsLayerImageExport.Size = new System.Drawing.Size(32, 22);
+            this.tsLayerImageExport.Text = "Save to";
+            this.tsLayerImageExport.ToolTipText = "Save layer image to a file or clipboard";
+            this.tsLayerImageExport.ButtonClick += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerImageExportFile
+            // 
+            this.tsLayerImageExportFile.Image = global::UVtools.GUI.Properties.Resources.file_image_16x16;
+            this.tsLayerImageExportFile.Name = "tsLayerImageExportFile";
+            this.tsLayerImageExportFile.Size = new System.Drawing.Size(141, 22);
+            this.tsLayerImageExportFile.Text = "To &File";
+            this.tsLayerImageExportFile.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerImageExportClipboard
+            // 
+            this.tsLayerImageExportClipboard.Image = global::UVtools.GUI.Properties.Resources.clipboard_16x16;
+            this.tsLayerImageExportClipboard.Name = "tsLayerImageExportClipboard";
+            this.tsLayerImageExportClipboard.Size = new System.Drawing.Size(141, 22);
+            this.tsLayerImageExportClipboard.Text = "To &Clipboard";
+            this.tsLayerImageExportClipboard.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerImageRotate
+            // 
+            this.tsLayerImageRotate.Checked = true;
+            this.tsLayerImageRotate.CheckOnClick = true;
+            this.tsLayerImageRotate.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsLayerImageRotate.Image = global::UVtools.GUI.Properties.Resources.Rotate_16x16;
+            this.tsLayerImageRotate.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerImageRotate.Name = "tsLayerImageRotate";
+            this.tsLayerImageRotate.Size = new System.Drawing.Size(117, 22);
+            this.tsLayerImageRotate.Text = "&Rotate Image 90º";
+            this.tsLayerImageRotate.ToolTipText = "Auto rotate layer preview image at 90º (This can slow down the layer preview) [CT" +
+    "RL+R]";
+            this.tsLayerImageRotate.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerImageLayerDifference
+            // 
+            this.tsLayerImageLayerDifference.CheckOnClick = true;
+            this.tsLayerImageLayerDifference.Image = global::UVtools.GUI.Properties.Resources.layers_16x16;
+            this.tsLayerImageLayerDifference.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerImageLayerDifference.Name = "tsLayerImageLayerDifference";
+            this.tsLayerImageLayerDifference.Size = new System.Drawing.Size(81, 22);
+            this.tsLayerImageLayerDifference.Text = "&Difference";
+            this.tsLayerImageLayerDifference.ToolTipText = "Show layer differences where daker pixels were also present on previous layer and" +
+    " the white pixels the difference between previous and current layer.";
+            this.tsLayerImageLayerDifference.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerImageHighlightIssues
+            // 
+            this.tsLayerImageHighlightIssues.Checked = true;
+            this.tsLayerImageHighlightIssues.CheckOnClick = true;
+            this.tsLayerImageHighlightIssues.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsLayerImageHighlightIssues.Image = global::UVtools.GUI.Properties.Resources.warning_16x16;
+            this.tsLayerImageHighlightIssues.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerImageHighlightIssues.Name = "tsLayerImageHighlightIssues";
+            this.tsLayerImageHighlightIssues.Size = new System.Drawing.Size(58, 22);
+            this.tsLayerImageHighlightIssues.Text = "&Issues";
+            this.tsLayerImageHighlightIssues.ToolTipText = "Highlight Issues on current layer.\r\nValid only if Issues are calculated.";
+            this.tsLayerImageHighlightIssues.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerImageLayerOutline
+            // 
+            this.tsLayerImageLayerOutline.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsLayerImageLayerOutlinePrintVolumeBounds,
+            this.tsLayerImageLayerOutlineLayerBounds,
+            this.tsLayerImageLayerOutlineHollowAreas,
+            this.tsLayerImageLayerOutlineEdgeDetection});
+            this.tsLayerImageLayerOutline.Image = global::UVtools.GUI.Properties.Resources.Geometry_16x16;
+            this.tsLayerImageLayerOutline.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerImageLayerOutline.Name = "tsLayerImageLayerOutline";
+            this.tsLayerImageLayerOutline.Size = new System.Drawing.Size(78, 22);
+            this.tsLayerImageLayerOutline.Text = "&Outline";
+            this.tsLayerImageLayerOutline.ButtonClick += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerImageLayerOutlinePrintVolumeBounds
+            // 
+            this.tsLayerImageLayerOutlinePrintVolumeBounds.CheckOnClick = true;
+            this.tsLayerImageLayerOutlinePrintVolumeBounds.Name = "tsLayerImageLayerOutlinePrintVolumeBounds";
+            this.tsLayerImageLayerOutlinePrintVolumeBounds.Size = new System.Drawing.Size(185, 22);
+            this.tsLayerImageLayerOutlinePrintVolumeBounds.Text = "Print Volume Bounds";
+            this.tsLayerImageLayerOutlinePrintVolumeBounds.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerImageLayerOutlineLayerBounds
+            // 
+            this.tsLayerImageLayerOutlineLayerBounds.CheckOnClick = true;
+            this.tsLayerImageLayerOutlineLayerBounds.Name = "tsLayerImageLayerOutlineLayerBounds";
+            this.tsLayerImageLayerOutlineLayerBounds.Size = new System.Drawing.Size(185, 22);
+            this.tsLayerImageLayerOutlineLayerBounds.Text = "Layer Bounds";
+            this.tsLayerImageLayerOutlineLayerBounds.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerImageLayerOutlineHollowAreas
+            // 
+            this.tsLayerImageLayerOutlineHollowAreas.CheckOnClick = true;
+            this.tsLayerImageLayerOutlineHollowAreas.Name = "tsLayerImageLayerOutlineHollowAreas";
+            this.tsLayerImageLayerOutlineHollowAreas.Size = new System.Drawing.Size(185, 22);
+            this.tsLayerImageLayerOutlineHollowAreas.Text = "Hollow Areas";
+            this.tsLayerImageLayerOutlineHollowAreas.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerImageLayerOutlineEdgeDetection
+            // 
+            this.tsLayerImageLayerOutlineEdgeDetection.CheckOnClick = true;
+            this.tsLayerImageLayerOutlineEdgeDetection.Name = "tsLayerImageLayerOutlineEdgeDetection";
+            this.tsLayerImageLayerOutlineEdgeDetection.Size = new System.Drawing.Size(185, 22);
+            this.tsLayerImageLayerOutlineEdgeDetection.Text = "&Edge Detection";
+            this.tsLayerImageLayerOutlineEdgeDetection.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerImagePixelEdit
+            // 
+            this.tsLayerImagePixelEdit.CheckOnClick = true;
+            this.tsLayerImagePixelEdit.Image = global::UVtools.GUI.Properties.Resources.pixel_16x16;
+            this.tsLayerImagePixelEdit.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerImagePixelEdit.Name = "tsLayerImagePixelEdit";
+            this.tsLayerImagePixelEdit.Size = new System.Drawing.Size(75, 22);
+            this.tsLayerImagePixelEdit.Text = "Pixel &Edit";
+            this.tsLayerImagePixelEdit.ToolTipText = "Edit layer image: Draw pixels, add supports and/or drain holes";
+            this.tsLayerImagePixelEdit.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerRmove
+            // 
+            this.tsLayerRmove.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerRmove.Image = global::UVtools.GUI.Properties.Resources.trash_16x16;
+            this.tsLayerRmove.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerRmove.Name = "tsLayerRmove";
+            this.tsLayerRmove.Size = new System.Drawing.Size(101, 22);
+            this.tsLayerRmove.Text = "Remove Layer";
+            this.tsLayerRmove.ToolTipText = "Delete current layer";
+            this.tsLayerRmove.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerClone
+            // 
+            this.tsLayerClone.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerClone.Image = global::UVtools.GUI.Properties.Resources.copy_16x16;
+            this.tsLayerClone.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerClone.Name = "tsLayerClone";
+            this.tsLayerClone.Size = new System.Drawing.Size(89, 22);
+            this.tsLayerClone.Text = "Clone Layer";
+            this.tsLayerClone.ToolTipText = "Clone current layer";
+            this.tsLayerClone.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsLayerResolution
+            // 
+            this.tsLayerResolution.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerResolution.Image = global::UVtools.GUI.Properties.Resources.expand_16x16;
+            this.tsLayerResolution.Name = "tsLayerResolution";
+            this.tsLayerResolution.Size = new System.Drawing.Size(79, 22);
+            this.tsLayerResolution.Text = "Resolution";
+            this.tsLayerResolution.ToolTipText = "Layer Resolution";
+            // 
+            // tsLayerImageZoom
+            // 
+            this.tsLayerImageZoom.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerImageZoom.Image = global::UVtools.GUI.Properties.Resources.search_16x16;
+            this.tsLayerImageZoom.Name = "tsLayerImageZoom";
+            this.tsLayerImageZoom.Size = new System.Drawing.Size(89, 22);
+            this.tsLayerImageZoom.Text = "Zoom: 100%";
+            this.tsLayerImageZoom.ToolTipText = "Layer image zoom level, use mouse scroll to zoom in/out into image\r\nCtrl + 0 to s" +
+    "cale to fit";
+            // 
+            // tsLayerImagePanLocation
+            // 
+            this.tsLayerImagePanLocation.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerImagePanLocation.Image = global::UVtools.GUI.Properties.Resources.map_marker_16x16;
+            this.tsLayerImagePanLocation.Name = "tsLayerImagePanLocation";
+            this.tsLayerImagePanLocation.Size = new System.Drawing.Size(79, 22);
+            this.tsLayerImagePanLocation.Text = "{X=0, Y=0}";
+            this.tsLayerImagePanLocation.ToolTipText = "Image pan location";
+            this.tsLayerImagePanLocation.Visible = false;
+            // 
+            // tsLayerImageMouseLocation
+            // 
+            this.tsLayerImageMouseLocation.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerImageMouseLocation.Image = global::UVtools.GUI.Properties.Resources.map_marker_16x16;
+            this.tsLayerImageMouseLocation.Name = "tsLayerImageMouseLocation";
+            this.tsLayerImageMouseLocation.Size = new System.Drawing.Size(79, 22);
+            this.tsLayerImageMouseLocation.Text = "{X=0, Y=0}";
+            this.tsLayerImageMouseLocation.ToolTipText = "Mouse over pixel location and pixel brightness";
+            // 
+            // tsLayerImagePixelCount
+            // 
+            this.tsLayerImagePixelCount.Image = global::UVtools.GUI.Properties.Resources.pixel_16x16;
+            this.tsLayerImagePixelCount.Name = "tsLayerImagePixelCount";
+            this.tsLayerImagePixelCount.Size = new System.Drawing.Size(65, 22);
+            this.tsLayerImagePixelCount.Text = "Pixels: 0";
+            this.tsLayerImagePixelCount.ToolTipText = "Number of pixels to cure on this layer image and the percetange of them against t" +
+    "otal lcd pixels";
+            // 
+            // tsLayerBounds
+            // 
+            this.tsLayerBounds.Image = global::UVtools.GUI.Properties.Resources.expand_16x16;
+            this.tsLayerBounds.Name = "tsLayerBounds";
+            this.tsLayerBounds.Size = new System.Drawing.Size(66, 22);
+            this.tsLayerBounds.Text = "Bounds:";
+            this.tsLayerBounds.ToolTipText = "Image bounds for this layer only, position and size";
+            // 
+            // pbThumbnail
+            // 
+            this.pbThumbnail.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pbThumbnail.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pbThumbnail.Location = new System.Drawing.Point(0, 25);
+            this.pbThumbnail.Name = "pbThumbnail";
+            this.pbThumbnail.Size = new System.Drawing.Size(380, 400);
+            this.pbThumbnail.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pbThumbnail.TabIndex = 4;
+            this.pbThumbnail.TabStop = false;
+            // 
+            // tsThumbnailsPrevious
+            // 
+            this.tsThumbnailsPrevious.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsThumbnailsPrevious.Enabled = false;
+            this.tsThumbnailsPrevious.Image = global::UVtools.GUI.Properties.Resources.Back_16x16;
+            this.tsThumbnailsPrevious.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsThumbnailsPrevious.Name = "tsThumbnailsPrevious";
+            this.tsThumbnailsPrevious.Size = new System.Drawing.Size(23, 22);
+            this.tsThumbnailsPrevious.ToolTipText = "Show previous thumbnail";
+            this.tsThumbnailsPrevious.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsThumbnailsNext
+            // 
+            this.tsThumbnailsNext.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsThumbnailsNext.Enabled = false;
+            this.tsThumbnailsNext.Image = global::UVtools.GUI.Properties.Resources.Next_16x16;
+            this.tsThumbnailsNext.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsThumbnailsNext.Name = "tsThumbnailsNext";
+            this.tsThumbnailsNext.Size = new System.Drawing.Size(23, 22);
+            this.tsThumbnailsNext.ToolTipText = "Show next thumbnail";
+            this.tsThumbnailsNext.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsThumbnailsExport
+            // 
+            this.tsThumbnailsExport.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsThumbnailsExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsThumbnailsExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsThumbnailsExportFile,
+            this.tsThumbnailsExportClipboard});
+            this.tsThumbnailsExport.Enabled = false;
+            this.tsThumbnailsExport.Image = global::UVtools.GUI.Properties.Resources.Save_16x16;
+            this.tsThumbnailsExport.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsThumbnailsExport.Name = "tsThumbnailsExport";
+            this.tsThumbnailsExport.Size = new System.Drawing.Size(32, 22);
+            this.tsThumbnailsExport.Text = "Save to";
+            this.tsThumbnailsExport.ToolTipText = "Save thumbnail image to a file or clipboard";
+            this.tsThumbnailsExport.ButtonClick += new System.EventHandler(this.EventClick);
+            // 
+            // tsThumbnailsExportFile
+            // 
+            this.tsThumbnailsExportFile.Image = global::UVtools.GUI.Properties.Resources.file_image_16x16;
+            this.tsThumbnailsExportFile.Name = "tsThumbnailsExportFile";
+            this.tsThumbnailsExportFile.Size = new System.Drawing.Size(141, 22);
+            this.tsThumbnailsExportFile.Text = "To &File";
+            this.tsThumbnailsExportFile.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsThumbnailsExportClipboard
+            // 
+            this.tsThumbnailsExportClipboard.Image = global::UVtools.GUI.Properties.Resources.clipboard_16x16;
+            this.tsThumbnailsExportClipboard.Name = "tsThumbnailsExportClipboard";
+            this.tsThumbnailsExportClipboard.Size = new System.Drawing.Size(141, 22);
+            this.tsThumbnailsExportClipboard.Text = "To &Clipboard";
+            this.tsThumbnailsExportClipboard.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsThumbnailsImport
+            // 
+            this.tsThumbnailsImport.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsThumbnailsImport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsThumbnailsImport.Image = global::UVtools.GUI.Properties.Resources.photo_16x16;
+            this.tsThumbnailsImport.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsThumbnailsImport.Name = "tsThumbnailsImport";
+            this.tsThumbnailsImport.Size = new System.Drawing.Size(23, 22);
+            this.tsThumbnailsImport.Text = "Change Preview";
+            this.tsThumbnailsImport.ToolTipText = "Replace the current preview image";
+            this.tsThumbnailsImport.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsPropertiesExport
+            // 
+            this.tsPropertiesExport.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsPropertiesExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsPropertiesExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsPropertiesExportFile,
+            this.tsPropertiesExportClipboard});
+            this.tsPropertiesExport.Enabled = false;
+            this.tsPropertiesExport.Image = global::UVtools.GUI.Properties.Resources.Save_16x16;
+            this.tsPropertiesExport.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsPropertiesExport.Name = "tsPropertiesExport";
+            this.tsPropertiesExport.Size = new System.Drawing.Size(32, 22);
+            this.tsPropertiesExport.Text = "Save to";
+            this.tsPropertiesExport.ToolTipText = "Save properties to a file or clipboard";
+            this.tsPropertiesExport.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsPropertiesExportFile
+            // 
+            this.tsPropertiesExportFile.Image = global::UVtools.GUI.Properties.Resources.file_image_16x16;
+            this.tsPropertiesExportFile.Name = "tsPropertiesExportFile";
+            this.tsPropertiesExportFile.Size = new System.Drawing.Size(141, 22);
+            this.tsPropertiesExportFile.Text = "To &File";
+            this.tsPropertiesExportFile.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsPropertiesExportClipboard
+            // 
+            this.tsPropertiesExportClipboard.Image = global::UVtools.GUI.Properties.Resources.clipboard_16x16;
+            this.tsPropertiesExportClipboard.Name = "tsPropertiesExportClipboard";
+            this.tsPropertiesExportClipboard.Size = new System.Drawing.Size(141, 22);
+            this.tsPropertiesExportClipboard.Text = "To &Clipboard";
+            this.tsPropertiesExportClipboard.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsGCodeButtonSave
+            // 
+            this.tsGCodeButtonSave.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsGCodeButtonSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsGCodeButtonSave.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsGCodeButtonSaveFile,
+            this.tsGCodeButtonSaveClipboard});
+            this.tsGCodeButtonSave.Image = global::UVtools.GUI.Properties.Resources.Save_16x16;
+            this.tsGCodeButtonSave.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsGCodeButtonSave.Name = "tsGCodeButtonSave";
+            this.tsGCodeButtonSave.Size = new System.Drawing.Size(32, 22);
+            this.tsGCodeButtonSave.Text = "Save to";
+            this.tsGCodeButtonSave.ToolTipText = "Save GCode to a file or clipboard";
+            this.tsGCodeButtonSave.ButtonClick += new System.EventHandler(this.tsGCodeButtonSave_ButtonClick);
+            this.tsGCodeButtonSave.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsGCodeButtonSaveFile
+            // 
+            this.tsGCodeButtonSaveFile.Image = global::UVtools.GUI.Properties.Resources.file_image_16x16;
+            this.tsGCodeButtonSaveFile.Name = "tsGCodeButtonSaveFile";
+            this.tsGCodeButtonSaveFile.Size = new System.Drawing.Size(141, 22);
+            this.tsGCodeButtonSaveFile.Text = "To &File";
+            this.tsGCodeButtonSaveFile.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsGCodeButtonSaveClipboard
+            // 
+            this.tsGCodeButtonSaveClipboard.Image = global::UVtools.GUI.Properties.Resources.clipboard_16x16;
+            this.tsGCodeButtonSaveClipboard.Name = "tsGCodeButtonSaveClipboard";
+            this.tsGCodeButtonSaveClipboard.Size = new System.Drawing.Size(141, 22);
+            this.tsGCodeButtonSaveClipboard.Text = "To &Clipboard";
+            this.tsGCodeButtonSaveClipboard.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnIssueGroup
+            // 
+            this.btnIssueGroup.CheckOnClick = true;
+            this.btnIssueGroup.Image = global::UVtools.GUI.Properties.Resources.list_16x16;
+            this.btnIssueGroup.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnIssueGroup.Name = "btnIssueGroup";
+            this.btnIssueGroup.Size = new System.Drawing.Size(60, 22);
+            this.btnIssueGroup.Text = "Group";
+            this.btnIssueGroup.ToolTipText = "Group items by issue type";
+            this.btnIssueGroup.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnIssueResort
+            // 
+            this.btnIssueResort.Image = global::UVtools.GUI.Properties.Resources.sort_alpha_up_16x16;
+            this.btnIssueResort.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnIssueResort.Name = "btnIssueResort";
+            this.btnIssueResort.Size = new System.Drawing.Size(60, 22);
+            this.btnIssueResort.Text = "Resort";
+            this.btnIssueResort.ToolTipText = "Reset sorting on issues";
+            this.btnIssueResort.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsIssuePrevious
+            // 
+            this.tsIssuePrevious.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsIssuePrevious.Enabled = false;
+            this.tsIssuePrevious.Image = global::UVtools.GUI.Properties.Resources.Back_16x16;
+            this.tsIssuePrevious.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsIssuePrevious.Name = "tsIssuePrevious";
+            this.tsIssuePrevious.Size = new System.Drawing.Size(23, 22);
+            this.tsIssuePrevious.Text = "Previous";
+            this.tsIssuePrevious.ToolTipText = "Show previous issue [CTRL+Left]";
+            this.tsIssuePrevious.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsIssueNext
+            // 
+            this.tsIssueNext.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsIssueNext.Enabled = false;
+            this.tsIssueNext.Image = global::UVtools.GUI.Properties.Resources.Next_16x16;
+            this.tsIssueNext.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsIssueNext.Name = "tsIssueNext";
+            this.tsIssueNext.Size = new System.Drawing.Size(23, 22);
+            this.tsIssueNext.Text = "tsIslandsNext";
+            this.tsIssueNext.ToolTipText = "Show next issue [CTRL+Right]";
+            this.tsIssueNext.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsIssueRemove
+            // 
+            this.tsIssueRemove.Enabled = false;
+            this.tsIssueRemove.Image = global::UVtools.GUI.Properties.Resources.trash_16x16;
+            this.tsIssueRemove.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsIssueRemove.Name = "tsIssueRemove";
+            this.tsIssueRemove.Size = new System.Drawing.Size(70, 22);
+            this.tsIssueRemove.Text = "Remove";
+            this.tsIssueRemove.ToolTipText = "Remove selected issue when possible\r\nIslands: All pixels are removed (turn black)" +
+    "\r\nResinTrap: All trap areas are filled with white pixels.\r\nTouchingBounds: No ac" +
+    "tion, need reslice.";
+            this.tsIssueRemove.Click += new System.EventHandler(this.EventClick);
+            // 
+            // tsIssuesRefresh
+            // 
+            this.tsIssuesRefresh.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsIssuesRefresh.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsIssuesRefreshIslands,
+            this.tsIssuesRefreshResinTraps});
+            this.tsIssuesRefresh.Image = global::UVtools.GUI.Properties.Resources.refresh_16x16;
+            this.tsIssuesRefresh.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsIssuesRefresh.Name = "tsIssuesRefresh";
+            this.tsIssuesRefresh.Size = new System.Drawing.Size(73, 22);
+            this.tsIssuesRefresh.Text = "&Detect";
+            this.tsIssuesRefresh.ToolTipText = "Compute Issues";
+            this.tsIssuesRefresh.ButtonClick += new System.EventHandler(this.EventClick);
+            // 
+            // tsIssuesRefreshIslands
+            // 
+            this.tsIssuesRefreshIslands.Checked = true;
+            this.tsIssuesRefreshIslands.CheckOnClick = true;
+            this.tsIssuesRefreshIslands.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsIssuesRefreshIslands.Name = "tsIssuesRefreshIslands";
+            this.tsIssuesRefreshIslands.Size = new System.Drawing.Size(211, 22);
+            this.tsIssuesRefreshIslands.Text = "Islands && Touching Bonds";
+            // 
+            // tsIssuesRefreshResinTraps
+            // 
+            this.tsIssuesRefreshResinTraps.Checked = true;
+            this.tsIssuesRefreshResinTraps.CheckOnClick = true;
+            this.tsIssuesRefreshResinTraps.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsIssuesRefreshResinTraps.Name = "tsIssuesRefreshResinTraps";
+            this.tsIssuesRefreshResinTraps.Size = new System.Drawing.Size(211, 22);
+            this.tsIssuesRefreshResinTraps.Text = "Resin traps";
+            // 
+            // tsIssuesRepair
+            // 
+            this.tsIssuesRepair.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsIssuesRepair.Enabled = false;
+            this.tsIssuesRepair.Image = global::UVtools.GUI.Properties.Resources.Wrench_16x16;
+            this.tsIssuesRepair.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsIssuesRepair.Name = "tsIssuesRepair";
+            this.tsIssuesRepair.Size = new System.Drawing.Size(60, 22);
+            this.tsIssuesRepair.Text = "Repair";
+            this.tsIssuesRepair.ToolTipText = "Attempt to repair issues";
+            this.tsIssuesRepair.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnPixelHistoryRemove
+            // 
+            this.btnPixelHistoryRemove.Enabled = false;
+            this.btnPixelHistoryRemove.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.btnPixelHistoryRemove.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnPixelHistoryRemove.Name = "btnPixelHistoryRemove";
+            this.btnPixelHistoryRemove.Size = new System.Drawing.Size(70, 22);
+            this.btnPixelHistoryRemove.Text = "Remove";
+            this.btnPixelHistoryRemove.ToolTipText = "Remove selected operations\r\n";
+            this.btnPixelHistoryRemove.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnPixelHistoryApply
+            // 
+            this.btnPixelHistoryApply.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.btnPixelHistoryApply.Enabled = false;
+            this.btnPixelHistoryApply.Image = global::UVtools.GUI.Properties.Resources.accept_16x16;
+            this.btnPixelHistoryApply.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnPixelHistoryApply.Name = "btnPixelHistoryApply";
+            this.btnPixelHistoryApply.Size = new System.Drawing.Size(75, 22);
+            this.btnPixelHistoryApply.Text = "&Apply All";
+            this.btnPixelHistoryApply.ToolTipText = "Apply all operations/modifications";
+            this.btnPixelHistoryApply.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnPixelHistoryClear
+            // 
+            this.btnPixelHistoryClear.Enabled = false;
+            this.btnPixelHistoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
+            this.btnPixelHistoryClear.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnPixelHistoryClear.Name = "btnPixelHistoryClear";
+            this.btnPixelHistoryClear.Size = new System.Drawing.Size(54, 22);
+            this.btnPixelHistoryClear.Text = "Clear";
+            this.btnPixelHistoryClear.ToolTipText = "Clears all operations";
+            this.btnPixelHistoryClear.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnLogClear
+            // 
+            this.btnLogClear.Image = global::UVtools.GUI.Properties.Resources.trash_16x16;
+            this.btnLogClear.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnLogClear.Name = "btnLogClear";
+            this.btnLogClear.Size = new System.Drawing.Size(54, 22);
+            this.btnLogClear.Text = "Clear";
+            this.btnLogClear.ToolTipText = "Clears all operations";
+            this.btnLogClear.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnPreviousLayer
+            // 
+            this.btnPreviousLayer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnPreviousLayer.Enabled = false;
+            this.btnPreviousLayer.Image = global::UVtools.GUI.Properties.Resources.arrow_down_16x16;
+            this.btnPreviousLayer.Location = new System.Drawing.Point(3, 648);
+            this.btnPreviousLayer.Name = "btnPreviousLayer";
+            this.btnPreviousLayer.Size = new System.Drawing.Size(138, 26);
+            this.btnPreviousLayer.TabIndex = 14;
+            this.btnPreviousLayer.Tag = "0";
+            this.btnPreviousLayer.Text = "-";
+            this.btnPreviousLayer.UseVisualStyleBackColor = true;
+            this.btnPreviousLayer.Click += new System.EventHandler(this.EventClick);
+            this.btnPreviousLayer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.EventMouseDown);
+            this.btnPreviousLayer.MouseUp += new System.Windows.Forms.MouseEventHandler(this.EventMouseUp);
+            // 
+            // btnNextLayer
+            // 
+            this.btnNextLayer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnNextLayer.Enabled = false;
+            this.btnNextLayer.Image = global::UVtools.GUI.Properties.Resources.arrow_up_16x16;
+            this.btnNextLayer.Location = new System.Drawing.Point(3, 53);
+            this.btnNextLayer.Name = "btnNextLayer";
+            this.btnNextLayer.Size = new System.Drawing.Size(138, 26);
+            this.btnNextLayer.TabIndex = 8;
+            this.btnNextLayer.Tag = "1";
+            this.btnNextLayer.Text = "+";
+            this.btnNextLayer.UseVisualStyleBackColor = true;
+            this.btnNextLayer.Click += new System.EventHandler(this.EventClick);
+            this.btnNextLayer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.EventMouseDown);
+            this.btnNextLayer.MouseUp += new System.Windows.Forms.MouseEventHandler(this.EventMouseUp);
+            // 
             // btnFindLayer
             // 
             this.btnFindLayer.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -2755,17 +2580,202 @@
             this.btnFirstLayer.UseVisualStyleBackColor = true;
             this.btnFirstLayer.Click += new System.EventHandler(this.EventClick);
             // 
-            // toolTipInformation
+            // menuFileOpen
             // 
-            this.toolTipInformation.AutoPopDelay = 10000;
-            this.toolTipInformation.InitialDelay = 500;
-            this.toolTipInformation.ReshowDelay = 100;
-            this.toolTipInformation.ToolTipTitle = "Information";
+            this.menuFileOpen.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
+            this.menuFileOpen.Name = "menuFileOpen";
+            this.menuFileOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
+            this.menuFileOpen.Size = new System.Drawing.Size(261, 22);
+            this.menuFileOpen.Text = "&Open";
+            this.menuFileOpen.Click += new System.EventHandler(this.EventClick);
             // 
-            // layerScrollTimer
+            // menuFileOpenNewWindow
             // 
-            this.layerScrollTimer.Interval = 150;
-            this.layerScrollTimer.Tick += new System.EventHandler(this.EventTimerTick);
+            this.menuFileOpenNewWindow.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
+            this.menuFileOpenNewWindow.Name = "menuFileOpenNewWindow";
+            this.menuFileOpenNewWindow.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.O)));
+            this.menuFileOpenNewWindow.Size = new System.Drawing.Size(261, 22);
+            this.menuFileOpenNewWindow.Text = "Open in new window";
+            this.menuFileOpenNewWindow.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuFileReload
+            // 
+            this.menuFileReload.Image = global::UVtools.GUI.Properties.Resources.File_Refresh_16x16;
+            this.menuFileReload.Name = "menuFileReload";
+            this.menuFileReload.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F5)));
+            this.menuFileReload.Size = new System.Drawing.Size(261, 22);
+            this.menuFileReload.Text = "&Reload";
+            this.menuFileReload.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuFileSave
+            // 
+            this.menuFileSave.Enabled = false;
+            this.menuFileSave.Image = global::UVtools.GUI.Properties.Resources.Save_16x16;
+            this.menuFileSave.Name = "menuFileSave";
+            this.menuFileSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.menuFileSave.Size = new System.Drawing.Size(261, 22);
+            this.menuFileSave.Text = "&Save";
+            this.menuFileSave.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuFileSaveAs
+            // 
+            this.menuFileSaveAs.Enabled = false;
+            this.menuFileSaveAs.Image = global::UVtools.GUI.Properties.Resources.SaveAs_16x16;
+            this.menuFileSaveAs.Name = "menuFileSaveAs";
+            this.menuFileSaveAs.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.S)));
+            this.menuFileSaveAs.Size = new System.Drawing.Size(261, 22);
+            this.menuFileSaveAs.Text = "Save As";
+            this.menuFileSaveAs.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuFileClose
+            // 
+            this.menuFileClose.Enabled = false;
+            this.menuFileClose.Image = global::UVtools.GUI.Properties.Resources.File_Close_16x16;
+            this.menuFileClose.Name = "menuFileClose";
+            this.menuFileClose.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.W)));
+            this.menuFileClose.Size = new System.Drawing.Size(261, 22);
+            this.menuFileClose.Text = "&Close";
+            this.menuFileClose.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuFileExtract
+            // 
+            this.menuFileExtract.Enabled = false;
+            this.menuFileExtract.Image = global::UVtools.GUI.Properties.Resources.Extract_object_16x16;
+            this.menuFileExtract.Name = "menuFileExtract";
+            this.menuFileExtract.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.E)));
+            this.menuFileExtract.Size = new System.Drawing.Size(261, 22);
+            this.menuFileExtract.Text = "&Extract";
+            this.menuFileExtract.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuFileConvert
+            // 
+            this.menuFileConvert.Enabled = false;
+            this.menuFileConvert.Image = global::UVtools.GUI.Properties.Resources.Convert_16x16;
+            this.menuFileConvert.Name = "menuFileConvert";
+            this.menuFileConvert.Size = new System.Drawing.Size(261, 22);
+            this.menuFileConvert.Text = "&Convert To";
+            // 
+            // menuFileSettings
+            // 
+            this.menuFileSettings.Image = global::UVtools.GUI.Properties.Resources.settings_16x16;
+            this.menuFileSettings.Name = "menuFileSettings";
+            this.menuFileSettings.ShortcutKeys = System.Windows.Forms.Keys.F12;
+            this.menuFileSettings.Size = new System.Drawing.Size(261, 22);
+            this.menuFileSettings.Text = "&Settings";
+            this.menuFileSettings.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuFileExit
+            // 
+            this.menuFileExit.Image = global::UVtools.GUI.Properties.Resources.Exit_16x16;
+            this.menuFileExit.Name = "menuFileExit";
+            this.menuFileExit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
+            this.menuFileExit.Size = new System.Drawing.Size(261, 22);
+            this.menuFileExit.Text = "&Exit";
+            this.menuFileExit.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuToolsRepairLayers
+            // 
+            this.menuToolsRepairLayers.Enabled = false;
+            this.menuToolsRepairLayers.Image = global::UVtools.GUI.Properties.Resources.toolbox_16x16;
+            this.menuToolsRepairLayers.Name = "menuToolsRepairLayers";
+            this.menuToolsRepairLayers.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            | System.Windows.Forms.Keys.R)));
+            this.menuToolsRepairLayers.Size = new System.Drawing.Size(261, 22);
+            this.menuToolsRepairLayers.Text = "&Repair layers and Issues";
+            this.menuToolsRepairLayers.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuToolsChangeResolution
+            // 
+            this.menuToolsChangeResolution.Enabled = false;
+            this.menuToolsChangeResolution.Image = global::UVtools.GUI.Properties.Resources.resize_16x16;
+            this.menuToolsChangeResolution.Name = "menuToolsChangeResolution";
+            this.menuToolsChangeResolution.Size = new System.Drawing.Size(261, 22);
+            this.menuToolsChangeResolution.Text = "Change Re&solution";
+            this.menuToolsChangeResolution.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuToolsLayerReHeight
+            // 
+            this.menuToolsLayerReHeight.Enabled = false;
+            this.menuToolsLayerReHeight.Image = global::UVtools.GUI.Properties.Resources.ladder_16x16;
+            this.menuToolsLayerReHeight.Name = "menuToolsLayerReHeight";
+            this.menuToolsLayerReHeight.Size = new System.Drawing.Size(261, 22);
+            this.menuToolsLayerReHeight.Text = "Layer Re-&Height";
+            this.menuToolsLayerReHeight.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuToolsLayerClone
+            // 
+            this.menuToolsLayerClone.Enabled = false;
+            this.menuToolsLayerClone.Image = global::UVtools.GUI.Properties.Resources.layers_alt_16x16;
+            this.menuToolsLayerClone.Name = "menuToolsLayerClone";
+            this.menuToolsLayerClone.Size = new System.Drawing.Size(261, 22);
+            this.menuToolsLayerClone.Text = "Layer &Clone";
+            this.menuToolsLayerClone.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuToolsLayerRemoval
+            // 
+            this.menuToolsLayerRemoval.Enabled = false;
+            this.menuToolsLayerRemoval.Image = global::UVtools.GUI.Properties.Resources.layers_alt_16x16;
+            this.menuToolsLayerRemoval.Name = "menuToolsLayerRemoval";
+            this.menuToolsLayerRemoval.Size = new System.Drawing.Size(261, 22);
+            this.menuToolsLayerRemoval.Text = "Layer Re&moval";
+            this.menuToolsLayerRemoval.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuToolsPattern
+            // 
+            this.menuToolsPattern.Enabled = false;
+            this.menuToolsPattern.Image = global::UVtools.GUI.Properties.Resources.pattern_16x16;
+            this.menuToolsPattern.Name = "menuToolsPattern";
+            this.menuToolsPattern.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            | System.Windows.Forms.Keys.P)));
+            this.menuToolsPattern.Size = new System.Drawing.Size(261, 22);
+            this.menuToolsPattern.Text = "&Pattern";
+            this.menuToolsPattern.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuHelpWebsite
+            // 
+            this.menuHelpWebsite.Image = global::UVtools.GUI.Properties.Resources.internet_explorer_16x16;
+            this.menuHelpWebsite.Name = "menuHelpWebsite";
+            this.menuHelpWebsite.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F1)));
+            this.menuHelpWebsite.Size = new System.Drawing.Size(231, 22);
+            this.menuHelpWebsite.Text = "&Website";
+            this.menuHelpWebsite.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuHelpDonate
+            // 
+            this.menuHelpDonate.Image = global::UVtools.GUI.Properties.Resources.Donate_16x16;
+            this.menuHelpDonate.Name = "menuHelpDonate";
+            this.menuHelpDonate.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.F1)));
+            this.menuHelpDonate.Size = new System.Drawing.Size(231, 22);
+            this.menuHelpDonate.Text = "&Donate";
+            this.menuHelpDonate.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuHelpAbout
+            // 
+            this.menuHelpAbout.Image = global::UVtools.GUI.Properties.Resources.Button_Info_16x16;
+            this.menuHelpAbout.Name = "menuHelpAbout";
+            this.menuHelpAbout.ShortcutKeys = System.Windows.Forms.Keys.F1;
+            this.menuHelpAbout.Size = new System.Drawing.Size(231, 22);
+            this.menuHelpAbout.Text = "&About";
+            this.menuHelpAbout.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuHelpBenchmark
+            // 
+            this.menuHelpBenchmark.Image = global::UVtools.GUI.Properties.Resources.microchip_16x16;
+            this.menuHelpBenchmark.Name = "menuHelpBenchmark";
+            this.menuHelpBenchmark.Size = new System.Drawing.Size(231, 22);
+            this.menuHelpBenchmark.Text = "&Benchmark";
+            this.menuHelpBenchmark.Click += new System.EventHandler(this.EventClick);
+            // 
+            // menuHelpInstallPrinters
+            // 
+            this.menuHelpInstallPrinters.Image = global::UVtools.GUI.Properties.Resources.CNCMachine_16x16;
+            this.menuHelpInstallPrinters.Name = "menuHelpInstallPrinters";
+            this.menuHelpInstallPrinters.Size = new System.Drawing.Size(231, 22);
+            this.menuHelpInstallPrinters.Text = "Install profiles into PrusaSlicer";
+            this.menuHelpInstallPrinters.Click += new System.EventHandler(this.EventClick);
             // 
             // FrmMain
             // 
@@ -2804,7 +2814,6 @@
             this.scLeft.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scLeft)).EndInit();
             this.scLeft.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pbThumbnail)).EndInit();
             this.tsThumbnails.ResumeLayout(false);
             this.tsThumbnails.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.flvProperties)).EndInit();
@@ -2871,6 +2880,7 @@
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).EndInit();
             this.panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pbThumbnail)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -3097,6 +3107,7 @@
         private System.Windows.Forms.ToolStripLabel tsLayerBounds;
         private System.Windows.Forms.ToolStripButton tsLayerClone;
         private System.Windows.Forms.ToolStripMenuItem menuToolsLayerClone;
+        private System.Windows.Forms.ToolStripMenuItem menuHelpBenchmark;
     }
 }
 

@@ -131,7 +131,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0-preview.7.20364.11\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0-preview.8.20407.11\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Extensions, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.Extensions.4.3.1\lib\net462\System.Runtime.Extensions.dll</HintPath>
@@ -145,6 +145,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\BenchmarkTest.cs" />
     <Compile Include="Controls\CtrlKernel.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -155,6 +156,12 @@
     <Compile Include="Controls\SlicerPropertyItem.cs" />
     <Compile Include="Controls\SplitButton.cs">
       <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmBenchmark.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmBenchmark.Designer.cs">
+      <DependentUpon>FrmBenchmark.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\FrmInstallPEProfiles.cs">
       <SubType>Form</SubType>
@@ -292,6 +299,9 @@
     <EmbeddedResource Include="Forms\FrmAbout.resx">
       <DependentUpon>FrmAbout.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmBenchmark.resx">
+      <DependentUpon>FrmBenchmark.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmInstallPEProfiles.resx">
       <DependentUpon>FrmInstallPEProfiles.cs</DependentUpon>
     </EmbeddedResource>
@@ -424,6 +434,7 @@
     <None Include="Images\list-16x16.png" />
     <None Include="Images\mask-16x16.png" />
     <None Include="Images\copy_16x16.png" />
+    <None Include="Images\microchip_16x16.png" />
     <Content Include="UVtools.ico" />
     <None Include="UVtools.png" />
     <None Include="Images\Exit-16x16.png" />
