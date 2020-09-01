@@ -325,6 +325,11 @@ namespace UVtools.Core.FileFormats
         bool SetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier, string value);
 
         /// <summary>
+        /// Rebuilds GCode based on current settings
+        /// </summary>
+        void RebuildGCode();
+
+        /// <summary>
         /// Saves current configuration on input file
         /// </summary>
         /// <param name="progress"></param>

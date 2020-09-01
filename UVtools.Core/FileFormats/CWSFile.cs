@@ -164,7 +164,7 @@ namespace UVtools.Core.FileFormats
             {
                 OutputSettings.LayersNum = LayerCount;
                 SliceSettings.LayersNum = LayerCount;
-                UpdateGCode();
+                RebuildGCode();
             }
         }
 
@@ -235,7 +235,7 @@ namespace UVtools.Core.FileFormats
                     progress++;
                 }
 
-                UpdateGCode();
+                RebuildGCode();
                 outputFile.PutFileContent($"{Path.GetFileNameWithoutExtension(fileFullPath)}.gcode", GCode.ToString(), ZipArchiveMode.Create);
             }
 
@@ -410,7 +410,7 @@ G1 Z-3.9 F120
                 SliceSettings.HeadLayersNum =
                 OutputSettings.NumberBottomLayers = value.Convert<ushort>();
                 UpdateLayers();
-                UpdateGCode();
+                RebuildGCode();
                 return true;
             }
             if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureSeconds))
@@ -418,7 +418,7 @@ G1 Z-3.9 F120
                 SliceSettings.HeadLayersExpoMs = 
                 OutputSettings.BottomLayersTime = (uint) (value.Convert<float>()*1000);
                 UpdateLayers();
-                UpdateGCode();
+                RebuildGCode();
                 return true;
             }
             if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
@@ -426,7 +426,7 @@ G1 Z-3.9 F120
                 SliceSettings.LayersExpoMs =
                 OutputSettings.LayerTime = (uint) (value.Convert<float>() * 1000);
                 UpdateLayers();
-                UpdateGCode();
+                RebuildGCode();
                 return true;
             }
 
@@ -434,14 +434,14 @@ G1 Z-3.9 F120
             {
                 SliceSettings.LiftDistance =
                 OutputSettings.LiftDistance = value.Convert<float>();
-                UpdateGCode();
+                RebuildGCode();
                 return true;
             }
             if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed))
             {
                 SliceSettings.LiftUpSpeed = 
                 OutputSettings.ZLiftFeedRate = value.Convert<float>();
-                UpdateGCode();
+                RebuildGCode();
                 return true;
             }
             if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
@@ -449,25 +449,92 @@ G1 Z-3.9 F120
                 SliceSettings.LiftDownSpeed =
                 OutputSettings.ZLiftRetractRate =
                 OutputSettings.ZBottomLiftFeedRate = value.Convert<float>();
-                UpdateGCode();
+                RebuildGCode();
                 return true;
             }
 
             if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightPWM))
             {
                 OutputSettings.BottomLightPWM = value.Convert<byte>();
-                UpdateGCode();
+                RebuildGCode();
                 return true;
             }
 
             if (ReferenceEquals(modifier, PrintParameterModifier.LightPWM))
             {
                 OutputSettings.BottomLightPWM = value.Convert<byte>();
-                UpdateGCode();
+                RebuildGCode();
                 return true;
             }
 
             return false;
+        }
+
+        public override void RebuildGCode()
+        {
+            string arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
+            GCode = new StringBuilder();
+            GCode.AppendLine($"; {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.Now}");
+            GCode.AppendLine(";(****Build and Slicing Parameters ****)");
+
+            foreach (var propertyInfo in OutputSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
+                if (ReferenceEquals(displayNameAttribute, null)) continue;
+                if (propertyInfo.Name.Equals(nameof(OutputSettings.LayersNum)))
+                {
+                    GCode.AppendLine($";{displayNameAttribute.DisplayName.PadRight(24)} = {propertyInfo.GetValue(OutputSettings)}");
+                }
+                else
+                {
+                    GCode.AppendLine($";({displayNameAttribute.DisplayName.PadRight(24)} = {propertyInfo.GetValue(OutputSettings)})");
+                }
+
+            }
+            GCode.AppendLine();
+            GCode.AppendFormat(GCodeStart, Environment.NewLine);
+
+            float lastZPosition = 0;
+
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                Layer layer = this[layerIndex];
+                GCode.AppendLine($"{GCodeKeywordSlice} {layerIndex}");
+                GCode.AppendLine($"M106 S{GetInitialLayerValueOrNormal(layerIndex, OutputSettings.BottomLightPWM, OutputSettings.LightPWM)}");
+                GCode.AppendLine($"{GCodeKeywordDelay} {layer.ExposureTime * 1000}");
+                GCode.AppendLine("M106 S0");
+                GCode.AppendLine(GCodeKeywordSliceBlank);
+
+                if (lastZPosition != layer.PositionZ)
+                {
+                    if (LiftHeight > 0)
+                    {
+                        GCode.AppendLine($"G1 Z{LiftHeight} F{LiftSpeed}");
+                        GCode.AppendLine($"G1 Z-{Math.Round(LiftHeight - layer.PositionZ + lastZPosition, 2)} F{RetractSpeed}");
+                    }
+                    else
+                    {
+                        GCode.AppendLine($"G1 Z{Math.Round(layer.PositionZ - lastZPosition, 2)} F{LiftSpeed}");
+                    }
+                }
+                // delay = max(extra['wait'], 500) + int(((int(lift)/(extra['lift_feed']/60)) + (int(lift)/(extra['lift_retract']/60)))*1000)
+                uint extraDelay = (uint)(((LiftHeight / (LiftSpeed / 60f)) + (LiftHeight / (RetractSpeed / 60f))) * 1000);
+                if (layerIndex < InitialLayerCount)
+                {
+                    extraDelay = (uint)Math.Max(extraDelay + 10000, layer.ExposureTime * 1000);
+                }
+                else
+                {
+                    extraDelay += Math.Max(OutputSettings.BlankingLayerTime, 500);
+                }
+
+                GCode.AppendLine($"{GCodeKeywordDelay} {extraDelay}");
+                GCode.AppendLine();
+
+                lastZPosition = layer.PositionZ;
+            }
+
+            GCode.AppendFormat(GCodeEnd, Environment.NewLine, SliceSettings.LiftWhenFinished);
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)
@@ -590,79 +657,6 @@ G1 Z-3.9 F120
             return false;
         }
 
-        private void UpdateGCode()
-        {
-            string arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
-            GCode = new StringBuilder();
-            GCode.AppendLine($"; {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.Now}"); 
-            GCode.AppendLine(";(****Build and Slicing Parameters ****)");
-
-            foreach (var propertyInfo in OutputSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
-            {
-                var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
-                if (ReferenceEquals(displayNameAttribute, null)) continue;
-                if (propertyInfo.Name.Equals(nameof(OutputSettings.LayersNum)))
-                {
-                    GCode.AppendLine($";{displayNameAttribute.DisplayName.PadRight(24)} = {propertyInfo.GetValue(OutputSettings)}");
-                }
-                else
-                {
-                    GCode.AppendLine($";({displayNameAttribute.DisplayName.PadRight(24)} = {propertyInfo.GetValue(OutputSettings)})");
-                }
-                
-            }
-            GCode.AppendLine();
-            GCode.AppendFormat(GCodeStart, Environment.NewLine);
-
-            float lastZPosition = 0;
-
-            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-            {
-                Layer layer = this[layerIndex];
-                GCode.AppendLine($"{GCodeKeywordSlice} {layerIndex}");
-                GCode.AppendLine($"M106 S{GetInitialLayerValueOrNormal(layerIndex, OutputSettings.BottomLightPWM, OutputSettings.LightPWM)}");
-                GCode.AppendLine($"{GCodeKeywordDelay} {layer.ExposureTime * 1000}");
-                GCode.AppendLine("M106 S0");
-                GCode.AppendLine(GCodeKeywordSliceBlank);
-
-                if (lastZPosition != layer.PositionZ)
-                {
-                    if (LiftHeight > 0)
-                    {
-                        GCode.AppendLine($"G1 Z{LiftHeight} F{LiftSpeed}");
-                        GCode.AppendLine($"G1 Z-{Math.Round(LiftHeight - layer.PositionZ + lastZPosition, 2)} F{RetractSpeed}");
-                    }
-                    else
-                    {
-                        GCode.AppendLine($"G1 Z{Math.Round(layer.PositionZ - lastZPosition, 2)} F{LiftSpeed}");
-                    }
-                }
-                // delay = max(extra['wait'], 500) + int(((int(lift)/(extra['lift_feed']/60)) + (int(lift)/(extra['lift_retract']/60)))*1000)
-                uint extraDelay = (uint) (((LiftHeight / (LiftSpeed / 60f)) + (LiftHeight / (RetractSpeed / 60f))) * 1000);
-                if (layerIndex < InitialLayerCount)
-                {
-                    extraDelay = (uint) Math.Max(extraDelay + 10000, layer.ExposureTime * 1000);
-                }
-                else
-                {
-                    extraDelay += Math.Max(OutputSettings.BlankingLayerTime, 500);
-                }
-
-                GCode.AppendLine($"{GCodeKeywordDelay} {extraDelay}");
-                GCode.AppendLine();
-
-                lastZPosition = layer.PositionZ;
-            }
-
-            GCode.AppendFormat(GCodeEnd, Environment.NewLine, SliceSettings.LiftWhenFinished);
-
-            /*GCode = Regex.Replace(GCode, @"Z[+]?([0-9]*\.[0-9]+|[0-9]+) F[+]?([0-9]*\.[0-9]+|[0-9]+)",
-                $"Z{SliceSettings.LiftDistance} F{SliceSettings.LiftUpSpeed}");
-
-            GCode = Regex.Replace(GCode, @"Z-[-]?([0-9]*\.[0-9]+|[0-9]+) F[+]?([0-9]*\.[0-9]+|[0-9]+)",
-                $"Z-{SliceSettings.LiftDistance - LayerHeight} F{SliceSettings.LiftDownSpeed}");*/
-
-        }
         #endregion
     }
 }

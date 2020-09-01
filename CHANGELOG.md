@@ -1,5 +1,10 @@
 # Changelog
 
+## /08/2020 - v0.6.7.2
+
+* (Add) "Rebuild GCode" button
+* (Fix) chitubox: Keep some original values when read from chitubox sliced files
+
 ## 27/08/2020 - v0.6.7.1
 
 * (Add) Menu - Help - Benchmark: Run benchmark test to measure system performance 

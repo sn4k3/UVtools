@@ -669,6 +669,9 @@ namespace UVtools.Core.FileFormats
         }
 
         public abstract bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value);
+        
+        public virtual void RebuildGCode()
+        { }
 
         public void Save(OperationProgress progress = null)
         {

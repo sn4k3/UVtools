@@ -284,7 +284,7 @@ namespace UVtools.Core.FileFormats
 
             /// <summary>
             /// Gets the parameter used to control encryption.
-            /// Not totally understood. 0 for cbddlp files, 0xF for ctb files.
+            /// Not totally understood. 0/8 for cbddlp files, 0xF (15) for ctb files.
             /// </summary>
             [FieldOrder(9)] public uint EncryptionMode     { get; set; } = 8;
 
@@ -1023,13 +1023,21 @@ namespace UVtools.Core.FileFormats
             
             if (IsCbtFile)
             {
-                SlicerInfoSettings.AntiAliasLevel = HeaderSettings.AntiAliasLevel;
+                if (SlicerInfoSettings.AntiAliasLevel <= 1)
+                {
+                    SlicerInfoSettings.AntiAliasLevel = HeaderSettings.AntiAliasLevel;
+                }
+
                 HeaderSettings.AntiAliasLevel = 1;
+
                 PrintParametersSettings.Padding4 = 0x1234;
-                //SlicerInfoSettings.EncryptionMode = 0xf;
-                SlicerInfoSettings.EncryptionMode = 7;
-                SlicerInfoSettings.MysteriousId = 0x12345678;
-                SlicerInfoSettings.Unknown1 = 0x200;
+
+                SlicerInfoSettings.EncryptionMode = 15;
+
+                if(SlicerInfoSettings.MysteriousId == 0)
+                    SlicerInfoSettings.MysteriousId = 0x12345678;
+
+                SlicerInfoSettings.Unknown1 = HeaderSettings.Version == 3 ? 0u : 0x200;
 
                 if (HeaderSettings.EncryptionKey == 0)
                 {
@@ -1148,7 +1156,7 @@ namespace UVtools.Core.FileFormats
                             outputFile.Seek(layerDataCurrentOffset, SeekOrigin.Begin);
                             layerDataCurrentOffset += outputFile.WriteBytes(layerData.EncodedRle);
                         }
-
+                        
                         outputFile.Seek(currentOffset, SeekOrigin.Begin);
                         currentOffset += Helpers.SerializeWriteFileStream(outputFile, layerData);
 

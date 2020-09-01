@@ -1349,12 +1349,18 @@ namespace UVtools.GUI
             /************************
              *      GCode Menu      *
              ***********************/
-            if (ReferenceEquals(sender, tsGCodeButtonSave))
+            if (ReferenceEquals(sender, btnGCodeRebuild))
             {
-                tsGCodeButtonSave.ShowDropDown();
+                SlicerFile.RebuildGCode();
+                UpdateGCode();
                 return;
             }
-            if (ReferenceEquals(sender, tsGCodeButtonSaveFile))
+            if (ReferenceEquals(sender, btnGCodeSave))
+            {
+                btnGCodeSave.ShowDropDown();
+                return;
+            }
+            if (ReferenceEquals(sender, btnGCodeSaveFile))
             {
                 using (SaveFileDialog dialog = new SaveFileDialog())
                 {
@@ -1371,20 +1377,16 @@ namespace UVtools.GUI
                         }
 
                         if (MessageBox.Show(
-                                $"GCode save was successful, do you want open the file with default editor?.\nPress 'Yes' if you want open the target file, otherwise select 'No' to continue.",
-                                "GCode save completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
-                            DialogResult.Yes)
-                        {
-                            using (Process.Start(dialog.FileName))
-                            {
-                            }
-                        }
+                                "GCode save was successful, do you want open the file with default editor?.\nPress 'Yes' if you want open the target file, otherwise select 'No' to continue.",
+                                "GCode save completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) !=
+                            DialogResult.Yes) return;
+                        using (Process.Start(dialog.FileName)) { }
                     }
 
                     return;
                 }
             }
-            if (ReferenceEquals(sender, tsGCodeButtonSaveClipboard))
+            if (ReferenceEquals(sender, btnGCodeSaveClipboard))
             {
                 Clipboard.SetText(SlicerFile.GCode.ToString());
                 return;
@@ -2435,12 +2437,7 @@ namespace UVtools.GUI
             tsPropertiesLabelCount.Text = $"Properties: {flvProperties.GetItemCount()}";
             tsPropertiesLabelGroups.Text = $"Groups: {flvProperties.OLVGroups?.Count ?? 0}";
 
-            if (!ReferenceEquals(SlicerFile.GCode, null))
-            {
-                tbGCode.Text = SlicerFile.GCode.ToString();
-                tsGCodeLabelLines.Text = $"Lines: {tbGCode.Lines.Length}";
-                tsGcodeLabelChars.Text = $"Chars: {tbGCode.Text.Length}";
-            }
+            UpdateGCode();
 
             statusBar.Items.Clear();
             AddStatusBarItem(nameof(SlicerFile.LayerHeight), SlicerFile.LayerHeight, "mm");
@@ -2452,6 +2449,14 @@ namespace UVtools.GUI
             AddStatusBarItem(nameof(SlicerFile.MaterialCost), SlicerFile.MaterialCost, "€");
             AddStatusBarItem(nameof(SlicerFile.MaterialName), SlicerFile.MaterialName);
             AddStatusBarItem(nameof(SlicerFile.MachineName), SlicerFile.MachineName);
+        }
+
+        private void UpdateGCode()
+        {
+            if (SlicerFile.GCode is null) return;
+            tbGCode.Text = SlicerFile.GCode.ToString();
+            tsGCodeLabelLines.Text = $"Lines: {tbGCode.Lines.Length}";
+            tsGcodeLabelChars.Text = $"Chars: {tbGCode.Text.Length}";
         }
 
         /// <summary>
@@ -3771,11 +3776,6 @@ namespace UVtools.GUI
             }
             UpdateIssuesInfo();
             ShowLayer();
-        }
-
-        private void tsGCodeButtonSave_ButtonClick(object sender, EventArgs e)
-        {
-
         }
     }
 }

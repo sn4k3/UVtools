@@ -193,7 +193,7 @@ namespace UVtools.Core.FileFormats
             {
                 UserSettings.MaxLayer = LayerCount - 1;
                 ResinMetadataSettings.TotalLayersCount = LayerCount;
-                UpdateGCode();
+                RebuildGCode();
             }
         }
 
@@ -488,23 +488,36 @@ M106 S0
             if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight))
             {
                 UserSettings.ZLiftDistance = value.Convert<float>();
-                UpdateGCode();
+                RebuildGCode();
                 return true;
             }
             if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed))
             {
                 UserSettings.ZLiftFeedRate = value.Convert<float>();
-                UpdateGCode();
+                RebuildGCode();
                 return true;
             }
             if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
             {
                 UserSettings.ZLiftRetractRate = value.Convert<float>();
-                UpdateGCode();
+                RebuildGCode();
                 return true;
             }
 
             return false;
+        }
+
+        public override void RebuildGCode()
+        {
+            var gcode = GCode.ToString();
+            gcode = Regex.Replace(gcode, @"Z[+]?([0-9]*\.[0-9]+|[0-9]+) F[+]?([0-9]*\.[0-9]+|[0-9]+)",
+                $"Z{UserSettings.ZLiftDistance} F{UserSettings.ZLiftFeedRate}");
+
+            gcode = Regex.Replace(gcode, @"Z-[-]?([0-9]*\.[0-9]+|[0-9]+) F[+]?([0-9]*\.[0-9]+|[0-9]+)",
+                $"Z-{UserSettings.ZLiftDistance - LayerHeight} F{UserSettings.ZLiftRetractRate}");
+
+            GCode.Clear();
+            GCode.Append(gcode);
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)
@@ -540,20 +553,6 @@ M106 S0
         public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
         {
             throw new NotImplementedException();
-        }
-
-        private void UpdateGCode()
-        {
-            var gcode = GCode.ToString();
-            gcode = Regex.Replace(gcode, @"Z[+]?([0-9]*\.[0-9]+|[0-9]+) F[+]?([0-9]*\.[0-9]+|[0-9]+)",
-                $"Z{UserSettings.ZLiftDistance} F{UserSettings.ZLiftFeedRate}");
-
-            gcode = Regex.Replace(gcode, @"Z-[-]?([0-9]*\.[0-9]+|[0-9]+) F[+]?([0-9]*\.[0-9]+|[0-9]+)",
-                $"Z-{UserSettings.ZLiftDistance - LayerHeight} F{UserSettings.ZLiftRetractRate}");
-
-            GCode.Clear();
-            GCode.Append(gcode);
-
         }
         #endregion
     }
