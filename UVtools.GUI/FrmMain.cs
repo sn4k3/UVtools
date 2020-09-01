@@ -178,7 +178,7 @@ namespace UVtools.GUI
 
         public PixelHistory PixelHistory { get; } = new PixelHistory();
 
-	// Track last open tab for when PixelEditor tab is removed.
+	    // Track last open tab for when PixelEditor tab is removed.
         public TabPage ControlLeftLastTab { get; set; } = null;
 
         public uint SavesCount { get; set; } = 0;
@@ -2510,7 +2510,7 @@ namespace UVtools.GUI
         /// <param name="layerNum">Layer number</param>
         void ShowLayer(uint layerNum)
         {
-            if (ReferenceEquals(SlicerFile, null)) return;
+            if (SlicerFile is null) return;
 
             //int layerOnSlider = (int)(SlicerFile.LayerCount - layerNum - 1);
             if (tbLayer.Value != layerNum)
@@ -2519,19 +2519,20 @@ namespace UVtools.GUI
                 return;
             }
 
-            if (IsChangingLayer) return ;
+            if (IsChangingLayer) return;
             IsChangingLayer = true;
 
             ActualLayer = layerNum;
             btnLastLayer.Enabled = btnNextLayer.Enabled = layerNum < SlicerFile.LayerCount - 1;
             btnFirstLayer.Enabled = btnPreviousLayer.Enabled = layerNum > 0;
 
+
             var layer = SlicerFile[ActualLayer];
             VectorOfVectorOfPoint layerContours = null;
             Mat layerHierarchy = null;
             Array layerHierarchyJagged = null;
 
-            void iniContours()
+            void initContours()
             {
                 if (!ReferenceEquals(layerContours, null)) return;
                 layerContours = new VectorOfVectorOfPoint();
@@ -2680,7 +2681,7 @@ namespace UVtools.GUI
                 if (tsLayerImageLayerOutlineHollowAreas.Checked)
                 {
                     //CvInvoke.Threshold(ActualLayerImage, grayscale, 1, 255, ThresholdType.Binary);
-                    iniContours();
+                    initContours();
 
                     /*
                      * hierarchy[i][0]: the index of the next contour of the same level
@@ -2760,7 +2761,7 @@ namespace UVtools.GUI
                     }
                     else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
                     {
-                        iniContours();
+                        initContours();
                         if(imageSpan[ActualLayerImage.GetPixelPos(operation.Location)] < 10) continue;
                         var color = flvPixelHistory.SelectedObjects.Contains(operation)
                                         ? Settings.Default.PixelEditorRemovePixelHLColor
@@ -2801,7 +2802,7 @@ namespace UVtools.GUI
                     // Gradually increase line thickness from 1 to 3 at the lower-end of the zoom range.
                     // This prevents the crosshair lines from dissapeareing due to being too thin to
                     // render at very low zoom factors.
-                    var LineThickness = (pbLayer.Zoom > 100) ? 1 : (pbLayer.Zoom < 50) ? 3 : 2;
+                    var lineThickness = (pbLayer.Zoom > 100) ? 1 : (pbLayer.Zoom < 50) ? 3 : 2;
 
                     foreach (LayerIssue issue in flvIssues.SelectedObjects)
                     {
@@ -2813,30 +2814,31 @@ namespace UVtools.GUI
                         // Only draw crosshairs when zoom level is below the configurable crosshair fade threshold.
                         if (pbLayer.Zoom <= ZoomLevels[Settings.Default.DefaultCrosshairFade + ZoomLevelSkipCount])
                         {
+                            var color = new MCvScalar(Color.Red.B, Color.Red.G, Color.Red.R);
                             CvInvoke.Line(ActualLayerImageBgr,
                                 new Point(0, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
                                 new Point(issue.BoundingRectangle.Left - 10, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
-                                new MCvScalar(Color.Red.B, Color.Red.G, Color.Red.R),
-                                LineThickness);
+                                color,
+                                lineThickness);
 
                             CvInvoke.Line(ActualLayerImageBgr,
                                 new Point(issue.BoundingRectangle.Right + 10, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
                                 new Point(ActualLayerImageBgr.Width, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
-                                new MCvScalar(Color.Red.B, Color.Red.G, Color.Red.R),
-                                LineThickness);
+                                color,
+                                lineThickness);
 
 
                             CvInvoke.Line(ActualLayerImageBgr,
                                 new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, 0),
                                 new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, issue.BoundingRectangle.Top - 10),
-                                new MCvScalar(Color.Red.B, Color.Red.G, Color.Red.R),
-                                LineThickness);
+                                color,
+                                lineThickness);
 
                             CvInvoke.Line(ActualLayerImageBgr,
                                 new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, issue.BoundingRectangle.Bottom + 10),
                                 new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, ActualLayerImageBgr.Height),
-                                new MCvScalar(Color.Red.B, Color.Red.G, Color.Red.R),
-                                LineThickness);
+                                color,
+                                lineThickness);
 
                         }
                     }
@@ -2933,7 +2935,7 @@ namespace UVtools.GUI
                     ShowLayer();
                 }
 
-               return;
+                return;
             }
 
             if (ReferenceEquals(sender, flvPixelHistory))
@@ -3209,6 +3211,11 @@ namespace UVtools.GUI
         {
             if (ReferenceEquals(sender, layerScrollTimer))
             {
+                if (!btnPreviousLayer.Enabled || !btnNextLayer.Enabled)
+                {
+                    layerScrollTimer.Stop();
+                    return;
+                }
                 layerScrollTimer.Interval = 150;
                 ShowLayer((bool)layerScrollTimer.Tag);
                 return;
@@ -3223,6 +3230,12 @@ namespace UVtools.GUI
 
             if (ReferenceEquals(sender, issueScrollTimer))
             {
+                if (!tsIssuePrevious.Enabled || !tsIssueNext.Enabled)
+                {
+                    issueScrollTimer.Stop();
+                    return;
+                }
+
                 issueScrollTimer.Interval = 150;
                 if ((bool)issueScrollTimer.Tag)
                 {

@@ -1,8 +1,45 @@
 # Changelog
 
-## /08/2020 - v0.6.7.2
+## /08/2020 - v0.7.0.0
 
 * (Add) "Rebuild GCode" button
+* (Add) Issue Highlighting
+  * Issues selected from the issue List View are now painted in an alternate configurable highlight color to distinguish them from non-selected issues.
+  * Issues are now made active as soon as they are selected in the issue list, so single-click or arrow keys can now be used to select and issue. Double-click is no longer required.
+  * Multi-select is supported. All selected issues on the currently visible layer will be highlighted with the appropriate highlight color.
+  * When an issue is selected, if it is already visible in the layer preview, it will be highlighted, but not moved. If an issue is not visible when selected, it's layer will be made active (in necessary) and it will be centered in the layer preview to make it visible.
+* (Add) Edit Pixel Operation Highlighting
+  * Similar to issue highlighting, pending operations in the pixel edit view will be highlighted in an alternate configurable color when they are selected from the operations List View, including multi-select support.
+  * Unlike issue highlighting, when an operation is selected from the List View, it will always be centered in the layer preview window, even if it is already visible on screen. A future update could be smarter about this and handle operations similar to issues (determining bounds of operations is a bit more involved than determining bounds of an issue).
+* (Add) Crosshair Support
+  * Cross-hairs can now be displayed to identify the exact location of each selected issue in the layer preview window. This is particularly beneficial at lower zoom levels to identify where issues are located within the overall layer.
+  * Multi-select is supported, so selecting multiple issues will render multiple cross-hairs, one per issue.
+  * Cross-hairs can be enabled/disabled on-demand using a tool strip button next to the issues button.
+  * Cross-hairs can be configured to automatically fade at a specific zoom level, so that they are visible when zoomed-out, but disappear when zoomed in and issue highlighting is more obvious. The Zoom-level at which the fade occurs is configurable in settings.
+  * Cross-hairs are visible in Pixel Edit mode, but they are linked to selected issues in the issues tab, not selected pixel operations in the pixel edit tab. Cross-hairs will automatically fade when an add/remove operation is initiated (via SHIFT key).
+* (Add) Configurable auto-zoom level support
+  * The zoom level used for auto-zoom operations is now configurable. It can be changed at any time by zooming to the desired level in the layer preview and double-clicking or CTRL-clicking the middle mouse button.
+  * The currently selected auto-zoom level is indicated by a "lock" icon that appears next to the current zoom level indicator in the tool strip.
+  * The default auto-zoom level (used on startup) can be configured in settings.
+* (Add) Mouse-Based Navigation updates for the issue list, layer preview and pixel edit mode.
+  * Issue List
+     * Single Left or Right click now selects an issue from the issues list. If auto-zoom is enabled, the issue will also be centered and zoomed. Holding ALT will invert the configured behavior in your settings. With these navigation updates, leaving auto-zoom disabled in settings is recommended (and is now the new default).
+     * Double-Left click or CTRL-Left-click on an issue in the issue list will zoom in on that specific issue.
+     * Double-Right click or CTRL-Right-Click on any issue will zoom to fit either the build plate or the print bounds, depending on your settings. Holding ALT during the click operation will perform the inverse zoom action from what is configured in your settings(zoom plate vs zoom print bounds).
+     * The Prev/Next buttons at the top of the Layer Preview will now auto-repeat if held down (similar to the layer scroll bar).
+  * Layer Preview
+     * Clicking in the Layer Preview window will allow you to grab and pan the image (unchanged behavior)
+     * Double-Left clicking or CTRL-click on any point within the Layer Preview window will zoom in on that specific point using the locked auto-zoom level.
+     * Double-Right click or CTRL-click in the layer preview will zoom-to-fit. Same behavior as double-left-click on an issue in the issue list.
+     * Double-click or CTRL-clicking middle mouse button will set the auto-zoom-level to the current zoom level.
+     * Mouse wheel scroll behavior is unchanged (wheel scrolls in/out)
+  * Pixel Edit Mode
+     * Single click left or right in the pixel operation list view will now select an operation. Double click does the same (advanced zoom operations described for issue list are not currently supported from the operation list).
+     * When Pixel Edit Mode is active, mouse operations in the Layer Preview area generally behave the same as described in the Layer Preview section above, including pan and double-click zoom in/out.
+     * Pressing the SHIFT key in layer edit mode activates the ability to perform add/remove operations, while shift is pressed the cursor icon changes to a cross-hair, and add/remove operations can be performed. In this mode, pan and double-click zoom operations are disabled. Releasing the shift key will end add/remove mode and restore pan/zoom functions.
+     * Shift-Left-Click will perform an add operations (add pixel, text, etc).
+     * Shift-Right-Click will perform a remove operation (remove pixel, etc).
+* (Fix) When next layer or previous layer button got disabled while pressing it get stuck
 * (Fix) chitubox: Keep some original values when read from chitubox sliced files
 
 ## 27/08/2020 - v0.6.7.1

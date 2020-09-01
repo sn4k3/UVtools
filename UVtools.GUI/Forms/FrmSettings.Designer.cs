@@ -126,8 +126,8 @@
             this.label37 = new System.Windows.Forms.Label();
             this.label36 = new System.Windows.Forms.Label();
             this.cbDefaultCrosshairFade = new System.Windows.Forms.ComboBox();
-            this.cbDefaultAutoZoomLock = new System.Windows.Forms.ComboBox();
             this.cbAutoZoomIssues = new System.Windows.Forms.CheckBox();
+            this.cbDefaultAutoZoomLock = new System.Windows.Forms.ComboBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.cbPartialUpdateIslandsOnEditing = new System.Windows.Forms.CheckBox();
@@ -233,9 +233,9 @@
             this.label2.Location = new System.Drawing.Point(9, 55);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(139, 18);
+            this.label2.Size = new System.Drawing.Size(143, 18);
             this.label2.TabIndex = 2;
-            this.label2.Text = "Previous layer color";
+            this.label2.Text = "Previous layer color:";
             // 
             // btnNextLayerColor
             // 
@@ -257,9 +257,9 @@
             this.label3.Location = new System.Drawing.Point(9, 95);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(111, 18);
+            this.label3.Size = new System.Drawing.Size(115, 18);
             this.label3.TabIndex = 4;
-            this.label3.Text = "Next layer color";
+            this.label3.Text = "Next layer color:";
             // 
             // btnTouchingBoundsColor
             // 
@@ -477,9 +477,9 @@
             this.label19.Location = new System.Drawing.Point(9, 215);
             this.label19.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(183, 18);
+            this.label19.Size = new System.Drawing.Size(187, 18);
             this.label19.TabIndex = 29;
-            this.label19.Text = "Outline Hollow areas color";
+            this.label19.Text = "Outline Hollow areas color:";
             // 
             // btnOutlineHollowAreasColor
             // 
@@ -543,9 +543,9 @@
             this.label17.Location = new System.Drawing.Point(9, 175);
             this.label17.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(185, 18);
+            this.label17.Size = new System.Drawing.Size(189, 18);
             this.label17.TabIndex = 24;
-            this.label17.Text = "Outline Layer bounds color";
+            this.label17.Text = "Outline Layer bounds color:";
             // 
             // btnOutlineLayerBoundsColor
             // 
@@ -609,9 +609,9 @@
             this.label14.Location = new System.Drawing.Point(9, 135);
             this.label14.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(181, 18);
+            this.label14.Size = new System.Drawing.Size(185, 18);
             this.label14.TabIndex = 16;
-            this.label14.Text = "Print volume bounds color";
+            this.label14.Text = "Print volume bounds color:";
             // 
             // btnOutlinePrintVolumeBoundsColor
             // 
@@ -1368,22 +1368,22 @@
             // label37
             // 
             this.label37.AutoSize = true;
-            this.label37.Location = new System.Drawing.Point(364, 373);
+            this.label37.Location = new System.Drawing.Point(362, 374);
             this.label37.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label37.Name = "label37";
-            this.label37.Size = new System.Drawing.Size(148, 18);
+            this.label37.Size = new System.Drawing.Size(152, 18);
             this.label37.TabIndex = 39;
-            this.label37.Text = "Crosshair Fade Level";
+            this.label37.Text = "Crosshair Fade Level:";
             // 
             // label36
             // 
             this.label36.AutoSize = true;
-            this.label36.Location = new System.Drawing.Point(9, 371);
+            this.label36.Location = new System.Drawing.Point(9, 374);
             this.label36.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label36.Name = "label36";
-            this.label36.Size = new System.Drawing.Size(161, 18);
+            this.label36.Size = new System.Drawing.Size(165, 18);
             this.label36.TabIndex = 38;
-            this.label36.Text = "Auto zoom default level";
+            this.label36.Text = "Auto zoom default level:";
             // 
             // cbDefaultCrosshairFade
             // 
@@ -1410,7 +1410,7 @@
             this.cbDefaultAutoZoomLock.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbDefaultAutoZoomLock.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbDefaultAutoZoomLock.FormattingEnabled = true;
-            this.cbDefaultAutoZoomLock.Location = new System.Drawing.Point(177, 369);
+            this.cbDefaultAutoZoomLock.Location = new System.Drawing.Point(181, 370);
             this.cbDefaultAutoZoomLock.Name = "cbDefaultAutoZoomLock";
             this.cbDefaultAutoZoomLock.Size = new System.Drawing.Size(68, 26);
             this.cbDefaultAutoZoomLock.TabIndex = 36;
