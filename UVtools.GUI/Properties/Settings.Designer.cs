@@ -12,7 +12,7 @@ namespace UVtools.GUI.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.6.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.7.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -37,7 +37,7 @@ namespace UVtools.GUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Yellow")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Gold")]
         public global::System.Drawing.Color IslandColor {
             get {
                 return ((global::System.Drawing.Color)(this["IslandColor"]));
@@ -49,13 +49,37 @@ namespace UVtools.GUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Orange")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Yellow")]
+        public global::System.Drawing.Color IslandHLColor {
+            get {
+                return ((global::System.Drawing.Color)(this["IslandHLColor"]));
+            }
+            set {
+                this["IslandHLColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("SandyBrown")]
         public global::System.Drawing.Color ResinTrapColor {
             get {
                 return ((global::System.Drawing.Color)(this["ResinTrapColor"]));
             }
             set {
                 this["ResinTrapColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Orange")]
+        public global::System.Drawing.Color ResinTrapHLColor {
+            get {
+                return ((global::System.Drawing.Color)(this["ResinTrapHLColor"]));
+            }
+            set {
+                this["ResinTrapHLColor"] = value;
             }
         }
         
@@ -457,7 +481,31 @@ namespace UVtools.GUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Green")]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public byte DefaultCrosshairFade {
+            get {
+                return ((byte)(this["DefaultCrosshairFade"]));
+            }
+            set {
+                this["DefaultCrosshairFade"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("7")]
+        public byte DefaultAutoZoomLock {
+            get {
+                return ((byte)(this["DefaultAutoZoomLock"]));
+            }
+            set {
+                this["DefaultAutoZoomLock"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("LightGreen")]
         public global::System.Drawing.Color PixelEditorAddPixelColor {
             get {
                 return ((global::System.Drawing.Color)(this["PixelEditorAddPixelColor"]));
@@ -469,13 +517,37 @@ namespace UVtools.GUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("DarkRed")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Green")]
+        public global::System.Drawing.Color PixelEditorAddPixelHLColor {
+            get {
+                return ((global::System.Drawing.Color)(this["PixelEditorAddPixelHLColor"]));
+            }
+            set {
+                this["PixelEditorAddPixelHLColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("PaleVioletRed")]
         public global::System.Drawing.Color PixelEditorRemovePixelColor {
             get {
                 return ((global::System.Drawing.Color)(this["PixelEditorRemovePixelColor"]));
             }
             set {
                 this["PixelEditorRemovePixelColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("DarkRed")]
+        public global::System.Drawing.Color PixelEditorRemovePixelHLColor {
+            get {
+                return ((global::System.Drawing.Color)(this["PixelEditorRemovePixelHLColor"]));
+            }
+            set {
+                this["PixelEditorRemovePixelHLColor"] = value;
             }
         }
         
@@ -493,13 +565,37 @@ namespace UVtools.GUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Purple")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Plum")]
         public global::System.Drawing.Color PixelEditorDrainHoleColor {
             get {
                 return ((global::System.Drawing.Color)(this["PixelEditorDrainHoleColor"]));
             }
             set {
                 this["PixelEditorDrainHoleColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("DarkCyan")]
+        public global::System.Drawing.Color PixelEditorSupportHLColor {
+            get {
+                return ((global::System.Drawing.Color)(this["PixelEditorSupportHLColor"]));
+            }
+            set {
+                this["PixelEditorSupportHLColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Purple")]
+        public global::System.Drawing.Color PixelEditorDrainHoleHLColor {
+            get {
+                return ((global::System.Drawing.Color)(this["PixelEditorDrainHoleHLColor"]));
+            }
+            set {
+                this["PixelEditorDrainHoleHLColor"] = value;
             }
         }
         
@@ -589,7 +685,7 @@ namespace UVtools.GUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool AutoZoomIssues {
             get {
                 return ((bool)(this["AutoZoomIssues"]));

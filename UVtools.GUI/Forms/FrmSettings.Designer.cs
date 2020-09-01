@@ -42,7 +42,9 @@
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.btnResinTrapColor = new System.Windows.Forms.Button();
+            this.btnResinTrapHLColor = new System.Windows.Forms.Button();
             this.btnIslandColor = new System.Windows.Forms.Button();
+            this.btnIslandHLColor = new System.Windows.Forms.Button();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.cbCheckForUpdatesOnStartup = new System.Windows.Forms.CheckBox();
@@ -121,18 +123,26 @@
             this.tbFileSaveNamePreffix = new System.Windows.Forms.TextBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.label37 = new System.Windows.Forms.Label();
+            this.label36 = new System.Windows.Forms.Label();
+            this.cbDefaultCrosshairFade = new System.Windows.Forms.ComboBox();
+            this.cbDefaultAutoZoomLock = new System.Windows.Forms.ComboBox();
             this.cbAutoZoomIssues = new System.Windows.Forms.CheckBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.cbPartialUpdateIslandsOnEditing = new System.Windows.Forms.CheckBox();
             this.btnPixelEditorDrainHoleColor = new System.Windows.Forms.Button();
+            this.btnPixelEditorDrainHoleHLColor = new System.Windows.Forms.Button();
             this.label26 = new System.Windows.Forms.Label();
             this.btnPixelEditorSupportColor = new System.Windows.Forms.Button();
+            this.btnPixelEditorSupportHLColor = new System.Windows.Forms.Button();
             this.label25 = new System.Windows.Forms.Label();
             this.btnPixelEditorRemovePixelColor = new System.Windows.Forms.Button();
+            this.btnPixelEditorRemovePixelHLColor = new System.Windows.Forms.Button();
             this.label24 = new System.Windows.Forms.Label();
             this.label23 = new System.Windows.Forms.Label();
             this.btnPixelEditorAddPixelColor = new System.Windows.Forms.Button();
+            this.btnPixelEditorAddPixelHLColor = new System.Windows.Forms.Button();
             this.tabPage5 = new System.Windows.Forms.TabPage();
             this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault = new System.Windows.Forms.NumericUpDown();
             this.label35 = new System.Windows.Forms.Label();
@@ -258,7 +268,7 @@
             this.btnTouchingBoundsColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnTouchingBoundsColor.FlatAppearance.BorderSize = 2;
             this.btnTouchingBoundsColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnTouchingBoundsColor.Location = new System.Drawing.Point(575, 88);
+            this.btnTouchingBoundsColor.Location = new System.Drawing.Point(521, 88);
             this.btnTouchingBoundsColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnTouchingBoundsColor.Name = "btnTouchingBoundsColor";
             this.btnTouchingBoundsColor.Size = new System.Drawing.Size(32, 32);
@@ -270,29 +280,29 @@
             // 
             this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(479, 15);
+            this.label4.Location = new System.Drawing.Point(317, 15);
             this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(88, 18);
+            this.label4.Size = new System.Drawing.Size(194, 18);
             this.label4.TabIndex = 6;
-            this.label4.Text = "Island color:";
+            this.label4.Text = "Island color / Highlight color:";
             // 
             // label5
             // 
             this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(450, 55);
+            this.label5.Location = new System.Drawing.Point(289, 55);
             this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(117, 18);
+            this.label5.Size = new System.Drawing.Size(223, 18);
             this.label5.TabIndex = 8;
-            this.label5.Text = "Resin trap color:";
+            this.label5.Text = "Resin trap color / Highlight color:";
             // 
             // label6
             // 
             this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(411, 95);
+            this.label6.Location = new System.Drawing.Point(357, 95);
             this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(156, 18);
@@ -306,13 +316,28 @@
             this.btnResinTrapColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnResinTrapColor.FlatAppearance.BorderSize = 2;
             this.btnResinTrapColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnResinTrapColor.Location = new System.Drawing.Point(575, 48);
+            this.btnResinTrapColor.Location = new System.Drawing.Point(521, 48);
             this.btnResinTrapColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnResinTrapColor.Name = "btnResinTrapColor";
             this.btnResinTrapColor.Size = new System.Drawing.Size(32, 32);
             this.btnResinTrapColor.TabIndex = 10;
             this.btnResinTrapColor.UseVisualStyleBackColor = false;
             this.btnResinTrapColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnResinTrapHLColor
+            // 
+            this.btnResinTrapHLColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnResinTrapHLColor.BackColor = System.Drawing.Color.White;
+            this.btnResinTrapHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnResinTrapHLColor.FlatAppearance.BorderSize = 2;
+            this.btnResinTrapHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnResinTrapHLColor.Location = new System.Drawing.Point(563, 48);
+            this.btnResinTrapHLColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnResinTrapHLColor.Name = "btnResinTrapHLColor";
+            this.btnResinTrapHLColor.Size = new System.Drawing.Size(32, 32);
+            this.btnResinTrapHLColor.TabIndex = 10;
+            this.btnResinTrapHLColor.UseVisualStyleBackColor = false;
+            this.btnResinTrapHLColor.Click += new System.EventHandler(this.EventClick);
             // 
             // btnIslandColor
             // 
@@ -321,13 +346,28 @@
             this.btnIslandColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnIslandColor.FlatAppearance.BorderSize = 2;
             this.btnIslandColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnIslandColor.Location = new System.Drawing.Point(575, 8);
+            this.btnIslandColor.Location = new System.Drawing.Point(521, 8);
             this.btnIslandColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnIslandColor.Name = "btnIslandColor";
             this.btnIslandColor.Size = new System.Drawing.Size(32, 32);
             this.btnIslandColor.TabIndex = 11;
             this.btnIslandColor.UseVisualStyleBackColor = false;
             this.btnIslandColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnIslandHLColor
+            // 
+            this.btnIslandHLColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnIslandHLColor.BackColor = System.Drawing.Color.White;
+            this.btnIslandHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnIslandHLColor.FlatAppearance.BorderSize = 2;
+            this.btnIslandHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnIslandHLColor.Location = new System.Drawing.Point(563, 8);
+            this.btnIslandHLColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnIslandHLColor.Name = "btnIslandHLColor";
+            this.btnIslandHLColor.Size = new System.Drawing.Size(32, 32);
+            this.btnIslandHLColor.TabIndex = 11;
+            this.btnIslandHLColor.UseVisualStyleBackColor = false;
+            this.btnIslandHLColor.Click += new System.EventHandler(this.EventClick);
             // 
             // btnSave
             // 
@@ -1279,7 +1319,11 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.label37);
+            this.tabPage2.Controls.Add(this.label36);
+            this.tabPage2.Controls.Add(this.cbDefaultCrosshairFade);
             this.tabPage2.Controls.Add(this.cbAutoZoomIssues);
+            this.tabPage2.Controls.Add(this.cbDefaultAutoZoomLock);
             this.tabPage2.Controls.Add(this.cbZoomToFitPrintVolumeBounds);
             this.tabPage2.Controls.Add(this.label1);
             this.tabPage2.Controls.Add(this.label2);
@@ -1288,12 +1332,14 @@
             this.tabPage2.Controls.Add(this.btnPreviousLayerColor);
             this.tabPage2.Controls.Add(this.label18);
             this.tabPage2.Controls.Add(this.btnIslandColor);
+            this.tabPage2.Controls.Add(this.btnIslandHLColor);
             this.tabPage2.Controls.Add(this.cbLayerAutoRotateBestView);
             this.tabPage2.Controls.Add(this.nmOutlineHollowAreasLineThickness);
             this.tabPage2.Controls.Add(this.label3);
             this.tabPage2.Controls.Add(this.cbLayerDifferenceDefault);
             this.tabPage2.Controls.Add(this.label19);
             this.tabPage2.Controls.Add(this.btnResinTrapColor);
+            this.tabPage2.Controls.Add(this.btnResinTrapHLColor);
             this.tabPage2.Controls.Add(this.cbLayerZoomToFit);
             this.tabPage2.Controls.Add(this.btnOutlineHollowAreasColor);
             this.tabPage2.Controls.Add(this.btnNextLayerColor);
@@ -1319,6 +1365,36 @@
             this.tabPage2.Text = "Layer Preview";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // label37
+            // 
+            this.label37.AutoSize = true;
+            this.label37.Location = new System.Drawing.Point(364, 373);
+            this.label37.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label37.Name = "label37";
+            this.label37.Size = new System.Drawing.Size(148, 18);
+            this.label37.TabIndex = 39;
+            this.label37.Text = "Crosshair Fade Level";
+            // 
+            // label36
+            // 
+            this.label36.AutoSize = true;
+            this.label36.Location = new System.Drawing.Point(9, 371);
+            this.label36.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label36.Name = "label36";
+            this.label36.Size = new System.Drawing.Size(161, 18);
+            this.label36.TabIndex = 38;
+            this.label36.Text = "Auto zoom default level";
+            // 
+            // cbDefaultCrosshairFade
+            // 
+            this.cbDefaultCrosshairFade.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbDefaultCrosshairFade.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbDefaultCrosshairFade.FormattingEnabled = true;
+            this.cbDefaultCrosshairFade.Location = new System.Drawing.Point(521, 370);
+            this.cbDefaultCrosshairFade.Name = "cbDefaultCrosshairFade";
+            this.cbDefaultCrosshairFade.Size = new System.Drawing.Size(68, 26);
+            this.cbDefaultCrosshairFade.TabIndex = 37;
+            // 
             // cbAutoZoomIssues
             // 
             this.cbAutoZoomIssues.AutoSize = true;
@@ -1328,6 +1404,16 @@
             this.cbAutoZoomIssues.TabIndex = 35;
             this.cbAutoZoomIssues.Text = "Auto zoom to issues and drawings portrait area (best fit)";
             this.cbAutoZoomIssues.UseVisualStyleBackColor = true;
+            // 
+            // cbDefaultAutoZoomLock
+            // 
+            this.cbDefaultAutoZoomLock.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbDefaultAutoZoomLock.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbDefaultAutoZoomLock.FormattingEnabled = true;
+            this.cbDefaultAutoZoomLock.Location = new System.Drawing.Point(177, 369);
+            this.cbDefaultAutoZoomLock.Name = "cbDefaultAutoZoomLock";
+            this.cbDefaultAutoZoomLock.Size = new System.Drawing.Size(68, 26);
+            this.cbDefaultAutoZoomLock.TabIndex = 36;
             // 
             // tabPage3
             // 
@@ -1346,13 +1432,17 @@
             // 
             this.tabPage4.Controls.Add(this.cbPartialUpdateIslandsOnEditing);
             this.tabPage4.Controls.Add(this.btnPixelEditorDrainHoleColor);
+            this.tabPage4.Controls.Add(this.btnPixelEditorDrainHoleHLColor);
             this.tabPage4.Controls.Add(this.label26);
             this.tabPage4.Controls.Add(this.btnPixelEditorSupportColor);
+            this.tabPage4.Controls.Add(this.btnPixelEditorSupportHLColor);
             this.tabPage4.Controls.Add(this.label25);
             this.tabPage4.Controls.Add(this.btnPixelEditorRemovePixelColor);
+            this.tabPage4.Controls.Add(this.btnPixelEditorRemovePixelHLColor);
             this.tabPage4.Controls.Add(this.label24);
             this.tabPage4.Controls.Add(this.label23);
             this.tabPage4.Controls.Add(this.btnPixelEditorAddPixelColor);
+            this.tabPage4.Controls.Add(this.btnPixelEditorAddPixelHLColor);
             this.tabPage4.Location = new System.Drawing.Point(4, 27);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
@@ -1378,7 +1468,7 @@
             this.btnPixelEditorDrainHoleColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnPixelEditorDrainHoleColor.FlatAppearance.BorderSize = 2;
             this.btnPixelEditorDrainHoleColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPixelEditorDrainHoleColor.Location = new System.Drawing.Point(152, 131);
+            this.btnPixelEditorDrainHoleColor.Location = new System.Drawing.Point(256, 131);
             this.btnPixelEditorDrainHoleColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnPixelEditorDrainHoleColor.Name = "btnPixelEditorDrainHoleColor";
             this.btnPixelEditorDrainHoleColor.Size = new System.Drawing.Size(32, 32);
@@ -1386,15 +1476,29 @@
             this.btnPixelEditorDrainHoleColor.UseVisualStyleBackColor = false;
             this.btnPixelEditorDrainHoleColor.Click += new System.EventHandler(this.EventClick);
             // 
+            // btnPixelEditorDrainHoleHLColor
+            // 
+            this.btnPixelEditorDrainHoleHLColor.BackColor = System.Drawing.Color.White;
+            this.btnPixelEditorDrainHoleHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnPixelEditorDrainHoleHLColor.FlatAppearance.BorderSize = 2;
+            this.btnPixelEditorDrainHoleHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPixelEditorDrainHoleHLColor.Location = new System.Drawing.Point(299, 131);
+            this.btnPixelEditorDrainHoleHLColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnPixelEditorDrainHoleHLColor.Name = "btnPixelEditorDrainHoleHLColor";
+            this.btnPixelEditorDrainHoleHLColor.Size = new System.Drawing.Size(32, 32);
+            this.btnPixelEditorDrainHoleHLColor.TabIndex = 23;
+            this.btnPixelEditorDrainHoleHLColor.UseVisualStyleBackColor = false;
+            this.btnPixelEditorDrainHoleHLColor.Click += new System.EventHandler(this.EventClick);
+            // 
             // label26
             // 
             this.label26.AutoSize = true;
             this.label26.Location = new System.Drawing.Point(9, 138);
             this.label26.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label26.Name = "label26";
-            this.label26.Size = new System.Drawing.Size(117, 18);
+            this.label26.Size = new System.Drawing.Size(223, 18);
             this.label26.TabIndex = 8;
-            this.label26.Text = "Drain hole color:";
+            this.label26.Text = "Drain hole color / Highlight color:";
             // 
             // btnPixelEditorSupportColor
             // 
@@ -1402,7 +1506,7 @@
             this.btnPixelEditorSupportColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnPixelEditorSupportColor.FlatAppearance.BorderSize = 2;
             this.btnPixelEditorSupportColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPixelEditorSupportColor.Location = new System.Drawing.Point(152, 91);
+            this.btnPixelEditorSupportColor.Location = new System.Drawing.Point(256, 91);
             this.btnPixelEditorSupportColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnPixelEditorSupportColor.Name = "btnPixelEditorSupportColor";
             this.btnPixelEditorSupportColor.Size = new System.Drawing.Size(32, 32);
@@ -1410,15 +1514,29 @@
             this.btnPixelEditorSupportColor.UseVisualStyleBackColor = false;
             this.btnPixelEditorSupportColor.Click += new System.EventHandler(this.EventClick);
             // 
+            // btnPixelEditorSupportHLColor
+            // 
+            this.btnPixelEditorSupportHLColor.BackColor = System.Drawing.Color.White;
+            this.btnPixelEditorSupportHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnPixelEditorSupportHLColor.FlatAppearance.BorderSize = 2;
+            this.btnPixelEditorSupportHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPixelEditorSupportHLColor.Location = new System.Drawing.Point(299, 91);
+            this.btnPixelEditorSupportHLColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnPixelEditorSupportHLColor.Name = "btnPixelEditorSupportHLColor";
+            this.btnPixelEditorSupportHLColor.Size = new System.Drawing.Size(32, 32);
+            this.btnPixelEditorSupportHLColor.TabIndex = 22;
+            this.btnPixelEditorSupportHLColor.UseVisualStyleBackColor = false;
+            this.btnPixelEditorSupportHLColor.Click += new System.EventHandler(this.EventClick);
+            // 
             // label25
             // 
             this.label25.AutoSize = true;
             this.label25.Location = new System.Drawing.Point(9, 98);
             this.label25.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(102, 18);
+            this.label25.Size = new System.Drawing.Size(208, 18);
             this.label25.TabIndex = 6;
-            this.label25.Text = "Support color:";
+            this.label25.Text = "Support color / Highlight color:";
             // 
             // btnPixelEditorRemovePixelColor
             // 
@@ -1426,7 +1544,7 @@
             this.btnPixelEditorRemovePixelColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnPixelEditorRemovePixelColor.FlatAppearance.BorderSize = 2;
             this.btnPixelEditorRemovePixelColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPixelEditorRemovePixelColor.Location = new System.Drawing.Point(152, 51);
+            this.btnPixelEditorRemovePixelColor.Location = new System.Drawing.Point(256, 51);
             this.btnPixelEditorRemovePixelColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnPixelEditorRemovePixelColor.Name = "btnPixelEditorRemovePixelColor";
             this.btnPixelEditorRemovePixelColor.Size = new System.Drawing.Size(32, 32);
@@ -1434,15 +1552,29 @@
             this.btnPixelEditorRemovePixelColor.UseVisualStyleBackColor = false;
             this.btnPixelEditorRemovePixelColor.Click += new System.EventHandler(this.EventClick);
             // 
+            // btnPixelEditorRemovePixelHLColor
+            // 
+            this.btnPixelEditorRemovePixelHLColor.BackColor = System.Drawing.Color.White;
+            this.btnPixelEditorRemovePixelHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnPixelEditorRemovePixelHLColor.FlatAppearance.BorderSize = 2;
+            this.btnPixelEditorRemovePixelHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPixelEditorRemovePixelHLColor.Location = new System.Drawing.Point(298, 51);
+            this.btnPixelEditorRemovePixelHLColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnPixelEditorRemovePixelHLColor.Name = "btnPixelEditorRemovePixelHLColor";
+            this.btnPixelEditorRemovePixelHLColor.Size = new System.Drawing.Size(32, 32);
+            this.btnPixelEditorRemovePixelHLColor.TabIndex = 21;
+            this.btnPixelEditorRemovePixelHLColor.UseVisualStyleBackColor = false;
+            this.btnPixelEditorRemovePixelHLColor.Click += new System.EventHandler(this.EventClick);
+            // 
             // label24
             // 
             this.label24.AutoSize = true;
             this.label24.Location = new System.Drawing.Point(9, 58);
             this.label24.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(135, 18);
+            this.label24.Size = new System.Drawing.Size(241, 18);
             this.label24.TabIndex = 4;
-            this.label24.Text = "Pixel remove color:";
+            this.label24.Text = "Pixel remove color / Highlight color:";
             // 
             // label23
             // 
@@ -1450,9 +1582,9 @@
             this.label23.Location = new System.Drawing.Point(9, 17);
             this.label23.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(109, 18);
+            this.label23.Size = new System.Drawing.Size(215, 18);
             this.label23.TabIndex = 2;
-            this.label23.Text = "Pixel add color:";
+            this.label23.Text = "Pixel add color / Highlight color:";
             // 
             // btnPixelEditorAddPixelColor
             // 
@@ -1460,13 +1592,27 @@
             this.btnPixelEditorAddPixelColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnPixelEditorAddPixelColor.FlatAppearance.BorderSize = 2;
             this.btnPixelEditorAddPixelColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPixelEditorAddPixelColor.Location = new System.Drawing.Point(152, 10);
+            this.btnPixelEditorAddPixelColor.Location = new System.Drawing.Point(256, 10);
             this.btnPixelEditorAddPixelColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnPixelEditorAddPixelColor.Name = "btnPixelEditorAddPixelColor";
             this.btnPixelEditorAddPixelColor.Size = new System.Drawing.Size(32, 32);
             this.btnPixelEditorAddPixelColor.TabIndex = 3;
             this.btnPixelEditorAddPixelColor.UseVisualStyleBackColor = false;
             this.btnPixelEditorAddPixelColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnPixelEditorAddPixelHLColor
+            // 
+            this.btnPixelEditorAddPixelHLColor.BackColor = System.Drawing.Color.White;
+            this.btnPixelEditorAddPixelHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnPixelEditorAddPixelHLColor.FlatAppearance.BorderSize = 2;
+            this.btnPixelEditorAddPixelHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPixelEditorAddPixelHLColor.Location = new System.Drawing.Point(298, 10);
+            this.btnPixelEditorAddPixelHLColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnPixelEditorAddPixelHLColor.Name = "btnPixelEditorAddPixelHLColor";
+            this.btnPixelEditorAddPixelHLColor.Size = new System.Drawing.Size(32, 32);
+            this.btnPixelEditorAddPixelHLColor.TabIndex = 20;
+            this.btnPixelEditorAddPixelHLColor.UseVisualStyleBackColor = false;
+            this.btnPixelEditorAddPixelHLColor.Click += new System.EventHandler(this.EventClick);
             // 
             // tabPage5
             // 
@@ -1684,7 +1830,9 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button btnResinTrapColor;
+        private System.Windows.Forms.Button btnResinTrapHLColor;
         private System.Windows.Forms.Button btnIslandColor;
+        private System.Windows.Forms.Button btnIslandHLColor;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.CheckBox cbStartMaximized;
@@ -1743,12 +1891,16 @@
         private System.Windows.Forms.ComboBox cbDefaultOpenFileExtension;
         private System.Windows.Forms.TabPage tabPage4;
         private System.Windows.Forms.Button btnPixelEditorRemovePixelColor;
+        private System.Windows.Forms.Button btnPixelEditorRemovePixelHLColor;
         private System.Windows.Forms.Label label24;
         private System.Windows.Forms.Label label23;
         private System.Windows.Forms.Button btnPixelEditorAddPixelColor;
+        private System.Windows.Forms.Button btnPixelEditorAddPixelHLColor;
         private System.Windows.Forms.Button btnPixelEditorSupportColor;
+        private System.Windows.Forms.Button btnPixelEditorSupportHLColor;
         private System.Windows.Forms.Label label25;
         private System.Windows.Forms.Button btnPixelEditorDrainHoleColor;
+        private System.Windows.Forms.Button btnPixelEditorDrainHoleHLColor;
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.CheckBox cbFileSavePromptOverwrite;
         private System.Windows.Forms.Label label27;
@@ -1774,6 +1926,7 @@
         private System.Windows.Forms.Label label32;
         private System.Windows.Forms.TextBox tbFileExtractDefaultDirectory;
         private System.Windows.Forms.CheckBox cbAutoZoomIssues;
+        private System.Windows.Forms.ComboBox cbDefaultAutoZoomLock;
         private System.Windows.Forms.TabPage tabPage5;
         private System.Windows.Forms.CheckBox cbLayerRepairLayersIslands;
         private System.Windows.Forms.CheckBox cbLayerRepairRemoveEmptyLayers;
@@ -1787,5 +1940,8 @@
         private System.Windows.Forms.CheckBox cbPartialUpdateIslandsOnEditing;
         private System.Windows.Forms.CheckBox cbIslandAllowDiagonalBonds;
         private System.Windows.Forms.ToolTip toolTip;
+        private System.Windows.Forms.ComboBox cbDefaultCrosshairFade;
+        private System.Windows.Forms.Label label37;
+        private System.Windows.Forms.Label label36;
     }
 }

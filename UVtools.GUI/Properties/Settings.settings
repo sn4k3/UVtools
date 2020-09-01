@@ -6,9 +6,15 @@
       <Value Profile="(Default)">Red</Value>
     </Setting>
     <Setting Name="IslandColor" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">Gold</Value>
+    </Setting>
+    <Setting Name="IslandHLColor" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">Yellow</Value>
     </Setting>
     <Setting Name="ResinTrapColor" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">SandyBrown</Value>
+    </Setting>
+    <Setting Name="ResinTrapHLColor" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">Orange</Value>
     </Setting>
     <Setting Name="TouchingBoundsColor" Type="System.Drawing.Color" Scope="User">
@@ -110,16 +116,34 @@
     <Setting Name="DefaultOpenFileExtension" Type="System.Byte" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
+    <Setting Name="DefaultCrosshairFade" Type="System.Byte" Scope="User">
+      <Value Profile="(Default)">5</Value>
+    </Setting>
+    <Setting Name="DefaultAutoZoomLock" Type="System.Byte" Scope="User">
+      <Value Profile="(Default)">7</Value>
+    </Setting>
     <Setting Name="PixelEditorAddPixelColor" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">LightGreen</Value>
+    </Setting>
+    <Setting Name="PixelEditorAddPixelHLColor" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">Green</Value>
     </Setting>
     <Setting Name="PixelEditorRemovePixelColor" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">PaleVioletRed</Value>
+    </Setting>
+    <Setting Name="PixelEditorRemovePixelHLColor" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">DarkRed</Value>
     </Setting>
     <Setting Name="PixelEditorSupportColor" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">Cyan</Value>
     </Setting>
     <Setting Name="PixelEditorDrainHoleColor" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">Plum</Value>
+    </Setting>
+    <Setting Name="PixelEditorSupportHLColor" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">DarkCyan</Value>
+    </Setting>
+    <Setting Name="PixelEditorDrainHoleHLColor" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">Purple</Value>
     </Setting>
     <Setting Name="FileSaveNamePreffix" Type="System.String" Scope="User">
@@ -144,7 +168,7 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="AutoZoomIssues" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="LayerRepairDefaultClosingIterations" Type="System.Byte" Scope="User">
       <Value Profile="(Default)">2</Value>
