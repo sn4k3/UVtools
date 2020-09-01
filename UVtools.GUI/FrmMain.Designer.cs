@@ -79,6 +79,8 @@
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerImageLayerOutline = new System.Windows.Forms.ToolStripSplitButton();
             this.tsLayerImageLayerOutlinePrintVolumeBounds = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsLayerImageShowCrosshairs = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator25 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerImageLayerOutlineLayerBounds = new System.Windows.Forms.ToolStripMenuItem();
             this.tsLayerImageLayerOutlineHollowAreas = new System.Windows.Forms.ToolStripMenuItem();
             this.tsLayerImageLayerOutlineEdgeDetection = new System.Windows.Forms.ToolStripMenuItem();
@@ -245,6 +247,9 @@
             this.tbLayer = new System.Windows.Forms.TrackBar();
             this.lbInitialLayer = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.layerZoomTimer = new System.Windows.Forms.Timer(this.components);
+            this.issueScrollTimer = new System.Windows.Forms.Timer(this.components);
+            this.tsLayerImageZoomLock = new System.Windows.Forms.ToolStripLabel();
             this.btnFindLayer = new System.Windows.Forms.Button();
             this.btnLastLayer = new System.Windows.Forms.Button();
             this.btnFirstLayer = new System.Windows.Forms.Button();
@@ -312,6 +317,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).BeginInit();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.EventKeyDown);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
             // 
             // menu
             // 
@@ -683,6 +690,7 @@
             this.pbLayer.TabIndex = 7;
             this.pbLayer.Zoomed += new System.EventHandler<Cyotek.Windows.Forms.ImageBoxZoomEventArgs>(this.pbLayer_Zoomed);
             this.pbLayer.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.EventMouseDoubleClick);
+            this.pbLayer.MouseClick += new System.Windows.Forms.MouseEventHandler(this.EventMouseClick);
             this.pbLayer.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseMove);
             this.pbLayer.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseUp);
             // 
@@ -697,6 +705,8 @@
             this.toolStripSeparator14,
             this.tsLayerImageHighlightIssues,
             this.toolStripSeparator7,
+            this.tsLayerImageShowCrosshairs,
+            this.toolStripSeparator25,
             this.tsLayerImageLayerOutline,
             this.toolStripSeparator9,
             this.tsLayerImagePixelEdit,
@@ -807,6 +817,24 @@
             this.tsLayerImageLayerOutline.Size = new System.Drawing.Size(78, 22);
             this.tsLayerImageLayerOutline.Text = "&Outline";
             this.tsLayerImageLayerOutline.ButtonClick += new System.EventHandler(this.EventClick);
+            //
+            // tsLayerImageShowCrosshairs
+            //
+            this.tsLayerImageShowCrosshairs.Checked = true;
+            this.tsLayerImageShowCrosshairs.CheckOnClick = true;
+            this.tsLayerImageShowCrosshairs.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsLayerImageShowCrosshairs.Image = global::UVtools.GUI.Properties.Resources.crosshairs_16x16;
+            this.tsLayerImageShowCrosshairs.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerImageShowCrosshairs.Name = "tsLayerImageShowCrosshairs";
+            this.tsLayerImageShowCrosshairs.Size = new System.Drawing.Size(81, 22);
+            this.tsLayerImageShowCrosshairs.Text = "&Crosshairs";
+            this.tsLayerImageShowCrosshairs.ToolTipText = "Show crosshairs for selected issues on the current layer.";
+            this.tsLayerImageShowCrosshairs.Click += new System.EventHandler(this.EventClick);
+            // 
+            // toolStripSeparator25
+            // 
+            this.toolStripSeparator25.Name = "toolStripSeparator25";
+            this.toolStripSeparator25.Size = new System.Drawing.Size(6, 25);
             // 
             // tsLayerImageLayerOutlinePrintVolumeBounds
             // 
@@ -893,6 +921,7 @@
             this.toolStripSeparator6,
             this.tsLayerResolution,
             this.toolStripSeparator11,
+            this.tsLayerImageZoomLock,
             this.tsLayerImageZoom,
             this.toolStripSeparator8,
             this.tsLayerImagePanLocation,
@@ -942,7 +971,7 @@
             this.tsLayerImageZoom.Image = global::UVtools.GUI.Properties.Resources.search_16x16;
             this.tsLayerImageZoom.Name = "tsLayerImageZoom";
             this.tsLayerImageZoom.Size = new System.Drawing.Size(89, 22);
-            this.tsLayerImageZoom.Text = "Zoom: 100%";
+            this.tsLayerImageZoom.Text = "Zoom: [1x]";
             this.tsLayerImageZoom.ToolTipText = "Layer image zoom level, use mouse scroll to zoom in/out into image\r\nCtrl + 0 to s" +
     "cale to fit";
             // 
@@ -1396,8 +1425,8 @@
             this.flvIssues.View = System.Windows.Forms.View.Details;
             this.flvIssues.VirtualMode = true;
             this.flvIssues.SelectionChanged += new System.EventHandler(this.EventSelectedIndexChanged);
-            this.flvIssues.ItemActivate += new System.EventHandler(this.EventItemActivate);
             this.flvIssues.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
+            this.flvIssues.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.EventMouseDoubleClick);
             // 
             // flvIssuesColType
             // 
@@ -1491,6 +1520,9 @@
             this.tsIssuePrevious.Text = "Previous";
             this.tsIssuePrevious.ToolTipText = "Show previous issue [CTRL+Left]";
             this.tsIssuePrevious.Click += new System.EventHandler(this.EventClick);
+            this.tsIssuePrevious.MouseDown += new System.Windows.Forms.MouseEventHandler(this.EventMouseDown);
+            this.tsIssuePrevious.MouseLeave += new System.EventHandler(this.EventMouseLeave);
+            this.tsIssuePrevious.MouseUp += new System.Windows.Forms.MouseEventHandler(this.EventMouseUp);
             // 
             // tsIssueCount
             // 
@@ -1510,6 +1542,9 @@
             this.tsIssueNext.Text = "tsIslandsNext";
             this.tsIssueNext.ToolTipText = "Show next issue [CTRL+Right]";
             this.tsIssueNext.Click += new System.EventHandler(this.EventClick);
+            this.tsIssueNext.MouseDown += new System.Windows.Forms.MouseEventHandler(this.EventMouseDown);
+            this.tsIssueNext.MouseLeave += new System.EventHandler(this.EventMouseLeave);
+            this.tsIssueNext.MouseUp += new System.Windows.Forms.MouseEventHandler(this.EventMouseUp);
             // 
             // toolStripSeparator13
             // 
@@ -1626,7 +1661,6 @@
             this.flvPixelHistory.View = System.Windows.Forms.View.Details;
             this.flvPixelHistory.VirtualMode = true;
             this.flvPixelHistory.SelectionChanged += new System.EventHandler(this.EventSelectedIndexChanged);
-            this.flvPixelHistory.ItemActivate += new System.EventHandler(this.EventItemActivate);
             this.flvPixelHistory.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
             // 
             // flvPixelHistoryColNumber
@@ -1938,7 +1972,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(272, 36);
             this.label1.TabIndex = 1;
-            this.label1.Text = "Right click to add white pixels\r\nShift + Right click to remove white pixels";
+            this.label1.Text = "Shift+Left click to add white pixels\r\nShift+Right click to remove white pixels";
             // 
             // label2
             // 
@@ -2169,8 +2203,7 @@
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(299, 36);
             this.label23.TabIndex = 1;
-            this.label23.Text = "Right click to add white pixels text\r\nShift + Right click to remove white pixels " +
-    "text";
+            this.label23.Text = "Shift+Left click to add white text\r\nShift+Right click to remove white text ";
             // 
             // label24
             // 
@@ -2281,8 +2314,7 @@
             this.label30.Name = "label30";
             this.label30.Size = new System.Drawing.Size(321, 36);
             this.label30.TabIndex = 1;
-            this.label30.Text = "Right click over a white pixel to remove it whole \r\nlinked area (Fill with black)" +
-    "";
+            this.label30.Text = "Shift click over a white pixel to remove whole \r\nlinked area (Fill with black)";
             // 
             // tabPage2
             // 
@@ -2451,7 +2483,7 @@
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(344, 36);
             this.label4.TabIndex = 1;
-            this.label4.Text = "Right click under a island to add a primitive support.\r\nNote: This operation can\'" +
+            this.label4.Text = "Shift click under a island to add a primitive support.\r\nNote: This operation can\'" +
     "t be previewed.";
             // 
             // tabPage3
@@ -2529,7 +2561,7 @@
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(271, 36);
             this.label12.TabIndex = 1;
-            this.label12.Text = "Right click to add a vertical drain hole.\r\nNote: This operation can\'t be previewe" +
+            this.label12.Text = "Shift click to add a vertical drain hole.\r\nNote: This operation can\'t be previewe" +
     "d.";
             // 
             // tabPageLog
@@ -2777,7 +2809,7 @@
             // 
             // layerScrollTimer
             // 
-            this.layerScrollTimer.Interval = 150;
+            this.layerScrollTimer.Interval = 500;
             this.layerScrollTimer.Tick += new System.EventHandler(this.EventTimerTick);
             // 
             // btnGCodeRebuild
@@ -2797,6 +2829,27 @@
             this.toolStripSeparator24.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripSeparator24.Name = "toolStripSeparator24";
             this.toolStripSeparator24.Size = new System.Drawing.Size(6, 25);
+            // 
+            // layerZoomTimer
+            // 
+            this.layerZoomTimer.Interval = 1;
+            this.layerZoomTimer.Tick += new System.EventHandler(this.EventTimerTick);
+            // 
+            // issueScrollTimer
+            // 
+            this.issueScrollTimer.Interval = 500;
+            this.issueScrollTimer.Tick += new System.EventHandler(this.EventTimerTick);
+            // 
+            // tsLayerImageZoomLock
+            // 
+            this.tsLayerImageZoomLock.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerImageZoomLock.Image = global::UVtools.GUI.Properties.Resources.Lock_16x16;
+            this.tsLayerImageZoomLock.Name = "tsLayerImageZoomLock";
+            this.tsLayerImageZoomLock.Size = new System.Drawing.Size(16, 22);
+            this.tsLayerImageZoomLock.ToolTipText = "This zoom factor will be used for auto-zoom functions. " +
+                "Use scroll wheel to select desired auto zoom level\r\nand double-click middle mouse button to set.";
+            this.tsLayerImageZoomLock.Text = "]";
+            this.tsLayerImageZoomLock.Visible = false;
             // 
             // FrmMain
             // 
@@ -2975,6 +3028,8 @@
         private System.Windows.Forms.ToolStripButton tsIssuesRepair;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator14;
         private System.Windows.Forms.ToolStripButton tsLayerImageHighlightIssues;
+        private System.Windows.Forms.ToolStripButton tsLayerImageShowCrosshairs;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator25;
         private System.Windows.Forms.TrackBar tbLayer;
         private System.Windows.Forms.TableLayoutPanel tlRight;
         private System.Windows.Forms.Label lbMaxLayer;
@@ -2989,6 +3044,8 @@
         private System.Windows.Forms.Button btnFindLayer;
         private System.Windows.Forms.ToolTip toolTipInformation;
         private System.Windows.Forms.Timer layerScrollTimer;
+        private System.Windows.Forms.Timer layerZoomTimer;
+        private System.Windows.Forms.Timer issueScrollTimer;
         private System.Windows.Forms.ToolStripSplitButton tsLayerImageExport;
         private System.Windows.Forms.ToolStripMenuItem tsLayerImageExportFile;
         private System.Windows.Forms.ToolStripMenuItem tsLayerImageExportClipboard;
@@ -3130,6 +3187,7 @@
         private System.Windows.Forms.ToolStripMenuItem menuToolsLayerClone;
         private System.Windows.Forms.ToolStripMenuItem menuHelpBenchmark;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator24;
+        private System.Windows.Forms.ToolStripLabel tsLayerImageZoomLock;
         private System.Windows.Forms.ToolStripButton btnGCodeRebuild;
     }
 }

@@ -22,6 +22,13 @@ namespace UVtools.GUI.Forms
             fileFormats.AddRange(from format in FileFormat.AvaliableFormats from extension in format.FileExtensions select $"{extension.Description} (.{extension.Extension})");
             cbDefaultOpenFileExtension.Items.AddRange(fileFormats.ToArray());
 
+            // Derive strings for the zoom lock and crosshair fade combo-boxes from the
+            // ZoomLevels constant array, and add those strings to the comboboxes.
+            var zoomRange = FrmMain.ZoomLevels.Skip(FrmMain.ZoomLevelSkipCount).Select(
+            s => Convert.ToString((double)s / 100) + "x").ToArray();
+            cbDefaultAutoZoomLock.Items.AddRange(zoomRange);
+            cbDefaultCrosshairFade.Items.AddRange(zoomRange);
+
             Init();
         }
 
@@ -44,8 +51,12 @@ namespace UVtools.GUI.Forms
                 btnPreviousLayerColor.BackColor = Settings.Default.PreviousLayerColor;
                 btnNextLayerColor.BackColor = Settings.Default.NextLayerColor;
                 btnIslandColor.BackColor = Settings.Default.IslandColor;
+                btnIslandHLColor.BackColor = Settings.Default.IslandHLColor;
                 btnResinTrapColor.BackColor = Settings.Default.ResinTrapColor;
+                btnResinTrapHLColor.BackColor = Settings.Default.ResinTrapHLColor;
                 btnTouchingBoundsColor.BackColor = Settings.Default.TouchingBoundsColor;
+                cbDefaultAutoZoomLock.SelectedIndex = Settings.Default.DefaultAutoZoomLock;
+                cbDefaultCrosshairFade.SelectedIndex = Settings.Default.DefaultCrosshairFade;
 
                 btnOutlinePrintVolumeBoundsColor.BackColor = Settings.Default.OutlinePrintVolumeBoundsColor;
                 btnOutlineLayerBoundsColor.BackColor = Settings.Default.OutlineLayerBoundsColor;
@@ -82,9 +93,13 @@ namespace UVtools.GUI.Forms
                 nmResinTrapMaximumPixelBrightnessToDrain.Value = Settings.Default.ResinTrapMaximumPixelBrightnessToDrain;
 
                 btnPixelEditorAddPixelColor.BackColor = Settings.Default.PixelEditorAddPixelColor;
+                btnPixelEditorAddPixelHLColor.BackColor = Settings.Default.PixelEditorAddPixelHLColor;
                 btnPixelEditorRemovePixelColor.BackColor = Settings.Default.PixelEditorRemovePixelColor;
+                btnPixelEditorRemovePixelHLColor.BackColor = Settings.Default.PixelEditorRemovePixelHLColor;
                 btnPixelEditorSupportColor.BackColor = Settings.Default.PixelEditorSupportColor;
+                btnPixelEditorSupportHLColor.BackColor = Settings.Default.PixelEditorSupportHLColor;
                 btnPixelEditorDrainHoleColor.BackColor = Settings.Default.PixelEditorDrainHoleColor;
+                btnPixelEditorDrainHoleHLColor.BackColor = Settings.Default.PixelEditorDrainHoleHLColor;
                 cbPartialUpdateIslandsOnEditing.Checked = Settings.Default.PartialUpdateIslandsOnEditing;
 
                 nmLayerRepairDefaultClosingIterations.Value = Settings.Default.LayerRepairDefaultClosingIterations;
@@ -111,15 +126,21 @@ namespace UVtools.GUI.Forms
                 ReferenceEquals(sender, btnPreviousLayerColor) ||
                 ReferenceEquals(sender, btnNextLayerColor) ||
                 ReferenceEquals(sender, btnIslandColor) ||
+                ReferenceEquals(sender, btnIslandHLColor) ||
                 ReferenceEquals(sender, btnResinTrapColor) ||
+                ReferenceEquals(sender, btnResinTrapHLColor) ||
                 ReferenceEquals(sender, btnTouchingBoundsColor) ||
                 ReferenceEquals(sender, btnOutlinePrintVolumeBoundsColor) ||
                 ReferenceEquals(sender, btnOutlineLayerBoundsColor) ||
                 ReferenceEquals(sender, btnOutlineHollowAreasColor) ||
                 ReferenceEquals(sender, btnPixelEditorAddPixelColor) ||
+                ReferenceEquals(sender, btnPixelEditorAddPixelHLColor) ||
                 ReferenceEquals(sender, btnPixelEditorRemovePixelColor) ||
+                ReferenceEquals(sender, btnPixelEditorRemovePixelHLColor) ||
                 ReferenceEquals(sender, btnPixelEditorSupportColor) ||
-                ReferenceEquals(sender, btnPixelEditorDrainHoleColor)
+                ReferenceEquals(sender, btnPixelEditorDrainHoleColor) ||
+                ReferenceEquals(sender, btnPixelEditorSupportHLColor) ||
+                ReferenceEquals(sender, btnPixelEditorDrainHoleHLColor)
                 )
             {
                 Button btn = sender as Button;
@@ -196,8 +217,12 @@ namespace UVtools.GUI.Forms
                 Settings.Default.PreviousLayerColor = btnPreviousLayerColor.BackColor;
                 Settings.Default.NextLayerColor = btnNextLayerColor.BackColor;
                 Settings.Default.IslandColor = btnIslandColor.BackColor;
+                Settings.Default.IslandHLColor = btnIslandHLColor.BackColor;
                 Settings.Default.ResinTrapColor = btnResinTrapColor.BackColor;
+                Settings.Default.ResinTrapHLColor = btnResinTrapHLColor.BackColor;
                 Settings.Default.TouchingBoundsColor = btnTouchingBoundsColor.BackColor;
+                Settings.Default.DefaultCrosshairFade = (byte)cbDefaultCrosshairFade.SelectedIndex;
+                Settings.Default.DefaultAutoZoomLock = (byte)cbDefaultAutoZoomLock.SelectedIndex;
 
                 Settings.Default.OutlinePrintVolumeBoundsColor = btnOutlinePrintVolumeBoundsColor.BackColor;
                 Settings.Default.OutlineLayerBoundsColor = btnOutlineLayerBoundsColor.BackColor;
@@ -234,9 +259,13 @@ namespace UVtools.GUI.Forms
                 Settings.Default.ResinTrapMaximumPixelBrightnessToDrain = (byte)nmResinTrapMaximumPixelBrightnessToDrain.Value;
 
                 Settings.Default.PixelEditorAddPixelColor = btnPixelEditorAddPixelColor.BackColor;
+                Settings.Default.PixelEditorAddPixelHLColor = btnPixelEditorAddPixelHLColor.BackColor;
                 Settings.Default.PixelEditorRemovePixelColor = btnPixelEditorRemovePixelColor.BackColor;
+                Settings.Default.PixelEditorRemovePixelHLColor = btnPixelEditorRemovePixelHLColor.BackColor;
                 Settings.Default.PixelEditorSupportColor = btnPixelEditorSupportColor.BackColor;
                 Settings.Default.PixelEditorDrainHoleColor = btnPixelEditorDrainHoleColor.BackColor;
+                Settings.Default.PixelEditorSupportHLColor = btnPixelEditorSupportHLColor.BackColor;
+                Settings.Default.PixelEditorDrainHoleHLColor = btnPixelEditorDrainHoleHLColor.BackColor;
                 Settings.Default.PartialUpdateIslandsOnEditing = cbPartialUpdateIslandsOnEditing.Checked;
 
                 Settings.Default.LayerRepairDefaultClosingIterations = (byte) nmLayerRepairDefaultClosingIterations.Value;

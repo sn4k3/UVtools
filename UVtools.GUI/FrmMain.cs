@@ -160,9 +160,26 @@ namespace UVtools.GUI
 
         public int TotalIssues => Issues?.Count ?? 0;
 
-        public bool IsChagingLayer { get; set; }
+        public bool IsChangingLayer { get; set; }
+
+        // Settable zoom level used for auto-zoom & double-click zoom actions
+        public int AutoZoomLevel { get; set; } = 1;
+
+        // Supported ZoomLevels for Layer Preview.
+        // These settings eliminate very small zoom factors from the ImageBox default values,
+        // while ensuring that 4K/5K build plates can still easily fit on screen.  
+        public static int[] ZoomLevels =
+            { 20, 25, 30, 50, 75, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1200, 1600 };
+
+        // Count of the bottom portion of the full zoom range which will be skipped for
+        // assignable actions such as auto-zoom level, and crosshair fade level.  If values
+        // are added/removed from ZoomLevels above, this value may also need to be adjusted.
+        public static int ZoomLevelSkipCount { get; } = 7; // Start at 2x which is index 7.
 
         public PixelHistory PixelHistory { get; } = new PixelHistory();
+
+	// Track last open tab for when PixelEditor tab is removed.
+        public TabPage ControlLeftLastTab { get; set; } = null;
 
         public uint SavesCount { get; set; } = 0;
 
@@ -190,6 +207,12 @@ namespace UVtools.GUI
             tsLayerImageLayerOutlinePrintVolumeBounds.Checked = Settings.Default.OutlinePrintVolumeBounds;
             tsLayerImageLayerOutlineLayerBounds.Checked = Settings.Default.OutlineLayerBounds;
             tsLayerImageLayerOutlineHollowAreas.Checked = Settings.Default.OutlineHollowAreas;
+
+            // Initialize pbLayer zoom levels to use the discrete factors from ZoomLevels
+            pbLayer.ZoomLevels = new Cyotek.Windows.Forms.ZoomLevelCollection(ZoomLevels);
+            // Initialize the zoom level used for autozoom based on the stored default settings.
+            AutoZoomLevel = 
+                ConvToAutoZoom(ZoomLevels[Settings.Default.DefaultAutoZoomLock + ZoomLevelSkipCount]);
 
             if (Settings.Default.StartMaximized || Width >= Screen.FromControl(this).WorkingArea.Width ||
                 Height >= Screen.FromControl(this).WorkingArea.Height)
@@ -308,7 +331,7 @@ namespace UVtools.GUI
 
         protected override void OnKeyPress(KeyPressEventArgs e)
         {
-            if (ReferenceEquals(SlicerFile, null) || IsChagingLayer)
+            if (ReferenceEquals(SlicerFile, null) || IsChangingLayer)
             {
                 return;
             }
@@ -1402,7 +1425,8 @@ namespace UVtools.GUI
                 flvIssues.SelectedIndices.Clear();
                 //flvIssues.SelectObject(Issues[--index]);
                 flvIssues.SelectedIndex = --index;
-                EventItemActivate(flvIssues, null);
+                flvIssues.EnsureVisible(index); // Keep selection on screen
+                EventItemActivate(flvIssues, EventArgs.Empty);
                 return;
             }
 
@@ -1413,7 +1437,8 @@ namespace UVtools.GUI
                 flvIssues.SelectedIndices.Clear();
                 //flvIssues.SelectObject(Issues[++index]);
                 flvIssues.SelectedIndex = ++index;
-                EventItemActivate(flvIssues, null);
+                flvIssues.EnsureVisible(index); // Keep selection on screen
+                EventItemActivate(flvIssues, EventArgs.Empty);
                 return;
             }
 
@@ -1658,6 +1683,7 @@ namespace UVtools.GUI
             if (ReferenceEquals(sender, tsLayerImageRotate) || 
                 ReferenceEquals(sender, tsLayerImageLayerDifference) ||
                 ReferenceEquals(sender, tsLayerImageHighlightIssues) ||
+                ReferenceEquals(sender, tsLayerImageShowCrosshairs) ||
                 ReferenceEquals(sender, tsLayerImageLayerOutlinePrintVolumeBounds) ||
                 ReferenceEquals(sender, tsLayerImageLayerOutlineLayerBounds) ||
                 ReferenceEquals(sender, tsLayerImageLayerOutlineHollowAreas) ||
@@ -1690,6 +1716,7 @@ namespace UVtools.GUI
                 {
                     DrawModifications(true);
                 }
+
                 return;
             }
 
@@ -1876,18 +1903,42 @@ namespace UVtools.GUI
 
         private void pbLayer_Zoomed(object sender, Cyotek.Windows.Forms.ImageBoxZoomEventArgs e)
         {
-            tsLayerImageZoom.Text = $"Zoom: {e.NewZoom}% ({e.NewZoom/100f}x)";
+            // Update zoom level display in the toolstrip
+            if (ConvToAutoZoom(e.NewZoom) == AutoZoomLevel)
+            {
+                tsLayerImageZoom.Text = $"Zoom: [ {e.NewZoom / 100f}x";
+                tsLayerImageZoomLock.Visible = true;
+            }
+            else
+            {
+                tsLayerImageZoom.Text = $"Zoom: [ {e.NewZoom / 100f}x ]";
+                tsLayerImageZoomLock.Visible = false;
+            }
+
+            // Start timer to trigger refresh of the layer preview.  This ensures that the crosshairs
+            // are refreshed as layer preview transitions from higher to lower zoom levels. Using a
+            // timer with a slight delay here eliminates visual glitches caused by invoking showLayer
+            // directly at the same time as zoom is changed.
+            if (tsLayerImageShowCrosshairs.Checked &&
+                (e.OldZoom < 50 && e.NewZoom >= 50 ||
+                 e.OldZoom > 100 && e.NewZoom <= 100 ||
+                 e.NewZoom >= 50 || e.NewZoom <= 100))
+            {
+                layerZoomTimer.Start();
+            }
         }
 
         private void pbLayer_MouseUp(object sender, MouseEventArgs e)
         {
-            if (!tsLayerImagePixelEdit.Checked || (e.Button & MouseButtons.Right) == 0) return;
+            // Shift must be pressed for any pixel edit action, middle button is ignored.
+            if (!tsLayerImagePixelEdit.Checked || (e.Button & MouseButtons.Middle) != 0 || 
+                (ModifierKeys & Keys.Shift) == 0) return;
             if (!pbLayer.IsPointInImage(e.Location)) return;
             var location = pbLayer.PointToImage(e.Location);
             _lastPixelMouseLocation = Point.Empty;
 
-            DrawPixel(ModifierKeys != Keys.Shift, location);
-
+            // Left or Alt-Right Adds pixel, Right or Alt-Left removes pixel
+            DrawPixel(e.Button == MouseButtons.Left ^ (ModifierKeys & Keys.Alt) != 0, location);
             //SlicerFile[ActualLayer].LayerMat = ActualLayerImage;
             RefreshPixelHistory();
         }
@@ -1895,7 +1946,7 @@ namespace UVtools.GUI
         private Point _lastPixelMouseLocation = Point.Empty;
         private void pbLayer_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!pbLayer.IsPointInImage(e.Location)) return;
+            if (!pbLayer.IsPointInImage(e.Location) ||(ModifierKeys & Keys.Shift) == 0) return;
             var location = pbLayer.PointToImage(e.Location);
             if (_lastPixelMouseLocation == e.Location) return;
             _lastPixelMouseLocation = e.Location;
@@ -1910,18 +1961,25 @@ namespace UVtools.GUI
             }
 
             tsLayerImageMouseLocation.Text = $"{{X={x}, Y={y}, B={ActualLayerImage.GetByte(x, y)}}}";
-
+            // Bail here if we're not in a draw operation, if the mouse button is not either
+            // left or right, or if the location of the mouse pointer is not within the image.
             if (tabControlPixelEditor.SelectedIndex != (int) PixelOperation.PixelOperationType.Drawing) return;
-                if (!tsLayerImagePixelEdit.Checked || (e.Button & MouseButtons.Right) == 0) return;
+            if (!tsLayerImagePixelEdit.Checked || (e.Button & MouseButtons.Middle) != 0) return;
             if (!pbLayer.IsPointInImage(e.Location)) return;
 
-            if (ModifierKeys == Keys.Shift)
+            if (e.Button == MouseButtons.Right)
             {
-                DrawPixel(false, location);
+                // Right or Alt-Left will remove a pixel
+                DrawPixel(false ^ (ModifierKeys & Keys.Alt) != 0, location);
                 return;
             }
 
-            DrawPixel(true, location);
+            if (e.Button == MouseButtons.Left)
+            {
+                // Left or Alt-Right will add a pixel
+                DrawPixel(true ^ (ModifierKeys & Keys.Alt) != 0, location);
+                return;
+            }
         }
 
         private void EventItemActivate(object sender, EventArgs e)
@@ -1930,65 +1988,32 @@ namespace UVtools.GUI
             {
                 if(!(flvIssues.SelectedObject is LayerIssue issue)) return;
 
-                if (issue.LayerIndex != ActualLayer)
-                {
-                    ShowLayer(issue.Layer.Index);
-                }
-
-                if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||  (issue.X == -1 && issue.Y == -1))
+                if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer || (issue.X == -1 && issue.Y == -1))
                 {
                     ZoomToFit();
                 }
                 else if (issue.X >= 0 && issue.Y >= 0)
                 {
-                    if (issue.BoundingRectangle.IsEmpty || issue.Size == 1)
+                    if (Settings.Default.AutoZoomIssues ^ (ModifierKeys & Keys.Alt) != 0)
                     {
-                        int x = issue.X;
-                        int y = issue.Y;
-
-                        if (tsLayerImageRotate.Checked)
-                        {
-                            x = ActualLayerImage.Height - 1 - issue.Y;
-                            y = issue.X;
-                        }
-
-                        if (Settings.Default.AutoZoomIssues ^ (ModifierKeys & Keys.Alt) != 0)
-                        {
-                            pbLayer.ZoomToRegion(x, y, 5, 5);
-                            pbLayer.ZoomOut(true);
-                        }
-                        else
-                        {
-                            pbLayer.CenterAt(x, y);
-                        }
+                        ZoomToIssue(issue);
                     }
                     else
                     {
-                        int x = tsLayerImageRotate.Checked
-                            ? ActualLayerImage.Height - 1 - issue.BoundingRectangle.Bottom
-                            : issue.BoundingRectangle.X;
-                        int y = tsLayerImageRotate.Checked ? issue.BoundingRectangle.X : issue.BoundingRectangle.Y;
-                        if (Settings.Default.AutoZoomIssues ^ (ModifierKeys & Keys.Alt) != 0)
+                        // If issue is not already visible, center on it and bring it into view.
+                        // Issues already in view will not be centered, though their color may
+                        // change and the crosshair may move to reflect active selections.
+                        if (!Rectangle.Round(pbLayer.GetSourceImageRegion()).Contains(GetTransposedIssueBounds(issue)))
                         {
-                            
-                            pbLayer.ZoomToRegion(
-                                x,
-                                y,
-                                tsLayerImageRotate.Checked
-                                    ? issue.BoundingRectangle.Height
-                                    : issue.BoundingRectangle.Width,
-                                tsLayerImageRotate.Checked
-                                    ? issue.BoundingRectangle.Width
-                                    : issue.BoundingRectangle.Height
-                            );
-                            pbLayer.ZoomOut(true);
-                        }
-                        else
-                        {
-                            pbLayer.CenterAt(x, y);
+                            CenterAtIssue(issue);
                         }
                     }
                 }
+
+                // Unconditionally refresh layer preview here, even if layer is already active.
+                // This ensures highlight colors are updated to reflect active selections within
+                // the current layer and the crosshair is refreshed.
+                ShowLayer(issue.Layer.Index);
 
                 tsIssueCount.Tag = flvIssues.SelectedIndices[0];
                 UpdateIssuesInfo();
@@ -1997,13 +2022,7 @@ namespace UVtools.GUI
 
             if (ReferenceEquals(sender, flvPixelHistory))
             {
-                //if (flvPixelHistory.SelectedIndices.Count == 0) return;
-
                 if (!(flvPixelHistory.SelectedObject is PixelOperation operation)) return;
-                if (operation.LayerIndex != ActualLayer)
-                {
-                    ShowLayer(operation.LayerIndex);
-                }
 
                 int x = operation.Location.X;
                 int y = operation.Location.Y;
@@ -2023,8 +2042,11 @@ namespace UVtools.GUI
                 {
                     pbLayer.CenterAt(x, y);
                 }
-            }
 
+                // Unconditionally refresh layer preview here to ensure highlighting for pixel
+                // operations properly reflects the active selection.
+                ShowLayer(operation.LayerIndex);
+            }
         }
 
         private void TbLayerOnMouseWheel(object sender, MouseEventArgs e)
@@ -2497,8 +2519,8 @@ namespace UVtools.GUI
                 return;
             }
 
-            if (IsChagingLayer) return ;
-            IsChagingLayer = true;
+            if (IsChangingLayer) return ;
+            IsChangingLayer = true;
 
             ActualLayer = layerNum;
             btnLastLayer.Enabled = btnNextLayer.Enabled = layerNum < SlicerFile.LayerCount - 1;
@@ -2594,7 +2616,10 @@ namespace UVtools.GUI
                     {
                         if(issue.LayerIndex != ActualLayer) continue;
                         if(!issue.HaveValidPoint) continue;
-                        Color color = Settings.Default.ResinTrapColor;
+                        Color color = flvIssues.SelectedObjects.Contains(issue)
+                            ? Settings.Default.ResinTrapHLColor
+                            : Settings.Default.ResinTrapColor;
+
 
                         if (issue.Type == LayerIssue.IssueType.ResinTrap)
                         {
@@ -2620,7 +2645,9 @@ namespace UVtools.GUI
                             switch (issue.Type)
                             {
                                 case LayerIssue.IssueType.Island:
-                                    color = Settings.Default.IslandColor;
+                                    color = flvIssues.SelectedObjects.Contains(issue)
+                                        ? Settings.Default.IslandHLColor
+                                        : Settings.Default.IslandColor;
                                     break;
                                 case LayerIssue.IssueType.TouchingBound:
                                     color = Settings.Default.TouchingBoundsColor;
@@ -2694,10 +2721,12 @@ namespace UVtools.GUI
                     {
                         var operationDrawing = (PixelDrawing)operation;
                         var color = operationDrawing.IsAdd
-                            ? Settings.Default.PixelEditorAddPixelColor
-                            : Settings.Default.PixelEditorRemovePixelColor;
-
-
+                            ? (flvPixelHistory.SelectedObjects.Contains(operation)
+                                  ? Settings.Default.PixelEditorAddPixelHLColor
+                                  : Settings.Default.PixelEditorAddPixelColor)
+                            : (flvPixelHistory.SelectedObjects.Contains(operation)
+                                  ? Settings.Default.PixelEditorRemovePixelHLColor
+                                  : Settings.Default.PixelEditorRemovePixelColor);
                         if (operationDrawing.BrushSize == 1)
                         {
                             ActualLayerImageBgr.SetByte(operation.Location.X, operation.Location.Y, new []{ color.B, color.G, color.R });
@@ -2720,8 +2749,12 @@ namespace UVtools.GUI
                     {
                         var operationText = (PixelText)operation;
                         var color = operationText.IsAdd
-                            ? Settings.Default.PixelEditorAddPixelColor
-                            : Settings.Default.PixelEditorRemovePixelColor;
+                            ? (flvPixelHistory.SelectedObjects.Contains(operation)
+                                  ? Settings.Default.PixelEditorAddPixelHLColor
+                                  : Settings.Default.PixelEditorAddPixelColor)
+                            : (flvPixelHistory.SelectedObjects.Contains(operation)
+                                  ? Settings.Default.PixelEditorRemovePixelHLColor
+                                  : Settings.Default.PixelEditorRemovePixelColor);
 
                         CvInvoke.PutText(ActualLayerImageBgr, operationText.Text, operationText.Location, operationText.Font, operationText.FontScale, new MCvScalar(color.B, color.G, color.R), operationText.Thickness, operationText.LineType, operationText.Mirror);
                     }
@@ -2729,7 +2762,9 @@ namespace UVtools.GUI
                     {
                         iniContours();
                         if(imageSpan[ActualLayerImage.GetPixelPos(operation.Location)] < 10) continue;
-                        var color = Settings.Default.PixelEditorRemovePixelColor;
+                        var color = flvPixelHistory.SelectedObjects.Contains(operation)
+                                        ? Settings.Default.PixelEditorRemovePixelHLColor
+                                        : Settings.Default.PixelEditorRemovePixelColor;
                         for (int i = 0; i < layerContours.Size; i++)
                         {
                             if (CvInvoke.PointPolygonTest(layerContours[i], operation.Location, false) >= 0)
@@ -2742,14 +2777,68 @@ namespace UVtools.GUI
                     else if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
                     {
                         var operationSupport = (PixelSupport)operation;
-                        var color = Settings.Default.PixelEditorSupportColor;
+                        var color = flvPixelHistory.SelectedObjects.Contains(operation)
+                                        ? Settings.Default.PixelEditorSupportHLColor
+                                        : Settings.Default.PixelEditorSupportColor;
+
                         CvInvoke.Circle(ActualLayerImageBgr, operation.Location, operationSupport.TipDiameter / 2, new MCvScalar(color.B, color.G, color.R), -1);
                     }
                     else if (operation.OperationType == PixelOperation.PixelOperationType.DrainHole)
                     {
                         var operationDrainHole = (PixelDrainHole)operation;
-                        var color = Settings.Default.PixelEditorDrainHoleColor;
+                        var color = flvPixelHistory.SelectedObjects.Contains(operation)
+                                        ? Settings.Default.PixelEditorDrainHoleHLColor
+                                        : Settings.Default.PixelEditorDrainHoleColor;
+
                         CvInvoke.Circle(ActualLayerImageBgr, operation.Location, operationDrainHole.Diameter / 2, new MCvScalar(color.B, color.G, color.R), -1);
+                    }
+                }
+
+                // Show crosshairs for selected issues if crosshair mode is enabled via toolstrip button.
+                // Even when enabled, crosshairs are hidden in pixel edit mode when SHIFT is pressed.
+                if (tsLayerImageShowCrosshairs.Checked && !ReferenceEquals(Issues, null) && !(tsLayerImagePixelEdit.Checked && (ModifierKeys & Keys.Shift) != 0))
+                {
+                    // Gradually increase line thickness from 1 to 3 at the lower-end of the zoom range.
+                    // This prevents the crosshair lines from dissapeareing due to being too thin to
+                    // render at very low zoom factors.
+                    var LineThickness = (pbLayer.Zoom > 100) ? 1 : (pbLayer.Zoom < 50) ? 3 : 2;
+
+                    foreach (LayerIssue issue in flvIssues.SelectedObjects)
+                    {
+                        // Don't render crosshairs for selected issue that are not on the current layer, or for 
+                        // issue types that don't have a specific location or bounds.
+                        if (issue.LayerIndex != ActualLayer || issue.Type == LayerIssue.IssueType.EmptyLayer
+                               || issue.Type == LayerIssue.IssueType.TouchingBound) continue;
+
+                        // Only draw crosshairs when zoom level is below the configurable crosshair fade threshold.
+                        if (pbLayer.Zoom <= ZoomLevels[Settings.Default.DefaultCrosshairFade + ZoomLevelSkipCount])
+                        {
+                            CvInvoke.Line(ActualLayerImageBgr,
+                                new Point(0, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
+                                new Point(issue.BoundingRectangle.Left - 10, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
+                                new MCvScalar(Color.Red.B, Color.Red.G, Color.Red.R),
+                                LineThickness);
+
+                            CvInvoke.Line(ActualLayerImageBgr,
+                                new Point(issue.BoundingRectangle.Right + 10, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
+                                new Point(ActualLayerImageBgr.Width, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
+                                new MCvScalar(Color.Red.B, Color.Red.G, Color.Red.R),
+                                LineThickness);
+
+
+                            CvInvoke.Line(ActualLayerImageBgr,
+                                new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, 0),
+                                new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, issue.BoundingRectangle.Top - 10),
+                                new MCvScalar(Color.Red.B, Color.Red.G, Color.Red.R),
+                                LineThickness);
+
+                            CvInvoke.Line(ActualLayerImageBgr,
+                                new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, issue.BoundingRectangle.Bottom + 10),
+                                new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, ActualLayerImageBgr.Height),
+                                new MCvScalar(Color.Red.B, Color.Red.G, Color.Red.R),
+                                LineThickness);
+
+                        }
                     }
                 }
 
@@ -2806,7 +2895,7 @@ namespace UVtools.GUI
                 Debug.WriteLine(e);
             }
 
-            IsChagingLayer = false;
+            IsChangingLayer = false;
         }
 
         void AddStatusBarItem(string name, object item, string extraText = "")
@@ -2830,18 +2919,50 @@ namespace UVtools.GUI
             if (ReferenceEquals(sender, flvIssues))
             {
                 tsIssueRemove.Enabled = flvIssues.SelectedIndices.Count > 0;
-                return;
+
+                // If selected index change has resulted in a single selected issue,
+                // activate it immediately. Otherwise, selection was cleared or multiple
+                // items are selected, and in either case, update layer preview
+                // to refresh selection highlighting and crosshair locations.
+                if (flvIssues.SelectedIndices.Count == 1)
+                {
+                    EventItemActivate(flvIssues, EventArgs.Empty);
+                }
+                else
+                {
+                    ShowLayer();
+                }
+
+               return;
             }
 
             if (ReferenceEquals(sender, flvPixelHistory))
             {
                 btnPixelHistoryRemove.Enabled = flvPixelHistory.SelectedIndices.Count > 0;
+
+                 // If single item is selected, activate it, otherwise, just refresh layer preview.
+                if (flvPixelHistory.SelectedIndices.Count == 1)
+                {
+                    EventItemActivate(flvPixelHistory, EventArgs.Empty);
+                }
+                else
+                {
+                    ShowLayer();
+                }
+
                 return;
             }
 
             if (ReferenceEquals(sender, tabControlLeft))
             {
-                if(ReferenceEquals(tabControlLeft.SelectedTab, tabPageIssues))
+                if (!ReferenceEquals(tabControlLeft.SelectedTab, tabPagePixelEditor))
+                {
+                    // Remember the last tab to be selected.  This is the tab that will
+                    // opened when Pixel Editor closes and it's tab is removed from the control.
+                    ControlLeftLastTab = tabControlLeft.SelectedTab;
+                }
+                
+                if (ReferenceEquals(tabControlLeft.SelectedTab, tabPageIssues))
                 {
                     if (!ReferenceEquals(tabPageIssues.Tag, null) || !Settings.Default.AutoComputeIssuesClickOnTab) return;
                     ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration());
@@ -2864,9 +2985,48 @@ namespace UVtools.GUI
                 return;
             }
         }
+ 
+        private void EventKeyDown(object sender, KeyEventArgs e)
+        {   
+            // We handle this event at the to top level rather than pbLayer to ensure
+            // the cross cursor is displayed even before the pblayer control has focus.
+            // This ensures the user is aware that even in this case, a click in the layer
+            // preview will draw a pixel.
+            if (ReferenceEquals(sender, this))
+            {
+                // This event repeats for as long as the key is pressed, so if we've
+                // already set the cursor from a previous key down event, just return.
+                if (pbLayer.Cursor == Cursors.Cross) return;
+
+                // Pixel Edit is active, Shift is down, and the cursor is over the image region.
+                if (e.KeyCode == Keys.ShiftKey &&
+                    pbLayer.ClientRectangle.Contains(pbLayer.PointToClient(Control.MousePosition)) &&
+                    tsLayerImagePixelEdit.Checked)
+                {
+                    pbLayer.Cursor = Cursors.Cross;
+                    pbLayer.PanMode = Cyotek.Windows.Forms.ImageBoxPanMode.None;
+                    if (!ReferenceEquals(SlicerFile, null)) ShowLayer();
+                }
+                return;
+            }
+        }
 
         private void EventKeyUp(object sender, KeyEventArgs e)
         {
+            // As with EventKeyDown, we handle this event at the to top level
+            // to ensure cursor and pan functionaty are restored regardless
+            // of which form has focus when shift is released.
+            if (ReferenceEquals(sender, this))
+            {
+                if (e.KeyCode == Keys.ShiftKey)
+                {
+                    pbLayer.Cursor = Cursors.Default;
+                    pbLayer.PanMode = Cyotek.Windows.Forms.ImageBoxPanMode.Left;
+                    if (!ReferenceEquals(SlicerFile, null)) ShowLayer();
+                }
+                return;
+            }
+
             if (ReferenceEquals(sender, flvProperties))
             {
                 if (e.KeyCode == Keys.Escape)
@@ -3006,6 +3166,13 @@ namespace UVtools.GUI
                 layerScrollTimer.Start();
                 return;
             }
+
+            if (ReferenceEquals(sender, tsIssueNext) || ReferenceEquals(sender, tsIssuePrevious))
+            {
+                issueScrollTimer.Tag = ReferenceEquals(sender, tsIssueNext);
+                issueScrollTimer.Start();
+                return;
+            }
         }
 
         private void EventMouseUp(object sender, MouseEventArgs e)
@@ -3013,6 +3180,27 @@ namespace UVtools.GUI
             if (ReferenceEquals(sender, btnNextLayer) || ReferenceEquals(sender, btnPreviousLayer))
             {
                 layerScrollTimer.Stop();
+                layerScrollTimer.Interval = 500;
+                return;
+            }
+
+            if (ReferenceEquals(sender, tsIssueNext) || ReferenceEquals(sender, tsIssuePrevious))
+            {
+                issueScrollTimer.Stop();
+                issueScrollTimer.Interval = 500;
+                return;
+            }
+        }
+
+        private void EventMouseLeave(object sender, EventArgs e)
+        {
+            // Toolstrip Buttons do not register mouseup events if the mouse is no longer over
+            // the button when the click is released.  Cancel scroll timer if the mouse is
+            // moved from over top of the button.
+            if (ReferenceEquals(sender, tsIssueNext) || ReferenceEquals(sender, tsIssuePrevious))
+            {
+                issueScrollTimer.Stop();
+                issueScrollTimer.Interval = 500;
                 return;
             }
         }
@@ -3021,27 +3209,129 @@ namespace UVtools.GUI
         {
             if (ReferenceEquals(sender, layerScrollTimer))
             {
+                layerScrollTimer.Interval = 150;
                 ShowLayer((bool)layerScrollTimer.Tag);
+                return;
+            }
+            
+            if (ReferenceEquals(sender, layerZoomTimer))
+            {
+                ShowLayer();
+                layerZoomTimer.Stop();
+                return;
+            }
+
+            if (ReferenceEquals(sender, issueScrollTimer))
+            {
+                issueScrollTimer.Interval = 150;
+                if ((bool)issueScrollTimer.Tag)
+                {
+                    EventClick(tsIssueNext, null);
+                }
+                else
+                {
+                    EventClick(tsIssuePrevious, null);
+                }
+                return;
+            }
+        }
+
+        private void EventMouseClick(object sender, MouseEventArgs e)
+        {
+            if (ReferenceEquals(sender, pbLayer))
+            {
+                if ((ModifierKeys & Keys.Control) != 0)
+                {
+                    // CTRL click within pbLayer performs double click action
+                    HandleMouseDoubleClick(sender, e);
+                }
                 return;
             }
         }
 
         private void EventMouseDoubleClick(object sender, MouseEventArgs e)
         {
+            // Ignore double click if CTRL is pressed. Prevents CTRL-click
+            // events that emulate double click from firing twice.
+            if ((ModifierKeys & Keys.Control) == 0)
+                HandleMouseDoubleClick(sender, e);
+        }
+
+        private void HandleMouseDoubleClick(object sender, MouseEventArgs e)
+        {
             if (ReferenceEquals(sender, pbLayer))
             {
+                // Ignore double click events if shift is pressed.  This prevents zoom
+                // operations from inadvertantly occuring when pixels are being edited, and
+                // for consistency, there is no reason not to just dissalow this any time
+                // shift is pressed regardless of whether pixel edit mode is enabled or not.
+                if ((ModifierKeys & Keys.Shift) != 0) return;
+
                 if ((e.Button & MouseButtons.Left) != 0)
                 {
-                    ZoomToFit();
+                    if (!pbLayer.IsPointInImage(e.Location)) return;
+                    var location = pbLayer.PointToImage(e.Location);
+ 
+                    if (tsLayerImageShowCrosshairs.Checked)
+                    {
+                        // turn off crosshairs before zoom to make the 
+                        // transition a little cleaner.
+                        tsLayerImageShowCrosshairs.Checked = false;
+                        ShowLayer();
+                        tsLayerImageShowCrosshairs.Checked = true;
+                    }
+
+                    pbLayer.ZoomToRegion(location.X, location.Y, 5, 5);
+                    // ZoomToRegion can result in Zoom factors much larger
+                    // than supported levels.  Zoom out and in again to 
+                    // normalize large zoom levels to the supported max zoom. 
+                    pbLayer.ZoomOut(true); pbLayer.ZoomIn(true);
+                    // Zoom out repeatedly to arrive at auto zoom level.
+                    for (int i = 0; i < AutoZoomLevel; i++) pbLayer.ZoomOut(true);
                     return;
                 }
                 if ((e.Button & MouseButtons.Middle) != 0)
                 {
-                    pbLayer.ZoomToFit();
+                    // Reset auto-zoom level based on current zoom level and
+                    // refresh toolstrip zoom indicator.
+                    var currentLevel = ConvToAutoZoom(pbLayer.Zoom);
+                    // Don't allow small zoom values to be locked for auto-zoom
+                    if (currentLevel >= ZoomLevels.Count() - ZoomLevelSkipCount) return;
+                    AutoZoomLevel = currentLevel;
+                    tsLayerImageZoom.Text = $"Zoom: [ {pbLayer.Zoom / 100f}x";
+                    tsLayerImageZoomLock.Visible = true;
                     return;
+                }
+                if ((e.Button & MouseButtons.Right) != 0)
+                {
+                    ZoomToFit();
+                    return;
+
                 }
                 return;
             }
+
+            if (ReferenceEquals(sender, flvIssues))
+            {
+                if (!(flvIssues.SelectedObject is LayerIssue issue)) return;
+		// Double clikcing an issue will center and zoom into the 
+                // selected issue. Left click on an issue will zoom to fit.
+                if ((e.Button & MouseButtons.Left) != 0)
+                {
+                    ZoomToIssue(issue);
+                    return;
+                }
+
+                if ((e.Button & (MouseButtons.Right)) != 0)
+                {
+                    ZoomToFit();
+                    return;
+                }
+
+                return;
+            }
+
+
         }
         #endregion
 
@@ -3087,7 +3377,13 @@ namespace UVtools.GUI
                             int shiftPos = brushSize / 2;
                             gfx.SmoothingMode = SmoothingMode.HighSpeed;
 
-                            var color = isAdd ? Settings.Default.PixelEditorAddPixelColor : Settings.Default.PixelEditorRemovePixelColor;
+                            var color = isAdd 
+                                ? (flvPixelHistory.SelectedObjects.Contains(operation)
+                                       ? Settings.Default.PixelEditorAddPixelHLColor
+                                       : Settings.Default.PixelEditorAddPixelColor)
+                                : (flvPixelHistory.SelectedObjects.Contains(operation)
+                                       ? Settings.Default.PixelEditorRemovePixelHLColor
+                                       : Settings.Default.PixelEditorRemovePixelColor);
                             if (lineType == LineType.AntiAlias && brushSize > 1)
                             {
                                 gfx.SmoothingMode = SmoothingMode.AntiAlias;
@@ -3158,7 +3454,9 @@ namespace UVtools.GUI
                 if (PixelHistory.Contains(operation)) return;
                 PixelHistory.Add(operation);
 
-                SolidBrush brush = new SolidBrush(Settings.Default.PixelEditorSupportColor);
+                SolidBrush brush = new SolidBrush(flvPixelHistory.SelectedObjects.Contains(operation)
+                                                      ? Settings.Default.PixelEditorSupportHLColor
+                                                      : Settings.Default.PixelEditorSupportColor);
                 using (var gfx = Graphics.FromImage(bmp))
                 {
                     int shiftPos = (int)nmPixelEditorSupportsTipDiameter.Value / 2;
@@ -3174,7 +3472,9 @@ namespace UVtools.GUI
                 if (PixelHistory.Contains(operation)) return;
                 PixelHistory.Add(operation);
 
-                SolidBrush brush = new SolidBrush(Settings.Default.PixelEditorDrainHoleColor);
+                SolidBrush brush = new SolidBrush(flvPixelHistory.SelectedObjects.Contains(operation)
+                                                      ? Settings.Default.PixelEditorDrainHoleHLColor
+                                                      : Settings.Default.PixelEditorDrainHoleColor);
                 using (var gfx = Graphics.FromImage(bmp))
                 {
                     int shiftPos = (int)nmPixelEditorDrainHoleDiameter.Value / 2;
@@ -3505,9 +3805,17 @@ namespace UVtools.GUI
             else
             {
                 int currentIssueSelected = Convert.ToInt32(tsIssueCount.Tag);
-                tsIssueCount.Enabled = true;
-                tsIssueCount.Text = $"{currentIssueSelected+1}/{TotalIssues}";
+                // Convert text to fixed field length in order to prevent
+                // prev/next buttons from moving as the number of digits in
+                // the display for current index changes.  Without this,
+                // scrolling may unexpectedly stop due to the button moving
+                // out from underneath the mouse pointer.
+                var digits = Math.Floor(Math.Log10(TotalIssues) + 1);
+                var issueNum = currentIssueSelected + 1;
+                var formatString = $"D{digits}";
 
+                tsIssueCount.Enabled = true;
+                tsIssueCount.Text = $"{issueNum.ToString(formatString)}/{TotalIssues}";
                 tsIssuePrevious.Enabled = currentIssueSelected > 0;
                 tsIssueNext.Enabled = currentIssueSelected+1 < TotalIssues;
             }
@@ -3553,10 +3861,103 @@ namespace UVtools.GUI
             UpdateIssuesList();
         }
 
+        /// <summary>
+        /// Gets the bounding rectangle of the passed issue, automatically adjusting
+        /// the coordinates and width/height to account for whether or not the layer
+        /// preview image is rotated.  Used to ensure images are properly zoomed or
+        /// centered independent of the layer preview rotation.
+        /// </summary>
+        private Rectangle GetTransposedIssueBounds(LayerIssue issue)
+        {
+            if (issue.X >= 0 && issue.Y >= 0)
+            {
+                if (issue.BoundingRectangle.IsEmpty || issue.Size == 1)
+                {
+                    if (tsLayerImageRotate.Checked)
+                        return new Rectangle(ActualLayerImage.Height - 1 - issue.Y,
+                            issue.X, 5, 5);
+                }
+                else
+                {
+                    if (tsLayerImageRotate.Checked)
+                        return new Rectangle(ActualLayerImage.Height - 1 - issue.BoundingRectangle.Bottom,
+                            issue.X, issue.BoundingRectangle.Height, issue.BoundingRectangle.Width);
+                }
+            }
+
+            return issue.BoundingRectangle;
+        }
+
+        
+        /// <summary>
+        /// Zoom the layer preview to the passed issue, or if appropriate for issue type,
+        /// Zoom to fit the plate or print bounds.
+        /// </summary>
+        private void ZoomToIssue(LayerIssue issue)
+        {
+            if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||  (issue.X == -1 && issue.Y == -1))
+            {
+                ZoomToFit();
+            }
+            else if (issue.X >= 0 && issue.Y >= 0)
+            {
+
+                if (tsLayerImageShowCrosshairs.Checked)
+                {
+                    // turn off crosshairs before zoom to make the
+                    // transition a little cleaner.
+                    tsLayerImageShowCrosshairs.Checked = false;
+                    ShowLayer();
+                    tsLayerImageShowCrosshairs.Checked = true;
+                }
+
+                pbLayer.ZoomToRegion(GetTransposedIssueBounds(issue));
+                pbLayer.ZoomOut(true); pbLayer.ZoomIn(true);
+                
+                for (int i=0; i < AutoZoomLevel; i++) pbLayer.ZoomOut(true);
+            }
+        }
+
+        /// <summary>
+        /// Center the layer preview on the passed issue, or if appropriate for issue type,
+        /// Zoom to fit the plate or print bounds.
+        /// </summary>
+        private void CenterAtIssue(LayerIssue issue)
+        {
+            if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer || (issue.X == -1 && issue.Y == -1))
+            {
+                ZoomToFit();
+            }
+            if (issue.X >= 0 && issue.Y >= 0)
+            {
+                var issueBounds = GetTransposedIssueBounds(issue);
+                pbLayer.CenterAt(issueBounds.X+issueBounds.Width/2, issueBounds.Y+issueBounds.Height/2);
+            }
+        }
+
+        /// <summary>
+        /// Given a zoom factor (200, 300, ..., 1200, 1600) this function finds the
+        /// closest matching zoom factor from within the ZoomLevels constant array, and
+        /// returns the reverse index (from the end of the array) of that zoom factor.
+        /// This is used by auto-zoom to determine how many times zoom-out needs to be
+        /// called from max zoom in order to arrive at the desired zoom.
+        /// </summary>
+        private int ConvToAutoZoom(int zoom)
+        {
+            // Converts a Zoom Level into an AutoZoom value that indicates
+            // the number of times that ZoomOut must be called from the max
+            // zoom level in order ot reach the passed zoom level.
+            return pbLayer.ZoomLevels.Count -
+                pbLayer.ZoomLevels.IndexOf(pbLayer.ZoomLevels.FindNearest(zoom)) - 1;
+        }
+
         private void ZoomToFit()
         {
             if (ReferenceEquals(SlicerFile, null)) return;
-            if (Settings.Default.ZoomToFitPrintVolumeBounds)
+
+            // If ALT key is pressed when ZoomToFit is performed, the configured option for 
+            // zoom to plate vs. zoom to print bounds will be inverted.
+            if (Settings.Default.ZoomToFitPrintVolumeBounds ^ (ModifierKeys & Keys.Alt) != 0)
             {
                 if (!tsLayerImageRotate.Checked)
                 {
@@ -3628,6 +4029,7 @@ namespace UVtools.GUI
             {
                 if (exitEditor)
                 {
+                    tabControlLeft.SelectedTab = ControlLeftLastTab;
                     tabControlLeft.TabPages.Remove(tabPagePixelEditor);
                 }
                 return;
@@ -3699,6 +4101,7 @@ namespace UVtools.GUI
 
             if (exitEditor)
             {
+                tabControlLeft.SelectedTab = ControlLeftLastTab;
                 tabControlLeft.TabPages.Remove(tabPagePixelEditor);
             }
 

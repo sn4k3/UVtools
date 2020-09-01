@@ -303,6 +303,16 @@ namespace UVtools.GUI.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap crosshairs_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("crosshairs-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap cursor_16x16 {
             get {
                 object obj = ResourceManager.GetObject("cursor-16x16", resourceCulture);
@@ -526,6 +536,16 @@ namespace UVtools.GUI.Properties {
         internal static System.Drawing.Bitmap list_16x16 {
             get {
                 object obj = ResourceManager.GetObject("list-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Lock_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("Lock-16x16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
