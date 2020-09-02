@@ -2642,6 +2642,18 @@ namespace UVtools.GUI
                             continue;
                         }
 
+                        switch (issue.Type)
+                        {
+                            case LayerIssue.IssueType.Island:
+                                color = flvIssues.SelectedObjects.Contains(issue)
+                                    ? Settings.Default.IslandHLColor
+                                    : Settings.Default.IslandColor;
+                                break;
+                            case LayerIssue.IssueType.TouchingBound:
+                                color = Settings.Default.TouchingBoundsColor;
+                                break;
+                        }
+
                         foreach (var pixel in issue)
                         {
                             int pixelPos = ActualLayerImage.GetPixelPos(pixel);
@@ -2649,20 +2661,6 @@ namespace UVtools.GUI
                             if (brightness == 0) continue;
 
                             int pixelBgrPos = pixelPos*ActualLayerImageBgr.NumberOfChannels;
-
-                            
-                            switch (issue.Type)
-                            {
-                                case LayerIssue.IssueType.Island:
-                                    color = flvIssues.SelectedObjects.Contains(issue)
-                                        ? Settings.Default.IslandHLColor
-                                        : Settings.Default.IslandColor;
-                                    break;
-                                case LayerIssue.IssueType.TouchingBound:
-                                    color = Settings.Default.TouchingBoundsColor;
-                                    break;
-                            }
-
 
                             var newColor = color.FactorColor(brightness, 80);
 
