@@ -12,7 +12,7 @@ namespace UVtools.GUI.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.7.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.6.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -482,24 +482,24 @@ namespace UVtools.GUI.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("5")]
-        public byte DefaultCrosshairFade {
+        public byte CrosshairFadeLevel {
             get {
-                return ((byte)(this["DefaultCrosshairFade"]));
+                return ((byte)(this["CrosshairFadeLevel"]));
             }
             set {
-                this["DefaultCrosshairFade"] = value;
+                this["CrosshairFadeLevel"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("7")]
-        public byte DefaultAutoZoomLock {
+        public byte AutoZoomLockLevel {
             get {
-                return ((byte)(this["DefaultAutoZoomLock"]));
+                return ((byte)(this["AutoZoomLockLevel"]));
             }
             set {
-                this["DefaultAutoZoomLock"] = value;
+                this["AutoZoomLockLevel"] = value;
             }
         }
         
@@ -788,6 +788,42 @@ namespace UVtools.GUI.Properties {
             }
             set {
                 this["IslandAllowDiagonalBonds"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("20")]
+        public uint CrosshairLineLength {
+            get {
+                return ((uint)(this["CrosshairLineLength"]));
+            }
+            set {
+                this["CrosshairLineLength"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool CrosshairShowOnSelectedIssuesOnly {
+            get {
+                return ((bool)(this["CrosshairShowOnSelectedIssuesOnly"]));
+            }
+            set {
+                this["CrosshairShowOnSelectedIssuesOnly"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public byte CrosshairLineMargin {
+            get {
+                return ((byte)(this["CrosshairLineMargin"]));
+            }
+            set {
+                this["CrosshairLineMargin"] = value;
             }
         }
     }

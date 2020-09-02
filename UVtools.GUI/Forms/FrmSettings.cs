@@ -26,8 +26,8 @@ namespace UVtools.GUI.Forms
             // ZoomLevels constant array, and add those strings to the comboboxes.
             var zoomRange = FrmMain.ZoomLevels.Skip(FrmMain.ZoomLevelSkipCount).Select(
             s => Convert.ToString((double)s / 100) + "x").ToArray();
-            cbDefaultAutoZoomLock.Items.AddRange(zoomRange);
-            cbDefaultCrosshairFade.Items.AddRange(zoomRange);
+            cbAutoZoomLockLevel.Items.AddRange(zoomRange);
+            cbCrosshairFadeLevel.Items.AddRange(zoomRange);
 
             Init();
         }
@@ -55,8 +55,11 @@ namespace UVtools.GUI.Forms
                 btnResinTrapColor.BackColor = Settings.Default.ResinTrapColor;
                 btnResinTrapHLColor.BackColor = Settings.Default.ResinTrapHLColor;
                 btnTouchingBoundsColor.BackColor = Settings.Default.TouchingBoundsColor;
-                cbDefaultAutoZoomLock.SelectedIndex = Settings.Default.DefaultAutoZoomLock;
-                cbDefaultCrosshairFade.SelectedIndex = Settings.Default.DefaultCrosshairFade;
+                cbAutoZoomLockLevel.SelectedIndex = Settings.Default.AutoZoomLockLevel;
+                cbCrosshairShowOnSelectedIssuesOnly.Checked = Settings.Default.CrosshairShowOnSelectedIssuesOnly;
+                cbCrosshairFadeLevel.SelectedIndex = Settings.Default.CrosshairFadeLevel;
+                nmCrosshairLineLength.Value = Settings.Default.CrosshairLineLength;
+                nmCrosshairLineMargin.Value = Settings.Default.CrosshairLineMargin;
 
                 btnOutlinePrintVolumeBoundsColor.BackColor = Settings.Default.OutlinePrintVolumeBoundsColor;
                 btnOutlineLayerBoundsColor.BackColor = Settings.Default.OutlineLayerBoundsColor;
@@ -221,8 +224,11 @@ namespace UVtools.GUI.Forms
                 Settings.Default.ResinTrapColor = btnResinTrapColor.BackColor;
                 Settings.Default.ResinTrapHLColor = btnResinTrapHLColor.BackColor;
                 Settings.Default.TouchingBoundsColor = btnTouchingBoundsColor.BackColor;
-                Settings.Default.DefaultCrosshairFade = (byte)cbDefaultCrosshairFade.SelectedIndex;
-                Settings.Default.DefaultAutoZoomLock = (byte)cbDefaultAutoZoomLock.SelectedIndex;
+                Settings.Default.CrosshairFadeLevel = (byte)cbCrosshairFadeLevel.SelectedIndex;
+                Settings.Default.AutoZoomLockLevel = (byte)cbAutoZoomLockLevel.SelectedIndex;
+                Settings.Default.CrosshairShowOnSelectedIssuesOnly = cbCrosshairShowOnSelectedIssuesOnly.Checked;
+                Settings.Default.CrosshairLineLength = (uint) nmCrosshairLineLength.Value;
+                Settings.Default.CrosshairLineMargin = (byte) nmCrosshairLineMargin.Value;
 
                 Settings.Default.OutlinePrintVolumeBoundsColor = btnOutlinePrintVolumeBoundsColor.BackColor;
                 Settings.Default.OutlineLayerBoundsColor = btnOutlineLayerBoundsColor.BackColor;

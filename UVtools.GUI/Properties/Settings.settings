@@ -116,10 +116,10 @@
     <Setting Name="DefaultOpenFileExtension" Type="System.Byte" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="DefaultCrosshairFade" Type="System.Byte" Scope="User">
+    <Setting Name="CrosshairFadeLevel" Type="System.Byte" Scope="User">
       <Value Profile="(Default)">5</Value>
     </Setting>
-    <Setting Name="DefaultAutoZoomLock" Type="System.Byte" Scope="User">
+    <Setting Name="AutoZoomLockLevel" Type="System.Byte" Scope="User">
       <Value Profile="(Default)">7</Value>
     </Setting>
     <Setting Name="PixelEditorAddPixelColor" Type="System.Drawing.Color" Scope="User">
@@ -193,6 +193,15 @@
     </Setting>
     <Setting Name="IslandAllowDiagonalBonds" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="CrosshairLineLength" Type="System.UInt32" Scope="User">
+      <Value Profile="(Default)">20</Value>
+    </Setting>
+    <Setting Name="CrosshairShowOnSelectedIssuesOnly" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="CrosshairLineMargin" Type="System.Byte" Scope="User">
+      <Value Profile="(Default)">5</Value>
     </Setting>
   </Settings>
 </SettingsFile>

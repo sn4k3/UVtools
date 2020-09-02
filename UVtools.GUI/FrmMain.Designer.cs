@@ -981,8 +981,8 @@
             this.tsLayerImageZoom.Name = "tsLayerImageZoom";
             this.tsLayerImageZoom.Size = new System.Drawing.Size(81, 22);
             this.tsLayerImageZoom.Text = "Zoom: [1x]";
-            this.tsLayerImageZoom.ToolTipText = "Layer image zoom level, use mouse scroll to zoom in/out into image\r\nCtrl + 0 to s" +
-    "cale to fit";
+            this.tsLayerImageZoom.ToolTipText = "Layer image zoom level, use mouse scroll to zoom in/out into image\r\nCtrl + 0 OR d" +
+    "ouble right click to scale to fit";
             // 
             // toolStripSeparator8
             // 
@@ -1014,7 +1014,8 @@
             this.tsLayerImageMouseLocation.Name = "tsLayerImageMouseLocation";
             this.tsLayerImageMouseLocation.Size = new System.Drawing.Size(79, 22);
             this.tsLayerImageMouseLocation.Text = "{X=0, Y=0}";
-            this.tsLayerImageMouseLocation.ToolTipText = "Mouse over pixel location and pixel brightness";
+            this.tsLayerImageMouseLocation.ToolTipText = "Mouse over pixel location and pixel brightness\r\nUse SHIFT while move mouse hover " +
+    "pixels";
             // 
             // tsLayerImagePixelCount
             // 

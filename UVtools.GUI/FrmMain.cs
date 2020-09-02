@@ -179,7 +179,7 @@ namespace UVtools.GUI
         /// <summary>
         /// Returns the zoom level at which the crosshairs will fade and no longer be displayed
         /// </summary>
-        public int CrosshairFadeLevel => ZoomLevels[Settings.Default.DefaultCrosshairFade + ZoomLevelSkipCount];
+        public int CrosshairFadeLevel => ZoomLevels[Settings.Default.CrosshairFadeLevel + ZoomLevelSkipCount];
 
         /// <summary>
         /// Returns the zoom level that will be used for autozoom actions
@@ -224,7 +224,7 @@ namespace UVtools.GUI
             pbLayer.ZoomLevels = new Cyotek.Windows.Forms.ZoomLevelCollection(ZoomLevels);
             // Initialize the zoom level used for autozoom based on the stored default settings.
             AutoZoomBackIndex = 
-                ConvZoomToBackIndex(ZoomLevels[Settings.Default.DefaultAutoZoomLock + ZoomLevelSkipCount]);
+                ConvZoomToBackIndex(ZoomLevels[Settings.Default.AutoZoomLockLevel + ZoomLevelSkipCount]);
 
             if (Settings.Default.StartMaximized || Width >= Screen.FromControl(this).WorkingArea.Width ||
                 Height >= Screen.FromControl(this).WorkingArea.Height)
@@ -2844,28 +2844,59 @@ namespace UVtools.GUI
                                || issue.Type == LayerIssue.IssueType.TouchingBound) continue;
 
                         var color = new MCvScalar(Color.Red.B, Color.Red.G, Color.Red.R);
+
+
+                        // LEFT
+                        Point startPoint = new Point(Math.Max(0, issue.BoundingRectangle.X - Settings.Default.CrosshairLineMargin - 1), issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2);
+                        Point endPoint =
+                            new Point(
+                                Settings.Default.CrosshairLineLength == 0
+                                    ? 0
+                                    : (int) Math.Max(0, startPoint.X - Settings.Default.CrosshairLineLength + 1),
+                                startPoint.Y);
+
                         CvInvoke.Line(ActualLayerImageBgr,
-                            new Point(0, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
-                            new Point(issue.BoundingRectangle.Left - 10, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
+                            startPoint,
+                            endPoint,
                             color,
                             lineThickness);
 
+
+                        // RIGHT
+                        startPoint.X = Math.Min(ActualLayerImageBgr.Width,
+                            issue.BoundingRectangle.Right + Settings.Default.CrosshairLineMargin);
+                        endPoint.X = Settings.Default.CrosshairLineLength == 0
+                            ? ActualLayerImageBgr.Width
+                            : (int)Math.Min(ActualLayerImageBgr.Width, startPoint.X + Settings.Default.CrosshairLineLength - 1);
+
                         CvInvoke.Line(ActualLayerImageBgr,
-                            new Point(issue.BoundingRectangle.Right + 10, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
-                            new Point(ActualLayerImageBgr.Width, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
+                            startPoint,
+                            endPoint,
                             color,
                             lineThickness);
 
+                        // TOP
+                        startPoint = new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2,
+                            Math.Max(0, issue.BoundingRectangle.Y - Settings.Default.CrosshairLineMargin - 1));
+                        endPoint = new Point(startPoint.X,
+                            (int) (Settings.Default.CrosshairLineLength == 0
+                                ? 0
+                                : Math.Max(0, startPoint.Y - Settings.Default.CrosshairLineLength + 1)));
+
 
                         CvInvoke.Line(ActualLayerImageBgr,
-                            new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, 0),
-                            new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, issue.BoundingRectangle.Top - 10),
+                            startPoint,
+                            endPoint,
                             color,
                             lineThickness);
 
+                        // Bottom
+                        startPoint.Y = Math.Min(ActualLayerImageBgr.Height, issue.BoundingRectangle.Bottom + Settings.Default.CrosshairLineMargin);
+                        endPoint.Y = Settings.Default.CrosshairLineLength == 0 ? ActualLayerImageBgr.Height : (int) Math.Min(ActualLayerImageBgr.Height, startPoint.Y + Settings.Default.CrosshairLineLength - 1);
+
                         CvInvoke.Line(ActualLayerImageBgr,
-                            new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, issue.BoundingRectangle.Bottom + 10),
-                            new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, ActualLayerImageBgr.Height),
+                            startPoint,
+                            endPoint,
                             color,
                             lineThickness);
                     }
