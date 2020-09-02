@@ -2947,7 +2947,6 @@ namespace UVtools.GUI
         {
             if (ReferenceEquals(sender, flvIssues))
             {
-                Debug.WriteLine("Issues: Selection changed");
                 tsIssueRemove.Enabled = flvIssues.SelectedIndices.Count > 0;
 
                 // If selected index change has resulted in a single selected issue,
@@ -3352,7 +3351,7 @@ namespace UVtools.GUI
                 return;
             }
 
-            /*if (ReferenceEquals(sender, flvIssues))
+            if (ReferenceEquals(sender, flvIssues))
             {
                 if (!(flvIssues.SelectedObject is LayerIssue issue)) return;
 		        // Double clicking an issue will center and zoom into the 
@@ -3370,7 +3369,7 @@ namespace UVtools.GUI
                 }
 
                 return;
-            }*/
+            }
         }
         #endregion
 
