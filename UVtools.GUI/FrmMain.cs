@@ -1906,7 +1906,7 @@ namespace UVtools.GUI
         private void pbLayer_Zoomed(object sender, Cyotek.Windows.Forms.ImageBoxZoomEventArgs e)
         {
             if (SupressLayerZoomEvent) return;
-            Debug.WriteLine("Zoomed");
+            Debug.WriteLine($"{DateTime.Now.Ticks}: Zoomed");
             // Update zoom level display in the toolstrip
             if (ConvToAutoZoom(e.NewZoom) == AutoZoomLevel)
             {
@@ -1924,10 +1924,17 @@ namespace UVtools.GUI
             // timer with a slight delay here eliminates visual glitches caused by invoking showLayer
             // directly at the same time as zoom is changed.
             if (tsLayerImageShowCrosshairs.Checked &&
+                !ReferenceEquals(Issues, null) && 
+                flvIssues.SelectedIndices.Count > 0 &&
                 (e.OldZoom < 50 && e.NewZoom >= 50 ||
                  e.OldZoom > 100 && e.NewZoom <= 100 ||
-                 e.NewZoom >= 50 || e.NewZoom <= 100))
+                 (e.OldZoom >= 50 && e.OldZoom <= 100 && (e.NewZoom < 50 || e.NewZoom > 100))
+                ))
             {
+                if (!flvIssues.SelectedObjects.Cast<LayerIssue>().Any(issue =>
+                    issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
+                    issue.Type != LayerIssue.IssueType.TouchingBound)) return; // Find a valid candidate to update layer preview, otherwise quit
+
                 layerZoomTimer.Start();
             }
         }
@@ -2803,7 +2810,11 @@ namespace UVtools.GUI
 
                 // Show crosshairs for selected issues if crosshair mode is enabled via toolstrip button.
                 // Even when enabled, crosshairs are hidden in pixel edit mode when SHIFT is pressed.
-                if (tsLayerImageShowCrosshairs.Checked && !ReferenceEquals(Issues, null) && !(tsLayerImagePixelEdit.Checked && (ModifierKeys & Keys.Shift) != 0))
+                if (tsLayerImageShowCrosshairs.Checked && 
+                    !ReferenceEquals(Issues, null) &&
+                    flvIssues.SelectedIndices.Count > 0 &&
+                    pbLayer.Zoom <= ZoomLevels[Settings.Default.DefaultCrosshairFade + ZoomLevelSkipCount] && // Only draw crosshairs when zoom level is below the configurable crosshair fade threshold.
+                    !(tsLayerImagePixelEdit.Checked && (ModifierKeys & Keys.Shift) != 0))
                 {
                     // Gradually increase line thickness from 1 to 3 at the lower-end of the zoom range.
                     // This prevents the crosshair lines from dissapeareing due to being too thin to
@@ -2817,36 +2828,31 @@ namespace UVtools.GUI
                         if (issue.LayerIndex != ActualLayer || issue.Type == LayerIssue.IssueType.EmptyLayer
                                || issue.Type == LayerIssue.IssueType.TouchingBound) continue;
 
-                        // Only draw crosshairs when zoom level is below the configurable crosshair fade threshold.
-                        if (pbLayer.Zoom <= ZoomLevels[Settings.Default.DefaultCrosshairFade + ZoomLevelSkipCount])
-                        {
-                            var color = new MCvScalar(Color.Red.B, Color.Red.G, Color.Red.R);
-                            CvInvoke.Line(ActualLayerImageBgr,
-                                new Point(0, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
-                                new Point(issue.BoundingRectangle.Left - 10, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
-                                color,
-                                lineThickness);
+                        var color = new MCvScalar(Color.Red.B, Color.Red.G, Color.Red.R);
+                        CvInvoke.Line(ActualLayerImageBgr,
+                            new Point(0, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
+                            new Point(issue.BoundingRectangle.Left - 10, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
+                            color,
+                            lineThickness);
 
-                            CvInvoke.Line(ActualLayerImageBgr,
-                                new Point(issue.BoundingRectangle.Right + 10, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
-                                new Point(ActualLayerImageBgr.Width, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
-                                color,
-                                lineThickness);
+                        CvInvoke.Line(ActualLayerImageBgr,
+                            new Point(issue.BoundingRectangle.Right + 10, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
+                            new Point(ActualLayerImageBgr.Width, issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2),
+                            color,
+                            lineThickness);
 
 
-                            CvInvoke.Line(ActualLayerImageBgr,
-                                new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, 0),
-                                new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, issue.BoundingRectangle.Top - 10),
-                                color,
-                                lineThickness);
+                        CvInvoke.Line(ActualLayerImageBgr,
+                            new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, 0),
+                            new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, issue.BoundingRectangle.Top - 10),
+                            color,
+                            lineThickness);
 
-                            CvInvoke.Line(ActualLayerImageBgr,
-                                new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, issue.BoundingRectangle.Bottom + 10),
-                                new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, ActualLayerImageBgr.Height),
-                                color,
-                                lineThickness);
-
-                        }
+                        CvInvoke.Line(ActualLayerImageBgr,
+                            new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, issue.BoundingRectangle.Bottom + 10),
+                            new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2, ActualLayerImageBgr.Height),
+                            color,
+                            lineThickness);
                     }
                 }
 
@@ -3324,7 +3330,7 @@ namespace UVtools.GUI
                     // refresh toolstrip zoom indicator.
                     var currentLevel = ConvToAutoZoom(pbLayer.Zoom);
                     // Don't allow small zoom values to be locked for auto-zoom
-                    if (currentLevel >= ZoomLevels.Count() - ZoomLevelSkipCount) return;
+                    if (currentLevel >= ZoomLevels.Length - ZoomLevelSkipCount) return;
                     AutoZoomLevel = currentLevel;
                     tsLayerImageZoom.Text = $"Zoom: [ {pbLayer.Zoom / 100f}x";
                     tsLayerImageZoomLock.Visible = true;
@@ -3358,8 +3364,6 @@ namespace UVtools.GUI
 
                 return;
             }
-
-
         }
         #endregion
 
