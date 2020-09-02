@@ -183,6 +183,8 @@ namespace UVtools.GUI
 
         public uint SavesCount { get; set; } = 0;
 
+        private bool SupressLayerZoomEvent = false;
+
         #endregion
 
         #region Constructors
@@ -1903,6 +1905,8 @@ namespace UVtools.GUI
 
         private void pbLayer_Zoomed(object sender, Cyotek.Windows.Forms.ImageBoxZoomEventArgs e)
         {
+            if (SupressLayerZoomEvent) return;
+            Debug.WriteLine("Zoomed");
             // Update zoom level display in the toolstrip
             if (ConvToAutoZoom(e.NewZoom) == AutoZoomLevel)
             {
@@ -2035,7 +2039,9 @@ namespace UVtools.GUI
 
                 if (Settings.Default.AutoZoomIssues ^ (ModifierKeys & Keys.Alt) != 0)
                 {
+                    SupressLayerZoomEvent = true;
                     pbLayer.ZoomToRegion(x, y, operation.Size.Width, operation.Size.Height);
+                    SupressLayerZoomEvent = false;
                     pbLayer.ZoomOut(true);
                 }
                 else
@@ -2521,6 +2527,8 @@ namespace UVtools.GUI
 
             if (IsChangingLayer) return;
             IsChangingLayer = true;
+
+            Debug.WriteLine($"Show Layer: {layerNum}");
 
             ActualLayer = layerNum;
             btnLastLayer.Enabled = btnNextLayer.Enabled = layerNum < SlicerFile.LayerCount - 1;
@@ -3294,13 +3302,22 @@ namespace UVtools.GUI
                         tsLayerImageShowCrosshairs.Checked = true;
                     }
 
+                    SupressLayerZoomEvent = true;
                     pbLayer.ZoomToRegion(location.X, location.Y, 5, 5);
                     // ZoomToRegion can result in Zoom factors much larger
                     // than supported levels.  Zoom out and in again to 
                     // normalize large zoom levels to the supported max zoom. 
-                    pbLayer.ZoomOut(true); pbLayer.ZoomIn(true);
+                    pbLayer.ZoomOut(true); 
+                    pbLayer.ZoomIn(true);
                     // Zoom out repeatedly to arrive at auto zoom level.
-                    for (int i = 0; i < AutoZoomLevel; i++) pbLayer.ZoomOut(true);
+                    for (int i = 0; i < AutoZoomLevel; i++)
+                    {
+                        if(i == AutoZoomLevel-1)
+                            SupressLayerZoomEvent = true;
+                        pbLayer.ZoomOut(true);
+                    }
+
+                    SupressLayerZoomEvent = false;
                     return;
                 }
                 if ((e.Button & MouseButtons.Middle) != 0)
@@ -3327,7 +3344,7 @@ namespace UVtools.GUI
             if (ReferenceEquals(sender, flvIssues))
             {
                 if (!(flvIssues.SelectedObject is LayerIssue issue)) return;
-		// Double clikcing an issue will center and zoom into the 
+		        // Double clicking an issue will center and zoom into the 
                 // selected issue. Left click on an issue will zoom to fit.
                 if ((e.Button & MouseButtons.Left) != 0)
                 {
@@ -3924,10 +3941,20 @@ namespace UVtools.GUI
                     tsLayerImageShowCrosshairs.Checked = true;
                 }
 
+
+                SupressLayerZoomEvent = true;
                 pbLayer.ZoomToRegion(GetTransposedIssueBounds(issue));
-                pbLayer.ZoomOut(true); pbLayer.ZoomIn(true);
-                
-                for (int i=0; i < AutoZoomLevel; i++) pbLayer.ZoomOut(true);
+                pbLayer.ZoomOut(true);
+                pbLayer.ZoomIn(true);
+
+                for (int i = 0; i < AutoZoomLevel; i++)
+                {
+                    if(i == AutoZoomLevel-1)
+                        SupressLayerZoomEvent = false;
+
+                    pbLayer.ZoomOut(true);
+                }
+                SupressLayerZoomEvent = false;
             }
         }
 
