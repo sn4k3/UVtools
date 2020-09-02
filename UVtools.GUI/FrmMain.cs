@@ -3311,7 +3311,7 @@ namespace UVtools.GUI
                     for (int i = 0; i < AutoZoomLevel; i++)
                     {
                         if(i == AutoZoomLevel-1)
-                            SupressLayerZoomEvent = true;
+                            SupressLayerZoomEvent = false;
                         pbLayer.ZoomOut(true);
                     }
 
