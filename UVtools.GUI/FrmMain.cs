@@ -1928,13 +1928,12 @@ namespace UVtools.GUI
                 flvIssues.SelectedIndices.Count > 0 &&
                 (e.OldZoom < 50 && e.NewZoom >= 50 ||
                  e.OldZoom > 100 && e.NewZoom <= 100 ||
-                 (e.OldZoom >= 50 && e.OldZoom <= 100 && (e.NewZoom < 50 || e.NewZoom > 100))
+                 (e.OldZoom >= 50 && e.OldZoom <= 100 && (e.NewZoom < 50 || e.NewZoom > 100)) &&
+                 flvIssues.SelectedObjects.Cast<LayerIssue>().Any(issue => // Find a valid candidate to update layer preview, otherwise quit
+                     issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
+                     issue.Type != LayerIssue.IssueType.TouchingBound)
                 ))
             {
-                if (!flvIssues.SelectedObjects.Cast<LayerIssue>().Any(issue =>
-                    issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
-                    issue.Type != LayerIssue.IssueType.TouchingBound)) return; // Find a valid candidate to update layer preview, otherwise quit
-
                 layerZoomTimer.Start();
             }
         }
