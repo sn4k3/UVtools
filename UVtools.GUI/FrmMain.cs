@@ -2624,6 +2624,9 @@ namespace UVtools.GUI
                     }
                 }
 
+                var selectedIssues = flvIssues.SelectedObjects;
+                //List<LayerIssue> selectedIssues = (from object t in selectedIssuesRaw where ((LayerIssue) t).LayerIndex == ActualLayer select (LayerIssue) t).ToList();
+
                 if (tsLayerImageHighlightIssues.Checked &&
                     !ReferenceEquals(Issues, null))
                 {
@@ -2631,13 +2634,16 @@ namespace UVtools.GUI
                     {
                         if(issue.LayerIndex != ActualLayer) continue;
                         if(!issue.HaveValidPoint) continue;
-                        Color color = flvIssues.SelectedObjects.Contains(issue)
-                            ? Settings.Default.ResinTrapHLColor
-                            : Settings.Default.ResinTrapColor;
 
+                        Color color = Color.Empty;
 
                         if (issue.Type == LayerIssue.IssueType.ResinTrap)
                         {
+                            color = selectedIssues.Contains(issue)
+                                ? Settings.Default.ResinTrapHLColor
+                                : Settings.Default.ResinTrapColor;
+
+
                             using (var vec = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
                             {
                                 CvInvoke.DrawContours(ActualLayerImageBgr, vec, -1,
@@ -2651,7 +2657,7 @@ namespace UVtools.GUI
                         switch (issue.Type)
                         {
                             case LayerIssue.IssueType.Island:
-                                color = flvIssues.SelectedObjects.Contains(issue)
+                                color = selectedIssues.Contains(issue)
                                     ? Settings.Default.IslandHLColor
                                     : Settings.Default.IslandColor;
                                 break;
@@ -2675,7 +2681,6 @@ namespace UVtools.GUI
                             imageBgrSpan[pixelBgrPos + 2] = newColor.R; // R
                         }
                     }
-
                 }
 
                 if (tsLayerImageLayerOutlinePrintVolumeBounds.Checked)
@@ -2816,11 +2821,11 @@ namespace UVtools.GUI
                     !(tsLayerImagePixelEdit.Checked && (ModifierKeys & Keys.Shift) != 0))
                 {
                     // Gradually increase line thickness from 1 to 3 at the lower-end of the zoom range.
-                    // This prevents the crosshair lines from dissapeareing due to being too thin to
+                    // This prevents the crosshair lines from disappearing due to being too thin to
                     // render at very low zoom factors.
                     var lineThickness = (pbLayer.Zoom > 100) ? 1 : (pbLayer.Zoom < 50) ? 3 : 2;
 
-                    foreach (LayerIssue issue in flvIssues.SelectedObjects)
+                    foreach (LayerIssue issue in selectedIssues)
                     {
                         // Don't render crosshairs for selected issue that are not on the current layer, or for 
                         // issue types that don't have a specific location or bounds.
