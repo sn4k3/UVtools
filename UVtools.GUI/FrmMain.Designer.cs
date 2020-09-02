@@ -1453,6 +1453,7 @@
             this.flvIssues.VirtualMode = true;
             this.flvIssues.SelectionChanged += new System.EventHandler(this.EventSelectedIndexChanged);
             this.flvIssues.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
+            this.flvIssues.MouseClick += new System.Windows.Forms.MouseEventHandler(this.EventMouseClick);
             this.flvIssues.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.EventMouseDoubleClick);
             // 
             // flvIssuesColType

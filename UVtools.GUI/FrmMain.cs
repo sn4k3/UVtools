@@ -2006,8 +2006,9 @@ namespace UVtools.GUI
             if (ReferenceEquals(sender, flvIssues))
             {
                 if(!(flvIssues.SelectedObject is LayerIssue issue)) return;
-
-                if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer || (issue.X == -1 && issue.Y == -1))
+                
+                if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer || 
+                    (issue.X == -1 && issue.Y == -1))
                 {
                     ZoomToFit();
                 }
@@ -2019,13 +2020,14 @@ namespace UVtools.GUI
                     }
                     else
                     {
+                        CenterLayerAt(GetTransposedIssueBounds(issue));
                         // If issue is not already visible, center on it and bring it into view.
                         // Issues already in view will not be centered, though their color may
                         // change and the crosshair may move to reflect active selections.
-                        if (!Rectangle.Round(pbLayer.GetSourceImageRegion()).Contains(GetTransposedIssueBounds(issue)))
+                        /*if (!Rectangle.Round(pbLayer.GetSourceImageRegion()).Contains(GetTransposedIssueBounds(issue)))
                         {
                             CenterAtIssue(issue);
-                        }
+                        }*/
                     }
                 }
 
@@ -2945,6 +2947,7 @@ namespace UVtools.GUI
         {
             if (ReferenceEquals(sender, flvIssues))
             {
+                Debug.WriteLine("Issues: Selection changed");
                 tsIssueRemove.Enabled = flvIssues.SelectedIndices.Count > 0;
 
                 // If selected index change has resulted in a single selected issue,
@@ -3278,11 +3281,9 @@ namespace UVtools.GUI
         {
             if (ReferenceEquals(sender, pbLayer))
             {
-                if ((ModifierKeys & Keys.Control) != 0)
-                {
-                    // CTRL click within pbLayer performs double click action
-                    HandleMouseDoubleClick(sender, e);
-                }
+                if ((ModifierKeys & Keys.Control) == 0) return;
+                // CTRL click within pbLayer performs double click action
+                HandleMouseDoubleClick(sender, e);
                 return;
             }
         }
@@ -3311,7 +3312,8 @@ namespace UVtools.GUI
                     var location = pbLayer.PointToImage(e.Location);
 
                     // Check to see if this zoom action will cross the crosshair fade threshold
-                    if (tsLayerImageShowCrosshairs.Checked &&
+                    // Not needed? visual artifact is not severe to make an extra showlayer call, also it acts like an "animation" removing crosshairs after zoom
+                    /*if (tsLayerImageShowCrosshairs.Checked &&
                         !ReferenceEquals(Issues, null) && flvIssues.SelectedIndices.Count > 0 && 
                         pbLayer.Zoom <= CrosshairFadeLevel && AutoZoomLevel > CrosshairFadeLevel &&
                         flvIssues.SelectedObjects.Cast<LayerIssue>().Any(issue => // Find a valid candidate to update layer preview, otherwise quit
@@ -3323,7 +3325,8 @@ namespace UVtools.GUI
                         tsLayerImageShowCrosshairs.Checked = false;
                         ShowLayer();
                         tsLayerImageShowCrosshairs.Checked = true;
-                    }
+                    }*/
+                    
 
                     CenterLayerAt(location, AutoZoomLevel);
                     return;
@@ -3349,7 +3352,7 @@ namespace UVtools.GUI
                 return;
             }
 
-            if (ReferenceEquals(sender, flvIssues))
+            /*if (ReferenceEquals(sender, flvIssues))
             {
                 if (!(flvIssues.SelectedObject is LayerIssue issue)) return;
 		        // Double clicking an issue will center and zoom into the 
@@ -3367,7 +3370,7 @@ namespace UVtools.GUI
                 }
 
                 return;
-            }
+            }*/
         }
         #endregion
 
@@ -3969,7 +3972,7 @@ namespace UVtools.GUI
             if (issue.X >= 0 && issue.Y >= 0)
             {
                 // Check to see if this zoom action will cross the crosshair fade threshold
-                if (tsLayerImageShowCrosshairs.Checked && !ReferenceEquals(Issues, null) && flvIssues.SelectedIndices.Count > 0
+                /*if (tsLayerImageShowCrosshairs.Checked && !ReferenceEquals(Issues, null) && flvIssues.SelectedIndices.Count > 0
                    && pbLayer.Zoom <= CrosshairFadeLevel && AutoZoomLevel > CrosshairFadeLevel)
                 {
                     // Refresh the preview without the crosshairs before zooming-in.
@@ -3978,7 +3981,7 @@ namespace UVtools.GUI
                     tsLayerImageShowCrosshairs.Checked = false;
                     ShowLayer();
                     tsLayerImageShowCrosshairs.Checked = true;
-                }
+                }*/
 
                 CenterLayerAt(GetTransposedIssueBounds(issue), AutoZoomLevel);
             }
@@ -3996,8 +3999,7 @@ namespace UVtools.GUI
             }
             if (issue.X >= 0 && issue.Y >= 0)
             {
-                var issueBounds = GetTransposedIssueBounds(issue);
-                pbLayer.CenterAt(issueBounds.X+issueBounds.Width/2, issueBounds.Y+issueBounds.Height/2);
+                CenterLayerAt(GetTransposedIssueBounds(issue));
             }
         }
 
