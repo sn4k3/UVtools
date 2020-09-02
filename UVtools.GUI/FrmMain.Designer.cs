@@ -77,10 +77,10 @@
             this.toolStripSeparator14 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerImageHighlightIssues = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImageLayerOutline = new System.Windows.Forms.ToolStripSplitButton();
-            this.tsLayerImageLayerOutlinePrintVolumeBounds = new System.Windows.Forms.ToolStripMenuItem();
             this.tsLayerImageShowCrosshairs = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator25 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsLayerImageLayerOutline = new System.Windows.Forms.ToolStripSplitButton();
+            this.tsLayerImageLayerOutlinePrintVolumeBounds = new System.Windows.Forms.ToolStripMenuItem();
             this.tsLayerImageLayerOutlineLayerBounds = new System.Windows.Forms.ToolStripMenuItem();
             this.tsLayerImageLayerOutlineHollowAreas = new System.Windows.Forms.ToolStripMenuItem();
             this.tsLayerImageLayerOutlineEdgeDetection = new System.Windows.Forms.ToolStripMenuItem();
@@ -94,6 +94,7 @@
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerResolution = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsLayerImageZoomLock = new System.Windows.Forms.ToolStripLabel();
             this.tsLayerImageZoom = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerImagePanLocation = new System.Windows.Forms.ToolStripLabel();
@@ -134,6 +135,8 @@
             this.btnGCodeSave = new System.Windows.Forms.ToolStripSplitButton();
             this.btnGCodeSaveFile = new System.Windows.Forms.ToolStripMenuItem();
             this.btnGCodeSaveClipboard = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator24 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnGCodeRebuild = new System.Windows.Forms.ToolStripButton();
             this.tabPageIssues = new System.Windows.Forms.TabPage();
             this.flvIssues = new BrightIdeasSoftware.FastObjectListView();
             this.flvIssuesColType = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
@@ -247,16 +250,13 @@
             this.tbLayer = new System.Windows.Forms.TrackBar();
             this.lbInitialLayer = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.layerZoomTimer = new System.Windows.Forms.Timer(this.components);
-            this.issueScrollTimer = new System.Windows.Forms.Timer(this.components);
-            this.tsLayerImageZoomLock = new System.Windows.Forms.ToolStripLabel();
             this.btnFindLayer = new System.Windows.Forms.Button();
             this.btnLastLayer = new System.Windows.Forms.Button();
             this.btnFirstLayer = new System.Windows.Forms.Button();
+            this.layerZoomTimer = new System.Windows.Forms.Timer(this.components);
+            this.issueScrollTimer = new System.Windows.Forms.Timer(this.components);
             this.toolTipInformation = new System.Windows.Forms.ToolTip(this.components);
             this.layerScrollTimer = new System.Windows.Forms.Timer(this.components);
-            this.btnGCodeRebuild = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator24 = new System.Windows.Forms.ToolStripSeparator();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).BeginInit();
@@ -317,8 +317,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).BeginInit();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.EventKeyDown);
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
             // 
             // menu
             // 
@@ -689,8 +687,8 @@
             this.pbLayer.Size = new System.Drawing.Size(1228, 705);
             this.pbLayer.TabIndex = 7;
             this.pbLayer.Zoomed += new System.EventHandler<Cyotek.Windows.Forms.ImageBoxZoomEventArgs>(this.pbLayer_Zoomed);
-            this.pbLayer.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.EventMouseDoubleClick);
             this.pbLayer.MouseClick += new System.Windows.Forms.MouseEventHandler(this.EventMouseClick);
+            this.pbLayer.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.EventMouseDoubleClick);
             this.pbLayer.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseMove);
             this.pbLayer.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseUp);
             // 
@@ -804,22 +802,8 @@
             this.toolStripSeparator7.Name = "toolStripSeparator7";
             this.toolStripSeparator7.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsLayerImageLayerOutline
-            // 
-            this.tsLayerImageLayerOutline.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsLayerImageLayerOutlinePrintVolumeBounds,
-            this.tsLayerImageLayerOutlineLayerBounds,
-            this.tsLayerImageLayerOutlineHollowAreas,
-            this.tsLayerImageLayerOutlineEdgeDetection});
-            this.tsLayerImageLayerOutline.Image = global::UVtools.GUI.Properties.Resources.Geometry_16x16;
-            this.tsLayerImageLayerOutline.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerImageLayerOutline.Name = "tsLayerImageLayerOutline";
-            this.tsLayerImageLayerOutline.Size = new System.Drawing.Size(78, 22);
-            this.tsLayerImageLayerOutline.Text = "&Outline";
-            this.tsLayerImageLayerOutline.ButtonClick += new System.EventHandler(this.EventClick);
-            //
             // tsLayerImageShowCrosshairs
-            //
+            // 
             this.tsLayerImageShowCrosshairs.Checked = true;
             this.tsLayerImageShowCrosshairs.CheckOnClick = true;
             this.tsLayerImageShowCrosshairs.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -835,6 +819,20 @@
             // 
             this.toolStripSeparator25.Name = "toolStripSeparator25";
             this.toolStripSeparator25.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsLayerImageLayerOutline
+            // 
+            this.tsLayerImageLayerOutline.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsLayerImageLayerOutlinePrintVolumeBounds,
+            this.tsLayerImageLayerOutlineLayerBounds,
+            this.tsLayerImageLayerOutlineHollowAreas,
+            this.tsLayerImageLayerOutlineEdgeDetection});
+            this.tsLayerImageLayerOutline.Image = global::UVtools.GUI.Properties.Resources.Geometry_16x16;
+            this.tsLayerImageLayerOutline.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsLayerImageLayerOutline.Name = "tsLayerImageLayerOutline";
+            this.tsLayerImageLayerOutline.Size = new System.Drawing.Size(78, 22);
+            this.tsLayerImageLayerOutline.Text = "&Outline";
+            this.tsLayerImageLayerOutline.ButtonClick += new System.EventHandler(this.EventClick);
             // 
             // tsLayerImageLayerOutlinePrintVolumeBounds
             // 
@@ -965,12 +963,23 @@
             this.toolStripSeparator11.Name = "toolStripSeparator11";
             this.toolStripSeparator11.Size = new System.Drawing.Size(6, 25);
             // 
+            // tsLayerImageZoomLock
+            // 
+            this.tsLayerImageZoomLock.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsLayerImageZoomLock.Image = global::UVtools.GUI.Properties.Resources.Lock_16x16;
+            this.tsLayerImageZoomLock.Name = "tsLayerImageZoomLock";
+            this.tsLayerImageZoomLock.Size = new System.Drawing.Size(27, 22);
+            this.tsLayerImageZoomLock.Text = "]";
+            this.tsLayerImageZoomLock.ToolTipText = "This zoom factor will be used for auto-zoom functions. Use scroll wheel to select" +
+    " desired auto zoom level\r\nand double-click middle mouse button to set.";
+            this.tsLayerImageZoomLock.Visible = false;
+            // 
             // tsLayerImageZoom
             // 
             this.tsLayerImageZoom.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.tsLayerImageZoom.Image = global::UVtools.GUI.Properties.Resources.search_16x16;
             this.tsLayerImageZoom.Name = "tsLayerImageZoom";
-            this.tsLayerImageZoom.Size = new System.Drawing.Size(89, 22);
+            this.tsLayerImageZoom.Size = new System.Drawing.Size(81, 22);
             this.tsLayerImageZoom.Text = "Zoom: [1x]";
             this.tsLayerImageZoom.ToolTipText = "Layer image zoom level, use mouse scroll to zoom in/out into image\r\nCtrl + 0 to s" +
     "cale to fit";
@@ -1366,7 +1375,7 @@
             // 
             this.btnGCodeSaveFile.Image = global::UVtools.GUI.Properties.Resources.file_image_16x16;
             this.btnGCodeSaveFile.Name = "btnGCodeSaveFile";
-            this.btnGCodeSaveFile.Size = new System.Drawing.Size(180, 22);
+            this.btnGCodeSaveFile.Size = new System.Drawing.Size(141, 22);
             this.btnGCodeSaveFile.Text = "To &File";
             this.btnGCodeSaveFile.Click += new System.EventHandler(this.EventClick);
             // 
@@ -1374,9 +1383,27 @@
             // 
             this.btnGCodeSaveClipboard.Image = global::UVtools.GUI.Properties.Resources.clipboard_16x16;
             this.btnGCodeSaveClipboard.Name = "btnGCodeSaveClipboard";
-            this.btnGCodeSaveClipboard.Size = new System.Drawing.Size(180, 22);
+            this.btnGCodeSaveClipboard.Size = new System.Drawing.Size(141, 22);
             this.btnGCodeSaveClipboard.Text = "To &Clipboard";
             this.btnGCodeSaveClipboard.Click += new System.EventHandler(this.EventClick);
+            // 
+            // toolStripSeparator24
+            // 
+            this.toolStripSeparator24.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripSeparator24.Name = "toolStripSeparator24";
+            this.toolStripSeparator24.Size = new System.Drawing.Size(6, 25);
+            // 
+            // btnGCodeRebuild
+            // 
+            this.btnGCodeRebuild.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.btnGCodeRebuild.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnGCodeRebuild.Image = global::UVtools.GUI.Properties.Resources.refresh_16x16;
+            this.btnGCodeRebuild.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnGCodeRebuild.Name = "btnGCodeRebuild";
+            this.btnGCodeRebuild.Size = new System.Drawing.Size(23, 22);
+            this.btnGCodeRebuild.Text = "Repair";
+            this.btnGCodeRebuild.ToolTipText = "Rebuild GCode with current settings";
+            this.btnGCodeRebuild.Click += new System.EventHandler(this.EventClick);
             // 
             // tabPageIssues
             // 
@@ -1970,7 +1997,7 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(3, 9);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(272, 36);
+            this.label1.Size = new System.Drawing.Size(264, 36);
             this.label1.TabIndex = 1;
             this.label1.Text = "Shift+Left click to add white pixels\r\nShift+Right click to remove white pixels";
             // 
@@ -2201,7 +2228,7 @@
             this.label23.AutoSize = true;
             this.label23.Location = new System.Drawing.Point(3, 9);
             this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(299, 36);
+            this.label23.Size = new System.Drawing.Size(254, 36);
             this.label23.TabIndex = 1;
             this.label23.Text = "Shift+Left click to add white text\r\nShift+Right click to remove white text ";
             // 
@@ -2312,7 +2339,7 @@
             this.label30.AutoSize = true;
             this.label30.Location = new System.Drawing.Point(3, 9);
             this.label30.Name = "label30";
-            this.label30.Size = new System.Drawing.Size(321, 36);
+            this.label30.Size = new System.Drawing.Size(305, 36);
             this.label30.TabIndex = 1;
             this.label30.Text = "Shift click over a white pixel to remove whole \r\nlinked area (Fill with black)";
             // 
@@ -2481,7 +2508,7 @@
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(3, 9);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(344, 36);
+            this.label4.Size = new System.Drawing.Size(339, 36);
             this.label4.TabIndex = 1;
             this.label4.Text = "Shift click under a island to add a primitive support.\r\nNote: This operation can\'" +
     "t be previewed.";
@@ -2800,6 +2827,16 @@
             this.btnFirstLayer.UseVisualStyleBackColor = true;
             this.btnFirstLayer.Click += new System.EventHandler(this.EventClick);
             // 
+            // layerZoomTimer
+            // 
+            this.layerZoomTimer.Interval = 1;
+            this.layerZoomTimer.Tick += new System.EventHandler(this.EventTimerTick);
+            // 
+            // issueScrollTimer
+            // 
+            this.issueScrollTimer.Interval = 500;
+            this.issueScrollTimer.Tick += new System.EventHandler(this.EventTimerTick);
+            // 
             // toolTipInformation
             // 
             this.toolTipInformation.AutoPopDelay = 10000;
@@ -2811,45 +2848,6 @@
             // 
             this.layerScrollTimer.Interval = 500;
             this.layerScrollTimer.Tick += new System.EventHandler(this.EventTimerTick);
-            // 
-            // btnGCodeRebuild
-            // 
-            this.btnGCodeRebuild.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.btnGCodeRebuild.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnGCodeRebuild.Image = global::UVtools.GUI.Properties.Resources.refresh_16x16;
-            this.btnGCodeRebuild.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnGCodeRebuild.Name = "btnGCodeRebuild";
-            this.btnGCodeRebuild.Size = new System.Drawing.Size(23, 22);
-            this.btnGCodeRebuild.Text = "Repair";
-            this.btnGCodeRebuild.ToolTipText = "Rebuild GCode with current settings";
-            this.btnGCodeRebuild.Click += new System.EventHandler(this.EventClick);
-            // 
-            // toolStripSeparator24
-            // 
-            this.toolStripSeparator24.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripSeparator24.Name = "toolStripSeparator24";
-            this.toolStripSeparator24.Size = new System.Drawing.Size(6, 25);
-            // 
-            // layerZoomTimer
-            // 
-            this.layerZoomTimer.Interval = 1;
-            this.layerZoomTimer.Tick += new System.EventHandler(this.EventTimerTick);
-            // 
-            // issueScrollTimer
-            // 
-            this.issueScrollTimer.Interval = 500;
-            this.issueScrollTimer.Tick += new System.EventHandler(this.EventTimerTick);
-            // 
-            // tsLayerImageZoomLock
-            // 
-            this.tsLayerImageZoomLock.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerImageZoomLock.Image = global::UVtools.GUI.Properties.Resources.Lock_16x16;
-            this.tsLayerImageZoomLock.Name = "tsLayerImageZoomLock";
-            this.tsLayerImageZoomLock.Size = new System.Drawing.Size(16, 22);
-            this.tsLayerImageZoomLock.ToolTipText = "This zoom factor will be used for auto-zoom functions. " +
-                "Use scroll wheel to select desired auto zoom level\r\nand double-click middle mouse button to set.";
-            this.tsLayerImageZoomLock.Text = "]";
-            this.tsLayerImageZoomLock.Visible = false;
             // 
             // FrmMain
             // 
@@ -2867,6 +2865,8 @@
             this.MinimumSize = new System.Drawing.Size(1000, 600);
             this.Name = "FrmMain";
             this.Text = "UVtools";
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.EventKeyDown);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
             this.menu.ResumeLayout(false);
             this.menu.PerformLayout();
             this.mainTable.ResumeLayout(false);

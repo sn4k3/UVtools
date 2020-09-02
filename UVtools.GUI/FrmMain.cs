@@ -168,7 +168,7 @@ namespace UVtools.GUI
         // Supported ZoomLevels for Layer Preview.
         // These settings eliminate very small zoom factors from the ImageBox default values,
         // while ensuring that 4K/5K build plates can still easily fit on screen.  
-        public static int[] ZoomLevels =
+        public static readonly int[] ZoomLevels =
             { 20, 25, 30, 50, 75, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1200, 1600 };
 
         // Count of the bottom portion of the full zoom range which will be skipped for
@@ -179,27 +179,21 @@ namespace UVtools.GUI
         /// <summary>
         /// Returns the zoom level at which the crosshairs will fade and no longer be displayed
         /// </summary>
-        private int CrosshairFadeLevel
-        {
-            get => ZoomLevels[Settings.Default.DefaultCrosshairFade + ZoomLevelSkipCount];
-        }
+        public int CrosshairFadeLevel => ZoomLevels[Settings.Default.DefaultCrosshairFade + ZoomLevelSkipCount];
 
         /// <summary>
         /// Returns the zoom level that will be used for autozoom actions
         /// </summary>
-        private int AutoZoomLevel
-        {
-            get => ZoomLevels[ZoomLevels.Length - AutoZoomBackIndex -1];
-        }
+        private int AutoZoomLevel => ZoomLevels[ZoomLevels.Length - AutoZoomBackIndex -1];
 
         public PixelHistory PixelHistory { get; } = new PixelHistory();
 
 	    // Track last open tab for when PixelEditor tab is removed.
-        public TabPage ControlLeftLastTab { get; set; } = null;
+        public TabPage ControlLeftLastTab { get; set; }
 
-        public uint SavesCount { get; set; } = 0;
+        public uint SavesCount { get; set; }
 
-        private bool SupressLayerZoomEvent = false;
+        private bool SupressLayerZoomEvent { get; set; }
 
         #endregion
 
@@ -1934,16 +1928,17 @@ namespace UVtools.GUI
                 tsLayerImageZoom.Text = $"Zoom: [ {e.NewZoom / 100f}x ]";
                 tsLayerImageZoomLock.Visible = false;
             }
-
+            
             // Refresh the layer to properly render the crosshair at various zoom transitions
-            if (tsLayerImageShowCrosshairs.Checked && !ReferenceEquals(Issues, null) && flvIssues.SelectedIndices.Count > 0
-                && flvIssues.SelectedObjects.Cast<LayerIssue>().Any(issue => // Find a valid candidate to update layer preview, otherwise quit
-                     issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer && issue.Type != LayerIssue.IssueType.TouchingBound)
-                && (e.OldZoom < 50 && e.NewZoom >= 50  // Trigger refresh as crosshair thickness increases at lower zoom levels
+            if (tsLayerImageShowCrosshairs.Checked && !ReferenceEquals(Issues, null) && 
+                flvIssues.SelectedIndices.Count > 0 &&
+                (e.OldZoom < 50 && e.NewZoom >= 50  // Trigger refresh as crosshair thickness increases at lower zoom levels
                     || e.OldZoom > 100 && e.NewZoom <= 100
                     || e.OldZoom >= 50 && e.OldZoom <= 100 && (e.NewZoom < 50 || e.NewZoom > 100)
                     || e.OldZoom <= CrosshairFadeLevel && e.NewZoom > CrosshairFadeLevel // Trigger refresh as zoom level manually crosses fade threshold
-                    || e.OldZoom > CrosshairFadeLevel && e.NewZoom <= CrosshairFadeLevel)
+                    || e.OldZoom > CrosshairFadeLevel && e.NewZoom <= CrosshairFadeLevel) &&
+                flvIssues.SelectedObjects.Cast<LayerIssue>().Any(issue => // Find a valid candidate to update layer preview, otherwise quit
+                    issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer && issue.Type != LayerIssue.IssueType.TouchingBound)
                 )
             {
                 // A timer is used here rather than invoking ShowLayer directly to eliminate sublte visual flashing
@@ -2066,7 +2061,7 @@ namespace UVtools.GUI
                 }
                 else
                 {
-                    pbLayer.CenterAt(x, y);
+                    CenterLayerAt(x, y);
                 }
 
                 // Unconditionally refresh layer preview here to ensure highlighting for pixel
@@ -3296,8 +3291,8 @@ namespace UVtools.GUI
         {
             // Ignore double click if CTRL is pressed. Prevents CTRL-click
             // events that emulate double click from firing twice.
-            if ((ModifierKeys & Keys.Control) == 0)
-                HandleMouseDoubleClick(sender, e);
+            if ((ModifierKeys & Keys.Control) != 0) return;
+            HandleMouseDoubleClick(sender, e);
         }
 
         private void HandleMouseDoubleClick(object sender, MouseEventArgs e)
@@ -3305,8 +3300,8 @@ namespace UVtools.GUI
             if (ReferenceEquals(sender, pbLayer))
             {
                 // Ignore double click events if shift is pressed.  This prevents zoom
-                // operations from inadvertantly occuring when pixels are being edited, and
-                // for consistency, there is no reason not to just dissalow this any time
+                // operations from inadvertently occuring when pixels are being edited, and
+                // for consistency, there is no reason not to just disallow this any time
                 // shift is pressed regardless of whether pixel edit mode is enabled or not.
                 if ((ModifierKeys & Keys.Shift) != 0) return;
 
@@ -3316,10 +3311,11 @@ namespace UVtools.GUI
                     var location = pbLayer.PointToImage(e.Location);
 
                     // Check to see if this zoom action will cross the crosshair fade threshold
-                    if (tsLayerImageShowCrosshairs.Checked && !ReferenceEquals(Issues, null) && flvIssues.SelectedIndices.Count > 0
-                       && flvIssues.SelectedObjects.Cast<LayerIssue>().Any(issue => // Find a valid candidate to update layer preview, otherwise quit
-                            issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer && issue.Type != LayerIssue.IssueType.TouchingBound)
-                       && pbLayer.Zoom <= CrosshairFadeLevel && AutoZoomLevel > CrosshairFadeLevel)
+                    if (tsLayerImageShowCrosshairs.Checked &&
+                        !ReferenceEquals(Issues, null) && flvIssues.SelectedIndices.Count > 0 && 
+                        pbLayer.Zoom <= CrosshairFadeLevel && AutoZoomLevel > CrosshairFadeLevel &&
+                        flvIssues.SelectedObjects.Cast<LayerIssue>().Any(issue => // Find a valid candidate to update layer preview, otherwise quit
+                        issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer && issue.Type != LayerIssue.IssueType.TouchingBound))
                     {
                         // Refresh the preview without the crosshairs before zooming-in.
                         // Prevents zoomed-in crosshairs from breifly being displayed before
@@ -3329,22 +3325,7 @@ namespace UVtools.GUI
                         tsLayerImageShowCrosshairs.Checked = true;
                     }
 
-                    SupressLayerZoomEvent = true;
-                    pbLayer.ZoomToRegion(location.X, location.Y, 5, 5);
-                    // ZoomToRegion can result in Zoom factors much larger
-                    // than supported levels.  Zoom out and in again to 
-                    // normalize large zoom levels to the supported max zoom. 
-                    pbLayer.ZoomOut(true); 
-                    pbLayer.ZoomIn(true);
-                    // Zoom out repeatedly to arrive at auto zoom level.
-                    for (int i = 0; i < AutoZoomBackIndex; i++)
-                    {
-                        if(i == AutoZoomBackIndex-1)
-                            SupressLayerZoomEvent = false;
-                        pbLayer.ZoomOut(true);
-                    }
-
-                    SupressLayerZoomEvent = false;
+                    CenterLayerAt(location, AutoZoomLevel);
                     return;
                 }
                 if ((e.Button & MouseButtons.Middle) != 0)
@@ -3379,7 +3360,7 @@ namespace UVtools.GUI
                     return;
                 }
 
-                if ((e.Button & (MouseButtons.Right)) != 0)
+                if ((e.Button & MouseButtons.Right) != 0)
                 {
                     ZoomToFit();
                     return;
@@ -3943,6 +3924,35 @@ namespace UVtools.GUI
             return issue.BoundingRectangle;
         }
 
+        /// <summary>
+        /// Centers layer view on a X,Y coordinate
+        /// </summary>
+        /// <param name="x">X coordinate</param>
+        /// <param name="y">X coordinate</param>
+        /// <param name="zoomLevel">Zoom level to set, 0 to skip</param>
+        public void CenterLayerAt(int x, int y, int zoomLevel = 0)
+        {
+            if (zoomLevel > 0)
+                pbLayer.Zoom = zoomLevel;
+            pbLayer.CenterAt(x, y);
+        }
+
+        /// <summary>
+        /// Centers layer view on a middle of a given rectangle
+        /// </summary>
+        /// <param name="rectangle">Rectangle holding coordinates and bounds</param>
+        /// <param name="zoomLevel">Zoom level to set, 0 to skip</param>
+        public void CenterLayerAt(Rectangle rectangle, int zoomLevel = 0) => 
+            CenterLayerAt(rectangle.X + rectangle.Width / 2, rectangle.Y + rectangle.Height / 2, zoomLevel);
+
+        /// <summary>
+        /// Centers layer view on a <see cref="Point"/>
+        /// </summary>
+        /// <param name="point">Point holding X and Y coordinates</param>
+        /// <param name="zoomLevel">Zoom level to set, 0 to skip</param>
+        public void CenterLayerAt(Point point, int zoomLevel = 0) => 
+            CenterLayerAt(point.X, point.Y, zoomLevel);
+      
         
         /// <summary>
         /// Zoom the layer preview to the passed issue, or if appropriate for issue type,
@@ -3953,8 +3963,10 @@ namespace UVtools.GUI
             if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||  (issue.X == -1 && issue.Y == -1))
             {
                 ZoomToFit();
+                return;
             }
-            else if (issue.X >= 0 && issue.Y >= 0)
+            
+            if (issue.X >= 0 && issue.Y >= 0)
             {
                 // Check to see if this zoom action will cross the crosshair fade threshold
                 if (tsLayerImageShowCrosshairs.Checked && !ReferenceEquals(Issues, null) && flvIssues.SelectedIndices.Count > 0
@@ -3968,20 +3980,7 @@ namespace UVtools.GUI
                     tsLayerImageShowCrosshairs.Checked = true;
                 }
 
-
-                SupressLayerZoomEvent = true;
-                pbLayer.ZoomToRegion(GetTransposedIssueBounds(issue));
-                pbLayer.ZoomOut(true);
-                pbLayer.ZoomIn(true);
-
-                for (int i = 0; i < AutoZoomBackIndex; i++)
-                {
-                    if(i == AutoZoomBackIndex-1)
-                        SupressLayerZoomEvent = false;
-
-                    pbLayer.ZoomOut(true);
-                }
-                SupressLayerZoomEvent = false;
+                CenterLayerAt(GetTransposedIssueBounds(issue), AutoZoomLevel);
             }
         }
 

@@ -118,41 +118,47 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <metadata name="menu.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>297, 17</value>
+    <value>421, 17</value>
   </metadata>
   <metadata name="statusBar.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>380, 17</value>
+    <value>504, 17</value>
   </metadata>
   <metadata name="tsLayer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>481, 17</value>
+    <value>605, 17</value>
   </metadata>
   <metadata name="tsLayerInfo.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>360, 56</value>
+    <value>1773, 17</value>
+  </metadata>
+  <metadata name="tsThumbnails.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>297, 17</value>
+  </metadata>
+  <metadata name="tsProperties.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>695, 17</value>
   </metadata>
   <metadata name="tsGCode.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>831, 17</value>
+    <value>1040, 17</value>
   </metadata>
   <metadata name="tsIssuesLv.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>255, 56</value>
+    <value>1668, 17</value>
   </metadata>
   <metadata name="tsIssues.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1045, 17</value>
+    <value>947, 17</value>
   </metadata>
   <metadata name="tsPixelEditorHistory.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 56</value>
+    <value>1430, 17</value>
   </metadata>
   <metadata name="tsLog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>174, 56</value>
+    <value>1587, 17</value>
   </metadata>
   <metadata name="imageList16x16.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>695, 17</value>
+    <value>811, 17</value>
   </metadata>
   <data name="imageList16x16.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAABk
-        FAAAAk1TRnQBSQFMAgEBBgEAASABCQEgAQkBEAEAARABAAT/ASEBAAj/AUIBTQE2BwABNgMAASgDAAFA
+        FAAAAk1TRnQBSQFMAgEBBgEAATABCQEwAQkBEAEAARABAAT/ASEBAAj/AUIBTQE2BwABNgMAASgDAAFA
         AwABIAMAAQEBAAEgBgABIC4AAxgBIgMwAUsDMAFMAzIBUDMAAQEDJAE2AysBQqwAAyIBMQNWAbkDXQHi
         AwAB/wMAAf8BKgEtASgB/gNTAawDTQGVAwABARgAAwkBDAMzAVIDUAGdA1cB6AMAAf4DKwH8Ay8BSqQA
         AyEBMANZAewBKwEuASkB+gNRAfcDUgH0A1MB8QNIAfYDQQH5AwAB/wNPAZsDAAEBCAADFQEdAz8BbgNV
@@ -200,7 +206,7 @@
         BAADUgGpAzQBVQM0AVUgAAM0AVUDNAFVA1IBqQgAA0oBiwMAAf8DAAH/A08BnAQAA00BlQMAAf8DVAGr
         CAADTwGcAwAB/wMAAf8DSgGLBAADUQGgAQABzAH3Af8BAAHMAfcB/wEAAcwB9wH/AQABzAH3Af8DQwF3
         CAADSgGNAgAB7AH/AgAB7AH/AgAB7wH/AgAB7AH/AgAB7AH/AgAB7QH/AVICUwGoA1IBqAMAAf8DAAH/
-        AwAB/wNRAfcDKwH9A1ABnwsAAf8DAAH/AwAB/wMAAf8DAAH/AwAB/wNSAagEAANSAakDNAFVAzQBVQNG
+        AwAB/wNRAfcDLQH9A1ABnwsAAf8DAAH/AwAB/wMAAf8DAAH/AwAB/wNSAagEAANSAakDNAFVAzQBVQNG
         AYADUgGpA1IBqQNSAakDUgGpA1IBqQNSAakDRQF/AzQBVQM0AVUDUgGpBAADUQGiAwAB/wMAAf8DSQGJ
         CAADLwFKAwAB/wNUAe4MAANJAYkDAAH/AwAB/wNRAaIDAAEBAT8CQAFvAT4CXAH4AQABzQH3Af8BAAHN
         AfcB/wMSARgIAAMBAQIDRgF+AlIBXQHwAgAB7gH/AgAB7gH/AkABqAH9AUUCRgF+AwMBBANSAagDAAH/
@@ -242,32 +248,17 @@
         AfwBPws=
 </value>
   </data>
-  <metadata name="tsThumbnails.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>291, 17</value>
-  </metadata>
-  <metadata name="tsProperties.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>649, 17</value>
-  </metadata>
-  <metadata name="tsIssuesLv.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1504, 17</value>
-  </metadata>
-  <metadata name="tsIssues.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>765, 17</value>
-  </metadata>
-  <metadata name="tsPixelEditorHistory.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1155, 17</value>
-  </metadata>
-  <metadata name="tsLog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1423, 17</value>
-  </metadata>
   <metadata name="toolTipInformation.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>1138, 17</value>
   </metadata>
-  <metadata name="toolTipInformation.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>863, 17</value>
+  <metadata name="layerZoomTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
+  <metadata name="issueScrollTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>158, 17</value>
   </metadata>
   <metadata name="layerScrollTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1017, 17</value>
+    <value>1292, 17</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
