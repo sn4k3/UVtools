@@ -162,8 +162,8 @@ namespace UVtools.GUI
 
         public bool IsChangingLayer { get; set; }
 
-        // Settable zoom level used for auto-zoom & double-click zoom actions
-        public int AutoZoomLevel { get; set; } = 1;
+        // Represents a reverse index from the end of the ZoomLevels array
+        public int AutoZoomBackIndex { get; set; } = 1;
 
         // Supported ZoomLevels for Layer Preview.
         // These settings eliminate very small zoom factors from the ImageBox default values,
@@ -175,6 +175,22 @@ namespace UVtools.GUI
         // assignable actions such as auto-zoom level, and crosshair fade level.  If values
         // are added/removed from ZoomLevels above, this value may also need to be adjusted.
         public static int ZoomLevelSkipCount { get; } = 7; // Start at 2x which is index 7.
+
+        /// <summary>
+        /// Returns the zoom level at which the crosshairs will fade and no longer be displayed
+        /// </summary>
+        private int CrosshairFadeLevel
+        {
+            get => ZoomLevels[Settings.Default.DefaultCrosshairFade + ZoomLevelSkipCount];
+        }
+
+        /// <summary>
+        /// Returns the zoom level that will be used for autozoom actions
+        /// </summary>
+        private int AutoZoomLevel
+        {
+            get => ZoomLevels[ZoomLevels.Length - AutoZoomBackIndex -1];
+        }
 
         public PixelHistory PixelHistory { get; } = new PixelHistory();
 
@@ -213,8 +229,8 @@ namespace UVtools.GUI
             // Initialize pbLayer zoom levels to use the discrete factors from ZoomLevels
             pbLayer.ZoomLevels = new Cyotek.Windows.Forms.ZoomLevelCollection(ZoomLevels);
             // Initialize the zoom level used for autozoom based on the stored default settings.
-            AutoZoomLevel = 
-                ConvToAutoZoom(ZoomLevels[Settings.Default.DefaultAutoZoomLock + ZoomLevelSkipCount]);
+            AutoZoomBackIndex = 
+                ConvZoomToBackIndex(ZoomLevels[Settings.Default.DefaultAutoZoomLock + ZoomLevelSkipCount]);
 
             if (Settings.Default.StartMaximized || Width >= Screen.FromControl(this).WorkingArea.Width ||
                 Height >= Screen.FromControl(this).WorkingArea.Height)
@@ -1908,7 +1924,7 @@ namespace UVtools.GUI
             if (SupressLayerZoomEvent) return;
             Debug.WriteLine($"{DateTime.Now.Ticks}: Zoomed");
             // Update zoom level display in the toolstrip
-            if (ConvToAutoZoom(e.NewZoom) == AutoZoomLevel)
+            if (ConvZoomToBackIndex(e.NewZoom) == AutoZoomBackIndex)
             {
                 tsLayerImageZoom.Text = $"Zoom: [ {e.NewZoom / 100f}x";
                 tsLayerImageZoomLock.Visible = true;
@@ -1919,21 +1935,19 @@ namespace UVtools.GUI
                 tsLayerImageZoomLock.Visible = false;
             }
 
-            // Start timer to trigger refresh of the layer preview.  This ensures that the crosshairs
-            // are refreshed as layer preview transitions from higher to lower zoom levels. Using a
-            // timer with a slight delay here eliminates visual glitches caused by invoking showLayer
-            // directly at the same time as zoom is changed.
-            if (tsLayerImageShowCrosshairs.Checked &&
-                !ReferenceEquals(Issues, null) && 
-                flvIssues.SelectedIndices.Count > 0 &&
-                (e.OldZoom < 50 && e.NewZoom >= 50 ||
-                 e.OldZoom > 100 && e.NewZoom <= 100 ||
-                 (e.OldZoom >= 50 && e.OldZoom <= 100 && (e.NewZoom < 50 || e.NewZoom > 100)) &&
-                 flvIssues.SelectedObjects.Cast<LayerIssue>().Any(issue => // Find a valid candidate to update layer preview, otherwise quit
-                     issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
-                     issue.Type != LayerIssue.IssueType.TouchingBound)
-                ))
+            // Refresh the layer to properly render the crosshair at various zoom transitions
+            if (tsLayerImageShowCrosshairs.Checked && !ReferenceEquals(Issues, null) && flvIssues.SelectedIndices.Count > 0
+                && flvIssues.SelectedObjects.Cast<LayerIssue>().Any(issue => // Find a valid candidate to update layer preview, otherwise quit
+                     issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer && issue.Type != LayerIssue.IssueType.TouchingBound)
+                && (e.OldZoom < 50 && e.NewZoom >= 50  // Trigger refresh as crosshair thickness increases at lower zoom levels
+                    || e.OldZoom > 100 && e.NewZoom <= 100
+                    || e.OldZoom >= 50 && e.OldZoom <= 100 && (e.NewZoom < 50 || e.NewZoom > 100)
+                    || e.OldZoom <= CrosshairFadeLevel && e.NewZoom > CrosshairFadeLevel // Trigger refresh as zoom level manually crosses fade threshold
+                    || e.OldZoom > CrosshairFadeLevel && e.NewZoom <= CrosshairFadeLevel)
+                )
             {
+                // A timer is used here rather than invoking ShowLayer directly to eliminate sublte visual flashing
+                // that will occur on the transition when the crosshair fades or unfades if ShowLayer is called directly.
                 layerZoomTimer.Start();
             }
         }
@@ -2817,7 +2831,7 @@ namespace UVtools.GUI
                 if (tsLayerImageShowCrosshairs.Checked && 
                     !ReferenceEquals(Issues, null) &&
                     flvIssues.SelectedIndices.Count > 0 &&
-                    pbLayer.Zoom <= ZoomLevels[Settings.Default.DefaultCrosshairFade + ZoomLevelSkipCount] && // Only draw crosshairs when zoom level is below the configurable crosshair fade threshold.
+                    pbLayer.Zoom <= CrosshairFadeLevel && // Only draw crosshairs when zoom level is below the configurable crosshair fade threshold.
                     !(tsLayerImagePixelEdit.Checked && (ModifierKeys & Keys.Shift) != 0))
                 {
                     // Gradually increase line thickness from 1 to 3 at the lower-end of the zoom range.
@@ -3300,11 +3314,16 @@ namespace UVtools.GUI
                 {
                     if (!pbLayer.IsPointInImage(e.Location)) return;
                     var location = pbLayer.PointToImage(e.Location);
- 
-                    if (tsLayerImageShowCrosshairs.Checked)
+
+                    // Check to see if this zoom action will cross the crosshair fade threshold
+                    if (tsLayerImageShowCrosshairs.Checked && !ReferenceEquals(Issues, null) && flvIssues.SelectedIndices.Count > 0
+                       && flvIssues.SelectedObjects.Cast<LayerIssue>().Any(issue => // Find a valid candidate to update layer preview, otherwise quit
+                            issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer && issue.Type != LayerIssue.IssueType.TouchingBound)
+                       && pbLayer.Zoom <= CrosshairFadeLevel && AutoZoomLevel > CrosshairFadeLevel)
                     {
-                        // turn off crosshairs before zoom to make the 
-                        // transition a little cleaner.
+                        // Refresh the preview without the crosshairs before zooming-in.
+                        // Prevents zoomed-in crosshairs from breifly being displayed before
+                        // the Layer Preview is refreshed post-zoom.
                         tsLayerImageShowCrosshairs.Checked = false;
                         ShowLayer();
                         tsLayerImageShowCrosshairs.Checked = true;
@@ -3318,9 +3337,9 @@ namespace UVtools.GUI
                     pbLayer.ZoomOut(true); 
                     pbLayer.ZoomIn(true);
                     // Zoom out repeatedly to arrive at auto zoom level.
-                    for (int i = 0; i < AutoZoomLevel; i++)
+                    for (int i = 0; i < AutoZoomBackIndex; i++)
                     {
-                        if(i == AutoZoomLevel-1)
+                        if(i == AutoZoomBackIndex-1)
                             SupressLayerZoomEvent = false;
                         pbLayer.ZoomOut(true);
                     }
@@ -3332,10 +3351,10 @@ namespace UVtools.GUI
                 {
                     // Reset auto-zoom level based on current zoom level and
                     // refresh toolstrip zoom indicator.
-                    var currentLevel = ConvToAutoZoom(pbLayer.Zoom);
+                    var currentBackIndex = ConvZoomToBackIndex(pbLayer.Zoom);
                     // Don't allow small zoom values to be locked for auto-zoom
-                    if (currentLevel >= ZoomLevels.Length - ZoomLevelSkipCount) return;
-                    AutoZoomLevel = currentLevel;
+                    if (currentBackIndex >= ZoomLevels.Length - ZoomLevelSkipCount) return;
+                    AutoZoomBackIndex = currentBackIndex;
                     tsLayerImageZoom.Text = $"Zoom: [ {pbLayer.Zoom / 100f}x";
                     tsLayerImageZoomLock.Visible = true;
                     return;
@@ -3937,11 +3956,13 @@ namespace UVtools.GUI
             }
             else if (issue.X >= 0 && issue.Y >= 0)
             {
-
-                if (tsLayerImageShowCrosshairs.Checked)
+                // Check to see if this zoom action will cross the crosshair fade threshold
+                if (tsLayerImageShowCrosshairs.Checked && !ReferenceEquals(Issues, null) && flvIssues.SelectedIndices.Count > 0
+                   && pbLayer.Zoom <= CrosshairFadeLevel && AutoZoomLevel > CrosshairFadeLevel)
                 {
-                    // turn off crosshairs before zoom to make the
-                    // transition a little cleaner.
+                    // Refresh the preview without the crosshairs before zooming-in.
+                    // Prevents zoomed-in crosshairs from breifly being displayed before
+                    // the Layer Preview is refreshed post-zoom.
                     tsLayerImageShowCrosshairs.Checked = false;
                     ShowLayer();
                     tsLayerImageShowCrosshairs.Checked = true;
@@ -3953,9 +3974,9 @@ namespace UVtools.GUI
                 pbLayer.ZoomOut(true);
                 pbLayer.ZoomIn(true);
 
-                for (int i = 0; i < AutoZoomLevel; i++)
+                for (int i = 0; i < AutoZoomBackIndex; i++)
                 {
-                    if(i == AutoZoomLevel-1)
+                    if(i == AutoZoomBackIndex-1)
                         SupressLayerZoomEvent = false;
 
                     pbLayer.ZoomOut(true);
@@ -3988,11 +4009,8 @@ namespace UVtools.GUI
         /// This is used by auto-zoom to determine how many times zoom-out needs to be
         /// called from max zoom in order to arrive at the desired zoom.
         /// </summary>
-        private int ConvToAutoZoom(int zoom)
+        private int ConvZoomToBackIndex(int zoom)
         {
-            // Converts a Zoom Level into an AutoZoom value that indicates
-            // the number of times that ZoomOut must be called from the max
-            // zoom level in order ot reach the passed zoom level.
             return pbLayer.ZoomLevels.Count -
                 pbLayer.ZoomLevels.IndexOf(pbLayer.ZoomLevels.FindNearest(zoom)) - 1;
         }
