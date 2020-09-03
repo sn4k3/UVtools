@@ -211,6 +211,9 @@ namespace UVtools.GUI
                 Settings.Default.UpdateSettings = false;
                 Settings.Default.Save();
             }
+
+            ControlLeftLastTab = tbpThumbnailsAndInfo;
+
             Clear();
 
             tsLayerImageLayerDifference.Checked = Settings.Default.LayerDifferenceDefault;

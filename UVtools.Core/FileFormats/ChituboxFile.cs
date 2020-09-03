@@ -495,7 +495,7 @@ namespace UVtools.Core.FileFormats
             /// </summary>
             [FieldOrder(4)] public uint DataSize             { get; set; }
             [FieldOrder(5)] public uint Unknown1             { get; set; }
-            [FieldOrder(6)] public uint Unknown2             { get; set; }
+            [FieldOrder(6)] public uint Unknown2             { get; set; }// = 84; // Spoted on Mars 2 Pro
             [FieldOrder(7)] public uint Unknown3             { get; set; }
             [FieldOrder(8)] public uint Unknown4             { get; set; }
 
