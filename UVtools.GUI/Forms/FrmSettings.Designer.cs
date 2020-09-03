@@ -155,7 +155,7 @@
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.nmCrosshairLineLength = new System.Windows.Forms.NumericUpDown();
             this.label38 = new System.Windows.Forms.Label();
-            this.cbCrosshairShowOnSelectedIssuesOnly = new System.Windows.Forms.CheckBox();
+            this.cbCrosshairShowOnlyOnSelectedIssues = new System.Windows.Forms.CheckBox();
             this.label36 = new System.Windows.Forms.Label();
             this.label37 = new System.Windows.Forms.Label();
             this.label39 = new System.Windows.Forms.Label();
@@ -1334,7 +1334,7 @@
             this.tabPage2.Controls.Add(this.label39);
             this.tabPage2.Controls.Add(this.label37);
             this.tabPage2.Controls.Add(this.label36);
-            this.tabPage2.Controls.Add(this.cbCrosshairShowOnSelectedIssuesOnly);
+            this.tabPage2.Controls.Add(this.cbCrosshairShowOnlyOnSelectedIssues);
             this.tabPage2.Controls.Add(this.label38);
             this.tabPage2.Controls.Add(this.nmCrosshairLineLength);
             this.tabPage2.Controls.Add(this.cbCrosshairFadeLevel);
@@ -1386,7 +1386,7 @@
             this.cbCrosshairFadeLevel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbCrosshairFadeLevel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbCrosshairFadeLevel.FormattingEnabled = true;
-            this.cbCrosshairFadeLevel.Location = new System.Drawing.Point(448, 359);
+            this.cbCrosshairFadeLevel.Location = new System.Drawing.Point(443, 360);
             this.cbCrosshairFadeLevel.Name = "cbCrosshairFadeLevel";
             this.cbCrosshairFadeLevel.Size = new System.Drawing.Size(68, 26);
             this.cbCrosshairFadeLevel.TabIndex = 37;
@@ -1778,15 +1778,15 @@
             this.label38.TabIndex = 41;
             this.label38.Text = "zoom";
             // 
-            // cbCrosshairShowOnSelectedIssuesOnly
+            // cbCrosshairShowOnlyOnSelectedIssues
             // 
-            this.cbCrosshairShowOnSelectedIssuesOnly.AutoSize = true;
-            this.cbCrosshairShowOnSelectedIssuesOnly.Location = new System.Drawing.Point(11, 361);
-            this.cbCrosshairShowOnSelectedIssuesOnly.Name = "cbCrosshairShowOnSelectedIssuesOnly";
-            this.cbCrosshairShowOnSelectedIssuesOnly.Size = new System.Drawing.Size(431, 22);
-            this.cbCrosshairShowOnSelectedIssuesOnly.TabIndex = 42;
-            this.cbCrosshairShowOnSelectedIssuesOnly.Text = "Show crossharis only for selected issues and hide them after:";
-            this.cbCrosshairShowOnSelectedIssuesOnly.UseVisualStyleBackColor = true;
+            this.cbCrosshairShowOnlyOnSelectedIssues.AutoSize = true;
+            this.cbCrosshairShowOnlyOnSelectedIssues.Location = new System.Drawing.Point(11, 361);
+            this.cbCrosshairShowOnlyOnSelectedIssues.Name = "cbCrosshairShowOnlyOnSelectedIssues";
+            this.cbCrosshairShowOnlyOnSelectedIssues.Size = new System.Drawing.Size(431, 22);
+            this.cbCrosshairShowOnlyOnSelectedIssues.TabIndex = 42;
+            this.cbCrosshairShowOnlyOnSelectedIssues.Text = "Show crossharis only for selected issues and hide them after:";
+            this.cbCrosshairShowOnlyOnSelectedIssues.UseVisualStyleBackColor = true;
             // 
             // label36
             // 
@@ -1801,7 +1801,7 @@
             // label37
             // 
             this.label37.AutoSize = true;
-            this.label37.Location = new System.Drawing.Point(523, 363);
+            this.label37.Location = new System.Drawing.Point(518, 364);
             this.label37.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label37.Name = "label37";
             this.label37.Size = new System.Drawing.Size(47, 18);
@@ -2046,7 +2046,7 @@
         private System.Windows.Forms.NumericUpDown nmCrosshairLineLength;
         private System.Windows.Forms.Label label38;
         private System.Windows.Forms.Label label36;
-        private System.Windows.Forms.CheckBox cbCrosshairShowOnSelectedIssuesOnly;
+        private System.Windows.Forms.CheckBox cbCrosshairShowOnlyOnSelectedIssues;
         private System.Windows.Forms.Label label37;
         private System.Windows.Forms.Label label39;
         private System.Windows.Forms.Label label40;

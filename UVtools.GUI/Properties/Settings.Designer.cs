@@ -805,13 +805,13 @@ namespace UVtools.GUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool CrosshairShowOnSelectedIssuesOnly {
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool CrosshairShowOnlyOnSelectedIssues {
             get {
-                return ((bool)(this["CrosshairShowOnSelectedIssuesOnly"]));
+                return ((bool)(this["CrosshairShowOnlyOnSelectedIssues"]));
             }
             set {
-                this["CrosshairShowOnSelectedIssuesOnly"] = value;
+                this["CrosshairShowOnlyOnSelectedIssues"] = value;
             }
         }
         
@@ -824,6 +824,18 @@ namespace UVtools.GUI.Properties {
             }
             set {
                 this["CrosshairLineMargin"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Red")]
+        public global::System.Drawing.Color CrossharirColor {
+            get {
+                return ((global::System.Drawing.Color)(this["CrossharirColor"]));
+            }
+            set {
+                this["CrossharirColor"] = value;
             }
         }
     }

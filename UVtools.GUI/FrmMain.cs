@@ -1930,17 +1930,30 @@ namespace UVtools.GUI
             }
             
             // Refresh the layer to properly render the crosshair at various zoom transitions
-            if (tsLayerImageShowCrosshairs.Checked && !ReferenceEquals(Issues, null) && 
-                flvIssues.SelectedIndices.Count > 0 &&
+            if (tsLayerImageShowCrosshairs.Checked && 
+                !ReferenceEquals(Issues, null) && 
                 (e.OldZoom < 50 && e.NewZoom >= 50  // Trigger refresh as crosshair thickness increases at lower zoom levels
                     || e.OldZoom > 100 && e.NewZoom <= 100
                     || e.OldZoom >= 50 && e.OldZoom <= 100 && (e.NewZoom < 50 || e.NewZoom > 100)
                     || e.OldZoom <= CrosshairFadeLevel && e.NewZoom > CrosshairFadeLevel // Trigger refresh as zoom level manually crosses fade threshold
-                    || e.OldZoom > CrosshairFadeLevel && e.NewZoom <= CrosshairFadeLevel) &&
-                flvIssues.SelectedObjects.Cast<LayerIssue>().Any(issue => // Find a valid candidate to update layer preview, otherwise quit
-                    issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer && issue.Type != LayerIssue.IssueType.TouchingBound)
+                    || e.OldZoom > CrosshairFadeLevel && e.NewZoom <= CrosshairFadeLevel)
+                
                 )
             {
+                if (Settings.Default.CrosshairShowOnlyOnSelectedIssues)
+                {
+                    if (flvIssues.SelectedIndices.Count == 0 || !flvIssues.SelectedObjects.Cast<LayerIssue>().Any(
+                        issue => // Find a valid candidate to update layer preview, otherwise quit
+                            issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
+                            issue.Type != LayerIssue.IssueType.TouchingBound)) return;
+                }
+                else
+                {
+                    if(!Issues.Any(
+                        issue => // Find a valid candidate to update layer preview, otherwise quit
+                            issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
+                            issue.Type != LayerIssue.IssueType.TouchingBound)) return;
+                }
                 // A timer is used here rather than invoking ShowLayer directly to eliminate sublte visual flashing
                 // that will occur on the transition when the crosshair fades or unfades if ShowLayer is called directly.
                 layerZoomTimer.Start();
@@ -2505,6 +2518,74 @@ namespace UVtools.GUI
         }
 
         /// <summary>
+        /// Draw a crosshair around a rectangle
+        /// </summary>
+        /// <param name="rect"></param>
+        public void DrawCrosshair(Rectangle rect)
+        {
+            // Gradually increase line thickness from 1 to 3 at the lower-end of the zoom range.
+            // This prevents the crosshair lines from disappearing due to being too thin to
+            // render at very low zoom factors.
+            var lineThickness = (pbLayer.Zoom > 100) ? 1 : (pbLayer.Zoom < 50) ? 3 : 2;
+            var color = new MCvScalar(Settings.Default.CrossharirColor.B, Settings.Default.CrossharirColor.G, Settings.Default.CrossharirColor.R);
+
+
+            // LEFT
+            Point startPoint = new Point(Math.Max(0, rect.X - Settings.Default.CrosshairLineMargin - 1), rect.Y + rect.Height / 2);
+            Point endPoint =
+                new Point(
+                    Settings.Default.CrosshairLineLength == 0
+                        ? 0
+                        : (int)Math.Max(0, startPoint.X - Settings.Default.CrosshairLineLength + 1),
+                    startPoint.Y);
+
+            CvInvoke.Line(ActualLayerImageBgr,
+                startPoint,
+                endPoint,
+                color,
+                lineThickness);
+
+
+            // RIGHT
+            startPoint.X = Math.Min(ActualLayerImageBgr.Width,
+                rect.Right + Settings.Default.CrosshairLineMargin);
+            endPoint.X = Settings.Default.CrosshairLineLength == 0
+                ? ActualLayerImageBgr.Width
+                : (int)Math.Min(ActualLayerImageBgr.Width, startPoint.X + Settings.Default.CrosshairLineLength - 1);
+
+            CvInvoke.Line(ActualLayerImageBgr,
+                startPoint,
+                endPoint,
+                color,
+                lineThickness);
+
+            // TOP
+            startPoint = new Point(rect.X + rect.Width / 2,
+                Math.Max(0, rect.Y - Settings.Default.CrosshairLineMargin - 1));
+            endPoint = new Point(startPoint.X,
+                (int)(Settings.Default.CrosshairLineLength == 0
+                    ? 0
+                    : Math.Max(0, startPoint.Y - Settings.Default.CrosshairLineLength + 1)));
+
+
+            CvInvoke.Line(ActualLayerImageBgr,
+                startPoint,
+                endPoint,
+                color,
+                lineThickness);
+
+            // Bottom
+            startPoint.Y = Math.Min(ActualLayerImageBgr.Height, rect.Bottom + Settings.Default.CrosshairLineMargin);
+            endPoint.Y = Settings.Default.CrosshairLineLength == 0 ? ActualLayerImageBgr.Height : (int)Math.Min(ActualLayerImageBgr.Height, startPoint.Y + Settings.Default.CrosshairLineLength - 1);
+
+            CvInvoke.Line(ActualLayerImageBgr,
+                startPoint,
+                endPoint,
+                color,
+                lineThickness);
+        }
+
+        /// <summary>
         /// Reshow current layer
         /// </summary>
         void ShowLayer() => ShowLayer(Math.Min(ActualLayer, SlicerFile.LayerCount-1));
@@ -2662,6 +2743,11 @@ namespace UVtools.GUI
                                 //CvInvoke.DrawContours(ActualLayerImageBgr, new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)), -1, new MCvScalar(0, 0, 255), 1);
                             }
 
+                            if (tsLayerImageShowCrosshairs.Checked && !Settings.Default.CrosshairShowOnlyOnSelectedIssues && pbLayer.Zoom <= CrosshairFadeLevel)
+                            {
+                                DrawCrosshair(issue.BoundingRectangle);
+                            }
+
                             continue;
                         }
 
@@ -2671,6 +2757,10 @@ namespace UVtools.GUI
                                 color = selectedIssues.Contains(issue)
                                     ? Settings.Default.IslandHLColor
                                     : Settings.Default.IslandColor;
+                                if (tsLayerImageShowCrosshairs.Checked && !Settings.Default.CrosshairShowOnlyOnSelectedIssues && pbLayer.Zoom <= CrosshairFadeLevel)
+                                {
+                                    DrawCrosshair(issue.BoundingRectangle);
+                                }
                                 break;
                             case LayerIssue.IssueType.TouchingBound:
                                 color = Settings.Default.TouchingBoundsColor;
@@ -2825,16 +2915,14 @@ namespace UVtools.GUI
 
                 // Show crosshairs for selected issues if crosshair mode is enabled via toolstrip button.
                 // Even when enabled, crosshairs are hidden in pixel edit mode when SHIFT is pressed.
-                if (tsLayerImageShowCrosshairs.Checked && 
+                if (tsLayerImageShowCrosshairs.Checked &&
+                    Settings.Default.CrosshairShowOnlyOnSelectedIssues &&
                     !ReferenceEquals(Issues, null) &&
                     flvIssues.SelectedIndices.Count > 0 &&
                     pbLayer.Zoom <= CrosshairFadeLevel && // Only draw crosshairs when zoom level is below the configurable crosshair fade threshold.
                     !(tsLayerImagePixelEdit.Checked && (ModifierKeys & Keys.Shift) != 0))
                 {
-                    // Gradually increase line thickness from 1 to 3 at the lower-end of the zoom range.
-                    // This prevents the crosshair lines from disappearing due to being too thin to
-                    // render at very low zoom factors.
-                    var lineThickness = (pbLayer.Zoom > 100) ? 1 : (pbLayer.Zoom < 50) ? 3 : 2;
+                    
 
                     foreach (LayerIssue issue in selectedIssues)
                     {
@@ -2843,62 +2931,7 @@ namespace UVtools.GUI
                         if (issue.LayerIndex != ActualLayer || issue.Type == LayerIssue.IssueType.EmptyLayer
                                || issue.Type == LayerIssue.IssueType.TouchingBound) continue;
 
-                        var color = new MCvScalar(Color.Red.B, Color.Red.G, Color.Red.R);
-
-
-                        // LEFT
-                        Point startPoint = new Point(Math.Max(0, issue.BoundingRectangle.X - Settings.Default.CrosshairLineMargin - 1), issue.BoundingRectangle.Y + issue.BoundingRectangle.Height / 2);
-                        Point endPoint =
-                            new Point(
-                                Settings.Default.CrosshairLineLength == 0
-                                    ? 0
-                                    : (int) Math.Max(0, startPoint.X - Settings.Default.CrosshairLineLength + 1),
-                                startPoint.Y);
-
-                        CvInvoke.Line(ActualLayerImageBgr,
-                            startPoint,
-                            endPoint,
-                            color,
-                            lineThickness);
-
-
-                        // RIGHT
-                        startPoint.X = Math.Min(ActualLayerImageBgr.Width,
-                            issue.BoundingRectangle.Right + Settings.Default.CrosshairLineMargin);
-                        endPoint.X = Settings.Default.CrosshairLineLength == 0
-                            ? ActualLayerImageBgr.Width
-                            : (int)Math.Min(ActualLayerImageBgr.Width, startPoint.X + Settings.Default.CrosshairLineLength - 1);
-
-                        CvInvoke.Line(ActualLayerImageBgr,
-                            startPoint,
-                            endPoint,
-                            color,
-                            lineThickness);
-
-                        // TOP
-                        startPoint = new Point(issue.BoundingRectangle.X + issue.BoundingRectangle.Width / 2,
-                            Math.Max(0, issue.BoundingRectangle.Y - Settings.Default.CrosshairLineMargin - 1));
-                        endPoint = new Point(startPoint.X,
-                            (int) (Settings.Default.CrosshairLineLength == 0
-                                ? 0
-                                : Math.Max(0, startPoint.Y - Settings.Default.CrosshairLineLength + 1)));
-
-
-                        CvInvoke.Line(ActualLayerImageBgr,
-                            startPoint,
-                            endPoint,
-                            color,
-                            lineThickness);
-
-                        // Bottom
-                        startPoint.Y = Math.Min(ActualLayerImageBgr.Height, issue.BoundingRectangle.Bottom + Settings.Default.CrosshairLineMargin);
-                        endPoint.Y = Settings.Default.CrosshairLineLength == 0 ? ActualLayerImageBgr.Height : (int) Math.Min(ActualLayerImageBgr.Height, startPoint.Y + Settings.Default.CrosshairLineLength - 1);
-
-                        CvInvoke.Line(ActualLayerImageBgr,
-                            startPoint,
-                            endPoint,
-                            color,
-                            lineThickness);
+                        DrawCrosshair(issue.BoundingRectangle);
                     }
                 }
 

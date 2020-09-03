@@ -56,7 +56,7 @@ namespace UVtools.GUI.Forms
                 btnResinTrapHLColor.BackColor = Settings.Default.ResinTrapHLColor;
                 btnTouchingBoundsColor.BackColor = Settings.Default.TouchingBoundsColor;
                 cbAutoZoomLockLevel.SelectedIndex = Settings.Default.AutoZoomLockLevel;
-                cbCrosshairShowOnSelectedIssuesOnly.Checked = Settings.Default.CrosshairShowOnSelectedIssuesOnly;
+                cbCrosshairShowOnlyOnSelectedIssues.Checked = Settings.Default.CrosshairShowOnlyOnSelectedIssues;
                 cbCrosshairFadeLevel.SelectedIndex = Settings.Default.CrosshairFadeLevel;
                 nmCrosshairLineLength.Value = Settings.Default.CrosshairLineLength;
                 nmCrosshairLineMargin.Value = Settings.Default.CrosshairLineMargin;
@@ -226,7 +226,7 @@ namespace UVtools.GUI.Forms
                 Settings.Default.TouchingBoundsColor = btnTouchingBoundsColor.BackColor;
                 Settings.Default.CrosshairFadeLevel = (byte)cbCrosshairFadeLevel.SelectedIndex;
                 Settings.Default.AutoZoomLockLevel = (byte)cbAutoZoomLockLevel.SelectedIndex;
-                Settings.Default.CrosshairShowOnSelectedIssuesOnly = cbCrosshairShowOnSelectedIssuesOnly.Checked;
+                Settings.Default.CrosshairShowOnlyOnSelectedIssues = cbCrosshairShowOnlyOnSelectedIssues.Checked;
                 Settings.Default.CrosshairLineLength = (uint) nmCrosshairLineLength.Value;
                 Settings.Default.CrosshairLineMargin = (byte) nmCrosshairLineMargin.Value;
 
