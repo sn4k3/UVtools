@@ -3094,7 +3094,7 @@ namespace UVtools.GUI
 
                 // Pixel Edit is active, Shift is down, and the cursor is over the image region.
                 if (e.KeyCode == Keys.ShiftKey &&
-                    pbLayer.ClientRectangle.Contains(pbLayer.PointToClient(Control.MousePosition)) &&
+                    pbLayer.ClientRectangle.Contains(pbLayer.PointToClient(MousePosition)) &&
                     tsLayerImagePixelEdit.Checked)
                 {
                     pbLayer.Cursor = Cursors.Cross;
@@ -3357,7 +3357,8 @@ namespace UVtools.GUI
 
                 // Check to see if the clicked location is an issue,
                 // and if so, select it in the ListView.
-                SelectIssueAtPoint(location);
+                if(!ReferenceEquals(tabControlLeft.SelectedTab, tabPagePixelEditor) && (ModifierKeys & Keys.Shift) != 0)
+                    SelectIssueAtPoint(location);
 
                 return;
             }
@@ -3385,7 +3386,7 @@ namespace UVtools.GUI
                 {
                     if (!pbLayer.IsPointInImage(e.Location)) return;
                     var location = pbLayer.PointToImage(e.Location);
-
+                    
                     // Check to see if this zoom action will cross the crosshair fade threshold
                     // Not needed? visual artifact is not severe to make an extra showlayer call, also it acts like an "animation" removing crosshairs after zoom
                     /*if (tsLayerImageShowCrosshairs.Checked &&
@@ -3978,6 +3979,17 @@ namespace UVtools.GUI
             UpdateIssuesList();
         }
 
+        public Point GetTransposedPoint(Point point)
+        {
+            return tsLayerImageRotate.Checked ? new Point(point.Y, ActualLayerImage.Height - 1 - point.X) : point;
+        }
+
+        public Rectangle GetTransposedRectangle(Rectangle rectangle)
+        {
+            return tsLayerImageRotate.Checked ? new Rectangle(ActualLayerImage.Height - rectangle.Bottom,
+                rectangle.X, rectangle.Height, rectangle.Width) : rectangle;
+        }
+
         /// <summary>
         /// Gets the bounding rectangle of the passed issue, automatically adjusting
         /// the coordinates and width/height to account for whether or not the layer
@@ -3986,23 +3998,11 @@ namespace UVtools.GUI
         /// </summary>
         private Rectangle GetTransposedIssueBounds(LayerIssue issue)
         {
-            if (issue.X >= 0 && issue.Y >= 0)
-            {
-                if (issue.BoundingRectangle.IsEmpty || issue.Size == 1)
-                {
-                    if (tsLayerImageRotate.Checked)
-                        return new Rectangle(ActualLayerImage.Height - 1 - issue.Y,
-                            issue.X, 1, 1);
-                }
-                else
-                {
-                    if (tsLayerImageRotate.Checked)
-                        return new Rectangle(ActualLayerImage.Height - issue.BoundingRectangle.Bottom,
-                            issue.X, issue.BoundingRectangle.Height, issue.BoundingRectangle.Width);
-                }
-            }
+            if (issue.X >= 0 && issue.Y >= 0 && (issue.BoundingRectangle.IsEmpty || issue.Size == 1) && tsLayerImageRotate.Checked)
+                return new Rectangle(ActualLayerImage.Height - 1 - issue.Y,
+                    issue.X, 1, 1);
 
-            return issue.BoundingRectangle;
+            return GetTransposedRectangle(issue.BoundingRectangle);
         }
 
         /// <summary>
@@ -4126,6 +4126,7 @@ namespace UVtools.GUI
         /// </summary>
         private void SelectIssueAtPoint(Point location)
         {
+            //location = GetTransposedPoint(location);
             // If location clicked is within an issue, activate it.
             int index = -1;
             foreach (LayerIssue issue in flvIssues.Objects)
@@ -4133,13 +4134,11 @@ namespace UVtools.GUI
                 index++;
 
                 if (issue.LayerIndex != ActualLayer) continue;
+                if (!GetTransposedIssueBounds(issue).Contains(location)) continue;
 
-                if (GetTransposedIssueBounds(issue).Contains(location))
-                {
-                    flvIssues.SelectedIndex = index;
-                    flvIssues.EnsureVisible(index);
-                    break;
-                }
+                flvIssues.SelectedIndex = index;
+                flvIssues.EnsureVisible(index);
+                break;
             }
 
         }

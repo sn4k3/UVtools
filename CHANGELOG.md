@@ -8,6 +8,7 @@
   * Issues are now made active as soon as they are selected in the issue list, so single-click or arrow keys can now be used to select and issue. Double-click is no longer required.
   * Multi-select is supported. All selected issues on the currently visible layer will be highlighted with the appropriate highlight color.
   * When an issue is selected, if it is already visible in the layer preview, it will be highlighted, but not moved. If an issue is not visible when selected, it's layer will be made active (in necessary) and it will be centered in the layer preview to make it visible.
+  * Issues can be selected directly from layer preview by double clicking or SHIFT+Left click on it, also will be highlighted on issue list (This will not work while on pixel editor mode)
 * (Add) Edit Pixel Operation Highlighting
   * Similar to issue highlighting, pending operations in the pixel edit view will be highlighted in an alternate configurable color when they are selected from the operations List View, including multi-select support.
   * Unlike issue highlighting, when an operation is selected from the List View, it will always be centered in the layer preview window, even if it is already visible on screen. A future update could be smarter about this and handle operations similar to issues (determining bounds of operations is a bit more involved than determining bounds of an issue).
@@ -39,6 +40,7 @@
      * Pressing the SHIFT key in layer edit mode activates the ability to perform add/remove operations, while shift is pressed the cursor icon changes to a cross-hair, and add/remove operations can be performed. In this mode, pan and double-click zoom operations are disabled. Releasing the shift key will end add/remove mode and restore pan/zoom functions.
      * Shift-Left-Click will perform an add operations (add pixel, text, etc).
      * Shift-Right-Click will perform a remove operation (remove pixel, etc).
+* (Change) Mouse coordinates on status bar now only change when SHIFT key is press, this allow to lock a position for debug
 * (Fix) When next layer or previous layer button got disabled while pressing it get stuck
 * (Fix) chitubox: Keep some original values when read from chitubox sliced files
 * (Fix) chitubox: Preview thumbnails to respect order and size names
