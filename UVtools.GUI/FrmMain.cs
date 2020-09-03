@@ -208,10 +208,10 @@ namespace UVtools.GUI
             Program.SetAllControlsFontSize(Controls, 11);
             Program.SetAllControlsFontSize(FrmLoading.Controls, 11);
 
-            if (Settings.Default.UpdateSettings)
+            if (Settings.Default.UpgradeSettings)
             {
                 Settings.Default.Upgrade();
-                Settings.Default.UpdateSettings = false;
+                Settings.Default.UpgradeSettings = false;
                 Settings.Default.Save();
             }
 

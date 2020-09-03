@@ -122,12 +122,12 @@ namespace UVtools.GUI.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool UpdateSettings {
+        public bool UpgradeSettings {
             get {
-                return ((bool)(this["UpdateSettings"]));
+                return ((bool)(this["UpgradeSettings"]));
             }
             set {
-                this["UpdateSettings"] = value;
+                this["UpgradeSettings"] = value;
             }
         }
         

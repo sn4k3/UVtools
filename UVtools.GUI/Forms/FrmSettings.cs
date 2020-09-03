@@ -206,6 +206,7 @@ namespace UVtools.GUI.Forms
                     DialogResult.Yes) return;
 
                 Settings.Default.Reset();
+                Settings.Default.UpgradeSettings = false;
                 Init();
 
                 return;

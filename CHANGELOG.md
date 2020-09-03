@@ -47,7 +47,8 @@
 * (Fix) Partial island detection wasn't checking next layer as it should
 * (Fix) chitubox: Keep some original values when read from chitubox sliced files
 * (Fix) chitubox: Preview thumbnails to respect order and size names
-* Notes: This release is the combination of the following pull requests: #26, #27, #28, #29, #30, #31, #32
+* (Fix) Settings: Reset settings triggers a upgrade from previous version when relaunch UVtools and bring that same values
+* Notes: This release is the combination of the following pull requests: #26, #27, #28, #29, #30, #31, #32, #33
 
 ## 27/08/2020 - v0.6.7.1
 
