@@ -1978,7 +1978,7 @@ namespace UVtools.GUI
         private Point _lastPixelMouseLocation = Point.Empty;
         private void pbLayer_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!pbLayer.IsPointInImage(e.Location) ||(ModifierKeys & Keys.Shift) == 0) return;
+            if (!pbLayer.IsPointInImage(e.Location) || (ModifierKeys & Keys.Shift) == 0) return;
             var location = pbLayer.PointToImage(e.Location);
             if (_lastPixelMouseLocation == e.Location) return;
             _lastPixelMouseLocation = e.Location;
@@ -1993,6 +1993,7 @@ namespace UVtools.GUI
             }
 
             tsLayerImageMouseLocation.Text = $"{{X={x}, Y={y}, B={ActualLayerImage.GetByte(x, y)}}}";
+
             // Bail here if we're not in a draw operation, if the mouse button is not either
             // left or right, or if the location of the mouse pointer is not within the image.
             if (tabControlPixelEditor.SelectedIndex != (int) PixelOperation.PixelOperationType.Drawing) return;
@@ -3344,9 +3345,20 @@ namespace UVtools.GUI
         {
             if (ReferenceEquals(sender, pbLayer))
             {
-                if ((ModifierKeys & Keys.Control) == 0) return;
-                // CTRL click within pbLayer performs double click action
-                HandleMouseDoubleClick(sender, e);
+                if ((ModifierKeys & Keys.Control) != 0)
+                {
+                    // CTRL click within pbLayer performs double click action
+                    HandleMouseDoubleClick(sender, e);
+                    return;
+                }
+ 
+                if (!pbLayer.IsPointInImage(e.Location)) return;
+                var location = pbLayer.PointToImage(e.Location);
+
+                // Check to see if the clicked location is an issue,
+                // and if so, select it in the ListView.
+                SelectIssueAtPoint(location);
+
                 return;
             }
         }
@@ -3392,6 +3404,10 @@ namespace UVtools.GUI
                     
 
                     CenterLayerAt(location, AutoZoomLevel);
+
+                    // Check to see if the clicked location is an issue, and if so, select it in the ListView.
+                    SelectIssueAtPoint(location);
+
                     return;
                 }
                 if ((e.Button & MouseButtons.Middle) != 0)
@@ -3410,7 +3426,6 @@ namespace UVtools.GUI
                 {
                     ZoomToFit();
                     return;
-
                 }
                 return;
             }
@@ -3977,12 +3992,12 @@ namespace UVtools.GUI
                 {
                     if (tsLayerImageRotate.Checked)
                         return new Rectangle(ActualLayerImage.Height - 1 - issue.Y,
-                            issue.X, 5, 5);
+                            issue.X, 1, 1);
                 }
                 else
                 {
                     if (tsLayerImageRotate.Checked)
-                        return new Rectangle(ActualLayerImage.Height - 1 - issue.BoundingRectangle.Bottom,
+                        return new Rectangle(ActualLayerImage.Height - issue.BoundingRectangle.Bottom,
                             issue.X, issue.BoundingRectangle.Height, issue.BoundingRectangle.Width);
                 }
             }
@@ -4105,7 +4120,29 @@ namespace UVtools.GUI
                 pbLayer.ZoomToFit();
             }
         }
+        /// <summary>
+        /// If there is an issue under the point location passed, that issue will be selected and
+        /// scrolled into view on the IssueList.
+        /// </summary>
+        private void SelectIssueAtPoint(Point location)
+        {
+            // If location clicked is within an issue, activate it.
+            int index = -1;
+            foreach (LayerIssue issue in flvIssues.Objects)
+            {
+                index++;
 
+                if (issue.LayerIndex != ActualLayer) continue;
+
+                if (GetTransposedIssueBounds(issue).Contains(location))
+                {
+                    flvIssues.SelectedIndex = index;
+                    flvIssues.EnsureVisible(index);
+                    break;
+                }
+            }
+
+        }
         public IslandDetectionConfiguration GetIslandDetectionConfiguration()
         {
             return new IslandDetectionConfiguration
