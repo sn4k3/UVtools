@@ -4255,7 +4255,7 @@ namespace UVtools.GUI
                         whiteListLayers.Add(item.LayerIndex);
 
                         uint nextLayer = item.LayerIndex + 1;
-                        if (SlicerFile.LayerCount < nextLayer &&
+                        if (nextLayer < SlicerFile.LayerCount &&
                             !whiteListLayers.Contains(nextLayer))
                         {
                             whiteListLayers.Add(nextLayer);

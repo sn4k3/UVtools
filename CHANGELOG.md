@@ -42,6 +42,7 @@
      * Shift-Right-Click will perform a remove operation (remove pixel, etc).
 * (Change) Mouse coordinates on status bar now only change when SHIFT key is press, this allow to lock a position for debug
 * (Fix) When next layer or previous layer button got disabled while pressing it get stuck
+* (Fix) Partial island detection wasn't checking next layer as it should
 * (Fix) chitubox: Keep some original values when read from chitubox sliced files
 * (Fix) chitubox: Preview thumbnails to respect order and size names
 
