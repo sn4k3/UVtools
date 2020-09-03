@@ -1996,16 +1996,9 @@ namespace UVtools.GUI
             if (_lastPixelMouseLocation == e.Location) return;
             _lastPixelMouseLocation = e.Location;
 
-            int x = location.X;
-            int y = location.Y;
+            Point realLocation = GetTransposedPoint(location);
 
-            if (tsLayerImageRotate.Checked)
-            {
-                x = location.Y;
-                y = ActualLayerImage.Height - 1 - location.X;
-            }
-
-            tsLayerImageMouseLocation.Text = $"{{X={x}, Y={y}, B={ActualLayerImage.GetByte(x, y)}}}";
+            tsLayerImageMouseLocation.Text = $"{{X={realLocation.X}, Y={realLocation.Y}, B={ActualLayerImage.GetByte(realLocation)}}}";
 
             // Bail here if we're not in a draw operation, if the mouse button is not either
             // left or right, or if the location of the mouse pointer is not within the image.
@@ -2072,7 +2065,7 @@ namespace UVtools.GUI
             {
                 if (!(flvPixelHistory.SelectedObject is PixelOperation operation)) return;
 
-                Point location = GetTransposedPoint(operation.Location);
+                Point location = GetTransposedPoint(operation.Location, false);
 
                 if (Settings.Default.ZoomIssues ^ (ModifierKeys & Keys.Alt) != 0)
                 {
@@ -3467,14 +3460,8 @@ namespace UVtools.GUI
         {
             //Stopwatch sw = Stopwatch.StartNew();
             //var point = pbLayer.PointToImage(location);
-            int x = location.X;
-            int y = location.Y;
 
-            if (tsLayerImageRotate.Checked)
-            {
-                x = location.Y;
-                y = ActualLayerImage.Height - 1 - location.X;
-            }
+            Point realLocation = GetTransposedPoint(location);
 
             PixelOperation operation = null;
             Bitmap bmp = pbLayer.Image as Bitmap;
@@ -3492,7 +3479,7 @@ namespace UVtools.GUI
                 uint maxLayer = (uint) Math.Min(SlicerFile.LayerCount-1, ActualLayer+nmPixelEditorDrawingLayersAbove.Value);
                 for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
                 {
-                    operation = new PixelDrawing(layerIndex, new Point(x, y), lineType,
+                    operation = new PixelDrawing(layerIndex, realLocation, lineType,
                         shapeType, brushSize, thickness, isAdd);
 
                     if (PixelHistory.Contains(operation)) continue;
@@ -3549,7 +3536,7 @@ namespace UVtools.GUI
                 uint maxLayer = (uint)Math.Min(SlicerFile.LayerCount - 1, ActualLayer + nmPixelEditorTextLayersAbove.Value);
                 for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
                 {
-                    operation = new PixelText(layerIndex, new Point(x, y), lineType,
+                    operation = new PixelText(layerIndex, realLocation, lineType,
                         fontFace, (double) nmPixelEditorTextFontScale.Value, (ushort) nmPixelEditorTextThickness.Value, tbPixelEditorTextText.Text, cbPixelEditorTextMirror.Checked, isAdd);
 
                     if (PixelHistory.Contains(operation)) continue;
@@ -3560,12 +3547,12 @@ namespace UVtools.GUI
             }
             else if (tabControlPixelEditor.SelectedIndex == (byte) PixelOperation.PixelOperationType.Eraser)
             {
-                if (ActualLayerImage.GetByte(x, y) < 10) return;
+                if (ActualLayerImage.GetByte(realLocation) < 10) return;
                 uint minLayer = (uint)Math.Max(0, ActualLayer - nmPixelEditorEraserLayersBelow.Value);
                 uint maxLayer = (uint)Math.Min(SlicerFile.LayerCount - 1, ActualLayer + nmPixelEditorEraserLayersAbove.Value);
                 for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
                 {
-                    operation = new PixelEraser(layerIndex, new Point(x, y));
+                    operation = new PixelEraser(layerIndex, realLocation);
 
                     if (PixelHistory.Contains(operation)) continue;
                     PixelHistory.Add(operation);
@@ -3576,7 +3563,7 @@ namespace UVtools.GUI
             else if (tabControlPixelEditor.SelectedIndex == (byte) PixelOperation.PixelOperationType.Supports)
             {
                 if (ActualLayer == 0) return;
-                operation = new PixelSupport(ActualLayer, new Point(x, y),
+                operation = new PixelSupport(ActualLayer, realLocation,
                     (byte) nmPixelEditorSupportsTipDiameter.Value, (byte)nmPixelEditorSupportsPillarDiameter.Value, (byte)nmPixelEditorSupportsBaseDiameter.Value);
 
                 if (PixelHistory.Contains(operation)) return;
@@ -3595,7 +3582,7 @@ namespace UVtools.GUI
             else if (tabControlPixelEditor.SelectedIndex == (byte)PixelOperation.PixelOperationType.DrainHole)
             {
                 if (ActualLayer == 0) return;
-                operation = new PixelDrainHole(ActualLayer, new Point(x, y), (byte)nmPixelEditorDrainHoleDiameter.Value);
+                operation = new PixelDrainHole(ActualLayer, realLocation, (byte)nmPixelEditorDrainHoleDiameter.Value);
 
                 if (PixelHistory.Contains(operation)) return;
                 PixelHistory.Add(operation);
@@ -3989,9 +3976,12 @@ namespace UVtools.GUI
             UpdateIssuesList();
         }
 
-        public Point GetTransposedPoint(Point point)
+        public Point GetTransposedPoint(Point point, bool clockWise = true)
         {
-            return tsLayerImageRotate.Checked ? new Point(ActualLayerImage.Height - 1 - point.Y, point.X) : point;
+            if (!tsLayerImageRotate.Checked) return point;
+            return clockWise
+                ? new Point(point.Y, ActualLayerImage.Height - 1 - point.X)
+                : new Point(ActualLayerImage.Height - 1 - point.Y, point.X);
         }
 
         public Rectangle GetTransposedRectangle(Rectangle rectangle)
