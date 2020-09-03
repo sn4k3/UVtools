@@ -1965,8 +1965,11 @@ namespace UVtools.GUI
 
         private void pbLayer_MouseDown(object sender, MouseEventArgs e)
         {
-            mouseHoldTimer.Tag = e.Button;
-            mouseHoldTimer.Start();
+            if (e.Button == MouseButtons.Middle)
+            {
+                mouseHoldTimer.Tag = e.Button;
+                mouseHoldTimer.Start();
+            }
         }
 
         private void pbLayer_MouseUp(object sender, MouseEventArgs e)
