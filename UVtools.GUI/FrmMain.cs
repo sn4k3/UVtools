@@ -3097,10 +3097,10 @@ namespace UVtools.GUI
 
                 // Pixel Edit is active, Shift is down, and the cursor is over the image region.
                 if (e.KeyCode == Keys.ShiftKey &&
-                    pbLayer.ClientRectangle.Contains(pbLayer.PointToClient(MousePosition)) &&
-                    tsLayerImagePixelEdit.Checked)
+                    pbLayer.ClientRectangle.Contains(pbLayer.PointToClient(MousePosition)))
                 {
-                    pbLayer.Cursor = Cursors.Cross;
+
+                    pbLayer.Cursor = tsLayerImagePixelEdit.Checked ? Cursors.Cross : Cursors.Hand;
                     pbLayer.PanMode = Cyotek.Windows.Forms.ImageBoxPanMode.None;
                     if (!ReferenceEquals(SlicerFile, null)) ShowLayer();
                 }
