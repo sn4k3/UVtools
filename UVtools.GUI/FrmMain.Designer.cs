@@ -973,7 +973,7 @@
             this.tsLayerImageZoomLock.Size = new System.Drawing.Size(27, 22);
             this.tsLayerImageZoomLock.Text = "]";
             this.tsLayerImageZoomLock.ToolTipText = "This zoom factor will be used for auto-zoom functions. Use scroll wheel to select" +
-    " desired auto zoom level\r\nand double-click middle mouse button to set.";
+    " desired auto zoom level\r\nand hold middle mouse button for 1 second to set.";
             this.tsLayerImageZoomLock.Visible = false;
             // 
             // tsLayerImageZoom
