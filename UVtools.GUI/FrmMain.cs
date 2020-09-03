@@ -2033,14 +2033,14 @@ namespace UVtools.GUI
                     }
                     else
                     {
-                        CenterLayerAt(GetTransposedIssueBounds(issue));
+                        //CenterLayerAt(GetTransposedIssueBounds(issue));
                         // If issue is not already visible, center on it and bring it into view.
                         // Issues already in view will not be centered, though their color may
                         // change and the crosshair may move to reflect active selections.
-                        /*if (!Rectangle.Round(pbLayer.GetSourceImageRegion()).Contains(GetTransposedIssueBounds(issue)))
+                        if (!Rectangle.Round(pbLayer.GetSourceImageRegion()).Contains(GetTransposedIssueBounds(issue)))
                         {
                             CenterAtIssue(issue);
-                        }*/
+                        }
                     }
                 }
 
