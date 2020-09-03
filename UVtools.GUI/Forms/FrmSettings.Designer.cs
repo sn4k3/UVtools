@@ -123,9 +123,18 @@
             this.tbFileSaveNamePreffix = new System.Windows.Forms.TextBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.label40 = new System.Windows.Forms.Label();
+            this.label41 = new System.Windows.Forms.Label();
+            this.nmCrosshairLineMargin = new System.Windows.Forms.NumericUpDown();
+            this.label39 = new System.Windows.Forms.Label();
+            this.label37 = new System.Windows.Forms.Label();
+            this.label36 = new System.Windows.Forms.Label();
+            this.cbCrosshairShowOnlyOnSelectedIssues = new System.Windows.Forms.CheckBox();
+            this.label38 = new System.Windows.Forms.Label();
+            this.nmCrosshairLineLength = new System.Windows.Forms.NumericUpDown();
             this.cbCrosshairFadeLevel = new System.Windows.Forms.ComboBox();
-            this.cbAutoZoomIssues = new System.Windows.Forms.CheckBox();
-            this.cbAutoZoomLockLevel = new System.Windows.Forms.ComboBox();
+            this.cbZoomIssues = new System.Windows.Forms.CheckBox();
+            this.cbZoomLockLevel = new System.Windows.Forms.ComboBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.cbPartialUpdateIslandsOnEditing = new System.Windows.Forms.CheckBox();
@@ -153,15 +162,7 @@
             this.cbLayerRepairLayersIslands = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.nmCrosshairLineLength = new System.Windows.Forms.NumericUpDown();
-            this.label38 = new System.Windows.Forms.Label();
-            this.cbCrosshairShowOnlyOnSelectedIssues = new System.Windows.Forms.CheckBox();
-            this.label36 = new System.Windows.Forms.Label();
-            this.label37 = new System.Windows.Forms.Label();
-            this.label39 = new System.Windows.Forms.Label();
-            this.label40 = new System.Windows.Forms.Label();
-            this.label41 = new System.Windows.Forms.Label();
-            this.nmCrosshairLineMargin = new System.Windows.Forms.NumericUpDown();
+            this.cbZoomIssuesAuto = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineHollowAreasLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineLayerBoundsLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlinePrintVolumeBoundsLineThickness)).BeginInit();
@@ -182,6 +183,8 @@
             this.groupBox5.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.tabPage2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmCrosshairLineMargin)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmCrosshairLineLength)).BeginInit();
             this.tabPage3.SuspendLayout();
             this.tabPage4.SuspendLayout();
             this.tabPage5.SuspendLayout();
@@ -189,8 +192,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultOpeningIterations)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultClosingIterations)).BeginInit();
             this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nmCrosshairLineLength)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nmCrosshairLineMargin)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -277,7 +278,7 @@
             this.btnTouchingBoundsColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnTouchingBoundsColor.FlatAppearance.BorderSize = 2;
             this.btnTouchingBoundsColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnTouchingBoundsColor.Location = new System.Drawing.Point(521, 88);
+            this.btnTouchingBoundsColor.Location = new System.Drawing.Point(536, 88);
             this.btnTouchingBoundsColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnTouchingBoundsColor.Name = "btnTouchingBoundsColor";
             this.btnTouchingBoundsColor.Size = new System.Drawing.Size(32, 32);
@@ -289,7 +290,7 @@
             // 
             this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(317, 15);
+            this.label4.Location = new System.Drawing.Point(332, 15);
             this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(194, 18);
@@ -300,7 +301,7 @@
             // 
             this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(289, 55);
+            this.label5.Location = new System.Drawing.Point(304, 55);
             this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(223, 18);
@@ -311,7 +312,7 @@
             // 
             this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(357, 95);
+            this.label6.Location = new System.Drawing.Point(372, 95);
             this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(156, 18);
@@ -325,7 +326,7 @@
             this.btnResinTrapColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnResinTrapColor.FlatAppearance.BorderSize = 2;
             this.btnResinTrapColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnResinTrapColor.Location = new System.Drawing.Point(521, 48);
+            this.btnResinTrapColor.Location = new System.Drawing.Point(536, 48);
             this.btnResinTrapColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnResinTrapColor.Name = "btnResinTrapColor";
             this.btnResinTrapColor.Size = new System.Drawing.Size(32, 32);
@@ -340,7 +341,7 @@
             this.btnResinTrapHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnResinTrapHLColor.FlatAppearance.BorderSize = 2;
             this.btnResinTrapHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnResinTrapHLColor.Location = new System.Drawing.Point(563, 48);
+            this.btnResinTrapHLColor.Location = new System.Drawing.Point(576, 48);
             this.btnResinTrapHLColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnResinTrapHLColor.Name = "btnResinTrapHLColor";
             this.btnResinTrapHLColor.Size = new System.Drawing.Size(32, 32);
@@ -355,7 +356,7 @@
             this.btnIslandColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnIslandColor.FlatAppearance.BorderSize = 2;
             this.btnIslandColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnIslandColor.Location = new System.Drawing.Point(521, 8);
+            this.btnIslandColor.Location = new System.Drawing.Point(536, 8);
             this.btnIslandColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnIslandColor.Name = "btnIslandColor";
             this.btnIslandColor.Size = new System.Drawing.Size(32, 32);
@@ -370,7 +371,7 @@
             this.btnIslandHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnIslandHLColor.FlatAppearance.BorderSize = 2;
             this.btnIslandHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnIslandHLColor.Location = new System.Drawing.Point(563, 8);
+            this.btnIslandHLColor.Location = new System.Drawing.Point(576, 8);
             this.btnIslandHLColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnIslandHLColor.Name = "btnIslandHLColor";
             this.btnIslandHLColor.Size = new System.Drawing.Size(32, 32);
@@ -431,18 +432,18 @@
             // cbZoomToFitPrintVolumeBounds
             // 
             this.cbZoomToFitPrintVolumeBounds.AutoSize = true;
-            this.cbZoomToFitPrintVolumeBounds.Location = new System.Drawing.Point(327, 277);
+            this.cbZoomToFitPrintVolumeBounds.Location = new System.Drawing.Point(336, 277);
             this.cbZoomToFitPrintVolumeBounds.Name = "cbZoomToFitPrintVolumeBounds";
-            this.cbZoomToFitPrintVolumeBounds.Size = new System.Drawing.Size(276, 22);
+            this.cbZoomToFitPrintVolumeBounds.Size = new System.Drawing.Size(272, 22);
             this.cbZoomToFitPrintVolumeBounds.TabIndex = 34;
-            this.cbZoomToFitPrintVolumeBounds.Text = "Zoom to print volume bounds instead ";
+            this.cbZoomToFitPrintVolumeBounds.Text = "Zoom to print volume bounds instead";
             this.cbZoomToFitPrintVolumeBounds.UseVisualStyleBackColor = true;
             // 
             // cbOutlineHollowAreas
             // 
             this.cbOutlineHollowAreas.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbOutlineHollowAreas.AutoSize = true;
-            this.cbOutlineHollowAreas.Location = new System.Drawing.Point(479, 213);
+            this.cbOutlineHollowAreas.Location = new System.Drawing.Point(477, 213);
             this.cbOutlineHollowAreas.Name = "cbOutlineHollowAreas";
             this.cbOutlineHollowAreas.Size = new System.Drawing.Size(131, 22);
             this.cbOutlineHollowAreas.TabIndex = 33;
@@ -508,7 +509,7 @@
             // 
             this.cbOutlineLayerBounds.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbOutlineLayerBounds.AutoSize = true;
-            this.cbOutlineLayerBounds.Location = new System.Drawing.Point(479, 173);
+            this.cbOutlineLayerBounds.Location = new System.Drawing.Point(477, 173);
             this.cbOutlineLayerBounds.Name = "cbOutlineLayerBounds";
             this.cbOutlineLayerBounds.Size = new System.Drawing.Size(131, 22);
             this.cbOutlineLayerBounds.TabIndex = 28;
@@ -574,7 +575,7 @@
             // 
             this.cbOutlinePrintVolumeBounds.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbOutlinePrintVolumeBounds.AutoSize = true;
-            this.cbOutlinePrintVolumeBounds.Location = new System.Drawing.Point(479, 133);
+            this.cbOutlinePrintVolumeBounds.Location = new System.Drawing.Point(477, 133);
             this.cbOutlinePrintVolumeBounds.Name = "cbOutlinePrintVolumeBounds";
             this.cbOutlinePrintVolumeBounds.Size = new System.Drawing.Size(131, 22);
             this.cbOutlinePrintVolumeBounds.TabIndex = 23;
@@ -1328,6 +1329,7 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.cbZoomIssuesAuto);
             this.tabPage2.Controls.Add(this.label40);
             this.tabPage2.Controls.Add(this.label41);
             this.tabPage2.Controls.Add(this.nmCrosshairLineMargin);
@@ -1338,8 +1340,8 @@
             this.tabPage2.Controls.Add(this.label38);
             this.tabPage2.Controls.Add(this.nmCrosshairLineLength);
             this.tabPage2.Controls.Add(this.cbCrosshairFadeLevel);
-            this.tabPage2.Controls.Add(this.cbAutoZoomIssues);
-            this.tabPage2.Controls.Add(this.cbAutoZoomLockLevel);
+            this.tabPage2.Controls.Add(this.cbZoomIssues);
+            this.tabPage2.Controls.Add(this.cbZoomLockLevel);
             this.tabPage2.Controls.Add(this.cbZoomToFitPrintVolumeBounds);
             this.tabPage2.Controls.Add(this.label1);
             this.tabPage2.Controls.Add(this.label2);
@@ -1381,35 +1383,139 @@
             this.tabPage2.Text = "Layer Preview";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // label40
+            // 
+            this.label40.AutoSize = true;
+            this.label40.Location = new System.Drawing.Point(226, 422);
+            this.label40.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label40.Name = "label40";
+            this.label40.Size = new System.Drawing.Size(23, 18);
+            this.label40.TabIndex = 48;
+            this.label40.Text = "px";
+            // 
+            // label41
+            // 
+            this.label41.AutoSize = true;
+            this.label41.Location = new System.Drawing.Point(9, 422);
+            this.label41.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label41.Name = "label41";
+            this.label41.Size = new System.Drawing.Size(126, 18);
+            this.label41.TabIndex = 47;
+            this.label41.Text = "Crosshair margin:";
+            // 
+            // nmCrosshairLineMargin
+            // 
+            this.nmCrosshairLineMargin.Location = new System.Drawing.Point(162, 419);
+            this.nmCrosshairLineMargin.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+            this.nmCrosshairLineMargin.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.nmCrosshairLineMargin.Name = "nmCrosshairLineMargin";
+            this.nmCrosshairLineMargin.Size = new System.Drawing.Size(57, 24);
+            this.nmCrosshairLineMargin.TabIndex = 46;
+            this.nmCrosshairLineMargin.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // label39
+            // 
+            this.label39.AutoSize = true;
+            this.label39.Location = new System.Drawing.Point(226, 392);
+            this.label39.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label39.Name = "label39";
+            this.label39.Size = new System.Drawing.Size(213, 18);
+            this.label39.TabIndex = 45;
+            this.label39.Text = "px (0 to fill up to image bounds)";
+            // 
+            // label37
+            // 
+            this.label37.AutoSize = true;
+            this.label37.Location = new System.Drawing.Point(526, 363);
+            this.label37.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label37.Name = "label37";
+            this.label37.Size = new System.Drawing.Size(47, 18);
+            this.label37.TabIndex = 44;
+            this.label37.Text = "zoom";
+            // 
+            // label36
+            // 
+            this.label36.AutoSize = true;
+            this.label36.Location = new System.Drawing.Point(9, 392);
+            this.label36.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label36.Name = "label36";
+            this.label36.Size = new System.Drawing.Size(146, 18);
+            this.label36.TabIndex = 43;
+            this.label36.Text = "Crosshair line length:";
+            // 
+            // cbCrosshairShowOnlyOnSelectedIssues
+            // 
+            this.cbCrosshairShowOnlyOnSelectedIssues.AutoSize = true;
+            this.cbCrosshairShowOnlyOnSelectedIssues.Location = new System.Drawing.Point(11, 361);
+            this.cbCrosshairShowOnlyOnSelectedIssues.Name = "cbCrosshairShowOnlyOnSelectedIssues";
+            this.cbCrosshairShowOnlyOnSelectedIssues.Size = new System.Drawing.Size(434, 22);
+            this.cbCrosshairShowOnlyOnSelectedIssues.TabIndex = 42;
+            this.cbCrosshairShowOnlyOnSelectedIssues.Text = "Show crossharis only for the selected issues. Hide them after:";
+            this.cbCrosshairShowOnlyOnSelectedIssues.UseVisualStyleBackColor = true;
+            // 
+            // label38
+            // 
+            this.label38.AutoSize = true;
+            this.label38.Location = new System.Drawing.Point(393, 307);
+            this.label38.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label38.Name = "label38";
+            this.label38.Size = new System.Drawing.Size(47, 18);
+            this.label38.TabIndex = 41;
+            this.label38.Text = "zoom";
+            // 
+            // nmCrosshairLineLength
+            // 
+            this.nmCrosshairLineLength.Location = new System.Drawing.Point(162, 389);
+            this.nmCrosshairLineLength.Maximum = new decimal(new int[] {
+            1000000,
+            0,
+            0,
+            0});
+            this.nmCrosshairLineLength.Name = "nmCrosshairLineLength";
+            this.nmCrosshairLineLength.Size = new System.Drawing.Size(57, 24);
+            this.nmCrosshairLineLength.TabIndex = 40;
+            // 
             // cbCrosshairFadeLevel
             // 
             this.cbCrosshairFadeLevel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbCrosshairFadeLevel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbCrosshairFadeLevel.FormattingEnabled = true;
-            this.cbCrosshairFadeLevel.Location = new System.Drawing.Point(443, 360);
+            this.cbCrosshairFadeLevel.Location = new System.Drawing.Point(451, 359);
             this.cbCrosshairFadeLevel.Name = "cbCrosshairFadeLevel";
             this.cbCrosshairFadeLevel.Size = new System.Drawing.Size(68, 26);
             this.cbCrosshairFadeLevel.TabIndex = 37;
             // 
-            // cbAutoZoomIssues
+            // cbZoomIssues
             // 
-            this.cbAutoZoomIssues.AutoSize = true;
-            this.cbAutoZoomIssues.Location = new System.Drawing.Point(11, 305);
-            this.cbAutoZoomIssues.Name = "cbAutoZoomIssues";
-            this.cbAutoZoomIssues.Size = new System.Drawing.Size(429, 22);
-            this.cbAutoZoomIssues.TabIndex = 35;
-            this.cbAutoZoomIssues.Text = "Auto zoom to issues and drawings portrait area (best fit) with:";
-            this.cbAutoZoomIssues.UseVisualStyleBackColor = true;
+            this.cbZoomIssues.AutoSize = true;
+            this.cbZoomIssues.Location = new System.Drawing.Point(11, 305);
+            this.cbZoomIssues.Name = "cbZoomIssues";
+            this.cbZoomIssues.Size = new System.Drawing.Size(301, 22);
+            this.cbZoomIssues.TabIndex = 35;
+            this.cbZoomIssues.Text = "Zoom to issues and drawings region with:";
+            this.cbZoomIssues.UseVisualStyleBackColor = true;
             // 
-            // cbAutoZoomLockLevel
+            // cbZoomLockLevel
             // 
-            this.cbAutoZoomLockLevel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cbAutoZoomLockLevel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbAutoZoomLockLevel.FormattingEnabled = true;
-            this.cbAutoZoomLockLevel.Location = new System.Drawing.Point(443, 303);
-            this.cbAutoZoomLockLevel.Name = "cbAutoZoomLockLevel";
-            this.cbAutoZoomLockLevel.Size = new System.Drawing.Size(68, 26);
-            this.cbAutoZoomLockLevel.TabIndex = 36;
+            this.cbZoomLockLevel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbZoomLockLevel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbZoomLockLevel.FormattingEnabled = true;
+            this.cbZoomLockLevel.Location = new System.Drawing.Point(318, 303);
+            this.cbZoomLockLevel.Name = "cbZoomLockLevel";
+            this.cbZoomLockLevel.Size = new System.Drawing.Size(68, 26);
+            this.cbZoomLockLevel.TabIndex = 36;
             // 
             // tabPage3
             // 
@@ -1756,109 +1862,16 @@
             this.toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             this.toolTip.ToolTipTitle = "Information";
             // 
-            // nmCrosshairLineLength
+            // cbZoomIssuesAuto
             // 
-            this.nmCrosshairLineLength.Location = new System.Drawing.Point(162, 389);
-            this.nmCrosshairLineLength.Maximum = new decimal(new int[] {
-            1000000,
-            0,
-            0,
-            0});
-            this.nmCrosshairLineLength.Name = "nmCrosshairLineLength";
-            this.nmCrosshairLineLength.Size = new System.Drawing.Size(57, 24);
-            this.nmCrosshairLineLength.TabIndex = 40;
-            // 
-            // label38
-            // 
-            this.label38.AutoSize = true;
-            this.label38.Location = new System.Drawing.Point(518, 307);
-            this.label38.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label38.Name = "label38";
-            this.label38.Size = new System.Drawing.Size(47, 18);
-            this.label38.TabIndex = 41;
-            this.label38.Text = "zoom";
-            // 
-            // cbCrosshairShowOnlyOnSelectedIssues
-            // 
-            this.cbCrosshairShowOnlyOnSelectedIssues.AutoSize = true;
-            this.cbCrosshairShowOnlyOnSelectedIssues.Location = new System.Drawing.Point(11, 361);
-            this.cbCrosshairShowOnlyOnSelectedIssues.Name = "cbCrosshairShowOnlyOnSelectedIssues";
-            this.cbCrosshairShowOnlyOnSelectedIssues.Size = new System.Drawing.Size(431, 22);
-            this.cbCrosshairShowOnlyOnSelectedIssues.TabIndex = 42;
-            this.cbCrosshairShowOnlyOnSelectedIssues.Text = "Show crossharis only for selected issues and hide them after:";
-            this.cbCrosshairShowOnlyOnSelectedIssues.UseVisualStyleBackColor = true;
-            // 
-            // label36
-            // 
-            this.label36.AutoSize = true;
-            this.label36.Location = new System.Drawing.Point(9, 392);
-            this.label36.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label36.Name = "label36";
-            this.label36.Size = new System.Drawing.Size(146, 18);
-            this.label36.TabIndex = 43;
-            this.label36.Text = "Crosshair line length:";
-            // 
-            // label37
-            // 
-            this.label37.AutoSize = true;
-            this.label37.Location = new System.Drawing.Point(518, 364);
-            this.label37.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label37.Name = "label37";
-            this.label37.Size = new System.Drawing.Size(47, 18);
-            this.label37.TabIndex = 44;
-            this.label37.Text = "zoom";
-            // 
-            // label39
-            // 
-            this.label39.AutoSize = true;
-            this.label39.Location = new System.Drawing.Point(226, 392);
-            this.label39.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label39.Name = "label39";
-            this.label39.Size = new System.Drawing.Size(213, 18);
-            this.label39.TabIndex = 45;
-            this.label39.Text = "px (0 to fill up to image bounds)";
-            // 
-            // label40
-            // 
-            this.label40.AutoSize = true;
-            this.label40.Location = new System.Drawing.Point(226, 422);
-            this.label40.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label40.Name = "label40";
-            this.label40.Size = new System.Drawing.Size(23, 18);
-            this.label40.TabIndex = 48;
-            this.label40.Text = "px";
-            // 
-            // label41
-            // 
-            this.label41.AutoSize = true;
-            this.label41.Location = new System.Drawing.Point(9, 422);
-            this.label41.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label41.Name = "label41";
-            this.label41.Size = new System.Drawing.Size(126, 18);
-            this.label41.TabIndex = 47;
-            this.label41.Text = "Crosshair margin:";
-            // 
-            // nmCrosshairLineMargin
-            // 
-            this.nmCrosshairLineMargin.Location = new System.Drawing.Point(162, 419);
-            this.nmCrosshairLineMargin.Maximum = new decimal(new int[] {
-            255,
-            0,
-            0,
-            0});
-            this.nmCrosshairLineMargin.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.nmCrosshairLineMargin.Name = "nmCrosshairLineMargin";
-            this.nmCrosshairLineMargin.Size = new System.Drawing.Size(57, 24);
-            this.nmCrosshairLineMargin.TabIndex = 46;
-            this.nmCrosshairLineMargin.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+            this.cbZoomIssuesAuto.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbZoomIssuesAuto.AutoSize = true;
+            this.cbZoomIssuesAuto.Location = new System.Drawing.Point(457, 305);
+            this.cbZoomIssuesAuto.Name = "cbZoomIssuesAuto";
+            this.cbZoomIssuesAuto.Size = new System.Drawing.Size(151, 22);
+            this.cbZoomIssuesAuto.TabIndex = 49;
+            this.cbZoomIssuesAuto.Text = "Auto zoom instead";
+            this.cbZoomIssuesAuto.UseVisualStyleBackColor = true;
             // 
             // FrmSettings
             // 
@@ -1903,6 +1916,8 @@
             this.groupBox4.PerformLayout();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmCrosshairLineMargin)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmCrosshairLineLength)).EndInit();
             this.tabPage3.ResumeLayout(false);
             this.tabPage4.ResumeLayout(false);
             this.tabPage4.PerformLayout();
@@ -1912,8 +1927,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultOpeningIterations)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultClosingIterations)).EndInit();
             this.panel1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.nmCrosshairLineLength)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nmCrosshairLineMargin)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2027,8 +2040,8 @@
         private System.Windows.Forms.Button btnFileExtractDefaultDirectorySearch;
         private System.Windows.Forms.Label label32;
         private System.Windows.Forms.TextBox tbFileExtractDefaultDirectory;
-        private System.Windows.Forms.CheckBox cbAutoZoomIssues;
-        private System.Windows.Forms.ComboBox cbAutoZoomLockLevel;
+        private System.Windows.Forms.CheckBox cbZoomIssues;
+        private System.Windows.Forms.ComboBox cbZoomLockLevel;
         private System.Windows.Forms.TabPage tabPage5;
         private System.Windows.Forms.CheckBox cbLayerRepairLayersIslands;
         private System.Windows.Forms.CheckBox cbLayerRepairRemoveEmptyLayers;
@@ -2052,5 +2065,6 @@
         private System.Windows.Forms.Label label40;
         private System.Windows.Forms.Label label41;
         private System.Windows.Forms.NumericUpDown nmCrosshairLineMargin;
+        private System.Windows.Forms.CheckBox cbZoomIssuesAuto;
     }
 }

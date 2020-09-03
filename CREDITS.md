@@ -2,7 +2,11 @@
 
 ### Tiago Conceição (sn4k3)
 * Main developer
-* https://github.com/sn4k3 
+* https://github.com/sn4k3
+
+### Bryce Yancey (byancey)
+* First code contributor with pull requests
+* https://github.com/byancey
 
 ### Photonsters (Photon Owners Group)
 

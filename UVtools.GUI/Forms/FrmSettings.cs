@@ -26,7 +26,7 @@ namespace UVtools.GUI.Forms
             // ZoomLevels constant array, and add those strings to the comboboxes.
             var zoomRange = FrmMain.ZoomLevels.Skip(FrmMain.ZoomLevelSkipCount).Select(
             s => Convert.ToString((double)s / 100) + "x").ToArray();
-            cbAutoZoomLockLevel.Items.AddRange(zoomRange);
+            cbZoomLockLevel.Items.AddRange(zoomRange);
             cbCrosshairFadeLevel.Items.AddRange(zoomRange);
 
             Init();
@@ -36,6 +36,7 @@ namespace UVtools.GUI.Forms
         {
             try
             {
+                // General
                 cbCheckForUpdatesOnStartup.Checked = Settings.Default.CheckForUpdatesOnStartup;
                 cbStartMaximized.Checked = Settings.Default.StartMaximized;
                 cbDefaultOpenFileExtension.SelectedIndex = Settings.Default.DefaultOpenFileExtension;
@@ -47,6 +48,7 @@ namespace UVtools.GUI.Forms
                 tbFileSaveNamePreffix.Text = Settings.Default.FileSaveNamePreffix;
                 tbFileSaveNameSuffix.Text = Settings.Default.FileSaveNameSuffix;
 
+                // Layer Preview
                 btnPreviousNextLayerColor.BackColor = Settings.Default.PreviousNextLayerColor;
                 btnPreviousLayerColor.BackColor = Settings.Default.PreviousLayerColor;
                 btnNextLayerColor.BackColor = Settings.Default.NextLayerColor;
@@ -55,11 +57,7 @@ namespace UVtools.GUI.Forms
                 btnResinTrapColor.BackColor = Settings.Default.ResinTrapColor;
                 btnResinTrapHLColor.BackColor = Settings.Default.ResinTrapHLColor;
                 btnTouchingBoundsColor.BackColor = Settings.Default.TouchingBoundsColor;
-                cbAutoZoomLockLevel.SelectedIndex = Settings.Default.AutoZoomLockLevel;
-                cbCrosshairShowOnlyOnSelectedIssues.Checked = Settings.Default.CrosshairShowOnlyOnSelectedIssues;
-                cbCrosshairFadeLevel.SelectedIndex = Settings.Default.CrosshairFadeLevel;
-                nmCrosshairLineLength.Value = Settings.Default.CrosshairLineLength;
-                nmCrosshairLineMargin.Value = Settings.Default.CrosshairLineMargin;
+                
 
                 btnOutlinePrintVolumeBoundsColor.BackColor = Settings.Default.OutlinePrintVolumeBoundsColor;
                 btnOutlineLayerBoundsColor.BackColor = Settings.Default.OutlineLayerBoundsColor;
@@ -76,8 +74,16 @@ namespace UVtools.GUI.Forms
                 cbLayerAutoRotateBestView.Checked = Settings.Default.LayerAutoRotateBestView;
                 cbLayerZoomToFit.Checked = Settings.Default.LayerZoomToFit;
                 cbZoomToFitPrintVolumeBounds.Checked = Settings.Default.ZoomToFitPrintVolumeBounds;
-                cbAutoZoomIssues.Checked = Settings.Default.AutoZoomIssues;
+                cbZoomIssues.Checked = Settings.Default.ZoomIssues;
+                cbZoomLockLevel.SelectedIndex = Settings.Default.ZoomLockLevel;
+                cbZoomIssuesAuto.Checked = Settings.Default.ZoomIssuesAuto;
                 cbLayerDifferenceDefault.Checked = Settings.Default.LayerDifferenceDefault;
+                cbCrosshairShowOnlyOnSelectedIssues.Checked = Settings.Default.CrosshairShowOnlyOnSelectedIssues;
+                cbCrosshairFadeLevel.SelectedIndex = Settings.Default.CrosshairFadeLevel;
+                nmCrosshairLineLength.Value = Settings.Default.CrosshairLineLength;
+                nmCrosshairLineMargin.Value = Settings.Default.CrosshairLineMargin;
+
+                // Issues
                 cbComputeIssuesOnLoad.Checked = Settings.Default.ComputeIssuesOnLoad;
                 cbComputeIslands.Checked = Settings.Default.ComputeIslands;
                 cbComputeResinTraps.Checked = Settings.Default.ComputeResinTraps;
@@ -95,6 +101,7 @@ namespace UVtools.GUI.Forms
                 nmResinTrapRequiredBlackPixelsToDrain.Value = Settings.Default.ResinTrapRequiredBlackPixelsToDrain;
                 nmResinTrapMaximumPixelBrightnessToDrain.Value = Settings.Default.ResinTrapMaximumPixelBrightnessToDrain;
 
+                // Pixel Editor
                 btnPixelEditorAddPixelColor.BackColor = Settings.Default.PixelEditorAddPixelColor;
                 btnPixelEditorAddPixelHLColor.BackColor = Settings.Default.PixelEditorAddPixelHLColor;
                 btnPixelEditorRemovePixelColor.BackColor = Settings.Default.PixelEditorRemovePixelColor;
@@ -105,6 +112,7 @@ namespace UVtools.GUI.Forms
                 btnPixelEditorDrainHoleHLColor.BackColor = Settings.Default.PixelEditorDrainHoleHLColor;
                 cbPartialUpdateIslandsOnEditing.Checked = Settings.Default.PartialUpdateIslandsOnEditing;
 
+                // Layer Repair
                 nmLayerRepairDefaultClosingIterations.Value = Settings.Default.LayerRepairDefaultClosingIterations;
                 nmLayerRepairDefaultOpeningIterations.Value = Settings.Default.LayerRepairDefaultOpeningIterations;
                 nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.Value = Settings.Default.LayerRepairRemoveIslandsBelowEqualPixelsDefault;
@@ -205,6 +213,7 @@ namespace UVtools.GUI.Forms
             
             if (ReferenceEquals(sender, btnSave))
             {
+                // General
                 Settings.Default.CheckForUpdatesOnStartup = cbCheckForUpdatesOnStartup.Checked;
                 Settings.Default.StartMaximized = cbStartMaximized.Checked;
                 Settings.Default.DefaultOpenFileExtension = (byte) cbDefaultOpenFileExtension.SelectedIndex;
@@ -216,6 +225,7 @@ namespace UVtools.GUI.Forms
                 Settings.Default.FileSaveNamePreffix = tbFileSaveNamePreffix.Text.Trim();
                 Settings.Default.FileSaveNameSuffix = tbFileSaveNameSuffix.Text.Trim();
 
+                // Layer Preview
                 Settings.Default.PreviousNextLayerColor = btnPreviousNextLayerColor.BackColor;
                 Settings.Default.PreviousLayerColor = btnPreviousLayerColor.BackColor;
                 Settings.Default.NextLayerColor = btnNextLayerColor.BackColor;
@@ -224,11 +234,6 @@ namespace UVtools.GUI.Forms
                 Settings.Default.ResinTrapColor = btnResinTrapColor.BackColor;
                 Settings.Default.ResinTrapHLColor = btnResinTrapHLColor.BackColor;
                 Settings.Default.TouchingBoundsColor = btnTouchingBoundsColor.BackColor;
-                Settings.Default.CrosshairFadeLevel = (byte)cbCrosshairFadeLevel.SelectedIndex;
-                Settings.Default.AutoZoomLockLevel = (byte)cbAutoZoomLockLevel.SelectedIndex;
-                Settings.Default.CrosshairShowOnlyOnSelectedIssues = cbCrosshairShowOnlyOnSelectedIssues.Checked;
-                Settings.Default.CrosshairLineLength = (uint) nmCrosshairLineLength.Value;
-                Settings.Default.CrosshairLineMargin = (byte) nmCrosshairLineMargin.Value;
 
                 Settings.Default.OutlinePrintVolumeBoundsColor = btnOutlinePrintVolumeBoundsColor.BackColor;
                 Settings.Default.OutlineLayerBoundsColor = btnOutlineLayerBoundsColor.BackColor;
@@ -245,8 +250,16 @@ namespace UVtools.GUI.Forms
                 Settings.Default.LayerAutoRotateBestView = cbLayerAutoRotateBestView.Checked;
                 Settings.Default.LayerZoomToFit = cbLayerZoomToFit.Checked;
                 Settings.Default.ZoomToFitPrintVolumeBounds = cbZoomToFitPrintVolumeBounds.Checked;
-                Settings.Default.AutoZoomIssues = cbAutoZoomIssues.Checked;
+                Settings.Default.ZoomIssues = cbZoomIssues.Checked;
+                Settings.Default.ZoomLockLevel = (byte)cbZoomLockLevel.SelectedIndex;
+                Settings.Default.ZoomIssuesAuto = cbZoomIssuesAuto.Checked;
                 Settings.Default.LayerDifferenceDefault = cbLayerDifferenceDefault.Checked;
+                Settings.Default.CrosshairShowOnlyOnSelectedIssues = cbCrosshairShowOnlyOnSelectedIssues.Checked;
+                Settings.Default.CrosshairFadeLevel = (byte)cbCrosshairFadeLevel.SelectedIndex;
+                Settings.Default.CrosshairLineLength = (uint)nmCrosshairLineLength.Value;
+                Settings.Default.CrosshairLineMargin = (byte)nmCrosshairLineMargin.Value;
+
+                // Issues
                 Settings.Default.ComputeIssuesOnLoad = cbComputeIssuesOnLoad.Checked;
                 Settings.Default.ComputeIslands = cbComputeIslands.Checked;
                 Settings.Default.ComputeResinTraps = cbComputeResinTraps.Checked;
@@ -264,6 +277,7 @@ namespace UVtools.GUI.Forms
                 Settings.Default.ResinTrapRequiredBlackPixelsToDrain = (byte)nmResinTrapRequiredBlackPixelsToDrain.Value;
                 Settings.Default.ResinTrapMaximumPixelBrightnessToDrain = (byte)nmResinTrapMaximumPixelBrightnessToDrain.Value;
 
+                // Pixel Editor
                 Settings.Default.PixelEditorAddPixelColor = btnPixelEditorAddPixelColor.BackColor;
                 Settings.Default.PixelEditorAddPixelHLColor = btnPixelEditorAddPixelHLColor.BackColor;
                 Settings.Default.PixelEditorRemovePixelColor = btnPixelEditorRemovePixelColor.BackColor;
@@ -274,6 +288,7 @@ namespace UVtools.GUI.Forms
                 Settings.Default.PixelEditorDrainHoleHLColor = btnPixelEditorDrainHoleHLColor.BackColor;
                 Settings.Default.PartialUpdateIslandsOnEditing = cbPartialUpdateIslandsOnEditing.Checked;
 
+                // Layer Repair
                 Settings.Default.LayerRepairDefaultClosingIterations = (byte) nmLayerRepairDefaultClosingIterations.Value;
                 Settings.Default.LayerRepairDefaultOpeningIterations = (byte) nmLayerRepairDefaultOpeningIterations.Value;
                 Settings.Default.LayerRepairRemoveIslandsBelowEqualPixelsDefault = (byte) nmLayerRepairRemoveIslandsBelowEqualPixelsDefault.Value;

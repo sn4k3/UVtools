@@ -184,7 +184,7 @@ namespace UVtools.GUI
         /// <summary>
         /// Returns the zoom level that will be used for autozoom actions
         /// </summary>
-        private int AutoZoomLevel => ZoomLevels[ZoomLevels.Length - AutoZoomBackIndex -1];
+        private int LockedZoomLevel => ZoomLevels[ZoomLevels.Length - AutoZoomBackIndex -1];
 
         public PixelHistory PixelHistory { get; } = new PixelHistory();
 
@@ -227,7 +227,7 @@ namespace UVtools.GUI
             pbLayer.ZoomLevels = new Cyotek.Windows.Forms.ZoomLevelCollection(ZoomLevels);
             // Initialize the zoom level used for autozoom based on the stored default settings.
             AutoZoomBackIndex = 
-                ConvZoomToBackIndex(ZoomLevels[Settings.Default.AutoZoomLockLevel + ZoomLevelSkipCount]);
+                ConvZoomToBackIndex(ZoomLevels[Settings.Default.ZoomLockLevel + ZoomLevelSkipCount]);
 
             if (Settings.Default.StartMaximized || Width >= Screen.FromControl(this).WorkingArea.Width ||
                 Height >= Screen.FromControl(this).WorkingArea.Height)
@@ -2031,7 +2031,7 @@ namespace UVtools.GUI
                 }
                 else if (issue.X >= 0 && issue.Y >= 0)
                 {
-                    if (Settings.Default.AutoZoomIssues ^ (ModifierKeys & Keys.Alt) != 0)
+                    if (Settings.Default.ZoomIssues ^ (ModifierKeys & Keys.Alt) != 0)
                     {
                         ZoomToIssue(issue);
                     }
@@ -2062,25 +2062,15 @@ namespace UVtools.GUI
             {
                 if (!(flvPixelHistory.SelectedObject is PixelOperation operation)) return;
 
-                int x = operation.Location.X;
-                int y = operation.Location.Y;
+                Point location = GetTransposedPoint(operation.Location);
 
-                if (tsLayerImageRotate.Checked)
+                if (Settings.Default.ZoomIssues ^ (ModifierKeys & Keys.Alt) != 0)
                 {
-                    x = ActualLayerImage.Height - 1 - operation.Location.Y;
-                    y = operation.Location.X;
-                }
-
-                if (Settings.Default.AutoZoomIssues ^ (ModifierKeys & Keys.Alt) != 0)
-                {
-                    SupressLayerZoomEvent = true;
-                    pbLayer.ZoomToRegion(x, y, operation.Size.Width, operation.Size.Height);
-                    SupressLayerZoomEvent = false;
-                    pbLayer.ZoomOut(true);
+                    CenterLayerAt(new Rectangle(location, operation.Size), LockedZoomLevel, Settings.Default.ZoomIssuesAuto);
                 }
                 else
                 {
-                    CenterLayerAt(x, y);
+                    CenterLayerAt(location);
                 }
 
                 // Unconditionally refresh layer preview here to ensure highlighting for pixel
@@ -3407,7 +3397,7 @@ namespace UVtools.GUI
                     }*/
                     
 
-                    CenterLayerAt(location, AutoZoomLevel);
+                    CenterLayerAt(location, LockedZoomLevel);
 
                     // Check to see if the clicked location is an issue, and if so, select it in the ListView.
                     SelectIssueAtPoint(location);
@@ -3984,7 +3974,7 @@ namespace UVtools.GUI
 
         public Point GetTransposedPoint(Point point)
         {
-            return tsLayerImageRotate.Checked ? new Point(point.Y, ActualLayerImage.Height - 1 - point.X) : point;
+            return tsLayerImageRotate.Checked ? new Point(ActualLayerImage.Height - 1 - point.Y, point.X) : point;
         }
 
         public Rectangle GetTransposedRectangle(Rectangle rectangle)
@@ -4026,8 +4016,19 @@ namespace UVtools.GUI
         /// </summary>
         /// <param name="rectangle">Rectangle holding coordinates and bounds</param>
         /// <param name="zoomLevel">Zoom level to set, 0 to skip</param>
-        public void CenterLayerAt(Rectangle rectangle, int zoomLevel = 0) => 
+        /// <param name="zoomToRegion">Auto zoom to a region and ensure that region area stays all visible when possible, when true this will overwrite zoomLevel</param></param>
+        public void CenterLayerAt(Rectangle rectangle, int zoomLevel = 0, bool zoomToRegion = false)
+        {
+            if (zoomToRegion)
+            {
+                SupressLayerZoomEvent = true;
+                pbLayer.ZoomToRegion(rectangle);
+                SupressLayerZoomEvent = false;
+                pbLayer.ZoomOut(true);
+                return;
+            }
             CenterLayerAt(rectangle.X + rectangle.Width / 2, rectangle.Y + rectangle.Height / 2, zoomLevel);
+        }
 
         /// <summary>
         /// Centers layer view on a <see cref="Point"/>
@@ -4064,7 +4065,7 @@ namespace UVtools.GUI
                     tsLayerImageShowCrosshairs.Checked = true;
                 }*/
 
-                CenterLayerAt(GetTransposedIssueBounds(issue), AutoZoomLevel);
+                CenterLayerAt(GetTransposedIssueBounds(issue), LockedZoomLevel, Settings.Default.ZoomIssuesAuto);
             }
         }
 

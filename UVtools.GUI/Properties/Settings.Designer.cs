@@ -494,12 +494,12 @@ namespace UVtools.GUI.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("7")]
-        public byte AutoZoomLockLevel {
+        public byte ZoomLockLevel {
             get {
-                return ((byte)(this["AutoZoomLockLevel"]));
+                return ((byte)(this["ZoomLockLevel"]));
             }
             set {
-                this["AutoZoomLockLevel"] = value;
+                this["ZoomLockLevel"] = value;
             }
         }
         
@@ -685,13 +685,13 @@ namespace UVtools.GUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool AutoZoomIssues {
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ZoomIssues {
             get {
-                return ((bool)(this["AutoZoomIssues"]));
+                return ((bool)(this["ZoomIssues"]));
             }
             set {
-                this["AutoZoomIssues"] = value;
+                this["ZoomIssues"] = value;
             }
         }
         
@@ -836,6 +836,18 @@ namespace UVtools.GUI.Properties {
             }
             set {
                 this["CrossharirColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ZoomIssuesAuto {
+            get {
+                return ((bool)(this["ZoomIssuesAuto"]));
+            }
+            set {
+                this["ZoomIssuesAuto"] = value;
             }
         }
     }

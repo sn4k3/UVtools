@@ -119,7 +119,7 @@
     <Setting Name="CrosshairFadeLevel" Type="System.Byte" Scope="User">
       <Value Profile="(Default)">5</Value>
     </Setting>
-    <Setting Name="AutoZoomLockLevel" Type="System.Byte" Scope="User">
+    <Setting Name="ZoomLockLevel" Type="System.Byte" Scope="User">
       <Value Profile="(Default)">7</Value>
     </Setting>
     <Setting Name="PixelEditorAddPixelColor" Type="System.Drawing.Color" Scope="User">
@@ -167,8 +167,8 @@
     <Setting Name="FileExtractDefaultDirectory" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="AutoZoomIssues" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+    <Setting Name="ZoomIssues" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="LayerRepairDefaultClosingIterations" Type="System.Byte" Scope="User">
       <Value Profile="(Default)">2</Value>
@@ -205,6 +205,9 @@
     </Setting>
     <Setting Name="CrossharirColor" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">Red</Value>
+    </Setting>
+    <Setting Name="ZoomIssuesAuto" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>
 </SettingsFile>
