@@ -1057,10 +1057,10 @@ namespace UVtools.Core.FileFormats
 
                 outputFile.Seek((int) currentOffset, SeekOrigin.Begin);
 
-
-                for (byte i = 0; i < ThumbnailsCount; i++)
+                Mat[] thumbnails = {GetThumbnail(true), GetThumbnail(false)};
+                for (byte i = 0; i < thumbnails.Length; i++)
                 {
-                    var image = Thumbnails[i];
+                    var image = thumbnails[i];
 
                     Preview preview = new Preview
                     {
@@ -1072,13 +1072,13 @@ namespace UVtools.Core.FileFormats
 
                     if (previewBytes.Length == 0) continue;
 
-                    if (i == (byte) FileThumbnailSize.Small)
+                    if (i == 0)
                     {
-                        HeaderSettings.PreviewSmallOffsetAddress = currentOffset;
+                        HeaderSettings.PreviewLargeOffsetAddress = currentOffset;
                     }
                     else
                     {
-                        HeaderSettings.PreviewLargeOffsetAddress = currentOffset;
+                        HeaderSettings.PreviewSmallOffsetAddress = currentOffset;
                     }
 
 
@@ -1210,8 +1210,8 @@ namespace UVtools.Core.FileFormats
                 for (byte i = 0; i < ThumbnailsCount; i++)
                 {
                     uint offsetAddress = i == 0
-                        ? HeaderSettings.PreviewSmallOffsetAddress
-                        : HeaderSettings.PreviewLargeOffsetAddress;
+                        ? HeaderSettings.PreviewLargeOffsetAddress
+                        : HeaderSettings.PreviewSmallOffsetAddress;
                     if (offsetAddress == 0) continue;
 
                     inputFile.Seek(offsetAddress, SeekOrigin.Begin);

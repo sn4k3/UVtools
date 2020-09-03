@@ -41,6 +41,7 @@
      * Shift-Right-Click will perform a remove operation (remove pixel, etc).
 * (Fix) When next layer or previous layer button got disabled while pressing it get stuck
 * (Fix) chitubox: Keep some original values when read from chitubox sliced files
+* (Fix) chitubox: Preview thumbnails to respect order and size names
 
 ## 27/08/2020 - v0.6.7.1
 

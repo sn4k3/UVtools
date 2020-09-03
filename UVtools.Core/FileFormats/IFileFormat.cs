@@ -221,6 +221,13 @@ namespace UVtools.Core.FileFormats
         Mat GetThumbnail(uint maxHeight = 400);
 
         /// <summary>
+        /// Gets a thumbnail by the largest or smallest
+        /// </summary>
+        /// <param name="largest">True to get the largest, otherwise false</param>
+        /// <returns></returns>
+        Mat GetThumbnail(bool largest);
+
+        /// <summary>
         /// Sets thumbnails from a list of thumbnails and clone them
         /// </summary>
         /// <param name="images"></param>

@@ -454,6 +454,26 @@ namespace UVtools.Core.FileFormats
             return null;
         }
 
+        public Mat GetThumbnail(bool largest)
+        {
+            switch (CreatedThumbnailsCount)
+            {
+                case 0:
+                    return null;
+                case 1:
+                    return Thumbnails[0];
+                default:
+                    if (largest)
+                    {
+                        return Thumbnails[0].Size.GetArea() >= Thumbnails[1].Size.GetArea() ? Thumbnails[0] : Thumbnails[1];
+                    }
+                    else
+                    {
+                        return Thumbnails[0].Size.GetArea() <= Thumbnails[1].Size.GetArea() ? Thumbnails[0] : Thumbnails[1];
+                    }
+            }
+        }
+
         public void SetThumbnails(Mat[] images)
         {
             for (var i = 0; i < ThumbnailsCount; i++)
