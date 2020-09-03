@@ -1963,8 +1963,18 @@ namespace UVtools.GUI
             }
         }
 
+        private void pbLayer_MouseDown(object sender, MouseEventArgs e)
+        {
+            mouseHoldTimer.Tag = e.Button;
+            mouseHoldTimer.Start();
+        }
+
         private void pbLayer_MouseUp(object sender, MouseEventArgs e)
         {
+
+            // unconditionally stop any pending mouse timer here.
+            mouseHoldTimer.Stop();
+
             // Shift must be pressed for any pixel edit action, middle button is ignored.
             if (!tsLayerImagePixelEdit.Checked || (e.Button & MouseButtons.Middle) != 0 || 
                 (ModifierKeys & Keys.Shift) == 0) return;
@@ -3332,6 +3342,25 @@ namespace UVtools.GUI
                 }
                 return;
             }
+
+            if (ReferenceEquals(sender, mouseHoldTimer))
+            {
+                mouseHoldTimer.Stop();  // one-shot timer
+
+                if ((MouseButtons)mouseHoldTimer.Tag == MouseButtons.Middle)
+                {
+                    // Reset auto-zoom level based on current zoom level and
+                    // refresh toolstrip zoom indicator.
+                    var currentBackIndex = ConvZoomToBackIndex(pbLayer.Zoom);
+                    // Don't allow small zoom values to be locked for auto-zoom
+                    if (currentBackIndex >= ZoomLevels.Length - ZoomLevelSkipCount) return;
+                    AutoZoomBackIndex = currentBackIndex;
+                    tsLayerImageZoom.Text = $"Zoom: [ {pbLayer.Zoom / 100f}x";
+                    tsLayerImageZoomLock.Visible = true;
+                }
+                return;
+            }
+
         }
 
         private void EventMouseClick(object sender, MouseEventArgs e)
@@ -3402,18 +3431,6 @@ namespace UVtools.GUI
                     // Check to see if the clicked location is an issue, and if so, select it in the ListView.
                     SelectIssueAtPoint(location);
 
-                    return;
-                }
-                if ((e.Button & MouseButtons.Middle) != 0)
-                {
-                    // Reset auto-zoom level based on current zoom level and
-                    // refresh toolstrip zoom indicator.
-                    var currentBackIndex = ConvZoomToBackIndex(pbLayer.Zoom);
-                    // Don't allow small zoom values to be locked for auto-zoom
-                    if (currentBackIndex >= ZoomLevels.Length - ZoomLevelSkipCount) return;
-                    AutoZoomBackIndex = currentBackIndex;
-                    tsLayerImageZoom.Text = $"Zoom: [ {pbLayer.Zoom / 100f}x";
-                    tsLayerImageZoomLock.Visible = true;
                     return;
                 }
                 if ((e.Button & MouseButtons.Right) != 0)

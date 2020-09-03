@@ -257,6 +257,7 @@
             this.issueScrollTimer = new System.Windows.Forms.Timer(this.components);
             this.toolTipInformation = new System.Windows.Forms.ToolTip(this.components);
             this.layerScrollTimer = new System.Windows.Forms.Timer(this.components);
+            this.mouseHoldTimer = new System.Windows.Forms.Timer(this.components);
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).BeginInit();
@@ -330,7 +331,7 @@
             this.menuNewVersion});
             this.menu.Location = new System.Drawing.Point(0, 0);
             this.menu.Name = "menu";
-            this.menu.Size = new System.Drawing.Size(1784, 24);
+            this.menu.Size = new System.Drawing.Size(1732, 24);
             this.menu.TabIndex = 0;
             this.menu.Text = "menuStrip1";
             // 
@@ -632,7 +633,7 @@
             // 
             this.statusBar.Location = new System.Drawing.Point(0, 789);
             this.statusBar.Name = "statusBar";
-            this.statusBar.Size = new System.Drawing.Size(1784, 22);
+            this.statusBar.Size = new System.Drawing.Size(1732, 22);
             this.statusBar.TabIndex = 1;
             this.statusBar.Text = "statusStrip1";
             // 
@@ -650,7 +651,7 @@
             this.mainTable.Name = "mainTable";
             this.mainTable.RowCount = 1;
             this.mainTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.mainTable.Size = new System.Drawing.Size(1784, 765);
+            this.mainTable.Size = new System.Drawing.Size(1732, 765);
             this.mainTable.TabIndex = 5;
             // 
             // scCenter
@@ -671,7 +672,7 @@
             // 
             this.scCenter.Panel2.Controls.Add(this.tsLayerInfo);
             this.scCenter.Panel2MinSize = 18;
-            this.scCenter.Size = new System.Drawing.Size(1228, 759);
+            this.scCenter.Size = new System.Drawing.Size(1176, 759);
             this.scCenter.SplitterDistance = 730;
             this.scCenter.TabIndex = 4;
             // 
@@ -684,11 +685,12 @@
             this.pbLayer.Name = "pbLayer";
             this.pbLayer.PanMode = Cyotek.Windows.Forms.ImageBoxPanMode.Left;
             this.pbLayer.ShowPixelGrid = true;
-            this.pbLayer.Size = new System.Drawing.Size(1228, 705);
+            this.pbLayer.Size = new System.Drawing.Size(1176, 705);
             this.pbLayer.TabIndex = 7;
             this.pbLayer.Zoomed += new System.EventHandler<Cyotek.Windows.Forms.ImageBoxZoomEventArgs>(this.pbLayer_Zoomed);
             this.pbLayer.MouseClick += new System.Windows.Forms.MouseEventHandler(this.EventMouseClick);
             this.pbLayer.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.EventMouseDoubleClick);
+            this.pbLayer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseDown);
             this.pbLayer.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseMove);
             this.pbLayer.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseUp);
             // 
@@ -713,7 +715,7 @@
             this.tsLayerClone});
             this.tsLayer.Location = new System.Drawing.Point(0, 0);
             this.tsLayer.Name = "tsLayer";
-            this.tsLayer.Size = new System.Drawing.Size(1228, 25);
+            this.tsLayer.Size = new System.Drawing.Size(1176, 25);
             this.tsLayer.TabIndex = 6;
             this.tsLayer.Text = "Layer Menu";
             // 
@@ -930,7 +932,7 @@
             this.tsLayerBounds});
             this.tsLayerInfo.Location = new System.Drawing.Point(0, 0);
             this.tsLayerInfo.Name = "tsLayerInfo";
-            this.tsLayerInfo.Size = new System.Drawing.Size(1228, 25);
+            this.tsLayerInfo.Size = new System.Drawing.Size(1176, 25);
             this.tsLayerInfo.TabIndex = 9;
             this.tsLayerInfo.Text = "tsLayerInfo";
             // 
@@ -2681,7 +2683,7 @@
             this.tlRight.Controls.Add(this.lbInitialLayer, 0, 5);
             this.tlRight.Controls.Add(this.panel2, 0, 4);
             this.tlRight.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tlRight.Location = new System.Drawing.Point(1637, 3);
+            this.tlRight.Location = new System.Drawing.Point(1585, 3);
             this.tlRight.Name = "tlRight";
             this.tlRight.RowCount = 6;
             this.tlRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
@@ -2851,12 +2853,17 @@
             this.layerScrollTimer.Interval = 500;
             this.layerScrollTimer.Tick += new System.EventHandler(this.EventTimerTick);
             // 
+            // mouseHoldTimer
+            // 
+            this.mouseHoldTimer.Interval = 1000;
+            this.mouseHoldTimer.Tick += new System.EventHandler(this.EventTimerTick);
+            // 
             // FrmMain
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1784, 811);
+            this.ClientSize = new System.Drawing.Size(1732, 811);
             this.Controls.Add(this.mainTable);
             this.Controls.Add(this.statusBar);
             this.Controls.Add(this.menu);
@@ -3191,6 +3198,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator24;
         private System.Windows.Forms.ToolStripLabel tsLayerImageZoomLock;
         private System.Windows.Forms.ToolStripButton btnGCodeRebuild;
+        private System.Windows.Forms.Timer mouseHoldTimer;
     }
 }
 
