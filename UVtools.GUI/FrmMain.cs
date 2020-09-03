@@ -162,9 +162,6 @@ namespace UVtools.GUI
 
         public bool IsChangingLayer { get; set; }
 
-        // Represents a reverse index from the end of the ZoomLevels array
-        public int AutoZoomBackIndex { get; set; } = 1;
-
         // Supported ZoomLevels for Layer Preview.
         // These settings eliminate very small zoom factors from the ImageBox default values,
         // while ensuring that 4K/5K build plates can still easily fit on screen.  
@@ -184,7 +181,13 @@ namespace UVtools.GUI
         /// <summary>
         /// Returns the zoom level that will be used for autozoom actions
         /// </summary>
-        private int LockedZoomLevel => ZoomLevels[ZoomLevels.Length - AutoZoomBackIndex -1];
+        private int LockedZoomLevel { get; set; } = 1200;
+
+
+        /// <summary>
+        /// Minimum Zoom level to which autozoom can be locked. 
+        /// </summary>
+        private static int MinLockedZoomLevel { get; } = 200;
 
         public PixelHistory PixelHistory { get; } = new PixelHistory();
 
@@ -226,8 +229,7 @@ namespace UVtools.GUI
             // Initialize pbLayer zoom levels to use the discrete factors from ZoomLevels
             pbLayer.ZoomLevels = new Cyotek.Windows.Forms.ZoomLevelCollection(ZoomLevels);
             // Initialize the zoom level used for autozoom based on the stored default settings.
-            AutoZoomBackIndex = 
-                ConvZoomToBackIndex(ZoomLevels[Settings.Default.ZoomLockLevel + ZoomLevelSkipCount]);
+            LockedZoomLevel = ZoomLevels[Settings.Default.ZoomLockLevel + ZoomLevelSkipCount];
 
             if (Settings.Default.StartMaximized || Width >= Screen.FromControl(this).WorkingArea.Width ||
                 Height >= Screen.FromControl(this).WorkingArea.Height)
@@ -1921,7 +1923,7 @@ namespace UVtools.GUI
             if (SupressLayerZoomEvent) return;
             Debug.WriteLine($"{DateTime.Now.Ticks}: Zoomed");
             // Update zoom level display in the toolstrip
-            if (ConvZoomToBackIndex(e.NewZoom) == AutoZoomBackIndex)
+            if (e.NewZoom == LockedZoomLevel)
             {
                 tsLayerImageZoom.Text = $"Zoom: [ {e.NewZoom / 100f}x";
                 tsLayerImageZoomLock.Visible = true;
@@ -3348,12 +3350,12 @@ namespace UVtools.GUI
                 {
                     // Reset auto-zoom level based on current zoom level and
                     // refresh toolstrip zoom indicator.
-                    var currentBackIndex = ConvZoomToBackIndex(pbLayer.Zoom);
-                    // Don't allow small zoom values to be locked for auto-zoom
-                    if (currentBackIndex >= ZoomLevels.Length - ZoomLevelSkipCount) return;
-                    AutoZoomBackIndex = currentBackIndex;
-                    tsLayerImageZoom.Text = $"Zoom: [ {pbLayer.Zoom / 100f}x";
-                    tsLayerImageZoomLock.Visible = true;
+                    if (pbLayer.Zoom >= MinLockedZoomLevel)
+                    {
+                        LockedZoomLevel = pbLayer.Zoom;
+                        tsLayerImageZoom.Text = $"Zoom: [ {pbLayer.Zoom / 100f}x";
+                        tsLayerImageZoomLock.Visible = true;
+                    }
                 }
                 return;
             }
@@ -4095,19 +4097,6 @@ namespace UVtools.GUI
             {
                 CenterLayerAt(GetTransposedIssueBounds(issue));
             }
-        }
-
-        /// <summary>
-        /// Given a zoom factor (200, 300, ..., 1200, 1600) this function finds the
-        /// closest matching zoom factor from within the ZoomLevels constant array, and
-        /// returns the reverse index (from the end of the array) of that zoom factor.
-        /// This is used by auto-zoom to determine how many times zoom-out needs to be
-        /// called from max zoom in order to arrive at the desired zoom.
-        /// </summary>
-        private int ConvZoomToBackIndex(int zoom)
-        {
-            return pbLayer.ZoomLevels.Count -
-                pbLayer.ZoomLevels.IndexOf(pbLayer.ZoomLevels.FindNearest(zoom)) - 1;
         }
 
         private void ZoomToFit()
