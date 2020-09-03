@@ -425,7 +425,8 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutatePixelDimming(uint startLayerIndex, uint endLayerIndex, Matrix<byte> evenPattern = null, Matrix<byte> oddPattern = null, ushort borderSize = 5, OperationProgress progress = null)
+        public void MutatePixelDimming(uint startLayerIndex, uint endLayerIndex, Matrix<byte> evenPattern = null,
+            Matrix<byte> oddPattern = null, ushort borderSize = 5, bool dimOnlyBorders = false, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
             progress.Reset("Dimming pixels", endLayerIndex - startLayerIndex + 1);
@@ -469,7 +470,7 @@ namespace UVtools.Core
                                 Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
                                 {
                                     if (progress.Token.IsCancellationRequested) return;
-                                    this[layerIndex].MutatePixelDimming(evenPatternMask, oddPatternMask, borderSize);
+                                    this[layerIndex].MutatePixelDimming(evenPatternMask, oddPatternMask, borderSize, dimOnlyBorders);
                                     lock (progress.Mutex)
                                     {
                                         progress++;

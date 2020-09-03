@@ -3,6 +3,8 @@
 ## /08/2020 - v0.7.0.0
 
 * (Add) "Rebuild GCode" button
+* (Add) Mutator - Pixel Dimming: Dims only the borders (Suggested by Marco Borzacconi)
+* (Add) Mutator - Pixel Dimming: "Solid" button to set brightness only
 * (Add) Issue Highlighting
   * Issues selected from the issue List View are now painted in an alternate configurable highlight color to distinguish them from non-selected issues.
   * Issues are now made active as soon as they are selected in the issue list, so single-click or arrow keys can now be used to select and issue. Double-click is no longer required.
@@ -32,7 +34,7 @@
      * Clicking in the Layer Preview window will allow you to grab and pan the image (unchanged behavior)
      * Double-Left clicking or CTRL-click on any point within the Layer Preview window will zoom in on that specific point using the locked auto-zoom level.
      * Double-Right click or CTRL-click in the layer preview will zoom-to-fit. Same behavior as double-left-click on an issue in the issue list.
-     * Double-click or CTRL-clicking middle mouse button will set the auto-zoom-level to the current zoom level.
+     * Hold middle mouse button for 1 second will set the auto-zoom-level to the current zoom level.
      * Mouse wheel scroll behavior is unchanged (wheel scrolls in/out)
   * Pixel Edit Mode
      * Single click left or right in the pixel operation list view will now select an operation. Double click does the same (advanced zoom operations described for issue list are not currently supported from the operation list).
@@ -45,6 +47,7 @@
 * (Fix) Partial island detection wasn't checking next layer as it should
 * (Fix) chitubox: Keep some original values when read from chitubox sliced files
 * (Fix) chitubox: Preview thumbnails to respect order and size names
+* Notes: This release is the combination of the following pull requests: #26, #27, #28, #29, #30, #31, #32
 
 ## 27/08/2020 - v0.6.7.1
 

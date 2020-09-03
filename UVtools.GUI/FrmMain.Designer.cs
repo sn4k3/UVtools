@@ -690,9 +690,9 @@
             this.pbLayer.Zoomed += new System.EventHandler<Cyotek.Windows.Forms.ImageBoxZoomEventArgs>(this.pbLayer_Zoomed);
             this.pbLayer.MouseClick += new System.Windows.Forms.MouseEventHandler(this.EventMouseClick);
             this.pbLayer.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.EventMouseDoubleClick);
-            this.pbLayer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseDown);
+            this.pbLayer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.EventMouseDown);
             this.pbLayer.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseMove);
-            this.pbLayer.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pbLayer_MouseUp);
+            this.pbLayer.MouseUp += new System.Windows.Forms.MouseEventHandler(this.EventMouseUp);
             // 
             // tsLayer
             // 

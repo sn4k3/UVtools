@@ -1963,34 +1963,6 @@ namespace UVtools.GUI
             }
         }
 
-        private void pbLayer_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Middle)
-            {
-                mouseHoldTimer.Tag = e.Button;
-                mouseHoldTimer.Start();
-            }
-        }
-
-        private void pbLayer_MouseUp(object sender, MouseEventArgs e)
-        {
-
-            // unconditionally stop any pending mouse timer here.
-            mouseHoldTimer.Stop();
-
-            // Shift must be pressed for any pixel edit action, middle button is ignored.
-            if (!tsLayerImagePixelEdit.Checked || (e.Button & MouseButtons.Middle) != 0 || 
-                (ModifierKeys & Keys.Shift) == 0) return;
-            if (!pbLayer.IsPointInImage(e.Location)) return;
-            var location = pbLayer.PointToImage(e.Location);
-            _lastPixelMouseLocation = Point.Empty;
-
-            // Left or Alt-Right Adds pixel, Right or Alt-Left removes pixel
-            DrawPixel(e.Button == MouseButtons.Left ^ (ModifierKeys & Keys.Alt) != 0, location);
-            //SlicerFile[ActualLayer].LayerMat = ActualLayerImage;
-            RefreshPixelHistory();
-        }
-
         private Point _lastPixelMouseLocation = Point.Empty;
         private void pbLayer_MouseMove(object sender, MouseEventArgs e)
         {
@@ -3266,6 +3238,17 @@ namespace UVtools.GUI
                 issueScrollTimer.Start();
                 return;
             }
+
+            if (ReferenceEquals(sender, pbLayer))
+            {
+                if (e.Button == MouseButtons.Middle)
+                {
+                    mouseHoldTimer.Tag = e.Button;
+                    mouseHoldTimer.Start();
+                }
+
+                return;
+            }
         }
 
         private void EventMouseUp(object sender, MouseEventArgs e)
@@ -3282,6 +3265,24 @@ namespace UVtools.GUI
                 issueScrollTimer.Stop();
                 issueScrollTimer.Interval = 500;
                 return;
+            }
+
+            if (ReferenceEquals(sender, pbLayer))
+            {
+                // unconditionally stop any pending mouse timer here.
+                mouseHoldTimer.Stop();
+
+                // Shift must be pressed for any pixel edit action, middle button is ignored.
+                if (!tsLayerImagePixelEdit.Checked || (e.Button & MouseButtons.Middle) != 0 ||
+                    (ModifierKeys & Keys.Shift) == 0) return;
+                if (!pbLayer.IsPointInImage(e.Location)) return;
+                var location = pbLayer.PointToImage(e.Location);
+                _lastPixelMouseLocation = Point.Empty;
+
+                // Left or Alt-Right Adds pixel, Right or Alt-Left removes pixel
+                DrawPixel(e.Button == MouseButtons.Left ^ (ModifierKeys & Keys.Alt) != 0, location);
+                //SlicerFile[ActualLayer].LayerMat = ActualLayerImage;
+                RefreshPixelHistory();
             }
         }
 
@@ -3721,6 +3722,7 @@ namespace UVtools.GUI
                         layerStart = inputBox.LayerRangeStart;
                         layerEnd = inputBox.LayerRangeEnd;
                         iterationsStart = inputBox.BorderSize;
+                        fade = inputBox.DimsOnlyBorders;
                         evenPattern = inputBox.EvenPattern;
                         oddPattern = inputBox.OddPattern;
                     }
@@ -3815,7 +3817,7 @@ namespace UVtools.GUI
                             mat?.Dispose();
                             break;
                         case LayerManager.Mutate.PixelDimming:
-                            SlicerFile.LayerManager.MutatePixelDimming(layerStart, layerEnd, evenPattern, oddPattern, (ushort) iterationsStart, progress);
+                            SlicerFile.LayerManager.MutatePixelDimming(layerStart, layerEnd, evenPattern, oddPattern, (ushort) iterationsStart, fade, progress);
                             break;
                         case LayerManager.Mutate.Erode:
                             SlicerFile.LayerManager.MutateErode(layerStart, layerEnd, (int) iterationsStart, (int) iterationsEnd, fade, progress, kernel, kernelAnchor);

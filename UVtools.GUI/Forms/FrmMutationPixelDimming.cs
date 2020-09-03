@@ -51,6 +51,12 @@ namespace UVtools.GUI.Forms
             set => nmBorderSize.Value = value;
         }
 
+        public bool DimsOnlyBorders
+        {
+            get => cbDimsOnlyBorders.Checked;
+            set => cbDimsOnlyBorders.Checked = value;
+        }
+
         public Matrix<byte> EvenPattern { get; private set; }
         public Matrix<byte> OddPattern { get; private set; }
 
@@ -189,6 +195,12 @@ namespace UVtools.GUI.Forms
                 return;
             }
 
+            if (ReferenceEquals(sender, btnDimPatternSolid))
+            {
+                tbEvenPattern.Text = nmPixelDimBrightness.Value.ToString(CultureInfo.InvariantCulture);
+                tbOddPattern.Text = string.Empty;
+                return;
+            }
             if (ReferenceEquals(sender, btnDimPatternChessBoard))
             {
                 tbEvenPattern.Text = string.Format(

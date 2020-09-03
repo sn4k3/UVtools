@@ -57,6 +57,7 @@ namespace UVtools.GUI.Forms
             this.tbEvenPattern = new System.Windows.Forms.TextBox();
             this.nmPixelDimBrightness = new System.Windows.Forms.NumericUpDown();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.btnDimPatternStrips = new System.Windows.Forms.Button();
             this.btnDimPatternWaves = new System.Windows.Forms.Button();
             this.btnPatternRandom = new System.Windows.Forms.Button();
             this.btnDimPatternSlashes = new System.Windows.Forms.Button();
@@ -81,7 +82,8 @@ namespace UVtools.GUI.Forms
             this.label10 = new System.Windows.Forms.Label();
             this.btnImportImageMask = new System.Windows.Forms.Button();
             this.btnLayerRangeSelect = new UVtools.GUI.Controls.SplitButton();
-            this.btnDimPatternStrips = new System.Windows.Forms.Button();
+            this.cbDimsOnlyBorders = new System.Windows.Forms.CheckBox();
+            this.btnDimPatternSolid = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeEnd)).BeginInit();
             this.cmLayerRange.SuspendLayout();
@@ -368,6 +370,7 @@ namespace UVtools.GUI.Forms
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.btnDimPatternSolid);
             this.groupBox1.Controls.Add(this.btnDimPatternStrips);
             this.groupBox1.Controls.Add(this.label7);
             this.groupBox1.Controls.Add(this.btnDimPatternWaves);
@@ -388,6 +391,16 @@ namespace UVtools.GUI.Forms
             this.groupBox1.TabIndex = 22;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Pixel dimming generator";
+            // 
+            // btnDimPatternStrips
+            // 
+            this.btnDimPatternStrips.Location = new System.Drawing.Point(332, 25);
+            this.btnDimPatternStrips.Name = "btnDimPatternStrips";
+            this.btnDimPatternStrips.Size = new System.Drawing.Size(94, 35);
+            this.btnDimPatternStrips.TabIndex = 31;
+            this.btnDimPatternStrips.Text = "Strips";
+            this.btnDimPatternStrips.UseVisualStyleBackColor = true;
+            this.btnDimPatternStrips.Click += new System.EventHandler(this.ItemClicked);
             // 
             // btnDimPatternWaves
             // 
@@ -650,7 +663,7 @@ namespace UVtools.GUI.Forms
             // 
             // btnImportImageMask
             // 
-            this.btnImportImageMask.Location = new System.Drawing.Point(314, 181);
+            this.btnImportImageMask.Location = new System.Drawing.Point(161, 88);
             this.btnImportImageMask.Name = "btnImportImageMask";
             this.btnImportImageMask.Size = new System.Drawing.Size(273, 32);
             this.btnImportImageMask.TabIndex = 30;
@@ -669,15 +682,25 @@ namespace UVtools.GUI.Forms
             this.btnLayerRangeSelect.Text = "Select";
             this.btnLayerRangeSelect.UseVisualStyleBackColor = true;
             // 
-            // btnDimPatternStrips
+            // cbDimsOnlyBorders
             // 
-            this.btnDimPatternStrips.Location = new System.Drawing.Point(332, 25);
-            this.btnDimPatternStrips.Name = "btnDimPatternStrips";
-            this.btnDimPatternStrips.Size = new System.Drawing.Size(94, 35);
-            this.btnDimPatternStrips.TabIndex = 31;
-            this.btnDimPatternStrips.Text = "Strips";
-            this.btnDimPatternStrips.UseVisualStyleBackColor = true;
-            this.btnDimPatternStrips.Click += new System.EventHandler(this.ItemClicked);
+            this.cbDimsOnlyBorders.AutoSize = true;
+            this.cbDimsOnlyBorders.Location = new System.Drawing.Point(314, 188);
+            this.cbDimsOnlyBorders.Name = "cbDimsOnlyBorders";
+            this.cbDimsOnlyBorders.Size = new System.Drawing.Size(181, 24);
+            this.cbDimsOnlyBorders.TabIndex = 31;
+            this.cbDimsOnlyBorders.Text = "Dims only the borders";
+            this.cbDimsOnlyBorders.UseVisualStyleBackColor = true;
+            // 
+            // btnDimPatternSolid
+            // 
+            this.btnDimPatternSolid.Location = new System.Drawing.Point(432, 25);
+            this.btnDimPatternSolid.Name = "btnDimPatternSolid";
+            this.btnDimPatternSolid.Size = new System.Drawing.Size(94, 35);
+            this.btnDimPatternSolid.TabIndex = 32;
+            this.btnDimPatternSolid.Text = "Solid";
+            this.btnDimPatternSolid.UseVisualStyleBackColor = true;
+            this.btnDimPatternSolid.Click += new System.EventHandler(this.ItemClicked);
             // 
             // FrmMutationPixelDimming
             // 
@@ -685,6 +708,7 @@ namespace UVtools.GUI.Forms
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(599, 916);
+            this.Controls.Add(this.cbDimsOnlyBorders);
             this.Controls.Add(this.btnImportImageMask);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.label6);
@@ -783,5 +807,7 @@ namespace UVtools.GUI.Forms
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Button btnImportImageMask;
         private System.Windows.Forms.Button btnDimPatternStrips;
+        private System.Windows.Forms.CheckBox cbDimsOnlyBorders;
+        private System.Windows.Forms.Button btnDimPatternSolid;
     }
 }
