@@ -452,6 +452,12 @@ namespace UVtools.GUI.Forms
                     return;
                 }
 
+                if (BorderSize == 0 && DimsOnlyBorders)
+                {
+                    MessageBox.Show("Border size must be positive in order to use \"Dims only the borders\" function.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
                 var matrixTextbox = new[]
                 {
                     new MatrixTexbox(EvenPattern, tbEvenPattern),
