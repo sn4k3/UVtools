@@ -220,8 +220,9 @@ namespace UVtools.GUI
             Clear();
 
             tsLayerImageLayerDifference.Checked = Settings.Default.LayerDifferenceDefault;
-            tsIssuesRefreshIslands.Checked = Settings.Default.ComputeIslands;
-            tsIssuesRefreshResinTraps.Checked = Settings.Default.ComputeResinTraps;
+            tsIssuesDetectIslands.Checked = Settings.Default.ComputeIslands;
+            tsIssuesDetectResinTraps.Checked = Settings.Default.ComputeResinTraps;
+            tsIssuesDetectTouchingBounds.Checked = Settings.Default.ComputeTouchingBounds;
             tsLayerImageLayerOutlinePrintVolumeBounds.Checked = Settings.Default.OutlinePrintVolumeBounds;
             tsLayerImageLayerOutlineLayerBounds.Checked = Settings.Default.OutlineLayerBounds;
             tsLayerImageLayerOutlineHollowAreas.Checked = Settings.Default.OutlineHollowAreas;
@@ -812,9 +813,10 @@ namespace UVtools.GUI
                         islandConfig.Enabled = repairIslands && removeIslandsBelowEqualPixels > 0;
                         var resinTrapConfig = GetResinTrapDetectionConfiguration();
                         resinTrapConfig.Enabled = repairResinTraps;
+                        var touchingBoundConfig = new TouchingBoundDetectionConfiguration{Enabled = false};
 
-                        if(islandConfig.Enabled || resinTrapConfig.Enabled)
-                            ComputeIssues(islandConfig, resinTrapConfig);
+                        if (islandConfig.Enabled || resinTrapConfig.Enabled)
+                            ComputeIssues(islandConfig, resinTrapConfig, touchingBoundConfig);
                     }
 
                     DisableGUI();
@@ -860,7 +862,7 @@ namespace UVtools.GUI
 
                     ShowLayer();
 
-                    ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration());
+                    ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration(), GetTouchingBoundsDetectionConfiguration());
 
                     menuFileSave.Enabled =
                         menuFileSaveAs.Enabled = true;
@@ -1622,10 +1624,10 @@ namespace UVtools.GUI
 
             if (ReferenceEquals(sender, tsIssuesRefresh))
             {
-                if (MessageBox.Show("Are you sure you want to compute issues?", "Issues Compute",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+                /*if (MessageBox.Show("Are you sure you want to compute issues?", "Issues Compute",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;*/
 
-                ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration());
+                ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration(), GetTouchingBoundsDetectionConfiguration());
 
                 return;
             }
@@ -2397,7 +2399,7 @@ namespace UVtools.GUI
 
             if (Settings.Default.ComputeIssuesOnLoad)
             {
-                ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration());
+                ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration(), GetTouchingBoundsDetectionConfiguration());
             }
         }
 
@@ -3032,7 +3034,7 @@ namespace UVtools.GUI
                 if (ReferenceEquals(tabControlLeft.SelectedTab, tabPageIssues))
                 {
                     if (!ReferenceEquals(tabPageIssues.Tag, null) || !Settings.Default.AutoComputeIssuesClickOnTab) return;
-                    ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration());
+                    ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration(), GetTouchingBoundsDetectionConfiguration());
                 }
                 return;
             }
@@ -3944,7 +3946,7 @@ namespace UVtools.GUI
             
         }
 
-        private void ComputeIssues(IslandDetectionConfiguration islandConfig = null, ResinTrapDetectionConfiguration resinTrapConfig = null)
+        private void ComputeIssues(IslandDetectionConfiguration islandConfig = null, ResinTrapDetectionConfiguration resinTrapConfig = null, TouchingBoundDetectionConfiguration touchingBoundConfig = null)
         {
             tabPageIssues.Tag = true;
             flvIssues.ClearObjects();
@@ -3957,7 +3959,7 @@ namespace UVtools.GUI
             {
                 try
                 {
-                    Issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, null, FrmLoading.RestartProgress());
+                    Issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, touchingBoundConfig, FrmLoading.RestartProgress());
                 }
                 catch (OperationCanceledException)
                 {
@@ -4151,7 +4153,7 @@ namespace UVtools.GUI
         {
             return new IslandDetectionConfiguration
             {
-                Enabled = tsIssuesRefreshIslands.Checked,
+                Enabled = tsIssuesDetectIslands.Checked,
                 AllowDiagonalBonds = Settings.Default.IslandAllowDiagonalBonds,
                 BinaryThreshold = Settings.Default.IslandBinaryThreshold,
                 RequiredAreaToProcessCheck = Settings.Default.IslandRequiredAreaToProcessCheck,
@@ -4165,11 +4167,20 @@ namespace UVtools.GUI
         {
             return new ResinTrapDetectionConfiguration
             {
-                Enabled = tsIssuesRefreshResinTraps.Checked,
+                Enabled = tsIssuesDetectResinTraps.Checked,
                 BinaryThreshold = Settings.Default.ResinTrapBinaryThreshold,
                 RequiredAreaToProcessCheck = Settings.Default.ResinTrapRequiredAreaToProcessCheck,
                 RequiredBlackPixelsToDrain = Settings.Default.ResinTrapRequiredBlackPixelsToDrain,
                 MaximumPixelBrightnessToDrain = Settings.Default.ResinTrapMaximumPixelBrightnessToDrain
+            };
+        }
+
+        public TouchingBoundDetectionConfiguration GetTouchingBoundsDetectionConfiguration()
+        {
+            return new TouchingBoundDetectionConfiguration
+            {
+                Enabled = tsIssuesDetectTouchingBounds.Checked,
+                //MaximumPixelBrightness = 100
             };
         }
 
@@ -4286,12 +4297,13 @@ namespace UVtools.GUI
             if (whiteListLayers.Count == 0) return;
             var islandConfig = GetIslandDetectionConfiguration();
             var resinTrapConfig = new ResinTrapDetectionConfiguration { Enabled = false };
+            var touchingBoundConfig = new TouchingBoundDetectionConfiguration { Enabled = false };
             islandConfig.Enabled = true;
             islandConfig.WhiteListLayers = whiteListLayers;
             
             if (ReferenceEquals(Issues, null))
             {
-                ComputeIssues(islandConfig, resinTrapConfig);
+                ComputeIssues(islandConfig, resinTrapConfig, touchingBoundConfig);
             }
             else
             {
@@ -4307,7 +4319,7 @@ namespace UVtools.GUI
                 {
                     try
                     {
-                        var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, null,
+                        var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, touchingBoundConfig,
                             FrmLoading.RestartProgress());
 
                         issues.RemoveAll(issue => issue.Type != LayerIssue.IssueType.Island); // Remove all non islands

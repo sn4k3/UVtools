@@ -123,6 +123,7 @@
             this.tbFileSaveNamePreffix = new System.Windows.Forms.TextBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.cbZoomIssuesAuto = new System.Windows.Forms.CheckBox();
             this.label40 = new System.Windows.Forms.Label();
             this.label41 = new System.Windows.Forms.Label();
             this.nmCrosshairLineMargin = new System.Windows.Forms.NumericUpDown();
@@ -162,7 +163,8 @@
             this.cbLayerRepairLayersIslands = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.cbZoomIssuesAuto = new System.Windows.Forms.CheckBox();
+            this.cbComputeTouchingBounds = new System.Windows.Forms.CheckBox();
+            this.label42 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineHollowAreasLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineLayerBoundsLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlinePrintVolumeBoundsLineThickness)).BeginInit();
@@ -695,21 +697,21 @@
             // cbComputeIslands
             // 
             this.cbComputeIslands.AutoSize = true;
-            this.cbComputeIslands.Location = new System.Drawing.Point(244, 23);
+            this.cbComputeIslands.Location = new System.Drawing.Point(85, 79);
             this.cbComputeIslands.Name = "cbComputeIslands";
-            this.cbComputeIslands.Size = new System.Drawing.Size(138, 22);
+            this.cbComputeIslands.Size = new System.Drawing.Size(73, 22);
             this.cbComputeIslands.TabIndex = 16;
-            this.cbComputeIslands.Text = "Compute Islands";
+            this.cbComputeIslands.Text = "Islands";
             this.cbComputeIslands.UseVisualStyleBackColor = true;
             // 
             // cbComputeResinTraps
             // 
             this.cbComputeResinTraps.AutoSize = true;
-            this.cbComputeResinTraps.Location = new System.Drawing.Point(411, 23);
+            this.cbComputeResinTraps.Location = new System.Drawing.Point(164, 79);
             this.cbComputeResinTraps.Name = "cbComputeResinTraps";
-            this.cbComputeResinTraps.Size = new System.Drawing.Size(172, 22);
+            this.cbComputeResinTraps.Size = new System.Drawing.Size(102, 22);
             this.cbComputeResinTraps.TabIndex = 17;
-            this.cbComputeResinTraps.Text = "Compute Resin Traps";
+            this.cbComputeResinTraps.Text = "Resin traps";
             this.cbComputeResinTraps.UseVisualStyleBackColor = true;
             // 
             // groupBox3
@@ -723,7 +725,7 @@
             this.groupBox3.Controls.Add(this.nmResinTrapRequiredAreaToProcessCheck);
             this.groupBox3.Controls.Add(this.label11);
             this.groupBox3.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox3.Location = new System.Drawing.Point(3, 300);
+            this.groupBox3.Location = new System.Drawing.Point(3, 328);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(610, 152);
             this.groupBox3.TabIndex = 24;
@@ -859,7 +861,7 @@
             this.groupBox2.Controls.Add(this.label8);
             this.groupBox2.Controls.Add(this.nmIslandRequiredPixelBrightnessToProcessCheck);
             this.groupBox2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox2.Location = new System.Drawing.Point(3, 86);
+            this.groupBox2.Location = new System.Drawing.Point(3, 114);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(610, 214);
             this.groupBox2.TabIndex = 23;
@@ -1025,6 +1027,8 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.label42);
+            this.groupBox1.Controls.Add(this.cbComputeTouchingBounds);
             this.groupBox1.Controls.Add(this.cbAutoComputeIssuesClickOnTab);
             this.groupBox1.Controls.Add(this.cbComputeIssuesOnLoad);
             this.groupBox1.Controls.Add(this.cbComputeIslands);
@@ -1032,7 +1036,7 @@
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBox1.Location = new System.Drawing.Point(3, 3);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(610, 83);
+            this.groupBox1.Size = new System.Drawing.Size(610, 111);
             this.groupBox1.TabIndex = 22;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Commun";
@@ -1058,7 +1062,7 @@
             this.tabSettings.Location = new System.Drawing.Point(0, 0);
             this.tabSettings.Name = "tabSettings";
             this.tabSettings.SelectedIndex = 0;
-            this.tabSettings.Size = new System.Drawing.Size(624, 577);
+            this.tabSettings.Size = new System.Drawing.Size(624, 625);
             this.tabSettings.TabIndex = 18;
             // 
             // tabPage1
@@ -1383,6 +1387,17 @@
             this.tabPage2.Text = "Layer Preview";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // cbZoomIssuesAuto
+            // 
+            this.cbZoomIssuesAuto.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbZoomIssuesAuto.AutoSize = true;
+            this.cbZoomIssuesAuto.Location = new System.Drawing.Point(457, 305);
+            this.cbZoomIssuesAuto.Name = "cbZoomIssuesAuto";
+            this.cbZoomIssuesAuto.Size = new System.Drawing.Size(151, 22);
+            this.cbZoomIssuesAuto.TabIndex = 49;
+            this.cbZoomIssuesAuto.Text = "Auto zoom instead";
+            this.cbZoomIssuesAuto.UseVisualStyleBackColor = true;
+            // 
             // label40
             // 
             this.label40.AutoSize = true;
@@ -1525,7 +1540,7 @@
             this.tabPage3.Location = new System.Drawing.Point(4, 27);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(616, 546);
+            this.tabPage3.Size = new System.Drawing.Size(616, 594);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Issues";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -1849,7 +1864,7 @@
             this.panel1.Controls.Add(this.btnSave);
             this.panel1.Controls.Add(this.btnReset);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 500);
+            this.panel1.Location = new System.Drawing.Point(0, 548);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(624, 77);
             this.panel1.TabIndex = 19;
@@ -1862,22 +1877,30 @@
             this.toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             this.toolTip.ToolTipTitle = "Information";
             // 
-            // cbZoomIssuesAuto
+            // cbComputeTouchingBounds
             // 
-            this.cbZoomIssuesAuto.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cbZoomIssuesAuto.AutoSize = true;
-            this.cbZoomIssuesAuto.Location = new System.Drawing.Point(457, 305);
-            this.cbZoomIssuesAuto.Name = "cbZoomIssuesAuto";
-            this.cbZoomIssuesAuto.Size = new System.Drawing.Size(151, 22);
-            this.cbZoomIssuesAuto.TabIndex = 49;
-            this.cbZoomIssuesAuto.Text = "Auto zoom instead";
-            this.cbZoomIssuesAuto.UseVisualStyleBackColor = true;
+            this.cbComputeTouchingBounds.AutoSize = true;
+            this.cbComputeTouchingBounds.Location = new System.Drawing.Point(272, 79);
+            this.cbComputeTouchingBounds.Name = "cbComputeTouchingBounds";
+            this.cbComputeTouchingBounds.Size = new System.Drawing.Size(141, 22);
+            this.cbComputeTouchingBounds.TabIndex = 19;
+            this.cbComputeTouchingBounds.Text = "Touching bounds";
+            this.cbComputeTouchingBounds.UseVisualStyleBackColor = true;
+            // 
+            // label42
+            // 
+            this.label42.AutoSize = true;
+            this.label42.Location = new System.Drawing.Point(6, 81);
+            this.label42.Name = "label42";
+            this.label42.Size = new System.Drawing.Size(73, 18);
+            this.label42.TabIndex = 20;
+            this.label42.Text = "Compute:";
             // 
             // FrmSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(624, 577);
+            this.ClientSize = new System.Drawing.Size(624, 625);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.tabSettings);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -2066,5 +2089,7 @@
         private System.Windows.Forms.Label label41;
         private System.Windows.Forms.NumericUpDown nmCrosshairLineMargin;
         private System.Windows.Forms.CheckBox cbZoomIssuesAuto;
+        private System.Windows.Forms.Label label42;
+        private System.Windows.Forms.CheckBox cbComputeTouchingBounds;
     }
 }

@@ -850,5 +850,17 @@ namespace UVtools.GUI.Properties {
                 this["ZoomIssuesAuto"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ComputeTouchingBounds {
+            get {
+                return ((bool)(this["ComputeTouchingBounds"]));
+            }
+            set {
+                this["ComputeTouchingBounds"] = value;
+            }
+        }
     }
 }

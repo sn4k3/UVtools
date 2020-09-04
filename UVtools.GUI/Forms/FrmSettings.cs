@@ -87,6 +87,7 @@ namespace UVtools.GUI.Forms
                 cbComputeIssuesOnLoad.Checked = Settings.Default.ComputeIssuesOnLoad;
                 cbComputeIslands.Checked = Settings.Default.ComputeIslands;
                 cbComputeResinTraps.Checked = Settings.Default.ComputeResinTraps;
+                cbComputeTouchingBounds.Checked = Settings.Default.ComputeTouchingBounds;
                 cbAutoComputeIssuesClickOnTab.Checked = Settings.Default.AutoComputeIssuesClickOnTab;
 
                 cbIslandAllowDiagonalBonds.Checked = Settings.Default.IslandAllowDiagonalBonds;
@@ -264,6 +265,7 @@ namespace UVtools.GUI.Forms
                 Settings.Default.ComputeIssuesOnLoad = cbComputeIssuesOnLoad.Checked;
                 Settings.Default.ComputeIslands = cbComputeIslands.Checked;
                 Settings.Default.ComputeResinTraps = cbComputeResinTraps.Checked;
+                Settings.Default.ComputeTouchingBounds = cbComputeTouchingBounds.Checked;
                 Settings.Default.AutoComputeIssuesClickOnTab = cbAutoComputeIssuesClickOnTab.Checked;
 
                 Settings.Default.IslandAllowDiagonalBonds = cbIslandAllowDiagonalBonds.Checked;

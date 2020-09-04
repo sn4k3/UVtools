@@ -154,8 +154,10 @@
             this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
             this.tsIssueRemove = new System.Windows.Forms.ToolStripButton();
             this.tsIssuesRefresh = new System.Windows.Forms.ToolStripSplitButton();
-            this.tsIssuesRefreshIslands = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsIssuesRefreshResinTraps = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsIssuesDetectIslands = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsIssuesDetectResinTraps = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsIssuesDetectTouchingBounds = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsIssuesDetectEmptyLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
             this.tsIssuesRepair = new System.Windows.Forms.ToolStripButton();
             this.tabPagePixelEditor = new System.Windows.Forms.TabPage();
@@ -1599,8 +1601,10 @@
             // 
             this.tsIssuesRefresh.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.tsIssuesRefresh.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsIssuesRefreshIslands,
-            this.tsIssuesRefreshResinTraps});
+            this.tsIssuesDetectIslands,
+            this.tsIssuesDetectResinTraps,
+            this.tsIssuesDetectTouchingBounds,
+            this.tsIssuesDetectEmptyLayers});
             this.tsIssuesRefresh.Image = global::UVtools.GUI.Properties.Resources.refresh_16x16;
             this.tsIssuesRefresh.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsIssuesRefresh.Name = "tsIssuesRefresh";
@@ -1609,23 +1613,42 @@
             this.tsIssuesRefresh.ToolTipText = "Compute Issues";
             this.tsIssuesRefresh.ButtonClick += new System.EventHandler(this.EventClick);
             // 
-            // tsIssuesRefreshIslands
+            // tsIssuesDetectIslands
             // 
-            this.tsIssuesRefreshIslands.Checked = true;
-            this.tsIssuesRefreshIslands.CheckOnClick = true;
-            this.tsIssuesRefreshIslands.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tsIssuesRefreshIslands.Name = "tsIssuesRefreshIslands";
-            this.tsIssuesRefreshIslands.Size = new System.Drawing.Size(211, 22);
-            this.tsIssuesRefreshIslands.Text = "Islands && Touching Bonds";
+            this.tsIssuesDetectIslands.Checked = true;
+            this.tsIssuesDetectIslands.CheckOnClick = true;
+            this.tsIssuesDetectIslands.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsIssuesDetectIslands.Name = "tsIssuesDetectIslands";
+            this.tsIssuesDetectIslands.Size = new System.Drawing.Size(180, 22);
+            this.tsIssuesDetectIslands.Text = "&Islands";
             // 
-            // tsIssuesRefreshResinTraps
+            // tsIssuesDetectResinTraps
             // 
-            this.tsIssuesRefreshResinTraps.Checked = true;
-            this.tsIssuesRefreshResinTraps.CheckOnClick = true;
-            this.tsIssuesRefreshResinTraps.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tsIssuesRefreshResinTraps.Name = "tsIssuesRefreshResinTraps";
-            this.tsIssuesRefreshResinTraps.Size = new System.Drawing.Size(211, 22);
-            this.tsIssuesRefreshResinTraps.Text = "Resin traps";
+            this.tsIssuesDetectResinTraps.Checked = true;
+            this.tsIssuesDetectResinTraps.CheckOnClick = true;
+            this.tsIssuesDetectResinTraps.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsIssuesDetectResinTraps.Name = "tsIssuesDetectResinTraps";
+            this.tsIssuesDetectResinTraps.Size = new System.Drawing.Size(180, 22);
+            this.tsIssuesDetectResinTraps.Text = "&Resin traps";
+            // 
+            // tsIssuesDetectTouchingBounds
+            // 
+            this.tsIssuesDetectTouchingBounds.Checked = true;
+            this.tsIssuesDetectTouchingBounds.CheckOnClick = true;
+            this.tsIssuesDetectTouchingBounds.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsIssuesDetectTouchingBounds.Name = "tsIssuesDetectTouchingBounds";
+            this.tsIssuesDetectTouchingBounds.Size = new System.Drawing.Size(180, 22);
+            this.tsIssuesDetectTouchingBounds.Text = "&Touching Bounds";
+            // 
+            // tsIssuesDetectEmptyLayers
+            // 
+            this.tsIssuesDetectEmptyLayers.Checked = true;
+            this.tsIssuesDetectEmptyLayers.CheckOnClick = true;
+            this.tsIssuesDetectEmptyLayers.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsIssuesDetectEmptyLayers.Enabled = false;
+            this.tsIssuesDetectEmptyLayers.Name = "tsIssuesDetectEmptyLayers";
+            this.tsIssuesDetectEmptyLayers.Size = new System.Drawing.Size(180, 22);
+            this.tsIssuesDetectEmptyLayers.Text = "&Empty Layers";
             // 
             // toolStripSeparator12
             // 
@@ -3062,8 +3085,8 @@
         private System.Windows.Forms.ToolStripMenuItem menuFileSettings;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator15;
         private System.Windows.Forms.ToolStripSplitButton tsIssuesRefresh;
-        private System.Windows.Forms.ToolStripMenuItem tsIssuesRefreshIslands;
-        private System.Windows.Forms.ToolStripMenuItem tsIssuesRefreshResinTraps;
+        private System.Windows.Forms.ToolStripMenuItem tsIssuesDetectIslands;
+        private System.Windows.Forms.ToolStripMenuItem tsIssuesDetectResinTraps;
         private System.Windows.Forms.ToolStripSplitButton tsLayerImageLayerOutline;
         private System.Windows.Forms.ToolStripMenuItem tsLayerImageLayerOutlineEdgeDetection;
         private System.Windows.Forms.ToolStripMenuItem tsLayerImageLayerOutlinePrintVolumeBounds;
@@ -3199,6 +3222,8 @@
         private System.Windows.Forms.ToolStripLabel tsLayerImageZoomLock;
         private System.Windows.Forms.ToolStripButton btnGCodeRebuild;
         private System.Windows.Forms.Timer mouseHoldTimer;
+        private System.Windows.Forms.ToolStripMenuItem tsIssuesDetectEmptyLayers;
+        private System.Windows.Forms.ToolStripMenuItem tsIssuesDetectTouchingBounds;
     }
 }
 

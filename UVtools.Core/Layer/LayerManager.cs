@@ -772,7 +772,7 @@ namespace UVtools.Core
 
             Parallel.Invoke(() =>
             {
-                if (!islandConfig.Enabled && !resinTrapConfig.Enabled)
+                if (!islandConfig.Enabled && !touchBoundConfig.Enabled)
                 {
                     islandsFinished = true;
                     return;
@@ -796,7 +796,7 @@ namespace UVtools.Core
                         }
 
                         // Spare a decoding cycle
-                        if (!resinTrapConfig.Enabled && 
+                        if (!touchBoundConfig.Enabled && 
                             (layer.Index == 0 || 
                              (!ReferenceEquals(islandConfig.WhiteListLayers, null) && !islandConfig.WhiteListLayers.Contains(layer.Index)))
                             )
@@ -813,7 +813,7 @@ namespace UVtools.Core
                             int step = image.Step;
                             var span = image.GetPixelSpan<byte>();
 
-                            if (resinTrapConfig.Enabled)
+                            if (touchBoundConfig.Enabled)
                             {
                                 // TouchingBounds Checker
                                 List<Point> pixels = new List<Point>();

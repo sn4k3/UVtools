@@ -1,8 +1,9 @@
 # Changelog
 
-## /08/2020 - v0.7.0.0
+## 04/08/2020 - v0.7.0.0
 
 * (Add) "Rebuild GCode" button
+* (Add) Issues: Touching Bounds and Empty Layers to the detect button
 * (Add) Mutator - Pixel Dimming: Dims only the borders (Suggested by Marco Borzacconi)
 * (Add) Mutator - Pixel Dimming: "Solid" button to set brightness only
 * (Add) Issue Highlighting
@@ -48,6 +49,7 @@
 * (Fix) chitubox: Keep some original values when read from chitubox sliced files
 * (Fix) chitubox: Preview thumbnails to respect order and size names
 * (Fix) Settings: Reset settings triggers a upgrade from previous version when relaunch UVtools and bring that same values
+* (Fix) Issues: Touching bounds only calculate when resin traps are active
 * Notes: This release is the combination of the following pull requests: #26, #27, #28, #29, #30, #31, #32, #33
 
 ## 27/08/2020 - v0.6.7.1
