@@ -264,7 +264,7 @@ namespace UVtools.GUI
             this.toolTipInformation = new System.Windows.Forms.ToolTip(this.components);
             this.layerScrollTimer = new System.Windows.Forms.Timer(this.components);
             this.mouseHoldTimer = new System.Windows.Forms.Timer(this.components);
-            this.tbLayer = new UVtools.GUI.Controls.TrackBarHighlight();
+            this.tbLayer = new UVtools.GUI.Controls.TrackBarEx();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).BeginInit();
@@ -2909,8 +2909,6 @@ namespace UVtools.GUI
             // tbLayer
             // 
             this.tbLayer.Dock = System.Windows.Forms.DockStyle.Right;
-            this.tbLayer.HighlightValues = null;
-            this.tbLayer.LineLength = ((byte)(20));
             this.tbLayer.Location = new System.Drawing.Point(93, 0);
             this.tbLayer.Margin = new System.Windows.Forms.Padding(0);
             this.tbLayer.Name = "tbLayer";
@@ -3103,7 +3101,7 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStripButton btnLayerImageHighlightIssues;
         private System.Windows.Forms.ToolStripButton btnLayerImageShowCrosshairs;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator25;
-        private TrackBarHighlight tbLayer;
+        private TrackBarEx tbLayer;
         private System.Windows.Forms.TableLayoutPanel tlRight;
         private System.Windows.Forms.Label lbMaxLayer;
         private System.Windows.Forms.Label lbInitialLayer;

@@ -14,33 +14,22 @@ using UVtools.Core.Extensions;
 
 namespace UVtools.GUI.Controls
 {
-    public class TrackBarHighlight : TrackBar
+    public class TrackBarEx : TrackBar
     {
-        private uint[] _highlightValues = null;
-
         [DllImport("user32.dll")]
         public static extern int SendMessage(IntPtr hWnd, uint msg, int wParam, int lParam);
 
         private const int TBM_GETNUMTICS = 0x0410;
         private const int TBM_GETTICPOS = 0x40F;
 
-        private const byte TrackerMargin = 12;
+        //private const byte TrackerMargin = 12;
 
         //public event PaintEventHandler PaintOver;
 
-        public Pen HighlightPen { get; set; } = new Pen(Color.FromArgb(50, Color.Red), 2);
-        public byte LineLength { get; set; } = 10;
-
-        public uint[] HighlightValues
+        /*public TrackBarEx()
         {
-            get => _highlightValues;
-            set { _highlightValues = value; Invalidate(); }
-        }
-
-        public TrackBarHighlight()
-        {
-            //SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.DoubleBuffer | ControlStyles.ResizeRedraw, true);
-        }
+            SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.DoubleBuffer | ControlStyles.ResizeRedraw, true);
+        }*/
 
         /*protected override void OnInvalidated(InvalidateEventArgs e)
         {
@@ -59,19 +48,19 @@ namespace UVtools.GUI.Controls
                 using (Graphics lgGraphics = Graphics.FromHwndInternal(m.HWnd))
                     OnPaintOver(new PaintEventArgs(lgGraphics, ClientRectangle));
             }
-        }*/
+        }
 
         protected virtual void OnPaintOver(PaintEventArgs e)
         {
             //PaintOver?.Invoke(this, e);
             //Debug.WriteLine("Paint");
             DrawHighlights(e.Graphics);
-        }
+        }*/
 
         public int GetTickPos(int index) => SendMessage(Handle, TBM_GETTICPOS, index, 0);
         public int NumTicks => SendMessage(Handle, TBM_GETNUMTICS, 0, 0);
 
-        public void DrawHighlights(Graphics gfx = null)
+        /*public void DrawHighlights(Graphics gfx = null)
         {
             if (HighlightValues is null) return;
             if (gfx is null) gfx = CreateGraphics();
@@ -88,6 +77,6 @@ namespace UVtools.GUI.Controls
                 int y = (Height - tickPos).Clamp(1, Height);
                 gfx.DrawLine(HighlightPen, startX, y, endX, y);
             }
-        }
+        }*/
     }
 }

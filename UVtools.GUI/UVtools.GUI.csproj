@@ -163,7 +163,7 @@
     <Compile Include="Controls\SplitButton.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Controls\TrackBarHighlight.cs">
+    <Compile Include="Controls\TrackBarEx.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Extensions\BitmapExtension.cs" />

@@ -2064,51 +2064,9 @@ namespace UVtools.GUI
 
         private void flvIssues_ItemsChanged(object sender, ItemsChangedEventArgs e)
         {
-            if (e.NewObjectCount == 0 || Issues is null)
-            {
-                tbLayer.HighlightValues = null;
-                UpdateLayerTrackerHighlightIssues();
-                return;
-            }
-
-            List<uint> layerIndexes = new List<uint>();
-            foreach (var issue in Issues)
-            {
-                if (layerIndexes.Contains(issue.LayerIndex)) continue;
-                layerIndexes.Add(issue.LayerIndex);
-            }
-            tbLayer.HighlightValues = layerIndexes.ToArray();
             UpdateLayerTrackerHighlightIssues();
         }
 
-        void UpdateLayerTrackerHighlightIssues()
-        {
-            var highlightValues = tbLayer.HighlightValues;
-
-            
-            if (highlightValues is null)
-            {
-                pbTrackerIssues.Image = null;
-                return;
-            }
-
-            using (Mat mat = new Mat(pbTrackerIssues.Height, pbTrackerIssues.Width, DepthType.Cv8U, 3))
-            {
-                mat.SetTo(new MCvScalar(255, 255, 255));
-                var color = new MCvScalar(0, 0, 255);
-
-                foreach (var value in highlightValues)
-                {
-                    var tickPos = tbLayer.GetTickPos((int) value);
-                    if (tickPos == -1) continue;
-                    //int y = (int)(Height - TrackerStartMargin - (Height / Maximum * value));
-                    int y = (pbTrackerIssues.Height - tickPos).Clamp(0, pbTrackerIssues.Height);
-                    CvInvoke.Line(mat, new Point(0, y), new Point(mat.Width, y), color);
-                }
-
-                pbTrackerIssues.Image = mat.ToBitmap();
-            }
-        }
         #endregion
 
         #region Methods
@@ -4449,6 +4407,51 @@ namespace UVtools.GUI
             }
             UpdateIssuesInfo();
             ShowLayer();
+        }
+
+        public Dictionary<uint, uint> GetIssuesCountPerLayer()
+        {
+            if (Issues is null) return null;
+            Dictionary<uint, uint> layerIndexIssueCount = new Dictionary<uint, uint>();
+            foreach (var issue in Issues)
+            {
+                if (!layerIndexIssueCount.ContainsKey(issue.LayerIndex))
+                {
+                    layerIndexIssueCount.Add(issue.LayerIndex, 1);
+                }
+                else
+                {
+                    layerIndexIssueCount[issue.LayerIndex]++;
+                }
+            }
+
+            return layerIndexIssueCount;
+        }
+
+        void UpdateLayerTrackerHighlightIssues()
+        {
+            var issuesCountPerLayer = GetIssuesCountPerLayer();
+            if (issuesCountPerLayer is null)
+            {
+                pbTrackerIssues.Image = null;
+                return;
+            }
+
+            using (Mat mat = new Mat(pbTrackerIssues.Height, pbTrackerIssues.Width, DepthType.Cv8U, 3))
+            {
+                mat.SetTo(new MCvScalar(255, 255, 255));
+                var color = new MCvScalar(0, 0, 255);
+
+                foreach (var value in issuesCountPerLayer)
+                {
+                    var tickPos = tbLayer.GetTickPos((int)value.Key);
+                    if (tickPos == -1) continue;
+                    int y = (pbTrackerIssues.Height - tickPos).Clamp(0, pbTrackerIssues.Height);
+                    CvInvoke.Line(mat, new Point(0, y), new Point(mat.Width, y), color);
+                }
+
+                pbTrackerIssues.Image = mat.ToBitmap();
+            }
         }
     }
 }
