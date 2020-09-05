@@ -70,27 +70,29 @@ namespace UVtools.GUI
             this.scCenter = new System.Windows.Forms.SplitContainer();
             this.pbLayer = new Cyotek.Windows.Forms.ImageBox();
             this.tsLayer = new System.Windows.Forms.ToolStrip();
-            this.tsLayerImageExport = new System.Windows.Forms.ToolStripSplitButton();
-            this.tsLayerImageExportFile = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsLayerImageExportClipboard = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsLayerImageRotate = new System.Windows.Forms.ToolStripButton();
+            this.btnLayerImageExport = new System.Windows.Forms.ToolStripSplitButton();
+            this.btnLayerImageExportFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnLayerImageExportClipboard = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnLayerImageRotate = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImageLayerDifference = new System.Windows.Forms.ToolStripButton();
+            this.btnLayerImageLayerDifference = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator14 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImageHighlightIssues = new System.Windows.Forms.ToolStripButton();
+            this.btnLayerImageHighlightIssues = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImageShowCrosshairs = new System.Windows.Forms.ToolStripButton();
+            this.btnLayerImageShowCrosshairs = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator25 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImageLayerOutline = new System.Windows.Forms.ToolStripSplitButton();
-            this.tsLayerImageLayerOutlinePrintVolumeBounds = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsLayerImageLayerOutlineLayerBounds = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsLayerImageLayerOutlineHollowAreas = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsLayerImageLayerOutlineEdgeDetection = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnLayerImageLayerOutline = new System.Windows.Forms.ToolStripSplitButton();
+            this.btnLayerImageLayerOutlinePrintVolumeBounds = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnLayerImageLayerOutlineLayerBounds = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnLayerImageLayerOutlineHollowAreas = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnLayerImageLayerOutlineEdgeDetection = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImagePixelEdit = new System.Windows.Forms.ToolStripButton();
+            this.btnLayerImagePixelEdit = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator18 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerRmove = new System.Windows.Forms.ToolStripButton();
-            this.tsLayerClone = new System.Windows.Forms.ToolStripButton();
+            this.btnLayerImageActions = new System.Windows.Forms.ToolStripSplitButton();
+            this.btnLayerImageActionImport = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnLayerImageActionClone = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnLayerImageActionRemove = new System.Windows.Forms.ToolStripMenuItem();
             this.tsLayerInfo = new System.Windows.Forms.ToolStrip();
             this.tsLayerPreviewTime = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
@@ -535,6 +537,7 @@ namespace UVtools.GUI
             this.menuToolsLayerClone.Name = "menuToolsLayerClone";
             this.menuToolsLayerClone.Size = new System.Drawing.Size(261, 22);
             this.menuToolsLayerClone.Text = "Layer &Clone";
+            this.menuToolsLayerClone.Visible = false;
             this.menuToolsLayerClone.Click += new System.EventHandler(this.EventClick);
             // 
             // menuToolsLayerRemoval
@@ -544,6 +547,7 @@ namespace UVtools.GUI
             this.menuToolsLayerRemoval.Name = "menuToolsLayerRemoval";
             this.menuToolsLayerRemoval.Size = new System.Drawing.Size(261, 22);
             this.menuToolsLayerRemoval.Text = "Layer Re&moval";
+            this.menuToolsLayerRemoval.Visible = false;
             this.menuToolsLayerRemoval.Click += new System.EventHandler(this.EventClick);
             // 
             // menuToolsPattern
@@ -704,191 +708,190 @@ namespace UVtools.GUI
             // 
             this.tsLayer.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.tsLayer.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsLayerImageExport,
-            this.tsLayerImageRotate,
+            this.btnLayerImageExport,
+            this.btnLayerImageRotate,
             this.toolStripSeparator5,
-            this.tsLayerImageLayerDifference,
+            this.btnLayerImageLayerDifference,
             this.toolStripSeparator14,
-            this.tsLayerImageHighlightIssues,
+            this.btnLayerImageHighlightIssues,
             this.toolStripSeparator7,
-            this.tsLayerImageShowCrosshairs,
+            this.btnLayerImageShowCrosshairs,
             this.toolStripSeparator25,
-            this.tsLayerImageLayerOutline,
+            this.btnLayerImageLayerOutline,
             this.toolStripSeparator9,
-            this.tsLayerImagePixelEdit,
+            this.btnLayerImagePixelEdit,
             this.toolStripSeparator18,
-            this.tsLayerRmove,
-            this.tsLayerClone});
+            this.btnLayerImageActions});
             this.tsLayer.Location = new System.Drawing.Point(0, 0);
             this.tsLayer.Name = "tsLayer";
             this.tsLayer.Size = new System.Drawing.Size(1176, 25);
             this.tsLayer.TabIndex = 6;
             this.tsLayer.Text = "Layer Menu";
             // 
-            // tsLayerImageExport
+            // btnLayerImageExport
             // 
-            this.tsLayerImageExport.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerImageExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsLayerImageExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsLayerImageExportFile,
-            this.tsLayerImageExportClipboard});
-            this.tsLayerImageExport.Image = global::UVtools.GUI.Properties.Resources.Save_16x16;
-            this.tsLayerImageExport.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerImageExport.Name = "tsLayerImageExport";
-            this.tsLayerImageExport.Size = new System.Drawing.Size(32, 22);
-            this.tsLayerImageExport.Text = "Save to";
-            this.tsLayerImageExport.ToolTipText = "Save layer image to a file or clipboard";
-            this.tsLayerImageExport.ButtonClick += new System.EventHandler(this.EventClick);
+            this.btnLayerImageExport.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.btnLayerImageExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnLayerImageExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.btnLayerImageExportFile,
+            this.btnLayerImageExportClipboard});
+            this.btnLayerImageExport.Image = global::UVtools.GUI.Properties.Resources.Save_16x16;
+            this.btnLayerImageExport.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnLayerImageExport.Name = "btnLayerImageExport";
+            this.btnLayerImageExport.Size = new System.Drawing.Size(32, 22);
+            this.btnLayerImageExport.Text = "Save to";
+            this.btnLayerImageExport.ToolTipText = "Save layer image to a file or clipboard";
+            this.btnLayerImageExport.ButtonClick += new System.EventHandler(this.EventClick);
             // 
-            // tsLayerImageExportFile
+            // btnLayerImageExportFile
             // 
-            this.tsLayerImageExportFile.Image = global::UVtools.GUI.Properties.Resources.file_image_16x16;
-            this.tsLayerImageExportFile.Name = "tsLayerImageExportFile";
-            this.tsLayerImageExportFile.Size = new System.Drawing.Size(141, 22);
-            this.tsLayerImageExportFile.Text = "To &File";
-            this.tsLayerImageExportFile.Click += new System.EventHandler(this.EventClick);
+            this.btnLayerImageExportFile.Image = global::UVtools.GUI.Properties.Resources.file_image_16x16;
+            this.btnLayerImageExportFile.Name = "btnLayerImageExportFile";
+            this.btnLayerImageExportFile.Size = new System.Drawing.Size(141, 22);
+            this.btnLayerImageExportFile.Text = "To &File";
+            this.btnLayerImageExportFile.Click += new System.EventHandler(this.EventClick);
             // 
-            // tsLayerImageExportClipboard
+            // btnLayerImageExportClipboard
             // 
-            this.tsLayerImageExportClipboard.Image = global::UVtools.GUI.Properties.Resources.clipboard_16x16;
-            this.tsLayerImageExportClipboard.Name = "tsLayerImageExportClipboard";
-            this.tsLayerImageExportClipboard.Size = new System.Drawing.Size(141, 22);
-            this.tsLayerImageExportClipboard.Text = "To &Clipboard";
-            this.tsLayerImageExportClipboard.Click += new System.EventHandler(this.EventClick);
+            this.btnLayerImageExportClipboard.Image = global::UVtools.GUI.Properties.Resources.clipboard_16x16;
+            this.btnLayerImageExportClipboard.Name = "btnLayerImageExportClipboard";
+            this.btnLayerImageExportClipboard.Size = new System.Drawing.Size(141, 22);
+            this.btnLayerImageExportClipboard.Text = "To &Clipboard";
+            this.btnLayerImageExportClipboard.Click += new System.EventHandler(this.EventClick);
             // 
-            // tsLayerImageRotate
+            // btnLayerImageRotate
             // 
-            this.tsLayerImageRotate.Checked = true;
-            this.tsLayerImageRotate.CheckOnClick = true;
-            this.tsLayerImageRotate.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tsLayerImageRotate.Image = global::UVtools.GUI.Properties.Resources.Rotate_16x16;
-            this.tsLayerImageRotate.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerImageRotate.Name = "tsLayerImageRotate";
-            this.tsLayerImageRotate.Size = new System.Drawing.Size(117, 22);
-            this.tsLayerImageRotate.Text = "&Rotate Image 90º";
-            this.tsLayerImageRotate.ToolTipText = "Auto rotate layer preview image at 90º (This can slow down the layer preview) [CT" +
+            this.btnLayerImageRotate.Checked = true;
+            this.btnLayerImageRotate.CheckOnClick = true;
+            this.btnLayerImageRotate.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.btnLayerImageRotate.Image = global::UVtools.GUI.Properties.Resources.Rotate_16x16;
+            this.btnLayerImageRotate.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnLayerImageRotate.Name = "btnLayerImageRotate";
+            this.btnLayerImageRotate.Size = new System.Drawing.Size(117, 22);
+            this.btnLayerImageRotate.Text = "&Rotate Image 90º";
+            this.btnLayerImageRotate.ToolTipText = "Auto rotate layer preview image at 90º (This can slow down the layer preview) [CT" +
     "RL+R]";
-            this.tsLayerImageRotate.Click += new System.EventHandler(this.EventClick);
+            this.btnLayerImageRotate.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsLayerImageLayerDifference
+            // btnLayerImageLayerDifference
             // 
-            this.tsLayerImageLayerDifference.CheckOnClick = true;
-            this.tsLayerImageLayerDifference.Image = global::UVtools.GUI.Properties.Resources.layers_16x16;
-            this.tsLayerImageLayerDifference.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerImageLayerDifference.Name = "tsLayerImageLayerDifference";
-            this.tsLayerImageLayerDifference.Size = new System.Drawing.Size(81, 22);
-            this.tsLayerImageLayerDifference.Text = "&Difference";
-            this.tsLayerImageLayerDifference.ToolTipText = "Show layer differences where daker pixels were also present on previous layer and" +
+            this.btnLayerImageLayerDifference.CheckOnClick = true;
+            this.btnLayerImageLayerDifference.Image = global::UVtools.GUI.Properties.Resources.layers_16x16;
+            this.btnLayerImageLayerDifference.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnLayerImageLayerDifference.Name = "btnLayerImageLayerDifference";
+            this.btnLayerImageLayerDifference.Size = new System.Drawing.Size(81, 22);
+            this.btnLayerImageLayerDifference.Text = "&Difference";
+            this.btnLayerImageLayerDifference.ToolTipText = "Show layer differences where daker pixels were also present on previous layer and" +
     " the white pixels the difference between previous and current layer.";
-            this.tsLayerImageLayerDifference.Click += new System.EventHandler(this.EventClick);
+            this.btnLayerImageLayerDifference.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator14
             // 
             this.toolStripSeparator14.Name = "toolStripSeparator14";
             this.toolStripSeparator14.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsLayerImageHighlightIssues
+            // btnLayerImageHighlightIssues
             // 
-            this.tsLayerImageHighlightIssues.Checked = true;
-            this.tsLayerImageHighlightIssues.CheckOnClick = true;
-            this.tsLayerImageHighlightIssues.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tsLayerImageHighlightIssues.Image = global::UVtools.GUI.Properties.Resources.warning_16x16;
-            this.tsLayerImageHighlightIssues.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerImageHighlightIssues.Name = "tsLayerImageHighlightIssues";
-            this.tsLayerImageHighlightIssues.Size = new System.Drawing.Size(58, 22);
-            this.tsLayerImageHighlightIssues.Text = "&Issues";
-            this.tsLayerImageHighlightIssues.ToolTipText = "Highlight Issues on current layer.\r\nValid only if Issues are calculated.";
-            this.tsLayerImageHighlightIssues.Click += new System.EventHandler(this.EventClick);
+            this.btnLayerImageHighlightIssues.Checked = true;
+            this.btnLayerImageHighlightIssues.CheckOnClick = true;
+            this.btnLayerImageHighlightIssues.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.btnLayerImageHighlightIssues.Image = global::UVtools.GUI.Properties.Resources.warning_16x16;
+            this.btnLayerImageHighlightIssues.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnLayerImageHighlightIssues.Name = "btnLayerImageHighlightIssues";
+            this.btnLayerImageHighlightIssues.Size = new System.Drawing.Size(58, 22);
+            this.btnLayerImageHighlightIssues.Text = "&Issues";
+            this.btnLayerImageHighlightIssues.ToolTipText = "Highlight Issues on current layer.\r\nValid only if Issues are calculated.";
+            this.btnLayerImageHighlightIssues.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator7
             // 
             this.toolStripSeparator7.Name = "toolStripSeparator7";
             this.toolStripSeparator7.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsLayerImageShowCrosshairs
+            // btnLayerImageShowCrosshairs
             // 
-            this.tsLayerImageShowCrosshairs.Checked = true;
-            this.tsLayerImageShowCrosshairs.CheckOnClick = true;
-            this.tsLayerImageShowCrosshairs.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tsLayerImageShowCrosshairs.Image = global::UVtools.GUI.Properties.Resources.crosshairs_16x16;
-            this.tsLayerImageShowCrosshairs.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerImageShowCrosshairs.Name = "tsLayerImageShowCrosshairs";
-            this.tsLayerImageShowCrosshairs.Size = new System.Drawing.Size(81, 22);
-            this.tsLayerImageShowCrosshairs.Text = "&Crosshairs";
-            this.tsLayerImageShowCrosshairs.ToolTipText = "Show crosshairs for selected issues on the current layer.";
-            this.tsLayerImageShowCrosshairs.Click += new System.EventHandler(this.EventClick);
+            this.btnLayerImageShowCrosshairs.Checked = true;
+            this.btnLayerImageShowCrosshairs.CheckOnClick = true;
+            this.btnLayerImageShowCrosshairs.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.btnLayerImageShowCrosshairs.Image = global::UVtools.GUI.Properties.Resources.crosshairs_16x16;
+            this.btnLayerImageShowCrosshairs.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnLayerImageShowCrosshairs.Name = "btnLayerImageShowCrosshairs";
+            this.btnLayerImageShowCrosshairs.Size = new System.Drawing.Size(81, 22);
+            this.btnLayerImageShowCrosshairs.Text = "&Crosshairs";
+            this.btnLayerImageShowCrosshairs.ToolTipText = "Show crosshairs for selected issues on the current layer.";
+            this.btnLayerImageShowCrosshairs.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator25
             // 
             this.toolStripSeparator25.Name = "toolStripSeparator25";
             this.toolStripSeparator25.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsLayerImageLayerOutline
+            // btnLayerImageLayerOutline
             // 
-            this.tsLayerImageLayerOutline.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsLayerImageLayerOutlinePrintVolumeBounds,
-            this.tsLayerImageLayerOutlineLayerBounds,
-            this.tsLayerImageLayerOutlineHollowAreas,
-            this.tsLayerImageLayerOutlineEdgeDetection});
-            this.tsLayerImageLayerOutline.Image = global::UVtools.GUI.Properties.Resources.Geometry_16x16;
-            this.tsLayerImageLayerOutline.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerImageLayerOutline.Name = "tsLayerImageLayerOutline";
-            this.tsLayerImageLayerOutline.Size = new System.Drawing.Size(78, 22);
-            this.tsLayerImageLayerOutline.Text = "&Outline";
-            this.tsLayerImageLayerOutline.ButtonClick += new System.EventHandler(this.EventClick);
+            this.btnLayerImageLayerOutline.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.btnLayerImageLayerOutlinePrintVolumeBounds,
+            this.btnLayerImageLayerOutlineLayerBounds,
+            this.btnLayerImageLayerOutlineHollowAreas,
+            this.btnLayerImageLayerOutlineEdgeDetection});
+            this.btnLayerImageLayerOutline.Image = global::UVtools.GUI.Properties.Resources.Geometry_16x16;
+            this.btnLayerImageLayerOutline.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnLayerImageLayerOutline.Name = "btnLayerImageLayerOutline";
+            this.btnLayerImageLayerOutline.Size = new System.Drawing.Size(78, 22);
+            this.btnLayerImageLayerOutline.Text = "&Outline";
+            this.btnLayerImageLayerOutline.ButtonClick += new System.EventHandler(this.EventClick);
             // 
-            // tsLayerImageLayerOutlinePrintVolumeBounds
+            // btnLayerImageLayerOutlinePrintVolumeBounds
             // 
-            this.tsLayerImageLayerOutlinePrintVolumeBounds.CheckOnClick = true;
-            this.tsLayerImageLayerOutlinePrintVolumeBounds.Name = "tsLayerImageLayerOutlinePrintVolumeBounds";
-            this.tsLayerImageLayerOutlinePrintVolumeBounds.Size = new System.Drawing.Size(185, 22);
-            this.tsLayerImageLayerOutlinePrintVolumeBounds.Text = "Print Volume Bounds";
-            this.tsLayerImageLayerOutlinePrintVolumeBounds.Click += new System.EventHandler(this.EventClick);
+            this.btnLayerImageLayerOutlinePrintVolumeBounds.CheckOnClick = true;
+            this.btnLayerImageLayerOutlinePrintVolumeBounds.Name = "btnLayerImageLayerOutlinePrintVolumeBounds";
+            this.btnLayerImageLayerOutlinePrintVolumeBounds.Size = new System.Drawing.Size(185, 22);
+            this.btnLayerImageLayerOutlinePrintVolumeBounds.Text = "Print Volume Bounds";
+            this.btnLayerImageLayerOutlinePrintVolumeBounds.Click += new System.EventHandler(this.EventClick);
             // 
-            // tsLayerImageLayerOutlineLayerBounds
+            // btnLayerImageLayerOutlineLayerBounds
             // 
-            this.tsLayerImageLayerOutlineLayerBounds.CheckOnClick = true;
-            this.tsLayerImageLayerOutlineLayerBounds.Name = "tsLayerImageLayerOutlineLayerBounds";
-            this.tsLayerImageLayerOutlineLayerBounds.Size = new System.Drawing.Size(185, 22);
-            this.tsLayerImageLayerOutlineLayerBounds.Text = "Layer Bounds";
-            this.tsLayerImageLayerOutlineLayerBounds.Click += new System.EventHandler(this.EventClick);
+            this.btnLayerImageLayerOutlineLayerBounds.CheckOnClick = true;
+            this.btnLayerImageLayerOutlineLayerBounds.Name = "btnLayerImageLayerOutlineLayerBounds";
+            this.btnLayerImageLayerOutlineLayerBounds.Size = new System.Drawing.Size(185, 22);
+            this.btnLayerImageLayerOutlineLayerBounds.Text = "Layer Bounds";
+            this.btnLayerImageLayerOutlineLayerBounds.Click += new System.EventHandler(this.EventClick);
             // 
-            // tsLayerImageLayerOutlineHollowAreas
+            // btnLayerImageLayerOutlineHollowAreas
             // 
-            this.tsLayerImageLayerOutlineHollowAreas.CheckOnClick = true;
-            this.tsLayerImageLayerOutlineHollowAreas.Name = "tsLayerImageLayerOutlineHollowAreas";
-            this.tsLayerImageLayerOutlineHollowAreas.Size = new System.Drawing.Size(185, 22);
-            this.tsLayerImageLayerOutlineHollowAreas.Text = "Hollow Areas";
-            this.tsLayerImageLayerOutlineHollowAreas.Click += new System.EventHandler(this.EventClick);
+            this.btnLayerImageLayerOutlineHollowAreas.CheckOnClick = true;
+            this.btnLayerImageLayerOutlineHollowAreas.Name = "btnLayerImageLayerOutlineHollowAreas";
+            this.btnLayerImageLayerOutlineHollowAreas.Size = new System.Drawing.Size(185, 22);
+            this.btnLayerImageLayerOutlineHollowAreas.Text = "Hollow Areas";
+            this.btnLayerImageLayerOutlineHollowAreas.Click += new System.EventHandler(this.EventClick);
             // 
-            // tsLayerImageLayerOutlineEdgeDetection
+            // btnLayerImageLayerOutlineEdgeDetection
             // 
-            this.tsLayerImageLayerOutlineEdgeDetection.CheckOnClick = true;
-            this.tsLayerImageLayerOutlineEdgeDetection.Name = "tsLayerImageLayerOutlineEdgeDetection";
-            this.tsLayerImageLayerOutlineEdgeDetection.Size = new System.Drawing.Size(185, 22);
-            this.tsLayerImageLayerOutlineEdgeDetection.Text = "&Edge Detection";
-            this.tsLayerImageLayerOutlineEdgeDetection.Click += new System.EventHandler(this.EventClick);
+            this.btnLayerImageLayerOutlineEdgeDetection.CheckOnClick = true;
+            this.btnLayerImageLayerOutlineEdgeDetection.Name = "btnLayerImageLayerOutlineEdgeDetection";
+            this.btnLayerImageLayerOutlineEdgeDetection.Size = new System.Drawing.Size(185, 22);
+            this.btnLayerImageLayerOutlineEdgeDetection.Text = "&Edge Detection";
+            this.btnLayerImageLayerOutlineEdgeDetection.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator9
             // 
             this.toolStripSeparator9.Name = "toolStripSeparator9";
             this.toolStripSeparator9.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsLayerImagePixelEdit
+            // btnLayerImagePixelEdit
             // 
-            this.tsLayerImagePixelEdit.CheckOnClick = true;
-            this.tsLayerImagePixelEdit.Image = global::UVtools.GUI.Properties.Resources.pixel_16x16;
-            this.tsLayerImagePixelEdit.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerImagePixelEdit.Name = "tsLayerImagePixelEdit";
-            this.tsLayerImagePixelEdit.Size = new System.Drawing.Size(75, 22);
-            this.tsLayerImagePixelEdit.Text = "Pixel &Edit";
-            this.tsLayerImagePixelEdit.ToolTipText = "Edit layer image: Draw pixels, add supports and/or drain holes";
-            this.tsLayerImagePixelEdit.Click += new System.EventHandler(this.EventClick);
+            this.btnLayerImagePixelEdit.CheckOnClick = true;
+            this.btnLayerImagePixelEdit.Image = global::UVtools.GUI.Properties.Resources.pixel_16x16;
+            this.btnLayerImagePixelEdit.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnLayerImagePixelEdit.Name = "btnLayerImagePixelEdit";
+            this.btnLayerImagePixelEdit.Size = new System.Drawing.Size(75, 22);
+            this.btnLayerImagePixelEdit.Text = "Pixel &Edit";
+            this.btnLayerImagePixelEdit.ToolTipText = "Edit layer image: Draw pixels, add supports and/or drain holes";
+            this.btnLayerImagePixelEdit.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator18
             // 
@@ -896,27 +899,45 @@ namespace UVtools.GUI
             this.toolStripSeparator18.Name = "toolStripSeparator18";
             this.toolStripSeparator18.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsLayerRmove
+            // btnLayerImageActions
             // 
-            this.tsLayerRmove.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerRmove.Image = global::UVtools.GUI.Properties.Resources.trash_16x16;
-            this.tsLayerRmove.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerRmove.Name = "tsLayerRmove";
-            this.tsLayerRmove.Size = new System.Drawing.Size(101, 22);
-            this.tsLayerRmove.Text = "Remove Layer";
-            this.tsLayerRmove.ToolTipText = "Delete current layer";
-            this.tsLayerRmove.Click += new System.EventHandler(this.EventClick);
+            this.btnLayerImageActions.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.btnLayerImageActions.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.btnLayerImageActionImport,
+            this.btnLayerImageActionClone,
+            this.btnLayerImageActionRemove});
+            this.btnLayerImageActions.Image = global::UVtools.GUI.Properties.Resources.layers_alt_16x16;
+            this.btnLayerImageActions.Name = "btnLayerImageActions";
+            this.btnLayerImageActions.Size = new System.Drawing.Size(79, 22);
+            this.btnLayerImageActions.Text = "Actions";
+            this.btnLayerImageActions.ButtonClick += new System.EventHandler(this.EventClick);
             // 
-            // tsLayerClone
+            // btnLayerImageActionImport
             // 
-            this.tsLayerClone.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerClone.Image = global::UVtools.GUI.Properties.Resources.copy_16x16;
-            this.tsLayerClone.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsLayerClone.Name = "tsLayerClone";
-            this.tsLayerClone.Size = new System.Drawing.Size(89, 22);
-            this.tsLayerClone.Text = "Clone Layer";
-            this.tsLayerClone.ToolTipText = "Clone current layer";
-            this.tsLayerClone.Click += new System.EventHandler(this.EventClick);
+            this.btnLayerImageActionImport.Image = global::UVtools.GUI.Properties.Resources.file_import_16x16;
+            this.btnLayerImageActionImport.Name = "btnLayerImageActionImport";
+            this.btnLayerImageActionImport.Size = new System.Drawing.Size(191, 22);
+            this.btnLayerImageActionImport.Text = "&Import layers from file";
+            this.btnLayerImageActionImport.ToolTipText = "Imports layer images at current height";
+            this.btnLayerImageActionImport.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnLayerImageActionClone
+            // 
+            this.btnLayerImageActionClone.Image = global::UVtools.GUI.Properties.Resources.copy_16x16;
+            this.btnLayerImageActionClone.Name = "btnLayerImageActionClone";
+            this.btnLayerImageActionClone.Size = new System.Drawing.Size(191, 22);
+            this.btnLayerImageActionClone.Text = "&Clone layer";
+            this.btnLayerImageActionClone.ToolTipText = "Clone current layer";
+            this.btnLayerImageActionClone.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnLayerImageActionRemove
+            // 
+            this.btnLayerImageActionRemove.Image = global::UVtools.GUI.Properties.Resources.trash_16x16;
+            this.btnLayerImageActionRemove.Name = "btnLayerImageActionRemove";
+            this.btnLayerImageActionRemove.Size = new System.Drawing.Size(191, 22);
+            this.btnLayerImageActionRemove.Text = "&Remove layer(s)";
+            this.btnLayerImageActionRemove.ToolTipText = "Remove current layer";
+            this.btnLayerImageActionRemove.Click += new System.EventHandler(this.EventClick);
             // 
             // tsLayerInfo
             // 
@@ -3057,12 +3078,12 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripLabel tsPropertiesLabelGroups;
         private System.Windows.Forms.ToolStripMenuItem menuFileOpenNewWindow;
-        private System.Windows.Forms.ToolStripButton tsLayerImageRotate;
+        private System.Windows.Forms.ToolStripButton btnLayerImageRotate;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
-        private System.Windows.Forms.ToolStripButton tsLayerImageLayerDifference;
+        private System.Windows.Forms.ToolStripButton btnLayerImageLayerDifference;
         private Cyotek.Windows.Forms.ImageBox pbLayer;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
-        private System.Windows.Forms.ToolStripButton tsLayerImagePixelEdit;
+        private System.Windows.Forms.ToolStripButton btnLayerImagePixelEdit;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
         private System.Windows.Forms.ToolStripMenuItem menuMutate;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
@@ -3079,8 +3100,8 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
         private System.Windows.Forms.ToolStripButton tsIssuesRepair;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator14;
-        private System.Windows.Forms.ToolStripButton tsLayerImageHighlightIssues;
-        private System.Windows.Forms.ToolStripButton tsLayerImageShowCrosshairs;
+        private System.Windows.Forms.ToolStripButton btnLayerImageHighlightIssues;
+        private System.Windows.Forms.ToolStripButton btnLayerImageShowCrosshairs;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator25;
         private TrackBarHighlight tbLayer;
         private System.Windows.Forms.TableLayoutPanel tlRight;
@@ -3098,20 +3119,20 @@ namespace UVtools.GUI
         private System.Windows.Forms.Timer layerScrollTimer;
         private System.Windows.Forms.Timer layerZoomTimer;
         private System.Windows.Forms.Timer issueScrollTimer;
-        private System.Windows.Forms.ToolStripSplitButton tsLayerImageExport;
-        private System.Windows.Forms.ToolStripMenuItem tsLayerImageExportFile;
-        private System.Windows.Forms.ToolStripMenuItem tsLayerImageExportClipboard;
+        private System.Windows.Forms.ToolStripSplitButton btnLayerImageExport;
+        private System.Windows.Forms.ToolStripMenuItem btnLayerImageExportFile;
+        private System.Windows.Forms.ToolStripMenuItem btnLayerImageExportClipboard;
         private System.Windows.Forms.ToolStripMenuItem menuNewVersion;
         private System.Windows.Forms.ToolStripMenuItem menuFileSettings;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator15;
         private System.Windows.Forms.ToolStripSplitButton tsIssuesDetect;
         private System.Windows.Forms.ToolStripMenuItem tsIssuesDetectIslands;
         private System.Windows.Forms.ToolStripMenuItem tsIssuesDetectResinTraps;
-        private System.Windows.Forms.ToolStripSplitButton tsLayerImageLayerOutline;
-        private System.Windows.Forms.ToolStripMenuItem tsLayerImageLayerOutlineEdgeDetection;
-        private System.Windows.Forms.ToolStripMenuItem tsLayerImageLayerOutlinePrintVolumeBounds;
-        private System.Windows.Forms.ToolStripMenuItem tsLayerImageLayerOutlineLayerBounds;
-        private System.Windows.Forms.ToolStripMenuItem tsLayerImageLayerOutlineHollowAreas;
+        private System.Windows.Forms.ToolStripSplitButton btnLayerImageLayerOutline;
+        private System.Windows.Forms.ToolStripMenuItem btnLayerImageLayerOutlineEdgeDetection;
+        private System.Windows.Forms.ToolStripMenuItem btnLayerImageLayerOutlinePrintVolumeBounds;
+        private System.Windows.Forms.ToolStripMenuItem btnLayerImageLayerOutlineLayerBounds;
+        private System.Windows.Forms.ToolStripMenuItem btnLayerImageLayerOutlineHollowAreas;
         private System.Windows.Forms.ToolStripMenuItem menuToolsPattern;
         private System.Windows.Forms.ToolStripSplitButton tsThumbnailsExport;
         private System.Windows.Forms.ToolStripMenuItem tsThumbnailsExportFile;
@@ -3147,7 +3168,6 @@ namespace UVtools.GUI
         private System.Windows.Forms.NumericUpDown nmPixelEditorDrainHoleDiameter;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.ToolStripButton btnPixelHistoryRemove;
-        private System.Windows.Forms.ToolStripButton tsLayerRmove;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator18;
         private System.Windows.Forms.ToolStripMenuItem menuToolsLayerRemoval;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator19;
@@ -3235,7 +3255,6 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStripLabel tsLayerImagePixelCount;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator17;
         private System.Windows.Forms.ToolStripLabel tsLayerBounds;
-        private System.Windows.Forms.ToolStripButton tsLayerClone;
         private System.Windows.Forms.ToolStripMenuItem menuToolsLayerClone;
         private System.Windows.Forms.ToolStripMenuItem menuHelpBenchmark;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator24;
@@ -3245,6 +3264,10 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStripMenuItem tsIssuesDetectEmptyLayers;
         private System.Windows.Forms.ToolStripMenuItem tsIssuesDetectTouchingBounds;
         private System.Windows.Forms.PictureBox pbTrackerIssues;
+        private System.Windows.Forms.ToolStripSplitButton btnLayerImageActions;
+        private System.Windows.Forms.ToolStripMenuItem btnLayerImageActionClone;
+        private System.Windows.Forms.ToolStripMenuItem btnLayerImageActionRemove;
+        private System.Windows.Forms.ToolStripMenuItem btnLayerImageActionImport;
     }
 }
 

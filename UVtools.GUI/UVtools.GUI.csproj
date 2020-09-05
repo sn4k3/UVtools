@@ -445,6 +445,7 @@
     <None Include="Images\mask-16x16.png" />
     <None Include="Images\copy_16x16.png" />
     <None Include="Images\microchip_16x16.png" />
+    <None Include="Images\file-import-16x16.png" />
     <Content Include="UVtools.ico" />
     <None Include="UVtools.png" />
     <None Include="Images\Exit-16x16.png" />

@@ -433,6 +433,16 @@ namespace UVtools.GUI.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap file_import_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("file-import-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap File_Refresh_16x16 {
             get {
                 object obj = ResourceManager.GetObject("File-Refresh-16x16", resourceCulture);

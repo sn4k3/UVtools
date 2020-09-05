@@ -282,7 +282,7 @@ namespace UVtools.GUI.Forms
             this.Name = "FrmToolLayerClone";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Pattern";
+            this.Text = "Clone layer";
             this.TopMost = true;
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeEnd)).EndInit();

@@ -39,7 +39,7 @@ namespace UVtools.GUI.Controls
 
         public TrackBarHighlight()
         {
-            SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.DoubleBuffer | ControlStyles.ResizeRedraw, true);
+            //SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.DoubleBuffer | ControlStyles.ResizeRedraw, true);
         }
 
         /*protected override void OnInvalidated(InvalidateEventArgs e)
