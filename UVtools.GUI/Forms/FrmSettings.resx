@@ -125,8 +125,14 @@
   </metadata>
   <data name="cbIslandAllowDiagonalBonds.ToolTip" xml:space="preserve">
     <value> If true, all 8 neighbors of a pixel (including diagonals) will be considered when finding individual components on the layer.
-If false only 4 neighbors (right, left, above, below) will be considered. (Slower but more islands)</value>
+If false only 4 neighbors (right, left, above, below) will be considered. (Slower but more islands detected)</value>
   </data>
+  <data name="nmLayerRepairDefaultOpeningIterations.ToolTip" xml:space="preserve">
+    <value>Default number of noise removal iterations the repair algorithm will apply to remove noise and fine details from the layer.  This setting has the potential to introduce new islands.  Set to 0 to disable.</value>
+  </data>
+  <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>47</value>
+  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>

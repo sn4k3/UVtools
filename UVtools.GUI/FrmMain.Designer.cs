@@ -850,7 +850,7 @@ namespace UVtools.GUI
             this.btnLayerImageLayerOutlinePrintVolumeBounds.CheckOnClick = true;
             this.btnLayerImageLayerOutlinePrintVolumeBounds.Name = "btnLayerImageLayerOutlinePrintVolumeBounds";
             this.btnLayerImageLayerOutlinePrintVolumeBounds.Size = new System.Drawing.Size(185, 22);
-            this.btnLayerImageLayerOutlinePrintVolumeBounds.Text = "Print Volume Bounds";
+            this.btnLayerImageLayerOutlinePrintVolumeBounds.Text = "Print Volume Boundary";
             this.btnLayerImageLayerOutlinePrintVolumeBounds.Click += new System.EventHandler(this.EventClick);
             // 
             // btnLayerImageLayerOutlineLayerBounds
@@ -858,7 +858,7 @@ namespace UVtools.GUI
             this.btnLayerImageLayerOutlineLayerBounds.CheckOnClick = true;
             this.btnLayerImageLayerOutlineLayerBounds.Name = "btnLayerImageLayerOutlineLayerBounds";
             this.btnLayerImageLayerOutlineLayerBounds.Size = new System.Drawing.Size(185, 22);
-            this.btnLayerImageLayerOutlineLayerBounds.Text = "Layer Bounds";
+            this.btnLayerImageLayerOutlineLayerBounds.Text = "Layer Boundary";
             this.btnLayerImageLayerOutlineLayerBounds.Click += new System.EventHandler(this.EventClick);
             // 
             // btnLayerImageLayerOutlineHollowAreas
