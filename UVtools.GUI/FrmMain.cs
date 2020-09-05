@@ -3525,7 +3525,7 @@ namespace UVtools.GUI
                     // Not needed? visual artifact is not severe to make an extra showlayer call, also it acts like an "animation" removing crosshairs after zoom
                     /*if (tsLayerImageShowCrosshairs.Checked &&
                         !ReferenceEquals(Issues, null) && flvIssues.SelectedIndices.Count > 0 && 
-                        pbLayer.Zoom <= CrosshairFadeLevel && AutoZoomLevel > CrosshairFadeLevel &&
+                        pbLayer.Zoom <= CrosshairFadeLevel && LockedZoomLevel > CrosshairFadeLevel &&
                         flvIssues.SelectedObjects.Cast<LayerIssue>().Any(issue => // Find a valid candidate to update layer preview, otherwise quit
                         issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer && issue.Type != LayerIssue.IssueType.TouchingBound))
                     {
@@ -4182,7 +4182,7 @@ namespace UVtools.GUI
             {
                 // Check to see if this zoom action will cross the crosshair fade threshold
                 /*if (tsLayerImageShowCrosshairs.Checked && !ReferenceEquals(Issues, null) && flvIssues.SelectedIndices.Count > 0
-                   && pbLayer.Zoom <= CrosshairFadeLevel && AutoZoomLevel > CrosshairFadeLevel)
+                   && pbLayer.Zoom <= CrosshairFadeLevel && LockedZoomLevel > CrosshairFadeLevel)
                 {
                     // Refresh the preview without the crosshairs before zooming-in.
                     // Prevents zoomed-in crosshairs from breifly being displayed before
@@ -4256,6 +4256,7 @@ namespace UVtools.GUI
 
                 flvIssues.SelectedIndex = index;
                 flvIssues.EnsureVisible(index);
+                flvIssues.Refresh();
                 break;
             }
 
