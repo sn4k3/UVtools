@@ -756,6 +756,7 @@ namespace UVtools.Core
         public List<LayerIssue> GetAllIssues(
             IslandDetectionConfiguration islandConfig = null, ResinTrapDetectionConfiguration resinTrapConfig = null,
             TouchingBoundDetectionConfiguration touchBoundConfig = null,
+            bool emptyLayersConfig = true,
             OperationProgress progress = null)
         {
             if(ReferenceEquals(islandConfig, null)) islandConfig = new IslandDetectionConfiguration();
@@ -786,7 +787,11 @@ namespace UVtools.Core
                         if (progress.Token.IsCancellationRequested) return;
                         if (layer.NonZeroPixelCount == 0)
                         {
-                            result.Add(new LayerIssue(layer, LayerIssue.IssueType.EmptyLayer));
+                            if (emptyLayersConfig)
+                            {
+                                result.Add(new LayerIssue(layer, LayerIssue.IssueType.EmptyLayer));
+                            }
+
                             lock (progress.Mutex)
                             {
                                 progress++;
@@ -939,7 +944,7 @@ namespace UVtools.Core
                                         }
                                     }
 
-                                    if (points.Count == 0) continue;
+                                    if (points.Count == 0) continue; // Should never happen
                                     if (pixelsSupportingIsland >= islandConfig.RequiredPixelsToSupport)
                                         continue; // Not a island, bounding is strong, i think...
                                     if (pixelsSupportingIsland > 0 &&

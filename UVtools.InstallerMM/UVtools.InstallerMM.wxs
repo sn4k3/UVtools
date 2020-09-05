@@ -163,6 +163,9 @@
             <Component Id="owc5C3D57BA78B3FB633FE137C11ABFF046" Guid="a58b5655-abbc-1a7e-e875-ddb174b93fae">
               <File Id="owf5C3D57BA78B3FB633FE137C11ABFF046" Source="$(var.SourceDir)\PrusaSlicer\printer\Kelant S400.ini" KeyPath="yes" />
             </Component>
+            <Component Id="owcC2B2D27208C6B67DB65F8BDEBC49EF5E" Guid="f97bbee5-4b5d-c8b5-ba5c-4d50b21cef66">
+              <File Id="owfC2B2D27208C6B67DB65F8BDEBC49EF5E" Source="$(var.SourceDir)\PrusaSlicer\printer\Nova3D Bene4 Mono.ini" KeyPath="yes" />
+            </Component>
             <Component Id="owc2C278182AFE0ABA208CC627D83CBF3C3" Guid="d7c4029a-678e-65f9-a321-7fbfbc638575">
               <File Id="owf2C278182AFE0ABA208CC627D83CBF3C3" Source="$(var.SourceDir)\PrusaSlicer\printer\Nova3D Elfin.ini" KeyPath="yes" />
             </Component>

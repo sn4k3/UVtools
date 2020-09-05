@@ -1,5 +1,16 @@
 # Changelog
 
+## ?/08/2020 - v0.7.1.0
+
+* (Add) Settings & Issues: Enable or disable Empty Layers
+* (Add) PrusaSlicer Printer: Nova Bene4 Mono
+* (Add) CWS: Support the GRAY2RGB and RBG2GRAY encoding for Bene Mono
+* (Add) Layer issue Z map paired with layer navigation tracker bar
+* (Change) Shortcuts: + and - to go up and down on layers were change to W and S keys. Reason: + and - are bound to zoom and can lead to problems
+* (Upgrade) OpenCV from 4.2 to 4.3
+* (Fix) CWS: Add missing Platform X,Y,Z size when converting from SL1
+* (Fix) CWS: Invert XY resolution when converting from SL1
+
 ## 04/08/2020 - v0.7.0.0
 
 * (Add) "Rebuild GCode" button

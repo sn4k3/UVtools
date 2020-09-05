@@ -29,6 +29,7 @@ using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
 using UVtools.GUI.Controls;
+using UVtools.GUI.Extensions;
 using UVtools.GUI.Forms;
 using UVtools.GUI.Properties;
 
@@ -203,6 +204,7 @@ namespace UVtools.GUI
         #region Constructors
         public FrmMain()
         {
+            //SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
             InitializeComponent();
             FrmLoading = new FrmLoading();
             Program.SetAllControlsFontSize(Controls, 11);
@@ -223,6 +225,7 @@ namespace UVtools.GUI
             tsIssuesDetectIslands.Checked = Settings.Default.ComputeIslands;
             tsIssuesDetectResinTraps.Checked = Settings.Default.ComputeResinTraps;
             tsIssuesDetectTouchingBounds.Checked = Settings.Default.ComputeTouchingBounds;
+            tsIssuesDetectEmptyLayers.Checked = Settings.Default.ComputeEmptyLayers;
             tsLayerImageLayerOutlinePrintVolumeBounds.Checked = Settings.Default.OutlinePrintVolumeBounds;
             tsLayerImageLayerOutlineLayerBounds.Checked = Settings.Default.OutlineLayerBounds;
             tsLayerImageLayerOutlineHollowAreas.Checked = Settings.Default.OutlineHollowAreas;
@@ -300,6 +303,8 @@ namespace UVtools.GUI
             flvProperties.ShowGroups = true;
             flvProperties.AlwaysGroupByColumn = flvProperties.AllColumns[2];
 
+            panelLayerNavigation.Paint += (sender, args) => Debug.WriteLine("Panel Paint");
+
             if (Settings.Default.CheckForUpdatesOnStartup)
             {
                 Task.Factory.StartNew(AppLoadTask);
@@ -349,19 +354,19 @@ namespace UVtools.GUI
 
         protected override void OnKeyPress(KeyPressEventArgs e)
         {
-            if (ReferenceEquals(SlicerFile, null) || IsChangingLayer)
+            if (SlicerFile is null || IsChangingLayer)
             {
                 return;
             }
 
-            if (e.KeyChar == '-')
+            if (e.KeyChar == 's')
             {
                 ShowLayer(false);
                 e.Handled = true;
                 return;
             }
 
-            if (e.KeyChar == '+')
+            if (e.KeyChar == 'w')
             {
                 ShowLayer(true);
                 e.Handled = true;
@@ -374,7 +379,7 @@ namespace UVtools.GUI
         protected override void OnKeyUp(KeyEventArgs e)
         {
             
-            if (ReferenceEquals(SlicerFile, null))
+            if (SlicerFile is null)
             {
                 return;
             }
@@ -450,11 +455,14 @@ namespace UVtools.GUI
                 ZoomToFit();
             }
 
+            tbLayer.Invalidate();
+            tbLayer.Update();
+            tbLayer.Refresh();
             lbActualLayer.Location = new Point(lbActualLayer.Location.X,
-                Math.Max(1,
-                    Math.Min(tbLayer.Height - 40,
-                        (int)(tbLayer.Height - tbLayer.Value * ((float)tbLayer.Height / tbLayer.Maximum)) - lbActualLayer.Height / 2)
-                ));
+                ((int)(tbLayer.Height - (float)tbLayer.Height / tbLayer.Maximum * tbLayer.Value) - lbActualLayer.Height / 2)
+                .Clamp(1, tbLayer.Height - lbActualLayer.Height));
+
+            UpdateLayerTrackerHighlightIssues();
         }
 
         
@@ -816,7 +824,9 @@ namespace UVtools.GUI
                         var touchingBoundConfig = new TouchingBoundDetectionConfiguration{Enabled = false};
 
                         if (islandConfig.Enabled || resinTrapConfig.Enabled)
-                            ComputeIssues(islandConfig, resinTrapConfig, touchingBoundConfig);
+                        {
+                            ComputeIssues(islandConfig, resinTrapConfig, touchingBoundConfig, tsIssuesDetectEmptyLayers.Checked);
+                        }
                     }
 
                     DisableGUI();
@@ -862,7 +872,7 @@ namespace UVtools.GUI
 
                     ShowLayer();
 
-                    ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration(), GetTouchingBoundsDetectionConfiguration());
+                    tsIssuesDetect.PerformButtonClick();
 
                     menuFileSave.Enabled =
                         menuFileSaveAs.Enabled = true;
@@ -1228,7 +1238,7 @@ namespace UVtools.GUI
                 }
 
                 pbThumbnail.Image = SlicerFile.Thumbnails[i]?.ToBitmap();
-
+                
                 tsThumbnailsCount.Text = $"{i + 1}/{SlicerFile.CreatedThumbnailsCount}";
                 tsThumbnailsNext.Enabled = true;
 
@@ -1622,12 +1632,12 @@ namespace UVtools.GUI
                 return;
             }
 
-            if (ReferenceEquals(sender, tsIssuesRefresh))
+            if (ReferenceEquals(sender, tsIssuesDetect))
             {
                 /*if (MessageBox.Show("Are you sure you want to compute issues?", "Issues Compute",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;*/
 
-                ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration(), GetTouchingBoundsDetectionConfiguration());
+                ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration(), GetTouchingBoundsDetectionConfiguration(), tsIssuesDetectEmptyLayers.Checked);
 
                 return;
             }
@@ -2074,6 +2084,54 @@ namespace UVtools.GUI
                 ShowLayer(false);
             }
         }
+
+        private void flvIssues_ItemsChanged(object sender, ItemsChangedEventArgs e)
+        {
+            if (e.NewObjectCount == 0 || Issues is null)
+            {
+                tbLayer.HighlightValues = null;
+                UpdateLayerTrackerHighlightIssues();
+                return;
+            }
+
+            List<uint> layerIndexes = new List<uint>();
+            foreach (var issue in Issues)
+            {
+                if (layerIndexes.Contains(issue.LayerIndex)) continue;
+                layerIndexes.Add(issue.LayerIndex);
+            }
+            tbLayer.HighlightValues = layerIndexes.ToArray();
+            UpdateLayerTrackerHighlightIssues();
+        }
+
+        void UpdateLayerTrackerHighlightIssues()
+        {
+            var highlightValues = tbLayer.HighlightValues;
+
+            
+            if (highlightValues is null)
+            {
+                pbTrackerIssues.Image = null;
+                return;
+            }
+
+            using (Mat mat = new Mat(pbTrackerIssues.Height, pbTrackerIssues.Width, DepthType.Cv8U, 3))
+            {
+                mat.SetTo(new MCvScalar(255, 255, 255));
+                var color = new MCvScalar(0, 0, 255);
+
+                foreach (var value in highlightValues)
+                {
+                    var tickPos = tbLayer.GetTickPos((int) value);
+                    if (tickPos == -1) continue;
+                    //int y = (int)(Height - TrackerStartMargin - (Height / Maximum * value));
+                    int y = (pbTrackerIssues.Height - tickPos).Clamp(0, pbTrackerIssues.Height);
+                    CvInvoke.Line(mat, new Point(0, y), new Point(mat.Width, y), color);
+                }
+
+                pbTrackerIssues.Image = mat.ToBitmap();
+            }
+        }
         #endregion
 
         #region Methods
@@ -2368,7 +2426,7 @@ namespace UVtools.GUI
             menuTools.Enabled =
 
             tsIssuesRepair.Enabled =
-            tsIssuesRefresh.Enabled =
+            tsIssuesDetect.Enabled =
 
                 btnFindLayer.Enabled =
                 true;
@@ -2399,7 +2457,7 @@ namespace UVtools.GUI
 
             if (Settings.Default.ComputeIssuesOnLoad)
             {
-                ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration(), GetTouchingBoundsDetectionConfiguration());
+                tsIssuesDetect.PerformButtonClick();
             }
         }
 
@@ -2658,35 +2716,90 @@ namespace UVtools.GUI
                     if (layerNum > 0 && layerNum < SlicerFile.LayerCount-1)
                     {
                         using (var previousImage = SlicerFile[layerNum - 1].LayerMat)
+                        using (var nextImage = SlicerFile[layerNum + 1].LayerMat)
                         {
-                            using (var nextImage = SlicerFile[layerNum + 1].LayerMat)
-                            {
-                                var previousSpan = previousImage.GetPixelSpan<byte>();
-                                var nextSpan = nextImage.GetPixelSpan<byte>();
+                            var previousSpan = previousImage.GetPixelSpan<byte>();
+                            var nextSpan = nextImage.GetPixelSpan<byte>();
 
-                                for (int pixel = 0; pixel < imageSpan.Length; pixel++)
+                            /*Parallel.For(0, imageSpan.Length, i =>
+                            {
+                                var currentByte = ActualLayerImage.GetSinglePixelSpan<byte>(i);
+                                var previousByte = previousImage.GetSinglePixelSpan<byte>(i);
+                                var nextByte = nextImage.GetSinglePixelSpan<byte>(i);
+
+                                if (currentByte[0] != 0) return;
+                                Color color = Color.Empty;
+                                if (previousByte[0] > 0 && nextByte[0] > 0)
                                 {
-                                    if (imageSpan[pixel] != 0) continue;
+                                    color = Settings.Default.PreviousNextLayerColor;
+                                }
+                                else if (previousByte[0] > 0)
+                                {
+                                    color = Settings.Default.PreviousLayerColor;
+                                }
+                                else if (nextByte[0] > 0)
+                                {
+                                    color = Settings.Default.NextLayerColor;
+                                }
+
+                                if (color.IsEmpty) return;
+                                ActualLayerImageBgr.SetByte(i * 3, new[]{ color.B , color.G, color.R });
+                            });*/
+
+                            /*Parallel.For(0, ActualLayerImage.Height, y =>
+                            {
+                                var currentSpan = ActualLayerImage.GetPixelRowSpan<byte>(y);
+                                var currentRGBSpan = ActualLayerImageBgr.GetPixelRowSpan<byte>(y);
+                                var previousSpan = previousImage.GetPixelRowSpan<byte>(y);
+                                var nextSpan = nextImage.GetPixelRowSpan<byte>(y);
+
+                                for (int x = 0; x < currentSpan.Length; x++)
+                                {
+                                    if (currentSpan[x] != 0) continue;
                                     Color color = Color.Empty;
-                                    if (previousSpan[pixel] > 0 && nextSpan[pixel] > 0)
+                                    if (previousSpan[x] > 0 && nextSpan[x] > 0)
                                     {
                                         color = Settings.Default.PreviousNextLayerColor;
                                     }
-                                    else if (previousSpan[pixel] > 0)
+                                    else if (previousSpan[x] > 0)
                                     {
                                         color = Settings.Default.PreviousLayerColor;
                                     }
-                                    else if (nextSpan[pixel] > 0)
+                                    else if (nextSpan[x] > 0)
                                     {
                                         color = Settings.Default.NextLayerColor;
                                     }
 
                                     if (color.IsEmpty) continue;
-                                    var bgrPixel = pixel * 3;
-                                    imageBgrSpan[bgrPixel] = color.B; // B
-                                    imageBgrSpan[++bgrPixel] = color.G; // G
-                                    imageBgrSpan[++bgrPixel] = color.R; // R
+                                    var bgrPixel = x * 3;
+                                    currentRGBSpan[bgrPixel] = color.B; // B
+                                    currentRGBSpan[++bgrPixel] = color.G; // G
+                                    currentRGBSpan[++bgrPixel] = color.R; // R
                                 }
+                            });*/
+                            
+                            for (int pixel = 0; pixel < imageSpan.Length; pixel++)
+                            {
+                                if (imageSpan[pixel] != 0) continue;
+                                Color color = Color.Empty;
+                                if (previousSpan[pixel] > 0 && nextSpan[pixel] > 0)
+                                {
+                                    color = Settings.Default.PreviousNextLayerColor;
+                                }
+                                else if (previousSpan[pixel] > 0)
+                                {
+                                    color = Settings.Default.PreviousLayerColor;
+                                }
+                                else if (nextSpan[pixel] > 0)
+                                {
+                                    color = Settings.Default.NextLayerColor;
+                                }
+
+                                if (color.IsEmpty) continue;
+                                var bgrPixel = pixel * 3;
+                                imageBgrSpan[bgrPixel] = color.B; // B
+                                imageBgrSpan[++bgrPixel] = color.G; // G
+                                imageBgrSpan[++bgrPixel] = color.R; // R
                             }
                         }
                     }
@@ -2742,7 +2855,7 @@ namespace UVtools.GUI
                                 color = Settings.Default.TouchingBoundsColor;
                                 break;
                         }
-
+                        
                         foreach (var pixel in issue)
                         {
                             int pixelPos = ActualLayerImage.GetPixelPos(pixel);
@@ -2944,10 +3057,8 @@ namespace UVtools.GUI
                 //lbLayers.Text = $"{SlicerFile.GetHeightFromLayer(layerNum)} / {SlicerFile.TotalHeight}mm\n{layerNum} / {SlicerFile.LayerCount-1}\n{percent}%";
                 lbActualLayer.Text = $"{layer.PositionZ}mm\n{ActualLayer}\n{percent}%";
                 lbActualLayer.Location = new Point(lbActualLayer.Location.X, 
-                    Math.Max(1, 
-                        Math.Min(tbLayer.Height- lbActualLayer.Height, 
-                            (int)(tbLayer.Height - tbLayer.Value * ((float)tbLayer.Height / tbLayer.Maximum)) - lbActualLayer.Height/2)
-                ));
+                            ((int)(tbLayer.Height - (float)tbLayer.Height / tbLayer.Maximum * tbLayer.Value) - lbActualLayer.Height / 2)
+                            .Clamp(1, tbLayer.Height - lbActualLayer.Height));
 
                 //pbLayers.Value = percent;
                 lbActualLayer.Invalidate();
@@ -3034,7 +3145,7 @@ namespace UVtools.GUI
                 if (ReferenceEquals(tabControlLeft.SelectedTab, tabPageIssues))
                 {
                     if (!ReferenceEquals(tabPageIssues.Tag, null) || !Settings.Default.AutoComputeIssuesClickOnTab) return;
-                    ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration(), GetTouchingBoundsDetectionConfiguration());
+                    tsIssuesDetect.PerformButtonClick();
                 }
                 return;
             }
@@ -3946,7 +4057,7 @@ namespace UVtools.GUI
             
         }
 
-        private void ComputeIssues(IslandDetectionConfiguration islandConfig = null, ResinTrapDetectionConfiguration resinTrapConfig = null, TouchingBoundDetectionConfiguration touchingBoundConfig = null)
+        private void ComputeIssues(IslandDetectionConfiguration islandConfig = null, ResinTrapDetectionConfiguration resinTrapConfig = null, TouchingBoundDetectionConfiguration touchingBoundConfig = null, bool emptyLayersConfig = true)
         {
             tabPageIssues.Tag = true;
             flvIssues.ClearObjects();
@@ -3959,7 +4070,7 @@ namespace UVtools.GUI
             {
                 try
                 {
-                    Issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, touchingBoundConfig, FrmLoading.RestartProgress());
+                    Issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, touchingBoundConfig, emptyLayersConfig, FrmLoading.RestartProgress());
                 }
                 catch (OperationCanceledException)
                 {
@@ -4303,7 +4414,7 @@ namespace UVtools.GUI
             
             if (ReferenceEquals(Issues, null))
             {
-                ComputeIssues(islandConfig, resinTrapConfig, touchingBoundConfig);
+                ComputeIssues(islandConfig, resinTrapConfig, touchingBoundConfig, false);
             }
             else
             {
@@ -4319,7 +4430,7 @@ namespace UVtools.GUI
                 {
                     try
                     {
-                        var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, touchingBoundConfig,
+                        var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, touchingBoundConfig, false,
                             FrmLoading.RestartProgress());
 
                         issues.RemoveAll(issue => issue.Type != LayerIssue.IssueType.Island); // Remove all non islands

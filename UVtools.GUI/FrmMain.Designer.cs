@@ -1,4 +1,6 @@
-﻿namespace UVtools.GUI
+﻿using UVtools.GUI.Controls;
+
+namespace UVtools.GUI
 {
     partial class FrmMain
     {
@@ -153,7 +155,7 @@
             this.tsIssueNext = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
             this.tsIssueRemove = new System.Windows.Forms.ToolStripButton();
-            this.tsIssuesRefresh = new System.Windows.Forms.ToolStripSplitButton();
+            this.tsIssuesDetect = new System.Windows.Forms.ToolStripSplitButton();
             this.tsIssuesDetectIslands = new System.Windows.Forms.ToolStripMenuItem();
             this.tsIssuesDetectResinTraps = new System.Windows.Forms.ToolStripMenuItem();
             this.tsIssuesDetectTouchingBounds = new System.Windows.Forms.ToolStripMenuItem();
@@ -247,9 +249,9 @@
             this.btnPreviousLayer = new System.Windows.Forms.Button();
             this.btnNextLayer = new System.Windows.Forms.Button();
             this.lbMaxLayer = new System.Windows.Forms.Label();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.panelLayerNavigation = new System.Windows.Forms.Panel();
+            this.pbTrackerIssues = new System.Windows.Forms.PictureBox();
             this.lbActualLayer = new System.Windows.Forms.Label();
-            this.tbLayer = new System.Windows.Forms.TrackBar();
             this.lbInitialLayer = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
             this.btnFindLayer = new System.Windows.Forms.Button();
@@ -260,6 +262,7 @@
             this.toolTipInformation = new System.Windows.Forms.ToolTip(this.components);
             this.layerScrollTimer = new System.Windows.Forms.Timer(this.components);
             this.mouseHoldTimer = new System.Windows.Forms.Timer(this.components);
+            this.tbLayer = new UVtools.GUI.Controls.TrackBarHighlight();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).BeginInit();
@@ -316,9 +319,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.lvLog)).BeginInit();
             this.tsLog.SuspendLayout();
             this.tlRight.SuspendLayout();
-            this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).BeginInit();
+            this.panelLayerNavigation.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbTrackerIssues)).BeginInit();
             this.panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).BeginInit();
             this.SuspendLayout();
             // 
             // menu
@@ -1456,6 +1460,7 @@
             this.flvIssues.UseHotItem = true;
             this.flvIssues.View = System.Windows.Forms.View.Details;
             this.flvIssues.VirtualMode = true;
+            this.flvIssues.ItemsChanged += new System.EventHandler<BrightIdeasSoftware.ItemsChangedEventArgs>(this.flvIssues_ItemsChanged);
             this.flvIssues.SelectionChanged += new System.EventHandler(this.EventSelectedIndexChanged);
             this.flvIssues.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
             this.flvIssues.MouseClick += new System.Windows.Forms.MouseEventHandler(this.EventMouseClick);
@@ -1533,7 +1538,7 @@
             this.tsIssueNext,
             this.toolStripSeparator13,
             this.tsIssueRemove,
-            this.tsIssuesRefresh,
+            this.tsIssuesDetect,
             this.toolStripSeparator12,
             this.tsIssuesRepair});
             this.tsIssues.Location = new System.Drawing.Point(3, 3);
@@ -1597,21 +1602,20 @@
     "tion, need reslice.";
             this.tsIssueRemove.Click += new System.EventHandler(this.EventClick);
             // 
-            // tsIssuesRefresh
+            // tsIssuesDetect
             // 
-            this.tsIssuesRefresh.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsIssuesRefresh.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsIssuesDetect.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsIssuesDetect.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsIssuesDetectIslands,
             this.tsIssuesDetectResinTraps,
             this.tsIssuesDetectTouchingBounds,
             this.tsIssuesDetectEmptyLayers});
-            this.tsIssuesRefresh.Image = global::UVtools.GUI.Properties.Resources.refresh_16x16;
-            this.tsIssuesRefresh.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsIssuesRefresh.Name = "tsIssuesRefresh";
-            this.tsIssuesRefresh.Size = new System.Drawing.Size(73, 22);
-            this.tsIssuesRefresh.Text = "&Detect";
-            this.tsIssuesRefresh.ToolTipText = "Compute Issues";
-            this.tsIssuesRefresh.ButtonClick += new System.EventHandler(this.EventClick);
+            this.tsIssuesDetect.Image = global::UVtools.GUI.Properties.Resources.refresh_16x16;
+            this.tsIssuesDetect.Name = "tsIssuesDetect";
+            this.tsIssuesDetect.Size = new System.Drawing.Size(73, 22);
+            this.tsIssuesDetect.Text = "&Detect";
+            this.tsIssuesDetect.ToolTipText = "Compute Issues";
+            this.tsIssuesDetect.ButtonClick += new System.EventHandler(this.EventClick);
             // 
             // tsIssuesDetectIslands
             // 
@@ -1619,7 +1623,7 @@
             this.tsIssuesDetectIslands.CheckOnClick = true;
             this.tsIssuesDetectIslands.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tsIssuesDetectIslands.Name = "tsIssuesDetectIslands";
-            this.tsIssuesDetectIslands.Size = new System.Drawing.Size(180, 22);
+            this.tsIssuesDetectIslands.Size = new System.Drawing.Size(166, 22);
             this.tsIssuesDetectIslands.Text = "&Islands";
             // 
             // tsIssuesDetectResinTraps
@@ -1628,7 +1632,7 @@
             this.tsIssuesDetectResinTraps.CheckOnClick = true;
             this.tsIssuesDetectResinTraps.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tsIssuesDetectResinTraps.Name = "tsIssuesDetectResinTraps";
-            this.tsIssuesDetectResinTraps.Size = new System.Drawing.Size(180, 22);
+            this.tsIssuesDetectResinTraps.Size = new System.Drawing.Size(166, 22);
             this.tsIssuesDetectResinTraps.Text = "&Resin traps";
             // 
             // tsIssuesDetectTouchingBounds
@@ -1637,7 +1641,7 @@
             this.tsIssuesDetectTouchingBounds.CheckOnClick = true;
             this.tsIssuesDetectTouchingBounds.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tsIssuesDetectTouchingBounds.Name = "tsIssuesDetectTouchingBounds";
-            this.tsIssuesDetectTouchingBounds.Size = new System.Drawing.Size(180, 22);
+            this.tsIssuesDetectTouchingBounds.Size = new System.Drawing.Size(166, 22);
             this.tsIssuesDetectTouchingBounds.Text = "&Touching Bounds";
             // 
             // tsIssuesDetectEmptyLayers
@@ -1645,9 +1649,8 @@
             this.tsIssuesDetectEmptyLayers.Checked = true;
             this.tsIssuesDetectEmptyLayers.CheckOnClick = true;
             this.tsIssuesDetectEmptyLayers.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tsIssuesDetectEmptyLayers.Enabled = false;
             this.tsIssuesDetectEmptyLayers.Name = "tsIssuesDetectEmptyLayers";
-            this.tsIssuesDetectEmptyLayers.Size = new System.Drawing.Size(180, 22);
+            this.tsIssuesDetectEmptyLayers.Size = new System.Drawing.Size(166, 22);
             this.tsIssuesDetectEmptyLayers.Text = "&Empty Layers";
             // 
             // toolStripSeparator12
@@ -2702,7 +2705,7 @@
             this.tlRight.Controls.Add(this.btnPreviousLayer, 0, 3);
             this.tlRight.Controls.Add(this.btnNextLayer, 0, 1);
             this.tlRight.Controls.Add(this.lbMaxLayer, 0, 0);
-            this.tlRight.Controls.Add(this.panel1, 0, 2);
+            this.tlRight.Controls.Add(this.panelLayerNavigation, 0, 2);
             this.tlRight.Controls.Add(this.lbInitialLayer, 0, 5);
             this.tlRight.Controls.Add(this.panel2, 0, 4);
             this.tlRight.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -2760,15 +2763,27 @@
             this.lbMaxLayer.Text = "Layers";
             this.lbMaxLayer.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // panel1
+            // panelLayerNavigation
             // 
-            this.panel1.Controls.Add(this.lbActualLayer);
-            this.panel1.Controls.Add(this.tbLayer);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(3, 85);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(138, 557);
-            this.panel1.TabIndex = 13;
+            this.panelLayerNavigation.Controls.Add(this.pbTrackerIssues);
+            this.panelLayerNavigation.Controls.Add(this.lbActualLayer);
+            this.panelLayerNavigation.Controls.Add(this.tbLayer);
+            this.panelLayerNavigation.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelLayerNavigation.Location = new System.Drawing.Point(3, 85);
+            this.panelLayerNavigation.Name = "panelLayerNavigation";
+            this.panelLayerNavigation.Size = new System.Drawing.Size(138, 557);
+            this.panelLayerNavigation.TabIndex = 13;
+            // 
+            // pbTrackerIssues
+            // 
+            this.pbTrackerIssues.Dock = System.Windows.Forms.DockStyle.Right;
+            this.pbTrackerIssues.Location = new System.Drawing.Point(83, 0);
+            this.pbTrackerIssues.Margin = new System.Windows.Forms.Padding(0);
+            this.pbTrackerIssues.Name = "pbTrackerIssues";
+            this.pbTrackerIssues.Size = new System.Drawing.Size(10, 557);
+            this.pbTrackerIssues.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            this.pbTrackerIssues.TabIndex = 10;
+            this.pbTrackerIssues.TabStop = false;
             // 
             // lbActualLayer
             // 
@@ -2779,17 +2794,6 @@
             this.lbActualLayer.Size = new System.Drawing.Size(18, 20);
             this.lbActualLayer.TabIndex = 9;
             this.lbActualLayer.Text = "?";
-            // 
-            // tbLayer
-            // 
-            this.tbLayer.Dock = System.Windows.Forms.DockStyle.Right;
-            this.tbLayer.Location = new System.Drawing.Point(93, 0);
-            this.tbLayer.Name = "tbLayer";
-            this.tbLayer.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.tbLayer.Size = new System.Drawing.Size(45, 557);
-            this.tbLayer.TabIndex = 8;
-            this.tbLayer.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
-            this.tbLayer.ValueChanged += new System.EventHandler(this.ValueChanged);
             // 
             // lbInitialLayer
             // 
@@ -2881,6 +2885,20 @@
             this.mouseHoldTimer.Interval = 1000;
             this.mouseHoldTimer.Tick += new System.EventHandler(this.EventTimerTick);
             // 
+            // tbLayer
+            // 
+            this.tbLayer.Dock = System.Windows.Forms.DockStyle.Right;
+            this.tbLayer.HighlightValues = null;
+            this.tbLayer.LineLength = ((byte)(20));
+            this.tbLayer.Location = new System.Drawing.Point(93, 0);
+            this.tbLayer.Margin = new System.Windows.Forms.Padding(0);
+            this.tbLayer.Name = "tbLayer";
+            this.tbLayer.Orientation = System.Windows.Forms.Orientation.Vertical;
+            this.tbLayer.Size = new System.Drawing.Size(45, 557);
+            this.tbLayer.TabIndex = 8;
+            this.tbLayer.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
+            this.tbLayer.ValueChanged += new System.EventHandler(this.ValueChanged);
+            // 
             // FrmMain
             // 
             this.AllowDrop = true;
@@ -2890,6 +2908,7 @@
             this.Controls.Add(this.mainTable);
             this.Controls.Add(this.statusBar);
             this.Controls.Add(this.menu);
+            this.DoubleBuffered = true;
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
@@ -2983,10 +3002,11 @@
             this.tsLog.ResumeLayout(false);
             this.tsLog.PerformLayout();
             this.tlRight.ResumeLayout(false);
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).EndInit();
+            this.panelLayerNavigation.ResumeLayout(false);
+            this.panelLayerNavigation.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbTrackerIssues)).EndInit();
             this.panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -3062,13 +3082,13 @@
         private System.Windows.Forms.ToolStripButton tsLayerImageHighlightIssues;
         private System.Windows.Forms.ToolStripButton tsLayerImageShowCrosshairs;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator25;
-        private System.Windows.Forms.TrackBar tbLayer;
+        private TrackBarHighlight tbLayer;
         private System.Windows.Forms.TableLayoutPanel tlRight;
         private System.Windows.Forms.Label lbMaxLayer;
         private System.Windows.Forms.Label lbInitialLayer;
         private System.Windows.Forms.Button btnNextLayer;
         private System.Windows.Forms.Button btnPreviousLayer;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel panelLayerNavigation;
         private System.Windows.Forms.Label lbActualLayer;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Button btnFirstLayer;
@@ -3084,7 +3104,7 @@
         private System.Windows.Forms.ToolStripMenuItem menuNewVersion;
         private System.Windows.Forms.ToolStripMenuItem menuFileSettings;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator15;
-        private System.Windows.Forms.ToolStripSplitButton tsIssuesRefresh;
+        private System.Windows.Forms.ToolStripSplitButton tsIssuesDetect;
         private System.Windows.Forms.ToolStripMenuItem tsIssuesDetectIslands;
         private System.Windows.Forms.ToolStripMenuItem tsIssuesDetectResinTraps;
         private System.Windows.Forms.ToolStripSplitButton tsLayerImageLayerOutline;
@@ -3224,6 +3244,7 @@
         private System.Windows.Forms.Timer mouseHoldTimer;
         private System.Windows.Forms.ToolStripMenuItem tsIssuesDetectEmptyLayers;
         private System.Windows.Forms.ToolStripMenuItem tsIssuesDetectTouchingBounds;
+        private System.Windows.Forms.PictureBox pbTrackerIssues;
     }
 }
 

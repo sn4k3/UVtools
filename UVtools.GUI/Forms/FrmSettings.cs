@@ -85,10 +85,11 @@ namespace UVtools.GUI.Forms
 
                 // Issues
                 cbComputeIssuesOnLoad.Checked = Settings.Default.ComputeIssuesOnLoad;
+                cbAutoComputeIssuesClickOnTab.Checked = Settings.Default.AutoComputeIssuesClickOnTab;
                 cbComputeIslands.Checked = Settings.Default.ComputeIslands;
                 cbComputeResinTraps.Checked = Settings.Default.ComputeResinTraps;
                 cbComputeTouchingBounds.Checked = Settings.Default.ComputeTouchingBounds;
-                cbAutoComputeIssuesClickOnTab.Checked = Settings.Default.AutoComputeIssuesClickOnTab;
+                cbComputeEmptyLayers.Checked = Settings.Default.ComputeEmptyLayers;
 
                 cbIslandAllowDiagonalBonds.Checked = Settings.Default.IslandAllowDiagonalBonds;
                 nmIslandBinaryThreshold.Value = Settings.Default.IslandBinaryThreshold;
@@ -263,10 +264,11 @@ namespace UVtools.GUI.Forms
 
                 // Issues
                 Settings.Default.ComputeIssuesOnLoad = cbComputeIssuesOnLoad.Checked;
+                Settings.Default.AutoComputeIssuesClickOnTab = cbAutoComputeIssuesClickOnTab.Checked;
                 Settings.Default.ComputeIslands = cbComputeIslands.Checked;
                 Settings.Default.ComputeResinTraps = cbComputeResinTraps.Checked;
                 Settings.Default.ComputeTouchingBounds = cbComputeTouchingBounds.Checked;
-                Settings.Default.AutoComputeIssuesClickOnTab = cbAutoComputeIssuesClickOnTab.Checked;
+                Settings.Default.ComputeEmptyLayers = cbComputeEmptyLayers.Checked;
 
                 Settings.Default.IslandAllowDiagonalBonds = cbIslandAllowDiagonalBonds.Checked;
                 Settings.Default.IslandBinaryThreshold = (byte)nmIslandBinaryThreshold.Value;

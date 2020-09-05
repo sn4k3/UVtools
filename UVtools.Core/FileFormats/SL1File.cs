@@ -1000,18 +1000,21 @@ namespace UVtools.Core.FileFormats
                 file.SliceSettings.Yppm = file.OutputSettings.PixPermmY = (float) Math.Round(LookupCustomValue<float>("Yppm", defaultFormat.SliceSettings.Xppm), 3);
                 file.SliceSettings.Xres = file.OutputSettings.XResolution = (ushort)ResolutionX;
                 file.SliceSettings.Yres = file.OutputSettings.YResolution = (ushort)ResolutionY;
+                file.OutputSettings.PlatformXSize = PrinterSettings.DisplayWidth;
+                file.OutputSettings.PlatformYSize = PrinterSettings.DisplayHeight;
+                file.OutputSettings.PlatformZSize = PrinterSettings.MaxPrintHeight;
                 file.SliceSettings.Thickness = file.OutputSettings.LayerThickness = LayerHeight;
                 file.SliceSettings.LayersNum = file.OutputSettings.LayersNum = LayerCount;
                 file.SliceSettings.HeadLayersNum = file.OutputSettings.NumberBottomLayers = InitialLayerCount;
                 file.SliceSettings.LayersExpoMs = file.OutputSettings.LayerTime = (uint) LayerExposureTime * 1000;
                 file.SliceSettings.HeadLayersExpoMs = file.OutputSettings.BottomLayersTime = (uint) InitialExposureTime * 1000;
-                file.SliceSettings.WaitBeforeExpoMs = LookupCustomValue<uint>("WaitBeforeExpoMs", file.SliceSettings.WaitBeforeExpoMs);
+                file.SliceSettings.WaitBeforeExpoMs = LookupCustomValue<uint>("WaitBeforeExpoMs", defaultFormat.SliceSettings.WaitBeforeExpoMs);
                 file.SliceSettings.LiftDistance = file.OutputSettings.LiftDistance = (float) Math.Round(LookupCustomValue<float>(Keyword_LiftHeight, file.SliceSettings.LiftDistance), 2);
                 file.SliceSettings.LiftUpSpeed = file.OutputSettings.ZLiftFeedRate = file.OutputSettings.ZBottomLiftFeedRate = (float) Math.Round(LookupCustomValue<float>(Keyword_LiftSpeed, file.SliceSettings.LiftUpSpeed), 2);
                 file.SliceSettings.LiftDownSpeed = file.OutputSettings.ZLiftRetractRate = (float) Math.Round(LookupCustomValue<float>(Keyword_RetractSpeed, file.SliceSettings.LiftDownSpeed), 2);
-                file.SliceSettings.LiftWhenFinished = LookupCustomValue<byte>("LiftWhenFinished", file.SliceSettings.LiftWhenFinished);
+                file.SliceSettings.LiftWhenFinished = LookupCustomValue<byte>("LiftWhenFinished", defaultFormat.SliceSettings.LiftWhenFinished);
 
-                file.OutputSettings.BlankingLayerTime = LookupCustomValue<uint>("BlankingLayerTime", file.OutputSettings.BlankingLayerTime);
+                file.OutputSettings.BlankingLayerTime = LookupCustomValue<uint>("BlankingLayerTime", defaultFormat.OutputSettings.BlankingLayerTime);
                 //file.OutputSettings.RenderOutlines = false;
                 //file.OutputSettings.OutlineWidthInset = 0;
                 //file.OutputSettings.OutlineWidthOutset = 0;
@@ -1025,13 +1028,17 @@ namespace UVtools.Core.FileFormats
                 file.OutputSettings.AntiAliasingValue = ValidateAntiAliasingLevel();
                 file.OutputSettings.AntiAliasing = file.OutputSettings.AntiAliasingValue > 1;
 
-
-
                 if (LookupCustomValue<bool>("FLIP_XY", false, true))
                 {
                     file.SliceSettings.Xres = file.OutputSettings.XResolution = (ushort) ResolutionY;
                     file.SliceSettings.Yres = file.OutputSettings.YResolution = (ushort) ResolutionX;
+
+                    file.OutputSettings.PlatformXSize = PrinterSettings.DisplayHeight;
+                    file.OutputSettings.PlatformYSize = PrinterSettings.DisplayWidth;
                 }
+
+                file.Printer = LookupCustomValue<bool>("NOVAMAKER_GRAY2RGB_ENCODE", false, true) ||
+                               MachineName.Contains("Bene4 Mono") ? CWSFile.PrinterType.BeneMono : CWSFile.PrinterType.Elfin;
 
                 file.Encode(fileFullPath, progress);
 

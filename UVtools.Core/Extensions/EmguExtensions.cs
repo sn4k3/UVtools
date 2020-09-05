@@ -37,6 +37,11 @@ namespace UVtools.Core.Extensions
             return mat.GetPixelSpan<T>(mat.NumberOfChannels, mat.GetPixelPos(x, y));
         }
 
+        public static Span<T> GetSinglePixelSpan<T>(this Mat mat, int pos)
+        {
+            return mat.GetPixelSpan<T>(mat.NumberOfChannels, pos);
+        }
+
 
         public static unsafe Span<T> GetPixelRowSpan<T>(this Mat mat, int y, int length = 0, int offset = 0)
         {

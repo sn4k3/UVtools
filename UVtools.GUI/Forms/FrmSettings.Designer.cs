@@ -94,6 +94,8 @@
             this.label8 = new System.Windows.Forms.Label();
             this.nmIslandRequiredPixelBrightnessToProcessCheck = new System.Windows.Forms.NumericUpDown();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label42 = new System.Windows.Forms.Label();
+            this.cbComputeTouchingBounds = new System.Windows.Forms.CheckBox();
             this.cbAutoComputeIssuesClickOnTab = new System.Windows.Forms.CheckBox();
             this.tabSettings = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
@@ -163,8 +165,7 @@
             this.cbLayerRepairLayersIslands = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.cbComputeTouchingBounds = new System.Windows.Forms.CheckBox();
-            this.label42 = new System.Windows.Forms.Label();
+            this.cbComputeEmptyLayers = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineHollowAreasLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineLayerBoundsLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlinePrintVolumeBoundsLineThickness)).BeginInit();
@@ -1027,6 +1028,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.cbComputeEmptyLayers);
             this.groupBox1.Controls.Add(this.label42);
             this.groupBox1.Controls.Add(this.cbComputeTouchingBounds);
             this.groupBox1.Controls.Add(this.cbAutoComputeIssuesClickOnTab);
@@ -1040,6 +1042,25 @@
             this.groupBox1.TabIndex = 22;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Commun";
+            // 
+            // label42
+            // 
+            this.label42.AutoSize = true;
+            this.label42.Location = new System.Drawing.Point(6, 81);
+            this.label42.Name = "label42";
+            this.label42.Size = new System.Drawing.Size(73, 18);
+            this.label42.TabIndex = 20;
+            this.label42.Text = "Compute:";
+            // 
+            // cbComputeTouchingBounds
+            // 
+            this.cbComputeTouchingBounds.AutoSize = true;
+            this.cbComputeTouchingBounds.Location = new System.Drawing.Point(272, 79);
+            this.cbComputeTouchingBounds.Name = "cbComputeTouchingBounds";
+            this.cbComputeTouchingBounds.Size = new System.Drawing.Size(141, 22);
+            this.cbComputeTouchingBounds.TabIndex = 19;
+            this.cbComputeTouchingBounds.Text = "Touching bounds";
+            this.cbComputeTouchingBounds.UseVisualStyleBackColor = true;
             // 
             // cbAutoComputeIssuesClickOnTab
             // 
@@ -1072,7 +1093,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 27);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(616, 546);
+            this.tabPage1.Size = new System.Drawing.Size(616, 594);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "General";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -1382,7 +1403,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 27);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(616, 546);
+            this.tabPage2.Size = new System.Drawing.Size(616, 594);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Layer Preview";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -1563,7 +1584,7 @@
             this.tabPage4.Location = new System.Drawing.Point(4, 27);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(616, 546);
+            this.tabPage4.Size = new System.Drawing.Size(616, 594);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Pixel Editor";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -1745,7 +1766,7 @@
             this.tabPage5.Location = new System.Drawing.Point(4, 27);
             this.tabPage5.Name = "tabPage5";
             this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(616, 546);
+            this.tabPage5.Size = new System.Drawing.Size(616, 594);
             this.tabPage5.TabIndex = 4;
             this.tabPage5.Text = "Layer Repair";
             this.tabPage5.UseVisualStyleBackColor = true;
@@ -1877,24 +1898,15 @@
             this.toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             this.toolTip.ToolTipTitle = "Information";
             // 
-            // cbComputeTouchingBounds
+            // cbComputeEmptyLayers
             // 
-            this.cbComputeTouchingBounds.AutoSize = true;
-            this.cbComputeTouchingBounds.Location = new System.Drawing.Point(272, 79);
-            this.cbComputeTouchingBounds.Name = "cbComputeTouchingBounds";
-            this.cbComputeTouchingBounds.Size = new System.Drawing.Size(141, 22);
-            this.cbComputeTouchingBounds.TabIndex = 19;
-            this.cbComputeTouchingBounds.Text = "Touching bounds";
-            this.cbComputeTouchingBounds.UseVisualStyleBackColor = true;
-            // 
-            // label42
-            // 
-            this.label42.AutoSize = true;
-            this.label42.Location = new System.Drawing.Point(6, 81);
-            this.label42.Name = "label42";
-            this.label42.Size = new System.Drawing.Size(73, 18);
-            this.label42.TabIndex = 20;
-            this.label42.Text = "Compute:";
+            this.cbComputeEmptyLayers.AutoSize = true;
+            this.cbComputeEmptyLayers.Location = new System.Drawing.Point(419, 79);
+            this.cbComputeEmptyLayers.Name = "cbComputeEmptyLayers";
+            this.cbComputeEmptyLayers.Size = new System.Drawing.Size(117, 22);
+            this.cbComputeEmptyLayers.TabIndex = 21;
+            this.cbComputeEmptyLayers.Text = "Empty Layers";
+            this.cbComputeEmptyLayers.UseVisualStyleBackColor = true;
             // 
             // FrmSettings
             // 
@@ -2091,5 +2103,6 @@
         private System.Windows.Forms.CheckBox cbZoomIssuesAuto;
         private System.Windows.Forms.Label label42;
         private System.Windows.Forms.CheckBox cbComputeTouchingBounds;
+        private System.Windows.Forms.CheckBox cbComputeEmptyLayers;
     }
 }

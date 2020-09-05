@@ -66,6 +66,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 * EPAX X156 4K Color
 * Zortrax Inkspire
 * Nova3D Elfin
+* Nova3D Bene4 Mono
 * AnyCubic Photon
 * AnyCubic Photon S
 * AnyCubic Photon Zero

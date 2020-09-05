@@ -27,21 +27,29 @@ namespace UVtools.Core.FileFormats
         public string Description { get; }
 
         /// <summary>
+        /// Gets a tag object
+        /// </summary>
+        public object Tag { get; }
+
+        /// <summary>
         /// Gets the file filter for open and save dialogs
         /// </summary>
         public string Filter => $@"{Description} (*.{Extension})|*.{Extension}";
         #endregion
 
         #region Constructor
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="extension">The extension name without the dot (.)</param>
         /// <param name="description">The extension description</param>
-        public FileExtension(string extension, string description)
+        /// <param name="tag">Tag object</param>
+        public FileExtension(string extension, string description, object tag = null)
         {
             Extension = extension;
             Description = description;
+            Tag = tag;
         }
         #endregion
 

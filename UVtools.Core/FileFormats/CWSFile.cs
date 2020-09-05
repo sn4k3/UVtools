@@ -14,6 +14,10 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 
@@ -111,8 +115,18 @@ namespace UVtools.Core.FileFormats
 
         public override FileFormatType FileType => FileFormatType.Archive;
 
+        public enum PrinterType : byte
+        {
+            Unknown,
+            Elfin,
+            BeneMono
+        }
+
+        public PrinterType Printer { get; set; } = PrinterType.Unknown;
+
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("cws", "NovaMaker CWS Files")
+            new FileExtension("cws", "NovaMaker CWS Files"),
+            //new FileExtension("cws", "NovaMaker Bene Mono CWS Files", "Bene")
         };
 
         public override Type[] ConvertToFormats { get; } =
@@ -204,6 +218,7 @@ namespace UVtools.Core.FileFormats
         public override void Encode(string fileFullPath, OperationProgress progress = null)
         {
             base.Encode(fileFullPath, progress);
+            if (Printer == PrinterType.Unknown) Printer = PrinterType.Elfin;
             using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
             {
                 string arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
@@ -224,16 +239,52 @@ namespace UVtools.Core.FileFormats
                         tw.WriteLine($"{displayNameAttribute.DisplayName.PadRight(24)}= {propertyInfo.GetValue(SliceSettings)}");
                     }
                 }
-                
 
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+
+                //for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                Parallel.For(0, LayerCount, 
+                    new ParallelOptions{MaxDegreeOfParallelism = Printer == PrinterType.Elfin ? 1 : Environment.ProcessorCount},
+                    layerIndex =>
                 {
-                    progress.Token.ThrowIfCancellationRequested();
+                    if (progress.Token.IsCancellationRequested) return;
+
                     Layer layer = this[layerIndex];
-                    var layerImagePath = $"{Path.GetFileNameWithoutExtension(fileFullPath)}{layerIndex.ToString().PadLeft(LayerCount.ToString().Length, '0')}.png";
-                    outputFile.PutFileContent(layerImagePath, layer.CompressedBytes, ZipArchiveMode.Create);
-                    progress++;
-                }
+                    var layerImagePath =
+                        $"{Path.GetFileNameWithoutExtension(fileFullPath)}{layerIndex.ToString().PadLeft(LayerCount.ToString().Length, '0')}.png";
+
+                    if (Printer == PrinterType.Elfin)
+                    {
+                        outputFile.PutFileContent(layerImagePath, layer.CompressedBytes, ZipArchiveMode.Create);
+                    }
+                    else
+                    {
+                        using (var mat = layer.LayerMat)
+                        using (var matEncode = new Mat(mat.Height, mat.Step / 3, DepthType.Cv8U, 3))
+                        {
+                            var span = mat.GetPixelSpan<byte>();
+                            var spanEncode = matEncode.GetPixelSpan<byte>();
+                            for (int i = 0; i < span.Length; i++)
+                            {
+                                spanEncode[i] = span[i];
+                            }
+
+                            using (VectorOfByte vec = new VectorOfByte())
+                            {
+                                CvInvoke.Imencode(".png", matEncode, vec);
+                                lock (progress.Mutex)
+                                {
+                                    outputFile.PutFileContent(layerImagePath, vec.ToArray(), ZipArchiveMode.Create);
+                                }
+                            }
+                        }
+
+                        lock (progress.Mutex)
+                        {
+                            progress++;
+                        }
+
+                    }
+                });
 
                 RebuildGCode();
                 outputFile.PutFileContent($"{Path.GetFileNameWithoutExtension(fileFullPath)}.gcode", GCode.ToString(), ZipArchiveMode.Create);
@@ -319,36 +370,35 @@ namespace UVtools.Core.FileFormats
 
                 LayerManager = new LayerManager(OutputSettings.LayersNum, this);
 
+                progress.ItemCount = OutputSettings.LayersNum;
+
                 var gcode = GCode.ToString();
                 float currentHeight = 0;
 
-                foreach (var zipArchiveEntry in inputFile.Entries)
+
+                int layerSize = OutputSettings.LayersNum.ToString().Length;
+
+                inputFile.Entries.AsParallel().ForAllInApproximateOrder(zipArchiveEntry =>
+                    //foreach (var zipArchiveEntry in inputFile.Entries)
                 {
-                    if (!zipArchiveEntry.Name.EndsWith(".png")) continue;
+                    if (!zipArchiveEntry.Name.EndsWith(".png") || progress.Token.IsCancellationRequested) return;
 
                     // - .png - 4 numbers
-                    int layerSize = OutputSettings.LayersNum.ToString().Length;
-                    string layerStr = zipArchiveEntry.Name.Substring(zipArchiveEntry.Name.Length - 4 - layerSize, layerSize);
+                    string layerStr =
+                        zipArchiveEntry.Name.Substring(zipArchiveEntry.Name.Length - 4 - layerSize, layerSize);
                     uint layerIndex = uint.Parse(layerStr);
 
                     var startStr = $"{GCodeKeywordSlice} {layerIndex}";
-                    var stripGcode = gcode.Substring(gcode.IndexOf(startStr, StringComparison.InvariantCultureIgnoreCase) + startStr.Length);
-                    stripGcode = stripGcode.Substring(0, stripGcode.IndexOf(GCodeKeywordDelay, stripGcode.IndexOf(GCodeKeywordSlice))).Trim(' ', '\n', '\r', '\t');
+                    var stripGcode =
+                        gcode.Substring(gcode.IndexOf(startStr, StringComparison.InvariantCultureIgnoreCase) +
+                                        startStr.Length);
+                    stripGcode = stripGcode
+                        .Substring(0, stripGcode.IndexOf(GCodeKeywordDelay, stripGcode.IndexOf(GCodeKeywordSlice)))
+                        .Trim(' ', '\n', '\r', '\t');
                     //var startCurrPos = stripGcode.Remove(0, ";currPos:".Length);
 
-                    /*
-                     * 
-;<Slice> 0
-M106 S255
-;<Delay> 45000
-M106 S0
-;<Slice> Blank
-G1 Z4 F120
-G1 Z-3.9 F120
-;<Delay> 45000
-                     */
 
-                    var currPos = Regex.Match(stripGcode, "G1 Z([+-]?([0-9]*[.])?[0-9]+)", RegexOptions.IgnoreCase);
+                    //var currPos = Regex.Match(stripGcode, "G1 Z([+-]?([0-9]*[.])?[0-9]+)", RegexOptions.IgnoreCase);
                     var exposureTime = Regex.Match(stripGcode, ";<Delay> (\\d+)", RegexOptions.IgnoreCase);
                     /*var pwm = Regex.Match(stripGcode, "M106 S(\\d+)", RegexOptions.IgnoreCase);
                     if (layerIndex < InitialLayerCount)
@@ -360,25 +410,79 @@ G1 Z-3.9 F120
                         OutputSettings.LayerLightPWM = byte.Parse(pwm.Groups[1].Value);
                     }*/
 
-                    if (currPos.Success)
+                    /*if (currPos.Success)
                     {
                         var nextMatch = currPos.NextMatch();
                         if (nextMatch.Success)
                         {
-                            currentHeight = (float)Math.Round(currentHeight + float.Parse(currPos.Groups[1].Value) + float.Parse(currPos.NextMatch().Groups[1].Value), 2);
+                            currentHeight =
+                                (float) Math.Round(
+                                    currentHeight + float.Parse(currPos.Groups[1].Value) +
+                                    float.Parse(currPos.NextMatch().Groups[1].Value), 2);
                         }
                         else
                         {
-                            currentHeight = (float)Math.Round(currentHeight + float.Parse(currPos.Groups[1].Value), 2);
+                            currentHeight = (float) Math.Round(currentHeight + float.Parse(currPos.Groups[1].Value), 2);
+                        }
+                    }*/
+
+                    byte[] buffer;
+
+                    lock (progress)
+                    {
+                        using (var stream = zipArchiveEntry.Open())
+                        {
+                            buffer = stream.ToArray();
+                            if (Printer == PrinterType.Unknown)
+                            {
+                                using (Mat mat = new Mat())
+                                {
+                                    CvInvoke.Imdecode(buffer, ImreadModes.AnyColor, mat);
+                                    Printer = mat.NumberOfChannels == 1 ? PrinterType.Elfin : PrinterType.BeneMono;
+                                }
+                            }
+
+                            stream.Close();
                         }
                     }
 
-                    LayerManager[layerIndex] = new Layer(layerIndex, zipArchiveEntry.Open(), zipArchiveEntry.Name)
+
+                    if (Printer == PrinterType.Elfin)
                     {
-                        PositionZ = currentHeight,
-                        ExposureTime = float.Parse(exposureTime.Groups[1].Value) / 1000f
-                    };
-                }
+                        LayerManager[layerIndex] =
+                            new Layer(layerIndex, buffer, zipArchiveEntry.Name)
+                            {
+                                PositionZ = GetHeightFromLayer(layerIndex),
+                                ExposureTime = float.Parse(exposureTime.Groups[1].Value) / 1000f
+                            };
+                    }
+                    else
+                    {
+                        using (Mat mat = new Mat())
+                        {
+                            CvInvoke.Imdecode(buffer, ImreadModes.Color, mat);
+                            using (Mat matDecode = new Mat(mat.Height, mat.Step, DepthType.Cv8U, 1))
+                            {
+                                var span = mat.GetPixelSpan<byte>();
+                                var spanDecode = matDecode.GetPixelSpan<byte>();
+                                for (int i = 0; i < span.Length; i++)
+                                {
+                                    spanDecode[i] = span[i];
+                                }
+
+                                LayerManager[layerIndex] =
+                                    new Layer(layerIndex, matDecode, zipArchiveEntry.Name)
+                                    {
+                                        PositionZ = GetHeightFromLayer(layerIndex),
+                                        ExposureTime = float.Parse(exposureTime.Groups[1].Value) / 1000f
+                                    };
+                            }
+                        }
+
+                    }
+
+                    progress++;
+                });
             }
 
             LayerManager.GetBoundingRectangle(progress);

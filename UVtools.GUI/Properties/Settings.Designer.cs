@@ -862,5 +862,17 @@ namespace UVtools.GUI.Properties {
                 this["ComputeTouchingBounds"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ComputeEmptyLayers {
+            get {
+                return ((bool)(this["ComputeEmptyLayers"]));
+            }
+            set {
+                this["ComputeEmptyLayers"] = value;
+            }
+        }
     }
 }
