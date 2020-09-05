@@ -1157,6 +1157,16 @@ namespace UVtools.GUI
                 }
             }
 
+            if (ReferenceEquals(sender, btnLayerImageActionImport))
+            {
+                using (var frm = new FrmToolWindow("Test", "Ok", ActualLayer))
+                {
+                    frm.ShowDialog();
+                }
+
+                return;
+            }
+
             if (ReferenceEquals(sender, menuToolsLayerClone) || ReferenceEquals(sender, btnLayerImageActionClone))
             {
                 using (var frm = new FrmToolLayerClone((int)ActualLayer))

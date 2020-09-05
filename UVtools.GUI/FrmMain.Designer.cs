@@ -254,6 +254,7 @@ namespace UVtools.GUI
             this.panelLayerNavigation = new System.Windows.Forms.Panel();
             this.pbTrackerIssues = new System.Windows.Forms.PictureBox();
             this.lbActualLayer = new System.Windows.Forms.Label();
+            this.tbLayer = new UVtools.GUI.Controls.TrackBarEx();
             this.lbInitialLayer = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
             this.btnFindLayer = new System.Windows.Forms.Button();
@@ -264,7 +265,6 @@ namespace UVtools.GUI
             this.toolTipInformation = new System.Windows.Forms.ToolTip(this.components);
             this.layerScrollTimer = new System.Windows.Forms.Timer(this.components);
             this.mouseHoldTimer = new System.Windows.Forms.Timer(this.components);
-            this.tbLayer = new UVtools.GUI.Controls.TrackBarEx();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).BeginInit();
@@ -323,8 +323,8 @@ namespace UVtools.GUI
             this.tlRight.SuspendLayout();
             this.panelLayerNavigation.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbTrackerIssues)).BeginInit();
-            this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).BeginInit();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // menu
@@ -2816,6 +2816,18 @@ namespace UVtools.GUI
             this.lbActualLayer.TabIndex = 9;
             this.lbActualLayer.Text = "?";
             // 
+            // tbLayer
+            // 
+            this.tbLayer.Dock = System.Windows.Forms.DockStyle.Right;
+            this.tbLayer.Location = new System.Drawing.Point(93, 0);
+            this.tbLayer.Margin = new System.Windows.Forms.Padding(0);
+            this.tbLayer.Name = "tbLayer";
+            this.tbLayer.Orientation = System.Windows.Forms.Orientation.Vertical;
+            this.tbLayer.Size = new System.Drawing.Size(45, 557);
+            this.tbLayer.TabIndex = 8;
+            this.tbLayer.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
+            this.tbLayer.ValueChanged += new System.EventHandler(this.ValueChanged);
+            // 
             // lbInitialLayer
             // 
             this.lbInitialLayer.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -2905,18 +2917,6 @@ namespace UVtools.GUI
             // 
             this.mouseHoldTimer.Interval = 1000;
             this.mouseHoldTimer.Tick += new System.EventHandler(this.EventTimerTick);
-            // 
-            // tbLayer
-            // 
-            this.tbLayer.Dock = System.Windows.Forms.DockStyle.Right;
-            this.tbLayer.Location = new System.Drawing.Point(93, 0);
-            this.tbLayer.Margin = new System.Windows.Forms.Padding(0);
-            this.tbLayer.Name = "tbLayer";
-            this.tbLayer.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.tbLayer.Size = new System.Drawing.Size(45, 557);
-            this.tbLayer.TabIndex = 8;
-            this.tbLayer.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
-            this.tbLayer.ValueChanged += new System.EventHandler(this.ValueChanged);
             // 
             // FrmMain
             // 
@@ -3024,8 +3024,8 @@ namespace UVtools.GUI
             this.panelLayerNavigation.ResumeLayout(false);
             this.panelLayerNavigation.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbTrackerIssues)).EndInit();
-            this.panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).EndInit();
+            this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 

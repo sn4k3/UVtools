@@ -12,7 +12,7 @@
 * (Fix) CWS: Add missing Platform X,Y,Z size when converting from SL1
 * (Fix) CWS: Invert XY resolution when converting from SL1
 * (Fix) Layer Preview: When selecting issues using SHIFT in the layer preview, the selected issue doesn't update in the issue list until after shift is released and slow operation
-* (Fix) PrusaSlicer Printer: Kelant S400 Y Resolution from 1440 to 1600 and default slice settings, inverted XY resolution
+* (Fix) PrusaSlicer Printer: Kelant S400 Y Resolution from 1440 to 1600 and default slice settings, FLIP_XY removed, portait mode to landscape
 * (Fix) Layer Clone window title was set to Pattern
 
 ## 04/08/2020 - v0.7.0.0
