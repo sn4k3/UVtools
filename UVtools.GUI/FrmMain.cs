@@ -3176,7 +3176,7 @@ namespace UVtools.GUI
             {
                 // This event repeats for as long as the key is pressed, so if we've
                 // already set the cursor from a previous key down event, just return.
-                if (pbLayer.Cursor == Cursors.Cross) return;
+                if (pbLayer.Cursor == Cursors.Cross || pbLayer.Cursor == Cursors.Hand) return;
 
                 // Pixel Edit is active, Shift is down, and the cursor is over the image region.
                 if (e.KeyCode == Keys.ShiftKey &&
@@ -3185,7 +3185,7 @@ namespace UVtools.GUI
 
                     pbLayer.Cursor = tsLayerImagePixelEdit.Checked ? Cursors.Cross : Cursors.Hand;
                     pbLayer.PanMode = Cyotek.Windows.Forms.ImageBoxPanMode.None;
-                    if (!ReferenceEquals(SlicerFile, null)) ShowLayer();
+                    //if (!ReferenceEquals(SlicerFile, null)) ShowLayer();  // Not needed?
                 }
                 return;
             }
@@ -3202,7 +3202,7 @@ namespace UVtools.GUI
                 {
                     pbLayer.Cursor = Cursors.Default;
                     pbLayer.PanMode = Cyotek.Windows.Forms.ImageBoxPanMode.Left;
-                    if (!ReferenceEquals(SlicerFile, null)) ShowLayer();
+                    //if (!ReferenceEquals(SlicerFile, null)) ShowLayer(); // Not needed?
                 }
                 return;
             }
@@ -4256,7 +4256,7 @@ namespace UVtools.GUI
 
                 flvIssues.SelectedIndex = index;
                 flvIssues.EnsureVisible(index);
-                flvIssues.Refresh();
+                //flvIssues.Refresh();
                 break;
             }
 
