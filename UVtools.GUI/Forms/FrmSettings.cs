@@ -57,7 +57,8 @@ namespace UVtools.GUI.Forms
                 btnResinTrapColor.BackColor = Settings.Default.ResinTrapColor;
                 btnResinTrapHLColor.BackColor = Settings.Default.ResinTrapHLColor;
                 btnTouchingBoundsColor.BackColor = Settings.Default.TouchingBoundsColor;
-                
+                btnCrosshairColor.BackColor = Settings.Default.CrosshairColor;
+
 
                 btnOutlinePrintVolumeBoundsColor.BackColor = Settings.Default.OutlinePrintVolumeBoundsColor;
                 btnOutlineLayerBoundsColor.BackColor = Settings.Default.OutlineLayerBoundsColor;
@@ -73,7 +74,7 @@ namespace UVtools.GUI.Forms
 
                 cbLayerAutoRotateBestView.Checked = Settings.Default.LayerAutoRotateBestView;
                 cbLayerZoomToFit.Checked = Settings.Default.LayerZoomToFit;
-                cbZoomToFitPrintVolumeBounds.Checked = Settings.Default.ZoomToFitPrintVolumeBounds;
+                cbZoomToFit.SelectedIndex = Settings.Default.ZoomToFitPrintVolumeBounds == true ? 0 : 1;
                 cbZoomIssues.Checked = Settings.Default.ZoomIssues;
                 cbZoomLockLevel.SelectedIndex = Settings.Default.ZoomLockLevel;
                 cbZoomIssuesAuto.Checked = Settings.Default.ZoomIssuesAuto;
@@ -143,6 +144,7 @@ namespace UVtools.GUI.Forms
                 ReferenceEquals(sender, btnResinTrapColor) ||
                 ReferenceEquals(sender, btnResinTrapHLColor) ||
                 ReferenceEquals(sender, btnTouchingBoundsColor) ||
+                ReferenceEquals(sender, btnCrosshairColor) ||
                 ReferenceEquals(sender, btnOutlinePrintVolumeBoundsColor) ||
                 ReferenceEquals(sender, btnOutlineLayerBoundsColor) ||
                 ReferenceEquals(sender, btnOutlineHollowAreasColor) ||
@@ -237,6 +239,7 @@ namespace UVtools.GUI.Forms
                 Settings.Default.ResinTrapColor = btnResinTrapColor.BackColor;
                 Settings.Default.ResinTrapHLColor = btnResinTrapHLColor.BackColor;
                 Settings.Default.TouchingBoundsColor = btnTouchingBoundsColor.BackColor;
+                Settings.Default.CrosshairColor = btnCrosshairColor.BackColor;
 
                 Settings.Default.OutlinePrintVolumeBoundsColor = btnOutlinePrintVolumeBoundsColor.BackColor;
                 Settings.Default.OutlineLayerBoundsColor = btnOutlineLayerBoundsColor.BackColor;
@@ -252,7 +255,7 @@ namespace UVtools.GUI.Forms
 
                 Settings.Default.LayerAutoRotateBestView = cbLayerAutoRotateBestView.Checked;
                 Settings.Default.LayerZoomToFit = cbLayerZoomToFit.Checked;
-                Settings.Default.ZoomToFitPrintVolumeBounds = cbZoomToFitPrintVolumeBounds.Checked;
+                Settings.Default.ZoomToFitPrintVolumeBounds = cbZoomToFit.SelectedIndex == 0 ? true : false;
                 Settings.Default.ZoomIssues = cbZoomIssues.Checked;
                 Settings.Default.ZoomLockLevel = (byte)cbZoomLockLevel.SelectedIndex;
                 Settings.Default.ZoomIssuesAuto = cbZoomIssuesAuto.Checked;

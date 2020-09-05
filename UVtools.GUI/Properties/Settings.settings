@@ -203,7 +203,7 @@
     <Setting Name="CrosshairLineMargin" Type="System.Byte" Scope="User">
       <Value Profile="(Default)">5</Value>
     </Setting>
-    <Setting Name="CrossharirColor" Type="System.Drawing.Color" Scope="User">
+    <Setting Name="CrosshairColor" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">Red</Value>
     </Setting>
     <Setting Name="ZoomIssuesAuto" Type="System.Boolean" Scope="User">

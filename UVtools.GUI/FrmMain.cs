@@ -2496,7 +2496,7 @@ namespace UVtools.GUI
             // This prevents the crosshair lines from disappearing due to being too thin to
             // render at very low zoom factors.
             var lineThickness = (pbLayer.Zoom > 100) ? 1 : (pbLayer.Zoom < 50) ? 3 : 2;
-            var color = new MCvScalar(Settings.Default.CrossharirColor.B, Settings.Default.CrossharirColor.G, Settings.Default.CrossharirColor.R);
+            var color = new MCvScalar(Settings.Default.CrosshairColor.B, Settings.Default.CrosshairColor.G, Settings.Default.CrosshairColor.R);
 
 
             // LEFT
