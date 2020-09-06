@@ -4275,10 +4275,27 @@ namespace UVtools.GUI
                 }
                 return;
             }
-            var result = MessageBox.Show(
-                                "There are unsaved changes on image editor, do you want to apply modifications?",
-                                "Unsaved changes on image editor", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
 
+            var result = DialogResult.None;
+
+            if (exitEditor) {
+               result =  MessageBox.Show(
+                   "There are edit operations that have not been applied.  " +
+                   "Would you like to apply all operations before closing the editor?",
+                   "Closing image editor", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+            }
+            else
+            {
+
+                result = MessageBox.Show(
+                    "Are you sure you want to apply all operations?",
+                    "Apply image editor changes?", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                // For the "apply" case, We aren't exiting the editor, so map "No" to "Cancel" here
+                // in order to prevent pixel history from being cleared.
+                result = result == DialogResult.No ? DialogResult.Cancel : DialogResult.Yes;
+            }
+            
             if (result == DialogResult.Cancel)
             {
                 btnLayerImagePixelEdit.Checked = true;
@@ -4340,8 +4357,9 @@ namespace UVtools.GUI
                 }
             }
 
-            if (exitEditor)
+            if (exitEditor || (Settings.Default.CloseEditOnApply && result == DialogResult.Yes))
             {
+                btnLayerImagePixelEdit.Checked = false;
                 tabControlLeft.SelectedTab = ControlLeftLastTab;
                 tabControlLeft.TabPages.Remove(tabPagePixelEditor);
             }
