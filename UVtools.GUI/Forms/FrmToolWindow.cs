@@ -8,6 +8,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Drawing;
 using System.Drawing.Design;
 using System.Windows.Forms;
 
@@ -108,8 +109,19 @@ namespace UVtools.GUI.Forms
             base.OnKeyUp(e);
             if (e.KeyCode == Keys.Enter)
             {
-                btnOk.PerformClick();
                 e.Handled = true;
+                // Need exclude controls that require ENTER
+                if (!ReferenceEquals(ActiveControl, null))
+                {
+                    switch (ActiveControl)
+                    {
+                        case NumericUpDown _:
+                        case TextBox textBox when textBox.Multiline:
+                            return;
+                    }
+                }
+
+                btnOk.PerformClick();
                 return;
             }
 
@@ -181,6 +193,14 @@ namespace UVtools.GUI.Forms
             if (ReferenceEquals(sender, btnOk))
             {
                 if (!btnOk.Enabled) return;
+
+                if (LayerRangeStart > LayerRangeEnd)
+                {
+                    MessageBox.Show("Layer range start can't be higher than layer end.\nPlease fix and try again.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    nmLayerRangeStart.Select();
+                    return;
+                }
+
                 if (!ValidateForm()) return;
 
                 if (MessageBox.Show($"Are you sure you want to {ConfirmationText}", Text, MessageBoxButtons.YesNo,
@@ -208,17 +228,30 @@ namespace UVtools.GUI.Forms
                 if (layerIndex >= Program.SlicerFile.LayerCount) return;
                 var layer = Program.SlicerFile[layerIndex];
                 var text = $"({layer.PositionZ}mm)";
+                uint layerCount = (uint) Math.Max(0, nmLayerRangeEnd.Value - nmLayerRangeStart.Value + 1);
+                lbLayerRangeCount.Text = $"({layerCount} layer / {Program.SlicerFile.LayerHeight * layerCount}mm)";
+
+                if (layerCount == 0)
+                {
+                    lbLayerRangeCount.ForeColor = Color.Red;
+                    btnOk.Enabled = false;
+                }
+                else
+                {
+                    lbLayerRangeCount.ForeColor = Color.Black;
+                    btnOk.Enabled = true;
+                }
+                
 
                 if (ReferenceEquals(sender, nmLayerRangeStart))
                 {
                     lbLayerRangeFromMM.Text = text;
-                    return;
                 }
-                if (ReferenceEquals(sender, nmLayerRangeEnd))
+                else if (ReferenceEquals(sender, nmLayerRangeEnd))
                 {
                     lbLayerRangeToMM.Text = text;
-                    return;
                 }
+                
                 return;
             }
         }
@@ -228,16 +261,7 @@ namespace UVtools.GUI.Forms
 
         #region Methods
 
-        public virtual bool ValidateForm()
-        {
-            if (LayerRangeStart > LayerRangeEnd)
-            {
-                MessageBox.Show("Layer range start can't be higher than layer end.\nPlease fix and try again.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                nmLayerRangeStart.Select();
-                return false;
-            }
-            return true;
-        }
+        public virtual bool ValidateForm() => true;
 
         #endregion
 

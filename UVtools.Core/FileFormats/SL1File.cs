@@ -114,7 +114,7 @@ namespace UVtools.Core.FileFormats
             public string MaterialType { get; set; }
             public string SlaMaterialSettingsId { get; set; }
             public float BottleCost { get; set; }
-            public ushort BottleVolume { get; set; }
+            public float BottleVolume { get; set; }
             public float BottleWeight { get; set; }
             public float MaterialDensity { get; set; }
             public string MaterialNotes { get; set; }
