@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Design;
 using System.Windows.Forms;
+using UVtools.GUI.Controls;
 
 namespace UVtools.GUI.Forms
 {
@@ -18,6 +19,10 @@ namespace UVtools.GUI.Forms
     {
         #region Properties
 
+        public CtrlToolWindowContent Content { get; set; }
+
+        [Editor("System.ComponentModel.Design.MultilineStringEditor", typeof(UITypeEditor))]
+        [SettingsBindable(true)]
         public string Description
         {
             get => lbDescription.Text;
@@ -58,14 +63,16 @@ namespace UVtools.GUI.Forms
                 btnLayerRangeSelect.Visible = value;
         }
 
-        [SettingsBindable(true)]
+        [ReadOnly(true)]
+        [Browsable(false)]
         public uint LayerRangeStart
         {
             get => (uint)nmLayerRangeStart.Value;
             set => nmLayerRangeStart.Value = value;
         }
 
-        [SettingsBindable(true)]
+        [ReadOnly(true)]
+        [Browsable(false)]
         public uint LayerRangeEnd
         {
             get => (uint)Math.Min(nmLayerRangeEnd.Value, Program.SlicerFile.LayerCount - 1);
@@ -98,6 +105,20 @@ namespace UVtools.GUI.Forms
         }
 
         public FrmToolWindow(string description, string buttonOkText, uint layerIndex) : this(description, buttonOkText)
+        {
+            LayerRangeStart = LayerRangeEnd = layerIndex;
+        }
+
+        public FrmToolWindow(CtrlToolWindowContent content, bool layerRangeVisible = true) : this(content.Description, content.ButtonOkText, layerRangeVisible)
+        {
+            pnContent.Controls.Add(content);
+            Width = Math.Max(MinimumSize.Width, content.Width);
+            Height += content.Height;
+            content.Dock = DockStyle.Fill;
+            Content = content;
+        }
+
+        public FrmToolWindow(CtrlToolWindowContent content, uint layerIndex) : this(content)
         {
             LayerRangeStart = LayerRangeEnd = layerIndex;
         }
@@ -202,8 +223,9 @@ namespace UVtools.GUI.Forms
                 }
 
                 if (!ValidateForm()) return;
+                if (!ReferenceEquals(Content, null) && !ValidateForm()) return;
 
-                if (MessageBox.Show($"Are you sure you want to {ConfirmationText}", Text, MessageBoxButtons.YesNo,
+                if (MessageBox.Show($"Are you sure you want to {Content?.ConfirmationText ?? ConfirmationText}", Text, MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     DialogResult = DialogResult.OK;

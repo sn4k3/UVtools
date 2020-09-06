@@ -125,18 +125,19 @@ namespace UVtools.GUI.Forms
             this.pnActions.Controls.Add(this.btnCancel);
             this.pnActions.Controls.Add(this.btnOk);
             this.pnActions.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnActions.Location = new System.Drawing.Point(0, 386);
+            this.pnActions.Location = new System.Drawing.Point(0, 182);
             this.pnActions.Name = "pnActions";
             this.pnActions.Size = new System.Drawing.Size(547, 78);
             this.pnActions.TabIndex = 8;
             // 
             // pnContent
             // 
+            this.pnContent.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.pnContent.BackColor = System.Drawing.Color.White;
             this.pnContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnContent.Location = new System.Drawing.Point(0, 170);
             this.pnContent.Name = "pnContent";
-            this.pnContent.Size = new System.Drawing.Size(547, 216);
+            this.pnContent.Size = new System.Drawing.Size(547, 12);
             this.pnContent.TabIndex = 9;
             // 
             // pnLayerRange
@@ -308,7 +309,7 @@ namespace UVtools.GUI.Forms
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(547, 464);
+            this.ClientSize = new System.Drawing.Size(547, 260);
             this.Controls.Add(this.pnContent);
             this.Controls.Add(this.pnLayerRange);
             this.Controls.Add(this.pnActions);
@@ -320,7 +321,7 @@ namespace UVtools.GUI.Forms
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(563, 0);
+            this.MinimumSize = new System.Drawing.Size(563, 39);
             this.Name = "FrmToolWindow";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
@@ -347,7 +348,6 @@ namespace UVtools.GUI.Forms
         public System.Windows.Forms.Button btnOk;
         public System.Windows.Forms.Panel pnDescription;
         public System.Windows.Forms.Label lbDescription;
-        private System.Windows.Forms.Panel pnContent;
         private System.Windows.Forms.Panel pnLayerRange;
         private System.Windows.Forms.ContextMenuStrip cmLayerRange;
         private System.Windows.Forms.ToolStripMenuItem btnLayerRangeAllLayers;
@@ -363,5 +363,6 @@ namespace UVtools.GUI.Forms
         public System.Windows.Forms.Label lbLayerRangeToMM;
         public System.Windows.Forms.Label lbLayerRangeFromMM;
         public System.Windows.Forms.Label lbLayerRangeCount;
+        public System.Windows.Forms.Panel pnContent;
     }
 }

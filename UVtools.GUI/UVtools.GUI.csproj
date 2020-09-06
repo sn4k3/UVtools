@@ -164,10 +164,22 @@
     <Compile Include="Controls\CtrlKernel.Designer.cs">
       <DependentUpon>CtrlKernel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\CtrlToolWindowContent.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\CtrlToolWindowContent.Designer.cs">
+      <DependentUpon>CtrlToolWindowContent.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\LogItem.cs" />
     <Compile Include="Controls\SlicerPropertyItem.cs" />
     <Compile Include="Controls\SplitButton.cs">
       <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Tools\CtrlToolLayerImport.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Tools\CtrlToolLayerImport.Designer.cs">
+      <DependentUpon>CtrlToolLayerImport.cs</DependentUpon>
     </Compile>
     <Compile Include="Controls\TrackBarEx.cs">
       <SubType>Component</SubType>
@@ -220,12 +232,6 @@
     </Compile>
     <Compile Include="Forms\FrmToolWindow.Designer.cs">
       <DependentUpon>FrmToolWindow.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\FrmToolLayerImport.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\FrmToolLayerImport.Designer.cs">
-      <DependentUpon>FrmToolLayerImport.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\FrmToolLayerReHeight.cs">
       <SubType>Form</SubType>
@@ -327,6 +333,12 @@
     <EmbeddedResource Include="Controls\CtrlKernel.resx">
       <DependentUpon>CtrlKernel.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Controls\CtrlToolWindowContent.resx">
+      <DependentUpon>CtrlToolWindowContent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Tools\CtrlToolLayerImport.resx">
+      <DependentUpon>CtrlToolLayerImport.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmAbout.resx">
       <DependentUpon>FrmAbout.cs</DependentUpon>
     </EmbeddedResource>
@@ -353,9 +365,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolWindow.resx">
       <DependentUpon>FrmToolWindow.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\FrmToolLayerImport.resx">
-      <DependentUpon>FrmToolLayerImport.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolLayerReHeight.resx">
       <DependentUpon>FrmToolLayerReHeight.cs</DependentUpon>

@@ -29,6 +29,7 @@ using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
 using UVtools.GUI.Controls;
+using UVtools.GUI.Controls.Tools;
 using UVtools.GUI.Extensions;
 using UVtools.GUI.Forms;
 using UVtools.GUI.Properties;
@@ -1159,7 +1160,7 @@ namespace UVtools.GUI
 
             if (ReferenceEquals(sender, btnLayerImageActionImport))
             {
-                using (var frm = new FrmToolWindow("Test", "Ok", ActualLayer))
+                using (var frm = new FrmToolWindow(new CtrlToolLayerImport(), ActualLayer))
                 {
                     frm.ShowDialog();
                 }
