@@ -1465,7 +1465,7 @@
             // label43
             // 
             this.label43.AutoSize = true;
-            this.label43.Location = new System.Drawing.Point(8, 61);
+            this.label43.Location = new System.Drawing.Point(8, 27);
             this.label43.Name = "label43";
             this.label43.Size = new System.Drawing.Size(109, 18);
             this.label43.TabIndex = 57;
@@ -1480,7 +1480,7 @@
             this.cbZoomToFit.Items.AddRange(new object[] {
             "Print Volume Boundary",
             "Layer Boundary"});
-            this.cbZoomToFit.Location = new System.Drawing.Point(123, 57);
+            this.cbZoomToFit.Location = new System.Drawing.Point(123, 23);
             this.cbZoomToFit.Name = "cbZoomToFit";
             this.cbZoomToFit.Size = new System.Drawing.Size(188, 26);
             this.cbZoomToFit.TabIndex = 55;
@@ -1490,7 +1490,7 @@
             // cbZoomIssues
             // 
             this.cbZoomIssues.AutoSize = true;
-            this.cbZoomIssues.Location = new System.Drawing.Point(11, 25);
+            this.cbZoomIssues.Location = new System.Drawing.Point(11, 60);
             this.cbZoomIssues.Name = "cbZoomIssues";
             this.cbZoomIssues.Size = new System.Drawing.Size(290, 22);
             this.cbZoomIssues.TabIndex = 52;
