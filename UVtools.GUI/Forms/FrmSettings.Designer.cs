@@ -173,6 +173,7 @@
             this.cbLayerRepairLayersIslands = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.cbCloseEditOnApply = new System.Windows.Forms.CheckBox();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapBinaryThreshold)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapMaximumPixelBrightnessToDrain)).BeginInit();
@@ -1698,6 +1699,7 @@
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.cbCloseEditOnApply);
             this.tabPage4.Controls.Add(this.groupBox10);
             this.tabPage4.Controls.Add(this.cbPartialUpdateIslandsOnEditing);
             this.tabPage4.Location = new System.Drawing.Point(4, 27);
@@ -2055,6 +2057,17 @@
             this.toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             this.toolTip.ToolTipTitle = "Information";
             // 
+            // cbCloseEditOnApply
+            // 
+            this.cbCloseEditOnApply.AutoSize = true;
+            this.cbCloseEditOnApply.Location = new System.Drawing.Point(11, 213);
+            this.cbCloseEditOnApply.Name = "cbCloseEditOnApply";
+            this.cbCloseEditOnApply.Size = new System.Drawing.Size(322, 22);
+            this.cbCloseEditOnApply.TabIndex = 25;
+            this.cbCloseEditOnApply.Text = "Close pixel editor after operations are applied";
+            this.toolTip.SetToolTip(this.cbCloseEditOnApply, "Automatically close pixel editor after applying changes");
+            this.cbCloseEditOnApply.UseVisualStyleBackColor = true;
+            // 
             // FrmSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
@@ -2266,5 +2279,6 @@
         private System.Windows.Forms.Label label23;
         private System.Windows.Forms.Button btnPixelEditorAddPixelColor;
         private System.Windows.Forms.Button btnPixelEditorAddPixelHLColor;
+        private System.Windows.Forms.CheckBox cbCloseEditOnApply;
     }
 }
