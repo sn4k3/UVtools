@@ -4091,11 +4091,13 @@ namespace UVtools.GUI
         /// <param name="zoomToRegion">Auto zoom to a region and ensure that region area stays all visible when possible, when true this will overwrite zoomLevel</param></param>
         public void CenterLayerAt(Rectangle rectangle, int zoomLevel = 0, bool zoomToRegion = false)
         {
-            if (zoomToRegion)
+            Rectangle viewPort = Rectangle.Round(pbLayer.GetSourceImageRegion());
+
+            // if zoom to region is true, and rectangle being centered would be larger than windwow
+            if (zoomToRegion && (rectangle.Width*LockedZoomLevel/pbLayer.Zoom > viewPort.Width
+                || rectangle.Height*LockedZoomLevel/pbLayer.Zoom > viewPort.Height))
             {
-                SupressLayerZoomEvent = true;
                 pbLayer.ZoomToRegion(rectangle);
-                SupressLayerZoomEvent = false;
                 pbLayer.ZoomOut(true);
                 return;
             }
