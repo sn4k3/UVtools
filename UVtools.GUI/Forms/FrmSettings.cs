@@ -77,7 +77,6 @@ namespace UVtools.GUI.Forms
                 cbZoomToFit.SelectedIndex = Settings.Default.ZoomToFitPrintVolumeBounds == true ? 0 : 1;
                 cbZoomIssues.Checked = Settings.Default.ZoomIssues;
                 cbZoomLockLevel.SelectedIndex = Settings.Default.ZoomLockLevel;
-                cbZoomIssuesAuto.Checked = Settings.Default.ZoomIssuesAuto;
                 cbLayerDifferenceDefault.Checked = Settings.Default.LayerDifferenceDefault;
                 cbCrosshairShowOnlyOnSelectedIssues.Checked = Settings.Default.CrosshairShowOnlyOnSelectedIssues;
                 cbCrosshairFadeLevel.SelectedIndex = Settings.Default.CrosshairFadeLevel;
@@ -258,7 +257,6 @@ namespace UVtools.GUI.Forms
                 Settings.Default.ZoomToFitPrintVolumeBounds = cbZoomToFit.SelectedIndex == 0 ? true : false;
                 Settings.Default.ZoomIssues = cbZoomIssues.Checked;
                 Settings.Default.ZoomLockLevel = (byte)cbZoomLockLevel.SelectedIndex;
-                Settings.Default.ZoomIssuesAuto = cbZoomIssuesAuto.Checked;
                 Settings.Default.LayerDifferenceDefault = cbLayerDifferenceDefault.Checked;
                 Settings.Default.CrosshairShowOnlyOnSelectedIssues = cbCrosshairShowOnlyOnSelectedIssues.Checked;
                 Settings.Default.CrosshairFadeLevel = (byte)cbCrosshairFadeLevel.SelectedIndex;

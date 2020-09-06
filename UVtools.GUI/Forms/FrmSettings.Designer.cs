@@ -130,7 +130,6 @@
             this.label43 = new System.Windows.Forms.Label();
             this.cbZoomToFit = new System.Windows.Forms.ComboBox();
             this.cbZoomIssues = new System.Windows.Forms.CheckBox();
-            this.cbZoomIssuesAuto = new System.Windows.Forms.CheckBox();
             this.label38 = new System.Windows.Forms.Label();
             this.cbZoomLockLevel = new System.Windows.Forms.ComboBox();
             this.groupBox8 = new System.Windows.Forms.GroupBox();
@@ -1454,7 +1453,6 @@
             this.groupBox7.Controls.Add(this.label43);
             this.groupBox7.Controls.Add(this.cbZoomToFit);
             this.groupBox7.Controls.Add(this.cbZoomIssues);
-            this.groupBox7.Controls.Add(this.cbZoomIssuesAuto);
             this.groupBox7.Controls.Add(this.label38);
             this.groupBox7.Controls.Add(this.cbZoomLockLevel);
             this.groupBox7.Location = new System.Drawing.Point(5, 269);
@@ -1500,19 +1498,6 @@
             this.toolTip.SetToolTip(this.cbZoomIssues, "Automatically zoom and center issues when they are selected.  When enabled, singl" +
         "e-left-click will behave the same as double-left-click.");
             this.cbZoomIssues.UseVisualStyleBackColor = true;
-            // 
-            // cbZoomIssuesAuto
-            // 
-            this.cbZoomIssuesAuto.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cbZoomIssuesAuto.AutoSize = true;
-            this.cbZoomIssuesAuto.Location = new System.Drawing.Point(407, 59);
-            this.cbZoomIssuesAuto.Name = "cbZoomIssuesAuto";
-            this.cbZoomIssuesAuto.Size = new System.Drawing.Size(190, 22);
-            this.cbZoomIssuesAuto.TabIndex = 54;
-            this.cbZoomIssuesAuto.Text = "Fit large issues on zoom";
-            this.toolTip.SetToolTip(this.cbZoomIssuesAuto, "Large issues that don\'t fit on the screen when zoomed to the Zoom In Factor, will" +
-        " zoom to fit instead.");
-            this.cbZoomIssuesAuto.UseVisualStyleBackColor = true;
             // 
             // label38
             // 
@@ -2255,7 +2240,6 @@
         private System.Windows.Forms.Label label43;
         private System.Windows.Forms.ComboBox cbZoomToFit;
         private System.Windows.Forms.CheckBox cbZoomIssues;
-        private System.Windows.Forms.CheckBox cbZoomIssuesAuto;
         private System.Windows.Forms.Label label38;
         private System.Windows.Forms.ComboBox cbZoomLockLevel;
         private System.Windows.Forms.Label label44;

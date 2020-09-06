@@ -2020,6 +2020,7 @@ namespace UVtools.GUI
                         // If issue is not already visible, center on it and bring it into view.
                         // Issues already in view will not be centered, though their color may
                         // change and the crosshair may move to reflect active selections.
+                        
                         if (!Rectangle.Round(pbLayer.GetSourceImageRegion()).Contains(GetTransposedIssueBounds(issue)))
                         {
                             CenterAtIssue(issue);
@@ -2045,7 +2046,7 @@ namespace UVtools.GUI
 
                 if (Settings.Default.ZoomIssues ^ (ModifierKeys & Keys.Alt) != 0)
                 {
-                    CenterLayerAt(new Rectangle(location, operation.Size), LockedZoomLevel, Settings.Default.ZoomIssuesAuto);
+                    CenterLayerAt(new Rectangle(location, operation.Size), LockedZoomLevel);
                 }
                 else
                 {
@@ -4075,11 +4076,11 @@ namespace UVtools.GUI
         /// </summary>
         /// <param name="x">X coordinate</param>
         /// <param name="y">X coordinate</param>
-        /// <param name="zoomLevel">Zoom level to set, 0 to skip</param>
+        /// <param name="zoomLevel">Zoom level to set, 0 to ignore or negative value to get current locked zoom level</param>
         public void CenterLayerAt(int x, int y, int zoomLevel = 0)
         {
-            if (zoomLevel > 0)
-                pbLayer.Zoom = zoomLevel;
+            if (zoomLevel < 0) zoomLevel = LockedZoomLevel;
+            if (zoomLevel > 0) pbLayer.Zoom = zoomLevel;
             pbLayer.CenterAt(x, y);
         }
 
@@ -4087,11 +4088,14 @@ namespace UVtools.GUI
         /// Centers layer view on a middle of a given rectangle
         /// </summary>
         /// <param name="rectangle">Rectangle holding coordinates and bounds</param>
-        /// <param name="zoomLevel">Zoom level to set, 0 to skip</param>
+        /// <param name="zoomLevel">Zoom level to set, 0 to ignore or negative value to get current locked zoom level</param>
         /// <param name="zoomToRegion">Auto zoom to a region and ensure that region area stays all visible when possible, when true this will overwrite zoomLevel</param></param>
         public void CenterLayerAt(Rectangle rectangle, int zoomLevel = 0, bool zoomToRegion = false)
         {
-            if (zoomToRegion)
+            Rectangle viewPort = Rectangle.Round(pbLayer.GetSourceImageRegion());
+            if (zoomToRegion || 
+                rectangle.Width * LockedZoomLevel / pbLayer.Zoom > viewPort.Width || 
+                rectangle.Height * LockedZoomLevel / pbLayer.Zoom > viewPort.Height)
             {
                 SupressLayerZoomEvent = true;
                 pbLayer.ZoomToRegion(rectangle);
@@ -4106,9 +4110,8 @@ namespace UVtools.GUI
         /// Centers layer view on a <see cref="Point"/>
         /// </summary>
         /// <param name="point">Point holding X and Y coordinates</param>
-        /// <param name="zoomLevel">Zoom level to set, 0 to skip</param>
-        public void CenterLayerAt(Point point, int zoomLevel = 0) => 
-            CenterLayerAt(point.X, point.Y, zoomLevel);
+        /// <param name="zoomLevel">Zoom level to set, 0 to ignore or negative value to get current locked zoom level</param>
+        public void CenterLayerAt(Point point, int zoomLevel = 0) => CenterLayerAt(point.X, point.Y, zoomLevel);
       
         
         /// <summary>
@@ -4137,7 +4140,8 @@ namespace UVtools.GUI
                     tsLayerImageShowCrosshairs.Checked = true;
                 }*/
 
-                CenterLayerAt(GetTransposedIssueBounds(issue), LockedZoomLevel, Settings.Default.ZoomIssuesAuto);
+                CenterLayerAt(GetTransposedIssueBounds(issue), LockedZoomLevel);
+
             }
         }
 
