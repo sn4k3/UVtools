@@ -117,24 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="lbDescription.Text" xml:space="preserve">
-    <value>Try to repair layers by removing noise/isolated pixels and fill lost pixels.
-Island repair are done by tring attach the island to another nearby island(s) in safe increments, if fails, next try to remove the island if it size is smaller than a threshold.
-In the end if island remains is not safe to perform any automatic operation and there before you must take care of if manually, in this case islands are too far from land and in many cases it will require a support to proper fix.</value>
-  </data>
-  <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>148, 17</value>
-  </metadata>
-  <data name="lbIterationsStart.ToolTip" xml:space="preserve">
-    <value>Selects the number of iterations/passes to perform on each layer.
-Choose 0 to disable this step.
-WARNING: Using high iteration values can destroy your model depending on the mutator being used, please use low values or with caution!</value>
-  </data>
-  <data name="lbLayerRange.ToolTip" xml:space="preserve">
-    <value>Selects the layers range within start layer and end layer where mutator will operate.
-Select same layer start as end to operate only within that layer.
-Note: "Layer Start" start can't be higher than "Layer End".</value>
-  </data>
   <metadata name="cmLayerRange.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
@@ -142,9 +124,25 @@ Note: "Layer Start" start can't be higher than "Layer End".</value>
     <value>148, 17</value>
   </metadata>
   <data name="label1.ToolTip" xml:space="preserve">
-    <value>Selects the number of iterations/passes to perform on each layer.
-Choose 0 to disable this step.
-WARNING: Using high iteration values can destroy your model depending on the mutator being used, please use low values or with caution!</value>
+    <value>Remove individual or small clusters of pixels in iterations.  This settings can remove noise from a layer, but will also remove fine details.
+Set iterations to 0 to diasble.
+WARNING: Even at low settings this operation has the potential to introduce new islands, as it may remove supporting material from previous layers.
+</value>
+  </data>
+  <data name="lbIterationsStart.ToolTip" xml:space="preserve">
+    <value>Attempt to repair islands by attaching them to other nearby islands in safe increments.  If enabled, gap closing is attempted before island removal is attempted.
+Set iterations to 0 to disable.
+WARNING: Using high iteration values can destroy your model.  Low values recomended.</value>
+  </data>
+  <data name="numOpeningIterations.ToolTip" xml:space="preserve">
+    <value>Remove individual or small clusters of pixels in iterations.  This settings can remove noise from a layer, but will also remove fine details.
+Set iterations to 0 to diasble.
+WARNING: Even at low settings this operation has the potential to introduce new islands, as it may remove supporting material from previous layers.</value>
+  </data>
+  <data name="numClosingIterations.ToolTip" xml:space="preserve">
+    <value>Attempt to repair islands by attaching them to other nearby islands in safe increments.  If enabled, gap closing is attempted before island removal is attempted.
+Set iterations to 0 to disable.
+WARNING: Using high iteration values can destroy your model.  Low values recomended.</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

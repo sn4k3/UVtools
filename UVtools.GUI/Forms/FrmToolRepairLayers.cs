@@ -204,9 +204,38 @@ namespace UVtools.GUI.Forms
             }
         }
 
-        
+
+
         #endregion
 
+        private void cbAdvancedOptions_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cbAdvancedOptions.Checked)
+            {
+                if (groupAdvancedSettings.Visible == false)
+                {
+                    groupAdvancedSettings.Visible = true;
+                    FrmToolRepairLayers.ActiveForm.Height += groupAdvancedSettings.Height;
+                }
+            }
+            else
+            {
+                if (groupAdvancedSettings.Visible == true)
+                {
+                    groupAdvancedSettings.Visible = false;
+                    FrmToolRepairLayers.ActiveForm.Height -= groupAdvancedSettings.Height;
+                }
+            }
+        }
 
+        private void FrmToolRepairLayers_Load(object sender, EventArgs e)
+        {
+            cbAdvancedOptions.Checked = false;
+            groupAdvancedSettings.Visible = false;
+
+
+
+            FrmToolRepairLayers.ActiveForm.Height -= groupAdvancedSettings.Height;
+        }
     }
 }
