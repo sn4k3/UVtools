@@ -499,8 +499,11 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(7)] public uint Unknown3             { get; set; }
             [FieldOrder(8)] public uint Unknown4             { get; set; }
 
+
             [Ignore] public byte[] EncodedRle { get; set; }
             [Ignore] public ChituboxFile Parent { get; set; }
+
+            [Ignore] public uint Version { get; set; } = 2;
 
             public LayerData()
             {
@@ -519,7 +522,14 @@ namespace UVtools.Core.FileFormats
                 /*LayerExposure = layerIndex < parent.HeaderSettings.BottomLayersCount
                     ? parent.HeaderSettings.BottomExposureSeconds
                     : parent.HeaderSettings.LayerExposureSeconds;*/
+
+                if (parent.HeaderSettings.Version >= 3 && Unknown2 == 0)
+                {
+                    Unknown2 = 84;
+                }
             }
+
+            
 
             public Mat Decode(uint layerIndex, bool consumeData = true)
             {
@@ -828,14 +838,63 @@ namespace UVtools.Core.FileFormats
             {
                 return $"{nameof(LayerPositionZ)}: {LayerPositionZ}, {nameof(LayerExposure)}: {LayerExposure}, {nameof(LayerOffTimeSeconds)}: {LayerOffTimeSeconds}, {nameof(DataAddress)}: {DataAddress}, {nameof(DataSize)}: {DataSize}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}";
             }
-
-            
         }
+
+        public class LayerDataEx
+        {
+            /// <summary>
+            /// Gets a copy of layer data defenition
+            /// </summary>
+            [FieldOrder(0)] public LayerData LayerData { get; set; } = new LayerData();
+
+            /// <summary>
+            /// Gets the total size of ctbImageInfo and Image data
+            /// </summary>
+            [FieldOrder(1)] public uint TotalSize { get; set; }
+            [FieldOrder(2)] public float LiftHeight { get; set; }
+            [FieldOrder(3)] public float LiftSpeed { get; set; }
+            [FieldOrder(4)] public uint Unknown6 { get; set; }
+            [FieldOrder(5)] public uint Unknown7 { get; set; }
+            [FieldOrder(6)] public float RetractSpeed { get; set; }
+            [FieldOrder(7)] public uint Unknown8 { get; set; }
+            [FieldOrder(8)] public uint Unknown9 { get; set; }
+            [FieldOrder(9)] public uint Unknown10 { get; set; }
+            [FieldOrder(10)] public uint Unknown11 { get; set; }
+            [FieldOrder(11)] public uint Unknown12 { get; set; }
+            [FieldOrder(12)] public float LightPWM { get; set; }
+
+            public LayerDataEx()
+            {
+            }
+
+            public LayerDataEx(LayerData layerData)
+            {
+                LayerData = layerData;
+                if (!ReferenceEquals(layerData.Parent, null))
+                {
+                    LiftHeight = layerData.Parent.LiftHeight;
+                    LiftSpeed = layerData.Parent.LiftSpeed;
+                    RetractSpeed = layerData.Parent.RetractSpeed;
+                    LightPWM = layerData.Parent.HeaderSettings.LightPWM;
+                }
+
+                if (layerData.DataSize > 0)
+                {
+                    TotalSize = (uint) (Helpers.Serializer.SizeOf(this) + layerData.DataSize);
+                }
+            }
+
+            public override string ToString()
+            {
+                return $"{nameof(LayerData)}: {LayerData}, {nameof(TotalSize)}: {TotalSize}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(Unknown6)}: {Unknown6}, {nameof(Unknown7)}: {Unknown7}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Unknown8)}: {Unknown8}, {nameof(Unknown9)}: {Unknown9}, {nameof(Unknown10)}: {Unknown10}, {nameof(Unknown11)}: {Unknown11}, {nameof(Unknown12)}: {Unknown12}, {nameof(LightPWM)}: {LightPWM}";
+            }
+        }
+
         #endregion
 
-        #region KeyRing
+            #region KeyRing
 
-        public class KeyRing
+            public class KeyRing
         {
             public uint Init { get; }
             public uint Key { get; private set; }
@@ -1270,11 +1329,25 @@ namespace UVtools.Core.FileFormats
                         LayersDefinitions[aaIndex, layerIndex] = layerData;
 
                         layerOffset += (uint) Helpers.Serializer.SizeOf(layerData);
-                        //Debug.Write($"LAYER {layerIndex} -> ");
-                        //Debug.WriteLine(layerData);
+                        Debug.Write($"LAYER {layerIndex} -> ");
+                        Debug.WriteLine(layerData);
 
                         layerData.EncodedRle = new byte[layerData.DataSize];
-                        inputFile.Seek(layerData.DataAddress, SeekOrigin.Begin);
+                        
+
+                        if (HeaderSettings.Version < 3)
+                        {
+                            inputFile.Seek(layerData.DataAddress, SeekOrigin.Begin);
+                        }
+                        else
+                        {
+                            inputFile.Seek(layerData.DataAddress - 84, SeekOrigin.Begin);
+                            LayerDataEx layerDataEx = Helpers.Deserialize<LayerDataEx>(inputFile);
+                            Debug.Write($"LAYER {layerIndex} -> ");
+                            Debug.WriteLine(layerDataEx);
+                        }
+
+
                         inputFile.Read(layerData.EncodedRle, 0, (int) layerData.DataSize);
                         progress++;
                         progress.Token.ThrowIfCancellationRequested();

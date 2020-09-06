@@ -174,7 +174,7 @@ namespace UVtools.GUI.Forms
             this.lbLayerRangeFromMM.Name = "lbLayerRangeFromMM";
             this.lbLayerRangeFromMM.Size = new System.Drawing.Size(120, 20);
             this.lbLayerRangeFromMM.TabIndex = 20;
-            this.lbLayerRangeFromMM.Text = "From mm";
+            this.lbLayerRangeFromMM.Text = "(mm)";
             this.lbLayerRangeFromMM.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lbLayerRangeToMM
