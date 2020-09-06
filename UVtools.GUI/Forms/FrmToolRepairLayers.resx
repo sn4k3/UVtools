@@ -136,8 +136,8 @@ WARNING: Using high iteration values can destroy your model.  Low values recomen
   </data>
   <data name="numOpeningIterations.ToolTip" xml:space="preserve">
     <value>Remove individual or small clusters of pixels in iterations.  This settings can remove noise from a layer, but will also remove fine details.
-Set iterations to 0 to diasble.
-WARNING: Even at low settings this operation has the potential to introduce new islands, as it may remove supporting material from previous layers.</value>
+Set iterations to 0 to diasble. (Recommended)
+WARNING: Even at low settings this operation has the potential to introduce new islands, as it may remove supporting material from previous layers.  It can also lead to empty layers when a particular layer only has a small overall pixel area, such as at the top surface of an object.</value>
   </data>
   <data name="numClosingIterations.ToolTip" xml:space="preserve">
     <value>Attempt to repair islands by attaching them to other nearby islands in safe increments.  If enabled, gap closing is attempted before island removal is attempted.

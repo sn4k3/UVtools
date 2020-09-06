@@ -44,26 +44,26 @@ namespace UVtools.GUI.Forms
             this.lbLayerRange = new System.Windows.Forms.Label();
             this.lbIterationsStart = new System.Windows.Forms.Label();
             this.cbRepairIslands = new System.Windows.Forms.CheckBox();
-            this.cbRepairResinTraps = new System.Windows.Forms.CheckBox();
-            this.cbRemoveEmptyLayers = new System.Windows.Forms.CheckBox();
             this.nmRemoveIslandsBelowEqualPixels = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.groupAdvancedSettings = new System.Windows.Forms.GroupBox();
             this.numOpeningIterations = new System.Windows.Forms.NumericUpDown();
-            this.lbLayerRangeTo = new System.Windows.Forms.Label();
             this.nmLayerRangeEnd = new System.Windows.Forms.NumericUpDown();
             this.nmLayerRangeStart = new System.Windows.Forms.NumericUpDown();
             this.numClosingIterations = new System.Windows.Forms.NumericUpDown();
+            this.cbRepairResinTraps = new System.Windows.Forms.CheckBox();
+            this.cbRemoveEmptyLayers = new System.Windows.Forms.CheckBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.groupAdvancedSettings = new System.Windows.Forms.GroupBox();
+            this.lbLayerRangeTo = new System.Windows.Forms.Label();
             this.cbAdvancedOptions = new System.Windows.Forms.CheckBox();
             this.btnLayerRangeSelect = new UVtools.GUI.Controls.SplitButton();
             this.cmLayerRange.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmRemoveIslandsBelowEqualPixels)).BeginInit();
-            this.groupAdvancedSettings.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numOpeningIterations)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeEnd)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numClosingIterations)).BeginInit();
+            this.groupAdvancedSettings.SuspendLayout();
             this.SuspendLayout();
             // 
             // cmLayerRange
@@ -155,7 +155,7 @@ namespace UVtools.GUI.Forms
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 109);
+            this.label1.Location = new System.Drawing.Point(12, 110);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(190, 20);
@@ -169,16 +169,16 @@ namespace UVtools.GUI.Forms
             this.lbLayerRange.Location = new System.Drawing.Point(12, 35);
             this.lbLayerRange.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbLayerRange.Name = "lbLayerRange";
-            this.lbLayerRange.Size = new System.Drawing.Size(115, 20);
+            this.lbLayerRange.Size = new System.Drawing.Size(151, 20);
             this.lbLayerRange.TabIndex = 24;
-            this.lbLayerRange.Text = "Process layers:";
+            this.lbLayerRange.Text = "Process layers from:";
             this.toolTip.SetToolTip(this.lbLayerRange, "Selects the layer range on which the repair operation will be performed.   Start " +
         "layer must be lower than end layer.");
             // 
             // lbIterationsStart
             // 
             this.lbIterationsStart.AutoSize = true;
-            this.lbIterationsStart.Location = new System.Drawing.Point(12, 71);
+            this.lbIterationsStart.Location = new System.Drawing.Point(12, 72);
             this.lbIterationsStart.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbIterationsStart.Name = "lbIterationsStart";
             this.lbIterationsStart.Size = new System.Drawing.Size(171, 20);
@@ -196,34 +196,9 @@ namespace UVtools.GUI.Forms
             this.cbRepairIslands.Size = new System.Drawing.Size(128, 24);
             this.cbRepairIslands.TabIndex = 16;
             this.cbRepairIslands.Text = "Repair islands";
-            this.toolTip.SetToolTip(this.cbRepairIslands, "If enabled, repair will first attempt to elimnate islands using the gap closure t" +
-        "echnique, and then remove any remaining islands smaller than the pixel area remo" +
-        "val threshold.");
+            this.toolTip.SetToolTip(this.cbRepairIslands, "If enabled, repair will first attempt to eliminate islands smaller than the pixel" +
+        " area removal threshold, and then runs the “gap closure” technique.\r\n");
             this.cbRepairIslands.UseVisualStyleBackColor = true;
-            // 
-            // cbRepairResinTraps
-            // 
-            this.cbRepairResinTraps.AutoSize = true;
-            this.cbRepairResinTraps.Checked = true;
-            this.cbRepairResinTraps.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbRepairResinTraps.Location = new System.Drawing.Point(206, 25);
-            this.cbRepairResinTraps.Name = "cbRepairResinTraps";
-            this.cbRepairResinTraps.Size = new System.Drawing.Size(153, 24);
-            this.cbRepairResinTraps.TabIndex = 19;
-            this.cbRepairResinTraps.Text = "Repair resin traps";
-            this.cbRepairResinTraps.UseVisualStyleBackColor = true;
-            // 
-            // cbRemoveEmptyLayers
-            // 
-            this.cbRemoveEmptyLayers.AutoSize = true;
-            this.cbRemoveEmptyLayers.Checked = true;
-            this.cbRemoveEmptyLayers.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbRemoveEmptyLayers.Location = new System.Drawing.Point(408, 25);
-            this.cbRemoveEmptyLayers.Name = "cbRemoveEmptyLayers";
-            this.cbRemoveEmptyLayers.Size = new System.Drawing.Size(179, 24);
-            this.cbRemoveEmptyLayers.TabIndex = 20;
-            this.cbRemoveEmptyLayers.Text = "Remove empty layers";
-            this.cbRemoveEmptyLayers.UseVisualStyleBackColor = true;
             // 
             // nmRemoveIslandsBelowEqualPixels
             // 
@@ -249,6 +224,85 @@ namespace UVtools.GUI.Forms
             this.label2.Text = "Do not remove islands larger than:";
             this.toolTip.SetToolTip(this.label2, "The pixel area theshold above which islands will not be removed by this repair.  " +
         " Islands remaining after repair will require supports to be added manually.");
+            // 
+            // numOpeningIterations
+            // 
+            this.numOpeningIterations.Location = new System.Drawing.Point(210, 107);
+            this.numOpeningIterations.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.numOpeningIterations.Name = "numOpeningIterations";
+            this.numOpeningIterations.Size = new System.Drawing.Size(89, 26);
+            this.numOpeningIterations.TabIndex = 27;
+            this.toolTip.SetToolTip(this.numOpeningIterations, resources.GetString("numOpeningIterations.ToolTip"));
+            // 
+            // nmLayerRangeEnd
+            // 
+            this.nmLayerRangeEnd.Location = new System.Drawing.Point(352, 33);
+            this.nmLayerRangeEnd.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.nmLayerRangeEnd.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.nmLayerRangeEnd.Name = "nmLayerRangeEnd";
+            this.nmLayerRangeEnd.Size = new System.Drawing.Size(102, 26);
+            this.nmLayerRangeEnd.TabIndex = 20;
+            this.toolTip.SetToolTip(this.nmLayerRangeEnd, "End Layer");
+            // 
+            // nmLayerRangeStart
+            // 
+            this.nmLayerRangeStart.Location = new System.Drawing.Point(210, 33);
+            this.nmLayerRangeStart.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.nmLayerRangeStart.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.nmLayerRangeStart.Name = "nmLayerRangeStart";
+            this.nmLayerRangeStart.Size = new System.Drawing.Size(89, 26);
+            this.nmLayerRangeStart.TabIndex = 19;
+            this.toolTip.SetToolTip(this.nmLayerRangeStart, "Start Layer");
+            // 
+            // numClosingIterations
+            // 
+            this.numClosingIterations.Location = new System.Drawing.Point(210, 69);
+            this.numClosingIterations.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.numClosingIterations.Name = "numClosingIterations";
+            this.numClosingIterations.Size = new System.Drawing.Size(89, 26);
+            this.numClosingIterations.TabIndex = 22;
+            this.toolTip.SetToolTip(this.numClosingIterations, resources.GetString("numClosingIterations.ToolTip"));
+            this.numClosingIterations.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // cbRepairResinTraps
+            // 
+            this.cbRepairResinTraps.AutoSize = true;
+            this.cbRepairResinTraps.Checked = true;
+            this.cbRepairResinTraps.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbRepairResinTraps.Location = new System.Drawing.Point(206, 25);
+            this.cbRepairResinTraps.Name = "cbRepairResinTraps";
+            this.cbRepairResinTraps.Size = new System.Drawing.Size(153, 24);
+            this.cbRepairResinTraps.TabIndex = 19;
+            this.cbRepairResinTraps.Text = "Repair resin traps";
+            this.toolTip.SetToolTip(this.cbRepairResinTraps, "If enabled, repair will fill black pixels found within a resin trap with white pi" +
+        "xels.  Hollow areas will become solid.");
+            this.cbRepairResinTraps.UseVisualStyleBackColor = true;
+            // 
+            // cbRemoveEmptyLayers
+            // 
+            this.cbRemoveEmptyLayers.AutoSize = true;
+            this.cbRemoveEmptyLayers.Checked = true;
+            this.cbRemoveEmptyLayers.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbRemoveEmptyLayers.Location = new System.Drawing.Point(408, 25);
+            this.cbRemoveEmptyLayers.Name = "cbRemoveEmptyLayers";
+            this.cbRemoveEmptyLayers.Size = new System.Drawing.Size(179, 24);
+            this.cbRemoveEmptyLayers.TabIndex = 20;
+            this.cbRemoveEmptyLayers.Text = "Remove empty layers";
+            this.toolTip.SetToolTip(this.cbRemoveEmptyLayers, "If enabled, repair will remove all layers with no white pixels.  The model will b" +
+        "e recalculated to ensure the correct Z height is maintained.");
+            this.cbRemoveEmptyLayers.UseVisualStyleBackColor = true;
             // 
             // label3
             // 
@@ -278,71 +332,15 @@ namespace UVtools.GUI.Forms
             this.groupAdvancedSettings.Text = "Advanced Settings";
             this.groupAdvancedSettings.Visible = false;
             // 
-            // numOpeningIterations
-            // 
-            this.numOpeningIterations.Location = new System.Drawing.Point(202, 107);
-            this.numOpeningIterations.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.numOpeningIterations.Name = "numOpeningIterations";
-            this.numOpeningIterations.Size = new System.Drawing.Size(92, 26);
-            this.numOpeningIterations.TabIndex = 27;
-            this.toolTip.SetToolTip(this.numOpeningIterations, resources.GetString("numOpeningIterations.ToolTip"));
-            this.numOpeningIterations.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            // 
             // lbLayerRangeTo
             // 
             this.lbLayerRangeTo.AutoSize = true;
-            this.lbLayerRangeTo.Location = new System.Drawing.Point(243, 35);
+            this.lbLayerRangeTo.Location = new System.Drawing.Point(313, 36);
             this.lbLayerRangeTo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbLayerRangeTo.Name = "lbLayerRangeTo";
             this.lbLayerRangeTo.Size = new System.Drawing.Size(31, 20);
             this.lbLayerRangeTo.TabIndex = 25;
             this.lbLayerRangeTo.Text = "To:";
-            // 
-            // nmLayerRangeEnd
-            // 
-            this.nmLayerRangeEnd.Location = new System.Drawing.Point(282, 32);
-            this.nmLayerRangeEnd.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.nmLayerRangeEnd.Maximum = new decimal(new int[] {
-            100000,
-            0,
-            0,
-            0});
-            this.nmLayerRangeEnd.Name = "nmLayerRangeEnd";
-            this.nmLayerRangeEnd.Size = new System.Drawing.Size(102, 26);
-            this.nmLayerRangeEnd.TabIndex = 20;
-            this.toolTip.SetToolTip(this.nmLayerRangeEnd, "End Layer");
-            // 
-            // nmLayerRangeStart
-            // 
-            this.nmLayerRangeStart.Location = new System.Drawing.Point(133, 32);
-            this.nmLayerRangeStart.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.nmLayerRangeStart.Maximum = new decimal(new int[] {
-            100000,
-            0,
-            0,
-            0});
-            this.nmLayerRangeStart.Name = "nmLayerRangeStart";
-            this.nmLayerRangeStart.Size = new System.Drawing.Size(102, 26);
-            this.nmLayerRangeStart.TabIndex = 19;
-            this.toolTip.SetToolTip(this.nmLayerRangeStart, "Start Layer");
-            // 
-            // numClosingIterations
-            // 
-            this.numClosingIterations.Location = new System.Drawing.Point(184, 69);
-            this.numClosingIterations.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.numClosingIterations.Name = "numClosingIterations";
-            this.numClosingIterations.Size = new System.Drawing.Size(89, 26);
-            this.numClosingIterations.TabIndex = 22;
-            this.toolTip.SetToolTip(this.numClosingIterations, resources.GetString("numClosingIterations.ToolTip"));
-            this.numClosingIterations.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
             // 
             // cbAdvancedOptions
             // 
@@ -358,10 +356,10 @@ namespace UVtools.GUI.Forms
             // 
             // btnLayerRangeSelect
             // 
-            this.btnLayerRangeSelect.Location = new System.Drawing.Point(399, 32);
+            this.btnLayerRangeSelect.Location = new System.Drawing.Point(469, 33);
             this.btnLayerRangeSelect.Menu = this.cmLayerRange;
             this.btnLayerRangeSelect.Name = "btnLayerRangeSelect";
-            this.btnLayerRangeSelect.Size = new System.Drawing.Size(102, 26);
+            this.btnLayerRangeSelect.Size = new System.Drawing.Size(111, 26);
             this.btnLayerRangeSelect.TabIndex = 21;
             this.btnLayerRangeSelect.Text = "Select";
             this.toolTip.SetToolTip(this.btnLayerRangeSelect, "Select specific subsets of layers");
@@ -395,15 +393,14 @@ namespace UVtools.GUI.Forms
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Repair Layers";
             this.TopMost = true;
-            this.Load += new System.EventHandler(this.FrmToolRepairLayers_Load);
             this.cmLayerRange.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.nmRemoveIslandsBelowEqualPixels)).EndInit();
-            this.groupAdvancedSettings.ResumeLayout(false);
-            this.groupAdvancedSettings.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numOpeningIterations)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeEnd)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numClosingIterations)).EndInit();
+            this.groupAdvancedSettings.ResumeLayout(false);
+            this.groupAdvancedSettings.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 

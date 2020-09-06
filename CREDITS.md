@@ -30,3 +30,4 @@
 * Paul Hammerstrom
 * Jeremy Lauzon
 * Peter Teal
+* Ulrich Mandl

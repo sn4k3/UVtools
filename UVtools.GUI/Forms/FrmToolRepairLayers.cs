@@ -7,7 +7,9 @@
  */
 
 using System;
+using System.Linq;
 using System.Windows.Forms;
+using UVtools.Core;
 
 namespace UVtools.GUI.Forms
 {
@@ -81,10 +83,18 @@ namespace UVtools.GUI.Forms
 
             nmLayerRangeEnd.Value = Program.SlicerFile.LayerCount-1;
 
+            Height -= groupAdvancedSettings.Height;
+
+            /*if(ReferenceEquals(Program.FrmMain.Issues, null) || Program.FrmMain.Issues.All(issue => issue.Type != LayerIssue.IssueType.ResinTrap))
+            {
+                cbRepairResinTraps.Enabled = cbRepairResinTraps.Checked = false;
+            }*/
+            
         }
         #endregion
 
         #region Overrides
+
         protected override void OnKeyUp(KeyEventArgs e)
         {
             base.OnKeyUp(e);
@@ -130,6 +140,26 @@ namespace UVtools.GUI.Forms
         #endregion
 
         #region Events
+        private void cbAdvancedOptions_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cbAdvancedOptions.Checked)
+            {
+                if (!groupAdvancedSettings.Visible)
+                {
+                    groupAdvancedSettings.Visible = true;
+                    Height += groupAdvancedSettings.Height;
+                }
+            }
+            else
+            {
+                if (groupAdvancedSettings.Visible)
+                {
+                    groupAdvancedSettings.Visible = false;
+                    Height -= groupAdvancedSettings.Height;
+                }
+            }
+        }
+
         private void ItemClicked(object sender, EventArgs e)
         {
             if (ReferenceEquals(sender, btnLayerRangeAllLayers))
@@ -208,34 +238,6 @@ namespace UVtools.GUI.Forms
 
         #endregion
 
-        private void cbAdvancedOptions_CheckedChanged(object sender, EventArgs e)
-        {
-            if (cbAdvancedOptions.Checked)
-            {
-                if (groupAdvancedSettings.Visible == false)
-                {
-                    groupAdvancedSettings.Visible = true;
-                    FrmToolRepairLayers.ActiveForm.Height += groupAdvancedSettings.Height;
-                }
-            }
-            else
-            {
-                if (groupAdvancedSettings.Visible == true)
-                {
-                    groupAdvancedSettings.Visible = false;
-                    FrmToolRepairLayers.ActiveForm.Height -= groupAdvancedSettings.Height;
-                }
-            }
-        }
-
-        private void FrmToolRepairLayers_Load(object sender, EventArgs e)
-        {
-            cbAdvancedOptions.Checked = false;
-            groupAdvancedSettings.Visible = false;
-
-
-
-            FrmToolRepairLayers.ActiveForm.Height -= groupAdvancedSettings.Height;
-        }
+        
     }
 }

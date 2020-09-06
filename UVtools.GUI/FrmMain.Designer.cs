@@ -849,7 +849,7 @@ namespace UVtools.GUI
             // 
             this.btnLayerImageLayerOutlinePrintVolumeBounds.CheckOnClick = true;
             this.btnLayerImageLayerOutlinePrintVolumeBounds.Name = "btnLayerImageLayerOutlinePrintVolumeBounds";
-            this.btnLayerImageLayerOutlinePrintVolumeBounds.Size = new System.Drawing.Size(185, 22);
+            this.btnLayerImageLayerOutlinePrintVolumeBounds.Size = new System.Drawing.Size(196, 22);
             this.btnLayerImageLayerOutlinePrintVolumeBounds.Text = "Print Volume Boundary";
             this.btnLayerImageLayerOutlinePrintVolumeBounds.Click += new System.EventHandler(this.EventClick);
             // 
@@ -857,7 +857,7 @@ namespace UVtools.GUI
             // 
             this.btnLayerImageLayerOutlineLayerBounds.CheckOnClick = true;
             this.btnLayerImageLayerOutlineLayerBounds.Name = "btnLayerImageLayerOutlineLayerBounds";
-            this.btnLayerImageLayerOutlineLayerBounds.Size = new System.Drawing.Size(185, 22);
+            this.btnLayerImageLayerOutlineLayerBounds.Size = new System.Drawing.Size(196, 22);
             this.btnLayerImageLayerOutlineLayerBounds.Text = "Layer Boundary";
             this.btnLayerImageLayerOutlineLayerBounds.Click += new System.EventHandler(this.EventClick);
             // 
@@ -865,7 +865,7 @@ namespace UVtools.GUI
             // 
             this.btnLayerImageLayerOutlineHollowAreas.CheckOnClick = true;
             this.btnLayerImageLayerOutlineHollowAreas.Name = "btnLayerImageLayerOutlineHollowAreas";
-            this.btnLayerImageLayerOutlineHollowAreas.Size = new System.Drawing.Size(185, 22);
+            this.btnLayerImageLayerOutlineHollowAreas.Size = new System.Drawing.Size(196, 22);
             this.btnLayerImageLayerOutlineHollowAreas.Text = "Hollow Areas";
             this.btnLayerImageLayerOutlineHollowAreas.Click += new System.EventHandler(this.EventClick);
             // 
@@ -873,7 +873,7 @@ namespace UVtools.GUI
             // 
             this.btnLayerImageLayerOutlineEdgeDetection.CheckOnClick = true;
             this.btnLayerImageLayerOutlineEdgeDetection.Name = "btnLayerImageLayerOutlineEdgeDetection";
-            this.btnLayerImageLayerOutlineEdgeDetection.Size = new System.Drawing.Size(185, 22);
+            this.btnLayerImageLayerOutlineEdgeDetection.Size = new System.Drawing.Size(196, 22);
             this.btnLayerImageLayerOutlineEdgeDetection.Text = "&Edge Detection";
             this.btnLayerImageLayerOutlineEdgeDetection.Click += new System.EventHandler(this.EventClick);
             // 
