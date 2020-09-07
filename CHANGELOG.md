@@ -2,6 +2,7 @@
 
 ## ?/08/2020 - v0.7.1.0
 
+* (Add) Layer importer tool (#37)
 * (Add) Settings & Issues: Enable or disable Empty Layers
 * (Add) PrusaSlicer Printer: Nova Bene4 Mono
 * (Add) CWS: Support the GRAY2RGB and RBG2GRAY encoding for Bene Mono
@@ -12,14 +13,15 @@
 Less frequently used settings for gap and noise removal iterations have been moved to an advanced settings group that is hidden by default, and can be shown if changes in those settings is desired. For many users, those advanced settings can be left on default and never adjusted. (#43)
 * (Change) Shortcuts: + and - to go up and down on layers were change to W and S keys. Reason: + and - are bound to zoom and can lead to problems
 * (Upgrade) OpenCV from 4.2 to 4.3
+* (Upgrade) BinarySerializer from 8.5.2 to 8.5.3
 * (Remove) Menu - Tools - Layer Removal and Layer clone for redudancy they now home at layer preview toolbar under "Actions" dropdown button
 * (Fix) CWS: Add missing Platform X,Y,Z size when converting from SL1
 * (Fix) CWS: Invert XY resolution when converting from SL1
 * (Fix) Layer Preview: When selecting issues using SHIFT in the layer preview, the selected issue doesn't update in the issue list until after shift is released and slow operation
 * (Fix) PrusaSlicer Printer: Kelant S400 Y Resolution from 1440 to 1600 and default slice settings, FLIP_XY removed, portait mode to landscape
 * (Fix) Layer Clone window title was set to Pattern
-* (Fix) CTB: Add support for CTB v3 (ezrec/uv3dp#97)
-* (Fix) SL1: Bottle volume doesnt accept decimal numbers
+* (Fix) CTB: Add support for CTB v3 (ezrec/uv3dp#97, #36)
+* (Fix) SL1: Bottle volume doesn't accept decimal numbers
 
 ## 04/08/2020 - v0.7.0.0
 

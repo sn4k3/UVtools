@@ -46,7 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BinarySerializer" Version="8.5.2" />
+    <PackageReference Include="BinarySerializer" Version="8.5.3" />
     <PackageReference Include="Emgu.CV" Version="4.4.0.4061" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
