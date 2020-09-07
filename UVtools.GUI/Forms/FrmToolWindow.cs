@@ -82,7 +82,7 @@ namespace UVtools.GUI.Forms
 
         [ReadOnly(true)]
         [Browsable(false)]
-        public virtual string ConfirmationText { get; } = "do this action?";
+        public virtual string ConfirmationText => $"{Text}?";
 
 
         #endregion

@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using UVtools.Core.Extensions;
 using UVtools.GUI.Annotations;
+using UVtools.GUI.Forms;
 
 namespace UVtools.GUI.Controls
 {
@@ -69,9 +70,11 @@ namespace UVtools.GUI.Controls
             }
         }
         #endregion
-        
+
 
         #region Properties
+
+        [ReadOnly(true)] [Browsable(false)] public FrmToolWindow ParentToolWindow => ParentForm as FrmToolWindow;
 
         [Editor("System.ComponentModel.Design.MultilineStringEditor", typeof(UITypeEditor))]
         [SettingsBindable(true)]
@@ -105,7 +108,7 @@ namespace UVtools.GUI.Controls
 
         [ReadOnly(true)]
         [Browsable(false)]
-        public virtual string ConfirmationText { get; } = "do this action?";
+        public virtual string ConfirmationText => $"{Text}?";
 
         #endregion
 

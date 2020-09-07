@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
@@ -43,17 +44,16 @@ namespace UVtools.Core.Operations
         {
             if (DiscardRemainingLayers)
             {
-                return (uint) (1 + InsertAfterLayerIndex + Files.Count - (ReplaceStartLayer ? 1u : 0u));
+                return (uint) (1 + InsertAfterLayerIndex + Files.Count - (ReplaceStartLayer ? 1 : 0));
             }
-            if (!ReplaceSubsequentLayers)
+            if (ReplaceSubsequentLayers)
             {
-                return (uint)(totalLayers + Files.Count - (ReplaceStartLayer ? 1u : 0u));
+                uint result = (uint) (1 + InsertAfterLayerIndex + Files.Count - (ReplaceStartLayer ? 1 : 0));
+                return result <= totalLayers ? totalLayers : result;
             }
 
-            // Need to calculate the total layer count after subsequent replacing, taking in account that layer count can grow
+            return (uint)(totalLayers + Files.Count - (ReplaceStartLayer ? 1 : 0));
 
-
-            return 0;
         }
     }
 }
