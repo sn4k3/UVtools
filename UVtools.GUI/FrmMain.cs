@@ -983,7 +983,8 @@ namespace UVtools.GUI
 
                 if (ReferenceEquals(menuItem, menuToolsLayerRemoval))
                 {
-                    using (var frm = new FrmToolEmpty(ActualLayer, "Remove Layer(s)", "Removes layer(s) in a given range", "Remove"))
+                    using (var frm = new FrmToolWindow("Remove Layer(s)", "Removes layer(s) in a given range", "Remove", ActualLayer, true))
+                    //using (var frm = new FrmToolEmpty(ActualLayer, "Remove Layer(s)", "Removes layer(s) in a given range", "Remove"))
                     {
                         if (frm.ShowDialog() != DialogResult.OK) return;
 

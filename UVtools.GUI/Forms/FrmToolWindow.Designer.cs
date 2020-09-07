@@ -44,7 +44,6 @@ namespace UVtools.GUI.Forms
             this.lbLayerRangeFromMM = new System.Windows.Forms.Label();
             this.lbLayerRangeToMM = new System.Windows.Forms.Label();
             this.nmLayerRangeEnd = new System.Windows.Forms.NumericUpDown();
-            this.btnLayerRangeSelect = new UVtools.GUI.Controls.SplitButton();
             this.cmLayerRange = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.btnLayerRangeAllLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.btnLayerRangeCurrentLayer = new System.Windows.Forms.ToolStripMenuItem();
@@ -53,6 +52,7 @@ namespace UVtools.GUI.Forms
             this.lbLayerRange = new System.Windows.Forms.Label();
             this.lbLayerRangeTo = new System.Windows.Forms.Label();
             this.nmLayerRangeStart = new System.Windows.Forms.NumericUpDown();
+            this.btnLayerRangeSelect = new UVtools.GUI.Controls.SplitButton();
             this.pnDescription.SuspendLayout();
             this.pnActions.SuspendLayout();
             this.pnLayerRange.SuspendLayout();
@@ -66,6 +66,7 @@ namespace UVtools.GUI.Forms
             // 
             this.pnDescription.AutoSize = true;
             this.pnDescription.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.pnDescription.BackColor = System.Drawing.SystemColors.Control;
             this.pnDescription.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnDescription.Controls.Add(this.lbDescription);
             this.pnDescription.Dock = System.Windows.Forms.DockStyle.Top;
@@ -88,6 +89,7 @@ namespace UVtools.GUI.Forms
             // 
             // pnActions
             // 
+            this.pnActions.BackColor = System.Drawing.SystemColors.Control;
             this.pnActions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnActions.Controls.Add(this.btnCancel);
             this.pnActions.Controls.Add(this.btnOk);
@@ -215,16 +217,6 @@ namespace UVtools.GUI.Forms
             this.nmLayerRangeEnd.TabIndex = 14;
             this.nmLayerRangeEnd.ValueChanged += new System.EventHandler(this.EventValueChanged);
             // 
-            // btnLayerRangeSelect
-            // 
-            this.btnLayerRangeSelect.Location = new System.Drawing.Point(359, 31);
-            this.btnLayerRangeSelect.Menu = this.cmLayerRange;
-            this.btnLayerRangeSelect.Name = "btnLayerRangeSelect";
-            this.btnLayerRangeSelect.Size = new System.Drawing.Size(175, 26);
-            this.btnLayerRangeSelect.TabIndex = 18;
-            this.btnLayerRangeSelect.Text = "Select";
-            this.btnLayerRangeSelect.UseVisualStyleBackColor = true;
-            // 
             // cmLayerRange
             // 
             this.cmLayerRange.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -305,10 +297,21 @@ namespace UVtools.GUI.Forms
             this.nmLayerRangeStart.TabIndex = 13;
             this.nmLayerRangeStart.ValueChanged += new System.EventHandler(this.EventValueChanged);
             // 
+            // btnLayerRangeSelect
+            // 
+            this.btnLayerRangeSelect.Location = new System.Drawing.Point(359, 31);
+            this.btnLayerRangeSelect.Menu = this.cmLayerRange;
+            this.btnLayerRangeSelect.Name = "btnLayerRangeSelect";
+            this.btnLayerRangeSelect.Size = new System.Drawing.Size(175, 26);
+            this.btnLayerRangeSelect.TabIndex = 18;
+            this.btnLayerRangeSelect.Text = "Select";
+            this.btnLayerRangeSelect.UseVisualStyleBackColor = true;
+            // 
             // FrmToolWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.White;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(547, 260);
             this.Controls.Add(this.pnContent);
