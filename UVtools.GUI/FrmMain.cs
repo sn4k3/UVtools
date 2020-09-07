@@ -1160,7 +1160,7 @@ namespace UVtools.GUI
 
             if (ReferenceEquals(sender, btnLayerImageActionImport))
             {
-                using (var frm = new FrmToolWindow(new CtrlToolLayerImport(), ActualLayer))
+                using (var frm = new FrmToolWindow(new CtrlToolLayerImport(ActualLayer)))
                 {
                     frm.ShowDialog();
                 }

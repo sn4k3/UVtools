@@ -28,20 +28,32 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.SuspendLayout();
+            // 
+            // toolTip
+            // 
+            this.toolTip.AutoPopDelay = 32767;
+            this.toolTip.InitialDelay = 500;
+            this.toolTip.ReshowDelay = 100;
+            this.toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
+            this.toolTip.ToolTipTitle = "Information";
             // 
             // CtrlToolWindowContent
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.MinimumSize = new System.Drawing.Size(563, 0);
+            this.MinimumSize = new System.Drawing.Size(540, 0);
             this.Name = "CtrlToolWindowContent";
-            this.Size = new System.Drawing.Size(563, 261);
+            this.Size = new System.Drawing.Size(540, 261);
             this.ResumeLayout(false);
 
         }
 
         #endregion
+
+        public System.Windows.Forms.ToolTip toolTip;
     }
 }

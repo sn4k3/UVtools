@@ -34,9 +34,9 @@ namespace UVtools.GUI.Forms
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmToolWindow));
             this.pnDescription = new System.Windows.Forms.Panel();
             this.lbDescription = new System.Windows.Forms.Label();
+            this.pnActions = new System.Windows.Forms.Panel();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnOk = new System.Windows.Forms.Button();
-            this.pnActions = new System.Windows.Forms.Panel();
             this.pnContent = new System.Windows.Forms.Panel();
             this.pnLayerRange = new System.Windows.Forms.Panel();
             this.gbLayerRange = new System.Windows.Forms.GroupBox();
@@ -86,6 +86,17 @@ namespace UVtools.GUI.Forms
             this.lbDescription.Text = "Description";
             this.lbDescription.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // pnActions
+            // 
+            this.pnActions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnActions.Controls.Add(this.btnCancel);
+            this.pnActions.Controls.Add(this.btnOk);
+            this.pnActions.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.pnActions.Location = new System.Drawing.Point(0, 182);
+            this.pnActions.Name = "pnActions";
+            this.pnActions.Size = new System.Drawing.Size(547, 78);
+            this.pnActions.TabIndex = 8;
+            // 
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -119,21 +130,11 @@ namespace UVtools.GUI.Forms
             this.btnOk.UseVisualStyleBackColor = true;
             this.btnOk.Click += new System.EventHandler(this.EventClick);
             // 
-            // pnActions
-            // 
-            this.pnActions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pnActions.Controls.Add(this.btnCancel);
-            this.pnActions.Controls.Add(this.btnOk);
-            this.pnActions.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnActions.Location = new System.Drawing.Point(0, 182);
-            this.pnActions.Name = "pnActions";
-            this.pnActions.Size = new System.Drawing.Size(547, 78);
-            this.pnActions.TabIndex = 8;
-            // 
             // pnContent
             // 
             this.pnContent.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.pnContent.BackColor = System.Drawing.Color.White;
+            this.pnContent.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnContent.Location = new System.Drawing.Point(0, 170);
             this.pnContent.Name = "pnContent";

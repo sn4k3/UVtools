@@ -6,17 +6,15 @@
  *  of this license document, but changing it is not allowed.
  */
 using System.ComponentModel;
-using System.Drawing.Design;
 using System.Runtime.CompilerServices;
-using System.Windows.Forms;
-using UVtools.Core.Extensions;
-using UVtools.GUI.Annotations;
 
-namespace UVtools.GUI.Controls
+namespace UVtools.Core.Obects
 {
-    public partial class CtrlToolWindowContent : UserControl, INotifyPropertyChanged
+    /// <summary>
+    ///     Implementation of <see cref="INotifyPropertyChanged" /> to simplify models.
+    /// </summary>
+    public abstract class BindableBase : INotifyPropertyChanged
     {
-        #region BindableBase
         /// <summary>
         ///     Multicast event for property change notifications.
         /// </summary>
@@ -38,7 +36,6 @@ namespace UVtools.GUI.Controls
         ///     True if the value was changed, false if the existing value matched the
         ///     desired value.
         /// </returns>
-        [NotifyPropertyChangedInvocator]
         protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
         {
             if (Equals(storage, value))
@@ -59,7 +56,6 @@ namespace UVtools.GUI.Controls
         ///     value is optional and can be provided automatically when invoked from compilers
         ///     that support <see cref="CallerMemberNameAttribute" />.
         /// </param>
-        [NotifyPropertyChangedInvocator]
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             var eventHandler = PropertyChanged;
@@ -68,63 +64,5 @@ namespace UVtools.GUI.Controls
                 eventHandler(this, new PropertyChangedEventArgs(propertyName));
             }
         }
-        #endregion
-        
-
-        #region Properties
-
-        [Editor("System.ComponentModel.Design.MultilineStringEditor", typeof(UITypeEditor))]
-        [SettingsBindable(true)]
-        public string Description { get; set; }
-
-        private bool _buttonOkEnabled;
-        [SettingsBindable(true)]
-        public bool ButtonOkEnabled
-        {
-            get => _buttonOkEnabled;
-            set => SetProperty(ref _buttonOkEnabled, value);
-        }
-
-        [Editor("System.ComponentModel.Design.MultilineStringEditor", typeof(UITypeEditor))]
-        [SettingsBindable(true)]
-        public string ButtonOkText { get; set; } = "Ok";
-
-        [Editor("System.ComponentModel.Design.MultilineStringEditor", typeof(UITypeEditor))]
-        [SettingsBindable(true)]
-        public string ButtonCancelText { get; set; } = "Cancel";
-
-        [SettingsBindable(true)] public bool LayerRangeVisible { get; set; } = true;
-
-        [SettingsBindable(true)] public bool LayerRangeEndVisible { get; set; } = true;
-
-        /*[SettingsBindable(true)]
-        public uint LayerRangeStart { get; set; }
-
-        [SettingsBindable(true)]
-        public uint LayerRangeEnd { get; set; }*/
-
-        [ReadOnly(true)]
-        [Browsable(false)]
-        public virtual string ConfirmationText { get; } = "do this action?";
-
-        #endregion
-
-        #region Constructor
-        public CtrlToolWindowContent()
-        {
-            InitializeComponent();
-        }
-        #endregion
-
-        #region Methods
-
-        public virtual bool ValidateForm() => true;
-
-        public DialogResult MessageErrorBox(string message, MessageBoxButtons buttons = MessageBoxButtons.OK) => GUIExtensions.MessageErrorBox($"{Text} Error", message, buttons);
-        public DialogResult MessageQuestionBox(string message, string title = null, MessageBoxButtons buttons = MessageBoxButtons.YesNo) => GUIExtensions.MessageQuestionBox($"{title ?? Text}", message, buttons);
-
-        #endregion
-
-        
     }
 }

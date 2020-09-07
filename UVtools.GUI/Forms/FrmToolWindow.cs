@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Design;
 using System.Windows.Forms;
+using UVtools.Core.Extensions;
 using UVtools.GUI.Controls;
 
 namespace UVtools.GUI.Forms
@@ -79,8 +80,8 @@ namespace UVtools.GUI.Forms
             set => nmLayerRangeEnd.Value = value;
         }
 
-        [Editor("System.ComponentModel.Design.MultilineStringEditor", typeof(UITypeEditor))]
-        [SettingsBindable(true)]
+        [ReadOnly(true)]
+        [Browsable(false)]
         public virtual string ConfirmationText { get; } = "do this action?";
 
 
@@ -93,11 +94,17 @@ namespace UVtools.GUI.Forms
             InitializeComponent();
         }
 
-        public FrmToolWindow(string description, string buttonOkText, bool layerRangeVisible = true) : this()
+        public FrmToolWindow(string description, string buttonOkText, bool layerRangeVisible = true, bool layerRangeEndVisible = true) : this()
         {
+            if (!layerRangeVisible)
+            {
+                Height -= pnLayerRange.Height;
+            }
+
             Description = description;
             ButtonOkText = buttonOkText;
             LayerRangeVisible = layerRangeVisible;
+            LayerRangeEndVisible = layerRangeEndVisible;
             LayerRangeEnd = Program.SlicerFile.LayerCount - 1;
 
             EventValueChanged(nmLayerRangeStart, EventArgs.Empty);
@@ -109,13 +116,26 @@ namespace UVtools.GUI.Forms
             LayerRangeStart = LayerRangeEnd = layerIndex;
         }
 
-        public FrmToolWindow(CtrlToolWindowContent content, bool layerRangeVisible = true) : this(content.Description, content.ButtonOkText, layerRangeVisible)
+        public FrmToolWindow(CtrlToolWindowContent content) : this(content.Description, content.ButtonOkText, content.LayerRangeVisible, content.LayerRangeEndVisible)
         {
+            Text = content.Text;
             pnContent.Controls.Add(content);
             Width = Math.Max(MinimumSize.Width, content.Width);
             Height += content.Height;
             content.Dock = DockStyle.Fill;
+            btnOk.Enabled = content.ButtonOkEnabled;
             Content = content;
+
+            content.PropertyChanged += ContentOnPropertyChanged;
+        }
+
+        private void ContentOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Content.ButtonOkEnabled))
+            {
+                btnOk.Enabled = Content.ButtonOkEnabled;
+                return;
+            }
         }
 
         public FrmToolWindow(CtrlToolWindowContent content, uint layerIndex) : this(content)
@@ -217,16 +237,15 @@ namespace UVtools.GUI.Forms
 
                 if (LayerRangeStart > LayerRangeEnd)
                 {
-                    MessageBox.Show("Layer range start can't be higher than layer end.\nPlease fix and try again.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageErrorBox("Layer range start can't be higher than layer end.\nPlease fix and try again.");
                     nmLayerRangeStart.Select();
                     return;
                 }
 
                 if (!ValidateForm()) return;
-                if (!ReferenceEquals(Content, null) && !ValidateForm()) return;
+                if (!ReferenceEquals(Content, null) && !Content.ValidateForm()) return;
 
-                if (MessageBox.Show($"Are you sure you want to {Content?.ConfirmationText ?? ConfirmationText}", Text, MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question) == DialogResult.Yes)
+                if (MessageQuestionBox($"Are you sure you want to {Content?.ConfirmationText ?? ConfirmationText}") == DialogResult.Yes)
                 {
                     DialogResult = DialogResult.OK;
                     Close();
@@ -250,7 +269,8 @@ namespace UVtools.GUI.Forms
                 if (layerIndex >= Program.SlicerFile.LayerCount) return;
                 var layer = Program.SlicerFile[layerIndex];
                 var text = $"({layer.PositionZ}mm)";
-                uint layerCount = (uint) Math.Max(0, nmLayerRangeEnd.Value - nmLayerRangeStart.Value + 1);
+
+                uint layerCount = LayerRangeEndVisible ? (uint) Math.Max(0, nmLayerRangeEnd.Value - nmLayerRangeStart.Value + 1) : 1;
                 lbLayerRangeCount.Text = $"({layerCount} layer / {Program.SlicerFile.LayerHeight * layerCount}mm)";
 
                 if (layerCount == 0)
@@ -284,6 +304,9 @@ namespace UVtools.GUI.Forms
         #region Methods
 
         public virtual bool ValidateForm() => true;
+
+        public DialogResult MessageErrorBox(string message) => GUIExtensions.MessageErrorBox($"{Text} Error", message);
+        public DialogResult MessageQuestionBox(string message, string title = null) => GUIExtensions.MessageQuestionBox($"{title ?? Text}", message);
 
         #endregion
 

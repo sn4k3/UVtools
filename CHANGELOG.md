@@ -6,6 +6,7 @@
 * (Add) PrusaSlicer Printer: Nova Bene4 Mono
 * (Add) CWS: Support the GRAY2RGB and RBG2GRAY encoding for Bene Mono
 * (Add) Layer issue Z map paired with layer navigation tracker bar
+* (Add) Setting: Pixel editor can be configured to exit after each apply operation (#45)
 * (Improvement) When zoom into issue or drawing now it checks bounds of zoom rectangle and only performs ZoomToFit is it will be larger then the viewPort after zoom. Otherwise, it will zoom to the fixed zoom level (Auto zoom to region setting dropped as merged into this) (#42)
 * (Improvement) Layer and Issues Repair: Detailed description and warning text in this dialog has been moved from main form into tooltips. It's useful information for new users, but not needed to be visible each time repair is run.
 Less frequently used settings for gap and noise removal iterations have been moved to an advanced settings group that is hidden by default, and can be shown if changes in those settings is desired. For many users, those advanced settings can be left on default and never adjusted. (#43)

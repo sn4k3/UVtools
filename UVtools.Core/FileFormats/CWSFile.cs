@@ -373,7 +373,7 @@ namespace UVtools.Core.FileFormats
                 progress.ItemCount = OutputSettings.LayersNum;
 
                 var gcode = GCode.ToString();
-                float currentHeight = 0;
+                //float currentHeight = 0;
 
 
                 int layerSize = OutputSettings.LayersNum.ToString().Length;

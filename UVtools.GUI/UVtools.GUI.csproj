@@ -152,12 +152,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controls\BenchmarkTest.cs" />
-    <Compile Include="Controls\CtrlDescriptionPanel.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\CtrlDescriptionPanel.Designer.cs">
-      <DependentUpon>CtrlDescriptionPanel.cs</DependentUpon>
-    </Compile>
     <Compile Include="Controls\CtrlKernel.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -185,6 +179,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Extensions\BitmapExtension.cs" />
+    <Compile Include="Extensions\GUIExtensions.cs" />
     <Compile Include="Forms\FrmBenchmark.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -326,10 +321,8 @@
     <Compile Include="Forms\PEProfileFolder.cs" />
     <Compile Include="Mutation.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Controls\CtrlDescriptionPanel.resx">
-      <DependentUpon>CtrlDescriptionPanel.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Controls\CtrlKernel.resx">
       <DependentUpon>CtrlKernel.cs</DependentUpon>
     </EmbeddedResource>
@@ -482,6 +475,8 @@
     <None Include="Images\copy_16x16.png" />
     <None Include="Images\microchip_16x16.png" />
     <None Include="Images\file-import-16x16.png" />
+    <None Include="Images\plus-16x16.png" />
+    <None Include="Images\minus_16x16.png" />
     <Content Include="UVtools.ico" />
     <None Include="UVtools.png" />
     <None Include="Images\Exit-16x16.png" />
