@@ -308,6 +308,22 @@ namespace UVtools.GUI.Forms
         public DialogResult MessageErrorBox(string message) => GUIExtensions.MessageErrorBox($"{Text} Error", message);
         public DialogResult MessageQuestionBox(string message, string title = null) => GUIExtensions.MessageQuestionBox($"{title ?? Text}", message);
 
+        public T GetContentCtrl<T>()
+        {
+            if (Content is T content)
+            {
+                return content;
+            }
+            try
+            {
+                return (T)Convert.ChangeType(Content, typeof(T));
+            }
+            catch (InvalidCastException)
+            {
+                return default(T);
+            }
+        }
+
         #endregion
 
     }

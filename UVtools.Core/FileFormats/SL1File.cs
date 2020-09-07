@@ -336,7 +336,11 @@ namespace UVtools.Core.FileFormats
 
         public override uint LayerCount
         {
-            set => OutputConfigSettings.NumFast = (ushort) (LayerCount - OutputConfigSettings.NumSlow);
+            set
+            {
+                OutputConfigSettings.NumSlow = 0;
+                OutputConfigSettings.NumFast = (ushort) LayerCount;
+            }
         }
 
         public override ushort InitialLayerCount => OutputConfigSettings.NumFade;

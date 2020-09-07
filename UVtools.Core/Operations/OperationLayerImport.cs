@@ -10,7 +10,7 @@ using Emgu.CV.CvEnum;
 
 namespace UVtools.Core.Operations
 {
-    public sealed class OperationLayerImport
+    public sealed class OperationLayerImport : Operation
     {
         public uint InsertAfterLayerIndex { get; set; }
         public bool ReplaceStartLayer { get; set; }
@@ -19,6 +19,8 @@ namespace UVtools.Core.Operations
 
         public List<string> Files { get; } = new List<string>();
 
+        public int Count => Files.Count;
+        
         public void Sort()
         {
             Files.Sort((file1, file2) => string.Compare(Path.GetFileNameWithoutExtension(file1), Path.GetFileNameWithoutExtension(file2), StringComparison.Ordinal));
@@ -53,7 +55,9 @@ namespace UVtools.Core.Operations
             }
 
             return (uint)(totalLayers + Files.Count - (ReplaceStartLayer ? 1 : 0));
-
         }
+
+        public uint StartLayerIndex => InsertAfterLayerIndex + (ReplaceStartLayer ? 0u : 1);
+        public uint EndLayerIndex => (uint) (StartLayerIndex + Count - 1);
     }
 }

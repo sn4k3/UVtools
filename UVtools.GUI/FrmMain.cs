@@ -1162,7 +1162,47 @@ namespace UVtools.GUI
             {
                 using (var frm = new FrmToolWindow(new CtrlToolLayerImport(ActualLayer)))
                 {
-                    frm.ShowDialog();
+                    if(frm.ShowDialog() != DialogResult.OK) return;
+
+                    var control = frm.GetContentCtrl<CtrlToolLayerImport>();
+                    var operation = control.Operation;
+
+                    DisableGUI();
+                    FrmLoading.SetDescription($"Importing {operation.Count} layer(s)");
+
+                    var task = Task.Factory.StartNew(() =>
+                    {
+                        try
+                        {
+                            SlicerFile.LayerManager.Import(operation, FrmLoading.RestartProgress());
+                        }
+                        catch (OperationCanceledException)
+                        {
+
+                        }
+                        catch (Exception ex)
+                        {
+                            GUIExtensions.MessageErrorBox("Error", ex.Message);
+                        }
+                        finally
+                        {
+                            Invoke((MethodInvoker)delegate
+                            {
+                                // Running on the UI thread
+                                EnableGUI(true);
+                            });
+                        }
+                    });
+
+                    var loadingResult = FrmLoading.ShowDialog();
+
+                    UpdateLayerLimits();
+                    RefreshInfo();
+                    ShowLayer();
+
+                    menuFileSave.Enabled =
+                        menuFileSaveAs.Enabled = true;
+
                 }
 
                 return;

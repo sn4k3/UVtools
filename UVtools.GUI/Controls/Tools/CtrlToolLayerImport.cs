@@ -26,11 +26,13 @@ namespace UVtools.GUI.Controls.Tools
             InitializeComponent();
             Text = "Import Layer(s)";
 
-            nmInsertAfterLayer.Maximum = Program.SlicerFile.LayerCount;
+            nmInsertAfterLayer.Maximum = Program.SlicerFile.LayerCount-1;
 
             nmInsertAfterLayer.Value = currentLayer;
             nmInsertAfterLayer_ValueChanged(nmInsertAfterLayer, EventArgs.Empty);
         }
+
+        public override string ConfirmationText => $"import {Operation.Count} layer(s)?";
 
         public void UpdateOperation()
         {

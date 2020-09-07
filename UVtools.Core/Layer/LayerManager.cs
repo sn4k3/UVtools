@@ -23,7 +23,6 @@ using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
-using System.Runtime.InteropServices;
 
 namespace UVtools.Core
 {
@@ -1361,6 +1360,67 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
         }
 
+        public void Import(OperationLayerImport operation, OperationProgress progress = null)
+        {
+            if (progress is null) progress = new OperationProgress();
+            progress.Reset("Imported layers", (uint)operation.Count);
+
+            var oldLayers = Layers;
+            uint newLayerCount = operation.CalculateTotalLayers((uint) Layers.Length);
+            uint startIndex = operation.StartLayerIndex;
+            Layers = new Layer[newLayerCount];
+
+            // Keep same layers up to InsertAfterLayerIndex
+            for (uint i = 0; i <= operation.InsertAfterLayerIndex; i++)
+            {
+                Layers[i] = oldLayers[i];
+            }
+
+            // Keep all old layers if not discarding them
+            if (operation.ReplaceSubsequentLayers)
+            {
+                if (!operation.DiscardRemainingLayers)
+                {
+                    for (uint i = operation.InsertAfterLayerIndex + 1; i < oldLayers.Length; i++)
+                    {
+                        Layers[i] = oldLayers[i];
+                    }
+                }
+            }
+            else // Push remaining layers to the end of imported layers
+            {
+                uint oldLayerIndex = operation.InsertAfterLayerIndex;
+                for (uint i = operation.EndLayerIndex + 1; i < newLayerCount; i++)
+                {
+                    oldLayerIndex++;
+                    Layers[i] = oldLayers[oldLayerIndex];
+                }
+            }
+
+            
+            Parallel.For(0, operation.Count, 
+                //new ParallelOptions{MaxDegreeOfParallelism = 1},
+                i =>
+            {
+                var mat = CvInvoke.Imread(operation.Files[i], ImreadModes.Grayscale);
+                uint layerIndex = (uint) (startIndex + i);
+                this[layerIndex] = new Layer(layerIndex, mat);
+
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+
+            SlicerFile.LayerCount = Count;
+            BoundingRectangle = Rectangle.Empty;
+            SlicerFile.RequireFullEncode = true;
+
+            RebuildLayersProperties();
+
+            progress.Token.ThrowIfCancellationRequested();
+        }
+
         public void CloneLayer(uint layerIndexStart, uint layerIndexEnd, uint clones = 1, OperationProgress progress = null)
         {
             
@@ -1731,6 +1791,8 @@ namespace UVtools.Core
 
             //pixelHistory.Clear();
         }
+
+        
 
         /// <summary>
         /// Desmodify all layers
