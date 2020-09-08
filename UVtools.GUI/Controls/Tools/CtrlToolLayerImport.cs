@@ -13,7 +13,7 @@ using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
-using UVtools.Core.Obects;
+using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 
 namespace UVtools.GUI.Controls.Tools
@@ -22,7 +22,7 @@ namespace UVtools.GUI.Controls.Tools
     {
         public OperationLayerImport Operation { get; }
 
-        public CtrlToolLayerImport(uint currentLayer = 0)
+        public CtrlToolLayerImport()
         {
             InitializeComponent();
             Operation = new OperationLayerImport(Program.FrmMain.ActualLayerImage.Size);
@@ -30,7 +30,7 @@ namespace UVtools.GUI.Controls.Tools
 
             nmInsertAfterLayer.Maximum = Program.SlicerFile.LayerCount-1;
 
-            nmInsertAfterLayer.Value = currentLayer;
+            nmInsertAfterLayer.Value = Program.FrmMain.ActualLayer;
             nmInsertAfterLayer_ValueChanged(nmInsertAfterLayer, EventArgs.Empty);
         }
 

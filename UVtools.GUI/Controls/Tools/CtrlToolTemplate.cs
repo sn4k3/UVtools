@@ -6,14 +6,21 @@
  *  of this license document, but changing it is not allowed.
  */
 using System.Windows.Forms;
+using UVtools.Core.Operations;
 
 namespace UVtools.GUI.Controls.Tools
 {
     public partial class CtrlToolTemplate : CtrlToolWindowContent
     {
+
         public CtrlToolTemplate()
         {
             InitializeComponent();
+        }
+
+        public CtrlToolTemplate(Operation operation) : this()
+        {
+            SetOperation(operation);
         }
     }
 }

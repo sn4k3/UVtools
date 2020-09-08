@@ -6,7 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 using System.Text;
-using UVtools.Core.Obects;
+using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
@@ -14,12 +14,17 @@ namespace UVtools.Core.Operations
     {
         #region Overrides
 
+        public override bool PassActualLayerIndex => true;
+
         public override string Title => "Clone layer(s)";
         public override string Description =>
             "Clone layers.\n" +
             "Useful to increase the height of the model or add additional structure by duplicating layers. For example, can be used to increase the raft height for added stability.";
         public override string ConfirmationText =>
             $"clone layers from {LayerIndexStart} to {LayerIndexEnd} times {Clones} clones?";
+
+        public override string ProgressTitle =>
+            $"Cloning layers from {LayerIndexStart} to {LayerIndexEnd} times {Clones} clones";
 
         public override StringTag Validate(params object[] parameters)
         {

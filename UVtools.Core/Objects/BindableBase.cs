@@ -5,10 +5,11 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace UVtools.Core.Obects
+namespace UVtools.Core.Objects
 {
     /// <summary>
     ///     Implementation of <see cref="INotifyPropertyChanged" /> to simplify models.

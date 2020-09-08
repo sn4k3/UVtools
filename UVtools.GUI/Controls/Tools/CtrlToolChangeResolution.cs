@@ -7,6 +7,7 @@
  */
 
 using System.Drawing;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 
 namespace UVtools.GUI.Controls.Tools
@@ -18,16 +19,17 @@ namespace UVtools.GUI.Controls.Tools
         public uint NewResolutionX => (uint) nmNewX.Value;
         public uint NewResolutionY => (uint) nmNewY.Value;
 
-        public CtrlToolChangeResolution(uint oldResolutionX, uint oldResolutionY, Rectangle volumeBonds)
+        public CtrlToolChangeResolution()
         {
             InitializeComponent();
-            Operation = new OperationChangeResolution(oldResolutionX, oldResolutionY, volumeBonds);
+            ButtonOkEnabled = false;
+            Operation = new OperationChangeResolution(Program.FrmMain.ActualLayerImage.Size, Program.SlicerFile.LayerManager.BoundingRectangle);
             SetOperation(Operation);
 
-            lbCurrent.Text = $"Current resolution (X/Y): {oldResolutionX} x {oldResolutionY}";
-            lbObjectVolume.Text = $"Object volume (X/Y): {volumeBonds.Width} x {volumeBonds.Height}";
-            nmNewX.Value = oldResolutionX;
-            nmNewY.Value = oldResolutionY;
+            lbCurrent.Text = $"Current resolution (X/Y): {Operation.OldResolution.Width} x {Operation.OldResolution.Height}";
+            lbObjectVolume.Text = $"Object volume (X/Y): {Operation.VolumeBonds.Width} x {Operation.VolumeBonds.Height}";
+            nmNewX.Value = Operation.OldResolution.Width;
+            nmNewY.Value = Operation.OldResolution.Height;
 
             foreach (var resolution in OperationChangeResolution.GetResolutions())
             {
@@ -39,8 +41,8 @@ namespace UVtools.GUI.Controls.Tools
         {
             if (ReferenceEquals(sender, nmNewX) || ReferenceEquals(sender, nmNewY))
             {
-                ButtonOkEnabled = Operation.OldResolutionX != NewResolutionX ||
-                                  Operation.OldResolutionY != NewResolutionY;
+                ButtonOkEnabled = Operation.OldResolution.Width != NewResolutionX ||
+                                  Operation.OldResolution.Height != NewResolutionY;
                 return;
             }
 

@@ -39,79 +39,121 @@ namespace UVtools.GUI
     public partial class FrmMain : Form
     {
         #region Enums
+
         #endregion
 
         #region Properties
 
+        public static readonly OperationMenuItem[] MenuTools = {
+            new OperationMenuItem(new OperationSolidify(), Resources.square_solid_16x16),
+            new OperationMenuItem(new OperationMorphModel(), Resources.Geometry_16x16),
+            new OperationMenuItem(new OperationChangeResolution(), Resources.resize_16x16)
+        };
+
+        public static readonly OperationMenuItem[] LayerActions = {
+            new OperationMenuItem(new OperationLayerImport(), Resources.file_import_16x16),
+            new OperationMenuItem(new OperationLayerClone(), Resources.copy_16x16), 
+            new OperationMenuItem(new OperationLayerRemove(), Resources.trash_16x16), 
+        };
+
         public static readonly Dictionary<LayerManager.Mutate, Mutation> Mutations =
             new Dictionary<LayerManager.Mutate, Mutation>
             {
-                {LayerManager.Mutate.Move, new Mutation(LayerManager.Mutate.Move, null, Resources.move_16x16,
-                    "Moves the entire print volume around the plate.\n" +
-                    "Note: Margins are in pixel values.",
-                    "Move"
-                )},
-                {LayerManager.Mutate.Resize, new Mutation(LayerManager.Mutate.Resize, null, Resources.crop_16x16,
-                    "Resizes layer images in a X and/or Y factor, starting from 100% value.\n" +
-                    "NOTE 1: Build volume bounds are not validated after operation, please ensure scaling stays inside your limits.\n" +
-                    "NOTE 2: X and Y are applied to original image, not to the rotated preview (If enabled).",
-                    "Resize"
-                )},
-                {LayerManager.Mutate.Flip, new Mutation(LayerManager.Mutate.Flip, null, Resources.flip_16x16,
-                    "Flips layer images vertically and/or horizontally.",
-                    "Flip"
-                )},
-                {LayerManager.Mutate.Rotate, new Mutation(LayerManager.Mutate.Rotate, null, Resources.refresh_16x16,
-                    "Rotate layer images in a certain degrees.",
-                    "Rotate"
-                )},
-                {LayerManager.Mutate.Solidify, new Mutation(LayerManager.Mutate.Solidify, null, Resources.square_solid_16x16,
-                    "Solidifies the selected layers, closes all inner holes.\n" +
-                    "NOTE: All open areas of the layer that are completely surrounded by pixels will be filled. Please ensure none of the holes in the layer are required before proceeding.",
-                    "Solidify",
-                    Resources.mutation_solidify
-                )},
-                {LayerManager.Mutate.Mask, new Mutation(LayerManager.Mutate.Mask, "Mask", Resources.mask_16x16,
-                    "Masks the LCD output image given a greyscale (0-255) pixel input image.\n" +
-                    "Useful to correct light uniformity, but a proper mask must be created first based on real measurements per printer.\n" +
-                    "NOTE 1: Masks should respect printer resolution or they will be resized to fit.\n" +
-                    "NOTE 2: Run only this tool after all repairs and other transformations.",
-                    "Mask"
-                )},
-                {LayerManager.Mutate.PixelDimming, new Mutation(LayerManager.Mutate.PixelDimming, "Pixel Dimming", Resources.chessboard_16x16,
-                    "Dims pixels in a chosen pattern over white pixels neighborhood. The selected pattern will be repeated over the image width and height as a mask. Benefits are:\n" +
-                    "1) Reduce layer expansion in big masses\n" +
-                    "2) Reduce cross layer exposure\n" +
-                    "3) Extend pixels life\n" +
-                    "NOTE: Run only this tool after all repairs and other transformations.",
-                    "Dim"
-                )},
-                {LayerManager.Mutate.Erode, new Mutation(LayerManager.Mutate.Erode, null, Resources.compress_alt_16x16,
-                "The basic idea of erosion is just like soil erosion only, it erodes away the boundaries of foreground object (Always try to keep foreground in white). " +
+                {
+                    LayerManager.Mutate.Move, new Mutation(LayerManager.Mutate.Move, null, Resources.move_16x16,
+                        "Moves the entire print volume around the plate.\n" +
+                        "Note: Margins are in pixel values.",
+                        "Move"
+                    )
+                },
+                {
+                    LayerManager.Mutate.Resize, new Mutation(LayerManager.Mutate.Resize, null, Resources.crop_16x16,
+                        "Resizes layer images in a X and/or Y factor, starting from 100% value.\n" +
+                        "NOTE 1: Build volume bounds are not validated after operation, please ensure scaling stays inside your limits.\n" +
+                        "NOTE 2: X and Y are applied to original image, not to the rotated preview (If enabled).",
+                        "Resize"
+                    )
+                },
+                {
+                    LayerManager.Mutate.Flip, new Mutation(LayerManager.Mutate.Flip, null, Resources.flip_16x16,
+                        "Flips layer images vertically and/or horizontally.",
+                        "Flip"
+                    )
+                },
+                {
+                    LayerManager.Mutate.Rotate, new Mutation(LayerManager.Mutate.Rotate, null, Resources.refresh_16x16,
+                        "Rotate layer images in a certain degrees.",
+                        "Rotate"
+                    )
+                },
+                /*{
+                    LayerManager.Mutate.Solidify, new Mutation(LayerManager.Mutate.Solidify, null,
+                        Resources.square_solid_16x16,
+                        "Solidifies the selected layers, closes all inner holes.\n" +
+                        "NOTE: All open areas of the layer that are completely surrounded by pixels will be filled. Please ensure none of the holes in the layer are required before proceeding.",
+                        "Solidify",
+                        Resources.mutation_solidify
+                    )
+                },*/
+                {
+                    LayerManager.Mutate.Mask, new Mutation(LayerManager.Mutate.Mask, "Mask", Resources.mask_16x16,
+                        "Masks the LCD output image given a greyscale (0-255) pixel input image.\n" +
+                        "Useful to correct light uniformity, but a proper mask must be created first based on real measurements per printer.\n" +
+                        "NOTE 1: Masks should respect printer resolution or they will be resized to fit.\n" +
+                        "NOTE 2: Run only this tool after all repairs and other transformations.",
+                        "Mask"
+                    )
+                },
+                {
+                    LayerManager.Mutate.PixelDimming, new Mutation(LayerManager.Mutate.PixelDimming, "Pixel Dimming",
+                        Resources.chessboard_16x16,
+                        "Dims pixels in a chosen pattern over white pixels neighborhood. The selected pattern will be repeated over the image width and height as a mask. Benefits are:\n" +
+                        "1) Reduce layer expansion in big masses\n" +
+                        "2) Reduce cross layer exposure\n" +
+                        "3) Extend pixels life\n" +
+                        "NOTE: Run only this tool after all repairs and other transformations.",
+                        "Dim"
+                    )
+                },
+                /*{
+                    LayerManager.Mutate.Erode, new Mutation(LayerManager.Mutate.Erode, null,
+                        Resources.compress_alt_16x16,
+                        "The basic idea of erosion is just like soil erosion only, it erodes away the boundaries of foreground object (Always try to keep foreground in white). " +
                         "So what happens is that, all the pixels near boundary will be discarded depending upon the size of kernel. So the thickness or size of the foreground object decreases or simply white region decreases in the image. It is useful for removing small white noises, detach two connected objects, etc.",
-                "Errode",
+                        "Errode",
                         Resources.mutation_erosion
-                )},
-                {LayerManager.Mutate.Dilate, new Mutation(LayerManager.Mutate.Dilate, null, Resources.expand_alt_16x16,
-                    "It is just opposite of erosion. Here, a pixel element is '1' if at least one pixel under the kernel is '1'. So it increases the white region in the image or size of foreground object increases. Normally, in cases like noise removal, erosion is followed by dilation. Because, erosion removes white noises, but it also shrinks our object. So we dilate it. Since noise is gone, they won't come back, but our object area increases. It is also useful in joining broken parts of an object.",
-                    "Dilate",
-                    Resources.mutation_dilation
-                )},
-                {LayerManager.Mutate.Opening, new Mutation(LayerManager.Mutate.Opening, "Noise Removal", null,
-                    "Noise Removal/Opening is just another name of erosion followed by dilation. It is useful in removing noise.",
-                    "Remove Noise",
-                    Resources.mutation_opening
-                )},
-                {LayerManager.Mutate.Closing, new Mutation(LayerManager.Mutate.Closing, "Gap Closing", Resources.bowling_ball_16x16,
-                    "Gap Closing is reverse of Opening, Dilation followed by Erosion. It is useful in closing small holes inside the foreground objects, or small black points on the object.",
-                    "Close gaps",
-                    Resources.mutation_closing
-                )},
-                {LayerManager.Mutate.Gradient, new Mutation(LayerManager.Mutate.Gradient, null, Resources.burn_16x16,
-                    "It's the difference between dilation and erosion of an image.",
-                    "Gradient",
-                    Resources.mutation_gradient
-                )},
+                    )
+                },
+                {
+                    LayerManager.Mutate.Dilate, new Mutation(LayerManager.Mutate.Dilate, null,
+                        Resources.expand_alt_16x16,
+                        "It is just opposite of erosion. Here, a pixel element is '1' if at least one pixel under the kernel is '1'. So it increases the white region in the image or size of foreground object increases. Normally, in cases like noise removal, erosion is followed by dilation. Because, erosion removes white noises, but it also shrinks our object. So we dilate it. Since noise is gone, they won't come back, but our object area increases. It is also useful in joining broken parts of an object.",
+                        "Dilate",
+                        Resources.mutation_dilation
+                    )
+                },
+                {
+                    LayerManager.Mutate.Opening, new Mutation(LayerManager.Mutate.Opening, "Noise Removal", null,
+                        "Noise Removal/Opening is just another name of erosion followed by dilation. It is useful in removing noise.",
+                        "Remove Noise",
+                        Resources.mutation_opening
+                    )
+                },
+                {
+                    LayerManager.Mutate.Closing, new Mutation(LayerManager.Mutate.Closing, "Gap Closing",
+                        Resources.bowling_ball_16x16,
+                        "Gap Closing is reverse of Opening, Dilation followed by Erosion. It is useful in closing small holes inside the foreground objects, or small black points on the object.",
+                        "Close gaps",
+                        Resources.mutation_closing
+                    )
+                },
+                {
+                    LayerManager.Mutate.Gradient, new Mutation(LayerManager.Mutate.Gradient, null, Resources.burn_16x16,
+                        "It's the difference between dilation and erosion of an image.",
+                        "Gradient",
+                        Resources.mutation_gradient
+                    )
+                },*/
                 /*{Mutation.Mutates.TopHat, new Mutation(Mutation.Mutates.TopHat,
                     "It's the difference between input image and Opening of the image.",
                     Properties.Resources.mutation_tophat
@@ -124,18 +166,23 @@ namespace UVtools.GUI
                     "The Hit-or-Miss transformation is useful to find patterns in binary images. In particular, it finds those pixels whose neighbourhood matches the shape of a first structuring element B1 while not matching the shape of a second structuring element B2 at the same time.",
                     null
                 )},*/
-                {LayerManager.Mutate.ThresholdPixels, new Mutation(LayerManager.Mutate.ThresholdPixels, "Threshold Pixels", Resources.th_16x16,
-                    "Manipulates pixels values giving a threshold, maximum and a operation type.\n" +
-                    "If a pixel brightness is less or equal to the threshold value, set this pixel to 0, otherwise set to defined maximum value.\n" +
-                    "More info: https://docs.opencv.org/master/d7/d4d/tutorial_py_thresholding.html",
-                    "Threshold"
-                )},
-                {LayerManager.Mutate.Blur, new Mutation(LayerManager.Mutate.Blur, "Blur", Resources.blur_16x16,
-                    "Blur and averaging images with various low pass filters\n" +
-                    "Note: Printer must support AntiAliasing on firmware to able to use this function\n" +
-                    "More information: https://docs.opencv.org/master/d4/d13/tutorial_py_filtering.html ",
-                    "Blur"
-                )},
+                {
+                    LayerManager.Mutate.ThresholdPixels, new Mutation(LayerManager.Mutate.ThresholdPixels,
+                        "Threshold Pixels", Resources.th_16x16,
+                        "Manipulates pixels values giving a threshold, maximum and a operation type.\n" +
+                        "If a pixel brightness is less or equal to the threshold value, set this pixel to 0, otherwise set to defined maximum value.\n" +
+                        "More info: https://docs.opencv.org/master/d7/d4d/tutorial_py_thresholding.html",
+                        "Threshold"
+                    )
+                },
+                {
+                    LayerManager.Mutate.Blur, new Mutation(LayerManager.Mutate.Blur, "Blur", Resources.blur_16x16,
+                        "Blur and averaging images with various low pass filters\n" +
+                        "Note: Printer must support AntiAliasing on firmware to able to use this function\n" +
+                        "More information: https://docs.opencv.org/master/d4/d13/tutorial_py_filtering.html ",
+                        "Blur"
+                    )
+                },
                 /*{LayerManager.Mutate.PyrDownUp, new Mutation(LayerManager.Mutate.PyrDownUp, "Big Blur", Resources.blur_16x16,
                     "Performs down/up-sampling step of Gaussian pyramid decomposition.\n" +
                     "First down-samples the image by rejecting even rows and columns, after performs up-sampling step of Gaussian pyramid decomposition.\n" +
@@ -182,7 +229,7 @@ namespace UVtools.GUI
         // These settings eliminate very small zoom factors from the ImageBox default values,
         // while ensuring that 4K/5K build plates can still easily fit on screen.  
         public static readonly int[] ZoomLevels =
-            { 20, 25, 30, 50, 75, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1200, 1600 };
+            {20, 25, 30, 50, 75, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1200, 1600};
 
         // Count of the bottom portion of the full zoom range which will be skipped for
         // assignable actions such as auto-zoom level, and crosshair fade level.  If values
@@ -207,7 +254,7 @@ namespace UVtools.GUI
 
         public PixelHistory PixelHistory { get; } = new PixelHistory();
 
-	    // Track last open tab for when PixelEditor tab is removed.
+        // Track last open tab for when PixelEditor tab is removed.
         public TabPage ControlLeftLastTab { get; set; }
 
         public uint SavesCount { get; set; }
@@ -217,6 +264,7 @@ namespace UVtools.GUI
         #endregion
 
         #region Constructors
+
         public FrmMain()
         {
             //SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
@@ -257,43 +305,75 @@ namespace UVtools.GUI
             }
 
 
-            DragEnter += (s, e) => { if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy; };
-            DragDrop += (s, e) => { ProcessFile((string[])e.Data.GetData(DataFormats.FileDrop)); };
-
-            foreach (LayerManager.Mutate mutate in (LayerManager.Mutate[])Enum.GetValues(typeof(LayerManager.Mutate)))
+            DragEnter += (s, e) =>
             {
-                if(!Mutations.ContainsKey(mutate)) continue;
+                if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy;
+            };
+            DragDrop += (s, e) => { ProcessFile((string[]) e.Data.GetData(DataFormats.FileDrop)); };
+
+            foreach (var menuItem in MenuTools)
+            {
+                var item = new ToolStripMenuItem(menuItem.Operation.Title)
+                {
+                    ToolTipText = menuItem.Operation.Description,
+                    Tag = menuItem.Operation,
+                    AutoToolTip = true,
+                    Image = menuItem.Icon
+                };
+                item.Click += EventClick;
+                menuTools.DropDownItems.Add(item);
+            }
+            foreach (var menuItem in LayerActions)
+            {
+                var item = new ToolStripMenuItem(menuItem.Operation.Title)
+                {
+                    ToolTipText = menuItem.Operation.Description,
+                    Tag = menuItem.Operation,
+                    AutoToolTip = true,
+                    Image = menuItem.Icon
+                };
+                item.Click += EventClick;
+                btnLayerImageActions.DropDownItems.Add(item);
+            }
+
+            foreach (LayerManager.Mutate mutate in (LayerManager.Mutate[]) Enum.GetValues(typeof(LayerManager.Mutate)))
+            {
+                if (!Mutations.ContainsKey(mutate)) continue;
                 var item = new ToolStripMenuItem(Mutations[mutate].MenuName)
                 {
-                    ToolTipText = Mutations[mutate].Description, Tag = mutate, AutoToolTip = true, Image = Mutations[mutate].MenuImage
+                    ToolTipText = Mutations[mutate].Description, Tag = mutate, AutoToolTip = true,
+                    Image = Mutations[mutate].MenuImage
                 };
                 item.Click += EventClick;
                 menuMutate.DropDownItems.Add(item);
             }
 
-            
-            foreach (PixelDrawing.BrushShapeType brushShape in (PixelDrawing.BrushShapeType[])Enum.GetValues(
+
+            foreach (PixelDrawing.BrushShapeType brushShape in (PixelDrawing.BrushShapeType[]) Enum.GetValues(
                 typeof(PixelDrawing.BrushShapeType)))
             {
                 cbPixelEditorDrawingBrushShape.Items.Add(brushShape);
             }
+
             cbPixelEditorDrawingBrushShape.SelectedIndex = 0;
 
-            foreach (LineType lineType in (LineType[])Enum.GetValues(
+            foreach (LineType lineType in (LineType[]) Enum.GetValues(
                 typeof(LineType)))
             {
-                if(lineType == LineType.Filled) continue;
+                if (lineType == LineType.Filled) continue;
                 cbPixelEditorDrawingLineType.Items.Add(lineType);
                 cbPixelEditorTextLineType.Items.Add(lineType);
             }
+
             cbPixelEditorDrawingLineType.SelectedItem = LineType.AntiAlias;
             cbPixelEditorTextLineType.SelectedItem = LineType.AntiAlias;
 
-            foreach (FontFace font in (FontFace[])Enum.GetValues(
+            foreach (FontFace font in (FontFace[]) Enum.GetValues(
                 typeof(FontFace)))
             {
                 cbPixelEditorTextFontFace.Items.Add(font);
             }
+
             cbPixelEditorTextFontFace.SelectedIndex = 0;
 
             tbLayer.MouseWheel += TbLayerOnMouseWheel;
@@ -332,12 +412,13 @@ namespace UVtools.GUI
                 {
                     string htmlCode = client.DownloadString($"{About.Website}/releases");
                     const string searchFor = "/releases/tag/";
-                    var startIndex = htmlCode.IndexOf(searchFor, StringComparison.InvariantCultureIgnoreCase) + searchFor.Length;
+                    var startIndex = htmlCode.IndexOf(searchFor, StringComparison.InvariantCultureIgnoreCase) +
+                                     searchFor.Length;
                     var endIndex = htmlCode.IndexOf("\"", startIndex, StringComparison.InvariantCultureIgnoreCase);
-                    var version = htmlCode.Substring(startIndex, endIndex- startIndex);
+                    var version = htmlCode.Substring(startIndex, endIndex - startIndex);
                     if (string.Compare(version, $"v{FrmAbout.AssemblyVersion}", StringComparison.OrdinalIgnoreCase) > 0)
                     {
-                        Invoke((MethodInvoker)delegate
+                        Invoke((MethodInvoker) delegate
                         {
                             // Running on the UI thread
                             menuNewVersion.Text = $"New version {version} is available!";
@@ -345,6 +426,7 @@ namespace UVtools.GUI
                             menuNewVersion.Visible = true;
                         });
                     }
+
                     //Debug.WriteLine(version);
                 }
             }
@@ -391,7 +473,7 @@ namespace UVtools.GUI
 
         protected override void OnKeyUp(KeyEventArgs e)
         {
-            
+
             if (SlicerFile is null)
             {
                 return;
@@ -404,7 +486,7 @@ namespace UVtools.GUI
                 return;
             }
 
-            
+
 
             if (e.KeyCode == Keys.End)
             {
@@ -457,6 +539,7 @@ namespace UVtools.GUI
                     ShowLayer();
                 }
             }
+
             base.OnKeyUp(e);
         }
 
@@ -472,13 +555,14 @@ namespace UVtools.GUI
             tbLayer.Update();
             tbLayer.Refresh();
             lbActualLayer.Location = new Point(lbActualLayer.Location.X,
-                ((int)(tbLayer.Height - (float)tbLayer.Height / tbLayer.Maximum * tbLayer.Value) - lbActualLayer.Height / 2)
+                ((int) (tbLayer.Height - (float) tbLayer.Height / tbLayer.Maximum * tbLayer.Value) -
+                 lbActualLayer.Height / 2)
                 .Clamp(1, tbLayer.Height - lbActualLayer.Height));
 
             UpdateLayerTrackerHighlightIssues();
         }
 
-        
+
         #endregion
 
         #region Events
@@ -490,6 +574,7 @@ namespace UVtools.GUI
                 splitButton.ShowDropDown();
                 return;
             }
+
             if (sender is ToolStripMenuItem menuItem)
             {
                 /*******************
@@ -768,6 +853,11 @@ namespace UVtools.GUI
                 }
 
                 // Edit & mutate
+                if (menuItem.Tag is Operation baseOperation)
+                {
+                    ShowRunOperation(baseOperation.GetType());
+                    return;
+                }
                 if (!ReferenceEquals(menuItem.Tag, null))
                 {
                     if (menuItem.Tag.GetType() == typeof(FileFormat.PrintParameterModifier))
@@ -838,11 +928,12 @@ namespace UVtools.GUI
                         islandConfig.Enabled = repairIslands && removeIslandsBelowEqualPixels > 0;
                         var resinTrapConfig = GetResinTrapDetectionConfiguration();
                         resinTrapConfig.Enabled = repairResinTraps;
-                        var touchingBoundConfig = new TouchingBoundDetectionConfiguration{Enabled = false};
+                        var touchingBoundConfig = new TouchingBoundDetectionConfiguration {Enabled = false};
 
                         if (islandConfig.Enabled || resinTrapConfig.Enabled)
                         {
-                            ComputeIssues(islandConfig, resinTrapConfig, touchingBoundConfig, tsIssuesDetectEmptyLayers.Checked);
+                            ComputeIssues(islandConfig, resinTrapConfig, touchingBoundConfig,
+                                tsIssuesDetectEmptyLayers.Checked);
                         }
                     }
 
@@ -854,7 +945,8 @@ namespace UVtools.GUI
                         try
                         {
                             SlicerFile.LayerManager.RepairLayers(layerStart, layerEnd, closingIterations,
-                                openingIterations, removeIslandsBelowEqualPixels, repairIslands, removeEmptyLayers, repairResinTraps, Issues,
+                                openingIterations, removeIslandsBelowEqualPixels, repairIslands, removeEmptyLayers,
+                                repairResinTraps, Issues,
                                 FrmLoading.RestartProgress());
                         }
                         catch (OperationCanceledException)
@@ -896,57 +988,6 @@ namespace UVtools.GUI
                     return;
                 }
 
-                if (ReferenceEquals(menuItem, menuToolsChangeResolution))
-                {
-                    var content = new CtrlToolChangeResolution(SlicerFile.ResolutionX, SlicerFile.ResolutionY, SlicerFile.LayerManager.BoundingRectangle);
-                    using (var frm = new FrmToolWindow(content))
-                    {
-                        if (frm.IsDisposed || frm.ShowDialog() != DialogResult.OK) return;
-
-                        var operation = content.Operation;
-
-                        DisableGUI();
-                        FrmLoading.SetDescription(
-                            $"Change Resolution from {operation.OldResolutionX} x {operation.NewResolutionY} to {operation.NewResolutionX} x {operation.NewResolutionY}");
-
-                        var task = Task.Factory.StartNew(() =>
-                        {
-                            try
-                            {
-                                SlicerFile.LayerManager.ChangeResolution(operation, FrmLoading.RestartProgress(false));
-                            }
-                            catch (OperationCanceledException)
-                            {
-
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            }
-                            finally
-                            {
-                                Invoke((MethodInvoker) delegate
-                                {
-                                    // Running on the UI thread
-                                    EnableGUI(true);
-                                });
-                            }
-                        });
-
-                        var loadingResult = FrmLoading.ShowDialog();
-
-                        //UpdateLayerLimits();
-                        RefreshInfo();
-                        ShowLayer();
-                        tsLayerResolution.Text = ActualLayerImage.Size.ToString();
-
-                        menuFileSave.Enabled =
-                            menuFileSaveAs.Enabled = true;
-
-                        return;
-                    }
-                }
-
                 if (ReferenceEquals(menuItem, menuToolsLayerReHeight))
                 {
                     OperationLayerReHeight operation = null;
@@ -957,7 +998,8 @@ namespace UVtools.GUI
                     }
 
                     DisableGUI();
-                    FrmLoading.SetDescription($"Layer Re-Height from {SlicerFile.LayerHeight}mm to {operation.LayerHeight}mm");
+                    FrmLoading.SetDescription(
+                        $"Layer Re-Height from {SlicerFile.LayerHeight}mm to {operation.LayerHeight}mm");
 
                     var task = Task.Factory.StartNew(() =>
                     {
@@ -975,7 +1017,7 @@ namespace UVtools.GUI
                         }
                         finally
                         {
-                            Invoke((MethodInvoker)delegate
+                            Invoke((MethodInvoker) delegate
                             {
                                 // Running on the UI thread
                                 EnableGUI(true);
@@ -995,62 +1037,16 @@ namespace UVtools.GUI
                     return;
                 }
 
-                if (ReferenceEquals(menuItem, menuToolsLayerRemoval))
-                {
-                    using (var frm = new FrmToolWindow("Remove Layer(s)", "Removes layer(s) in a given range", "Remove", ActualLayer, true))
-                    //using (var frm = new FrmToolEmpty(ActualLayer, "Remove Layer(s)", "Removes layer(s) in a given range", "Remove"))
-                    {
-                        if (frm.ShowDialog() != DialogResult.OK) return;
-
-                        DisableGUI();
-                        FrmLoading.SetDescription($"Layer Removal from {frm.LayerRangeStart} to {frm.LayerRangeEnd}");
-
-                        var task = Task.Factory.StartNew(() =>
-                        {
-                            try
-                            {
-                                SlicerFile.LayerManager.RemoveLayer(frm.LayerRangeStart, frm.LayerRangeEnd);
-                            }
-                            catch (OperationCanceledException)
-                            {
-
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            }
-                            finally
-                            {
-                                Invoke((MethodInvoker)delegate
-                                {
-                                    // Running on the UI thread
-                                    EnableGUI(true);
-                                });
-                            }
-                        });
-
-                        var loadingResult = FrmLoading.ShowDialog();
-
-                        UpdateLayerLimits();
-                        RefreshInfo();
-                        ShowLayer();
-
-                        menuFileSave.Enabled =
-                            menuFileSaveAs.Enabled = true;
-                    }
-
-                    return;
-                }
-
                 if (ReferenceEquals(menuItem, menuToolsPattern))
                 {
                     OperationPattern operation = new OperationPattern(SlicerFile.LayerManager.BoundingRectangle,
-                        (uint)ActualLayerImage.Width, (uint)ActualLayerImage.Height);
+                        (uint) ActualLayerImage.Width, (uint) ActualLayerImage.Height);
 
                     if (operation.MaxRows < 2 && operation.MaxCols < 2)
                     {
                         MessageBox.Show("The available free volume is not enough to pattern this object.\n" +
-                                        "To run this tool the free space must allow at least 1 copy.", "Unable to pattern", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        "To run this tool the free space must allow at least 1 copy.",
+                            "Unable to pattern", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
 
@@ -1135,6 +1131,7 @@ namespace UVtools.GUI
                     {
                         frmBenchmark.ShowDialog();
                     }
+
                     return;
                 }
 
@@ -1171,103 +1168,6 @@ namespace UVtools.GUI
 
                     return;
                 }
-            }
-
-            if (ReferenceEquals(sender, btnLayerImageActionImport))
-            {
-                using (var frm = new FrmToolWindow(new CtrlToolLayerImport(ActualLayer)))
-                {
-                    if(frm.ShowDialog() != DialogResult.OK) return;
-
-                    var control = frm.GetContentCtrl<CtrlToolLayerImport>();
-                    var operation = control.Operation;
-
-                    DisableGUI();
-                    FrmLoading.SetDescription($"Importing {operation.Count} layer(s)");
-
-                    var task = Task.Factory.StartNew(() =>
-                    {
-                        try
-                        {
-                            SlicerFile.LayerManager.Import(operation, FrmLoading.RestartProgress());
-                        }
-                        catch (OperationCanceledException)
-                        {
-
-                        }
-                        catch (Exception ex)
-                        {
-                            GUIExtensions.MessageErrorBox("Error", ex.Message);
-                        }
-                        finally
-                        {
-                            Invoke((MethodInvoker)delegate
-                            {
-                                // Running on the UI thread
-                                EnableGUI(true);
-                            });
-                        }
-                    });
-
-                    var loadingResult = FrmLoading.ShowDialog();
-
-                    UpdateLayerLimits();
-                    RefreshInfo();
-                    ShowLayer();
-
-                    menuFileSave.Enabled =
-                        menuFileSaveAs.Enabled = true;
-
-                }
-
-                return;
-            }
-
-            if (ReferenceEquals(sender, menuToolsLayerClone) || ReferenceEquals(sender, btnLayerImageActionClone))
-            {
-                var content = new CtrlToolLayerClone();
-                using (var frm = new FrmToolWindow(content, ActualLayer))
-                {
-                    if (frm.ShowDialog() != DialogResult.OK) return;
-
-                    DisableGUI();
-                    FrmLoading.SetDescription($"Layer clone from {frm.LayerRangeStart} to {frm.LayerRangeEnd}");
-
-                    var task = Task.Factory.StartNew(() =>
-                    {
-                        try
-                        {
-                            SlicerFile.LayerManager.CloneLayer(content.Operation, FrmLoading.RestartProgress());
-                        }
-                        catch (OperationCanceledException)
-                        {
-
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                        finally
-                        {
-                            Invoke((MethodInvoker)delegate
-                            {
-                                // Running on the UI thread
-                                EnableGUI(true);
-                            });
-                        }
-                    });
-
-                    var loadingResult = FrmLoading.ShowDialog();
-
-                    UpdateLayerLimits();
-                    RefreshInfo();
-                    ShowLayer();
-
-                    menuFileSave.Enabled =
-                        menuFileSaveAs.Enabled = true;
-                }
-
-                return;
             }
 
             if (ReferenceEquals(sender, menuNewVersion))
@@ -1307,7 +1207,7 @@ namespace UVtools.GUI
                 }
 
                 pbThumbnail.Image = SlicerFile.Thumbnails[i]?.ToBitmap();
-                
+
                 tsThumbnailsCount.Text = $"{i + 1}/{SlicerFile.CreatedThumbnailsCount}";
                 tsThumbnailsNext.Enabled = true;
 
@@ -1451,6 +1351,7 @@ namespace UVtools.GUI
 
                     sb.AppendLine();
                 }
+
                 Clipboard.SetText(sb.ToString());
                 return;
             }
@@ -1485,12 +1386,15 @@ namespace UVtools.GUI
                                 "GCode save was successful, do you want open the file with default editor?.\nPress 'Yes' if you want open the target file, otherwise select 'No' to continue.",
                                 "GCode save completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) !=
                             DialogResult.Yes) return;
-                        using (Process.Start(dialog.FileName)) { }
+                        using (Process.Start(dialog.FileName))
+                        {
+                        }
                     }
 
                     return;
                 }
             }
+
             if (ReferenceEquals(sender, btnGCodeSaveClipboard))
             {
                 Clipboard.SetText(SlicerFile.GCode.ToString());
@@ -1614,7 +1518,7 @@ namespace UVtools.GUI
 
                         if (layersRemove.Count > 0)
                         {
-                            SlicerFile.LayerManager.RemoveLayer(layersRemove);
+                            SlicerFile.LayerManager.RemoveLayers(layersRemove);
                             result = true;
                         }
 
@@ -1658,6 +1562,7 @@ namespace UVtools.GUI
                     Issues.Remove(issue);
                     removeList.Add(issue);
                 }
+
                 flvIssues.RemoveObjects(removeList);
 
                 if (layersRemove.Count > 0)
@@ -1690,7 +1595,8 @@ namespace UVtools.GUI
                 /*if (MessageBox.Show("Are you sure you want to compute issues?", "Issues Compute",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;*/
 
-                ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration(), GetTouchingBoundsDetectionConfiguration(), tsIssuesDetectEmptyLayers.Checked);
+                ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration(),
+                    GetTouchingBoundsDetectionConfiguration(), tsIssuesDetectEmptyLayers.Checked);
 
                 return;
             }
@@ -1721,6 +1627,7 @@ namespace UVtools.GUI
                 {
                     PixelHistory.Items.Remove(operation);
                 }
+
                 RefreshPixelHistory();
 
                 ShowLayer();
@@ -1762,7 +1669,7 @@ namespace UVtools.GUI
             /************************
              *      Layer Menu      *
              ***********************/
-            if (ReferenceEquals(sender, btnLayerImageRotate) || 
+            if (ReferenceEquals(sender, btnLayerImageRotate) ||
                 ReferenceEquals(sender, btnLayerImageLayerDifference) ||
                 ReferenceEquals(sender, btnLayerImageHighlightIssues) ||
                 ReferenceEquals(sender, btnLayerImageShowCrosshairs) ||
@@ -1771,13 +1678,14 @@ namespace UVtools.GUI
                 ReferenceEquals(sender, btnLayerImageLayerOutlineHollowAreas) ||
                 ReferenceEquals(sender, btnLayerImageLayerOutlineEdgeDetection)
 
-                )
+            )
             {
                 ShowLayer();
                 if (ReferenceEquals(sender, btnLayerImageRotate))
                 {
                     ZoomToFit();
                 }
+
                 return;
             }
 
@@ -1792,23 +1700,6 @@ namespace UVtools.GUI
                 {
                     DrawModifications(true);
                 }
-
-                return;
-            }
-
-            if (ReferenceEquals(sender, btnLayerImageActionRemove))
-            {
-                /*if (MessageBox.Show("Are you sure you want to remove current layer?\nThis operation is irreversible!",
-                        "Remove current layer?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) !=
-                    DialogResult.Yes) return;*/
-
-                /*SlicerFile.LayerManager.RemoveLayer(ActualLayer);
-                UpdateLayerLimits();
-                RefreshInfo();
-                ShowLayer();
-                menuFileSave.Enabled = menuFileSaveAs.Enabled = true;*/
-
-                EventClick(menuToolsLayerRemoval, EventArgs.Empty);
 
                 return;
             }
@@ -1832,6 +1723,7 @@ namespace UVtools.GUI
                         pbLayer.Image.Save(dialog.FileName);
                     }
                 }
+
                 return;
             }
 
@@ -1867,23 +1759,24 @@ namespace UVtools.GUI
 
             if (ReferenceEquals(sender, btnLastLayer))
             {
-                ShowLayer(SlicerFile.LayerCount-1);
+                ShowLayer(SlicerFile.LayerCount - 1);
                 return;
             }
 
             if (ReferenceEquals(sender, btnFindLayer))
             {
-                using (FrmInputBox inputBox = new FrmInputBox("Go to layer", "Select a layer index to go to", ActualLayer, null, 0, SlicerFile.LayerCount - 1, 0, "Layer"))
+                using (FrmInputBox inputBox = new FrmInputBox("Go to layer", "Select a layer index to go to",
+                    ActualLayer, null, 0, SlicerFile.LayerCount - 1, 0, "Layer"))
                 {
                     if (inputBox.ShowDialog() == DialogResult.OK)
                     {
-                        ShowLayer((uint)inputBox.NewValue);
+                        ShowLayer((uint) inputBox.NewValue);
                     }
                 }
+
                 return;
             }
         }
-
 
         private void ValueChanged(object sender, EventArgs e)
         {
@@ -1900,13 +1793,15 @@ namespace UVtools.GUI
 
         private void ConvertToItemOnClick(object sender, EventArgs e)
         {
-            ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
-            FileFormat fileFormat = (FileFormat)menuItem.Tag;
+            ToolStripMenuItem menuItem = (ToolStripMenuItem) sender;
+            FileFormat fileFormat = (FileFormat) menuItem.Tag;
             using (SaveFileDialog dialog = new SaveFileDialog())
             {
                 dialog.FileName = Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath);
                 dialog.Filter = fileFormat.FileFilter;
-                dialog.InitialDirectory = string.IsNullOrEmpty(Settings.Default.FileConvertDefaultDirectory) ? Path.GetDirectoryName(SlicerFile.FileFullPath) : Settings.Default.FileConvertDefaultDirectory;
+                dialog.InitialDirectory = string.IsNullOrEmpty(Settings.Default.FileConvertDefaultDirectory)
+                    ? Path.GetDirectoryName(SlicerFile.FileFullPath)
+                    : Settings.Default.FileConvertDefaultDirectory;
 
                 //using (FileFormat instance = (FileFormat)Activator.CreateInstance(type)) 
                 //using (CbddlpFile file = new CbddlpFile())
@@ -1916,7 +1811,8 @@ namespace UVtools.GUI
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     DisableGUI();
-                    FrmLoading.SetDescription($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {Path.GetExtension(dialog.FileName)}");
+                    FrmLoading.SetDescription(
+                        $"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {Path.GetExtension(dialog.FileName)}");
 
                     Task<bool> task = Task<bool>.Factory.StartNew(() =>
                     {
@@ -1930,11 +1826,13 @@ namespace UVtools.GUI
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show($"Convertion was unsuccessful! Maybe not implemented...\n{ex.Message}", "Convertion unsuccessful", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show($"Convertion was unsuccessful! Maybe not implemented...\n{ex.Message}",
+                                "Convertion unsuccessful", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                         finally
                         {
-                            Invoke((MethodInvoker)delegate {
+                            Invoke((MethodInvoker) delegate
+                            {
                                 // Running on the UI thread
                                 EnableGUI(true);
                             });
@@ -1945,8 +1843,9 @@ namespace UVtools.GUI
 
                     if (FrmLoading.ShowDialog() == DialogResult.OK && task.Result)
                     {
-                        if (MessageBox.Show($"Convertion is completed: {Path.GetFileName(dialog.FileName)} in {FrmLoading.StopWatch.ElapsedMilliseconds / 1000}s\n" +
-                                            "Do you want open the converted file in a new window?",
+                        if (MessageBox.Show(
+                            $"Convertion is completed: {Path.GetFileName(dialog.FileName)} in {FrmLoading.StopWatch.ElapsedMilliseconds / 1000}s\n" +
+                            "Do you want open the converted file in a new window?",
                             "Convertion completed", MessageBoxButtons.YesNo,
                             MessageBoxIcon.Information) == DialogResult.Yes)
                         {
@@ -1966,7 +1865,7 @@ namespace UVtools.GUI
                         {
                             Debug.WriteLine(ex);
                         }
-                        
+
                         //MessageBox.Show("Convertion was unsuccessful! Maybe not implemented...", "Convertion unsuccessful", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
@@ -1989,17 +1888,19 @@ namespace UVtools.GUI
                 tsLayerImageZoom.Text = $"Zoom: [ {e.NewZoom / 100f}x ]";
                 tsLayerImageZoomLock.Visible = false;
             }
-            
+
             // Refresh the layer to properly render the crosshair at various zoom transitions
-            if (btnLayerImageShowCrosshairs.Checked && 
-                !ReferenceEquals(Issues, null) && 
-                (e.OldZoom < 50 && e.NewZoom >= 50  // Trigger refresh as crosshair thickness increases at lower zoom levels
-                    || e.OldZoom > 100 && e.NewZoom <= 100
-                    || e.OldZoom >= 50 && e.OldZoom <= 100 && (e.NewZoom < 50 || e.NewZoom > 100)
-                    || e.OldZoom <= CrosshairFadeLevel && e.NewZoom > CrosshairFadeLevel // Trigger refresh as zoom level manually crosses fade threshold
-                    || e.OldZoom > CrosshairFadeLevel && e.NewZoom <= CrosshairFadeLevel)
-                
-                )
+            if (btnLayerImageShowCrosshairs.Checked &&
+                !ReferenceEquals(Issues, null) &&
+                (e.OldZoom < 50 &&
+                 e.NewZoom >= 50 // Trigger refresh as crosshair thickness increases at lower zoom levels
+                 || e.OldZoom > 100 && e.NewZoom <= 100
+                 || e.OldZoom >= 50 && e.OldZoom <= 100 && (e.NewZoom < 50 || e.NewZoom > 100)
+                 || e.OldZoom <= CrosshairFadeLevel &&
+                 e.NewZoom > CrosshairFadeLevel // Trigger refresh as zoom level manually crosses fade threshold
+                 || e.OldZoom > CrosshairFadeLevel && e.NewZoom <= CrosshairFadeLevel)
+
+            )
             {
                 if (Settings.Default.CrosshairShowOnlyOnSelectedIssues)
                 {
@@ -2010,11 +1911,12 @@ namespace UVtools.GUI
                 }
                 else
                 {
-                    if(!Issues.Any(
+                    if (!Issues.Any(
                         issue => // Find a valid candidate to update layer preview, otherwise quit
                             issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
                             issue.Type != LayerIssue.IssueType.TouchingBound)) return;
                 }
+
                 // A timer is used here rather than invoking ShowLayer directly to eliminate sublte visual flashing
                 // that will occur on the transition when the crosshair fades or unfades if ShowLayer is called directly.
                 layerZoomTimer.Start();
@@ -2022,6 +1924,7 @@ namespace UVtools.GUI
         }
 
         private Point _lastPixelMouseLocation = Point.Empty;
+
         private void pbLayer_MouseMove(object sender, MouseEventArgs e)
         {
             if (!pbLayer.IsPointInImage(e.Location) || (ModifierKeys & Keys.Shift) == 0) return;
@@ -2031,7 +1934,8 @@ namespace UVtools.GUI
 
             Point realLocation = GetTransposedPoint(location);
 
-            tsLayerImageMouseLocation.Text = $"{{X={realLocation.X}, Y={realLocation.Y}, B={ActualLayerImage.GetByte(realLocation)}}}";
+            tsLayerImageMouseLocation.Text =
+                $"{{X={realLocation.X}, Y={realLocation.Y}, B={ActualLayerImage.GetByte(realLocation)}}}";
 
             // Bail here if we're not in a draw operation, if the mouse button is not either
             // left or right, or if the location of the mouse pointer is not within the image.
@@ -2058,9 +1962,9 @@ namespace UVtools.GUI
         {
             if (ReferenceEquals(sender, flvIssues))
             {
-                if(!(flvIssues.SelectedObject is LayerIssue issue)) return;
-                
-                if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer || 
+                if (!(flvIssues.SelectedObject is LayerIssue issue)) return;
+
+                if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
                     (issue.X == -1 && issue.Y == -1))
                 {
                     ZoomToFit();
@@ -2077,7 +1981,7 @@ namespace UVtools.GUI
                         // If issue is not already visible, center on it and bring it into view.
                         // Issues already in view will not be centered, though their color may
                         // change and the crosshair may move to reflect active selections.
-                        
+
                         if (!Rectangle.Round(pbLayer.GetSourceImageRegion()).Contains(GetTransposedIssueBounds(issue)))
                         {
                             CenterAtIssue(issue);
@@ -2118,7 +2022,7 @@ namespace UVtools.GUI
 
         private void TbLayerOnMouseWheel(object sender, MouseEventArgs e)
         {
-            ((HandledMouseEventArgs)e).Handled = true;
+            ((HandledMouseEventArgs) e).Handled = true;
             if (!tbLayer.Enabled) return;
             if (e.Delta > 0)
             {
@@ -2145,7 +2049,7 @@ namespace UVtools.GUI
         void Clear()
         {
             UpdateTitle();
-            
+
             SlicerFile?.Dispose();
             SlicerFile = null;
             ActualLayer = 0;
@@ -2164,9 +2068,9 @@ namespace UVtools.GUI
             PixelHistory.Clear();
             RefreshPixelHistory();
 
-            lbMaxLayer.Text = 
-            lbActualLayer.Text = 
-            lbInitialLayer.Text = "???";
+            lbMaxLayer.Text =
+                lbActualLayer.Text =
+                    lbInitialLayer.Text = "???";
             flvProperties.ClearObjects();
             //pbLayers.Value = 0;
             tbLayer.Value = 0;
@@ -2189,18 +2093,22 @@ namespace UVtools.GUI
             {
                 item.Enabled = false;
             }
+
             foreach (ToolStripItem item in tsLayer.Items)
             {
                 item.Enabled = false;
             }
+
             foreach (ToolStripItem item in tsLayerInfo.Items)
             {
                 item.Enabled = false;
             }
+
             foreach (ToolStripItem item in tsProperties.Items)
             {
                 item.Enabled = false;
             }
+
             foreach (ToolStripItem item in tsIssues.Items)
             {
                 item.Enabled = false;
@@ -2210,33 +2118,33 @@ namespace UVtools.GUI
             tsLayerBounds.Text = "Bounds:";
             tsLayerImageMouseLocation.Text = "{X=0, Y=0}";
 
-            tsThumbnailsResolution.Text = 
-            tsLayerPreviewTime.Text =
-            tsLayerResolution.Text =
-            tsPropertiesLabelCount.Text =
-            tsPropertiesLabelGroups.Text = string.Empty;
+            tsThumbnailsResolution.Text =
+                tsLayerPreviewTime.Text =
+                    tsLayerResolution.Text =
+                        tsPropertiesLabelCount.Text =
+                            tsPropertiesLabelGroups.Text = string.Empty;
 
 
             menuFileReload.Enabled =
-            menuFileSave.Enabled =
-            menuFileSaveAs.Enabled =
-            menuFileClose.Enabled =
-            menuFileExtract.Enabled =
-            menuFileConvert.Enabled =
-            tbLayer.Enabled = 
-            //pbLayers.Enabled = 
-            menuEdit.Enabled = 
-            menuMutate.Enabled =
-            menuTools.Enabled =
-            btnFirstLayer.Enabled =
-            btnNextLayer.Enabled =
-            btnPreviousLayer.Enabled =
-            btnLastLayer.Enabled =
-            btnFindLayer.Enabled =
+                menuFileSave.Enabled =
+                    menuFileSaveAs.Enabled =
+                        menuFileClose.Enabled =
+                            menuFileExtract.Enabled =
+                                menuFileConvert.Enabled =
+                                    tbLayer.Enabled =
+                                        //pbLayers.Enabled = 
+                                        menuEdit.Enabled =
+                                            menuMutate.Enabled =
+                                                menuTools.Enabled =
+                                                    btnFirstLayer.Enabled =
+                                                        btnNextLayer.Enabled =
+                                                            btnPreviousLayer.Enabled =
+                                                                btnLastLayer.Enabled =
+                                                                    btnFindLayer.Enabled =
 
-            btnLayerImagePixelEdit.Checked =
+                                                                        btnLayerImagePixelEdit.Checked =
 
-                false;
+                                                                            false;
 
             tsThumbnailsCount.Text = "0/0";
             tsThumbnailsCount.Tag = null;
@@ -2249,8 +2157,8 @@ namespace UVtools.GUI
 
         void DisableGUI()
         {
-            mainTable.Enabled = 
-            menu.Enabled = false;
+            mainTable.Enabled =
+                menu.Enabled = false;
         }
 
         void EnableGUI(bool closeLoading = false)
@@ -2263,14 +2171,16 @@ namespace UVtools.GUI
                 }
                 else
                 {
-                    FrmLoading.DialogResult = FrmLoading.Progress.Token.IsCancellationRequested ? DialogResult.Cancel : DialogResult.OK;
+                    FrmLoading.DialogResult = FrmLoading.Progress.Token.IsCancellationRequested
+                        ? DialogResult.Cancel
+                        : DialogResult.OK;
                 }
-                
+
                 //FrmLoading.Close();
             }
 
-            mainTable.Enabled = 
-            menu.Enabled = true;
+            mainTable.Enabled =
+                menu.Enabled = true;
         }
 
         void ProcessFile(uint actualLayer = 0)
@@ -2290,7 +2200,8 @@ namespace UVtools.GUI
                 }
                 catch (Exception exception)
                 {
-                    MessageBox.Show(exception.ToString(), "Error while try opening the file", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(exception.ToString(), "Error while try opening the file", MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                     return;
                 }
 
@@ -2308,7 +2219,7 @@ namespace UVtools.GUI
 
             DisableGUI();
             FrmLoading.SetDescription($"Decoding {fileNameOnly}");
-            
+
             var task = Task.Factory.StartNew(() =>
             {
                 try
@@ -2321,7 +2232,8 @@ namespace UVtools.GUI
                 }
                 finally
                 {
-                    Invoke((MethodInvoker)delegate {
+                    Invoke((MethodInvoker) delegate
+                    {
                         // Running on the UI thread
                         EnableGUI(true);
                     });
@@ -2334,15 +2246,16 @@ namespace UVtools.GUI
                 SlicerFile = null;
                 return;
             }
-            
-            if (SlicerFile.LayerCount == 0 )
+
+            if (SlicerFile.LayerCount == 0)
             {
                 MessageBox.Show("It seens the file don't have any layer, the causes can be:\n" +
                                 "- Empty\n" +
                                 "- Corrupted\n" +
                                 "- Lacking a sliced model\n" +
                                 "- A programing internal error\n\n" +
-                                "Please check your file and retry", "Error reading the file - Lacking of layers", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                "Please check your file and retry", "Error reading the file - Lacking of layers",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
                 //Clear();
                 return;
             }
@@ -2399,40 +2312,45 @@ namespace UVtools.GUI
             {
                 item.Enabled = true;
             }
+
             foreach (ToolStripItem item in menuTools.DropDownItems)
             {
                 item.Enabled = true;
             }
+
             foreach (ToolStripItem item in tsLayer.Items)
             {
                 item.Enabled = true;
             }
+
             foreach (ToolStripItem item in tsLayerInfo.Items)
             {
                 item.Enabled = true;
             }
+
             foreach (ToolStripItem item in tsProperties.Items)
             {
                 item.Enabled = true;
             }
+
             tsPropertiesLabelCount.Text = $"Properties: {flvProperties.GetItemCount()}";
             tsPropertiesLabelGroups.Text = $"Groups: {flvProperties.OLVGroups?.Count ?? 0}";
 
             menuFileReload.Enabled =
-            menuFileClose.Enabled =
-            menuFileExtract.Enabled =
-                
-            tbLayer.Enabled =
-            //pbLayers.Enabled =
-            menuEdit.Enabled = 
-            menuMutate.Enabled =
-            menuTools.Enabled =
+                menuFileClose.Enabled =
+                    menuFileExtract.Enabled =
 
-            tsIssuesRepair.Enabled =
-            tsIssuesDetect.Enabled =
+                        tbLayer.Enabled =
+                            //pbLayers.Enabled =
+                            menuEdit.Enabled =
+                                menuMutate.Enabled =
+                                    menuTools.Enabled =
 
-                btnFindLayer.Enabled =
-                true;
+                                        tsIssuesRepair.Enabled =
+                                            tsIssuesDetect.Enabled =
+
+                                                btnFindLayer.Enabled =
+                                                    true;
 
 
             tabControlLeft.TabPages.Insert(1, tabPageIssues);
@@ -2440,14 +2358,14 @@ namespace UVtools.GUI
             {
                 tabControlLeft.TabPages.Insert(1, tabPageGCode);
             }
-            
+
 
 
             tabControlLeft.SelectedIndex = 0;
             tsLayerResolution.Text = $"{{Width={SlicerFile.ResolutionX}, Height={SlicerFile.ResolutionY}}}";
 
             UpdateLayerLimits();
-            ShowLayer(Math.Min(actualLayer, SlicerFile.LayerCount-1));
+            ShowLayer(Math.Min(actualLayer, SlicerFile.LayerCount - 1));
 
             RefreshInfo();
 
@@ -2468,16 +2386,16 @@ namespace UVtools.GUI
         {
             lbMaxLayer.Text = $"{SlicerFile.TotalHeight}mm\n{SlicerFile.LayerCount - 1}";
             lbInitialLayer.Text = $"{SlicerFile.LayerHeight}mm\n0";
-            tbLayer.Maximum = (int)SlicerFile.LayerCount - 1;
+            tbLayer.Maximum = (int) SlicerFile.LayerCount - 1;
         }
 
         private void UpdateTitle()
         {
-            Text = ReferenceEquals(SlicerFile, null) ?
-                $"{FrmAbout.AssemblyTitle}   Version: {FrmAbout.AssemblyVersion}" : 
-                $"{FrmAbout.AssemblyTitle}   File: {Path.GetFileName(SlicerFile.FileFullPath)} ({Math.Round(FrmLoading.StopWatch.ElapsedMilliseconds/1000m, 2)}s)   Version: {FrmAbout.AssemblyVersion}";
+            Text = ReferenceEquals(SlicerFile, null)
+                ? $"{FrmAbout.AssemblyTitle}   Version: {FrmAbout.AssemblyVersion}"
+                : $"{FrmAbout.AssemblyTitle}   File: {Path.GetFileName(SlicerFile.FileFullPath)} ({Math.Round(FrmLoading.StopWatch.ElapsedMilliseconds / 1000m, 2)}s)   Version: {FrmAbout.AssemblyVersion}";
 
-#if  DEBUG
+#if DEBUG
             Text += "   [DEBUG]";
 #endif
         }
@@ -2513,19 +2431,22 @@ namespace UVtools.GUI
                     foreach (PropertyInfo propertyInfo in config.GetType()
                         .GetProperties(BindingFlags.Public | BindingFlags.Instance))
                     {
-                        if(propertyInfo.Name.Equals("Item")) continue;
+                        if (propertyInfo.Name.Equals("Item")) continue;
                         var value = propertyInfo.GetValue(config);
                         if (ReferenceEquals(value, null)) continue;
                         if (value is IList list)
                         {
-                            items.Add(new SlicerPropertyItem(propertyInfo.Name, list.Count.ToString(), config.GetType().Name));
+                            items.Add(new SlicerPropertyItem(propertyInfo.Name, list.Count.ToString(),
+                                config.GetType().Name));
                         }
                         else
                         {
-                            items.Add(new SlicerPropertyItem(propertyInfo.Name, value.ToString(), config.GetType().Name));
+                            items.Add(
+                                new SlicerPropertyItem(propertyInfo.Name, value.ToString(), config.GetType().Name));
                         }
                     }
                 }
+
                 flvProperties.SetObjects(items);
             }
 
@@ -2544,6 +2465,8 @@ namespace UVtools.GUI
             AddStatusBarItem(nameof(SlicerFile.MaterialCost), SlicerFile.MaterialCost, "€");
             AddStatusBarItem(nameof(SlicerFile.MaterialName), SlicerFile.MaterialName);
             AddStatusBarItem(nameof(SlicerFile.MachineName), SlicerFile.MachineName);
+
+            tsLayerResolution.Text = ActualLayerImage.Size.ToString();
         }
 
         private void UpdateGCode()
@@ -2564,16 +2487,18 @@ namespace UVtools.GUI
             // This prevents the crosshair lines from disappearing due to being too thin to
             // render at very low zoom factors.
             var lineThickness = (pbLayer.Zoom > 100) ? 1 : (pbLayer.Zoom < 50) ? 3 : 2;
-            var color = new MCvScalar(Settings.Default.CrosshairColor.B, Settings.Default.CrosshairColor.G, Settings.Default.CrosshairColor.R);
+            var color = new MCvScalar(Settings.Default.CrosshairColor.B, Settings.Default.CrosshairColor.G,
+                Settings.Default.CrosshairColor.R);
 
 
             // LEFT
-            Point startPoint = new Point(Math.Max(0, rect.X - Settings.Default.CrosshairLineMargin - 1), rect.Y + rect.Height / 2);
+            Point startPoint = new Point(Math.Max(0, rect.X - Settings.Default.CrosshairLineMargin - 1),
+                rect.Y + rect.Height / 2);
             Point endPoint =
                 new Point(
                     Settings.Default.CrosshairLineLength == 0
                         ? 0
-                        : (int)Math.Max(0, startPoint.X - Settings.Default.CrosshairLineLength + 1),
+                        : (int) Math.Max(0, startPoint.X - Settings.Default.CrosshairLineLength + 1),
                     startPoint.Y);
 
             CvInvoke.Line(ActualLayerImageBgr,
@@ -2588,7 +2513,7 @@ namespace UVtools.GUI
                 rect.Right + Settings.Default.CrosshairLineMargin);
             endPoint.X = Settings.Default.CrosshairLineLength == 0
                 ? ActualLayerImageBgr.Width
-                : (int)Math.Min(ActualLayerImageBgr.Width, startPoint.X + Settings.Default.CrosshairLineLength - 1);
+                : (int) Math.Min(ActualLayerImageBgr.Width, startPoint.X + Settings.Default.CrosshairLineLength - 1);
 
             CvInvoke.Line(ActualLayerImageBgr,
                 startPoint,
@@ -2600,7 +2525,7 @@ namespace UVtools.GUI
             startPoint = new Point(rect.X + rect.Width / 2,
                 Math.Max(0, rect.Y - Settings.Default.CrosshairLineMargin - 1));
             endPoint = new Point(startPoint.X,
-                (int)(Settings.Default.CrosshairLineLength == 0
+                (int) (Settings.Default.CrosshairLineLength == 0
                     ? 0
                     : Math.Max(0, startPoint.Y - Settings.Default.CrosshairLineLength + 1)));
 
@@ -2613,7 +2538,9 @@ namespace UVtools.GUI
 
             // Bottom
             startPoint.Y = Math.Min(ActualLayerImageBgr.Height, rect.Bottom + Settings.Default.CrosshairLineMargin);
-            endPoint.Y = Settings.Default.CrosshairLineLength == 0 ? ActualLayerImageBgr.Height : (int)Math.Min(ActualLayerImageBgr.Height, startPoint.Y + Settings.Default.CrosshairLineLength - 1);
+            endPoint.Y = Settings.Default.CrosshairLineLength == 0
+                ? ActualLayerImageBgr.Height
+                : (int) Math.Min(ActualLayerImageBgr.Height, startPoint.Y + Settings.Default.CrosshairLineLength - 1);
 
             CvInvoke.Line(ActualLayerImageBgr,
                 startPoint,
@@ -2625,7 +2552,7 @@ namespace UVtools.GUI
         /// <summary>
         /// Reshow current layer
         /// </summary>
-        void ShowLayer() => ShowLayer(Math.Min(ActualLayer, SlicerFile.LayerCount-1));
+        void ShowLayer() => ShowLayer(Math.Min(ActualLayer, SlicerFile.LayerCount - 1));
 
         void ShowLayer(bool direction)
         {
@@ -2693,9 +2620,9 @@ namespace UVtools.GUI
                 //pbLayer.Image = Image.FromStream(SlicerFile.LayerEntries[layerNum].Open());
                 //pbLayer.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
 
-                
+
                 Stopwatch watch = Stopwatch.StartNew();
-                
+
 
                 ActualLayerImage?.Dispose();
                 ActualLayerImage = SlicerFile[layerNum].LayerMat;
@@ -2716,7 +2643,7 @@ namespace UVtools.GUI
                 }
                 else if (btnLayerImageLayerDifference.Checked)
                 {
-                    if (layerNum > 0 && layerNum < SlicerFile.LayerCount-1)
+                    if (layerNum > 0 && layerNum < SlicerFile.LayerCount - 1)
                     {
                         using (var previousImage = SlicerFile[layerNum - 1].LayerMat)
                         using (var nextImage = SlicerFile[layerNum + 1].LayerMat)
@@ -2780,7 +2707,7 @@ namespace UVtools.GUI
                                     currentRGBSpan[++bgrPixel] = color.R; // R
                                 }
                             });*/
-                            
+
                             for (int pixel = 0; pixel < imageSpan.Length; pixel++)
                             {
                                 if (imageSpan[pixel] != 0) continue;
@@ -2816,8 +2743,8 @@ namespace UVtools.GUI
                 {
                     foreach (var issue in Issues)
                     {
-                        if(issue.LayerIndex != ActualLayer) continue;
-                        if(!issue.HaveValidPoint) continue;
+                        if (issue.LayerIndex != ActualLayer) continue;
+                        if (!issue.HaveValidPoint) continue;
 
                         Color color = Color.Empty;
 
@@ -2835,7 +2762,9 @@ namespace UVtools.GUI
                                 //CvInvoke.DrawContours(ActualLayerImageBgr, new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)), -1, new MCvScalar(0, 0, 255), 1);
                             }
 
-                            if (btnLayerImageShowCrosshairs.Checked && !Settings.Default.CrosshairShowOnlyOnSelectedIssues && pbLayer.Zoom <= CrosshairFadeLevel)
+                            if (btnLayerImageShowCrosshairs.Checked &&
+                                !Settings.Default.CrosshairShowOnlyOnSelectedIssues &&
+                                pbLayer.Zoom <= CrosshairFadeLevel)
                             {
                                 DrawCrosshair(issue.BoundingRectangle);
                             }
@@ -2849,23 +2778,26 @@ namespace UVtools.GUI
                                 color = selectedIssues.Contains(issue)
                                     ? Settings.Default.IslandHLColor
                                     : Settings.Default.IslandColor;
-                                if (btnLayerImageShowCrosshairs.Checked && !Settings.Default.CrosshairShowOnlyOnSelectedIssues && pbLayer.Zoom <= CrosshairFadeLevel)
+                                if (btnLayerImageShowCrosshairs.Checked &&
+                                    !Settings.Default.CrosshairShowOnlyOnSelectedIssues &&
+                                    pbLayer.Zoom <= CrosshairFadeLevel)
                                 {
                                     DrawCrosshair(issue.BoundingRectangle);
                                 }
+
                                 break;
                             case LayerIssue.IssueType.TouchingBound:
                                 color = Settings.Default.TouchingBoundsColor;
                                 break;
                         }
-                        
+
                         foreach (var pixel in issue)
                         {
                             int pixelPos = ActualLayerImage.GetPixelPos(pixel);
                             byte brightness = imageSpan[pixelPos];
                             if (brightness == 0) continue;
 
-                            int pixelBgrPos = pixelPos*ActualLayerImageBgr.NumberOfChannels;
+                            int pixelBgrPos = pixelPos * ActualLayerImageBgr.NumberOfChannels;
 
                             var newColor = color.FactorColor(brightness, 80);
 
@@ -2878,14 +2810,19 @@ namespace UVtools.GUI
 
                 if (btnLayerImageLayerOutlinePrintVolumeBounds.Checked)
                 {
-                    CvInvoke.Rectangle(ActualLayerImageBgr, SlicerFile.LayerManager.BoundingRectangle, 
-                        new MCvScalar(Settings.Default.OutlinePrintVolumeBoundsColor.B, Settings.Default.OutlinePrintVolumeBoundsColor.G, Settings.Default.OutlinePrintVolumeBoundsColor.R), Settings.Default.OutlinePrintVolumeBoundsLineThickness);
+                    CvInvoke.Rectangle(ActualLayerImageBgr, SlicerFile.LayerManager.BoundingRectangle,
+                        new MCvScalar(Settings.Default.OutlinePrintVolumeBoundsColor.B,
+                            Settings.Default.OutlinePrintVolumeBoundsColor.G,
+                            Settings.Default.OutlinePrintVolumeBoundsColor.R),
+                        Settings.Default.OutlinePrintVolumeBoundsLineThickness);
                 }
 
                 if (btnLayerImageLayerOutlineLayerBounds.Checked)
                 {
-                    CvInvoke.Rectangle(ActualLayerImageBgr, SlicerFile[layerNum].BoundingRectangle, 
-                        new MCvScalar(Settings.Default.OutlineLayerBoundsColor.B, Settings.Default.OutlineLayerBoundsColor.G, Settings.Default.OutlineLayerBoundsColor.R), Settings.Default.OutlineLayerBoundsLineThickness);
+                    CvInvoke.Rectangle(ActualLayerImageBgr, SlicerFile[layerNum].BoundingRectangle,
+                        new MCvScalar(Settings.Default.OutlineLayerBoundsColor.B,
+                            Settings.Default.OutlineLayerBoundsColor.G, Settings.Default.OutlineLayerBoundsColor.R),
+                        Settings.Default.OutlineLayerBoundsLineThickness);
                 }
 
                 if (btnLayerImageLayerOutlineHollowAreas.Checked)
@@ -2901,7 +2838,8 @@ namespace UVtools.GUI
                      */
                     for (int i = 0; i < layerContours.Size; i++)
                     {
-                        if ((int)layerHierarchyJagged.GetValue(0, i, 2) == -1 && (int)layerHierarchyJagged.GetValue(0, i, 3) != -1)
+                        if ((int) layerHierarchyJagged.GetValue(0, i, 2) == -1 &&
+                            (int) layerHierarchyJagged.GetValue(0, i, 3) != -1)
                         {
                             //var r = CvInvoke.BoundingRectangle(contours[i]);
                             //CvInvoke.Rectangle(ActualLayerImageBgr, r, new MCvScalar(0, 0, 255), 2);
@@ -2926,31 +2864,36 @@ namespace UVtools.GUI
 
                 for (var index = 0; index < PixelHistory.Count; index++)
                 {
-                    if(PixelHistory[index].LayerIndex != ActualLayer) continue;
+                    if (PixelHistory[index].LayerIndex != ActualLayer) continue;
                     var operation = PixelHistory[index];
                     if (operation.OperationType == PixelOperation.PixelOperationType.Drawing)
                     {
-                        var operationDrawing = (PixelDrawing)operation;
+                        var operationDrawing = (PixelDrawing) operation;
                         var color = operationDrawing.IsAdd
                             ? (flvPixelHistory.SelectedObjects.Contains(operation)
-                                  ? Settings.Default.PixelEditorAddPixelHLColor
-                                  : Settings.Default.PixelEditorAddPixelColor)
+                                ? Settings.Default.PixelEditorAddPixelHLColor
+                                : Settings.Default.PixelEditorAddPixelColor)
                             : (flvPixelHistory.SelectedObjects.Contains(operation)
-                                  ? Settings.Default.PixelEditorRemovePixelHLColor
-                                  : Settings.Default.PixelEditorRemovePixelColor);
+                                ? Settings.Default.PixelEditorRemovePixelHLColor
+                                : Settings.Default.PixelEditorRemovePixelColor);
                         if (operationDrawing.BrushSize == 1)
                         {
-                            ActualLayerImageBgr.SetByte(operation.Location.X, operation.Location.Y, new []{ color.B, color.G, color.R });
+                            ActualLayerImageBgr.SetByte(operation.Location.X, operation.Location.Y,
+                                new[] {color.B, color.G, color.R});
                             continue;
                         }
 
                         switch (operationDrawing.BrushShape)
                         {
                             case PixelDrawing.BrushShapeType.Rectangle:
-                                CvInvoke.Rectangle(ActualLayerImageBgr, operationDrawing.Rectangle, new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness, operationDrawing.LineType);
+                                CvInvoke.Rectangle(ActualLayerImageBgr, operationDrawing.Rectangle,
+                                    new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
+                                    operationDrawing.LineType);
                                 break;
                             case PixelDrawing.BrushShapeType.Circle:
-                                CvInvoke.Circle(ActualLayerImageBgr, operation.Location, operationDrawing.BrushSize / 2, new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness, operationDrawing.LineType);
+                                CvInvoke.Circle(ActualLayerImageBgr, operation.Location, operationDrawing.BrushSize / 2,
+                                    new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
+                                    operationDrawing.LineType);
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException();
@@ -2958,50 +2901,55 @@ namespace UVtools.GUI
                     }
                     else if (operation.OperationType == PixelOperation.PixelOperationType.Text)
                     {
-                        var operationText = (PixelText)operation;
+                        var operationText = (PixelText) operation;
                         var color = operationText.IsAdd
                             ? (flvPixelHistory.SelectedObjects.Contains(operation)
-                                  ? Settings.Default.PixelEditorAddPixelHLColor
-                                  : Settings.Default.PixelEditorAddPixelColor)
+                                ? Settings.Default.PixelEditorAddPixelHLColor
+                                : Settings.Default.PixelEditorAddPixelColor)
                             : (flvPixelHistory.SelectedObjects.Contains(operation)
-                                  ? Settings.Default.PixelEditorRemovePixelHLColor
-                                  : Settings.Default.PixelEditorRemovePixelColor);
+                                ? Settings.Default.PixelEditorRemovePixelHLColor
+                                : Settings.Default.PixelEditorRemovePixelColor);
 
-                        CvInvoke.PutText(ActualLayerImageBgr, operationText.Text, operationText.Location, operationText.Font, operationText.FontScale, new MCvScalar(color.B, color.G, color.R), operationText.Thickness, operationText.LineType, operationText.Mirror);
+                        CvInvoke.PutText(ActualLayerImageBgr, operationText.Text, operationText.Location,
+                            operationText.Font, operationText.FontScale, new MCvScalar(color.B, color.G, color.R),
+                            operationText.Thickness, operationText.LineType, operationText.Mirror);
                     }
                     else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
                     {
                         initContours();
-                        if(imageSpan[ActualLayerImage.GetPixelPos(operation.Location)] < 10) continue;
+                        if (imageSpan[ActualLayerImage.GetPixelPos(operation.Location)] < 10) continue;
                         var color = flvPixelHistory.SelectedObjects.Contains(operation)
-                                        ? Settings.Default.PixelEditorRemovePixelHLColor
-                                        : Settings.Default.PixelEditorRemovePixelColor;
+                            ? Settings.Default.PixelEditorRemovePixelHLColor
+                            : Settings.Default.PixelEditorRemovePixelColor;
                         for (int i = 0; i < layerContours.Size; i++)
                         {
                             if (CvInvoke.PointPolygonTest(layerContours[i], operation.Location, false) >= 0)
                             {
-                                CvInvoke.DrawContours(ActualLayerImageBgr, layerContours, i, new MCvScalar(color.B, color.G, color.R), -1);
+                                CvInvoke.DrawContours(ActualLayerImageBgr, layerContours, i,
+                                    new MCvScalar(color.B, color.G, color.R), -1);
                                 break;
                             }
                         }
                     }
                     else if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
                     {
-                        var operationSupport = (PixelSupport)operation;
+                        var operationSupport = (PixelSupport) operation;
                         var color = flvPixelHistory.SelectedObjects.Contains(operation)
-                                        ? Settings.Default.PixelEditorSupportHLColor
-                                        : Settings.Default.PixelEditorSupportColor;
+                            ? Settings.Default.PixelEditorSupportHLColor
+                            : Settings.Default.PixelEditorSupportColor;
 
-                        CvInvoke.Circle(ActualLayerImageBgr, operation.Location, operationSupport.TipDiameter / 2, new MCvScalar(color.B, color.G, color.R), -1);
+                        CvInvoke.Circle(ActualLayerImageBgr, operation.Location, operationSupport.TipDiameter / 2,
+                            new MCvScalar(color.B, color.G, color.R), -1);
                     }
                     else if (operation.OperationType == PixelOperation.PixelOperationType.DrainHole)
                     {
-                        var operationDrainHole = (PixelDrainHole)operation;
+                        var operationDrainHole = (PixelDrainHole) operation;
                         var color = flvPixelHistory.SelectedObjects.Contains(operation)
-                                        ? Settings.Default.PixelEditorDrainHoleHLColor
-                                        : Settings.Default.PixelEditorDrainHoleColor;
+                            ? Settings.Default.PixelEditorDrainHoleHLColor
+                            : Settings.Default.PixelEditorDrainHoleColor;
 
-                        CvInvoke.Circle(ActualLayerImageBgr, operation.Location, operationDrainHole.Diameter / 2, new MCvScalar(color.B, color.G, color.R), -1);
+                        CvInvoke.Circle(ActualLayerImageBgr, operation.Location, operationDrainHole.Diameter / 2,
+                            new MCvScalar(color.B, color.G, color.R), -1);
                     }
                 }
 
@@ -3011,17 +2959,19 @@ namespace UVtools.GUI
                     Settings.Default.CrosshairShowOnlyOnSelectedIssues &&
                     !ReferenceEquals(Issues, null) &&
                     flvIssues.SelectedIndices.Count > 0 &&
-                    pbLayer.Zoom <= CrosshairFadeLevel && // Only draw crosshairs when zoom level is below the configurable crosshair fade threshold.
+                    pbLayer.Zoom <=
+                    CrosshairFadeLevel && // Only draw crosshairs when zoom level is below the configurable crosshair fade threshold.
                     !(btnLayerImagePixelEdit.Checked && (ModifierKeys & Keys.Shift) != 0))
                 {
-                    
+
 
                     foreach (LayerIssue issue in selectedIssues)
                     {
                         // Don't render crosshairs for selected issue that are not on the current layer, or for 
                         // issue types that don't have a specific location or bounds.
                         if (issue.LayerIndex != ActualLayer || issue.Type == LayerIssue.IssueType.EmptyLayer
-                               || issue.Type == LayerIssue.IssueType.TouchingBound) continue;
+                                                            || issue.Type == LayerIssue.IssueType.TouchingBound)
+                            continue;
 
                         DrawCrosshair(issue.BoundingRectangle);
                     }
@@ -3031,7 +2981,7 @@ namespace UVtools.GUI
                 {
                     CvInvoke.Rotate(ActualLayerImageBgr, ActualLayerImageBgr, RotateFlags.Rotate90Clockwise);
                 }
-                
+
 
                 //watch.Restart();
                 var imageBmp = ActualLayerImageBgr.ToBitmap();
@@ -3041,9 +2991,11 @@ namespace UVtools.GUI
                 //Debug.WriteLine(watch.ElapsedMilliseconds);
 
 
-                byte percent = (byte)((layerNum + 1) * 100 / SlicerFile.LayerCount);
+                byte percent = (byte) ((layerNum + 1) * 100 / SlicerFile.LayerCount);
 
-                float pixelPercent = (float) Math.Round(layer.NonZeroPixelCount * 100f / (SlicerFile.ResolutionX * SlicerFile.ResolutionY), 2);
+                float pixelPercent =
+                    (float) Math.Round(
+                        layer.NonZeroPixelCount * 100f / (SlicerFile.ResolutionX * SlicerFile.ResolutionY), 2);
                 tsLayerImagePixelCount.Text = $"Pixels: {layer.NonZeroPixelCount} ({pixelPercent}%)";
                 tsLayerBounds.Text = $"Bounds: {layer.BoundingRectangle}";
                 tsLayerImagePixelCount.Invalidate();
@@ -3059,9 +3011,10 @@ namespace UVtools.GUI
                 tsLayerPreviewTime.Text = $"{watch.ElapsedMilliseconds}ms";
                 //lbLayers.Text = $"{SlicerFile.GetHeightFromLayer(layerNum)} / {SlicerFile.TotalHeight}mm\n{layerNum} / {SlicerFile.LayerCount-1}\n{percent}%";
                 lbActualLayer.Text = $"{layer.PositionZ}mm\n{ActualLayer}\n{percent}%";
-                lbActualLayer.Location = new Point(lbActualLayer.Location.X, 
-                            ((int)(tbLayer.Height - (float)tbLayer.Height / tbLayer.Maximum * tbLayer.Value) - lbActualLayer.Height / 2)
-                            .Clamp(1, tbLayer.Height - lbActualLayer.Height));
+                lbActualLayer.Location = new Point(lbActualLayer.Location.X,
+                    ((int) (tbLayer.Height - (float) tbLayer.Height / tbLayer.Maximum * tbLayer.Value) -
+                     lbActualLayer.Height / 2)
+                    .Clamp(1, tbLayer.Height - lbActualLayer.Height));
 
                 //pbLayers.Value = percent;
                 lbActualLayer.Invalidate();
@@ -3123,7 +3076,7 @@ namespace UVtools.GUI
             {
                 btnPixelHistoryRemove.Enabled = flvPixelHistory.SelectedIndices.Count > 0;
 
-                 // If single item is selected, activate it, otherwise, just refresh layer preview.
+                // If single item is selected, activate it, otherwise, just refresh layer preview.
                 if (flvPixelHistory.SelectedIndices.Count == 1)
                 {
                     EventItemActivate(flvPixelHistory, EventArgs.Empty);
@@ -3144,12 +3097,14 @@ namespace UVtools.GUI
                     // opened when Pixel Editor closes and it's tab is removed from the control.
                     ControlLeftLastTab = tabControlLeft.SelectedTab;
                 }
-                
+
                 if (ReferenceEquals(tabControlLeft.SelectedTab, tabPageIssues))
                 {
-                    if (!ReferenceEquals(tabPageIssues.Tag, null) || !Settings.Default.AutoComputeIssuesClickOnTab) return;
+                    if (!ReferenceEquals(tabPageIssues.Tag, null) ||
+                        !Settings.Default.AutoComputeIssuesClickOnTab) return;
                     tsIssuesDetect.PerformButtonClick();
                 }
+
                 return;
             }
 
@@ -3160,17 +3115,19 @@ namespace UVtools.GUI
                     nmPixelEditorDrawingBrushSize.Minimum = PixelDrawing.MinRectangleBrush;
                     return;
                 }
-                if (cbPixelEditorDrawingBrushShape.SelectedIndex == (int)PixelDrawing.BrushShapeType.Circle)
+
+                if (cbPixelEditorDrawingBrushShape.SelectedIndex == (int) PixelDrawing.BrushShapeType.Circle)
                 {
                     nmPixelEditorDrawingBrushSize.Minimum = PixelDrawing.MinCircleBrush;
                     return;
                 }
+
                 return;
             }
         }
- 
+
         private void EventKeyDown(object sender, KeyEventArgs e)
-        {   
+        {
             // We handle this event at the to top level rather than pbLayer to ensure
             // the cross cursor is displayed even before the pblayer control has focus.
             // This ensures the user is aware that even in this case, a click in the layer
@@ -3190,6 +3147,7 @@ namespace UVtools.GUI
                     pbLayer.PanMode = Cyotek.Windows.Forms.ImageBoxPanMode.None;
                     //if (!ReferenceEquals(SlicerFile, null)) ShowLayer();  // Not needed?
                 }
+
                 return;
             }
         }
@@ -3207,6 +3165,7 @@ namespace UVtools.GUI
                     pbLayer.PanMode = Cyotek.Windows.Forms.ImageBoxPanMode.Left;
                     //if (!ReferenceEquals(SlicerFile, null)) ShowLayer(); // Not needed?
                 }
+
                 return;
             }
 
@@ -3235,7 +3194,7 @@ namespace UVtools.GUI
                     return;
                 }
 
-                
+
                 return;
             }
 
@@ -3258,6 +3217,7 @@ namespace UVtools.GUI
                         if (selectedArray.Contains(i)) continue;
                         flvIssues.SelectedIndices.Add(i);
                     }
+
                     e.Handled = true;
                     return;
                 }
@@ -3286,6 +3246,7 @@ namespace UVtools.GUI
                     e.Handled = true;
                     return;
                 }
+
                 return;
             }
 
@@ -3337,6 +3298,7 @@ namespace UVtools.GUI
                     e.Handled = true;
                     return;
                 }
+
                 return;
             }
         }
@@ -3426,11 +3388,12 @@ namespace UVtools.GUI
                     layerScrollTimer.Stop();
                     return;
                 }
+
                 layerScrollTimer.Interval = 150;
-                ShowLayer((bool)layerScrollTimer.Tag);
+                ShowLayer((bool) layerScrollTimer.Tag);
                 return;
             }
-            
+
             if (ReferenceEquals(sender, layerZoomTimer))
             {
                 ShowLayer();
@@ -3447,7 +3410,7 @@ namespace UVtools.GUI
                 }
 
                 issueScrollTimer.Interval = 150;
-                if ((bool)issueScrollTimer.Tag)
+                if ((bool) issueScrollTimer.Tag)
                 {
                     EventClick(tsIssueNext, null);
                 }
@@ -3455,14 +3418,15 @@ namespace UVtools.GUI
                 {
                     EventClick(tsIssuePrevious, null);
                 }
+
                 return;
             }
 
             if (ReferenceEquals(sender, mouseHoldTimer))
             {
-                mouseHoldTimer.Stop();  // one-shot timer
+                mouseHoldTimer.Stop(); // one-shot timer
 
-                if ((MouseButtons)mouseHoldTimer.Tag == MouseButtons.Middle)
+                if ((MouseButtons) mouseHoldTimer.Tag == MouseButtons.Middle)
                 {
                     // Reset auto-zoom level based on current zoom level and
                     // refresh toolstrip zoom indicator.
@@ -3473,6 +3437,7 @@ namespace UVtools.GUI
                         tsLayerImageZoomLock.Visible = true;
                     }
                 }
+
                 return;
             }
 
@@ -3488,13 +3453,14 @@ namespace UVtools.GUI
                     HandleMouseDoubleClick(sender, e);
                     return;
                 }
- 
+
                 if (!pbLayer.IsPointInImage(e.Location)) return;
                 var location = pbLayer.PointToImage(e.Location);
 
                 // Check to see if the clicked location is an issue,
                 // and if so, select it in the ListView.
-                if(!ReferenceEquals(tabControlLeft.SelectedTab, tabPagePixelEditor) && (ModifierKeys & Keys.Shift) != 0)
+                if (!ReferenceEquals(tabControlLeft.SelectedTab, tabPagePixelEditor) &&
+                    (ModifierKeys & Keys.Shift) != 0)
                     SelectIssueAtPoint(location);
 
                 return;
@@ -3523,7 +3489,7 @@ namespace UVtools.GUI
                 {
                     if (!pbLayer.IsPointInImage(e.Location)) return;
                     var location = pbLayer.PointToImage(e.Location);
-                    
+
                     // Check to see if this zoom action will cross the crosshair fade threshold
                     // Not needed? visual artifact is not severe to make an extra showlayer call, also it acts like an "animation" removing crosshairs after zoom
                     /*if (tsLayerImageShowCrosshairs.Checked &&
@@ -3539,7 +3505,7 @@ namespace UVtools.GUI
                         ShowLayer();
                         tsLayerImageShowCrosshairs.Checked = true;
                     }*/
-                    
+
 
                     CenterLayerAt(location, LockedZoomLevel);
 
@@ -3548,18 +3514,20 @@ namespace UVtools.GUI
 
                     return;
                 }
+
                 if ((e.Button & MouseButtons.Right) != 0)
                 {
                     ZoomToFit();
                     return;
                 }
+
                 return;
             }
 
             if (ReferenceEquals(sender, flvIssues))
             {
                 if (!(flvIssues.SelectedObject is LayerIssue issue)) return;
-		        // Double clicking an issue will center and zoom into the 
+                // Double clicking an issue will center and zoom into the 
                 // selected issue. Left click on an issue will zoom to fit.
                 if ((e.Button & MouseButtons.Left) != 0)
                 {
@@ -3576,6 +3544,7 @@ namespace UVtools.GUI
                 return;
             }
         }
+
         #endregion
 
         void DrawPixel(bool isAdd, Point location)
@@ -3590,15 +3559,18 @@ namespace UVtools.GUI
 
             if (tabControlPixelEditor.SelectedIndex == (byte) PixelOperation.PixelOperationType.Drawing)
             {
-                LineType lineType = (LineType)cbPixelEditorDrawingLineType.SelectedItem;
+                LineType lineType = (LineType) cbPixelEditorDrawingLineType.SelectedItem;
                 PixelDrawing.BrushShapeType shapeType =
                     (PixelDrawing.BrushShapeType) cbPixelEditorDrawingBrushShape.SelectedIndex;
 
                 ushort brushSize = (ushort) nmPixelEditorDrawingBrushSize.Value;
-                short thickness = (short) (nmPixelEditorDrawingThickness.Value == 0 ? 1 : nmPixelEditorDrawingThickness.Value);
+                short thickness = (short) (nmPixelEditorDrawingThickness.Value == 0
+                    ? 1
+                    : nmPixelEditorDrawingThickness.Value);
 
                 uint minLayer = (uint) Math.Max(0, ActualLayer - nmPixelEditorDrawingLayersBelow.Value);
-                uint maxLayer = (uint) Math.Min(SlicerFile.LayerCount-1, ActualLayer+nmPixelEditorDrawingLayersAbove.Value);
+                uint maxLayer = (uint) Math.Min(SlicerFile.LayerCount - 1,
+                    ActualLayer + nmPixelEditorDrawingLayersAbove.Value);
                 for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
                 {
                     operation = new PixelDrawing(layerIndex, realLocation, lineType,
@@ -3614,13 +3586,13 @@ namespace UVtools.GUI
                             int shiftPos = brushSize / 2;
                             gfx.SmoothingMode = SmoothingMode.HighSpeed;
 
-                            var color = isAdd 
+                            var color = isAdd
                                 ? (flvPixelHistory.SelectedObjects.Contains(operation)
-                                       ? Settings.Default.PixelEditorAddPixelHLColor
-                                       : Settings.Default.PixelEditorAddPixelColor)
+                                    ? Settings.Default.PixelEditorAddPixelHLColor
+                                    : Settings.Default.PixelEditorAddPixelColor)
                                 : (flvPixelHistory.SelectedObjects.Contains(operation)
-                                       ? Settings.Default.PixelEditorRemovePixelHLColor
-                                       : Settings.Default.PixelEditorRemovePixelColor);
+                                    ? Settings.Default.PixelEditorRemovePixelHLColor
+                                    : Settings.Default.PixelEditorRemovePixelColor);
                             if (lineType == LineType.AntiAlias && brushSize > 1)
                             {
                                 gfx.SmoothingMode = SmoothingMode.AntiAlias;
@@ -3630,15 +3602,27 @@ namespace UVtools.GUI
                             {
                                 case PixelDrawing.BrushShapeType.Rectangle:
                                     if (thickness > 0)
-                                        gfx.DrawRectangle(new Pen(color, thickness), Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos), (int)nmPixelEditorDrawingBrushSize.Value, (int)nmPixelEditorDrawingBrushSize.Value);
+                                        gfx.DrawRectangle(new Pen(color, thickness), Math.Max(0, location.X - shiftPos),
+                                            Math.Max(0, location.Y - shiftPos),
+                                            (int) nmPixelEditorDrawingBrushSize.Value,
+                                            (int) nmPixelEditorDrawingBrushSize.Value);
                                     else
-                                        gfx.FillRectangle(new SolidBrush(color), Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos), (int)nmPixelEditorDrawingBrushSize.Value, (int)nmPixelEditorDrawingBrushSize.Value);
+                                        gfx.FillRectangle(new SolidBrush(color), Math.Max(0, location.X - shiftPos),
+                                            Math.Max(0, location.Y - shiftPos),
+                                            (int) nmPixelEditorDrawingBrushSize.Value,
+                                            (int) nmPixelEditorDrawingBrushSize.Value);
                                     break;
                                 case PixelDrawing.BrushShapeType.Circle:
                                     if (thickness > 0)
-                                        gfx.DrawEllipse(new Pen(color, thickness), Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos), (int)nmPixelEditorDrawingBrushSize.Value, (int)nmPixelEditorDrawingBrushSize.Value);
+                                        gfx.DrawEllipse(new Pen(color, thickness), Math.Max(0, location.X - shiftPos),
+                                            Math.Max(0, location.Y - shiftPos),
+                                            (int) nmPixelEditorDrawingBrushSize.Value,
+                                            (int) nmPixelEditorDrawingBrushSize.Value);
                                     else
-                                        gfx.FillEllipse(new SolidBrush(color), Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos), (int)nmPixelEditorDrawingBrushSize.Value, (int)nmPixelEditorDrawingBrushSize.Value);
+                                        gfx.FillEllipse(new SolidBrush(color), Math.Max(0, location.X - shiftPos),
+                                            Math.Max(0, location.Y - shiftPos),
+                                            (int) nmPixelEditorDrawingBrushSize.Value,
+                                            (int) nmPixelEditorDrawingBrushSize.Value);
                                     break;
                                 default:
                                     throw new ArgumentOutOfRangeException();
@@ -3647,31 +3631,35 @@ namespace UVtools.GUI
                     }
                 }
             }
-            else if (tabControlPixelEditor.SelectedIndex == (byte)PixelOperation.PixelOperationType.Text)
+            else if (tabControlPixelEditor.SelectedIndex == (byte) PixelOperation.PixelOperationType.Text)
             {
                 if (string.IsNullOrEmpty(tbPixelEditorTextText.Text) || nmPixelEditorTextFontScale.Value < 0.2m) return;
 
-                LineType lineType = (LineType)cbPixelEditorTextLineType.SelectedItem;
-                FontFace fontFace = (FontFace)cbPixelEditorTextFontFace.SelectedItem;
+                LineType lineType = (LineType) cbPixelEditorTextLineType.SelectedItem;
+                FontFace fontFace = (FontFace) cbPixelEditorTextFontFace.SelectedItem;
 
-                uint minLayer = (uint)Math.Max(0, ActualLayer - nmPixelEditorTextLayersBelow.Value);
-                uint maxLayer = (uint)Math.Min(SlicerFile.LayerCount - 1, ActualLayer + nmPixelEditorTextLayersAbove.Value);
+                uint minLayer = (uint) Math.Max(0, ActualLayer - nmPixelEditorTextLayersBelow.Value);
+                uint maxLayer = (uint) Math.Min(SlicerFile.LayerCount - 1,
+                    ActualLayer + nmPixelEditorTextLayersAbove.Value);
                 for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
                 {
                     operation = new PixelText(layerIndex, realLocation, lineType,
-                        fontFace, (double) nmPixelEditorTextFontScale.Value, (ushort) nmPixelEditorTextThickness.Value, tbPixelEditorTextText.Text, cbPixelEditorTextMirror.Checked, isAdd);
+                        fontFace, (double) nmPixelEditorTextFontScale.Value, (ushort) nmPixelEditorTextThickness.Value,
+                        tbPixelEditorTextText.Text, cbPixelEditorTextMirror.Checked, isAdd);
 
                     if (PixelHistory.Contains(operation)) continue;
                     PixelHistory.Add(operation);
                 }
+
                 ShowLayer();
                 return;
             }
             else if (tabControlPixelEditor.SelectedIndex == (byte) PixelOperation.PixelOperationType.Eraser)
             {
                 if (ActualLayerImage.GetByte(realLocation) < 10) return;
-                uint minLayer = (uint)Math.Max(0, ActualLayer - nmPixelEditorEraserLayersBelow.Value);
-                uint maxLayer = (uint)Math.Min(SlicerFile.LayerCount - 1, ActualLayer + nmPixelEditorEraserLayersAbove.Value);
+                uint minLayer = (uint) Math.Max(0, ActualLayer - nmPixelEditorEraserLayersBelow.Value);
+                uint maxLayer = (uint) Math.Min(SlicerFile.LayerCount - 1,
+                    ActualLayer + nmPixelEditorEraserLayersAbove.Value);
                 for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
                 {
                     operation = new PixelEraser(layerIndex, realLocation);
@@ -3679,6 +3667,7 @@ namespace UVtools.GUI
                     if (PixelHistory.Contains(operation)) continue;
                     PixelHistory.Add(operation);
                 }
+
                 ShowLayer();
                 return;
             }
@@ -3686,37 +3675,40 @@ namespace UVtools.GUI
             {
                 if (ActualLayer == 0) return;
                 operation = new PixelSupport(ActualLayer, realLocation,
-                    (byte) nmPixelEditorSupportsTipDiameter.Value, (byte)nmPixelEditorSupportsPillarDiameter.Value, (byte)nmPixelEditorSupportsBaseDiameter.Value);
+                    (byte) nmPixelEditorSupportsTipDiameter.Value, (byte) nmPixelEditorSupportsPillarDiameter.Value,
+                    (byte) nmPixelEditorSupportsBaseDiameter.Value);
 
                 if (PixelHistory.Contains(operation)) return;
                 PixelHistory.Add(operation);
 
                 SolidBrush brush = new SolidBrush(flvPixelHistory.SelectedObjects.Contains(operation)
-                                                      ? Settings.Default.PixelEditorSupportHLColor
-                                                      : Settings.Default.PixelEditorSupportColor);
+                    ? Settings.Default.PixelEditorSupportHLColor
+                    : Settings.Default.PixelEditorSupportColor);
                 using (var gfx = Graphics.FromImage(bmp))
                 {
-                    int shiftPos = (int)nmPixelEditorSupportsTipDiameter.Value / 2;
+                    int shiftPos = (int) nmPixelEditorSupportsTipDiameter.Value / 2;
                     gfx.SmoothingMode = SmoothingMode.HighSpeed;
-                    gfx.FillEllipse(brush, Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos), (int)nmPixelEditorSupportsTipDiameter.Value, (int)nmPixelEditorSupportsTipDiameter.Value);
+                    gfx.FillEllipse(brush, Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos),
+                        (int) nmPixelEditorSupportsTipDiameter.Value, (int) nmPixelEditorSupportsTipDiameter.Value);
                 }
             }
-            else if (tabControlPixelEditor.SelectedIndex == (byte)PixelOperation.PixelOperationType.DrainHole)
+            else if (tabControlPixelEditor.SelectedIndex == (byte) PixelOperation.PixelOperationType.DrainHole)
             {
                 if (ActualLayer == 0) return;
-                operation = new PixelDrainHole(ActualLayer, realLocation, (byte)nmPixelEditorDrainHoleDiameter.Value);
+                operation = new PixelDrainHole(ActualLayer, realLocation, (byte) nmPixelEditorDrainHoleDiameter.Value);
 
                 if (PixelHistory.Contains(operation)) return;
                 PixelHistory.Add(operation);
 
                 SolidBrush brush = new SolidBrush(flvPixelHistory.SelectedObjects.Contains(operation)
-                                                      ? Settings.Default.PixelEditorDrainHoleHLColor
-                                                      : Settings.Default.PixelEditorDrainHoleColor);
+                    ? Settings.Default.PixelEditorDrainHoleHLColor
+                    : Settings.Default.PixelEditorDrainHoleColor);
                 using (var gfx = Graphics.FromImage(bmp))
                 {
-                    int shiftPos = (int)nmPixelEditorDrainHoleDiameter.Value / 2;
+                    int shiftPos = (int) nmPixelEditorDrainHoleDiameter.Value / 2;
                     gfx.SmoothingMode = SmoothingMode.HighSpeed;
-                    gfx.FillEllipse(brush, Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos), (int)nmPixelEditorDrainHoleDiameter.Value, (int)nmPixelEditorDrainHoleDiameter.Value);
+                    gfx.FillEllipse(brush, Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos),
+                        (int) nmPixelEditorDrainHoleDiameter.Value, (int) nmPixelEditorDrainHoleDiameter.Value);
                 }
             }
             else
@@ -3724,8 +3716,8 @@ namespace UVtools.GUI
                 throw new NotImplementedException("Missing pixel operation");
             }
 
-            
-            
+
+
             pbLayer.Invalidate();
             //pbLayer.Update();
             //pbLayer.Refresh();
@@ -3738,15 +3730,15 @@ namespace UVtools.GUI
         {
             PixelHistory.Renumber();
             flvPixelHistory.SetObjects(PixelHistory);
-            
+
             lbPixelHistoryOperations.Text = $"Operations: {PixelHistory.Count}";
-            
+
             btnPixelHistoryRemove.Enabled = flvPixelHistory.SelectedIndices.Count > 0;
             btnPixelHistoryClear.Enabled =
-            btnPixelHistoryApply.Enabled = PixelHistory.Count > 0;
+                btnPixelHistoryApply.Enabled = PixelHistory.Count > 0;
         }
 
-        
+
 
         public void MutateLayers(LayerManager.Mutate mutator)
         {
@@ -3776,7 +3768,9 @@ namespace UVtools.GUI
             switch (mutator)
             {
                 case LayerManager.Mutate.Move:
-                    using (FrmMutationMove inputBox = new FrmMutationMove(Mutations[mutator], SlicerFile.LayerManager.BoundingRectangle, (uint) ActualLayerImage.Width, (uint) ActualLayerImage.Height))
+                    using (FrmMutationMove inputBox = new FrmMutationMove(Mutations[mutator],
+                        SlicerFile.LayerManager.BoundingRectangle, (uint) ActualLayerImage.Width,
+                        (uint) ActualLayerImage.Height))
                     {
                         if (inputBox.ShowDialog() != DialogResult.OK) return;
                         layerStart = inputBox.LayerRangeStart;
@@ -3806,6 +3800,7 @@ namespace UVtools.GUI
                         iterationsStart = (uint) inputBox.SelectedValue;
                         fade = inputBox.MakeCopy;
                     }
+
                     break;
                 case LayerManager.Mutate.Rotate:
                     using (FrmMutationOneNumericalInput inputBox = new FrmMutationOneNumericalInput(Mutations[mutator]))
@@ -3815,6 +3810,7 @@ namespace UVtools.GUI
                         layerEnd = inputBox.LayerRangeEnd;
                         x = (double) inputBox.Value;
                     }
+
                     break;
                 case LayerManager.Mutate.Solidify:
                     using (FrmToolWindow inputBox = new FrmToolWindow(Mutations[mutator]))
@@ -3823,6 +3819,7 @@ namespace UVtools.GUI
                         layerStart = inputBox.LayerRangeStart;
                         layerEnd = inputBox.LayerRangeEnd;
                     }
+
                     break;
                 case LayerManager.Mutate.Mask:
                     using (FrmMutationMask inputBox = new FrmMutationMask(Mutations[mutator]))
@@ -3832,6 +3829,7 @@ namespace UVtools.GUI
                         layerEnd = inputBox.LayerRangeEnd;
                         mat = inputBox.Mask;
                     }
+
                     break;
                 case LayerManager.Mutate.PixelDimming:
                     using (FrmMutationPixelDimming inputBox = new FrmMutationPixelDimming(Mutations[mutator]))
@@ -3844,6 +3842,7 @@ namespace UVtools.GUI
                         evenPattern = inputBox.EvenPattern;
                         oddPattern = inputBox.OddPattern;
                     }
+
                     break;
                 case LayerManager.Mutate.ThresholdPixels:
                     using (FrmMutationThreshold inputBox = new FrmMutationThreshold(Mutations[mutator]))
@@ -3855,6 +3854,7 @@ namespace UVtools.GUI
                         iterationsEnd = inputBox.Maximum;
                         thresholdType = inputBox.ThresholdTypeValue;
                     }
+
                     break;
                 case LayerManager.Mutate.Blur:
                     using (FrmMutationBlur inputBox = new FrmMutationBlur(Mutations[mutator]))
@@ -3906,7 +3906,8 @@ namespace UVtools.GUI
                             SlicerFile.LayerManager.MutateMove(layerStart, layerEnd, operationMove, progress);
                             break;
                         case LayerManager.Mutate.Resize:
-                            SlicerFile.LayerManager.MutateResize(layerStart, layerEnd, x / 100.0, y / 100.0, fade, progress);
+                            SlicerFile.LayerManager.MutateResize(layerStart, layerEnd, x / 100.0, y / 100.0, fade,
+                                progress);
                             break;
                         case LayerManager.Mutate.Flip:
                             FlipType flipType = FlipType.Horizontal;
@@ -3922,36 +3923,43 @@ namespace UVtools.GUI
                                     flipType = FlipType.Horizontal | FlipType.Vertical;
                                     break;
                             }
+
                             SlicerFile.LayerManager.MutateFlip(layerStart, layerEnd, flipType, fade, progress);
                             break;
                         case LayerManager.Mutate.Rotate:
                             SlicerFile.LayerManager.MutateRotate(layerStart, layerEnd, x, Inter.Linear, progress);
                             break;
-                        case LayerManager.Mutate.Solidify:
-                            SlicerFile.LayerManager.MutateSolidify(layerStart, layerEnd, progress);
-                            break;
+                        /*case LayerManager.Mutate.Solidify:
+                            SlicerFile.LayerManager.Solidify(layerStart, layerEnd, progress);
+                            break;*/
                         case LayerManager.Mutate.Mask:
                             SlicerFile.LayerManager.MutateMask(layerStart, layerEnd, mat, progress);
                             mat?.Dispose();
                             break;
                         case LayerManager.Mutate.PixelDimming:
-                            SlicerFile.LayerManager.MutatePixelDimming(layerStart, layerEnd, evenPattern, oddPattern, (ushort) iterationsStart, fade, progress);
+                            SlicerFile.LayerManager.MutatePixelDimming(layerStart, layerEnd, evenPattern, oddPattern,
+                                (ushort) iterationsStart, fade, progress);
                             break;
-                        case LayerManager.Mutate.Erode:
-                            SlicerFile.LayerManager.MutateErode(layerStart, layerEnd, (int) iterationsStart, (int) iterationsEnd, fade, progress, kernel, kernelAnchor);
+                        /*case LayerManager.Mutate.Erode:
+                            SlicerFile.LayerManager.MutateErode(layerStart, layerEnd, (int) iterationsStart,
+                                (int) iterationsEnd, fade, progress, kernel, kernelAnchor);
                             break;
                         case LayerManager.Mutate.Dilate:
-                            SlicerFile.LayerManager.MutateDilate(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade, progress, kernel, kernelAnchor);
+                            SlicerFile.LayerManager.MutateDilate(layerStart, layerEnd, (int) iterationsStart,
+                                (int) iterationsEnd, fade, progress, kernel, kernelAnchor);
                             break;
                         case LayerManager.Mutate.Opening:
-                            SlicerFile.LayerManager.MutateOpen(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade, progress, kernel, kernelAnchor);
+                            SlicerFile.LayerManager.MutateOpen(layerStart, layerEnd, (int) iterationsStart,
+                                (int) iterationsEnd, fade, progress, kernel, kernelAnchor);
                             break;
                         case LayerManager.Mutate.Closing:
-                            SlicerFile.LayerManager.MutateClose(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade, progress, kernel, kernelAnchor);
+                            SlicerFile.LayerManager.MutateClose(layerStart, layerEnd, (int) iterationsStart,
+                                (int) iterationsEnd, fade, progress, kernel, kernelAnchor);
                             break;
                         case LayerManager.Mutate.Gradient:
-                            SlicerFile.LayerManager.MutateGradient(layerStart, layerEnd, (int)iterationsStart, (int)iterationsEnd, fade, progress, kernel, kernelAnchor);
-                            break;
+                            SlicerFile.LayerManager.MutateGradient(layerStart, layerEnd, (int) iterationsStart,
+                                (int) iterationsEnd, fade, progress, kernel, kernelAnchor);
+                            break;*/
                         /*case Mutation.Mutates.TopHat:
                             kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(9, 9),
                                 new Point(-1, -1));
@@ -3969,39 +3977,48 @@ namespace UVtools.GUI
                                 new Point(-1, -1), (int) iterations, BorderType.Default, new MCvScalar());
                             break;*/
                         case LayerManager.Mutate.ThresholdPixels:
-                            SlicerFile.LayerManager.MutateThresholdPixels(layerStart, layerEnd, (byte) iterationsStart, (byte) iterationsEnd, thresholdType, progress);
+                            SlicerFile.LayerManager.MutateThresholdPixels(layerStart, layerEnd, (byte) iterationsStart,
+                                (byte) iterationsEnd, thresholdType, progress);
                             break;
                         case LayerManager.Mutate.Blur:
                             switch (blurAlgorithm)
                             {
                                 case FrmMutationBlur.BlurAlgorithm.Blur:
-                                    SlicerFile.LayerManager.MutateBlur(layerStart, layerEnd, new Size((int)iterationsStart, (int)iterationsStart), kernelAnchor, BorderType.Reflect101, progress);
+                                    SlicerFile.LayerManager.MutateBlur(layerStart, layerEnd,
+                                        new Size((int) iterationsStart, (int) iterationsStart), kernelAnchor,
+                                        BorderType.Reflect101, progress);
                                     break;
                                 case FrmMutationBlur.BlurAlgorithm.Pyramid:
-                                    SlicerFile.LayerManager.MutatePyrDownUp(layerStart, layerEnd, BorderType.Default, progress);
+                                    SlicerFile.LayerManager.MutatePyrDownUp(layerStart, layerEnd, BorderType.Default,
+                                        progress);
                                     break;
                                 case FrmMutationBlur.BlurAlgorithm.MedianBlur:
-                                    SlicerFile.LayerManager.MutateMedianBlur(layerStart, layerEnd, (int) iterationsStart, progress);
+                                    SlicerFile.LayerManager.MutateMedianBlur(layerStart, layerEnd,
+                                        (int) iterationsStart, progress);
                                     break;
                                 case FrmMutationBlur.BlurAlgorithm.GaussianBlur:
-                                    SlicerFile.LayerManager.MutateGaussianBlur(layerStart, layerEnd, new Size((int)iterationsStart, (int)iterationsStart), 0, 0, BorderType.Reflect101, progress);
+                                    SlicerFile.LayerManager.MutateGaussianBlur(layerStart, layerEnd,
+                                        new Size((int) iterationsStart, (int) iterationsStart), 0, 0,
+                                        BorderType.Reflect101, progress);
                                     break;
                                 case FrmMutationBlur.BlurAlgorithm.Filter2D:
-                                    SlicerFile.LayerManager.MutateFilter2D(layerStart, layerEnd, kernel, kernelAnchor, BorderType.Reflect101, progress);
+                                    SlicerFile.LayerManager.MutateFilter2D(layerStart, layerEnd, kernel, kernelAnchor,
+                                        BorderType.Reflect101, progress);
                                     break;
                                 default:
                                     throw new ArgumentOutOfRangeException();
                             }
+
                             break;
-                            /*case LayerManager.Mutate.PyrDownUp:
-                                SlicerFile.LayerManager.MutatePyrDownUp(layerStart, layerEnd, BorderType.Default, progress);
-                                break;
-                            case LayerManager.Mutate.SmoothMedian:
-                                SlicerFile.LayerManager.MutateMedianBlur(layerStart, layerEnd, (int)iterationsStart, progress);
-                                break;
-                            case LayerManager.Mutate.SmoothGaussian:
-                                SlicerFile.LayerManager.MutateGaussianBlur(layerStart, layerEnd, new Size((int) iterationsStart, (int) iterationsStart), 0,0, BorderType.Default, progress);
-                                break;*/
+                        /*case LayerManager.Mutate.PyrDownUp:
+                            SlicerFile.LayerManager.MutatePyrDownUp(layerStart, layerEnd, BorderType.Default, progress);
+                            break;
+                        case LayerManager.Mutate.SmoothMedian:
+                            SlicerFile.LayerManager.MutateMedianBlur(layerStart, layerEnd, (int)iterationsStart, progress);
+                            break;
+                        case LayerManager.Mutate.SmoothGaussian:
+                            SlicerFile.LayerManager.MutateGaussianBlur(layerStart, layerEnd, new Size((int) iterationsStart, (int) iterationsStart), 0,0, BorderType.Default, progress);
+                            break;*/
                     }
 
                 }
@@ -4010,11 +4027,13 @@ namespace UVtools.GUI
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"{ex.Message}\nPlease try different values for the mutation", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"{ex.Message}\nPlease try different values for the mutation", "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 finally
                 {
-                    Invoke((MethodInvoker)delegate {
+                    Invoke((MethodInvoker) delegate
+                    {
                         // Running on the UI thread
                         EnableGUI(true);
                     });
@@ -4026,7 +4045,7 @@ namespace UVtools.GUI
             ShowLayer();
 
             menuFileSave.Enabled =
-            menuFileSaveAs.Enabled = true;
+                menuFileSaveAs.Enabled = true;
         }
 
         private void UpdateIssuesInfo()
@@ -4055,12 +4074,14 @@ namespace UVtools.GUI
                 tsIssueCount.Enabled = true;
                 tsIssueCount.Text = $"{issueNum.ToString(formatString)}/{TotalIssues}";
                 tsIssuePrevious.Enabled = currentIssueSelected > 0;
-                tsIssueNext.Enabled = currentIssueSelected+1 < TotalIssues;
+                tsIssueNext.Enabled = currentIssueSelected + 1 < TotalIssues;
             }
-            
+
         }
 
-        private void ComputeIssues(IslandDetectionConfiguration islandConfig = null, ResinTrapDetectionConfiguration resinTrapConfig = null, TouchingBoundDetectionConfiguration touchingBoundConfig = null, bool emptyLayersConfig = true)
+        private void ComputeIssues(IslandDetectionConfiguration islandConfig = null,
+            ResinTrapDetectionConfiguration resinTrapConfig = null,
+            TouchingBoundDetectionConfiguration touchingBoundConfig = null, bool emptyLayersConfig = true)
         {
             tabPageIssues.Tag = true;
             flvIssues.ClearObjects();
@@ -4073,7 +4094,8 @@ namespace UVtools.GUI
             {
                 try
                 {
-                    Issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, touchingBoundConfig, emptyLayersConfig, FrmLoading.RestartProgress());
+                    Issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, touchingBoundConfig,
+                        emptyLayersConfig, FrmLoading.RestartProgress());
                 }
                 catch (OperationCanceledException)
                 {
@@ -4086,7 +4108,7 @@ namespace UVtools.GUI
                 }
                 finally
                 {
-                    Invoke((MethodInvoker)delegate
+                    Invoke((MethodInvoker) delegate
                     {
                         // Running on the UI thread
                         EnableGUI(true);
@@ -4109,8 +4131,10 @@ namespace UVtools.GUI
 
         public Rectangle GetTransposedRectangle(Rectangle rectangle)
         {
-            return btnLayerImageRotate.Checked ? new Rectangle(ActualLayerImage.Height - rectangle.Bottom,
-                rectangle.X, rectangle.Height, rectangle.Width) : rectangle;
+            return btnLayerImageRotate.Checked
+                ? new Rectangle(ActualLayerImage.Height - rectangle.Bottom,
+                    rectangle.X, rectangle.Height, rectangle.Width)
+                : rectangle;
         }
 
         /// <summary>
@@ -4121,7 +4145,8 @@ namespace UVtools.GUI
         /// </summary>
         private Rectangle GetTransposedIssueBounds(LayerIssue issue)
         {
-            if (issue.X >= 0 && issue.Y >= 0 && (issue.BoundingRectangle.IsEmpty || issue.Size == 1) && btnLayerImageRotate.Checked)
+            if (issue.X >= 0 && issue.Y >= 0 && (issue.BoundingRectangle.IsEmpty || issue.Size == 1) &&
+                btnLayerImageRotate.Checked)
                 return new Rectangle(ActualLayerImage.Height - 1 - issue.Y,
                     issue.X, 1, 1);
 
@@ -4150,8 +4175,8 @@ namespace UVtools.GUI
         public void CenterLayerAt(Rectangle rectangle, int zoomLevel = 0, bool zoomToRegion = false)
         {
             Rectangle viewPort = Rectangle.Round(pbLayer.GetSourceImageRegion());
-            if (zoomToRegion || 
-                rectangle.Width * LockedZoomLevel / pbLayer.Zoom > viewPort.Width || 
+            if (zoomToRegion ||
+                rectangle.Width * LockedZoomLevel / pbLayer.Zoom > viewPort.Width ||
                 rectangle.Height * LockedZoomLevel / pbLayer.Zoom > viewPort.Height)
             {
                 SupressLayerZoomEvent = true;
@@ -4160,6 +4185,7 @@ namespace UVtools.GUI
                 pbLayer.ZoomOut(true);
                 return;
             }
+
             CenterLayerAt(rectangle.X + rectangle.Width / 2, rectangle.Y + rectangle.Height / 2, zoomLevel);
         }
 
@@ -4169,20 +4195,21 @@ namespace UVtools.GUI
         /// <param name="point">Point holding X and Y coordinates</param>
         /// <param name="zoomLevel">Zoom level to set, 0 to ignore or negative value to get current locked zoom level</param>
         public void CenterLayerAt(Point point, int zoomLevel = 0) => CenterLayerAt(point.X, point.Y, zoomLevel);
-      
-        
+
+
         /// <summary>
         /// Zoom the layer preview to the passed issue, or if appropriate for issue type,
         /// Zoom to fit the plate or print bounds.
         /// </summary>
         private void ZoomToIssue(LayerIssue issue)
         {
-            if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||  (issue.X == -1 && issue.Y == -1))
+            if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
+                (issue.X == -1 && issue.Y == -1))
             {
                 ZoomToFit();
                 return;
             }
-            
+
             if (issue.X >= 0 && issue.Y >= 0)
             {
                 // Check to see if this zoom action will cross the crosshair fade threshold
@@ -4208,10 +4235,12 @@ namespace UVtools.GUI
         /// </summary>
         private void CenterAtIssue(LayerIssue issue)
         {
-            if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer || (issue.X == -1 && issue.Y == -1))
+            if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
+                (issue.X == -1 && issue.Y == -1))
             {
                 ZoomToFit();
             }
+
             if (issue.X >= 0 && issue.Y >= 0)
             {
                 CenterLayerAt(GetTransposedIssueBounds(issue));
@@ -4233,9 +4262,9 @@ namespace UVtools.GUI
                 else
                 {
                     pbLayer.ZoomToRegion(ActualLayerImage.Height - 1 - SlicerFile.LayerManager.BoundingRectangle.Bottom,
-                             SlicerFile.LayerManager.BoundingRectangle.X,
-                             SlicerFile.LayerManager.BoundingRectangle.Height,
-                             SlicerFile.LayerManager.BoundingRectangle.Width
+                        SlicerFile.LayerManager.BoundingRectangle.X,
+                        SlicerFile.LayerManager.BoundingRectangle.Height,
+                        SlicerFile.LayerManager.BoundingRectangle.Width
                     );
                 }
             }
@@ -4244,6 +4273,7 @@ namespace UVtools.GUI
                 pbLayer.ZoomToFit();
             }
         }
+
         /// <summary>
         /// If there is an issue under the point location passed, that issue will be selected and
         /// scrolled into view on the IssueList.
@@ -4267,6 +4297,7 @@ namespace UVtools.GUI
             }
 
         }
+
         public IslandDetectionConfiguration GetIslandDetectionConfiguration()
         {
             return new IslandDetectionConfiguration
@@ -4304,14 +4335,14 @@ namespace UVtools.GUI
 
         public void AddLog(LogItem log)
         {
-            int count = log.Index = lvLog.GetItemCount()+1;
+            int count = log.Index = lvLog.GetItemCount() + 1;
             lvLog.AddObject(log);
             lbLogOperations.Text = $"Operations: {count}";
         }
-        
+
         public void AddLog(string description, decimal elapsedTime = 0)
         {
-            int count = lvLog.GetItemCount()+1;
+            int count = lvLog.GetItemCount() + 1;
             lvLog.AddObject(new LogItem(count, description));
             lbLogOperations.Text = $"Operations: {count}";
         }
@@ -4330,16 +4361,18 @@ namespace UVtools.GUI
                     tabControlLeft.SelectedTab = ControlLeftLastTab;
                     tabControlLeft.TabPages.Remove(tabPagePixelEditor);
                 }
+
                 return;
             }
 
             var result = DialogResult.None;
 
-            if (exitEditor) {
-               result =  MessageBox.Show(
-                   "There are edit operations that have not been applied.  " +
-                   "Would you like to apply all operations before closing the editor?",
-                   "Closing image editor", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+            if (exitEditor)
+            {
+                result = MessageBox.Show(
+                    "There are edit operations that have not been applied.  " +
+                    "Would you like to apply all operations before closing the editor?",
+                    "Closing image editor", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
             }
             else
             {
@@ -4352,12 +4385,13 @@ namespace UVtools.GUI
                 // in order to prevent pixel history from being cleared.
                 result = result == DialogResult.No ? DialogResult.Cancel : DialogResult.Yes;
             }
-            
+
             if (result == DialogResult.Cancel)
             {
                 btnLayerImagePixelEdit.Checked = true;
                 return;
             }
+
             if (result == DialogResult.Yes)
             {
                 DisableGUI();
@@ -4375,11 +4409,13 @@ namespace UVtools.GUI
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"{ex.Message}", "Drawing was unsuccessful!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"{ex.Message}", "Drawing was unsuccessful!", MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
                     }
                     finally
                     {
-                        Invoke((MethodInvoker)delegate {
+                        Invoke((MethodInvoker) delegate
+                        {
                             // Running on the UI thread
                             EnableGUI(true);
                         });
@@ -4432,11 +4468,11 @@ namespace UVtools.GUI
         {
             if (whiteListLayers.Count == 0) return;
             var islandConfig = GetIslandDetectionConfiguration();
-            var resinTrapConfig = new ResinTrapDetectionConfiguration { Enabled = false };
-            var touchingBoundConfig = new TouchingBoundDetectionConfiguration { Enabled = false };
+            var resinTrapConfig = new ResinTrapDetectionConfiguration {Enabled = false};
+            var touchingBoundConfig = new TouchingBoundDetectionConfiguration {Enabled = false};
             islandConfig.Enabled = true;
             islandConfig.WhiteListLayers = whiteListLayers;
-            
+
             if (ReferenceEquals(Issues, null))
             {
                 ComputeIssues(islandConfig, resinTrapConfig, touchingBoundConfig, false);
@@ -4448,19 +4484,23 @@ namespace UVtools.GUI
 
                 foreach (var layerIndex in islandConfig.WhiteListLayers)
                 {
-                    Issues.RemoveAll(issue => issue.LayerIndex == layerIndex && issue.Type == LayerIssue.IssueType.Island); // Remove all islands for update
+                    Issues.RemoveAll(issue =>
+                        issue.LayerIndex == layerIndex &&
+                        issue.Type == LayerIssue.IssueType.Island); // Remove all islands for update
                 }
 
                 Task.Factory.StartNew(() =>
                 {
                     try
                     {
-                        var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, touchingBoundConfig, false,
+                        var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig,
+                            touchingBoundConfig, false,
                             FrmLoading.RestartProgress());
 
                         issues.RemoveAll(issue => issue.Type != LayerIssue.IssueType.Island); // Remove all non islands
                         Issues.AddRange(issues);
-                        Issues = Issues.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.PixelsCount).ToList();
+                        Issues = Issues.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex)
+                            .ThenBy(issue => issue.PixelsCount).ToList();
                     }
                     catch (OperationCanceledException)
                     {
@@ -4474,7 +4514,7 @@ namespace UVtools.GUI
                     }
                     finally
                     {
-                        Invoke((MethodInvoker)delegate
+                        Invoke((MethodInvoker) delegate
                         {
                             // Running on the UI thread
                             EnableGUI(true);
@@ -4494,6 +4534,7 @@ namespace UVtools.GUI
             {
                 flvIssues.SetObjects(Issues);
             }
+
             UpdateIssuesInfo();
             ShowLayer();
         }
@@ -4533,7 +4574,7 @@ namespace UVtools.GUI
 
                 foreach (var value in issuesCountPerLayer)
                 {
-                    var tickPos = tbLayer.GetTickPos((int)value.Key);
+                    var tickPos = tbLayer.GetTickPos((int) value.Key);
                     if (tickPos == -1) continue;
                     int y = (pbTrackerIssues.Height - tickPos).Clamp(0, pbTrackerIssues.Height);
                     CvInvoke.Line(mat, new Point(0, y), new Point(mat.Width, y), color);
@@ -4541,6 +4582,121 @@ namespace UVtools.GUI
 
                 pbTrackerIssues.Image = mat.ToBitmap();
             }
+        }
+
+        public Operation ShowRunOperation(Type type)
+        {
+            var operation = ShowOperation(type);
+            RunOperation(operation);
+            return operation;
+        }
+
+        public Operation ShowOperation(Type type)
+        {
+            Operation operation;
+            
+            var typeBase = typeof(CtrlToolTemplate);
+            var classname = $"{typeBase.Namespace}.CtrlTool{type.Name.Remove(0,Operation.ClassNameLength)}";
+            var controlType = Type.GetType(classname);
+            CtrlToolWindowContent control = null;
+
+            bool removeContent = false;
+            if (controlType is null)
+            {
+                controlType = typeBase;
+                removeContent = true;
+                control = new CtrlToolTemplate(type.CreateInstance<Operation>());
+            }
+            else
+            {
+                control = controlType.CreateInstance<CtrlToolWindowContent>();
+                if (control is null) return null;
+            }
+            
+            if (removeContent)
+            {
+                control.Visible = false;
+            }
+
+            using (var frm = new FrmToolWindow(control, control.BaseOperation.PassActualLayerIndex ? (int)ActualLayer : -1))
+            {
+                if (removeContent)
+                {
+                    frm.pnContent.Visible = false;
+                }
+                if (frm.IsDisposed || frm.ShowDialog() != DialogResult.OK) return null;
+                operation = control.BaseOperation;
+            }
+
+            return operation;
+        }
+
+        public bool RunOperation(Operation baseOperation)
+        {
+            if (baseOperation is null) return false;
+
+            DisableGUI();
+            FrmLoading.SetDescription(baseOperation.ProgressTitle);
+
+            var task = Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    switch (baseOperation)
+                    {
+                        case OperationSolidify operation:
+                            SlicerFile.LayerManager.Solidify(operation, FrmLoading.RestartProgress());
+                            break;
+                        case OperationMorphModel operation:
+                            SlicerFile.LayerManager.Morph(operation, BorderType.Default, new MCvScalar(), FrmLoading.RestartProgress());
+                            break;
+                        case OperationChangeResolution operation:
+                            SlicerFile.LayerManager.ChangeResolution(operation, FrmLoading.RestartProgress(false));
+                            break;
+                        case OperationLayerImport operation:
+                            SlicerFile.LayerManager.Import(operation, FrmLoading.RestartProgress(false));
+                            break;
+                        case OperationLayerClone operation:
+                            SlicerFile.LayerManager.CloneLayer(operation, FrmLoading.RestartProgress(false));
+                            break;
+                        case OperationLayerRemove operation:
+                            SlicerFile.LayerManager.RemoveLayers(operation, FrmLoading.RestartProgress(false));
+                            break;
+
+                        default:
+                            throw new NotImplementedException();
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+
+                }
+                catch (Exception ex)
+                {
+                    GUIExtensions.MessageErrorBox($"{baseOperation.Title} Error", ex.Message);
+                }
+                finally
+                {
+                    Invoke((MethodInvoker)delegate
+                    {
+                        // Running on the UI thread
+                        EnableGUI(true);
+                    });
+                }
+            });
+
+            var loadingResult = FrmLoading.ShowDialog();
+
+            
+            ShowLayer();
+            UpdateLayerLimits();
+            RefreshInfo();
+
+            menuFileSave.Enabled =
+                menuFileSaveAs.Enabled = true;
+
+
+            return true;
         }
     }
 }

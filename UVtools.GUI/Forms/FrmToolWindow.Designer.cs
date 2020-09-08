@@ -45,8 +45,12 @@ namespace UVtools.GUI.Forms
             this.cmLayerRange = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.btnLayerRangeAllLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.btnLayerRangeCurrentLayer = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.btnLayerRangeBottomLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.btnLayerRangeNormalLayers = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnLayerRangeFirstLayer = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnLayerRangeLastLayer = new System.Windows.Forms.ToolStripMenuItem();
             this.lbLayerRange = new System.Windows.Forms.Label();
             this.lbLayerRangeTo = new System.Windows.Forms.Label();
             this.nmLayerRangeStart = new System.Windows.Forms.NumericUpDown();
@@ -54,10 +58,6 @@ namespace UVtools.GUI.Forms
             this.pnActions = new System.Windows.Forms.Panel();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnOk = new System.Windows.Forms.Button();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnLayerRangeFirstLayer = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnLayerRangeLastLayer = new System.Windows.Forms.ToolStripMenuItem();
             this.pnDescription.SuspendLayout();
             this.pnLayerRange.SuspendLayout();
             this.gbLayerRange.SuspendLayout();
@@ -205,7 +205,7 @@ namespace UVtools.GUI.Forms
             this.btnLayerRangeFirstLayer,
             this.btnLayerRangeLastLayer});
             this.cmLayerRange.Name = "cmLayerRange";
-            this.cmLayerRange.Size = new System.Drawing.Size(226, 170);
+            this.cmLayerRange.Size = new System.Drawing.Size(226, 148);
             // 
             // btnLayerRangeAllLayers
             // 
@@ -225,6 +225,11 @@ namespace UVtools.GUI.Forms
             this.btnLayerRangeCurrentLayer.Text = "&Current Layer";
             this.btnLayerRangeCurrentLayer.Click += new System.EventHandler(this.EventClick);
             // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(222, 6);
+            // 
             // btnLayerRangeBottomLayers
             // 
             this.btnLayerRangeBottomLayers.Name = "btnLayerRangeBottomLayers";
@@ -242,6 +247,29 @@ namespace UVtools.GUI.Forms
             this.btnLayerRangeNormalLayers.Size = new System.Drawing.Size(225, 22);
             this.btnLayerRangeNormalLayers.Text = "&Normal Layers";
             this.btnLayerRangeNormalLayers.Click += new System.EventHandler(this.EventClick);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(222, 6);
+            // 
+            // btnLayerRangeFirstLayer
+            // 
+            this.btnLayerRangeFirstLayer.Name = "btnLayerRangeFirstLayer";
+            this.btnLayerRangeFirstLayer.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.F)));
+            this.btnLayerRangeFirstLayer.Size = new System.Drawing.Size(225, 22);
+            this.btnLayerRangeFirstLayer.Text = "&First Layer";
+            this.btnLayerRangeFirstLayer.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnLayerRangeLastLayer
+            // 
+            this.btnLayerRangeLastLayer.Name = "btnLayerRangeLastLayer";
+            this.btnLayerRangeLastLayer.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.L)));
+            this.btnLayerRangeLastLayer.Size = new System.Drawing.Size(225, 22);
+            this.btnLayerRangeLastLayer.Text = "&Last Layer";
+            this.btnLayerRangeLastLayer.Click += new System.EventHandler(this.EventClick);
             // 
             // lbLayerRange
             // 
@@ -344,34 +372,6 @@ namespace UVtools.GUI.Forms
             this.btnOk.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnOk.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.btnOk.Click += new System.EventHandler(this.EventClick);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(222, 6);
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(222, 6);
-            // 
-            // btnLayerRangeFirstLayer
-            // 
-            this.btnLayerRangeFirstLayer.Name = "btnLayerRangeFirstLayer";
-            this.btnLayerRangeFirstLayer.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
-            | System.Windows.Forms.Keys.F)));
-            this.btnLayerRangeFirstLayer.Size = new System.Drawing.Size(225, 22);
-            this.btnLayerRangeFirstLayer.Text = "&First Layer";
-            this.btnLayerRangeFirstLayer.Click += new System.EventHandler(this.EventClick);
-            // 
-            // btnLayerRangeLastLayer
-            // 
-            this.btnLayerRangeLastLayer.Name = "btnLayerRangeLastLayer";
-            this.btnLayerRangeLastLayer.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
-            | System.Windows.Forms.Keys.L)));
-            this.btnLayerRangeLastLayer.Size = new System.Drawing.Size(225, 22);
-            this.btnLayerRangeLastLayer.Text = "&Last Layer";
-            this.btnLayerRangeLastLayer.Click += new System.EventHandler(this.EventClick);
             // 
             // FrmToolWindow
             // 

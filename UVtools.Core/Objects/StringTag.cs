@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace UVtools.Core.Obects
+namespace UVtools.Core.Objects
 {
     public class StringTag : IComparable<StringTag>
     {
@@ -18,6 +18,11 @@ namespace UVtools.Core.Obects
         public object Tag { get; set; }
         public string TagString => Tag.ToString();
 
+        public StringTag(object content, object tag = null)
+        {
+            Content = content.ToString();
+            Tag = tag;
+        }
         public StringTag(string content, object tag = null)
         {
             Content = content;

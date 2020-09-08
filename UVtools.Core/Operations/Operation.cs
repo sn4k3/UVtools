@@ -6,18 +6,23 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using UVtools.Core.Obects;
+using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
-    public class Operation
+    public abstract class Operation
     {
-        const byte ClassNameLength = 9;
+        public const byte ClassNameLength = 9;
 
         /// <summary>
         /// Gets the ID name of this operation, this comes from class name with "Operation" removed
         /// </summary>
         public string Id => GetType().Name.Remove(0, ClassNameLength);
+
+        /// <summary>
+        /// Gets if this operation should set layer range to the actual layer index on layer preview
+        /// </summary>
+        public virtual bool PassActualLayerIndex => false;
 
         /// <summary>
         /// Gets the title of this operation
@@ -40,6 +45,11 @@ namespace UVtools.Core.Operations
         public virtual string ConfirmationText => $"Are you sure you want to {Id}";
 
         /// <summary>
+        /// Gets the progress window title
+        /// </summary>
+        public virtual string ProgressTitle => "Processing items";
+
+        /// <summary>
         /// Validates the operation
         /// </summary>
         /// <returns>null or empty if validates, or else, return a string with error message</returns>
@@ -48,11 +58,13 @@ namespace UVtools.Core.Operations
         /// <summary>
         /// Gets the start layer index where operation will starts in
         /// </summary>
-        public uint LayerIndexStart { get; set; }
+        public virtual uint LayerIndexStart { get; set; }
 
         /// <summary>
         /// Gets the end layer index where operation will ends in
         /// </summary>
-        public uint LayerIndexEnd { get; set; }
+        public virtual uint LayerIndexEnd { get; set; }
+
+        public uint LayerRangeCount => LayerIndexEnd - LayerIndexStart + 1;
     }
 }

@@ -10,7 +10,7 @@ using System.Drawing.Design;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using UVtools.Core.Extensions;
-using UVtools.Core.Obects;
+using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.GUI.Annotations;
 using UVtools.GUI.Forms;
@@ -83,7 +83,7 @@ namespace UVtools.GUI.Controls
         [SettingsBindable(true)]
         public string Description { get; set; }
 
-        private bool _buttonOkEnabled;
+        private bool _buttonOkEnabled = true;
         [SettingsBindable(true)]
         public bool ButtonOkEnabled
         {

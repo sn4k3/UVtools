@@ -667,6 +667,18 @@ namespace UVtools.Core
             }
         }
 
+        public void Morph(OperationMorphModel operation, int iterations = 1, BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
+        {
+            if (iterations == 0)
+                iterations = (int) operation.IterationsStart;
+
+            using (Mat dst = LayerMat)
+            {
+                CvInvoke.MorphologyEx(dst, dst, operation.MorphOperation, operation.Kernel.Matrix, operation.Kernel.Anchor, iterations, borderType, borderValue);
+                LayerMat = dst;
+            }
+        }
+
         public void MutateErode(int iterations = 1, IInputArray kernel = null, Point anchor = default, BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
         {
             if (anchor.IsEmpty) anchor = new Point(-1, -1);

@@ -7,7 +7,7 @@
  */
 using System.Drawing;
 using System.Text;
-using UVtools.Core.Obects;
+using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
@@ -41,7 +41,7 @@ namespace UVtools.Core.Operations
 
         #region Overrides
 
-        public override string Title => "Change Resolution";
+        public override string Title => "Change print resolution";
         public override string Description =>
             "Crops or resizes all layer images to fit an alternate print area\n" +
             "Useful to make files printable on a different printer than they were originally sliced for without the need to re-slice.\n" +
@@ -49,15 +49,18 @@ namespace UVtools.Core.Operations
 
         public override string ConfirmationText => 
             "change file resolution?\n" +
-            $"From: {OldResolutionX} x {OldResolutionY}\n" +
+            $"From: {OldResolution.Width} x {OldResolution.Height}\n" +
             $"To: {NewResolutionX} x {NewResolutionY}";
+
+        public override string ProgressTitle =>
+            $"Changing print resolution from ({OldResolution.Width} x {OldResolution.Height}) to ({NewResolutionX} x {NewResolutionY})";
 
         public override StringTag Validate(params object[] parameters)
         {
             var sb = new StringBuilder();
-            if (OldResolutionX == NewResolutionX && OldResolutionY == NewResolutionY)
+            if (OldResolution.Width == NewResolutionX && OldResolution.Height == NewResolutionY)
             {
-                sb.AppendLine($"The new resolution must be different from current resolution ({OldResolutionX} x {OldResolutionY}).");
+                sb.AppendLine($"The new resolution must be different from current resolution ({OldResolution.Width} x {OldResolution.Height}).");
             }
 
             if (NewResolutionX < VolumeBonds.Width || NewResolutionY < VolumeBonds.Height)
@@ -72,8 +75,7 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Properties
-        public uint OldResolutionX { get; }
-        public uint OldResolutionY { get; }
+        public Size OldResolution { get; }
 
         public uint NewResolutionX { get; set; }
         public uint NewResolutionY { get; set; }
@@ -82,14 +84,19 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Constructor
-        public OperationChangeResolution(uint oldResolutionX, uint oldResolutionY, Rectangle volumeBonds)
+
+        public OperationChangeResolution()
         {
-            OldResolutionX = oldResolutionX;
-            OldResolutionY = oldResolutionY;
+        }
+
+        public OperationChangeResolution(Size oldResolution, Rectangle volumeBonds)
+        {
+            OldResolution = oldResolution;
             VolumeBonds = volumeBonds;
         }
         #endregion
 
+        #region Methods
         public static Resolution[] GetResolutions()
         {
             return new [] {
@@ -109,7 +116,7 @@ namespace UVtools.Core.Operations
                 new Resolution(3840, 2400, "WQUXGA"),
             };
         }
+        #endregion
 
-        
     }
 }

@@ -51,10 +51,7 @@ namespace UVtools.GUI
             this.menuMutate = new System.Windows.Forms.ToolStripMenuItem();
             this.menuTools = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsRepairLayers = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuToolsChangeResolution = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsLayerReHeight = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuToolsLayerClone = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuToolsLayerRemoval = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsPattern = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuHelpWebsite = new System.Windows.Forms.ToolStripMenuItem();
@@ -90,9 +87,6 @@ namespace UVtools.GUI
             this.btnLayerImagePixelEdit = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator18 = new System.Windows.Forms.ToolStripSeparator();
             this.btnLayerImageActions = new System.Windows.Forms.ToolStripSplitButton();
-            this.btnLayerImageActionImport = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnLayerImageActionClone = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnLayerImageActionRemove = new System.Windows.Forms.ToolStripMenuItem();
             this.tsLayerInfo = new System.Windows.Forms.ToolStrip();
             this.tsLayerPreviewTime = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
@@ -491,10 +485,7 @@ namespace UVtools.GUI
             // 
             this.menuTools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuToolsRepairLayers,
-            this.menuToolsChangeResolution,
             this.menuToolsLayerReHeight,
-            this.menuToolsLayerClone,
-            this.menuToolsLayerRemoval,
             this.menuToolsPattern});
             this.menuTools.Enabled = false;
             this.menuTools.Name = "menuTools";
@@ -512,15 +503,6 @@ namespace UVtools.GUI
             this.menuToolsRepairLayers.Text = "&Repair layers and Issues";
             this.menuToolsRepairLayers.Click += new System.EventHandler(this.EventClick);
             // 
-            // menuToolsChangeResolution
-            // 
-            this.menuToolsChangeResolution.Enabled = false;
-            this.menuToolsChangeResolution.Image = global::UVtools.GUI.Properties.Resources.resize_16x16;
-            this.menuToolsChangeResolution.Name = "menuToolsChangeResolution";
-            this.menuToolsChangeResolution.Size = new System.Drawing.Size(261, 22);
-            this.menuToolsChangeResolution.Text = "Change Re&solution";
-            this.menuToolsChangeResolution.Click += new System.EventHandler(this.EventClick);
-            // 
             // menuToolsLayerReHeight
             // 
             this.menuToolsLayerReHeight.Enabled = false;
@@ -529,26 +511,6 @@ namespace UVtools.GUI
             this.menuToolsLayerReHeight.Size = new System.Drawing.Size(261, 22);
             this.menuToolsLayerReHeight.Text = "Layer Re-&Height";
             this.menuToolsLayerReHeight.Click += new System.EventHandler(this.EventClick);
-            // 
-            // menuToolsLayerClone
-            // 
-            this.menuToolsLayerClone.Enabled = false;
-            this.menuToolsLayerClone.Image = global::UVtools.GUI.Properties.Resources.layers_alt_16x16;
-            this.menuToolsLayerClone.Name = "menuToolsLayerClone";
-            this.menuToolsLayerClone.Size = new System.Drawing.Size(261, 22);
-            this.menuToolsLayerClone.Text = "Layer &Clone";
-            this.menuToolsLayerClone.Visible = false;
-            this.menuToolsLayerClone.Click += new System.EventHandler(this.EventClick);
-            // 
-            // menuToolsLayerRemoval
-            // 
-            this.menuToolsLayerRemoval.Enabled = false;
-            this.menuToolsLayerRemoval.Image = global::UVtools.GUI.Properties.Resources.layers_alt_16x16;
-            this.menuToolsLayerRemoval.Name = "menuToolsLayerRemoval";
-            this.menuToolsLayerRemoval.Size = new System.Drawing.Size(261, 22);
-            this.menuToolsLayerRemoval.Text = "Layer Re&moval";
-            this.menuToolsLayerRemoval.Visible = false;
-            this.menuToolsLayerRemoval.Click += new System.EventHandler(this.EventClick);
             // 
             // menuToolsPattern
             // 
@@ -902,42 +864,11 @@ namespace UVtools.GUI
             // btnLayerImageActions
             // 
             this.btnLayerImageActions.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.btnLayerImageActions.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.btnLayerImageActionImport,
-            this.btnLayerImageActionClone,
-            this.btnLayerImageActionRemove});
             this.btnLayerImageActions.Image = global::UVtools.GUI.Properties.Resources.layers_alt_16x16;
             this.btnLayerImageActions.Name = "btnLayerImageActions";
             this.btnLayerImageActions.Size = new System.Drawing.Size(79, 22);
             this.btnLayerImageActions.Text = "Actions";
             this.btnLayerImageActions.ButtonClick += new System.EventHandler(this.EventClick);
-            // 
-            // btnLayerImageActionImport
-            // 
-            this.btnLayerImageActionImport.Image = global::UVtools.GUI.Properties.Resources.file_import_16x16;
-            this.btnLayerImageActionImport.Name = "btnLayerImageActionImport";
-            this.btnLayerImageActionImport.Size = new System.Drawing.Size(191, 22);
-            this.btnLayerImageActionImport.Text = "&Import layers from file";
-            this.btnLayerImageActionImport.ToolTipText = "Imports layer images at current height";
-            this.btnLayerImageActionImport.Click += new System.EventHandler(this.EventClick);
-            // 
-            // btnLayerImageActionClone
-            // 
-            this.btnLayerImageActionClone.Image = global::UVtools.GUI.Properties.Resources.copy_16x16;
-            this.btnLayerImageActionClone.Name = "btnLayerImageActionClone";
-            this.btnLayerImageActionClone.Size = new System.Drawing.Size(191, 22);
-            this.btnLayerImageActionClone.Text = "&Clone layer";
-            this.btnLayerImageActionClone.ToolTipText = "Clone current layer";
-            this.btnLayerImageActionClone.Click += new System.EventHandler(this.EventClick);
-            // 
-            // btnLayerImageActionRemove
-            // 
-            this.btnLayerImageActionRemove.Image = global::UVtools.GUI.Properties.Resources.trash_16x16;
-            this.btnLayerImageActionRemove.Name = "btnLayerImageActionRemove";
-            this.btnLayerImageActionRemove.Size = new System.Drawing.Size(191, 22);
-            this.btnLayerImageActionRemove.Text = "&Remove layer(s)";
-            this.btnLayerImageActionRemove.ToolTipText = "Remove current layer";
-            this.btnLayerImageActionRemove.Click += new System.EventHandler(this.EventClick);
             // 
             // tsLayerInfo
             // 
@@ -3167,7 +3098,6 @@ namespace UVtools.GUI
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.ToolStripButton btnPixelHistoryRemove;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator18;
-        private System.Windows.Forms.ToolStripMenuItem menuToolsLayerRemoval;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator19;
         private System.Windows.Forms.ToolStripButton btnPixelHistoryApply;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator20;
@@ -3179,7 +3109,6 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStripSplitButton tsPropertiesExport;
         private System.Windows.Forms.ToolStripMenuItem tsPropertiesExportFile;
         private System.Windows.Forms.ToolStripMenuItem tsPropertiesExportClipboard;
-        private System.Windows.Forms.ToolStripMenuItem menuToolsChangeResolution;
         private System.Windows.Forms.TabPage tabPageLog;
         private BrightIdeasSoftware.FastObjectListView lvLog;
         private System.Windows.Forms.ToolStrip tsLog;
@@ -3253,7 +3182,6 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStripLabel tsLayerImagePixelCount;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator17;
         private System.Windows.Forms.ToolStripLabel tsLayerBounds;
-        private System.Windows.Forms.ToolStripMenuItem menuToolsLayerClone;
         private System.Windows.Forms.ToolStripMenuItem menuHelpBenchmark;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator24;
         private System.Windows.Forms.ToolStripLabel tsLayerImageZoomLock;
@@ -3263,9 +3191,6 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStripMenuItem tsIssuesDetectTouchingBounds;
         private System.Windows.Forms.PictureBox pbTrackerIssues;
         private System.Windows.Forms.ToolStripSplitButton btnLayerImageActions;
-        private System.Windows.Forms.ToolStripMenuItem btnLayerImageActionClone;
-        private System.Windows.Forms.ToolStripMenuItem btnLayerImageActionRemove;
-        private System.Windows.Forms.ToolStripMenuItem btnLayerImageActionImport;
     }
 }
 

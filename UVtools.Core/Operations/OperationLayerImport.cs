@@ -14,23 +14,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Ocl;
-using UVtools.Core.Obects;
+using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
     public sealed class OperationLayerImport : Operation
     {
-        public Size FileResolution { get; }
-        public uint InsertAfterLayerIndex { get; set; }
-        public bool ReplaceStartLayer { get; set; }
-        public bool ReplaceSubsequentLayers { get; set; }
-        public bool DiscardRemainingLayers { get; set; }
-
-        public List<string> Files { get; } = new List<string>();
-
-        public int Count => Files.Count;
-
+        #region Overrides
         public override string Title => "Import Layer(s)";
 
         public override string Description =>
@@ -39,15 +29,11 @@ namespace UVtools.Core.Operations
 
         public override string ConfirmationText => $"import {Count} layer(s)?";
 
-        public OperationLayerImport(Size fileResolution)
-        {
-            FileResolution = fileResolution;
-        }
+        public override string ProgressTitle =>
+            $"Importing {Count} layer(s)";
 
-        public void Sort()
-        {
-            Files.Sort((file1, file2) => string.Compare(Path.GetFileNameWithoutExtension(file1), Path.GetFileNameWithoutExtension(file2), StringComparison.Ordinal));
-        }
+        public override uint LayerIndexStart => InsertAfterLayerIndex + (ReplaceStartLayer ? 0u : 1);
+        public override uint LayerIndexEnd => (uint)(LayerIndexStart + Count - 1);
 
         public override StringTag Validate(params object[] parameters)
         {
@@ -81,6 +67,39 @@ namespace UVtools.Core.Operations
 
             return new StringTag(message.ToString(), result);
         }
+        #endregion
+
+        #region Properties
+
+        public Size FileResolution { get; }
+        public uint InsertAfterLayerIndex { get; set; }
+        public bool ReplaceStartLayer { get; set; }
+        public bool ReplaceSubsequentLayers { get; set; }
+        public bool DiscardRemainingLayers { get; set; }
+
+        public List<string> Files { get; } = new List<string>();
+
+        public int Count => Files.Count;
+        #endregion
+
+        #region Constructor
+
+        public OperationLayerImport()
+        {
+        }
+
+        public OperationLayerImport(Size fileResolution)
+        {
+            FileResolution = fileResolution;
+        }
+        #endregion
+
+        #region Methods
+        public void Sort()
+        {
+            Files.Sort((file1, file2) => string.Compare(Path.GetFileNameWithoutExtension(file1), Path.GetFileNameWithoutExtension(file2), StringComparison.Ordinal));
+        }
+        
 
         public uint CalculateTotalLayers(uint totalLayers)
         {
@@ -97,7 +116,8 @@ namespace UVtools.Core.Operations
             return (uint)(totalLayers + Files.Count - (ReplaceStartLayer ? 1 : 0));
         }
 
-        public uint StartLayerIndex => InsertAfterLayerIndex + (ReplaceStartLayer ? 0u : 1);
-        public uint EndLayerIndex => (uint) (StartLayerIndex + Count - 1);
+        
+
+        #endregion
     }
 }

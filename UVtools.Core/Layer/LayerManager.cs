@@ -390,11 +390,11 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutateSolidify(uint startLayerIndex, uint endLayerIndex, OperationProgress progress = null)
+        public void Solidify(OperationSolidify operation, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Solidifing", endLayerIndex - startLayerIndex+1);
-            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            progress.Reset("Solidifying", operation.LayerRangeCount);
+            Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
                 this[layerIndex].MutateSolidify();
@@ -484,19 +484,19 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
         }
 
-        private void MutateGetVarsIterationFade(uint startLayerIndex, uint endLayerIndex, int iterationsStart, int iterationsEnd, ref bool isFade, out int iterationSteps, out int maxIteration)
+        private void MutateGetVarsIterationFade(uint startLayerIndex, uint endLayerIndex, int iterationsStart, int iterationsEnd, ref bool isFade, out float iterationSteps, out int maxIteration)
         {
             iterationSteps = 0;
             maxIteration = 0;
             isFade = isFade && startLayerIndex != endLayerIndex && iterationsStart != iterationsEnd;
             if (!isFade) return;
-            iterationSteps = (int)Math.Abs((double)(iterationsStart - iterationsEnd) / (endLayerIndex - startLayerIndex));
+            iterationSteps = Math.Abs((iterationsStart - (float)iterationsEnd) / ((float)endLayerIndex - startLayerIndex));
             maxIteration = Math.Max(iterationsStart, iterationsEnd);
         }
 
-        private int MutateGetIterationVar(bool isFade, int iterationsStart, int iterationsEnd, int iterationSteps, int maxIteration, uint startLayerIndex, uint layerIndex)
+        private int MutateGetIterationVar(bool isFade, int iterationsStart, int iterationsEnd, float iterationSteps, int maxIteration, uint startLayerIndex, uint layerIndex)
         {
-            if(!isFade) return iterationsStart;
+            if (!isFade) return iterationsStart;
             // calculate iterations based on range
             int iterations = (int)(iterationsStart < iterationsEnd
                 ? iterationsStart + (layerIndex - startLayerIndex) * iterationSteps
@@ -506,10 +506,46 @@ namespace UVtools.Core
             return Math.Min(Math.Max(1, iterations), maxIteration);
         }
 
-        public void MutateErode(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false, OperationProgress progress = null,
+        public void Morph(OperationMorphModel operation, BorderType borderType = BorderType.Default, MCvScalar borderValue = default, OperationProgress progress = null)
+        {
+            if (progress is null) progress = new OperationProgress();
+            progress.Reset("Morphing model", operation.LayerRangeCount);
+
+            var isFade = operation.FadeInOut;
+            MutateGetVarsIterationFade(
+                operation.LayerIndexStart,
+                operation.LayerIndexEnd,
+                (int) operation.IterationsStart,
+                (int) operation.IterationsEnd,
+                ref isFade,
+                out var iterationSteps,
+                out var maxIteration
+            );
+
+            Debug.WriteLine($"Steps: {iterationSteps}, Max iteration: {maxIteration}");
+
+            Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, 
+                new ParallelOptions {MaxDegreeOfParallelism = 1},
+                layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+                int iterations = MutateGetIterationVar(isFade, (int) operation.IterationsStart, (int) operation.IterationsEnd, iterationSteps, maxIteration, operation.LayerIndexStart, (uint)layerIndex);
+                Debug.WriteLine(iterations);
+                this[layerIndex].Morph(operation, iterations, borderType, borderValue);
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+            progress.Token.ThrowIfCancellationRequested();
+
+        }
+
+        /*public void MutateErode(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false, OperationProgress progress = null,
             IInputArray kernel = null, Point anchor = default,
             BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
         {
+
             MutateGetVarsIterationFade(
                 startLayerIndex, 
                 endLayerIndex, 
@@ -654,7 +690,7 @@ namespace UVtools.Core
                 }
             });
             progress.Token.ThrowIfCancellationRequested();
-        }
+        }*/
 
         public void MutateThresholdPixels(uint startLayerIndex, uint endLayerIndex, byte threshold, byte maximum, ThresholdType thresholdType, OperationProgress progress)
         {
@@ -1353,7 +1389,7 @@ namespace UVtools.Core
 
                 if (removeLayers.Count > 0)
                 {
-                    RemoveLayer(removeLayers);
+                    RemoveLayers(removeLayers);
                 }
             }
 
@@ -1367,7 +1403,7 @@ namespace UVtools.Core
 
             var oldLayers = Layers;
             uint newLayerCount = operation.CalculateTotalLayers((uint) Layers.Length);
-            uint startIndex = operation.StartLayerIndex;
+            uint startIndex = operation.LayerIndexStart;
             Layers = new Layer[newLayerCount];
 
             // Keep same layers up to InsertAfterLayerIndex
@@ -1390,7 +1426,7 @@ namespace UVtools.Core
             else // Push remaining layers to the end of imported layers
             {
                 uint oldLayerIndex = operation.InsertAfterLayerIndex;
-                for (uint i = operation.EndLayerIndex + 1; i < newLayerCount; i++)
+                for (uint i = operation.LayerIndexEnd + 1; i < newLayerCount; i++)
                 {
                     oldLayerIndex++;
                     Layers[i] = oldLayers[oldLayerIndex];
@@ -1459,22 +1495,33 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void RemoveLayer(uint layerIndex) => RemoveLayer(layerIndex, layerIndex);
-
-        public void RemoveLayer(uint layerIndexStart, uint layerIndexEnd)
+        public void RemoveLayer(uint layerIndex) => RemoveLayers(new OperationLayerRemove
         {
+            LayerIndexStart = layerIndex,
+            LayerIndexEnd = layerIndex,
+        });
+
+        public void RemoveLayers(OperationLayerRemove operation, OperationProgress progress = null)
+        {
+            if(progress is null)
+                progress = new OperationProgress(false);
             var layersRemove = new List<uint>();
-            for (uint layerIndex = layerIndexStart; layerIndex <= layerIndexEnd; layerIndex++)
+            for (uint layerIndex = operation.LayerIndexStart; layerIndex <= operation.LayerIndexEnd; layerIndex++)
             {
                 layersRemove.Add(layerIndex);
             }
 
-            RemoveLayer(layersRemove);
+            RemoveLayers(layersRemove, progress);
         }
 
-        public void RemoveLayer(List<uint> layersRemove)
+        public void RemoveLayers(List<uint> layersRemove, OperationProgress progress = null)
         {
             if (layersRemove.Count == 0) return;
+
+            if (progress is null)
+                progress = new OperationProgress(false);
+
+            progress.Reset("Removing layers", (uint) layersRemove.Count);
 
             var oldLayers = Layers;
             float layerHeight = SlicerFile.LayerHeight;
@@ -1507,6 +1554,7 @@ namespace UVtools.Core
                 Layers[newLayerIndex].IsModified = true;
 
                 newLayerIndex++;
+                progress++;
             }
 
             SlicerFile.LayerCount = Count;
@@ -1819,5 +1867,7 @@ namespace UVtools.Core
 
 
         #endregion
+
+        
     }
 }

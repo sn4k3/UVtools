@@ -94,7 +94,7 @@ namespace UVtools.GUI.Forms
             InitializeComponent();
         }
 
-        public FrmToolWindow(string title, string description, string buttonOkText, bool layerRangeVisible = true, bool layerRangeEndVisible = true, bool hideContent = false) : this()
+        public FrmToolWindow(string title, string description, string buttonOkText, bool layerRangeVisible = true, int layerIndex = -1, bool layerRangeEndVisible = true, bool hideContent = false) : this()
         {
             if (!ReferenceEquals(title, null)) Text = title;
             lbDescription.MaximumSize = new Size(Width - 20, 0);
@@ -103,6 +103,11 @@ namespace UVtools.GUI.Forms
             LayerRangeVisible = layerRangeVisible;
             LayerRangeEndVisible = layerRangeEndVisible;
             LayerRangeEnd = Program.SlicerFile.LayerCount - 1;
+            if (layerIndex >= 0)
+            {
+                LayerRangeStart =
+                LayerRangeEnd = (uint) layerIndex;
+            }
 
             if (hideContent)
             {
@@ -113,18 +118,14 @@ namespace UVtools.GUI.Forms
             EventValueChanged(nmLayerRangeEnd, EventArgs.Empty);
         }
 
-        public FrmToolWindow(string description, string buttonOkText, bool layerRangeVisible = true, bool layerRangeEndVisible = true, bool hideContent = false) : this(null, description, buttonOkText, layerRangeVisible, layerRangeEndVisible, hideContent)
+        public FrmToolWindow(string description, string buttonOkText, bool layerRangeVisible = true, int layerIndex = -1, bool layerRangeEndVisible = true, bool hideContent = false) : this(null, description, buttonOkText, layerRangeVisible, layerIndex, layerRangeEndVisible, hideContent)
         { }
 
-        public FrmToolWindow(string title, string description, string buttonOkText, uint layerIndex, bool hideContent = false) : this(title, description, buttonOkText, true, true, hideContent)
-        {
-            LayerRangeStart = LayerRangeEnd = layerIndex;
-        }
 
-        public FrmToolWindow(string description, string buttonOkText, uint layerIndex, bool hideContent = false) : this(null, description, buttonOkText, layerIndex, hideContent)
+        public FrmToolWindow(string description, string buttonOkText, int layerIndex, bool hideContent = false) : this(null, description, buttonOkText, true, layerIndex, hideContent)
         { }
 
-        public FrmToolWindow(CtrlToolWindowContent content) : this(content.Text, content.Description, content.ButtonOkText, content.LayerRangeVisible, content.LayerRangeEndVisible)
+        public FrmToolWindow(CtrlToolWindowContent content, int layerIndex = -1) : this(content.Text, content.Description, content.ButtonOkText, content.LayerRangeVisible, layerIndex, content.LayerRangeEndVisible)
         {
             pnContent.Controls.Add(content);
             Width = Math.Max(MinimumSize.Width, content.Width);
@@ -135,19 +136,10 @@ namespace UVtools.GUI.Forms
             content.PropertyChanged += ContentOnPropertyChanged;
         }
 
-        public FrmToolWindow(CtrlToolWindowContent content, uint layerIndex) : this(content)
-        {
-            LayerRangeStart = LayerRangeEnd = layerIndex;
-        }
-
-        public FrmToolWindow(Mutation mutation) : this($"Mutate: {mutation.MenuName}", mutation.Description, mutation.ButtonOkText, true, true, true)
+        public FrmToolWindow(Mutation mutation, int layerIndex = -1) : this($"Mutate: {mutation.MenuName}", mutation.Description, mutation.ButtonOkText, true, layerIndex, true, true)
         {
         }
 
-        public FrmToolWindow(Mutation mutation, uint layerIndex) : this(mutation)
-        {
-            LayerRangeStart = LayerRangeEnd = layerIndex;
-        }
 
         #endregion
 

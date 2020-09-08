@@ -15,6 +15,11 @@ namespace UVtools.Core.Extensions
 {
     public static class StringExtensions
     {
+        public static string RemoveFromEnd(this string input, int count)
+        {
+            return input.Remove(input.Length - count);
+        }
+
         /// <summary>
         /// Upper the first character in a string
         /// </summary>

@@ -165,9 +165,16 @@
       <DependentUpon>CtrlToolWindowContent.cs</DependentUpon>
     </Compile>
     <Compile Include="Controls\LogItem.cs" />
+    <Compile Include="Controls\OperationMenuItem.cs" />
     <Compile Include="Controls\SlicerPropertyItem.cs" />
     <Compile Include="Controls\SplitButton.cs">
       <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Tools\CtrlToolMorphModel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Tools\CtrlToolMorphModel.Designer.cs">
+      <DependentUpon>CtrlToolMorphModel.cs</DependentUpon>
     </Compile>
     <Compile Include="Controls\Tools\CtrlToolLayerClone.cs">
       <SubType>UserControl</SubType>
@@ -245,12 +252,6 @@
     </Compile>
     <Compile Include="Forms\FrmToolLayerReHeight.Designer.cs">
       <DependentUpon>FrmToolLayerReHeight.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\FrmToolLayerClone.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\FrmToolLayerClone.Designer.cs">
-      <DependentUpon>FrmToolLayerClone.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\FrmToolPattern.cs">
       <SubType>Form</SubType>
@@ -335,6 +336,9 @@
     <EmbeddedResource Include="Controls\CtrlToolWindowContent.resx">
       <DependentUpon>CtrlToolWindowContent.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Tools\CtrlToolMorphModel.resx">
+      <DependentUpon>CtrlToolMorphModel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\Tools\CtrlToolLayerClone.resx">
       <DependentUpon>CtrlToolLayerClone.cs</DependentUpon>
     </EmbeddedResource>
@@ -373,9 +377,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolLayerReHeight.resx">
       <DependentUpon>FrmToolLayerReHeight.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\FrmToolLayerClone.resx">
-      <DependentUpon>FrmToolLayerClone.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolPattern.resx">
       <DependentUpon>FrmToolPattern.cs</DependentUpon>

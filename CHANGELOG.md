@@ -12,6 +12,7 @@
 * (Improvement) When zoom into issue or drawing now it checks bounds of zoom rectangle and only performs ZoomToFit is it will be larger then the viewPort after zoom. Otherwise, it will zoom to the fixed zoom level (Auto zoom to region setting dropped as merged into this) (#42)
 * (Improvement) Layer and Issues Repair: Detailed description and warning text in this dialog has been moved from main form into tooltips. It's useful information for new users, but not needed to be visible each time repair is run.
 Less frequently used settings for gap and noise removal iterations have been moved to an advanced settings group that is hidden by default, and can be shown if changes in those settings is desired. For many users, those advanced settings can be left on default and never adjusted. (#43)
+* (Change) Erode, dilate, gap closing and noise removal converted into one window (Morph model)
 * (Change) Shortcuts: + and - to go up and down on layers were change to W and S keys. Reason: + and - are bound to zoom and can lead to problems
 * (Upgrade) OpenCV from 4.2 to 4.3
 * (Upgrade) BinarySerializer from 8.5.2 to 8.5.3
@@ -24,6 +25,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Fix) CTB: Add support for CTB v3 (ezrec/uv3dp#97, #36)
 * (Fix) SL1: Bottle volume doesn't accept decimal numbers
 * (Fix) Tool - Change resolution: Confirmation text was set to remove layers
+* (Fix) Fade iteration now working as expected on some mutators
 
 ## 04/08/2020 - v0.7.0.0
 
