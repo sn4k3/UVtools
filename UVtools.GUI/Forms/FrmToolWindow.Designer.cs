@@ -54,6 +54,10 @@ namespace UVtools.GUI.Forms
             this.pnActions = new System.Windows.Forms.Panel();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnOk = new System.Windows.Forms.Button();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnLayerRangeFirstLayer = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnLayerRangeLastLayer = new System.Windows.Forms.ToolStripMenuItem();
             this.pnDescription.SuspendLayout();
             this.pnLayerRange.SuspendLayout();
             this.gbLayerRange.SuspendLayout();
@@ -194,10 +198,14 @@ namespace UVtools.GUI.Forms
             this.cmLayerRange.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.btnLayerRangeAllLayers,
             this.btnLayerRangeCurrentLayer,
+            this.toolStripSeparator1,
             this.btnLayerRangeBottomLayers,
-            this.btnLayerRangeNormalLayers});
+            this.btnLayerRangeNormalLayers,
+            this.toolStripSeparator2,
+            this.btnLayerRangeFirstLayer,
+            this.btnLayerRangeLastLayer});
             this.cmLayerRange.Name = "cmLayerRange";
-            this.cmLayerRange.Size = new System.Drawing.Size(226, 92);
+            this.cmLayerRange.Size = new System.Drawing.Size(226, 170);
             // 
             // btnLayerRangeAllLayers
             // 
@@ -337,6 +345,34 @@ namespace UVtools.GUI.Forms
             this.btnOk.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.btnOk.Click += new System.EventHandler(this.EventClick);
             // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(222, 6);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(222, 6);
+            // 
+            // btnLayerRangeFirstLayer
+            // 
+            this.btnLayerRangeFirstLayer.Name = "btnLayerRangeFirstLayer";
+            this.btnLayerRangeFirstLayer.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.F)));
+            this.btnLayerRangeFirstLayer.Size = new System.Drawing.Size(225, 22);
+            this.btnLayerRangeFirstLayer.Text = "&First Layer";
+            this.btnLayerRangeFirstLayer.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnLayerRangeLastLayer
+            // 
+            this.btnLayerRangeLastLayer.Name = "btnLayerRangeLastLayer";
+            this.btnLayerRangeLastLayer.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.L)));
+            this.btnLayerRangeLastLayer.Size = new System.Drawing.Size(225, 22);
+            this.btnLayerRangeLastLayer.Text = "&Last Layer";
+            this.btnLayerRangeLastLayer.Click += new System.EventHandler(this.EventClick);
+            // 
             // FrmToolWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -401,5 +437,9 @@ namespace UVtools.GUI.Forms
         public System.Windows.Forms.Panel pnActions;
         public System.Windows.Forms.Button btnCancel;
         public System.Windows.Forms.Button btnOk;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem btnLayerRangeFirstLayer;
+        private System.Windows.Forms.ToolStripMenuItem btnLayerRangeLastLayer;
     }
 }

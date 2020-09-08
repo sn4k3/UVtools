@@ -44,5 +44,15 @@ namespace UVtools.Core.Operations
         /// </summary>
         /// <returns>null or empty if validates, or else, return a string with error message</returns>
         public virtual StringTag Validate(params object[] parameters) => null;
+
+        /// <summary>
+        /// Gets the start layer index where operation will starts in
+        /// </summary>
+        public uint LayerIndexStart { get; set; }
+
+        /// <summary>
+        /// Gets the end layer index where operation will ends in
+        /// </summary>
+        public uint LayerIndexEnd { get; set; }
     }
 }

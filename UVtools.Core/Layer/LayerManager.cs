@@ -1421,12 +1421,11 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void CloneLayer(uint layerIndexStart, uint layerIndexEnd, uint clones = 1, OperationProgress progress = null)
+        public void CloneLayer(OperationLayerClone operation, OperationProgress progress = null)
         {
-            
             var oldLayers = Layers;
 
-            uint totalClones = (layerIndexEnd - layerIndexStart + 1) * clones;
+            uint totalClones = (operation.LayerIndexEnd - operation.LayerIndexStart + 1) * operation.Clones;
             uint newLayerCount = Count + totalClones;
             Layers = new Layer[newLayerCount];
 
@@ -1436,9 +1435,9 @@ namespace UVtools.Core
             for (uint layerIndex = 0; layerIndex < oldLayers.Length; layerIndex++)
             {
                 Layers[newLayerIndex] = oldLayers[layerIndex];
-                if (layerIndex >= layerIndexStart && layerIndex <= layerIndexEnd)
+                if (layerIndex >= operation.LayerIndexStart && layerIndex <= operation.LayerIndexEnd)
                 {
-                    for (uint i = 0; i < clones; i++)
+                    for (uint i = 0; i < operation.Clones; i++)
                     {
                         newLayerIndex++;
                         Layers[newLayerIndex] = oldLayers[layerIndex].Clone();

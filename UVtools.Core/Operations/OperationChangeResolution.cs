@@ -1,4 +1,11 @@
-﻿using System.Drawing;
+﻿/*
+ *                     GNU AFFERO GENERAL PUBLIC LICENSE
+ *                       Version 3, 19 November 2007
+ *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ *  Everyone is permitted to copy and distribute verbatim copies
+ *  of this license document, but changing it is not allowed.
+ */
+using System.Drawing;
 using System.Text;
 using UVtools.Core.Obects;
 
@@ -41,7 +48,7 @@ namespace UVtools.Core.Operations
             "NOTE: Please ensure that the actual object will fit within the new print resolution. The operation will be aborted if it will result in any of the actual model being clipped.";
 
         public override string ConfirmationText => 
-            "Are you sure you want change file resolution?\n" +
+            "change file resolution?\n" +
             $"From: {OldResolutionX} x {OldResolutionY}\n" +
             $"To: {NewResolutionX} x {NewResolutionY}";
 

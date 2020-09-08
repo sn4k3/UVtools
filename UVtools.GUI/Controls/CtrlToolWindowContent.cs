@@ -146,7 +146,12 @@ namespace UVtools.GUI.Controls
         /// <summary>
         /// Updates operation object with items retrieved from form fields
         /// </summary>
-        public virtual void UpdateOperation(){}
+        public virtual void UpdateOperation()
+        {
+            if (ParentToolWindow is null) return;
+            BaseOperation.LayerIndexStart = ParentToolWindow.LayerRangeStart;
+            BaseOperation.LayerIndexEnd = ParentToolWindow.LayerRangeEnd;
+        }
 
         /// <summary>
         /// Validates if is safe to continue with operation

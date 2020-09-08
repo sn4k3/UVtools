@@ -293,7 +293,6 @@
             this.Controls.Add(this.splitContainer);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LayerRangeVisible = false;
-            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "CtrlToolLayerImport";
             this.Size = new System.Drawing.Size(707, 578);
             ((System.ComponentModel.ISupportInitialize)(this.nmInsertAfterLayer)).EndInit();

@@ -1225,7 +1225,8 @@ namespace UVtools.GUI
 
             if (ReferenceEquals(sender, menuToolsLayerClone) || ReferenceEquals(sender, btnLayerImageActionClone))
             {
-                using (var frm = new FrmToolLayerClone((int)ActualLayer))
+                var content = new CtrlToolLayerClone();
+                using (var frm = new FrmToolWindow(content, ActualLayer))
                 {
                     if (frm.ShowDialog() != DialogResult.OK) return;
 
@@ -1236,7 +1237,7 @@ namespace UVtools.GUI
                     {
                         try
                         {
-                            SlicerFile.LayerManager.CloneLayer(frm.LayerRangeStart, frm.LayerRangeEnd, frm.Clones, FrmLoading.RestartProgress());
+                            SlicerFile.LayerManager.CloneLayer(content.Operation, FrmLoading.RestartProgress());
                         }
                         catch (OperationCanceledException)
                         {

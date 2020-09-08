@@ -247,6 +247,20 @@ namespace UVtools.GUI.Forms
                 return;
             }
 
+            if (ReferenceEquals(sender, btnLayerRangeFirstLayer))
+            {
+                nmLayerRangeStart.Value = 
+                nmLayerRangeEnd.Value = 0;
+                return;
+            }
+
+            if (ReferenceEquals(sender, btnLayerRangeLastLayer))
+            {
+                nmLayerRangeStart.Value =
+                    nmLayerRangeEnd.Value = Program.SlicerFile.LayerCount - 1;
+                return;
+            }
+
             if (ReferenceEquals(sender, btnOk))
             {
                 if (!btnOk.Enabled) return;
