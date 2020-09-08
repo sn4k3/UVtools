@@ -1576,18 +1576,16 @@ namespace UVtools.Core
             SlicerFile.RequireFullEncode = true;
         }
 
-        public void ChangeResolution(uint newResolutionX, uint newResolutionY, OperationProgress progress)
+        public void ChangeResolution(OperationChangeResolution operation, OperationProgress progress)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
             progress.Reset("Resolution", Count);
-
-            var bounds = BoundingRectangle;
 
             Parallel.For(0, Count, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 
-                this[layerIndex].ChangeResolution(newResolutionX, newResolutionY, bounds);
+                this[layerIndex].ChangeResolution(operation);
 
                 lock (progress.Mutex)
                 {
@@ -1595,8 +1593,8 @@ namespace UVtools.Core
                 }
             });
 
-            SlicerFile.ResolutionX = newResolutionX;
-            SlicerFile.ResolutionY = newResolutionY;
+            SlicerFile.ResolutionX = operation.NewResolutionX;
+            SlicerFile.ResolutionY = operation.NewResolutionY;
         }
 
         public void ToolPattern(uint startLayerIndex, uint endLayerIndex, OperationPattern settings, OperationProgress progress = null)

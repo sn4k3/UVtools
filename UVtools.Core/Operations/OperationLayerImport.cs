@@ -20,7 +20,9 @@ namespace UVtools.Core.Operations
         public List<string> Files { get; } = new List<string>();
 
         public int Count => Files.Count;
-        
+
+        public override string ConfirmationText => $"import {Count} layer(s)?";
+
         public void Sort()
         {
             Files.Sort((file1, file2) => string.Compare(Path.GetFileNameWithoutExtension(file1), Path.GetFileNameWithoutExtension(file2), StringComparison.Ordinal));

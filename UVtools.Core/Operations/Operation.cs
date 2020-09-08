@@ -15,5 +15,9 @@ namespace UVtools.Core.Operations
         /// Gets the ID name of this operation, this comes from class name with "Operation" removed
         /// </summary>
         public string Id => GetType().Name.Remove(0, ClassNameLength);
+
+        public virtual string ConfirmationText => $"Are you sure you want to {Id}";
+
+        public virtual string Validate() => null;
     }
 }

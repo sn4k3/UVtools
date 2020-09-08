@@ -123,7 +123,14 @@ namespace UVtools.GUI.Controls
 
         public virtual bool ValidateForm() => true;
 
-        public DialogResult MessageErrorBox(string message, MessageBoxButtons buttons = MessageBoxButtons.OK) => GUIExtensions.MessageErrorBox($"{Text} Error", message, buttons);
+        public bool ValidateFormFromString(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return true;
+            MessageBoxError(text);
+            return false;
+        }
+
+        public DialogResult MessageBoxError(string message, MessageBoxButtons buttons = MessageBoxButtons.OK) => GUIExtensions.MessageErrorBox($"{Text} Error", message, buttons);
         public DialogResult MessageQuestionBox(string message, string title = null, MessageBoxButtons buttons = MessageBoxButtons.YesNo) => GUIExtensions.MessageQuestionBox($"{title ?? Text}", message, buttons);
 
         #endregion

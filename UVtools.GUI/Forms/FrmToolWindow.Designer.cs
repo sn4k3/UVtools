@@ -34,9 +34,6 @@ namespace UVtools.GUI.Forms
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmToolWindow));
             this.pnDescription = new System.Windows.Forms.Panel();
             this.lbDescription = new System.Windows.Forms.Label();
-            this.pnActions = new System.Windows.Forms.Panel();
-            this.btnCancel = new System.Windows.Forms.Button();
-            this.btnOk = new System.Windows.Forms.Button();
             this.pnContent = new System.Windows.Forms.Panel();
             this.pnLayerRange = new System.Windows.Forms.Panel();
             this.gbLayerRange = new System.Windows.Forms.GroupBox();
@@ -44,6 +41,7 @@ namespace UVtools.GUI.Forms
             this.lbLayerRangeFromMM = new System.Windows.Forms.Label();
             this.lbLayerRangeToMM = new System.Windows.Forms.Label();
             this.nmLayerRangeEnd = new System.Windows.Forms.NumericUpDown();
+            this.btnLayerRangeSelect = new UVtools.GUI.Controls.SplitButton();
             this.cmLayerRange = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.btnLayerRangeAllLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.btnLayerRangeCurrentLayer = new System.Windows.Forms.ToolStripMenuItem();
@@ -52,14 +50,18 @@ namespace UVtools.GUI.Forms
             this.lbLayerRange = new System.Windows.Forms.Label();
             this.lbLayerRangeTo = new System.Windows.Forms.Label();
             this.nmLayerRangeStart = new System.Windows.Forms.NumericUpDown();
-            this.btnLayerRangeSelect = new UVtools.GUI.Controls.SplitButton();
+            this.table = new System.Windows.Forms.TableLayoutPanel();
+            this.pnActions = new System.Windows.Forms.Panel();
+            this.btnCancel = new System.Windows.Forms.Button();
+            this.btnOk = new System.Windows.Forms.Button();
             this.pnDescription.SuspendLayout();
-            this.pnActions.SuspendLayout();
             this.pnLayerRange.SuspendLayout();
             this.gbLayerRange.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeEnd)).BeginInit();
             this.cmLayerRange.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).BeginInit();
+            this.table.SuspendLayout();
+            this.pnActions.SuspendLayout();
             this.SuspendLayout();
             // 
             // pnDescription
@@ -69,10 +71,10 @@ namespace UVtools.GUI.Forms
             this.pnDescription.BackColor = System.Drawing.SystemColors.Control;
             this.pnDescription.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnDescription.Controls.Add(this.lbDescription);
-            this.pnDescription.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnDescription.Location = new System.Drawing.Point(0, 0);
+            this.pnDescription.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pnDescription.Location = new System.Drawing.Point(3, 3);
             this.pnDescription.Name = "pnDescription";
-            this.pnDescription.Size = new System.Drawing.Size(547, 62);
+            this.pnDescription.Size = new System.Drawing.Size(548, 62);
             this.pnDescription.TabIndex = 7;
             // 
             // lbDescription
@@ -87,75 +89,35 @@ namespace UVtools.GUI.Forms
             this.lbDescription.Text = "Description";
             this.lbDescription.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // pnActions
-            // 
-            this.pnActions.BackColor = System.Drawing.SystemColors.Control;
-            this.pnActions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pnActions.Controls.Add(this.btnCancel);
-            this.pnActions.Controls.Add(this.btnOk);
-            this.pnActions.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnActions.Location = new System.Drawing.Point(0, 182);
-            this.pnActions.Name = "pnActions";
-            this.pnActions.Size = new System.Drawing.Size(547, 78);
-            this.pnActions.TabIndex = 8;
-            // 
-            // btnCancel
-            // 
-            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Image = global::UVtools.GUI.Properties.Resources.Cancel_24x24;
-            this.btnCancel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnCancel.Location = new System.Drawing.Point(383, 14);
-            this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
-            this.btnCancel.Size = new System.Drawing.Size(150, 48);
-            this.btnCancel.TabIndex = 6;
-            this.btnCancel.Text = "&Cancel";
-            this.btnCancel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.btnCancel.UseVisualStyleBackColor = true;
-            this.btnCancel.Click += new System.EventHandler(this.EventClick);
-            // 
-            // btnOk
-            // 
-            this.btnOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOk.Image = global::UVtools.GUI.Properties.Resources.Ok_24x24;
-            this.btnOk.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnOk.Location = new System.Drawing.Point(225, 14);
-            this.btnOk.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.btnOk.Name = "btnOk";
-            this.btnOk.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
-            this.btnOk.Size = new System.Drawing.Size(150, 48);
-            this.btnOk.TabIndex = 5;
-            this.btnOk.Text = "&Ok";
-            this.btnOk.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.btnOk.UseVisualStyleBackColor = true;
-            this.btnOk.Click += new System.EventHandler(this.EventClick);
-            // 
             // pnContent
             // 
+            this.pnContent.AutoSize = true;
             this.pnContent.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.pnContent.BackColor = System.Drawing.Color.White;
             this.pnContent.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnContent.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnContent.Location = new System.Drawing.Point(0, 170);
+            this.pnContent.Location = new System.Drawing.Point(3, 191);
             this.pnContent.Name = "pnContent";
-            this.pnContent.Size = new System.Drawing.Size(547, 12);
+            this.pnContent.Size = new System.Drawing.Size(548, 2);
             this.pnContent.TabIndex = 9;
             // 
             // pnLayerRange
             // 
+            this.pnLayerRange.AutoSize = true;
+            this.pnLayerRange.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.pnLayerRange.BackColor = System.Drawing.Color.White;
             this.pnLayerRange.Controls.Add(this.gbLayerRange);
-            this.pnLayerRange.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnLayerRange.Location = new System.Drawing.Point(0, 62);
+            this.pnLayerRange.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pnLayerRange.Location = new System.Drawing.Point(3, 71);
             this.pnLayerRange.Name = "pnLayerRange";
             this.pnLayerRange.Padding = new System.Windows.Forms.Padding(0, 10, 0, 0);
-            this.pnLayerRange.Size = new System.Drawing.Size(547, 108);
+            this.pnLayerRange.Size = new System.Drawing.Size(548, 114);
             this.pnLayerRange.TabIndex = 0;
             // 
             // gbLayerRange
             // 
+            this.gbLayerRange.AutoSize = true;
+            this.gbLayerRange.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.gbLayerRange.BackColor = System.Drawing.Color.White;
             this.gbLayerRange.Controls.Add(this.lbLayerRangeCount);
             this.gbLayerRange.Controls.Add(this.lbLayerRangeFromMM);
@@ -168,7 +130,7 @@ namespace UVtools.GUI.Forms
             this.gbLayerRange.Dock = System.Windows.Forms.DockStyle.Fill;
             this.gbLayerRange.Location = new System.Drawing.Point(0, 10);
             this.gbLayerRange.Name = "gbLayerRange";
-            this.gbLayerRange.Size = new System.Drawing.Size(547, 98);
+            this.gbLayerRange.Size = new System.Drawing.Size(548, 104);
             this.gbLayerRange.TabIndex = 19;
             this.gbLayerRange.TabStop = false;
             this.gbLayerRange.Text = "Layer Range Selector";
@@ -216,6 +178,16 @@ namespace UVtools.GUI.Forms
             this.nmLayerRangeEnd.Size = new System.Drawing.Size(120, 26);
             this.nmLayerRangeEnd.TabIndex = 14;
             this.nmLayerRangeEnd.ValueChanged += new System.EventHandler(this.EventValueChanged);
+            // 
+            // btnLayerRangeSelect
+            // 
+            this.btnLayerRangeSelect.Location = new System.Drawing.Point(359, 31);
+            this.btnLayerRangeSelect.Menu = this.cmLayerRange;
+            this.btnLayerRangeSelect.Name = "btnLayerRangeSelect";
+            this.btnLayerRangeSelect.Size = new System.Drawing.Size(180, 26);
+            this.btnLayerRangeSelect.TabIndex = 18;
+            this.btnLayerRangeSelect.Text = "Select";
+            this.btnLayerRangeSelect.UseVisualStyleBackColor = true;
             // 
             // cmLayerRange
             // 
@@ -297,27 +269,84 @@ namespace UVtools.GUI.Forms
             this.nmLayerRangeStart.TabIndex = 13;
             this.nmLayerRangeStart.ValueChanged += new System.EventHandler(this.EventValueChanged);
             // 
-            // btnLayerRangeSelect
+            // table
             // 
-            this.btnLayerRangeSelect.Location = new System.Drawing.Point(359, 31);
-            this.btnLayerRangeSelect.Menu = this.cmLayerRange;
-            this.btnLayerRangeSelect.Name = "btnLayerRangeSelect";
-            this.btnLayerRangeSelect.Size = new System.Drawing.Size(175, 26);
-            this.btnLayerRangeSelect.TabIndex = 18;
-            this.btnLayerRangeSelect.Text = "Select";
-            this.btnLayerRangeSelect.UseVisualStyleBackColor = true;
+            this.table.AutoSize = true;
+            this.table.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.table.ColumnCount = 1;
+            this.table.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.table.Controls.Add(this.pnDescription, 0, 0);
+            this.table.Controls.Add(this.pnActions, 0, 3);
+            this.table.Controls.Add(this.pnContent, 0, 2);
+            this.table.Controls.Add(this.pnLayerRange, 0, 1);
+            this.table.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.table.Location = new System.Drawing.Point(0, 0);
+            this.table.Name = "table";
+            this.table.RowCount = 4;
+            this.table.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.table.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.table.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.table.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.table.Size = new System.Drawing.Size(554, 281);
+            this.table.TabIndex = 10;
+            // 
+            // pnActions
+            // 
+            this.pnActions.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.pnActions.BackColor = System.Drawing.SystemColors.Control;
+            this.pnActions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnActions.Controls.Add(this.btnCancel);
+            this.pnActions.Controls.Add(this.btnOk);
+            this.pnActions.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pnActions.Location = new System.Drawing.Point(3, 199);
+            this.pnActions.Name = "pnActions";
+            this.pnActions.Size = new System.Drawing.Size(548, 85);
+            this.pnActions.TabIndex = 8;
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnCancel.Image = global::UVtools.GUI.Properties.Resources.Cancel_24x24;
+            this.btnCancel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnCancel.Location = new System.Drawing.Point(430, 19);
+            this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Padding = new System.Windows.Forms.Padding(10, 0, 10, 0);
+            this.btnCancel.Size = new System.Drawing.Size(112, 48);
+            this.btnCancel.TabIndex = 6;
+            this.btnCancel.Text = "&Cancel";
+            this.btnCancel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.btnCancel.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnOk
+            // 
+            this.btnOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnOk.AutoSize = true;
+            this.btnOk.Image = global::UVtools.GUI.Properties.Resources.Ok_24x24;
+            this.btnOk.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnOk.Location = new System.Drawing.Point(330, 19);
+            this.btnOk.Name = "btnOk";
+            this.btnOk.Padding = new System.Windows.Forms.Padding(10, 0, 10, 0);
+            this.btnOk.Size = new System.Drawing.Size(93, 48);
+            this.btnOk.TabIndex = 5;
+            this.btnOk.Text = "&Ok";
+            this.btnOk.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.btnOk.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.btnOk.Click += new System.EventHandler(this.EventClick);
             // 
             // FrmToolWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoSize = true;
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.Color.White;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(547, 260);
-            this.Controls.Add(this.pnContent);
-            this.Controls.Add(this.pnLayerRange);
-            this.Controls.Add(this.pnActions);
-            this.Controls.Add(this.pnDescription);
+            this.ClientSize = new System.Drawing.Size(554, 281);
+            this.Controls.Add(this.table);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -325,7 +354,7 @@ namespace UVtools.GUI.Forms
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(563, 39);
+            this.MinimumSize = new System.Drawing.Size(570, 39);
             this.Name = "FrmToolWindow";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
@@ -333,23 +362,23 @@ namespace UVtools.GUI.Forms
             this.TopMost = true;
             this.pnDescription.ResumeLayout(false);
             this.pnDescription.PerformLayout();
-            this.pnActions.ResumeLayout(false);
             this.pnLayerRange.ResumeLayout(false);
+            this.pnLayerRange.PerformLayout();
             this.gbLayerRange.ResumeLayout(false);
             this.gbLayerRange.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeEnd)).EndInit();
             this.cmLayerRange.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRangeStart)).EndInit();
+            this.table.ResumeLayout(false);
+            this.table.PerformLayout();
+            this.pnActions.ResumeLayout(false);
+            this.pnActions.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-
-        public System.Windows.Forms.Panel pnActions;
-        public System.Windows.Forms.Button btnCancel;
-        public System.Windows.Forms.Button btnOk;
         public System.Windows.Forms.Panel pnDescription;
         public System.Windows.Forms.Label lbDescription;
         private System.Windows.Forms.Panel pnLayerRange;
@@ -368,5 +397,9 @@ namespace UVtools.GUI.Forms
         public System.Windows.Forms.Label lbLayerRangeFromMM;
         public System.Windows.Forms.Label lbLayerRangeCount;
         public System.Windows.Forms.Panel pnContent;
+        private System.Windows.Forms.TableLayoutPanel table;
+        public System.Windows.Forms.Panel pnActions;
+        public System.Windows.Forms.Button btnCancel;
+        public System.Windows.Forms.Button btnOk;
     }
 }

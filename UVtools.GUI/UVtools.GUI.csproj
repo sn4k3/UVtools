@@ -175,6 +175,18 @@
     <Compile Include="Controls\Tools\CtrlToolLayerImport.Designer.cs">
       <DependentUpon>CtrlToolLayerImport.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\Tools\CtrlToolChangeResolution.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Tools\CtrlToolChangeResolution.Designer.cs">
+      <DependentUpon>CtrlToolChangeResolution.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Tools\CtrlToolTemplate.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Tools\CtrlToolTemplate.Designer.cs">
+      <DependentUpon>CtrlToolTemplate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\TrackBarEx.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -216,12 +228,6 @@
     <Compile Include="Forms\FrmMutationPixelDimming.Designer.cs">
       <DependentUpon>FrmMutationPixelDimming.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\FrmToolChangeResolution.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\FrmToolChangeResolution.Designer.cs">
-      <DependentUpon>FrmToolChangeResolution.cs</DependentUpon>
-    </Compile>
     <Compile Include="Forms\FrmToolWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -233,12 +239,6 @@
     </Compile>
     <Compile Include="Forms\FrmToolLayerReHeight.Designer.cs">
       <DependentUpon>FrmToolLayerReHeight.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\FrmToolEmpty.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\FrmToolEmpty.Designer.cs">
-      <DependentUpon>FrmToolEmpty.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\FrmToolLayerClone.cs">
       <SubType>Form</SubType>
@@ -332,6 +332,12 @@
     <EmbeddedResource Include="Controls\Tools\CtrlToolLayerImport.resx">
       <DependentUpon>CtrlToolLayerImport.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Tools\CtrlToolChangeResolution.resx">
+      <DependentUpon>CtrlToolChangeResolution.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Tools\CtrlToolTemplate.resx">
+      <DependentUpon>CtrlToolTemplate.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmAbout.resx">
       <DependentUpon>FrmAbout.cs</DependentUpon>
     </EmbeddedResource>
@@ -353,17 +359,11 @@
     <EmbeddedResource Include="Forms\FrmMutationPixelDimming.resx">
       <DependentUpon>FrmMutationPixelDimming.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\FrmToolChangeResolution.resx">
-      <DependentUpon>FrmToolChangeResolution.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolWindow.resx">
       <DependentUpon>FrmToolWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolLayerReHeight.resx">
       <DependentUpon>FrmToolLayerReHeight.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\FrmToolEmpty.resx">
-      <DependentUpon>FrmToolEmpty.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolLayerClone.resx">
       <DependentUpon>FrmToolLayerClone.cs</DependentUpon>

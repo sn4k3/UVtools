@@ -32,7 +32,7 @@ namespace UVtools.GUI.Controls.Tools
             nmInsertAfterLayer_ValueChanged(nmInsertAfterLayer, EventArgs.Empty);
         }
 
-        public override string ConfirmationText => $"import {Operation.Count} layer(s)?";
+        public override string ConfirmationText => Operation.ConfirmationText;
 
         public void UpdateOperation()
         {
@@ -67,7 +67,7 @@ namespace UVtools.GUI.Controls.Tools
 
             message.AppendLine();
             message.AppendLine("Do you want to remove all invalid files from list?");
-            if (MessageErrorBox(message.ToString(), MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (MessageBoxError(message.ToString(), MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 foreach (var file in result)
                 {

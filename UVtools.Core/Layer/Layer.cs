@@ -802,18 +802,20 @@ namespace UVtools.Core
             }
         }
 
-        public void ChangeResolution(uint newResolutionX, uint newResolutionY, Rectangle roi)
+        public void ChangeResolution(OperationChangeResolution operation)
         {
             using (var mat = LayerMat)
             {
                 //mat.Transform(1, 1, newResolutionX-mat.Width+roi.Width, newResolutionY-mat.Height - roi.Height/2, new Size((int) newResolutionX, (int) newResolutionY));
-                using (var matRoi = new Mat(mat, roi))
+                using (var matRoi = new Mat(mat, operation.VolumeBonds))
                 {
-                    using (var matDst = new Mat(new Size((int) newResolutionX, (int) newResolutionY), mat.Depth,
+                    using (var matDst = new Mat(new Size((int)operation.NewResolutionX, (int)operation.NewResolutionY), mat.Depth,
                         mat.NumberOfChannels))
                     {
                         using (var matDstRoi = new Mat(matDst,
-                            new Rectangle((int) (newResolutionX / 2 - roi.Width / 2), (int) newResolutionY / 2 - roi.Height / 2, roi.Width, roi.Height)))
+                            new Rectangle((int) (operation.NewResolutionX / 2 - operation.VolumeBonds.Width / 2),
+                                (int)operation.NewResolutionY / 2 - operation.VolumeBonds.Height / 2, 
+                                operation.VolumeBonds.Width, operation.VolumeBonds.Height)))
                         {
                             matRoi.CopyTo(matDstRoi);
                             LayerMat = matDst;

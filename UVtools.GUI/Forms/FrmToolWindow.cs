@@ -96,12 +96,8 @@ namespace UVtools.GUI.Forms
 
         public FrmToolWindow(string title, string description, string buttonOkText, bool layerRangeVisible = true, bool layerRangeEndVisible = true, bool hideContent = false) : this()
         {
-            if (!layerRangeVisible)
-            {
-                Height -= pnLayerRange.Height;
-            }
-
             if (!ReferenceEquals(title, null)) Text = title;
+            lbDescription.MaximumSize = new Size(Width - 20, 0);
             Description = description;
             ButtonOkText = buttonOkText;
             LayerRangeVisible = layerRangeVisible;
@@ -110,7 +106,6 @@ namespace UVtools.GUI.Forms
 
             if (hideContent)
             {
-                Height -= pnContent.Height;
                 pnContent.Visible = false;
             }
 
@@ -133,27 +128,27 @@ namespace UVtools.GUI.Forms
         {
             pnContent.Controls.Add(content);
             Width = Math.Max(MinimumSize.Width, content.Width);
-            Height += content.Height;
-            content.Dock = DockStyle.Fill;
+            //content.Dock = DockStyle.Fill;
             btnOk.Enabled = content.ButtonOkEnabled;
             Content = content;
 
             content.PropertyChanged += ContentOnPropertyChanged;
         }
 
-        private void ContentOnPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(Content.ButtonOkEnabled))
-            {
-                btnOk.Enabled = Content.ButtonOkEnabled;
-                return;
-            }
-        }
-
         public FrmToolWindow(CtrlToolWindowContent content, uint layerIndex) : this(content)
         {
             LayerRangeStart = LayerRangeEnd = layerIndex;
         }
+
+        public FrmToolWindow(Mutation mutation) : this($"Mutate: {mutation.MenuName}", mutation.Description, mutation.ButtonOkText, true, true, true)
+        {
+        }
+
+        public FrmToolWindow(Mutation mutation, uint layerIndex) : this(mutation)
+        {
+            LayerRangeStart = LayerRangeEnd = layerIndex;
+        }
+
         #endregion
 
         #region Overrides
@@ -213,6 +208,15 @@ namespace UVtools.GUI.Forms
         #endregion
 
         #region Events
+        private void ContentOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Content.ButtonOkEnabled))
+            {
+                btnOk.Enabled = Content.ButtonOkEnabled;
+                return;
+            }
+        }
+
         private void EventClick(object sender, EventArgs e)
         {
             if (ReferenceEquals(sender, btnLayerRangeAllLayers))

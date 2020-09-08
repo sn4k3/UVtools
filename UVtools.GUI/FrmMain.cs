@@ -48,56 +48,68 @@ namespace UVtools.GUI
             {
                 {LayerManager.Mutate.Move, new Mutation(LayerManager.Mutate.Move, null, Resources.move_16x16,
                     "Moves the entire print volume around the plate.\n" +
-                    "Note: Margins are in pixel values."
+                    "Note: Margins are in pixel values.",
+                    "Move"
                 )},
                 {LayerManager.Mutate.Resize, new Mutation(LayerManager.Mutate.Resize, null, Resources.crop_16x16,
                     "Resizes layer images in a X and/or Y factor, starting from 100% value.\n" +
                     "NOTE 1: Build volume bounds are not validated after operation, please ensure scaling stays inside your limits.\n" +
-                    "NOTE 2: X and Y are applied to original image, not to the rotated preview (If enabled)."
+                    "NOTE 2: X and Y are applied to original image, not to the rotated preview (If enabled).",
+                    "Resize"
                 )},
                 {LayerManager.Mutate.Flip, new Mutation(LayerManager.Mutate.Flip, null, Resources.flip_16x16,
-                    "Flips layer images vertically and/or horizontally."
+                    "Flips layer images vertically and/or horizontally.",
+                    "Flip"
                 )},
                 {LayerManager.Mutate.Rotate, new Mutation(LayerManager.Mutate.Rotate, null, Resources.refresh_16x16,
-                    "Rotate layer images in a certain degrees."
+                    "Rotate layer images in a certain degrees.",
+                    "Rotate"
                 )},
                 {LayerManager.Mutate.Solidify, new Mutation(LayerManager.Mutate.Solidify, null, Resources.square_solid_16x16,
                     "Solidifies the selected layers, closes all inner holes.\n" +
-                    "Warning: All surrounded holes are filled, no exceptions! Make sure you don't require any of holes in layer path.",
+                    "NOTE: All open areas of the layer that are completely surrounded by pixels will be filled. Please ensure none of the holes in the layer are required before proceeding.",
+                    "Solidify",
                     Resources.mutation_solidify
                 )},
                 {LayerManager.Mutate.Mask, new Mutation(LayerManager.Mutate.Mask, "Mask", Resources.mask_16x16,
                     "Masks the LCD output image given a greyscale (0-255) pixel input image.\n" +
                     "Useful to correct light uniformity, but a proper mask must be created first based on real measurements per printer.\n" +
                     "NOTE 1: Masks should respect printer resolution or they will be resized to fit.\n" +
-                    "NOTE 2: Run only this tool after all repairs and other transformations."
+                    "NOTE 2: Run only this tool after all repairs and other transformations.",
+                    "Mask"
                 )},
                 {LayerManager.Mutate.PixelDimming, new Mutation(LayerManager.Mutate.PixelDimming, "Pixel Dimming", Resources.chessboard_16x16,
                     "Dims pixels in a chosen pattern over white pixels neighborhood. The selected pattern will be repeated over the image width and height as a mask. Benefits are:\n" +
                     "1) Reduce layer expansion in big masses\n" +
                     "2) Reduce cross layer exposure\n" +
                     "3) Extend pixels life\n" +
-                    "NOTE: Run only this tool after all repairs and other transformations."
+                    "NOTE: Run only this tool after all repairs and other transformations.",
+                    "Dim"
                 )},
                 {LayerManager.Mutate.Erode, new Mutation(LayerManager.Mutate.Erode, null, Resources.compress_alt_16x16,
                 "The basic idea of erosion is just like soil erosion only, it erodes away the boundaries of foreground object (Always try to keep foreground in white). " +
                         "So what happens is that, all the pixels near boundary will be discarded depending upon the size of kernel. So the thickness or size of the foreground object decreases or simply white region decreases in the image. It is useful for removing small white noises, detach two connected objects, etc.",
+                "Errode",
                         Resources.mutation_erosion
                 )},
                 {LayerManager.Mutate.Dilate, new Mutation(LayerManager.Mutate.Dilate, null, Resources.expand_alt_16x16,
                     "It is just opposite of erosion. Here, a pixel element is '1' if at least one pixel under the kernel is '1'. So it increases the white region in the image or size of foreground object increases. Normally, in cases like noise removal, erosion is followed by dilation. Because, erosion removes white noises, but it also shrinks our object. So we dilate it. Since noise is gone, they won't come back, but our object area increases. It is also useful in joining broken parts of an object.",
+                    "Dilate",
                     Resources.mutation_dilation
                 )},
                 {LayerManager.Mutate.Opening, new Mutation(LayerManager.Mutate.Opening, "Noise Removal", null,
                     "Noise Removal/Opening is just another name of erosion followed by dilation. It is useful in removing noise.",
+                    "Remove Noise",
                     Resources.mutation_opening
                 )},
                 {LayerManager.Mutate.Closing, new Mutation(LayerManager.Mutate.Closing, "Gap Closing", Resources.bowling_ball_16x16,
                     "Gap Closing is reverse of Opening, Dilation followed by Erosion. It is useful in closing small holes inside the foreground objects, or small black points on the object.",
+                    "Close gaps",
                     Resources.mutation_closing
                 )},
                 {LayerManager.Mutate.Gradient, new Mutation(LayerManager.Mutate.Gradient, null, Resources.burn_16x16,
                     "It's the difference between dilation and erosion of an image.",
+                    "Gradient",
                     Resources.mutation_gradient
                 )},
                 /*{Mutation.Mutates.TopHat, new Mutation(Mutation.Mutates.TopHat,
@@ -115,12 +127,14 @@ namespace UVtools.GUI
                 {LayerManager.Mutate.ThresholdPixels, new Mutation(LayerManager.Mutate.ThresholdPixels, "Threshold Pixels", Resources.th_16x16,
                     "Manipulates pixels values giving a threshold, maximum and a operation type.\n" +
                     "If a pixel brightness is less or equal to the threshold value, set this pixel to 0, otherwise set to defined maximum value.\n" +
-                    "More info: https://docs.opencv.org/master/d7/d4d/tutorial_py_thresholding.html"
+                    "More info: https://docs.opencv.org/master/d7/d4d/tutorial_py_thresholding.html",
+                    "Threshold"
                 )},
                 {LayerManager.Mutate.Blur, new Mutation(LayerManager.Mutate.Blur, "Blur", Resources.blur_16x16,
                     "Blur and averaging images with various low pass filters\n" +
                     "Note: Printer must support AntiAliasing on firmware to able to use this function\n" +
-                    "More information: https://docs.opencv.org/master/d4/d13/tutorial_py_filtering.html "
+                    "More information: https://docs.opencv.org/master/d4/d13/tutorial_py_filtering.html ",
+                    "Blur"
                 )},
                 /*{LayerManager.Mutate.PyrDownUp, new Mutation(LayerManager.Mutate.PyrDownUp, "Big Blur", Resources.blur_16x16,
                     "Performs down/up-sampling step of Gaussian pyramid decomposition.\n" +
@@ -884,53 +898,53 @@ namespace UVtools.GUI
 
                 if (ReferenceEquals(menuItem, menuToolsChangeResolution))
                 {
-                    uint newResolutionX;
-                    uint newResolutionY;
-                    using (var frm = new FrmToolChangeResolution(SlicerFile.ResolutionX, SlicerFile.ResolutionY, SlicerFile.LayerManager.BoundingRectangle))
+                    var content = new CtrlToolChangeResolution(SlicerFile.ResolutionX, SlicerFile.ResolutionY, SlicerFile.LayerManager.BoundingRectangle);
+                    using (var frm = new FrmToolWindow(content))
                     {
                         if (frm.IsDisposed || frm.ShowDialog() != DialogResult.OK) return;
-                        newResolutionX = frm.NewResolutionX;
-                        newResolutionY = frm.NewResolutionY;
-                    }
 
-                    DisableGUI();
-                    FrmLoading.SetDescription($"Change Resolution from {SlicerFile.ResolutionX} x {SlicerFile.ResolutionY} to {newResolutionX} x {newResolutionY}");
+                        var operation = content.Operation;
 
-                    var task = Task.Factory.StartNew(() =>
-                    {
-                        try
-                        {
-                            SlicerFile.LayerManager.ChangeResolution(newResolutionX, newResolutionY, FrmLoading.RestartProgress(false));
-                        }
-                        catch (OperationCanceledException)
-                        {
+                        DisableGUI();
+                        FrmLoading.SetDescription(
+                            $"Change Resolution from {operation.OldResolutionX} x {operation.NewResolutionY} to {operation.NewResolutionX} x {operation.NewResolutionY}");
 
-                        }
-                        catch (Exception ex)
+                        var task = Task.Factory.StartNew(() =>
                         {
-                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                        finally
-                        {
-                            Invoke((MethodInvoker)delegate
+                            try
                             {
-                                // Running on the UI thread
-                                EnableGUI(true);
-                            });
-                        }
-                    });
+                                SlicerFile.LayerManager.ChangeResolution(operation, FrmLoading.RestartProgress(false));
+                            }
+                            catch (OperationCanceledException)
+                            {
 
-                    var loadingResult = FrmLoading.ShowDialog();
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
+                            finally
+                            {
+                                Invoke((MethodInvoker) delegate
+                                {
+                                    // Running on the UI thread
+                                    EnableGUI(true);
+                                });
+                            }
+                        });
 
-                    //UpdateLayerLimits();
-                    RefreshInfo();
-                    ShowLayer();
-                    tsLayerResolution.Text = ActualLayerImage.Size.ToString();
+                        var loadingResult = FrmLoading.ShowDialog();
 
-                    menuFileSave.Enabled =
-                        menuFileSaveAs.Enabled = true;
+                        //UpdateLayerLimits();
+                        RefreshInfo();
+                        ShowLayer();
+                        tsLayerResolution.Text = ActualLayerImage.Size.ToString();
 
-                    return;
+                        menuFileSave.Enabled =
+                            menuFileSaveAs.Enabled = true;
+
+                        return;
+                    }
                 }
 
                 if (ReferenceEquals(menuItem, menuToolsLayerReHeight))
@@ -3802,7 +3816,7 @@ namespace UVtools.GUI
                     }
                     break;
                 case LayerManager.Mutate.Solidify:
-                    using (FrmToolEmpty inputBox = new FrmToolEmpty(Mutations[mutator]))
+                    using (FrmToolWindow inputBox = new FrmToolWindow(Mutations[mutator]))
                     {
                         if (inputBox.ShowDialog() != DialogResult.OK) return;
                         layerStart = inputBox.LayerRangeStart;
