@@ -4,14 +4,18 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Ocl;
+using UVtools.Core.Obects;
 
 namespace UVtools.Core.Operations
 {
     public sealed class OperationLayerImport : Operation
     {
+        public Size FileResolution { get; }
         public uint InsertAfterLayerIndex { get; set; }
         public bool ReplaceStartLayer { get; set; }
         public bool ReplaceSubsequentLayers { get; set; }
@@ -21,27 +25,55 @@ namespace UVtools.Core.Operations
 
         public int Count => Files.Count;
 
+        public override string Title => "Import Layer(s)";
+
+        public override string Description =>
+            "Import layer(s) from local file(s) into the model at a selected height.\n" +
+            "NOTE: Images must respect file resolution and in greyscale color.";
+
         public override string ConfirmationText => $"import {Count} layer(s)?";
+
+        public OperationLayerImport(Size fileResolution)
+        {
+            FileResolution = fileResolution;
+        }
 
         public void Sort()
         {
             Files.Sort((file1, file2) => string.Compare(Path.GetFileNameWithoutExtension(file1), Path.GetFileNameWithoutExtension(file2), StringComparison.Ordinal));
         }
 
-        public ConcurrentBag<string> Validate(Size resolution)
+        public override StringTag Validate(params object[] parameters)
         {
             var result = new ConcurrentBag<string>();
             Parallel.ForEach(Files, file =>
             {
                 using (Mat mat = CvInvoke.Imread(file, ImreadModes.AnyColor))
                 {
-                    if (mat.Size != resolution)
+                    if (mat.Size != FileResolution)
                     {
                         result.Add(file);
                     }
                 }
             });
-            return result;
+
+            if (result.IsEmpty) return null;
+            var message = new StringBuilder();
+            message.AppendLine($"The following {result.Count} files mismatched the slice resolution of {FileResolution.Width} x {FileResolution.Height}:");
+            message.AppendLine();
+            uint count = 0;
+            foreach (var file in result)
+            {
+                count++;
+                if (count == 20)
+                {
+                    message.AppendLine("... To many to show ...");
+                    break;
+                }
+                message.AppendLine(Path.GetFileNameWithoutExtension(file));
+            }
+
+            return new StringTag(message.ToString(), result);
         }
 
         public uint CalculateTotalLayers(uint totalLayers)

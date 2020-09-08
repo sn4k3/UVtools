@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -19,12 +20,13 @@ namespace UVtools.GUI.Controls.Tools
 {
     public partial class CtrlToolLayerImport : CtrlToolWindowContent
     {
-        public OperationLayerImport Operation { get; } = new OperationLayerImport();
+        public OperationLayerImport Operation { get; }
 
         public CtrlToolLayerImport(uint currentLayer = 0)
         {
             InitializeComponent();
-            Text = "Import Layer(s)";
+            Operation = new OperationLayerImport(Program.FrmMain.ActualLayerImage.Size);
+            SetOperation(Operation);
 
             nmInsertAfterLayer.Maximum = Program.SlicerFile.LayerCount-1;
 
@@ -32,9 +34,7 @@ namespace UVtools.GUI.Controls.Tools
             nmInsertAfterLayer_ValueChanged(nmInsertAfterLayer, EventArgs.Empty);
         }
 
-        public override string ConfirmationText => Operation.ConfirmationText;
-
-        public void UpdateOperation()
+        public override void UpdateOperation()
         {
             Operation.InsertAfterLayerIndex = (uint)nmInsertAfterLayer.Value;
             Operation.ReplaceStartLayer = cbReplaceStartLayer.Checked;
@@ -46,29 +46,14 @@ namespace UVtools.GUI.Controls.Tools
         public override bool ValidateForm()
         {
             UpdateOperation();
-            var result = Operation.Validate(Program.FrmMain.ActualLayerImage.Size);
-            if (result.Count == 0) return true;
+            var message = Operation.Validate();
+            if (message is null) return true;
 
-            var message = new StringBuilder();
-            message.AppendLine($"The following {result.Count} files mismatched the slice resolution of {Program.FrmMain.ActualLayerImage.Size.Width}x{Program.FrmMain.ActualLayerImage.Size.Height}:");
-            message.AppendLine();
-            uint count = 0;
-            foreach (var file in result)
-            {
-                count++;
-                if (count == 20)
-                {
-                    message.AppendLine("... To many to show ...");
-                    break;
-                }
-                message.AppendLine(Path.GetFileNameWithoutExtension(file));
-                
-            }
 
-            message.AppendLine();
-            message.AppendLine("Do you want to remove all invalid files from list?");
+            message.Content += "\nDo you want to remove all invalid files from list?";
             if (MessageBoxError(message.ToString(), MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
+                ConcurrentBag<string> result = (ConcurrentBag<string>)message.Tag;
                 foreach (var file in result)
                 {
                     Operation.Files.Remove(file);

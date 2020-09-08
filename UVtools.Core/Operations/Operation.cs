@@ -5,6 +5,9 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
+using UVtools.Core.Obects;
+
 namespace UVtools.Core.Operations
 {
     public class Operation
@@ -16,8 +19,30 @@ namespace UVtools.Core.Operations
         /// </summary>
         public string Id => GetType().Name.Remove(0, ClassNameLength);
 
+        /// <summary>
+        /// Gets the title of this operation
+        /// </summary>
+        public virtual string Title => Id;
+
+        /// <summary>
+        /// Gets a descriptive text of this operation
+        /// </summary>
+        public virtual string Description => Id;
+
+        /// <summary>
+        /// Gets the Ok button text
+        /// </summary>
+        public virtual string ButtonOkText => Title;
+
+        /// <summary>
+        /// Gets the confirmation text for the operation
+        /// </summary>
         public virtual string ConfirmationText => $"Are you sure you want to {Id}";
 
-        public virtual string Validate() => null;
+        /// <summary>
+        /// Validates the operation
+        /// </summary>
+        /// <returns>null or empty if validates, or else, return a string with error message</returns>
+        public virtual StringTag Validate(params object[] parameters) => null;
     }
 }

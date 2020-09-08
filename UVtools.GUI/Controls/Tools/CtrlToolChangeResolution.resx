@@ -120,10 +120,4 @@
   <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
-  <data name="$this.Description" xml:space="preserve">
-    <value>Changes images resolution (X/Y).
-Usefull to make files printable under a different printer resolution without have to reslice.
-Note 1: Before run this tool, ensure object rotatation and volume fits new resolution.
-Note 2: Object will auto-center on new resolution.</value>
-  </data>
 </root>

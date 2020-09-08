@@ -867,15 +867,15 @@ namespace UVtools.Core.FileFormats
             {
             }
 
-            public LayerDataEx(LayerData layerData)
+            public LayerDataEx(LayerData layerData, uint layerIndex)
             {
                 LayerData = layerData;
                 if (!ReferenceEquals(layerData.Parent, null))
                 {
-                    LiftHeight = layerData.Parent.LiftHeight;
-                    LiftSpeed = layerData.Parent.LiftSpeed;
-                    RetractSpeed = layerData.Parent.RetractSpeed;
-                    LightPWM = layerData.Parent.HeaderSettings.LightPWM;
+                    LiftHeight = layerData.Parent.GetInitialLayerValueOrNormal(layerIndex, layerData.Parent.PrintParametersSettings.BottomLiftHeight, layerData.Parent.PrintParametersSettings.LiftHeight);
+                    LiftSpeed = layerData.Parent.GetInitialLayerValueOrNormal(layerIndex, layerData.Parent.PrintParametersSettings.BottomLiftSpeed, layerData.Parent.PrintParametersSettings.LiftSpeed);
+                    RetractSpeed = layerData.Parent.PrintParametersSettings.RetractSpeed;
+                    LightPWM = layerData.Parent.GetInitialLayerValueOrNormal(layerIndex, layerData.Parent.HeaderSettings.BottomLightPWM, layerData.Parent.HeaderSettings.LightPWM);
                 }
 
                 if (layerData.DataSize > 0)
@@ -1096,7 +1096,8 @@ namespace UVtools.Core.FileFormats
                 if(SlicerInfoSettings.MysteriousId == 0)
                     SlicerInfoSettings.MysteriousId = 0x12345678;
 
-                SlicerInfoSettings.Unknown1 = HeaderSettings.Version == 3 ? 0u : 0x200;
+                if(SlicerInfoSettings.Unknown1 == 0)
+                    SlicerInfoSettings.Unknown1 = HeaderSettings.Version == 3 ? 0u : 0x200;
 
                 if (HeaderSettings.EncryptionKey == 0)
                 {
@@ -1166,7 +1167,7 @@ namespace UVtools.Core.FileFormats
 
                 HeaderSettings.LayersDefinitionOffsetAddress = currentOffset;
                 uint layerDataCurrentOffset = currentOffset + (uint)Helpers.Serializer.SizeOf(new LayerData()) * HeaderSettings.LayerCount * HeaderSettings.AntiAliasLevel;
-
+                
                 progress.ItemCount *= 2 * HeaderSettings.AntiAliasLevel;
 
                 for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
@@ -1208,11 +1209,18 @@ namespace UVtools.Core.FileFormats
                             }
                         }
 
-                        if (ReferenceEquals(layerDataHash, null))
+                        if (layerDataHash is null)
                         {
                             layerData.DataAddress = layerDataCurrentOffset;
 
                             outputFile.Seek(layerDataCurrentOffset, SeekOrigin.Begin);
+
+                            if (HeaderSettings.Version >= 3)
+                            {
+                                var layerDataEx = new LayerDataEx(layerData, layerIndex);
+                                layerData.DataAddress = layerDataCurrentOffset += Helpers.SerializeWriteFileStream(outputFile, layerDataEx);
+                            }
+
                             layerDataCurrentOffset += outputFile.WriteBytes(layerData.EncodedRle);
                         }
                         

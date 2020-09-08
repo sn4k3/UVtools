@@ -281,7 +281,6 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ButtonOkText = "Import";
             this.Controls.Add(this.cbDiscardRemainingLayers);
             this.Controls.Add(this.cbReplaceSubsequentLayers);
             this.Controls.Add(this.lbResult);
@@ -292,8 +291,6 @@
             this.Controls.Add(this.nmInsertAfterLayer);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.splitContainer);
-            this.Description = "Import layer(s) from local file(s) into the model at a selected height.\r\nNOTE: Im" +
-    "ages must respect file resolution and in greyscale color.";
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LayerRangeVisible = false;
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);

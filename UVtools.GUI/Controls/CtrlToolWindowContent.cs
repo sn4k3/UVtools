@@ -10,6 +10,8 @@ using System.Drawing.Design;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using UVtools.Core.Extensions;
+using UVtools.Core.Obects;
+using UVtools.Core.Operations;
 using UVtools.GUI.Annotations;
 using UVtools.GUI.Forms;
 
@@ -71,8 +73,9 @@ namespace UVtools.GUI.Controls
         }
         #endregion
 
-
         #region Properties
+
+        [ReadOnly(true)] [Browsable(false)] public Operation BaseOperation { get; private set; }
 
         [ReadOnly(true)] [Browsable(false)] public FrmToolWindow ParentToolWindow => ParentForm as FrmToolWindow;
 
@@ -108,7 +111,18 @@ namespace UVtools.GUI.Controls
 
         [ReadOnly(true)]
         [Browsable(false)]
-        public virtual string ConfirmationText => $"{Text}?";
+        public virtual string ConfirmationText
+        {
+            get
+            {
+                if (BaseOperation is null || string.IsNullOrEmpty(BaseOperation.ConfirmationText))
+                {
+                    return $"{Text}?";
+                }
+
+                return BaseOperation.ConfirmationText;
+            }
+        }
 
         #endregion
 
@@ -121,12 +135,52 @@ namespace UVtools.GUI.Controls
 
         #region Methods
 
-        public virtual bool ValidateForm() => true;
+        public void SetOperation(Operation operation)
+        {
+            BaseOperation = operation;
+            if(!string.IsNullOrEmpty(operation.Title)) Text = operation.Title;
+            if (!string.IsNullOrEmpty(operation.Description)) Description = operation.Description;
+            if (!string.IsNullOrEmpty(operation.ButtonOkText)) ButtonOkText = operation.ButtonOkText;
+        }
 
+        /// <summary>
+        /// Updates operation object with items retrieved from form fields
+        /// </summary>
+        public virtual void UpdateOperation(){}
+
+        /// <summary>
+        /// Validates if is safe to continue with operation
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool ValidateForm()
+        {
+            if (BaseOperation is null) return true;
+            UpdateOperation();
+            return ValidateFormFromString(BaseOperation.Validate());
+        }
+
+        /// <summary>
+        /// Validates if is safe to continue with operation, if not shows a message box with the error
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
         public bool ValidateFormFromString(string text)
         {
             if (string.IsNullOrEmpty(text)) return true;
             MessageBoxError(text);
+            return false;
+        }
+
+        /// <summary>
+        /// Validates if is safe to continue with operation, if not shows a message box with the error
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public bool ValidateFormFromString(StringTag text)
+        {
+            if (text is null) return true;
+            if (string.IsNullOrEmpty(text.ToString())) return true;
+            MessageBoxError(text.ToString());
             return false;
         }
 

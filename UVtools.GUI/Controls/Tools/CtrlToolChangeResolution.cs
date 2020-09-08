@@ -18,13 +18,11 @@ namespace UVtools.GUI.Controls.Tools
         public uint NewResolutionX => (uint) nmNewX.Value;
         public uint NewResolutionY => (uint) nmNewY.Value;
 
-        public override string ConfirmationText => Operation.ConfirmationText;
-
         public CtrlToolChangeResolution(uint oldResolutionX, uint oldResolutionY, Rectangle volumeBonds)
         {
             InitializeComponent();
-            Text = "Change Resolution";
             Operation = new OperationChangeResolution(oldResolutionX, oldResolutionY, volumeBonds);
+            SetOperation(Operation);
 
             lbCurrent.Text = $"Current resolution (X/Y): {oldResolutionX} x {oldResolutionY}";
             lbObjectVolume.Text = $"Object volume (X/Y): {volumeBonds.Width} x {volumeBonds.Height}";
@@ -58,11 +56,10 @@ namespace UVtools.GUI.Controls.Tools
             }
         }
 
-        public override bool ValidateForm()
+        public override void UpdateOperation()
         {
             Operation.NewResolutionX = NewResolutionX;
             Operation.NewResolutionY = NewResolutionY;
-            return ValidateFormFromString(Operation.Validate());
         }
     }
 }
