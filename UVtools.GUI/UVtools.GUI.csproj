@@ -170,6 +170,12 @@
     <Compile Include="Controls\SplitButton.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Controls\Tools\CtrlToolThreshold.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Tools\CtrlToolThreshold.Designer.cs">
+      <DependentUpon>CtrlToolThreshold.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Tools\CtrlToolPixelDimming.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -271,12 +277,6 @@
     <Compile Include="Forms\FrmMutationBlur.Designer.cs">
       <DependentUpon>FrmMutationBlur.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\FrmMutationThreshold.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\FrmMutationThreshold.Designer.cs">
-      <DependentUpon>FrmMutationThreshold.cs</DependentUpon>
-    </Compile>
     <Compile Include="Forms\FrmToolWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -330,6 +330,9 @@
     <EmbeddedResource Include="Controls\CtrlToolWindowContent.resx">
       <DependentUpon>CtrlToolWindowContent.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Tools\CtrlToolThreshold.resx">
+      <DependentUpon>CtrlToolThreshold.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\Tools\CtrlToolPixelDimming.resx">
       <DependentUpon>CtrlToolPixelDimming.cs</DependentUpon>
     </EmbeddedResource>
@@ -380,9 +383,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmMutationBlur.resx">
       <DependentUpon>FrmMutationBlur.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\FrmMutationThreshold.resx">
-      <DependentUpon>FrmMutationThreshold.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolWindow.resx">
       <DependentUpon>FrmToolWindow.cs</DependentUpon>

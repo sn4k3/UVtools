@@ -53,6 +53,7 @@ namespace UVtools.GUI
             new OperationMenuItem(new OperationMorph(), Resources.Geometry_16x16),
             new OperationMenuItem(new OperationMask(), Resources.mask_16x16),
             new OperationMenuItem(new OperationPixelDimming(), Resources.pixel_16x16),
+            new OperationMenuItem(new OperationThreshold(), Resources.th_16x16),
             new OperationMenuItem(new OperationChangeResolution(), Resources.resize_16x16),
             new OperationMenuItem(new OperationLayerReHeight(), Resources.ladder_16x16),
             new OperationMenuItem(new OperationPattern(), Resources.pattern_16x16)
@@ -174,7 +175,7 @@ namespace UVtools.GUI
                     "The Hit-or-Miss transformation is useful to find patterns in binary images. In particular, it finds those pixels whose neighbourhood matches the shape of a first structuring element B1 while not matching the shape of a second structuring element B2 at the same time.",
                     null
                 )},*/
-                {
+                /*{
                     LayerManager.Mutate.ThresholdPixels, new Mutation(LayerManager.Mutate.ThresholdPixels,
                         "Threshold Pixels", Resources.th_16x16,
                         "Manipulates pixels values giving a threshold, maximum and a operation type.\n" +
@@ -182,7 +183,7 @@ namespace UVtools.GUI
                         "More info: https://docs.opencv.org/master/d7/d4d/tutorial_py_thresholding.html",
                         "Threshold"
                     )
-                },
+                },*/
                 {
                     LayerManager.Mutate.Blur, new Mutation(LayerManager.Mutate.Blur, "Blur", Resources.blur_16x16,
                         "Blur and averaging images with various low pass filters\n" +
@@ -3647,15 +3648,10 @@ namespace UVtools.GUI
             uint layerEnd = 0;
             uint iterationsStart = 0;
             uint iterationsEnd = 0;
-            bool fade = false;
 
             Matrix<byte> kernel = null;
             Point kernelAnchor = Point.Empty;
 
-            ThresholdType thresholdType = ThresholdType.Binary;
-
-            Matrix<byte> evenPattern = null;
-            Matrix<byte> oddPattern = null;
 
             FrmMutationBlur.BlurAlgorithm blurAlgorithm = FrmMutationBlur.BlurAlgorithm.Blur;
 
@@ -3824,10 +3820,10 @@ namespace UVtools.GUI
                             CvInvoke.MorphologyEx(image, image, MorphOp.HitMiss, Program.KernelFindIsolated,
                                 new Point(-1, -1), (int) iterations, BorderType.Default, new MCvScalar());
                             break;*/
-                        case LayerManager.Mutate.ThresholdPixels:
+                        /*/case LayerManager.Mutate.ThresholdPixels:
                             SlicerFile.LayerManager.MutateThresholdPixels(layerStart, layerEnd, (byte) iterationsStart,
                                 (byte) iterationsEnd, thresholdType, progress);
-                            break;
+                            break;*/
                         case LayerManager.Mutate.Blur:
                             switch (blurAlgorithm)
                             {
@@ -4522,6 +4518,9 @@ namespace UVtools.GUI
                             break;
                         case OperationPixelDimming operation:
                             SlicerFile.LayerManager.PixelDimming(operation, FrmLoading.RestartProgress());
+                            break;
+                        case OperationThreshold operation:
+                            SlicerFile.LayerManager.ThresholdPixels(operation, FrmLoading.RestartProgress());
                             break;
 
                         case OperationChangeResolution operation:

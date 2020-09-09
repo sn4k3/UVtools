@@ -754,11 +754,11 @@ namespace UVtools.Core
             }
         }
 
-        public void MutateThresholdPixels(byte threshold, byte maximum, ThresholdType thresholdType)
+        public void ThresholdPixels(OperationThreshold operation)
         {
             using (Mat dst = LayerMat)
             {
-                CvInvoke.Threshold(dst, dst, threshold, maximum, thresholdType);
+                CvInvoke.Threshold(dst, dst, operation.Threshold, operation.Maximum, operation.Type);
                 LayerMat = dst;
             }
         }

@@ -682,14 +682,14 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
         }*/
 
-        public void MutateThresholdPixels(uint startLayerIndex, uint endLayerIndex, byte threshold, byte maximum, ThresholdType thresholdType, OperationProgress progress)
+        public void ThresholdPixels(OperationThreshold operation, OperationProgress progress)
         {
-            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Thresholding", endLayerIndex - startLayerIndex + 1);
-            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            if (progress is null) progress = new OperationProgress();
+            progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
+            Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
-                this[layerIndex].MutateThresholdPixels(threshold, maximum, thresholdType);
+                this[layerIndex].ThresholdPixels(operation);
                 lock (progress.Mutex)
                 {
                     progress++;
