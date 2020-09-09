@@ -3650,10 +3650,7 @@ namespace UVtools.GUI
 
             ThresholdType thresholdType = ThresholdType.Binary;
 
-            OperationMove operationMove = null;
-
             double x = 0;
-            double y = 0;
 
             Mat mat = null;
 
@@ -3664,30 +3661,6 @@ namespace UVtools.GUI
 
             switch (mutator)
             {
-                /*case LayerManager.Mutate.Move:
-                    using (FrmMutationMove inputBox = new FrmMutationMove(Mutations[mutator],
-                        SlicerFile.LayerManager.BoundingRectangle, (uint) ActualLayerImage.Width,
-                        (uint) ActualLayerImage.Height))
-                    {
-                        if (inputBox.ShowDialog() != DialogResult.OK) return;
-                        layerStart = inputBox.LayerRangeStart;
-                        layerEnd = inputBox.LayerRangeEnd;
-                        operationMoveModel = inputBox.OperationMoveModel;
-                    }
-
-                    break;*/
-                case LayerManager.Mutate.Resize:
-                    using (FrmMutationResize inputBox = new FrmMutationResize(Mutations[mutator]))
-                    {
-                        if (inputBox.ShowDialog() != DialogResult.OK) return;
-                        layerStart = inputBox.LayerRangeStart;
-                        layerEnd = inputBox.LayerRangeEnd;
-                        x = inputBox.X;
-                        y = inputBox.Y;
-                        fade = inputBox.Fade;
-                    }
-
-                    break;
                 case LayerManager.Mutate.Flip:
                     using (FrmMutationOneComboBox inputBox = new FrmMutationOneComboBox(Mutations[mutator]))
                     {
@@ -3772,21 +3745,6 @@ namespace UVtools.GUI
                     }
 
                     break;
-                /*default:
-                    using (FrmMutation inputBox = new FrmMutation(Mutations[mutator]))
-                    {
-                        if (inputBox.ShowDialog() != DialogResult.OK) return;
-                        iterationsStart = inputBox.Iterations;
-                        if (iterationsStart == 0) return;
-                        layerStart = inputBox.LayerRangeStart;
-                        layerEnd = inputBox.LayerRangeEnd;
-                        iterationsEnd = inputBox.IterationsEnd;
-
-                        kernel = inputBox.KernelMatrix;
-                        kernelAnchor = inputBox.KernelAnchor;
-                    }
-
-                    break;*/
             }
 
             DisableGUI();
@@ -3799,13 +3757,6 @@ namespace UVtools.GUI
                 {
                     switch (mutator)
                     {
-                       /* case LayerManager.Mutate.Move:
-                            SlicerFile.LayerManager.MoveModel(layerStart, layerEnd, operationMoveModel, progress);
-                            break;*/
-                        /*case LayerManager.Mutate.Resize:
-                            SlicerFile.LayerManager.Resize(layerStart, layerEnd, x / 100.0, y / 100.0, fade,
-                                progress);
-                            break;*/
                         case LayerManager.Mutate.Flip:
                             FlipType flipType = FlipType.Horizontal;
                             switch (iterationsStart)

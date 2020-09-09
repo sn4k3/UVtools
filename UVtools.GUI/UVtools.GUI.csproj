@@ -283,12 +283,6 @@
     <Compile Include="Forms\FrmMutationOneComoboBox.Designer.cs">
       <DependentUpon>FrmMutationOneComoboBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\FrmMutationResize.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\FrmMutationResize.Designer.cs">
-      <DependentUpon>FrmMutationResize.cs</DependentUpon>
-    </Compile>
     <Compile Include="Forms\FrmToolRepairLayers.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -392,9 +386,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmMutationOneComoboBox.resx">
       <DependentUpon>FrmMutationOneComoboBox.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\FrmMutationResize.resx">
-      <DependentUpon>FrmMutationResize.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolRepairLayers.resx">
       <DependentUpon>FrmToolRepairLayers.cs</DependentUpon>
