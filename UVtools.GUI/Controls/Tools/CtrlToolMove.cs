@@ -49,7 +49,7 @@ namespace UVtools.GUI.Controls.Tools
             lbPlacementY.Text = $"Placement Y: {Operation.DstRoi.Y} / {Operation.ImageHeight - Operation.SrcRoi.Height}";
         }
 
-        public override void UpdateOperation()
+        public override bool UpdateOperation()
         {
             base.UpdateOperation();
             byte i = 0;
@@ -73,6 +73,7 @@ namespace UVtools.GUI.Controls.Tools
             Operation.MarginTop = (int)nmMarginTop.Value;
             Operation.MarginRight = (int)nmMarginRight.Value;
             Operation.MarginBottom = (int)nmMarginBottom.Value;
+            return true;
         }
     }
 }

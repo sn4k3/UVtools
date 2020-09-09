@@ -39,10 +39,11 @@ namespace UVtools.GUI.Controls.Tools
             lbHeights.Text = $"Heights: {Program.SlicerFile.TotalHeight}mm → {Program.SlicerFile.TotalHeight + extraHeight}mm (+ {extraHeight}mm)";
         }
 
-        public override void UpdateOperation()
+        public override bool UpdateOperation()
         {
             base.UpdateOperation();
             Operation.Clones = (uint) nmClones.Value;
+            return true;
         }
     }
 }

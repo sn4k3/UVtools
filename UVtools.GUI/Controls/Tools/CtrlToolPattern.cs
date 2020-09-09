@@ -50,7 +50,7 @@ namespace UVtools.GUI.Controls.Tools
             EventValueChanged(this, EventArgs.Empty);
         }
 
-        public override void UpdateOperation()
+        public override bool UpdateOperation()
         {
             base.UpdateOperation();
 
@@ -77,6 +77,7 @@ namespace UVtools.GUI.Controls.Tools
 
             Operation.Cols = (ushort)nmCols.Value;
             Operation.Rows = (ushort)nmRows.Value;
+            return true;
         }
 
         private void EventValueChanged(object sender, EventArgs e)

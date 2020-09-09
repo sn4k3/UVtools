@@ -30,7 +30,7 @@ namespace UVtools.GUI.Controls.Tools
         }
 
 
-        public override void UpdateOperation()
+        public override bool UpdateOperation()
         {
             base.UpdateOperation();
             Operation.IterationsStart = (uint) nmIterationsStart.Value;
@@ -39,6 +39,7 @@ namespace UVtools.GUI.Controls.Tools
             Operation.MorphOperation = (MorphOp)((StringTag) cbMorphOperation.SelectedItem).Tag;
             Operation.Kernel.Anchor = ctrlKernel.KernelAnchor;
             Operation.Kernel.Matrix = ctrlKernel.GetMatrix();
+            return true;
         }
 
         private void EventCheckedChanged(object sender, EventArgs e)

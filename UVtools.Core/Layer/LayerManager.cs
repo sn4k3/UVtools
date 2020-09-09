@@ -419,23 +419,22 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutatePixelDimming(uint startLayerIndex, uint endLayerIndex, Matrix<byte> evenPattern = null,
-            Matrix<byte> oddPattern = null, ushort borderSize = 5, bool dimOnlyBorders = false, OperationProgress progress = null)
+        public void PixelDimming(OperationPixelDimming operation, OperationProgress progress = null)
         {
-            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Dimming pixels", endLayerIndex - startLayerIndex + 1);
+            if (progress is null) progress = new OperationProgress();
+            progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
 
-            if (ReferenceEquals(evenPattern, null))
+            if (operation.EvenPattern is null)
             {
-                evenPattern = new Matrix<byte>(2, 2)
+                operation.EvenPattern = new Matrix<byte>(2, 2)
                 {
                     [0, 0] = 127, [0, 1] = 255,
                     [1, 0] = 255, [1, 1] = 127,
                 };
 
-                if (ReferenceEquals(oddPattern, null))
+                if (operation.OddPattern is null)
                 {
-                    oddPattern = new Matrix<byte>(2, 2)
+                    operation.OddPattern = new Matrix<byte>(2, 2)
                     {
                         [0, 0] = 255, [0, 1] = 127,
                         [1, 0] = 127, [1, 1] = 255,
@@ -443,36 +442,32 @@ namespace UVtools.Core
                 }
             }
 
-            if (ReferenceEquals(oddPattern, null))
+            if (operation.OddPattern is null)
             {
-                oddPattern = evenPattern;
+                operation.OddPattern = operation.EvenPattern;
             }
 
             using (Mat mat = this[0].LayerMat)
+            using (Mat matEven = mat.CloneBlank())
+            using (Mat matOdd = mat.CloneBlank())
             {
-                using (var matEven = mat.CloneBlank())
-                {
-                    using (Mat matOdd = mat.CloneBlank())
-                    {
-                        CvInvoke.Repeat(evenPattern, mat.Rows / evenPattern.Rows + 1, mat.Cols / evenPattern.Cols + 1, matEven);
-                        CvInvoke.Repeat(oddPattern, mat.Rows / oddPattern.Rows + 1, mat.Cols / oddPattern.Cols + 1, matOdd);
+                CvInvoke.Repeat(operation.EvenPattern, mat.Rows / operation.EvenPattern.Rows + 1,
+                    mat.Cols / operation.EvenPattern.Cols + 1, matEven);
+                CvInvoke.Repeat(operation.OddPattern, mat.Rows / operation.OddPattern.Rows + 1,
+                    mat.Cols / operation.OddPattern.Cols + 1, matOdd);
 
-                        using (var evenPatternMask = new Mat(matEven, new Rectangle(0, 0, mat.Width, mat.Height)))
+                using (var evenPatternMask = new Mat(matEven, new Rectangle(0, 0, mat.Width, mat.Height)))
+                using (var oddPatternMask = new Mat(matOdd, new Rectangle(0, 0, mat.Width, mat.Height)))
+                {
+                    Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
+                    {
+                        if (progress.Token.IsCancellationRequested) return;
+                        this[layerIndex].PixelDimming(operation, evenPatternMask, oddPatternMask);
+                        lock (progress.Mutex)
                         {
-                            using (var oddPatternMask = new Mat(matOdd, new Rectangle(0, 0, mat.Width, mat.Height)))
-                            {
-                                Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
-                                {
-                                    if (progress.Token.IsCancellationRequested) return;
-                                    this[layerIndex].MutatePixelDimming(evenPatternMask, oddPatternMask, borderSize, dimOnlyBorders);
-                                    lock (progress.Mutex)
-                                    {
-                                        progress++;
-                                    }
-                                });
-                            }
+                            progress++;
                         }
-                    }
+                    });
                 }
             }
 

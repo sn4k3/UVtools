@@ -34,11 +34,12 @@ namespace UVtools.GUI.Controls.Tools
             cbFlipDirection.SelectedIndex = 0;
         }
 
-        public override void UpdateOperation()
+        public override bool UpdateOperation()
         {
             base.UpdateOperation();
             Operation.FlipDirection = (Enumerations.FlipDirection)cbFlipDirection.SelectedItem;
             Operation.MakeCopy = cbMakeCopy.Checked;
+            return true;
         }
     }
 }

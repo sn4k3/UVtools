@@ -43,13 +43,14 @@ namespace UVtools.GUI.Controls.Tools
             ButtonOkEnabled = Operation.CanValidate();
         }
 
-        public override void UpdateOperation()
+        public override bool UpdateOperation()
         {
             base.UpdateOperation();
             Operation.X = nmX.Value;
             Operation.Y = nmY.Value;
             Operation.ConstrainXY = cbConstrainXY.Checked;
             Operation.IsFade = cbFade.Checked;
+            return true;
         }
     }
 }

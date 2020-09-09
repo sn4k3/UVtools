@@ -52,6 +52,7 @@ namespace UVtools.GUI
             new OperationMenuItem(new OperationSolidify(), Resources.square_solid_16x16),
             new OperationMenuItem(new OperationMorph(), Resources.Geometry_16x16),
             new OperationMenuItem(new OperationMask(), Resources.mask_16x16),
+            new OperationMenuItem(new OperationPixelDimming(), Resources.pixel_16x16),
             new OperationMenuItem(new OperationChangeResolution(), Resources.resize_16x16),
             new OperationMenuItem(new OperationLayerReHeight(), Resources.ladder_16x16),
             new OperationMenuItem(new OperationPattern(), Resources.pattern_16x16)
@@ -111,7 +112,7 @@ namespace UVtools.GUI
                         "Mask"
                     )
                 },*/
-                {
+                /*{
                     LayerManager.Mutate.PixelDimming, new Mutation(LayerManager.Mutate.PixelDimming, "Pixel Dimming",
                         Resources.chessboard_16x16,
                         "Dims pixels in a chosen pattern over white pixels neighborhood. The selected pattern will be repeated over the image width and height as a mask. Benefits are:\n" +
@@ -121,7 +122,7 @@ namespace UVtools.GUI
                         "NOTE: Run only this tool after all repairs and other transformations.",
                         "Dim"
                     )
-                },
+                },*/
                 /*{
                     LayerManager.Mutate.Erode, new Mutation(LayerManager.Mutate.Erode, null,
                         Resources.compress_alt_16x16,
@@ -3700,7 +3701,7 @@ namespace UVtools.GUI
                     }
 
                     break;*/
-                case LayerManager.Mutate.PixelDimming:
+                /*case LayerManager.Mutate.PixelDimming:
                     using (FrmMutationPixelDimming inputBox = new FrmMutationPixelDimming(Mutations[mutator]))
                     {
                         if (inputBox.ShowDialog() != DialogResult.OK) return;
@@ -3711,9 +3712,9 @@ namespace UVtools.GUI
                         evenPattern = inputBox.EvenPattern;
                         oddPattern = inputBox.OddPattern;
                     }
-
-                    break;
-                case LayerManager.Mutate.ThresholdPixels:
+            
+                    break;*/
+                /*case LayerManager.Mutate.ThresholdPixels:
                     using (FrmMutationThreshold inputBox = new FrmMutationThreshold(Mutations[mutator]))
                     {
                         if (inputBox.ShowDialog() != DialogResult.OK) return;
@@ -3743,7 +3744,7 @@ namespace UVtools.GUI
                         }
                     }
 
-                    break;
+                    break;*/
             }
 
             DisableGUI();
@@ -3783,10 +3784,10 @@ namespace UVtools.GUI
                             SlicerFile.LayerManager.Mask(layerStart, layerEnd, mat, progress);
                             mat?.Dispose();
                             break;*/
-                        case LayerManager.Mutate.PixelDimming:
-                            SlicerFile.LayerManager.MutatePixelDimming(layerStart, layerEnd, evenPattern, oddPattern,
+                        /*case LayerManager.Mutate.PixelDimming:
+                            SlicerFile.LayerManager.PixelDimming(layerStart, layerEnd, evenPattern, oddPattern,
                                 (ushort) iterationsStart, fade, progress);
-                            break;
+                            break;*/
                         /*case LayerManager.Mutate.Erode:
                             SlicerFile.LayerManager.MutateErode(layerStart, layerEnd, (int) iterationsStart,
                                 (int) iterationsEnd, fade, progress, kernel, kernelAnchor);
@@ -4518,6 +4519,9 @@ namespace UVtools.GUI
                             break;
                         case OperationMask operation:
                             SlicerFile.LayerManager.Mask(operation, FrmLoading.RestartProgress());
+                            break;
+                        case OperationPixelDimming operation:
+                            SlicerFile.LayerManager.PixelDimming(operation, FrmLoading.RestartProgress());
                             break;
 
                         case OperationChangeResolution operation:

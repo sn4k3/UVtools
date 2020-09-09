@@ -641,7 +641,7 @@ namespace UVtools.Core
             }
         }
 
-        public void MutatePixelDimming(Mat evenPatternMask, Mat oddPatternMask = null, ushort borderSize = 5, bool dimOnlyBorders = false)
+        public void PixelDimming(OperationPixelDimming operation, Mat evenPatternMask, Mat oddPatternMask = null)
         {
             var anchor = new Point(-1, -1);
             var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
@@ -655,9 +655,9 @@ namespace UVtools.Core
             using (Mat erode = new Mat())
             using (Mat diff = new Mat())
             {
-                CvInvoke.Erode(dst, erode, kernel, anchor, borderSize, BorderType.Reflect101, default);
+                CvInvoke.Erode(dst, erode, kernel, anchor, (int) operation.BorderSize, BorderType.Reflect101, default);
                 CvInvoke.Subtract(dst, erode, diff);
-                if (dimOnlyBorders)
+                if (operation.BordersOnly)
                 {
                     CvInvoke.BitwiseAnd(diff, Index % 2 == 0 ? evenPatternMask : oddPatternMask, dst);
                     CvInvoke.Add(erode, dst, dst);

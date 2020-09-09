@@ -46,10 +46,11 @@ namespace UVtools.GUI.Controls.Tools
             ButtonOkEnabled = cbMultiplier.SelectedIndex >= 0;
         }
 
-        public override void UpdateOperation()
+        public override bool UpdateOperation()
         {
             base.UpdateOperation();
             Operation.Item = (OperationLayerReHeight.OperationLayerReHeightItem)cbMultiplier.SelectedItem;
+            return true;
         }
     }
 }

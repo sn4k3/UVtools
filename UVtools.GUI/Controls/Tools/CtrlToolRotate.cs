@@ -22,10 +22,11 @@ namespace UVtools.GUI.Controls.Tools
             SetOperation(Operation);
         }
 
-        public override void UpdateOperation()
+        public override bool UpdateOperation()
         {
             base.UpdateOperation();
             Operation.AngleDegrees = nmDegrees.Value;
+            return true;
         }
 
         private void EventValueChanged(object sender, EventArgs e)

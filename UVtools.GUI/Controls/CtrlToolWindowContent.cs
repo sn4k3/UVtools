@@ -150,11 +150,12 @@ namespace UVtools.GUI.Controls
         /// <summary>
         /// Updates operation object with items retrieved from form fields
         /// </summary>
-        public virtual void UpdateOperation()
+        public virtual bool UpdateOperation()
         {
-            if (ParentToolWindow is null) return;
+            if (ParentToolWindow is null) return true;
             BaseOperation.LayerIndexStart = ParentToolWindow.LayerRangeStart;
             BaseOperation.LayerIndexEnd = ParentToolWindow.LayerRangeEnd;
+            return true;
         }
 
         /// <summary>
@@ -164,7 +165,7 @@ namespace UVtools.GUI.Controls
         public virtual bool ValidateForm()
         {
             if (BaseOperation is null) return true;
-            UpdateOperation();
+            if(!UpdateOperation()) return false;
             return ValidateFormFromString(BaseOperation.Validate());
         }
 

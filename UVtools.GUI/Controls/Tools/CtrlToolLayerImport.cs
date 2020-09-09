@@ -34,12 +34,13 @@ namespace UVtools.GUI.Controls.Tools
             nmInsertAfterLayer_ValueChanged(nmInsertAfterLayer, EventArgs.Empty);
         }
 
-        public override void UpdateOperation()
+        public override bool UpdateOperation()
         {
             Operation.InsertAfterLayerIndex = (uint)nmInsertAfterLayer.Value;
             Operation.ReplaceStartLayer = cbReplaceStartLayer.Checked;
             Operation.ReplaceSubsequentLayers = cbReplaceSubsequentLayers.Checked;
             Operation.DiscardRemainingLayers = cbDiscardRemainingLayers.Checked;
+            return true;
         }
 
 

@@ -58,10 +58,12 @@ namespace UVtools.GUI.Controls.Tools
             }
         }
 
-        public override void UpdateOperation()
+        public override bool UpdateOperation()
         {
+            base.UpdateOperation();
             Operation.NewResolutionX = NewResolutionX;
             Operation.NewResolutionY = NewResolutionY;
+            return true;
         }
     }
 }
