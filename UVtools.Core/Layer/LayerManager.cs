@@ -268,7 +268,7 @@ namespace UVtools.Core
             return Layers[index];
         }
 
-        public void MoveModel(OperationMove move, OperationProgress progress = null)
+        public void Move(OperationMove move, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
             progress.Reset("Moving model", move.LayerRangeCount);
@@ -297,49 +297,44 @@ namespace UVtools.Core
         /// <summary>
         /// Resizes layer images in x and y factor, starting at 1 = 100%
         /// </summary>
-        /// <param name="startLayerIndex">Layer index to start</param>
-        /// <param name="endLayerIndex">Layer index to end</param>
-        /// <param name="x">X factor, starts at 1</param>
-        /// <param name="y">Y factor, starts at 1</param>
-        /// <param name="isFade">Fade X/Y towards 100%</param>
-        public void MutateResize(uint startLayerIndex, uint endLayerIndex, double x, double y, bool isFade, OperationProgress progress = null)
+        public void Resize(OperationResize operation, OperationProgress progress = null)
         {
-            if (x == 1.0 && y == 1.0) return;
+            if (operation.X == 1m && operation.Y == 1m) return;
 
             if(ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Resizing", endLayerIndex - startLayerIndex + 1);
+            progress.Reset("Resizing", operation.LayerRangeCount);
 
-            double xSteps = Math.Abs(x - 1.0) / (endLayerIndex - startLayerIndex);
-            double ySteps = Math.Abs(y - 1.0) / (endLayerIndex - startLayerIndex);
+            decimal xSteps = Math.Abs(operation.X - 1m) / (operation.LayerIndexEnd - operation.LayerIndexStart);
+            decimal ySteps = Math.Abs(operation.Y - 1m) / (operation.LayerIndexEnd - operation.LayerIndexStart);
 
-            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
-                var newX = x;
-                var newY = y;
-                if (isFade)
+                var newX = operation.X;
+                var newY = operation.Y;
+                if (operation.IsFade)
                 {
-                    if (newX != 1.0)
+                    if (newX != 1m)
                     {
                         
                         //maxIteration = Math.Max(iterationsStart, iterationsEnd);
 
-                        newX = (float)(newX < 1.0
-                            ? newX + (layerIndex - startLayerIndex) * xSteps
-                            : newX - (layerIndex - startLayerIndex) * xSteps);
+                        newX = newX < 1m
+                            ? newX + (layerIndex - operation.LayerIndexStart) * xSteps
+                            : newX - (layerIndex - operation.LayerIndexStart) * xSteps;
 
                         // constrain
                         //iterations = Math.Min(Math.Max(1, iterations), maxIteration);
                     }
 
-                    if (y != 1.0)
+                    if (newY != 1m)
                     {
                         
                         //maxIteration = Math.Max(iterationsStart, iterationsEnd);
 
-                        newY = (float)(newY < 1.0
-                            ? newY + (layerIndex - startLayerIndex) * ySteps
-                            : newY - (layerIndex - startLayerIndex) * ySteps);
+                        newY = (newY < 1m
+                            ? newY + (layerIndex - operation.LayerIndexStart) * ySteps
+                            : newY - (layerIndex - operation.LayerIndexStart) * ySteps);
 
                         // constrain
                         //iterations = Math.Min(Math.Max(1, iterations), maxIteration);
@@ -351,9 +346,9 @@ namespace UVtools.Core
                     progress++;
                 }
 
-                if (newX == 1.0 && newY == 1.0) return;
+                if (newX == 1.0m && newY == 1.0m) return;
 
-                this[layerIndex].MutateResize(newX, newY);
+                this[layerIndex].Resize((double) (newX / 100m), (double) (newY / 100m));
             });
             progress.Token.ThrowIfCancellationRequested();
         }
@@ -1670,7 +1665,7 @@ namespace UVtools.Core
             {
                 LayerIndexStart = operation.LayerIndexStart, LayerIndexEnd = operation.LayerIndexEnd
             };
-            MoveModel(operationMove, progress);
+            Move(operationMove, progress);
 
         }
 

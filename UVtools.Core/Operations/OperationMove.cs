@@ -28,7 +28,7 @@ namespace UVtools.Core.Operations
             "Note: Margins are in pixel values.";
 
         public override string ConfirmationText =>
-            "move model?\n" +
+            $"move model from layers {LayerIndexStart} to {LayerIndexEnd}?\n" +
             $"From: X:{SrcRoi.X} Y:{SrcRoi.Y}\n" +
             $"To: X:{DstRoi.X} Y:{DstRoi.Y}";
 

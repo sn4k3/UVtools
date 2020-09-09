@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System.Runtime.CompilerServices;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -54,6 +55,12 @@ namespace UVtools.Core.Operations
         /// </summary>
         /// <returns>null or empty if validates, or else, return a string with error message</returns>
         public virtual StringTag Validate(params object[] parameters) => null;
+
+        public bool CanValidate(params object[] parameters)
+        {
+            var result = Validate(parameters);
+            return result is null || string.IsNullOrEmpty(result.Content);
+        }
 
         /// <summary>
         /// Gets the start layer index where operation will starts in

@@ -468,7 +468,7 @@ namespace UVtools.Core
         }
 
 
-        public void MutateResize(double xScale, double yScale)
+        public void Resize(double xScale, double yScale)
         {
             using (var mat = LayerMat)
             {

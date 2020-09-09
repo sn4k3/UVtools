@@ -148,7 +148,6 @@ namespace UVtools.GUI.Forms
             | System.Windows.Forms.Keys.A)));
             this.btnLayerRangeAllLayers.Size = new System.Drawing.Size(225, 22);
             this.btnLayerRangeAllLayers.Text = "&All Layers";
-            this.btnLayerRangeAllLayers.Click += new System.EventHandler(this.ItemClicked);
             // 
             // btnLayerRangeCurrentLayer
             // 
@@ -157,7 +156,6 @@ namespace UVtools.GUI.Forms
             | System.Windows.Forms.Keys.C)));
             this.btnLayerRangeCurrentLayer.Size = new System.Drawing.Size(225, 22);
             this.btnLayerRangeCurrentLayer.Text = "&Current Layer";
-            this.btnLayerRangeCurrentLayer.Click += new System.EventHandler(this.ItemClicked);
             // 
             // btnLayerRangeBottomLayers
             // 
@@ -166,7 +164,6 @@ namespace UVtools.GUI.Forms
             | System.Windows.Forms.Keys.B)));
             this.btnLayerRangeBottomLayers.Size = new System.Drawing.Size(225, 22);
             this.btnLayerRangeBottomLayers.Text = "&Bottom Layers";
-            this.btnLayerRangeBottomLayers.Click += new System.EventHandler(this.ItemClicked);
             // 
             // btnLayerRangeNormalLayers
             // 
@@ -175,7 +172,6 @@ namespace UVtools.GUI.Forms
             | System.Windows.Forms.Keys.N)));
             this.btnLayerRangeNormalLayers.Size = new System.Drawing.Size(225, 22);
             this.btnLayerRangeNormalLayers.Text = "&Normal Layers";
-            this.btnLayerRangeNormalLayers.Click += new System.EventHandler(this.ItemClicked);
             // 
             // toolTip
             // 
@@ -232,7 +228,6 @@ namespace UVtools.GUI.Forms
             this.btnCancel.Text = "&Cancel";
             this.btnCancel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnCancel.UseVisualStyleBackColor = true;
-            this.btnCancel.Click += new System.EventHandler(this.ItemClicked);
             // 
             // btnMutate
             // 
@@ -247,7 +242,6 @@ namespace UVtools.GUI.Forms
             this.btnMutate.Text = "&Resize";
             this.btnMutate.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnMutate.UseVisualStyleBackColor = true;
-            this.btnMutate.Click += new System.EventHandler(this.ItemClicked);
             // 
             // nmX
             // 

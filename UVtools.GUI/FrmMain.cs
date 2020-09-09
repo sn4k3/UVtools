@@ -46,6 +46,7 @@ namespace UVtools.GUI
 
         public static readonly OperationMenuItem[] MenuTools = {
             new OperationMenuItem(new OperationMove(), Resources.move_16x16),
+            new OperationMenuItem(new OperationResize(), Resources.crop_16x16),
             new OperationMenuItem(new OperationSolidify(), Resources.square_solid_16x16),
             new OperationMenuItem(new OperationMorph(), Resources.Geometry_16x16),
             new OperationMenuItem(new OperationChangeResolution(), Resources.resize_16x16),
@@ -69,14 +70,14 @@ namespace UVtools.GUI
                         "Move"
                     )
                 },*/
-                {
+                /*{
                     LayerManager.Mutate.Resize, new Mutation(LayerManager.Mutate.Resize, null, Resources.crop_16x16,
                         "Resizes layer images in a X and/or Y factor, starting from 100% value.\n" +
                         "NOTE 1: Build volume bounds are not validated after operation, please ensure scaling stays inside your limits.\n" +
                         "NOTE 2: X and Y are applied to original image, not to the rotated preview (If enabled).",
                         "Resize"
                     )
-                },
+                },*/
                 {
                     LayerManager.Mutate.Flip, new Mutation(LayerManager.Mutate.Flip, null, Resources.flip_16x16,
                         "Flips layer images vertically and/or horizontally.",
@@ -3801,10 +3802,10 @@ namespace UVtools.GUI
                        /* case LayerManager.Mutate.Move:
                             SlicerFile.LayerManager.MoveModel(layerStart, layerEnd, operationMoveModel, progress);
                             break;*/
-                        case LayerManager.Mutate.Resize:
-                            SlicerFile.LayerManager.MutateResize(layerStart, layerEnd, x / 100.0, y / 100.0, fade,
+                        /*case LayerManager.Mutate.Resize:
+                            SlicerFile.LayerManager.Resize(layerStart, layerEnd, x / 100.0, y / 100.0, fade,
                                 progress);
-                            break;
+                            break;*/
                         case LayerManager.Mutate.Flip:
                             FlipType flipType = FlipType.Horizontal;
                             switch (iterationsStart)
@@ -4548,7 +4549,10 @@ namespace UVtools.GUI
                     {
                         // Tools
                         case OperationMove operation:
-                            SlicerFile.LayerManager.MoveModel(operation, FrmLoading.RestartProgress());
+                            SlicerFile.LayerManager.Move(operation, FrmLoading.RestartProgress());
+                            break;
+                        case OperationResize operation:
+                            SlicerFile.LayerManager.Resize(operation, FrmLoading.RestartProgress());
                             break;
                         case OperationSolidify operation:
                             SlicerFile.LayerManager.Solidify(operation, FrmLoading.RestartProgress());
