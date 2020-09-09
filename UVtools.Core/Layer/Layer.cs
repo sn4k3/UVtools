@@ -477,22 +477,25 @@ namespace UVtools.Core
             }
         }
 
-        public void MutateFlip(FlipType flipType, bool makeCopy = true)
+        public void Flip(OperationFlip operation)
         {
             using (var mat = LayerMat)
             {
-                if (makeCopy)
+                if (operation.MakeCopy)
                 {
                     using (Mat dst = new Mat())
                     {
-                        CvInvoke.Flip(mat, dst, flipType);
-                        var spanSrc = mat.GetPixelSpan<byte>();
+                        CvInvoke.Flip(mat, dst, operation.FlipTypeOpenCV);
+                        CvInvoke.Add(mat, dst, mat);
+                        /*var spanSrc = mat.GetPixelSpan<byte>();
                         var spanDst = dst.GetPixelSpan<byte>();
                         for (int i = 0; i < spanSrc.Length; i++)
                         {
                             if (spanDst[i] == 0) continue;
                             spanSrc[i] = spanDst[i];
-                        }
+                        }*/
+
+
 
                         LayerMat = mat;
 
@@ -500,7 +503,7 @@ namespace UVtools.Core
                 }
                 else
                 {
-                    CvInvoke.Flip(mat, mat, flipType);
+                    CvInvoke.Flip(mat, mat, operation.FlipTypeOpenCV);
                     /*GpuMat gpumat = new GpuMat();
                     gpumat.Upload(mat);
                     CudaInvoke.Flip(gpumat, gpumat, flipType);
@@ -511,7 +514,7 @@ namespace UVtools.Core
             }
         }
 
-        public void MutateRotate(double angle = 90.0, Inter interpolation = Inter.Linear)
+        public void Rotate(OperationRotate operation)
         {
             using (var mat = LayerMat)
             {
@@ -519,7 +522,7 @@ namespace UVtools.Core
                 var halfHeight = mat.Height / 2.0f;
                 using (var translateTransform = new Matrix<double>(2, 3))
                 {
-                    CvInvoke.GetRotationMatrix2D(new PointF(halfWidth, halfHeight), angle, 1.0, translateTransform);
+                    CvInvoke.GetRotationMatrix2D(new PointF(halfWidth, halfHeight), (double) operation.AngleDegrees, 1.0, translateTransform);
                     /*var rect = new RotatedRect(PointF.Empty, mat.Size, (float) angle).MinAreaRect();
                     translateTransform[0, 2] += rect.Width / 2.0 - mat.Cols / 2.0;
                     translateTransform[0, 2] += rect.Height / 2.0 - mat.Rows / 2.0;*/
@@ -534,7 +537,7 @@ namespace UVtools.Core
                        translateTransform[1, 2] += bound_h / 2 - halfHeight;*/
 
 
-                    CvInvoke.WarpAffine(mat, mat, translateTransform, mat.Size, interpolation);
+                    CvInvoke.WarpAffine(mat, mat, translateTransform, mat.Size);
                 }
 
                 LayerMat = mat;

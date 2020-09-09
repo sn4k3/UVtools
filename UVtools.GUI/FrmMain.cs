@@ -47,6 +47,8 @@ namespace UVtools.GUI
         public static readonly OperationMenuItem[] MenuTools = {
             new OperationMenuItem(new OperationMove(), Resources.move_16x16),
             new OperationMenuItem(new OperationResize(), Resources.crop_16x16),
+            new OperationMenuItem(new OperationFlip(), Resources.flip_16x16),
+            new OperationMenuItem(new OperationRotate(), Resources.Rotate_16x16),
             new OperationMenuItem(new OperationSolidify(), Resources.square_solid_16x16),
             new OperationMenuItem(new OperationMorph(), Resources.Geometry_16x16),
             new OperationMenuItem(new OperationChangeResolution(), Resources.resize_16x16),
@@ -78,18 +80,18 @@ namespace UVtools.GUI
                         "Resize"
                     )
                 },*/
-                {
+                /*{
                     LayerManager.Mutate.Flip, new Mutation(LayerManager.Mutate.Flip, null, Resources.flip_16x16,
                         "Flips layer images vertically and/or horizontally.",
                         "Flip"
                     )
-                },
-                {
+                },*/
+                /*{
                     LayerManager.Mutate.Rotate, new Mutation(LayerManager.Mutate.Rotate, null, Resources.refresh_16x16,
                         "Rotate layer images in a certain degrees.",
                         "Rotate"
                     )
-                },
+                },*/
                 /*{
                     LayerManager.Mutate.Solidify, new Mutation(LayerManager.Mutate.Solidify, null,
                         Resources.square_solid_16x16,
@@ -3661,7 +3663,7 @@ namespace UVtools.GUI
 
             switch (mutator)
             {
-                case LayerManager.Mutate.Flip:
+                /*case LayerManager.Mutate.Flip:
                     using (FrmMutationOneComboBox inputBox = new FrmMutationOneComboBox(Mutations[mutator]))
                     {
                         if (inputBox.ShowDialog() != DialogResult.OK) return;
@@ -3671,8 +3673,8 @@ namespace UVtools.GUI
                         fade = inputBox.MakeCopy;
                     }
 
-                    break;
-                case LayerManager.Mutate.Rotate:
+                    break;*/
+                /*case LayerManager.Mutate.Rotate:
                     using (FrmMutationOneNumericalInput inputBox = new FrmMutationOneNumericalInput(Mutations[mutator]))
                     {
                         if (inputBox.ShowDialog() != DialogResult.OK) return;
@@ -3681,8 +3683,8 @@ namespace UVtools.GUI
                         x = (double) inputBox.Value;
                     }
 
-                    break;
-                case LayerManager.Mutate.Solidify:
+                    break;*/
+                /*case LayerManager.Mutate.Solidify:
                     using (FrmToolWindow inputBox = new FrmToolWindow(Mutations[mutator]))
                     {
                         if (inputBox.ShowDialog() != DialogResult.OK) return;
@@ -3690,7 +3692,7 @@ namespace UVtools.GUI
                         layerEnd = inputBox.LayerRangeEnd;
                     }
 
-                    break;
+                    break;*/
                 case LayerManager.Mutate.Mask:
                     using (FrmMutationMask inputBox = new FrmMutationMask(Mutations[mutator]))
                     {
@@ -3757,7 +3759,7 @@ namespace UVtools.GUI
                 {
                     switch (mutator)
                     {
-                        case LayerManager.Mutate.Flip:
+                        /*case LayerManager.Mutate.Flip:
                             FlipType flipType = FlipType.Horizontal;
                             switch (iterationsStart)
                             {
@@ -3772,11 +3774,11 @@ namespace UVtools.GUI
                                     break;
                             }
 
-                            SlicerFile.LayerManager.MutateFlip(layerStart, layerEnd, flipType, fade, progress);
-                            break;
-                        case LayerManager.Mutate.Rotate:
-                            SlicerFile.LayerManager.MutateRotate(layerStart, layerEnd, x, Inter.Linear, progress);
-                            break;
+                            SlicerFile.LayerManager.Flip(layerStart, layerEnd, flipType, fade, progress);
+                            break;*/
+                        /*case LayerManager.Mutate.Rotate:
+                            SlicerFile.LayerManager.Rotate(layerStart, layerEnd, x, Inter.Linear, progress);
+                            break;*/
                         /*case LayerManager.Mutate.Solidify:
                             SlicerFile.LayerManager.Solidify(layerStart, layerEnd, progress);
                             break;*/
@@ -4504,6 +4506,12 @@ namespace UVtools.GUI
                             break;
                         case OperationResize operation:
                             SlicerFile.LayerManager.Resize(operation, FrmLoading.RestartProgress());
+                            break;
+                        case OperationFlip operation:
+                            SlicerFile.LayerManager.Flip(operation, FrmLoading.RestartProgress());
+                            break;
+                        case OperationRotate operation:
+                            SlicerFile.LayerManager.Rotate(operation, FrmLoading.RestartProgress());
                             break;
                         case OperationSolidify operation:
                             SlicerFile.LayerManager.Solidify(operation, FrmLoading.RestartProgress());

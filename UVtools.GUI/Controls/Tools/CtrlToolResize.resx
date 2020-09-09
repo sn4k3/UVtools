@@ -130,9 +130,4 @@ WARNING: Using high iteration values can destroy your model depending on the mut
 Enable  the "Fade in/out" to fade the iteration over layers, you can use a start iteration higher than end to perform a inverse fade.
 WARNING: Using high iteration values can destroy your model depending on the mutator being used, please use low values or with caution!</value>
   </data>
-  <data name="lbX.ToolTip" xml:space="preserve">
-    <value>Selects the number of iterations/passes to perform on each layer using this mutator.
-Enable  the "Fade in/out" to fade the iteration over layers, you can use a start iteration higher than end to perform a inverse fade.
-WARNING: Using high iteration values can destroy your model depending on the mutator being used, please use low values or with caution!</value>
-  </data>
 </root>

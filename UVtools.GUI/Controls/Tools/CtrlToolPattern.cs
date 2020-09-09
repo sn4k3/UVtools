@@ -8,6 +8,7 @@
 
 using System;
 using System.Windows.Forms;
+using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 
@@ -64,7 +65,7 @@ namespace UVtools.GUI.Controls.Tools
             {
                 if (radioButton.Checked)
                 {
-                    Operation.Anchor = (Anchor)i;
+                    Operation.Anchor = (Enumerations.Anchor)i;
                     break;
                 }
 

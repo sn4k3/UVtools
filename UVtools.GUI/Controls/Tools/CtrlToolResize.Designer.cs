@@ -156,7 +156,6 @@
             this.lbX.Size = new System.Drawing.Size(24, 20);
             this.lbX.TabIndex = 20;
             this.lbX.Text = "X:";
-            this.toolTip.SetToolTip(this.lbX, resources.GetString("lbX.ToolTip"));
             // 
             // CtrlToolResize
             // 

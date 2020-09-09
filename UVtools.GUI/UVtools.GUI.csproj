@@ -170,6 +170,18 @@
     <Compile Include="Controls\SplitButton.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Controls\Tools\CtrlToolRotate.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Tools\CtrlToolRotate.Designer.cs">
+      <DependentUpon>CtrlToolRotate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Tools\CtrlToolFlip.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Tools\CtrlToolFlip.Designer.cs">
+      <DependentUpon>CtrlToolFlip.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Tools\CtrlToolResize.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -271,18 +283,6 @@
     <Compile Include="Forms\FrmToolWindow.Designer.cs">
       <DependentUpon>FrmToolWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\FrmMutationOneNumericalInput.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\FrmMutationOneNumericalInput.Designer.cs">
-      <DependentUpon>FrmMutationOneNumericalInput.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\FrmMutationOneComoboBox.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\FrmMutationOneComoboBox.Designer.cs">
-      <DependentUpon>FrmMutationOneComoboBox.cs</DependentUpon>
-    </Compile>
     <Compile Include="Forms\FrmToolRepairLayers.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -329,6 +329,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\CtrlToolWindowContent.resx">
       <DependentUpon>CtrlToolWindowContent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Tools\CtrlToolRotate.resx">
+      <DependentUpon>CtrlToolRotate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Tools\CtrlToolFlip.resx">
+      <DependentUpon>CtrlToolFlip.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\Tools\CtrlToolResize.resx">
       <DependentUpon>CtrlToolResize.cs</DependentUpon>
@@ -380,12 +386,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolWindow.resx">
       <DependentUpon>FrmToolWindow.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\FrmMutationOneNumericalInput.resx">
-      <DependentUpon>FrmMutationOneNumericalInput.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\FrmMutationOneComoboBox.resx">
-      <DependentUpon>FrmMutationOneComoboBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolRepairLayers.resx">
       <DependentUpon>FrmToolRepairLayers.cs</DependentUpon>

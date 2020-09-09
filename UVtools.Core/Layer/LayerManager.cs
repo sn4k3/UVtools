@@ -353,14 +353,14 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutateFlip(uint startLayerIndex, uint endLayerIndex, FlipType flipType, bool makeCopy = false, OperationProgress progress = null)
+        public void Flip(OperationFlip operation, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Fliping", endLayerIndex - startLayerIndex + 1);
-            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            progress.Reset("Flipped", operation.LayerRangeCount);
+            Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
-                this[layerIndex].MutateFlip(flipType, makeCopy);
+                this[layerIndex].Flip(operation);
                 lock (progress.Mutex)
                 {
                     progress++;
@@ -369,14 +369,14 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutateRotate(uint startLayerIndex, uint endLayerIndex, double angle, Inter interpolation = Inter.Linear, OperationProgress progress = null)
+        public void Rotate(OperationRotate operation, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Rotating", endLayerIndex - startLayerIndex+1);
-            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            progress.Reset("Rotating", operation.LayerRangeCount);
+            Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
-                this[layerIndex].MutateRotate(angle, interpolation);
+                this[layerIndex].Rotate(operation);
                 lock (progress.Mutex)
                 {
                     progress++;
@@ -1660,7 +1660,7 @@ namespace UVtools.Core
 
             progress.Token.ThrowIfCancellationRequested();
 
-            if (operation.Anchor == Anchor.None) return;
+            if (operation.Anchor == Enumerations.Anchor.None) return;
             var operationMove = new OperationMove(BoundingRectangle, 0, 0, operation.Anchor)
             {
                 LayerIndexStart = operation.LayerIndexStart, LayerIndexEnd = operation.LayerIndexEnd

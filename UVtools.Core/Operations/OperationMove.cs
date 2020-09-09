@@ -12,14 +12,6 @@ using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
-    public enum Anchor : byte
-    {
-        TopLeft,    TopCenter,    TopRight,
-        MiddleLeft, MiddleCenter, MiddleRight,
-        BottomLeft, BottomCenter, BottomRight,
-        None
-    }
-
     public class OperationMove : Operation
     {
         public override string Title => "Move";
@@ -68,32 +60,32 @@ namespace UVtools.Core.Operations
 
             switch (Anchor)
             {
-                case Anchor.TopLeft:
+                case Enumerations.Anchor.TopLeft:
                     _dstRoi.Location = new Point(0, 0);
                     break;
-                case Anchor.TopCenter:
+                case Enumerations.Anchor.TopCenter:
                     _dstRoi.Location = new Point((int)(ImageWidth / 2 - SrcRoi.Width / 2), 0);
                     break;
-                case Anchor.TopRight:
+                case Enumerations.Anchor.TopRight:
                     _dstRoi.Location = new Point((int)(ImageWidth - SrcRoi.Width), 0);
                     break;
-                case Anchor.MiddleLeft:
+                case Enumerations.Anchor.MiddleLeft:
                     _dstRoi.Location = new Point(0, (int)(ImageHeight / 2 - SrcRoi.Height / 2));
                     break;
-                case Anchor.MiddleCenter:
+                case Enumerations.Anchor.MiddleCenter:
                 //case Anchor.None:
                     _dstRoi.Location = new Point((int)(ImageWidth / 2 - SrcRoi.Width / 2), (int)(ImageHeight / 2 - SrcRoi.Height / 2));
                     break;
-                case Anchor.MiddleRight:
+                case Enumerations.Anchor.MiddleRight:
                     _dstRoi.Location = new Point((int)(ImageWidth - SrcRoi.Width), (int)(ImageHeight / 2 - SrcRoi.Height / 2));
                     break;
-                case Anchor.BottomLeft:
+                case Enumerations.Anchor.BottomLeft:
                     _dstRoi.Location = new Point(0, (int)(ImageHeight - SrcRoi.Height));
                     break;
-                case Anchor.BottomCenter:
+                case Enumerations.Anchor.BottomCenter:
                     _dstRoi.Location = new Point((int)(ImageWidth / 2 - SrcRoi.Width / 2), (int)(ImageHeight - SrcRoi.Height));
                     break;
-                case Anchor.BottomRight:
+                case Enumerations.Anchor.BottomRight:
                     _dstRoi.Location = new Point((int)(ImageWidth - SrcRoi.Width), (int)(ImageHeight - SrcRoi.Height));
                     break;
                 default:
@@ -110,7 +102,7 @@ namespace UVtools.Core.Operations
         public uint ImageWidth { get; set; }
         public uint ImageHeight { get; set; }
 
-        public Anchor Anchor { get; set; }
+        public Enumerations.Anchor Anchor { get; set; }
 
         public int MarginLeft { get; set; } = 0;
         public int MarginTop { get; set; } = 0;
@@ -121,7 +113,7 @@ namespace UVtools.Core.Operations
         {
         }
 
-        public OperationMove(Rectangle srcRoi, uint imageWidth = 0, uint imageHeight = 0, Anchor anchor = Anchor.MiddleCenter)
+        public OperationMove(Rectangle srcRoi, uint imageWidth = 0, uint imageHeight = 0, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter)
         {
             SrcRoi = srcRoi;
             ImageWidth = imageWidth;

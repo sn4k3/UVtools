@@ -43,7 +43,7 @@ namespace UVtools.Core.Operations
 
         #endregion
 
-        public Anchor Anchor { get; set; }
+        public Enumerations.Anchor Anchor { get; set; }
         public Rectangle SrcRoi { get; }
 
         public uint ImageWidth { get; }
