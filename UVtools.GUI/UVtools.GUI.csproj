@@ -170,6 +170,12 @@
     <Compile Include="Controls\SplitButton.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Controls\Tools\CtrlToolMove.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Tools\CtrlToolMove.Designer.cs">
+      <DependentUpon>CtrlToolMove.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Tools\CtrlToolPattern.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -182,11 +188,11 @@
     <Compile Include="Controls\Tools\CtrlToolLayerReHeight.Designer.cs">
       <DependentUpon>CtrlToolLayerReHeight.cs</DependentUpon>
     </Compile>
-    <Compile Include="Controls\Tools\CtrlToolMorphModel.cs">
+    <Compile Include="Controls\Tools\CtrlToolMorph.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Controls\Tools\CtrlToolMorphModel.Designer.cs">
-      <DependentUpon>CtrlToolMorphModel.cs</DependentUpon>
+    <Compile Include="Controls\Tools\CtrlToolMorph.Designer.cs">
+      <DependentUpon>CtrlToolMorph.cs</DependentUpon>
     </Compile>
     <Compile Include="Controls\Tools\CtrlToolLayerClone.cs">
       <SubType>UserControl</SubType>
@@ -271,12 +277,6 @@
     <Compile Include="Forms\FrmMutationOneComoboBox.Designer.cs">
       <DependentUpon>FrmMutationOneComoboBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\FrmMutationMove.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\FrmMutationMove.Designer.cs">
-      <DependentUpon>FrmMutationMove.cs</DependentUpon>
-    </Compile>
     <Compile Include="Forms\FrmMutationResize.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -288,12 +288,6 @@
     </Compile>
     <Compile Include="Forms\FrmToolRepairLayers.Designer.cs">
       <DependentUpon>FrmToolRepairLayers.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\FrmMutation.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\FrmMutation.Designer.cs">
-      <DependentUpon>FrmMutation.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\FrmInputBox.cs">
       <SubType>Form</SubType>
@@ -336,14 +330,17 @@
     <EmbeddedResource Include="Controls\CtrlToolWindowContent.resx">
       <DependentUpon>CtrlToolWindowContent.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Tools\CtrlToolMove.resx">
+      <DependentUpon>CtrlToolMove.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\Tools\CtrlToolPattern.resx">
       <DependentUpon>CtrlToolPattern.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\Tools\CtrlToolLayerReHeight.resx">
       <DependentUpon>CtrlToolLayerReHeight.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Controls\Tools\CtrlToolMorphModel.resx">
-      <DependentUpon>CtrlToolMorphModel.cs</DependentUpon>
+    <EmbeddedResource Include="Controls\Tools\CtrlToolMorph.resx">
+      <DependentUpon>CtrlToolMorph.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\Tools\CtrlToolLayerClone.resx">
       <DependentUpon>CtrlToolLayerClone.cs</DependentUpon>
@@ -387,17 +384,11 @@
     <EmbeddedResource Include="Forms\FrmMutationOneComoboBox.resx">
       <DependentUpon>FrmMutationOneComoboBox.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\FrmMutationMove.resx">
-      <DependentUpon>FrmMutationMove.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmMutationResize.resx">
       <DependentUpon>FrmMutationResize.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolRepairLayers.resx">
       <DependentUpon>FrmToolRepairLayers.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\FrmMutation.resx">
-      <DependentUpon>FrmMutation.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmInputBox.resx">
       <DependentUpon>FrmInputBox.cs</DependentUpon>

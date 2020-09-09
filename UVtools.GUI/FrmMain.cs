@@ -45,8 +45,9 @@ namespace UVtools.GUI
         #region Properties
 
         public static readonly OperationMenuItem[] MenuTools = {
+            new OperationMenuItem(new OperationMove(), Resources.move_16x16),
             new OperationMenuItem(new OperationSolidify(), Resources.square_solid_16x16),
-            new OperationMenuItem(new OperationMorphModel(), Resources.Geometry_16x16),
+            new OperationMenuItem(new OperationMorph(), Resources.Geometry_16x16),
             new OperationMenuItem(new OperationChangeResolution(), Resources.resize_16x16),
             new OperationMenuItem(new OperationLayerReHeight(), Resources.ladder_16x16),
             new OperationMenuItem(new OperationPattern(), Resources.pattern_16x16)
@@ -61,13 +62,13 @@ namespace UVtools.GUI
         public static readonly Dictionary<LayerManager.Mutate, Mutation> Mutations =
             new Dictionary<LayerManager.Mutate, Mutation>
             {
-                {
+                /*{
                     LayerManager.Mutate.Move, new Mutation(LayerManager.Mutate.Move, null, Resources.move_16x16,
                         "Moves the entire print volume around the plate.\n" +
                         "Note: Margins are in pixel values.",
                         "Move"
                     )
-                },
+                },*/
                 {
                     LayerManager.Mutate.Resize, new Mutation(LayerManager.Mutate.Resize, null, Resources.crop_16x16,
                         "Resizes layer images in a X and/or Y factor, starting from 100% value.\n" +
@@ -3637,8 +3638,8 @@ namespace UVtools.GUI
 
         public void MutateLayers(LayerManager.Mutate mutator)
         {
-            uint layerStart;
-            uint layerEnd;
+            uint layerStart = 0;
+            uint layerEnd = 0;
             uint iterationsStart = 0;
             uint iterationsEnd = 0;
             bool fade = false;
@@ -3662,7 +3663,7 @@ namespace UVtools.GUI
 
             switch (mutator)
             {
-                case LayerManager.Mutate.Move:
+                /*case LayerManager.Mutate.Move:
                     using (FrmMutationMove inputBox = new FrmMutationMove(Mutations[mutator],
                         SlicerFile.LayerManager.BoundingRectangle, (uint) ActualLayerImage.Width,
                         (uint) ActualLayerImage.Height))
@@ -3670,10 +3671,10 @@ namespace UVtools.GUI
                         if (inputBox.ShowDialog() != DialogResult.OK) return;
                         layerStart = inputBox.LayerRangeStart;
                         layerEnd = inputBox.LayerRangeEnd;
-                        operationMove = inputBox.OperationMove;
+                        operationMoveModel = inputBox.OperationMoveModel;
                     }
 
-                    break;
+                    break;*/
                 case LayerManager.Mutate.Resize:
                     using (FrmMutationResize inputBox = new FrmMutationResize(Mutations[mutator]))
                     {
@@ -3770,7 +3771,7 @@ namespace UVtools.GUI
                     }
 
                     break;
-                default:
+                /*default:
                     using (FrmMutation inputBox = new FrmMutation(Mutations[mutator]))
                     {
                         if (inputBox.ShowDialog() != DialogResult.OK) return;
@@ -3784,7 +3785,7 @@ namespace UVtools.GUI
                         kernelAnchor = inputBox.KernelAnchor;
                     }
 
-                    break;
+                    break;*/
             }
 
             DisableGUI();
@@ -3797,9 +3798,9 @@ namespace UVtools.GUI
                 {
                     switch (mutator)
                     {
-                        case LayerManager.Mutate.Move:
-                            SlicerFile.LayerManager.MutateMove(layerStart, layerEnd, operationMove, progress);
-                            break;
+                       /* case LayerManager.Mutate.Move:
+                            SlicerFile.LayerManager.MoveModel(layerStart, layerEnd, operationMoveModel, progress);
+                            break;*/
                         case LayerManager.Mutate.Resize:
                             SlicerFile.LayerManager.MutateResize(layerStart, layerEnd, x / 100.0, y / 100.0, fade,
                                 progress);
@@ -4546,10 +4547,13 @@ namespace UVtools.GUI
                     switch (baseOperation)
                     {
                         // Tools
+                        case OperationMove operation:
+                            SlicerFile.LayerManager.MoveModel(operation, FrmLoading.RestartProgress());
+                            break;
                         case OperationSolidify operation:
                             SlicerFile.LayerManager.Solidify(operation, FrmLoading.RestartProgress());
                             break;
-                        case OperationMorphModel operation:
+                        case OperationMorph operation:
                             SlicerFile.LayerManager.Morph(operation, BorderType.Default, new MCvScalar(), FrmLoading.RestartProgress());
                             break;
                         case OperationChangeResolution operation:

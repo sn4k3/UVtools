@@ -11,11 +11,11 @@ using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
-    public sealed class OperationMorphModel : Operation
+    public sealed class OperationMorph : Operation
     {
         #region Overrides
 
-        public override string Title => "Morph model";
+        public override string Title => "Morph";
         public override string Description =>
             $"Morph Model\n" +
             $"Various operations that can be used to change the physical structure of the model or individual layers in various ways.";

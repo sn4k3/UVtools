@@ -268,14 +268,14 @@ namespace UVtools.Core
             return Layers[index];
         }
 
-        public void MutateMove(uint startLayerIndex, uint endLayerIndex, OperationMove move, OperationProgress progress = null)
+        public void MoveModel(OperationMove move, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Moving", endLayerIndex - startLayerIndex + 1);
+            progress.Reset("Moving model", move.LayerRangeCount);
 
             if (move.SrcRoi == Rectangle.Empty) move.SrcRoi = GetBoundingRectangle(progress);
 
-            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            Parallel.For(move.LayerIndexStart, move.LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 
@@ -506,7 +506,7 @@ namespace UVtools.Core
             return Math.Min(Math.Max(1, iterations), maxIteration);
         }
 
-        public void Morph(OperationMorphModel operation, BorderType borderType = BorderType.Default, MCvScalar borderValue = default, OperationProgress progress = null)
+        public void Morph(OperationMorph operation, BorderType borderType = BorderType.Default, MCvScalar borderValue = default, OperationProgress progress = null)
         {
             if (progress is null) progress = new OperationProgress();
             progress.Reset("Morphing model", operation.LayerRangeCount);
@@ -525,12 +525,12 @@ namespace UVtools.Core
             Debug.WriteLine($"Steps: {iterationSteps}, Max iteration: {maxIteration}");
 
             Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, 
-                new ParallelOptions {MaxDegreeOfParallelism = 1},
+                //new ParallelOptions {MaxDegreeOfParallelism = 1},
                 layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
                 int iterations = MutateGetIterationVar(isFade, (int) operation.IterationsStart, (int) operation.IterationsEnd, iterationSteps, maxIteration, operation.LayerIndexStart, (uint)layerIndex);
-                Debug.WriteLine(iterations);
+                //Debug.WriteLine(iterations);
                 this[layerIndex].Morph(operation, iterations, borderType, borderValue);
                 lock (progress.Mutex)
                 {
@@ -1666,7 +1666,11 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
 
             if (operation.Anchor == Anchor.None) return;
-            MutateMove(operation.LayerIndexStart, operation.LayerIndexEnd, new OperationMove(BoundingRectangle, 0, 0, operation.Anchor), progress);
+            var operationMove = new OperationMove(BoundingRectangle, 0, 0, operation.Anchor)
+            {
+                LayerIndexStart = operation.LayerIndexStart, LayerIndexEnd = operation.LayerIndexEnd
+            };
+            MoveModel(operationMove, progress);
 
         }
 

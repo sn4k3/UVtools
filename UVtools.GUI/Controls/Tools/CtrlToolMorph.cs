@@ -13,19 +13,19 @@ using UVtools.Core.Operations;
 
 namespace UVtools.GUI.Controls.Tools
 {
-    public partial class CtrlToolMorphModel : CtrlToolWindowContent
+    public partial class CtrlToolMorph : CtrlToolWindowContent
     {
-        public OperationMorphModel Operation { get; }
+        public OperationMorph Operation { get; }
 
 
-        public CtrlToolMorphModel()
+        public CtrlToolMorph()
         {
             InitializeComponent();
-            Operation = new OperationMorphModel();
+            Operation = new OperationMorph();
             SetOperation(Operation);
 
 
-            cbMorphOperation.Items.AddRange(OperationMorphModel.MorphOperations);
+            cbMorphOperation.Items.AddRange(OperationMorph.MorphOperations);
             cbMorphOperation.SelectedIndex = 0;
         }
 

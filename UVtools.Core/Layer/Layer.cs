@@ -444,20 +444,20 @@ namespace UVtools.Core
             return result;
         }
 
-        public void MutateMove(OperationMove move)
+        public void MutateMove(OperationMove operation)
         {
             using (var layer = LayerMat)
             {
-                if (move.ImageWidth == 0) move.ImageWidth = (uint)layer.Width;
-                if (move.ImageHeight == 0) move.ImageHeight = (uint)layer.Height;
+                if (operation.ImageWidth == 0) operation.ImageWidth = (uint)layer.Width;
+                if (operation.ImageHeight == 0) operation.ImageHeight = (uint)layer.Height;
 
                 /*layer.Transform(1.0, 1.0, move.MarginLeft - move.MarginRight, move.MarginTop-move.MarginBottom);
                 LayerMat = layer;*/
-                using (var layerRoi = new Mat(layer, move.SrcRoi))
+                using (var layerRoi = new Mat(layer, operation.SrcRoi))
                 {
                     using (var dstLayer = layer.CloneBlank())
                     {
-                        using (var dstRoi = new Mat(dstLayer, move.DstRoi))
+                        using (var dstRoi = new Mat(dstLayer, operation.DstRoi))
                         {
                             layerRoi.CopyTo(dstRoi);
                             LayerMat = dstLayer;
@@ -667,7 +667,7 @@ namespace UVtools.Core
             }
         }
 
-        public void Morph(OperationMorphModel operation, int iterations = 1, BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
+        public void Morph(OperationMorph operation, int iterations = 1, BorderType borderType = BorderType.Default, MCvScalar borderValue = default)
         {
             if (iterations == 0)
                 iterations = (int) operation.IterationsStart;

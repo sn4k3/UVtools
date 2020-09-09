@@ -1,6 +1,6 @@
 ﻿namespace UVtools.GUI.Controls.Tools
 {
-    partial class CtrlToolMorphModel
+    partial class CtrlToolMorph
     {
         /// <summary> 
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CtrlToolMorphModel));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CtrlToolMorph));
             this.ctrlKernel = new UVtools.GUI.Controls.CtrlKernel();
             this.cbIterationsFade = new System.Windows.Forms.CheckBox();
             this.nmIterationsEnd = new System.Windows.Forms.NumericUpDown();
@@ -151,7 +151,7 @@
             this.Controls.Add(this.nmIterationsStart);
             this.Controls.Add(this.lbIterationsStart);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Name = "CtrlToolMorphModel";
+            this.Name = "CtrlToolMorph";
             this.Size = new System.Drawing.Size(596, 307);
             ((System.ComponentModel.ISupportInitialize)(this.nmIterationsEnd)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmIterationsStart)).EndInit();
