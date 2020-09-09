@@ -30,6 +30,8 @@ namespace UVtools.Core.Operations
         public override string ProgressTitle =>
             $"Re-height layers to {Item.LayerHeight}mm";
 
+        public override string ProgressAction => "Re-height-ed layers";
+
         public override StringTag Validate(params object[] parameters)
         {
             var sb = new StringBuilder();

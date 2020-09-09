@@ -24,6 +24,8 @@ namespace UVtools.Core.Operations
         public override string ProgressTitle =>
             $"Pattern the object with {Cols} x {Rows} copies";
 
+        public override string ProgressAction => "Patterned layers";
+
         public override StringTag Validate(params object[] parameters)
         {
             var sb = new StringBuilder();

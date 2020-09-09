@@ -26,6 +26,8 @@ namespace UVtools.Core.Operations
         public override string ProgressTitle =>
             $"Removing layers from {LayerIndexStart} to {LayerIndexEnd}";
 
+        public override string ProgressAction => "Removed layers";
+
         #endregion
 
         #region Properties

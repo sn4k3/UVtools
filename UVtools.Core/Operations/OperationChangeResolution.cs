@@ -55,6 +55,8 @@ namespace UVtools.Core.Operations
         public override string ProgressTitle =>
             $"Changing print resolution from ({OldResolution.Width} x {OldResolution.Height}) to ({NewResolutionX} x {NewResolutionY})";
 
+        public override string ProgressAction => "Changed layers";
+
         public override StringTag Validate(params object[] parameters)
         {
             var sb = new StringBuilder();

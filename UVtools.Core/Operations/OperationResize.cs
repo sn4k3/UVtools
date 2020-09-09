@@ -25,6 +25,8 @@ namespace UVtools.Core.Operations
         public override string ProgressTitle =>
             $"Resizing from layers {LayerIndexStart} to {LayerIndexEnd} at X:{X}%  Y:{Y}% ";
 
+        public override string ProgressAction => "Reiszed layers";
+
         public override StringTag Validate(params object[] parameters)
         {
             var sb = new StringBuilder();

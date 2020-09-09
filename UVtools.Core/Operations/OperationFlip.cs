@@ -22,8 +22,8 @@ namespace UVtools.Core.Operations
         public override string ProgressTitle =>
             $"Flipping {FlipDirection} from layers {LayerIndexStart} to {LayerIndexEnd}";
 
+        public override string ProgressAction => "Flipped layers";
         
-
         public Enumerations.FlipDirection FlipDirection { get; set; }
 
         public bool MakeCopy { get; set; }

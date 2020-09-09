@@ -27,6 +27,8 @@ namespace UVtools.Core.Operations
         public override string ProgressTitle =>
             $"Moving model to X:{DstRoi.X} Y:{DstRoi.Y}";
 
+        public override string ProgressAction => "Moved layers";
+
         public override StringTag Validate(params object[] parameters)
         {
             var sb = new StringBuilder();

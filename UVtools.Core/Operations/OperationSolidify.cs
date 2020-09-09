@@ -5,7 +5,6 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
-using System.Text;
 
 namespace UVtools.Core.Operations
 {
@@ -24,6 +23,8 @@ namespace UVtools.Core.Operations
 
         public override string ProgressTitle =>
             $"Solidifying layers from {LayerIndexStart} to {LayerIndexEnd}";
+
+        public override string ProgressAction => "Solidified layers";
 
         #endregion
     }

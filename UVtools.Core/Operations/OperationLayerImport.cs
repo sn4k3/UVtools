@@ -32,6 +32,8 @@ namespace UVtools.Core.Operations
         public override string ProgressTitle =>
             $"Importing {Count} layer(s)";
 
+        public override string ProgressAction => "Imported layers";
+
         public override uint LayerIndexStart => InsertAfterLayerIndex + (ReplaceStartLayer ? 0u : 1);
         public override uint LayerIndexEnd => (uint)(LayerIndexStart + Count - 1);
 

@@ -268,18 +268,18 @@ namespace UVtools.Core
             return Layers[index];
         }
 
-        public void Move(OperationMove move, OperationProgress progress = null)
+        public void Move(OperationMove operation, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Moving model", move.LayerRangeCount);
+            progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
 
-            if (move.SrcRoi == Rectangle.Empty) move.SrcRoi = GetBoundingRectangle(progress);
+            if (operation.SrcRoi == Rectangle.Empty) operation.SrcRoi = GetBoundingRectangle(progress);
 
-            Parallel.For(move.LayerIndexStart, move.LayerIndexEnd + 1, layerIndex =>
+            Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 
-                this[layerIndex].MutateMove(move);
+                this[layerIndex].MutateMove(operation);
 
                 lock (progress.Mutex)
                 {
@@ -302,7 +302,7 @@ namespace UVtools.Core
             if (operation.X == 1m && operation.Y == 1m) return;
 
             if(ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Resizing", operation.LayerRangeCount);
+            progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
 
             decimal xSteps = Math.Abs(operation.X - 1m) / (operation.LayerIndexEnd - operation.LayerIndexStart);
             decimal ySteps = Math.Abs(operation.Y - 1m) / (operation.LayerIndexEnd - operation.LayerIndexStart);
@@ -356,7 +356,7 @@ namespace UVtools.Core
         public void Flip(OperationFlip operation, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Flipped", operation.LayerRangeCount);
+            progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
             Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
@@ -372,7 +372,7 @@ namespace UVtools.Core
         public void Rotate(OperationRotate operation, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Rotating", operation.LayerRangeCount);
+            progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
             Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
@@ -388,7 +388,7 @@ namespace UVtools.Core
         public void Solidify(OperationSolidify operation, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Solidifying", operation.LayerRangeCount);
+            progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
             Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
@@ -504,7 +504,7 @@ namespace UVtools.Core
         public void Morph(OperationMorph operation, BorderType borderType = BorderType.Default, MCvScalar borderValue = default, OperationProgress progress = null)
         {
             if (progress is null) progress = new OperationProgress();
-            progress.Reset("Morphing model", operation.LayerRangeCount);
+            progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
 
             var isFade = operation.FadeInOut;
             MutateGetVarsIterationFade(
@@ -1394,7 +1394,7 @@ namespace UVtools.Core
         public void Import(OperationLayerImport operation, OperationProgress progress = null)
         {
             if (progress is null) progress = new OperationProgress();
-            progress.Reset("Imported layers", (uint)operation.Count);
+            progress.Reset(operation.ProgressAction, (uint)operation.Count);
 
             var oldLayers = Layers;
             uint newLayerCount = operation.CalculateTotalLayers((uint) Layers.Length);
@@ -1460,7 +1460,7 @@ namespace UVtools.Core
             uint newLayerCount = Count + totalClones;
             Layers = new Layer[newLayerCount];
 
-            progress.Reset("Cloned layers", totalClones);
+            progress.Reset(operation.ProgressAction, totalClones);
 
             uint newLayerIndex = 0;
             for (uint layerIndex = 0; layerIndex < oldLayers.Length; layerIndex++)
@@ -1516,7 +1516,7 @@ namespace UVtools.Core
             if (progress is null)
                 progress = new OperationProgress(false);
 
-            progress.Reset("Removing layers", (uint) layersRemove.Count);
+            progress.Reset("removed layers", (uint) layersRemove.Count);
 
             var oldLayers = Layers;
             float layerHeight = SlicerFile.LayerHeight;
@@ -1560,7 +1560,7 @@ namespace UVtools.Core
         public void ReHeight(OperationLayerReHeight operation, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset($"Layer re-height from {SlicerFile.LayerHeight}mm to {operation.Item.LayerHeight}mm");
+            progress.Reset(operation.ProgressAction, operation.Item.LayerCount);
 
             var oldLayers = Layers;
 
@@ -1621,7 +1621,7 @@ namespace UVtools.Core
         public void ChangeResolution(OperationChangeResolution operation, OperationProgress progress)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Resolution", Count);
+            progress.Reset(operation.ProgressAction, Count);
 
             Parallel.For(0, Count, layerIndex =>
             {
@@ -1642,7 +1642,7 @@ namespace UVtools.Core
         public void Pattern(OperationPattern operation, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Pattern", operation.LayerRangeCount);
+            progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
 
             Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
             {

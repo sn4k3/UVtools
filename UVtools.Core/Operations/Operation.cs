@@ -51,6 +51,11 @@ namespace UVtools.Core.Operations
         public virtual string ProgressTitle => "Processing items";
 
         /// <summary>
+        /// Gets the progress action name
+        /// </summary>
+        public virtual string ProgressAction => Id;
+
+        /// <summary>
         /// Validates the operation
         /// </summary>
         /// <returns>null or empty if validates, or else, return a string with error message</returns>

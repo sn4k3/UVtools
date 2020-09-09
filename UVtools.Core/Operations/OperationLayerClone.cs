@@ -26,6 +26,8 @@ namespace UVtools.Core.Operations
         public override string ProgressTitle =>
             $"Cloning layers from {LayerIndexStart} to {LayerIndexEnd} times {Clones} clones";
 
+        public override string ProgressAction => "Cloned layers";
+
         public override StringTag Validate(params object[] parameters)
         {
             var sb = new StringBuilder();

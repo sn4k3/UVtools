@@ -25,11 +25,13 @@ namespace UVtools.Core.Operations
         public override string ProgressTitle =>
             $"Morphing layers from {LayerIndexStart} to {LayerIndexEnd}";
 
+        public override string ProgressAction => "Morphed layers";
+
         #endregion
 
         #region Properties
 
-        
+
         public static StringTag[] MorphOperations => new[]
         {
             new StringTag("Erode - Contracts the boundaries within the object", MorphOp.Erode),

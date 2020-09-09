@@ -22,6 +22,8 @@ namespace UVtools.Core.Operations
         public override string ProgressTitle =>
             $"Rotating layers {LayerIndexStart} to {LayerIndexEnd} at {AngleDegrees} degrees";
 
+        public override string ProgressAction => "Rotated layers";
+
         public decimal AngleDegrees { get; set; }
     }
 }
