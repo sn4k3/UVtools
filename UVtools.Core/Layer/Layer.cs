@@ -763,58 +763,37 @@ namespace UVtools.Core
             }
         }
 
-        public void MutateBlur(Size size = default, Point anchor = default, BorderType borderType = BorderType.Reflect101)
+        public void Blur(OperationBlur operation)
         {
-            if (size.IsEmpty) size = new Size(3, 3);
+            Size size = new Size((int) operation.Size, (int) operation.Size);
+            Point anchor = operation.Kernel.Anchor;
             if (anchor.IsEmpty) anchor = new Point(-1, -1);
+            //if (size.IsEmpty) size = new Size(3, 3);
+            //if (anchor.IsEmpty) anchor = new Point(-1, -1);
             using (Mat dst = LayerMat)
             {
-                CvInvoke.Blur(dst, dst, size, anchor, borderType);
-                LayerMat = dst;
-            }
-        }
-
-
-        public void MutatePyrDownUp(BorderType borderType = BorderType.Reflect101)
-        {
-            using (Mat dst = LayerMat)
-            {
-                CvInvoke.PyrDown(dst, dst, borderType);
-                CvInvoke.PyrUp(dst, dst, borderType);
-                LayerMat = dst;
-            }
-        }
-
-        public void MutateMedianBlur(int aperture = 1)
-        {
-            using (Mat dst = LayerMat)
-            {
-                CvInvoke.MedianBlur(dst, dst, aperture);
-                LayerMat = dst;
-            }
-        }
-
-        public void MutateGaussianBlur(Size size = default, int sigmaX = 0, int sigmaY = 0, BorderType borderType = BorderType.Reflect101)
-        {
-            if (size.IsEmpty) size = new Size(5, 5);
-
-            using (Mat dst = LayerMat)
-            {
-                CvInvoke.GaussianBlur(dst, dst, size, sigmaX, sigmaY, borderType);
-                LayerMat = dst;
-            }
-        }
-
-        public void MutateFilter2D(IInputArray kernel = null, Point anchor = default, BorderType borderType = BorderType.Reflect101)
-        {
-            if (anchor.IsEmpty) anchor = new Point(-1, -1);
-            if (ReferenceEquals(kernel, null))
-            {
-                kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
-            }
-            using (Mat dst = LayerMat)
-            {
-                CvInvoke.Filter2D(dst, dst, kernel, anchor, 0, borderType);
+                switch (operation.BlurOperation)
+                {
+                    case OperationBlur.BlurAlgorithm.Blur:
+                        CvInvoke.Blur(dst, dst, size, operation.Kernel.Anchor); 
+                        break;
+                    case OperationBlur.BlurAlgorithm.Pyramid:
+                        CvInvoke.PyrDown(dst, dst);
+                        CvInvoke.PyrUp(dst, dst);
+                        break;
+                    case OperationBlur.BlurAlgorithm.MedianBlur:
+                        CvInvoke.MedianBlur(dst, dst, (int) operation.Size);
+                        break;
+                    case OperationBlur.BlurAlgorithm.GaussianBlur:
+                        CvInvoke.GaussianBlur(dst, dst, size, 0);
+                        break;
+                    case OperationBlur.BlurAlgorithm.Filter2D:
+                        CvInvoke.Filter2D(dst, dst, operation.Kernel.Matrix, anchor);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+                
                 LayerMat = dst;
             }
         }

@@ -145,12 +145,6 @@ namespace UVtools.GUI.Forms
 
             content.PropertyChanged += ContentOnPropertyChanged;
         }
-
-        public FrmToolWindow(Mutation mutation, int layerIndex = -1) : this($"Mutate: {mutation.MenuName}", mutation.Description, mutation.ButtonOkText, true, layerIndex, true, true)
-        {
-        }
-
-
         #endregion
 
         #region Overrides

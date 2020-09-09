@@ -54,9 +54,10 @@ namespace UVtools.GUI
             new OperationMenuItem(new OperationMask(), Resources.mask_16x16),
             new OperationMenuItem(new OperationPixelDimming(), Resources.pixel_16x16),
             new OperationMenuItem(new OperationThreshold(), Resources.th_16x16),
-            new OperationMenuItem(new OperationChangeResolution(), Resources.resize_16x16),
+            new OperationMenuItem(new OperationBlur(), Resources.blur_16x16),
+            new OperationMenuItem(new OperationPattern(), Resources.pattern_16x16),
             new OperationMenuItem(new OperationLayerReHeight(), Resources.ladder_16x16),
-            new OperationMenuItem(new OperationPattern(), Resources.pattern_16x16)
+            new OperationMenuItem(new OperationChangeResolution(), Resources.resize_16x16),
         };
 
         public static readonly OperationMenuItem[] LayerActions = {
@@ -64,155 +65,6 @@ namespace UVtools.GUI
             new OperationMenuItem(new OperationLayerClone(), Resources.copy_16x16), 
             new OperationMenuItem(new OperationLayerRemove(), Resources.trash_16x16), 
         };
-
-        public static readonly Dictionary<LayerManager.Mutate, Mutation> Mutations =
-            new Dictionary<LayerManager.Mutate, Mutation>
-            {
-                /*{
-                    LayerManager.Mutate.Move, new Mutation(LayerManager.Mutate.Move, null, Resources.move_16x16,
-                        "Moves the entire print volume around the plate.\n" +
-                        "Note: Margins are in pixel values.",
-                        "Move"
-                    )
-                },*/
-                /*{
-                    LayerManager.Mutate.Resize, new Mutation(LayerManager.Mutate.Resize, null, Resources.crop_16x16,
-                        "Resizes layer images in a X and/or Y factor, starting from 100% value.\n" +
-                        "NOTE 1: Build volume bounds are not validated after operation, please ensure scaling stays inside your limits.\n" +
-                        "NOTE 2: X and Y are applied to original image, not to the rotated preview (If enabled).",
-                        "Resize"
-                    )
-                },*/
-                /*{
-                    LayerManager.Mutate.Flip, new Mutation(LayerManager.Mutate.Flip, null, Resources.flip_16x16,
-                        "Flips layer images vertically and/or horizontally.",
-                        "Flip"
-                    )
-                },*/
-                /*{
-                    LayerManager.Mutate.Rotate, new Mutation(LayerManager.Mutate.Rotate, null, Resources.refresh_16x16,
-                        "Rotate layer images in a certain degrees.",
-                        "Rotate"
-                    )
-                },*/
-                /*{
-                    LayerManager.Mutate.Solidify, new Mutation(LayerManager.Mutate.Solidify, null,
-                        Resources.square_solid_16x16,
-                        "Solidifies the selected layers, closes all inner holes.\n" +
-                        "NOTE: All open areas of the layer that are completely surrounded by pixels will be filled. Please ensure none of the holes in the layer are required before proceeding.",
-                        "Solidify",
-                        Resources.mutation_solidify
-                    )
-                },*/
-                /*{
-                    LayerManager.Mutate.Mask, new Mutation(LayerManager.Mutate.Mask, "Mask", Resources.mask_16x16,
-                        "Masks the LCD output image given a greyscale (0-255) pixel input image.\n" +
-                        "Useful to correct light uniformity, but a proper mask must be created first based on real measurements per printer.\n" +
-                        "NOTE 1: Masks should respect printer resolution or they will be resized to fit.\n" +
-                        "NOTE 2: Run only this tool after all repairs and other transformations.",
-                        "Mask"
-                    )
-                },*/
-                /*{
-                    LayerManager.Mutate.PixelDimming, new Mutation(LayerManager.Mutate.PixelDimming, "Pixel Dimming",
-                        Resources.chessboard_16x16,
-                        "Dims pixels in a chosen pattern over white pixels neighborhood. The selected pattern will be repeated over the image width and height as a mask. Benefits are:\n" +
-                        "1) Reduce layer expansion in big masses\n" +
-                        "2) Reduce cross layer exposure\n" +
-                        "3) Extend pixels life\n" +
-                        "NOTE: Run only this tool after all repairs and other transformations.",
-                        "Dim"
-                    )
-                },*/
-                /*{
-                    LayerManager.Mutate.Erode, new Mutation(LayerManager.Mutate.Erode, null,
-                        Resources.compress_alt_16x16,
-                        "The basic idea of erosion is just like soil erosion only, it erodes away the boundaries of foreground object (Always try to keep foreground in white). " +
-                        "So what happens is that, all the pixels near boundary will be discarded depending upon the size of kernel. So the thickness or size of the foreground object decreases or simply white region decreases in the image. It is useful for removing small white noises, detach two connected objects, etc.",
-                        "Errode",
-                        Resources.mutation_erosion
-                    )
-                },
-                {
-                    LayerManager.Mutate.Dilate, new Mutation(LayerManager.Mutate.Dilate, null,
-                        Resources.expand_alt_16x16,
-                        "It is just opposite of erosion. Here, a pixel element is '1' if at least one pixel under the kernel is '1'. So it increases the white region in the image or size of foreground object increases. Normally, in cases like noise removal, erosion is followed by dilation. Because, erosion removes white noises, but it also shrinks our object. So we dilate it. Since noise is gone, they won't come back, but our object area increases. It is also useful in joining broken parts of an object.",
-                        "Dilate",
-                        Resources.mutation_dilation
-                    )
-                },
-                {
-                    LayerManager.Mutate.Opening, new Mutation(LayerManager.Mutate.Opening, "Noise Removal", null,
-                        "Noise Removal/Opening is just another name of erosion followed by dilation. It is useful in removing noise.",
-                        "Remove Noise",
-                        Resources.mutation_opening
-                    )
-                },
-                {
-                    LayerManager.Mutate.Closing, new Mutation(LayerManager.Mutate.Closing, "Gap Closing",
-                        Resources.bowling_ball_16x16,
-                        "Gap Closing is reverse of Opening, Dilation followed by Erosion. It is useful in closing small holes inside the foreground objects, or small black points on the object.",
-                        "Close gaps",
-                        Resources.mutation_closing
-                    )
-                },
-                {
-                    LayerManager.Mutate.Gradient, new Mutation(LayerManager.Mutate.Gradient, null, Resources.burn_16x16,
-                        "It's the difference between dilation and erosion of an image.",
-                        "Gradient",
-                        Resources.mutation_gradient
-                    )
-                },*/
-                /*{Mutation.Mutates.TopHat, new Mutation(Mutation.Mutates.TopHat,
-                    "It's the difference between input image and Opening of the image.",
-                    Properties.Resources.mutation_tophat
-                )},
-                {Mutation.Mutates.BlackHat, new Mutation(Mutation.Mutates.BlackHat,
-                    "It's the difference between the closing of the input image and input image.",
-                    Properties.Resources.mutation_blackhat
-                )},*/
-                /*{Mutation.Mutates.HitMiss, new Mutation(Mutation.Mutates.HitMiss,
-                    "The Hit-or-Miss transformation is useful to find patterns in binary images. In particular, it finds those pixels whose neighbourhood matches the shape of a first structuring element B1 while not matching the shape of a second structuring element B2 at the same time.",
-                    null
-                )},*/
-                /*{
-                    LayerManager.Mutate.ThresholdPixels, new Mutation(LayerManager.Mutate.ThresholdPixels,
-                        "Threshold Pixels", Resources.th_16x16,
-                        "Manipulates pixels values giving a threshold, maximum and a operation type.\n" +
-                        "If a pixel brightness is less or equal to the threshold value, set this pixel to 0, otherwise set to defined maximum value.\n" +
-                        "More info: https://docs.opencv.org/master/d7/d4d/tutorial_py_thresholding.html",
-                        "Threshold"
-                    )
-                },*/
-                {
-                    LayerManager.Mutate.Blur, new Mutation(LayerManager.Mutate.Blur, "Blur", Resources.blur_16x16,
-                        "Blur and averaging images with various low pass filters\n" +
-                        "Note: Printer must support AntiAliasing on firmware to able to use this function\n" +
-                        "More information: https://docs.opencv.org/master/d4/d13/tutorial_py_filtering.html ",
-                        "Blur"
-                    )
-                },
-                /*{LayerManager.Mutate.PyrDownUp, new Mutation(LayerManager.Mutate.PyrDownUp, "Big Blur", Resources.blur_16x16,
-                    "Performs down/up-sampling step of Gaussian pyramid decomposition.\n" +
-                    "First down-samples the image by rejecting even rows and columns, after performs up-sampling step of Gaussian pyramid decomposition.\n" +
-                    "This operation will add a big blur to edges, creating a over-exaggerated anti-aliasing and as result can make edges smoother\n" +
-                    "Note: Printer must support AntiAliasing on firmware to able to use this function."
-                )},
-                {LayerManager.Mutate.SmoothMedian, new Mutation(LayerManager.Mutate.SmoothMedian, "Smooth Median", Resources.blur_16x16,
-                    "Each pixel becomes the median of its surrounding pixels.\n" +
-                    "A good way to remove noise and can be used to reconstruct or intensify the antialiasing level.\n" +
-                    "Note 1: Printer must support AntiAliasing on firmware to able to use this function.\n" +
-                    "Note 2: Iterations must be a odd number."
-                )},
-                {LayerManager.Mutate.SmoothGaussian, new Mutation(LayerManager.Mutate.SmoothGaussian,  "Smooth Gaussian", Resources.blur_16x16,
-                    "Each pixel is a sum of fractions of each pixel in its neighborhood\n" +
-                    "A good way to remove noise and can be used to reconstruct or intensify the antialiasing level.\n" +
-                    "Very fast, but does not preserve sharp edges well.\n" +
-                    "Note 1: Printer must support AntiAliasing on firmware to able to use this function.\n" +
-                    "Note 2: Iterations must be a odd number."
-                )},*/
-            };
-
 
         public FrmLoading FrmLoading { get; }
 
@@ -344,19 +196,6 @@ namespace UVtools.GUI
                 item.Click += EventClick;
                 btnLayerImageActions.DropDownItems.Add(item);
             }
-
-            foreach (LayerManager.Mutate mutate in (LayerManager.Mutate[]) Enum.GetValues(typeof(LayerManager.Mutate)))
-            {
-                if (!Mutations.ContainsKey(mutate)) continue;
-                var item = new ToolStripMenuItem(Mutations[mutate].MenuName)
-                {
-                    ToolTipText = Mutations[mutate].Description, Tag = mutate, AutoToolTip = true,
-                    Image = Mutations[mutate].MenuImage
-                };
-                item.Click += EventClick;
-                menuMutate.DropDownItems.Add(item);
-            }
-
 
             foreach (PixelDrawing.BrushShapeType brushShape in (PixelDrawing.BrushShapeType[]) Enum.GetValues(
                 typeof(PixelDrawing.BrushShapeType)))
@@ -894,13 +733,6 @@ namespace UVtools.GUI
 
                         return;
 
-                    }
-
-                    if (menuItem.Tag.GetType() == typeof(LayerManager.Mutate))
-                    {
-                        LayerManager.Mutate mutate = (LayerManager.Mutate) menuItem.Tag;
-                        MutateLayers(mutate);
-                        return;
                     }
                 }
 
@@ -1981,10 +1813,6 @@ namespace UVtools.GUI
             menuFileConvert.DropDownItems.Clear();
 
             menuEdit.DropDownItems.Clear();
-            foreach (ToolStripItem item in menuMutate.DropDownItems)
-            {
-                item.Enabled = false;
-            }
 
             foreach (ToolStripItem item in menuTools.DropDownItems)
             {
@@ -2036,7 +1864,6 @@ namespace UVtools.GUI
                                     tbLayer.Enabled =
                                         //pbLayers.Enabled = 
                                         menuEdit.Enabled =
-                                            menuMutate.Enabled =
                                                 menuTools.Enabled =
                                                     btnFirstLayer.Enabled =
                                                         btnNextLayer.Enabled =
@@ -2210,11 +2037,6 @@ namespace UVtools.GUI
                 AdjustThumbnailSplitter();
             }
 
-            foreach (ToolStripItem item in menuMutate.DropDownItems)
-            {
-                item.Enabled = true;
-            }
-
             foreach (ToolStripItem item in menuTools.DropDownItems)
             {
                 item.Enabled = true;
@@ -2245,7 +2067,6 @@ namespace UVtools.GUI
                         tbLayer.Enabled =
                             //pbLayers.Enabled =
                             menuEdit.Enabled =
-                                menuMutate.Enabled =
                                     menuTools.Enabled =
 
                                         tsIssuesRepair.Enabled =
@@ -3640,258 +3461,6 @@ namespace UVtools.GUI
                 btnPixelHistoryApply.Enabled = PixelHistory.Count > 0;
         }
 
-
-
-        public void MutateLayers(LayerManager.Mutate mutator)
-        {
-            uint layerStart = 0;
-            uint layerEnd = 0;
-            uint iterationsStart = 0;
-            uint iterationsEnd = 0;
-
-            Matrix<byte> kernel = null;
-            Point kernelAnchor = Point.Empty;
-
-
-            FrmMutationBlur.BlurAlgorithm blurAlgorithm = FrmMutationBlur.BlurAlgorithm.Blur;
-
-            switch (mutator)
-            {
-                /*case LayerManager.Mutate.Flip:
-                    using (FrmMutationOneComboBox inputBox = new FrmMutationOneComboBox(Mutations[mutator]))
-                    {
-                        if (inputBox.ShowDialog() != DialogResult.OK) return;
-                        layerStart = inputBox.LayerRangeStart;
-                        layerEnd = inputBox.LayerRangeEnd;
-                        iterationsStart = (uint) inputBox.SelectedValue;
-                        fade = inputBox.MakeCopy;
-                    }
-
-                    break;*/
-                /*case LayerManager.Mutate.Rotate:
-                    using (FrmMutationOneNumericalInput inputBox = new FrmMutationOneNumericalInput(Mutations[mutator]))
-                    {
-                        if (inputBox.ShowDialog() != DialogResult.OK) return;
-                        layerStart = inputBox.LayerRangeStart;
-                        layerEnd = inputBox.LayerRangeEnd;
-                        x = (double) inputBox.Value;
-                    }
-
-                    break;*/
-                /*case LayerManager.Mutate.Solidify:
-                    using (FrmToolWindow inputBox = new FrmToolWindow(Mutations[mutator]))
-                    {
-                        if (inputBox.ShowDialog() != DialogResult.OK) return;
-                        layerStart = inputBox.LayerRangeStart;
-                        layerEnd = inputBox.LayerRangeEnd;
-                    }
-
-                    break;*/
-                /*case LayerManager.Mutate.Mask:
-                    using (FrmMutationMask inputBox = new FrmMutationMask(Mutations[mutator]))
-                    {
-                        if (inputBox.ShowDialog() != DialogResult.OK) return;
-                        layerStart = inputBox.LayerRangeStart;
-                        layerEnd = inputBox.LayerRangeEnd;
-                        mat = inputBox.Mask;
-                    }
-
-                    break;*/
-                /*case LayerManager.Mutate.PixelDimming:
-                    using (FrmMutationPixelDimming inputBox = new FrmMutationPixelDimming(Mutations[mutator]))
-                    {
-                        if (inputBox.ShowDialog() != DialogResult.OK) return;
-                        layerStart = inputBox.LayerRangeStart;
-                        layerEnd = inputBox.LayerRangeEnd;
-                        iterationsStart = inputBox.BorderSize;
-                        fade = inputBox.DimsOnlyBorders;
-                        evenPattern = inputBox.EvenPattern;
-                        oddPattern = inputBox.OddPattern;
-                    }
-            
-                    break;*/
-                /*case LayerManager.Mutate.ThresholdPixels:
-                    using (FrmMutationThreshold inputBox = new FrmMutationThreshold(Mutations[mutator]))
-                    {
-                        if (inputBox.ShowDialog() != DialogResult.OK) return;
-                        layerStart = inputBox.LayerRangeStart;
-                        layerEnd = inputBox.LayerRangeEnd;
-                        iterationsStart = inputBox.Threshold;
-                        iterationsEnd = inputBox.Maximum;
-                        thresholdType = inputBox.ThresholdTypeValue;
-                    }
-
-                    break;
-                case LayerManager.Mutate.Blur:
-                    using (FrmMutationBlur inputBox = new FrmMutationBlur(Mutations[mutator]))
-                    {
-                        if (inputBox.ShowDialog() != DialogResult.OK) return;
-                        iterationsStart = inputBox.KSize;
-                        if (iterationsStart == 0) return;
-                        layerStart = inputBox.LayerRangeStart;
-                        layerEnd = inputBox.LayerRangeEnd;
-
-                        blurAlgorithm = inputBox.BlurAlgorithmType;
-
-                        if (blurAlgorithm == FrmMutationBlur.BlurAlgorithm.Filter2D)
-                        {
-                            kernel = inputBox.KernelMatrix;
-                            kernelAnchor = inputBox.KernelAnchor;
-                        }
-                    }
-
-                    break;*/
-            }
-
-            DisableGUI();
-            FrmLoading.SetDescription($"Mutating - {Mutations[mutator].MenuName}");
-            var progress = FrmLoading.RestartProgress();
-
-            var task = Task.Factory.StartNew(() =>
-            {
-                try
-                {
-                    switch (mutator)
-                    {
-                        /*case LayerManager.Mutate.Flip:
-                            FlipType flipType = FlipType.Horizontal;
-                            switch (iterationsStart)
-                            {
-                                case 0:
-                                    flipType = FlipType.Horizontal;
-                                    break;
-                                case 1:
-                                    flipType = FlipType.Vertical;
-                                    break;
-                                case 2:
-                                    flipType = FlipType.Horizontal | FlipType.Vertical;
-                                    break;
-                            }
-
-                            SlicerFile.LayerManager.Flip(layerStart, layerEnd, flipType, fade, progress);
-                            break;*/
-                        /*case LayerManager.Mutate.Rotate:
-                            SlicerFile.LayerManager.Rotate(layerStart, layerEnd, x, Inter.Linear, progress);
-                            break;*/
-                        /*case LayerManager.Mutate.Solidify:
-                            SlicerFile.LayerManager.Solidify(layerStart, layerEnd, progress);
-                            break;*/
-                        /*case LayerManager.Mutate.Mask:
-                            SlicerFile.LayerManager.Mask(layerStart, layerEnd, mat, progress);
-                            mat?.Dispose();
-                            break;*/
-                        /*case LayerManager.Mutate.PixelDimming:
-                            SlicerFile.LayerManager.PixelDimming(layerStart, layerEnd, evenPattern, oddPattern,
-                                (ushort) iterationsStart, fade, progress);
-                            break;*/
-                        /*case LayerManager.Mutate.Erode:
-                            SlicerFile.LayerManager.MutateErode(layerStart, layerEnd, (int) iterationsStart,
-                                (int) iterationsEnd, fade, progress, kernel, kernelAnchor);
-                            break;
-                        case LayerManager.Mutate.Dilate:
-                            SlicerFile.LayerManager.MutateDilate(layerStart, layerEnd, (int) iterationsStart,
-                                (int) iterationsEnd, fade, progress, kernel, kernelAnchor);
-                            break;
-                        case LayerManager.Mutate.Opening:
-                            SlicerFile.LayerManager.MutateOpen(layerStart, layerEnd, (int) iterationsStart,
-                                (int) iterationsEnd, fade, progress, kernel, kernelAnchor);
-                            break;
-                        case LayerManager.Mutate.Closing:
-                            SlicerFile.LayerManager.MutateClose(layerStart, layerEnd, (int) iterationsStart,
-                                (int) iterationsEnd, fade, progress, kernel, kernelAnchor);
-                            break;
-                        case LayerManager.Mutate.Gradient:
-                            SlicerFile.LayerManager.MutateGradient(layerStart, layerEnd, (int) iterationsStart,
-                                (int) iterationsEnd, fade, progress, kernel, kernelAnchor);
-                            break;*/
-                        /*case Mutation.Mutates.TopHat:
-                            kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(9, 9),
-                                new Point(-1, -1));
-                            CvInvoke.MorphologyEx(image, image, MorphOp.Tophat, kernel, new Point(-1, -1),
-                                (int) iterations, BorderType.Default, new MCvScalar());
-                            break;
-                        case Mutation.Mutates.BlackHat:
-                            kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(9, 9),
-                                new Point(-1, -1));
-                            CvInvoke.MorphologyEx(image, image, MorphOp.Blackhat, kernel, new Point(-1, -1),
-                                (int) iterations, BorderType.Default, new MCvScalar());
-                            break;
-                        case Mutation.Mutates.HitMiss:
-                            CvInvoke.MorphologyEx(image, image, MorphOp.HitMiss, Program.KernelFindIsolated,
-                                new Point(-1, -1), (int) iterations, BorderType.Default, new MCvScalar());
-                            break;*/
-                        /*/case LayerManager.Mutate.ThresholdPixels:
-                            SlicerFile.LayerManager.MutateThresholdPixels(layerStart, layerEnd, (byte) iterationsStart,
-                                (byte) iterationsEnd, thresholdType, progress);
-                            break;*/
-                        case LayerManager.Mutate.Blur:
-                            switch (blurAlgorithm)
-                            {
-                                case FrmMutationBlur.BlurAlgorithm.Blur:
-                                    SlicerFile.LayerManager.MutateBlur(layerStart, layerEnd,
-                                        new Size((int) iterationsStart, (int) iterationsStart), kernelAnchor,
-                                        BorderType.Reflect101, progress);
-                                    break;
-                                case FrmMutationBlur.BlurAlgorithm.Pyramid:
-                                    SlicerFile.LayerManager.MutatePyrDownUp(layerStart, layerEnd, BorderType.Default,
-                                        progress);
-                                    break;
-                                case FrmMutationBlur.BlurAlgorithm.MedianBlur:
-                                    SlicerFile.LayerManager.MutateMedianBlur(layerStart, layerEnd,
-                                        (int) iterationsStart, progress);
-                                    break;
-                                case FrmMutationBlur.BlurAlgorithm.GaussianBlur:
-                                    SlicerFile.LayerManager.MutateGaussianBlur(layerStart, layerEnd,
-                                        new Size((int) iterationsStart, (int) iterationsStart), 0, 0,
-                                        BorderType.Reflect101, progress);
-                                    break;
-                                case FrmMutationBlur.BlurAlgorithm.Filter2D:
-                                    SlicerFile.LayerManager.MutateFilter2D(layerStart, layerEnd, kernel, kernelAnchor,
-                                        BorderType.Reflect101, progress);
-                                    break;
-                                default:
-                                    throw new ArgumentOutOfRangeException();
-                            }
-
-                            break;
-                        /*case LayerManager.Mutate.PyrDownUp:
-                            SlicerFile.LayerManager.MutatePyrDownUp(layerStart, layerEnd, BorderType.Default, progress);
-                            break;
-                        case LayerManager.Mutate.SmoothMedian:
-                            SlicerFile.LayerManager.MutateMedianBlur(layerStart, layerEnd, (int)iterationsStart, progress);
-                            break;
-                        case LayerManager.Mutate.SmoothGaussian:
-                            SlicerFile.LayerManager.MutateGaussianBlur(layerStart, layerEnd, new Size((int) iterationsStart, (int) iterationsStart), 0,0, BorderType.Default, progress);
-                            break;*/
-                    }
-
-                }
-                catch (OperationCanceledException)
-                {
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"{ex.Message}\nPlease try different values for the mutation", "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                finally
-                {
-                    Invoke((MethodInvoker) delegate
-                    {
-                        // Running on the UI thread
-                        EnableGUI(true);
-                    });
-                }
-            });
-
-            FrmLoading.ShowDialog();
-
-            ShowLayer();
-
-            menuFileSave.Enabled =
-                menuFileSaveAs.Enabled = true;
-        }
-
         private void UpdateIssuesInfo()
         {
             if (TotalIssues == 0)
@@ -4521,6 +4090,9 @@ namespace UVtools.GUI
                             break;
                         case OperationThreshold operation:
                             SlicerFile.LayerManager.ThresholdPixels(operation, FrmLoading.RestartProgress());
+                            break;
+                        case OperationBlur operation:
+                            SlicerFile.LayerManager.Blur(operation, FrmLoading.RestartProgress());
                             break;
 
                         case OperationChangeResolution operation:

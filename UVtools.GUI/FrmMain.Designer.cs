@@ -48,7 +48,6 @@ namespace UVtools.GUI
             this.toolStripSeparator15 = new System.Windows.Forms.ToolStripSeparator();
             this.menuFileExit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuEdit = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuMutate = new System.Windows.Forms.ToolStripMenuItem();
             this.menuTools = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsRepairLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -324,7 +323,6 @@ namespace UVtools.GUI
             this.menu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.menuEdit,
-            this.menuMutate,
             this.menuTools,
             this.helpToolStripMenuItem,
             this.viewToolStripMenuItem,
@@ -471,13 +469,6 @@ namespace UVtools.GUI
             this.menuEdit.Name = "menuEdit";
             this.menuEdit.Size = new System.Drawing.Size(39, 20);
             this.menuEdit.Text = "&Edit";
-            // 
-            // menuMutate
-            // 
-            this.menuMutate.Enabled = false;
-            this.menuMutate.Name = "menuMutate";
-            this.menuMutate.Size = new System.Drawing.Size(57, 20);
-            this.menuMutate.Text = "&Mutate";
             // 
             // menuTools
             // 
@@ -2990,7 +2981,6 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
         private System.Windows.Forms.ToolStripButton btnLayerImagePixelEdit;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
-        private System.Windows.Forms.ToolStripMenuItem menuMutate;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
         private System.Windows.Forms.ToolStripMenuItem menuHelpInstallPrinters;
         private System.Windows.Forms.TabPage tabPageIssues;

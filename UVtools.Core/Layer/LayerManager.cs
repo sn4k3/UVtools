@@ -28,32 +28,6 @@ namespace UVtools.Core
 {
     public class LayerManager : IEnumerable<Layer>
     {
-        #region Enums
-        public enum Mutate : byte
-        {
-            Move,
-            Resize,
-            Flip,
-            Rotate,
-            Solidify,
-            Mask,
-            PixelDimming,
-            Erode,
-            Dilate,
-            Opening,
-            Closing,
-            Gradient,
-            TopHat,
-            BlackHat,
-            HitMiss,
-            ThresholdPixels,
-            Blur
-            /*PyrDownUp,
-            SmoothMedian,
-            SmoothGaussian,*/
-        }
-        #endregion
-
         #region Properties
         public FileFormat SlicerFile { get; private set; }
 
@@ -698,78 +672,15 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutateBlur(uint startLayerIndex, uint endLayerIndex, Size size, Point kernelAnchor = default, BorderType borderType = BorderType.Reflect101, OperationProgress progress = null)
-        {
-            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Box Blur", endLayerIndex - startLayerIndex + 1);
-            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
-            {
-                if (progress.Token.IsCancellationRequested) return;
-                this[layerIndex].MutateBlur(size, kernelAnchor, borderType);
-                lock (progress.Mutex)
-                {
-                    progress++;
-                }
-            });
-            progress.Token.ThrowIfCancellationRequested();
-        }
 
-        public void MutatePyrDownUp(uint startLayerIndex, uint endLayerIndex, BorderType borderType = BorderType.Reflect101, OperationProgress progress = null)
+        public void Blur(OperationBlur operation, OperationProgress progress)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("PryDownUp", endLayerIndex - startLayerIndex+1);
-            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
+            Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
-                this[layerIndex].MutatePyrDownUp(borderType);
-                lock (progress.Mutex)
-                {
-                    progress++;
-                }
-            });
-            progress.Token.ThrowIfCancellationRequested();
-        }
-
-        public void MutateMedianBlur(uint startLayerIndex, uint endLayerIndex, int aperture = 1, OperationProgress progress = null)
-        {
-            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Bluring", endLayerIndex - startLayerIndex+1);
-            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
-            {
-                if (progress.Token.IsCancellationRequested) return;
-                this[layerIndex].MutateMedianBlur(aperture);
-                lock (progress.Mutex)
-                {
-                    progress++;
-                }
-            });
-            progress.Token.ThrowIfCancellationRequested();
-        }
-
-        public void MutateGaussianBlur(uint startLayerIndex, uint endLayerIndex, Size size = default, int sigmaX = 0, int sigmaY = 0, BorderType borderType = BorderType.Reflect101, OperationProgress progress = null)
-        {
-            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Bluring", endLayerIndex - startLayerIndex+1);
-            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
-            {
-                if (progress.Token.IsCancellationRequested) return;
-                this[layerIndex].MutateGaussianBlur(size, sigmaX, sigmaY, borderType);
-                lock (progress.Mutex)
-                {
-                    progress++;
-                }
-            });
-            progress.Token.ThrowIfCancellationRequested();
-        }
-
-        public void MutateFilter2D(uint startLayerIndex, uint endLayerIndex, IInputArray kernel = null, Point kernelAnchor = default, BorderType borderType = BorderType.Reflect101, OperationProgress progress = null)
-        {
-            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Filter 2D", endLayerIndex - startLayerIndex + 1);
-            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
-            {
-                if (progress.Token.IsCancellationRequested) return;
-                this[layerIndex].MutateFilter2D(kernel, kernelAnchor, borderType);
+                this[layerIndex].Blur(operation);
                 lock (progress.Mutex)
                 {
                     progress++;
@@ -1861,7 +1772,5 @@ namespace UVtools.Core
 
 
         #endregion
-
-        
     }
 }
