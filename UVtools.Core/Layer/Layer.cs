@@ -571,7 +571,9 @@ namespace UVtools.Core
             }
         }
 
-        public void MutateMask(Mat mask)
+        public void Mask(OperationMask mask) => Mask(mask.Mask);
+
+        public void Mask(Mat mask)
         {
             using (var mat = LayerMat)
             {

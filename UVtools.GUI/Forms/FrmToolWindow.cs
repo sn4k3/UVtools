@@ -140,6 +140,7 @@ namespace UVtools.GUI.Forms
             //content.Dock = DockStyle.Fill;
             btnResetDefaults.Visible = content.ButtonResetDefaultsVisible;
             btnOk.Enabled = content.ButtonOkEnabled;
+            //content.AutoSize = true;
             Content = content;
 
             content.PropertyChanged += ContentOnPropertyChanged;

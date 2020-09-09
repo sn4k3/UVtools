@@ -401,15 +401,15 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
         }
 
-        public void MutateMask(uint startLayerIndex, uint endLayerIndex, Mat mask, OperationProgress progress = null)
+        public void Mask(OperationMask operation, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Masking pixels", endLayerIndex - startLayerIndex + 1);
+            progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
 
-            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
-                this[layerIndex].MutateMask(mask);
+                this[layerIndex].Mask(operation);
                 lock (progress.Mutex)
                 {
                     progress++;

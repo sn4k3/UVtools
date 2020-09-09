@@ -51,6 +51,7 @@ namespace UVtools.GUI
             new OperationMenuItem(new OperationRotate(), Resources.Rotate_16x16),
             new OperationMenuItem(new OperationSolidify(), Resources.square_solid_16x16),
             new OperationMenuItem(new OperationMorph(), Resources.Geometry_16x16),
+            new OperationMenuItem(new OperationMask(), Resources.mask_16x16),
             new OperationMenuItem(new OperationChangeResolution(), Resources.resize_16x16),
             new OperationMenuItem(new OperationLayerReHeight(), Resources.ladder_16x16),
             new OperationMenuItem(new OperationPattern(), Resources.pattern_16x16)
@@ -101,7 +102,7 @@ namespace UVtools.GUI
                         Resources.mutation_solidify
                     )
                 },*/
-                {
+                /*{
                     LayerManager.Mutate.Mask, new Mutation(LayerManager.Mutate.Mask, "Mask", Resources.mask_16x16,
                         "Masks the LCD output image given a greyscale (0-255) pixel input image.\n" +
                         "Useful to correct light uniformity, but a proper mask must be created first based on real measurements per printer.\n" +
@@ -109,7 +110,7 @@ namespace UVtools.GUI
                         "NOTE 2: Run only this tool after all repairs and other transformations.",
                         "Mask"
                     )
-                },
+                },*/
                 {
                     LayerManager.Mutate.PixelDimming, new Mutation(LayerManager.Mutate.PixelDimming, "Pixel Dimming",
                         Resources.chessboard_16x16,
@@ -3652,10 +3653,6 @@ namespace UVtools.GUI
 
             ThresholdType thresholdType = ThresholdType.Binary;
 
-            double x = 0;
-
-            Mat mat = null;
-
             Matrix<byte> evenPattern = null;
             Matrix<byte> oddPattern = null;
 
@@ -3693,7 +3690,7 @@ namespace UVtools.GUI
                     }
 
                     break;*/
-                case LayerManager.Mutate.Mask:
+                /*case LayerManager.Mutate.Mask:
                     using (FrmMutationMask inputBox = new FrmMutationMask(Mutations[mutator]))
                     {
                         if (inputBox.ShowDialog() != DialogResult.OK) return;
@@ -3702,7 +3699,7 @@ namespace UVtools.GUI
                         mat = inputBox.Mask;
                     }
 
-                    break;
+                    break;*/
                 case LayerManager.Mutate.PixelDimming:
                     using (FrmMutationPixelDimming inputBox = new FrmMutationPixelDimming(Mutations[mutator]))
                     {
@@ -3782,10 +3779,10 @@ namespace UVtools.GUI
                         /*case LayerManager.Mutate.Solidify:
                             SlicerFile.LayerManager.Solidify(layerStart, layerEnd, progress);
                             break;*/
-                        case LayerManager.Mutate.Mask:
-                            SlicerFile.LayerManager.MutateMask(layerStart, layerEnd, mat, progress);
+                        /*case LayerManager.Mutate.Mask:
+                            SlicerFile.LayerManager.Mask(layerStart, layerEnd, mat, progress);
                             mat?.Dispose();
-                            break;
+                            break;*/
                         case LayerManager.Mutate.PixelDimming:
                             SlicerFile.LayerManager.MutatePixelDimming(layerStart, layerEnd, evenPattern, oddPattern,
                                 (ushort) iterationsStart, fade, progress);
@@ -4519,6 +4516,10 @@ namespace UVtools.GUI
                         case OperationMorph operation:
                             SlicerFile.LayerManager.Morph(operation, BorderType.Default, new MCvScalar(), FrmLoading.RestartProgress());
                             break;
+                        case OperationMask operation:
+                            SlicerFile.LayerManager.Mask(operation, FrmLoading.RestartProgress());
+                            break;
+
                         case OperationChangeResolution operation:
                             SlicerFile.LayerManager.ChangeResolution(operation, FrmLoading.RestartProgress(false));
                             break;

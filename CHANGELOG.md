@@ -30,6 +30,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Fix) Tool - Change resolution: Confirmation text was set to remove layers
 * (Fix) Fade iteration now working as expected on some mutators
 * (Fix) Pattern: When select big margins and cols/rows it triggers an error because value hits the maximum variable size
+* (Fix) Mask: A crash when check "Invert" when mask is not loaded
 * (Fix) Some text and phrases
 
 ## 04/08/2020 - v0.7.0.0
