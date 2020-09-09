@@ -837,31 +837,24 @@ namespace UVtools.Core
             }
         }
 
-        public void ToolPattern(OperationPattern settings)
+        public void Pattern(OperationPattern operation)
         {
             using (var layer = LayerMat)
+            using (var layerRoi = new Mat(layer, operation.SrcRoi))
+            using (var dstLayer = layer.CloneBlank())
             {
-                using (var layerRoi = new Mat(layer, settings.SrcRoi))
+                for (ushort col = 0; col < operation.Cols; col++)
+                for (ushort row = 0; row < operation.Rows; row++)
                 {
-                    using (var dstLayer = layer.CloneBlank())
+                    using (var dstRoi = new Mat(dstLayer, operation.GetRoi(col, row)))
                     {
-                        for (ushort col = 0; col < settings.Cols; col++)
-                        {
-                            for (ushort row = 0; row < settings.Rows; row++)
-                            {
-                                using (var dstRoi = new Mat(dstLayer, settings.GetRoi(col, row)))
-                                {
-                                    layerRoi.CopyTo(dstRoi);
-                                }
-                            }
-                        }
-
-                        LayerMat = dstLayer;
+                        layerRoi.CopyTo(dstRoi);
                     }
                 }
+
+                LayerMat = dstLayer;
             }
         }
-
         public Layer Clone()
         {
             return new Layer(Index, CompressedBytes, Filename, ParentLayerManager)

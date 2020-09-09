@@ -1644,16 +1644,16 @@ namespace UVtools.Core
             SlicerFile.ResolutionY = operation.NewResolutionY;
         }
 
-        public void ToolPattern(uint startLayerIndex, uint endLayerIndex, OperationPattern settings, OperationProgress progress = null)
+        public void Pattern(OperationPattern operation, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Pattern", endLayerIndex - startLayerIndex + 1);
+            progress.Reset("Pattern", operation.LayerRangeCount);
 
-            Parallel.For(startLayerIndex, endLayerIndex + 1, layerIndex =>
+            Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 
-                this[layerIndex].ToolPattern(settings);
+                this[layerIndex].Pattern(operation);
 
                 lock (progress.Mutex)
                 {
@@ -1665,8 +1665,8 @@ namespace UVtools.Core
 
             progress.Token.ThrowIfCancellationRequested();
 
-            if (settings.Anchor == Anchor.None) return;
-            MutateMove(startLayerIndex, endLayerIndex, new OperationMove(BoundingRectangle, 0, 0, settings.Anchor), progress);
+            if (operation.Anchor == Anchor.None) return;
+            MutateMove(operation.LayerIndexStart, operation.LayerIndexEnd, new OperationMove(BoundingRectangle, 0, 0, operation.Anchor), progress);
 
         }
 

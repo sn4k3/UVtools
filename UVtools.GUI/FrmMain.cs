@@ -47,8 +47,9 @@ namespace UVtools.GUI
         public static readonly OperationMenuItem[] MenuTools = {
             new OperationMenuItem(new OperationSolidify(), Resources.square_solid_16x16),
             new OperationMenuItem(new OperationMorphModel(), Resources.Geometry_16x16),
+            new OperationMenuItem(new OperationChangeResolution(), Resources.resize_16x16),
             new OperationMenuItem(new OperationLayerReHeight(), Resources.ladder_16x16),
-            new OperationMenuItem(new OperationChangeResolution(), Resources.resize_16x16)
+            new OperationMenuItem(new OperationPattern(), Resources.pattern_16x16)
         };
 
         public static readonly OperationMenuItem[] LayerActions = {
@@ -986,64 +987,6 @@ namespace UVtools.GUI
 
                     menuFileSave.Enabled =
                         menuFileSaveAs.Enabled = true;
-                    return;
-                }
-
-                if (ReferenceEquals(menuItem, menuToolsPattern))
-                {
-                    OperationPattern operation = new OperationPattern(SlicerFile.LayerManager.BoundingRectangle,
-                        (uint) ActualLayerImage.Width, (uint) ActualLayerImage.Height);
-
-                    if (operation.MaxRows < 2 && operation.MaxCols < 2)
-                    {
-                        MessageBox.Show("The available free volume is not enough to pattern this object.\n" +
-                                        "To run this tool the free space must allow at least 1 copy.",
-                            "Unable to pattern", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-
-                    using (var frm = new FrmToolPattern(operation))
-                    {
-                        if (frm.ShowDialog() != DialogResult.OK) return;
-
-                        DisableGUI();
-                        FrmLoading.SetDescription($"Pattern {frm.OperationPattern.Cols} x {frm.OperationPattern.Rows}");
-
-                        var task = Task.Factory.StartNew(() =>
-                        {
-                            try
-                            {
-                                SlicerFile.LayerManager.ToolPattern(frm.LayerRangeStart, frm.LayerRangeEnd,
-                                    frm.OperationPattern, FrmLoading.RestartProgress());
-                            }
-                            catch (OperationCanceledException)
-                            {
-
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            }
-                            finally
-                            {
-                                Invoke((MethodInvoker) delegate
-                                {
-                                    // Running on the UI thread
-                                    EnableGUI(true);
-                                });
-                            }
-                        });
-
-                        var loadingResult = FrmLoading.ShowDialog();
-
-                        ShowLayer();
-
-                        menuFileSave.Enabled =
-                            menuFileSaveAs.Enabled = true;
-
-
-                    }
-
                     return;
                 }
 
@@ -4602,18 +4545,23 @@ namespace UVtools.GUI
                 {
                     switch (baseOperation)
                     {
+                        // Tools
                         case OperationSolidify operation:
                             SlicerFile.LayerManager.Solidify(operation, FrmLoading.RestartProgress());
                             break;
                         case OperationMorphModel operation:
                             SlicerFile.LayerManager.Morph(operation, BorderType.Default, new MCvScalar(), FrmLoading.RestartProgress());
                             break;
-                        case OperationLayerReHeight operation:
-                            SlicerFile.LayerManager.ReHeight(operation, FrmLoading.RestartProgress());
-                            break;
                         case OperationChangeResolution operation:
                             SlicerFile.LayerManager.ChangeResolution(operation, FrmLoading.RestartProgress(false));
                             break;
+                        case OperationLayerReHeight operation:
+                            SlicerFile.LayerManager.ReHeight(operation, FrmLoading.RestartProgress());
+                            break;
+                        case OperationPattern operation:
+                            SlicerFile.LayerManager.Pattern(operation, FrmLoading.RestartProgress());
+                            break;
+                        // Actions
                         case OperationLayerImport operation:
                             SlicerFile.LayerManager.Import(operation, FrmLoading.RestartProgress(false));
                             break;

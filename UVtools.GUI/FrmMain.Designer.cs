@@ -51,7 +51,6 @@ namespace UVtools.GUI
             this.menuMutate = new System.Windows.Forms.ToolStripMenuItem();
             this.menuTools = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsRepairLayers = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuToolsPattern = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuHelpWebsite = new System.Windows.Forms.ToolStripMenuItem();
             this.menuHelpDonate = new System.Windows.Forms.ToolStripMenuItem();
@@ -483,8 +482,7 @@ namespace UVtools.GUI
             // menuTools
             // 
             this.menuTools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuToolsRepairLayers,
-            this.menuToolsPattern});
+            this.menuToolsRepairLayers});
             this.menuTools.Enabled = false;
             this.menuTools.Name = "menuTools";
             this.menuTools.Size = new System.Drawing.Size(46, 20);
@@ -500,17 +498,6 @@ namespace UVtools.GUI
             this.menuToolsRepairLayers.Size = new System.Drawing.Size(261, 22);
             this.menuToolsRepairLayers.Text = "&Repair layers and Issues";
             this.menuToolsRepairLayers.Click += new System.EventHandler(this.EventClick);
-            // 
-            // menuToolsPattern
-            // 
-            this.menuToolsPattern.Enabled = false;
-            this.menuToolsPattern.Image = global::UVtools.GUI.Properties.Resources.pattern_16x16;
-            this.menuToolsPattern.Name = "menuToolsPattern";
-            this.menuToolsPattern.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
-            | System.Windows.Forms.Keys.P)));
-            this.menuToolsPattern.Size = new System.Drawing.Size(261, 22);
-            this.menuToolsPattern.Text = "&Pattern";
-            this.menuToolsPattern.Click += new System.EventHandler(this.EventClick);
             // 
             // helpToolStripMenuItem
             // 
@@ -3051,7 +3038,6 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStripMenuItem btnLayerImageLayerOutlinePrintVolumeBounds;
         private System.Windows.Forms.ToolStripMenuItem btnLayerImageLayerOutlineLayerBounds;
         private System.Windows.Forms.ToolStripMenuItem btnLayerImageLayerOutlineHollowAreas;
-        private System.Windows.Forms.ToolStripMenuItem menuToolsPattern;
         private System.Windows.Forms.ToolStripSplitButton tsThumbnailsExport;
         private System.Windows.Forms.ToolStripMenuItem tsThumbnailsExportFile;
         private System.Windows.Forms.ToolStripMenuItem tsThumbnailsExportClipboard;

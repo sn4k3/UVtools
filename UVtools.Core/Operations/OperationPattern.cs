@@ -6,11 +6,43 @@
  *  of this license document, but changing it is not allowed.
  */
 using System.Drawing;
+using System.Text;
+using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
-    public class OperationPattern
+    public class OperationPattern : Operation
     {
+        #region Overrides
+
+        public override string Title => "Pattern";
+        public override string Description =>
+            "Rectangular pattern the print around the plate.";
+        public override string ConfirmationText =>
+            $"pattern the object with {Cols} x {Rows} copies?";
+
+        public override string ProgressTitle =>
+            $"Pattern the object with {Cols} x {Rows} copies";
+
+        public override StringTag Validate(params object[] parameters)
+        {
+            var sb = new StringBuilder();
+
+            if (Cols <= 1 && Rows <= 1)
+            {
+                sb.AppendLine("Either columns or rows must be greater than 1 to be able to run this tool.");
+            }
+            
+            if (!ValidateBounds())
+            {
+                sb.AppendLine("Your parameters will put the object out of build plate, please adjust the margins.");
+            }
+
+            return new StringTag(sb.ToString());
+        }
+
+        #endregion
+
         public Anchor Anchor { get; set; }
         public Rectangle SrcRoi { get; }
 
@@ -31,15 +63,18 @@ namespace UVtools.Core.Operations
 
         public Size GetPatternVolume => new Size(Cols * SrcRoi.Width + (Cols - 1) * MarginCol, Rows * SrcRoi.Height + (Rows - 1) * MarginRow);
 
+        public OperationPattern()
+        {
+        }
 
-        public OperationPattern(Rectangle srcRoi, uint imageWidth, uint imageHeight)
+        public OperationPattern(Rectangle srcRoi, Size resolution)
         {
             SrcRoi = srcRoi;
-            ImageWidth = imageWidth;
-            ImageHeight = imageHeight;
+            ImageWidth = (uint) resolution.Width;
+            ImageHeight = (uint) resolution.Height;
 
-            MaxCols = (ushort) (imageWidth / srcRoi.Width);
-            MaxRows = (ushort) (imageHeight / srcRoi.Height);
+            MaxCols = (ushort) (ImageWidth / srcRoi.Width);
+            MaxRows = (ushort) (ImageHeight / srcRoi.Height);
 
             MaxMarginCol = CalculateMarginCol(MaxCols);
             MaxMarginRow = CalculateMarginRow(MaxRows);
@@ -89,9 +124,6 @@ namespace UVtools.Core.Operations
             _dstRoi.Y -= MarginBottom;
         }*/
 
-
-
-
         /// <summary>
         /// Fills the plate with maximum cols and rows
         /// </summary>
@@ -123,6 +155,13 @@ namespace UVtools.Core.Operations
             return new Rectangle(new Point(
                 (int) (col * SrcRoi.Width + col * MarginCol + (ImageWidth - patternVolume.Width) / 2), 
                 (int) (row * SrcRoi.Height + row * MarginRow + (ImageHeight - patternVolume.Height) / 2)), SrcRoi.Size);
+        }
+
+        public bool ValidateBounds()
+        {
+            var volume = GetPatternVolume;
+            if (volume.Width > ImageWidth || volume.Height > ImageHeight) return false;
+            return true;
         }
     }
 }
