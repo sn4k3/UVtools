@@ -79,6 +79,8 @@ namespace UVtools.GUI.Controls
 
         [ReadOnly(true)] [Browsable(false)] public FrmToolWindow ParentToolWindow => ParentForm as FrmToolWindow;
 
+        [SettingsBindable(true)] public bool CanRun { get; set; } = true;
+
         [Editor("System.ComponentModel.Design.MultilineStringEditor", typeof(UITypeEditor))]
         [SettingsBindable(true)]
         public string Description { get; set; }
@@ -189,8 +191,8 @@ namespace UVtools.GUI.Controls
             return false;
         }
 
-        public DialogResult MessageBoxError(string message, MessageBoxButtons buttons = MessageBoxButtons.OK) => GUIExtensions.MessageErrorBox($"{Text} Error", message, buttons);
-        public DialogResult MessageQuestionBox(string message, string title = null, MessageBoxButtons buttons = MessageBoxButtons.YesNo) => GUIExtensions.MessageQuestionBox($"{title ?? Text}", message, buttons);
+        public DialogResult MessageBoxError(string message, MessageBoxButtons buttons = MessageBoxButtons.OK) => GUIExtensions.MessageBoxError($"{Text} Error", message, buttons);
+        public DialogResult MessageQuestionBox(string message, string title = null, MessageBoxButtons buttons = MessageBoxButtons.YesNo) => GUIExtensions.MessageBoxQuestion($"{title ?? Text}", message, buttons);
 
         #endregion
 

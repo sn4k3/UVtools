@@ -47,6 +47,7 @@ namespace UVtools.GUI
         public static readonly OperationMenuItem[] MenuTools = {
             new OperationMenuItem(new OperationSolidify(), Resources.square_solid_16x16),
             new OperationMenuItem(new OperationMorphModel(), Resources.Geometry_16x16),
+            new OperationMenuItem(new OperationLayerReHeight(), Resources.ladder_16x16),
             new OperationMenuItem(new OperationChangeResolution(), Resources.resize_16x16)
         };
 
@@ -985,55 +986,6 @@ namespace UVtools.GUI
 
                     menuFileSave.Enabled =
                         menuFileSaveAs.Enabled = true;
-                    return;
-                }
-
-                if (ReferenceEquals(menuItem, menuToolsLayerReHeight))
-                {
-                    OperationLayerReHeight operation = null;
-                    using (var frm = new FrmToolLayerReHeight(SlicerFile.LayerCount, SlicerFile.LayerHeight))
-                    {
-                        if (frm.IsDisposed || frm.ShowDialog() != DialogResult.OK) return;
-                        operation = frm.Operation;
-                    }
-
-                    DisableGUI();
-                    FrmLoading.SetDescription(
-                        $"Layer Re-Height from {SlicerFile.LayerHeight}mm to {operation.LayerHeight}mm");
-
-                    var task = Task.Factory.StartNew(() =>
-                    {
-                        try
-                        {
-                            SlicerFile.LayerManager.ReHeight(operation, FrmLoading.RestartProgress());
-                        }
-                        catch (OperationCanceledException)
-                        {
-
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                        finally
-                        {
-                            Invoke((MethodInvoker) delegate
-                            {
-                                // Running on the UI thread
-                                EnableGUI(true);
-                            });
-                        }
-                    });
-
-                    var loadingResult = FrmLoading.ShowDialog();
-
-                    UpdateLayerLimits();
-                    RefreshInfo();
-                    ShowLayer();
-
-                    menuFileSave.Enabled =
-                        menuFileSaveAs.Enabled = true;
-
                     return;
                 }
 
@@ -4612,6 +4564,12 @@ namespace UVtools.GUI
                 control = controlType.CreateInstance<CtrlToolWindowContent>();
                 if (control is null) return null;
             }
+
+            if (!control.CanRun)
+            {
+                control.Dispose();
+                return null;
+            }
             
             if (removeContent)
             {
@@ -4650,6 +4608,9 @@ namespace UVtools.GUI
                         case OperationMorphModel operation:
                             SlicerFile.LayerManager.Morph(operation, BorderType.Default, new MCvScalar(), FrmLoading.RestartProgress());
                             break;
+                        case OperationLayerReHeight operation:
+                            SlicerFile.LayerManager.ReHeight(operation, FrmLoading.RestartProgress());
+                            break;
                         case OperationChangeResolution operation:
                             SlicerFile.LayerManager.ChangeResolution(operation, FrmLoading.RestartProgress(false));
                             break;
@@ -4673,7 +4634,7 @@ namespace UVtools.GUI
                 }
                 catch (Exception ex)
                 {
-                    GUIExtensions.MessageErrorBox($"{baseOperation.Title} Error", ex.Message);
+                    GUIExtensions.MessageBoxError($"{baseOperation.Title} Error", ex.Message);
                 }
                 finally
                 {

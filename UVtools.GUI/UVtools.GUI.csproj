@@ -170,6 +170,12 @@
     <Compile Include="Controls\SplitButton.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Controls\Tools\CtrlToolLayerReHeight.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Tools\CtrlToolLayerReHeight.Designer.cs">
+      <DependentUpon>CtrlToolLayerReHeight.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Tools\CtrlToolMorphModel.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -246,12 +252,6 @@
     </Compile>
     <Compile Include="Forms\FrmToolWindow.Designer.cs">
       <DependentUpon>FrmToolWindow.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\FrmToolLayerReHeight.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\FrmToolLayerReHeight.Designer.cs">
-      <DependentUpon>FrmToolLayerReHeight.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\FrmToolPattern.cs">
       <SubType>Form</SubType>
@@ -336,6 +336,9 @@
     <EmbeddedResource Include="Controls\CtrlToolWindowContent.resx">
       <DependentUpon>CtrlToolWindowContent.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Tools\CtrlToolLayerReHeight.resx">
+      <DependentUpon>CtrlToolLayerReHeight.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\Tools\CtrlToolMorphModel.resx">
       <DependentUpon>CtrlToolMorphModel.cs</DependentUpon>
     </EmbeddedResource>
@@ -374,9 +377,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolWindow.resx">
       <DependentUpon>FrmToolWindow.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\FrmToolLayerReHeight.resx">
-      <DependentUpon>FrmToolLayerReHeight.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmToolPattern.resx">
       <DependentUpon>FrmToolPattern.cs</DependentUpon>

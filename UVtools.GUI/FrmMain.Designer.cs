@@ -51,7 +51,6 @@ namespace UVtools.GUI
             this.menuMutate = new System.Windows.Forms.ToolStripMenuItem();
             this.menuTools = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsRepairLayers = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuToolsLayerReHeight = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsPattern = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuHelpWebsite = new System.Windows.Forms.ToolStripMenuItem();
@@ -485,7 +484,6 @@ namespace UVtools.GUI
             // 
             this.menuTools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuToolsRepairLayers,
-            this.menuToolsLayerReHeight,
             this.menuToolsPattern});
             this.menuTools.Enabled = false;
             this.menuTools.Name = "menuTools";
@@ -502,15 +500,6 @@ namespace UVtools.GUI
             this.menuToolsRepairLayers.Size = new System.Drawing.Size(261, 22);
             this.menuToolsRepairLayers.Text = "&Repair layers and Issues";
             this.menuToolsRepairLayers.Click += new System.EventHandler(this.EventClick);
-            // 
-            // menuToolsLayerReHeight
-            // 
-            this.menuToolsLayerReHeight.Enabled = false;
-            this.menuToolsLayerReHeight.Image = global::UVtools.GUI.Properties.Resources.ladder_16x16;
-            this.menuToolsLayerReHeight.Name = "menuToolsLayerReHeight";
-            this.menuToolsLayerReHeight.Size = new System.Drawing.Size(261, 22);
-            this.menuToolsLayerReHeight.Text = "Layer Re-&Height";
-            this.menuToolsLayerReHeight.Click += new System.EventHandler(this.EventClick);
             // 
             // menuToolsPattern
             // 
@@ -3105,7 +3094,6 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStripButton tsThumbnailsImport;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator21;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator22;
-        private System.Windows.Forms.ToolStripMenuItem menuToolsLayerReHeight;
         private System.Windows.Forms.ToolStripSplitButton tsPropertiesExport;
         private System.Windows.Forms.ToolStripMenuItem tsPropertiesExportFile;
         private System.Windows.Forms.ToolStripMenuItem tsPropertiesExportClipboard;

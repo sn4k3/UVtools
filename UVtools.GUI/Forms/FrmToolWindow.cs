@@ -327,8 +327,8 @@ namespace UVtools.GUI.Forms
 
         public virtual bool ValidateForm() => true;
 
-        public DialogResult MessageErrorBox(string message) => GUIExtensions.MessageErrorBox($"{Text} Error", message);
-        public DialogResult MessageQuestionBox(string message, string title = null) => GUIExtensions.MessageQuestionBox($"{title ?? Text}", message);
+        public DialogResult MessageErrorBox(string message) => GUIExtensions.MessageBoxError($"{Text} Error", message);
+        public DialogResult MessageQuestionBox(string message, string title = null) => GUIExtensions.MessageBoxQuestion($"{title ?? Text}", message);
 
         public T GetContentCtrl<T>()
         {

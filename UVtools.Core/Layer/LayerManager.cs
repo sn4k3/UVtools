@@ -1565,24 +1565,24 @@ namespace UVtools.Core
         public void ReHeight(OperationLayerReHeight operation, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Re-Height", operation.LayerCount);
+            progress.Reset($"Layer re-height from {SlicerFile.LayerHeight}mm to {operation.Item.LayerHeight}mm");
 
             var oldLayers = Layers;
 
-            Layers = new Layer[operation.LayerCount];
+            Layers = new Layer[operation.Item.LayerCount];
 
             uint newLayerIndex = 0;
             for (uint layerIndex = 0; layerIndex < oldLayers.Length; layerIndex++)
             {
                 var oldLayer = oldLayers[layerIndex];
-                if (operation.IsDivision)
+                if (operation.Item.IsDivision)
                 {
-                    for (byte i = 0; i < operation.Modifier; i++)
+                    for (byte i = 0; i < operation.Item.Modifier; i++)
                     {
                         Layers[newLayerIndex] =
                             new Layer(newLayerIndex, oldLayer.CompressedBytes, null, this)
                             {
-                                PositionZ = (float)(operation.LayerHeight * (newLayerIndex + 1)),
+                                PositionZ = (float)(operation.Item.LayerHeight * (newLayerIndex + 1)),
                                 ExposureTime = oldLayer.ExposureTime,
                                 BoundingRectangle = oldLayer.BoundingRectangle,
                                 NonZeroPixelCount = oldLayer.NonZeroPixelCount
@@ -1596,7 +1596,7 @@ namespace UVtools.Core
                 {
                     using (var mat = oldLayers[layerIndex++].LayerMat)
                     {
-                        for (byte i = 1; i < operation.Modifier; i++)
+                        for (byte i = 1; i < operation.Item.Modifier; i++)
                         {
                             using (var nextMat = oldLayers[layerIndex++].LayerMat)
                             {
@@ -1606,7 +1606,7 @@ namespace UVtools.Core
 
                         Layers[newLayerIndex] = new Layer(newLayerIndex, mat, null, this)
                         {
-                            PositionZ = (float)(operation.LayerHeight * (newLayerIndex + 1)),
+                            PositionZ = (float)(operation.Item.LayerHeight * (newLayerIndex + 1)),
                             ExposureTime = oldLayer.ExposureTime
                         };
                         newLayerIndex++;
@@ -1617,7 +1617,7 @@ namespace UVtools.Core
             }
 
 
-            SlicerFile.LayerHeight = (float)operation.LayerHeight;
+            SlicerFile.LayerHeight = (float)operation.Item.LayerHeight;
             SlicerFile.LayerCount = Count;
             BoundingRectangle = Rectangle.Empty;
             SlicerFile.RequireFullEncode = true;
