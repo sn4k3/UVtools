@@ -58,6 +58,7 @@ namespace UVtools.GUI.Forms
             this.pnActions = new System.Windows.Forms.Panel();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnOk = new System.Windows.Forms.Button();
+            this.btnResetDefaults = new System.Windows.Forms.Button();
             this.pnDescription.SuspendLayout();
             this.pnLayerRange.SuspendLayout();
             this.gbLayerRange.SuspendLayout();
@@ -331,6 +332,7 @@ namespace UVtools.GUI.Forms
             this.pnActions.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.pnActions.BackColor = System.Drawing.SystemColors.Control;
             this.pnActions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnActions.Controls.Add(this.btnResetDefaults);
             this.pnActions.Controls.Add(this.btnCancel);
             this.pnActions.Controls.Add(this.btnOk);
             this.pnActions.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -372,6 +374,23 @@ namespace UVtools.GUI.Forms
             this.btnOk.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnOk.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.btnOk.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnResetDefaults
+            // 
+            this.btnResetDefaults.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnResetDefaults.AutoSize = true;
+            this.btnResetDefaults.Image = global::UVtools.GUI.Properties.Resources.Rotate_16x16;
+            this.btnResetDefaults.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnResetDefaults.Location = new System.Drawing.Point(4, 19);
+            this.btnResetDefaults.Name = "btnResetDefaults";
+            this.btnResetDefaults.Padding = new System.Windows.Forms.Padding(10, 0, 10, 0);
+            this.btnResetDefaults.Size = new System.Drawing.Size(177, 48);
+            this.btnResetDefaults.TabIndex = 7;
+            this.btnResetDefaults.Text = "&Reset to defaults";
+            this.btnResetDefaults.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.btnResetDefaults.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.btnResetDefaults.Visible = false;
+            this.btnResetDefaults.Click += new System.EventHandler(this.EventClick);
             // 
             // FrmToolWindow
             // 
@@ -441,5 +460,6 @@ namespace UVtools.GUI.Forms
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem btnLayerRangeFirstLayer;
         private System.Windows.Forms.ToolStripMenuItem btnLayerRangeLastLayer;
+        public System.Windows.Forms.Button btnResetDefaults;
     }
 }

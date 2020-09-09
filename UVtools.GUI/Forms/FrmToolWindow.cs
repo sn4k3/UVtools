@@ -32,6 +32,14 @@ namespace UVtools.GUI.Forms
 
         [Editor("System.ComponentModel.Design.MultilineStringEditor", typeof(UITypeEditor))]
         [SettingsBindable(true)]
+        public bool ButtonResetDefaultsVisible
+        {
+            get => btnResetDefaults.Visible;
+            set => btnResetDefaults.Visible = value;
+        }
+
+        [Editor("System.ComponentModel.Design.MultilineStringEditor", typeof(UITypeEditor))]
+        [SettingsBindable(true)]
         public string ButtonOkText
         {
             get => btnOk.Text;
@@ -130,6 +138,7 @@ namespace UVtools.GUI.Forms
             pnContent.Controls.Add(content);
             Width = Math.Max(MinimumSize.Width, content.Width);
             //content.Dock = DockStyle.Fill;
+            btnResetDefaults.Visible = content.ButtonResetDefaultsVisible;
             btnOk.Enabled = content.ButtonOkEnabled;
             Content = content;
 
@@ -253,6 +262,12 @@ namespace UVtools.GUI.Forms
                 return;
             }
 
+            if (ReferenceEquals(sender, btnResetDefaults))
+            {
+                ResetDefaults();
+                return;
+            }
+
             if (ReferenceEquals(sender, btnOk))
             {
                 if (!btnOk.Enabled) return;
@@ -326,6 +341,14 @@ namespace UVtools.GUI.Forms
         #region Methods
 
         public virtual bool ValidateForm() => true;
+
+        /// <summary>
+        /// Called when button reset to defaults is clicked
+        /// </summary>
+        public virtual void ResetDefaults()
+        {
+            Content?.ResetDefaults();
+        }
 
         public DialogResult MessageErrorBox(string message) => GUIExtensions.MessageBoxError($"{Text} Error", message);
         public DialogResult MessageQuestionBox(string message, string title = null) => GUIExtensions.MessageBoxQuestion($"{title ?? Text}", message);

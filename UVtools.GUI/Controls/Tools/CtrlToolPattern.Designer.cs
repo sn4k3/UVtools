@@ -399,6 +399,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ButtonOkEnabled = false;
+            this.ButtonResetDefaultsVisible = true;
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btnAutoMarginRow);
             this.Controls.Add(this.btnAutoMarginCol);

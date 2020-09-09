@@ -85,6 +85,8 @@ namespace UVtools.GUI.Controls
         [SettingsBindable(true)]
         public string Description { get; set; }
 
+        [SettingsBindable(true)] public bool ButtonResetDefaultsVisible { get; set; } = false;
+
         private bool _buttonOkEnabled = true;
         [SettingsBindable(true)]
         public bool ButtonOkEnabled
@@ -196,6 +198,7 @@ namespace UVtools.GUI.Controls
 
         #endregion
 
-        
+
+        public virtual void ResetDefaults() { }
     }
 }

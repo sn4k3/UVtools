@@ -36,16 +36,17 @@ namespace UVtools.GUI.Controls.Tools
             nmCols.Maximum = Operation.MaxCols;
             nmRows.Maximum = Operation.MaxRows;
 
-            Reset();
+            ResetDefaults();
         }
 
-        public void Reset()
+        public override void ResetDefaults()
         {
             nmMarginCol.Value = Operation.MaxMarginCol;
             nmMarginRow.Value = Operation.MaxMarginRow;
             nmCols.Value = Operation.MaxCols;
             nmRows.Value = Operation.MaxRows;
             Operation.Fill();
+            EventValueChanged(this, EventArgs.Empty);
         }
 
         public override void UpdateOperation()
@@ -79,10 +80,11 @@ namespace UVtools.GUI.Controls.Tools
 
         private void EventValueChanged(object sender, EventArgs e)
         {
-            var insideBounds = ButtonOkEnabled = Operation.ValidateBounds();
-            lbInsideBounds.Text = "Inside Bounds: " + (insideBounds ? "Yes" : "No");
-
             UpdateOperation();
+
+            var insideBounds = Operation.ValidateBounds();
+            ButtonOkEnabled = insideBounds && (Operation.Cols > 1 || Operation.Rows > 1);
+            lbInsideBounds.Text = "Inside Bounds: " + (insideBounds ? "Yes" : "No");
 
             lbVolumeWidth.Text = $"Volume/Pattern Width: {Operation.SrcRoi.Width} / {Operation.GetPatternVolume.Width} / {Operation.ImageWidth}";
             lbVolumeHeight.Text = $"Volume/Pattern Height: {Operation.SrcRoi.Height} / {Operation.GetPatternVolume.Height} / {Operation.ImageHeight}";
