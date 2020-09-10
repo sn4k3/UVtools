@@ -6,23 +6,23 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
+
 namespace UVtools.Core.Operations
 {
     public class OperationRotate : Operation
     {
         public override string Title => "Rotate";
         public override string Description =>
-            "Rotate layer images in a certain angle degrees.\n" +
-            "Positive angle are clockwise (CW)\n" +
-            "Negative angle are counter-clockwise (CCW)";
+            "Rotate the layers of the model.\n";
 
         public override string ConfirmationText =>
-            $"rotate layers {LayerIndexStart} to {LayerIndexEnd} at {AngleDegrees} degrees";
+            $"rotate layers {LayerIndexStart} through {LayerIndexEnd} {(AngleDegrees < 0?"counter-clockwise":"clockwise")} by {Math.Abs(AngleDegrees)}°?";
 
         public override string ProgressTitle =>
-            $"Rotating layers {LayerIndexStart} to {LayerIndexEnd} at {AngleDegrees} degrees";
+            $"Rotating layers {LayerIndexStart} through {LayerIndexEnd} {(AngleDegrees < 0 ? "counter-clockwise" : "clockwise")} by {Math.Abs(AngleDegrees)}°";
 
-        public override string ProgressAction => "Rotated layers";
+        public override string ProgressAction => "Rotating layers";
 
         public decimal AngleDegrees { get; set; }
     }

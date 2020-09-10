@@ -52,6 +52,8 @@
             this.nmDegrees.Name = "nmDegrees";
             this.nmDegrees.Size = new System.Drawing.Size(101, 26);
             this.nmDegrees.TabIndex = 23;
+            this.toolTip.SetToolTip(this.nmDegrees, "Number of degrees to rotate the layers, where postive values are clockwise and ne" +
+        "gative values are counter-clockwise.");
             this.nmDegrees.Value = new decimal(new int[] {
             90,
             0,
@@ -91,6 +93,7 @@
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "CtrlToolRotate";
             this.Size = new System.Drawing.Size(540, 45);
+            this.toolTip.SetToolTip(this, "  ");
             ((System.ComponentModel.ISupportInitialize)(this.nmDegrees)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

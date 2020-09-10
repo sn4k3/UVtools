@@ -14,15 +14,19 @@ namespace UVtools.Core.Operations
     {
         public override string Title => "Flip";
         public override string Description =>
-            "Flips layer images vertically and/or horizontally.";
+            "Flip the layers of the model vertically and/or horizontally.";
 
         public override string ConfirmationText =>
-            $"flip {FlipDirection} from layers {LayerIndexStart} to {LayerIndexEnd}";
+            FlipDirection == Enumerations.FlipDirection.Both
+                ? $"flip {(MakeCopy == true? "and blend ":"")}layers {LayerIndexStart} through {LayerIndexEnd} Horizontally and Vertically?"
+                : $"flip {(MakeCopy == true ? "and blend " : "")}layers {LayerIndexStart} through {LayerIndexEnd} {FlipDirection}?";
 
         public override string ProgressTitle =>
-            $"Flipping {FlipDirection} from layers {LayerIndexStart} to {LayerIndexEnd}";
+            FlipDirection == Enumerations.FlipDirection.Both
+                ? $"Flipping {(MakeCopy == true ? "and blending " : "")}layers {LayerIndexStart} through {LayerIndexEnd} Horizontally and Vertically"
+                : $"Flipping {(MakeCopy == true ? "and blending " : "")}layers {LayerIndexStart} through {LayerIndexEnd} {FlipDirection}";
 
-        public override string ProgressAction => "Flipped layers";
+        public override string ProgressAction => "Flipping layers";
         
         public Enumerations.FlipDirection FlipDirection { get; set; }
 
