@@ -3851,9 +3851,14 @@ namespace UVtools.GUI
         void UpdateIssuesList()
         {
             flvIssues.ClearObjects();
-            if (!ReferenceEquals(Issues, null))
+            
+            if (!ReferenceEquals(Issues, null) && Issues.Count > 0)
             {
                 flvIssues.SetObjects(Issues);
+            }
+            else
+            {
+                UpdateLayerTrackerHighlightIssues();
             }
 
             UpdateIssuesInfo();
@@ -3981,9 +3986,9 @@ namespace UVtools.GUI
                             ComputeIssues(islandConfig, resinTrapConfig, touchingBoundConfig,
                                 tsIssuesDetectEmptyLayers.Checked);
                         }
-
-                        operation.Issues = Issues;
                     }
+
+                    operation.Issues = Issues;
 
                     break;
             }
