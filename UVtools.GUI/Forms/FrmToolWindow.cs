@@ -199,6 +199,20 @@ namespace UVtools.GUI.Forms
                     e.Handled = true;
                     return;
                 }
+
+                if (e.KeyCode == Keys.F)
+                {
+                    btnLayerRangeFirstLayer.PerformClick();
+                    e.Handled = true;
+                    return;
+                }
+
+                if (e.KeyCode == Keys.L)
+                {
+                    btnLayerRangeLastLayer.PerformClick();
+                    e.Handled = true;
+                    return;
+                }
             }
         }
 
