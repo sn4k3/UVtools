@@ -15,16 +15,16 @@ namespace UVtools.Core.Operations
 
         public override bool PassActualLayerIndex => true;
 
-        public override string Title => "Remove layer(s)";
+        public override string Title => "Remove layers";
 
         public override string Description =>
-            "Remove Layer(s) in a given range.";
+            "Remove Layers in a given range.";
 
         public override string ConfirmationText =>
-            $"remove layers from {LayerIndexStart} to {LayerIndexEnd}?";
+            $"remove layers {LayerIndexStart} through {LayerIndexEnd}?";
 
         public override string ProgressTitle =>
-            $"Removing layers from {LayerIndexStart} to {LayerIndexEnd}";
+            $"Removing layers {LayerIndexStart} through {LayerIndexEnd}";
 
         public override string ProgressAction => "Removed layers";
 

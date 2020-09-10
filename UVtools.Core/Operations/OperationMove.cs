@@ -16,16 +16,15 @@ namespace UVtools.Core.Operations
     {
         public override string Title => "Move";
         public override string Description =>
-            "Moves the entire model around the build plate.\n" +
-            "Note: Margins are in pixel values.";
+            "Change the position of the model on the build plate.";
 
         public override string ConfirmationText =>
-            $"move model from layers {LayerIndexStart} to {LayerIndexEnd}?\n" +
-            $"From: X:{SrcRoi.X} Y:{SrcRoi.Y}\n" +
-            $"To: X:{DstRoi.X} Y:{DstRoi.Y}";
+            $"move model layers {LayerIndexStart} through {LayerIndexEnd} from " +
+            $"location {{X={SrcRoi.X},Y={SrcRoi.Y}}} to " +
+            $"location {{X={DstRoi.X},Y={DstRoi.Y}}}?";
 
         public override string ProgressTitle =>
-            $"Moving model to X:{DstRoi.X} Y:{DstRoi.Y}";
+            $"Moving model to {{X={DstRoi.X},Y={DstRoi.Y}}}";
 
         public override string ProgressAction => "Moved layers";
 
@@ -35,7 +34,7 @@ namespace UVtools.Core.Operations
 
             if (!ValidateBounds())
             {
-                sb.AppendLine("Your parameters will put the object out of build plate, please adjust the margins.");
+                sb.AppendLine("Your parameters will put the model outside of build plate.   Please adjust the location and margins.");
             }
 
             return new StringTag(sb.ToString());

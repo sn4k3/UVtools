@@ -33,6 +33,8 @@ namespace UVtools.GUI.Controls.Tools
             cbThresholdType.EndUpdate();
             
             cbThresholdType.SelectedItem = ThresholdType.Binary;
+
+            cbPresetHelpers.SelectedItem = "Free use";
         }
 
         public override bool UpdateOperation()
@@ -44,9 +46,9 @@ namespace UVtools.GUI.Controls.Tools
             return true;
         }
 
-        private void EventClick(object sender, EventArgs e)
+        private void cbPresetHelpers_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (ReferenceEquals(sender, btnPresetFreeUse))
+            if (cbPresetHelpers.SelectedItem.ToString() == "Free use")
             {
                 nmThreshold.Enabled =
                     nmMaximum.Enabled =
@@ -54,9 +56,12 @@ namespace UVtools.GUI.Controls.Tools
                 return;
             }
 
-            if (ReferenceEquals(sender, btnPresetStripAntiAliasing))
+            if (cbPresetHelpers.SelectedItem.ToString() == "Strip AntiAliasing")
             {
-                EventClick(btnPresetFreeUse, e);
+                nmThreshold.Enabled =
+                    nmMaximum.Enabled =
+                        cbThresholdType.Enabled = true;
+
                 nmMaximum.Enabled = cbThresholdType.Enabled = false;
 
                 nmThreshold.Value = 127;
@@ -66,9 +71,12 @@ namespace UVtools.GUI.Controls.Tools
                 return;
             }
 
-            if (ReferenceEquals(sender, btnPresetSetPixelsBrightness))
+            if (cbPresetHelpers.SelectedItem.ToString() == "Set pixel brightness")
             {
-                EventClick(btnPresetFreeUse, e);
+                nmThreshold.Enabled =
+                    nmMaximum.Enabled =
+                        cbThresholdType.Enabled = true;
+
                 nmThreshold.Enabled = cbThresholdType.Enabled = false;
 
                 nmThreshold.Value = 254;

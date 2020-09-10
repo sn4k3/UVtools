@@ -42,7 +42,6 @@
             this.nmInfillThickness = new System.Windows.Forms.NumericUpDown();
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.tbOddPattern = new System.Windows.Forms.TextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -79,9 +78,9 @@
             this.cbDimsOnlyBorders.AutoSize = true;
             this.cbDimsOnlyBorders.Location = new System.Drawing.Point(301, 9);
             this.cbDimsOnlyBorders.Name = "cbDimsOnlyBorders";
-            this.cbDimsOnlyBorders.Size = new System.Drawing.Size(181, 24);
+            this.cbDimsOnlyBorders.Size = new System.Drawing.Size(146, 24);
             this.cbDimsOnlyBorders.TabIndex = 42;
-            this.cbDimsOnlyBorders.Text = "Dims only the borders";
+            this.cbDimsOnlyBorders.Text = "Dim only borders";
             this.cbDimsOnlyBorders.UseVisualStyleBackColor = true;
             // 
             // groupBox2
@@ -97,23 +96,21 @@
             this.groupBox2.Controls.Add(this.nmInfillThickness);
             this.groupBox2.Controls.Add(this.label9);
             this.groupBox2.Controls.Add(this.label10);
-            this.groupBox2.Location = new System.Drawing.Point(-1, 506);
+            this.groupBox2.Location = new System.Drawing.Point(-1, 476);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(575, 160);
+            this.groupBox2.Size = new System.Drawing.Size(575, 149);
             this.groupBox2.TabIndex = 41;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Infill generator";
             // 
             // label13
             // 
-            this.label13.Location = new System.Drawing.Point(7, 22);
+            this.label13.Location = new System.Drawing.Point(7, 30);
             this.label13.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(561, 46);
+            this.label13.Size = new System.Drawing.Size(561, 30);
             this.label13.TabIndex = 34;
-            this.label13.Text = "The infill function can create a ton of resin traps, use only this tool if you kn" +
-    "ow what are you doing or for specific parts. You always need to ensure the drain" +
-    "s.";
+            this.label13.Text = "Warning: This function can genearte a large number of resin traps.";
             // 
             // label11
             // 
@@ -241,17 +238,6 @@
             this.label10.TabIndex = 21;
             this.label10.Text = "Thickness:";
             // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(6, 299);
-            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(548, 20);
-            this.label6.TabIndex = 40;
-            this.label6.Text = "(Leave this field empty to use only the even layer pattern for the layers range)";
-            this.toolTip.SetToolTip(this.label6, resources.GetString("label6.ToolTip"));
-            // 
             // label5
             // 
             this.label5.AutoSize = true;
@@ -271,6 +257,7 @@
             this.tbOddPattern.Size = new System.Drawing.Size(469, 124);
             this.tbOddPattern.TabIndex = 38;
             this.tbOddPattern.Text = "255 255 127 255\r\n127 255 255 255";
+            this.toolTip.SetToolTip(this.tbOddPattern, "Leave this field empty in order to use only the even layer pattern.");
             this.tbOddPattern.WordWrap = false;
             // 
             // groupBox1
@@ -290,7 +277,7 @@
             this.groupBox1.Controls.Add(this.nmPixelDimBrightness);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.label4);
-            this.groupBox1.Location = new System.Drawing.Point(-1, 338);
+            this.groupBox1.Location = new System.Drawing.Point(-1, 308);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(575, 162);
             this.groupBox1.TabIndex = 37;
@@ -524,7 +511,6 @@
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.Controls.Add(this.cbDimsOnlyBorders);
             this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.tbOddPattern);
             this.Controls.Add(this.groupBox1);
@@ -536,7 +522,7 @@
             this.Description = "";
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "CtrlToolPixelDimming";
-            this.Size = new System.Drawing.Size(577, 669);
+            this.Size = new System.Drawing.Size(577, 628);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmInfillSpacing)).EndInit();
@@ -565,7 +551,6 @@
         private System.Windows.Forms.NumericUpDown nmInfillThickness;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox tbOddPattern;
         private System.Windows.Forms.GroupBox groupBox1;

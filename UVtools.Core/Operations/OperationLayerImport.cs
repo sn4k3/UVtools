@@ -21,16 +21,16 @@ namespace UVtools.Core.Operations
     public sealed class OperationLayerImport : Operation
     {
         #region Overrides
-        public override string Title => "Import Layer(s)";
+        public override string Title => "Import Layers";
 
         public override string Description =>
-            "Import layer(s) from local file(s) into the model at a selected height.\n" +
-            "NOTE: Images must respect file resolution and in greyscale color.";
+            "Import layers from local files into the model at a selected layer height.\n\n" +
+            "NOTE: Imported images must be greyscale and have the same resolution as the model.";
 
-        public override string ConfirmationText => $"import {Count} layer(s)?";
+        public override string ConfirmationText => $"import {Count} layer{(Count!=1?"s":"")}?";
 
         public override string ProgressTitle =>
-            $"Importing {Count} layer(s)";
+            $"Importing {Count} layer{(Count!=1 ? "s" : "")}";
 
         public override string ProgressAction => "Imported layers";
 
@@ -53,7 +53,7 @@ namespace UVtools.Core.Operations
 
             if (result.IsEmpty) return null;
             var message = new StringBuilder();
-            message.AppendLine($"The following {result.Count} files mismatched the slice resolution of {FileResolution.Width} x {FileResolution.Height}:");
+            message.AppendLine($"The following {result.Count} files mismatched the target resolution of {FileResolution.Width}x{FileResolution.Height}:");
             message.AppendLine();
             uint count = 0;
             foreach (var file in result)
@@ -61,7 +61,7 @@ namespace UVtools.Core.Operations
                 count++;
                 if (count == 20)
                 {
-                    message.AppendLine("... To many to show ...");
+                    message.AppendLine("... Too many to show ...");
                     break;
                 }
                 message.AppendLine(Path.GetFileNameWithoutExtension(file));

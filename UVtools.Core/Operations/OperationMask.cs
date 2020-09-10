@@ -17,16 +17,16 @@ namespace UVtools.Core.Operations
     {
         public override string Title => "Mask";
         public override string Description =>
-            "Masks the LCD output image given a greyscale (0-255) pixel input image.\n" +
-            "Useful to correct light uniformity, but a proper mask must be created first based on real measurements per printer.\n" +
-            "NOTE 1: Masks should respect printer resolution or they will be resized to fit.\n" +
-            "NOTE 2: Run only this tool after all repairs and other transformations.";
+            "Mask the intensity of the LCD output using a greyscale input image.\n\n" +
+            "Useful to correct LCD light uniformity for a specific printer.\n\n" +
+            "NOTE:  This operation should be run only after repairs and other transformations.  The provided" +
+            "input mask image must match the ouput resolution of the target printer.";
 
         public override string ConfirmationText =>
-            $"mask layers from {LayerIndexStart} to {LayerIndexEnd}";
+            $"mask layers from {LayerIndexStart} through {LayerIndexEnd}";
 
         public override string ProgressTitle =>
-            $"Masking layers from {LayerIndexStart} to {LayerIndexEnd}";
+            $"Masking layers from {LayerIndexStart} through {LayerIndexEnd}";
 
         public override string ProgressAction => "Masked layers";
 
@@ -35,7 +35,7 @@ namespace UVtools.Core.Operations
             var sb = new StringBuilder();
             if (Mask is null)
             {
-                sb.AppendLine("The mask can't be empty.");
+                sb.AppendLine("The mask can not be empty.");
             }
 
             return new StringTag(sb.ToString());

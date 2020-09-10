@@ -48,9 +48,11 @@
             this.cbMakeCopy.AutoSize = true;
             this.cbMakeCopy.Location = new System.Drawing.Point(240, 8);
             this.cbMakeCopy.Name = "cbMakeCopy";
-            this.cbMakeCopy.Size = new System.Drawing.Size(104, 24);
+            this.cbMakeCopy.Size = new System.Drawing.Size(120, 24);
             this.cbMakeCopy.TabIndex = 22;
-            this.cbMakeCopy.Text = "Make copy";
+            this.cbMakeCopy.Text = "Blend Layers";
+            this.toolTip.SetToolTip(this.cbMakeCopy, "If checked, rather than simply flipping the layer, a copy of each layer will be " +
+        "flipped and blended with the layer.");
             this.cbMakeCopy.UseVisualStyleBackColor = true;
             // 
             // cbFlipDirection
@@ -73,7 +75,7 @@
             this.Description = "";
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "CtrlToolFlip";
-            this.Size = new System.Drawing.Size(540, 45);
+            this.Size = new System.Drawing.Size(720, 45);
             this.ResumeLayout(false);
             this.PerformLayout();
 

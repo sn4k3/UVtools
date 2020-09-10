@@ -43,17 +43,17 @@ namespace UVtools.Core.Operations
 
         public override string Title => "Change print resolution";
         public override string Description =>
-            "Crops or resizes all layer images to fit an alternate print area\n" +
-            "Useful to make files printable on a different printer than they were originally sliced for without the need to re-slice.\n" +
-            "NOTE: Please ensure that the actual object will fit within the new print resolution. The operation will be aborted if it will result in any of the actual model being clipped.";
+            "Crops or resizes all layer images to fit an alternate print area\n\n" +
+            "Useful to make files printable on a different printer than they were originally sliced for without the need to re-slice.\n\n" +
+            "NOTE: Please ensure that the actual model will fit within the new print resolution. The operation will be aborted if it will result in any of the actual model being clipped.";
 
         public override string ConfirmationText => 
-            "change file resolution?\n" +
-            $"From: {OldResolution.Width} x {OldResolution.Height}\n" +
-            $"To: {NewResolutionX} x {NewResolutionY}";
+            "change print resolution " +
+            $"from {OldResolution.Width}x{OldResolution.Height} " +
+            $"to {NewResolutionX}x{NewResolutionY}?";
 
         public override string ProgressTitle =>
-            $"Changing print resolution from ({OldResolution.Width} x {OldResolution.Height}) to ({NewResolutionX} x {NewResolutionY})";
+            $"Changing print resolution from ({OldResolution.Width}x{OldResolution.Height}) to ({NewResolutionX}x{NewResolutionY})";
 
         public override string ProgressAction => "Changed layers";
 
@@ -67,7 +67,7 @@ namespace UVtools.Core.Operations
 
             if (NewResolutionX < VolumeBonds.Width || NewResolutionY < VolumeBonds.Height)
             {
-                sb.AppendLine($"The new resolution ({NewResolutionX} x {NewResolutionY}) is not enough to accommodate the object volume ({VolumeBonds.Width} x {VolumeBonds.Height}), continuing operation would cut the object");
+                sb.AppendLine($"The new resolution ({NewResolutionX} x {NewResolutionY}) is not large enough to hold the model volume ({VolumeBonds.Width} x {VolumeBonds.Height}), continuing operation would clip the model");
                 sb.AppendLine("To fix this, try to rotate the object and/or resize to fit on this new resolution.");
             }
 

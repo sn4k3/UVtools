@@ -59,6 +59,8 @@
             this.cbIterationsFade.Size = new System.Drawing.Size(108, 24);
             this.cbIterationsFade.TabIndex = 21;
             this.cbIterationsFade.Text = "Fade in/out";
+            this.toolTip.SetToolTip(this.cbIterationsFade, "Allow the number of iterations to be gradually varied as the operation progresses" +
+        " from the starting layer to the ending layer.");
             this.cbIterationsFade.UseVisualStyleBackColor = true;
             this.cbIterationsFade.CheckedChanged += new System.EventHandler(this.EventCheckedChanged);
             // 

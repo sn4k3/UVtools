@@ -52,6 +52,8 @@
             this.nmDegrees.Name = "nmDegrees";
             this.nmDegrees.Size = new System.Drawing.Size(101, 26);
             this.nmDegrees.TabIndex = 23;
+            this.toolTip.SetToolTip(this.nmDegrees, "Number of degrees to rotate the layers, where postive values are clockwise and" +
+        " negative values are counter-clockwise.");
             this.nmDegrees.Value = new decimal(new int[] {
             90,
             0,
