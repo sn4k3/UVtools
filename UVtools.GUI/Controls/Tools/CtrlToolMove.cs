@@ -24,8 +24,8 @@ namespace UVtools.GUI.Controls.Tools
                 (uint)Program.FrmMain.ActualLayerImage.Height);
             SetOperation(Operation);
 
-            lbVolumeWidth.Text = $"Volume Width: {Operation.SrcRoi.Width} / {Operation.ImageWidth}";
-            lbVolumeHeight.Text = $"Volume Height: {Operation.SrcRoi.Height} / {Operation.ImageHeight}";
+            lbVolumeWidth.Text = $"Width: {Operation.SrcRoi.Width} / {Operation.ImageWidth}";
+            lbVolumeHeight.Text = $"Height: {Operation.SrcRoi.Height} / {Operation.ImageHeight}";
 
             ResetDefaults();
         }
@@ -44,9 +44,9 @@ namespace UVtools.GUI.Controls.Tools
         {
             UpdateOperation();
             var insideBounds = ButtonOkEnabled = Operation.ValidateBounds();
-            lbInsideBounds.Text = "Inside Bounds: " + (insideBounds ? "Yes" : "No");
-            lbPlacementX.Text = $"Placement X: {Operation.DstRoi.X} / {Operation.ImageWidth - Operation.SrcRoi.Width}";
-            lbPlacementY.Text = $"Placement Y: {Operation.DstRoi.Y} / {Operation.ImageHeight - Operation.SrcRoi.Height}";
+            lbInsideBounds.Text = "Model within boundary: " + (insideBounds ? "Yes" : "No");
+            lbPlacementX.Text = $"X: {Operation.DstRoi.X} / {Operation.ImageWidth - Operation.SrcRoi.Width}";
+            lbPlacementY.Text = $"Y: {Operation.DstRoi.Y} / {Operation.ImageHeight - Operation.SrcRoi.Height}";
         }
 
         public override bool UpdateOperation()
