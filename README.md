@@ -55,6 +55,8 @@ But also, i need victims for test subject. Proceed at your own risk!
 * PW0 (Photon Workshop)
 * ZCodex (Z-Suite)
 * CWS (NovaMaker)
+* LGS (Longer Orange 10)
+* LGS30 (onger Orange 30)
 * UVJ
 * Image files (png, jpg, jpeg, gif, bmp)
 
@@ -91,6 +93,8 @@ But also, i need victims for test subject. Proceed at your own risk!
 * Creality LD-002R
 * Creality LD-002H
 * Voxelab Polaris
+* Longer Orange 10
+* Longer Orange 30
 
 ## Available profiles for PrusaSlicer
 

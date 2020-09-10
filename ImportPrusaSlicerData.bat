@@ -38,6 +38,8 @@ SET files[28]=Wanhao D8.ini
 SET files[29]=Creality LD-002R.ini
 SET files[30]=Creality LD-002H.ini
 SET files[31]=Voxelab Polaris.ini
+SET files[32]=Longer Orange 10.ini
+SET files[33]=Longer Orange 30.ini
 
 echo PrusaSlicer Printers Instalation
 echo This will replace printers, all changes will be discarded

@@ -45,6 +45,7 @@ namespace UVtools.GUI
         #region Properties
 
         public static readonly OperationMenuItem[] MenuTools = {
+            new OperationMenuItem(new OperationRepairLayers(), Resources.toolbox_16x16),
             new OperationMenuItem(new OperationMove(), Resources.move_16x16),
             new OperationMenuItem(new OperationResize(), Resources.crop_16x16),
             new OperationMenuItem(new OperationFlip(), Resources.flip_16x16),
@@ -736,99 +737,6 @@ namespace UVtools.GUI
                     }
                 }
 
-                // View
-
-                // Tools
-                if (ReferenceEquals(menuItem, menuToolsRepairLayers))
-                {
-                    uint layerStart;
-                    uint layerEnd;
-                    uint closingIterations;
-                    uint openingIterations;
-                    byte removeIslandsBelowEqualPixels;
-                    bool repairIslands;
-                    bool removeEmptyLayers;
-                    bool repairResinTraps;
-                    using (var frmRepairLayers = new FrmToolRepairLayers())
-                    {
-                        if (frmRepairLayers.ShowDialog() != DialogResult.OK) return;
-
-                        layerStart = frmRepairLayers.LayerRangeStart;
-                        layerEnd = frmRepairLayers.LayerRangeEnd;
-                        closingIterations = frmRepairLayers.ClosingIterations;
-                        openingIterations = frmRepairLayers.OpeningIterations;
-                        removeIslandsBelowEqualPixels = frmRepairLayers.RemoveIslandsBelowEqualPixels;
-                        repairIslands = frmRepairLayers.RepairIslands;
-                        removeEmptyLayers = frmRepairLayers.RemoveEmptyLayers;
-                        repairResinTraps = frmRepairLayers.RepairResinTraps;
-                    }
-
-                    if (ReferenceEquals(Issues, null))
-                    {
-                        var islandConfig = GetIslandDetectionConfiguration();
-                        islandConfig.Enabled = repairIslands && removeIslandsBelowEqualPixels > 0;
-                        var resinTrapConfig = GetResinTrapDetectionConfiguration();
-                        resinTrapConfig.Enabled = repairResinTraps;
-                        var touchingBoundConfig = new TouchingBoundDetectionConfiguration {Enabled = false};
-
-                        if (islandConfig.Enabled || resinTrapConfig.Enabled)
-                        {
-                            ComputeIssues(islandConfig, resinTrapConfig, touchingBoundConfig,
-                                tsIssuesDetectEmptyLayers.Checked);
-                        }
-                    }
-
-                    DisableGUI();
-                    FrmLoading.SetDescription("Repairing Layers and Issues");
-
-                    var task = Task.Factory.StartNew(() =>
-                    {
-                        try
-                        {
-                            SlicerFile.LayerManager.RepairLayers(layerStart, layerEnd, closingIterations,
-                                openingIterations, removeIslandsBelowEqualPixels, repairIslands, removeEmptyLayers,
-                                repairResinTraps, Issues,
-                                FrmLoading.RestartProgress());
-                        }
-                        catch (OperationCanceledException)
-                        {
-
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                        finally
-                        {
-                            Invoke((MethodInvoker) delegate
-                            {
-                                // Running on the UI thread
-                                EnableGUI(true);
-                            });
-                        }
-                    });
-
-                    var loadingResult = FrmLoading.ShowDialog();
-                    /*if (loadingResult != DialogResult.OK)
-                    {
-                        return;
-                    }*/
-
-                    if (removeEmptyLayers)
-                    {
-                        UpdateLayerLimits();
-                        RefreshInfo();
-                    }
-
-                    ShowLayer();
-
-                    tsIssuesDetect.PerformButtonClick();
-
-                    menuFileSave.Enabled =
-                        menuFileSaveAs.Enabled = true;
-                    return;
-                }
-
                 // About
                 if (ReferenceEquals(menuItem, menuHelpAbout))
                 {
@@ -1320,7 +1228,7 @@ namespace UVtools.GUI
 
             if (ReferenceEquals(sender, tsIssuesRepair))
             {
-                EventClick(menuToolsRepairLayers, e);
+                ShowRunOperation(typeof(OperationRepairLayers));
                 return;
             }
 
@@ -4011,7 +3919,7 @@ namespace UVtools.GUI
             var typeBase = typeof(CtrlToolTemplate);
             var classname = $"{typeBase.Namespace}.CtrlTool{type.Name.Remove(0,Operation.ClassNameLength)}";
             var controlType = Type.GetType(classname);
-            CtrlToolWindowContent control = null;
+            CtrlToolWindowContent control;
 
             bool removeContent = false;
             if (controlType is null)
@@ -4055,6 +3963,32 @@ namespace UVtools.GUI
             if (baseOperation is null) return false;
 
             DisableGUI();
+
+            switch (baseOperation)
+            {
+                case OperationRepairLayers operation:
+                    if (ReferenceEquals(Issues, null))
+                    {
+                        var islandConfig = GetIslandDetectionConfiguration();
+                        islandConfig.Enabled =
+                            operation.RepairIslands && operation.RemoveIslandsBelowEqualPixelCount > 0;
+                        var resinTrapConfig = GetResinTrapDetectionConfiguration();
+                        resinTrapConfig.Enabled = operation.RepairResinTraps;
+                        var touchingBoundConfig = new TouchingBoundDetectionConfiguration {Enabled = false};
+
+                        if (islandConfig.Enabled || resinTrapConfig.Enabled)
+                        {
+                            ComputeIssues(islandConfig, resinTrapConfig, touchingBoundConfig,
+                                tsIssuesDetectEmptyLayers.Checked);
+                        }
+
+                        operation.Issues = Issues;
+                    }
+
+                    break;
+            }
+
+
             FrmLoading.SetDescription(baseOperation.ProgressTitle);
 
             var task = Task.Factory.StartNew(() =>
@@ -4064,6 +3998,9 @@ namespace UVtools.GUI
                     switch (baseOperation)
                     {
                         // Tools
+                        case OperationRepairLayers operation:
+                            SlicerFile.LayerManager.RepairLayers(operation, FrmLoading.RestartProgress());
+                            break;
                         case OperationMove operation:
                             SlicerFile.LayerManager.Move(operation, FrmLoading.RestartProgress());
                             break;
@@ -4136,16 +4073,23 @@ namespace UVtools.GUI
                     });
                 }
             });
-
+   
             var loadingResult = FrmLoading.ShowDialog();
-
-            
+ 
             ShowLayer();
             UpdateLayerLimits();
             RefreshInfo();
 
             menuFileSave.Enabled =
                 menuFileSaveAs.Enabled = true;
+
+            switch (baseOperation)
+            {
+                // Tools
+                case OperationRepairLayers operation:
+                    tsIssuesDetect.PerformButtonClick();
+                    break;
+            }
 
 
             return true;

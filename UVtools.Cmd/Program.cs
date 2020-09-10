@@ -247,7 +247,7 @@ namespace UVtools.Cmd
                     bool removeEmptyLayers = repair.Length < 4 || repair[3] > 0 || repair[3] < 0;
                     bool repairResinTraps = repair.Length < 5 || repair[4] > 0 || repair[4] < 0;
 
-                    fileFormat.LayerManager.RepairLayers(layerStartIndex, layerEndIndex, 2, 1, 4, repairIslands, removeEmptyLayers, repairResinTraps, null, progress);
+                    //fileFormat.LayerManager.RepairLayers(layerStartIndex, layerEndIndex, 2, 1, 4, repairIslands, removeEmptyLayers, repairResinTraps, null, progress);
                 }
                 
             });

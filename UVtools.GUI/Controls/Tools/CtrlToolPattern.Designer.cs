@@ -399,7 +399,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ButtonOkEnabled = false;
-            this.ButtonResetDefaultsVisible = true;
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btnAutoMarginRow);
             this.Controls.Add(this.btnAutoMarginCol);
@@ -417,6 +416,7 @@
             this.Controls.Add(this.label4);
             this.Controls.Add(this.nmCols);
             this.Description = "";
+            this.ExtraButtonVisible = true;
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "CtrlToolPattern";
             this.Size = new System.Drawing.Size(590, 198);

@@ -56,9 +56,10 @@ namespace UVtools.GUI.Forms
             this.nmLayerRangeStart = new System.Windows.Forms.NumericUpDown();
             this.table = new System.Windows.Forms.TableLayoutPanel();
             this.pnActions = new System.Windows.Forms.Panel();
+            this.cbActionExtra = new System.Windows.Forms.CheckBox();
+            this.btnActionExtra = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnOk = new System.Windows.Forms.Button();
-            this.btnResetDefaults = new System.Windows.Forms.Button();
             this.pnDescription.SuspendLayout();
             this.pnLayerRange.SuspendLayout();
             this.gbLayerRange.SuspendLayout();
@@ -88,8 +89,8 @@ namespace UVtools.GUI.Forms
             this.lbDescription.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lbDescription.Location = new System.Drawing.Point(0, 0);
             this.lbDescription.Name = "lbDescription";
-            this.lbDescription.Padding = new System.Windows.Forms.Padding(20);
-            this.lbDescription.Size = new System.Drawing.Size(129, 60);
+            this.lbDescription.Padding = new System.Windows.Forms.Padding(20, 20, 10, 20);
+            this.lbDescription.Size = new System.Drawing.Size(119, 60);
             this.lbDescription.TabIndex = 1;
             this.lbDescription.Text = "Description";
             this.lbDescription.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -332,7 +333,8 @@ namespace UVtools.GUI.Forms
             this.pnActions.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.pnActions.BackColor = System.Drawing.SystemColors.Control;
             this.pnActions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pnActions.Controls.Add(this.btnResetDefaults);
+            this.pnActions.Controls.Add(this.cbActionExtra);
+            this.pnActions.Controls.Add(this.btnActionExtra);
             this.pnActions.Controls.Add(this.btnCancel);
             this.pnActions.Controls.Add(this.btnOk);
             this.pnActions.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -340,6 +342,36 @@ namespace UVtools.GUI.Forms
             this.pnActions.Name = "pnActions";
             this.pnActions.Size = new System.Drawing.Size(548, 85);
             this.pnActions.TabIndex = 8;
+            // 
+            // cbActionExtra
+            // 
+            this.cbActionExtra.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.cbActionExtra.AutoSize = true;
+            this.cbActionExtra.Location = new System.Drawing.Point(4, 32);
+            this.cbActionExtra.Name = "cbActionExtra";
+            this.cbActionExtra.Size = new System.Drawing.Size(202, 24);
+            this.cbActionExtra.TabIndex = 26;
+            this.cbActionExtra.Text = "Show Advanced Options";
+            this.cbActionExtra.UseVisualStyleBackColor = true;
+            this.cbActionExtra.Visible = false;
+            this.cbActionExtra.CheckedChanged += new System.EventHandler(this.EventClick);
+            // 
+            // btnActionExtra
+            // 
+            this.btnActionExtra.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnActionExtra.AutoSize = true;
+            this.btnActionExtra.Image = global::UVtools.GUI.Properties.Resources.Rotate_16x16;
+            this.btnActionExtra.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnActionExtra.Location = new System.Drawing.Point(4, 19);
+            this.btnActionExtra.Name = "btnActionExtra";
+            this.btnActionExtra.Padding = new System.Windows.Forms.Padding(10, 0, 10, 0);
+            this.btnActionExtra.Size = new System.Drawing.Size(177, 48);
+            this.btnActionExtra.TabIndex = 7;
+            this.btnActionExtra.Text = "&Reset to defaults";
+            this.btnActionExtra.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.btnActionExtra.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.btnActionExtra.Visible = false;
+            this.btnActionExtra.Click += new System.EventHandler(this.EventClick);
             // 
             // btnCancel
             // 
@@ -374,23 +406,6 @@ namespace UVtools.GUI.Forms
             this.btnOk.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnOk.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.btnOk.Click += new System.EventHandler(this.EventClick);
-            // 
-            // btnResetDefaults
-            // 
-            this.btnResetDefaults.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnResetDefaults.AutoSize = true;
-            this.btnResetDefaults.Image = global::UVtools.GUI.Properties.Resources.Rotate_16x16;
-            this.btnResetDefaults.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnResetDefaults.Location = new System.Drawing.Point(4, 19);
-            this.btnResetDefaults.Name = "btnResetDefaults";
-            this.btnResetDefaults.Padding = new System.Windows.Forms.Padding(10, 0, 10, 0);
-            this.btnResetDefaults.Size = new System.Drawing.Size(177, 48);
-            this.btnResetDefaults.TabIndex = 7;
-            this.btnResetDefaults.Text = "&Reset to defaults";
-            this.btnResetDefaults.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.btnResetDefaults.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.btnResetDefaults.Visible = false;
-            this.btnResetDefaults.Click += new System.EventHandler(this.EventClick);
             // 
             // FrmToolWindow
             // 
@@ -460,6 +475,7 @@ namespace UVtools.GUI.Forms
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem btnLayerRangeFirstLayer;
         private System.Windows.Forms.ToolStripMenuItem btnLayerRangeLastLayer;
-        public System.Windows.Forms.Button btnResetDefaults;
+        public System.Windows.Forms.Button btnActionExtra;
+        private System.Windows.Forms.CheckBox cbActionExtra;
     }
 }

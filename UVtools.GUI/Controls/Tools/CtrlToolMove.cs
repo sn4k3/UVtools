@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Windows.Forms;
 using UVtools.Core;
 using UVtools.Core.Operations;
 
@@ -27,17 +28,20 @@ namespace UVtools.GUI.Controls.Tools
             lbVolumeWidth.Text = $"Volume Width: {Operation.SrcRoi.Width} / {Operation.ImageWidth}";
             lbVolumeHeight.Text = $"Volume Height: {Operation.SrcRoi.Height} / {Operation.ImageHeight}";
 
-            ResetDefaults();
+            ExtraActionCall(this);
         }
 
-        public override void ResetDefaults()
+        public override void ExtraActionCall(object sender)
         {
-            nmMarginLeft.Value = 0;
-            nmMarginTop.Value = 0;
-            nmMarginRight.Value = 0;
-            nmMarginBottom.Value = 0;
-            rbAnchorMiddleCenter.Checked = true;
-            EventValueChanged(this, EventArgs.Empty);
+            if (sender is Button || ReferenceEquals(sender, this))
+            {
+                nmMarginLeft.Value = 0;
+                nmMarginTop.Value = 0;
+                nmMarginRight.Value = 0;
+                nmMarginBottom.Value = 0;
+                rbAnchorMiddleCenter.Checked = true;
+                EventValueChanged(this, EventArgs.Empty);
+            }
         }
 
         private void EventValueChanged(object sender, EventArgs e)

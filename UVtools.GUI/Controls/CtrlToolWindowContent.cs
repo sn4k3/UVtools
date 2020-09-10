@@ -85,9 +85,21 @@ namespace UVtools.GUI.Controls
         [SettingsBindable(true)]
         public string Description { get; set; }
 
-        [SettingsBindable(true)] public bool ButtonResetDefaultsVisible { get; set; } = false;
+        [SettingsBindable(true)] public bool ExtraButtonVisible { get; set; } = false;
+
+        [Editor("System.ComponentModel.Design.MultilineStringEditor", typeof(UITypeEditor))]
+        [SettingsBindable(true)]
+        public string ExtraButtonText { get; set; } = "&Reset to defaults";
+
+        [SettingsBindable(true)] public bool ExtraCheckboxVisible { get; set; } = false;
+
+        [Editor("System.ComponentModel.Design.MultilineStringEditor", typeof(UITypeEditor))]
+        [SettingsBindable(true)]
+        public string ExtraCheckboxText { get; set; } = "Show advanced options";
 
         private bool _buttonOkEnabled = true;
+        private bool _layerRangeVisible = true;
+
         [SettingsBindable(true)]
         public bool ButtonOkEnabled
         {
@@ -103,7 +115,12 @@ namespace UVtools.GUI.Controls
         [SettingsBindable(true)]
         public string ButtonCancelText { get; set; } = "Cancel";
 
-        [SettingsBindable(true)] public bool LayerRangeVisible { get; set; } = true;
+        [SettingsBindable(true)]
+        public bool LayerRangeVisible
+        {
+            get => _layerRangeVisible;
+            set => SetProperty(ref _layerRangeVisible, value);
+        }
 
         [SettingsBindable(true)] public bool LayerRangeEndVisible { get; set; } = true;
 
@@ -115,18 +132,7 @@ namespace UVtools.GUI.Controls
 
         [ReadOnly(true)]
         [Browsable(false)]
-        public virtual string ConfirmationText
-        {
-            get
-            {
-                if (BaseOperation is null || string.IsNullOrEmpty(BaseOperation.ConfirmationText))
-                {
-                    return $"{Text}?";
-                }
-
-                return BaseOperation.ConfirmationText;
-            }
-        }
+        public virtual string ConfirmationText => BaseOperation is null ? $"{Text}?" : BaseOperation.ConfirmationText;
 
         #endregion
 
@@ -199,7 +205,8 @@ namespace UVtools.GUI.Controls
 
         #endregion
 
-
-        public virtual void ResetDefaults() { }
+        #region Events
+        public virtual void ExtraActionCall(object sender) { }
+        #endregion
     }
 }

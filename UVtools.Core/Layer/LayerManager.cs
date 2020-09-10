@@ -1171,16 +1171,16 @@ namespace UVtools.Core
             return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.PixelsCount).ToList();
         }
 
-        public void RepairLayers(uint layerStart, uint layerEnd, uint closingIterations = 1, uint openingIterations = 0, byte removeIslandsBelowEqualPixels = 4,
-            bool repairIslands = true, bool removeEmptyLayers = true, bool repairResinTraps = true, List<LayerIssue> issues = null,
-            OperationProgress progress = null)
+        public void RepairLayers(OperationRepairLayers operation, OperationProgress progress = null)
         {
             if(ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset(OperationProgress.StatusRepairLayers, layerEnd - layerStart + 1);
+            progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
 
-            if (repairIslands || repairResinTraps)
+            var issues = operation.Issues;
+
+            if (operation.RepairIslands || operation.RepairResinTraps)
             {
-                Parallel.For(layerStart, layerEnd + 1, layerIndex =>
+                Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     Layer layer = this[layerIndex];
@@ -1194,7 +1194,7 @@ namespace UVtools.Core
 
                     if (!ReferenceEquals(issues, null))
                     {
-                        if (repairIslands && removeIslandsBelowEqualPixels > 0)
+                        if (operation.RepairIslands && operation.RemoveIslandsBelowEqualPixelCount > 0)
                         {
                             Span<byte> bytes = null;
                             foreach (var issue in issues)
@@ -1202,7 +1202,7 @@ namespace UVtools.Core
                                 if (
                                     issue.LayerIndex != layerIndex ||
                                     issue.Type != LayerIssue.IssueType.Island ||
-                                    issue.Pixels.Length > removeIslandsBelowEqualPixels) continue;
+                                    issue.Pixels.Length > operation.RemoveIslandsBelowEqualPixelCount) continue;
 
                                 initImage();
                                 if(bytes == null)
@@ -1227,7 +1227,7 @@ namespace UVtools.Core
                             }*/
                         }
 
-                        if (repairResinTraps)
+                        if (operation.RepairResinTraps)
                         {
                             foreach (var issue in issues.Where(issue => issue.LayerIndex == layerIndex && issue.Type == LayerIssue.IssueType.ResinTrap))
                             {
@@ -1244,22 +1244,22 @@ namespace UVtools.Core
                         }
                     }
 
-                    if (repairIslands && (closingIterations > 0 || openingIterations > 0))
+                    if (operation.RepairIslands && (operation.GapClosingIterations > 0 || operation.NoiseRemovalIterations > 0))
                     {
                         initImage();
                         using (Mat kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3),
                             new Point(-1, -1)))
                         {
-                            if (closingIterations > 0)
+                            if (operation.GapClosingIterations > 0)
                             {
                                 CvInvoke.MorphologyEx(image, image, MorphOp.Close, kernel, new Point(-1, -1),
-                                    (int) closingIterations, BorderType.Default, new MCvScalar());
+                                    (int)operation.GapClosingIterations, BorderType.Default, new MCvScalar());
                             }
 
-                            if (openingIterations > 0)
+                            if (operation.NoiseRemovalIterations > 0)
                             {
                                 CvInvoke.MorphologyEx(image, image, MorphOp.Open, kernel, new Point(-1, -1),
-                                    (int) closingIterations, BorderType.Default, new MCvScalar());
+                                    (int)operation.NoiseRemovalIterations, BorderType.Default, new MCvScalar());
                             }
                         }
                     }
@@ -1277,10 +1277,10 @@ namespace UVtools.Core
                 });
             }
 
-            if (removeEmptyLayers)
+            if (operation.RemoveEmptyLayers)
             {
                 List<uint> removeLayers = new List<uint>();
-                for (uint layerIndex = layerStart; layerIndex <= layerEnd; layerIndex++)
+                for (uint layerIndex = operation.LayerIndexStart; layerIndex <= operation.LayerIndexEnd; layerIndex++)
                 {
                     if (this[layerIndex].NonZeroPixelCount == 0)
                     {

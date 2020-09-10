@@ -49,7 +49,6 @@ namespace UVtools.GUI
             this.menuFileExit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuTools = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuToolsRepairLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuHelpWebsite = new System.Windows.Forms.ToolStripMenuItem();
             this.menuHelpDonate = new System.Windows.Forms.ToolStripMenuItem();
@@ -472,23 +471,10 @@ namespace UVtools.GUI
             // 
             // menuTools
             // 
-            this.menuTools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuToolsRepairLayers});
             this.menuTools.Enabled = false;
             this.menuTools.Name = "menuTools";
             this.menuTools.Size = new System.Drawing.Size(46, 20);
             this.menuTools.Text = "&Tools";
-            // 
-            // menuToolsRepairLayers
-            // 
-            this.menuToolsRepairLayers.Enabled = false;
-            this.menuToolsRepairLayers.Image = global::UVtools.GUI.Properties.Resources.toolbox_16x16;
-            this.menuToolsRepairLayers.Name = "menuToolsRepairLayers";
-            this.menuToolsRepairLayers.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
-            | System.Windows.Forms.Keys.R)));
-            this.menuToolsRepairLayers.Size = new System.Drawing.Size(261, 22);
-            this.menuToolsRepairLayers.Text = "&Repair layers and Issues";
-            this.menuToolsRepairLayers.Click += new System.EventHandler(this.EventClick);
             // 
             // helpToolStripMenuItem
             // 
@@ -2991,7 +2977,6 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator12;
         private System.Windows.Forms.ToolStripButton tsIssueRemove;
         private System.Windows.Forms.ToolStripMenuItem menuTools;
-        private System.Windows.Forms.ToolStripMenuItem menuToolsRepairLayers;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
         private System.Windows.Forms.ToolStripButton tsIssuesRepair;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator14;

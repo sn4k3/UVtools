@@ -377,14 +377,14 @@
             this.nmMarginLeft.UpDownAlign = System.Windows.Forms.LeftRightAlignment.Left;
             this.nmMarginLeft.ValueChanged += new System.EventHandler(this.EventValueChanged);
             // 
-            // CtrlToolMoveModel
+            // CtrlToolMove
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ButtonResetDefaultsVisible = true;
             this.Controls.Add(this.groupBox1);
             this.Description = "";
+            this.ExtraButtonVisible = true;
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "CtrlToolMove";
             this.Size = new System.Drawing.Size(571, 210);

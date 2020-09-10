@@ -64,16 +64,16 @@
             this.panel3.Location = new System.Drawing.Point(0, 0);
             this.panel3.Margin = new System.Windows.Forms.Padding(4);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(452, 167);
+            this.panel3.Size = new System.Drawing.Size(486, 167);
             this.panel3.TabIndex = 4;
             // 
             // lbDescription
             // 
             this.lbDescription.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lbDescription.Location = new System.Drawing.Point(0, 0);
-            this.lbDescription.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbDescription.Name = "lbDescription";
-            this.lbDescription.Size = new System.Drawing.Size(450, 165);
+            this.lbDescription.Padding = new System.Windows.Forms.Padding(20, 0, 20, 0);
+            this.lbDescription.Size = new System.Drawing.Size(484, 165);
             this.lbDescription.TabIndex = 1;
             this.lbDescription.Text = resources.GetString("lbDescription.Text");
             this.lbDescription.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -86,7 +86,7 @@
             this.cbTest.FormattingEnabled = true;
             this.cbTest.Location = new System.Drawing.Point(61, 174);
             this.cbTest.Name = "cbTest";
-            this.cbTest.Size = new System.Drawing.Size(379, 26);
+            this.cbTest.Size = new System.Drawing.Size(413, 26);
             this.cbTest.TabIndex = 5;
             this.cbTest.SelectedIndexChanged += new System.EventHandler(this.EventSelectedIndexChanged);
             // 
@@ -112,28 +112,35 @@
             // 
             // btnStop
             // 
+            this.btnStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnStop.BackColor = System.Drawing.SystemColors.Control;
             this.btnStop.Enabled = false;
-            this.btnStop.Location = new System.Drawing.Point(353, 378);
+            this.btnStop.Location = new System.Drawing.Point(387, 378);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(87, 36);
             this.btnStop.TabIndex = 8;
             this.btnStop.Text = "Stop";
+            this.btnStop.UseVisualStyleBackColor = false;
             this.btnStop.Click += new System.EventHandler(this.EventClicked);
             // 
             // btnStart
             // 
-            this.btnStart.Location = new System.Drawing.Point(260, 378);
+            this.btnStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnStart.BackColor = System.Drawing.SystemColors.Control;
+            this.btnStart.Location = new System.Drawing.Point(294, 378);
             this.btnStart.Name = "btnStart";
             this.btnStart.Size = new System.Drawing.Size(87, 36);
             this.btnStart.TabIndex = 9;
             this.btnStart.Text = "Start";
+            this.btnStart.UseVisualStyleBackColor = false;
             this.btnStart.Click += new System.EventHandler(this.EventClicked);
             // 
             // progressBar
             // 
+            this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.progressBar.Location = new System.Drawing.Point(12, 378);
             this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(242, 36);
+            this.progressBar.Size = new System.Drawing.Size(276, 36);
             this.progressBar.TabIndex = 10;
             // 
             // label2
@@ -184,7 +191,8 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(452, 426);
+            this.BackColor = System.Drawing.Color.White;
+            this.ClientSize = new System.Drawing.Size(486, 426);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.lbMultiThreadDevResults);
             this.Controls.Add(this.lbSingleThreadDevResults);

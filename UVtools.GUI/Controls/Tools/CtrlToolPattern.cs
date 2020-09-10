@@ -37,17 +37,20 @@ namespace UVtools.GUI.Controls.Tools
             nmCols.Maximum = Operation.MaxCols;
             nmRows.Maximum = Operation.MaxRows;
 
-            ResetDefaults();
+            ExtraActionCall(this);
         }
 
-        public override void ResetDefaults()
+        public override void ExtraActionCall(object sender)
         {
-            nmMarginCol.Value = Operation.MaxMarginCol;
-            nmMarginRow.Value = Operation.MaxMarginRow;
-            nmCols.Value = Operation.MaxCols;
-            nmRows.Value = Operation.MaxRows;
-            Operation.Fill();
-            EventValueChanged(this, EventArgs.Empty);
+            if (sender is Button || ReferenceEquals(sender, this))
+            {
+                nmMarginCol.Value = Operation.MaxMarginCol;
+                nmMarginRow.Value = Operation.MaxMarginRow;
+                nmCols.Value = Operation.MaxCols;
+                nmRows.Value = Operation.MaxRows;
+                Operation.Fill();
+                EventValueChanged(this, EventArgs.Empty);
+            }
         }
 
         public override bool UpdateOperation()

@@ -30,12 +30,34 @@ namespace UVtools.GUI.Forms
             set => lbDescription.Text = value;
         }
 
+        [SettingsBindable(true)]
+        public bool ExtraButtonVisible
+        {
+            get => btnActionExtra.Visible;
+            set => btnActionExtra.Visible = value;
+        }
+
         [Editor("System.ComponentModel.Design.MultilineStringEditor", typeof(UITypeEditor))]
         [SettingsBindable(true)]
-        public bool ButtonResetDefaultsVisible
+        public string ExtraButtonText
         {
-            get => btnResetDefaults.Visible;
-            set => btnResetDefaults.Visible = value;
+            get => btnActionExtra.Text;
+            set => btnActionExtra.Text = value;
+        }
+
+        [SettingsBindable(true)]
+        public bool ExtraCheckboxVisible
+        {
+            get => cbActionExtra.Visible;
+            set => cbActionExtra.Visible = value;
+        }
+
+        [Editor("System.ComponentModel.Design.MultilineStringEditor", typeof(UITypeEditor))]
+        [SettingsBindable(true)]
+        public string ExtraCheckboxText
+        {
+            get => cbActionExtra.Text;
+            set => cbActionExtra.Text = value;
         }
 
         [Editor("System.ComponentModel.Design.MultilineStringEditor", typeof(UITypeEditor))]
@@ -107,6 +129,11 @@ namespace UVtools.GUI.Forms
             if (!ReferenceEquals(title, null)) Text = title;
             lbDescription.MaximumSize = new Size(Width - 10, 0);
             Description = description;
+            if (string.IsNullOrEmpty(description))
+            {
+                pnDescription.Visible = false;
+            }
+            
             ButtonOkText = buttonOkText;
             LayerRangeVisible = layerRangeVisible;
             LayerRangeEndVisible = layerRangeEndVisible;
@@ -139,7 +166,10 @@ namespace UVtools.GUI.Forms
             Width = Math.Max(MinimumSize.Width, content.Width);
             lbDescription.MaximumSize = new Size(Width - 10, 0);
             //content.Dock = DockStyle.Fill;
-            btnResetDefaults.Visible = content.ButtonResetDefaultsVisible;
+            ExtraButtonVisible = content.ExtraButtonVisible;
+            ExtraButtonText = content.ExtraButtonText;
+            ExtraCheckboxVisible = content.ExtraCheckboxVisible;
+            ExtraCheckboxText = content.ExtraCheckboxText;
             btnOk.Enabled = content.ButtonOkEnabled;
             //content.AutoSize = true;
             Content = content;
@@ -226,6 +256,13 @@ namespace UVtools.GUI.Forms
                 btnOk.Enabled = Content.ButtonOkEnabled;
                 return;
             }
+
+            if (e.PropertyName == nameof(Content.LayerRangeVisible))
+            {
+                LayerRangeVisible = Content.LayerRangeVisible;
+                return;
+            }
+            
         }
 
         private void EventClick(object sender, EventArgs e)
@@ -272,9 +309,9 @@ namespace UVtools.GUI.Forms
                 return;
             }
 
-            if (ReferenceEquals(sender, btnResetDefaults))
+            if (ReferenceEquals(sender, btnActionExtra) || ReferenceEquals(sender, cbActionExtra))
             {
-                ResetDefaults();
+                ExtraActionCall(sender);
                 return;
             }
 
@@ -292,11 +329,21 @@ namespace UVtools.GUI.Forms
                 if (!ValidateForm()) return;
                 if (!ReferenceEquals(Content, null) && !Content.ValidateForm()) return;
 
-                if (MessageQuestionBox($"Are you sure you want to {Content?.ConfirmationText ?? ConfirmationText}") == DialogResult.Yes)
+                string confirmationText = ConfirmationText;
+                if (!ReferenceEquals(Content, null))
                 {
-                    DialogResult = DialogResult.OK;
-                    Close();
+                    confirmationText = Content.ConfirmationText;
                 }
+
+                if (!string.IsNullOrEmpty(confirmationText))
+                {
+                    if (MessageQuestionBox(
+                            $"Are you sure you want to {confirmationText}") !=
+                        DialogResult.Yes) return;
+                }
+
+                DialogResult = DialogResult.OK;
+                Close();
 
                 return;
             }
@@ -355,9 +402,9 @@ namespace UVtools.GUI.Forms
         /// <summary>
         /// Called when button reset to defaults is clicked
         /// </summary>
-        public virtual void ResetDefaults()
+        public virtual void ExtraActionCall(object sender)
         {
-            Content?.ResetDefaults();
+            Content?.ExtraActionCall(sender);
         }
 
         public DialogResult MessageErrorBox(string message) => GUIExtensions.MessageBoxError($"{Text} Error", message);

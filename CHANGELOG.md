@@ -1,10 +1,12 @@
 # Changelog
 
-## ?/08/2020 - v0.8.0.0
+## 10/08/2020 - v0.8.0.0
 
 * (Add) LGS and LGS30 file format for Longer Orange 10 and 30 (ezrec/uv3dp#105)
 * (Add) CWS: Support the GRAY2RGB and RBG2GRAY encoding for Bene Mono
 * (Add) PrusaSlicer Printer: Nova Bene4 Mono
+* (Add) PrusaSlicer Printer: Longer Orange 10
+* (Add) PrusaSlicer Printer: Longer Orange 30
 * (Add) Layer importer tool (#37)
 * (Add) Settings & Issues: Enable or disable Empty Layers
 * (Add) Layer issue Z map paired with layer navigation tracker bar
