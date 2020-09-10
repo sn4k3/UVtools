@@ -105,7 +105,7 @@ namespace UVtools.GUI.Forms
         public FrmToolWindow(string title, string description, string buttonOkText, bool layerRangeVisible = true, int layerIndex = -1, bool layerRangeEndVisible = true, bool hideContent = false) : this()
         {
             if (!ReferenceEquals(title, null)) Text = title;
-            lbDescription.MaximumSize = new Size(Width - 20, 0);
+            lbDescription.MaximumSize = new Size(Width - 10, 0);
             Description = description;
             ButtonOkText = buttonOkText;
             LayerRangeVisible = layerRangeVisible;
@@ -137,6 +137,7 @@ namespace UVtools.GUI.Forms
         {
             pnContent.Controls.Add(content);
             Width = Math.Max(MinimumSize.Width, content.Width);
+            lbDescription.MaximumSize = new Size(Width - 10, 0);
             //content.Dock = DockStyle.Fill;
             btnResetDefaults.Visible = content.ButtonResetDefaultsVisible;
             btnOk.Enabled = content.ButtonOkEnabled;

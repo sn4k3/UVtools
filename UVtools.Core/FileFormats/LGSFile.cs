@@ -124,7 +124,6 @@ namespace UVtools.Core.FileFormats
                     {
                         addSpan();
                         span = 1;
-
                     }
 
                     lc = c;
@@ -307,6 +306,11 @@ namespace UVtools.Core.FileFormats
 
                 bytes[index++] = (byte) (rgb15 >> 8);
                 bytes[index++] = (byte) (rgb15 & 0xff);
+            }
+
+            if (index != bytes.Length)
+            {
+                throw new FileLoadException($"Preview encode incomplete encode, expected: {bytes.Length}, encoded: {index}");
             }
 
             return bytes;
