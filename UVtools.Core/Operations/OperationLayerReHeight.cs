@@ -18,19 +18,19 @@ namespace UVtools.Core.Operations
     {
         #region Overrides
 
-        public override string Title => "Layer re-height";
+        public override string Title => "Adjust layer height";
         public override string Description =>
-            "Changes layer height.\n" +
-            "Going lower doesn't give you better XYZ accuracy but will reduce Z lines, layers will be cloned and repeated over Z for the effect.\n" +
-            "Going higher will reduce detail, layers will sum times the modifier for the effect.\n" +
-            "Note: Reslice with the new layer height is always preferable";
+            "Adjust the layer height of the model\n\n" +
+            "Adjusting to values lower than current height will reduce layer lines, adjusting to values higher" +
+            " than current height will reduce model detail.\n\n" +
+            "Note: Using dedicated slicer software to re-slice will usually yeild better results.";
         public override string ConfirmationText =>
-            $"re-height layers to {Item.LayerHeight}mm?";
+            $"adjust layer height to {Item.LayerHeight}mm?";
 
         public override string ProgressTitle =>
-            $"Re-height layers to {Item.LayerHeight}mm";
+            $"Adjusting layer height to {Item.LayerHeight}mm";
 
-        public override string ProgressAction => "Re-height-ed layers";
+        public override string ProgressAction => "Height adjusted layers";
 
         public override StringTag Validate(params object[] parameters)
         {
@@ -38,7 +38,7 @@ namespace UVtools.Core.Operations
 
             if (Item is null)
             {
-                sb.AppendLine("No valid configurations to proceed");
+                sb.AppendLine("No valid configurations, unable to proceed.");
             }
 
 

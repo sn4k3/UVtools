@@ -17,15 +17,15 @@ namespace UVtools.Core.Operations
 
         public override string Title => "Blur";
         public override string Description =>
-            $"Blur and averaging images with various low pass filters\n" +
-            "Note: Printer must support AntiAliasing on firmware to able to use this function\n" +
-            "More information: https://docs.opencv.org/master/d4/d13/tutorial_py_filtering.html";
+            $"Blur layer images by applying a low pass filter\n\n" +
+            "NOTE: Target printer must support AntiAliasing in order to use this function.\n\n" +
+            "See https://docs.opencv.org/master/d4/d13/tutorial_py_filtering.html";
 
         public override string ConfirmationText =>
-            $"blur model with {BlurOperation} from layers {LayerIndexStart} to {LayerIndexEnd}?";
+            $"blur model with {BlurOperation} from layers {LayerIndexStart} through {LayerIndexEnd}?";
 
         public override string ProgressTitle =>
-            $"Bluring model with {BlurOperation} layers from {LayerIndexStart} to {LayerIndexEnd}";
+            $"Bluring model with {BlurOperation} from layers {LayerIndexStart} through {LayerIndexEnd}";
 
         public override string ProgressAction => "Blured layers";
 
@@ -46,7 +46,7 @@ namespace UVtools.Core.Operations
             {
                 if (Kernel is null)
                 {
-                    sb.AppendLine("Kernel can't be empty.");
+                    sb.AppendLine("Kernel can not be empty.");
                 }
             }
 

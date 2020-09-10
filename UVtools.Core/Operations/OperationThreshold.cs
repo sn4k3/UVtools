@@ -14,15 +14,16 @@ namespace UVtools.Core.Operations
     {
         public override string Title => "Threshold pixels";
         public override string Description =>
-            "Manipulates pixels values giving a threshold, maximum and a operation type.\n" +
-            "If a pixel brightness is less or equal to the threshold value, set this pixel to 0, otherwise set to defined maximum value.\n" +
-            "More info: https://docs.opencv.org/master/d7/d4d/tutorial_py_thresholding.html";
+            "Manipulate pixel values based on a threshold.\n\n" +
+            "Pixles brighter than the theshold will be set to the Max value, " +
+            "all other pixels will be set to 0.\n\n" +
+            "See https://docs.opencv.org/master/d7/d4d/tutorial_py_thresholding.html";
 
         public override string ConfirmationText =>
-            $"threshold pixels ({Threshold}/{Maximum}) from layers {LayerIndexStart} to {LayerIndexEnd}";
+            $"apply threshold {Threshold} with max {Maximum} from layers {LayerIndexStart} through {LayerIndexEnd}";
 
         public override string ProgressTitle =>
-            $"Thresholding pixels ({Threshold}/{Maximum}) from layers {LayerIndexStart} to {LayerIndexEnd}";
+            $"Applying threshold {Threshold} with max {Maximum} from layers {LayerIndexStart} through {LayerIndexEnd}";
 
         public override string ProgressAction => "Thresholded layers";
         

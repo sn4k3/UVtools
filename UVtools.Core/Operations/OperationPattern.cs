@@ -15,14 +15,14 @@ namespace UVtools.Core.Operations
     {
         #region Overrides
 
-        public override string Title => "Pattern";
+        public override string Title => "Duplicate";
         public override string Description =>
-            "Rectangular pattern the print around the plate.";
+            "Duplicates the model in a rectangular pattern around the build plate.";
         public override string ConfirmationText =>
-            $"pattern the object with {Cols} x {Rows} copies?";
+            $"duplicate the object across {Cols} columns and {Rows} rows?";
 
         public override string ProgressTitle =>
-            $"Pattern the object with {Cols} x {Rows} copies";
+            $"Duplicating the object across {Cols} columns and {Rows} rowss";
 
         public override string ProgressAction => "Patterned layers";
 
@@ -32,12 +32,12 @@ namespace UVtools.Core.Operations
 
             if (Cols <= 1 && Rows <= 1)
             {
-                sb.AppendLine("Either columns or rows must be greater than 1 to be able to run this tool.");
+                sb.AppendLine("Either columns or rows must be greater than 1.");
             }
             
             if (!ValidateBounds())
             {
-                sb.AppendLine("Your parameters will put the object out of build plate, please adjust the margins.");
+                sb.AppendLine("Your parameters will put the object outside of the build plate, please adjust the margins.");
             }
 
             return new StringTag(sb.ToString());

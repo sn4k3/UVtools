@@ -120,11 +120,6 @@
   <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
-  <data name="label6.ToolTip" xml:space="preserve">
-    <value>Selects the layers range within start layer and end layer where mutator will operate.
-Select same layer start as end to operate only within that layer.
-Note: "Layer Start" start can't be higher than "Layer End".</value>
-  </data>
   <data name="label1.ToolTip" xml:space="preserve">
     <value>Selects the number of iterations/passes to perform on each layer using this mutator.
 Enable  the "Fade in/out" to fade the iteration over layers, you can use a start iteration higher than end to perform a inverse fade.
@@ -135,4 +130,7 @@ WARNING: Using high iteration values can destroy your model depending on the mut
 Enable  the "Fade in/out" to fade the iteration over layers, you can use a start iteration higher than end to perform a inverse fade.
 WARNING: Using high iteration values can destroy your model depending on the mutator being used, please use low values or with caution!</value>
   </data>
+  <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>25</value>
+  </metadata>
 </root>

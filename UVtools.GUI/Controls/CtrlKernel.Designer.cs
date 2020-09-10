@@ -28,6 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CtrlKernel));
             this.tbKernel = new System.Windows.Forms.TextBox();
             this.cbShape = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -38,17 +40,25 @@
             this.btnGen = new System.Windows.Forms.Button();
             this.btnReset = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.label4 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
             this.nmAnchorY = new System.Windows.Forms.NumericUpDown();
             this.nmAnchorX = new System.Windows.Forms.NumericUpDown();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.nmSizeX)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmSizeY)).BeginInit();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmAnchorY)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmAnchorX)).BeginInit();
             this.SuspendLayout();
+            // 
+            // toolTip
+            // 
+            this.toolTip.AutoPopDelay = 32767;
+            this.toolTip.InitialDelay = 500;
+            this.toolTip.ReshowDelay = 100;
+            this.toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
+            this.toolTip.ToolTipTitle = "Information";
             // 
             // tbKernel
             // 
@@ -60,6 +70,7 @@
             this.tbKernel.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.tbKernel.Size = new System.Drawing.Size(210, 178);
             this.tbKernel.TabIndex = 1;
+            this.toolTip.SetToolTip(this.tbKernel, resources.GetString("tbKernel.ToolTip"));
             this.tbKernel.WordWrap = false;
             // 
             // cbShape
@@ -172,7 +183,6 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.label6);
             this.groupBox1.Controls.Add(this.label5);
             this.groupBox1.Controls.Add(this.nmAnchorY);
             this.groupBox1.Controls.Add(this.nmAnchorX);
@@ -194,15 +204,15 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Kernel";
             // 
-            // label4
+            // label5
             // 
-            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(223, 93);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(79, 20);
-            this.label4.TabIndex = 9;
-            this.label4.Text = "Anchor X:";
+            this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(363, 93);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(24, 20);
+            this.label5.TabIndex = 12;
+            this.label5.Text = "Y:";
             // 
             // nmAnchorY
             // 
@@ -221,6 +231,7 @@
             this.nmAnchorY.Name = "nmAnchorY";
             this.nmAnchorY.Size = new System.Drawing.Size(50, 26);
             this.nmAnchorY.TabIndex = 11;
+            this.toolTip.SetToolTip(this.nmAnchorY, "Y coordinate of the kernel origin, -1 for auto-center");
             this.nmAnchorY.Value = new decimal(new int[] {
             1,
             0,
@@ -244,31 +255,22 @@
             this.nmAnchorX.Name = "nmAnchorX";
             this.nmAnchorX.Size = new System.Drawing.Size(50, 26);
             this.nmAnchorX.TabIndex = 10;
+            this.toolTip.SetToolTip(this.nmAnchorX, "X coordinate of the kenel origin, -1 for auto-center.");
             this.nmAnchorX.Value = new decimal(new int[] {
             1,
             0,
             0,
             -2147483648});
             // 
-            // label5
+            // label4
             // 
-            this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(363, 93);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(24, 20);
-            this.label5.TabIndex = 12;
-            this.label5.Text = "Y:";
-            // 
-            // label6
-            // 
-            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(222, 123);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(218, 20);
-            this.label6.TabIndex = 13;
-            this.label6.Text = "Note: Anchor auto center = -1";
+            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(223, 93);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(79, 20);
+            this.label4.TabIndex = 9;
+            this.label4.Text = "Anchor X:";
             // 
             // CtrlKernel
             // 
@@ -301,7 +303,7 @@
         private System.Windows.Forms.NumericUpDown nmAnchorY;
         private System.Windows.Forms.NumericUpDown nmAnchorX;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label6;
         public System.Windows.Forms.TextBox tbKernel;
+        private System.Windows.Forms.ToolTip toolTip;
     }
 }

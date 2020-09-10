@@ -316,9 +316,9 @@
             this.lbInsideBounds.Location = new System.Drawing.Point(7, 139);
             this.lbInsideBounds.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbInsideBounds.Name = "lbInsideBounds";
-            this.lbInsideBounds.Size = new System.Drawing.Size(147, 20);
+            this.lbInsideBounds.Size = new System.Drawing.Size(202, 20);
             this.lbInsideBounds.TabIndex = 46;
-            this.lbInsideBounds.Text = "Inside Bounds: Yes";
+            this.lbInsideBounds.Text = "Model within boundary: Yes";
             // 
             // lbRows
             // 
@@ -346,9 +346,9 @@
             this.lbVolumeHeight.Location = new System.Drawing.Point(4, 110);
             this.lbVolumeHeight.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbVolumeHeight.Name = "lbVolumeHeight";
-            this.lbVolumeHeight.Size = new System.Drawing.Size(174, 20);
+            this.lbVolumeHeight.Size = new System.Drawing.Size(60, 20);
             this.lbVolumeHeight.TabIndex = 43;
-            this.lbVolumeHeight.Text = "Volume/Pattern Height:";
+            this.lbVolumeHeight.Text = "Height:";
             // 
             // lbVolumeWidth
             // 
@@ -356,9 +356,9 @@
             this.lbVolumeWidth.Location = new System.Drawing.Point(4, 81);
             this.lbVolumeWidth.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbVolumeWidth.Name = "lbVolumeWidth";
-            this.lbVolumeWidth.Size = new System.Drawing.Size(168, 20);
+            this.lbVolumeWidth.Size = new System.Drawing.Size(54, 20);
             this.lbVolumeWidth.TabIndex = 42;
-            this.lbVolumeWidth.Text = "Volume/Pattern Width:";
+            this.lbVolumeWidth.Text = "Width:";
             // 
             // label4
             // 

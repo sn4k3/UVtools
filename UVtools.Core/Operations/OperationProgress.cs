@@ -12,10 +12,10 @@ namespace UVtools.Core.Operations
 {
     public sealed class OperationProgress
     {
-        public const string StatusDecodeThumbnails = "Decoding Thumbnails";
-        public const string StatusGatherLayers = "Gathering Layers";
-        public const string StatusDecodeLayers = "Decoding Layers";
-        public const string StatusEncodeLayers = "Encoding Layers";
+        public const string StatusDecodeThumbnails = "Decoded Thumbnails";
+        public const string StatusGatherLayers = "Gathered Layers";
+        public const string StatusDecodeLayers = "Decoded Layers";
+        public const string StatusEncodeLayers = "Encoded Layers";
         public const string StatusWritingFile = "Writing File";
         public const string StatusEncodeGcode = "Encoding GCode";
 
@@ -24,9 +24,9 @@ namespace UVtools.Core.Operations
 
         public const string StatusExtracting = "Extracting";
 
-        public const string StatusIslands = "Islands";
-        public const string StatusResinTraps = "Resin traps";
-        public const string StatusRepairLayers = "Repair Layers";
+        public const string StatusIslands = "Layers processed (Islands)";
+        public const string StatusResinTraps = "Layers processed (Resin traps)";
+        public const string StatusRepairLayers = "Repaired Layers";
 
         public object Mutex = new object();
 
@@ -113,8 +113,8 @@ namespace UVtools.Core.Operations
         public override string ToString()
         {
             return ItemCount == 0 ?
-                $"{ProcessedItems} / ? {ItemName}" :
-                $"{RemainingItems} / {ItemCount} / {ProcessedItems} | {ItemName} | {ProgressPercent:0.00}%";
+                $"{ProcessedItems}/? {ItemName}" :
+                $"{ProcessedItems}/{ItemCount} {ItemName} - {ProgressPercent:0.00}%";
         }
     }
 }

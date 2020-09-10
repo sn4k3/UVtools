@@ -79,15 +79,15 @@
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox1.Location = new System.Drawing.Point(0, 0);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(571, 210);
+            this.groupBox1.Size = new System.Drawing.Size(720, 210);
             this.groupBox1.TabIndex = 24;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Margins and Anchor";
+            this.groupBox1.Text = "Location && Margins";
             // 
             // lbInsideBounds
             // 
             this.lbInsideBounds.AutoSize = true;
-            this.lbInsideBounds.Location = new System.Drawing.Point(7, 168);
+            this.lbInsideBounds.Location = new System.Drawing.Point(7, 172);
             this.lbInsideBounds.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbInsideBounds.Name = "lbInsideBounds";
             this.lbInsideBounds.Size = new System.Drawing.Size(147, 20);
@@ -97,42 +97,42 @@
             // lbPlacementY
             // 
             this.lbPlacementY.AutoSize = true;
-            this.lbPlacementY.Location = new System.Drawing.Point(7, 138);
+            this.lbPlacementY.Location = new System.Drawing.Point(7, 60);
             this.lbPlacementY.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbPlacementY.Name = "lbPlacementY";
-            this.lbPlacementY.Size = new System.Drawing.Size(103, 20);
+            this.lbPlacementY.Size = new System.Drawing.Size(24, 20);
             this.lbPlacementY.TabIndex = 26;
-            this.lbPlacementY.Text = "Placement Y:";
+            this.lbPlacementY.Text = "Y:";
             // 
             // lbPlacementX
             // 
             this.lbPlacementX.AutoSize = true;
-            this.lbPlacementX.Location = new System.Drawing.Point(7, 107);
+            this.lbPlacementX.Location = new System.Drawing.Point(7, 31);
             this.lbPlacementX.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbPlacementX.Name = "lbPlacementX";
-            this.lbPlacementX.Size = new System.Drawing.Size(103, 20);
+            this.lbPlacementX.Size = new System.Drawing.Size(24, 20);
             this.lbPlacementX.TabIndex = 25;
-            this.lbPlacementX.Text = "Placement X:";
+            this.lbPlacementX.Text = "X:";
             // 
             // lbVolumeHeight
             // 
             this.lbVolumeHeight.AutoSize = true;
-            this.lbVolumeHeight.Location = new System.Drawing.Point(7, 56);
+            this.lbVolumeHeight.Location = new System.Drawing.Point(7, 134);
             this.lbVolumeHeight.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbVolumeHeight.Name = "lbVolumeHeight";
-            this.lbVolumeHeight.Size = new System.Drawing.Size(118, 20);
+            this.lbVolumeHeight.Size = new System.Drawing.Size(60, 20);
             this.lbVolumeHeight.TabIndex = 24;
-            this.lbVolumeHeight.Text = "Volume Height:";
+            this.lbVolumeHeight.Text = "Height:";
             // 
             // lbVolumeWidth
             // 
             this.lbVolumeWidth.AutoSize = true;
-            this.lbVolumeWidth.Location = new System.Drawing.Point(7, 27);
+            this.lbVolumeWidth.Location = new System.Drawing.Point(7, 103);
             this.lbVolumeWidth.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbVolumeWidth.Name = "lbVolumeWidth";
-            this.lbVolumeWidth.Size = new System.Drawing.Size(112, 20);
+            this.lbVolumeWidth.Size = new System.Drawing.Size(54, 20);
             this.lbVolumeWidth.TabIndex = 23;
-            this.lbVolumeWidth.Text = "Volume Width:";
+            this.lbVolumeWidth.Text = "Width:";
             // 
             // label5
             // 
@@ -288,7 +288,9 @@
             this.nmMarginTop.Size = new System.Drawing.Size(85, 26);
             this.nmMarginTop.TabIndex = 15;
             this.nmMarginTop.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip.SetToolTip(this.nmMarginTop, "Top margin in pixels");
             this.nmMarginTop.ValueChanged += new System.EventHandler(this.EventValueChanged);
+            this.nmMarginTop.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventValueChanged);
             // 
             // nmMarginBottom
             // 
@@ -307,7 +309,9 @@
             this.nmMarginBottom.Size = new System.Drawing.Size(85, 26);
             this.nmMarginBottom.TabIndex = 17;
             this.nmMarginBottom.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip.SetToolTip(this.nmMarginBottom, "Bottom margin in pixels");
             this.nmMarginBottom.ValueChanged += new System.EventHandler(this.EventValueChanged);
+            this.nmMarginBottom.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventValueChanged);
             // 
             // label3
             // 
@@ -356,7 +360,9 @@
             this.nmMarginRight.Size = new System.Drawing.Size(85, 26);
             this.nmMarginRight.TabIndex = 19;
             this.nmMarginRight.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.toolTip.SetToolTip(this.nmMarginRight, "Right margin in pixels");
             this.nmMarginRight.ValueChanged += new System.EventHandler(this.EventValueChanged);
+            this.nmMarginRight.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventValueChanged);
             // 
             // nmMarginLeft
             // 
@@ -374,8 +380,10 @@
             this.nmMarginLeft.Name = "nmMarginLeft";
             this.nmMarginLeft.Size = new System.Drawing.Size(85, 26);
             this.nmMarginLeft.TabIndex = 20;
+            this.toolTip.SetToolTip(this.nmMarginLeft, "Left Margin in pixels");
             this.nmMarginLeft.UpDownAlign = System.Windows.Forms.LeftRightAlignment.Left;
             this.nmMarginLeft.ValueChanged += new System.EventHandler(this.EventValueChanged);
+            this.nmMarginLeft.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventValueChanged);
             // 
             // CtrlToolMove
             // 
@@ -387,7 +395,7 @@
             this.ExtraButtonVisible = true;
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "CtrlToolMove";
-            this.Size = new System.Drawing.Size(571, 210);
+            this.Size = new System.Drawing.Size(720, 210);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.tableAnchor.ResumeLayout(false);

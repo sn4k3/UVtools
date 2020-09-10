@@ -14,13 +14,15 @@ namespace UVtools.Core.Operations
     {
         public override string Title => "Resize";
         public override string Description =>
-            "Resizes layer images in a X and/or Y factor, starting from 100% value.\n" +
-            "NOTE 1: Build volume bounds are not validated after operation, please ensure scaling stays inside your limits.\n" +
-            "NOTE 2: X and Y are applied to original image, not to the rotated preview (If enabled).";
+            "Resize the model by a percentage in the X/Y plane.\n\n" +
+            "NOTE: This operation is applied based on the original orientation of the layers in the model file. " +
+            "If the image is rotated 90° in the Layer Preview, you will need to compensate by inverting " +
+            "the X and Y values.  The print bounds will also not be validated as part of this operation, so please " +
+            "ensure that the scaling factor does not result in the model being clipped.";
 
         public override string ConfirmationText =>
-            $"resize model from layers {LayerIndexStart} to {LayerIndexEnd}?\n" +
-            $"X:{X}%  Y:{Y}%";
+            $"resize model layers {LayerIndexStart} through {LayerIndexEnd} by " +
+            $"X={X}% and Y={Y}%";
 
         public override string ProgressTitle =>
             $"Resizing from layers {LayerIndexStart} to {LayerIndexEnd} at X:{X}%  Y:{Y}% ";
@@ -33,7 +35,7 @@ namespace UVtools.Core.Operations
 
             if (X == 100m && Y == 100m)
             {
-                sb.AppendLine("X and Y can't be 100% together.");
+                sb.AppendLine("X and Y can't both be 100%.");
             }
 
             return new StringTag(sb.ToString());

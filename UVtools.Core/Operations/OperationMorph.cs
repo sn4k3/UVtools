@@ -17,13 +17,13 @@ namespace UVtools.Core.Operations
 
         public override string Title => "Morph";
         public override string Description =>
-            $"Morph Model\n" +
-            $"Various operations that can be used to change the physical structure of the model or individual layers in various ways.";
+            $"Morph Model - " +
+            $"Various operations that can be used to change the physical structure of the model or individual layers.";
         public override string ConfirmationText =>
-            $"morph model from layers {LayerIndexStart} to {LayerIndexEnd}?";
+            $"morph model layers {LayerIndexStart} through {LayerIndexEnd}?";
 
         public override string ProgressTitle =>
-            $"Morphing layers from {LayerIndexStart} to {LayerIndexEnd}";
+            $"Morphing layers {LayerIndexStart} through {LayerIndexEnd}";
 
         public override string ProgressAction => "Morphed layers";
 

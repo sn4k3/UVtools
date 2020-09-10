@@ -15,14 +15,14 @@ namespace UVtools.Core.Operations
         public override string Title => "Solidify";
 
         public override string Description =>
-            "Solidifies the selected layers, closes all inner holes.\n" +
-            "NOTE: All open areas of the layer that are completely surrounded by pixels will be filled. Please ensure none of the holes in the layer are required before proceeding.";
+            "Solidifies the selected layers, closing all interior holes.\n\n" +
+            "NOTE: All open areas of the layer that are completely surrounded by pixels will be filled. Please ensure that none of the holes in the layer are required before proceeding.";
 
         public override string ConfirmationText =>
-            $"solidify layers from {LayerIndexStart} to {LayerIndexEnd}?";
+            $"solidify layers {LayerIndexStart} through {LayerIndexEnd}?";
 
         public override string ProgressTitle =>
-            $"Solidifying layers from {LayerIndexStart} to {LayerIndexEnd}";
+            $"Solidifying layers {LayerIndexStart} through {LayerIndexEnd}";
 
         public override string ProgressAction => "Solidified layers";
 

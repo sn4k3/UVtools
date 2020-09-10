@@ -18,13 +18,13 @@ namespace UVtools.Core.Operations
 
         public override string Title => "Clone layer(s)";
         public override string Description =>
-            "Clone layers.\n" +
+            "Clone layers.\n\n" +
             "Useful to increase the height of the model or add additional structure by duplicating layers. For example, can be used to increase the raft height for added stability.";
         public override string ConfirmationText =>
-            $"clone layers from {LayerIndexStart} to {LayerIndexEnd} times {Clones} clones?";
+            $"clone layers {LayerIndexStart} through {LayerIndexEnd}, {Clones} time{(Clones != 1 ? "s" : "")}?";
 
         public override string ProgressTitle =>
-            $"Cloning layers from {LayerIndexStart} to {LayerIndexEnd} times {Clones} clones";
+            $"Cloning layers {LayerIndexStart} through {LayerIndexEnd}, {Clones} time{(Clones != 1 ? "s" : "")}";
 
         public override string ProgressAction => "Cloned layers";
 

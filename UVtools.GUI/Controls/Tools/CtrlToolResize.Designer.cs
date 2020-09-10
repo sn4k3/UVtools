@@ -46,9 +46,11 @@
             this.cbFade.AutoSize = true;
             this.cbFade.Location = new System.Drawing.Point(8, 41);
             this.cbFade.Name = "cbFade";
-            this.cbFade.Size = new System.Drawing.Size(170, 24);
+            this.cbFade.Size = new System.Drawing.Size(283, 24);
             this.cbFade.TabIndex = 26;
-            this.cbFade.Text = "Fade towards 100%";
+            this.cbFade.Text = "Increase or decrease towards 100%";
+            this.toolTip.SetToolTip(this.cbFade, "If checked, resize will gradually adjust the scale factor from the percentage specified" +
+        " to 100% as the operation progresses from the starting layer to the ending layer.");
             this.cbFade.UseVisualStyleBackColor = true;
             // 
             // label2
@@ -80,9 +82,9 @@
             this.cbConstrainXY.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cbConstrainXY.Location = new System.Drawing.Point(388, 8);
             this.cbConstrainXY.Name = "cbConstrainXY";
-            this.cbConstrainXY.Size = new System.Drawing.Size(126, 24);
+            this.cbConstrainXY.Size = new System.Drawing.Size(181, 24);
             this.cbConstrainXY.TabIndex = 23;
-            this.cbConstrainXY.Text = "Constrain X/Y";
+            this.cbConstrainXY.Text = "Constrain Proportions";
             this.cbConstrainXY.CheckedChanged += new System.EventHandler(this.EventValueChanged);
             // 
             // nmY
@@ -174,7 +176,7 @@
             this.Description = "";
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "CtrlToolResize";
-            this.Size = new System.Drawing.Size(540, 77);
+            this.Size = new System.Drawing.Size(720, 77);
             ((System.ComponentModel.ISupportInitialize)(this.nmY)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmX)).EndInit();
             this.ResumeLayout(false);

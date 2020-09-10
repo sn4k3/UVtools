@@ -89,10 +89,10 @@ namespace UVtools.GUI.Controls.Tools
 
             var insideBounds = Operation.ValidateBounds();
             ButtonOkEnabled = insideBounds && (Operation.Cols > 1 || Operation.Rows > 1);
-            lbInsideBounds.Text = "Inside Bounds: " + (insideBounds ? "Yes" : "No");
+            lbInsideBounds.Text = "Model within boundary: " + (insideBounds ? "Yes" : "No");
 
-            lbVolumeWidth.Text = $"Volume/Pattern Width: {Operation.SrcRoi.Width} / {Operation.GetPatternVolume.Width} / {Operation.ImageWidth}";
-            lbVolumeHeight.Text = $"Volume/Pattern Height: {Operation.SrcRoi.Height} / {Operation.GetPatternVolume.Height} / {Operation.ImageHeight}";
+            lbVolumeWidth.Text = $"Width: {Operation.GetPatternVolume.Width} (Min:{Operation.SrcRoi.Width}, Max:{Operation.ImageWidth})";
+            lbVolumeHeight.Text = $"Height: {Operation.GetPatternVolume.Height} (Min:{Operation.SrcRoi.Height}, Max:{Operation.ImageHeight})";
 
             lbCols.Text = $"Columns: {nmCols.Value} / {Operation.MaxCols}";
             lbRows.Text = $"Rows: {nmRows.Value} / {Operation.MaxRows}";

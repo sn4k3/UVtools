@@ -17,17 +17,18 @@ namespace UVtools.Core.Operations
         #region Overrides
         public override string Title => "Pixel dimming";
         public override string Description =>
-            "Dims pixels in a chosen pattern over white pixels neighborhood. The selected pattern will be repeated over the image width and height as a mask. Benefits are:\n" +
-            "1) Reduce layer expansion in big masses\n" +
-            "2) Reduce cross layer exposure\n" +
-            "3) Extend pixels life\n" +
-            "NOTE: Run only this tool after all repairs and other transformations.";
+            "Dim white pixels in a chosen pattern applied over the print area.\n\n" +
+            "The selected pattern will tiled over the image.  Benefits are:\n" +
+            "1) Reduced layer expansion for large layer objects\n" +
+            "2) Reduced cross layer exposure\n" +
+            "3) Extended pixel life of the LCD\n\n" +
+            "NOTE: Run this tool only after repairs and all other transformations.";
 
         public override string ConfirmationText =>
-            $"dim pixels from layers {LayerIndexStart} to {LayerIndexEnd}";
+            $"dim pixels from layers {LayerIndexStart} through {LayerIndexEnd}";
 
         public override string ProgressTitle =>
-            $"Dimming from layers {LayerIndexStart} to {LayerIndexEnd}";
+            $"Dimming from layers {LayerIndexStart} through {LayerIndexEnd}";
 
         public override string ProgressAction => "Dimmed layers";
 
@@ -36,7 +37,7 @@ namespace UVtools.Core.Operations
             var sb = new StringBuilder();
             if (BorderSize == 0 && BordersOnly)
             {
-                sb.AppendLine("Border size must be positive in order to use \"Dims only the borders\" function.");
+                sb.AppendLine("Border size must be positive in order to use \"Dim only borders\" function.");
             }
 
             if (EvenPattern is null && OddPattern is null)

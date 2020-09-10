@@ -20,7 +20,7 @@ namespace UVtools.Core.Operations
         public override string ConfirmationText => "attempt  this repair?";
 
         public override string ProgressTitle =>
-            $"Reparing layers from layers {LayerIndexStart} to {LayerIndexEnd}";
+            $"Reparing layers {LayerIndexStart} through {LayerIndexEnd}";
 
         public override string ProgressAction => "Repaired layers";
 
