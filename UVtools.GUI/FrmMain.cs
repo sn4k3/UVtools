@@ -45,6 +45,7 @@ namespace UVtools.GUI
         #region Properties
 
         public static readonly OperationMenuItem[] MenuTools = {
+            new OperationMenuItem(new OperationEditParameters(), Resources.Wrench_16x16),
             new OperationMenuItem(new OperationRepairLayers(), Resources.toolbox_16x16),
             new OperationMenuItem(new OperationMove(), Resources.move_16x16),
             new OperationMenuItem(new OperationResize(), Resources.crop_16x16),

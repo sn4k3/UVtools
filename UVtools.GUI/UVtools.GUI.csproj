@@ -176,6 +176,12 @@
     <Compile Include="Controls\Tools\CtrlToolBlur.Designer.cs">
       <DependentUpon>CtrlToolBlur.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\Tools\CtrlToolEditEditParameters.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Tools\CtrlToolEditEditParameters.Designer.cs">
+      <DependentUpon>CtrlToolEditEditParameters.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Tools\CtrlToolRepairLayers.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -331,6 +337,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\Tools\CtrlToolBlur.resx">
       <DependentUpon>CtrlToolBlur.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Tools\CtrlToolEditEditParameters.resx">
+      <DependentUpon>CtrlToolEditEditParameters.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\Tools\CtrlToolRepairLayers.resx">
       <DependentUpon>CtrlToolRepairLayers.cs</DependentUpon>
