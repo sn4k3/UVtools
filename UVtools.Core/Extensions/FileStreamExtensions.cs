@@ -33,5 +33,10 @@ namespace UVtools.Core.Extensions
             stream.Write(bytes, offset, bytes.Length);
             return (uint)bytes.Length;
         }
+
+        public static uint WriteSerialize(this FileStream fs, object data, int offset = 0)
+        {
+            return Helpers.SerializeWriteFileStream(fs, data, offset);
+        }
     }
 }

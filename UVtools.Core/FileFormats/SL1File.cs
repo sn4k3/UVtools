@@ -300,6 +300,7 @@ namespace UVtools.Core.FileFormats
             typeof(PHZFile),
             typeof(ZCodexFile),
             typeof(CWSFile),
+            typeof(LGSFile),
             typeof(UVJFile),
         };
 
@@ -1044,6 +1045,47 @@ namespace UVtools.Core.FileFormats
                 file.Printer = LookupCustomValue<bool>("NOVAMAKER_GRAY2RGB_ENCODE", false, true) ||
                                MachineName.Contains("Bene4 Mono") ? CWSFile.PrinterType.BeneMono : CWSFile.PrinterType.Elfin;
 
+                file.Encode(fileFullPath, progress);
+
+                return true;
+            }
+
+            if (to == typeof(LGSFile))
+            {
+                LGSFile defaultFormat = (LGSFile)FindByType(typeof(LGSFile));
+                LGSFile file = new LGSFile
+                {
+                    LayerManager = LayerManager,
+                    HeaderSettings =
+                    {
+                        ResolutionX = ResolutionX,
+                        ResolutionY = ResolutionY,
+                        LayerHeight = LayerHeight,
+                        ExposureTimeMs = LayerExposureTime * 1000,
+                        LiftHeight = LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.HeaderSettings.LiftHeight),
+                        LiftSpeed = LookupCustomValue<float>(Keyword_LiftSpeed, defaultFormat.HeaderSettings.LiftSpeed) / 60,
+                        LiftSpeed_ = LookupCustomValue<float>(Keyword_LiftSpeed, defaultFormat.HeaderSettings.LiftSpeed) / 60,
+                        LightOffDelayMs = LookupCustomValue<float>(Keyword_LayerOffTime, defaultFormat.HeaderSettings.LightOffDelayMs),
+                        BottomHeight = InitialLayerCount * LayerHeight,
+                        BottomExposureTimeMs = InitialExposureTime * 1000,
+                        LayerCount = LayerCount,
+                        BottomLiftSpeed = LookupCustomValue<float>(Keyword_BottomLiftSpeed, defaultFormat.HeaderSettings.BottomLiftSpeed),
+                        BottomLiftSpeed_ = LookupCustomValue<float>(Keyword_BottomLiftSpeed, defaultFormat.HeaderSettings.BottomLiftSpeed_),
+                        BottomLiftHeight = LookupCustomValue<float>(Keyword_BottomLiftHeight, defaultFormat.HeaderSettings.BottomLiftHeight),
+                        BottomLightOffDelayMs = LookupCustomValue<float>(Keyword_BottomLightOffDelay, defaultFormat.HeaderSettings.BottomLightOffDelayMs),
+                        PixelPerMmX = (float) Math.Round(ResolutionY / PrinterSettings.DisplayWidth, 3),
+                        PixelPerMmY = (float) Math.Round(ResolutionX / PrinterSettings.DisplayHeight, 3),
+                    }
+                };
+
+
+                if (LookupCustomValue<bool>("FLIP_XY", false, true))
+                {
+                    file.HeaderSettings.ResolutionX = PrinterSettings.DisplayPixelsY;
+                    file.HeaderSettings.ResolutionY = PrinterSettings.DisplayPixelsX;
+                }
+
+                file.SetThumbnails(Thumbnails);
                 file.Encode(fileFullPath, progress);
 
                 return true;

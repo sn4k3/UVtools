@@ -1,11 +1,12 @@
 # Changelog
 
-## ?/08/2020 - v0.7.1.0
+## ?/08/2020 - v0.8.0.0
 
+* (Add) LGS and LGS30 file format for Longer Orange 10 and 30 (ezrec/uv3dp#105)
+* (Add) CWS: Support the GRAY2RGB and RBG2GRAY encoding for Bene Mono
+* (Add) PrusaSlicer Printer: Nova Bene4 Mono
 * (Add) Layer importer tool (#37)
 * (Add) Settings & Issues: Enable or disable Empty Layers
-* (Add) PrusaSlicer Printer: Nova Bene4 Mono
-* (Add) CWS: Support the GRAY2RGB and RBG2GRAY encoding for Bene Mono
 * (Add) Layer issue Z map paired with layer navigation tracker bar
 * (Add) Setting: Pixel editor can be configured to exit after each apply operation (#45)
 * (Add) More abstraction on GUI and operations

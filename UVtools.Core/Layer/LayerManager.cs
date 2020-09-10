@@ -167,12 +167,12 @@ namespace UVtools.Core
         /// </summary>
         public void RebuildLayersProperties()
         {
-            var layerHeight = SlicerFile.LayerHeight;
+            //var layerHeight = SlicerFile.LayerHeight;
             for (uint layerIndex = 0; layerIndex < Count; layerIndex++)
             {
                 var layer = this[layerIndex];
                 layer.Index = layerIndex;
-                layer.PositionZ = (float) Math.Round(layerHeight * (layerIndex + 1), 2);
+                layer.PositionZ = SlicerFile.GetHeightFromLayer(layerIndex);
                 layer.ExposureTime = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.InitialExposureTime, SlicerFile.LayerExposureTime);
             }
         }

@@ -144,6 +144,7 @@ namespace UVtools.Core.FileFormats
             new ZCodexFile(),   // zcodex
             new CWSFile(),   // CWS
             //new MakerbaseFile(),   // MKS
+            new LGSFile(),   // LGS, LGS30
             new UVJFile(),   // UVJ
             new ImageFile(),   // images
         };

@@ -41,7 +41,7 @@ namespace UVtools.Core
 
         public static uint SerializeWriteFileStream(FileStream fs, object value, int offset = 0)
         {
-            using (MemoryStream stream = Helpers.Serialize(value))
+            using (MemoryStream stream = Serialize(value))
             {
                 return fs.WriteStream(stream, offset);
             }
