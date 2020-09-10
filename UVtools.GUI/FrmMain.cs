@@ -123,6 +123,8 @@ namespace UVtools.GUI
 
         private bool SupressLayerZoomEvent { get; set; }
 
+        public bool IsLogVerbose => btnLogVerbose.Checked;
+
         #endregion
 
         #region Constructors
@@ -1218,7 +1220,7 @@ namespace UVtools.GUI
                     UpdateIslands(whiteListLayers);
                 }
 
-                ShowLayer();
+                //ShowLayer(); // It will call latter so its a extra call
                 UpdateIssuesInfo();
                 menuFileSave.Enabled =
                     menuFileSaveAs.Enabled = true;
@@ -1511,14 +1513,13 @@ namespace UVtools.GUI
                         //MessageBox.Show("Convertion was unsuccessful! Maybe not implemented...", "Convertion unsuccessful", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
-
             }
         }
 
         private void pbLayer_Zoomed(object sender, Cyotek.Windows.Forms.ImageBoxZoomEventArgs e)
         {
             if (SupressLayerZoomEvent) return;
-            Debug.WriteLine($"{DateTime.Now.Ticks}: Zoomed");
+            AddLogVerbose($"Zoomed from {e.OldZoom} to {e.NewZoom}");
             // Update zoom level display in the toolstrip
             if (e.NewZoom == LockedZoomLevel)
             {
@@ -2221,7 +2222,7 @@ namespace UVtools.GUI
             if (IsChangingLayer) return;
             IsChangingLayer = true;
 
-            Debug.WriteLine($"Show Layer: {layerNum}");
+            AddLogVerbose($"Show Layer: {layerNum}");
 
             ActualLayer = layerNum;
             btnLastLayer.Enabled = btnNextLayer.Enabled = layerNum < SlicerFile.LayerCount - 1;
@@ -3666,6 +3667,13 @@ namespace UVtools.GUI
             int count = lvLog.GetItemCount() + 1;
             lvLog.AddObject(new LogItem(count, description));
             lbLogOperations.Text = $"Operations: {count}";
+        }
+
+        public void AddLogVerbose(string description, decimal elapsedTime = 0)
+        {
+            if (!IsLogVerbose) return;
+            AddLog(description, elapsedTime);
+            Debug.WriteLine(description);
         }
 
         public void EditLastLogElapsedTime(decimal elapsedTime = 0)

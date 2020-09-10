@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Windows.Forms;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
@@ -40,6 +41,15 @@ namespace UVtools.GUI.Controls.Tools
             Operation.Kernel.Anchor = ctrlKernel.KernelAnchor;
             Operation.Kernel.Matrix = ctrlKernel.GetMatrix();
             return true;
+        }
+
+        public override void ExtraActionCall(object sender)
+        {
+            if (sender is CheckBox checkbox)
+            {
+                ctrlKernel.Visible = checkbox.Checked;
+                return;
+            }
         }
 
         private void EventCheckedChanged(object sender, EventArgs e)

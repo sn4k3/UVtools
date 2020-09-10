@@ -43,13 +43,13 @@
             // 
             // ctrlKernel
             // 
-            this.ctrlKernel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ctrlKernel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ctrlKernel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ctrlKernel.Location = new System.Drawing.Point(3, 87);
             this.ctrlKernel.Name = "ctrlKernel";
-            this.ctrlKernel.Size = new System.Drawing.Size(585, 217);
+            this.ctrlKernel.Size = new System.Drawing.Size(580, 217);
             this.ctrlKernel.TabIndex = 22;
+            this.ctrlKernel.Visible = false;
             // 
             // cbIterationsFade
             // 
@@ -139,9 +139,10 @@
             this.label1.TabIndex = 24;
             this.label1.Text = "Operation:";
             // 
-            // CtrlToolMorphModel
+            // CtrlToolMorph
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
+            this.AutoSize = true;
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cbMorphOperation);
             this.Controls.Add(this.ctrlKernel);
@@ -150,9 +151,10 @@
             this.Controls.Add(this.lbIterationsStop);
             this.Controls.Add(this.nmIterationsStart);
             this.Controls.Add(this.lbIterationsStart);
+            this.ExtraCheckboxVisible = true;
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "CtrlToolMorph";
-            this.Size = new System.Drawing.Size(596, 307);
+            this.Size = new System.Drawing.Size(591, 307);
             ((System.ComponentModel.ISupportInitialize)(this.nmIterationsEnd)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmIterationsStart)).EndInit();
             this.ResumeLayout(false);

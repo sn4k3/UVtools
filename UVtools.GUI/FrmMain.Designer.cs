@@ -236,6 +236,8 @@ namespace UVtools.GUI
             this.tsLog = new System.Windows.Forms.ToolStrip();
             this.btnLogClear = new System.Windows.Forms.ToolStripButton();
             this.lbLogOperations = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripSeparator26 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnLogVerbose = new System.Windows.Forms.ToolStripButton();
             this.imageList16x16 = new System.Windows.Forms.ImageList(this.components);
             this.tlRight = new System.Windows.Forms.TableLayoutPanel();
             this.btnPreviousLayer = new System.Windows.Forms.Button();
@@ -2568,7 +2570,9 @@ namespace UVtools.GUI
             this.tsLog.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.tsLog.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.btnLogClear,
-            this.lbLogOperations});
+            this.lbLogOperations,
+            this.toolStripSeparator26,
+            this.btnLogVerbose});
             this.tsLog.Location = new System.Drawing.Point(3, 3);
             this.tsLog.Name = "tsLog";
             this.tsLog.Size = new System.Drawing.Size(380, 25);
@@ -2591,6 +2595,22 @@ namespace UVtools.GUI
             this.lbLogOperations.Name = "lbLogOperations";
             this.lbLogOperations.Size = new System.Drawing.Size(77, 22);
             this.lbLogOperations.Text = "Operations: 0";
+            // 
+            // toolStripSeparator26
+            // 
+            this.toolStripSeparator26.Name = "toolStripSeparator26";
+            this.toolStripSeparator26.Size = new System.Drawing.Size(6, 25);
+            // 
+            // btnLogVerbose
+            // 
+            this.btnLogVerbose.CheckOnClick = true;
+            this.btnLogVerbose.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnLogVerbose.Image = ((System.Drawing.Image)(resources.GetObject("btnLogVerbose.Image")));
+            this.btnLogVerbose.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnLogVerbose.Name = "btnLogVerbose";
+            this.btnLogVerbose.Size = new System.Drawing.Size(52, 22);
+            this.btnLogVerbose.Text = "Verbose";
+            this.btnLogVerbose.ToolTipText = "Shows extra information usefull to debug problems";
             // 
             // imageList16x16
             // 
@@ -3140,6 +3160,8 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStripMenuItem tsIssuesDetectTouchingBounds;
         private System.Windows.Forms.PictureBox pbTrackerIssues;
         private System.Windows.Forms.ToolStripSplitButton btnLayerImageActions;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator26;
+        private System.Windows.Forms.ToolStripButton btnLogVerbose;
     }
 }
 

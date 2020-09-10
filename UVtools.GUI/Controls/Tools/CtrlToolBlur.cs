@@ -42,7 +42,7 @@ namespace UVtools.GUI.Controls.Tools
         private void cbBlurOperation_SelectedIndexChanged(object sender, System.EventArgs e)
         {
             UpdateOperation();
-            ctrlKernel.Enabled = Operation.BlurOperation == OperationBlur.BlurAlgorithm.Filter2D;
+            ctrlKernel.Visible  = ctrlKernel.Enabled = Operation.BlurOperation == OperationBlur.BlurAlgorithm.Filter2D;
             nmSize.Enabled = Operation.BlurOperation != OperationBlur.BlurAlgorithm.Pyramid && Operation.BlurOperation != OperationBlur.BlurAlgorithm.Filter2D;
         }
     }
