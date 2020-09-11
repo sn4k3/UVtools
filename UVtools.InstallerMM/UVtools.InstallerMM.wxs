@@ -29,12 +29,6 @@
         <Component Id="owc0F288E77993D555E272ECFA1DF023DDA" Guid="ad374cb5-9215-37cb-d59d-88e4b3bc61bb">
           <File Id="owf0F288E77993D555E272ECFA1DF023DDA" Source="$(var.SourceDir)\Emgu.CV.Platform.NetCore.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owc5A25DAF599EFAF9BDE0A414028049BB5" Guid="08486262-cc80-60a3-c6b2-f5c1bba4699d">
-          <File Id="owf5A25DAF599EFAF9BDE0A414028049BB5" Source="$(var.SourceDir)\Emgu.CV.Platform.NetFramework.dll" KeyPath="yes" />
-        </Component>
-        <Component Id="owcE199C6CB41C5AFF465CD5E3CF52EBD12" Guid="fc04ad72-cf5d-d674-3d12-1ac6d3989b26">
-          <File Id="owfE199C6CB41C5AFF465CD5E3CF52EBD12" Source="$(var.SourceDir)\Emgu.CV.Platform.NetFramework.xml" KeyPath="yes" />
-        </Component>
         <Component Id="owc63D81B12D4DED477220E84E2AEBD7DBE" Guid="b08152e4-c420-0b27-69c4-3f58ac0a5fc7">
           <File Id="owf63D81B12D4DED477220E84E2AEBD7DBE" Source="$(var.SourceDir)\Emgu.CV.Platform.NetStandard.dll" KeyPath="yes" />
         </Component>
@@ -270,8 +264,8 @@
           <Component Id="owc2FF8EDA65751914E3C80D405856A37CE" Guid="283d40b2-5948-d5e0-9173-53dbd88d6e13">
             <File Id="owf2FF8EDA65751914E3C80D405856A37CE" Source="$(var.SourceDir)\x64\msvcp140_codecvt_ids.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owcAD40560F77CAD70FF1F32E32FD4242DE" Guid="a2675e61-d758-8d56-d152-6e962f599a7a">
-            <File Id="owfAD40560F77CAD70FF1F32E32FD4242DE" Source="$(var.SourceDir)\x64\opencv_videoio_ffmpeg430_64.dll" KeyPath="yes" />
+          <Component Id="owcA66BA6B6AE2CB062F1DEE173EBAC6013" Guid="2c9e44cd-17bb-ac7b-b524-b8d94f9cf180">
+            <File Id="owfA66BA6B6AE2CB062F1DEE173EBAC6013" Source="$(var.SourceDir)\x64\opencv_videoio_ffmpeg440_64.dll" KeyPath="yes" />
           </Component>
           <Component Id="owc8C50C7464818ADC2267594B33B7B1EE6" Guid="049c0f0d-c410-daa8-b6ec-1c515fdfce03">
             <File Id="owf8C50C7464818ADC2267594B33B7B1EE6" Source="$(var.SourceDir)\x64\vcruntime140.dll" KeyPath="yes" />
@@ -299,8 +293,8 @@
           <Component Id="owcDE8398D0FE76287635F64D20414A83A9" Guid="b3a19e5c-5f5b-984b-06fc-91ec029138fe">
             <File Id="owfDE8398D0FE76287635F64D20414A83A9" Source="$(var.SourceDir)\x86\msvcp140_codecvt_ids.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owc1B4BF3CACFB109D18ED2AA6E69D6FB20" Guid="312f9267-46c7-f517-1afe-9a266fff6b73">
-            <File Id="owf1B4BF3CACFB109D18ED2AA6E69D6FB20" Source="$(var.SourceDir)\x86\opencv_videoio_ffmpeg430.dll" KeyPath="yes" />
+          <Component Id="owcB3105100F274DC6C121EB91815CE430E" Guid="17155558-2ffd-5452-640e-b77c2e2b86e5">
+            <File Id="owfB3105100F274DC6C121EB91815CE430E" Source="$(var.SourceDir)\x86\opencv_videoio_ffmpeg440.dll" KeyPath="yes" />
           </Component>
           <Component Id="owcFE2AD2B6C739ABAFD86DE40F4D5B83C9" Guid="30610dbe-339b-b1be-a4a6-626e8fc07490">
             <File Id="owfFE2AD2B6C739ABAFD86DE40F4D5B83C9" Source="$(var.SourceDir)\x86\vcruntime140.dll" KeyPath="yes" />
