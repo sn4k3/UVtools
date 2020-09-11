@@ -114,7 +114,7 @@ namespace UVtools.Core.Operations
         {
             return ItemCount == 0 ?
                 $"{ProcessedItems}/? {ItemName}" :
-                $"{ProcessedItems}/{ItemCount} {ItemName} - {ProgressPercent:0.00}%";
+                $"{ProcessedItems}/{ItemCount} {ItemName} | {ProgressPercent:0.00}%";
         }
     }
 }

@@ -16,7 +16,7 @@ namespace UVtools.Core.Operations
         public override string Description =>
             "Edits the available print parameters.";
 
-        public override string ConfirmationText => null;
+        public override string ConfirmationText => "commit print parameter changes?";
 
         public override string ProgressTitle => null;
 
