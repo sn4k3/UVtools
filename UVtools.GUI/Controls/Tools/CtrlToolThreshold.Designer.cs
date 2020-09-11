@@ -106,6 +106,7 @@
             // 
             // cbPresetHelpers
             // 
+            this.cbPresetHelpers.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbPresetHelpers.FormattingEnabled = true;
             this.cbPresetHelpers.Items.AddRange(new object[] {
             "Free use",
