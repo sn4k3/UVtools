@@ -2795,12 +2795,13 @@ namespace UVtools.GUI
                             pbLayer.Cursor = Cursors.Cross;
                             pbLayer.PanMode = ImageBoxPanMode.None;
                             lbLayerImageOverlay.Text = "Pixel editing is on\n" +
-                                                       "Click to draw";
+                                                       "Click to hover a pixel to draw";
                         }
                         else
                         {
                             pbLayer.SelectionMode = ImageBoxSelectionMode.Rectangle;
                             lbLayerImageOverlay.Text = "ROI selection mode\n" +
+                                                       "Click and drag to select an ROI\n" +
                                                        "Press Esc to clear the ROI";
                         }
 
@@ -2813,7 +2814,7 @@ namespace UVtools.GUI
                         pbLayer.Cursor = Cursors.Hand;
                         pbLayer.PanMode = ImageBoxPanMode.None;
                         lbLayerImageOverlay.Text = "Issue selection mode\n" +
-                                                   "Click on a issue to select it";
+                                                   "Click hover a issue to select it";
 
                         lbLayerImageOverlay.Visible = true;
                         return;
