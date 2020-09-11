@@ -19,6 +19,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using BrightIdeasSoftware;
+using Cyotek.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -146,7 +147,6 @@ namespace UVtools.GUI
             }
 
             ControlLeftLastTab = tbpThumbnailsAndInfo;
-
             Clear();
 
             btnLayerImageLayerDifference.Checked = Settings.Default.LayerDifferenceDefault;
@@ -159,7 +159,7 @@ namespace UVtools.GUI
             btnLayerImageLayerOutlineHollowAreas.Checked = Settings.Default.OutlineHollowAreas;
 
             // Initialize pbLayer zoom levels to use the discrete factors from ZoomLevels
-            pbLayer.ZoomLevels = new Cyotek.Windows.Forms.ZoomLevelCollection(ZoomLevels);
+            pbLayer.ZoomLevels = new ZoomLevelCollection(ZoomLevels);
             // Initialize the zoom level used for autozoom based on the stored default settings.
             LockedZoomLevel = ZoomLevels[Settings.Default.ZoomLockLevel + ZoomLevelSkipCount];
 
@@ -1581,15 +1581,19 @@ namespace UVtools.GUI
 
         private void pbLayer_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!pbLayer.IsPointInImage(e.Location) || (ModifierKeys & Keys.Shift) == 0) return;
+            if (!pbLayer.IsPointInImage(e.Location)) return;
             var location = pbLayer.PointToImage(e.Location);
+
+            if ((ModifierKeys & Keys.Control) != 0)
+            {
+                Point realLocation = GetTransposedPoint(location);
+                tsLayerImageMouseLocation.Text =
+                    $"{{X={realLocation.X}, Y={realLocation.Y}, B={ActualLayerImage.GetByte(realLocation)}}}";
+            }
+            
+            if ((ModifierKeys & Keys.Shift) == 0) return;
             if (_lastPixelMouseLocation == e.Location) return;
             _lastPixelMouseLocation = e.Location;
-
-            Point realLocation = GetTransposedPoint(location);
-
-            tsLayerImageMouseLocation.Text =
-                $"{{X={realLocation.X}, Y={realLocation.Y}, B={ActualLayerImage.GetByte(realLocation)}}}";
 
             // Bail here if we're not in a draw operation, if the mouse button is not either
             // left or right, or if the location of the mouse pointer is not within the image.
@@ -2775,20 +2779,45 @@ namespace UVtools.GUI
             // the cross cursor is displayed even before the pblayer control has focus.
             // This ensures the user is aware that even in this case, a click in the layer
             // preview will draw a pixel.
-            if (ReferenceEquals(sender, this))
+            if (ReferenceEquals(sender, this) && !ReferenceEquals(SlicerFile, null))
             {
                 // This event repeats for as long as the key is pressed, so if we've
                 // already set the cursor from a previous key down event, just return.
-                if (pbLayer.Cursor == Cursors.Cross || pbLayer.Cursor == Cursors.Hand) return;
+                if (pbLayer.Cursor == Cursors.Cross || pbLayer.Cursor == Cursors.Hand || pbLayer.SelectionMode == ImageBoxSelectionMode.Rectangle) return;
 
                 // Pixel Edit is active, Shift is down, and the cursor is over the image region.
-                if (e.KeyCode == Keys.ShiftKey &&
-                    pbLayer.ClientRectangle.Contains(pbLayer.PointToClient(MousePosition)))
+                if (pbLayer.ClientRectangle.Contains(pbLayer.PointToClient(MousePosition)))
                 {
+                    if (e.Modifiers == Keys.Shift)
+                    {
+                        if (btnLayerImagePixelEdit.Checked)
+                        {
+                            pbLayer.Cursor = Cursors.Cross;
+                            pbLayer.PanMode = ImageBoxPanMode.None;
+                            lbLayerImageOverlay.Text = "Pixel editing is on\n" +
+                                                       "Click to draw";
+                        }
+                        else
+                        {
+                            pbLayer.SelectionMode = ImageBoxSelectionMode.Rectangle;
+                            lbLayerImageOverlay.Text = "ROI selection mode\n" +
+                                                       "Press Esc to clear the ROI";
+                        }
 
-                    pbLayer.Cursor = btnLayerImagePixelEdit.Checked ? Cursors.Cross : Cursors.Hand;
-                    pbLayer.PanMode = Cyotek.Windows.Forms.ImageBoxPanMode.None;
-                    //if (!ReferenceEquals(SlicerFile, null)) ShowLayer();  // Not needed?
+                        lbLayerImageOverlay.Visible = true;
+
+                        return;
+                    }
+                    if (e.Modifiers == Keys.Control)
+                    {
+                        pbLayer.Cursor = Cursors.Hand;
+                        pbLayer.PanMode = ImageBoxPanMode.None;
+                        lbLayerImageOverlay.Text = "Issue selection mode\n" +
+                                                   "Click on a issue to select it";
+
+                        lbLayerImageOverlay.Visible = true;
+                        return;
+                    }
                 }
 
                 return;
@@ -2798,15 +2827,29 @@ namespace UVtools.GUI
         private void EventKeyUp(object sender, KeyEventArgs e)
         {
             // As with EventKeyDown, we handle this event at the to top level
-            // to ensure cursor and pan functionaty are restored regardless
+            // to ensure cursor and pan functionality are restored regardless
             // of which form has focus when shift is released.
             if (ReferenceEquals(sender, this))
             {
-                if (e.KeyCode == Keys.ShiftKey)
+                if (e.KeyCode == Keys.ShiftKey || e.KeyCode == Keys.ControlKey)
                 {
                     pbLayer.Cursor = Cursors.Default;
-                    pbLayer.PanMode = Cyotek.Windows.Forms.ImageBoxPanMode.Left;
+                    pbLayer.PanMode = ImageBoxPanMode.Left;
+                    pbLayer.SelectionMode = ImageBoxSelectionMode.None;
+                    lbLayerImageOverlay.Visible = false;
                     //if (!ReferenceEquals(SlicerFile, null)) ShowLayer(); // Not needed?
+                    e.Handled = true;
+                }
+
+                return;
+            }
+
+            if (ReferenceEquals(sender, pbLayer))
+            {
+                if (e.KeyCode == Keys.Escape)
+                {
+                    pbLayer.SelectNone();
+                    e.Handled = true;
                 }
 
                 return;
@@ -3090,10 +3133,11 @@ namespace UVtools.GUI
         {
             if (ReferenceEquals(sender, pbLayer))
             {
-                if ((ModifierKeys & Keys.Control) != 0)
+                if ((ModifierKeys & Keys.Alt) != 0)
                 {
-                    // CTRL click within pbLayer performs double click action
+                    // ALT click within pbLayer performs double click action
                     HandleMouseDoubleClick(sender, e);
+
                     return;
                 }
 
@@ -3102,8 +3146,7 @@ namespace UVtools.GUI
 
                 // Check to see if the clicked location is an issue,
                 // and if so, select it in the ListView.
-                if (!ReferenceEquals(tabControlLeft.SelectedTab, tabPagePixelEditor) &&
-                    (ModifierKeys & Keys.Shift) != 0)
+                if ((ModifierKeys & Keys.Control) != 0)
                     SelectIssueAtPoint(location);
 
                 return;
@@ -3112,9 +3155,9 @@ namespace UVtools.GUI
 
         private void EventMouseDoubleClick(object sender, MouseEventArgs e)
         {
-            // Ignore double click if CTRL is pressed. Prevents CTRL-click
+            // Ignore double click if CTRL is pressed. Prevents ALT-click
             // events that emulate double click from firing twice.
-            if ((ModifierKeys & Keys.Control) != 0) return;
+            if ((ModifierKeys & Keys.Alt) != 0) return;
             HandleMouseDoubleClick(sender, e);
         }
 
@@ -3196,7 +3239,7 @@ namespace UVtools.GUI
             //var point = pbLayer.PointToImage(location);
 
             Point realLocation = GetTransposedPoint(location);
-
+            
             PixelOperation operation = null;
             Bitmap bmp = pbLayer.Image as Bitmap;
 

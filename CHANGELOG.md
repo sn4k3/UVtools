@@ -1,5 +1,13 @@
 # Changelog
 
+## /08/2020 - v0.8.1.0
+
+* (Add) Layer preview: Hold-Shift key to select an ROI (Region of interest) on image, that region will be used instead of whole image when running some tools
+* (Add) Layer preview: ESC key to clear ROI
+* (Add) Layer preview: Overlay text with hints for current action
+* (Change) Layer preview: Hold-Shift key to select issues and pick pixel position/brightness changed to Hold-Control key
+* (Change) Layer preview: Shift+click combination to zoom-in changed to Alt+click
+
 ## 11/08/2020 - v0.8.0.0
 
 * (Add) LGS and LGS30 file format for Longer Orange 10 and 30 (ezrec/uv3dp#105)

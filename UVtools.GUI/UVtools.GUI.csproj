@@ -488,6 +488,7 @@
     <None Include="Images\plus-16x16.png" />
     <None Include="Images\minus_16x16.png" />
     <None Include="Images\sync-16x16.png" />
+    <None Include="Images\object-group-16x16.png" />
     <Content Include="UVtools.ico" />
     <None Include="UVtools.png" />
     <None Include="Images\Exit-16x16.png" />
