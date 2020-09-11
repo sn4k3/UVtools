@@ -2795,7 +2795,7 @@ namespace UVtools.GUI
                             pbLayer.Cursor = Cursors.Cross;
                             pbLayer.PanMode = ImageBoxPanMode.None;
                             lbLayerImageOverlay.Text = "Pixel editing is on\n" +
-                                                       "Click to hover a pixel to draw";
+                                                       "Click to over a pixel to draw";
                         }
                         else
                         {
@@ -2814,7 +2814,7 @@ namespace UVtools.GUI
                         pbLayer.Cursor = Cursors.Hand;
                         pbLayer.PanMode = ImageBoxPanMode.None;
                         lbLayerImageOverlay.Text = "Issue selection mode\n" +
-                                                   "Click hover a issue to select it";
+                                                   "Click over a issue to select it";
 
                         lbLayerImageOverlay.Visible = true;
                         return;
