@@ -10,6 +10,7 @@ using System;
 using System.Drawing;
 using System.Globalization;
 using System.Windows.Forms;
+using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 
@@ -18,7 +19,93 @@ namespace UVtools.GUI.Controls.Tools
     public partial class CtrlToolEditParameters : CtrlToolWindowContent
     {
         public OperationEditParameters Operation { get; }
-        public NumericUpDown[] NumericUpDownProperties;
+        public RowControl[] RowControls;
+
+        public sealed class RowControl
+        {
+            public FileFormat.PrintParameterModifier Modifier { get; }
+
+            public Label Name { get; }
+            public Label OldValue { get; }
+            public NumericUpDown NewValue { get; }
+            public Label Unit { get; }
+            public Button ResetButton { get; }
+
+            public RowControl(FileFormat.PrintParameterModifier modifier)
+            {
+                Modifier = modifier;
+                modifier.OldValue = decimal.Parse(Program.SlicerFile.GetValueFromPrintParameterModifier(modifier).ToString());
+
+                Name = new Label
+                {
+                    Text = $"{modifier.Name}:",
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    AutoSize = true,
+                    Dock = DockStyle.Fill,
+                    Tag = this,
+                };
+
+                OldValue = new Label
+                {
+                    Text = modifier.OldValue.ToString(CultureInfo.InvariantCulture),
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    AutoSize = true,
+                    Dock = DockStyle.Fill,
+                    Tag = this
+                };
+
+                NewValue = new NumericUpDown
+                {
+                    DecimalPlaces = modifier.DecimalPlates,
+                    Minimum = modifier.Minimum,
+                    Maximum = modifier.Maximum,
+                    Value = modifier.OldValue.Clamp(modifier.Minimum, modifier.Maximum),
+                    Tag = this,
+                    Width = 100,
+                    Dock = DockStyle.Fill,
+                    //AutoSize = true
+                };
+                NewValue.ValueChanged += NewValue_ValueChanged;
+
+                Unit = new Label
+                {
+                    Text = modifier.ValueUnit,
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    AutoSize = true,
+                    Dock = DockStyle.Fill,
+                    Tag = this
+                };
+
+                ResetButton = new Button
+                {
+                    Image = Properties.Resources.refresh_16x16,
+                    Dock = DockStyle.Fill,
+                    BackColor = Color.LightGray,
+                    Enabled = false,
+                    Tag = this
+                };
+                ResetButton.Click += ResetButton_Clicked;
+            }
+
+            private void NewValue_ValueChanged(object sender, EventArgs e)
+            {
+                Modifier.NewValue = NewValue.Value;
+                ResetButton.Enabled = Modifier.HasChanged;
+            }
+
+            private void ResetButton_Clicked(object sender, EventArgs e)
+            {
+                /*if (!(sender is Button button)) return;
+                if (!(button.Tag is NumericUpDown numericUpDown)) return;
+                if (!(numericUpDown.Tag is FileFormat.PrintParameterModifier modifier)) return;
+                numericUpDown.Value = modifier.OldValue;*/
+
+                NewValue.Value = Modifier.OldValue;
+                NewValue.Select();
+                return;
+
+            }
+        }
         
         public CtrlToolEditParameters()
         {
@@ -33,66 +120,20 @@ namespace UVtools.GUI.Controls.Tools
             }
 
             int rowIndex = 1;
-            NumericUpDownProperties = new NumericUpDown[Operation.Modifiers.Length];
+            RowControls = new RowControl[Operation.Modifiers.Length];
             foreach (var modifier in Operation.Modifiers)
             {
-                modifier.OldValue = decimal.Parse(Program.SlicerFile.GetValueFromPrintParameterModifier(modifier).ToString());
+                byte column = 0;
                 table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-                Label nameLabel = new Label
-                {
-                    Text = $"{modifier.Name}:",
-                    TextAlign = ContentAlignment.MiddleLeft,
-                    AutoSize = true,
-                    Dock = DockStyle.Fill
-                };
-                table.Controls.Add(nameLabel, 0, rowIndex);
-                toolTip.SetToolTip(nameLabel, modifier.Description);
+                var rowControl = new RowControl(modifier);
+                table.Controls.Add(rowControl.Name, column++, rowIndex);
+                table.Controls.Add(rowControl.OldValue, column++, rowIndex);
+                table.Controls.Add(rowControl.NewValue, column++, rowIndex);
+                table.Controls.Add(rowControl.Unit, column++, rowIndex);
+                table.Controls.Add(rowControl.ResetButton, column++, rowIndex);
 
-                Label oldValueLabel = new Label
-                {
-                    Text = modifier.OldValue.ToString(CultureInfo.InvariantCulture),
-                    TextAlign = ContentAlignment.MiddleCenter,
-                    AutoSize = true,
-                    Dock = DockStyle.Fill
-                };
-                table.Controls.Add(oldValueLabel, 1, rowIndex);
-
-                NumericUpDown numericValue = new NumericUpDown
-                {
-                    Value = modifier.OldValue,
-                    DecimalPlaces = modifier.DecimalPlates,
-                    Minimum = modifier.Minimum,
-                    Maximum = modifier.Maximum,
-                    Tag = modifier,
-                    Width = 100,
-                    Dock = DockStyle.Fill
-                    //AutoSize = true
-                };
-                NumericUpDownProperties[rowIndex - 1] = numericValue;
-                table.Controls.Add(numericValue, 2, rowIndex);
-
-                if (!string.IsNullOrEmpty(modifier.ValueUnit))
-                {
-                    Label unitLabel = new Label
-                    {
-                        Text = modifier.ValueUnit,
-                        TextAlign = ContentAlignment.MiddleLeft,
-                        AutoSize = true,
-                        Dock = DockStyle.Fill,
-                    };
-                    table.Controls.Add(unitLabel, 3, rowIndex);
-                }
-
-                Button resetButton = new Button
-                {
-                    Image = Properties.Resources.refresh_16x16,
-                    Dock = DockStyle.Fill,
-                    BackColor = Color.WhiteSmoke,
-                    Tag = numericValue
-                };
-                resetButton.Click += ResetClicked;
-                table.Controls.Add(resetButton, 4, rowIndex);
+                RowControls[rowIndex-1] = rowControl;
 
                 rowIndex++;
             }
@@ -102,12 +143,11 @@ namespace UVtools.GUI.Controls.Tools
         {
             base.UpdateOperation();
 
-            foreach (var numUpDown in NumericUpDownProperties)
+            foreach (var rowControl in RowControls)
             {
-                if (!(numUpDown.Tag is FileFormat.PrintParameterModifier modifier)) continue;
-                modifier.NewValue = modifier.NewValue;
-                if(!modifier.HasChanged) continue;
-                Program.SlicerFile.SetValueFromPrintParameterModifier(modifier, modifier.NewValue);
+                rowControl.Modifier.NewValue = rowControl.NewValue.Value;
+                //if(!modifier.HasChanged) continue;
+                //Program.SlicerFile.SetValueFromPrintParameterModifier(modifier, modifier.NewValue);
             }
 
             return true;
@@ -117,25 +157,12 @@ namespace UVtools.GUI.Controls.Tools
         {
             if (sender is Button button)
             {
-                foreach (var numUpDown in NumericUpDownProperties)
+                foreach (var rowControl in RowControls)
                 {
-                    if (numUpDown.Tag is FileFormat.PrintParameterModifier modifier)
-                    {
-                        numUpDown.Value = modifier.OldValue;
-                    }
+                    rowControl.NewValue.Value = rowControl.Modifier.OldValue;
                 }
                 return;
             }
-        }
-
-        private void ResetClicked(object sender, EventArgs e)
-        {
-            if (!(sender is Button button)) return;
-            if (!(button.Tag is NumericUpDown numericUpDown)) return;
-            if (!(numericUpDown.Tag is FileFormat.PrintParameterModifier modifier)) return;
-            numericUpDown.Value = modifier.OldValue;
-            return;
-
         }
     }
 }

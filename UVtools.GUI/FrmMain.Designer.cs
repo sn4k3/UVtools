@@ -470,6 +470,7 @@ namespace UVtools.GUI
             this.menuEdit.Name = "menuEdit";
             this.menuEdit.Size = new System.Drawing.Size(39, 20);
             this.menuEdit.Text = "&Edit";
+            this.menuEdit.Visible = false;
             // 
             // menuTools
             // 

@@ -52,6 +52,21 @@ namespace UVtools.Core.Extensions
             return value <= min ? min : value >= max ? max : value;
         }
 
+        public static float Clamp(this float value, float min, float max)
+        {
+            return value <= min ? min : value >= max ? max : value;
+        }
+
+        public static double Clamp(this double value, double min, double max)
+        {
+            return value <= min ? min : value >= max ? max : value;
+        }
+
+        public static decimal Clamp(this decimal value, decimal min, decimal max)
+        {
+            return value <= min ? min : value >= max ? max : value;
+        }
+
         public static T Clamp<T>(T value, T min, T max) where T : IComparable<T>
         {
             if (value.CompareTo(min) < 0)

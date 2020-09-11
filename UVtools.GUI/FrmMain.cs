@@ -2035,7 +2035,7 @@ namespace UVtools.GUI
 
         private void RefreshInfo()
         {
-            menuEdit.DropDownItems.Clear();
+            /*menuEdit.DropDownItems.Clear();
 
             if (!ReferenceEquals(SlicerFile.PrintParameterModifiers, null))
             {
@@ -2052,7 +2052,7 @@ namespace UVtools.GUI
 
                     item.Click += EventClick;
                 }
-            }
+            }*/
 
             flvProperties.ClearObjects();
 
@@ -3976,10 +3976,19 @@ namespace UVtools.GUI
         {
             if (baseOperation is null) return false;
 
-            DisableGUI();
-
             switch (baseOperation)
             {
+                case OperationEditParameters operation:
+                    foreach (var modifier in operation.Modifiers.Where(modifier => modifier.HasChanged))
+                    {
+                        SlicerFile.SetValueFromPrintParameterModifier(modifier, modifier.NewValue);
+                    }
+                    RefreshInfo();
+
+                    menuFileSave.Enabled =
+                    menuFileSaveAs.Enabled = true;
+
+                    return false;
                 case OperationRepairLayers operation:
                     if (ReferenceEquals(Issues, null))
                     {
@@ -4002,6 +4011,7 @@ namespace UVtools.GUI
                     break;
             }
 
+            DisableGUI();
 
             FrmLoading.SetDescription(baseOperation.ProgressTitle);
 
