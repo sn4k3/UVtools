@@ -503,7 +503,6 @@
     <None Include="Images\Next-16x16.png" />
     <None Include="Images\Save-16x16.png" />
     <None Include="Images\File-Close-16x16.png" />
-    <None Include="Images\Error-128x128.png" />
     <None Include="Images\Wrench-16x16.png" />
     <None Include="Images\File-Refresh-16x16.png" />
     <None Include="Images\Cancel-32x32.png" />
@@ -528,9 +527,6 @@
     <None Include="Images\pointer-16x16.png" />
     <None Include="Images\delete-16x16.png" />
     <None Include="Images\island-16x16.png" />
-    <None Include="Images\plus.ico" />
-    <None Include="Images\arrow-up.ico" />
-    <None Include="Images\arrow-down.ico" />
     <None Include="Images\arrow-up-16x16.png" />
     <None Include="Images\arrow-down-16x16.png" />
     <None Include="Images\arrow-down-double-16x16.png" />
