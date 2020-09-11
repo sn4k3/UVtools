@@ -12,7 +12,8 @@ namespace UVtools.Core.Operations
 {
     public class OperationEditParameters : Operation
     {
-        public override string Title => "Edit Parameters";
+        public override string Title => "Edit print parameters";
+
         public override string Description =>
             "Edits the available print parameters.";
 

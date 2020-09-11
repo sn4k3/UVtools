@@ -47,7 +47,7 @@
             this.ctrlKernel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ctrlKernel.Location = new System.Drawing.Point(3, 87);
             this.ctrlKernel.Name = "ctrlKernel";
-            this.ctrlKernel.Size = new System.Drawing.Size(580, 217);
+            this.ctrlKernel.Size = new System.Drawing.Size(533, 217);
             this.ctrlKernel.TabIndex = 22;
             this.ctrlKernel.Visible = false;
             // 
@@ -129,7 +129,7 @@
             this.cbMorphOperation.FormattingEnabled = true;
             this.cbMorphOperation.Location = new System.Drawing.Point(93, 46);
             this.cbMorphOperation.Name = "cbMorphOperation";
-            this.cbMorphOperation.Size = new System.Drawing.Size(495, 28);
+            this.cbMorphOperation.Size = new System.Drawing.Size(443, 28);
             this.cbMorphOperation.TabIndex = 23;
             // 
             // label1
@@ -156,7 +156,7 @@
             this.ExtraCheckboxVisible = true;
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "CtrlToolMorph";
-            this.Size = new System.Drawing.Size(591, 307);
+            this.Size = new System.Drawing.Size(540, 307);
             ((System.ComponentModel.ISupportInitialize)(this.nmIterationsEnd)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmIterationsStart)).EndInit();
             this.ResumeLayout(false);

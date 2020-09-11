@@ -49,8 +49,9 @@
             this.cbFade.Size = new System.Drawing.Size(283, 24);
             this.cbFade.TabIndex = 26;
             this.cbFade.Text = "Increase or decrease towards 100%";
-            this.toolTip.SetToolTip(this.cbFade, "If checked, resize will gradually adjust the scale factor from the percentage specified" +
-        " to 100% as the operation progresses from the starting layer to the ending layer.");
+            this.toolTip.SetToolTip(this.cbFade, "If checked, resize will gradually adjust the scale factor from the percentage spe" +
+        "cified to 100% as the operation progresses from the starting layer to the ending" +
+        " layer.");
             this.cbFade.UseVisualStyleBackColor = true;
             // 
             // label2
@@ -163,7 +164,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.AutoSize = true;
             this.ButtonOkEnabled = false;
             this.Controls.Add(this.cbFade);
             this.Controls.Add(this.label2);
@@ -176,7 +177,7 @@
             this.Description = "";
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "CtrlToolResize";
-            this.Size = new System.Drawing.Size(720, 77);
+            this.Size = new System.Drawing.Size(572, 68);
             ((System.ComponentModel.ISupportInitialize)(this.nmY)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmX)).EndInit();
             this.ResumeLayout(false);

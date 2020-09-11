@@ -15,14 +15,14 @@ namespace UVtools.Core.Operations
     {
         #region Overrides
 
-        public override string Title => "Duplicate";
+        public override string Title => "Pattern";
         public override string Description =>
             "Duplicates the model in a rectangular pattern around the build plate.";
         public override string ConfirmationText =>
-            $"duplicate the object across {Cols} columns and {Rows} rows?";
+            $"pattern the object across {Cols} columns and {Rows} rows?";
 
         public override string ProgressTitle =>
-            $"Duplicating the object across {Cols} columns and {Rows} rowss";
+            $"Patterning the object across {Cols} columns and {Rows} rows";
 
         public override string ProgressAction => "Patterned layers";
 

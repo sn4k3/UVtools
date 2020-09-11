@@ -413,14 +413,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <None Include="..\CHANGELOG.md">
       <Link>CHANGELOG.md</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -441,6 +436,11 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
@@ -487,6 +487,7 @@
     <None Include="Images\file-import-16x16.png" />
     <None Include="Images\plus-16x16.png" />
     <None Include="Images\minus_16x16.png" />
+    <None Include="Images\sync-16x16.png" />
     <Content Include="UVtools.ico" />
     <None Include="UVtools.png" />
     <None Include="Images\Exit-16x16.png" />
@@ -497,7 +498,7 @@
     <None Include="Images\Global-Network-icon-16x16.png" />
     <None Include="Images\Convert-16x16.png" />
     <None Include="Images\layers-16x16.png" />
-    <None Include="Images\Rotate-16x16.png" />
+    <None Include="Images\undo-16x16.png" />
     <None Include="Images\Back-16x16.png" />
     <None Include="Images\Next-16x16.png" />
     <None Include="Images\Save-16x16.png" />

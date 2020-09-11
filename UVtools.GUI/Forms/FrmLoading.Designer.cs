@@ -37,15 +37,16 @@
             this.lbWait = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
             this.lbOperation = new System.Windows.Forms.Label();
-            this.panel2 = new System.Windows.Forms.Panel();
+            this.pnActions = new System.Windows.Forms.Panel();
             this.btnCancel = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
-            this.panel2.SuspendLayout();
+            this.pnActions.SuspendLayout();
             this.SuspendLayout();
             // 
             // progressBar
             // 
-            this.progressBar.Dock = System.Windows.Forms.DockStyle.Left;
+            this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.progressBar.Location = new System.Drawing.Point(0, 0);
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(374, 29);
@@ -88,15 +89,18 @@
             // 
             // panel1
             // 
+            this.panel1.AutoSize = true;
+            this.panel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel1.Controls.Add(this.lbOperation);
             this.panel1.Controls.Add(this.lbDescription);
             this.panel1.Controls.Add(this.lbWait);
             this.panel1.Controls.Add(this.lbElapsedTime);
-            this.panel1.Controls.Add(this.panel2);
+            this.panel1.Controls.Add(this.pnActions);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.panel1.Location = new System.Drawing.Point(0, 0);
+            this.panel1.MinimumSize = new System.Drawing.Size(470, 124);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(470, 124);
             this.panel1.TabIndex = 4;
@@ -111,19 +115,20 @@
             this.lbOperation.Text = "Operation";
             this.lbOperation.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
-            // panel2
+            // pnActions
             // 
-            this.panel2.Controls.Add(this.btnCancel);
-            this.panel2.Controls.Add(this.progressBar);
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel2.Location = new System.Drawing.Point(0, 93);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(468, 29);
-            this.panel2.TabIndex = 5;
+            this.pnActions.Controls.Add(this.btnCancel);
+            this.pnActions.Controls.Add(this.progressBar);
+            this.pnActions.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.pnActions.Location = new System.Drawing.Point(0, 93);
+            this.pnActions.Name = "pnActions";
+            this.pnActions.Size = new System.Drawing.Size(468, 29);
+            this.pnActions.TabIndex = 5;
             // 
             // btnCancel
             // 
-            this.btnCancel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCancel.AutoSize = true;
             this.btnCancel.Location = new System.Drawing.Point(374, 0);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(94, 29);
@@ -135,6 +140,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(470, 124);
             this.ControlBox = false;
             this.Controls.Add(this.panel1);
@@ -150,8 +156,10 @@
             this.Text = "Loading";
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
-            this.panel2.ResumeLayout(false);
+            this.pnActions.ResumeLayout(false);
+            this.pnActions.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -164,7 +172,7 @@
         private System.Windows.Forms.Label lbWait;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label lbOperation;
-        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Panel pnActions;
         private System.Windows.Forms.Button btnCancel;
     }
 }

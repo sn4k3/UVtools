@@ -12,6 +12,7 @@
 * (Add) Layer issue Z map paired with layer navigation tracker bar
 * (Add) Setting: Pixel editor can be configured to exit after each apply operation (#45)
 * (Add) More abstraction on GUI and operations
+* (Add) Verbose log - More a developer feature to cath bugs
 * (Improvement) Redesign tools and mutator windows
 * (Improvement) Erode, dilate, gap closing and noise removal converted into one window (Morph model)
 * (Improvement) Convert add edit parameters into one tool window, edit all at once now
@@ -24,6 +25,7 @@
 * (Improvement) Tool - Rotate: Disallow operation when selecting an angle of -360, 0 and 360
 * (Improvement) Shortcuts: + and - to go up and down on layers were change to W and S keys. Reason: + and - are bound to zoom and can lead to problems
 Less frequently used settings for gap and noise removal iterations have been moved to an advanced settings group that is hidden by default, and can be shown if changes in those settings is desired. For many users, those advanced settings can be left on default and never adjusted. (#43)
+* (Change) Tool - Rotate - icon
 * (Upgrade) OpenCV from 4.2 to 4.3
 * (Upgrade) BinarySerializer from 8.5.2 to 8.5.3
 * (Remove) Menu - Tools - Layer Removal and Layer clone for redudancy they now home at layer preview toolbar under "Actions" dropdown button

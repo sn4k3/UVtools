@@ -62,6 +62,8 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.AutoSize = true;
+            this.groupBox1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.groupBox1.Controls.Add(this.lbInsideBounds);
             this.groupBox1.Controls.Add(this.lbPlacementY);
             this.groupBox1.Controls.Add(this.lbPlacementX);
@@ -79,7 +81,7 @@
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox1.Location = new System.Drawing.Point(0, 0);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(720, 210);
+            this.groupBox1.Size = new System.Drawing.Size(570, 214);
             this.groupBox1.TabIndex = 24;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Location && Margins";
@@ -389,13 +391,13 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.AutoSize = true;
             this.Controls.Add(this.groupBox1);
             this.Description = "";
             this.ExtraButtonVisible = true;
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "CtrlToolMove";
-            this.Size = new System.Drawing.Size(720, 210);
+            this.Size = new System.Drawing.Size(570, 214);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.tableAnchor.ResumeLayout(false);
@@ -405,6 +407,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.nmMarginRight)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmMarginLeft)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 

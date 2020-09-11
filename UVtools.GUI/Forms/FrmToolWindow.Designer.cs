@@ -347,7 +347,7 @@ namespace UVtools.GUI.Forms
             // 
             this.cbActionExtra.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.cbActionExtra.AutoSize = true;
-            this.cbActionExtra.Location = new System.Drawing.Point(4, 32);
+            this.cbActionExtra.Location = new System.Drawing.Point(10, 31);
             this.cbActionExtra.Name = "cbActionExtra";
             this.cbActionExtra.Size = new System.Drawing.Size(202, 24);
             this.cbActionExtra.TabIndex = 26;
@@ -360,7 +360,7 @@ namespace UVtools.GUI.Forms
             // 
             this.btnActionExtra.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnActionExtra.AutoSize = true;
-            this.btnActionExtra.Image = global::UVtools.GUI.Properties.Resources.Rotate_16x16;
+            this.btnActionExtra.Image = global::UVtools.GUI.Properties.Resources.undo_alt_16x16;
             this.btnActionExtra.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnActionExtra.Location = new System.Drawing.Point(4, 19);
             this.btnActionExtra.Name = "btnActionExtra";

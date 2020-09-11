@@ -278,7 +278,7 @@
             // btnReset
             // 
             this.btnReset.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnReset.Image = global::UVtools.GUI.Properties.Resources.Rotate_16x16;
+            this.btnReset.Image = global::UVtools.GUI.Properties.Resources.undo_alt_16x16;
             this.btnReset.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnReset.Location = new System.Drawing.Point(13, 15);
             this.btnReset.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);

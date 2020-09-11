@@ -41,7 +41,7 @@
             // 
             // nmMaximum
             // 
-            this.nmMaximum.Location = new System.Drawing.Point(305, 51);
+            this.nmMaximum.Location = new System.Drawing.Point(270, 51);
             this.nmMaximum.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nmMaximum.Maximum = new decimal(new int[] {
             255,
@@ -49,7 +49,7 @@
             0,
             0});
             this.nmMaximum.Name = "nmMaximum";
-            this.nmMaximum.Size = new System.Drawing.Size(120, 26);
+            this.nmMaximum.Size = new System.Drawing.Size(70, 26);
             this.nmMaximum.TabIndex = 23;
             this.nmMaximum.Value = new decimal(new int[] {
             255,
@@ -60,7 +60,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(251, 54);
+            this.label2.Location = new System.Drawing.Point(216, 54);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(46, 20);
@@ -69,7 +69,7 @@
             // 
             // nmThreshold
             // 
-            this.nmThreshold.Location = new System.Drawing.Point(109, 51);
+            this.nmThreshold.Location = new System.Drawing.Point(128, 51);
             this.nmThreshold.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nmThreshold.Maximum = new decimal(new int[] {
             255,
@@ -77,7 +77,7 @@
             0,
             0});
             this.nmThreshold.Name = "nmThreshold";
-            this.nmThreshold.Size = new System.Drawing.Size(120, 26);
+            this.nmThreshold.Size = new System.Drawing.Size(70, 26);
             this.nmThreshold.TabIndex = 21;
             this.nmThreshold.Value = new decimal(new int[] {
             127,
@@ -99,9 +99,9 @@
             // 
             this.cbThresholdType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbThresholdType.FormattingEnabled = true;
-            this.cbThresholdType.Location = new System.Drawing.Point(437, 50);
+            this.cbThresholdType.Location = new System.Drawing.Point(347, 50);
             this.cbThresholdType.Name = "cbThresholdType";
-            this.cbThresholdType.Size = new System.Drawing.Size(138, 28);
+            this.cbThresholdType.Size = new System.Drawing.Size(189, 28);
             this.cbThresholdType.TabIndex = 19;
             // 
             // cbPresetHelpers
@@ -114,7 +114,7 @@
             "Set pixel brightness"});
             this.cbPresetHelpers.Location = new System.Drawing.Point(128, 10);
             this.cbPresetHelpers.Name = "cbPresetHelpers";
-            this.cbPresetHelpers.Size = new System.Drawing.Size(212, 28);
+            this.cbPresetHelpers.Size = new System.Drawing.Size(408, 28);
             this.cbPresetHelpers.TabIndex = 25;
             this.cbPresetHelpers.SelectedIndexChanged += new System.EventHandler(this.cbPresetHelpers_SelectedIndexChanged);
             // 
@@ -123,9 +123,9 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(4, 13);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(118, 20);
+            this.label3.Size = new System.Drawing.Size(115, 20);
             this.label3.TabIndex = 26;
-            this.label3.Text = "Preset Helpers:";
+            this.label3.Text = "Preset helpers:";
             // 
             // CtrlToolThreshold
             // 
@@ -142,7 +142,7 @@
             this.Description = "";
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "CtrlToolThreshold";
-            this.Size = new System.Drawing.Size(578, 82);
+            this.Size = new System.Drawing.Size(540, 82);
             ((System.ComponentModel.ISupportInitialize)(this.nmMaximum)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmThreshold)).EndInit();
             this.ResumeLayout(false);

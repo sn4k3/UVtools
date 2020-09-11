@@ -73,16 +73,6 @@ namespace UVtools.GUI.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap arrow_down {
-            get {
-                object obj = ResourceManager.GetObject("arrow-down", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap arrow_down_16x16 {
             get {
                 object obj = ResourceManager.GetObject("arrow-down-16x16", resourceCulture);
@@ -116,16 +106,6 @@ namespace UVtools.GUI.Properties {
         internal static System.Drawing.Bitmap arrow_top_16x16 {
             get {
                 object obj = ResourceManager.GetObject("arrow-top-16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap arrow_up {
-            get {
-                object obj = ResourceManager.GetObject("arrow-up", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -336,16 +316,6 @@ namespace UVtools.GUI.Properties {
         internal static System.Drawing.Bitmap Donate_16x16 {
             get {
                 object obj = ResourceManager.GetObject("Donate-16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap Error_128x128 {
-            get {
-                object obj = ResourceManager.GetObject("Error-128x128", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -753,16 +723,6 @@ namespace UVtools.GUI.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap plus {
-            get {
-                object obj = ResourceManager.GetObject("plus", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap plus_16x16 {
             get {
                 object obj = ResourceManager.GetObject("plus-16x16", resourceCulture);
@@ -796,16 +756,6 @@ namespace UVtools.GUI.Properties {
         internal static System.Drawing.Bitmap resize_16x16 {
             get {
                 object obj = ResourceManager.GetObject("resize-16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap Rotate_16x16 {
-            get {
-                object obj = ResourceManager.GetObject("Rotate-16x16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -873,6 +823,16 @@ namespace UVtools.GUI.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap sync_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("sync-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap th_16x16 {
             get {
                 object obj = ResourceManager.GetObject("th-16x16", resourceCulture);
@@ -896,6 +856,26 @@ namespace UVtools.GUI.Properties {
         internal static System.Drawing.Bitmap trash_16x16 {
             get {
                 object obj = ResourceManager.GetObject("trash-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap undo_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("undo-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap undo_alt_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("undo-alt-16x16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

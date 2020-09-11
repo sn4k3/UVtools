@@ -682,7 +682,7 @@ namespace UVtools.GUI
             this.btnLayerImageRotate.Checked = true;
             this.btnLayerImageRotate.CheckOnClick = true;
             this.btnLayerImageRotate.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.btnLayerImageRotate.Image = global::UVtools.GUI.Properties.Resources.Rotate_16x16;
+            this.btnLayerImageRotate.Image = global::UVtools.GUI.Properties.Resources.undo_alt_16x16;
             this.btnLayerImageRotate.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnLayerImageRotate.Name = "btnLayerImageRotate";
             this.btnLayerImageRotate.Size = new System.Drawing.Size(117, 22);

@@ -50,7 +50,7 @@ namespace UVtools.GUI
             new OperationMenuItem(new OperationMove(), Resources.move_16x16),
             new OperationMenuItem(new OperationResize(), Resources.crop_16x16),
             new OperationMenuItem(new OperationFlip(), Resources.flip_16x16),
-            new OperationMenuItem(new OperationRotate(), Resources.Rotate_16x16),
+            new OperationMenuItem(new OperationRotate(), Resources.sync_16x16),
             new OperationMenuItem(new OperationSolidify(), Resources.square_solid_16x16),
             new OperationMenuItem(new OperationMorph(), Resources.Geometry_16x16),
             new OperationMenuItem(new OperationMask(), Resources.mask_16x16),
@@ -180,9 +180,9 @@ namespace UVtools.GUI
             {
                 var item = new ToolStripMenuItem(menuItem.Operation.Title)
                 {
+                    AutoToolTip = true,
                     ToolTipText = menuItem.Operation.Description,
                     Tag = menuItem.Operation,
-                    AutoToolTip = true,
                     Image = menuItem.Icon
                 };
                 item.Click += EventClick;
@@ -291,6 +291,7 @@ namespace UVtools.GUI
         #endregion
 
         #region Overrides
+
         protected override CreateParams CreateParams
         {
             get

@@ -79,7 +79,7 @@ namespace UVtools.GUI.Controls.Tools
 
                 ResetButton = new Button
                 {
-                    Image = Properties.Resources.refresh_16x16,
+                    Image = Properties.Resources.undo_16x16,
                     Dock = DockStyle.Fill,
                     BackColor = Color.LightGray,
                     Enabled = false,
