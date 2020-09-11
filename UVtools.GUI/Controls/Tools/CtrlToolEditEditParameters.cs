@@ -13,6 +13,7 @@ using System.Windows.Forms;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
+using UVtools.GUI.Extensions;
 
 namespace UVtools.GUI.Controls.Tools
 {
@@ -119,8 +120,11 @@ namespace UVtools.GUI.Controls.Tools
                 return;
             }
 
+            table.SetDoubleBuffered();
+
             int rowIndex = 1;
             RowControls = new RowControl[Operation.Modifiers.Length];
+            //table.RowCount = Operation.Modifiers.Length+1;
             foreach (var modifier in Operation.Modifiers)
             {
                 byte column = 0;

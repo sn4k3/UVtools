@@ -1,6 +1,6 @@
 # Changelog
 
-## 10/08/2020 - v0.8.0.0
+## 11/08/2020 - v0.8.0.0
 
 * (Add) LGS and LGS30 file format for Longer Orange 10 and 30 (ezrec/uv3dp#105)
 * (Add) CWS: Support the GRAY2RGB and RBG2GRAY encoding for Bene Mono

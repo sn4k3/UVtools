@@ -276,6 +276,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Extensions\BitmapExtension.cs" />
+    <Compile Include="Extensions\ControlExtensions.cs" />
     <Compile Include="Extensions\GUIExtensions.cs" />
     <Compile Include="Forms\FrmBenchmark.cs">
       <SubType>Form</SubType>
