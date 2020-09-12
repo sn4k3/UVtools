@@ -2048,9 +2048,8 @@ namespace UVtools.GUI
             {
                 SavesCount++;
                 menuFileSave.Enabled = false;
+                UpdateTitle();
             }
-
-            UpdateTitle();
 
             return task.Result;
         }
@@ -4175,63 +4174,70 @@ namespace UVtools.GUI
 
             var task = Task.Factory.StartNew(() =>
             {
+                var backup = new Layer[baseOperation.LayerRangeCount];
+                uint i = 0;
+                for (uint layerIndex = baseOperation.LayerIndexStart; layerIndex <= baseOperation.LayerIndexEnd; layerIndex++)
+                {
+                    backup[i++] = SlicerFile[layerIndex].Clone();
+                }
+
                 try
                 {
                     switch (baseOperation)
                     {
                         // Tools
                         case OperationRepairLayers operation:
-                            SlicerFile.LayerManager.RepairLayers(operation, FrmLoading.RestartProgress());
+                            SlicerFile.LayerManager.RepairLayers(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         case OperationMove operation:
-                            SlicerFile.LayerManager.Move(operation, FrmLoading.RestartProgress());
+                            SlicerFile.LayerManager.Move(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         case OperationResize operation:
-                            SlicerFile.LayerManager.Resize(operation, FrmLoading.RestartProgress());
+                            SlicerFile.LayerManager.Resize(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         case OperationFlip operation:
-                            SlicerFile.LayerManager.Flip(operation, FrmLoading.RestartProgress());
+                            SlicerFile.LayerManager.Flip(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         case OperationRotate operation:
-                            SlicerFile.LayerManager.Rotate(operation, FrmLoading.RestartProgress());
+                            SlicerFile.LayerManager.Rotate(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         case OperationSolidify operation:
-                            SlicerFile.LayerManager.Solidify(operation, FrmLoading.RestartProgress());
+                            SlicerFile.LayerManager.Solidify(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         case OperationMorph operation:
-                            SlicerFile.LayerManager.Morph(operation, BorderType.Default, new MCvScalar(), FrmLoading.RestartProgress());
+                            SlicerFile.LayerManager.Morph(operation, BorderType.Default, new MCvScalar(), FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         case OperationMask operation:
-                            SlicerFile.LayerManager.Mask(operation, FrmLoading.RestartProgress());
+                            SlicerFile.LayerManager.Mask(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         case OperationPixelDimming operation:
-                            SlicerFile.LayerManager.PixelDimming(operation, FrmLoading.RestartProgress());
+                            SlicerFile.LayerManager.PixelDimming(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         case OperationThreshold operation:
-                            SlicerFile.LayerManager.ThresholdPixels(operation, FrmLoading.RestartProgress());
+                            SlicerFile.LayerManager.ThresholdPixels(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         case OperationBlur operation:
-                            SlicerFile.LayerManager.Blur(operation, FrmLoading.RestartProgress());
+                            SlicerFile.LayerManager.Blur(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
 
                         case OperationChangeResolution operation:
-                            SlicerFile.LayerManager.ChangeResolution(operation, FrmLoading.RestartProgress(false));
+                            SlicerFile.LayerManager.ChangeResolution(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         case OperationLayerReHeight operation:
-                            SlicerFile.LayerManager.ReHeight(operation, FrmLoading.RestartProgress());
+                            SlicerFile.LayerManager.ReHeight(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         case OperationPattern operation:
-                            SlicerFile.LayerManager.Pattern(operation, FrmLoading.RestartProgress());
+                            SlicerFile.LayerManager.Pattern(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         // Actions
                         case OperationLayerImport operation:
-                            SlicerFile.LayerManager.Import(operation, FrmLoading.RestartProgress(false));
+                            SlicerFile.LayerManager.Import(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         case OperationLayerClone operation:
-                            SlicerFile.LayerManager.CloneLayer(operation, FrmLoading.RestartProgress(false));
+                            SlicerFile.LayerManager.CloneLayer(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         case OperationLayerRemove operation:
-                            SlicerFile.LayerManager.RemoveLayers(operation, FrmLoading.RestartProgress(false));
+                            SlicerFile.LayerManager.RemoveLayers(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
 
                         default:
@@ -4240,7 +4246,11 @@ namespace UVtools.GUI
                 }
                 catch (OperationCanceledException)
                 {
-
+                    i = 0;
+                    for (uint layerIndex = baseOperation.LayerIndexStart; layerIndex <= baseOperation.LayerIndexEnd; layerIndex++)
+                    {
+                        SlicerFile[layerIndex] = backup[i++];
+                    }
                 }
                 catch (Exception ex)
                 {

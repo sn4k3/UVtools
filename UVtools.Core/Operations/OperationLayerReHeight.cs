@@ -32,6 +32,8 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Height adjusted layers";
 
+        public override bool CanCancel => false;
+
         public override StringTag Validate(params object[] parameters)
         {
             var sb = new StringBuilder();

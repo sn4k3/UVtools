@@ -28,6 +28,8 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Removed layers";
 
+        public override bool CanCancel => false;
+
         #endregion
 
         #region Properties

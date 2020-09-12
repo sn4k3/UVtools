@@ -1543,6 +1543,8 @@ namespace UVtools.Core
                 }
             });
 
+            progress.Token.ThrowIfCancellationRequested();
+
             SlicerFile.ResolutionX = operation.NewResolutionX;
             SlicerFile.ResolutionY = operation.NewResolutionY;
         }

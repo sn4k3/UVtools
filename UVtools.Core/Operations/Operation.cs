@@ -28,6 +28,11 @@ namespace UVtools.Core.Operations
         public virtual bool PassActualLayerIndex => false;
 
         /// <summary>
+        /// Gets if this operation supports cancellation
+        /// </summary>
+        public virtual bool CanCancel => true;
+
+        /// <summary>
         /// Gets the title of this operation
         /// </summary>
         public virtual string Title => Id;

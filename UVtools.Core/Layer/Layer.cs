@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO.Compression;
+using System.Linq;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -847,7 +848,7 @@ namespace UVtools.Core
         }
         public Layer Clone()
         {
-            return new Layer(Index, CompressedBytes, Filename, ParentLayerManager)
+            return new Layer(Index, CompressedBytes.ToArray(), Filename, ParentLayerManager)
             {
                 PositionZ = PositionZ,
                 ExposureTime = ExposureTime,
