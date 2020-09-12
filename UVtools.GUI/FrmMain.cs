@@ -514,8 +514,7 @@ namespace UVtools.GUI
                     if (SavesCount == 0 && Settings.Default.FileSavePromptOverwrite)
                     {
                         if (MessageBox.Show(
-                            "This action will overwrite the input file, if it's the original is best practice to make a copy first (Save As) and work from that copy instead.\n" +
-                            "Do you want to continue and overwrite the file?", "Overwrite input file?",
+                            "Original input file will be overwritten.  Do you wish to proceed?", "Overwrite file?",
                             MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
                     }
 
@@ -673,7 +672,7 @@ namespace UVtools.GUI
                             ? Path.GetDirectoryName(SlicerFile.FileFullPath)
                             : Settings.Default.FileExtractDefaultDirectory;
                         folder.Description =
-                            $"A \"{fileNameNoExt}\" folder will be created on your selected folder to dump the content.";
+                            $"A \"{fileNameNoExt}\" folder will be created within your selected folder to dump the contents.";
                         if (folder.ShowDialog() == DialogResult.OK)
                         {
                             string finalPath = Path.Combine(folder.SelectedPath, fileNameNoExt);
@@ -709,7 +708,7 @@ namespace UVtools.GUI
                                 }*/
 
                                 if (MessageBox.Show(
-                                        $"Extraction was successful ({FrmLoading.StopWatch.ElapsedMilliseconds / 1000}s), browser folder to see it contents.\n{finalPath}\nPress 'Yes' if you want open the target folder, otherwise select 'No' to continue.",
+                                        $"Extraction was successful ({FrmLoading.StopWatch.ElapsedMilliseconds / 1000}s), browse folder to see it contents.\n{finalPath}\nPress 'Yes' if you want open the target folder, otherwise select 'No' to continue.",
                                         "Extraction completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
                                     DialogResult.Yes)
                                 {
@@ -751,7 +750,7 @@ namespace UVtools.GUI
                             if (!SlicerFile.SetValueFromPrintParameterModifier(modifier, value))
                             {
                                 MessageBox.Show(
-                                    $"Unable to set '{modifier.Name}' value, was not found, it may not implemented yet.",
+                                    $"Unable to set '{modifier.Name}'. Value was not found, it may not yet be implemented.",
                                     "Operation error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 return;
                             }
@@ -787,8 +786,8 @@ namespace UVtools.GUI
                 {
                     MessageBox.Show(
                         "All my work here is given for free (OpenSource), it took some hours to build, test and polish the program.\n" +
-                        "If you're happy to contribute for a better program and for my work i will appreciate the tip.\n" +
-                        "A browser window will be open and forward to my paypal address after you click 'OK'.\nHappy Printing!",
+                        "If would like to contribute for a better program and for my work, I would appreciate the tip.\n" +
+                        "A browser window will be open and you will be forwarded to my paypal address after you click 'OK'.\nHappy Printing!",
                         "Donation", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     using (Process.Start(About.Donate))
                     {
@@ -1105,10 +1104,9 @@ namespace UVtools.GUI
             {
                 if (!tsIssueRemove.Enabled || ReferenceEquals(Issues, null)) return;
 
-                if (MessageBox.Show("Are you sure you want to remove all selected issues from image?\n" +
-                                    "Warning: Removing a island can cause another issues to appears if the next layer have land in top of the removed island.\n" +
-                                    "Always check previous and next layer before perform a island removal to ensure safe operation.",
-                    "Remove Issues?",
+                if (MessageBox.Show("Are you sure you want to remove all selected issues?\n\n" +
+                                    "Warning: Removing an island can cause other issues to appear if there is material present in the layers above it.\n" +
+                                    "Always check previous and next layers before performing an island removal.", "Remove Issues?",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
 
                 Dictionary<uint, List<LayerIssue>> processIssues = new Dictionary<uint, List<LayerIssue>>();
@@ -1525,7 +1523,7 @@ namespace UVtools.GUI
                     {
                         if (MessageBox.Show(
                             $"Convertion is completed: {Path.GetFileName(dialog.FileName)} in {FrmLoading.StopWatch.ElapsedMilliseconds / 1000}s\n" +
-                            "Do you want open the converted file in a new window?",
+                            "Do you want to open the converted file in a new window?",
                             "Convertion completed", MessageBoxButtons.YesNo,
                             MessageBoxIcon.Information) == DialogResult.Yes)
                         {
@@ -3989,7 +3987,7 @@ namespace UVtools.GUI
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message, "Error while trying compute issues",
+                        MessageBox.Show(ex.Message, "Error while trying to compute issues",
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
                     }
