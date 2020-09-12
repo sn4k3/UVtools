@@ -30,6 +30,18 @@ namespace UVtools.GUI.Controls.Tools
             lbPrinterResolution.Text = $"Printer Resolution: {Program.FrmMain.ActualLayerImage.Size}";
         }
 
+        public override void ExtraActionCall(object sender)
+        {
+            if (ReferenceEquals(sender, ParentToolWindow.btnClearRoi))
+            {
+                Operation.Mask = null;
+                pbMask.Image = null;
+                lbMaskResolution.Text = "Mask resolution: (Unloaded)";
+                ButtonOkEnabled = false;
+                return;
+            }
+        }
+
         private void EventClick(object sender, EventArgs e)
         {
             if (ReferenceEquals(sender, btnImportImageMask))
@@ -44,9 +56,20 @@ namespace UVtools.GUI.Controls.Tools
 
                     Operation.Mask = CvInvoke.Imread(fileOpen.FileName, ImreadModes.Grayscale);
 
-                    if (Operation.Mask.Size != Program.FrmMain.ActualLayerImage.Size)
+                    var roi = Program.FrmMain.ROI;
+                    if (roi.IsEmpty)
                     {
-                        CvInvoke.Resize(Operation.Mask, Operation.Mask, Program.FrmMain.ActualLayerImage.Size);
+                        if (Operation.Mask.Size != Program.FrmMain.ActualLayerImage.Size)
+                        {
+                            CvInvoke.Resize(Operation.Mask, Operation.Mask, Program.FrmMain.ActualLayerImage.Size);
+                        }
+                    }
+                    else
+                    {
+                        if (Operation.Mask.Size != roi.Size)
+                        {
+                            CvInvoke.Resize(Operation.Mask, Operation.Mask, roi.Size);
+                        }
                     }
 
                     if (cbInvertMask.Checked)
@@ -72,7 +95,9 @@ namespace UVtools.GUI.Controls.Tools
 
             if (ReferenceEquals(sender, btnMaskGenerate))
             {
-                Operation.Mask = Program.FrmMain.ActualLayerImage.CloneBlank();
+                var roi = Program.FrmMain.ROI;
+                Operation.Mask = roi.IsEmpty ? Program.FrmMain.ActualLayerImage.CloneBlank() : new Mat(roi.Size, DepthType.Cv8U, 1);
+
                 lbMaskResolution.Text = $"Mask Resolution: {Operation.Mask.Size}";
 
                 int radius = (int)nmGeneratorDiameter.Value;

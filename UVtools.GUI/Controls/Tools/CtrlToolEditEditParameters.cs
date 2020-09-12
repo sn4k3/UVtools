@@ -159,7 +159,7 @@ namespace UVtools.GUI.Controls.Tools
 
         public override void ExtraActionCall(object sender)
         {
-            if (sender is Button button)
+            if (ReferenceEquals(sender, ParentToolWindow.btnActionExtra))
             {
                 foreach (var rowControl in RowControls)
                 {

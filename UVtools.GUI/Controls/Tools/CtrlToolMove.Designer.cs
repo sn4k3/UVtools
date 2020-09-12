@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.cbMoveType = new System.Windows.Forms.ComboBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.lbInsideBounds = new System.Windows.Forms.Label();
             this.lbPlacementY = new System.Windows.Forms.Label();
             this.lbPlacementX = new System.Windows.Forms.Label();
@@ -64,6 +66,8 @@
             // 
             this.groupBox1.AutoSize = true;
             this.groupBox1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.groupBox1.Controls.Add(this.cbMoveType);
+            this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.lbInsideBounds);
             this.groupBox1.Controls.Add(this.lbPlacementY);
             this.groupBox1.Controls.Add(this.lbPlacementX);
@@ -81,10 +85,32 @@
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox1.Location = new System.Drawing.Point(0, 0);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(570, 214);
+            this.groupBox1.Size = new System.Drawing.Size(570, 260);
             this.groupBox1.TabIndex = 24;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Location && Margins";
+            // 
+            // cbMoveType
+            // 
+            this.cbMoveType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbMoveType.FormattingEnabled = true;
+            this.cbMoveType.Items.AddRange(new object[] {
+            "Cut",
+            "Copy"});
+            this.cbMoveType.Location = new System.Drawing.Point(99, 207);
+            this.cbMoveType.Name = "cbMoveType";
+            this.cbMoveType.Size = new System.Drawing.Size(101, 28);
+            this.cbMoveType.TabIndex = 30;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(7, 211);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(85, 20);
+            this.label1.TabIndex = 29;
+            this.label1.Text = "Move type:";
             // 
             // lbInsideBounds
             // 
@@ -392,12 +418,13 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
+            this.CanROI = true;
             this.Controls.Add(this.groupBox1);
             this.Description = "";
             this.ExtraButtonVisible = true;
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "CtrlToolMove";
-            this.Size = new System.Drawing.Size(570, 214);
+            this.Size = new System.Drawing.Size(570, 260);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.tableAnchor.ResumeLayout(false);
@@ -437,5 +464,7 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.NumericUpDown nmMarginRight;
         private System.Windows.Forms.NumericUpDown nmMarginLeft;
+        private System.Windows.Forms.ComboBox cbMoveType;
+        private System.Windows.Forms.Label label1;
     }
 }

@@ -45,9 +45,9 @@ namespace UVtools.GUI.Controls.Tools
 
         public override void ExtraActionCall(object sender)
         {
-            if (sender is CheckBox checkbox)
+            if (ReferenceEquals(sender, ParentToolWindow.cbActionExtra))
             {
-                ctrlKernel.Visible = checkbox.Checked;
+                ctrlKernel.Visible = ParentToolWindow.cbActionExtra.Checked;
                 return;
             }
         }

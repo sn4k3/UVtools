@@ -22,7 +22,9 @@ namespace UVtools.GUI.Controls.Tools
         public CtrlToolPattern()
         {
             InitializeComponent();
-            Operation = new OperationPattern(Program.SlicerFile.LayerManager.BoundingRectangle, Program.FrmMain.ActualLayerImage.Size);
+
+            var roi = Program.FrmMain.ROI;
+            Operation = new OperationPattern(roi.IsEmpty ? Program.SlicerFile.LayerManager.BoundingRectangle : roi, Program.FrmMain.ActualLayerImage.Size);
             SetOperation(Operation);
 
             if (Operation.MaxRows < 2 && Operation.MaxCols < 2)
@@ -34,22 +36,31 @@ namespace UVtools.GUI.Controls.Tools
                 return;
             }
 
-            nmCols.Maximum = Operation.MaxCols;
-            nmRows.Maximum = Operation.MaxRows;
-
             ExtraActionCall(this);
         }
 
         public override void ExtraActionCall(object sender)
         {
-            if (sender is Button || ReferenceEquals(sender, this))
+            if (ReferenceEquals(sender, this) || ReferenceEquals(sender, ParentToolWindow.btnActionExtra))
             {
+                nmCols.Maximum = Operation.MaxCols;
+                nmRows.Maximum = Operation.MaxRows;
+
                 nmMarginCol.Value = Operation.MaxMarginCol;
                 nmMarginRow.Value = Operation.MaxMarginRow;
                 nmCols.Value = Operation.MaxCols;
                 nmRows.Value = Operation.MaxRows;
                 Operation.Fill();
                 EventValueChanged(this, EventArgs.Empty);
+
+                return;
+            }
+
+            if (ReferenceEquals(sender, ParentToolWindow.btnClearRoi))
+            {
+                Operation.SetRoi(Program.SlicerFile.LayerManager.BoundingRectangle);
+                ExtraActionCall(this);
+                return;
             }
         }
 
@@ -91,8 +102,8 @@ namespace UVtools.GUI.Controls.Tools
             ButtonOkEnabled = insideBounds && (Operation.Cols > 1 || Operation.Rows > 1);
             lbInsideBounds.Text = "Model within boundary: " + (insideBounds ? "Yes" : "No");
 
-            lbVolumeWidth.Text = $"Width: {Operation.GetPatternVolume.Width} (Min:{Operation.SrcRoi.Width}, Max:{Operation.ImageWidth})";
-            lbVolumeHeight.Text = $"Height: {Operation.GetPatternVolume.Height} (Min:{Operation.SrcRoi.Height}, Max:{Operation.ImageHeight})";
+            lbVolumeWidth.Text = $"Width: {Operation.GetPatternVolume.Width} (Min:{Operation.ROI.Width}, Max:{Operation.ImageWidth})";
+            lbVolumeHeight.Text = $"Height: {Operation.GetPatternVolume.Height} (Min:{Operation.ROI.Height}, Max:{Operation.ImageHeight})";
 
             lbCols.Text = $"Columns: {nmCols.Value} / {Operation.MaxCols}";
             lbRows.Text = $"Rows: {nmRows.Value} / {Operation.MaxRows}";

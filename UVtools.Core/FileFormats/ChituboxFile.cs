@@ -1218,7 +1218,9 @@ namespace UVtools.Core.FileFormats
                             if (HeaderSettings.Version >= 3)
                             {
                                 var layerDataEx = new LayerDataEx(layerData, layerIndex);
-                                layerData.DataAddress = layerDataCurrentOffset += Helpers.SerializeWriteFileStream(outputFile, layerDataEx);
+                                layerDataCurrentOffset += (uint)Helpers.Serializer.SizeOf(layerDataEx);
+                                layerData.DataAddress = layerDataCurrentOffset;
+                                Helpers.SerializeWriteFileStream(outputFile, layerDataEx);
                             }
 
                             layerDataCurrentOffset += outputFile.WriteBytes(layerData.EncodedRle);

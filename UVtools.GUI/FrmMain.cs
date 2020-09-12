@@ -15,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -71,11 +72,23 @@ namespace UVtools.GUI
 
         public FrmLoading FrmLoading { get; }
 
+        public Rectangle ROI
+        {
+            get
+            {
+                var rectangleF = pbLayer.SelectionRegion;
+                return rectangleF.IsEmpty ? Rectangle.Empty : GetTransposedRectangle(rectangleF, false);
+            }
+            set => pbLayer.SelectionRegion = value;
+        }
+
         public static FileFormat SlicerFile
         {
             get => Program.SlicerFile;
             set => Program.SlicerFile = value;
         }
+
+        public LayerCache LayerCache { get; set; } = new LayerCache();
 
         public uint ActualLayer { get; set; }
 
@@ -1338,6 +1351,14 @@ namespace UVtools.GUI
                 ShowLayer();
                 if (ReferenceEquals(sender, btnLayerImageRotate))
                 {
+                    // Arrange selection rotation
+                    var rectangleF = pbLayer.SelectionRegion;
+                    if (!rectangleF.IsEmpty)
+                    {
+                        var rectangle = Rectangle.Round(rectangleF);
+                        pbLayer.SelectionRegion = GetTransposedRectangle(rectangle, btnLayerImageRotate.Checked, true);
+                    }
+                    
                     ZoomToFit();
                 }
 
@@ -1715,6 +1736,8 @@ namespace UVtools.GUI
             // GUI CLEAN
             pbThumbnail.Image = null;
             pbLayer.Image = null;
+            pbLayer.SelectNone();
+            lbLayerImageOverlay.Visible = false;
             pbThumbnail.Image = null;
             tbGCode.Clear();
             tabPageIssues.Tag = null;
@@ -2245,19 +2268,6 @@ namespace UVtools.GUI
 
 
             var layer = SlicerFile[ActualLayer];
-            VectorOfVectorOfPoint layerContours = null;
-            Mat layerHierarchy = null;
-            Array layerHierarchyJagged = null;
-
-            void initContours()
-            {
-                if (!ReferenceEquals(layerContours, null)) return;
-                layerContours = new VectorOfVectorOfPoint();
-                layerHierarchy = new Mat();
-                CvInvoke.FindContours(ActualLayerImage, layerContours, layerHierarchy, RetrType.Ccomp,
-                    ChainApproxMethod.ChainApproxSimple);
-                layerHierarchyJagged = layerHierarchy.GetData();
-            }
 
             try
             {
@@ -2273,6 +2283,7 @@ namespace UVtools.GUI
 
                 ActualLayerImage?.Dispose();
                 ActualLayerImage = SlicerFile[layerNum].LayerMat;
+                LayerCache.Image = ActualLayerImage;
 
                 CvInvoke.CvtColor(ActualLayerImage, ActualLayerImageBgr, ColorConversion.Gray2Bgr);
 
@@ -2475,7 +2486,6 @@ namespace UVtools.GUI
                 if (btnLayerImageLayerOutlineHollowAreas.Checked)
                 {
                     //CvInvoke.Threshold(ActualLayerImage, grayscale, 1, 255, ThresholdType.Binary);
-                    initContours();
 
                     /*
                      * hierarchy[i][0]: the index of the next contour of the same level
@@ -2483,14 +2493,14 @@ namespace UVtools.GUI
                      * hierarchy[i][2]: the index of the first child
                      * hierarchy[i][3]: the index of the parent
                      */
-                    for (int i = 0; i < layerContours.Size; i++)
+                    for (int i = 0; i < LayerCache.LayerContours.Size; i++)
                     {
-                        if ((int) layerHierarchyJagged.GetValue(0, i, 2) == -1 &&
-                            (int) layerHierarchyJagged.GetValue(0, i, 3) != -1)
+                        if ((int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 2) == -1 &&
+                            (int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 3) != -1)
                         {
                             //var r = CvInvoke.BoundingRectangle(contours[i]);
                             //CvInvoke.Rectangle(ActualLayerImageBgr, r, new MCvScalar(0, 0, 255), 2);
-                            CvInvoke.DrawContours(ActualLayerImageBgr, layerContours, i,
+                            CvInvoke.DrawContours(ActualLayerImageBgr, LayerCache.LayerContours, i,
                                 new MCvScalar(Settings.Default.OutlineHollowAreasColor.B,
                                     Settings.Default.OutlineHollowAreasColor.G,
                                     Settings.Default.OutlineHollowAreasColor.R),
@@ -2563,16 +2573,15 @@ namespace UVtools.GUI
                     }
                     else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
                     {
-                        initContours();
                         if (imageSpan[ActualLayerImage.GetPixelPos(operation.Location)] < 10) continue;
                         var color = flvPixelHistory.SelectedObjects.Contains(operation)
                             ? Settings.Default.PixelEditorRemovePixelHLColor
                             : Settings.Default.PixelEditorRemovePixelColor;
-                        for (int i = 0; i < layerContours.Size; i++)
+                        for (int i = 0; i < LayerCache.LayerContours.Size; i++)
                         {
-                            if (CvInvoke.PointPolygonTest(layerContours[i], operation.Location, false) >= 0)
+                            if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], operation.Location, false) >= 0)
                             {
-                                CvInvoke.DrawContours(ActualLayerImageBgr, layerContours, i,
+                                CvInvoke.DrawContours(ActualLayerImageBgr, LayerCache.LayerContours, i,
                                     new MCvScalar(color.B, color.G, color.R), -1);
                                 break;
                             }
@@ -2627,6 +2636,11 @@ namespace UVtools.GUI
                 if (btnLayerImageRotate.Checked)
                 {
                     CvInvoke.Rotate(ActualLayerImageBgr, ActualLayerImageBgr, RotateFlags.Rotate90Clockwise);
+                    /*var roi = Rectangle.Round(pbLayer.SelectionRegion);
+                    if (roi != Rectangle.Empty)
+                    {
+                        pbLayer.SelectionRegion = G
+                    }*/
                 }
 
 
@@ -2649,10 +2663,6 @@ namespace UVtools.GUI
                 tsLayerBounds.Invalidate();
                 tsLayerInfo.Update();
                 tsLayerInfo.Refresh();
-
-                layerContours?.Dispose();
-                layerHierarchy?.Dispose();
-
 
                 watch.Stop();
                 tsLayerPreviewTime.Text = $"{watch.ElapsedMilliseconds}ms";
@@ -2794,14 +2804,17 @@ namespace UVtools.GUI
                         {
                             pbLayer.Cursor = Cursors.Cross;
                             pbLayer.PanMode = ImageBoxPanMode.None;
-                            lbLayerImageOverlay.Text = "Pixel editing is on\n" +
-                                                       "Click to over a pixel to draw";
+                            lbLayerImageOverlay.Text = "Pixel editing is on:\n" +
+                                                       "» Click to over a pixel to draw";
                         }
                         else
                         {
+                            pbLayer.Cursor = Cursors.Cross;
                             pbLayer.SelectionMode = ImageBoxSelectionMode.Rectangle;
-                            lbLayerImageOverlay.Text = "ROI selection mode\n" +
-                                                       "Click and drag to select an ROI\n" +
+                            lbLayerImageOverlay.Text = "ROI selection mode:\n" +
+                                                       "» Left-click and drag to select an ROI\n" +
+                                                       "» Left-click + Alt and drag to select contained objects\n" +
+                                                       "» Right click on an object to select its area\n" +
                                                        "Press Esc to clear the ROI";
                         }
 
@@ -2813,8 +2826,8 @@ namespace UVtools.GUI
                     {
                         pbLayer.Cursor = Cursors.Hand;
                         pbLayer.PanMode = ImageBoxPanMode.None;
-                        lbLayerImageOverlay.Text = "Issue selection mode\n" +
-                                                   "Click over a issue to select it";
+                        lbLayerImageOverlay.Text = "Issue selection mode:\n" +
+                                                   "» Click over a issue to select it";
 
                         lbLayerImageOverlay.Visible = true;
                         return;
@@ -3039,11 +3052,34 @@ namespace UVtools.GUI
                 // unconditionally stop any pending mouse timer here.
                 mouseHoldTimer.Stop();
 
+                if (!pbLayer.IsPointInImage(e.Location)) return;
+                Point location = pbLayer.PointToImage(e.Location);
+                if (pbLayer.SelectionMode == ImageBoxSelectionMode.Rectangle)
+                {
+                    if (e.Button == MouseButtons.Left)
+                    {
+                        if ((ModifierKeys & Keys.Alt) != 0)
+                        {
+                            if (SelectObjectRoi(ROI) == 0) SelectObjectRoi(location);
+                            return;
+                        }
+                        return;
+                    }
+
+                    if (e.Button == MouseButtons.Right)
+                    {
+                        if (!pbLayer.IsPointInImage(e.Location)) return;
+                        SelectObjectRoi(location);
+
+                        return;
+                    }
+                }
+
                 // Shift must be pressed for any pixel edit action, middle button is ignored.
                 if (!btnLayerImagePixelEdit.Checked || (e.Button & MouseButtons.Middle) != 0 ||
                     (ModifierKeys & Keys.Shift) == 0) return;
-                if (!pbLayer.IsPointInImage(e.Location)) return;
-                var location = pbLayer.PointToImage(e.Location);
+                //if (!pbLayer.IsPointInImage(e.Location)) return;
+                //location = pbLayer.PointToImage(e.Location);
                 _lastPixelMouseLocation = Point.Empty;
 
                 // Left or Alt-Right Adds pixel, Right or Alt-Left removes pixel
@@ -3051,6 +3087,53 @@ namespace UVtools.GUI
                 //SlicerFile[ActualLayer].LayerMat = ActualLayerImage;
                 RefreshPixelHistory();
             }
+        }
+
+        public bool SelectObjectRoi(Point location)
+        {
+            var point = GetTransposedPoint(location);
+            var brightness = ActualLayerImage.GetByte(point);
+
+            if (brightness == 0) return false;
+            for (int i = 0; i < LayerCache.LayerContours.Size; i++)
+            {
+                if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], point, false) >= 0)
+                {
+                    var rectangle =
+                        GetTransposedRectangle(CvInvoke.BoundingRectangle(LayerCache.LayerContours[i]));
+                    ROI = rectangle;
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public uint SelectObjectRoi(Rectangle roiRectangle)
+        {
+            if (roiRectangle.IsEmpty) return 0;
+            List<Rectangle> rectangles = new List<Rectangle>();
+            for (int i = 0; i < LayerCache.LayerContours.Size; i++)
+            {
+                var rectangle = CvInvoke.BoundingRectangle(LayerCache.LayerContours[i]);
+                //roi.Intersect(rectangle);
+                if (roiRectangle.IntersectsWith(rectangle))
+                {
+                    rectangles.Add(rectangle);
+                }
+
+            }
+            roiRectangle = rectangles.Count == 0 ? Rectangle.Empty : rectangles[0];
+            for (var i = 1; i < rectangles.Count; i++)
+            {
+                var rectangle = rectangles[i];
+                roiRectangle = Rectangle.Union(roiRectangle, rectangle);
+            }
+
+            ROI = GetTransposedRectangle(roiRectangle);
+
+            return (uint) rectangles.Count;
         }
 
         private void EventMouseLeave(object sender, EventArgs e)
@@ -3506,12 +3589,19 @@ namespace UVtools.GUI
                 : new Point(ActualLayerImage.Height - 1 - point.Y, point.X);
         }
 
-        public Rectangle GetTransposedRectangle(Rectangle rectangle)
+        public Rectangle GetTransposedRectangle(RectangleF rectangleF, bool clockWise = true, bool ignoreLayerRotation = false) =>
+            GetTransposedRectangle(Rectangle.Round(rectangleF), clockWise, ignoreLayerRotation);
+
+        public Rectangle GetTransposedRectangle(Rectangle rectangle, bool clockWise = true, bool ignoreLayerRotation = false)
         {
-            return btnLayerImageRotate.Checked
+            if (rectangle.IsEmpty || (!ignoreLayerRotation && !btnLayerImageRotate.Checked)) return rectangle;
+            return clockWise
                 ? new Rectangle(ActualLayerImage.Height - rectangle.Bottom,
-                    rectangle.X, rectangle.Height, rectangle.Width)
-                : rectangle;
+                    rectangle.Left, rectangle.Height, rectangle.Width)
+                //: new Rectangle(ActualLayerImage.Width - rectangle.Bottom, rectangle.Left, rectangle.Width, rectangle.Height);
+                //: new Rectangle(ActualLayerImage.Width - rectangle.Bottom, ActualLayerImage.Height-rectangle.Right, rectangle.Width, rectangle.Height); // Rotate90FlipX: // = Rotate270FlipY
+                //: new Rectangle(rectangle.Top, rectangle.Left, rectangle.Width, rectangle.Height); // Rotate270FlipX:  // = Rotate90FlipY
+                : new Rectangle(rectangle.Top, ActualLayerImage.Height - rectangle.Right, rectangle.Height, rectangle.Width); // Rotate90FlipNone:  // = Rotate270FlipXY
         }
 
         /// <summary>

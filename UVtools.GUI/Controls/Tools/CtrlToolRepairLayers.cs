@@ -47,9 +47,9 @@ namespace UVtools.GUI.Controls.Tools
 
         public override void ExtraActionCall(object sender)
         {
-            if (sender is CheckBox checkbox)
+            if (ReferenceEquals(sender, ParentToolWindow.cbActionExtra))
             {
-                LayerRangeVisible = groupAdvancedSettings.Visible = checkbox.Checked;
+                LayerRangeVisible = groupAdvancedSettings.Visible = ParentToolWindow.cbActionExtra.Checked;
                 return;
             }
         }

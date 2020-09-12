@@ -149,6 +149,17 @@ namespace UVtools.GUI.Forms
                 pnContent.Visible = false;
             }
 
+            var ROI = Program.FrmMain.ROI;
+            if (ROI != Rectangle.Empty)
+            {
+                pnROI.Visible = true;
+                lbRoi.Text = ROI.ToString();
+
+                /*lbDescription.Text +=
+                    "\n\nNOTE: The operation will only be applied to the selected Region of Interest indicated below.\n" +
+                    "The Region of Interest can be set directly from the layer preview window prior to running this tool.";*/
+            }
+
             EventValueChanged(nmLayerRangeStart, EventArgs.Empty);
             EventValueChanged(nmLayerRangeEnd, EventArgs.Empty);
         }
@@ -172,6 +183,12 @@ namespace UVtools.GUI.Forms
             ExtraCheckboxText = content.ExtraCheckboxText;
             btnOk.Enabled = content.ButtonOkEnabled;
             //content.AutoSize = true;
+
+            if (!content.CanROI)
+            {
+                pnROI.Visible = false;
+            }
+
             Content = content;
 
             content.PropertyChanged += ContentOnPropertyChanged;
@@ -318,6 +335,18 @@ namespace UVtools.GUI.Forms
                 return;
             }
 
+            if (ReferenceEquals(sender, btnClearRoi))
+            {
+                if (MessageQuestionBox("Are you sure you want to clear the current ROI?\n" +
+                                       "This action can not be reverted, to select another ROI you must quit this window and select it on layer preview.",
+                    "Clear the current ROI?") != DialogResult.Yes) return;
+                Program.FrmMain.pbLayer.SelectNone();
+                cbClearRoiAfterOperation.Checked = false;
+                pnROI.Visible = false;
+                ExtraActionCall(btnClearRoi);
+                return;
+            }
+
             if (ReferenceEquals(sender, btnActionExtra) || ReferenceEquals(sender, cbActionExtra))
             {
                 ExtraActionCall(sender);
@@ -349,6 +378,11 @@ namespace UVtools.GUI.Forms
                     if (MessageQuestionBox(
                             $"Are you sure you want to {confirmationText}") !=
                         DialogResult.Yes) return;
+                }
+
+                if (cbClearRoiAfterOperation.Checked)
+                {
+                    Program.FrmMain.pbLayer.SelectNone();
                 }
 
                 DialogResult = DialogResult.OK;

@@ -166,6 +166,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.ButtonOkEnabled = false;
+            this.CanROI = true;
             this.Controls.Add(this.cbFade);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);

@@ -247,13 +247,13 @@ namespace UVtools.Core
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
             progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
 
-            if (operation.SrcRoi == Rectangle.Empty) operation.SrcRoi = GetBoundingRectangle(progress);
+            if (operation.ROI == Rectangle.Empty) operation.ROI = GetBoundingRectangle(progress);
 
             Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 
-                this[layerIndex].MutateMove(operation);
+                this[layerIndex].Move(operation);
 
                 lock (progress.Mutex)
                 {
@@ -322,7 +322,7 @@ namespace UVtools.Core
 
                 if (newX == 1.0m && newY == 1.0m) return;
 
-                this[layerIndex].Resize((double) (newX / 100m), (double) (newY / 100m));
+                this[layerIndex].Resize((double) (newX / 100m), (double) (newY / 100m), operation);
             });
             progress.Token.ThrowIfCancellationRequested();
         }
@@ -366,7 +366,7 @@ namespace UVtools.Core
             Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
-                this[layerIndex].MutateSolidify();
+                this[layerIndex].Solidify(operation);
                 lock (progress.Mutex)
                 {
                     progress++;
@@ -425,13 +425,15 @@ namespace UVtools.Core
             using (Mat matEven = mat.CloneBlank())
             using (Mat matOdd = mat.CloneBlank())
             {
-                CvInvoke.Repeat(operation.EvenPattern, mat.Rows / operation.EvenPattern.Rows + 1,
-                    mat.Cols / operation.EvenPattern.Cols + 1, matEven);
-                CvInvoke.Repeat(operation.OddPattern, mat.Rows / operation.OddPattern.Rows + 1,
-                    mat.Cols / operation.OddPattern.Cols + 1, matOdd);
+                Mat target = operation.GetRoiOrDefault(mat);
 
-                using (var evenPatternMask = new Mat(matEven, new Rectangle(0, 0, mat.Width, mat.Height)))
-                using (var oddPatternMask = new Mat(matOdd, new Rectangle(0, 0, mat.Width, mat.Height)))
+                CvInvoke.Repeat(operation.EvenPattern, target.Rows / operation.EvenPattern.Rows + 1,
+                    target.Cols / operation.EvenPattern.Cols + 1, matEven);
+                CvInvoke.Repeat(operation.OddPattern, target.Rows / operation.OddPattern.Rows + 1,
+                    target.Cols / operation.OddPattern.Cols + 1, matOdd);
+
+                using (var evenPatternMask = new Mat(matEven, new Rectangle(0, 0, target.Width, target.Height)))
+                using (var oddPatternMask = new Mat(matOdd, new Rectangle(0, 0, target.Width, target.Height)))
                 {
                     Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
                     {

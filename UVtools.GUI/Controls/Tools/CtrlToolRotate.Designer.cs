@@ -52,8 +52,8 @@
             this.nmDegrees.Name = "nmDegrees";
             this.nmDegrees.Size = new System.Drawing.Size(101, 26);
             this.nmDegrees.TabIndex = 23;
-            this.toolTip.SetToolTip(this.nmDegrees, "Number of degrees to rotate the layers, where postive values are clockwise and" +
-        " negative values are counter-clockwise.");
+            this.toolTip.SetToolTip(this.nmDegrees, "Number of degrees to rotate the layers, where postive values are clockwise and ne" +
+        "gative values are counter-clockwise.");
             this.nmDegrees.Value = new decimal(new int[] {
             90,
             0,
@@ -85,7 +85,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.CanROI = true;
             this.Controls.Add(this.label1);
             this.Controls.Add(this.nmDegrees);
             this.Controls.Add(this.lbX);

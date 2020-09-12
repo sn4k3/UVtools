@@ -66,6 +66,8 @@ namespace UVtools.GUI.Forms
 
             btnCancel.Enabled = CanCancel;
             btnCancel.Text = "Cancel";
+
+            Cursor = Cursors.AppStarting;
         }
 
         protected override void OnClosed(EventArgs e)
@@ -75,6 +77,7 @@ namespace UVtools.GUI.Forms
             StopWatch.Stop();
             Progress = null;
             OperationLog.ElapsedTime = (uint) StopWatch.ElapsedMilliseconds / 1000m;
+            Cursor = Cursors.Arrow;
         }
 
         public OperationProgress RestartProgress(bool canCancel = true)

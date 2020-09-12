@@ -16,17 +16,17 @@ namespace UVtools.Core.Operations
     {
         public override string Title => "Move";
         public override string Description =>
-            "Change the position of the model on the build plate.";
+            "Change or copy the position of the model on the build plate.";
 
         public override string ConfirmationText =>
-            $"move model layers {LayerIndexStart} through {LayerIndexEnd} from " +
-            $"location {{X={SrcRoi.X},Y={SrcRoi.Y}}} to " +
+            (IsCutMove ? "move" : "copy") + $" model layers {LayerIndexStart} through {LayerIndexEnd} from " +
+            $"location {{X={ROI.X},Y={ROI.Y}}} to " +
             $"location {{X={DstRoi.X},Y={DstRoi.Y}}}?";
 
         public override string ProgressTitle =>
-            $"Moving model to {{X={DstRoi.X},Y={DstRoi.Y}}}";
+            (IsCutMove ? "Moving" : "Copying") +$" model to {{X={DstRoi.X},Y={DstRoi.Y}}}";
 
-        public override string ProgressAction => "Moved layers";
+        public override string ProgressAction => (IsCutMove ? "Moved" : "Copied")+" layers";
 
         public override StringTag Validate(params object[] parameters)
         {
@@ -34,14 +34,11 @@ namespace UVtools.Core.Operations
 
             if (!ValidateBounds())
             {
-                sb.AppendLine("Your parameters will put the model outside of build plate.   Please adjust the location and margins.");
+                sb.AppendLine("Your parameters will put the model outside of build plate. Please adjust the location and margins.");
             }
 
             return new StringTag(sb.ToString());
         }
-
-
-        public Rectangle SrcRoi { get; set; }
 
         private Rectangle _dstRoi = Rectangle.Empty;
         public Rectangle DstRoi
@@ -57,7 +54,7 @@ namespace UVtools.Core.Operations
 
         public void CalculateDstRoi()
         {
-            _dstRoi.Size = SrcRoi.Size;
+            _dstRoi.Size = ROI.Size;
 
             switch (Anchor)
             {
@@ -65,29 +62,29 @@ namespace UVtools.Core.Operations
                     _dstRoi.Location = new Point(0, 0);
                     break;
                 case Enumerations.Anchor.TopCenter:
-                    _dstRoi.Location = new Point((int)(ImageWidth / 2 - SrcRoi.Width / 2), 0);
+                    _dstRoi.Location = new Point((int)(ImageWidth / 2 - ROI.Width / 2), 0);
                     break;
                 case Enumerations.Anchor.TopRight:
-                    _dstRoi.Location = new Point((int)(ImageWidth - SrcRoi.Width), 0);
+                    _dstRoi.Location = new Point((int)(ImageWidth - ROI.Width), 0);
                     break;
                 case Enumerations.Anchor.MiddleLeft:
-                    _dstRoi.Location = new Point(0, (int)(ImageHeight / 2 - SrcRoi.Height / 2));
+                    _dstRoi.Location = new Point(0, (int)(ImageHeight / 2 - ROI.Height / 2));
                     break;
                 case Enumerations.Anchor.MiddleCenter:
                 //case Anchor.None:
-                    _dstRoi.Location = new Point((int)(ImageWidth / 2 - SrcRoi.Width / 2), (int)(ImageHeight / 2 - SrcRoi.Height / 2));
+                    _dstRoi.Location = new Point((int)(ImageWidth / 2 - ROI.Width / 2), (int)(ImageHeight / 2 - ROI.Height / 2));
                     break;
                 case Enumerations.Anchor.MiddleRight:
-                    _dstRoi.Location = new Point((int)(ImageWidth - SrcRoi.Width), (int)(ImageHeight / 2 - SrcRoi.Height / 2));
+                    _dstRoi.Location = new Point((int)(ImageWidth - ROI.Width), (int)(ImageHeight / 2 - ROI.Height / 2));
                     break;
                 case Enumerations.Anchor.BottomLeft:
-                    _dstRoi.Location = new Point(0, (int)(ImageHeight - SrcRoi.Height));
+                    _dstRoi.Location = new Point(0, (int)(ImageHeight - ROI.Height));
                     break;
                 case Enumerations.Anchor.BottomCenter:
-                    _dstRoi.Location = new Point((int)(ImageWidth / 2 - SrcRoi.Width / 2), (int)(ImageHeight - SrcRoi.Height));
+                    _dstRoi.Location = new Point((int)(ImageWidth / 2 - ROI.Width / 2), (int)(ImageHeight - ROI.Height));
                     break;
                 case Enumerations.Anchor.BottomRight:
-                    _dstRoi.Location = new Point((int)(ImageWidth - SrcRoi.Width), (int)(ImageHeight - SrcRoi.Height));
+                    _dstRoi.Location = new Point((int)(ImageWidth - ROI.Width), (int)(ImageHeight - ROI.Height));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -110,13 +107,15 @@ namespace UVtools.Core.Operations
         public int MarginRight { get; set; } = 0;
         public int MarginBottom { get; set; } = 0;
 
+        public bool IsCutMove { get; set; } = true;
+
         public OperationMove()
         {
         }
 
         public OperationMove(Rectangle srcRoi, uint imageWidth = 0, uint imageHeight = 0, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter)
         {
-            SrcRoi = srcRoi;
+            ROI = srcRoi;
             ImageWidth = imageWidth;
             ImageHeight = imageHeight;
             Anchor = anchor;

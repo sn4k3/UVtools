@@ -444,35 +444,44 @@ namespace UVtools.Core
             return result;
         }
 
-        public void MutateMove(OperationMove operation)
+        public void Move(OperationMove operation)
         {
-            using (var layer = LayerMat)
+            using (var mat = LayerMat)
             {
-                if (operation.ImageWidth == 0) operation.ImageWidth = (uint)layer.Width;
-                if (operation.ImageHeight == 0) operation.ImageHeight = (uint)layer.Height;
+                if (operation.ImageWidth == 0) operation.ImageWidth = (uint)mat.Width;
+                if (operation.ImageHeight == 0) operation.ImageHeight = (uint)mat.Height;
 
                 /*layer.Transform(1.0, 1.0, move.MarginLeft - move.MarginRight, move.MarginTop-move.MarginBottom);
                 LayerMat = layer;*/
-                using (var layerRoi = new Mat(layer, operation.SrcRoi))
+                /*using (var layerRoi = new Mat(layer, operation.SrcRoi))
+                using (var dstLayer = layer.CloneBlank())
+                using (var dstRoi = new Mat(dstLayer, operation.DstRoi))
                 {
-                    using (var dstLayer = layer.CloneBlank())
+                    layerRoi.CopyTo(dstRoi);
+                    LayerMat = dstLayer;
+                }*/
+
+                using (var srcRoi = new Mat(mat, operation.ROI))
+                using (var dstRoi = new Mat(mat, operation.DstRoi))
+                {
+                    srcRoi.CopyTo(dstRoi);
+                    if (operation.IsCutMove)
                     {
-                        using (var dstRoi = new Mat(dstLayer, operation.DstRoi))
-                        {
-                            layerRoi.CopyTo(dstRoi);
-                            LayerMat = dstLayer;
-                        }
+                        srcRoi.SetTo(new MCvScalar(0));
                     }
+
+                    LayerMat = mat;
                 }
             }
         }
 
 
-        public void Resize(double xScale, double yScale)
+        public void Resize(double xScale, double yScale, OperationResize operation)
         {
             using (var mat = LayerMat)
             {
-                mat.TransformFromCenter(xScale, yScale);
+                Mat target = operation.GetRoiOrDefault(mat);
+                target.TransformFromCenter(xScale, yScale);
                 LayerMat = mat;
             }
         }
@@ -481,33 +490,20 @@ namespace UVtools.Core
         {
             using (var mat = LayerMat)
             {
+                Mat target = operation.GetRoiOrDefault(mat);
+
                 if (operation.MakeCopy)
                 {
                     using (Mat dst = new Mat())
                     {
-                        CvInvoke.Flip(mat, dst, operation.FlipTypeOpenCV);
-                        CvInvoke.Add(mat, dst, mat);
-                        /*var spanSrc = mat.GetPixelSpan<byte>();
-                        var spanDst = dst.GetPixelSpan<byte>();
-                        for (int i = 0; i < spanSrc.Length; i++)
-                        {
-                            if (spanDst[i] == 0) continue;
-                            spanSrc[i] = spanDst[i];
-                        }*/
 
-
-
-                        LayerMat = mat;
-
+                        CvInvoke.Flip(target, dst, operation.FlipTypeOpenCV);
+                        CvInvoke.Add(target, dst, target);
                     }
                 }
                 else
                 {
-                    CvInvoke.Flip(mat, mat, operation.FlipTypeOpenCV);
-                    /*GpuMat gpumat = new GpuMat();
-                    gpumat.Upload(mat);
-                    CudaInvoke.Flip(gpumat, gpumat, flipType);
-                    gpumat.Download(mat);*/
+                    CvInvoke.Flip(target, target, operation.FlipTypeOpenCV);
                 }
 
                 LayerMat = mat;
@@ -518,8 +514,10 @@ namespace UVtools.Core
         {
             using (var mat = LayerMat)
             {
-                var halfWidth = mat.Width / 2.0f;
-                var halfHeight = mat.Height / 2.0f;
+                Mat target = operation.GetRoiOrDefault(mat);
+
+                var halfWidth = target.Width / 2.0f;
+                var halfHeight = target.Height / 2.0f;
                 using (var translateTransform = new Matrix<double>(2, 3))
                 {
                     CvInvoke.GetRotationMatrix2D(new PointF(halfWidth, halfHeight), (double) operation.AngleDegrees, 1.0, translateTransform);
@@ -537,20 +535,23 @@ namespace UVtools.Core
                        translateTransform[1, 2] += bound_h / 2 - halfHeight;*/
 
 
-                    CvInvoke.WarpAffine(mat, mat, translateTransform, mat.Size);
+                    CvInvoke.WarpAffine(target, target, translateTransform, target.Size);
                 }
 
                 LayerMat = mat;
             }
         }
 
-        public void MutateSolidify()
+        public void Solidify(OperationSolidify operation)
         {
             using (Mat mat = LayerMat)
             {
                 using (Mat filteredMat = new Mat())
                 {
-                    CvInvoke.Threshold(mat, filteredMat, 254, 255, ThresholdType.Binary); // Clean AA
+                    Mat target = operation.GetRoiOrDefault(mat);
+
+
+                    CvInvoke.Threshold(target, filteredMat, 254, 255, ThresholdType.Binary); // Clean AA
 
                     using (VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint())
                     {
@@ -561,7 +562,7 @@ namespace UVtools.Core
                             for (int i = 0; i < contours.Size; i++)
                             {
                                 if ((int)arr.GetValue(0, i, 2) != -1 || (int)arr.GetValue(0, i, 3) == -1) continue;
-                                CvInvoke.DrawContours(mat, contours, i, new MCvScalar(255), -1);
+                                CvInvoke.DrawContours(target, contours, i, new MCvScalar(255), -1);
                             }
                         }
                     }
@@ -571,13 +572,13 @@ namespace UVtools.Core
             }
         }
 
-        public void Mask(OperationMask mask) => Mask(mask.Mask);
-
-        public void Mask(Mat mask)
+        public void Mask(OperationMask operation)
         {
             using (var mat = LayerMat)
             {
-                CvInvoke.BitwiseAnd(mat, mask, mat);
+                Mat target = operation.GetRoiOrDefault(mat);
+                if(operation.Mask.Size != target.Size) return;
+                CvInvoke.BitwiseAnd(target, operation.Mask, target);
                 LayerMat = mat;
             }
         }
@@ -655,17 +656,19 @@ namespace UVtools.Core
             using (Mat erode = new Mat())
             using (Mat diff = new Mat())
             {
-                CvInvoke.Erode(dst, erode, kernel, anchor, (int) operation.BorderSize, BorderType.Reflect101, default);
-                CvInvoke.Subtract(dst, erode, diff);
+                Mat target = operation.GetRoiOrDefault(dst);
+
+                CvInvoke.Erode(target, erode, kernel, anchor, (int) operation.BorderSize, BorderType.Reflect101, default);
+                CvInvoke.Subtract(target, erode, diff);
                 if (operation.BordersOnly)
                 {
-                    CvInvoke.BitwiseAnd(diff, Index % 2 == 0 ? evenPatternMask : oddPatternMask, dst);
-                    CvInvoke.Add(erode, dst, dst);
+                    CvInvoke.BitwiseAnd(diff, Index % 2 == 0 ? evenPatternMask : oddPatternMask, target);
+                    CvInvoke.Add(erode, target, target);
                 }
                 else
                 {
-                    CvInvoke.BitwiseAnd(erode, Index % 2 == 0 ? evenPatternMask : oddPatternMask, dst);
-                    CvInvoke.Add(dst, diff, dst);
+                    CvInvoke.BitwiseAnd(erode, Index % 2 == 0 ? evenPatternMask : oddPatternMask, target);
+                    CvInvoke.Add(target, diff, target);
                 }
                 
                 LayerMat = dst;
@@ -679,7 +682,8 @@ namespace UVtools.Core
 
             using (Mat dst = LayerMat)
             {
-                CvInvoke.MorphologyEx(dst, dst, operation.MorphOperation, operation.Kernel.Matrix, operation.Kernel.Anchor, iterations, borderType, borderValue);
+                Mat target = operation.GetRoiOrDefault(dst);
+                CvInvoke.MorphologyEx(target, target, operation.MorphOperation, operation.Kernel.Matrix, operation.Kernel.Anchor, iterations, borderType, borderValue);
                 LayerMat = dst;
             }
         }
@@ -758,7 +762,8 @@ namespace UVtools.Core
         {
             using (Mat dst = LayerMat)
             {
-                CvInvoke.Threshold(dst, dst, operation.Threshold, operation.Maximum, operation.Type);
+                Mat target = operation.GetRoiOrDefault(dst);
+                CvInvoke.Threshold(target, target, operation.Threshold, operation.Maximum, operation.Type);
                 LayerMat = dst;
             }
         }
@@ -772,23 +777,24 @@ namespace UVtools.Core
             //if (anchor.IsEmpty) anchor = new Point(-1, -1);
             using (Mat dst = LayerMat)
             {
+                Mat target = operation.GetRoiOrDefault(dst);
                 switch (operation.BlurOperation)
                 {
                     case OperationBlur.BlurAlgorithm.Blur:
-                        CvInvoke.Blur(dst, dst, size, operation.Kernel.Anchor); 
+                        CvInvoke.Blur(target, target, size, operation.Kernel.Anchor); 
                         break;
                     case OperationBlur.BlurAlgorithm.Pyramid:
-                        CvInvoke.PyrDown(dst, dst);
-                        CvInvoke.PyrUp(dst, dst);
+                        CvInvoke.PyrDown(target, target);
+                        CvInvoke.PyrUp(target, target);
                         break;
                     case OperationBlur.BlurAlgorithm.MedianBlur:
-                        CvInvoke.MedianBlur(dst, dst, (int) operation.Size);
+                        CvInvoke.MedianBlur(target, target, (int) operation.Size);
                         break;
                     case OperationBlur.BlurAlgorithm.GaussianBlur:
-                        CvInvoke.GaussianBlur(dst, dst, size, 0);
+                        CvInvoke.GaussianBlur(target, target, size, 0);
                         break;
                     case OperationBlur.BlurAlgorithm.Filter2D:
-                        CvInvoke.Filter2D(dst, dst, operation.Kernel.Matrix, anchor);
+                        CvInvoke.Filter2D(target, target, operation.Kernel.Matrix, anchor);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -824,7 +830,7 @@ namespace UVtools.Core
         public void Pattern(OperationPattern operation)
         {
             using (var layer = LayerMat)
-            using (var layerRoi = new Mat(layer, operation.SrcRoi))
+            using (var layerRoi = new Mat(layer, operation.ROI))
             using (var dstLayer = layer.CloneBlank())
             {
                 for (ushort col = 0; col < operation.Cols; col++)

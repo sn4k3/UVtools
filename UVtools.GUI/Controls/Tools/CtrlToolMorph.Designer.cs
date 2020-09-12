@@ -145,6 +145,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoSize = true;
+            this.CanROI = true;
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cbMorphOperation);
             this.Controls.Add(this.ctrlKernel);

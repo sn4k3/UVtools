@@ -46,7 +46,6 @@ namespace UVtools.Core.Operations
         #endregion
 
         public Enumerations.Anchor Anchor { get; set; }
-        public Rectangle SrcRoi { get; }
 
         public uint ImageWidth { get; }
         public uint ImageHeight { get; }
@@ -54,16 +53,16 @@ namespace UVtools.Core.Operations
         public ushort MarginCol { get; set; }
         public ushort MarginRow { get; set; }
 
-        public ushort MaxMarginCol { get; }
-        public ushort MaxMarginRow { get; }
+        public ushort MaxMarginCol { get; set; }
+        public ushort MaxMarginRow { get; set; }
 
         public ushort Cols { get; set; } = 1;
         public ushort Rows { get; set; } = 1;
 
-        public ushort MaxCols { get; }
-        public ushort MaxRows { get; }
+        public ushort MaxCols { get; set; }
+        public ushort MaxRows { get; set; }
 
-        public Size GetPatternVolume => new Size(Cols * SrcRoi.Width + (Cols - 1) * MarginCol, Rows * SrcRoi.Height + (Rows - 1) * MarginRow);
+        public Size GetPatternVolume => new Size(Cols * ROI.Width + (Cols - 1) * MarginCol, Rows * ROI.Height + (Rows - 1) * MarginRow);
 
         public OperationPattern()
         {
@@ -71,12 +70,18 @@ namespace UVtools.Core.Operations
 
         public OperationPattern(Rectangle srcRoi, Size resolution)
         {
-            SrcRoi = srcRoi;
             ImageWidth = (uint) resolution.Width;
             ImageHeight = (uint) resolution.Height;
 
-            MaxCols = (ushort) (ImageWidth / srcRoi.Width);
-            MaxRows = (ushort) (ImageHeight / srcRoi.Height);
+            SetRoi(srcRoi);
+        }
+
+        public void SetRoi(Rectangle srcRoi)
+        {
+            ROI = srcRoi;
+
+            MaxCols = (ushort)(ImageWidth / srcRoi.Width);
+            MaxRows = (ushort)(ImageHeight / srcRoi.Height);
 
             MaxMarginCol = CalculateMarginCol(MaxCols);
             MaxMarginRow = CalculateMarginRow(MaxRows);
@@ -141,13 +146,13 @@ namespace UVtools.Core.Operations
         public ushort CalculateMarginCol(ushort cols)
         {
             if (cols <= 1) return 0;
-            return (ushort)((ImageWidth - SrcRoi.Width * cols) / cols);
+            return (ushort)((ImageWidth - ROI.Width * cols) / cols);
         }
 
         public ushort CalculateMarginRow(ushort rows)
         {
             if (rows <= 1) return 0;
-            return (ushort)((ImageHeight - SrcRoi.Height * rows) / rows);
+            return (ushort)((ImageHeight - ROI.Height * rows) / rows);
         }
 
         public Rectangle GetRoi(ushort col, ushort row)
@@ -155,8 +160,8 @@ namespace UVtools.Core.Operations
             var patternVolume = GetPatternVolume;
 
             return new Rectangle(new Point(
-                (int) (col * SrcRoi.Width + col * MarginCol + (ImageWidth - patternVolume.Width) / 2), 
-                (int) (row * SrcRoi.Height + row * MarginRow + (ImageHeight - patternVolume.Height) / 2)), SrcRoi.Size);
+                (int) (col * ROI.Width + col * MarginCol + (ImageWidth - patternVolume.Width) / 2), 
+                (int) (row * ROI.Height + row * MarginRow + (ImageHeight - patternVolume.Height) / 2)), ROI.Size);
         }
 
         public bool ValidateBounds()

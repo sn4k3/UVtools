@@ -225,8 +225,8 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
-            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ButtonOkEnabled = false;
+            this.CanROI = true;
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.cbInvertMask);
             this.Controls.Add(this.lbMaskResolution);

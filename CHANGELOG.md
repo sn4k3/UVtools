@@ -1,14 +1,20 @@
 # Changelog
 
-## /08/2020 - v0.8.1.0
+## 12/09/2020 - v0.8.1.0
 
-* (Add) Layer preview: Hold-Shift key to select an ROI (Region of interest) on image, that region will be used instead of whole image when running some tools
+* (Add) Tools can now run inside a ROI (#49)
+* (Add) Layer preview: Hold-Shift + Left-drag to select an ROI (Region of interest) on image, that region will be used instead of whole image when running some tools
+* (Add) Layer preview: Hold-Shift + Hold-Alt + Left-drag to select and auto adjust the ROI to the contained objects, that region will be used instead of whole image when running some tools
+* (Add) Layer preview: Hold-Shift + Right-click on a object to select its bounding area, that region will be used instead of whole image when running some tools
 * (Add) Layer preview: ESC key to clear ROI
 * (Add) Layer preview: Overlay text with hints for current action
+* (Add) Tool - Move: Now possible to do a copy move instead of a cut move
+* (Add) Arrow wait cursor to progress loadings
 * (Change) Layer preview: Hold-Shift key to select issues and pick pixel position/brightness changed to Hold-Control key
 * (Change) Layer preview: Shift+click combination to zoom-in changed to Alt+click
+* (Fix) CTB v3: Bad file when re-encoding
 
-## 11/08/2020 - v0.8.0.0
+## 11/09/2020 - v0.8.0.0
 
 * (Add) LGS and LGS30 file format for Longer Orange 10 and 30 (ezrec/uv3dp#105)
 * (Add) CWS: Support the GRAY2RGB and RBG2GRAY encoding for Bene Mono
@@ -50,7 +56,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Fix) Mask: A crash when check "Invert" when mask is not loaded
 * (Fix) Some text and phrases
 
-## 04/08/2020 - v0.7.0.0
+## 04/09/2020 - v0.7.0.0
 
 * (Add) "Rebuild GCode" button
 * (Add) Issues: Touching Bounds and Empty Layers to the detect button

@@ -21,26 +21,39 @@ namespace UVtools.GUI.Controls.Tools
         public CtrlToolMove()
         {
             InitializeComponent();
-            Operation = new OperationMove(Program.SlicerFile.LayerManager.BoundingRectangle, (uint)Program.FrmMain.ActualLayerImage.Width,
+
+            var roi = Program.FrmMain.ROI;
+
+            Operation = new OperationMove(roi.IsEmpty ? Program.SlicerFile.LayerManager.BoundingRectangle : roi, (uint)Program.FrmMain.ActualLayerImage.Width,
                 (uint)Program.FrmMain.ActualLayerImage.Height);
             SetOperation(Operation);
 
-            lbVolumeWidth.Text = $"Width: {Operation.SrcRoi.Width} / {Operation.ImageWidth}";
-            lbVolumeHeight.Text = $"Height: {Operation.SrcRoi.Height} / {Operation.ImageHeight}";
-
+            cbMoveType.SelectedIndex = 0;
             ExtraActionCall(this);
         }
 
         public override void ExtraActionCall(object sender)
         {
-            if (sender is Button || ReferenceEquals(sender, this))
+            if (ReferenceEquals(sender, this) || ReferenceEquals(sender, ParentToolWindow.btnActionExtra))
             {
+                lbVolumeWidth.Text = $"Width: {Operation.ROI.Width} / {Operation.ImageWidth}";
+                lbVolumeHeight.Text = $"Height: {Operation.ROI.Height} / {Operation.ImageHeight}";
+                
                 nmMarginLeft.Value = 0;
                 nmMarginTop.Value = 0;
                 nmMarginRight.Value = 0;
                 nmMarginBottom.Value = 0;
                 rbAnchorMiddleCenter.Checked = true;
                 EventValueChanged(this, EventArgs.Empty);
+
+                return;
+            }
+
+            if (ReferenceEquals(sender, ParentToolWindow.btnClearRoi))
+            {
+                Operation.ROI = Program.SlicerFile.LayerManager.BoundingRectangle;
+                ExtraActionCall(this);
+                return;
             }
         }
 
@@ -49,8 +62,8 @@ namespace UVtools.GUI.Controls.Tools
             UpdateOperation();
             var insideBounds = ButtonOkEnabled = Operation.ValidateBounds();
             lbInsideBounds.Text = "Model within boundary: " + (insideBounds ? "Yes" : "No");
-            lbPlacementX.Text = $"X: {Operation.DstRoi.X} / {Operation.ImageWidth - Operation.SrcRoi.Width}";
-            lbPlacementY.Text = $"Y: {Operation.DstRoi.Y} / {Operation.ImageHeight - Operation.SrcRoi.Height}";
+            lbPlacementX.Text = $"X: {Operation.DstRoi.X} / {Operation.ImageWidth - Operation.ROI.Width}";
+            lbPlacementY.Text = $"Y: {Operation.DstRoi.Y} / {Operation.ImageHeight - Operation.ROI.Height}";
         }
 
         public override bool UpdateOperation()
@@ -77,6 +90,7 @@ namespace UVtools.GUI.Controls.Tools
             Operation.MarginTop = (int)nmMarginTop.Value;
             Operation.MarginRight = (int)nmMarginRight.Value;
             Operation.MarginBottom = (int)nmMarginBottom.Value;
+            Operation.IsCutMove = cbMoveType.SelectedIndex == 0;
             return true;
         }
     }

@@ -132,6 +132,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
+            this.CanROI = true;
             this.Controls.Add(this.label3);
             this.Controls.Add(this.cbPresetHelpers);
             this.Controls.Add(this.nmMaximum);

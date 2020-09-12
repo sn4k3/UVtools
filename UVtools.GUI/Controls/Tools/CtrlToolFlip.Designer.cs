@@ -69,6 +69,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
+            this.CanROI = true;
             this.Controls.Add(this.cbMakeCopy);
             this.Controls.Add(this.cbFlipDirection);
             this.Controls.Add(this.lbX);

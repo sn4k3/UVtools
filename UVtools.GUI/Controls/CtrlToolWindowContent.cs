@@ -81,6 +81,11 @@ namespace UVtools.GUI.Controls
 
         [SettingsBindable(true)] public bool CanRun { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets if this control can make use of ROI
+        /// </summary>
+        [SettingsBindable(true)] public bool CanROI { get; set; } = false;
+
         [Editor("System.ComponentModel.Design.MultilineStringEditor", typeof(UITypeEditor))]
         [SettingsBindable(true)]
         public string Description { get; set; }
@@ -161,6 +166,11 @@ namespace UVtools.GUI.Controls
             if (ParentToolWindow is null) return true;
             BaseOperation.LayerIndexStart = ParentToolWindow.LayerRangeStart;
             BaseOperation.LayerIndexEnd = ParentToolWindow.LayerRangeEnd;
+            if (CanROI)
+            {
+                BaseOperation.ROI = Program.FrmMain.ROI;
+            }
+
             return true;
         }
 

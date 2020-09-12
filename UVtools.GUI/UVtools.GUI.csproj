@@ -188,6 +188,12 @@
     <Compile Include="Controls\Tools\CtrlToolRepairLayers.Designer.cs">
       <DependentUpon>CtrlToolRepairLayers.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\Tools\CtrlToolSolidify.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Tools\CtrlToolSolidify.Designer.cs">
+      <DependentUpon>CtrlToolSolidify.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Tools\CtrlToolThreshold.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -327,6 +333,7 @@
       <DependentUpon>FrmMain.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\PEProfileFolder.cs" />
+    <Compile Include="LayerCache.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -344,6 +351,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\Tools\CtrlToolRepairLayers.resx">
       <DependentUpon>CtrlToolRepairLayers.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Tools\CtrlToolSolidify.resx">
+      <DependentUpon>CtrlToolSolidify.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\Tools\CtrlToolThreshold.resx">
       <DependentUpon>CtrlToolThreshold.cs</DependentUpon>

@@ -6,7 +6,9 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System.Drawing;
 using System.Runtime.CompilerServices;
+using Emgu.CV;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -78,5 +80,17 @@ namespace UVtools.Core.Operations
         public virtual uint LayerIndexEnd { get; set; }
 
         public uint LayerRangeCount => LayerIndexEnd - LayerIndexStart + 1;
+
+        /// <summary>
+        /// Gets or sets an ROI to process this operation
+        /// </summary>
+        public Rectangle ROI { get; set; } = Rectangle.Empty;
+
+        public bool HaveROI => !ROI.IsEmpty;
+
+        public Mat GetRoiOrDefault(Mat defaultMat)
+        {
+            return HaveROI ? new Mat(defaultMat, ROI) : defaultMat;
+        }
     }
 }
