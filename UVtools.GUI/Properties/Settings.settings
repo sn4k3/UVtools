@@ -47,6 +47,9 @@
     <Setting Name="LayerZoomToFit" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="HidePLTooltips" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
     <Setting Name="ComputeIslands" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>

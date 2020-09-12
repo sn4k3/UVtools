@@ -174,6 +174,7 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.cbCloseEditOnApply = new System.Windows.Forms.CheckBox();
+            this.cbHidePLTooltips = new System.Windows.Forms.CheckBox();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapBinaryThreshold)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapMaximumPixelBrightnessToDrain)).BeginInit();
@@ -1653,6 +1654,7 @@
             // 
             // groupBox9
             // 
+            this.groupBox9.Controls.Add(this.cbHidePLTooltips);
             this.groupBox9.Controls.Add(this.cbLayerAutoRotateBestView);
             this.groupBox9.Controls.Add(this.cbLayerZoomToFit);
             this.groupBox9.Location = new System.Drawing.Point(5, 483);
@@ -1709,6 +1711,17 @@
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Pixel Editor";
             this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // cbCloseEditOnApply
+            // 
+            this.cbCloseEditOnApply.AutoSize = true;
+            this.cbCloseEditOnApply.Location = new System.Drawing.Point(11, 213);
+            this.cbCloseEditOnApply.Name = "cbCloseEditOnApply";
+            this.cbCloseEditOnApply.Size = new System.Drawing.Size(322, 22);
+            this.cbCloseEditOnApply.TabIndex = 25;
+            this.cbCloseEditOnApply.Text = "Close pixel editor after operations are applied";
+            this.toolTip.SetToolTip(this.cbCloseEditOnApply, "Automatically close pixel editor after applying changes");
+            this.cbCloseEditOnApply.UseVisualStyleBackColor = true;
             // 
             // groupBox10
             // 
@@ -2068,6 +2081,17 @@
             this.toolTip.SetToolTip(this.cbCloseEditOnApply, "Automatically close pixel editor after applying changes");
             this.cbCloseEditOnApply.UseVisualStyleBackColor = true;
             // 
+            // cbHidePLTooltips
+            // 
+            this.cbHidePLTooltips.AutoSize = true;
+            this.cbHidePLTooltips.Location = new System.Drawing.Point(404, 27);
+            this.cbHidePLTooltips.Name = "cbHidePLTooltips";
+            this.cbHidePLTooltips.Size = new System.Drawing.Size(198, 22);
+            this.cbHidePLTooltips.TabIndex = 4;
+            this.cbHidePLTooltips.Text = "Hide preview layer tooltips";
+            this.toolTip.SetToolTip(this.cbHidePLTooltips, "Show or hide layer preview tooltips for select, ROI, and pixel edit modes.");
+            this.cbHidePLTooltips.UseVisualStyleBackColor = true;
+            // 
             // FrmSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
@@ -2280,5 +2304,6 @@
         private System.Windows.Forms.Button btnPixelEditorAddPixelColor;
         private System.Windows.Forms.Button btnPixelEditorAddPixelHLColor;
         private System.Windows.Forms.CheckBox cbCloseEditOnApply;
+        private System.Windows.Forms.CheckBox cbHidePLTooltips;
     }
 }

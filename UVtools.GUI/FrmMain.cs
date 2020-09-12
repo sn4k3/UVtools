@@ -140,6 +140,8 @@ namespace UVtools.GUI
 
         public bool IsLogVerbose => btnLogVerbose.Checked;
 
+        private Cursor pixelEditCursor;
+
         #endregion
 
         #region Constructors
@@ -240,6 +242,8 @@ namespace UVtools.GUI
             }
 
             cbPixelEditorTextFontFace.SelectedIndex = 0;
+            pixelEditCursor = CursorResourceLoader.LoadEmbeddedCursor(Properties.Resources.pixel_edit);
+
 
             tbLayer.MouseWheel += TbLayerOnMouseWheel;
 
@@ -2793,7 +2797,8 @@ namespace UVtools.GUI
             {
                 // This event repeats for as long as the key is pressed, so if we've
                 // already set the cursor from a previous key down event, just return.
-                if (pbLayer.Cursor == Cursors.Cross || pbLayer.Cursor == Cursors.Hand || pbLayer.SelectionMode == ImageBoxSelectionMode.Rectangle) return;
+                if (pbLayer.Cursor == pixelEditCursor || pbLayer.Cursor == Cursors.Cross
+                     || pbLayer.Cursor == Cursors.Hand || pbLayer.SelectionMode == ImageBoxSelectionMode.Rectangle) return;
 
                 // Pixel Edit is active, Shift is down, and the cursor is over the image region.
                 if (pbLayer.ClientRectangle.Contains(pbLayer.PointToClient(MousePosition)))
@@ -2802,7 +2807,7 @@ namespace UVtools.GUI
                     {
                         if (btnLayerImagePixelEdit.Checked)
                         {
-                            pbLayer.Cursor = Cursors.Cross;
+                            pbLayer.Cursor = pixelEditCursor;
                             pbLayer.PanMode = ImageBoxPanMode.None;
                             lbLayerImageOverlay.Text = "Pixel editing is on:\n" +
                                                        "» Click to over a pixel to draw";
@@ -2818,7 +2823,8 @@ namespace UVtools.GUI
                                                        "Press Esc to clear the ROI";
                         }
 
-                        lbLayerImageOverlay.Visible = true;
+                        if (!Settings.Default.HidePLTooltips)
+                            lbLayerImageOverlay.Visible = true;
 
                         return;
                     }
@@ -2829,7 +2835,8 @@ namespace UVtools.GUI
                         lbLayerImageOverlay.Text = "Issue selection mode:\n" +
                                                    "» Click over a issue to select it";
 
-                        lbLayerImageOverlay.Visible = true;
+                        if (!Settings.Default.HidePLTooltips)
+                            lbLayerImageOverlay.Visible = true;
                         return;
                     }
                 }

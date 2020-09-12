@@ -283,6 +283,7 @@
     </Compile>
     <Compile Include="Extensions\BitmapExtension.cs" />
     <Compile Include="Extensions\ControlExtensions.cs" />
+    <Compile Include="Extensions\CursorExtensions.cs" />
     <Compile Include="Extensions\GUIExtensions.cs" />
     <Compile Include="Forms\FrmBenchmark.cs">
       <SubType>Form</SubType>
@@ -499,6 +500,7 @@
     <None Include="Images\minus_16x16.png" />
     <None Include="Images\sync-16x16.png" />
     <None Include="Images\object-group-16x16.png" />
+    <None Include="Resources\aero_pen.cur" />
     <Content Include="UVtools.ico" />
     <None Include="UVtools.png" />
     <None Include="Images\Exit-16x16.png" />
