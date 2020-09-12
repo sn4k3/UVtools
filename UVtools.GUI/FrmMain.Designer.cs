@@ -61,7 +61,6 @@ namespace UVtools.GUI
             this.statusBar = new System.Windows.Forms.StatusStrip();
             this.mainTable = new System.Windows.Forms.TableLayoutPanel();
             this.scCenter = new System.Windows.Forms.SplitContainer();
-            this.lbLayerImageOverlay = new System.Windows.Forms.Label();
             this.pbLayer = new Cyotek.Windows.Forms.ImageBox();
             this.tsLayer = new System.Windows.Forms.ToolStrip();
             this.btnLayerImageExport = new System.Windows.Forms.ToolStripSplitButton();
@@ -259,6 +258,7 @@ namespace UVtools.GUI
             this.toolTipInformation = new System.Windows.Forms.ToolTip(this.components);
             this.layerScrollTimer = new System.Windows.Forms.Timer(this.components);
             this.mouseHoldTimer = new System.Windows.Forms.Timer(this.components);
+            this.lbLayerImageOverlay = new UVtools.GUI.Controls.TransparentLabel();
             this.tbLayer = new UVtools.GUI.Controls.TrackBarEx();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
@@ -607,19 +607,6 @@ namespace UVtools.GUI
             this.scCenter.Size = new System.Drawing.Size(1176, 759);
             this.scCenter.SplitterDistance = 730;
             this.scCenter.TabIndex = 4;
-            // 
-            // lbLayerImageOverlay
-            // 
-            this.lbLayerImageOverlay.AutoSize = true;
-            this.lbLayerImageOverlay.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
-            this.lbLayerImageOverlay.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lbLayerImageOverlay.Location = new System.Drawing.Point(13, 37);
-            this.lbLayerImageOverlay.Name = "lbLayerImageOverlay";
-            this.lbLayerImageOverlay.Padding = new System.Windows.Forms.Padding(5);
-            this.lbLayerImageOverlay.Size = new System.Drawing.Size(70, 30);
-            this.lbLayerImageOverlay.TabIndex = 8;
-            this.lbLayerImageOverlay.Text = "Overlay";
-            this.lbLayerImageOverlay.Visible = false;
             // 
             // pbLayer
             // 
@@ -2856,6 +2843,23 @@ namespace UVtools.GUI
             this.mouseHoldTimer.Interval = 1000;
             this.mouseHoldTimer.Tick += new System.EventHandler(this.EventTimerTick);
             // 
+            // lbLayerImageOverlay
+            // 
+            this.lbLayerImageOverlay.AutoSize = true;
+            this.lbLayerImageOverlay.BackColor = System.Drawing.Color.Transparent;
+            this.lbLayerImageOverlay.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lbLayerImageOverlay.CausesValidation = false;
+            this.lbLayerImageOverlay.Location = new System.Drawing.Point(13, 37);
+            this.lbLayerImageOverlay.Name = "lbLayerImageOverlay";
+            this.lbLayerImageOverlay.Opacity = 210;
+            this.lbLayerImageOverlay.Padding = new System.Windows.Forms.Padding(10);
+            this.lbLayerImageOverlay.Size = new System.Drawing.Size(80, 40);
+            this.lbLayerImageOverlay.TabIndex = 8;
+            this.lbLayerImageOverlay.Text = "Overlay";
+            this.lbLayerImageOverlay.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lbLayerImageOverlay.TransparentBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.lbLayerImageOverlay.Visible = false;
+            // 
             // tbLayer
             // 
             this.tbLayer.Dock = System.Windows.Forms.DockStyle.Right;
@@ -3204,7 +3208,7 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStripSplitButton btnLayerImageActions;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator26;
         private System.Windows.Forms.ToolStripButton btnLogVerbose;
-        private System.Windows.Forms.Label lbLayerImageOverlay;
+        private TransparentLabel lbLayerImageOverlay;
         public Cyotek.Windows.Forms.ImageBox pbLayer;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator27;
         private System.Windows.Forms.ToolStripButton btnLayerROI;

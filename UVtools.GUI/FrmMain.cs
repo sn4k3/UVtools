@@ -735,35 +735,6 @@ namespace UVtools.GUI
                     ShowRunOperation(baseOperation.GetType());
                     return;
                 }
-                if (!ReferenceEquals(menuItem.Tag, null))
-                {
-                    if (menuItem.Tag.GetType() == typeof(FileFormat.PrintParameterModifier))
-                    {
-                        FileFormat.PrintParameterModifier modifier = (FileFormat.PrintParameterModifier) menuItem.Tag;
-                        using (FrmInputBox inputBox = new FrmInputBox(modifier,
-                            decimal.Parse(SlicerFile.GetValueFromPrintParameterModifier(modifier).ToString())))
-                        {
-                            if (inputBox.ShowDialog() != DialogResult.OK) return;
-                            var value = inputBox.NewValue;
-
-                            if (!SlicerFile.SetValueFromPrintParameterModifier(modifier, value))
-                            {
-                                MessageBox.Show(
-                                    $"Unable to set '{modifier.Name}'. Value was not found, it may not yet be implemented.",
-                                    "Operation error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                return;
-                            }
-
-                            RefreshInfo();
-
-                            menuFileSave.Enabled =
-                                menuFileSaveAs.Enabled = true;
-                        }
-
-                        return;
-
-                    }
-                }
 
                 // About
                 if (ReferenceEquals(menuItem, menuHelpAbout))

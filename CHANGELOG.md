@@ -8,6 +8,7 @@
 * (Change) Layer status bar: Pixel picker text to button - Click to center in point
 * (Change) Layer status bar: Resolution text to button - Click to zoom to fit
 * (Change) Customized cursor for Pixel Edit mode (#51)
+* (Change) Layer overlay tooltip is now semi-transparent
 * (Fix) Misc. text cleanup (#52)
 
 ## 12/09/2020 - v0.8.1.0
