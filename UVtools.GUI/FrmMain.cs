@@ -1465,6 +1465,12 @@ namespace UVtools.GUI
                 var roi = pbLayer.SelectionRegion;
                 if (roi.IsEmpty) return;
 
+                if ((ModifierKeys & Keys.Shift) != 0)
+                {
+                    pbLayer.SelectNone();
+                    return;
+                }
+
                 CenterLayerAt(roi, 0, true);
                 return;
             }

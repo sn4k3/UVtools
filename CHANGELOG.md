@@ -2,8 +2,8 @@
 
 ## /09/2020 - v0.8.1.1
 
-* (Add) Layer status bar: Button with ROI - Click to zoom in region
-* (Add) Setting: Allow the layer overlay tooltips for select issues, ROI, and edit pixel mode to be hidden.
+* (Add) Layer status bar: Button with ROI - Click to zoom in region | Click + shift to clear roi
+* (Add) Setting: Allow the layer overlay tooltips for select issues, ROI, and edit pixel mode to be hidden (#51)
 * (Change) Layer status bar: Bounds text to button - Click to zoom in region
 * (Change) Layer status bar: Pixel picker text to button - Click to center in point
 * (Change) Layer status bar: Resolution text to button - Click to zoom to fit
