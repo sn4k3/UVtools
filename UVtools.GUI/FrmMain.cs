@@ -510,52 +510,7 @@ namespace UVtools.GUI
 
                 if (ReferenceEquals(menuItem, menuFileSave))
                 {
-                    if (SavesCount == 0 && Settings.Default.FileSavePromptOverwrite)
-                    {
-                        if (MessageBox.Show(
-                            "Original input file will be overwritten.  Do you wish to proceed?", "Overwrite file?",
-                            MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
-                    }
-
-
-                    DisableGUI();
-                    FrmLoading.SetDescription($"Saving {Path.GetFileName(SlicerFile.FileFullPath)}");
-
-                    Task<bool> task = Task<bool>.Factory.StartNew(() =>
-                    {
-                        bool result = false;
-                        try
-                        {
-                            SlicerFile.Save(FrmLoading.RestartProgress());
-                            result = true;
-                        }
-                        catch (OperationCanceledException)
-                        {
-
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.Message, "Error while saving the file", MessageBoxButtons.OK,
-                                MessageBoxIcon.Error);
-                        }
-                        finally
-                        {
-                            Invoke((MethodInvoker) delegate
-                            {
-                                // Running on the UI thread
-                                EnableGUI(true);
-                            });
-                        }
-
-                        return result;
-                    });
-
-                    FrmLoading.ShowDialog();
-
-                    SavesCount++;
-                    menuFileSave.Enabled =
-                        menuFileSaveAs.Enabled = false;
-
+                    SaveFile();
                     return;
                 }
 
@@ -571,48 +526,8 @@ namespace UVtools.GUI
                             : Settings.Default.FileSaveDefaultDirectory;
                         dialog.FileName =
                             $"{Settings.Default.FileSaveNamePreffix}{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}{Settings.Default.FileSaveNameSuffix}";
-                        if (dialog.ShowDialog() == DialogResult.OK)
-                        {
-                            DisableGUI();
-                            FrmLoading.SetDescription($"Saving {Path.GetFileName(dialog.FileName)}");
-
-                            Task<bool> task = Task<bool>.Factory.StartNew(() =>
-                            {
-                                bool result = false;
-                                try
-                                {
-                                    SlicerFile.SaveAs(dialog.FileName, FrmLoading.RestartProgress());
-                                    result = true;
-                                }
-                                catch (OperationCanceledException)
-                                {
-
-                                }
-                                catch (Exception ex)
-                                {
-                                    MessageBox.Show(ex.Message, "Error while saving the file", MessageBoxButtons.OK,
-                                        MessageBoxIcon.Error);
-                                }
-                                finally
-                                {
-                                    Invoke((MethodInvoker) delegate
-                                    {
-                                        // Running on the UI thread
-                                        EnableGUI(true);
-                                    });
-                                }
-
-                                return result;
-                            });
-
-                            FrmLoading.ShowDialog();
-
-                            SavesCount++;
-                            menuFileSave.Enabled =
-                                menuFileSaveAs.Enabled = false;
-                            UpdateTitle();
-                            //ProcessFile(dialog.FileName);
-                        }
+                        if (dialog.ShowDialog() != DialogResult.OK) return;
+                        SaveFile(dialog.FileName);
                     }
 
 
@@ -900,7 +815,7 @@ namespace UVtools.GUI
                     SlicerFile.SetThumbnail(i, fileOpen.FileName);
                     pbThumbnail.Image = SlicerFile.Thumbnails[i].ToBitmap();
                     SlicerFile.RequireFullEncode = true;
-                    menuFileSave.Enabled = menuFileSaveAs.Enabled = true;
+                    menuFileSave.Enabled = true;
                 }
             }
 
@@ -1219,8 +1134,7 @@ namespace UVtools.GUI
 
                 //ShowLayer(); // It will call latter so its a extra call
                 UpdateIssuesInfo();
-                menuFileSave.Enabled =
-                    menuFileSaveAs.Enabled = true;
+                menuFileSave.Enabled = true;
 
                 return;
             }
@@ -2025,7 +1939,7 @@ namespace UVtools.GUI
             menuFileReload.Enabled =
                 menuFileClose.Enabled =
                     menuFileExtract.Enabled =
-
+                        menuFileSaveAs.Enabled =
                         tbLayer.Enabled =
                             //pbLayers.Enabled =
                             menuEdit.Enabled =
@@ -2065,6 +1979,80 @@ namespace UVtools.GUI
             {
                 tsIssuesDetect.PerformButtonClick();
             }
+        }
+
+        public bool SaveFile(string filepath = null)
+        {
+            if (filepath is null)
+            {
+                if (SavesCount == 0 && Settings.Default.FileSavePromptOverwrite)
+                {
+                    if (MessageBox.Show(
+                        "Original input file will be overwritten.  Do you wish to proceed?", "Overwrite file?",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                        return false;
+                }
+
+                filepath = SlicerFile.FileFullPath;
+            }
+
+            var oldFile = SlicerFile.FileFullPath;
+            var tempFile = filepath + ".tmp";
+
+            DisableGUI();
+            FrmLoading.SetDescription($"Saving {Path.GetFileName(filepath)}");
+
+            Task<bool> task = Task<bool>.Factory.StartNew(() =>
+            {
+                bool result = false;
+
+                try
+                {
+                    SlicerFile.SaveAs(tempFile, FrmLoading.RestartProgress());
+                    if (File.Exists(filepath))
+                    {
+                        File.Delete(filepath);
+                    }
+                    File.Move(tempFile, filepath);
+                    SlicerFile.FileFullPath = filepath;
+                    result = true;
+                }
+                catch (OperationCanceledException)
+                {
+                    SlicerFile.FileFullPath = oldFile;
+                    if (File.Exists(tempFile))
+                    {
+                        File.Delete(tempFile);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error while saving the file", MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    Invoke((MethodInvoker)delegate
+                    {
+                        // Running on the UI thread
+                        EnableGUI(true);
+                    });
+                }
+
+                return result;
+            });
+
+            FrmLoading.ShowDialog();
+
+            if (task.Result)
+            {
+                SavesCount++;
+                menuFileSave.Enabled = false;
+            }
+
+            UpdateTitle();
+
+            return task.Result;
         }
 
         private void UpdateLayerLimits()
@@ -3962,7 +3950,7 @@ namespace UVtools.GUI
             RefreshPixelHistory();
             ShowLayer();
 
-            menuFileSave.Enabled = menuFileSaveAs.Enabled = true;
+            menuFileSave.Enabled = true;
         }
 
         private void UpdateIslands(List<uint> whiteListLayers)
@@ -4156,8 +4144,7 @@ namespace UVtools.GUI
                     }
                     RefreshInfo();
 
-                    menuFileSave.Enabled =
-                    menuFileSaveAs.Enabled = true;
+                    menuFileSave.Enabled = true;
 
                     return false;
                 case OperationRepairLayers operation:
@@ -4275,8 +4262,7 @@ namespace UVtools.GUI
             UpdateLayerLimits();
             RefreshInfo();
 
-            menuFileSave.Enabled =
-                menuFileSaveAs.Enabled = true;
+            menuFileSave.Enabled = true;
 
             switch (baseOperation)
             {

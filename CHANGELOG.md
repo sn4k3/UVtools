@@ -9,6 +9,9 @@
 * (Change) Layer status bar: Resolution text to button - Click to zoom to fit
 * (Change) Customized cursor for Pixel Edit mode (#51)
 * (Change) Layer overlay tooltip is now semi-transparent
+* (Change) File - Save As is always available (#56)
+* (Fix) File - Save when cancelled no longer keep a invalid file, old restored (#54)
+* (Fix) File - Save As when cancelled no longer keep a invalid file, that will be deleted (#54, #55)
 * (Fix) Misc. text cleanup (#52, #53)
 
 ## 12/09/2020 - v0.8.1.0
