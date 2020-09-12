@@ -1,5 +1,7 @@
 # Changelog
 
+## /09/2020 - v0.8.2.0
+
 ## 12/09/2020 - v0.8.1.0
 
 * (Add) Tools can now run inside a ROI (#49)

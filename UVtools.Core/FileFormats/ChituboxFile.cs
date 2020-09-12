@@ -860,7 +860,7 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(8)] public uint Unknown9 { get; set; }
             [FieldOrder(9)] public uint Unknown10 { get; set; }
             [FieldOrder(10)] public uint Unknown11 { get; set; }
-            [FieldOrder(11)] public uint Unknown12 { get; set; }
+            [FieldOrder(11)] public uint Unknown12 { get; set; } = 28672; // 28672 v3?
             [FieldOrder(12)] public float LightPWM { get; set; }
 
             public LayerDataEx()
