@@ -476,7 +476,7 @@ namespace UVtools.GUI
                             }
                             catch (Exception exception)
                             {
-                                MessageBox.Show(exception.ToString(), "Error while try opening the file",
+                                MessageBox.Show(exception.ToString(), "Error while trying to open the file",
                                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         }
@@ -623,7 +623,7 @@ namespace UVtools.GUI
                 {
                     if (menuFileSave.Enabled)
                     {
-                        if (MessageBox.Show("There are unsaved changes, do you want close this file without save?",
+                        if (MessageBox.Show("There are unsaved changes.  Do you want close this file without saving?",
                                 "Close file without save?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) !=
                             DialogResult.Yes)
                         {
@@ -649,7 +649,7 @@ namespace UVtools.GUI
                 {
                     if (menuFileSave.Enabled)
                     {
-                        if (MessageBox.Show("There are unsaved changes, do you want exit without save?",
+                        if (MessageBox.Show("There are unsaved changes, do you want exit without saving?",
                                 "Exit without save?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) !=
                             DialogResult.Yes)
                         {
@@ -707,8 +707,9 @@ namespace UVtools.GUI
                                 }*/
 
                                 if (MessageBox.Show(
-                                        $"Extraction was successful ({FrmLoading.StopWatch.ElapsedMilliseconds / 1000}s), browse folder to see it contents.\n{finalPath}\nPress 'Yes' if you want open the target folder, otherwise select 'No' to continue.",
-                                        "Extraction completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
+                                        $"Extraction to {finalPath} completed in ({FrmLoading.StopWatch.ElapsedMilliseconds / 1000}s)\n\n" + 
+                                        "'Yes' to open target folder, 'No' to continue.",
+                                        "Extraction complete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
                                     DialogResult.Yes)
                                 {
                                     using (Process.Start(finalPath))
@@ -812,10 +813,10 @@ namespace UVtools.GUI
                     if (!Directory.Exists(PEFolder))
                     {
                         var result = MessageBox.Show(
-                            "Unable to detect PrusaSlicer on your system, make sure you have lastest version installed on your system.\n" +
-                            "Click 'OK' to open PrusaSlicer webpage for program download\n" +
+                            "Unable to detect PrusaSlicer on your system, please ensure you have lastest version installed.\n\n" +
+                            "Click 'OK' to open the PrusaSlicer webpage for download\n" +
                             "Click 'Cancel' to cancel this operation",
-                            "Unable to detect PrusaSlicer on your system",
+                            "Unable to detect PrusaSlicer",
                             MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
 
                         switch (result)
@@ -993,8 +994,8 @@ namespace UVtools.GUI
                         }
 
                         if (MessageBox.Show(
-                                $"Properties save was successful, do you want open the file with default editor?.\nPress 'Yes' if you want open the target file, otherwise select 'No' to continue.",
-                                "Properties save completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
+                                "Properties save was successful. Do you want open the file in the default editor?",
+                                "Properties save complete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
                             DialogResult.Yes)
                         {
                             using (Process.Start(dialog.FileName))
@@ -1053,8 +1054,8 @@ namespace UVtools.GUI
                         }
 
                         if (MessageBox.Show(
-                                "GCode save was successful, do you want open the file with default editor?.\nPress 'Yes' if you want open the target file, otherwise select 'No' to continue.",
-                                "GCode save completed", MessageBoxButtons.YesNo, MessageBoxIcon.Question) !=
+                                "GCode save was successful.  Do you want open the file in the default editor?",
+                                "GCode save complete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) !=
                             DialogResult.Yes) return;
                         using (Process.Start(dialog.FileName))
                         {
@@ -1194,7 +1195,7 @@ namespace UVtools.GUI
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message, "Unsuccessful Removal", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(ex.Message, "Removal failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                     finally
                     {
@@ -1442,7 +1443,7 @@ namespace UVtools.GUI
 
             if (ReferenceEquals(sender, btnFindLayer))
             {
-                using (FrmInputBox inputBox = new FrmInputBox("Go to layer", "Select a layer index to go to",
+                using (FrmInputBox inputBox = new FrmInputBox("Go to layer", "Select a layer to go to",
                     ActualLayer, null, 0, SlicerFile.LayerCount - 1, 0, "Layer"))
                 {
                     if (inputBox.ShowDialog() == DialogResult.OK)
@@ -1533,7 +1534,7 @@ namespace UVtools.GUI
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show($"Convertion was unsuccessful! Maybe not implemented...\n{ex.Message}",
+                            MessageBox.Show($"Convertion was not successful! Maybe not implemented...\n{ex.Message}",
                                 "Convertion unsuccessful", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                         finally
@@ -1551,9 +1552,9 @@ namespace UVtools.GUI
                     if (FrmLoading.ShowDialog() == DialogResult.OK && task.Result)
                     {
                         if (MessageBox.Show(
-                            $"Convertion is completed: {Path.GetFileName(dialog.FileName)} in {FrmLoading.StopWatch.ElapsedMilliseconds / 1000}s\n" +
-                            "Do you want to open the converted file in a new window?",
-                            "Convertion completed", MessageBoxButtons.YesNo,
+                            $"Conversion completed in {FrmLoading.StopWatch.ElapsedMilliseconds / 1000}s\n\n" +
+                            $"Do you want to open {Path.GetFileName(dialog.FileName)} in a new window?",
+                            "Conversion complete", MessageBoxButtons.YesNo,
                             MessageBoxIcon.Information) == DialogResult.Yes)
                         {
                             Program.NewInstance(dialog.FileName);
@@ -1910,7 +1911,7 @@ namespace UVtools.GUI
                 }
                 catch (Exception exception)
                 {
-                    MessageBox.Show(exception.ToString(), "Error while try opening the file", MessageBoxButtons.OK,
+                    MessageBox.Show(exception.ToString(), "Error opening the file", MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                     return;
                 }
@@ -1959,12 +1960,12 @@ namespace UVtools.GUI
 
             if (SlicerFile.LayerCount == 0)
             {
-                MessageBox.Show("It seens the file don't have any layer, the causes can be:\n" +
-                                "- Empty\n" +
-                                "- Corrupted\n" +
-                                "- Lacking a sliced model\n" +
-                                "- A programing internal error\n\n" +
-                                "Please check your file and retry", "Error reading the file - Lacking of layers",
+                MessageBox.Show("It seems this file has no layers.  Possilbe causes could be:\n" +
+                                "- File is empty\n" +
+                                "- File is corrupted\n" +
+                                "- File has not been sliced\n" +
+                                "- An internal programing error\n\n" +
+                                "Please check your file and retry", "Error reading file",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 //Clear();
                 return;
@@ -2843,16 +2844,16 @@ namespace UVtools.GUI
                             pbLayer.Cursor = pixelEditCursor;
                             pbLayer.PanMode = ImageBoxPanMode.None;
                             lbLayerImageOverlay.Text = "Pixel editing is on:\n" +
-                                                       "» Click to over a pixel to draw";
+                                                       "» Click over a pixel to draw";
                         }
                         else
                         {
                             pbLayer.Cursor = Cursors.Cross;
                             pbLayer.SelectionMode = ImageBoxSelectionMode.Rectangle;
                             lbLayerImageOverlay.Text = "ROI selection mode:\n" +
-                                                       "» Left-click and drag to select an ROI\n" +
-                                                       "» Left-click + Alt and drag to select contained objects\n" +
-                                                       "» Right click on an object to select its area\n" +
+                                                       "» Left-click drag to select a fixed region\n" +
+                                                       "» Left-click + ALT drag to select specific objects\n" +
+                                                       "» Right click on a specific object to select it\n" +
                                                        "Press Esc to clear the ROI";
                         }
 
@@ -2865,7 +2866,7 @@ namespace UVtools.GUI
                         pbLayer.Cursor = Cursors.Hand;
                         pbLayer.PanMode = ImageBoxPanMode.None;
                         lbLayerImageOverlay.Text = "Issue selection mode:\n" +
-                                                   "» Click over a issue to select it";
+                                                   "» Click over an issue to select it";
 
                         lbLayerImageOverlay.Visible = Settings.Default.ShowLayerTooltipsOverlay;
 
@@ -3932,7 +3933,7 @@ namespace UVtools.GUI
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"{ex.Message}", "Drawing was unsuccessful!", MessageBoxButtons.OK,
+                        MessageBox.Show($"{ex.Message}", "Drawing operation failed!", MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
                     }
                     finally
