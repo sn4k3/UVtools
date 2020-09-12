@@ -87,17 +87,19 @@ namespace UVtools.GUI
             this.tsLayerInfo = new System.Windows.Forms.ToolStrip();
             this.tsLayerPreviewTime = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerResolution = new System.Windows.Forms.ToolStripLabel();
+            this.btnLayerResolution = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerImageZoomLock = new System.Windows.Forms.ToolStripLabel();
             this.tsLayerImageZoom = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             this.tsLayerImagePanLocation = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator16 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerImageMouseLocation = new System.Windows.Forms.ToolStripLabel();
             this.tsLayerImagePixelCount = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator17 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsLayerBounds = new System.Windows.Forms.ToolStripLabel();
+            this.btnLayerBounds = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator27 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnLayerROI = new System.Windows.Forms.ToolStripButton();
+            this.btnLayerMouseLocation = new System.Windows.Forms.ToolStripButton();
             this.tabControlLeft = new System.Windows.Forms.TabControl();
             this.tbpThumbnailsAndInfo = new System.Windows.Forms.TabPage();
             this.scLeft = new System.Windows.Forms.SplitContainer();
@@ -630,6 +632,7 @@ namespace UVtools.GUI
             this.pbLayer.ShowPixelGrid = true;
             this.pbLayer.Size = new System.Drawing.Size(1176, 705);
             this.pbLayer.TabIndex = 7;
+            this.pbLayer.SelectionRegionChanged += new System.EventHandler(this.pbLayer_SelectionRegionChanged);
             this.pbLayer.Zoomed += new System.EventHandler<Cyotek.Windows.Forms.ImageBoxZoomEventArgs>(this.pbLayer_Zoomed);
             this.pbLayer.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EventKeyUp);
             this.pbLayer.MouseClick += new System.Windows.Forms.MouseEventHandler(this.EventMouseClick);
@@ -849,17 +852,19 @@ namespace UVtools.GUI
             this.tsLayerInfo.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsLayerPreviewTime,
             this.toolStripSeparator6,
-            this.tsLayerResolution,
+            this.btnLayerResolution,
             this.toolStripSeparator11,
             this.tsLayerImageZoomLock,
             this.tsLayerImageZoom,
             this.toolStripSeparator8,
             this.tsLayerImagePanLocation,
             this.toolStripSeparator16,
-            this.tsLayerImageMouseLocation,
             this.tsLayerImagePixelCount,
             this.toolStripSeparator17,
-            this.tsLayerBounds});
+            this.btnLayerBounds,
+            this.toolStripSeparator27,
+            this.btnLayerROI,
+            this.btnLayerMouseLocation});
             this.tsLayerInfo.Location = new System.Drawing.Point(0, 0);
             this.tsLayerInfo.Name = "tsLayerInfo";
             this.tsLayerInfo.Size = new System.Drawing.Size(1176, 25);
@@ -880,14 +885,16 @@ namespace UVtools.GUI
             this.toolStripSeparator6.Name = "toolStripSeparator6";
             this.toolStripSeparator6.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsLayerResolution
+            // btnLayerResolution
             // 
-            this.tsLayerResolution.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerResolution.Image = global::UVtools.GUI.Properties.Resources.expand_16x16;
-            this.tsLayerResolution.Name = "tsLayerResolution";
-            this.tsLayerResolution.Size = new System.Drawing.Size(79, 22);
-            this.tsLayerResolution.Text = "Resolution";
-            this.tsLayerResolution.ToolTipText = "Layer Resolution";
+            this.btnLayerResolution.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.btnLayerResolution.Image = global::UVtools.GUI.Properties.Resources.expand_16x16;
+            this.btnLayerResolution.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnLayerResolution.Name = "btnLayerResolution";
+            this.btnLayerResolution.Size = new System.Drawing.Size(86, 22);
+            this.btnLayerResolution.Text = "Resolution:";
+            this.btnLayerResolution.ToolTipText = "Layer Resolution";
+            this.btnLayerResolution.Click += new System.EventHandler(this.EventClick);
             // 
             // toolStripSeparator11
             // 
@@ -926,7 +933,7 @@ namespace UVtools.GUI
             // tsLayerImagePanLocation
             // 
             this.tsLayerImagePanLocation.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerImagePanLocation.Image = global::UVtools.GUI.Properties.Resources.map_marker_16x16;
+            this.tsLayerImagePanLocation.Image = global::UVtools.GUI.Properties.Resources.move_16x16;
             this.tsLayerImagePanLocation.Name = "tsLayerImagePanLocation";
             this.tsLayerImagePanLocation.Size = new System.Drawing.Size(79, 22);
             this.tsLayerImagePanLocation.Text = "{X=0, Y=0}";
@@ -938,16 +945,6 @@ namespace UVtools.GUI
             this.toolStripSeparator16.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripSeparator16.Name = "toolStripSeparator16";
             this.toolStripSeparator16.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsLayerImageMouseLocation
-            // 
-            this.tsLayerImageMouseLocation.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsLayerImageMouseLocation.Image = global::UVtools.GUI.Properties.Resources.map_marker_16x16;
-            this.tsLayerImageMouseLocation.Name = "tsLayerImageMouseLocation";
-            this.tsLayerImageMouseLocation.Size = new System.Drawing.Size(79, 22);
-            this.tsLayerImageMouseLocation.Text = "{X=0, Y=0}";
-            this.tsLayerImageMouseLocation.ToolTipText = "Mouse over pixel location and pixel brightness\r\nUse SHIFT while move mouse hover " +
-    "pixels";
             // 
             // tsLayerImagePixelCount
             // 
@@ -963,13 +960,45 @@ namespace UVtools.GUI
             this.toolStripSeparator17.Name = "toolStripSeparator17";
             this.toolStripSeparator17.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsLayerBounds
+            // btnLayerBounds
             // 
-            this.tsLayerBounds.Image = global::UVtools.GUI.Properties.Resources.expand_16x16;
-            this.tsLayerBounds.Name = "tsLayerBounds";
-            this.tsLayerBounds.Size = new System.Drawing.Size(66, 22);
-            this.tsLayerBounds.Text = "Bounds:";
-            this.tsLayerBounds.ToolTipText = "Image bounds for this layer only, position and size";
+            this.btnLayerBounds.Image = global::UVtools.GUI.Properties.Resources.expand_16x16;
+            this.btnLayerBounds.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnLayerBounds.Name = "btnLayerBounds";
+            this.btnLayerBounds.Size = new System.Drawing.Size(70, 22);
+            this.btnLayerBounds.Text = "Bounds:";
+            this.btnLayerBounds.ToolTipText = "Object volume bounds for current layer, position and size\r\nClick: go to region";
+            this.btnLayerBounds.Click += new System.EventHandler(this.EventClick);
+            // 
+            // toolStripSeparator27
+            // 
+            this.toolStripSeparator27.Name = "toolStripSeparator27";
+            this.toolStripSeparator27.Size = new System.Drawing.Size(6, 25);
+            // 
+            // btnLayerROI
+            // 
+            this.btnLayerROI.Enabled = false;
+            this.btnLayerROI.Image = global::UVtools.GUI.Properties.Resources.object_group_16x16;
+            this.btnLayerROI.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnLayerROI.Name = "btnLayerROI";
+            this.btnLayerROI.Size = new System.Drawing.Size(67, 22);
+            this.btnLayerROI.Text = "ROI: NS";
+            this.btnLayerROI.ToolTipText = "Region of interest selection over  layer. (NS): Not selected\r\nClick: go to region" +
+    "";
+            this.btnLayerROI.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnLayerMouseLocation
+            // 
+            this.btnLayerMouseLocation.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.btnLayerMouseLocation.Enabled = false;
+            this.btnLayerMouseLocation.Image = global::UVtools.GUI.Properties.Resources.map_marker_16x16;
+            this.btnLayerMouseLocation.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnLayerMouseLocation.Name = "btnLayerMouseLocation";
+            this.btnLayerMouseLocation.Size = new System.Drawing.Size(83, 22);
+            this.btnLayerMouseLocation.Text = "{X=0, Y=0}";
+            this.btnLayerMouseLocation.ToolTipText = "Pixel picker: Use CONTROL and over a pixel to get his position and brightness\r\nCl" +
+    "ick: Center at position";
+            this.btnLayerMouseLocation.Click += new System.EventHandler(this.EventClick);
             // 
             // tabControlLeft
             // 
@@ -3157,16 +3186,13 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStrip tsLayerInfo;
         private System.Windows.Forms.ToolStripLabel tsLayerPreviewTime;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
-        private System.Windows.Forms.ToolStripLabel tsLayerResolution;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
         private System.Windows.Forms.ToolStripLabel tsLayerImageZoom;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
         private System.Windows.Forms.ToolStripLabel tsLayerImagePanLocation;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator16;
-        private System.Windows.Forms.ToolStripLabel tsLayerImageMouseLocation;
         private System.Windows.Forms.ToolStripLabel tsLayerImagePixelCount;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator17;
-        private System.Windows.Forms.ToolStripLabel tsLayerBounds;
         private System.Windows.Forms.ToolStripMenuItem menuHelpBenchmark;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator24;
         private System.Windows.Forms.ToolStripLabel tsLayerImageZoomLock;
@@ -3180,6 +3206,11 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStripButton btnLogVerbose;
         private System.Windows.Forms.Label lbLayerImageOverlay;
         public Cyotek.Windows.Forms.ImageBox pbLayer;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator27;
+        private System.Windows.Forms.ToolStripButton btnLayerROI;
+        private System.Windows.Forms.ToolStripButton btnLayerBounds;
+        private System.Windows.Forms.ToolStripButton btnLayerMouseLocation;
+        private System.Windows.Forms.ToolStripButton btnLayerResolution;
     }
 }
 

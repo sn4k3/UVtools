@@ -205,13 +205,13 @@ namespace UVtools.GUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool HidePLTooltips {
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowLayerTooltipsOverlay {
             get {
-                return ((bool)(this["HidePLTooltips"]));
+                return ((bool)(this["ShowLayerTooltipsOverlay"]));
             }
             set {
-                this["HidePLTooltips"] = value;
+                this["ShowLayerTooltipsOverlay"] = value;
             }
         }
         

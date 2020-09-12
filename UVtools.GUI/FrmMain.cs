@@ -15,7 +15,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -1454,6 +1453,36 @@ namespace UVtools.GUI
 
                 return;
             }
+
+            if (ReferenceEquals(sender, btnLayerBounds))
+            {
+                CenterLayerAt(GetTransposedRectangle(SlicerFile[ActualLayer].BoundingRectangle), 0, true);
+                return;
+            }
+
+            if (ReferenceEquals(sender, btnLayerROI))
+            {
+                var roi = pbLayer.SelectionRegion;
+                if (roi.IsEmpty) return;
+
+                CenterLayerAt(roi, 0, true);
+                return;
+            }
+
+            if (ReferenceEquals(sender, btnLayerMouseLocation))
+            {
+                if (btnLayerMouseLocation.Tag is Point point)
+                {
+                    CenterLayerAt(point);
+                }
+                return;
+            }
+
+            if (ReferenceEquals(sender, btnLayerResolution))
+            {
+                pbLayer.ZoomToFit();
+                return;
+            }
         }
 
         private void ValueChanged(object sender, EventArgs e)
@@ -1610,8 +1639,10 @@ namespace UVtools.GUI
             if ((ModifierKeys & Keys.Control) != 0)
             {
                 Point realLocation = GetTransposedPoint(location);
-                tsLayerImageMouseLocation.Text =
+                btnLayerMouseLocation.Text =
                     $"{{X={realLocation.X}, Y={realLocation.Y}, B={ActualLayerImage.GetByte(realLocation)}}}";
+                btnLayerMouseLocation.Tag = location;
+                btnLayerMouseLocation.Enabled = true;
             }
             
             if ((ModifierKeys & Keys.Shift) == 0) return;
@@ -1794,12 +1825,13 @@ namespace UVtools.GUI
             }
 
             tsLayerImagePixelCount.Text = "Pixels: 0";
-            tsLayerBounds.Text = "Bounds:";
-            tsLayerImageMouseLocation.Text = "{X=0, Y=0}";
+            btnLayerBounds.Text = "Bounds: (Unloaded)";
+            btnLayerROI.Text = "ROI: (NA)";
+            btnLayerMouseLocation.Text = "{X=0, Y=0}";
 
             tsThumbnailsResolution.Text =
                 tsLayerPreviewTime.Text =
-                    tsLayerResolution.Text =
+                    btnLayerResolution.Text =
                         tsPropertiesLabelCount.Text =
                             tsPropertiesLabelGroups.Text = string.Empty;
 
@@ -1998,6 +2030,9 @@ namespace UVtools.GUI
 
             foreach (ToolStripItem item in tsLayerInfo.Items)
             {
+                if(ReferenceEquals(item, btnLayerROI) ||
+                   ReferenceEquals(item, btnLayerMouseLocation)
+                   ) continue;
                 item.Enabled = true;
             }
 
@@ -2034,7 +2069,7 @@ namespace UVtools.GUI
 
 
             tabControlLeft.SelectedIndex = 0;
-            tsLayerResolution.Text = $"{{Width={SlicerFile.ResolutionX}, Height={SlicerFile.ResolutionY}}}";
+            btnLayerResolution.Text = $"{{Width={SlicerFile.ResolutionX}, Height={SlicerFile.ResolutionY}}}";
 
             UpdateLayerLimits();
             ShowLayer(Math.Min(actualLayer, SlicerFile.LayerCount - 1));
@@ -2138,7 +2173,7 @@ namespace UVtools.GUI
             AddStatusBarItem(nameof(SlicerFile.MaterialName), SlicerFile.MaterialName);
             AddStatusBarItem(nameof(SlicerFile.MachineName), SlicerFile.MachineName);
 
-            tsLayerResolution.Text = ActualLayerImage.Size.ToString();
+            btnLayerResolution.Text = ActualLayerImage.Size.ToString();
         }
 
         private void UpdateGCode()
@@ -2660,9 +2695,9 @@ namespace UVtools.GUI
                     (float) Math.Round(
                         layer.NonZeroPixelCount * 100f / (SlicerFile.ResolutionX * SlicerFile.ResolutionY), 2);
                 tsLayerImagePixelCount.Text = $"Pixels: {layer.NonZeroPixelCount} ({pixelPercent}%)";
-                tsLayerBounds.Text = $"Bounds: {layer.BoundingRectangle}";
+                btnLayerBounds.Text = $"Bounds: {layer.BoundingRectangle}";
                 tsLayerImagePixelCount.Invalidate();
-                tsLayerBounds.Invalidate();
+                btnLayerBounds.Invalidate();
                 tsLayerInfo.Update();
                 tsLayerInfo.Refresh();
 
@@ -2821,8 +2856,7 @@ namespace UVtools.GUI
                                                        "Press Esc to clear the ROI";
                         }
 
-                        if (!Settings.Default.HidePLTooltips)
-                            lbLayerImageOverlay.Visible = true;
+                        lbLayerImageOverlay.Visible = Settings.Default.ShowLayerTooltipsOverlay;
 
                         return;
                     }
@@ -2833,8 +2867,8 @@ namespace UVtools.GUI
                         lbLayerImageOverlay.Text = "Issue selection mode:\n" +
                                                    "» Click over a issue to select it";
 
-                        if (!Settings.Default.HidePLTooltips)
-                            lbLayerImageOverlay.Visible = true;
+                        lbLayerImageOverlay.Visible = Settings.Default.ShowLayerTooltipsOverlay;
+
                         return;
                     }
                 }
@@ -3662,6 +3696,16 @@ namespace UVtools.GUI
         }
 
         /// <summary>
+        /// Centers layer view on a middle of a given rectangle
+        /// </summary>
+        /// <param name="rectangle">Rectangle holding coordinates and bounds</param>
+        /// <param name="zoomLevel">Zoom level to set, 0 to ignore or negative value to get current locked zoom level</param>
+        /// <param name="zoomToRegion">Auto zoom to a region and ensure that region area stays all visible when possible, when true this will overwrite zoomLevel</param></param>
+        public void CenterLayerAt(RectangleF rectangle, int zoomLevel = 0, bool zoomToRegion = false) =>
+            CenterLayerAt(Rectangle.Round(rectangle), zoomLevel, zoomToRegion);
+
+
+        /// <summary>
         /// Centers layer view on a <see cref="Point"/>
         /// </summary>
         /// <param name="point">Point holding X and Y coordinates</param>
@@ -4266,6 +4310,13 @@ namespace UVtools.GUI
 
 
             return true;
+        }
+
+        private void pbLayer_SelectionRegionChanged(object sender, EventArgs e)
+        {
+            var roi = ROI;
+            btnLayerROI.Text = roi.IsEmpty ? "ROI: (NS)" : $"ROI: {roi}";
+            btnLayerROI.Enabled = !roi.IsEmpty;
         }
     }
 }

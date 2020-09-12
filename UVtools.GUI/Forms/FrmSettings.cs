@@ -74,7 +74,7 @@ namespace UVtools.GUI.Forms
 
                 cbLayerAutoRotateBestView.Checked = Settings.Default.LayerAutoRotateBestView;
                 cbLayerZoomToFit.Checked = Settings.Default.LayerZoomToFit;
-                cbHidePLTooltips.Checked = Settings.Default.HidePLTooltips;
+                cbShowLayerTooltipsOverlay.Checked = Settings.Default.ShowLayerTooltipsOverlay;
 
                 cbZoomToFit.SelectedIndex = Settings.Default.ZoomToFitPrintVolumeBounds == true ? 0 : 1;
                 cbZoomIssues.Checked = Settings.Default.ZoomIssues;
@@ -257,7 +257,7 @@ namespace UVtools.GUI.Forms
 
                 Settings.Default.LayerAutoRotateBestView = cbLayerAutoRotateBestView.Checked;
                 Settings.Default.LayerZoomToFit = cbLayerZoomToFit.Checked;
-                Settings.Default.HidePLTooltips = cbHidePLTooltips.Checked;
+                Settings.Default.ShowLayerTooltipsOverlay = cbShowLayerTooltipsOverlay.Checked;
                 Settings.Default.ZoomToFitPrintVolumeBounds = cbZoomToFit.SelectedIndex == 0 ? true : false;
                 Settings.Default.ZoomIssues = cbZoomIssues.Checked;
                 Settings.Default.ZoomLockLevel = (byte)cbZoomLockLevel.SelectedIndex;
