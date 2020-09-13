@@ -206,12 +206,12 @@ namespace UVtools.GUI.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool ShowLayerTooltipsOverlay {
+        public bool LayerTooltipOverlay {
             get {
-                return ((bool)(this["ShowLayerTooltipsOverlay"]));
+                return ((bool)(this["LayerTooltipOverlay"]));
             }
             set {
-                this["ShowLayerTooltipsOverlay"] = value;
+                this["LayerTooltipOverlay"] = value;
             }
         }
         
@@ -884,6 +884,30 @@ namespace UVtools.GUI.Properties {
             }
             set {
                 this["ComputeEmptyLayers"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("255, 255, 192")]
+        public global::System.Drawing.Color LayerTooltipOverlayColor {
+            get {
+                return ((global::System.Drawing.Color)(this["LayerTooltipOverlayColor"]));
+            }
+            set {
+                this["LayerTooltipOverlayColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("210")]
+        public byte LayerTooltipOverlayOpacity {
+            get {
+                return ((byte)(this["LayerTooltipOverlayOpacity"]));
+            }
+            set {
+                this["LayerTooltipOverlayOpacity"] = value;
             }
         }
     }

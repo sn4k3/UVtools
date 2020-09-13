@@ -47,8 +47,8 @@
     <Setting Name="LayerZoomToFit" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="HidePLTooltips" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+    <Setting Name="LayerTooltipOverlay" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="ComputeIslands" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
@@ -217,6 +217,12 @@
     </Setting>
     <Setting Name="ComputeEmptyLayers" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="LayerTooltipOverlayColor" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">255, 255, 192</Value>
+    </Setting>
+    <Setting Name="LayerTooltipOverlayOpacity" Type="System.Byte" Scope="User">
+      <Value Profile="(Default)">210</Value>
     </Setting>
   </Settings>
 </SettingsFile>

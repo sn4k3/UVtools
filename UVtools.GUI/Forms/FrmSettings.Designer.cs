@@ -93,7 +93,31 @@
             this.label27 = new System.Windows.Forms.Label();
             this.tbFileSaveNamePreffix = new System.Windows.Forms.TextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.groupBox9 = new System.Windows.Forms.GroupBox();
+            this.cbLayerAutoRotateBestView = new System.Windows.Forms.CheckBox();
+            this.cbLayerZoomToFit = new System.Windows.Forms.CheckBox();
+            this.groupBox8 = new System.Windows.Forms.GroupBox();
+            this.label44 = new System.Windows.Forms.Label();
+            this.cbCrosshairShowOnlyOnSelectedIssues = new System.Windows.Forms.CheckBox();
+            this.cbCrosshairFadeLevel = new System.Windows.Forms.ComboBox();
+            this.nmCrosshairLineLength = new System.Windows.Forms.NumericUpDown();
+            this.label40 = new System.Windows.Forms.Label();
+            this.label36 = new System.Windows.Forms.Label();
+            this.label41 = new System.Windows.Forms.Label();
+            this.label39 = new System.Windows.Forms.Label();
+            this.nmCrosshairLineMargin = new System.Windows.Forms.NumericUpDown();
+            this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.label43 = new System.Windows.Forms.Label();
+            this.cbZoomToFit = new System.Windows.Forms.ComboBox();
+            this.cbZoomIssues = new System.Windows.Forms.CheckBox();
+            this.label38 = new System.Windows.Forms.Label();
+            this.cbZoomLockLevel = new System.Windows.Forms.ComboBox();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.cbLayerTooltipOverlay = new System.Windows.Forms.CheckBox();
+            this.label46 = new System.Windows.Forms.Label();
+            this.nmLayerTooltipOverlayOpacity = new System.Windows.Forms.NumericUpDown();
+            this.btnLayerTooltipOverlayColor = new System.Windows.Forms.Button();
+            this.label45 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.cbOutlineHollowAreas = new System.Windows.Forms.CheckBox();
@@ -126,26 +150,6 @@
             this.label37 = new System.Windows.Forms.Label();
             this.nmOutlinePrintVolumeBoundsLineThickness = new System.Windows.Forms.NumericUpDown();
             this.btnCrosshairColor = new System.Windows.Forms.Button();
-            this.groupBox7 = new System.Windows.Forms.GroupBox();
-            this.label43 = new System.Windows.Forms.Label();
-            this.cbZoomToFit = new System.Windows.Forms.ComboBox();
-            this.cbZoomIssues = new System.Windows.Forms.CheckBox();
-            this.label38 = new System.Windows.Forms.Label();
-            this.cbZoomLockLevel = new System.Windows.Forms.ComboBox();
-            this.groupBox8 = new System.Windows.Forms.GroupBox();
-            this.label44 = new System.Windows.Forms.Label();
-            this.cbCrosshairShowOnlyOnSelectedIssues = new System.Windows.Forms.CheckBox();
-            this.cbCrosshairFadeLevel = new System.Windows.Forms.ComboBox();
-            this.nmCrosshairLineLength = new System.Windows.Forms.NumericUpDown();
-            this.label40 = new System.Windows.Forms.Label();
-            this.label36 = new System.Windows.Forms.Label();
-            this.label41 = new System.Windows.Forms.Label();
-            this.label39 = new System.Windows.Forms.Label();
-            this.nmCrosshairLineMargin = new System.Windows.Forms.NumericUpDown();
-            this.groupBox9 = new System.Windows.Forms.GroupBox();
-            this.cbShowLayerTooltipsOverlay = new System.Windows.Forms.CheckBox();
-            this.cbLayerAutoRotateBestView = new System.Windows.Forms.CheckBox();
-            this.cbLayerZoomToFit = new System.Windows.Forms.CheckBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.cbCloseEditOnApply = new System.Windows.Forms.CheckBox();
@@ -173,7 +177,7 @@
             this.cbLayerRepairResinTraps = new System.Windows.Forms.CheckBox();
             this.cbLayerRepairRemoveEmptyLayers = new System.Windows.Forms.CheckBox();
             this.cbLayerRepairLayersIslands = new System.Windows.Forms.CheckBox();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.pnActions = new System.Windows.Forms.Panel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapBinaryThreshold)).BeginInit();
@@ -192,15 +196,16 @@
             this.groupBox4.SuspendLayout();
             this.groupBox5.SuspendLayout();
             this.tabPage2.SuspendLayout();
-            this.groupBox6.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nmOutlineHollowAreasLineThickness)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nmOutlineLayerBoundsLineThickness)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nmOutlinePrintVolumeBoundsLineThickness)).BeginInit();
-            this.groupBox7.SuspendLayout();
+            this.groupBox9.SuspendLayout();
             this.groupBox8.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmCrosshairLineLength)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmCrosshairLineMargin)).BeginInit();
-            this.groupBox9.SuspendLayout();
+            this.groupBox7.SuspendLayout();
+            this.groupBox6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmLayerTooltipOverlayOpacity)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmOutlineHollowAreasLineThickness)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmOutlineLayerBoundsLineThickness)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmOutlinePrintVolumeBoundsLineThickness)).BeginInit();
             this.tabPage3.SuspendLayout();
             this.tabPage4.SuspendLayout();
             this.groupBox10.SuspendLayout();
@@ -208,7 +213,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultOpeningIterations)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultClosingIterations)).BeginInit();
-            this.panel1.SuspendLayout();
+            this.pnActions.SuspendLayout();
             this.SuspendLayout();
             // 
             // colorDialog
@@ -221,7 +226,7 @@
             this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSave.Image = global::UVtools.GUI.Properties.Resources.Ok_24x24;
             this.btnSave.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnSave.Location = new System.Drawing.Point(303, 15);
+            this.btnSave.Location = new System.Drawing.Point(301, 13);
             this.btnSave.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(150, 48);
@@ -237,7 +242,7 @@
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Image = global::UVtools.GUI.Properties.Resources.Cancel_24x24;
             this.btnCancel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnCancel.Location = new System.Drawing.Point(461, 15);
+            this.btnCancel.Location = new System.Drawing.Point(459, 13);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(150, 48);
@@ -281,7 +286,7 @@
             this.btnReset.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnReset.Image = global::UVtools.GUI.Properties.Resources.undo_alt_16x16;
             this.btnReset.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnReset.Location = new System.Drawing.Point(13, 15);
+            this.btnReset.Location = new System.Drawing.Point(13, 13);
             this.btnReset.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(158, 48);
@@ -689,7 +694,7 @@
             this.tabSettings.Location = new System.Drawing.Point(0, 0);
             this.tabSettings.Name = "tabSettings";
             this.tabSettings.SelectedIndex = 0;
-            this.tabSettings.Size = new System.Drawing.Size(624, 661);
+            this.tabSettings.Size = new System.Drawing.Size(624, 669);
             this.tabSettings.TabIndex = 0;
             // 
             // tabPage1
@@ -699,7 +704,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 27);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(616, 630);
+            this.tabPage1.Size = new System.Drawing.Size(616, 638);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "General";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -960,571 +965,55 @@
             // 
             // tabPage2
             // 
-            this.tabPage2.Controls.Add(this.groupBox6);
-            this.tabPage2.Controls.Add(this.groupBox7);
-            this.tabPage2.Controls.Add(this.groupBox8);
             this.tabPage2.Controls.Add(this.groupBox9);
+            this.tabPage2.Controls.Add(this.groupBox8);
+            this.tabPage2.Controls.Add(this.groupBox7);
+            this.tabPage2.Controls.Add(this.groupBox6);
             this.tabPage2.Location = new System.Drawing.Point(4, 27);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(616, 630);
+            this.tabPage2.Size = new System.Drawing.Size(616, 638);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Layer Preview";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // groupBox6
-            // 
-            this.groupBox6.Controls.Add(this.label1);
-            this.groupBox6.Controls.Add(this.label2);
-            this.groupBox6.Controls.Add(this.cbOutlineHollowAreas);
-            this.groupBox6.Controls.Add(this.btnPreviousNextLayerColor);
-            this.groupBox6.Controls.Add(this.btnPreviousLayerColor);
-            this.groupBox6.Controls.Add(this.label18);
-            this.groupBox6.Controls.Add(this.btnIslandColor);
-            this.groupBox6.Controls.Add(this.btnIslandHLColor);
-            this.groupBox6.Controls.Add(this.nmOutlineHollowAreasLineThickness);
-            this.groupBox6.Controls.Add(this.label3);
-            this.groupBox6.Controls.Add(this.cbLayerDifferenceDefault);
-            this.groupBox6.Controls.Add(this.label19);
-            this.groupBox6.Controls.Add(this.btnResinTrapColor);
-            this.groupBox6.Controls.Add(this.btnResinTrapHLColor);
-            this.groupBox6.Controls.Add(this.btnOutlineHollowAreasColor);
-            this.groupBox6.Controls.Add(this.btnNextLayerColor);
-            this.groupBox6.Controls.Add(this.btnOutlinePrintVolumeBoundsColor);
-            this.groupBox6.Controls.Add(this.cbOutlineLayerBounds);
-            this.groupBox6.Controls.Add(this.label6);
-            this.groupBox6.Controls.Add(this.label14);
-            this.groupBox6.Controls.Add(this.label16);
-            this.groupBox6.Controls.Add(this.label4);
-            this.groupBox6.Controls.Add(this.nmOutlineLayerBoundsLineThickness);
-            this.groupBox6.Controls.Add(this.label5);
-            this.groupBox6.Controls.Add(this.label15);
-            this.groupBox6.Controls.Add(this.label17);
-            this.groupBox6.Controls.Add(this.btnTouchingBoundsColor);
-            this.groupBox6.Controls.Add(this.cbOutlinePrintVolumeBounds);
-            this.groupBox6.Controls.Add(this.btnOutlineLayerBoundsColor);
-            this.groupBox6.Controls.Add(this.label37);
-            this.groupBox6.Controls.Add(this.nmOutlinePrintVolumeBoundsLineThickness);
-            this.groupBox6.Controls.Add(this.btnCrosshairColor);
-            this.groupBox6.Location = new System.Drawing.Point(5, 9);
-            this.groupBox6.Name = "groupBox6";
-            this.groupBox6.Size = new System.Drawing.Size(604, 255);
-            this.groupBox6.TabIndex = 53;
-            this.groupBox6.TabStop = false;
-            this.groupBox6.Text = "Layer Colors";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(11, 181);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(190, 18);
-            this.label1.TabIndex = 39;
-            this.label1.Text = "Prev && next layer difference:";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(11, 117);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(173, 18);
-            this.label2.TabIndex = 34;
-            this.label2.Text = "Previous layer difference:";
-            // 
-            // cbOutlineHollowAreas
-            // 
-            this.cbOutlineHollowAreas.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cbOutlineHollowAreas.AutoSize = true;
-            this.cbOutlineHollowAreas.Location = new System.Drawing.Point(406, 84);
-            this.cbOutlineHollowAreas.Name = "cbOutlineHollowAreas";
-            this.cbOutlineHollowAreas.Size = new System.Drawing.Size(131, 22);
-            this.cbOutlineHollowAreas.TabIndex = 46;
-            this.cbOutlineHollowAreas.Text = "Show by default";
-            this.toolTip.SetToolTip(this.cbOutlineHollowAreas, "Determines the default state of the \'Hollow Area Outline\' toolstrip setting.");
-            this.cbOutlineHollowAreas.UseVisualStyleBackColor = true;
-            // 
-            // btnPreviousNextLayerColor
-            // 
-            this.btnPreviousNextLayerColor.BackColor = System.Drawing.Color.White;
-            this.btnPreviousNextLayerColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            this.btnPreviousNextLayerColor.FlatAppearance.BorderSize = 2;
-            this.btnPreviousNextLayerColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPreviousNextLayerColor.Location = new System.Drawing.Point(219, 178);
-            this.btnPreviousNextLayerColor.Margin = new System.Windows.Forms.Padding(4);
-            this.btnPreviousNextLayerColor.Name = "btnPreviousNextLayerColor";
-            this.btnPreviousNextLayerColor.Size = new System.Drawing.Size(24, 24);
-            this.btnPreviousNextLayerColor.TabIndex = 52;
-            this.toolTip.SetToolTip(this.btnPreviousNextLayerColor, "Pixels present on the previous layer and the next layer, but not on the current l" +
-        "ayer.");
-            this.btnPreviousNextLayerColor.UseVisualStyleBackColor = false;
-            this.btnPreviousNextLayerColor.Click += new System.EventHandler(this.EventClick);
-            // 
-            // btnPreviousLayerColor
-            // 
-            this.btnPreviousLayerColor.BackColor = System.Drawing.Color.White;
-            this.btnPreviousLayerColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            this.btnPreviousLayerColor.FlatAppearance.BorderSize = 2;
-            this.btnPreviousLayerColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPreviousLayerColor.Location = new System.Drawing.Point(219, 114);
-            this.btnPreviousLayerColor.Margin = new System.Windows.Forms.Padding(4);
-            this.btnPreviousLayerColor.Name = "btnPreviousLayerColor";
-            this.btnPreviousLayerColor.Size = new System.Drawing.Size(24, 24);
-            this.btnPreviousLayerColor.TabIndex = 48;
-            this.toolTip.SetToolTip(this.btnPreviousLayerColor, "Pixels present on the previous layer, but not on the current layer.  Represents w" +
-        "here the current layer has receeded.");
-            this.btnPreviousLayerColor.UseVisualStyleBackColor = false;
-            this.btnPreviousLayerColor.Click += new System.EventHandler(this.EventClick);
-            // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(295, 86);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(102, 18);
-            this.label18.TabIndex = 64;
-            this.label18.Text = "Line thickness";
-            // 
-            // btnIslandColor
-            // 
-            this.btnIslandColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnIslandColor.BackColor = System.Drawing.Color.White;
-            this.btnIslandColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            this.btnIslandColor.FlatAppearance.BorderSize = 2;
-            this.btnIslandColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnIslandColor.Location = new System.Drawing.Point(538, 118);
-            this.btnIslandColor.Margin = new System.Windows.Forms.Padding(4);
-            this.btnIslandColor.Name = "btnIslandColor";
-            this.btnIslandColor.Size = new System.Drawing.Size(24, 24);
-            this.btnIslandColor.TabIndex = 53;
-            this.toolTip.SetToolTip(this.btnIslandColor, "Islands on the layer that are not currently selected.");
-            this.btnIslandColor.UseVisualStyleBackColor = false;
-            this.btnIslandColor.Click += new System.EventHandler(this.EventClick);
-            // 
-            // btnIslandHLColor
-            // 
-            this.btnIslandHLColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnIslandHLColor.BackColor = System.Drawing.Color.White;
-            this.btnIslandHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            this.btnIslandHLColor.FlatAppearance.BorderSize = 2;
-            this.btnIslandHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnIslandHLColor.Location = new System.Drawing.Point(570, 118);
-            this.btnIslandHLColor.Margin = new System.Windows.Forms.Padding(4);
-            this.btnIslandHLColor.Name = "btnIslandHLColor";
-            this.btnIslandHLColor.Size = new System.Drawing.Size(24, 24);
-            this.btnIslandHLColor.TabIndex = 54;
-            this.toolTip.SetToolTip(this.btnIslandHLColor, "Islands on the layer that are currently selected in the issue list.");
-            this.btnIslandHLColor.UseVisualStyleBackColor = false;
-            this.btnIslandHLColor.Click += new System.EventHandler(this.EventClick);
-            // 
-            // nmOutlineHollowAreasLineThickness
-            // 
-            this.nmOutlineHollowAreasLineThickness.Location = new System.Drawing.Point(253, 83);
-            this.nmOutlineHollowAreasLineThickness.Maximum = new decimal(new int[] {
-            50,
-            0,
-            0,
-            0});
-            this.nmOutlineHollowAreasLineThickness.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            -2147483648});
-            this.nmOutlineHollowAreasLineThickness.Name = "nmOutlineHollowAreasLineThickness";
-            this.nmOutlineHollowAreasLineThickness.Size = new System.Drawing.Size(40, 24);
-            this.nmOutlineHollowAreasLineThickness.TabIndex = 45;
-            this.toolTip.SetToolTip(this.nmOutlineHollowAreasLineThickness, "Range -1 to 50, -1 for fill");
-            this.nmOutlineHollowAreasLineThickness.Value = new decimal(new int[] {
-            2,
-            0,
-            0,
-            0});
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(11, 149);
-            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(145, 18);
-            this.label3.TabIndex = 37;
-            this.label3.Text = "Next layer difference:";
-            // 
-            // cbLayerDifferenceDefault
-            // 
-            this.cbLayerDifferenceDefault.AutoSize = true;
-            this.cbLayerDifferenceDefault.Location = new System.Drawing.Point(14, 213);
-            this.cbLayerDifferenceDefault.Name = "cbLayerDifferenceDefault";
-            this.cbLayerDifferenceDefault.Size = new System.Drawing.Size(235, 22);
-            this.cbLayerDifferenceDefault.TabIndex = 59;
-            this.cbLayerDifferenceDefault.Text = "Show layer diff colors by default";
-            this.toolTip.SetToolTip(this.cbLayerDifferenceDefault, "Determines whether differences will be visulaized by default by setting the defau" +
-        "lt state of the \'Difference\' toolstrip button");
-            this.cbLayerDifferenceDefault.UseVisualStyleBackColor = true;
-            // 
-            // label19
-            // 
-            this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(11, 86);
-            this.label19.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(138, 18);
-            this.label19.TabIndex = 63;
-            this.label19.Text = "Hollow area outline:";
-            // 
-            // btnResinTrapColor
-            // 
-            this.btnResinTrapColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnResinTrapColor.BackColor = System.Drawing.Color.White;
-            this.btnResinTrapColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            this.btnResinTrapColor.FlatAppearance.BorderSize = 2;
-            this.btnResinTrapColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnResinTrapColor.Location = new System.Drawing.Point(538, 150);
-            this.btnResinTrapColor.Margin = new System.Windows.Forms.Padding(4);
-            this.btnResinTrapColor.Name = "btnResinTrapColor";
-            this.btnResinTrapColor.Size = new System.Drawing.Size(24, 24);
-            this.btnResinTrapColor.TabIndex = 55;
-            this.toolTip.SetToolTip(this.btnResinTrapColor, "Resin Traps on the layer that are not currently selected.");
-            this.btnResinTrapColor.UseVisualStyleBackColor = false;
-            this.btnResinTrapColor.Click += new System.EventHandler(this.EventClick);
-            // 
-            // btnResinTrapHLColor
-            // 
-            this.btnResinTrapHLColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnResinTrapHLColor.BackColor = System.Drawing.Color.White;
-            this.btnResinTrapHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            this.btnResinTrapHLColor.FlatAppearance.BorderSize = 2;
-            this.btnResinTrapHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnResinTrapHLColor.Location = new System.Drawing.Point(570, 150);
-            this.btnResinTrapHLColor.Margin = new System.Windows.Forms.Padding(4);
-            this.btnResinTrapHLColor.Name = "btnResinTrapHLColor";
-            this.btnResinTrapHLColor.Size = new System.Drawing.Size(24, 24);
-            this.btnResinTrapHLColor.TabIndex = 56;
-            this.toolTip.SetToolTip(this.btnResinTrapHLColor, "Resin Traps on the layer that are currently selected in the issue list.");
-            this.btnResinTrapHLColor.UseVisualStyleBackColor = false;
-            this.btnResinTrapHLColor.Click += new System.EventHandler(this.EventClick);
-            // 
-            // btnOutlineHollowAreasColor
-            // 
-            this.btnOutlineHollowAreasColor.BackColor = System.Drawing.Color.White;
-            this.btnOutlineHollowAreasColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            this.btnOutlineHollowAreasColor.FlatAppearance.BorderSize = 2;
-            this.btnOutlineHollowAreasColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnOutlineHollowAreasColor.Location = new System.Drawing.Point(219, 83);
-            this.btnOutlineHollowAreasColor.Margin = new System.Windows.Forms.Padding(4);
-            this.btnOutlineHollowAreasColor.Name = "btnOutlineHollowAreasColor";
-            this.btnOutlineHollowAreasColor.Size = new System.Drawing.Size(24, 24);
-            this.btnOutlineHollowAreasColor.TabIndex = 43;
-            this.toolTip.SetToolTip(this.btnOutlineHollowAreasColor, "Color used to outline (or fill) hollow areas on the layer.");
-            this.btnOutlineHollowAreasColor.UseVisualStyleBackColor = false;
-            this.btnOutlineHollowAreasColor.Click += new System.EventHandler(this.EventClick);
-            // 
-            // btnNextLayerColor
-            // 
-            this.btnNextLayerColor.BackColor = System.Drawing.Color.White;
-            this.btnNextLayerColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            this.btnNextLayerColor.FlatAppearance.BorderSize = 2;
-            this.btnNextLayerColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNextLayerColor.Location = new System.Drawing.Point(219, 146);
-            this.btnNextLayerColor.Margin = new System.Windows.Forms.Padding(4);
-            this.btnNextLayerColor.Name = "btnNextLayerColor";
-            this.btnNextLayerColor.Size = new System.Drawing.Size(24, 24);
-            this.btnNextLayerColor.TabIndex = 50;
-            this.toolTip.SetToolTip(this.btnNextLayerColor, "Pixels present on the next layer, but not on the current layer.  Represens where " +
-        "the next layer will grow.");
-            this.btnNextLayerColor.UseVisualStyleBackColor = false;
-            this.btnNextLayerColor.Click += new System.EventHandler(this.EventClick);
-            // 
-            // btnOutlinePrintVolumeBoundsColor
-            // 
-            this.btnOutlinePrintVolumeBoundsColor.BackColor = System.Drawing.Color.White;
-            this.btnOutlinePrintVolumeBoundsColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            this.btnOutlinePrintVolumeBoundsColor.FlatAppearance.BorderSize = 2;
-            this.btnOutlinePrintVolumeBoundsColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnOutlinePrintVolumeBoundsColor.Location = new System.Drawing.Point(219, 19);
-            this.btnOutlinePrintVolumeBoundsColor.Margin = new System.Windows.Forms.Padding(4);
-            this.btnOutlinePrintVolumeBoundsColor.Name = "btnOutlinePrintVolumeBoundsColor";
-            this.btnOutlinePrintVolumeBoundsColor.Size = new System.Drawing.Size(24, 24);
-            this.btnOutlinePrintVolumeBoundsColor.TabIndex = 35;
-            this.toolTip.SetToolTip(this.btnOutlinePrintVolumeBoundsColor, "Color used to draw the bounding rectangle around the print volume.");
-            this.btnOutlinePrintVolumeBoundsColor.UseVisualStyleBackColor = false;
-            this.btnOutlinePrintVolumeBoundsColor.Click += new System.EventHandler(this.EventClick);
-            // 
-            // cbOutlineLayerBounds
-            // 
-            this.cbOutlineLayerBounds.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cbOutlineLayerBounds.AutoSize = true;
-            this.cbOutlineLayerBounds.Location = new System.Drawing.Point(406, 52);
-            this.cbOutlineLayerBounds.Name = "cbOutlineLayerBounds";
-            this.cbOutlineLayerBounds.Size = new System.Drawing.Size(131, 22);
-            this.cbOutlineLayerBounds.TabIndex = 42;
-            this.cbOutlineLayerBounds.Text = "Show by default";
-            this.toolTip.SetToolTip(this.cbOutlineLayerBounds, "Determines the default state of the \'Layer Boundary\' toolstrip setting.");
-            this.cbOutlineLayerBounds.UseVisualStyleBackColor = true;
-            // 
-            // label6
-            // 
-            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(392, 184);
-            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(138, 18);
-            this.label6.TabIndex = 49;
-            this.label6.Text = "Touching boundary:";
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(11, 22);
-            this.label14.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(159, 18);
-            this.label14.TabIndex = 58;
-            this.label14.Text = "Print volume boundary:";
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(295, 54);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(102, 18);
-            this.label16.TabIndex = 62;
-            this.label16.Text = "Line thickness";
-            // 
-            // label4
-            // 
-            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(369, 121);
-            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(161, 18);
-            this.label4.TabIndex = 44;
-            this.label4.Text = "Island / Selected Island:";
-            // 
-            // nmOutlineLayerBoundsLineThickness
-            // 
-            this.nmOutlineLayerBoundsLineThickness.Location = new System.Drawing.Point(253, 51);
-            this.nmOutlineLayerBoundsLineThickness.Maximum = new decimal(new int[] {
-            50,
-            0,
-            0,
-            0});
-            this.nmOutlineLayerBoundsLineThickness.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.nmOutlineLayerBoundsLineThickness.Name = "nmOutlineLayerBoundsLineThickness";
-            this.nmOutlineLayerBoundsLineThickness.Size = new System.Drawing.Size(40, 24);
-            this.nmOutlineLayerBoundsLineThickness.TabIndex = 41;
-            this.toolTip.SetToolTip(this.nmOutlineLayerBoundsLineThickness, "Range 1 to 50");
-            this.nmOutlineLayerBoundsLineThickness.Value = new decimal(new int[] {
-            2,
-            0,
-            0,
-            0});
-            // 
-            // label5
-            // 
-            this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(317, 153);
-            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(213, 18);
-            this.label5.TabIndex = 47;
-            this.label5.Text = "Resin trap / Selected resin trap:";
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(295, 22);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(102, 18);
-            this.label15.TabIndex = 60;
-            this.label15.Text = "Line thickness";
-            // 
-            // label17
-            // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(11, 54);
-            this.label17.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(113, 18);
-            this.label17.TabIndex = 61;
-            this.label17.Text = "Layer boundary:";
-            // 
-            // btnTouchingBoundsColor
-            // 
-            this.btnTouchingBoundsColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnTouchingBoundsColor.BackColor = System.Drawing.Color.White;
-            this.btnTouchingBoundsColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            this.btnTouchingBoundsColor.FlatAppearance.BorderSize = 2;
-            this.btnTouchingBoundsColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnTouchingBoundsColor.Location = new System.Drawing.Point(538, 182);
-            this.btnTouchingBoundsColor.Margin = new System.Windows.Forms.Padding(4);
-            this.btnTouchingBoundsColor.Name = "btnTouchingBoundsColor";
-            this.btnTouchingBoundsColor.Size = new System.Drawing.Size(24, 24);
-            this.btnTouchingBoundsColor.TabIndex = 57;
-            this.toolTip.SetToolTip(this.btnTouchingBoundsColor, "Pixels that are touching the plate boundary.");
-            this.btnTouchingBoundsColor.UseVisualStyleBackColor = false;
-            this.btnTouchingBoundsColor.Click += new System.EventHandler(this.EventClick);
-            // 
-            // cbOutlinePrintVolumeBounds
-            // 
-            this.cbOutlinePrintVolumeBounds.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cbOutlinePrintVolumeBounds.AutoSize = true;
-            this.cbOutlinePrintVolumeBounds.Location = new System.Drawing.Point(406, 20);
-            this.cbOutlinePrintVolumeBounds.Name = "cbOutlinePrintVolumeBounds";
-            this.cbOutlinePrintVolumeBounds.Size = new System.Drawing.Size(131, 22);
-            this.cbOutlinePrintVolumeBounds.TabIndex = 38;
-            this.cbOutlinePrintVolumeBounds.Text = "Show by default";
-            this.toolTip.SetToolTip(this.cbOutlinePrintVolumeBounds, "Determines the default state of the \'Print Volume Boundary\' toolstrip setting.");
-            this.cbOutlinePrintVolumeBounds.UseVisualStyleBackColor = true;
-            // 
-            // btnOutlineLayerBoundsColor
-            // 
-            this.btnOutlineLayerBoundsColor.BackColor = System.Drawing.Color.White;
-            this.btnOutlineLayerBoundsColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            this.btnOutlineLayerBoundsColor.FlatAppearance.BorderSize = 2;
-            this.btnOutlineLayerBoundsColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnOutlineLayerBoundsColor.Location = new System.Drawing.Point(219, 51);
-            this.btnOutlineLayerBoundsColor.Margin = new System.Windows.Forms.Padding(4);
-            this.btnOutlineLayerBoundsColor.Name = "btnOutlineLayerBoundsColor";
-            this.btnOutlineLayerBoundsColor.Size = new System.Drawing.Size(24, 24);
-            this.btnOutlineLayerBoundsColor.TabIndex = 40;
-            this.toolTip.SetToolTip(this.btnOutlineLayerBoundsColor, "Color used to draw the bounding rectangle around the layer.");
-            this.btnOutlineLayerBoundsColor.UseVisualStyleBackColor = false;
-            this.btnOutlineLayerBoundsColor.Click += new System.EventHandler(this.EventClick);
-            // 
-            // label37
-            // 
-            this.label37.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label37.AutoSize = true;
-            this.label37.Location = new System.Drawing.Point(453, 217);
-            this.label37.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label37.Name = "label37";
-            this.label37.Size = new System.Drawing.Size(77, 18);
-            this.label37.TabIndex = 51;
-            this.label37.Text = "Crosshair:";
-            // 
-            // nmOutlinePrintVolumeBoundsLineThickness
-            // 
-            this.nmOutlinePrintVolumeBoundsLineThickness.Location = new System.Drawing.Point(253, 19);
-            this.nmOutlinePrintVolumeBoundsLineThickness.Maximum = new decimal(new int[] {
-            50,
-            0,
-            0,
-            0});
-            this.nmOutlinePrintVolumeBoundsLineThickness.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.nmOutlinePrintVolumeBoundsLineThickness.Name = "nmOutlinePrintVolumeBoundsLineThickness";
-            this.nmOutlinePrintVolumeBoundsLineThickness.Size = new System.Drawing.Size(40, 24);
-            this.nmOutlinePrintVolumeBoundsLineThickness.TabIndex = 36;
-            this.toolTip.SetToolTip(this.nmOutlinePrintVolumeBoundsLineThickness, "Range 1 to 50");
-            this.nmOutlinePrintVolumeBoundsLineThickness.Value = new decimal(new int[] {
-            2,
-            0,
-            0,
-            0});
-            // 
-            // btnCrosshairColor
-            // 
-            this.btnCrosshairColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCrosshairColor.BackColor = System.Drawing.Color.White;
-            this.btnCrosshairColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            this.btnCrosshairColor.FlatAppearance.BorderSize = 2;
-            this.btnCrosshairColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnCrosshairColor.Location = new System.Drawing.Point(538, 214);
-            this.btnCrosshairColor.Margin = new System.Windows.Forms.Padding(4);
-            this.btnCrosshairColor.Name = "btnCrosshairColor";
-            this.btnCrosshairColor.Size = new System.Drawing.Size(24, 24);
-            this.btnCrosshairColor.TabIndex = 33;
-            this.toolTip.SetToolTip(this.btnCrosshairColor, "Pixels that are touching the plate boundary.");
-            this.btnCrosshairColor.UseVisualStyleBackColor = false;
-            this.btnCrosshairColor.Click += new System.EventHandler(this.EventClick);
-            // 
-            // groupBox7
-            // 
-            this.groupBox7.Controls.Add(this.label43);
-            this.groupBox7.Controls.Add(this.cbZoomToFit);
-            this.groupBox7.Controls.Add(this.cbZoomIssues);
-            this.groupBox7.Controls.Add(this.label38);
-            this.groupBox7.Controls.Add(this.cbZoomLockLevel);
-            this.groupBox7.Location = new System.Drawing.Point(5, 269);
-            this.groupBox7.Name = "groupBox7";
-            this.groupBox7.Size = new System.Drawing.Size(605, 97);
-            this.groupBox7.TabIndex = 54;
-            this.groupBox7.TabStop = false;
-            this.groupBox7.Text = "Zoom";
-            // 
-            // label43
-            // 
-            this.label43.AutoSize = true;
-            this.label43.Location = new System.Drawing.Point(8, 27);
-            this.label43.Name = "label43";
-            this.label43.Size = new System.Drawing.Size(109, 18);
-            this.label43.TabIndex = 57;
-            this.label43.Text = "Zoom out to fit:";
-            // 
-            // cbZoomToFit
-            // 
-            this.cbZoomToFit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cbZoomToFit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbZoomToFit.DropDownWidth = 180;
-            this.cbZoomToFit.FormattingEnabled = true;
-            this.cbZoomToFit.Items.AddRange(new object[] {
-            "Print Volume Boundary",
-            "Layer Boundary"});
-            this.cbZoomToFit.Location = new System.Drawing.Point(123, 23);
-            this.cbZoomToFit.Name = "cbZoomToFit";
-            this.cbZoomToFit.Size = new System.Drawing.Size(188, 26);
-            this.cbZoomToFit.TabIndex = 55;
-            this.toolTip.SetToolTip(this.cbZoomToFit, "Determines whether double-right-click will zoom out to layer boundary or to print" +
-        " volume boundary.  Holding ALT during double-click will invert this behavior.");
-            // 
-            // cbZoomIssues
-            // 
-            this.cbZoomIssues.AutoSize = true;
-            this.cbZoomIssues.Location = new System.Drawing.Point(11, 60);
-            this.cbZoomIssues.Name = "cbZoomIssues";
-            this.cbZoomIssues.Size = new System.Drawing.Size(290, 22);
-            this.cbZoomIssues.TabIndex = 52;
-            this.cbZoomIssues.Text = "Auto zoom && center issues on selection";
-            this.toolTip.SetToolTip(this.cbZoomIssues, "Automatically zoom and center issues when they are selected.  When enabled, singl" +
-        "e-left-click will behave the same as double-left-click.");
-            this.cbZoomIssues.UseVisualStyleBackColor = true;
-            // 
-            // label38
-            // 
-            this.label38.AutoSize = true;
-            this.label38.Location = new System.Drawing.Point(403, 27);
-            this.label38.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label38.Name = "label38";
-            this.label38.Size = new System.Drawing.Size(109, 18);
-            this.label38.TabIndex = 56;
-            this.label38.Text = "Zoom In factor:";
-            // 
-            // cbZoomLockLevel
-            // 
-            this.cbZoomLockLevel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cbZoomLockLevel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbZoomLockLevel.FormattingEnabled = true;
-            this.cbZoomLockLevel.Location = new System.Drawing.Point(519, 23);
-            this.cbZoomLockLevel.Name = "cbZoomLockLevel";
-            this.cbZoomLockLevel.Size = new System.Drawing.Size(72, 26);
-            this.cbZoomLockLevel.TabIndex = 53;
-            this.toolTip.SetToolTip(this.cbZoomLockLevel, "Default zoom factor to be used when zooming in via double-left-click.  This zoom " +
-        "factor can be changed on-the-fly by holding the scroll wheel for 1 second.");
+            // groupBox9
+            // 
+            this.groupBox9.Controls.Add(this.cbLayerAutoRotateBestView);
+            this.groupBox9.Controls.Add(this.cbLayerZoomToFit);
+            this.groupBox9.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBox9.Location = new System.Drawing.Point(3, 491);
+            this.groupBox9.Name = "groupBox9";
+            this.groupBox9.Size = new System.Drawing.Size(610, 63);
+            this.groupBox9.TabIndex = 56;
+            this.groupBox9.TabStop = false;
+            this.groupBox9.Text = "Miscellaneous";
+            // 
+            // cbLayerAutoRotateBestView
+            // 
+            this.cbLayerAutoRotateBestView.AutoSize = true;
+            this.cbLayerAutoRotateBestView.Location = new System.Drawing.Point(12, 27);
+            this.cbLayerAutoRotateBestView.Name = "cbLayerAutoRotateBestView";
+            this.cbLayerAutoRotateBestView.Size = new System.Drawing.Size(152, 22);
+            this.cbLayerAutoRotateBestView.TabIndex = 2;
+            this.cbLayerAutoRotateBestView.Text = "Auto rotate on load";
+            this.toolTip.SetToolTip(this.cbLayerAutoRotateBestView, "Rotate layer for best fit in layer preview when file is loaded.");
+            this.cbLayerAutoRotateBestView.UseVisualStyleBackColor = true;
+            // 
+            // cbLayerZoomToFit
+            // 
+            this.cbLayerZoomToFit.AutoSize = true;
+            this.cbLayerZoomToFit.Location = new System.Drawing.Point(208, 27);
+            this.cbLayerZoomToFit.Name = "cbLayerZoomToFit";
+            this.cbLayerZoomToFit.Size = new System.Drawing.Size(152, 22);
+            this.cbLayerZoomToFit.TabIndex = 3;
+            this.cbLayerZoomToFit.Text = "Zoom to fit on load";
+            this.toolTip.SetToolTip(this.cbLayerZoomToFit, "Zoom layer to fit layer preview when file is loaded.");
+            this.cbLayerZoomToFit.UseVisualStyleBackColor = true;
             // 
             // groupBox8
             // 
+            this.groupBox8.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.groupBox8.Controls.Add(this.label44);
             this.groupBox8.Controls.Add(this.cbCrosshairShowOnlyOnSelectedIssues);
             this.groupBox8.Controls.Add(this.cbCrosshairFadeLevel);
@@ -1534,9 +1023,10 @@
             this.groupBox8.Controls.Add(this.label41);
             this.groupBox8.Controls.Add(this.label39);
             this.groupBox8.Controls.Add(this.nmCrosshairLineMargin);
-            this.groupBox8.Location = new System.Drawing.Point(5, 375);
+            this.groupBox8.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBox8.Location = new System.Drawing.Point(3, 389);
             this.groupBox8.Name = "groupBox8";
-            this.groupBox8.Size = new System.Drawing.Size(605, 102);
+            this.groupBox8.Size = new System.Drawing.Size(610, 102);
             this.groupBox8.TabIndex = 55;
             this.groupBox8.TabStop = false;
             this.groupBox8.Text = "Crosshairs";
@@ -1567,7 +1057,7 @@
             this.cbCrosshairFadeLevel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbCrosshairFadeLevel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbCrosshairFadeLevel.FormattingEnabled = true;
-            this.cbCrosshairFadeLevel.Location = new System.Drawing.Point(160, 64);
+            this.cbCrosshairFadeLevel.Location = new System.Drawing.Point(165, 64);
             this.cbCrosshairFadeLevel.Name = "cbCrosshairFadeLevel";
             this.cbCrosshairFadeLevel.Size = new System.Drawing.Size(74, 26);
             this.cbCrosshairFadeLevel.TabIndex = 54;
@@ -1652,50 +1142,633 @@
             0,
             0});
             // 
-            // groupBox9
+            // groupBox7
             // 
-            this.groupBox9.Controls.Add(this.cbShowLayerTooltipsOverlay);
-            this.groupBox9.Controls.Add(this.cbLayerAutoRotateBestView);
-            this.groupBox9.Controls.Add(this.cbLayerZoomToFit);
-            this.groupBox9.Location = new System.Drawing.Point(5, 483);
-            this.groupBox9.Name = "groupBox9";
-            this.groupBox9.Size = new System.Drawing.Size(605, 63);
-            this.groupBox9.TabIndex = 56;
-            this.groupBox9.TabStop = false;
-            this.groupBox9.Text = "Miscellaneous";
+            this.groupBox7.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.groupBox7.Controls.Add(this.label43);
+            this.groupBox7.Controls.Add(this.cbZoomToFit);
+            this.groupBox7.Controls.Add(this.cbZoomIssues);
+            this.groupBox7.Controls.Add(this.label38);
+            this.groupBox7.Controls.Add(this.cbZoomLockLevel);
+            this.groupBox7.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBox7.Location = new System.Drawing.Point(3, 292);
+            this.groupBox7.Name = "groupBox7";
+            this.groupBox7.Size = new System.Drawing.Size(610, 97);
+            this.groupBox7.TabIndex = 54;
+            this.groupBox7.TabStop = false;
+            this.groupBox7.Text = "Zoom";
             // 
-            // cbShowLayerTooltipsOverlay
+            // label43
             // 
-            this.cbShowLayerTooltipsOverlay.AutoSize = true;
-            this.cbShowLayerTooltipsOverlay.Location = new System.Drawing.Point(393, 27);
-            this.cbShowLayerTooltipsOverlay.Name = "cbShowLayerTooltipsOverlay";
-            this.cbShowLayerTooltipsOverlay.Size = new System.Drawing.Size(206, 22);
-            this.cbShowLayerTooltipsOverlay.TabIndex = 4;
-            this.cbShowLayerTooltipsOverlay.Text = "Show preview layer tooltips";
-            this.toolTip.SetToolTip(this.cbShowLayerTooltipsOverlay, "Show or hide layer preview tooltips for select, ROI, and pixel edit modes.");
-            this.cbShowLayerTooltipsOverlay.UseVisualStyleBackColor = true;
+            this.label43.AutoSize = true;
+            this.label43.Location = new System.Drawing.Point(8, 27);
+            this.label43.Name = "label43";
+            this.label43.Size = new System.Drawing.Size(109, 18);
+            this.label43.TabIndex = 57;
+            this.label43.Text = "Zoom out to fit:";
             // 
-            // cbLayerAutoRotateBestView
+            // cbZoomToFit
             // 
-            this.cbLayerAutoRotateBestView.AutoSize = true;
-            this.cbLayerAutoRotateBestView.Location = new System.Drawing.Point(12, 27);
-            this.cbLayerAutoRotateBestView.Name = "cbLayerAutoRotateBestView";
-            this.cbLayerAutoRotateBestView.Size = new System.Drawing.Size(152, 22);
-            this.cbLayerAutoRotateBestView.TabIndex = 2;
-            this.cbLayerAutoRotateBestView.Text = "Auto rotate on load";
-            this.toolTip.SetToolTip(this.cbLayerAutoRotateBestView, "Rotate layer for best fit in layer preview when file is loaded.");
-            this.cbLayerAutoRotateBestView.UseVisualStyleBackColor = true;
+            this.cbZoomToFit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbZoomToFit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbZoomToFit.DropDownWidth = 180;
+            this.cbZoomToFit.FormattingEnabled = true;
+            this.cbZoomToFit.Items.AddRange(new object[] {
+            "Print Volume Boundary",
+            "Layer Boundary"});
+            this.cbZoomToFit.Location = new System.Drawing.Point(128, 23);
+            this.cbZoomToFit.Name = "cbZoomToFit";
+            this.cbZoomToFit.Size = new System.Drawing.Size(188, 26);
+            this.cbZoomToFit.TabIndex = 55;
+            this.toolTip.SetToolTip(this.cbZoomToFit, "Determines whether double-right-click will zoom out to layer boundary or to print" +
+        " volume boundary.  Holding ALT during double-click will invert this behavior.");
             // 
-            // cbLayerZoomToFit
+            // cbZoomIssues
             // 
-            this.cbLayerZoomToFit.AutoSize = true;
-            this.cbLayerZoomToFit.Location = new System.Drawing.Point(208, 27);
-            this.cbLayerZoomToFit.Name = "cbLayerZoomToFit";
-            this.cbLayerZoomToFit.Size = new System.Drawing.Size(152, 22);
-            this.cbLayerZoomToFit.TabIndex = 3;
-            this.cbLayerZoomToFit.Text = "Zoom to fit on load";
-            this.toolTip.SetToolTip(this.cbLayerZoomToFit, "Zoom layer to fit layer preview when file is loaded.");
-            this.cbLayerZoomToFit.UseVisualStyleBackColor = true;
+            this.cbZoomIssues.AutoSize = true;
+            this.cbZoomIssues.Location = new System.Drawing.Point(11, 60);
+            this.cbZoomIssues.Name = "cbZoomIssues";
+            this.cbZoomIssues.Size = new System.Drawing.Size(290, 22);
+            this.cbZoomIssues.TabIndex = 52;
+            this.cbZoomIssues.Text = "Auto zoom && center issues on selection";
+            this.toolTip.SetToolTip(this.cbZoomIssues, "Automatically zoom and center issues when they are selected.  When enabled, singl" +
+        "e-left-click will behave the same as double-left-click.");
+            this.cbZoomIssues.UseVisualStyleBackColor = true;
+            // 
+            // label38
+            // 
+            this.label38.AutoSize = true;
+            this.label38.Location = new System.Drawing.Point(403, 27);
+            this.label38.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label38.Name = "label38";
+            this.label38.Size = new System.Drawing.Size(109, 18);
+            this.label38.TabIndex = 56;
+            this.label38.Text = "Zoom In factor:";
+            // 
+            // cbZoomLockLevel
+            // 
+            this.cbZoomLockLevel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbZoomLockLevel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbZoomLockLevel.FormattingEnabled = true;
+            this.cbZoomLockLevel.Location = new System.Drawing.Point(524, 23);
+            this.cbZoomLockLevel.Name = "cbZoomLockLevel";
+            this.cbZoomLockLevel.Size = new System.Drawing.Size(72, 26);
+            this.cbZoomLockLevel.TabIndex = 53;
+            this.toolTip.SetToolTip(this.cbZoomLockLevel, "Default zoom factor to be used when zooming in via double-left-click.  This zoom " +
+        "factor can be changed on-the-fly by holding the scroll wheel for 1 second.");
+            // 
+            // groupBox6
+            // 
+            this.groupBox6.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.groupBox6.Controls.Add(this.cbLayerTooltipOverlay);
+            this.groupBox6.Controls.Add(this.label46);
+            this.groupBox6.Controls.Add(this.nmLayerTooltipOverlayOpacity);
+            this.groupBox6.Controls.Add(this.btnLayerTooltipOverlayColor);
+            this.groupBox6.Controls.Add(this.label45);
+            this.groupBox6.Controls.Add(this.label1);
+            this.groupBox6.Controls.Add(this.label2);
+            this.groupBox6.Controls.Add(this.cbOutlineHollowAreas);
+            this.groupBox6.Controls.Add(this.btnPreviousNextLayerColor);
+            this.groupBox6.Controls.Add(this.btnPreviousLayerColor);
+            this.groupBox6.Controls.Add(this.label18);
+            this.groupBox6.Controls.Add(this.btnIslandColor);
+            this.groupBox6.Controls.Add(this.btnIslandHLColor);
+            this.groupBox6.Controls.Add(this.nmOutlineHollowAreasLineThickness);
+            this.groupBox6.Controls.Add(this.label3);
+            this.groupBox6.Controls.Add(this.cbLayerDifferenceDefault);
+            this.groupBox6.Controls.Add(this.label19);
+            this.groupBox6.Controls.Add(this.btnResinTrapColor);
+            this.groupBox6.Controls.Add(this.btnResinTrapHLColor);
+            this.groupBox6.Controls.Add(this.btnOutlineHollowAreasColor);
+            this.groupBox6.Controls.Add(this.btnNextLayerColor);
+            this.groupBox6.Controls.Add(this.btnOutlinePrintVolumeBoundsColor);
+            this.groupBox6.Controls.Add(this.cbOutlineLayerBounds);
+            this.groupBox6.Controls.Add(this.label6);
+            this.groupBox6.Controls.Add(this.label14);
+            this.groupBox6.Controls.Add(this.label16);
+            this.groupBox6.Controls.Add(this.label4);
+            this.groupBox6.Controls.Add(this.nmOutlineLayerBoundsLineThickness);
+            this.groupBox6.Controls.Add(this.label5);
+            this.groupBox6.Controls.Add(this.label15);
+            this.groupBox6.Controls.Add(this.label17);
+            this.groupBox6.Controls.Add(this.btnTouchingBoundsColor);
+            this.groupBox6.Controls.Add(this.cbOutlinePrintVolumeBounds);
+            this.groupBox6.Controls.Add(this.btnOutlineLayerBoundsColor);
+            this.groupBox6.Controls.Add(this.label37);
+            this.groupBox6.Controls.Add(this.nmOutlinePrintVolumeBoundsLineThickness);
+            this.groupBox6.Controls.Add(this.btnCrosshairColor);
+            this.groupBox6.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBox6.Location = new System.Drawing.Point(3, 3);
+            this.groupBox6.Name = "groupBox6";
+            this.groupBox6.Size = new System.Drawing.Size(610, 289);
+            this.groupBox6.TabIndex = 53;
+            this.groupBox6.TabStop = false;
+            this.groupBox6.Text = "Layer Colors";
+            // 
+            // cbLayerTooltipOverlay
+            // 
+            this.cbLayerTooltipOverlay.AutoSize = true;
+            this.cbLayerTooltipOverlay.Location = new System.Drawing.Point(430, 25);
+            this.cbLayerTooltipOverlay.Name = "cbLayerTooltipOverlay";
+            this.cbLayerTooltipOverlay.Size = new System.Drawing.Size(131, 22);
+            this.cbLayerTooltipOverlay.TabIndex = 4;
+            this.cbLayerTooltipOverlay.Text = "Show by default";
+            this.toolTip.SetToolTip(this.cbLayerTooltipOverlay, "Show or hide layer preview tooltips for select, ROI, and pixel edit modes.");
+            this.cbLayerTooltipOverlay.UseVisualStyleBackColor = true;
+            // 
+            // label46
+            // 
+            this.label46.AutoSize = true;
+            this.label46.Location = new System.Drawing.Point(313, 27);
+            this.label46.Name = "label46";
+            this.label46.Size = new System.Drawing.Size(58, 18);
+            this.label46.TabIndex = 68;
+            this.label46.Text = "Opacity";
+            // 
+            // nmLayerTooltipOverlayOpacity
+            // 
+            this.nmLayerTooltipOverlayOpacity.Location = new System.Drawing.Point(243, 24);
+            this.nmLayerTooltipOverlayOpacity.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+            this.nmLayerTooltipOverlayOpacity.Minimum = new decimal(new int[] {
+            50,
+            0,
+            0,
+            0});
+            this.nmLayerTooltipOverlayOpacity.Name = "nmLayerTooltipOverlayOpacity";
+            this.nmLayerTooltipOverlayOpacity.Size = new System.Drawing.Size(63, 24);
+            this.nmLayerTooltipOverlayOpacity.TabIndex = 67;
+            this.toolTip.SetToolTip(this.nmLayerTooltipOverlayOpacity, "Range 50 to 255 (Solid)");
+            this.nmLayerTooltipOverlayOpacity.Value = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+            // 
+            // btnLayerTooltipOverlayColor
+            // 
+            this.btnLayerTooltipOverlayColor.BackColor = System.Drawing.Color.White;
+            this.btnLayerTooltipOverlayColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnLayerTooltipOverlayColor.FlatAppearance.BorderSize = 2;
+            this.btnLayerTooltipOverlayColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnLayerTooltipOverlayColor.Location = new System.Drawing.Point(209, 24);
+            this.btnLayerTooltipOverlayColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnLayerTooltipOverlayColor.Name = "btnLayerTooltipOverlayColor";
+            this.btnLayerTooltipOverlayColor.Size = new System.Drawing.Size(24, 24);
+            this.btnLayerTooltipOverlayColor.TabIndex = 65;
+            this.toolTip.SetToolTip(this.btnLayerTooltipOverlayColor, "Color used to draw the bounding rectangle around the print volume.");
+            this.btnLayerTooltipOverlayColor.UseVisualStyleBackColor = false;
+            this.btnLayerTooltipOverlayColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // label45
+            // 
+            this.label45.AutoSize = true;
+            this.label45.Location = new System.Drawing.Point(11, 27);
+            this.label45.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label45.Name = "label45";
+            this.label45.Size = new System.Drawing.Size(108, 18);
+            this.label45.TabIndex = 66;
+            this.label45.Text = "Tooltip overlay:";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(11, 218);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(190, 18);
+            this.label1.TabIndex = 39;
+            this.label1.Text = "Prev && next layer difference:";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(11, 154);
+            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(173, 18);
+            this.label2.TabIndex = 34;
+            this.label2.Text = "Previous layer difference:";
+            // 
+            // cbOutlineHollowAreas
+            // 
+            this.cbOutlineHollowAreas.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbOutlineHollowAreas.AutoSize = true;
+            this.cbOutlineHollowAreas.Location = new System.Drawing.Point(430, 121);
+            this.cbOutlineHollowAreas.Name = "cbOutlineHollowAreas";
+            this.cbOutlineHollowAreas.Size = new System.Drawing.Size(131, 22);
+            this.cbOutlineHollowAreas.TabIndex = 46;
+            this.cbOutlineHollowAreas.Text = "Show by default";
+            this.toolTip.SetToolTip(this.cbOutlineHollowAreas, "Determines the default state of the \'Hollow Area Outline\' toolstrip setting.");
+            this.cbOutlineHollowAreas.UseVisualStyleBackColor = true;
+            // 
+            // btnPreviousNextLayerColor
+            // 
+            this.btnPreviousNextLayerColor.BackColor = System.Drawing.Color.White;
+            this.btnPreviousNextLayerColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnPreviousNextLayerColor.FlatAppearance.BorderSize = 2;
+            this.btnPreviousNextLayerColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPreviousNextLayerColor.Location = new System.Drawing.Point(209, 215);
+            this.btnPreviousNextLayerColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnPreviousNextLayerColor.Name = "btnPreviousNextLayerColor";
+            this.btnPreviousNextLayerColor.Size = new System.Drawing.Size(24, 24);
+            this.btnPreviousNextLayerColor.TabIndex = 52;
+            this.toolTip.SetToolTip(this.btnPreviousNextLayerColor, "Pixels present on the previous layer and the next layer, but not on the current l" +
+        "ayer.");
+            this.btnPreviousNextLayerColor.UseVisualStyleBackColor = false;
+            this.btnPreviousNextLayerColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnPreviousLayerColor
+            // 
+            this.btnPreviousLayerColor.BackColor = System.Drawing.Color.White;
+            this.btnPreviousLayerColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnPreviousLayerColor.FlatAppearance.BorderSize = 2;
+            this.btnPreviousLayerColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPreviousLayerColor.Location = new System.Drawing.Point(209, 151);
+            this.btnPreviousLayerColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnPreviousLayerColor.Name = "btnPreviousLayerColor";
+            this.btnPreviousLayerColor.Size = new System.Drawing.Size(24, 24);
+            this.btnPreviousLayerColor.TabIndex = 48;
+            this.toolTip.SetToolTip(this.btnPreviousLayerColor, "Pixels present on the previous layer, but not on the current layer.  Represents w" +
+        "here the current layer has receeded.");
+            this.btnPreviousLayerColor.UseVisualStyleBackColor = false;
+            this.btnPreviousLayerColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(313, 123);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(102, 18);
+            this.label18.TabIndex = 64;
+            this.label18.Text = "Line thickness";
+            // 
+            // btnIslandColor
+            // 
+            this.btnIslandColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnIslandColor.BackColor = System.Drawing.Color.White;
+            this.btnIslandColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnIslandColor.FlatAppearance.BorderSize = 2;
+            this.btnIslandColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnIslandColor.Location = new System.Drawing.Point(544, 155);
+            this.btnIslandColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnIslandColor.Name = "btnIslandColor";
+            this.btnIslandColor.Size = new System.Drawing.Size(24, 24);
+            this.btnIslandColor.TabIndex = 53;
+            this.toolTip.SetToolTip(this.btnIslandColor, "Islands on the layer that are not currently selected.");
+            this.btnIslandColor.UseVisualStyleBackColor = false;
+            this.btnIslandColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnIslandHLColor
+            // 
+            this.btnIslandHLColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnIslandHLColor.BackColor = System.Drawing.Color.White;
+            this.btnIslandHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnIslandHLColor.FlatAppearance.BorderSize = 2;
+            this.btnIslandHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnIslandHLColor.Location = new System.Drawing.Point(575, 155);
+            this.btnIslandHLColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnIslandHLColor.Name = "btnIslandHLColor";
+            this.btnIslandHLColor.Size = new System.Drawing.Size(24, 24);
+            this.btnIslandHLColor.TabIndex = 54;
+            this.toolTip.SetToolTip(this.btnIslandHLColor, "Islands on the layer that are currently selected in the issue list.");
+            this.btnIslandHLColor.UseVisualStyleBackColor = false;
+            this.btnIslandHLColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // nmOutlineHollowAreasLineThickness
+            // 
+            this.nmOutlineHollowAreasLineThickness.Location = new System.Drawing.Point(243, 120);
+            this.nmOutlineHollowAreasLineThickness.Maximum = new decimal(new int[] {
+            50,
+            0,
+            0,
+            0});
+            this.nmOutlineHollowAreasLineThickness.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            -2147483648});
+            this.nmOutlineHollowAreasLineThickness.Name = "nmOutlineHollowAreasLineThickness";
+            this.nmOutlineHollowAreasLineThickness.Size = new System.Drawing.Size(63, 24);
+            this.nmOutlineHollowAreasLineThickness.TabIndex = 45;
+            this.toolTip.SetToolTip(this.nmOutlineHollowAreasLineThickness, "Range -1 to 50, -1 for fill");
+            this.nmOutlineHollowAreasLineThickness.Value = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(11, 186);
+            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(145, 18);
+            this.label3.TabIndex = 37;
+            this.label3.Text = "Next layer difference:";
+            // 
+            // cbLayerDifferenceDefault
+            // 
+            this.cbLayerDifferenceDefault.AutoSize = true;
+            this.cbLayerDifferenceDefault.Location = new System.Drawing.Point(14, 250);
+            this.cbLayerDifferenceDefault.Name = "cbLayerDifferenceDefault";
+            this.cbLayerDifferenceDefault.Size = new System.Drawing.Size(235, 22);
+            this.cbLayerDifferenceDefault.TabIndex = 59;
+            this.cbLayerDifferenceDefault.Text = "Show layer diff colors by default";
+            this.toolTip.SetToolTip(this.cbLayerDifferenceDefault, "Determines whether differences will be visulaized by default by setting the defau" +
+        "lt state of the \'Difference\' toolstrip button");
+            this.cbLayerDifferenceDefault.UseVisualStyleBackColor = true;
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(11, 123);
+            this.label19.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(138, 18);
+            this.label19.TabIndex = 63;
+            this.label19.Text = "Hollow area outline:";
+            // 
+            // btnResinTrapColor
+            // 
+            this.btnResinTrapColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnResinTrapColor.BackColor = System.Drawing.Color.White;
+            this.btnResinTrapColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnResinTrapColor.FlatAppearance.BorderSize = 2;
+            this.btnResinTrapColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnResinTrapColor.Location = new System.Drawing.Point(544, 187);
+            this.btnResinTrapColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnResinTrapColor.Name = "btnResinTrapColor";
+            this.btnResinTrapColor.Size = new System.Drawing.Size(24, 24);
+            this.btnResinTrapColor.TabIndex = 55;
+            this.toolTip.SetToolTip(this.btnResinTrapColor, "Resin Traps on the layer that are not currently selected.");
+            this.btnResinTrapColor.UseVisualStyleBackColor = false;
+            this.btnResinTrapColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnResinTrapHLColor
+            // 
+            this.btnResinTrapHLColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnResinTrapHLColor.BackColor = System.Drawing.Color.White;
+            this.btnResinTrapHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnResinTrapHLColor.FlatAppearance.BorderSize = 2;
+            this.btnResinTrapHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnResinTrapHLColor.Location = new System.Drawing.Point(575, 187);
+            this.btnResinTrapHLColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnResinTrapHLColor.Name = "btnResinTrapHLColor";
+            this.btnResinTrapHLColor.Size = new System.Drawing.Size(24, 24);
+            this.btnResinTrapHLColor.TabIndex = 56;
+            this.toolTip.SetToolTip(this.btnResinTrapHLColor, "Resin Traps on the layer that are currently selected in the issue list.");
+            this.btnResinTrapHLColor.UseVisualStyleBackColor = false;
+            this.btnResinTrapHLColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnOutlineHollowAreasColor
+            // 
+            this.btnOutlineHollowAreasColor.BackColor = System.Drawing.Color.White;
+            this.btnOutlineHollowAreasColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnOutlineHollowAreasColor.FlatAppearance.BorderSize = 2;
+            this.btnOutlineHollowAreasColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnOutlineHollowAreasColor.Location = new System.Drawing.Point(209, 120);
+            this.btnOutlineHollowAreasColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnOutlineHollowAreasColor.Name = "btnOutlineHollowAreasColor";
+            this.btnOutlineHollowAreasColor.Size = new System.Drawing.Size(24, 24);
+            this.btnOutlineHollowAreasColor.TabIndex = 43;
+            this.toolTip.SetToolTip(this.btnOutlineHollowAreasColor, "Color used to outline (or fill) hollow areas on the layer.");
+            this.btnOutlineHollowAreasColor.UseVisualStyleBackColor = false;
+            this.btnOutlineHollowAreasColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnNextLayerColor
+            // 
+            this.btnNextLayerColor.BackColor = System.Drawing.Color.White;
+            this.btnNextLayerColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnNextLayerColor.FlatAppearance.BorderSize = 2;
+            this.btnNextLayerColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnNextLayerColor.Location = new System.Drawing.Point(209, 183);
+            this.btnNextLayerColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnNextLayerColor.Name = "btnNextLayerColor";
+            this.btnNextLayerColor.Size = new System.Drawing.Size(24, 24);
+            this.btnNextLayerColor.TabIndex = 50;
+            this.toolTip.SetToolTip(this.btnNextLayerColor, "Pixels present on the next layer, but not on the current layer.  Represens where " +
+        "the next layer will grow.");
+            this.btnNextLayerColor.UseVisualStyleBackColor = false;
+            this.btnNextLayerColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnOutlinePrintVolumeBoundsColor
+            // 
+            this.btnOutlinePrintVolumeBoundsColor.BackColor = System.Drawing.Color.White;
+            this.btnOutlinePrintVolumeBoundsColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnOutlinePrintVolumeBoundsColor.FlatAppearance.BorderSize = 2;
+            this.btnOutlinePrintVolumeBoundsColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnOutlinePrintVolumeBoundsColor.Location = new System.Drawing.Point(209, 56);
+            this.btnOutlinePrintVolumeBoundsColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnOutlinePrintVolumeBoundsColor.Name = "btnOutlinePrintVolumeBoundsColor";
+            this.btnOutlinePrintVolumeBoundsColor.Size = new System.Drawing.Size(24, 24);
+            this.btnOutlinePrintVolumeBoundsColor.TabIndex = 35;
+            this.toolTip.SetToolTip(this.btnOutlinePrintVolumeBoundsColor, "Color used to draw the bounding rectangle around the print volume.");
+            this.btnOutlinePrintVolumeBoundsColor.UseVisualStyleBackColor = false;
+            this.btnOutlinePrintVolumeBoundsColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // cbOutlineLayerBounds
+            // 
+            this.cbOutlineLayerBounds.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbOutlineLayerBounds.AutoSize = true;
+            this.cbOutlineLayerBounds.Location = new System.Drawing.Point(430, 89);
+            this.cbOutlineLayerBounds.Name = "cbOutlineLayerBounds";
+            this.cbOutlineLayerBounds.Size = new System.Drawing.Size(131, 22);
+            this.cbOutlineLayerBounds.TabIndex = 42;
+            this.cbOutlineLayerBounds.Text = "Show by default";
+            this.toolTip.SetToolTip(this.cbOutlineLayerBounds, "Determines the default state of the \'Layer Boundary\' toolstrip setting.");
+            this.cbOutlineLayerBounds.UseVisualStyleBackColor = true;
+            // 
+            // label6
+            // 
+            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(398, 221);
+            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(138, 18);
+            this.label6.TabIndex = 49;
+            this.label6.Text = "Touching boundary:";
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(11, 59);
+            this.label14.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(159, 18);
+            this.label14.TabIndex = 58;
+            this.label14.Text = "Print volume boundary:";
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(313, 91);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(102, 18);
+            this.label16.TabIndex = 62;
+            this.label16.Text = "Line thickness";
+            // 
+            // label4
+            // 
+            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(375, 158);
+            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(161, 18);
+            this.label4.TabIndex = 44;
+            this.label4.Text = "Island / Selected Island:";
+            // 
+            // nmOutlineLayerBoundsLineThickness
+            // 
+            this.nmOutlineLayerBoundsLineThickness.Location = new System.Drawing.Point(243, 88);
+            this.nmOutlineLayerBoundsLineThickness.Maximum = new decimal(new int[] {
+            50,
+            0,
+            0,
+            0});
+            this.nmOutlineLayerBoundsLineThickness.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.nmOutlineLayerBoundsLineThickness.Name = "nmOutlineLayerBoundsLineThickness";
+            this.nmOutlineLayerBoundsLineThickness.Size = new System.Drawing.Size(63, 24);
+            this.nmOutlineLayerBoundsLineThickness.TabIndex = 41;
+            this.toolTip.SetToolTip(this.nmOutlineLayerBoundsLineThickness, "Range 1 to 50");
+            this.nmOutlineLayerBoundsLineThickness.Value = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            // 
+            // label5
+            // 
+            this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(323, 190);
+            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(213, 18);
+            this.label5.TabIndex = 47;
+            this.label5.Text = "Resin trap / Selected resin trap:";
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(313, 59);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(102, 18);
+            this.label15.TabIndex = 60;
+            this.label15.Text = "Line thickness";
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(11, 91);
+            this.label17.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(113, 18);
+            this.label17.TabIndex = 61;
+            this.label17.Text = "Layer boundary:";
+            // 
+            // btnTouchingBoundsColor
+            // 
+            this.btnTouchingBoundsColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnTouchingBoundsColor.BackColor = System.Drawing.Color.White;
+            this.btnTouchingBoundsColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnTouchingBoundsColor.FlatAppearance.BorderSize = 2;
+            this.btnTouchingBoundsColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnTouchingBoundsColor.Location = new System.Drawing.Point(544, 219);
+            this.btnTouchingBoundsColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnTouchingBoundsColor.Name = "btnTouchingBoundsColor";
+            this.btnTouchingBoundsColor.Size = new System.Drawing.Size(24, 24);
+            this.btnTouchingBoundsColor.TabIndex = 57;
+            this.toolTip.SetToolTip(this.btnTouchingBoundsColor, "Pixels that are touching the plate boundary.");
+            this.btnTouchingBoundsColor.UseVisualStyleBackColor = false;
+            this.btnTouchingBoundsColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // cbOutlinePrintVolumeBounds
+            // 
+            this.cbOutlinePrintVolumeBounds.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbOutlinePrintVolumeBounds.AutoSize = true;
+            this.cbOutlinePrintVolumeBounds.Location = new System.Drawing.Point(430, 57);
+            this.cbOutlinePrintVolumeBounds.Name = "cbOutlinePrintVolumeBounds";
+            this.cbOutlinePrintVolumeBounds.Size = new System.Drawing.Size(131, 22);
+            this.cbOutlinePrintVolumeBounds.TabIndex = 38;
+            this.cbOutlinePrintVolumeBounds.Text = "Show by default";
+            this.toolTip.SetToolTip(this.cbOutlinePrintVolumeBounds, "Determines the default state of the \'Print Volume Boundary\' toolstrip setting.");
+            this.cbOutlinePrintVolumeBounds.UseVisualStyleBackColor = true;
+            // 
+            // btnOutlineLayerBoundsColor
+            // 
+            this.btnOutlineLayerBoundsColor.BackColor = System.Drawing.Color.White;
+            this.btnOutlineLayerBoundsColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnOutlineLayerBoundsColor.FlatAppearance.BorderSize = 2;
+            this.btnOutlineLayerBoundsColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnOutlineLayerBoundsColor.Location = new System.Drawing.Point(209, 88);
+            this.btnOutlineLayerBoundsColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnOutlineLayerBoundsColor.Name = "btnOutlineLayerBoundsColor";
+            this.btnOutlineLayerBoundsColor.Size = new System.Drawing.Size(24, 24);
+            this.btnOutlineLayerBoundsColor.TabIndex = 40;
+            this.toolTip.SetToolTip(this.btnOutlineLayerBoundsColor, "Color used to draw the bounding rectangle around the layer.");
+            this.btnOutlineLayerBoundsColor.UseVisualStyleBackColor = false;
+            this.btnOutlineLayerBoundsColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // label37
+            // 
+            this.label37.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label37.AutoSize = true;
+            this.label37.Location = new System.Drawing.Point(459, 254);
+            this.label37.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label37.Name = "label37";
+            this.label37.Size = new System.Drawing.Size(77, 18);
+            this.label37.TabIndex = 51;
+            this.label37.Text = "Crosshair:";
+            // 
+            // nmOutlinePrintVolumeBoundsLineThickness
+            // 
+            this.nmOutlinePrintVolumeBoundsLineThickness.Location = new System.Drawing.Point(243, 56);
+            this.nmOutlinePrintVolumeBoundsLineThickness.Maximum = new decimal(new int[] {
+            50,
+            0,
+            0,
+            0});
+            this.nmOutlinePrintVolumeBoundsLineThickness.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.nmOutlinePrintVolumeBoundsLineThickness.Name = "nmOutlinePrintVolumeBoundsLineThickness";
+            this.nmOutlinePrintVolumeBoundsLineThickness.Size = new System.Drawing.Size(63, 24);
+            this.nmOutlinePrintVolumeBoundsLineThickness.TabIndex = 36;
+            this.toolTip.SetToolTip(this.nmOutlinePrintVolumeBoundsLineThickness, "Range 1 to 50");
+            this.nmOutlinePrintVolumeBoundsLineThickness.Value = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            // 
+            // btnCrosshairColor
+            // 
+            this.btnCrosshairColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCrosshairColor.BackColor = System.Drawing.Color.White;
+            this.btnCrosshairColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnCrosshairColor.FlatAppearance.BorderSize = 2;
+            this.btnCrosshairColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnCrosshairColor.Location = new System.Drawing.Point(544, 251);
+            this.btnCrosshairColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnCrosshairColor.Name = "btnCrosshairColor";
+            this.btnCrosshairColor.Size = new System.Drawing.Size(24, 24);
+            this.btnCrosshairColor.TabIndex = 33;
+            this.toolTip.SetToolTip(this.btnCrosshairColor, "Pixels that are touching the plate boundary.");
+            this.btnCrosshairColor.UseVisualStyleBackColor = false;
+            this.btnCrosshairColor.Click += new System.EventHandler(this.EventClick);
             // 
             // tabPage3
             // 
@@ -1705,7 +1778,7 @@
             this.tabPage3.Location = new System.Drawing.Point(4, 27);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(616, 630);
+            this.tabPage3.Size = new System.Drawing.Size(616, 638);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Issues";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -1718,7 +1791,7 @@
             this.tabPage4.Location = new System.Drawing.Point(4, 27);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(616, 630);
+            this.tabPage4.Size = new System.Drawing.Size(616, 638);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Pixel Editor";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -1943,7 +2016,7 @@
             this.tabPage5.Location = new System.Drawing.Point(4, 27);
             this.tabPage5.Name = "tabPage5";
             this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(616, 630);
+            this.tabPage5.Size = new System.Drawing.Size(616, 638);
             this.tabPage5.TabIndex = 4;
             this.tabPage5.Text = "Layer Repair";
             this.tabPage5.UseVisualStyleBackColor = true;
@@ -2062,16 +2135,17 @@
             this.cbLayerRepairLayersIslands.Text = "Attempt to repair islands by default";
             this.cbLayerRepairLayersIslands.UseVisualStyleBackColor = true;
             // 
-            // panel1
+            // pnActions
             // 
-            this.panel1.Controls.Add(this.btnCancel);
-            this.panel1.Controls.Add(this.btnSave);
-            this.panel1.Controls.Add(this.btnReset);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 584);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(624, 77);
-            this.panel1.TabIndex = 19;
+            this.pnActions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnActions.Controls.Add(this.btnCancel);
+            this.pnActions.Controls.Add(this.btnSave);
+            this.pnActions.Controls.Add(this.btnReset);
+            this.pnActions.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.pnActions.Location = new System.Drawing.Point(0, 592);
+            this.pnActions.Name = "pnActions";
+            this.pnActions.Size = new System.Drawing.Size(624, 77);
+            this.pnActions.TabIndex = 19;
             // 
             // toolTip
             // 
@@ -2085,8 +2159,8 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(624, 661);
-            this.Controls.Add(this.panel1);
+            this.ClientSize = new System.Drawing.Size(624, 669);
+            this.Controls.Add(this.pnActions);
             this.Controls.Add(this.tabSettings);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -2120,19 +2194,20 @@
             this.groupBox5.ResumeLayout(false);
             this.groupBox5.PerformLayout();
             this.tabPage2.ResumeLayout(false);
-            this.groupBox6.ResumeLayout(false);
-            this.groupBox6.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nmOutlineHollowAreasLineThickness)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nmOutlineLayerBoundsLineThickness)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nmOutlinePrintVolumeBoundsLineThickness)).EndInit();
-            this.groupBox7.ResumeLayout(false);
-            this.groupBox7.PerformLayout();
+            this.groupBox9.ResumeLayout(false);
+            this.groupBox9.PerformLayout();
             this.groupBox8.ResumeLayout(false);
             this.groupBox8.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmCrosshairLineLength)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmCrosshairLineMargin)).EndInit();
-            this.groupBox9.ResumeLayout(false);
-            this.groupBox9.PerformLayout();
+            this.groupBox7.ResumeLayout(false);
+            this.groupBox7.PerformLayout();
+            this.groupBox6.ResumeLayout(false);
+            this.groupBox6.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmLayerTooltipOverlayOpacity)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmOutlineHollowAreasLineThickness)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmOutlineLayerBoundsLineThickness)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmOutlinePrintVolumeBoundsLineThickness)).EndInit();
             this.tabPage3.ResumeLayout(false);
             this.tabPage4.ResumeLayout(false);
             this.tabPage4.PerformLayout();
@@ -2143,7 +2218,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairRemoveIslandsBelowEqualPixelsDefault)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultOpeningIterations)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultClosingIterations)).EndInit();
-            this.panel1.ResumeLayout(false);
+            this.pnActions.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -2183,7 +2258,7 @@
         private System.Windows.Forms.TabControl tabSettings;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel pnActions;
         private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.TabPage tabPage4;
         private System.Windows.Forms.GroupBox groupBox4;
@@ -2293,6 +2368,10 @@
         private System.Windows.Forms.Button btnPixelEditorAddPixelColor;
         private System.Windows.Forms.Button btnPixelEditorAddPixelHLColor;
         private System.Windows.Forms.CheckBox cbCloseEditOnApply;
-        private System.Windows.Forms.CheckBox cbShowLayerTooltipsOverlay;
+        private System.Windows.Forms.CheckBox cbLayerTooltipOverlay;
+        private System.Windows.Forms.Button btnLayerTooltipOverlayColor;
+        private System.Windows.Forms.Label label45;
+        private System.Windows.Forms.Label label46;
+        private System.Windows.Forms.NumericUpDown nmLayerTooltipOverlayOpacity;
     }
 }

@@ -171,6 +171,9 @@ namespace UVtools.GUI
             btnLayerImageLayerOutlinePrintVolumeBounds.Checked = Settings.Default.OutlinePrintVolumeBounds;
             btnLayerImageLayerOutlineLayerBounds.Checked = Settings.Default.OutlineLayerBounds;
             btnLayerImageLayerOutlineHollowAreas.Checked = Settings.Default.OutlineHollowAreas;
+            lbLayerImageTooltipOverlay.TransparentBackColor = Settings.Default.LayerTooltipOverlayColor;
+            lbLayerImageTooltipOverlay.Opacity = Settings.Default.LayerTooltipOverlayOpacity;
+
 
             // Initialize pbLayer zoom levels to use the discrete factors from ZoomLevels
             pbLayer.ZoomLevels = new ZoomLevelCollection(ZoomLevels);
@@ -1669,7 +1672,7 @@ namespace UVtools.GUI
             pbThumbnail.Image = null;
             pbLayer.Image = null;
             pbLayer.SelectNone();
-            lbLayerImageOverlay.Visible = false;
+            lbLayerImageTooltipOverlay.Visible = false;
             pbThumbnail.Image = null;
             tbGCode.Clear();
             tabPageIssues.Tag = null;
@@ -2814,21 +2817,21 @@ namespace UVtools.GUI
                         {
                             pbLayer.Cursor = pixelEditCursor;
                             pbLayer.PanMode = ImageBoxPanMode.None;
-                            lbLayerImageOverlay.Text = "Pixel editing is on:\n" +
+                            lbLayerImageTooltipOverlay.Text = "Pixel editing is on:\n" +
                                                        "» Click over a pixel to draw";
                         }
                         else
                         {
                             pbLayer.Cursor = Cursors.Cross;
                             pbLayer.SelectionMode = ImageBoxSelectionMode.Rectangle;
-                            lbLayerImageOverlay.Text = "ROI selection mode:\n" +
+                            lbLayerImageTooltipOverlay.Text = "ROI selection mode:\n" +
                                                        "» Left-click drag to select a fixed region\n" +
                                                        "» Left-click + ALT drag to select specific objects\n" +
                                                        "» Right click on a specific object to select it\n" +
                                                        "Press Esc to clear the ROI";
                         }
 
-                        lbLayerImageOverlay.Visible = Settings.Default.ShowLayerTooltipsOverlay;
+                        lbLayerImageTooltipOverlay.Visible = Settings.Default.LayerTooltipOverlay;
 
                         return;
                     }
@@ -2836,10 +2839,10 @@ namespace UVtools.GUI
                     {
                         pbLayer.Cursor = Cursors.Hand;
                         pbLayer.PanMode = ImageBoxPanMode.None;
-                        lbLayerImageOverlay.Text = "Issue selection mode:\n" +
+                        lbLayerImageTooltipOverlay.Text = "Issue selection mode:\n" +
                                                    "» Click over an issue to select it";
 
-                        lbLayerImageOverlay.Visible = Settings.Default.ShowLayerTooltipsOverlay;
+                        lbLayerImageTooltipOverlay.Visible = Settings.Default.LayerTooltipOverlay;
 
                         return;
                     }
@@ -2861,7 +2864,7 @@ namespace UVtools.GUI
                     pbLayer.Cursor = Cursors.Default;
                     pbLayer.PanMode = ImageBoxPanMode.Left;
                     pbLayer.SelectionMode = ImageBoxSelectionMode.None;
-                    lbLayerImageOverlay.Visible = false;
+                    lbLayerImageTooltipOverlay.Visible = false;
                     //if (!ReferenceEquals(SlicerFile, null)) ShowLayer(); // Not needed?
                     e.Handled = true;
                 }

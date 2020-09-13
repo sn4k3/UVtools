@@ -63,7 +63,7 @@ namespace UVtools.Core.FileFormats
             public static PrintParameterModifier LayerOffTime { get; } = new PrintParameterModifier("Layer off seconds", null, "s");
             public static PrintParameterModifier BottomLiftHeight { get; } = new PrintParameterModifier("Bottom lift height", @"Modify 'Bottom lift height' millimeters between bottom layers", "mm", 1);
             public static PrintParameterModifier LiftHeight { get; } = new PrintParameterModifier("Lift height", @"Modify 'Lift height' millimeters between layers", "mm", 1);
-            public static PrintParameterModifier BottomLiftSpeed { get; } = new PrintParameterModifier("Bottom Lift Speed", @"Modify 'Bottom lift Speed' mm/min between bottom layers", "mm/min", 10);
+            public static PrintParameterModifier BottomLiftSpeed { get; } = new PrintParameterModifier("Bottom lift Speed", @"Modify 'Bottom lift Speed' mm/min between bottom layers", "mm/min", 10);
             public static PrintParameterModifier LiftSpeed { get; } = new PrintParameterModifier("Lift speed", @"Modify 'Lift speed' mm/min between layers", "mm/min", 10, 5000, 2);
             public static PrintParameterModifier RetractSpeed { get; } = new PrintParameterModifier("Retract speed", @"Modify 'Retract speed' mm/min between layer", "mm/min", 10, 5000, 2);
 

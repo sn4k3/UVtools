@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 using UVtools.Core.FileFormats;
@@ -25,7 +26,7 @@ namespace UVtools.GUI.Forms
             // Derive strings for the zoom lock and crosshair fade combo-boxes from the
             // ZoomLevels constant array, and add those strings to the comboboxes.
             var zoomRange = FrmMain.ZoomLevels.Skip(FrmMain.ZoomLevelSkipCount).Select(
-            s => Convert.ToString((double)s / 100) + "x").ToArray();
+            s => Convert.ToString((double)s / 100, CultureInfo.InvariantCulture) + "x").ToArray();
             cbZoomLockLevel.Items.AddRange(zoomRange);
             cbCrosshairFadeLevel.Items.AddRange(zoomRange);
 
@@ -49,6 +50,11 @@ namespace UVtools.GUI.Forms
                 tbFileSaveNameSuffix.Text = Settings.Default.FileSaveNameSuffix;
 
                 // Layer Preview
+                btnLayerTooltipOverlayColor.BackColor = Settings.Default.LayerTooltipOverlayColor;
+                nmLayerTooltipOverlayOpacity.Value = Settings.Default.LayerTooltipOverlayOpacity;
+                cbLayerTooltipOverlay.Checked = Settings.Default.LayerTooltipOverlay;
+
+
                 btnPreviousNextLayerColor.BackColor = Settings.Default.PreviousNextLayerColor;
                 btnPreviousLayerColor.BackColor = Settings.Default.PreviousLayerColor;
                 btnNextLayerColor.BackColor = Settings.Default.NextLayerColor;
@@ -74,7 +80,6 @@ namespace UVtools.GUI.Forms
 
                 cbLayerAutoRotateBestView.Checked = Settings.Default.LayerAutoRotateBestView;
                 cbLayerZoomToFit.Checked = Settings.Default.LayerZoomToFit;
-                cbShowLayerTooltipsOverlay.Checked = Settings.Default.ShowLayerTooltipsOverlay;
 
                 cbZoomToFit.SelectedIndex = Settings.Default.ZoomToFitPrintVolumeBounds == true ? 0 : 1;
                 cbZoomIssues.Checked = Settings.Default.ZoomIssues;
@@ -147,6 +152,7 @@ namespace UVtools.GUI.Forms
                 ReferenceEquals(sender, btnResinTrapHLColor) ||
                 ReferenceEquals(sender, btnTouchingBoundsColor) ||
                 ReferenceEquals(sender, btnCrosshairColor) ||
+                ReferenceEquals(sender, btnLayerTooltipOverlayColor) ||
                 ReferenceEquals(sender, btnOutlinePrintVolumeBoundsColor) ||
                 ReferenceEquals(sender, btnOutlineLayerBoundsColor) ||
                 ReferenceEquals(sender, btnOutlineHollowAreasColor) ||
@@ -233,6 +239,10 @@ namespace UVtools.GUI.Forms
                 Settings.Default.FileSaveNameSuffix = tbFileSaveNameSuffix.Text.Trim();
 
                 // Layer Preview
+                Program.FrmMain.lbLayerImageTooltipOverlay.TransparentBackColor = Settings.Default.LayerTooltipOverlayColor = btnLayerTooltipOverlayColor.BackColor;
+                Program.FrmMain.lbLayerImageTooltipOverlay.Opacity = Settings.Default.LayerTooltipOverlayOpacity = (byte) nmLayerTooltipOverlayOpacity.Value;
+                Settings.Default.LayerTooltipOverlay = cbLayerTooltipOverlay.Checked;
+
                 Settings.Default.PreviousNextLayerColor = btnPreviousNextLayerColor.BackColor;
                 Settings.Default.PreviousLayerColor = btnPreviousLayerColor.BackColor;
                 Settings.Default.NextLayerColor = btnNextLayerColor.BackColor;
@@ -257,8 +267,7 @@ namespace UVtools.GUI.Forms
 
                 Settings.Default.LayerAutoRotateBestView = cbLayerAutoRotateBestView.Checked;
                 Settings.Default.LayerZoomToFit = cbLayerZoomToFit.Checked;
-                Settings.Default.ShowLayerTooltipsOverlay = cbShowLayerTooltipsOverlay.Checked;
-                Settings.Default.ZoomToFitPrintVolumeBounds = cbZoomToFit.SelectedIndex == 0 ? true : false;
+                Settings.Default.ZoomToFitPrintVolumeBounds = cbZoomToFit.SelectedIndex == 0;
                 Settings.Default.ZoomIssues = cbZoomIssues.Checked;
                 Settings.Default.ZoomLockLevel = (byte)cbZoomLockLevel.SelectedIndex;
                 Settings.Default.LayerDifferenceDefault = cbLayerDifferenceDefault.Checked;
