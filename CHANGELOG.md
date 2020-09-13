@@ -4,6 +4,7 @@
 
 * (Add) Layer status bar: Button with ROI - Click to zoom in region | Click + shift to clear roi
 * (Add) Setting: Allow the layer overlay tooltips for select issues, ROI, and edit pixel mode to be hidden (#51)
+* (Add) Setting: Allow change layer tooltip overlay color and opacity
 * (Add) Global print properties on formats for more internal abstraction
 * (Improvement) Print properties performance internal code with abstraction
 * (Change) Layer status bar: Bounds text to button - Click to zoom in region

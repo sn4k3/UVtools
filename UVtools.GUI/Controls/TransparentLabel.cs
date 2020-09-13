@@ -21,7 +21,7 @@ namespace UVtools.GUI.Controls
         public TransparentLabel()
         {
             transparentBackColor = Color.Blue;
-            opacity = 50;
+            _opacity = 50;
             BackColor = Color.Transparent;
             DoubleBuffered = true;
         }
@@ -54,14 +54,13 @@ namespace UVtools.GUI.Controls
             }
         }
 
-        private int opacity;
-        public int Opacity
+        private byte _opacity;
+        public byte Opacity
         {
-            get => opacity;
+            get => _opacity;
             set
             {
-                if (value >= 0 && value <= 255)
-                    opacity = value;
+                _opacity = value;
                 Invalidate();
             }
         }

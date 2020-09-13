@@ -61,6 +61,7 @@ namespace UVtools.GUI
             this.statusBar = new System.Windows.Forms.StatusStrip();
             this.mainTable = new System.Windows.Forms.TableLayoutPanel();
             this.scCenter = new System.Windows.Forms.SplitContainer();
+            this.lbLayerImageTooltipOverlay = new UVtools.GUI.Controls.TransparentLabel();
             this.pbLayer = new Cyotek.Windows.Forms.ImageBox();
             this.tsLayer = new System.Windows.Forms.ToolStrip();
             this.btnLayerImageExport = new System.Windows.Forms.ToolStripSplitButton();
@@ -248,6 +249,7 @@ namespace UVtools.GUI
             this.panelLayerNavigation = new System.Windows.Forms.Panel();
             this.pbTrackerIssues = new System.Windows.Forms.PictureBox();
             this.lbActualLayer = new System.Windows.Forms.Label();
+            this.tbLayer = new UVtools.GUI.Controls.TrackBarEx();
             this.lbInitialLayer = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
             this.btnFindLayer = new System.Windows.Forms.Button();
@@ -258,8 +260,6 @@ namespace UVtools.GUI
             this.toolTipInformation = new System.Windows.Forms.ToolTip(this.components);
             this.layerScrollTimer = new System.Windows.Forms.Timer(this.components);
             this.mouseHoldTimer = new System.Windows.Forms.Timer(this.components);
-            this.lbLayerImageOverlay = new UVtools.GUI.Controls.TransparentLabel();
-            this.tbLayer = new UVtools.GUI.Controls.TrackBarEx();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).BeginInit();
@@ -318,8 +318,8 @@ namespace UVtools.GUI
             this.tlRight.SuspendLayout();
             this.panelLayerNavigation.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbTrackerIssues)).BeginInit();
-            this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).BeginInit();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // menu
@@ -596,7 +596,7 @@ namespace UVtools.GUI
             // 
             // scCenter.Panel1
             // 
-            this.scCenter.Panel1.Controls.Add(this.lbLayerImageOverlay);
+            this.scCenter.Panel1.Controls.Add(this.lbLayerImageTooltipOverlay);
             this.scCenter.Panel1.Controls.Add(this.pbLayer);
             this.scCenter.Panel1.Controls.Add(this.tsLayer);
             // 
@@ -607,6 +607,23 @@ namespace UVtools.GUI
             this.scCenter.Size = new System.Drawing.Size(1176, 759);
             this.scCenter.SplitterDistance = 730;
             this.scCenter.TabIndex = 4;
+            // 
+            // lbLayerImageOverlay
+            // 
+            this.lbLayerImageTooltipOverlay.AutoSize = true;
+            this.lbLayerImageTooltipOverlay.BackColor = System.Drawing.Color.Transparent;
+            this.lbLayerImageTooltipOverlay.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lbLayerImageTooltipOverlay.CausesValidation = false;
+            this.lbLayerImageTooltipOverlay.Location = new System.Drawing.Point(13, 37);
+            this.lbLayerImageTooltipOverlay.Name = "lbLayerImageTooltipOverlay";
+            this.lbLayerImageTooltipOverlay.Opacity = 210;
+            this.lbLayerImageTooltipOverlay.Padding = new System.Windows.Forms.Padding(10);
+            this.lbLayerImageTooltipOverlay.Size = new System.Drawing.Size(80, 40);
+            this.lbLayerImageTooltipOverlay.TabIndex = 8;
+            this.lbLayerImageTooltipOverlay.Text = "Overlay";
+            this.lbLayerImageTooltipOverlay.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lbLayerImageTooltipOverlay.TransparentBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.lbLayerImageTooltipOverlay.Visible = false;
             // 
             // pbLayer
             // 
@@ -2753,6 +2770,18 @@ namespace UVtools.GUI
             this.lbActualLayer.TabIndex = 9;
             this.lbActualLayer.Text = "?";
             // 
+            // tbLayer
+            // 
+            this.tbLayer.Dock = System.Windows.Forms.DockStyle.Right;
+            this.tbLayer.Location = new System.Drawing.Point(93, 0);
+            this.tbLayer.Margin = new System.Windows.Forms.Padding(0);
+            this.tbLayer.Name = "tbLayer";
+            this.tbLayer.Orientation = System.Windows.Forms.Orientation.Vertical;
+            this.tbLayer.Size = new System.Drawing.Size(45, 557);
+            this.tbLayer.TabIndex = 8;
+            this.tbLayer.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
+            this.tbLayer.ValueChanged += new System.EventHandler(this.ValueChanged);
+            // 
             // lbInitialLayer
             // 
             this.lbInitialLayer.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -2842,35 +2871,6 @@ namespace UVtools.GUI
             // 
             this.mouseHoldTimer.Interval = 1000;
             this.mouseHoldTimer.Tick += new System.EventHandler(this.EventTimerTick);
-            // 
-            // lbLayerImageOverlay
-            // 
-            this.lbLayerImageOverlay.AutoSize = true;
-            this.lbLayerImageOverlay.BackColor = System.Drawing.Color.Transparent;
-            this.lbLayerImageOverlay.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lbLayerImageOverlay.CausesValidation = false;
-            this.lbLayerImageOverlay.Location = new System.Drawing.Point(13, 37);
-            this.lbLayerImageOverlay.Name = "lbLayerImageOverlay";
-            this.lbLayerImageOverlay.Opacity = 210;
-            this.lbLayerImageOverlay.Padding = new System.Windows.Forms.Padding(10);
-            this.lbLayerImageOverlay.Size = new System.Drawing.Size(80, 40);
-            this.lbLayerImageOverlay.TabIndex = 8;
-            this.lbLayerImageOverlay.Text = "Overlay";
-            this.lbLayerImageOverlay.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.lbLayerImageOverlay.TransparentBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
-            this.lbLayerImageOverlay.Visible = false;
-            // 
-            // tbLayer
-            // 
-            this.tbLayer.Dock = System.Windows.Forms.DockStyle.Right;
-            this.tbLayer.Location = new System.Drawing.Point(93, 0);
-            this.tbLayer.Margin = new System.Windows.Forms.Padding(0);
-            this.tbLayer.Name = "tbLayer";
-            this.tbLayer.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.tbLayer.Size = new System.Drawing.Size(45, 557);
-            this.tbLayer.TabIndex = 8;
-            this.tbLayer.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
-            this.tbLayer.ValueChanged += new System.EventHandler(this.ValueChanged);
             // 
             // FrmMain
             // 
@@ -2978,8 +2978,8 @@ namespace UVtools.GUI
             this.panelLayerNavigation.ResumeLayout(false);
             this.panelLayerNavigation.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbTrackerIssues)).EndInit();
-            this.panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).EndInit();
+            this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -3208,13 +3208,13 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStripSplitButton btnLayerImageActions;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator26;
         private System.Windows.Forms.ToolStripButton btnLogVerbose;
-        private TransparentLabel lbLayerImageOverlay;
         public Cyotek.Windows.Forms.ImageBox pbLayer;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator27;
         private System.Windows.Forms.ToolStripButton btnLayerROI;
         private System.Windows.Forms.ToolStripButton btnLayerBounds;
         private System.Windows.Forms.ToolStripButton btnLayerMouseLocation;
         private System.Windows.Forms.ToolStripButton btnLayerResolution;
+        public TransparentLabel lbLayerImageTooltipOverlay;
     }
 }
 
