@@ -345,6 +345,7 @@
             this.nmResinTrapBinaryThreshold.Name = "nmResinTrapBinaryThreshold";
             this.nmResinTrapBinaryThreshold.Size = new System.Drawing.Size(57, 24);
             this.nmResinTrapBinaryThreshold.TabIndex = 26;
+            this.toolTip.SetToolTip(this.nmResinTrapBinaryThreshold, "Range 1-255, 0 to disable");
             this.nmResinTrapBinaryThreshold.Value = new decimal(new int[] {
             1,
             0,
@@ -356,10 +357,12 @@
             this.label20.AutoSize = true;
             this.label20.Location = new System.Drawing.Point(73, 26);
             this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(512, 18);
+            this.label20.Size = new System.Drawing.Size(312, 18);
             this.label20.TabIndex = 27;
-            this.label20.Text = "Pixels below this value will turn black, otherwise white. Value=0 to disable this" +
-    "";
+            this.label20.Text = "Pixel intensity threshold for resin trap detection";
+            this.toolTip.SetToolTip(this.label20, "Pixels below this threshold will be considered black during resin trap detection." +
+        "  \r\nPixels equal to or above this theshold will be considred white during resin " +
+        "trap detection.\r\n0 to disable");
             // 
             // nmResinTrapMaximumPixelBrightnessToDrain
             // 
@@ -372,6 +375,7 @@
             this.nmResinTrapMaximumPixelBrightnessToDrain.Name = "nmResinTrapMaximumPixelBrightnessToDrain";
             this.nmResinTrapMaximumPixelBrightnessToDrain.Size = new System.Drawing.Size(57, 24);
             this.nmResinTrapMaximumPixelBrightnessToDrain.TabIndex = 24;
+            this.toolTip.SetToolTip(this.nmResinTrapMaximumPixelBrightnessToDrain, "Range 0-150");
             this.nmResinTrapMaximumPixelBrightnessToDrain.Value = new decimal(new int[] {
             1,
             0,
@@ -383,9 +387,11 @@
             this.label13.AutoSize = true;
             this.label13.Location = new System.Drawing.Point(73, 128);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(347, 18);
+            this.label13.Size = new System.Drawing.Size(425, 18);
             this.label13.TabIndex = 25;
-            this.label13.Text = "Maximum pixel brightness to be a drain pixel (0-150)";
+            this.label13.Text = "Maximum pixel intensity for a pixel to be considered a drain pixel";
+            this.toolTip.SetToolTip(this.label13, "Pixels below this intensity threshold will not be counted when evaluating if a po" +
+        "tential resin trap is sufficiently drained");
             // 
             // nmResinTrapRequiredBlackPixelsToDrain
             // 
@@ -403,6 +409,7 @@
             this.nmResinTrapRequiredBlackPixelsToDrain.Name = "nmResinTrapRequiredBlackPixelsToDrain";
             this.nmResinTrapRequiredBlackPixelsToDrain.Size = new System.Drawing.Size(57, 24);
             this.nmResinTrapRequiredBlackPixelsToDrain.TabIndex = 22;
+            this.toolTip.SetToolTip(this.nmResinTrapRequiredBlackPixelsToDrain, "Range 1-255");
             this.nmResinTrapRequiredBlackPixelsToDrain.Value = new decimal(new int[] {
             1,
             0,
@@ -414,9 +421,11 @@
             this.label12.AutoSize = true;
             this.label12.Location = new System.Drawing.Point(73, 94);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(441, 18);
+            this.label12.Size = new System.Drawing.Size(429, 18);
             this.label12.TabIndex = 23;
-            this.label12.Text = "Number of drain pixels required to promote area as a drain (1-255)";
+            this.label12.Text = "Number of drain pixels required to disqualify a potential resin trap";
+            this.toolTip.SetToolTip(this.label12, "The drain pixel area required to consider a potential resin trap sufficiently dra" +
+        "ined (no longer a resin trap)");
             // 
             // nmResinTrapRequiredAreaToProcessCheck
             // 
@@ -434,6 +443,7 @@
             this.nmResinTrapRequiredAreaToProcessCheck.Name = "nmResinTrapRequiredAreaToProcessCheck";
             this.nmResinTrapRequiredAreaToProcessCheck.Size = new System.Drawing.Size(57, 24);
             this.nmResinTrapRequiredAreaToProcessCheck.TabIndex = 20;
+            this.toolTip.SetToolTip(this.nmResinTrapRequiredAreaToProcessCheck, "Range 1-255");
             this.nmResinTrapRequiredAreaToProcessCheck.Value = new decimal(new int[] {
             1,
             0,
@@ -445,9 +455,11 @@
             this.label11.AutoSize = true;
             this.label11.Location = new System.Drawing.Point(73, 60);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(504, 18);
+            this.label11.Size = new System.Drawing.Size(530, 18);
             this.label11.TabIndex = 21;
-            this.label11.Text = "Required pixel bound area (x*y) to process and consider a resin trap (1-255)";
+            this.label11.Text = "Bounding area required for an object to be processed during resin trap detection";
+            this.toolTip.SetToolTip(this.label11, "Objects with bounding area smaller than this value will not be processed during r" +
+        "esin trip detection\r\n");
             // 
             // groupBox2
             // 
@@ -475,9 +487,9 @@
             this.cbIslandAllowDiagonalBonds.AutoSize = true;
             this.cbIslandAllowDiagonalBonds.Location = new System.Drawing.Point(10, 23);
             this.cbIslandAllowDiagonalBonds.Name = "cbIslandAllowDiagonalBonds";
-            this.cbIslandAllowDiagonalBonds.Size = new System.Drawing.Size(327, 22);
+            this.cbIslandAllowDiagonalBonds.Size = new System.Drawing.Size(316, 22);
             this.cbIslandAllowDiagonalBonds.TabIndex = 30;
-            this.cbIslandAllowDiagonalBonds.Text = "Allow Diagonal Bonds During Island Detection";
+            this.cbIslandAllowDiagonalBonds.Text = "Allow diagonal bonds during island detection";
             this.toolTip.SetToolTip(this.cbIslandAllowDiagonalBonds, resources.GetString("cbIslandAllowDiagonalBonds.ToolTip"));
             this.cbIslandAllowDiagonalBonds.UseVisualStyleBackColor = true;
             // 
@@ -492,25 +504,30 @@
             this.nmIslandBinaryThreshold.Name = "nmIslandBinaryThreshold";
             this.nmIslandBinaryThreshold.Size = new System.Drawing.Size(57, 24);
             this.nmIslandBinaryThreshold.TabIndex = 28;
+            this.toolTip.SetToolTip(this.nmIslandBinaryThreshold, "Range 1-255, 0 to disable");
             // 
             // label21
             // 
             this.label21.AutoSize = true;
             this.label21.Location = new System.Drawing.Point(73, 58);
             this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(512, 18);
+            this.label21.Size = new System.Drawing.Size(289, 18);
             this.label21.TabIndex = 29;
-            this.label21.Text = "Pixels below this value will turn black, otherwise white. Value=0 to disable this" +
-    "";
+            this.label21.Text = "Pixel intensity threshold for island detection";
+            this.toolTip.SetToolTip(this.label21, "Pixels below this threshold will be considered black during island detection.  \r\n" +
+        "Pixels equal to or above this theshold will be considred white during island det" +
+        "ection.\r\n0 to disable");
             // 
             // label10
             // 
             this.label10.AutoSize = true;
             this.label10.Location = new System.Drawing.Point(73, 194);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(507, 18);
+            this.label10.Size = new System.Drawing.Size(442, 18);
             this.label10.TabIndex = 25;
-            this.label10.Text = "Minimum pixel brightness bellow island to consider it as a safe pixel (50-255)";
+            this.label10.Text = "Minimum intensity of a supporting pixel before it is considered safe";
+            this.toolTip.SetToolTip(this.label10, "Pixels below this threshold will not be considered when counting supporting pixel" +
+        "s for an island");
             // 
             // nmIslandRequiredPixelBrightnessToSupport
             // 
@@ -528,6 +545,7 @@
             this.nmIslandRequiredPixelBrightnessToSupport.Name = "nmIslandRequiredPixelBrightnessToSupport";
             this.nmIslandRequiredPixelBrightnessToSupport.Size = new System.Drawing.Size(57, 24);
             this.nmIslandRequiredPixelBrightnessToSupport.TabIndex = 24;
+            this.toolTip.SetToolTip(this.nmIslandRequiredPixelBrightnessToSupport, "Range 50-255");
             this.nmIslandRequiredPixelBrightnessToSupport.Value = new decimal(new int[] {
             150,
             0,
@@ -539,9 +557,10 @@
             this.label9.AutoSize = true;
             this.label9.Location = new System.Drawing.Point(73, 160);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(385, 18);
+            this.label9.Size = new System.Drawing.Size(432, 18);
             this.label9.TabIndex = 23;
-            this.label9.Text = "Required safe pixels bellow the island to demote it (1-255)";
+            this.label9.Text = "Supporting safe pixels required to considerer an island supported\r\n";
+            this.toolTip.SetToolTip(this.label9, resources.GetString("label9.ToolTip"));
             // 
             // nmIslandRequiredPixelsToSupport
             // 
@@ -559,6 +578,7 @@
             this.nmIslandRequiredPixelsToSupport.Name = "nmIslandRequiredPixelsToSupport";
             this.nmIslandRequiredPixelsToSupport.Size = new System.Drawing.Size(57, 24);
             this.nmIslandRequiredPixelsToSupport.TabIndex = 22;
+            this.toolTip.SetToolTip(this.nmIslandRequiredPixelsToSupport, "Range 1-255");
             this.nmIslandRequiredPixelsToSupport.Value = new decimal(new int[] {
             1,
             0,
@@ -581,6 +601,7 @@
             this.nmIslandRequiredAreaToProcessCheck.Name = "nmIslandRequiredAreaToProcessCheck";
             this.nmIslandRequiredAreaToProcessCheck.Size = new System.Drawing.Size(57, 24);
             this.nmIslandRequiredAreaToProcessCheck.TabIndex = 18;
+            this.toolTip.SetToolTip(this.nmIslandRequiredAreaToProcessCheck, "Range 1-255");
             this.nmIslandRequiredAreaToProcessCheck.Value = new decimal(new int[] {
             1,
             0,
@@ -592,18 +613,22 @@
             this.label7.AutoSize = true;
             this.label7.Location = new System.Drawing.Point(73, 92);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(481, 18);
+            this.label7.Size = new System.Drawing.Size(422, 18);
             this.label7.TabIndex = 19;
-            this.label7.Text = "Required pixel bound area (x*y) to process and consider a island (1-255)";
+            this.label7.Text = "Bounding area required for an object to be considered an island";
+            this.toolTip.SetToolTip(this.label7, "Objects with bounding area smaller than this value will not be considered an isla" +
+        "nd even if unsupported");
             // 
             // label8
             // 
             this.label8.AutoSize = true;
             this.label8.Location = new System.Drawing.Point(73, 126);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(439, 18);
+            this.label8.Size = new System.Drawing.Size(390, 18);
             this.label8.TabIndex = 21;
-            this.label8.Text = "Minimum pixel brightness to consider that pixel on a island (1-255)";
+            this.label8.Text = "Minimum pixel intensity to consider a pixel part of an island";
+            this.toolTip.SetToolTip(this.label8, "Pixels with an intensity below this threshold will not be considerd as part of an" +
+        " island");
             // 
             // nmIslandRequiredPixelBrightnessToProcessCheck
             // 
@@ -621,6 +646,7 @@
             this.nmIslandRequiredPixelBrightnessToProcessCheck.Name = "nmIslandRequiredPixelBrightnessToProcessCheck";
             this.nmIslandRequiredPixelBrightnessToProcessCheck.Size = new System.Drawing.Size(57, 24);
             this.nmIslandRequiredPixelBrightnessToProcessCheck.TabIndex = 20;
+            this.toolTip.SetToolTip(this.nmIslandRequiredPixelBrightnessToProcessCheck, "Range 1-255");
             this.nmIslandRequiredPixelBrightnessToProcessCheck.Value = new decimal(new int[] {
             1,
             0,
@@ -678,9 +704,9 @@
             this.cbAutoComputeIssuesClickOnTab.AutoSize = true;
             this.cbAutoComputeIssuesClickOnTab.Location = new System.Drawing.Point(6, 51);
             this.cbAutoComputeIssuesClickOnTab.Name = "cbAutoComputeIssuesClickOnTab";
-            this.cbAutoComputeIssuesClickOnTab.Size = new System.Drawing.Size(416, 22);
+            this.cbAutoComputeIssuesClickOnTab.Size = new System.Drawing.Size(474, 22);
             this.cbAutoComputeIssuesClickOnTab.TabIndex = 18;
-            this.cbAutoComputeIssuesClickOnTab.Text = "Auto compute issues when click Issues tab for the first time";
+            this.cbAutoComputeIssuesClickOnTab.Text = "Auto compute issues when the Issues tab is opened for the first time";
             this.cbAutoComputeIssuesClickOnTab.UseVisualStyleBackColor = true;
             // 
             // tabSettings

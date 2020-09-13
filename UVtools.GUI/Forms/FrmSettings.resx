@@ -124,8 +124,12 @@
     <value>131, 17</value>
   </metadata>
   <data name="cbIslandAllowDiagonalBonds.ToolTip" xml:space="preserve">
-    <value> If true, all 8 neighbors of a pixel (including diagonals) will be considered when finding individual components on the layer.
-If false only 4 neighbors (right, left, above, below) will be considered. (Slower but more islands detected)</value>
+    <value>If enabled, components touching by even a single diagonal bond will be considered a single component for the purposes of island detection.
+Enabling this will result in faster island detection. but some potential islands with weak bonds to other components may not be detected.</value>
+  </data>
+  <data name="label9.ToolTip" xml:space="preserve">
+    <value>An island supported by at least this number of safe pixels will always be considered supported.
+An island supported by less than this number of pixels will only be considered supported if the number of supporting pixels is at least half the area of the island itself.</value>
   </data>
   <data name="nmLayerRepairDefaultOpeningIterations.ToolTip" xml:space="preserve">
     <value>Default number of noise removal iterations the repair algorithm will apply to remove noise and fine details from the layer.  This setting has the potential to introduce new islands.  Set to 0 to disable.</value>
