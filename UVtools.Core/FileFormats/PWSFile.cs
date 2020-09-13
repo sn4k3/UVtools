@@ -781,8 +781,8 @@ namespace UVtools.Core.FileFormats
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
         {
-            PrintParameterModifier.InitialLayerCount,
-            PrintParameterModifier.InitialExposureSeconds,
+            PrintParameterModifier.BottomLayerCount,
+            PrintParameterModifier.BottomExposureSeconds,
             PrintParameterModifier.ExposureSeconds,
 
             //PrintParameterModifier.BottomLayerOffTime,
@@ -823,14 +823,47 @@ namespace UVtools.Core.FileFormats
             set => LayersDefinition.LayersCount = LayerCount;
         }
 
-        public override ushort InitialLayerCount => (ushort)HeaderSettings.BottomLayersCount;
+        public override ushort BottomLayerCount
+        {
+            get => (ushort)HeaderSettings.BottomLayersCount;
+            set => HeaderSettings.BottomLayersCount = value;
+        }
 
-        public override float InitialExposureTime => HeaderSettings.BottomExposureSeconds;
+        public override float BottomExposureTime
+        {
+            get => HeaderSettings.BottomExposureSeconds;
+            set => HeaderSettings.BottomExposureSeconds = value;
+        }
 
-        public override float LayerExposureTime => HeaderSettings.LayerExposureTime;
-        public override float LiftHeight => HeaderSettings.LiftHeight;
-        public override float LiftSpeed => HeaderSettings.LiftSpeed * 60;
-        public override float RetractSpeed => HeaderSettings.RetractSpeed * 60;
+        public override float ExposureTime
+        {
+            get => HeaderSettings.LayerExposureTime;
+            set => HeaderSettings.LayerExposureTime = value;
+        }
+
+        public override float LayerOffTime
+        {
+            get => HeaderSettings.LayerOffTime;
+            set => HeaderSettings.LayerOffTime = value;
+        }
+
+        public override float LiftHeight
+        {
+            get => HeaderSettings.LiftHeight;
+            set => HeaderSettings.LiftHeight = value;
+        }
+
+        public override float LiftSpeed
+        {
+            get => (float) Math.Round(HeaderSettings.LiftSpeed * 60, 2);
+            set => HeaderSettings.LiftSpeed = (float) Math.Round(value / 60, 2);
+        }
+
+        public override float RetractSpeed
+        {
+            get => (float)Math.Round(HeaderSettings.RetractSpeed * 60, 2);
+            set => HeaderSettings.RetractSpeed = (float)Math.Round(value / 60, 2);
+        }
 
         public override float PrintTime => 0;
 
@@ -1066,78 +1099,6 @@ namespace UVtools.Core.FileFormats
             progress.Token.ThrowIfCancellationRequested();
         }
 
-        public override object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
-        {
-            if (ReferenceEquals(modifier, PrintParameterModifier.LayerOffTime)) return HeaderSettings.LayerOffTime;
-
-            var baseValue = base.GetValueFromPrintParameterModifier(modifier);
-            return baseValue;
-        }
-
-        public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
-        {
-            void UpdateLayers()
-            {
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    // Bottom : others
-
-                    this[layerIndex].ExposureTime =
-                        LayersDefinition[layerIndex].LayerExposure = GetInitialLayerValueOrNormal(layerIndex, HeaderSettings.BottomExposureSeconds, HeaderSettings.LayerExposureTime);
-                }
-            }
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.InitialLayerCount))
-            {
-                HeaderSettings.BottomLayersCount =
-                HeaderSettings.BottomLayersCount = value.Convert<uint>();
-                UpdateLayers();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureSeconds))
-            {
-                HeaderSettings.BottomExposureSeconds = value.Convert<float>();
-                UpdateLayers();
-                return true;
-            }
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
-            {
-                HeaderSettings.LayerExposureTime = value.Convert<float>();
-                UpdateLayers();
-                return true;
-            }
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.LayerOffTime))
-            {
-                HeaderSettings.LayerOffTime = value.Convert<float>();
-                UpdateLayers();
-                return true;
-            }
-
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight))
-            {
-                HeaderSettings.LiftHeight = value.Convert<float>();
-                UpdateLayers();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed))
-            {
-                HeaderSettings.LiftSpeed = value.Convert<float>() / 60f;
-                UpdateLayers();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
-            {
-                HeaderSettings.RetractSpeed = value.Convert<float>() / 60f;
-                UpdateLayers();
-                return true;
-            }
-
-            return false;
-        }
-
         public override void SaveAs(string filePath = null, OperationProgress progress = null)
         {
             if (RequireFullEncode)
@@ -1189,13 +1150,13 @@ namespace UVtools.Core.FileFormats
                         ResolutionX = ResolutionX,
                         ResolutionY = ResolutionY,
                         LayerHeight = LayerHeight,
-                        LayerExposureTime = LayerExposureTime,
+                        LayerExposureTime = ExposureTime,
                         LiftHeight = LiftHeight,
                         LiftSpeed = LiftSpeed / 60,
                         RetractSpeed = RetractSpeed / 60,
                         LayerOffTime = HeaderSettings.LayerOffTime,
-                        BottomLayersCount = InitialLayerCount,
-                        BottomExposureSeconds = InitialExposureTime,
+                        BottomLayersCount = BottomLayerCount,
+                        BottomExposureSeconds = BottomExposureTime,
                         Price = MaterialCost,
                         Volume = UsedMaterial,
                         Weight = HeaderSettings.Weight,
@@ -1353,9 +1314,9 @@ namespace UVtools.Core.FileFormats
                 file.SliceSettings.Yres = file.OutputSettings.YResolution = (ushort)ResolutionY;
                 file.SliceSettings.Thickness = file.OutputSettings.LayerThickness = LayerHeight;
                 file.SliceSettings.LayersNum = file.OutputSettings.LayersNum = LayerCount;
-                file.SliceSettings.HeadLayersNum = file.OutputSettings.NumberBottomLayers = InitialLayerCount;
-                file.SliceSettings.LayersExpoMs = file.OutputSettings.LayerTime = (uint)LayerExposureTime * 1000;
-                file.SliceSettings.HeadLayersExpoMs = file.OutputSettings.BottomLayersTime = (uint)InitialExposureTime * 1000;
+                file.SliceSettings.HeadLayersNum = file.OutputSettings.NumberBottomLayers = BottomLayerCount;
+                file.SliceSettings.LayersExpoMs = file.OutputSettings.LayerTime = (uint)ExposureTime * 1000;
+                file.SliceSettings.HeadLayersExpoMs = file.OutputSettings.BottomLayersTime = (uint)BottomExposureTime * 1000;
                 file.SliceSettings.WaitBeforeExpoMs = (uint)(HeaderSettings.LayerOffTime * 1000);
                 file.SliceSettings.LiftDistance = file.OutputSettings.LiftDistance = LiftHeight;
                 file.SliceSettings.LiftUpSpeed = file.OutputSettings.ZLiftFeedRate = LiftSpeed;
@@ -1406,18 +1367,18 @@ namespace UVtools.Core.FileFormats
                             {
                                 LiftHeight = HeaderSettings.LiftHeight,
                                 LiftSpeed = HeaderSettings.LiftSpeed,
-                                LightOnTime = InitialExposureTime,
+                                LightOnTime = BottomExposureTime,
                                 LightOffTime = HeaderSettings.LayerOffTime,
                                 //LightPWM = (byte)HeaderSettings.LightPWM,
                                 RetractSpeed = HeaderSettings.RetractSpeed,
-                                Count = InitialLayerCount
+                                Count = BottomLayerCount
                                 //RetractHeight = LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.JsonSettings.Properties.Bottom.RetractHeight),
                             },
                             Exposure = new UVJFile.Exposure
                             {
                                 LiftHeight = HeaderSettings.LiftHeight,
                                 LiftSpeed = HeaderSettings.LiftSpeed,
-                                LightOnTime = LayerExposureTime,
+                                LightOnTime = ExposureTime,
                                 LightOffTime = HeaderSettings.LayerOffTime,
                                 //LightPWM = (byte)HeaderSettings.LightPWM,
                                 RetractSpeed = HeaderSettings.RetractSpeed,
@@ -1435,6 +1396,7 @@ namespace UVtools.Core.FileFormats
 
             return false;
         }
+
         #endregion
     }
 }

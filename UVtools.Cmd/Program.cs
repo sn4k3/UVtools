@@ -123,9 +123,9 @@ namespace UVtools.Cmd
                     Console.WriteLine($"Resolution: {new Size((int) fileFormat.ResolutionX, (int) fileFormat.ResolutionY)}");
                     Console.WriteLine($"AntiAlias: {fileFormat.ValidateAntiAliasingLevel()}");
                     
-                    Console.WriteLine($"Bottom Layer Count: {fileFormat.InitialLayerCount}");
-                    Console.WriteLine($"Bottom Exposure Time: {fileFormat.InitialExposureTime}s");
-                    Console.WriteLine($"Layer Exposure Time: {fileFormat.LayerExposureTime}s");
+                    Console.WriteLine($"Bottom Layer Count: {fileFormat.BottomLayerCount}");
+                    Console.WriteLine($"Bottom Exposure Time: {fileFormat.BottomExposureTime}s");
+                    Console.WriteLine($"Layer Exposure Time: {fileFormat.ExposureTime}s");
                     Console.WriteLine($"Print Time: {fileFormat.PrintTime}s");
                     Console.WriteLine($"Cost: {fileFormat.MaterialCost}$");
                     Console.WriteLine($"Resin Name: {fileFormat.MaterialName}");

@@ -39,12 +39,6 @@ namespace UVtools.Core.FileFormats
 
         public override byte AntiAliasing { get; } = 1;
         public override float LayerHeight { get; set; } = 0;
-        public override ushort InitialLayerCount { get; } = 1;
-        public override float InitialExposureTime { get; } = 0;
-        public override float LayerExposureTime { get; } = 0;
-        public override float LiftHeight { get; } = 0;
-        public override float RetractSpeed { get; } = 0;
-        public override float LiftSpeed { get; } = 0;
         public override float PrintTime { get; } = 0;
         public override float UsedMaterial { get; } = 0;
         public override float MaterialCost { get; } = 0;
@@ -53,11 +47,6 @@ namespace UVtools.Core.FileFormats
         public override object[] Configs { get; } = null;
 
         private Mat ImageMat { get; set; }
-
-        public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
-        {
-            throw new NotImplementedException();
-        }
 
         public override void Decode(string fileFullPath, OperationProgress progress = null)
         {

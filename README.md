@@ -135,8 +135,10 @@ After some tests without failure you can increase your confidence and ignore thi
 ### Windows
 
 1. Windows 7 or greater
-2. .NET Framework 4.8 installed (Comes pre-installed on Windows 10 with last updates)
-3. 2 GB RAM or higher
+   1. If on Windows 10 N or NK: [Media Feature Pack](https://www.microsoft.com/download/details.aspx?id=48231) must be installed
+1. .NET Framework 4.8 installed (Comes pre-installed on Windows 10 with last updates)
+1. 2 GB RAM or higher
+
 
 ### Mac and Linux
 

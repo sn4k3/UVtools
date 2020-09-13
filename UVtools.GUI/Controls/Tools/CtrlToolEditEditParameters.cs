@@ -35,7 +35,6 @@ namespace UVtools.GUI.Controls.Tools
             public RowControl(FileFormat.PrintParameterModifier modifier)
             {
                 Modifier = modifier;
-                modifier.OldValue = decimal.Parse(Program.SlicerFile.GetValueFromPrintParameterModifier(modifier).ToString());
 
                 Name = new Label
                 {
@@ -111,6 +110,8 @@ namespace UVtools.GUI.Controls.Tools
         public CtrlToolEditParameters()
         {
             InitializeComponent();
+
+            Program.SlicerFile.RefreshPrintParametersModifiersValues();
             Operation = new OperationEditParameters(Program.SlicerFile.PrintParameterModifiers);
             SetOperation(Operation);
 

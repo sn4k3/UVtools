@@ -173,7 +173,7 @@ namespace UVtools.Core
                 var layer = this[layerIndex];
                 layer.Index = layerIndex;
                 layer.PositionZ = SlicerFile.GetHeightFromLayer(layerIndex);
-                layer.ExposureTime = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.InitialExposureTime, SlicerFile.LayerExposureTime);
+                layer.ExposureTime = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
             }
         }
 
@@ -1770,6 +1770,8 @@ namespace UVtools.Core
             {
                 layerManager[layer.Index] = layer.Clone();
             }
+
+            layerManager.BoundingRectangle = BoundingRectangle;
 
             return layerManager;
         }

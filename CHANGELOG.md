@@ -4,6 +4,8 @@
 
 * (Add) Layer status bar: Button with ROI - Click to zoom in region | Click + shift to clear roi
 * (Add) Setting: Allow the layer overlay tooltips for select issues, ROI, and edit pixel mode to be hidden (#51)
+* (Add) Global print properties on formats for more internal abstraction
+* (Improvement) Print properties performance internal code with abstraction
 * (Change) Layer status bar: Bounds text to button - Click to zoom in region
 * (Change) Layer status bar: Pixel picker text to button - Click to center in point
 * (Change) Layer status bar: Resolution text to button - Click to zoom to fit

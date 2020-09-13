@@ -109,41 +109,73 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         float TotalHeight { get; }
 
+        #region Universal Properties
+
         /// <summary>
         /// Gets the number of layers present in this file
         /// </summary>
         uint LayerCount { get; set; }
 
         /// <summary>
-        /// Gets the number of initial layer count
+        /// Gets or sets the number of initial layer count
         /// </summary>
-        /// </summary>
-        ushort InitialLayerCount { get; }
+        ushort BottomLayerCount { get; set; }
 
         /// <summary>
-        /// Gets the initial exposure time for <see cref="InitialLayerCount"/>
+        /// Gets or sets the initial exposure time for <see cref="BottomLayerCount"/> in seconds
         /// </summary>
-        float InitialExposureTime { get; }
+        float BottomExposureTime { get; set; }
 
         /// <summary>
-        /// Gets the normal layer exposure time
+        /// Gets or sets the normal layer exposure time in seconds
         /// </summary>
-        float LayerExposureTime { get; }
+        float ExposureTime { get; set; }
 
         /// <summary>
-        /// Gets the speed in mm/min for the detracts
+        /// Gets or sets the bottom layer off time in seconds
         /// </summary>
-        float LiftSpeed { get; }
+        float BottomLayerOffTime { get; set; }
 
         /// <summary>
-        /// Gets the height in mm to retract between layers
+        /// Gets or sets the layer off time in seconds
         /// </summary>
-        float LiftHeight { get; }
+        float LayerOffTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the bottom lift height in mm
+        /// </summary>
+        float BottomLiftHeight { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lift height in mm
+        /// </summary>
+        float LiftHeight { get; set; }
+
+        /// <summary>
+        /// Gets or sets the bottom lift speed in mm/min
+        /// </summary>
+        float BottomLiftSpeed { get; set; }
+
+        /// <summary>
+        /// Gets or sets the speed in mm/min
+        /// </summary>
+        float LiftSpeed { get; set; }
 
         /// <summary>
         /// Gets the speed in mm/min for the retracts
         /// </summary>
-        float RetractSpeed { get; }
+        float RetractSpeed { get; set; }
+
+        /// <summary>
+        /// Gets or sets the bottom pwm value from 0 to 255
+        /// </summary>
+        byte BottomLightPWM { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pwm value from 0 to 255
+        /// </summary>
+        byte LightPWM { get; set; }
+        #endregion
 
         /// <summary>
         /// Gets the estimate print time in seconds
@@ -308,6 +340,8 @@ namespace UVtools.Core.FileFormats
         /// <returns></returns>
         T GetInitialLayerValueOrNormal<T>(uint layerIndex, T initialLayerValue, T normalLayerValue);
 
+        void RefreshPrintParametersModifiersValues();
+
         /// <summary>
         /// Gets the value attributed to <see cref="FileFormat.PrintParameterModifier"/>
         /// </summary>
@@ -321,15 +355,9 @@ namespace UVtools.Core.FileFormats
         /// <param name="modifier">Modifier to use</param>
         /// <param name="value">Value to set</param>
         /// <returns>True if set, otherwise false = <see cref="modifier"/> not found</returns>
-        bool SetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier, object value);
+        bool SetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier, decimal value);
 
-        /// <summary>
-        /// Sets a property value attributed to <see cref="modifier"/>
-        /// </summary>
-        /// <param name="modifier">Modifier to use</param>
-        /// <param name="value">Value to set</param>
-        /// <returns>True if set, otherwise false = <see cref="modifier"/> not found</returns>
-        bool SetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier, string value);
+        byte SetValuesFromPrintParametersModifiers();
 
         /// <summary>
         /// Rebuilds GCode based on current settings

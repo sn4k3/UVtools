@@ -153,8 +153,8 @@ namespace UVtools.Core.FileFormats
         public override Type[] ConvertToFormats { get; } = null;
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
-            PrintParameterModifier.InitialLayerCount,
-            PrintParameterModifier.InitialExposureSeconds,
+            PrintParameterModifier.BottomLayerCount,
+            PrintParameterModifier.BottomExposureSeconds,
             PrintParameterModifier.ExposureSeconds,
 
 
@@ -197,16 +197,41 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override ushort InitialLayerCount => ResinMetadataSettings.BottomLayersNumber;
+        public override ushort BottomLayerCount
+        {
+            get => ResinMetadataSettings.BottomLayersNumber;
+            set => ResinMetadataSettings.BottomLayersNumber = value;
+        }
 
-        public override float InitialExposureTime => UserSettings.BottomLayerExposureTime / 1000f;
+        public override float BottomExposureTime
+        {
+            get => (float) Math.Round(UserSettings.BottomLayerExposureTime / 1000f, 2);
+            set => UserSettings.BottomLayerExposureTime = (uint) (value * 1000f);
+        }
 
-        public override float LayerExposureTime => UserSettings.LayerExposureTime / 1000f;
-        public override float LiftHeight => UserSettings.ZLiftDistance;
+        public override float ExposureTime
+        {
+            get => (float) Math.Round(UserSettings.LayerExposureTime / 1000f, 2);
+            set => UserSettings.LayerExposureTime = (uint) (value * 1000f);
+        }
 
-        public override float LiftSpeed =>  UserSettings.ZLiftFeedRate;
+        public override float LiftHeight
+        {
+            get => UserSettings.ZLiftDistance;
+            set => UserSettings.ZLiftDistance = value;
+        }
 
-        public override float RetractSpeed => UserSettings.ZLiftRetractRate;
+        public override float LiftSpeed
+        {
+            get => UserSettings.ZLiftFeedRate;
+            set => UserSettings.ZLiftFeedRate = value;
+        }
+
+        public override float RetractSpeed
+        {
+            get => UserSettings.ZLiftRetractRate;
+            set => UserSettings.ZLiftRetractRate = value;
+        }
 
         public override float PrintTime => ResinMetadataSettings.PrintTime;
 
@@ -423,7 +448,7 @@ M106 S0
                             this[layerIndex] = new Layer((uint) layerIndex, LayersSettings[layerIndex].LayerEntry.Open(), LayersSettings[layerIndex].LayerEntry.Name)
                             {
                                 PositionZ = currentHeight,
-                                ExposureTime = GetInitialLayerValueOrNormal((uint) layerIndex, InitialExposureTime, LayerExposureTime)
+                                ExposureTime = GetInitialLayerValueOrNormal((uint) layerIndex, BottomExposureTime, ExposureTime)
                             };
                             layerIndex++;
 
@@ -447,64 +472,6 @@ M106 S0
             }
 
             LayerManager.GetBoundingRectangle(progress);
-        }
-
-        public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
-        {
-            void UpdateLayers()
-            {
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    this[layerIndex].ExposureTime = GetInitialLayerValueOrNormal(layerIndex, InitialExposureTime, LayerExposureTime);
-                }
-            }
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.InitialLayerCount))
-            {
-                UserSettings.BottomLayersCount =
-                ResinMetadataSettings.BottomLayersNumber = value.Convert<ushort>();
-                UpdateLayers();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureSeconds))
-            {
-                ResinMetadataSettings.BottomLayersTime =
-                UserSettings.BottomLayerExposureTime = value.Convert<uint>()*1000;
-
-                UpdateLayers();
-
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
-            {
-                ResinMetadataSettings.LayerTime =
-                UserSettings.LayerExposureTime = value.Convert<uint>()*1000;
-
-                UpdateLayers();
-
-                return true;
-            }
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight))
-            {
-                UserSettings.ZLiftDistance = value.Convert<float>();
-                RebuildGCode();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed))
-            {
-                UserSettings.ZLiftFeedRate = value.Convert<float>();
-                RebuildGCode();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
-            {
-                UserSettings.ZLiftRetractRate = value.Convert<float>();
-                RebuildGCode();
-                return true;
-            }
-
-            return false;
         }
 
         public override void RebuildGCode()

@@ -216,8 +216,8 @@ namespace UVtools.Core.FileFormats
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
         {
-            PrintParameterModifier.InitialLayerCount,
-            PrintParameterModifier.InitialExposureSeconds,
+            PrintParameterModifier.BottomLayerCount,
+            PrintParameterModifier.BottomExposureSeconds,
             PrintParameterModifier.ExposureSeconds,
 
             PrintParameterModifier.BottomLayerOffTime,
@@ -257,14 +257,59 @@ namespace UVtools.Core.FileFormats
             set => HeaderSettings.LayerCount = LayerCount;
         }
 
-        public override ushort InitialLayerCount => (ushort) (HeaderSettings.BottomHeight / LayerHeight);
+        public override ushort BottomLayerCount
+        {
+            get => (ushort)(HeaderSettings.BottomHeight / LayerHeight);
+            set => HeaderSettings.BottomHeight = value * LayerHeight;
+        }
 
-        public override float InitialExposureTime => (float) Math.Round(HeaderSettings.BottomExposureTimeMs/1000, 2);
+        public override float BottomExposureTime
+        {
+            get => (float)Math.Round(HeaderSettings.BottomExposureTimeMs / 1000, 2);
+            set => HeaderSettings.BottomExposureTimeMs = value * 1000;
+        }
 
-        public override float LayerExposureTime => (float) Math.Round(HeaderSettings.ExposureTimeMs/1000, 2);
-        public override float LiftHeight => HeaderSettings.LiftHeight;
-        public override float LiftSpeed => HeaderSettings.LiftSpeed;
-        public override float RetractSpeed => 0;
+        public override float ExposureTime
+        {
+            get => (float)Math.Round(HeaderSettings.ExposureTimeMs / 1000, 2);
+            set => HeaderSettings.ExposureTimeMs = value * 1000;
+        }
+
+        public override float BottomLayerOffTime
+        {
+            get => HeaderSettings.BottomLightOffDelayMs;
+            set => HeaderSettings.BottomLightOffDelayMs = value;
+        }
+
+        public override float LayerOffTime
+        {
+            get => HeaderSettings.LightOffDelayMs;
+            set => HeaderSettings.LightOffDelayMs = value;
+        }
+
+        public override float BottomLiftHeight
+        {
+            get => HeaderSettings.BottomLiftHeight;
+            set => HeaderSettings.BottomLiftHeight = value;
+        }
+
+        public override float LiftHeight
+        {
+            get => HeaderSettings.LiftHeight;
+            set => HeaderSettings.LiftHeight = value;
+        }
+
+        public override float BottomLiftSpeed
+        {
+            get => HeaderSettings.BottomLiftSpeed;
+            set => HeaderSettings.BottomLiftSpeed = HeaderSettings.BottomLiftSpeed_ = value;
+        }
+
+        public override float LiftSpeed
+        {
+            get => HeaderSettings.LiftSpeed;
+            set => HeaderSettings.LiftSpeed = HeaderSettings.LiftSpeed_ = value;
+        }
 
         public override float PrintTime => 0;
 
@@ -441,70 +486,6 @@ namespace UVtools.Core.FileFormats
             }
 
             progress.Token.ThrowIfCancellationRequested();
-        }
-
-        public override object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
-        {
-            var baseValue = base.GetValueFromPrintParameterModifier(modifier);
-            if (!ReferenceEquals(baseValue, null)) return baseValue;
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerOffTime)) return HeaderSettings.BottomLightOffDelayMs / 1000;
-            if (ReferenceEquals(modifier, PrintParameterModifier.LayerOffTime)) return HeaderSettings.LightOffDelayMs / 1000;
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftHeight)) return HeaderSettings.BottomLiftHeight;
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftSpeed)) return HeaderSettings.BottomLiftSpeed;
-
-            return null;
-        }
-
-        public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
-        {
-            if (ReferenceEquals(modifier, PrintParameterModifier.InitialLayerCount))
-            {
-                HeaderSettings.BottomHeight = value.Convert<uint>() * LayerHeight;
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureSeconds))
-            {
-                HeaderSettings.BottomExposureTimeMs = value.Convert<float>() * 1000;
-                return true;
-            }
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
-            {
-                HeaderSettings.ExposureTimeMs = value.Convert<float>() * 1000;
-                return true;
-            }
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerOffTime))
-            {
-                HeaderSettings.BottomLightOffDelayMs = value.Convert<float>() * 1000;
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.LayerOffTime))
-            {
-                HeaderSettings.LightOffDelayMs = value.Convert<float>() * 1000;
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftHeight))
-            {
-                HeaderSettings.BottomLiftHeight = value.Convert<float>();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftSpeed))
-            {
-                HeaderSettings.BottomLiftSpeed = HeaderSettings.BottomLiftSpeed_ = value.Convert<float>();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight))
-            {
-                HeaderSettings.LiftHeight = value.Convert<float>();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed))
-            {
-                HeaderSettings.LiftSpeed = HeaderSettings.LiftSpeed_ = value.Convert<float>();
-                return true;
-            }
-            return false;
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)

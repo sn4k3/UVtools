@@ -310,13 +310,13 @@ namespace UVtools.GUI.Forms
             if (ReferenceEquals(sender, btnLayerRangeBottomLayers))
             {
                 nmLayerRangeStart.Value = 0;
-                nmLayerRangeEnd.Value = Program.SlicerFile.InitialLayerCount-1;
+                nmLayerRangeEnd.Value = Program.SlicerFile.BottomLayerCount-1;
                 return;
             }
 
             if (ReferenceEquals(sender, btnLayerRangeNormalLayers))
             {
-                nmLayerRangeStart.Value = Program.SlicerFile.InitialLayerCount - 1;
+                nmLayerRangeStart.Value = Program.SlicerFile.BottomLayerCount - 1;
                 nmLayerRangeEnd.Value = Program.SlicerFile.LayerCount - 1;
                 return;
             }

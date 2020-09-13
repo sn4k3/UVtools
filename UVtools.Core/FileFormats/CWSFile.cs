@@ -135,8 +135,8 @@ namespace UVtools.Core.FileFormats
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
-            PrintParameterModifier.InitialLayerCount,
-            PrintParameterModifier.InitialExposureSeconds,
+            PrintParameterModifier.BottomLayerCount,
+            PrintParameterModifier.BottomExposureSeconds,
             PrintParameterModifier.ExposureSeconds,
 
 
@@ -182,17 +182,54 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override ushort InitialLayerCount => SliceSettings.HeadLayersNum;
+        public override ushort BottomLayerCount
+        {
+            get => SliceSettings.HeadLayersNum;
+            set => SliceSettings.HeadLayersNum = value;
+        }
 
-        public override float InitialExposureTime => SliceSettings.HeadLayersExpoMs / 1000f;
+        public override float BottomExposureTime
+        {
+            get => (float) Math.Round(SliceSettings.HeadLayersExpoMs / 1000f, 2);
+            set => SliceSettings.HeadLayersExpoMs = (uint) (value * 1000f);
+        }
 
-        public override float LayerExposureTime => SliceSettings.LayersExpoMs / 1000f;
+        public override float ExposureTime
+        {
+            get => (float) Math.Round(SliceSettings.LayersExpoMs / 1000f, 2);
+            set => SliceSettings.LayersExpoMs = (uint) (value * 1000f);
+        }
+        
+        public override float LiftHeight
+        {
+            get => SliceSettings.LiftDistance;
+            set => SliceSettings.LiftDistance = value;
+        }
 
-        public override float LiftHeight => SliceSettings.LiftDistance;
+        public override float LiftSpeed
+        {
+            get => SliceSettings.LiftDownSpeed;
+            set => SliceSettings.LiftDownSpeed = value;
+        }
 
-        public override float LiftSpeed => SliceSettings.LiftDownSpeed;
+        public override float RetractSpeed
+        {
+            get => OutputSettings.ZLiftRetractRate;
+            set => OutputSettings.ZLiftRetractRate = value;
+        }
 
-        public override float RetractSpeed => OutputSettings.ZLiftRetractRate;
+        public override byte BottomLightPWM
+        {
+            get => OutputSettings.BottomLightPWM;
+            set => OutputSettings.BottomLightPWM = value;
+        }
+
+        public override byte LightPWM
+        {
+            get => OutputSettings.LightPWM;
+            set => OutputSettings.LightPWM = value;
+        }
+
 
         public override float PrintTime => 0;
 
@@ -488,92 +525,6 @@ namespace UVtools.Core.FileFormats
             LayerManager.GetBoundingRectangle(progress);
         }
 
-        public override object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
-        {
-            var baseValue = base.GetValueFromPrintParameterModifier(modifier);
-            if (!ReferenceEquals(baseValue, null)) return baseValue;
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightPWM)) return OutputSettings.BottomLightPWM;
-            if (ReferenceEquals(modifier, PrintParameterModifier.LightPWM)) return OutputSettings.LightPWM;
-
-            return null;
-        }
-
-        public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
-        {
-            void UpdateLayers()
-            {
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    this[layerIndex].ExposureTime = GetInitialLayerValueOrNormal(layerIndex, InitialExposureTime, LayerExposureTime);
-                }
-            }
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.InitialLayerCount))
-            {
-                SliceSettings.HeadLayersNum =
-                OutputSettings.NumberBottomLayers = value.Convert<ushort>();
-                UpdateLayers();
-                RebuildGCode();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureSeconds))
-            {
-                SliceSettings.HeadLayersExpoMs = 
-                OutputSettings.BottomLayersTime = (uint) (value.Convert<float>()*1000);
-                UpdateLayers();
-                RebuildGCode();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
-            {
-                SliceSettings.LayersExpoMs =
-                OutputSettings.LayerTime = (uint) (value.Convert<float>() * 1000);
-                UpdateLayers();
-                RebuildGCode();
-                return true;
-            }
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight))
-            {
-                SliceSettings.LiftDistance =
-                OutputSettings.LiftDistance = value.Convert<float>();
-                RebuildGCode();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed))
-            {
-                SliceSettings.LiftUpSpeed = 
-                OutputSettings.ZLiftFeedRate = value.Convert<float>();
-                RebuildGCode();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
-            {
-                SliceSettings.LiftDownSpeed =
-                OutputSettings.ZLiftRetractRate =
-                OutputSettings.ZBottomLiftFeedRate = value.Convert<float>();
-                RebuildGCode();
-                return true;
-            }
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightPWM))
-            {
-                OutputSettings.BottomLightPWM = value.Convert<byte>();
-                RebuildGCode();
-                return true;
-            }
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.LightPWM))
-            {
-                OutputSettings.BottomLightPWM = value.Convert<byte>();
-                RebuildGCode();
-                return true;
-            }
-
-            return false;
-        }
-
         public override void RebuildGCode()
         {
             string arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
@@ -623,7 +574,7 @@ namespace UVtools.Core.FileFormats
                 }
                 // delay = max(extra['wait'], 500) + int(((int(lift)/(extra['lift_feed']/60)) + (int(lift)/(extra['lift_retract']/60)))*1000)
                 uint extraDelay = (uint)(((LiftHeight / (LiftSpeed / 60f)) + (LiftHeight / (RetractSpeed / 60f))) * 1000);
-                if (layerIndex < InitialLayerCount)
+                if (layerIndex < BottomLayerCount)
                 {
                     extraDelay = (uint)Math.Max(extraDelay + 10000, layer.ExposureTime * 1000);
                 }
@@ -731,18 +682,18 @@ namespace UVtools.Core.FileFormats
                             {
                                 LiftHeight = SliceSettings.LiftDistance,
                                 LiftSpeed = SliceSettings.LiftUpSpeed,
-                                LightOnTime = InitialExposureTime,
+                                LightOnTime = BottomExposureTime,
                                 //LightOffTime = SliceSettings.BottomLightOffDelay,
                                 LightPWM = OutputSettings.BottomLightPWM,
                                 RetractSpeed = OutputSettings.ZBottomLiftFeedRate,
-                                Count = InitialLayerCount
+                                Count = BottomLayerCount
                                 //RetractHeight = LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.JsonSettings.Properties.Bottom.RetractHeight),
                             },
                             Exposure = new UVJFile.Exposure
                             {
                                 LiftHeight = SliceSettings.LiftDistance,
                                 LiftSpeed = SliceSettings.LiftUpSpeed,
-                                LightOnTime = InitialExposureTime,
+                                LightOnTime = BottomExposureTime,
                                 //LightOffTime = SliceSettings.BottomLightOffDelay,
                                 LightPWM = OutputSettings.BottomLightPWM,
                                 RetractSpeed = SliceSettings.LiftDownSpeed,

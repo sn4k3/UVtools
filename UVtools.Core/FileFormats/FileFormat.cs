@@ -55,24 +55,24 @@ namespace UVtools.Core.FileFormats
         {
             
             #region Instances
-            public static PrintParameterModifier InitialLayerCount { get; } = new PrintParameterModifier("Initial Layer Count", @"Modify 'Initial Layer Count' value", "layers",0, ushort.MaxValue, 0);
-            public static PrintParameterModifier InitialExposureSeconds { get; } = new PrintParameterModifier("Initial Exposure Time", @"Modify 'Initial Exposure Time' seconds", "s", 0.1M, byte.MaxValue, 2);
-            public static PrintParameterModifier ExposureSeconds { get; } = new PrintParameterModifier("Exposure Time", @"Modify 'Exposure Time' seconds", "s", 0.1M, byte.MaxValue, 2);
+            public static PrintParameterModifier BottomLayerCount { get; } = new PrintParameterModifier("Bottom layer count", null, "layers",0, ushort.MaxValue, 0);
+            public static PrintParameterModifier BottomExposureSeconds { get; } = new PrintParameterModifier("Bottom exposure time", null, "s", 0.1M, byte.MaxValue, 2);
+            public static PrintParameterModifier ExposureSeconds { get; } = new PrintParameterModifier("Exposure time", null, "s", 0.1M, byte.MaxValue, 2);
             
-            public static PrintParameterModifier BottomLayerOffTime { get; } = new PrintParameterModifier("Bottom Layer Off Time", @"Modify 'Bottom Layer Off Time' seconds", "s");
-            public static PrintParameterModifier LayerOffTime { get; } = new PrintParameterModifier("Layer Off Time", @"Modify 'Layer Off Time' seconds", "s");
-            public static PrintParameterModifier BottomLiftHeight { get; } = new PrintParameterModifier("Bottom Lift Height", @"Modify 'Bottom Lift Height' millimeters between bottom layers", "mm", 1);
-            public static PrintParameterModifier BottomLiftSpeed { get; } = new PrintParameterModifier("Bottom Lift Speed", @"Modify 'Bottom Lift Speed' mm/min between bottom layers", "mm/min", 10);
-            public static PrintParameterModifier LiftHeight { get; } = new PrintParameterModifier("Lift Height", @"Modify 'Lift Height' millimeters between layers", "mm", 1);
-            public static PrintParameterModifier LiftSpeed { get; } = new PrintParameterModifier("Lift Speed", @"Modify 'Lift Speed' mm/min between layers", "mm/min", 10, 5000, 2);
-            public static PrintParameterModifier RetractSpeed { get; } = new PrintParameterModifier("Retract Speed", @"Modify 'Retract Speed' mm/min between layers", "mm/min", 10, 5000, 2);
+            public static PrintParameterModifier BottomLayerOffTime { get; } = new PrintParameterModifier("Bottom layer off seconds", null, "s");
+            public static PrintParameterModifier LayerOffTime { get; } = new PrintParameterModifier("Layer off seconds", null, "s");
+            public static PrintParameterModifier BottomLiftHeight { get; } = new PrintParameterModifier("Bottom lift height", @"Modify 'Bottom lift height' millimeters between bottom layers", "mm", 1);
+            public static PrintParameterModifier LiftHeight { get; } = new PrintParameterModifier("Lift height", @"Modify 'Lift height' millimeters between layers", "mm", 1);
+            public static PrintParameterModifier BottomLiftSpeed { get; } = new PrintParameterModifier("Bottom Lift Speed", @"Modify 'Bottom lift Speed' mm/min between bottom layers", "mm/min", 10);
+            public static PrintParameterModifier LiftSpeed { get; } = new PrintParameterModifier("Lift speed", @"Modify 'Lift speed' mm/min between layers", "mm/min", 10, 5000, 2);
+            public static PrintParameterModifier RetractSpeed { get; } = new PrintParameterModifier("Retract speed", @"Modify 'Retract speed' mm/min between layer", "mm/min", 10, 5000, 2);
 
-            public static PrintParameterModifier BottomLightPWM { get; } = new PrintParameterModifier("Bottom Light PWM", @"Modify 'Bottom Light PWM' value", null, 1, byte.MaxValue, 0);
+            public static PrintParameterModifier BottomLightPWM { get; } = new PrintParameterModifier("Bottom light PWM", @"Modify 'Bottom light PWM' value", null, 1, byte.MaxValue, 0);
             public static PrintParameterModifier LightPWM { get; } = new PrintParameterModifier("Light PWM", @"Modify 'Light PWM' value", null, 1, byte.MaxValue, 0);
 
             public static PrintParameterModifier[] Parameters = {
-                InitialLayerCount,
-                InitialExposureSeconds,
+                BottomLayerCount,
+                BottomExposureSeconds,
                 ExposureSeconds,
 
                 BottomLayerOffTime,
@@ -130,6 +130,12 @@ namespace UVtools.Core.FileFormats
             /// </summary>
             public decimal NewValue { get; set; }
 
+            public decimal Value
+            {
+                get => NewValue;
+                set => OldValue = NewValue = value;
+            }
+
             /// <summary>
             /// Gets if the value has changed
             /// </summary>
@@ -137,10 +143,10 @@ namespace UVtools.Core.FileFormats
             #endregion
 
             #region Constructor
-            public PrintParameterModifier(string name, string description, string valueUnit = null, decimal minimum = 0, decimal maximum = 1000, byte decimalPlates = 2)
+            public PrintParameterModifier(string name, string description = null, string valueUnit = null, decimal minimum = 0, decimal maximum = 1000, byte decimalPlates = 2)
             {
                 Name = name;
-                Description = description;
+                Description = description ?? $"Modify '{name}'";
                 ValueUnit = valueUnit ?? string.Empty;
                 Minimum = minimum;
                 Maximum = maximum;
@@ -330,17 +336,19 @@ namespace UVtools.Core.FileFormats
             set => throw new NotImplementedException();
         }
 
-        public abstract ushort InitialLayerCount { get; }
-        
-        public abstract float InitialExposureTime { get; }
+        public virtual ushort BottomLayerCount { get; set; }
+        public virtual float BottomExposureTime { get; set; }
+        public virtual float ExposureTime { get; set; }
+        public virtual float BottomLayerOffTime { get; set; }
+        public virtual float LayerOffTime { get; set; }
+        public virtual float BottomLiftHeight { get; set; }
+        public virtual float LiftHeight { get; set; }
+        public virtual float BottomLiftSpeed { get; set; }
+        public virtual float LiftSpeed { get; set; }
+        public virtual float RetractSpeed { get; set; }
+        public virtual byte BottomLightPWM { get; set; } = 255;
+        public virtual byte LightPWM { get; set; } = 255;
 
-        public abstract float LayerExposureTime { get; }
-
-        public abstract float LiftHeight { get; }
-
-        public abstract float RetractSpeed { get; }
-
-        public abstract float LiftSpeed { get; }
 
         public abstract float PrintTime { get; }
         
@@ -685,44 +693,206 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public virtual float GetHeightFromLayer(uint layerIndex, bool realHeight = true)
+        public float GetHeightFromLayer(uint layerIndex, bool realHeight = true)
         {
             return (float)Math.Round((layerIndex+(realHeight ? 1 : 0)) * LayerHeight, 2);
         }
 
         public T GetInitialLayerValueOrNormal<T>(uint layerIndex, T initialLayerValue, T normalLayerValue)
         {
-            return layerIndex < InitialLayerCount ? initialLayerValue : normalLayerValue;
+            return layerIndex < BottomLayerCount ? initialLayerValue : normalLayerValue;
         }
 
-        public virtual object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
+        public void RefreshPrintParametersModifiersValues()
         {
-            if (ReferenceEquals(modifier, PrintParameterModifier.InitialLayerCount))
-                return InitialLayerCount;
-            if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureSeconds))
-                return InitialExposureTime;
-            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
-                return LayerExposureTime;
+            if (PrintParameterModifiers is null) return;
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLayerCount))
+            {
+                PrintParameterModifier.BottomLayerCount.OldValue = BottomLayerCount;
+            }
 
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomExposureSeconds))
+            {
+                PrintParameterModifier.BottomExposureSeconds.OldValue = (decimal) BottomExposureTime;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.ExposureSeconds))
+            {
+                PrintParameterModifier.ExposureSeconds.OldValue = (decimal)ExposureTime;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLayerOffTime))
+            {
+                PrintParameterModifier.BottomLayerOffTime.OldValue = (decimal)BottomLayerOffTime;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.LayerOffTime))
+            {
+                PrintParameterModifier.LayerOffTime.OldValue = (decimal)LayerOffTime;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLiftHeight))
+            {
+                PrintParameterModifier.BottomLiftHeight.OldValue = (decimal)BottomLiftHeight;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.LiftHeight))
+            {
+                PrintParameterModifier.LiftHeight.OldValue = (decimal)LiftHeight;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLiftSpeed))
+            {
+                PrintParameterModifier.BottomLiftSpeed.OldValue = (decimal)BottomLiftSpeed;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.LiftSpeed))
+            {
+                PrintParameterModifier.LiftSpeed.OldValue = (decimal)LiftSpeed;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.RetractSpeed))
+            {
+                PrintParameterModifier.RetractSpeed.OldValue = (decimal)RetractSpeed;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLightPWM))
+            {
+                PrintParameterModifier.BottomLightPWM.OldValue = BottomLightPWM;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.LightPWM))
+            {
+                PrintParameterModifier.LightPWM.OldValue = LightPWM;
+            }
+        }
+
+        public object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
+        {
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerCount))
+                return BottomLayerCount;
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomExposureSeconds))
+                return BottomExposureTime;
+            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
+                return ExposureTime;
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerOffTime))
+                return BottomLayerOffTime;
+            if (ReferenceEquals(modifier, PrintParameterModifier.LayerOffTime))
+                return LayerOffTime;
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftHeight))
+                return BottomLiftHeight;
             if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight))
                 return LiftHeight;
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftSpeed))
+                return BottomLiftSpeed;
             if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed))
                 return LiftSpeed;
             if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
                 return RetractSpeed;
-            
 
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightPWM))
+                return BottomLightPWM;
+            if (ReferenceEquals(modifier, PrintParameterModifier.LightPWM))
+                return LightPWM;
 
             return null;
         }
 
-        public virtual bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, object value)
+        public bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, decimal value)
         {
-            return SetValueFromPrintParameterModifier(modifier, value.ToString());
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerCount))
+            {
+                BottomLayerCount = (ushort)value;
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomExposureSeconds))
+            {
+                BottomExposureTime = (float) value;
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
+            {
+                ExposureTime = (float) value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerOffTime))
+            {
+                BottomLayerOffTime = (float) value;
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.LayerOffTime))
+            {
+                LayerOffTime = (float) value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftHeight))
+            {
+                BottomLiftHeight = (float) value;
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight))
+            {
+                LiftHeight = (float) value;
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftSpeed))
+            {
+                BottomLiftSpeed = (float) value;
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed))
+            {
+                LiftSpeed = (float) value;
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
+            {
+                RetractSpeed = (float) value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightPWM))
+            {
+                BottomLightPWM = (byte)value;
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.LightPWM))
+            {
+                LightPWM = (byte)value;
+                return true;
+            }
+
+            return false;
         }
 
-        public abstract bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value);
-        
+        public virtual byte SetValuesFromPrintParametersModifiers()
+        {
+            if (PrintParameterModifiers is null) return 0;
+            byte changed = 0;
+            foreach (var modifier in PrintParameterModifiers)
+            {
+                if(!modifier.HasChanged) continue;
+                modifier.OldValue = modifier.NewValue;
+                SetValueFromPrintParameterModifier(modifier, modifier.NewValue);
+                changed++;
+            }
+
+            if (changed == 0) return changed;
+
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                this[layerIndex].ExposureTime = GetInitialLayerValueOrNormal(layerIndex, BottomExposureTime, ExposureTime);
+            }
+
+            RebuildGCode();
+
+            return changed;
+        }
+
         public virtual void RebuildGCode()
         { }
 

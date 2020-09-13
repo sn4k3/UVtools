@@ -68,8 +68,8 @@ namespace UVtools.Core.FileFormats
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
         {
-            PrintParameterModifier.InitialLayerCount,
-            PrintParameterModifier.InitialExposureSeconds,
+            PrintParameterModifier.BottomLayerCount,
+            PrintParameterModifier.BottomExposureSeconds,
             PrintParameterModifier.ExposureSeconds,
 
             PrintParameterModifier.BottomLayerOffTime,
@@ -118,11 +118,11 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override ushort InitialLayerCount => 0;
+        public override ushort BottomLayerCount => 0;
 
-        public override float InitialExposureTime => 0;
+        public override float BottomExposureTime => 0;
 
-        public override float LayerExposureTime => 0;
+        public override float ExposureTime => 0;
         public override float LiftHeight => 0;
         public override float LiftSpeed => 0;
         public override float RetractSpeed => 0;
@@ -190,31 +190,6 @@ namespace UVtools.Core.FileFormats
             }
 
             progress.Token.ThrowIfCancellationRequested();
-        }
-
-        public override object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
-        {
-            var baseValue = base.GetValueFromPrintParameterModifier(modifier);
-            if (!ReferenceEquals(baseValue, null)) return baseValue;
-            /*if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerOffTime)) return PrintParametersSettings.BottomLightOffDelay;
-            if (ReferenceEquals(modifier, PrintParameterModifier.LayerOffTime)) return PrintParametersSettings.LightOffDelay;
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftHeight)) return PrintParametersSettings.BottomLiftHeight;
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftSpeed)) return PrintParametersSettings.BottomLiftSpeed;*/
-            /*if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight)) return PrintParametersSettings.LiftHeight;
-            if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed)) return PrintParametersSettings.LiftingSpeed;
-            if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed)) return PrintParametersSettings.RetractSpeed;*/
-
-            /*if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightPWM)) return HeaderSettings.BottomLightPWM;
-            if (ReferenceEquals(modifier, PrintParameterModifier.LightPWM)) return HeaderSettings.LightPWM;*/
-
-
-
-            return null;
-        }
-
-        public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
-        {
-            return false;
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)

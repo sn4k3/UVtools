@@ -79,7 +79,7 @@ namespace UVtools.Core.FileFormats
             [DisplayName("bottomLightOffTime")] public float BottomLightOffTime { get; set; }
             [DisplayName("lightOffTime")] public float LightOffTime { get; set; }
             [DisplayName("bottomPWMLight")] public byte BottomLightPWM { get; set; } = 255;
-            [DisplayName("PWMLight")] public byte LayerLightPWM { get; set; } = 255;
+            [DisplayName("PWMLight")] public byte LightPWM { get; set; } = 255;
             [DisplayName("antiAliasLevel")] public byte AntiAliasing { get; set; } = 1;
         }
 
@@ -99,8 +99,8 @@ namespace UVtools.Core.FileFormats
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
-            PrintParameterModifier.InitialLayerCount,
-            PrintParameterModifier.InitialExposureSeconds,
+            PrintParameterModifier.BottomLayerCount,
+            PrintParameterModifier.BottomExposureSeconds,
             PrintParameterModifier.ExposureSeconds,
 
             PrintParameterModifier.BottomLayerOffTime,
@@ -148,17 +148,77 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override ushort InitialLayerCount => HeaderSettings.BottomLayerCount;
+        public override ushort BottomLayerCount
+        {
+            get => HeaderSettings.BottomLayerCount;
+            set => HeaderSettings.BottomLayerCount = HeaderSettings.BottomLayCount = value;
+        }
 
-        public override float InitialExposureTime => HeaderSettings.BottomLayerExposureTime;
+        public override float BottomExposureTime
+        {
+            get => HeaderSettings.BottomLayerExposureTime;
+            set => HeaderSettings.BottomLayerExposureTime = HeaderSettings.BottomLayExposureTime = value;
+        }
 
-        public override float LayerExposureTime => HeaderSettings.LayerExposureTime;
+        public override float ExposureTime
+        {
+            get => HeaderSettings.LayerExposureTime;
+            set => HeaderSettings.LayerExposureTime = value;
+        }
 
-        public override float LiftHeight => HeaderSettings.LiftHeight;
+        public override float BottomLayerOffTime
+        {
+            get => HeaderSettings.BottomLightOffTime;
+            set => HeaderSettings.BottomLightOffTime = value;
+        }
 
-        public override float LiftSpeed => HeaderSettings.LiftSpeed;
+        public override float LayerOffTime
+        {
+            get => HeaderSettings.LightOffTime;
+            set => HeaderSettings.LightOffTime = value;
+        }
 
-        public override float RetractSpeed => HeaderSettings.RetractSpeed;
+        public override float BottomLiftHeight
+        {
+            get => HeaderSettings.BottomLiftHeight;
+            set => HeaderSettings.BottomLiftHeight = value;
+        }
+
+        public override float LiftHeight
+        {
+            get => HeaderSettings.LiftHeight;
+            set => HeaderSettings.LiftHeight = value;
+        }
+
+        public override float BottomLiftSpeed
+        {
+            get => HeaderSettings.BottomLiftSpeed;
+            set => HeaderSettings.BottomLiftSpeed = value;
+        }
+
+        public override float LiftSpeed
+        {
+            get => HeaderSettings.LiftSpeed;
+            set => HeaderSettings.LiftSpeed = value;
+        }
+
+        public override float RetractSpeed
+        {
+            get => HeaderSettings.RetractSpeed;
+            set => HeaderSettings.RetractSpeed = value;
+        }
+
+        public override byte BottomLightPWM
+        {
+            get => HeaderSettings.BottomLightPWM;
+            set => HeaderSettings.BottomLightPWM = value;
+        }
+
+        public override byte LightPWM
+        {
+            get => HeaderSettings.LightPWM;
+            set => HeaderSettings.LightPWM = value;
+        }
 
         public override float PrintTime => HeaderSettings.EstimatedPrintTime;
 
@@ -300,13 +360,13 @@ namespace UVtools.Core.FileFormats
                     var currPos = Regex.Match(stripGcode, ";currPos:([+-]?([0-9]*[.])?[0-9]+)", RegexOptions.IgnoreCase);
                     var exposureTime = Regex.Match(stripGcode, "G4 P(\\d+)", RegexOptions.IgnoreCase);
                     var pwm = Regex.Match(stripGcode, "M106 S(\\d+)", RegexOptions.IgnoreCase);
-                    if (layerIndex < InitialLayerCount)
+                    if (layerIndex < BottomLayerCount)
                     {
                         HeaderSettings.BottomLightPWM = byte.Parse(pwm.Groups[1].Value);
                     }
                     else
                     {
-                        HeaderSettings.LayerLightPWM = byte.Parse(pwm.Groups[1].Value);
+                        HeaderSettings.LightPWM = byte.Parse(pwm.Groups[1].Value);
                     }
 
                     LayerManager[layerIndex] = new Layer(layerIndex, entry.Open(), entry.Name)
@@ -342,119 +402,6 @@ namespace UVtools.Core.FileFormats
             LayerManager.GetBoundingRectangle(progress);
         }
 
-        public override object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
-        {
-            var baseValue = base.GetValueFromPrintParameterModifier(modifier);
-            if (!ReferenceEquals(baseValue, null)) return baseValue;
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerOffTime)) return HeaderSettings.BottomLightOffTime;
-            if (ReferenceEquals(modifier, PrintParameterModifier.LayerOffTime)) return HeaderSettings.LightOffTime;
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftHeight)) return HeaderSettings.BottomLiftHeight;
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftSpeed)) return HeaderSettings.BottomLiftSpeed;
-            /*if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight)) return PrintParametersSettings.LiftHeight;
-            if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed)) return PrintParametersSettings.LiftingSpeed;
-            if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed)) return PrintParametersSettings.RetractSpeed;*/
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightPWM)) return HeaderSettings.BottomLightPWM;
-            if (ReferenceEquals(modifier, PrintParameterModifier.LightPWM)) return HeaderSettings.LayerLightPWM;
-
-
-
-            return null;
-        }
-
-        public override bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, string value)
-        {
-            void UpdateLayers()
-            {
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    this[layerIndex].ExposureTime = GetInitialLayerValueOrNormal(layerIndex, InitialExposureTime, LayerExposureTime);
-                }
-            }
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.InitialLayerCount))
-            {
-                HeaderSettings.BottomLayerCount =
-                    HeaderSettings.BottomLayCount = value.Convert<ushort>();
-                UpdateLayers();
-                RebuildGCode();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.InitialExposureSeconds))
-            {
-                HeaderSettings.BottomLayerExposureTime = value.Convert<float>();
-                UpdateLayers();
-                RebuildGCode();
-                return true;
-            }
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
-            {
-                HeaderSettings.LayerExposureTime = value.Convert<float>();
-                UpdateLayers();
-                RebuildGCode();
-                return true;
-            }
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerOffTime))
-            {
-                HeaderSettings.BottomLightOffTime = value.Convert<float>();
-                RebuildGCode();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.LayerOffTime))
-            {
-                HeaderSettings.LightOffTime = value.Convert<float>();
-                RebuildGCode();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftHeight))
-            {
-                HeaderSettings.BottomLiftHeight = value.Convert<float>();
-                RebuildGCode();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftSpeed))
-            {
-                HeaderSettings.LiftSpeed = value.Convert<float>();
-                RebuildGCode();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight))
-            {
-                HeaderSettings.LiftHeight = value.Convert<float>();
-                RebuildGCode();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed))
-            {
-                HeaderSettings.LiftSpeed = value.Convert<float>();
-                RebuildGCode();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
-            {
-                HeaderSettings.RetractSpeed = value.Convert<float>();
-                RebuildGCode();
-                return true;
-            }
-
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightPWM))
-            {
-                HeaderSettings.BottomLightPWM = value.Convert<byte>();
-                RebuildGCode();
-                return true;
-            }
-            if (ReferenceEquals(modifier, PrintParameterModifier.LightPWM))
-            {
-                HeaderSettings.LayerLightPWM = value.Convert<byte>();
-                RebuildGCode();
-                return true;
-            }
-
-            return false;
-        }
-
         public override void RebuildGCode()
         {
             string arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
@@ -486,7 +433,7 @@ namespace UVtools.Core.FileFormats
                 var lightOffDelay = GetInitialLayerValueOrNormal(layerIndex, HeaderSettings.BottomLightOffTime,
                     HeaderSettings.LightOffTime) * 1000;
 
-                var pwmValue = GetInitialLayerValueOrNormal(layerIndex, HeaderSettings.BottomLightPWM, HeaderSettings.LayerLightPWM);
+                var pwmValue = GetInitialLayerValueOrNormal(layerIndex, HeaderSettings.BottomLightPWM, HeaderSettings.LightPWM);
                 var exposureTime = this[layerIndex].ExposureTime * 1000;
 
                 GCode.AppendLine($";LAYER_START:{layerIndex}");
@@ -580,20 +527,20 @@ namespace UVtools.Core.FileFormats
                             {
                                 LiftHeight = HeaderSettings.BottomLiftHeight,
                                 LiftSpeed = HeaderSettings.BottomLiftSpeed,
-                                LightOnTime = InitialExposureTime,
+                                LightOnTime = BottomExposureTime,
                                 LightOffTime = HeaderSettings.BottomLightOffTime,
                                 LightPWM = HeaderSettings.BottomLightPWM,
                                 RetractSpeed = HeaderSettings.RetractSpeed,
-                                Count = InitialLayerCount
+                                Count = BottomLayerCount
                                 //RetractHeight = LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.JsonSettings.Properties.Bottom.RetractHeight),
                             },
                             Exposure = new UVJFile.Exposure
                             {
                                 LiftHeight = HeaderSettings.LiftHeight,
                                 LiftSpeed = HeaderSettings.LiftSpeed,
-                                LightOnTime = LayerExposureTime,
+                                LightOnTime = ExposureTime,
                                 LightOffTime = HeaderSettings.LightOffTime,
-                                LightPWM = HeaderSettings.LayerLightPWM,
+                                LightPWM = HeaderSettings.LightPWM,
                                 RetractSpeed = HeaderSettings.RetractSpeed,
                             },
                             AntiAliasLevel = ValidateAntiAliasingLevel()

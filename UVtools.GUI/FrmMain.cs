@@ -1471,6 +1471,13 @@ namespace UVtools.GUI
             }
         }
 
+        private void pbLayer_SelectionRegionChanged(object sender, EventArgs e)
+        {
+            var roi = ROI;
+            btnLayerROI.Text = roi.IsEmpty ? "ROI: (NS)" : $"ROI: {roi}";
+            btnLayerROI.Enabled = !roi.IsEmpty;
+        }
+
         private void pbLayer_Zoomed(object sender, Cyotek.Windows.Forms.ImageBoxZoomEventArgs e)
         {
             if (SupressLayerZoomEvent) return;
@@ -2129,9 +2136,9 @@ namespace UVtools.GUI
 
             statusBar.Items.Clear();
             AddStatusBarItem(nameof(SlicerFile.LayerHeight), SlicerFile.LayerHeight, "mm");
-            AddStatusBarItem(nameof(SlicerFile.InitialLayerCount), SlicerFile.InitialLayerCount);
-            AddStatusBarItem(nameof(SlicerFile.InitialExposureTime), SlicerFile.InitialExposureTime, "s");
-            AddStatusBarItem(nameof(SlicerFile.LayerExposureTime), SlicerFile.LayerExposureTime, "s");
+            AddStatusBarItem(nameof(SlicerFile.BottomLayerCount), SlicerFile.BottomLayerCount);
+            AddStatusBarItem(nameof(SlicerFile.BottomExposureTime), SlicerFile.BottomExposureTime, "s");
+            AddStatusBarItem(nameof(SlicerFile.ExposureTime), SlicerFile.ExposureTime, "s");
             AddStatusBarItem(nameof(SlicerFile.PrintTime), Math.Round(SlicerFile.PrintTime / 3600, 2), "h");
             AddStatusBarItem(nameof(SlicerFile.UsedMaterial), Math.Round(SlicerFile.UsedMaterial, 2), "ml");
             AddStatusBarItem(nameof(SlicerFile.MaterialCost), SlicerFile.MaterialCost, "€");
@@ -4137,10 +4144,11 @@ namespace UVtools.GUI
             switch (baseOperation)
             {
                 case OperationEditParameters operation:
-                    foreach (var modifier in operation.Modifiers.Where(modifier => modifier.HasChanged))
+                    /*foreach (var modifier in operation.Modifiers.Where(modifier => modifier.HasChanged))
                     {
                         SlicerFile.SetValueFromPrintParameterModifier(modifier, modifier.NewValue);
-                    }
+                    }*/
+                    SlicerFile.SetValuesFromPrintParametersModifiers();
                     RefreshInfo();
 
                     menuFileSave.Enabled = true;
@@ -4286,11 +4294,6 @@ namespace UVtools.GUI
             return true;
         }
 
-        private void pbLayer_SelectionRegionChanged(object sender, EventArgs e)
-        {
-            var roi = ROI;
-            btnLayerROI.Text = roi.IsEmpty ? "ROI: (NS)" : $"ROI: {roi}";
-            btnLayerROI.Enabled = !roi.IsEmpty;
-        }
+        
     }
 }
