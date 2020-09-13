@@ -1,6 +1,6 @@
 # Changelog
 
-## /09/2020 - v0.8.1.1
+## 13/09/2020 - v0.8.2.0
 
 * (Add) Layer status bar: Button with ROI - Click to zoom in region | Click + shift to clear roi
 * (Add) Setting: Allow the layer overlay tooltips for select issues, ROI, and edit pixel mode to be hidden (#51)
@@ -16,7 +16,7 @@
 * (Fix) File - Save when cancelled no longer keep a invalid file, old restored (#54)
 * (Fix) File - Save As when cancelled no longer keep a invalid file, that will be deleted (#54, #55)
 * (Fix) When a operation is cancelled affected layers will revert to the original form (#57)
-* (Fix) Misc. text cleanup (#52, #53)
+* (Fix) Misc. text cleanup (#52, #53, #58)
 
 ## 12/09/2020 - v0.8.1.0
 
