@@ -1,5 +1,11 @@
 # Changelog
 
+## ?/09/2020 - v0.8.2.1
+
+* (Improvement) When unable to convert a format from SL1 to other, advice users to check used printer on PrusaSlicer
+* (Improvement) Information on "Install profiles on PrusaSlicer" (#60)
+* (Fix) LGS: Change resolution tool was defining wrong Y
+
 ## 13/09/2020 - v0.8.2.0
 
 * (Add) Layer status bar: Button with ROI - Click to zoom in region | Click + shift to clear roi

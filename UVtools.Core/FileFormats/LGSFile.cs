@@ -241,7 +241,7 @@ namespace UVtools.Core.FileFormats
         public override uint ResolutionY
         {
             get => (uint)HeaderSettings.ResolutionY;
-            set => HeaderSettings.ResolutionX = value;
+            set => HeaderSettings.ResolutionY = value;
         }
 
         public override byte AntiAliasing => 4;
