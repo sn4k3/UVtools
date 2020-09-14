@@ -1,10 +1,12 @@
 # Changelog
 
-## ?/09/2020 - v0.8.2.1
+## 14/09/2020 - v0.8.2.1
 
-* (Improvement) When unable to convert a format from SL1 to other, advice users to check used printer on PrusaSlicer
+* (Improvement) When unable to convert a format from SL1 to other, advice users to check used printer on PrusaSlicer (#60)
 * (Improvement) Information on "Install profiles on PrusaSlicer" (#60)
 * (Fix) LGS: Change resolution tool was defining wrong Y
+* (Fix) ctb and pws: Renders a bad file after save, this was introduced with cancelled saves feature
+* (Fix) When cancel a file convertion, it now deletes the target file
 
 ## 13/09/2020 - v0.8.2.0
 

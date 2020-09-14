@@ -876,7 +876,7 @@ namespace UVtools.Core.FileFormats
         
         public override object[] Configs => new object[] { FileMarkSettings, HeaderSettings, PreviewSettings, LayersDefinition };
 
-        public LayerRleFormat LayerFormat => FileFullPath.EndsWith(".pws") ? LayerRleFormat.PWS : LayerRleFormat.PW0;
+        public LayerRleFormat LayerFormat => FileFullPath.EndsWith(".pws") || FileFullPath.EndsWith($".pws{TemporaryFileAppend}") ? LayerRleFormat.PWS : LayerRleFormat.PW0;
 
         #endregion
 

@@ -26,6 +26,7 @@ namespace UVtools.Core.FileFormats
     /// </summary>
     public abstract class FileFormat : IFileFormat, IDisposable, IEquatable<FileFormat>, IEnumerable<Layer>
     {
+        public const string TemporaryFileAppend = ".tmp";
         #region Enums
 
         /// <summary>

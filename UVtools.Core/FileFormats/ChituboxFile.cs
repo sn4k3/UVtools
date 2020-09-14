@@ -26,8 +26,8 @@ namespace UVtools.Core.FileFormats
     public class ChituboxFile : FileFormat
     {
         #region Constants
-        private const uint MAGIC_CBDDLP = 0x12FD0019;
-        private const uint MAGIC_CBT = 0x12FD0086;
+        private const uint MAGIC_CBDDLP = 0x12FD0019; // 318570521
+        private const uint MAGIC_CBT = 0x12FD0086; // 318570630
         private const ushort REPEATRGB15MASK = 0x20;
 
         private const byte RLE8EncodingLimit = 0x7d; // 125;
@@ -1139,7 +1139,7 @@ namespace UVtools.Core.FileFormats
             base.Encode(fileFullPath, progress);
             LayersHash.Clear();
 
-            HeaderSettings.Magic = fileFullPath.EndsWith(".ctb") ? MAGIC_CBT : MAGIC_CBDDLP;
+            HeaderSettings.Magic = fileFullPath.EndsWith(".ctb") || fileFullPath.EndsWith($".ctb{TemporaryFileAppend}") ? MAGIC_CBT : MAGIC_CBDDLP;
             HeaderSettings.PrintParametersSize = (uint)Helpers.Serializer.SizeOf(PrintParametersSettings);
 
             

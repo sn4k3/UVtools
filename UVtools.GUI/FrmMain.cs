@@ -1424,7 +1424,10 @@ namespace UVtools.GUI
                         }
                         catch (OperationCanceledException)
                         {
-
+                            if (File.Exists(dialog.FileName))
+                            {
+                                File.Delete(dialog.FileName);
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -2013,7 +2016,7 @@ namespace UVtools.GUI
             }
 
             var oldFile = SlicerFile.FileFullPath;
-            var tempFile = filepath + ".tmp";
+            var tempFile = filepath + FileFormat.TemporaryFileAppend;
 
             DisableGUI();
             FrmLoading.SetDescription($"Saving {Path.GetFileName(filepath)}");
