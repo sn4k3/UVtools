@@ -126,10 +126,9 @@ namespace UVtools.Core.Operations
         public bool ValidateBounds()
         {
             CalculateDstRoi();
-            if (DstRoi.X < 0) return false;
-            if (DstRoi.Y < 0) return false;
-            if (DstRoi.Right > ImageWidth) return false;
-            if (DstRoi.Bottom > ImageHeight) return false;
+            if (DstRoi.IsEmpty || DstRoi.X < 0 || DstRoi.Y < 0) return false;
+            if (DstRoi.Width == 0 || DstRoi.Right > ImageWidth) return false;
+            if (DstRoi.Height == 0 || DstRoi.Bottom > ImageHeight) return false;
 
             return true;
         }

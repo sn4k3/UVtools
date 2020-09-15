@@ -465,10 +465,17 @@ namespace UVtools.Core
                 using (var srcRoi = new Mat(mat, operation.ROI))
                 using (var dstRoi = new Mat(mat, operation.DstRoi))
                 {
-                    srcRoi.CopyTo(dstRoi);
                     if (operation.IsCutMove)
                     {
-                        srcRoi.SetTo(new MCvScalar(0));
+                        using (var targetRoi = srcRoi.Clone())
+                        {
+                            srcRoi.SetTo(new MCvScalar(0));
+                            targetRoi.CopyTo(dstRoi);
+                        }
+                    }
+                    else
+                    {
+                        srcRoi.CopyTo(dstRoi);
                     }
 
                     LayerMat = mat;

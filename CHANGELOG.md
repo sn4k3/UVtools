@@ -1,5 +1,10 @@
 # Changelog
 
+## /09/2020 - v0.8.2.2
+
+* (Fix) Tools - Move and Pattern: When not selecting a ROI will draw black layers
+* (Fix) Tool - Move: When making a cut move and move to a overlap zone it will blackout the source rectangle
+
 ## 14/09/2020 - v0.8.2.1
 
 * (Improvement) When unable to convert a format from SL1 to other, advice users to check used printer on PrusaSlicer (#60)

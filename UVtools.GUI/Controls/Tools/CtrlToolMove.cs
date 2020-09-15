@@ -17,6 +17,7 @@ namespace UVtools.GUI.Controls.Tools
     {
         public OperationMove Operation { get; }
 
+        private RadioButton[] radioButtons;
 
         public CtrlToolMove()
         {
@@ -27,6 +28,13 @@ namespace UVtools.GUI.Controls.Tools
             Operation = new OperationMove(roi.IsEmpty ? Program.SlicerFile.LayerManager.BoundingRectangle : roi, (uint)Program.FrmMain.ActualLayerImage.Width,
                 (uint)Program.FrmMain.ActualLayerImage.Height);
             SetOperation(Operation);
+
+            radioButtons = new[]
+            {
+                rbAnchorTopLeft, rbAnchorTopCenter, rbAnchorTopRight,
+                rbAnchorMiddleLeft, rbAnchorMiddleCenter, rbAnchorMiddleRight,
+                rbAnchorBottomLeft, rbAnchorBottomCenter, rbAnchorBottomRight
+            };
 
             cbMoveType.SelectedIndex = 0;
             ExtraActionCall(this);
@@ -70,12 +78,7 @@ namespace UVtools.GUI.Controls.Tools
         {
             base.UpdateOperation();
             byte i = 0;
-            foreach (var radioButton in new[]
-            {
-                rbAnchorTopLeft,    rbAnchorTopCenter, rbAnchorTopRight,
-                rbAnchorMiddleLeft, rbAnchorMiddleCenter, rbAnchorMiddleRight,
-                rbAnchorBottomLeft, rbAnchorBottomCenter, rbAnchorBottomRight
-            })
+            foreach (var radioButton in radioButtons)
             {
                 if (radioButton.Checked)
                 {
@@ -91,6 +94,7 @@ namespace UVtools.GUI.Controls.Tools
             Operation.MarginRight = (int)nmMarginRight.Value;
             Operation.MarginBottom = (int)nmMarginBottom.Value;
             Operation.IsCutMove = cbMoveType.SelectedIndex == 0;
+
             return true;
         }
     }

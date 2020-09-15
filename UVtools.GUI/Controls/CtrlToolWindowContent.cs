@@ -166,7 +166,7 @@ namespace UVtools.GUI.Controls
             if (ParentToolWindow is null) return true;
             BaseOperation.LayerIndexStart = ParentToolWindow.LayerRangeStart;
             BaseOperation.LayerIndexEnd = ParentToolWindow.LayerRangeEnd;
-            if (CanROI)
+            if (CanROI && BaseOperation.ROI.IsEmpty)
             {
                 BaseOperation.ROI = Program.FrmMain.ROI;
             }
