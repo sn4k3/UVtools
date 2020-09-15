@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>UVtools</AssemblyName>
+    <ApplicationIcon>UVtools.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="0.9.11" />
+    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2019013001" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.9.11" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UVtools.Core\UVtools.Core.csproj" />
+  </ItemGroup>
+</Project>
