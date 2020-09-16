@@ -60,10 +60,7 @@ namespace UVtools.Core.Objects
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             var eventHandler = PropertyChanged;
-            if (!ReferenceEquals(eventHandler, null))
-            {
-                eventHandler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            eventHandler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

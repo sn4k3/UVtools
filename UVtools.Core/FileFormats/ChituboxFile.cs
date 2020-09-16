@@ -1316,6 +1316,8 @@ namespace UVtools.Core.FileFormats
         public override void Decode(string fileFullPath, OperationProgress progress = null)
         {
             base.Decode(fileFullPath, progress);
+            if(progress is null) progress = new OperationProgress();
+            progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
 
             using (var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read))
             {

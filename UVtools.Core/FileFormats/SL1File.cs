@@ -493,6 +493,9 @@ namespace UVtools.Core.FileFormats
         {
             base.Decode(fileFullPath, progress);
 
+            if (progress is null) progress = new OperationProgress();
+            progress.ItemName = OperationProgress.StatusGatherLayers;
+
             FileFullPath = fileFullPath;
 
             PrinterSettings = new Printer();

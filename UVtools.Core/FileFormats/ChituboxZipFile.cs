@@ -231,15 +231,11 @@ namespace UVtools.Core.FileFormats
         public override string MachineName => HeaderSettings.MachineType;
 
         public override object[] Configs => new object[] { HeaderSettings };
+
+        public bool IsPHZZip = false;
         #endregion
 
         #region Methods
-
-        public override void Clear()
-        {
-            base.Clear();
-            GCode = null;
-        }
 
         public override void Encode(string fileFullPath, OperationProgress progress = null)
         {
@@ -250,10 +246,12 @@ namespace UVtools.Core.FileFormats
                 {
                     using (Stream stream = outputFile.CreateEntry("preview.png").Open())
                     {
-                        var vec = new VectorOfByte();
-                        CvInvoke.Imencode(".png", Thumbnails[0], vec);
-                        stream.WriteBytes(vec.ToArray());
-                        stream.Close();
+                        using (var vec = new VectorOfByte())
+                        {
+                            CvInvoke.Imencode(".png", Thumbnails[0], vec);
+                            stream.WriteBytes(vec.ToArray());
+                            stream.Close();
+                        }
                     }
                 }
 
@@ -261,21 +259,27 @@ namespace UVtools.Core.FileFormats
                 {
                     using (Stream stream = outputFile.CreateEntry("preview_cropping.png").Open())
                     {
-                        var vec = new VectorOfByte();
-                        CvInvoke.Imencode(".png", Thumbnails[1], vec);
-                        stream.WriteBytes(vec.ToArray());
-                        stream.Close();
+                        using (var vec = new VectorOfByte())
+                        {
+                            CvInvoke.Imencode(".png", Thumbnails[1], vec);
+                            stream.WriteBytes(vec.ToArray());
+                            stream.Close();
+                        }
                     }
                 }
 
-                RebuildGCode();
-                outputFile.PutFileContent("run.gcode", GCode.ToString(), ZipArchiveMode.Create);
+                if (!IsPHZZip)
+                {
+                    RebuildGCode();
+                    outputFile.PutFileContent("run.gcode", GCode.ToString(), ZipArchiveMode.Create);
+                }
 
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
                     progress.Token.ThrowIfCancellationRequested();
                     Layer layer = this[layerIndex];
-                    outputFile.PutFileContent($"{layerIndex + 1}.png", layer.CompressedBytes, ZipArchiveMode.Create);
+                    outputFile.PutFileContent($"{layerIndex + 1}.png", layer.CompressedBytes,
+                        ZipArchiveMode.Create);
                     progress++;
                 }
             }
@@ -286,43 +290,48 @@ namespace UVtools.Core.FileFormats
         public override void Decode(string fileFullPath, OperationProgress progress = null)
         {
             base.Decode(fileFullPath, progress);
+            if(progress is null) progress = new OperationProgress();
+            progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
 
             FileFullPath = fileFullPath;
             using (var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read))
             {
                 var entry = inputFile.GetEntry("run.gcode");
-                if (ReferenceEquals(entry, null))
+                if (!ReferenceEquals(entry, null))
                 {
-                    Clear();
-                    throw new FileLoadException("run.gcode not found", fileFullPath);
-                }
-
-                using (TextReader tr = new StreamReader(entry.Open()))
-                {
-                    string line;
-                    GCode = new StringBuilder();
-                    while ((line = tr.ReadLine()) != null)
+                    //Clear();
+                    //throw new FileLoadException("run.gcode not found", fileFullPath);
+                    using (TextReader tr = new StreamReader(entry.Open()))
                     {
-                        GCode.AppendLine(line);
-                        if (string.IsNullOrEmpty(line)) continue;
-
-                        if (line[0] != ';')
+                        string line;
+                        GCode = new StringBuilder();
+                        while ((line = tr.ReadLine()) != null)
                         {
-                            continue;
-                        }
+                            GCode.AppendLine(line);
+                            if (string.IsNullOrEmpty(line)) continue;
 
-                        var splitLine = line.Split(':');
-                        if (splitLine.Length < 2) continue;
+                            if (line[0] != ';')
+                            {
+                                continue;
+                            }
 
-                        foreach (var propertyInfo in HeaderSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
-                        {
-                            var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
-                            if (ReferenceEquals(displayNameAttribute, null)) continue;
-                            if (!splitLine[0].Trim(' ', ';').Equals(displayNameAttribute.DisplayName)) continue;
-                            Helpers.SetPropertyValue(propertyInfo, HeaderSettings, splitLine[1].Trim());
+                            var splitLine = line.Split(':');
+                            if (splitLine.Length < 2) continue;
+
+                            foreach (var propertyInfo in HeaderSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                            {
+                                var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
+                                if (ReferenceEquals(displayNameAttribute, null)) continue;
+                                if (!splitLine[0].Trim(' ', ';').Equals(displayNameAttribute.DisplayName)) continue;
+                                Helpers.SetPropertyValue(propertyInfo, HeaderSettings, splitLine[1].Trim());
+                            }
                         }
+                        tr.Close();
                     }
-                    tr.Close();
+                }
+                else
+                {
+                    IsPHZZip = true;
                 }
 
                 if (HeaderSettings.LayerCount == 0)
@@ -341,16 +350,25 @@ namespace UVtools.Core.FileFormats
 
                 progress.ItemCount = LayerCount;
 
-                var gcode = GCode.ToString();
+                var gcode = GCode?.ToString();
 
                 for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
                 {
+                    if (progress.Token.IsCancellationRequested) break;
                     entry = inputFile.GetEntry($"{layerIndex+1}.png");
                     if (ReferenceEquals(entry, null))
                     {
                         Clear();
                         throw new FileLoadException($"Layer {layerIndex+1} not found", fileFullPath);
                     }
+
+                    if (IsPHZZip) // PHZ file
+                    {
+                        LayerManager[layerIndex] = new Layer(layerIndex, entry.Open(), entry.Name);
+                        progress++;
+                        continue;;
+                    }
+
 
                     var startStr = $";LAYER_START:{layerIndex}";
                     var stripGcode = gcode.Substring(gcode.IndexOf(startStr, StringComparison.InvariantCultureIgnoreCase) + startStr.Length);
@@ -377,6 +395,11 @@ namespace UVtools.Core.FileFormats
                     progress++;
                 }
 
+                if (GCode is null) // PHZ file
+                {
+                    LayerManager.RebuildLayersProperties();
+                }
+
                 if (HeaderSettings.LayerCount > 0 && ResolutionX == 0)
                 {
                     using (var mat = this[0].LayerMat)
@@ -389,13 +412,16 @@ namespace UVtools.Core.FileFormats
                 entry = inputFile.GetEntry("preview.png");
                 if (!ReferenceEquals(entry, null))
                 {
+                    Thumbnails[0] = new Mat();
                     CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[0]);
                 }
 
                 entry = inputFile.GetEntry("preview_cropping.png");
                 if (!ReferenceEquals(entry, null))
                 {
-                    CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[CreatedThumbnailsCount]);
+                    var count = CreatedThumbnailsCount;
+                    Thumbnails[count] = new Mat();
+                    CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[count]);
                 }
             }
 
@@ -404,6 +430,7 @@ namespace UVtools.Core.FileFormats
 
         public override void RebuildGCode()
         {
+            if (IsPHZZip) return;
             string arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
             GCode = new StringBuilder();
             GCode.AppendLine($"; {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.Now}");
@@ -493,7 +520,10 @@ namespace UVtools.Core.FileFormats
                     }
                 }
 
-                outputFile.PutFileContent("run.gcode", GCode.ToString(), ZipArchiveMode.Update);
+                if (!IsPHZZip)
+                {
+                    outputFile.PutFileContent("run.gcode", GCode.ToString(), ZipArchiveMode.Update);
+                }
             }
 
             //Decode(FileFullPath, progress);

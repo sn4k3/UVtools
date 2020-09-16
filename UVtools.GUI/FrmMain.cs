@@ -1424,10 +1424,6 @@ namespace UVtools.GUI
                         }
                         catch (OperationCanceledException)
                         {
-                            if (File.Exists(dialog.FileName))
-                            {
-                                File.Delete(dialog.FileName);
-                            }
                         }
                         catch (Exception ex)
                         {
@@ -1437,6 +1433,7 @@ namespace UVtools.GUI
                                 extraMessage = "Note: When converting from SL1 make sure you have the correct printer selected, you MUST use a UVtools base printer.\n" +
                                                "Go to \"Help\" -> \"Install profiles into PrusaSlicer\" to install printers.\n";
                             }
+
                             MessageBox.Show($"Convertion was not successful! Maybe not implemented...\n{extraMessage}{ex.Message}",
                                 "Convertion unsuccessful", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }

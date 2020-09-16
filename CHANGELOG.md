@@ -1,9 +1,12 @@
 # Changelog
 
-## /09/2020 - v0.8.2.2
+## 16/09/2020 - v0.8.2.2
 
+* (Add) Support for PHZ zip files when renamed to .zip
 * (Fix) Tools - Move and Pattern: When not selecting a ROI will draw black layers
 * (Fix) Tool - Move: When making a cut move and move to a overlap zone it will blackout the source rectangle
+* (Fix) ZIP: Allow to cancel on gather layers stage
+* (Fix) ZIP: Thumbnails not showing nor saving
 
 ## 14/09/2020 - v0.8.2.1
 

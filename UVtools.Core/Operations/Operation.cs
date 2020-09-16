@@ -7,7 +7,6 @@
  */
 
 using System.Drawing;
-using System.Runtime.CompilerServices;
 using Emgu.CV;
 using UVtools.Core.Objects;
 

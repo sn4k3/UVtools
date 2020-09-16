@@ -292,12 +292,12 @@ namespace UVtools.Core.FileFormats
         public byte CreatedThumbnailsCount {
             get
             {
-                if (ReferenceEquals(Thumbnails, null)) return 0;
+                if (Thumbnails is null) return 0;
                 byte count = 0;
 
                 foreach (var thumbnail in Thumbnails)
                 {
-                    if (ReferenceEquals(thumbnail, null)) continue;
+                    if (thumbnail is null) continue;
                     count++;
                 }
 
@@ -572,8 +572,6 @@ namespace UVtools.Core.FileFormats
             Clear();
             FileValidation(fileFullPath);
             FileFullPath = fileFullPath;
-            if(ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.ItemName = OperationProgress.StatusGatherLayers;
         }
 
         public virtual void Extract(string path, bool genericConfigExtract = true, bool genericLayersExtract = true,
