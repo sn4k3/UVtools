@@ -6,11 +6,35 @@
     <ApplicationIcon>UVtools.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.9.11" />
+    <PackageReference Include="Avalonia" Version="0.10.0-preview5" />
     <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2019013001" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.9.11" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.0-preview5" />
+    <PackageReference Include="Avalonia.ThemeManager" Version="0.10.0-preview3" />
+    <PackageReference Include="Dock.Avalonia" Version="0.10.0-preview5" />
+    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.4.0.4061" />
+    <PackageReference Include="MessageBox.Avalonia" Version="0.10.0-prev2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\UVtools.Core\UVtools.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+		<AvaloniaResource Include="Assets\Icons\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Themes - Copy\UVtoolsDark.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Themes - Copy\UVtoolsLight.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Themes\UVtools.themes">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Themes\UVtoolsDark.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Themes\UVtoolsLight.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

@@ -2,20 +2,175 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:manager="clr-namespace:Avalonia.ThemeManager;assembly=Avalonia.ThemeManager"
         xmlns:uc="clr-namespace:UVtools.WPF.Controls"
+        xmlns:idc="clr-namespace:Dock.Avalonia.Controls;assembly=Dock.Avalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="UVtools.WPF.MainWindow"
         Title="UVtools">
-
+  
   <DockPanel>
-    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Name="MainMenu.File" Header="_File">
+        <MenuItem Name="MainMenu.File.Open" Header="_Open" InputGesture="Ctrl+O" Command="{Binding MenuFileOpenClicked}">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\open-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+        <MenuItem Name="MainMenu.File.OpenNewWindow" Header="Open in _new window" InputGesture="Ctrl+Shift+O" Command="{Binding ButtonClicked}">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\open-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+        <MenuItem Name="MainMenu.File.Reload" Header="_Reload" InputGesture="Ctrl+F5" IsEnabled="{Binding IsFileLoaded}">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\file-refresh-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+        <MenuItem Name="MainMenu.File.Save" Header="_Save" InputGesture="Ctrl+S">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\save-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+          <MenuItem Name="MainMenu.File.SaveAs" Header="Save _as" InputGesture="Ctrl+Shift+S" IsEnabled="{Binding IsFileLoaded}">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\save-as-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+        <MenuItem Name="MainMenu.File.Close" Header="_Close" InputGesture="Ctrl+W" IsEnabled="{Binding IsFileLoaded}">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\file-close-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+        
+          <Separator/>
+        
+        <MenuItem Name="MainMenu.File.Extract" Header="_Extract" InputGesture="Ctrl+E" IsEnabled="{Binding IsFileLoaded}">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\extract-object-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+        
+        <MenuItem Name="MainMenu.File.Convert" Header="_Convert to" IsEnabled="{Binding IsFileLoaded}">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\convert-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+        
+        <Separator/>
+        
+        <MenuItem Name="MainMenu.File.Exit" Header="_Exit Alt+F4" InputGesture="Alt+F4">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\exit-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+      </MenuItem>
+      <MenuItem Header="_Edit">
+        <MenuItem Header="Copy"/>
+        <MenuItem Header="Paste"/>
+      </MenuItem>
+    </Menu>
+
+    <Menu DockPanel.Dock="Bottom">
+      <MenuItem Header="_File">
+        <MenuItem Header="_Open..."/>
+        <Separator/>
+        <MenuItem Header="_Exit"/>
+      </MenuItem>
+      <MenuItem Header="_Edit">
+        <MenuItem Header="Copy"/>
+        <MenuItem Header="Paste"/>
+      </MenuItem>
+    </Menu>
+
+    <TabControl DockPanel.Dock="Left" Width="300">
+      <TabItem Header="Information" VerticalContentAlignment="Center">
+        <TextBlock Text="I am in the circle page !" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+      </TabItem>
+      <TabItem>
+        <TabItem.Header>
+          <TextBlock VerticalAlignment="Center">Issues</TextBlock>
+        </TabItem.Header>
+        <StackPanel>
+          <TextBlock Text="I am in the triangle page ! I'll put a button to show you that each page contains what you want." HorizontalAlignment="Left" VerticalAlignment="Center"/>
+          <Button>A button in the triangle page !</Button>
+        </StackPanel>
+      </TabItem>
+      <TabItem>
+        <TabItem.Header>
+          <TextBlock VerticalAlignment="Center">GCode</TextBlock>
+        </TabItem.Header>
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Text="Square : " HorizontalAlignment="Left" VerticalAlignment="Center"/>
+          <Rectangle Fill="Blue" Width="63" Height="41"/>
+        </StackPanel>
+      </TabItem>
+      <TabItem>
+        <TabItem.Header>
+          <TextBlock VerticalAlignment="Center">Log</TextBlock>
+        </TabItem.Header>
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Text="Square : " HorizontalAlignment="Left" VerticalAlignment="Center"/>
+          <Rectangle Fill="Blue" Width="63" Height="41"/>
+        </StackPanel>
+      </TabItem>
+    </TabControl>
+
+    <Grid DockPanel.Dock="Right" ColumnDefinitions="100*,1.5*,4*" RowDefinitions="Auto,Auto,*,Auto,Auto,Auto"  Margin="5">
+      <TextBlock Margin="0,0,0,10" Text="???" HorizontalAlignment="Center" TextAlignment="Center" Grid.Row="0"/>
+      <RepeatButton Grid.Row="1">Up</RepeatButton>
+      <Slider Margin="0,5,0,5" HorizontalAlignment="Center" Orientation="Vertical" Grid.Row="2"/>
+      <RepeatButton Grid.Row="3">Down</RepeatButton>
+      <StackPanel Margin="0,10,0,10" Grid.Row="4" Orientation="Horizontal">
+        <Button Content="asd"/>
+        <Button Margin="5,0,5,0" Content="asd"/>
+        <Button Content="asd"/>
+      </StackPanel>
+      <TextBlock Text="???" HorizontalAlignment="Center" TextAlignment="Center" Grid.Row="5"/>
+    </Grid>
+
+
+    <!--<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
       <Button Name="zoomtofit">Zoom to fit</Button>
       <Button Name="center">Center image</Button>
-    </StackPanel>
-  
-    <uc:AdvancedImageBox
+    </StackPanel>-->
+
+    <Grid ColumnDefinitions="*" RowDefinitions="Auto,*,Auto"  Margin="5">
+      <Menu Grid.Row="0">
+        <MenuItem Header="_File">
+          <MenuItem Header="_Open..."/>
+          <Separator/>
+          <MenuItem Header="_Exit"/>
+        </MenuItem>
+        <MenuItem Header="_Edit">
+          <MenuItem Header="Copy"/>
+          <MenuItem Header="Paste"/>
+        </MenuItem>
+      </Menu>
+
+      <uc:AdvancedImageBox
+        Grid.Row="1"
      GridCellSize="15"
-     Name="Layer.ImageOld"
+     Name="Layer.Image"
       />
+
+      <Menu Grid.Row="2">
+        <MenuItem Header="_File">
+          <MenuItem Header="_Open..."/>
+          <Separator/>
+          <MenuItem Header="_Exit"/>
+        </MenuItem>
+        <MenuItem Header="_Edit">
+          <MenuItem Header="Copy"/>
+          <MenuItem Header="Paste"/>
+        </MenuItem>
+      </Menu>
+      
+      
+    </Grid>
+
+
   </DockPanel>
+
+
 </Window>

@@ -11,6 +11,8 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Skia;
 using Avalonia.Styling;
+using Avalonia.Visuals.Media.Imaging;
+using SkiaSharp;
 using UVtools.Core.Extensions;
 
 
@@ -525,6 +527,45 @@ namespace UVtools.WPF.Controls
 
         public virtual bool IsActualSize => Zoom == 100;
 
+        private ISolidColorBrush _pixelGridColor = Brushes.DimGray;
+        /// <summary>
+        /// Gets or sets the color of the pixel grid.
+        /// </summary>
+        /// <value>The color of the pixel grid.</value>
+        public virtual ISolidColorBrush PixelGridColor
+        {
+            get => _pixelGridColor;
+            set
+            {
+                if (PixelGridColor != value)
+                {
+                    _pixelGridColor = value;
+
+                    //this.OnPixelGridColorChanged(EventArgs.Empty);
+                }
+            }
+        }
+
+        private int _pixelGridThreshold = 5;
+        /// <summary>
+        /// Gets or sets the minimum size of zoomed pixel's before the pixel grid will be drawn
+        /// </summary>
+        /// <value>The pixel grid threshold.</value>
+
+        public virtual int PixelGridThreshold
+        {
+            get => _pixelGridThreshold;
+            set
+            {
+                if (PixelGridThreshold != value)
+                {
+                    _pixelGridThreshold = value;
+
+                    //this.OnPixelGridThresholdChanged(EventArgs.Empty);
+                }
+            }
+        }
+
 
         //Our render target we compile everything to and present to the user
         private RenderTargetBitmap RenderTarget;
@@ -778,11 +819,13 @@ namespace UVtools.WPF.Controls
         /// <param name="relativeDisplayPoint">The relative display point to offset scrolling by.</param>
         public virtual void ScrollTo(Point imageLocation, Point relativeDisplayPoint)
         {
-            var x = HorizontalScrollBarMaximum - imageLocation.X * ZoomFactor + relativeDisplayPoint.X;
-            var y = VerticalScrollBarMaximum - imageLocation.Y * ZoomFactor + relativeDisplayPoint.Y;
+            var x = imageLocation.X * ZoomFactor - relativeDisplayPoint.X;
+            var y = imageLocation.Y * ZoomFactor - relativeDisplayPoint.Y;
             
             Offset = new Vector(x, y);
-            Debug.WriteLine($"{Offset} | {HorizontalScrollBarMaximum},{VerticalScrollBarMaximum} | {HorizontalScrollBarValue},{VerticalScrollBarValue}");
+            Debug.WriteLine($"{Offset} | " +
+                            $"{relativeDisplayPoint} | " +
+                            $"{HorizontalScrollBarValue},{VerticalScrollBarValue}");
         }
 
         /// <summary>
@@ -989,6 +1032,7 @@ namespace UVtools.WPF.Controls
         public void LoadImage(string path)
         {
             Image = new Bitmap(path);
+            Image.Save("D:\\test2.png");
             //ImageControl.Source = Image;
             //ImageControl.InvalidateVisual();
         }
@@ -997,6 +1041,8 @@ namespace UVtools.WPF.Controls
         {
             Debug.WriteLine($"Render: {DateTime.Now.Ticks}");
             //   base.Render(context);
+
+            // Draw Grid
             if (ShowGrid)
             {
                 // draw the background
@@ -1021,22 +1067,33 @@ namespace UVtools.WPF.Controls
             }
 
             if (Image is null) return;
-            
-            context.DrawImage(Image, 1.0,
+            // Draw iamge
+            context.DrawImage(Image,
                 GetSourceImageRegion(),
                 GetImageViewPort()
                 );
-                /*using (var surface = SKSurface.Create(SkiaContext.GrContext, RenderTarget))
-                {
-                    surface.Canvas.DrawImage(Image, 0f, 0f);
-                    surface.Canvas.Flush();
-                    var textureImage = surface.Snapshot(); //This should be texture backed
-                }*/
+            //SkiaContext.SkCanvas.dr
+            // Draw pixel grid
+            var pixelSize = ZoomFactor;
+            if (pixelSize > PixelGridThreshold)
+            {
+                Rect viewport = GetImageViewPort();
+                var offsetX = Offset.X % pixelSize;
+                var offsetY = Offset.Y % pixelSize;
 
-            /*context.DrawImage(RenderTarget, 1.0,
-                new Rect(0, 0, RenderTarget.PixelSize.Width, RenderTarget.PixelSize.Height),
-                new Rect(0, 0, Width, Height)
-            );*/
+                Pen pen = new Pen(PixelGridColor);
+                for (double x = viewport.X + pixelSize - offsetX; x < viewport.Right; x += pixelSize)
+                {
+                    context.DrawLine(pen, new Point(x, viewport.X), new Point(x, viewport.Bottom));
+                }
+
+                for (double y = viewport.Y + pixelSize - offsetY; y < viewport.Bottom; y += pixelSize)
+                {
+                    context.DrawLine(pen, new Point(viewport.Y, y), new Point(viewport.Right, y));
+                }
+
+                context.DrawRectangle(pen, viewport);
+            }
         }
 
        /// <summary>
