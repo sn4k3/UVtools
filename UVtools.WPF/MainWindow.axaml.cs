@@ -1,18 +1,23 @@
-﻿using System;
+﻿/*
+ *                     GNU AFFERO GENERAL PUBLIC LICENSE
+ *                       Version 3, 19 November 2007
+ *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ *  Everyone is permitted to copy and distribute verbatim copies
+ *  of this license document, but changing it is not allowed.
+ */
+using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using MessageBox.Avalonia.DTO;
-using MessageBox.Avalonia.Enums;
-using MessageBox.Avalonia.Models;
-using SkiaSharp;
 using UVtools.Core.FileFormats;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.ViewModels;
+using UVtools.WPF.Windows;
 
 namespace UVtools.WPF
 {
@@ -68,9 +73,6 @@ namespace UVtools.WPF
         #endregion
 
         public MainWindowViewModel ViewModel { get; }
-
-
-
 
 
 
@@ -133,6 +135,8 @@ namespace UVtools.WPF
             App.SlicerFile = FileFormat.FindByExtension(fileName, true, true);
             if (App.SlicerFile is null) return;
 
+            ViewModel.IsGUIEnabled = false;
+
             var task = Task.Factory.StartNew(() =>
             {
                 try
@@ -153,37 +157,23 @@ namespace UVtools.WPF
                 }
             });
 
+            //ProgressWindow progressWindow = new ProgressWindow();
+            //progressWindow.ShowDialog(this);
+
+
+
             task.Wait();
 
             var mat = App.SlicerFile[0].LayerMat;
             var matRgb = App.SlicerFile[0].BrgMat;
 
-            var skbitmapGray = mat.ToSkBitmap();
-            using (var image = SKImage.FromBitmap(skbitmapGray))
-            using (var data = image.Encode(SKEncodedImageFormat.Png, 80))
-            {
-                // save the data to a stream
-                using (var stream = File.OpenWrite("D:\\gray.png"))
-                {
-                    data.SaveTo(stream);
-                }
-            }
-
+            Debug.WriteLine("4K grayscale - BGRA convertion:");
+            var bitmap = mat.ToBitmap();
+            Debug.WriteLine("4K BGR - BGRA convertion:");
+            var bitmapRgb = matRgb.ToBitmap();
+            LayerImage.Image = bitmapRgb;
             
-
-            var skbitmapRBG = matRgb.ToSkBitmap();
-            using (var image = SKImage.FromBitmap(skbitmapRBG))
-            using (var data = image.Encode(SKEncodedImageFormat.Png, 80))
-            {
-                // save the data to a stream
-                using (var stream = File.OpenWrite("D:\\rgb.png"))
-                {
-                    data.SaveTo(stream);
-                }
-            }
-
-            //Avalonia.Skia.SkiaSharpExtensions.
-            //LayerImage.Image = bitmap;
+            ViewModel.IsGUIEnabled = true;
         }
     }
 }

@@ -1,0 +1,167 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
+        x:Class="UVtools.WPF.Windows.SettingsWindow"
+        WindowStartupLocation="CenterOwner"
+        SizeToContent="WidthAndHeight"
+        CanResize="false"
+        SystemDecorations="Full"
+        MinWidth="500"
+        Title="UVtools - Settings"
+        Icon="/Assets/Icons/UVtools.ico"
+        >
+  <StackPanel Orientation="Vertical" Spacing="10">
+    <TabControl>
+      <TabItem Header="General" VerticalContentAlignment="Center">
+        <StackPanel Orientation="Vertical" Spacing="5">
+          <Border 
+            Margin="5"
+          BorderBrush="LightBlue"
+          BorderThickness="4"
+          >
+
+            <StackPanel Orientation="Vertical">
+              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Startup"/>
+              <StackPanel Margin="15" Orientation="Vertical" Spacing="15">
+                <CheckBox Content="Start maximized"/>
+                <CheckBox Content="Check for updates on startup"/>
+              </StackPanel>
+            
+            </StackPanel>
+
+
+          </Border>
+
+          <Border
+            Margin="5"
+          BorderBrush="LightBlue"
+          BorderThickness="4"
+          >
+
+            <StackPanel Orientation="Vertical">
+              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="File dialog"/>
+              <Grid Margin="15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,*,Auto,Auto">
+                <TextBlock 
+                  VerticalAlignment="Center" 
+                  Grid.Row="0" Grid.Column="0" 
+                  Text="File open dialog filters:"/>
+                <ComboBox Margin="10,0,0,0" 
+                          Grid.ColumnSpan="3" Grid.Row="0" Grid.Column="1"/>
+
+                <TextBlock VerticalAlignment="Center"
+                           Grid.Row="2" Grid.Column="0"
+                           Text="File open default directory:"/>
+                <TextBox Margin="10,0,0,0" Grid.Row="2" Grid.Column="1" IsReadOnly="True"/>
+                <Button Grid.Row="2" Grid.Column="2">
+                  <Image Source="/Assets/Icons/open-16x16.png"/>
+                </Button>
+                <Button Grid.Row="2" Grid.Column="3">
+                  <Image Source="/Assets/Icons/delete-16x16.png"/>
+                </Button>
+
+                <TextBlock VerticalAlignment="Center" 
+                           Grid.Row="4" Grid.Column="0"
+                           Text="File save as default directory:"/>
+                <TextBox Margin="10,0,0,0" Grid.Row="4" Grid.Column="1" IsReadOnly="True"/>
+                <Button Grid.Row="4" Grid.Column="2">
+                  <Image Source="/Assets/Icons/open-16x16.png"/>
+                </Button>
+                <Button Grid.Row="4" Grid.Column="3">
+                  <Image Source="/Assets/Icons/delete-16x16.png"/>
+                </Button>
+
+                <TextBlock VerticalAlignment="Center" 
+                           Grid.Row="6" Grid.Column="0"
+                           Text="File extract default directory:"/>
+                <TextBox Margin="10,0,0,0" Grid.Row="6" Grid.Column="1" IsReadOnly="True"/>
+                <Button Grid.Row="6" Grid.Column="2">
+                  <Image Source="/Assets/Icons/open-16x16.png"/>
+                </Button>
+                <Button Grid.Row="6" Grid.Column="3">
+                  <Image Source="/Assets/Icons/delete-16x16.png"/>
+                </Button>
+
+                <TextBlock VerticalAlignment="Center" 
+                           Grid.Row="8" Grid.Column="0"
+                           Text="File convert default directory:"/>
+                <TextBox Margin="10,0,0,0" Grid.Row="8" Grid.Column="1" IsReadOnly="True"/>
+                <Button Grid.Row="8" Grid.Column="2">
+                  <Image Source="/Assets/Icons/open-16x16.png"/>
+                </Button>
+                <Button Grid.Row="8" Grid.Column="3">
+                  <Image Source="/Assets/Icons/delete-16x16.png"/>
+                </Button>
+                
+              </Grid>
+              <CheckBox Margin="15,0" Content="On file 'Save' prompt for file overwrite for the first time" />
+
+              <Grid Margin="15" ColumnDefinitions="Auto,*,Auto,*">
+                <TextBlock VerticalAlignment="Center" Grid.Column="0" Text="File 'Save as' prefix:"/>
+                <TextBox Grid.Column="1" Margin="10,0,10,0"/>
+                <TextBlock VerticalAlignment="Center" Grid.Column="2" Text="Suffix:"/>
+                <TextBox Grid.Column="3" Margin="10,0,0,0"/>
+              </Grid>
+              
+            </StackPanel>
+
+
+          </Border>
+
+        </StackPanel>
+
+
+      </TabItem>
+      <TabItem Header="Layer preview" VerticalContentAlignment="Center">
+
+      </TabItem>
+      <TabItem Header="Issues" VerticalContentAlignment="Center">
+
+      </TabItem>
+
+      <TabItem Header="Pixel editor" VerticalContentAlignment="Center">
+
+      </TabItem>
+
+      <TabItem Header="Layer repair" VerticalContentAlignment="Center">
+
+      </TabItem>
+
+    </TabControl>
+
+    <Grid ColumnDefinitions="*,*" Background="LightGray">
+
+      <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="10">
+        <Button Padding="10">
+          <StackPanel Orientation="Horizontal">
+            <Image Source="/Assets/Icons/undo-alt-16x16.png"/>
+            <TextBlock Margin="10,0,0,0">Reset all settings</TextBlock>
+          </StackPanel>
+          </Button>
+      </StackPanel>
+
+      <StackPanel Grid.Column="1"
+                  HorizontalAlignment="Right"
+                  VerticalAlignment="Center"
+                  Orientation="Horizontal"
+                  Margin="10"
+                  >
+          <Button Margin="0,0,10,0" Padding="10" IsDefault="True">
+            <StackPanel Orientation="Horizontal">
+              <Image Source="/Assets/Icons/save-16x16.png"/>
+              <TextBlock Margin="10,0,0,0">Save</TextBlock>
+            </StackPanel>
+          </Button>
+
+        <Button Padding="10" IsCancel="True">
+          <StackPanel Orientation="Horizontal">
+            <Image Source="/Assets/Icons/exit-16x16.png"/>
+            <TextBlock Margin="10,0,0,0">Cancel</TextBlock>
+          </StackPanel>
+        </Button>
+      </StackPanel>
+    </Grid>
+  </StackPanel>
+
+  </Window>

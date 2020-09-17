@@ -1,11 +1,15 @@
-﻿using System.Diagnostics;
+﻿/*
+ *                     GNU AFFERO GENERAL PUBLIC LICENSE
+ *                       Version 3, 19 November 2007
+ *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ *  Everyone is permitted to copy and distribute verbatim copies
+ *  of this license document, but changing it is not allowed.
+ */
+
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.ThemeManager;
-using MessageBox.Avalonia.DTO;
-using MessageBox.Avalonia.Enums;
-using MessageBox.Avalonia.Models;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.WPF
@@ -25,16 +29,16 @@ namespace UVtools.WPF
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                Selector = ThemeSelector.Create("Themes");
-                Selector.LoadSelectedTheme("UVtools.theme");
+                UserSettings.Load();
+
+                Selector = ThemeSelector.Create("Assets/Themes");
+                Selector.LoadSelectedTheme("Assets/selected.theme");
                 desktop.MainWindow = new MainWindow
                 {
                     //DataContext = Selector
                 };
                 desktop.Exit += (sender, e) 
-                    => Selector.SaveSelectedTheme("UVtools.theme");
-
-                Debug.WriteLine(Selector.Themes[1].Name);
+                    => Selector.SaveSelectedTheme("Assets/selected.theme");
             }
 
             base.OnFrameworkInitializationCompleted();

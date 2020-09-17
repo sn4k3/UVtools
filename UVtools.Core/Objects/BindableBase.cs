@@ -49,6 +49,12 @@ namespace UVtools.Core.Objects
             return true;
         }
 
+        protected bool SetProperty([CallerMemberName] string propertyName = null)
+        {
+            OnPropertyChanged(propertyName);
+            return true;
+        }
+
         /// <summary>
         ///     Notifies listeners that a property value has changed.
         /// </summary>

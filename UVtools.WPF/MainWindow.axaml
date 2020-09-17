@@ -7,9 +7,11 @@
         xmlns:idc="clr-namespace:Dock.Avalonia.Controls;assembly=Dock.Avalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="UVtools.WPF.MainWindow"
-        Title="UVtools">
+        Title="UVtools"
+        Icon="/Assets/Icons/UVtools.ico"
+        >
   
-  <DockPanel>
+  <DockPanel IsEnabled="{Binding IsGUIEnabled}">
     <Menu DockPanel.Dock="Top">
       <MenuItem Name="MainMenu.File" Header="_File">
         <MenuItem Name="MainMenu.File.Open" Header="_Open" InputGesture="Ctrl+O" Command="{Binding MenuFileOpenClicked}">
@@ -54,6 +56,14 @@
         <MenuItem Name="MainMenu.File.Convert" Header="_Convert to" IsEnabled="{Binding IsFileLoaded}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\convert-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+        
+        <Separator/>
+
+        <MenuItem Name="MainMenu.File.Settings" Header="_Settings" InputGesture="F12" HotKey="F12" Command="{Binding MenuFileSettingsClicked}">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\settings-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
         

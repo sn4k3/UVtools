@@ -4,6 +4,20 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>UVtools</AssemblyName>
     <ApplicationIcon>UVtools.ico</ApplicationIcon>
+    <Authors>Tiago Conceição</Authors>
+    <Company>PTRTECH</Company>
+    <Description>MSLA/DLP, file analysis, repair, conversion and manipulation</Description>
+    <Copyright>Copyright © 2020 PTRTECH</Copyright>
+    <PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.0-preview5" />
@@ -13,6 +27,7 @@
     <PackageReference Include="Dock.Avalonia" Version="0.10.0-preview5" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.4.0.4061" />
     <PackageReference Include="MessageBox.Avalonia" Version="0.10.0-prev2" />
+    <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.0-preview3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\UVtools.Core\UVtools.Core.csproj" />
@@ -21,20 +36,27 @@
 		<AvaloniaResource Include="Assets\Icons\*" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Assets\Icons\UVtools.ico" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="Themes - Copy\UVtoolsDark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
     <None Update="Themes - Copy\UVtoolsLight.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
-    <None Update="Themes\UVtools.themes">
+    <None Update="Assets\Themes\UVtools.themes">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Themes\UVtoolsDark.xaml">
+    <None Update="Assets\Themes\UVtoolsDark.xaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Themes\UVtoolsLight.xaml">
+    <None Update="Assets\Themes\UVtoolsLight.xaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
     </None>
   </ItemGroup>
 </Project>

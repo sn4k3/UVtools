@@ -1,4 +1,11 @@
-﻿using System;
+﻿/*
+ *                     GNU AFFERO GENERAL PUBLIC LICENSE
+ *                       Version 3, 19 November 2007
+ *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ *  Everyone is permitted to copy and distribute verbatim copies
+ *  of this license document, but changing it is not allowed.
+ */
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Avalonia;
@@ -16,6 +23,55 @@ namespace UVtools.WPF.Extensions
     /// </summary>
     public static class BitmapExtension
     {
+        public static int GetStep(this WriteableBitmap bitmap)
+         => (int)(bitmap.Size.Width * 4);
+
+        /// <summary>
+        /// Gets the total length of this <see cref="WriteableBitmap"/></param>
+        /// </summary>
+        /// <param name="bitmap"></param>
+        /// <returns>The total length of this <see cref="WriteableBitmap"/></returns>
+        public static int GetLength(this WriteableBitmap bitmap)
+         => (int) (bitmap.Size.Width * 4 * bitmap.Size.Height);
+
+        public static int GetPixelPos(this WriteableBitmap bitmap, int x, int y)
+         => (int)(bitmap.Size.Width * 4 * y + x);
+
+        /// <summary>
+        /// Gets a single pixel span to manipulate or read pixels
+        /// </summary>
+        /// <typeparam name="T">Pixel type</typeparam>
+        /// <param name="mat"><see cref="Mat"/> Input</param>
+        /// <returns>A <see cref="Span{T}"/> containing all pixels in data memory</returns>
+        public static unsafe Span<byte> GetPixelSpan(this WriteableBitmap bitmap)
+        {
+            using var l = bitmap.Lock();
+            return new Span<byte>(l.Address.ToPointer(), bitmap.GetLength());
+        }
+
+        
+        public static unsafe Span<byte> GetPixelSpan(this WriteableBitmap bitmap, int length, int offset = 0)
+        {
+            using var l = bitmap.Lock();
+            return new Span<byte>(IntPtr.Add(l.Address, offset).ToPointer(), length);
+        }
+
+        public static Span<byte> GetSinglePixelSpan(this WriteableBitmap bitmap, int x, int y, int length = 3)
+        {
+            using var l = bitmap.Lock();
+            return bitmap.GetPixelSpan(length, bitmap.GetPixelPos(x, y));
+        }
+
+        public static Span<byte> GetSinglePixelPosSpan(this WriteableBitmap bitmap, int pos, int length = 3)
+         => bitmap.GetPixelSpan(length, pos);
+
+
+        public static unsafe Span<byte> GetPixelRowSpan(this WriteableBitmap bitmap, int y, int length = 0, int offset = 0)
+        {
+            using var l = bitmap.Lock();
+            return new Span<byte>(IntPtr.Add(l.Address, (int) (bitmap.Size.Width * 4 * y + offset)).ToPointer(), (int) (length == 0 ? bitmap.Size.Width * 4 : length));
+        }
+
         public static SKBitmap ToSkBitmap(this Mat mat)
         {
             SKBitmap bitmap;
@@ -52,65 +108,77 @@ namespace UVtools.WPF.Extensions
             return SKImage.FromBitmap(bitmap);
         }
 
-        public static Bitmap ToBitmap(this Mat mat)
+        public static WriteableBitmap ToBitmap(this Mat mat)
         {
-            if (mat.NumberOfChannels == 1)
-            {
-                var writeableBitmap = new WriteableBitmap(new PixelSize(mat.Width, mat.Height), new Vector(72, 72),
-                    PixelFormat.Rgba8888, AlphaFormat.Unpremul);
-                var span = mat.GetPixelSpan<byte>();
-                var bytes = new[] {0, 0, 0, 255};
-                using (var lockBuffer = writeableBitmap.Lock())
-                {
-                    for (var i = 1; i < span.Length; i++)
-                    {
-                        bytes[0] = bytes[1] = bytes[2] = span[i];
-                        Marshal.Copy(bytes, 0,
-                            new IntPtr(lockBuffer.Address.ToInt64() + i * 4), bytes.Length);
-                    }
-                }
+            var dataCount = mat.Width * mat.Height;
 
-                return writeableBitmap;
+            var writableBitmap = new WriteableBitmap(new PixelSize(mat.Width, mat.Height), new Vector(96, 96),
+                PixelFormat.Bgra8888, AlphaFormat.Unpremul);
+            using var lockBuffer = writableBitmap.Lock();
+
+            unsafe
+            {
+                var targetPixels = (uint*) (void*) lockBuffer.Address;
+                switch (mat.NumberOfChannels)
+                {
+                    //Stopwatch sw = Stopwatch.StartNew();
+                    // Method 1 (Span copy)
+                    case 1:
+                        var srcPixels1 = (byte*) (void*) mat.DataPointer;
+                        for (var i = 0; i < dataCount; i++)
+                        {
+                            var color = srcPixels1[i];
+                            targetPixels[i] = (uint) (color | color << 8 | color << 16 | 0xff << 24);
+                        }
+
+                        break;
+                    case 3:
+                        var srcPixels2 = (byte*) (void*) mat.DataPointer;
+                        uint pixel = 0;
+                        for (uint i = 0; i < dataCount; i++)
+                        {
+                            targetPixels[i] = (uint)(srcPixels2[pixel++] | srcPixels2[pixel++] << 8 | srcPixels2[pixel++] << 16 | 0xff << 24);
+                        }
+
+                        break;
+                    case 4:
+                        var srcPixels4 = (uint*) (void*) mat.DataPointer;
+                        for (uint i = 0; i < dataCount; i++)
+                        {
+                            targetPixels[i] = srcPixels4[i];
+                        }
+
+                        break;
+                }
             }
 
-            return null;
-        }
-        /*PixelFormat targetPixelFormat = PixelFormat.Bgra8888;
-        
-        switch (mat.NumberOfChannels)
-        {
-            case 3:
-                targetPixelFormat = PixelFormat.Rgb565;
-                break;
-            case 4:
-                targetPixelFormat = PixelFormat.Bgra8888;
-                break;
-            default:
-                throw new Exception("Unknown color type");
-        }
+            return writableBitmap;
+            /*Debug.WriteLine($"Method 1 (Span copy): {sw.ElapsedMilliseconds}ms");
+            
+            // Method 2 (OpenCV Convertion + Copy Marshal)
+            sw.Restart();
+            CvInvoke.CvtColor(mat, target, ColorConversion.Bgr2Bgra);
+            var buffer = target.GetBytes();
+            Marshal.Copy(buffer, 0, lockBuffer.Address, buffer.Length);
+            Debug.WriteLine($"Method 2 (OpenCV Convertion + Copy Marshal): {sw.ElapsedMilliseconds}ms");
 
-        
-        var writeableBitmap = new WriteableBitmap(new PixelSize(mat.Width, mat.Height), new Vector(72, 72), targetPixelFormat, AlphaFormat.Unpremul);
-        using var lockBuffer = writeableBitmap.Lock();
-        var buffer = mat.GetBytes();
-        for (var y = 0; y < mat.Height; y++)
-        {
-            Marshal.Copy(buffer, y * lockBuffer.RowBytes, new IntPtr(lockBuffer.Address.ToInt64() + y * lockBuffer.RowBytes), lockBuffer.RowBytes);
+            
+            //sw.Restart();
+            CvInvoke.CvtColor(mat, target, ColorConversion.Bgr2Bgra);
+            unsafe
+            {
+                var srcAddress = (uint*)(void*)target.DataPointer;
+                var targetAddress = (uint*)(void*)lockBuffer.Address;
+                *targetAddress = *srcAddress;
+            }
+            //Debug.WriteLine($"Method 3 (OpenCV Convertion + Set Address): {sw.ElapsedMilliseconds}ms");
+
+            return writableBitmap;
+            */
+            /* for (var y = 0; y < mat.Height; y++)
+                {
+                    Marshal.Copy(buffer, y * lockBuffer.RowBytes, new IntPtr(lockBuffer.Address.ToInt64() + y * lockBuffer.RowBytes), lockBuffer.RowBytes);
+                }*/
         }
-        //Marshal.Copy(buffer, 0, lockBuffer.Address, buffer.Length);
-        
-        SKBitmap bitmap = new SKBitmap(new SKImageInfo(mat.Width, mat.Height, SKColorType.Gray8));
-        bitmap.SetPixels(mat.DataPointer);
-        Debug.WriteLine(bitmap.Info.ColorType);
-
-        bitmap = SKBitmap.Decode(buffer.AsSpan(), new SKImageInfo
-        {
-            Width = mat.Width,
-            Height = mat.Height,
-            ColorType = SKColorType.Gray8,
-        });*/
-
-        /*return writeableBitmap;
-        }*/
     }
 }

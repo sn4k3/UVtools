@@ -1,0 +1,25 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
+        x:Class="UVtools.WPF.Windows.ProgressWindow"
+        Title="ProgressWindow"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        MinWidth="400"
+        SizeToContent="WidthAndHeight"
+        SystemDecorations="BorderOnly"
+        Icon="/Assets/Icons/UVtools.ico"
+        >
+  <StackPanel Orientation="Vertical">
+    <TextBlock Margin="10" Text="Title"/>
+    <TextBlock Margin="10,0,10,10" Text="Elapsed Time: "/>
+    <TextBlock Margin="10,0,10,10" Text="Progress" HorizontalAlignment="Center"/>
+    <Grid RowDefinitions="30" ColumnDefinitions="*,Auto">
+      <ProgressBar Grid.Column="0" ShowProgressText="True"/>
+      <Button Grid.Column="1" Padding="30,0" IsCancel="True">Cancel</Button>
+    </Grid>
+  </StackPanel>
+</Window>

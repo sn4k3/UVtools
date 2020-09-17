@@ -5,16 +5,22 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 
-using Avalonia;
-
-namespace UVtools.WPF.Extensions
+namespace UVtools.WPF.Windows
 {
-    public static class PrimitivesExtensions
+    public class ProgressWindow : Window
     {
-        public static bool IsEmpty(this Point point)
+        public ProgressWindow()
         {
-            return point.X == 0 && point.Y == 0;
+            InitializeComponent();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+            
         }
     }
 }
