@@ -16,7 +16,7 @@ namespace UVtools.WPF
 {
     public class App : Application
     {
-        public static IThemeSelector? Selector { get; set; }
+        public static IThemeSelector? ThemeSelector { get; set; }
 
         public static FileFormat SlicerFile = null;
 
@@ -31,14 +31,14 @@ namespace UVtools.WPF
             {
                 UserSettings.Load();
 
-                Selector = ThemeSelector.Create("Assets/Themes");
-                Selector.LoadSelectedTheme("Assets/selected.theme");
+                ThemeSelector = Avalonia.ThemeManager.ThemeSelector.Create("Assets/Themes");
+                ThemeSelector.LoadSelectedTheme("Assets/selected.theme");
                 desktop.MainWindow = new MainWindow
                 {
                     //DataContext = Selector
                 };
                 desktop.Exit += (sender, e) 
-                    => Selector.SaveSelectedTheme("Assets/selected.theme");
+                    => ThemeSelector.SaveSelectedTheme("Assets/selected.theme");
             }
 
             base.OnFrameworkInitializationCompleted();

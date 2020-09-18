@@ -7,13 +7,12 @@
         WindowStartupLocation="CenterOwner"
         SizeToContent="WidthAndHeight"
         CanResize="false"
-        SystemDecorations="Full"
         MinWidth="500"
         Title="UVtools - Settings"
         Icon="/Assets/Icons/UVtools.ico"
         >
   <StackPanel Orientation="Vertical" Spacing="10">
-    <TabControl>
+    <TabControl SelectedIndex="3">
       <TabItem Header="General" VerticalContentAlignment="Center">
         <StackPanel Orientation="Vertical" Spacing="5">
           <Border 
@@ -114,18 +113,592 @@
 
       </TabItem>
       <TabItem Header="Layer preview" VerticalContentAlignment="Center">
+        <StackPanel Orientation="Vertical" Spacing="5">
+          <Border
+            Margin="5"
+          BorderBrush="LightBlue"
+          BorderThickness="4">
 
+            <StackPanel Orientation="Vertical">
+              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Layer colors"/>
+
+              <Grid Margin="15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,70,Auto,*">
+
+                <!--Tooltip overlay-->
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Tooltip overlay:"/>
+                <Button Grid.Row="0" Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                         VerticalAlignment="Center"/>
+                <CheckBox Grid.Row="0" Grid.Column="4"
+                          Margin="10,0,0,0"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Center"
+                          Content="Show by default"/>
+
+
+                <!--Print volume boundary-->
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Print volume boundary:"/>
+                
+                <Button Grid.Row="2" Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                         VerticalAlignment="Center"/>
+                <NumericUpDown Grid.Row="2" Grid.Column="2"
+                               Margin="10,0,0,0"
+                               VerticalAlignment="Center"
+                               Minimum="1"
+                               Maximum="50"/>
+                <TextBlock Grid.Row="2" Grid.Column="3"
+                           Margin="5,0,0,0"
+                           VerticalAlignment="Center"
+                           Text="Line thickness"/>
+                <CheckBox Grid.Row="2" Grid.Column="4"
+                          Margin="10,0,0,0"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Center"
+                          Content="Show by default"/>
+
+                <!--Layer boundary-->
+                <TextBlock Grid.Row="4" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Layer boundary:"/>
+                <Button Grid.Row="4" Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                         VerticalAlignment="Center"/>
+                <NumericUpDown Grid.Row="4" Grid.Column="2"
+                               Margin="10,0,0,0"
+                               VerticalAlignment="Center"
+                               Minimum="1"
+                               Maximum="50"/>
+                <TextBlock Grid.Row="4" Grid.Column="3"
+                           Margin="5,0,0,0"
+                           VerticalAlignment="Center"
+                           Text="Line thickness"/>
+                <CheckBox Grid.Row="4" Grid.Column="4"
+                          Margin="10,0,0,0"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Center"
+                          Content="Show by default"/>
+
+
+                <!--Hallow area boundary-->
+                <TextBlock Grid.Row="6" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Hollow area outline:"/>
+                <Button Grid.Row="6" Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                         VerticalAlignment="Center"/>
+                <NumericUpDown Grid.Row="6" Grid.Column="2"
+                               Margin="10,0,0,0"
+                               VerticalAlignment="Center"
+                               Minimum="1"
+                               Maximum="50"/>
+                <TextBlock Grid.Row="6" Grid.Column="3"
+                           Margin="5,0,0,0"
+                           VerticalAlignment="Center"
+                           Text="Line thickness"/>
+                <CheckBox Grid.Row="6" Grid.Column="4"
+                          Margin="10,0,0,0"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Center"
+                          Content="Show by default"/>
+                
+              </Grid>
+
+              <Grid Margin="15,0,15,15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+
+                <!--Previous layer difference  & island-->
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Previous layer difference:"/>
+                <Button Grid.Row="0" Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                         VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="0" Grid.Column="2"
+                          Margin="10,0,0,0"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Center"
+                          Text="Island / Selected island:"/>
+                <Button Grid.Row="0" Grid.Column="3"
+                        Margin="10,0,0,0"
+                        Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                         VerticalAlignment="Center"/>
+                <Button Grid.Row="0" Grid.Column="4"
+                        Margin="10,0,0,0"
+                        Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                         VerticalAlignment="Center"/>
+
+                <!--Next layer difference  & Resin trap-->
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Next layer difference:"/>
+                <Button Grid.Row="2" Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                         VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="2" Grid.Column="2"
+                          Margin="10,0,0,0"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Center"
+                          Text="Resin trap / Selected Resin trap:"/>
+                <Button Grid.Row="2" Grid.Column="3"
+                        Margin="10,0,0,0"
+                        Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                         VerticalAlignment="Center"/>
+                <Button Grid.Row="2" Grid.Column="4"
+                        Margin="10,0,0,0"
+                        Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                        VerticalAlignment="Center"/>
+
+                <!--Next layer difference  & Resin trap-->
+                <TextBlock Grid.Row="4" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Prev &amp; next layer difference:"/>
+                <Button Grid.Row="4" Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                         VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="4" Grid.Column="2"
+                          Margin="10,0,0,0"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Center"
+                          Text="Touching boundary:"/>
+                <Button Grid.Row="4" Grid.Column="3"
+                        Margin="10,0,0,0"
+                        Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                         VerticalAlignment="Center"/>
+
+                <!--Crosshair-->
+                <CheckBox Grid.Row="6" Grid.Column="0"
+                          Grid.ColumnSpan="3"
+                          Content="Show layer diff colors by default"/>
+                
+                <TextBlock Grid.Row="6" Grid.Column="2"
+                          Margin="10,0,0,0"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Center"
+                          Text="Crosshair:"/>
+                <Button Grid.Row="6" Grid.Column="3"
+                        Margin="10,0,0,0"
+                        Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                        VerticalAlignment="Center"/>               
+              </Grid>
+            </StackPanel>
+
+
+          </Border>
+
+          <!--Zoom-->
+          <Border
+            Margin="5"
+          BorderBrush="LightBlue"
+          BorderThickness="4">
+
+            <StackPanel Orientation="Vertical">
+              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Zoom"/>
+              <Grid Margin="15" RowDefinitions="Auto" ColumnDefinitions="Auto,200,*,70">
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Zoom out to fit:"/>
+
+                <ComboBox Grid.Row="0" Grid.Column="1"
+                          Margin="10,0,0,0"
+                          VerticalAlignment="Center">
+                  <ComboBoxItem Content="Print Volume Boundary" />
+                  <ComboBoxItem Content="Layer Boundary" />
+                </ComboBox>
+
+                <TextBlock Grid.Row="0" Grid.Column="2"
+                           Margin="10,0,0,0"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Text="Zoom in factor:"/>
+
+                <ComboBox Grid.Row="0" Grid.Column="3"
+                          Margin="10,0,0,0"
+                          VerticalAlignment="Center"/>
+                
+              </Grid>
+
+              <CheckBox
+                Margin="15,0,15,15"
+                Content="Auto zoom &amp; center issues on selection"/>
+            </StackPanel>
+
+          </Border>
+
+          <!--Crosshairs-->
+          <Border
+            Margin="5"
+          BorderBrush="LightBlue"
+          BorderThickness="4">
+
+            <StackPanel Orientation="Vertical">
+              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Crosshairs"/>
+              <Grid Margin="15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,100,*,Auto,Auto">
+                <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                           VerticalAlignment="Center"
+                           Content="Show crosshairs for selected issues only"/>
+                <TextBlock Grid.Row="0" Grid.Column="2"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Text="Crosshair size:"/>
+
+                <NumericUpDown Grid.Row="0" Grid.Column="3"
+                               Margin="10,0,0,0"
+                               VerticalAlignment="Center"
+                               Minimum="1"
+                               Maximum="1000000"
+                               Width="70"/>
+
+                <TextBlock Grid.Row="0" Grid.Column="4"
+                           Margin="5,0,0,0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Text="px"/>
+
+
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Crosshair fade after:"/>
+                <ComboBox Grid.Row="2" Grid.Column="1"
+                          VerticalAlignment="Center"
+                          Margin="10,0,0,0"/>
+                <TextBlock Grid.Row="2" Grid.Column="2"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Text="Crosshair margin:"/>
+
+                <NumericUpDown Grid.Row="2" Grid.Column="3"
+                               Margin="10,0,0,0"
+                               VerticalAlignment="Center"
+                               Minimum="1"
+                               Maximum="255"
+                               Width="70"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="4"
+                           Margin="5,0,0,0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Text="px"/>
+
+              </Grid>
+            </StackPanel>
+
+          </Border>
+
+          <Border
+            Margin="5"
+            BorderBrush="LightBlue"
+            BorderThickness="4">
+
+            <StackPanel Orientation="Vertical">
+              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Miscellaneous"/>
+
+              <StackPanel Orientation="Horizontal">
+                <CheckBox
+                  Margin="15"
+                Content="Auto rotate on load"  
+                />
+
+                <CheckBox
+                Content="Zoom to fit on load"/>
+                
+              </StackPanel>
+              
+            </StackPanel>
+          </Border>
+
+
+          </StackPanel>
       </TabItem>
       <TabItem Header="Issues" VerticalContentAlignment="Center">
+        <StackPanel Orientation="Vertical">
+          <Border
+              Margin="5"
+              BorderBrush="LightBlue"
+              BorderThickness="4">
 
+            <StackPanel Orientation="Vertical">
+              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Common"/>
+
+            
+                <CheckBox Margin="15" Content="Compute issues on file load"/>
+
+                <CheckBox Margin="15,0,15,0" Content="Auto compute issues when the Issues tab is opened for the first time"/>
+
+              <StackPanel Orientation="Horizontal" Margin="15" Spacing="15">
+                <TextBlock Text="Compute:"/>
+                <CheckBox Content="Islands"/>
+                <CheckBox Content="Resin traps"/>
+                <CheckBox Content="Touching boundary"/>
+                <CheckBox Content="Empty layers"/>
+              </StackPanel>
+
+            </StackPanel>
+          </Border>
+
+          <Border
+              Margin="5"
+              BorderBrush="LightBlue"
+              BorderThickness="4">
+
+            <StackPanel Orientation="Vertical">
+              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Islands"/>
+              <CheckBox Margin="15" Content="Allow diagonal bonds during island detection"/>
+
+                
+              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <NumericUpDown Width="60"
+                                Minimum="1"
+                                Maximum="254"
+                                />
+                <TextBlock VerticalAlignment="Center" Text="Pixel intensity threshold for island detection"/>
+              </StackPanel>
+
+              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <NumericUpDown Width="60"
+                                Minimum="1"
+                                Maximum="255"
+                                />
+                <TextBlock VerticalAlignment="Center" Text="Bounding area required for an object to be considered an island"/>
+              </StackPanel>
+              
+              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <NumericUpDown Width="60"
+                                Minimum="1"
+                                Maximum="255"
+                                />
+                <TextBlock VerticalAlignment="Center" Text="Minimum pixel intensity to consider a pixel part of an island"/>
+              </StackPanel>
+
+              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <NumericUpDown Width="60"
+                                Minimum="1"
+                                Maximum="255"
+                                />
+                <TextBlock VerticalAlignment="Center" Text="Supporting safe pixels required to considerer an island supported"/>
+              </StackPanel>
+
+
+              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <NumericUpDown Width="60"
+                                Minimum="50"
+                                Maximum="255"
+                                />
+                <TextBlock VerticalAlignment="Center" Text="Minimum intensity of a supporting pixel before it is considered safe"/>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <Border
+              Margin="5"
+              BorderBrush="LightBlue"
+              BorderThickness="4">
+
+            <StackPanel Orientation="Vertical">
+              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Resin traps"/>
+
+              <StackPanel Orientation="Horizontal" Margin="15" Spacing="10">
+                <NumericUpDown Width="60"
+                                Minimum="1"
+                                Maximum="254"
+                                />
+                <TextBlock VerticalAlignment="Center" Text="Pixel intensity threshold for resin trap detection"/>
+              </StackPanel>
+
+              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <NumericUpDown Width="60"
+                                Minimum="1"
+                                Maximum="255"
+                                />
+                <TextBlock VerticalAlignment="Center" Text="Bounding area required for an object to be processed during resin trap detection"/>
+              </StackPanel>
+
+              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <NumericUpDown Width="60"
+                                Minimum="1"
+                                Maximum="255"
+                                />
+                <TextBlock VerticalAlignment="Center" Text="Number of drain pixels required to disqualify a potential resin trap"/>
+              </StackPanel>
+
+              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <NumericUpDown Width="60"
+                                Minimum="1"
+                                Maximum="150"
+                                />
+                <TextBlock VerticalAlignment="Center" Text="Maximum pixel intensity for a pixel to be considered a drain pixel"/>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+        </StackPanel>
+                
       </TabItem>
 
       <TabItem Header="Pixel editor" VerticalContentAlignment="Center">
+        <StackPanel Orientation="Vertical">
+          <Border
+                Margin="5"
+                BorderBrush="LightBlue"
+                BorderThickness="4">
 
+            <StackPanel Orientation="Vertical">
+              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Colors &amp; highlights"/>
+
+              <Grid Margin="15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,Auto">
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                  VerticalAlignment="Center"
+                  Text="Pixel add operation / (Selected):"/>
+
+                <Button Grid.Row="0" Grid.Column="1"
+                        Margin="10,0,0,0" Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"/>
+                <Button Grid.Row="0" Grid.Column="2"
+                        Margin="10,0,0,0" Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"/>
+
+
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                  VerticalAlignment="Center"
+                  Text="Pixel remove operation / (Selected):"/>
+
+                <Button Grid.Row="2" Grid.Column="1"
+                        Margin="10,0,0,0" Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"/>
+                <Button Grid.Row="2" Grid.Column="2"
+                        Margin="10,0,0,0" Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"/>
+
+                <TextBlock Grid.Row="4" Grid.Column="0"
+                  VerticalAlignment="Center"
+                  Text="Support operation / (Selected):"/>
+
+                <Button Grid.Row="4" Grid.Column="1"
+                        Margin="10,0,0,0" Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"/>
+                <Button Grid.Row="4" Grid.Column="2"
+                        Margin="10,0,0,0" Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"/>
+
+                <TextBlock Grid.Row="6" Grid.Column="0"
+                  VerticalAlignment="Center"
+                  Text="Drain hole operation / (Selected):"/>
+
+                <Button Grid.Row="6" Grid.Column="1"
+                        Margin="10,0,0,0" Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"/>
+                <Button Grid.Row="6" Grid.Column="2"
+                        Margin="10,0,0,0" Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"/>
+              </Grid>
+              
+            </StackPanel>
+          </Border>
+
+          <Border
+                Margin="5"
+                BorderBrush="LightBlue"
+                BorderThickness="4">
+
+            <StackPanel Orientation="Vertical">
+              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Actions"/>
+
+              <CheckBox Margin="15"
+                        Content="Refresh issues for modified layers"/>
+              <CheckBox Margin="15,0,15,15"
+                        Content="Close pixel editor after operations are applied"/>
+            </StackPanel>
+          </Border>
+
+        </StackPanel>
       </TabItem>
 
       <TabItem Header="Layer repair" VerticalContentAlignment="Center">
+        <StackPanel Orientation="Vertical">
+          <Border
+                Margin="5"
+                BorderBrush="LightBlue"
+                BorderThickness="4">
 
+            <StackPanel Orientation="Vertical">
+              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Default values"/>
+
+              <StackPanel Orientation="Horizontal" Margin="15" Spacing="10">
+                <NumericUpDown Width="60"
+                                Minimum="0"
+                                Maximum="255"
+                                />
+                <TextBlock VerticalAlignment="Center" Text="Default 'Gap Closing' iterations"/>
+              </StackPanel>
+
+              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <NumericUpDown Width="60"
+                                Minimum="0"
+                                Maximum="255"
+                                />
+                <TextBlock VerticalAlignment="Center" Text="Default 'Noise Removal' iterations"/>
+              </StackPanel>
+
+              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <NumericUpDown Width="60"
+                                Minimum="0"
+                                Maximum="255"
+                                />
+                <TextBlock VerticalAlignment="Center" Text="Default maximum pixel area for Island removal (0 = disable)"/>
+              </StackPanel>
+
+              <CheckBox Margin="15,0" Content="Attempt to repair islands by default"/>
+              <CheckBox Margin="15,15,15,0" Content="Remove empty layers by default"/>
+              <CheckBox Margin="15" Content="Attempt to repair resin traps by default"/>
+              
+            </StackPanel>
+          </Border>
+
+        </StackPanel>
       </TabItem>
 
     </TabControl>

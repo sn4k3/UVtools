@@ -86,7 +86,7 @@ namespace UVtools.WPF
 #if DEBUG
             //this.AttachDevTools();
 #endif
-            App.Selector?.EnableThemes(this);
+            App.ThemeSelector?.EnableThemes(this);
 
             ViewModel = new MainWindowViewModel(this);
             DataContext = ViewModel;

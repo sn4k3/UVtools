@@ -15,5 +15,7 @@ namespace UVtools.WPF.Windows
         {
             AvaloniaXamlLoader.Load(this);
         }
+
+
     }
 }
