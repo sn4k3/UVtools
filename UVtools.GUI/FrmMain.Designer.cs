@@ -61,7 +61,6 @@ namespace UVtools.GUI
             this.statusBar = new System.Windows.Forms.StatusStrip();
             this.mainTable = new System.Windows.Forms.TableLayoutPanel();
             this.scCenter = new System.Windows.Forms.SplitContainer();
-            this.lbLayerImageTooltipOverlay = new UVtools.GUI.Controls.TransparentLabel();
             this.pbLayer = new Cyotek.Windows.Forms.ImageBox();
             this.tsLayer = new System.Windows.Forms.ToolStrip();
             this.btnLayerImageExport = new System.Windows.Forms.ToolStripSplitButton();
@@ -249,7 +248,6 @@ namespace UVtools.GUI
             this.panelLayerNavigation = new System.Windows.Forms.Panel();
             this.pbTrackerIssues = new System.Windows.Forms.PictureBox();
             this.lbActualLayer = new System.Windows.Forms.Label();
-            this.tbLayer = new UVtools.GUI.Controls.TrackBarEx();
             this.lbInitialLayer = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
             this.btnFindLayer = new System.Windows.Forms.Button();
@@ -260,6 +258,8 @@ namespace UVtools.GUI
             this.toolTipInformation = new System.Windows.Forms.ToolTip(this.components);
             this.layerScrollTimer = new System.Windows.Forms.Timer(this.components);
             this.mouseHoldTimer = new System.Windows.Forms.Timer(this.components);
+            this.lbLayerImageTooltipOverlay = new UVtools.GUI.Controls.TransparentLabel();
+            this.tbLayer = new UVtools.GUI.Controls.TrackBarEx();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).BeginInit();
@@ -318,8 +318,8 @@ namespace UVtools.GUI
             this.tlRight.SuspendLayout();
             this.panelLayerNavigation.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbTrackerIssues)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).BeginInit();
             this.panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).BeginInit();
             this.SuspendLayout();
             // 
             // menu
@@ -607,23 +607,6 @@ namespace UVtools.GUI
             this.scCenter.Size = new System.Drawing.Size(1176, 759);
             this.scCenter.SplitterDistance = 730;
             this.scCenter.TabIndex = 4;
-            // 
-            // lbLayerImageOverlay
-            // 
-            this.lbLayerImageTooltipOverlay.AutoSize = true;
-            this.lbLayerImageTooltipOverlay.BackColor = System.Drawing.Color.Transparent;
-            this.lbLayerImageTooltipOverlay.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lbLayerImageTooltipOverlay.CausesValidation = false;
-            this.lbLayerImageTooltipOverlay.Location = new System.Drawing.Point(13, 37);
-            this.lbLayerImageTooltipOverlay.Name = "lbLayerImageTooltipOverlay";
-            this.lbLayerImageTooltipOverlay.Opacity = 210;
-            this.lbLayerImageTooltipOverlay.Padding = new System.Windows.Forms.Padding(10);
-            this.lbLayerImageTooltipOverlay.Size = new System.Drawing.Size(80, 40);
-            this.lbLayerImageTooltipOverlay.TabIndex = 8;
-            this.lbLayerImageTooltipOverlay.Text = "Overlay";
-            this.lbLayerImageTooltipOverlay.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.lbLayerImageTooltipOverlay.TransparentBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
-            this.lbLayerImageTooltipOverlay.Visible = false;
             // 
             // pbLayer
             // 
@@ -2707,6 +2690,7 @@ namespace UVtools.GUI
             this.btnPreviousLayer.TabIndex = 14;
             this.btnPreviousLayer.Tag = "0";
             this.btnPreviousLayer.Text = "-";
+            this.toolTipInformation.SetToolTip(this.btnPreviousLayer, "Go to the previous layer [S]");
             this.btnPreviousLayer.UseVisualStyleBackColor = true;
             this.btnPreviousLayer.Click += new System.EventHandler(this.EventClick);
             this.btnPreviousLayer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.EventMouseDown);
@@ -2723,6 +2707,7 @@ namespace UVtools.GUI
             this.btnNextLayer.TabIndex = 8;
             this.btnNextLayer.Tag = "1";
             this.btnNextLayer.Text = "+";
+            this.toolTipInformation.SetToolTip(this.btnNextLayer, "Go to the next layer [W]");
             this.btnNextLayer.UseVisualStyleBackColor = true;
             this.btnNextLayer.Click += new System.EventHandler(this.EventClick);
             this.btnNextLayer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.EventMouseDown);
@@ -2769,18 +2754,6 @@ namespace UVtools.GUI
             this.lbActualLayer.Size = new System.Drawing.Size(18, 20);
             this.lbActualLayer.TabIndex = 9;
             this.lbActualLayer.Text = "?";
-            // 
-            // tbLayer
-            // 
-            this.tbLayer.Dock = System.Windows.Forms.DockStyle.Right;
-            this.tbLayer.Location = new System.Drawing.Point(93, 0);
-            this.tbLayer.Margin = new System.Windows.Forms.Padding(0);
-            this.tbLayer.Name = "tbLayer";
-            this.tbLayer.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.tbLayer.Size = new System.Drawing.Size(45, 557);
-            this.tbLayer.TabIndex = 8;
-            this.tbLayer.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
-            this.tbLayer.ValueChanged += new System.EventHandler(this.ValueChanged);
             // 
             // lbInitialLayer
             // 
@@ -2871,6 +2844,35 @@ namespace UVtools.GUI
             // 
             this.mouseHoldTimer.Interval = 1000;
             this.mouseHoldTimer.Tick += new System.EventHandler(this.EventTimerTick);
+            // 
+            // lbLayerImageTooltipOverlay
+            // 
+            this.lbLayerImageTooltipOverlay.AutoSize = true;
+            this.lbLayerImageTooltipOverlay.BackColor = System.Drawing.Color.Transparent;
+            this.lbLayerImageTooltipOverlay.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lbLayerImageTooltipOverlay.CausesValidation = false;
+            this.lbLayerImageTooltipOverlay.Location = new System.Drawing.Point(13, 37);
+            this.lbLayerImageTooltipOverlay.Name = "lbLayerImageTooltipOverlay";
+            this.lbLayerImageTooltipOverlay.Opacity = ((byte)(210));
+            this.lbLayerImageTooltipOverlay.Padding = new System.Windows.Forms.Padding(10);
+            this.lbLayerImageTooltipOverlay.Size = new System.Drawing.Size(80, 40);
+            this.lbLayerImageTooltipOverlay.TabIndex = 8;
+            this.lbLayerImageTooltipOverlay.Text = "Overlay";
+            this.lbLayerImageTooltipOverlay.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lbLayerImageTooltipOverlay.TransparentBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.lbLayerImageTooltipOverlay.Visible = false;
+            // 
+            // tbLayer
+            // 
+            this.tbLayer.Dock = System.Windows.Forms.DockStyle.Right;
+            this.tbLayer.Location = new System.Drawing.Point(93, 0);
+            this.tbLayer.Margin = new System.Windows.Forms.Padding(0);
+            this.tbLayer.Name = "tbLayer";
+            this.tbLayer.Orientation = System.Windows.Forms.Orientation.Vertical;
+            this.tbLayer.Size = new System.Drawing.Size(45, 557);
+            this.tbLayer.TabIndex = 8;
+            this.tbLayer.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
+            this.tbLayer.ValueChanged += new System.EventHandler(this.ValueChanged);
             // 
             // FrmMain
             // 
@@ -2978,8 +2980,8 @@ namespace UVtools.GUI
             this.panelLayerNavigation.ResumeLayout(false);
             this.panelLayerNavigation.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbTrackerIssues)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).EndInit();
             this.panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
