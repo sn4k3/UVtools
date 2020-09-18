@@ -334,9 +334,9 @@ namespace UVtools.GUI
             {
                 return;
             }
-
             if (e.KeyChar == 's')
             {
+                if (!CanGlobalHotKey) return;
                 ShowLayer(false);
                 e.Handled = true;
                 return;
@@ -344,6 +344,7 @@ namespace UVtools.GUI
 
             if (e.KeyChar == 'w')
             {
+                if (!CanGlobalHotKey) return;
                 ShowLayer(true);
                 e.Handled = true;
                 return;
@@ -362,6 +363,7 @@ namespace UVtools.GUI
 
             if (e.KeyCode == Keys.Home)
             {
+                if (!CanGlobalHotKey) return;
                 btnFirstLayer.PerformClick();
                 e.Handled = true;
                 return;
@@ -371,6 +373,7 @@ namespace UVtools.GUI
 
             if (e.KeyCode == Keys.End)
             {
+                if (!CanGlobalHotKey) return;
                 btnLastLayer.PerformClick();
                 e.Handled = true;
                 return;
@@ -4303,6 +4306,15 @@ namespace UVtools.GUI
             return true;
         }
 
-        
+        public bool CanGlobalHotKey
+            => !(ActiveControl is TextBox 
+                 || ActiveControl is ComboBox 
+                 || ActiveControl is NumericUpDown 
+                 || ActiveControl is RichTextBox 
+                 || ActiveControl is ListView 
+                 || ActiveControl is ObjectListView 
+                 || ActiveControl is FastObjectListView);
+
+
     }
 }
