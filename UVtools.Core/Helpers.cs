@@ -102,5 +102,12 @@ namespace UVtools.Core
         {
             return width * y + x;
         }
+
+        public static void SwapVariables<T>(ref T var1, ref T var2)
+        {
+            var backup = var1;
+            var1 = var2;
+            var2 = backup;
+        }
     }
 }

@@ -2,6 +2,7 @@
 
 ## /09/2020 - v0.8.2.3
 
+* (Fix) LGS: Some plugins and slicers use XY resolution information, while others are swapped, a auto swap will be performed when required (#59)
 
 ## 16/09/2020 - v0.8.2.2
 

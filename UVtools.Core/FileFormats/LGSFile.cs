@@ -44,8 +44,8 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(5)] public uint Uint_18 { get; set; } = 34; // 0x18: 34 ?
             [FieldOrder(6)] public float PixelPerMmY { get; set; }
             [FieldOrder(7)] public float PixelPerMmX { get; set; }
-            [FieldOrder(8)] public float ResolutionY { get; set; }
-            [FieldOrder(9)] public float ResolutionX { get; set; }
+            [FieldOrder(8)] public float ResolutionX { get; set; }
+            [FieldOrder(9)] public float ResolutionY { get; set; }
             [FieldOrder(10)] public float LayerHeight { get; set; }
             [FieldOrder(11)] public float ExposureTimeMs { get; set; }
             [FieldOrder(12)] public float BottomExposureTimeMs { get; set; }
@@ -437,6 +437,14 @@ namespace UVtools.Core.FileFormats
                 if (HeaderSettings.Name != Header.NameValue)
                 {
                     throw new FileLoadException("Not a valid LGS file!", fileFullPath);
+                }
+
+                // Fix inconsistencies found of different version of plugin and slicers
+                if (ResolutionX > ResolutionY)
+                {
+                    var oldX = ResolutionX;
+                    ResolutionX = ResolutionY;
+                    ResolutionY = oldX;
                 }
 
                 int previewSize = (int) (HeaderSettings.PreviewSizeX * HeaderSettings.PreviewSizeY * 2);
