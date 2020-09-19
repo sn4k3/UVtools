@@ -1,8 +1,11 @@
 # Changelog
 
-## /09/2020 - v0.8.2.3
+## 19/09/2020 - v0.8.2.3
 
 * (Add) Tooltip for next and previous layer buttons with associated shortcut (#61)
+* (Add) Pixel Editor: Erase drawing edits while hold Control (#63)
+* (Add) Pixel Editor: When using diameters larger than 1px and when possible the cursor will show the associated drawing preview (#63)
+* (Fix) Pixel Editor: Area px<sup>2</sup> to Diameter px (#63)
 * (Fix) LGS: Some plugins and slicers use XY resolution information, while others are swapped, a auto swap will be performed when required (#59)
 * (Fix) Global hotkeys prevent user from typing that key on controls (#62)
 

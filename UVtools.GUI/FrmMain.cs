@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -1490,7 +1491,7 @@ namespace UVtools.GUI
             btnLayerROI.Enabled = !roi.IsEmpty;
         }
 
-        private void pbLayer_Zoomed(object sender, Cyotek.Windows.Forms.ImageBoxZoomEventArgs e)
+        private void pbLayer_Zoomed(object sender, ImageBoxZoomEventArgs e)
         {
             if (SupressLayerZoomEvent) return;
             AddLogVerbose($"Zoomed from {e.OldZoom} to {e.NewZoom}");
@@ -1504,6 +1505,11 @@ namespace UVtools.GUI
             {
                 tsLayerImageZoom.Text = $"Zoom: [ {e.NewZoom / 100f}x ]";
                 tsLayerImageZoomLock.Visible = false;
+            }
+
+            if (pbLayer.Cursor.Tag is string str || ReferenceEquals(pbLayer.Cursor, pixelEditCursor))
+            {
+                UpdatePixelEditorCursor();
             }
 
             // Refresh the layer to properly render the crosshair at various zoom transitions
@@ -1557,14 +1563,16 @@ namespace UVtools.GUI
             }
             
             if ((ModifierKeys & Keys.Shift) == 0) return;
-            if (_lastPixelMouseLocation == e.Location) return;
-            _lastPixelMouseLocation = e.Location;
+
+            if (_lastPixelMouseLocation == location) return;
+            _lastPixelMouseLocation = location;
+            
 
             // Bail here if we're not in a draw operation, if the mouse button is not either
             // left or right, or if the location of the mouse pointer is not within the image.
             if (tabControlPixelEditor.SelectedIndex != (int) PixelOperation.PixelOperationType.Drawing) return;
             if (!btnLayerImagePixelEdit.Checked || (e.Button & MouseButtons.Middle) != 0) return;
-            if (!pbLayer.IsPointInImage(e.Location)) return;
+            //if (!pbLayer.IsPointInImage(e.Location)) return;
 
             if (e.Button == MouseButtons.Right)
             {
@@ -2814,8 +2822,8 @@ namespace UVtools.GUI
             {
                 // This event repeats for as long as the key is pressed, so if we've
                 // already set the cursor from a previous key down event, just return.
-                if (pbLayer.Cursor == pixelEditCursor || pbLayer.Cursor == Cursors.Cross
-                     || pbLayer.Cursor == Cursors.Hand || pbLayer.SelectionMode == ImageBoxSelectionMode.Rectangle) return;
+                if (!ReferenceEquals(pbLayer.Cursor.Tag, null) || pbLayer.Cursor == pixelEditCursor || pbLayer.Cursor == Cursors.Cross
+                                                             || pbLayer.Cursor == Cursors.Hand || pbLayer.SelectionMode == ImageBoxSelectionMode.Rectangle) return;
 
                 // Pixel Edit is active, Shift is down, and the cursor is over the image region.
                 if (pbLayer.ClientRectangle.Contains(pbLayer.PointToClient(MousePosition)))
@@ -2824,10 +2832,12 @@ namespace UVtools.GUI
                     {
                         if (btnLayerImagePixelEdit.Checked)
                         {
-                            pbLayer.Cursor = pixelEditCursor;
                             pbLayer.PanMode = ImageBoxPanMode.None;
                             lbLayerImageTooltipOverlay.Text = "Pixel editing is on:\n" +
-                                                       "» Click over a pixel to draw";
+                                                       "» Click over a pixel to draw\n" +
+                                                       "» Hold CTRL to clear pixels";
+
+                            UpdatePixelEditorCursor();
                         }
                         else
                         {
@@ -2868,7 +2878,7 @@ namespace UVtools.GUI
             // of which form has focus when shift is released.
             if (ReferenceEquals(sender, this))
             {
-                if (e.KeyCode == Keys.ShiftKey || e.KeyCode == Keys.ControlKey)
+                if (e.KeyCode == Keys.ShiftKey || ((ModifierKeys & Keys.Shift) == 0 && e.KeyCode == Keys.ControlKey))
                 {
                     pbLayer.Cursor = Cursors.Default;
                     pbLayer.PanMode = ImageBoxPanMode.Left;
@@ -3346,6 +3356,19 @@ namespace UVtools.GUI
             //var point = pbLayer.PointToImage(location);
 
             Point realLocation = GetTransposedPoint(location);
+
+            if ((ModifierKeys & Keys.Control) != 0)
+            {
+                var removedItems = PixelHistory.Items.RemoveAll(item =>
+                {
+                    Rectangle rect = new Rectangle(item.Location, item.Size);
+                    rect.X -= item.Size.Width / 2;
+                    rect.Y -= item.Size.Height / 2;
+                    return rect.Contains(realLocation);
+                });
+                if(removedItems > 0) ShowLayer();
+                return;
+            }
             
             PixelOperation operation = null;
             Bitmap bmp = pbLayer.Image as Bitmap;
@@ -4304,6 +4327,94 @@ namespace UVtools.GUI
 
 
             return true;
+        }
+
+        readonly SolidBrush _pixelEditorCursorBrush = new SolidBrush(Color.FromArgb(150, 120, 255, 255));
+        const byte _pixelEditorCursorMinDiamater = 10;
+        public void UpdatePixelEditorCursor()
+        {
+            Bitmap bitmap = null;
+
+            if (tabControlPixelEditor.SelectedIndex == (byte)PixelOperation.PixelOperationType.Drawing)
+            {
+                PixelDrawing.BrushShapeType shapeType =
+                    (PixelDrawing.BrushShapeType)cbPixelEditorDrawingBrushShape.SelectedIndex;
+
+                ushort brushSize = (ushort)nmPixelEditorDrawingBrushSize.Value;
+                short thickness = (short)(nmPixelEditorDrawingThickness.Value == 0
+                    ? 1
+                    : nmPixelEditorDrawingThickness.Value);
+
+                int diameter = (brushSize * pbLayer.Zoom / 100);
+                if (brushSize > 1 && diameter >= _pixelEditorCursorMinDiamater)
+                {
+                    bitmap = new Bitmap(diameter, diameter, PixelFormat.Format32bppArgb);
+                    using (Graphics gr = Graphics.FromImage(bitmap))
+                    {
+                        gr.SmoothingMode = SmoothingMode.AntiAlias;
+                        gr.CompositingMode = CompositingMode.SourceCopy;
+
+                        switch (shapeType)
+                        {
+                            case PixelDrawing.BrushShapeType.Rectangle:
+                                if (thickness >= 1)
+                                {
+                                    gr.DrawRectangle(new Pen(_pixelEditorCursorBrush, thickness), 0, 0, diameter, diameter);
+                                }
+                                else
+                                {
+                                    gr.FillRectangle(_pixelEditorCursorBrush, 0, 0, diameter, diameter);
+                                }
+                                break;
+                            case PixelDrawing.BrushShapeType.Circle:
+                                if (thickness >= 1)
+                                {
+                                    gr.DrawEllipse(new Pen(_pixelEditorCursorBrush, thickness), 0, 0, diameter, diameter);
+                                }
+                                else
+                                {
+                                    gr.FillEllipse(_pixelEditorCursorBrush, 0, 0, diameter, diameter);
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+            /*else if (tabControlPixelEditor.SelectedIndex == (byte)PixelOperation.PixelOperationType.Text)
+            {
+                var text = tbPixelEditorTextText.Text;
+                if (string.IsNullOrEmpty(text) || nmPixelEditorTextFontScale.Value < 0.2m) return;
+
+                LineType lineType = (LineType)cbPixelEditorTextLineType.SelectedItem;
+                FontFace fontFace = (FontFace)cbPixelEditorTextFontFace.SelectedItem;
+                double scale = (double) nmPixelEditorTextFontScale.Value * pbLayer.Zoom / 100;
+                int thickness = (int) nmPixelEditorTextThickness.Value;
+                int baseLine = 0;
+                var size = CvInvoke.GetTextSize(text, fontFace, scale, thickness, ref baseLine);
+                mat = new Mat(size, DepthType.Cv8U, 4);
+                CvInvoke.PutText(mat, text, new Point(0,0), fontFace, scale, new MCvScalar(255,100,255, 255), thickness, lineType, cbPixelEditorTextMirror.Checked);
+            }*/
+            else if (tabControlPixelEditor.SelectedIndex == (byte)PixelOperation.PixelOperationType.Supports || tabControlPixelEditor.SelectedIndex == (byte)PixelOperation.PixelOperationType.DrainHole)
+            {
+                var diameter = (int)(
+                    (tabControlPixelEditor.SelectedIndex == (byte)PixelOperation.PixelOperationType.Supports ? 
+                        nmPixelEditorSupportsTipDiameter.Value : nmPixelEditorDrainHoleDiameter.Value) 
+                    * pbLayer.Zoom / 100);
+
+                if (diameter >= _pixelEditorCursorMinDiamater)
+                {
+                    bitmap = new Bitmap(diameter, diameter, PixelFormat.Format32bppArgb);
+                    using (Graphics gr = Graphics.FromImage(bitmap))
+                    {
+                        gr.SmoothingMode = SmoothingMode.AntiAlias;
+                        gr.CompositingMode = CompositingMode.SourceCopy;
+                        gr.FillEllipse(_pixelEditorCursorBrush, 0, 0, diameter, diameter);
+                    }
+                }
+            }
+            
+
+            pbLayer.Cursor = bitmap is null ? pixelEditCursor : new Cursor(bitmap.GetHicon()) { Tag = "Custom" };
         }
 
         public bool CanGlobalHotKey

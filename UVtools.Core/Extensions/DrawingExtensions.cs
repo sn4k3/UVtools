@@ -30,5 +30,10 @@ namespace UVtools.Core.Extensions
         {
             return size.Width * size.Height;
         }
+
+        public static int GetMaximum(this Size size)
+        {
+            return Math.Max(size.Width, size.Height);
+        }
     }
 }

@@ -61,6 +61,7 @@ namespace UVtools.GUI
             this.statusBar = new System.Windows.Forms.StatusStrip();
             this.mainTable = new System.Windows.Forms.TableLayoutPanel();
             this.scCenter = new System.Windows.Forms.SplitContainer();
+            this.lbLayerImageTooltipOverlay = new UVtools.GUI.Controls.TransparentLabel();
             this.pbLayer = new Cyotek.Windows.Forms.ImageBox();
             this.tsLayer = new System.Windows.Forms.ToolStrip();
             this.btnLayerImageExport = new System.Windows.Forms.ToolStripSplitButton();
@@ -248,6 +249,7 @@ namespace UVtools.GUI
             this.panelLayerNavigation = new System.Windows.Forms.Panel();
             this.pbTrackerIssues = new System.Windows.Forms.PictureBox();
             this.lbActualLayer = new System.Windows.Forms.Label();
+            this.tbLayer = new UVtools.GUI.Controls.TrackBarEx();
             this.lbInitialLayer = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
             this.btnFindLayer = new System.Windows.Forms.Button();
@@ -258,8 +260,6 @@ namespace UVtools.GUI
             this.toolTipInformation = new System.Windows.Forms.ToolTip(this.components);
             this.layerScrollTimer = new System.Windows.Forms.Timer(this.components);
             this.mouseHoldTimer = new System.Windows.Forms.Timer(this.components);
-            this.lbLayerImageTooltipOverlay = new UVtools.GUI.Controls.TransparentLabel();
-            this.tbLayer = new UVtools.GUI.Controls.TrackBarEx();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).BeginInit();
@@ -318,8 +318,8 @@ namespace UVtools.GUI
             this.tlRight.SuspendLayout();
             this.panelLayerNavigation.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbTrackerIssues)).BeginInit();
-            this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).BeginInit();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // menu
@@ -607,6 +607,23 @@ namespace UVtools.GUI
             this.scCenter.Size = new System.Drawing.Size(1176, 759);
             this.scCenter.SplitterDistance = 730;
             this.scCenter.TabIndex = 4;
+            // 
+            // lbLayerImageTooltipOverlay
+            // 
+            this.lbLayerImageTooltipOverlay.AutoSize = true;
+            this.lbLayerImageTooltipOverlay.BackColor = System.Drawing.Color.Transparent;
+            this.lbLayerImageTooltipOverlay.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lbLayerImageTooltipOverlay.CausesValidation = false;
+            this.lbLayerImageTooltipOverlay.Location = new System.Drawing.Point(13, 37);
+            this.lbLayerImageTooltipOverlay.Name = "lbLayerImageTooltipOverlay";
+            this.lbLayerImageTooltipOverlay.Opacity = ((byte)(210));
+            this.lbLayerImageTooltipOverlay.Padding = new System.Windows.Forms.Padding(10);
+            this.lbLayerImageTooltipOverlay.Size = new System.Drawing.Size(80, 40);
+            this.lbLayerImageTooltipOverlay.TabIndex = 8;
+            this.lbLayerImageTooltipOverlay.Text = "Overlay";
+            this.lbLayerImageTooltipOverlay.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lbLayerImageTooltipOverlay.TransparentBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.lbLayerImageTooltipOverlay.Visible = false;
             // 
             // pbLayer
             // 
@@ -1813,7 +1830,7 @@ namespace UVtools.GUI
             // 
             this.nmPixelEditorDrawingThickness.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.nmPixelEditorDrawingThickness.Location = new System.Drawing.Point(108, 160);
+            this.nmPixelEditorDrawingThickness.Location = new System.Drawing.Point(125, 160);
             this.nmPixelEditorDrawingThickness.Maximum = new decimal(new int[] {
             200,
             0,
@@ -1825,7 +1842,7 @@ namespace UVtools.GUI
             0,
             -2147483648});
             this.nmPixelEditorDrawingThickness.Name = "nmPixelEditorDrawingThickness";
-            this.nmPixelEditorDrawingThickness.Size = new System.Drawing.Size(224, 24);
+            this.nmPixelEditorDrawingThickness.Size = new System.Drawing.Size(207, 24);
             this.nmPixelEditorDrawingThickness.TabIndex = 32;
             this.nmPixelEditorDrawingThickness.Value = new decimal(new int[] {
             1,
@@ -1848,9 +1865,9 @@ namespace UVtools.GUI
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cbPixelEditorDrawingLineType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbPixelEditorDrawingLineType.FormattingEnabled = true;
-            this.cbPixelEditorDrawingLineType.Location = new System.Drawing.Point(108, 66);
+            this.cbPixelEditorDrawingLineType.Location = new System.Drawing.Point(125, 66);
             this.cbPixelEditorDrawingLineType.Name = "cbPixelEditorDrawingLineType";
-            this.cbPixelEditorDrawingLineType.Size = new System.Drawing.Size(258, 26);
+            this.cbPixelEditorDrawingLineType.Size = new System.Drawing.Size(241, 26);
             this.cbPixelEditorDrawingLineType.TabIndex = 30;
             // 
             // label17
@@ -1879,7 +1896,7 @@ namespace UVtools.GUI
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(114, 217);
+            this.label16.Location = new System.Drawing.Point(131, 217);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(49, 18);
             this.label16.TabIndex = 9;
@@ -1889,7 +1906,7 @@ namespace UVtools.GUI
             // 
             this.nmPixelEditorDrawingLayersBelow.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.nmPixelEditorDrawingLayersBelow.Location = new System.Drawing.Point(108, 190);
+            this.nmPixelEditorDrawingLayersBelow.Location = new System.Drawing.Point(125, 190);
             this.nmPixelEditorDrawingLayersBelow.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -1914,15 +1931,15 @@ namespace UVtools.GUI
             this.label6.AutoSize = true;
             this.label6.Location = new System.Drawing.Point(338, 133);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(28, 18);
+            this.label6.Size = new System.Drawing.Size(23, 18);
             this.label6.TabIndex = 6;
-            this.label6.Text = "px²";
+            this.label6.Text = "px";
             // 
             // nmPixelEditorDrawingBrushSize
             // 
             this.nmPixelEditorDrawingBrushSize.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.nmPixelEditorDrawingBrushSize.Location = new System.Drawing.Point(108, 130);
+            this.nmPixelEditorDrawingBrushSize.Location = new System.Drawing.Point(125, 130);
             this.nmPixelEditorDrawingBrushSize.Maximum = new decimal(new int[] {
             200,
             0,
@@ -1934,7 +1951,7 @@ namespace UVtools.GUI
             0,
             0});
             this.nmPixelEditorDrawingBrushSize.Name = "nmPixelEditorDrawingBrushSize";
-            this.nmPixelEditorDrawingBrushSize.Size = new System.Drawing.Size(224, 24);
+            this.nmPixelEditorDrawingBrushSize.Size = new System.Drawing.Size(207, 24);
             this.nmPixelEditorDrawingBrushSize.TabIndex = 5;
             this.nmPixelEditorDrawingBrushSize.Value = new decimal(new int[] {
             1,
@@ -1947,9 +1964,9 @@ namespace UVtools.GUI
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(7, 133);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(84, 18);
+            this.label3.Size = new System.Drawing.Size(112, 18);
             this.label3.TabIndex = 4;
-            this.label3.Text = "Brush area:";
+            this.label3.Text = "Brush diameter:";
             // 
             // panel3
             // 
@@ -1986,9 +2003,9 @@ namespace UVtools.GUI
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cbPixelEditorDrawingBrushShape.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbPixelEditorDrawingBrushShape.FormattingEnabled = true;
-            this.cbPixelEditorDrawingBrushShape.Location = new System.Drawing.Point(108, 98);
+            this.cbPixelEditorDrawingBrushShape.Location = new System.Drawing.Point(125, 98);
             this.cbPixelEditorDrawingBrushShape.Name = "cbPixelEditorDrawingBrushShape";
-            this.cbPixelEditorDrawingBrushShape.Size = new System.Drawing.Size(258, 26);
+            this.cbPixelEditorDrawingBrushShape.Size = new System.Drawing.Size(241, 26);
             this.cbPixelEditorDrawingBrushShape.TabIndex = 0;
             this.cbPixelEditorDrawingBrushShape.SelectedIndexChanged += new System.EventHandler(this.EventSelectedIndexChanged);
             // 
@@ -2755,6 +2772,18 @@ namespace UVtools.GUI
             this.lbActualLayer.TabIndex = 9;
             this.lbActualLayer.Text = "?";
             // 
+            // tbLayer
+            // 
+            this.tbLayer.Dock = System.Windows.Forms.DockStyle.Right;
+            this.tbLayer.Location = new System.Drawing.Point(93, 0);
+            this.tbLayer.Margin = new System.Windows.Forms.Padding(0);
+            this.tbLayer.Name = "tbLayer";
+            this.tbLayer.Orientation = System.Windows.Forms.Orientation.Vertical;
+            this.tbLayer.Size = new System.Drawing.Size(45, 557);
+            this.tbLayer.TabIndex = 8;
+            this.tbLayer.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
+            this.tbLayer.ValueChanged += new System.EventHandler(this.ValueChanged);
+            // 
             // lbInitialLayer
             // 
             this.lbInitialLayer.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -2844,35 +2873,6 @@ namespace UVtools.GUI
             // 
             this.mouseHoldTimer.Interval = 1000;
             this.mouseHoldTimer.Tick += new System.EventHandler(this.EventTimerTick);
-            // 
-            // lbLayerImageTooltipOverlay
-            // 
-            this.lbLayerImageTooltipOverlay.AutoSize = true;
-            this.lbLayerImageTooltipOverlay.BackColor = System.Drawing.Color.Transparent;
-            this.lbLayerImageTooltipOverlay.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lbLayerImageTooltipOverlay.CausesValidation = false;
-            this.lbLayerImageTooltipOverlay.Location = new System.Drawing.Point(13, 37);
-            this.lbLayerImageTooltipOverlay.Name = "lbLayerImageTooltipOverlay";
-            this.lbLayerImageTooltipOverlay.Opacity = ((byte)(210));
-            this.lbLayerImageTooltipOverlay.Padding = new System.Windows.Forms.Padding(10);
-            this.lbLayerImageTooltipOverlay.Size = new System.Drawing.Size(80, 40);
-            this.lbLayerImageTooltipOverlay.TabIndex = 8;
-            this.lbLayerImageTooltipOverlay.Text = "Overlay";
-            this.lbLayerImageTooltipOverlay.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.lbLayerImageTooltipOverlay.TransparentBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
-            this.lbLayerImageTooltipOverlay.Visible = false;
-            // 
-            // tbLayer
-            // 
-            this.tbLayer.Dock = System.Windows.Forms.DockStyle.Right;
-            this.tbLayer.Location = new System.Drawing.Point(93, 0);
-            this.tbLayer.Margin = new System.Windows.Forms.Padding(0);
-            this.tbLayer.Name = "tbLayer";
-            this.tbLayer.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.tbLayer.Size = new System.Drawing.Size(45, 557);
-            this.tbLayer.TabIndex = 8;
-            this.tbLayer.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
-            this.tbLayer.ValueChanged += new System.EventHandler(this.ValueChanged);
             // 
             // FrmMain
             // 
@@ -2980,8 +2980,8 @@ namespace UVtools.GUI
             this.panelLayerNavigation.ResumeLayout(false);
             this.panelLayerNavigation.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbTrackerIssues)).EndInit();
-            this.panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.tbLayer)).EndInit();
+            this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
