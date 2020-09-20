@@ -605,6 +605,7 @@ namespace UVtools.WPF.Controls
 
         private void FillContainerOnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
         {
+            if (Image is null) return;
             e.Handled = true;
             if (AllowZoom && SizeMode == SizeModes.Normal)
             {

@@ -11,35 +11,35 @@
         Icon="/Assets/Icons/UVtools.ico"
         >
   
-  <DockPanel IsEnabled="{Binding IsGUIEnabled}">
+  <DockPanel>
     <Menu DockPanel.Dock="Top">
       <MenuItem Name="MainMenu.File" Header="_File">
-        <MenuItem Name="MainMenu.File.Open" Header="_Open" InputGesture="Ctrl+O" Command="{Binding MenuFileOpenClicked}">
+        <MenuItem Name="MainMenu.File.Open" Header="_Open" HotKey="Ctrl+O" InputGesture="Ctrl+O" Command="{Binding MenuFileOpenClicked}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\open-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Name="MainMenu.File.OpenNewWindow" Header="Open in _new window" InputGesture="Ctrl+Shift+O" Command="{Binding ButtonClicked}">
+        <MenuItem Name="MainMenu.File.OpenNewWindow" Header="Open in _new window" HotKey="Ctrl+Shift+O" InputGesture="Ctrl+Shift+O" Command="{Binding ButtonClicked}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\open-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Name="MainMenu.File.Reload" Header="_Reload" InputGesture="Ctrl+F5" IsEnabled="{Binding IsFileLoaded}">
+        <MenuItem Name="MainMenu.File.Reload" Header="_Reload" HotKey="Ctrl+F5" InputGesture="Ctrl+F5" IsEnabled="{Binding IsFileLoaded}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\file-refresh-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Name="MainMenu.File.Save" Header="_Save" InputGesture="Ctrl+S">
+        <MenuItem Name="MainMenu.File.Save" Header="_Save" HotKey="Ctrl+S" InputGesture="Ctrl+S">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\save-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
-          <MenuItem Name="MainMenu.File.SaveAs" Header="Save _as" InputGesture="Ctrl+Shift+S" IsEnabled="{Binding IsFileLoaded}">
+          <MenuItem Name="MainMenu.File.SaveAs" Header="Save _as" HotKey="Ctrl+Shift+S" InputGesture="Ctrl+Shift+S" IsEnabled="{Binding IsFileLoaded}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\save-as-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Name="MainMenu.File.Close" Header="_Close" InputGesture="Ctrl+W" IsEnabled="{Binding IsFileLoaded}">
+        <MenuItem Name="MainMenu.File.Close" Header="_Close" HotKey="Ctrl+W" InputGesture="Ctrl+W" IsEnabled="{Binding IsFileLoaded}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\file-close-16x16.png"/>
           </MenuItem.Icon>
@@ -47,7 +47,7 @@
         
           <Separator/>
         
-        <MenuItem Name="MainMenu.File.Extract" Header="_Extract" InputGesture="Ctrl+E" IsEnabled="{Binding IsFileLoaded}">
+        <MenuItem Name="MainMenu.File.Extract" Header="_Extract" HotKey="Ctrl+E" InputGesture="Ctrl+E" IsEnabled="{Binding IsFileLoaded}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\extract-object-16x16.png"/>
           </MenuItem.Icon>
@@ -69,7 +69,12 @@
         
         <Separator/>
         
-        <MenuItem Name="MainMenu.File.Exit" Header="_Exit Alt+F4" InputGesture="Alt+F4">
+        <MenuItem 
+          Name="MainMenu.File.Exit"
+          Header="_Exit Alt+F4" 
+          InputGesture="Alt+F4"
+          Command="{Binding Close}"
+          >
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\exit-16x16.png"/>
           </MenuItem.Icon>
@@ -81,7 +86,9 @@
       </MenuItem>
     </Menu>
 
-    <Menu DockPanel.Dock="Bottom">
+    <Menu DockPanel.Dock="Bottom"
+          IsEnabled="{Binding IsFileLoaded}"
+          >
       <MenuItem Header="_File">
         <MenuItem Header="_Open..."/>
         <Separator/>
@@ -93,7 +100,7 @@
       </MenuItem>
     </Menu>
 
-    <TabControl DockPanel.Dock="Left" Width="300">
+    <TabControl IsEnabled="{Binding IsFileLoaded}" DockPanel.Dock="Left" Width="300">
       <TabItem Header="Information" VerticalContentAlignment="Center">
         <TextBlock Text="I am in the circle page !" HorizontalAlignment="Left" VerticalAlignment="Center"/>
       </TabItem>
@@ -126,17 +133,74 @@
       </TabItem>
     </TabControl>
 
-    <Grid DockPanel.Dock="Right" ColumnDefinitions="100*,1.5*,4*" RowDefinitions="Auto,Auto,*,Auto,Auto,Auto"  Margin="5">
-      <TextBlock Margin="0,0,0,10" Text="???" HorizontalAlignment="Center" TextAlignment="Center" Grid.Row="0"/>
-      <RepeatButton Grid.Row="1">Up</RepeatButton>
-      <Slider Margin="0,5,0,5" HorizontalAlignment="Center" Orientation="Vertical" Grid.Row="2"/>
-      <RepeatButton Grid.Row="3">Down</RepeatButton>
+    <Grid IsEnabled="{Binding IsFileLoaded}" DockPanel.Dock="Right" ColumnDefinitions="*" RowDefinitions="Auto,Auto,*,Auto,Auto,Auto"  Margin="5">
+      <TextBlock
+        Text="{Binding MaximumLayerString}"
+        Name="Layer.Navigation.Up"
+        Margin="0,0,0,10" 
+        HorizontalAlignment="Center"
+        TextAlignment="Center"
+        Grid.Row="0"/>
+      <RepeatButton 
+        Grid.Row="1"
+        ToolTip.Tip="Navigate to up layer [W]"
+        HotKey="w"
+        Interval="100"
+        IsEnabled="{Binding CanGoUp}"
+        Command="{Binding GoNextLayer}">
+        <Image Width="16" Height="16" Source="/Assets/Icons/arrow-up-16x16.png"/>
+      </RepeatButton>
+      <Slider 
+        Name="Layer.Navigation.Slider"
+        Minimum="0"
+        Maximum="{Binding SliderMaximumValue}"
+        Ticks="{Binding SliderMaximumValue}"
+        Value="{Binding ActualLayer}"
+        TickFrequency="1"
+        TickPlacement="Outside"
+        SmallChange="1"
+        LargeChange="10"
+        IsSnapToTickEnabled="True"
+        Grid.Row="2"
+        Margin="0,5,0,5" 
+        HorizontalAlignment="Right"
+        Orientation="Vertical"/>
+      <RepeatButton 
+        Grid.Row="3"
+        ToolTip.Tip="Navigate to down layer [S]"
+        HotKey="s"
+        Interval="100"
+        IsEnabled="{Binding CanGoDown}"
+        Command="{Binding GoPreviousLayer}"
+        >
+        <Image Width="16" Height="16" Source="/Assets/Icons/arrow-down-16x16.png"/>
+      </RepeatButton>
       <StackPanel Margin="0,10,0,10" Grid.Row="4" Orientation="Horizontal">
-        <Button Content="asd"/>
-        <Button Margin="5,0,5,0" Content="asd"/>
-        <Button Content="asd"/>
+        <Button
+          ToolTip.Tip="Navigate to first layer [END]"
+          HotKey="END"
+          IsEnabled="{Binding CanGoDown}"
+          Command="{Binding GoFirstLayer}"
+          >
+          <Image Width="16" Height="16" Source="/Assets/Icons/arrow-end-16x16.png"/>
+        </Button>
+        <Button Margin="5,0,5,0"
+          ToolTip.Tip="Navigate to a selected layer [Ctrl + F]"
+          HotKey="Ctrl + F"
+                >
+          <Image Source="/Assets/Icons/search-16x16.png"/>
+        </Button>
+        <Button
+          ToolTip.Tip="Navigate to last layer [HOME]"
+          HotKey="HOME"
+          IsEnabled="{Binding CanGoUp}"
+          Command="{Binding GoLastLayer}"
+          >
+          <Image Width="16" Height="16" Source="/Assets/Icons/arrow-top-16x16.png"/>
+        </Button>
+      
       </StackPanel>
-      <TextBlock Text="???" HorizontalAlignment="Center" TextAlignment="Center" Grid.Row="5"/>
+      <TextBlock Text="{Binding MinimumLayerString}" HorizontalAlignment="Center" TextAlignment="Center" Grid.Row="5"/>
     </Grid>
 
 
@@ -145,7 +209,9 @@
       <Button Name="center">Center image</Button>
     </StackPanel>-->
 
-    <Grid ColumnDefinitions="*" RowDefinitions="Auto,*,Auto"  Margin="5">
+    <Grid
+      IsEnabled="{Binding IsFileLoaded}"
+      ColumnDefinitions="*" RowDefinitions="Auto,*,Auto"  Margin="5">
       <Menu Grid.Row="0">
         <MenuItem Header="_File">
           <MenuItem Header="_Open..."/>
@@ -164,7 +230,8 @@
      Name="Layer.Image"
       />
 
-      <Menu Grid.Row="2">
+      <Menu
+        Grid.Row="2">
         <MenuItem Header="_File">
           <MenuItem Header="_Open..."/>
           <Separator/>

@@ -1,0 +1,41 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cp="clr-namespace:ThemeEditor.Controls.ColorPicker;assembly=ThemeEditor.Controls.ColorPicker"
+        mc:Ignorable="d" d:DesignWidth="420" d:DesignHeight="420"
+        WindowStartupLocation="CenterOwner"
+        Width="420"
+        SizeToContent="Height"
+        CanResize="False"
+        x:Class="UVtools.WPF.Windows.ColorPickerWindow"
+        Title="Color Picker"
+        Icon="/Assets/Icons/UVtools.ico"
+        >
+  <StackPanel Orientation="Vertical">
+    <cp:ColorPicker Color="{Binding ResultColor, Mode=TwoWay}" />
+
+    <Panel Background="LightGray">
+      <StackPanel HorizontalAlignment="Right" Margin="15" Orientation="Horizontal">
+        <Button HorizontalAlignment="Right" Name="Actions.Save" Margin="0,0,10,0" Padding="10" IsDefault="True"
+                  Command="{Binding OnClickOk}">
+          <StackPanel Orientation="Horizontal">
+            <Image Source="/Assets/Icons/accept-16x16.png"/>
+            <TextBlock Margin="10,0,0,0">Select</TextBlock>
+          </StackPanel>
+        </Button>
+
+        <Button HorizontalAlignment="Right" 
+                Name="Actions.Cancel" Padding="10" IsCancel="True"
+                Command="{Binding Close}">
+          <StackPanel Orientation="Horizontal">
+            <Image Source="/Assets/Icons/exit-16x16.png"/>
+            <TextBlock Margin="10,0,0,0">Cancel</TextBlock>
+          </StackPanel>
+        </Button>
+      </StackPanel>
+    </Panel>
+
+  </StackPanel>
+
+</Window>

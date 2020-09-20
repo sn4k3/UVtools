@@ -39,7 +39,14 @@ namespace UVtools.WPF.Extensions
             => await window.MessageBoxGeneric(message, title ?? $"{window.Title} Error", buttons, Icon.Error, WindowStartupLocation.CenterOwner, style);
 
         public static async Task<ButtonResult> MessageBoxQuestion(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.YesNo, Style style = Style.None)
-            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} Question", buttons, Icon.Info, WindowStartupLocation.CenterOwner, style);
+            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} Question", buttons, Icon.Setting, WindowStartupLocation.CenterOwner, style);
 
+
+        public static void ResetDataContext(this Window window)
+        {
+            var old = window.DataContext;
+            window.DataContext = new object();
+            window.DataContext = old;
+        }
     }
 }

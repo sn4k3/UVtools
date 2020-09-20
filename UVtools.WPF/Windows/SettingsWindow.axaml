@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cp="clr-namespace:ThemeEditor.Controls.ColorPicker;assembly=ThemeEditor.Controls.ColorPicker"
         mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
         x:Class="UVtools.WPF.Windows.SettingsWindow"
         WindowStartupLocation="CenterOwner"
@@ -12,7 +13,7 @@
         Icon="/Assets/Icons/UVtools.ico"
         >
   <StackPanel Orientation="Vertical" Spacing="10">
-    <TabControl SelectedIndex="3">
+    <TabControl>
       <TabItem Header="General" VerticalContentAlignment="Center">
         <StackPanel Orientation="Vertical" Spacing="5">
           <Border 
@@ -24,8 +25,8 @@
             <StackPanel Orientation="Vertical">
               <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Startup"/>
               <StackPanel Margin="15" Orientation="Vertical" Spacing="15">
-                <CheckBox Content="Start maximized"/>
-                <CheckBox Content="Check for updates on startup"/>
+                <CheckBox IsChecked="{Binding Settings.General.StartMaximized}" Content="Start maximized"/>
+                <CheckBox IsChecked="{Binding Settings.General.CheckForUpdatesOnStartup}" Content="Check for updates on startup"/>
               </StackPanel>
             
             </StackPanel>
@@ -46,63 +47,95 @@
                   VerticalAlignment="Center" 
                   Grid.Row="0" Grid.Column="0" 
                   Text="File open dialog filters:"/>
-                <ComboBox Margin="10,0,0,0" 
+                <ComboBox Items="{Binding FileOpenDialogFilters}"
+                          SelectedIndex="{Binding Settings.General.DefaultOpenFileExtensionIndex}"
+                          Margin="10,0,0,0" 
                           Grid.ColumnSpan="3" Grid.Row="0" Grid.Column="1"/>
 
                 <TextBlock VerticalAlignment="Center"
                            Grid.Row="2" Grid.Column="0"
                            Text="File open default directory:"/>
-                <TextBox Margin="10,0,0,0" Grid.Row="2" Grid.Column="1" IsReadOnly="True"/>
-                <Button Grid.Row="2" Grid.Column="2">
+                <TextBox
+                  Name="General.DefaultDirectoryOpenFile"
+                  Text="{Binding Settings.General.DefaultDirectoryOpenFile}"
+                  Margin="10,0,0,0" Grid.Row="2" Grid.Column="1" IsReadOnly="True"/>
+                <Button Grid.Row="2" Grid.Column="2"
+                        Command="{Binding GeneralOpenFolderField}"
+                        CommandParameter="DefaultDirectoryOpenFile">
                   <Image Source="/Assets/Icons/open-16x16.png"/>
                 </Button>
-                <Button Grid.Row="2" Grid.Column="3">
+                <Button Grid.Row="2" Grid.Column="3"
+                        Command="{Binding GeneralClearField}"
+                        CommandParameter="DefaultDirectoryOpenFile">
                   <Image Source="/Assets/Icons/delete-16x16.png"/>
                 </Button>
 
                 <TextBlock VerticalAlignment="Center" 
                            Grid.Row="4" Grid.Column="0"
                            Text="File save as default directory:"/>
-                <TextBox Margin="10,0,0,0" Grid.Row="4" Grid.Column="1" IsReadOnly="True"/>
-                <Button Grid.Row="4" Grid.Column="2">
+                <TextBox 
+                  Name="General.DefaultDirectorySaveFile"
+                  Text="{Binding Settings.General.DefaultDirectorySaveFile}"
+                  Margin="10,0,0,0" Grid.Row="4" Grid.Column="1" IsReadOnly="True"/>
+                <Button Grid.Row="4" Grid.Column="2"
+                        Command="{Binding GeneralOpenFolderField}"
+                        CommandParameter="DefaultDirectorySaveFile">
                   <Image Source="/Assets/Icons/open-16x16.png"/>
                 </Button>
-                <Button Grid.Row="4" Grid.Column="3">
+                <Button Grid.Row="4" Grid.Column="3"
+                        Command="{Binding GeneralClearField}"
+                        CommandParameter="DefaultDirectorySaveFile">
                   <Image Source="/Assets/Icons/delete-16x16.png"/>
                 </Button>
 
                 <TextBlock VerticalAlignment="Center" 
                            Grid.Row="6" Grid.Column="0"
                            Text="File extract default directory:"/>
-                <TextBox Margin="10,0,0,0" Grid.Row="6" Grid.Column="1" IsReadOnly="True"/>
-                <Button Grid.Row="6" Grid.Column="2">
+                <TextBox
+                  Name="General.DefaultDirectoryExtractFile"
+                  Text="{Binding Settings.General.DefaultDirectoryExtractFile}"
+                  Margin="10,0,0,0" Grid.Row="6" Grid.Column="1" IsReadOnly="True"/>
+                <Button Grid.Row="6" Grid.Column="2"
+                        Command="{Binding GeneralOpenFolderField}"
+                        CommandParameter="DefaultDirectoryExtractFile">
                   <Image Source="/Assets/Icons/open-16x16.png"/>
                 </Button>
-                <Button Grid.Row="6" Grid.Column="3">
+                <Button Grid.Row="6" Grid.Column="3"
+                        Command="{Binding GeneralClearField}"
+                        CommandParameter="DefaultDirectoryExtractFile">
                   <Image Source="/Assets/Icons/delete-16x16.png"/>
                 </Button>
 
                 <TextBlock VerticalAlignment="Center" 
                            Grid.Row="8" Grid.Column="0"
                            Text="File convert default directory:"/>
-                <TextBox Margin="10,0,0,0" Grid.Row="8" Grid.Column="1" IsReadOnly="True"/>
-                <Button Grid.Row="8" Grid.Column="2">
+                <TextBox 
+                  Name="General.DefaultDirectoryConvertFile"
+                  Text="{Binding Settings.General.DefaultDirectoryConvertFile}"
+                  Margin="10,0,0,0" Grid.Row="8" Grid.Column="1" IsReadOnly="True"/>
+                <Button Grid.Row="8" Grid.Column="2"
+                        Command="{Binding GeneralOpenFolderField}"
+                        CommandParameter="DefaultDirectoryConvertFile">
                   <Image Source="/Assets/Icons/open-16x16.png"/>
                 </Button>
-                <Button Grid.Row="8" Grid.Column="3">
+                <Button 
+                  Command="{Binding GeneralClearField}"
+                  CommandParameter="DefaultDirectoryConvertFile"
+                  Grid.Row="8" Grid.Column="3">
                   <Image Source="/Assets/Icons/delete-16x16.png"/>
                 </Button>
                 
               </Grid>
-              <CheckBox Margin="15,0" Content="On file 'Save' prompt for file overwrite for the first time" />
+              <CheckBox IsChecked="{Binding Settings.General.PromptOverwriteFileSave}" Margin="15,0" Content="On file 'Save' prompt for file overwrite for the first time" />
 
               <Grid Margin="15" ColumnDefinitions="Auto,*,Auto,*">
                 <TextBlock VerticalAlignment="Center" Grid.Column="0" Text="File 'Save as' prefix:"/>
-                <TextBox Grid.Column="1" Margin="10,0,10,0"/>
+                <TextBox Text="{Binding Settings.General.FileSaveNamePrefix}"
+                         Grid.Column="1" Margin="10,0,10,0"/>
                 <TextBlock VerticalAlignment="Center" Grid.Column="2" Text="Suffix:"/>
-                <TextBox Grid.Column="3" Margin="10,0,0,0"/>
+                <TextBox Text="{Binding Settings.General.FileSaveNameSuffix}"
+                         Grid.Column="3" Margin="10,0,0,0"/>
               </Grid>
-              
             </StackPanel>
 
 
@@ -133,12 +166,18 @@
                         Padding="10"
                         BorderBrush="Black"
                         BorderThickness="2"
-                         VerticalAlignment="Center"/>
+                         VerticalAlignment="Center"
+                        Background="{Binding Settings.LayerPreview.TooltipOverlayBackgroundBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="TooltipOverlayBackgroundColor"
+                        />
                 <CheckBox Grid.Row="0" Grid.Column="4"
                           Margin="10,0,0,0"
                           HorizontalAlignment="Right"
                           VerticalAlignment="Center"
-                          Content="Show by default"/>
+                          Content="Show by default"
+                          IsChecked="{Binding Settings.LayerPreview.TooltipOverlay}"
+                          />
 
 
                 <!--Print volume boundary-->
@@ -151,12 +190,18 @@
                         Padding="10"
                         BorderBrush="Black"
                         BorderThickness="2"
-                         VerticalAlignment="Center"/>
+                         VerticalAlignment="Center"
+                        Background="{Binding Settings.LayerPreview.VolumeBoundsOutlineBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="VolumeBoundsOutlineColor"
+                        />
                 <NumericUpDown Grid.Row="2" Grid.Column="2"
                                Margin="10,0,0,0"
                                VerticalAlignment="Center"
                                Minimum="1"
-                               Maximum="50"/>
+                               Maximum="50"
+                               Value="{Binding Settings.LayerPreview.VolumeBoundsOutlineThickness}"
+                               />
                 <TextBlock Grid.Row="2" Grid.Column="3"
                            Margin="5,0,0,0"
                            VerticalAlignment="Center"
@@ -165,7 +210,9 @@
                           Margin="10,0,0,0"
                           HorizontalAlignment="Right"
                           VerticalAlignment="Center"
-                          Content="Show by default"/>
+                          Content="Show by default"
+                          IsChecked="{Binding Settings.LayerPreview.VolumeBoundsOutline}"
+                          />
 
                 <!--Layer boundary-->
                 <TextBlock Grid.Row="4" Grid.Column="0"
@@ -176,12 +223,18 @@
                         Padding="10"
                         BorderBrush="Black"
                         BorderThickness="2"
-                         VerticalAlignment="Center"/>
+                         VerticalAlignment="Center"
+                        Background="{Binding Settings.LayerPreview.LayerBoundsOutlineBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="LayerBoundsOutlineColor"
+                        />
                 <NumericUpDown Grid.Row="4" Grid.Column="2"
                                Margin="10,0,0,0"
                                VerticalAlignment="Center"
                                Minimum="1"
-                               Maximum="50"/>
+                               Maximum="50"
+                               Value="{Binding Settings.LayerPreview.LayerBoundsOutlineThickness}"
+                               />
                 <TextBlock Grid.Row="4" Grid.Column="3"
                            Margin="5,0,0,0"
                            VerticalAlignment="Center"
@@ -190,7 +243,9 @@
                           Margin="10,0,0,0"
                           HorizontalAlignment="Right"
                           VerticalAlignment="Center"
-                          Content="Show by default"/>
+                          Content="Show by default"
+                          IsChecked="{Binding Settings.LayerPreview.LayerBoundsOutline}"
+                          />
 
 
                 <!--Hallow area boundary-->
@@ -202,12 +257,18 @@
                         Padding="10"
                         BorderBrush="Black"
                         BorderThickness="2"
-                         VerticalAlignment="Center"/>
+                         VerticalAlignment="Center"
+                        Background="{Binding Settings.LayerPreview.HollowOutlineBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="HollowOutlineColor"
+                        />
                 <NumericUpDown Grid.Row="6" Grid.Column="2"
                                Margin="10,0,0,0"
                                VerticalAlignment="Center"
                                Minimum="1"
-                               Maximum="50"/>
+                               Maximum="50"
+                               Value="{Binding Settings.LayerPreview.HollowOutlineLineThickness}"
+                               />
                 <TextBlock Grid.Row="6" Grid.Column="3"
                            Margin="5,0,0,0"
                            VerticalAlignment="Center"
@@ -216,7 +277,9 @@
                           Margin="10,0,0,0"
                           HorizontalAlignment="Right"
                           VerticalAlignment="Center"
-                          Content="Show by default"/>
+                          Content="Show by default"
+                          IsChecked="{Binding Settings.LayerPreview.HollowOutline}"
+                          />
                 
               </Grid>
 
@@ -231,7 +294,11 @@
                         Padding="10"
                         BorderBrush="Black"
                         BorderThickness="2"
-                         VerticalAlignment="Center"/>
+                         VerticalAlignment="Center"
+                        Background="{Binding Settings.LayerPreview.PreviousLayerDifferenceBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="PreviousLayerDifferenceColor"
+                        />
                 <TextBlock Grid.Row="0" Grid.Column="2"
                           Margin="10,0,0,0"
                           HorizontalAlignment="Right"
@@ -242,13 +309,21 @@
                         Padding="10"
                         BorderBrush="Black"
                         BorderThickness="2"
-                         VerticalAlignment="Center"/>
+                         VerticalAlignment="Center"
+                        Background="{Binding Settings.LayerPreview.IslandBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="IslandColor"
+                        />
                 <Button Grid.Row="0" Grid.Column="4"
                         Margin="10,0,0,0"
                         Padding="10"
                         BorderBrush="Black"
                         BorderThickness="2"
-                         VerticalAlignment="Center"/>
+                         VerticalAlignment="Center"
+                        Background="{Binding Settings.LayerPreview.IslandHighlightBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="IslandHighlightColor"
+                        />
 
                 <!--Next layer difference  & Resin trap-->
                 <TextBlock Grid.Row="2" Grid.Column="0"
@@ -259,7 +334,11 @@
                         Padding="10"
                         BorderBrush="Black"
                         BorderThickness="2"
-                         VerticalAlignment="Center"/>
+                         VerticalAlignment="Center"
+                        Background="{Binding Settings.LayerPreview.NextLayerDifferenceBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="NextLayerDifferenceColor"
+                        />
                 <TextBlock Grid.Row="2" Grid.Column="2"
                           Margin="10,0,0,0"
                           HorizontalAlignment="Right"
@@ -270,15 +349,23 @@
                         Padding="10"
                         BorderBrush="Black"
                         BorderThickness="2"
-                         VerticalAlignment="Center"/>
+                         VerticalAlignment="Center"
+                        Background="{Binding Settings.LayerPreview.ResinTrapBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="ResinTrapColor"
+                        />
                 <Button Grid.Row="2" Grid.Column="4"
                         Margin="10,0,0,0"
                         Padding="10"
                         BorderBrush="Black"
                         BorderThickness="2"
-                        VerticalAlignment="Center"/>
+                        VerticalAlignment="Center"
+                        Background="{Binding Settings.LayerPreview.ResinTrapHighlightBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="ResinTrapHighlightColor"
+                        />
 
-                <!--Next layer difference  & Resin trap-->
+                <!--Next&prev layer difference & Touching boundary-->
                 <TextBlock Grid.Row="4" Grid.Column="0"
                            VerticalAlignment="Center"
                            Text="Prev &amp; next layer difference:"/>
@@ -287,7 +374,11 @@
                         Padding="10"
                         BorderBrush="Black"
                         BorderThickness="2"
-                         VerticalAlignment="Center"/>
+                         VerticalAlignment="Center"
+                        Background="{Binding Settings.LayerPreview.BothLayerDifferenceBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="BothLayerDifferenceColor"
+                        />
                 <TextBlock Grid.Row="4" Grid.Column="2"
                           Margin="10,0,0,0"
                           HorizontalAlignment="Right"
@@ -298,12 +389,18 @@
                         Padding="10"
                         BorderBrush="Black"
                         BorderThickness="2"
-                         VerticalAlignment="Center"/>
+                         VerticalAlignment="Center"
+                        Background="{Binding Settings.LayerPreview.TouchingBoundsBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="TouchingBoundsColor"
+                        />
 
-                <!--Crosshair-->
+                <!--Diff & Crosshair-->
                 <CheckBox Grid.Row="6" Grid.Column="0"
                           Grid.ColumnSpan="3"
-                          Content="Show layer diff colors by default"/>
+                          Content="Show layer diff colors by default"
+                          IsChecked="{Binding Settings.LayerPreview.ShowLayerDifference}"
+                          />
                 
                 <TextBlock Grid.Row="6" Grid.Column="2"
                           Margin="10,0,0,0"
@@ -315,7 +412,11 @@
                         Padding="10"
                         BorderBrush="Black"
                         BorderThickness="2"
-                        VerticalAlignment="Center"/>               
+                        VerticalAlignment="Center"
+                        Background="{Binding Settings.LayerPreview.CrosshairBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="CrosshairColor"
+                        />               
               </Grid>
             </StackPanel>
 
@@ -337,26 +438,36 @@
 
                 <ComboBox Grid.Row="0" Grid.Column="1"
                           Margin="10,0,0,0"
-                          VerticalAlignment="Center">
-                  <ComboBoxItem Content="Print Volume Boundary" />
-                  <ComboBoxItem Content="Layer Boundary" />
+                          VerticalAlignment="Center"
+                          SelectedIndex="{Binding Settings.LayerPreview.ZoomToFitPrintVolumeBounds}"
+                          >
+                  <ComboBox.Items>
+                    <ComboBoxItem Content="Print Volume Boundary" />
+                    <ComboBoxItem Content="Layer Boundary" />
+                  </ComboBox.Items>
                 </ComboBox>
 
                 <TextBlock Grid.Row="0" Grid.Column="2"
                            Margin="10,0,0,0"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Right"
-                           Text="Zoom in factor:"/>
+                           Text="Zoom in factor:"
+                           />
 
                 <ComboBox Grid.Row="0" Grid.Column="3"
                           Margin="10,0,0,0"
-                          VerticalAlignment="Center"/>
+                          VerticalAlignment="Center"
+                          Items="{Binding ZoomRanges}"
+                          SelectedIndex="{Binding Settings.LayerPreview.ZoomLockLevelIndex}"
+                          />
                 
               </Grid>
 
               <CheckBox
                 Margin="15,0,15,15"
-                Content="Auto zoom &amp; center issues on selection"/>
+                Content="Auto zoom &amp; center issues on selection"
+                IsChecked="{Binding Settings.LayerPreview.ZoomIssues}"
+                />
             </StackPanel>
 
           </Border>
@@ -372,7 +483,9 @@
               <Grid Margin="15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,100,*,Auto,Auto">
                 <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
                            VerticalAlignment="Center"
-                           Content="Show crosshairs for selected issues only"/>
+                           Content="Show crosshairs for selected issues only"
+                           IsChecked="{Binding Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues}"
+                          />
                 <TextBlock Grid.Row="0" Grid.Column="2"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center"
@@ -383,7 +496,9 @@
                                VerticalAlignment="Center"
                                Minimum="1"
                                Maximum="1000000"
-                               Width="70"/>
+                               Width="70"
+                               Value="{Binding Settings.LayerPreview.CrosshairLength}"
+                               />
 
                 <TextBlock Grid.Row="0" Grid.Column="4"
                            Margin="5,0,0,0"
@@ -397,7 +512,10 @@
                            Text="Crosshair fade after:"/>
                 <ComboBox Grid.Row="2" Grid.Column="1"
                           VerticalAlignment="Center"
-                          Margin="10,0,0,0"/>
+                          Margin="10,0,0,0"
+                          Items="{Binding ZoomRanges}"
+                          SelectedIndex="{Binding Settings.LayerPreview.CrosshairFadeLevelIndex}"
+                          />
                 <TextBlock Grid.Row="2" Grid.Column="2"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center"
@@ -408,7 +526,9 @@
                                VerticalAlignment="Center"
                                Minimum="1"
                                Maximum="255"
-                               Width="70"/>
+                               Width="70"
+                               Value="{Binding Settings.LayerPreview.CrosshairMargin}"
+                               />
 
                 <TextBlock Grid.Row="2" Grid.Column="4"
                            Margin="5,0,0,0"
@@ -432,11 +552,14 @@
               <StackPanel Orientation="Horizontal">
                 <CheckBox
                   Margin="15"
-                Content="Auto rotate on load"  
+                  Content="Auto rotate on load"
+                  IsChecked="{Binding Settings.LayerPreview.AutoRotateLayerBestView}"
                 />
 
                 <CheckBox
-                Content="Zoom to fit on load"/>
+                Content="Zoom to fit on load"
+                IsChecked="{Binding Settings.LayerPreview.LayerZoomToFitOnLoad}"
+                />
                 
               </StackPanel>
               
@@ -457,16 +580,24 @@
               <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Common"/>
 
             
-                <CheckBox Margin="15" Content="Compute issues on file load"/>
+                <CheckBox Margin="15" Content="Compute issues on file load"
+                          IsChecked="{Binding Settings.Issues.ComputeIssuesOnLoad}"
+                          />
 
-                <CheckBox Margin="15,0,15,0" Content="Auto compute issues when the Issues tab is opened for the first time"/>
+                <CheckBox Margin="15,0,15,0" Content="Auto compute issues when the Issues tab is opened for the first time"
+                          IsChecked="{Binding Settings.Issues.ComputeIssuesOnClickTab}"
+                          />
 
               <StackPanel Orientation="Horizontal" Margin="15" Spacing="15">
                 <TextBlock Text="Compute:"/>
-                <CheckBox Content="Islands"/>
-                <CheckBox Content="Resin traps"/>
-                <CheckBox Content="Touching boundary"/>
-                <CheckBox Content="Empty layers"/>
+                <CheckBox Content="Islands"
+                          IsChecked="{Binding Settings.Issues.ComputeIslands}"/>
+                <CheckBox Content="Resin traps"
+                          IsChecked="{Binding Settings.Issues.ComputeResinTraps}"/>
+                <CheckBox Content="Touching boundary"
+                          IsChecked="{Binding Settings.Issues.ComputeTouchingBounds}"/>
+                <CheckBox Content="Empty layers"
+                          IsChecked="{Binding Settings.Issues.ComputeEmptyLayers}"/>
               </StackPanel>
 
             </StackPanel>
@@ -479,13 +610,16 @@
 
             <StackPanel Orientation="Vertical">
               <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Islands"/>
-              <CheckBox Margin="15" Content="Allow diagonal bonds during island detection"/>
+              <CheckBox Margin="15" Content="Allow diagonal bonds during island detection"
+                        IsChecked="{Binding Settings.Issues.IslandAllowDiagonalBonds}"
+                        />
 
                 
               <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
                 <NumericUpDown Width="60"
                                 Minimum="1"
                                 Maximum="254"
+                               Value="{Binding Settings.Issues.IslandBinaryThreshold}"
                                 />
                 <TextBlock VerticalAlignment="Center" Text="Pixel intensity threshold for island detection"/>
               </StackPanel>
@@ -494,6 +628,7 @@
                 <NumericUpDown Width="60"
                                 Minimum="1"
                                 Maximum="255"
+                               Value="{Binding Settings.Issues.IslandRequiredAreaToProcessCheck}"
                                 />
                 <TextBlock VerticalAlignment="Center" Text="Bounding area required for an object to be considered an island"/>
               </StackPanel>
@@ -502,6 +637,7 @@
                 <NumericUpDown Width="60"
                                 Minimum="1"
                                 Maximum="255"
+                               Value="{Binding Settings.Issues.IslandRequiredPixelBrightnessToProcessCheck}"
                                 />
                 <TextBlock VerticalAlignment="Center" Text="Minimum pixel intensity to consider a pixel part of an island"/>
               </StackPanel>
@@ -510,6 +646,7 @@
                 <NumericUpDown Width="60"
                                 Minimum="1"
                                 Maximum="255"
+                               Value="{Binding Settings.Issues.IslandRequiredPixelsToSupport}"
                                 />
                 <TextBlock VerticalAlignment="Center" Text="Supporting safe pixels required to considerer an island supported"/>
               </StackPanel>
@@ -519,6 +656,7 @@
                 <NumericUpDown Width="60"
                                 Minimum="50"
                                 Maximum="255"
+                               Value="{Binding Settings.Issues.IslandRequiredPixelBrightnessToSupport}"
                                 />
                 <TextBlock VerticalAlignment="Center" Text="Minimum intensity of a supporting pixel before it is considered safe"/>
               </StackPanel>
@@ -537,6 +675,7 @@
                 <NumericUpDown Width="60"
                                 Minimum="1"
                                 Maximum="254"
+                               Value="{Binding Settings.Issues.ResinTrapBinaryThreshold}"
                                 />
                 <TextBlock VerticalAlignment="Center" Text="Pixel intensity threshold for resin trap detection"/>
               </StackPanel>
@@ -545,6 +684,7 @@
                 <NumericUpDown Width="60"
                                 Minimum="1"
                                 Maximum="255"
+                               Value="{Binding Settings.Issues.ResinTrapRequiredAreaToProcessCheck}"
                                 />
                 <TextBlock VerticalAlignment="Center" Text="Bounding area required for an object to be processed during resin trap detection"/>
               </StackPanel>
@@ -553,6 +693,7 @@
                 <NumericUpDown Width="60"
                                 Minimum="1"
                                 Maximum="255"
+                               Value="{Binding Settings.Issues.ResinTrapRequiredBlackPixelsToDrain}"
                                 />
                 <TextBlock VerticalAlignment="Center" Text="Number of drain pixels required to disqualify a potential resin trap"/>
               </StackPanel>
@@ -561,6 +702,7 @@
                 <NumericUpDown Width="60"
                                 Minimum="1"
                                 Maximum="150"
+                               Value="{Binding Settings.Issues.ResinTrapMaximumPixelBrightnessToDrain}"
                                 />
                 <TextBlock VerticalAlignment="Center" Text="Maximum pixel intensity for a pixel to be considered a drain pixel"/>
               </StackPanel>
@@ -589,11 +731,19 @@
                 <Button Grid.Row="0" Grid.Column="1"
                         Margin="10,0,0,0" Padding="10"
                         BorderBrush="Black"
-                        BorderThickness="2"/>
+                        BorderThickness="2"
+                        Background="{Binding Settings.PixelEditor.AddPixelBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="AddPixelColor"
+                        />
                 <Button Grid.Row="0" Grid.Column="2"
                         Margin="10,0,0,0" Padding="10"
                         BorderBrush="Black"
-                        BorderThickness="2"/>
+                        BorderThickness="2"
+                        Background="{Binding Settings.PixelEditor.AddPixelHighlightBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="AddPixelHighlightColor"
+                        />
 
 
                 <TextBlock Grid.Row="2" Grid.Column="0"
@@ -603,11 +753,19 @@
                 <Button Grid.Row="2" Grid.Column="1"
                         Margin="10,0,0,0" Padding="10"
                         BorderBrush="Black"
-                        BorderThickness="2"/>
+                        BorderThickness="2"
+                        Background="{Binding Settings.PixelEditor.RemovePixelBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="RemovePixelColor"
+                        />
                 <Button Grid.Row="2" Grid.Column="2"
                         Margin="10,0,0,0" Padding="10"
                         BorderBrush="Black"
-                        BorderThickness="2"/>
+                        BorderThickness="2"
+                        Background="{Binding Settings.PixelEditor.RemovePixelHighlightBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="RemovePixelHighlightColor"
+                        />
 
                 <TextBlock Grid.Row="4" Grid.Column="0"
                   VerticalAlignment="Center"
@@ -616,11 +774,19 @@
                 <Button Grid.Row="4" Grid.Column="1"
                         Margin="10,0,0,0" Padding="10"
                         BorderBrush="Black"
-                        BorderThickness="2"/>
+                        BorderThickness="2"
+                        Background="{Binding Settings.PixelEditor.SupportsBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="SupportsColor"
+                        />
                 <Button Grid.Row="4" Grid.Column="2"
                         Margin="10,0,0,0" Padding="10"
                         BorderBrush="Black"
-                        BorderThickness="2"/>
+                        BorderThickness="2"
+                        Background="{Binding Settings.PixelEditor.SupportsHighlightBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="SupportsHighlightColor"
+                        />
 
                 <TextBlock Grid.Row="6" Grid.Column="0"
                   VerticalAlignment="Center"
@@ -629,11 +795,19 @@
                 <Button Grid.Row="6" Grid.Column="1"
                         Margin="10,0,0,0" Padding="10"
                         BorderBrush="Black"
-                        BorderThickness="2"/>
+                        BorderThickness="2"
+                        Background="{Binding Settings.PixelEditor.DrainHoleBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="DrainHoleColor"
+                        />
                 <Button Grid.Row="6" Grid.Column="2"
                         Margin="10,0,0,0" Padding="10"
                         BorderBrush="Black"
-                        BorderThickness="2"/>
+                        BorderThickness="2"
+                        Background="{Binding Settings.PixelEditor.DrainHoleHighlightBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="DrainHoleHighlightColor"
+                        />
               </Grid>
               
             </StackPanel>
@@ -647,10 +821,14 @@
             <StackPanel Orientation="Vertical">
               <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Actions"/>
 
-              <CheckBox Margin="15"
-                        Content="Refresh issues for modified layers"/>
-              <CheckBox Margin="15,0,15,15"
-                        Content="Close pixel editor after operations are applied"/>
+              <CheckBox
+                IsChecked="{Binding Settings.PixelEditor.PartialUpdateIslandsOnEditing}"
+                Margin="15"
+                Content="Refresh issues for modified layers"/>
+              <CheckBox 
+                IsChecked="{Binding Settings.PixelEditor.CloseEditorOnApply}"
+                Margin="15,0,15,15"
+                Content="Close pixel editor after operations are applied"/>
             </StackPanel>
           </Border>
 
@@ -668,32 +846,41 @@
               <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Default values"/>
 
               <StackPanel Orientation="Horizontal" Margin="15" Spacing="10">
-                <NumericUpDown Width="60"
-                                Minimum="0"
-                                Maximum="255"
+                <NumericUpDown
+                  Value="{Binding Settings.LayerRepair.ClosingIterations}"
+                  Width="60"
+                  Minimum="0"
+                  Maximum="255"
                                 />
                 <TextBlock VerticalAlignment="Center" Text="Default 'Gap Closing' iterations"/>
               </StackPanel>
 
               <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
-                <NumericUpDown Width="60"
-                                Minimum="0"
-                                Maximum="255"
+                <NumericUpDown 
+                  Value="{Binding Settings.LayerRepair.OpeningIterations}"
+                  Width="60"
+                  Minimum="0"
+                  Maximum="255"
                                 />
                 <TextBlock VerticalAlignment="Center" Text="Default 'Noise Removal' iterations"/>
               </StackPanel>
 
               <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
-                <NumericUpDown Width="60"
-                                Minimum="0"
-                                Maximum="255"
+                <NumericUpDown 
+                  Value="{Binding Settings.LayerRepair.RemoveIslandsBelowEqualPixels}"
+                  Width="60"
+                  Minimum="0"
+                  Maximum="255"
                                 />
                 <TextBlock VerticalAlignment="Center" Text="Default maximum pixel area for Island removal (0 = disable)"/>
               </StackPanel>
 
-              <CheckBox Margin="15,0" Content="Attempt to repair islands by default"/>
-              <CheckBox Margin="15,15,15,0" Content="Remove empty layers by default"/>
-              <CheckBox Margin="15" Content="Attempt to repair resin traps by default"/>
+              <CheckBox IsChecked="{Binding Settings.LayerRepair.RepairIslands}"
+                Margin="15,0" Content="Attempt to repair islands by default"/>
+              <CheckBox IsChecked="{Binding Settings.LayerRepair.RepairResinTraps}"
+                Margin="15,15,15,0" Content="Remove empty layers by default"/>
+              <CheckBox IsChecked="{Binding Settings.LayerRepair.RemoveEmptyLayers}"
+                Margin="15" Content="Attempt to repair resin traps by default"/>
               
             </StackPanel>
           </Border>
@@ -706,7 +893,8 @@
     <Grid ColumnDefinitions="*,*" Background="LightGray">
 
       <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="10">
-        <Button Padding="10">
+        <Button Name="Actions.ResetAllSettings" Padding="10"
+                Command="{Binding OnClickResetAllDefaults}">
           <StackPanel Orientation="Horizontal">
             <Image Source="/Assets/Icons/undo-alt-16x16.png"/>
             <TextBlock Margin="10,0,0,0">Reset all settings</TextBlock>
@@ -720,14 +908,16 @@
                   Orientation="Horizontal"
                   Margin="10"
                   >
-          <Button Margin="0,0,10,0" Padding="10" IsDefault="True">
+          <Button Name="Actions.Save" Margin="0,0,10,0" Padding="10" IsDefault="True"
+                  Command="{Binding OnClickSave}">
             <StackPanel Orientation="Horizontal">
               <Image Source="/Assets/Icons/save-16x16.png"/>
               <TextBlock Margin="10,0,0,0">Save</TextBlock>
             </StackPanel>
           </Button>
 
-        <Button Padding="10" IsCancel="True">
+        <Button Name="Actions.Cancel" Padding="10" IsCancel="True"
+                Command="{Binding Close}">
           <StackPanel Orientation="Horizontal">
             <Image Source="/Assets/Icons/exit-16x16.png"/>
             <TextBlock Margin="10,0,0,0">Cancel</TextBlock>

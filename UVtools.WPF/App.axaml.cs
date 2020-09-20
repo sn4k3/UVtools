@@ -17,7 +17,7 @@ namespace UVtools.WPF
     public class App : Application
     {
         public static IThemeSelector? ThemeSelector { get; set; }
-
+        public static MainWindow MainWindow;
         public static FileFormat SlicerFile = null;
 
         public override void Initialize()
@@ -30,10 +30,11 @@ namespace UVtools.WPF
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 UserSettings.Load();
+                UserSettings.SetVersion();
 
                 ThemeSelector = Avalonia.ThemeManager.ThemeSelector.Create("Assets/Themes");
                 ThemeSelector.LoadSelectedTheme("Assets/selected.theme");
-                desktop.MainWindow = new MainWindow
+                desktop.MainWindow = MainWindow = new MainWindow
                 {
                     //DataContext = Selector
                 };

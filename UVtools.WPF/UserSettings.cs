@@ -11,162 +11,905 @@ using System.Diagnostics;
 using System.IO;
 using System.Xml.Serialization;
 using Avalonia.Media;
+using JetBrains.Annotations;
+using ReactiveUI;
+using UVtools.WPF.Extensions;
+using Color=UVtools.WPF.Structures.Color;
 
 namespace UVtools.WPF
 {
     [Serializable]
-    public sealed class UserSettings
+    public sealed class UserSettings : ReactiveObject
     {
         #region Sub classes
         [Serializable]
-        public sealed class GeneralUserSettings
+        public sealed class GeneralUserSettings : ReactiveObject
         {
-            public bool StartMaximized { get; set; } = true;
-            public bool CheckForUpdatesOnStartup { get; set; } = true;
-            public byte DefaultOpenFileExtensionIndex { get; set; }
-            public string DefaultDirectoryOpenFile { get; set; }
-            public string DefaultDirectorySaveFile { get; set; }
-            public string DefaultDirectoryExtractFile { get; set; }
-            public string DefaultDirectoryConvertFile { get; set; }
-            public bool PromptOverwriteFileSave { get; set; } = true;
-            public string FileSaveNamePrefix { get; set; }
-            public string FileSaveNameSuffix { get; set; } = "_copy";
+            private bool _startMaximized = true;
+            private bool _checkForUpdatesOnStartup = true;
+            private byte _defaultOpenFileExtensionIndex;
+            private string _defaultDirectoryOpenFile;
+            private string _defaultDirectorySaveFile;
+            private string _defaultDirectoryExtractFile;
+            private string _defaultDirectoryConvertFile;
+            private bool _promptOverwriteFileSave = true;
+            private string _fileSaveNamePrefix;
+            private string _fileSaveNameSuffix = "_copy";
+
+            public bool StartMaximized
+            {
+                get => _startMaximized;
+                set => this.RaiseAndSetIfChanged(ref _startMaximized, value);
+            }
+
+            public bool CheckForUpdatesOnStartup
+            {
+                get => _checkForUpdatesOnStartup;
+                set => this.RaiseAndSetIfChanged(ref _checkForUpdatesOnStartup, value);
+            }
+
+            public byte DefaultOpenFileExtensionIndex
+            {
+                get => _defaultOpenFileExtensionIndex;
+                set => this.RaiseAndSetIfChanged(ref _defaultOpenFileExtensionIndex, value);
+            }
+
+            public string DefaultDirectoryOpenFile
+            {
+                get => _defaultDirectoryOpenFile;
+                set => this.RaiseAndSetIfChanged(ref _defaultDirectoryOpenFile, value);
+            }
+
+            public string DefaultDirectorySaveFile
+            {
+                get => _defaultDirectorySaveFile;
+                set => this.RaiseAndSetIfChanged(ref _defaultDirectorySaveFile, value);
+            }
+
+            public string DefaultDirectoryExtractFile
+            {
+                get => _defaultDirectoryExtractFile;
+                set => this.RaiseAndSetIfChanged(ref _defaultDirectoryExtractFile, value);
+            }
+
+            public string DefaultDirectoryConvertFile
+            {
+                get => _defaultDirectoryConvertFile;
+                set => this.RaiseAndSetIfChanged(ref _defaultDirectoryConvertFile, value);
+            }
+
+            public bool PromptOverwriteFileSave
+            {
+                get => _promptOverwriteFileSave;
+                set => this.RaiseAndSetIfChanged(ref _promptOverwriteFileSave, value);
+            }
+
+            public string FileSaveNamePrefix
+            {
+                get => _fileSaveNamePrefix;
+                set => this.RaiseAndSetIfChanged(ref _fileSaveNamePrefix, value);
+            }
+
+            public string FileSaveNameSuffix
+            {
+                get => _fileSaveNameSuffix;
+                set => this.RaiseAndSetIfChanged(ref _fileSaveNameSuffix, value);
+            }
+
+            public GeneralUserSettings Clone()
+            {
+                return MemberwiseClone() as GeneralUserSettings;
+            }
         }
 
         [Serializable]
-        public sealed class LayerPreviewUserSettings
+        public sealed class LayerPreviewUserSettings : ReactiveObject
         {
-            public Color TooltipOverlayBackgroundColor { get; set; } = new Color(210, 255, 255, 192);
+            private Color _tooltipOverlayBackgroundColor = new Color(210, 255, 255, 192);
+            private bool _tooltipOverlay = true;
+            private Color _volumeBoundsOutlineColor = new Color(210, 0, 255, 0);
+            private byte _volumeBoundsOutlineThickness = 3;
+            private bool _volumeBoundsOutline = true;
+            private Color _layerBoundsOutlineColor = new Color(210, 0, 255, 0);
+            private byte _layerBoundsOutlineThickness = 3;
+            private bool _layerBoundsOutline = false;
+            private Color _hollowOutlineColor = new Color(210, 255, 165, 0);
+            private byte _hollowOutlineLineThickness = 3;
+            private bool _hollowOutline = false;
+            private Color _previousLayerDifferenceColor = new Color(255, 255, 0, 255);
+            private Color _nextLayerDifferenceColor = new Color(255, 0, 255, 255);
+            private Color _bothLayerDifferenceColor = new Color(255, 255, 0, 0);
+            private bool _showLayerDifference = false;
+            private Color _islandColor = new Color(255, 255,215, 0);
+            private Color _islandHighlightColor = new Color(255, 255,255, 0);
+            private Color _resinTrapColor = new Color(255, 244, 164, 96);
+            private Color _resinTrapHighlightColor = new Color(255, 255, 165, 0);
+            private Color _touchingBoundsColor = new Color(255, 255, 0, 0);
+            private Color _crosshairColor = new Color(255, 255, 0, 0);
+            private bool _zoomToFitPrintVolumeBounds = true;
+            private byte _zoomLockLevelIndex = 7;
+            private bool _zoomIssues = true;
+            private bool _crosshairShowOnlyOnSelectedIssues = false;
+            private byte _crosshairFadeLevelIndex = 5;
+            private uint _crosshairLength = 20;
+            private byte _crosshairMargin = 5;
+            private bool _autoRotateLayerBestView = true;
+            private bool _layerZoomToFitOnLoad = true;
 
-            public bool TooltipOverlay { get; set; } = true;
+            public Color TooltipOverlayBackgroundColor
+            {
+                get => _tooltipOverlayBackgroundColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _tooltipOverlayBackgroundColor, value);
+                    this.RaisePropertyChanged(nameof(TooltipOverlayBackgroundBrush));
+                }
+            }
 
-            public Color VolumeBoundsOutlineColor { get; set; } = new Color(210, 0, 255, 0);
-            public byte VolumeBoundsOutlineThickness { get; set; } = 3;
-            public bool VolumeBoundsOutline { get; set; } = true;
+            [XmlIgnore]
+            public SolidColorBrush TooltipOverlayBackgroundBrush
+            {
+                get => new SolidColorBrush(_tooltipOverlayBackgroundColor.ToAvalonia());
+                set => TooltipOverlayBackgroundColor = new Color(value);
+            }
 
-            public Color LayerBoundsOutlineColor { get; set; } = new Color(210, 0, 255, 0);
-            public byte LayerBoundsOutlineThickness { get; set; } = 3;
-            public bool LayerBoundsOutline { get; set; } = true;
+            public bool TooltipOverlay
+            {
+                get => _tooltipOverlay;
+                set => this.RaiseAndSetIfChanged(ref _tooltipOverlay, value);
+            }
 
-            public Color HollowOutlineColor { get; set; } = new Color(210, 255, 165, 0);
-            public byte HollowOutlineLineThickness { get; set; } = 3;
-            public bool HollowOutline { get; set; } = true;
+            public Color VolumeBoundsOutlineColor
+            {
+                get => _volumeBoundsOutlineColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _volumeBoundsOutlineColor, value);
+                    this.RaisePropertyChanged(nameof(VolumeBoundsOutlineBrush));
+                }
+            }
 
-            public Color PreviousLayerDifferenceColor { get; set; } = new Color(255, 255, 0, 255);
-            public Color NextLayerDifferenceColor { get; set; } = new Color(255, 0, 255, 255);
-            public Color BothLayerDifferenceColor { get; set; } = new Color(255, 255, 0, 0);
-            public bool ShowLayerDifference { get; set; } = true;
+            [XmlIgnore]
+            public SolidColorBrush VolumeBoundsOutlineBrush
+            {
+                get => new SolidColorBrush(_volumeBoundsOutlineColor.ToAvalonia());
+                set => VolumeBoundsOutlineColor = new Color(value);
+            }
 
-            public Color IslandColor { get; set; } = new Color(255, 255,215, 0);
-            public Color IslandHighlightColor { get; set; } = new Color(255, 255,255, 0);
-            public Color ResinTrapColor { get; set; } = new Color(255, 244, 164, 96);
-            public Color ResinTrapHighlightColor { get; set; } = new Color(255, 255, 165, 0);
-            public Color TouchingBoundsColor { get; set; } = new Color(255, 255, 0, 0);
-            public Color CrosshairColor { get; set; } = new Color(255, 255, 0, 0);
+            public byte VolumeBoundsOutlineThickness
+            {
+                get => _volumeBoundsOutlineThickness;
+                set => this.RaiseAndSetIfChanged(ref _volumeBoundsOutlineThickness, value);
+            }
 
-            public bool ZoomToFitPrintVolumeBounds { get; set; } = true;
-            public byte ZoomLockLevelIndex { get; set; } = 7;
-            public bool ZoomIssues { get; set; } = true;
+            public bool VolumeBoundsOutline
+            {
+                get => _volumeBoundsOutline;
+                set => this.RaiseAndSetIfChanged(ref _volumeBoundsOutline, value);
+            }
 
-            public bool CrosshairShowOnlyOnSelectedIssues { get; set; } = false;
-            public byte CrosshairFadeLevelIndex { get; set; } = 5;
-            public uint CrosshairLength { get; set; } = 20;
-            public byte CrosshairMargin { get; set; } = 5;
+            public Color LayerBoundsOutlineColor
+            {
+                get => _layerBoundsOutlineColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _layerBoundsOutlineColor, value);
+                    this.RaisePropertyChanged(nameof(LayerBoundsOutlineBrush));
+                }
+            }
 
-            public bool AutoRotateLayerBestView { get; set; } = true;
-            public bool LayerZoomToFitOnLoad { get; set; } = true;
+            [XmlIgnore]
+            public SolidColorBrush LayerBoundsOutlineBrush
+            {
+                get => new SolidColorBrush(_layerBoundsOutlineColor.ToAvalonia());
+                set => LayerBoundsOutlineColor = new Color(value);
+            }
+
+            public byte LayerBoundsOutlineThickness
+            {
+                get => _layerBoundsOutlineThickness;
+                set => this.RaiseAndSetIfChanged(ref _layerBoundsOutlineThickness, value);
+            }
+
+            public bool LayerBoundsOutline
+            {
+                get => _layerBoundsOutline;
+                set => this.RaiseAndSetIfChanged(ref _layerBoundsOutline, value);
+            }
+
+            public Color HollowOutlineColor
+            {
+                get => _hollowOutlineColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _hollowOutlineColor, value);
+                    this.RaisePropertyChanged(nameof(HollowOutlineBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush HollowOutlineBrush
+            {
+                get => new SolidColorBrush(_hollowOutlineColor.ToAvalonia());
+                set => HollowOutlineColor = new Color(value);
+            }
+
+            public byte HollowOutlineLineThickness
+            {
+                get => _hollowOutlineLineThickness;
+                set => this.RaiseAndSetIfChanged(ref _hollowOutlineLineThickness, value);
+            }
+
+            public bool HollowOutline
+            {
+                get => _hollowOutline;
+                set => this.RaiseAndSetIfChanged(ref _hollowOutline, value);
+            }
+
+            public Color PreviousLayerDifferenceColor
+            {
+                get => _previousLayerDifferenceColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _previousLayerDifferenceColor, value);
+                    this.RaisePropertyChanged(nameof(PreviousLayerDifferenceBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush PreviousLayerDifferenceBrush
+            {
+                get => new SolidColorBrush(_previousLayerDifferenceColor.ToAvalonia());
+                set => PreviousLayerDifferenceColor = new Color(value);
+            }
+
+            public Color NextLayerDifferenceColor
+            {
+                get => _nextLayerDifferenceColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _nextLayerDifferenceColor, value);
+                    this.RaisePropertyChanged(nameof(NextLayerDifferenceBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush NextLayerDifferenceBrush
+            {
+                get => new SolidColorBrush(_nextLayerDifferenceColor.ToAvalonia());
+                set => NextLayerDifferenceColor = new Color(value);
+            }
+
+            public Color BothLayerDifferenceColor
+            {
+                get => _bothLayerDifferenceColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _bothLayerDifferenceColor, value);
+                    this.RaisePropertyChanged(nameof(BothLayerDifferenceBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush BothLayerDifferenceBrush
+            {
+                get => new SolidColorBrush(_bothLayerDifferenceColor.ToAvalonia());
+                set => BothLayerDifferenceColor = new Color(value);
+            }
+
+            public bool ShowLayerDifference
+            {
+                get => _showLayerDifference;
+                set => this.RaiseAndSetIfChanged(ref _showLayerDifference, value);
+            }
+
+            public Color IslandColor
+            {
+                get => _islandColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _islandColor, value);
+                    this.RaisePropertyChanged(nameof(IslandBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush IslandBrush
+            {
+                get => new SolidColorBrush(_islandColor.ToAvalonia());
+                set => IslandHighlightColor = new Color(value);
+            }
+
+            public Color IslandHighlightColor
+            {
+                get => _islandHighlightColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _islandHighlightColor, value);
+                    this.RaisePropertyChanged(nameof(IslandHighlightBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush IslandHighlightBrush
+            {
+                get => new SolidColorBrush(_islandHighlightColor.ToAvalonia());
+                set => IslandHighlightColor = new Color(value);
+            }
+
+            public Color ResinTrapColor
+            {
+                get => _resinTrapColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _resinTrapColor, value);
+                    this.RaisePropertyChanged(nameof(ResinTrapBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush ResinTrapBrush
+            {
+                get => new SolidColorBrush(_resinTrapColor.ToAvalonia());
+                set => ResinTrapColor = new Color(value);
+            }
+
+            public Color ResinTrapHighlightColor
+            {
+                get => _resinTrapHighlightColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _resinTrapHighlightColor, value);
+                    this.RaisePropertyChanged(nameof(ResinTrapHighlightBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush ResinTrapHighlightBrush
+            {
+                get => new SolidColorBrush(_resinTrapHighlightColor.ToAvalonia());
+                set => ResinTrapHighlightColor = new Color(value);
+            }
+            public Color TouchingBoundsColor
+            {
+                get => _touchingBoundsColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _touchingBoundsColor, value);
+                    this.RaisePropertyChanged(nameof(TouchingBoundsBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush TouchingBoundsBrush
+            {
+                get => new SolidColorBrush(_touchingBoundsColor.ToAvalonia());
+                set => TouchingBoundsColor = new Color(value);
+            }
+
+            public Color CrosshairColor
+            {
+                get => _crosshairColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _crosshairColor, value);
+                    this.RaisePropertyChanged(nameof(CrosshairBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush CrosshairBrush
+            {
+                get => new SolidColorBrush(_crosshairColor.ToAvalonia());
+                set => CrosshairColor = new Color(value);
+            }
+
+            public bool ZoomToFitPrintVolumeBounds
+            {
+                get => _zoomToFitPrintVolumeBounds;
+                set => this.RaiseAndSetIfChanged(ref _zoomToFitPrintVolumeBounds, value);
+            }
+
+            public byte ZoomLockLevelIndex
+            {
+                get => _zoomLockLevelIndex;
+                set => this.RaiseAndSetIfChanged(ref _zoomLockLevelIndex, value);
+            }
+
+            public bool ZoomIssues
+            {
+                get => _zoomIssues;
+                set => this.RaiseAndSetIfChanged(ref _zoomIssues, value);
+            }
+
+            public bool CrosshairShowOnlyOnSelectedIssues
+            {
+                get => _crosshairShowOnlyOnSelectedIssues;
+                set => this.RaiseAndSetIfChanged(ref _crosshairShowOnlyOnSelectedIssues, value);
+            }
+
+            public byte CrosshairFadeLevelIndex
+            {
+                get => _crosshairFadeLevelIndex;
+                set => this.RaiseAndSetIfChanged(ref _crosshairFadeLevelIndex, value);
+            }
+
+            public uint CrosshairLength
+            {
+                get => _crosshairLength;
+                set => this.RaiseAndSetIfChanged(ref _crosshairLength, value);
+            }
+
+            public byte CrosshairMargin
+            {
+                get => _crosshairMargin;
+                set => this.RaiseAndSetIfChanged(ref _crosshairMargin, value);
+            }
+
+            public bool AutoRotateLayerBestView
+            {
+                get => _autoRotateLayerBestView;
+                set => this.RaiseAndSetIfChanged(ref _autoRotateLayerBestView, value);
+            }
+
+            public bool LayerZoomToFitOnLoad
+            {
+                get => _layerZoomToFitOnLoad;
+                set => this.RaiseAndSetIfChanged(ref _layerZoomToFitOnLoad, value);
+            }
+
+            public LayerPreviewUserSettings Clone()
+            {
+                return MemberwiseClone() as LayerPreviewUserSettings;
+            }
 
         }
 
         [Serializable]
-        public sealed class IssuesUserSettings
+        public sealed class IssuesUserSettings : ReactiveObject
         {
-            public bool ComputeIssuesOnLoad { get; set; } = false;
-            public bool ComputeIssuesOnClickTab { get; set; } = true;
-            public bool ComputeIslands { get; set; } = true;
-            public bool ComputeResinTraps { get; set; } = true;
-            public bool ComputeTouchingBounds { get; set; } = true;
-            public bool ComputeEmptyLayers { get; set; } = true;
+            private bool _computeIssuesOnLoad = false;
+            private bool _computeIssuesOnClickTab = true;
+            private bool _computeIslands = true;
+            private bool _computeResinTraps = true;
+            private bool _computeTouchingBounds = true;
+            private bool _computeEmptyLayers = true;
+            private bool _islandAllowDiagonalBonds = false;
+            private byte _islandBinaryThreshold = 0;
+            private byte _islandRequiredAreaToProcessCheck = 1;
+            private byte _islandRequiredPixelBrightnessToProcessCheck = 1;
+            private byte _islandRequiredPixelsToSupport = 10;
+            private byte _islandRequiredPixelBrightnessToSupport = 150;
+            private byte _resinTrapBinaryThreshold = 127;
+            private byte _resinTrapRequiredAreaToProcessCheck = 17;
+            private byte _resinTrapRequiredBlackPixelsToDrain = 10;
+            private byte _resinTrapMaximumPixelBrightnessToDrain = 30;
 
-            public bool IslandAllowDiagonalBonds { get; set; } = false;
-            public byte IslandBinaryThreshold { get; set; } = 0;
-            public byte IslandRequiredAreaToProcessCheck { get; set; } = 1;
-            public byte IslandRequiredPixelsToSupport { get; set; } = 10;
-            public byte IslandRequiredPixelBrightnessToSupport { get; set; } = 150;
+            public bool ComputeIssuesOnLoad
+            {
+                get => _computeIssuesOnLoad;
+                set => this.RaiseAndSetIfChanged(ref _computeIssuesOnLoad, value);
+            }
+
+            public bool ComputeIssuesOnClickTab
+            {
+                get => _computeIssuesOnClickTab;
+                set => this.RaiseAndSetIfChanged(ref _computeIssuesOnClickTab, value);
+            }
+
+            public bool ComputeIslands
+            {
+                get => _computeIslands;
+                set => this.RaiseAndSetIfChanged(ref _computeIslands, value);
+            }
+
+            public bool ComputeResinTraps
+            {
+                get => _computeResinTraps;
+                set => this.RaiseAndSetIfChanged(ref _computeResinTraps, value);
+            }
+
+            public bool ComputeTouchingBounds
+            {
+                get => _computeTouchingBounds;
+                set => this.RaiseAndSetIfChanged(ref _computeTouchingBounds, value);
+            }
+
+            public bool ComputeEmptyLayers
+            {
+                get => _computeEmptyLayers;
+                set => this.RaiseAndSetIfChanged(ref _computeEmptyLayers, value);
+            }
+
+            public bool IslandAllowDiagonalBonds
+            {
+                get => _islandAllowDiagonalBonds;
+                set => this.RaiseAndSetIfChanged(ref _islandAllowDiagonalBonds, value);
+            }
+
+            public byte IslandBinaryThreshold
+            {
+                get => _islandBinaryThreshold;
+                set => this.RaiseAndSetIfChanged(ref _islandBinaryThreshold, value);
+            }
+
+            public byte IslandRequiredAreaToProcessCheck
+            {
+                get => _islandRequiredAreaToProcessCheck;
+                set => this.RaiseAndSetIfChanged(ref _islandRequiredAreaToProcessCheck, value);
+            }
+
+            public byte IslandRequiredPixelsToSupport
+            {
+                get => _islandRequiredPixelsToSupport;
+                set => this.RaiseAndSetIfChanged(ref _islandRequiredPixelsToSupport, value);
+            }
+            
+            public byte IslandRequiredPixelBrightnessToProcessCheck
+            {
+                get => _islandRequiredPixelBrightnessToProcessCheck;
+                set => this.RaiseAndSetIfChanged(ref _islandRequiredPixelBrightnessToProcessCheck, value);
+            }
+
+            public byte IslandRequiredPixelBrightnessToSupport
+            {
+                get => _islandRequiredPixelBrightnessToSupport;
+                set => this.RaiseAndSetIfChanged(ref _islandRequiredPixelBrightnessToSupport, value);
+            }
 
 
-            public byte ResinTrapBinaryThreshold { get; set; } = 127;
-            public byte ResinTrapRequiredAreaToProcessCheck { get; set; } = 17;
-            public byte ResinTrapRequiredBlackPixelsToDrain { get; set; } = 10;
-            public byte ResinTrapMaximumPixelBrightnessToDrain { get; set; } = 30;
+            public byte ResinTrapBinaryThreshold
+            {
+                get => _resinTrapBinaryThreshold;
+                set => this.RaiseAndSetIfChanged(ref _resinTrapBinaryThreshold, value);
+            }
+
+            public byte ResinTrapRequiredAreaToProcessCheck
+            {
+                get => _resinTrapRequiredAreaToProcessCheck;
+                set => this.RaiseAndSetIfChanged(ref _resinTrapRequiredAreaToProcessCheck, value);
+            }
+
+            public byte ResinTrapRequiredBlackPixelsToDrain
+            {
+                get => _resinTrapRequiredBlackPixelsToDrain;
+                set => this.RaiseAndSetIfChanged(ref _resinTrapRequiredBlackPixelsToDrain, value);
+            }
+
+            public byte ResinTrapMaximumPixelBrightnessToDrain
+            {
+                get => _resinTrapMaximumPixelBrightnessToDrain;
+                set => this.RaiseAndSetIfChanged(ref _resinTrapMaximumPixelBrightnessToDrain, value);
+            }
+
+            public IssuesUserSettings Clone()
+            {
+                return MemberwiseClone() as IssuesUserSettings;
+            }
 
         }
 
         [Serializable]
-        public sealed class PixelEditorUserSettings
+        public sealed class PixelEditorUserSettings : ReactiveObject
         {
-            public Color AddPixelColor { get; set; } = new Color(255, 144, 238, 144);
-            public Color AddPixelHighlightColor { get; set; } = new Color(255, 0, 255, 0);
+            private Color _addPixelColor = new Color(255, 144, 238, 144);
+            private Color _addPixelHighlightColor = new Color(255, 0, 255, 0);
+            private Color _removePixelColor = new Color(255, 219, 112, 147);
+            private Color _removePixelHighlightColor = new Color(255, 139, 0, 0);
+            private Color _supportsColor = new Color(255, 0, 255, 255);
+            private Color _supportsHighlightColor = new Color(255, 0, 139, 139);
+            private Color _drainHoleColor = new Color(255, 142, 69, 133);
+            private Color _drainHoleHighlightColor = new Color(255, 159, 0, 197);
+            private bool _partialUpdateIslandsOnEditing = true;
+            private bool _closeEditorOnApply;
 
-            public Color RemovePixelColor { get; set; } = new Color(255, 219, 112, 147);
-            public Color RemovePixelHighlightColor { get; set; } = new Color(255, 139, 0, 0);
+            public Color AddPixelColor
+            {
+                get => _addPixelColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _addPixelColor, value);
+                    this.RaisePropertyChanged(nameof(AddPixelBrush));
+                }
+            }
 
-            public Color SupportsColor { get; set; } = new Color(255, 0, 255, 255);
-            public Color SupportsHighlightColor { get; set; } = new Color(255, 0, 139, 139);
+            [XmlIgnore]
+            public SolidColorBrush AddPixelBrush
+            {
+                get => new SolidColorBrush(_addPixelColor.ToAvalonia());
+                set => AddPixelColor = new Color(value);
+            }
 
-            public Color DrainHolesColor { get; set; } = new Color(255, 142, 69, 133);
-            public Color DrainHolesHighlightColor { get; set; } = new Color(255, 159, 0, 197);
+            public Color AddPixelHighlightColor
+            {
+                get => _addPixelHighlightColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _addPixelHighlightColor, value);
+                    this.RaisePropertyChanged(nameof(AddPixelHighlightBrush));
+                }
+            }
 
-            public bool PartialUpdateIslandsOnEditing { get; set; } = true;
-            public bool CloseEditorOnApply { get; set; } = false;
+            [XmlIgnore]
+            public SolidColorBrush AddPixelHighlightBrush
+            {
+                get => new SolidColorBrush(_addPixelHighlightColor.ToAvalonia());
+                set => AddPixelHighlightColor = new Color(value);
+            }
+
+            public Color RemovePixelColor
+            {
+                get => _removePixelColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _removePixelColor, value);
+                    this.RaisePropertyChanged(nameof(RemovePixelBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush RemovePixelBrush
+            {
+                get => new SolidColorBrush(_removePixelColor.ToAvalonia());
+                set => RemovePixelColor = new Color(value);
+            }
+
+            public Color RemovePixelHighlightColor
+            {
+                get => _removePixelHighlightColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _removePixelHighlightColor, value);
+                    this.RaisePropertyChanged(nameof(RemovePixelHighlightBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush RemovePixelHighlightBrush
+            {
+                get => new SolidColorBrush(_removePixelHighlightColor.ToAvalonia());
+                set => RemovePixelHighlightColor = new Color(value);
+            }
+
+            public Color SupportsColor
+            {
+                get => _supportsColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _supportsColor, value);
+                    this.RaisePropertyChanged(nameof(SupportsBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush SupportsBrush
+            {
+                get => new SolidColorBrush(_supportsColor.ToAvalonia());
+                set => SupportsColor = new Color(value);
+            }
+
+            public Color SupportsHighlightColor
+            {
+                get => _supportsHighlightColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _supportsHighlightColor, value);
+                    this.RaisePropertyChanged(nameof(SupportsHighlightBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush SupportsHighlightBrush
+            {
+                get => new SolidColorBrush(_supportsHighlightColor.ToAvalonia());
+                set => SupportsHighlightColor = new Color(value);
+            }
+
+            public Color DrainHoleColor
+            {
+                get => _drainHoleColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _drainHoleColor, value);
+                    this.RaisePropertyChanged(nameof(DrainHoleBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush DrainHoleBrush
+            {
+                get => new SolidColorBrush(_drainHoleColor.ToAvalonia());
+                set => DrainHoleColor = new Color(value);
+            }
+
+            public Color DrainHoleHighlightColor
+            {
+                get => _drainHoleHighlightColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _drainHoleHighlightColor, value);
+                    this.RaisePropertyChanged(nameof(DrainHoleHighlightBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush DrainHoleHighlightBrush
+            {
+                get => new SolidColorBrush(_drainHoleHighlightColor.ToAvalonia());
+                set => DrainHoleHighlightColor = new Color(value);
+            }
+
+            public bool PartialUpdateIslandsOnEditing
+            {
+                get => _partialUpdateIslandsOnEditing;
+                set => this.RaiseAndSetIfChanged(ref _partialUpdateIslandsOnEditing, value);
+            }
+
+            public bool CloseEditorOnApply
+            {
+                get => _closeEditorOnApply;
+                set => this.RaiseAndSetIfChanged(ref _closeEditorOnApply, value);
+            }
+
+            public PixelEditorUserSettings Clone()
+            {
+                return MemberwiseClone() as PixelEditorUserSettings;
+            }
         }
 
         [Serializable]
-        public sealed class LayerRepairUserSettings
+        public sealed class LayerRepairUserSettings : ReactiveObject
         {
+            private byte _closingIterations = 2;
+            private byte _openingIterations = 0;
+            private byte _removeIslandsBelowEqualPixels = 10;
+            private bool _repairIslands = true;
+            private bool _repairResinTraps = true;
+            private bool _removeEmptyLayers = true;
 
-            public byte ClosingIterations { get; set; } = 2;
-            public byte OpeningIterations { get; set; } = 0;
-            public byte RemoveIslandsBelowEqualPixels { get; set; } = 10;
+            public byte ClosingIterations
+            {
+                get => _closingIterations;
+                set => this.RaiseAndSetIfChanged(ref _closingIterations, value);
+            }
 
-            public bool RepairIslands { get; set; } = true;
-            public bool RepairResinTraps { get; set; } = true;
-            public bool RemoveEmptyLayers { get; set; } = true;
+            public byte OpeningIterations
+            {
+                get => _openingIterations;
+                set => this.RaiseAndSetIfChanged(ref _openingIterations, value);
+            }
+
+            public byte RemoveIslandsBelowEqualPixels
+            {
+                get => _removeIslandsBelowEqualPixels;
+                set => this.RaiseAndSetIfChanged(ref _removeIslandsBelowEqualPixels, value);
+            }
+
+            public bool RepairIslands
+            {
+                get => _repairIslands;
+                set => this.RaiseAndSetIfChanged(ref _repairIslands, value);
+            }
+
+            public bool RepairResinTraps
+            {
+                get => _repairResinTraps;
+                set => this.RaiseAndSetIfChanged(ref _repairResinTraps, value);
+            }
+
+            public bool RemoveEmptyLayers
+            {
+                get => _removeEmptyLayers;
+                set => this.RaiseAndSetIfChanged(ref _removeEmptyLayers, value);
+            }
+
+            public LayerRepairUserSettings Clone()
+            {
+                return MemberwiseClone() as LayerRepairUserSettings;
+            }
         }
 
         #endregion
 
-            #region Singleton
-            /// <summary>
-            /// Default filepath for store <see cref="UserSettings"/>
-            /// </summary>
-            private const string FilePath = "Assets/usersettings.xml";
+        #region Singleton
+        /// <summary>
+        /// Default filepath for store <see cref="UserSettings"/>
+        /// </summary>
+        private const string FilePath = "Assets/usersettings.xml";
 
 
         private static UserSettings _instance;
         /// <summary>
         /// Instance of <see cref="UserSettings"/> (singleton)
         /// </summary>
-        public static UserSettings Instance => _instance ??= new UserSettings();
+        public static UserSettings Instance
+        {
+            get => _instance ??= new UserSettings();
+            internal set => _instance = value;
+        }
         #endregion
 
         #region Properties
 
-        public GeneralUserSettings General { get; set; } = new GeneralUserSettings();
-        public LayerPreviewUserSettings LayerPreview { get; set; } = new LayerPreviewUserSettings();
-        public IssuesUserSettings Issues { get; set; } = new IssuesUserSettings();
-        public PixelEditorUserSettings PixelEditor { get; set; } = new PixelEditorUserSettings();
-        public LayerRepairUserSettings LayerRepair { get; set; } = new LayerRepairUserSettings();
+        private GeneralUserSettings _general;
+        private LayerPreviewUserSettings _layerPreview;
+        private IssuesUserSettings _issues;
+        private PixelEditorUserSettings _pixelEditor;
+        private LayerRepairUserSettings _layerRepair;
+        private string _version;
+        private uint _savesCount;
+        private DateTime _modifiedDateTime;
+
+        
+        public GeneralUserSettings General
+        {
+            get => _general ??= new GeneralUserSettings();
+            set => _general = value;
+        }
+
+        public LayerPreviewUserSettings LayerPreview
+        {
+            get => _layerPreview ??= new LayerPreviewUserSettings();
+            set => _layerPreview = value;
+        }
+
+        
+        public IssuesUserSettings Issues
+        {
+            get => _issues ??= new IssuesUserSettings();
+            set => _issues = value;
+        }
+
+        
+        public PixelEditorUserSettings PixelEditor
+        {
+            get => _pixelEditor ??= new PixelEditorUserSettings();
+            set => _pixelEditor = value;
+        }
+
+
+
+        public LayerRepairUserSettings LayerRepair
+        {
+            get => _layerRepair ??= new LayerRepairUserSettings();
+            set => _layerRepair = value;
+        }
+
+        /*
+        /// <summary>
+        /// Gets or sets the number of times this file has been reset to defaults
+        /// </summary>
+        public uint ResetCount { get; set; }
+        */
+
+        /// <summary>
+        /// Gets or sets the last running version of UVtools with these settings
+        /// </summary>
+        [NotNull]
+        public string Version
+        {
+            get => _version ??= AppSettings.Version.ToString();
+            set => this.RaiseAndSetIfChanged(ref _version, value);
+        }
 
         /// <summary>
         /// Gets or sets the number of times this file has been saved
         /// </summary>
-        public uint SavesCount { get; set; }
+        public uint SavesCount
+        {
+            get => _savesCount;
+            set => this.RaiseAndSetIfChanged(ref _savesCount, value);
+        }
 
         /// <summary>
         /// Gets or sets the last time this file has been modified
         /// </summary>
-        public DateTime ModifiedDateTime { get; set; }
+        public DateTime ModifiedDateTime
+        {
+            get => _modifiedDateTime;
+            set => this.RaiseAndSetIfChanged(ref _modifiedDateTime, value);
+        }
+
         #endregion
 
         #region Constructor
@@ -182,7 +925,7 @@ namespace UVtools.WPF
         public static void Reset(bool save = false)
         {
             _instance = new UserSettings();
-            if(save) Save();
+            if (save) Save();
         }
 
         /// <summary>
@@ -204,6 +947,7 @@ namespace UVtools.WPF
             catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
+                Reset();
             }
         }
 
@@ -226,6 +970,32 @@ namespace UVtools.WPF
                 Debug.WriteLine(e.Message);
             }
         }
+
+        public static void SetVersion()
+        {
+            _instance.Version = AppSettings.Version.ToString();
+        }
+
+        public static object[] PackObjects => 
+            new object[]
+            {
+                Instance.General,
+                Instance.LayerPreview,
+                Instance.Issues,
+                Instance.PixelEditor,
+                Instance.LayerRepair
+            };
         #endregion
+
+        public UserSettings Clone()
+        {
+            var clone = MemberwiseClone() as UserSettings;
+            clone.General = clone.General.Clone();
+            clone.LayerPreview = clone.LayerPreview.Clone();
+            clone.Issues = clone.Issues.Clone();
+            clone.PixelEditor = clone.PixelEditor.Clone();
+            clone.LayerRepair = clone.LayerRepair.Clone();
+            return clone;
+        }
     }
 }

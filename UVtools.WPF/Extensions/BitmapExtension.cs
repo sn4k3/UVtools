@@ -114,10 +114,16 @@ namespace UVtools.WPF.Extensions
 
             var writableBitmap = new WriteableBitmap(new PixelSize(mat.Width, mat.Height), new Vector(96, 96),
                 PixelFormat.Bgra8888, AlphaFormat.Unpremul);
+
+            
+
             using var lockBuffer = writableBitmap.Lock();
+
+           
 
             unsafe
             {
+
                 var targetPixels = (uint*) (void*) lockBuffer.Address;
                 switch (mat.NumberOfChannels)
                 {
