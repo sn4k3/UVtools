@@ -333,6 +333,7 @@ namespace UVtools.Core.FileFormats
         public override void Decode(string fileFullPath, OperationProgress progress = null)
         {
             base.Decode(fileFullPath, progress);
+            if(progress is null) progress = new OperationProgress(OperationProgress.StatusGatherLayers, LayerCount);
 
             FileFullPath = fileFullPath;
             using (var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read))

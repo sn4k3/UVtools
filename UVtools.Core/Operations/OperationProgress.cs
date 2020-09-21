@@ -35,8 +35,14 @@ namespace UVtools.Core.Operations
 
         private bool _canCancel = true;
 
-        public OperationProgress()
+        public 
+            OperationProgress()
         {
+        }
+
+        public OperationProgress(string name, uint value = 0)
+        {
+            Reset(name, value);
         }
 
         public OperationProgress(bool canCancel)

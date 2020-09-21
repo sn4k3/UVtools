@@ -973,7 +973,7 @@ namespace UVtools.WPF
 
         public static void SetVersion()
         {
-            _instance.Version = AppSettings.Version.ToString();
+            Instance.Version = AppSettings.Version.ToString();
         }
 
         public static object[] PackObjects => 

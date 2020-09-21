@@ -55,9 +55,13 @@ namespace UVtools.WPF.Structures
             return new Avalonia.Media.Color(A, R, G, B);
         }
 
+        public bool IsEmpty => ReferenceEquals(this, Empty);
+
         public static Color FromArgb(byte a, byte r, byte g, byte b)
         {
             return new Color(a, r, g, b);
         }
+
+        public static Color Empty => new Color(0,0,0,0);
     }
 }

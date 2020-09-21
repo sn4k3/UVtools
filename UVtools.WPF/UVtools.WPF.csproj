@@ -25,6 +25,8 @@
     <PackageReference Include="Avalonia.Desktop" Version="0.10.0-preview5" />
     <PackageReference Include="Avalonia.ThemeManager" Version="0.10.0-preview3" />
     <PackageReference Include="Dock.Avalonia" Version="0.10.0-preview5" />
+    <PackageReference Include="Emgu.CV.runtime.raspbian" Version="4.4.0.4061" />
+    <PackageReference Include="Emgu.CV.runtime.ubuntu" Version="4.4.0.4061" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.4.0.4061" />
     <PackageReference Include="MessageBox.Avalonia" Version="0.10.0-prev2" />
     <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.0-preview3" />

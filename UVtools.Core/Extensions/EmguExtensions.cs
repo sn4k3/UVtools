@@ -16,6 +16,11 @@ namespace UVtools.Core.Extensions
 {
     public static class EmguExtensions
     {
+        public static unsafe byte* GetBytePointer(this Mat mat)
+        {
+            return (byte*)mat.DataPointer.ToPointer();
+        }
+
         /// <summary>
         /// Gets a single pixel span to manipulate or read pixels
         /// </summary>

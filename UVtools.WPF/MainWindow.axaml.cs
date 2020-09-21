@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
@@ -21,14 +22,14 @@ using Emgu.CV.Util;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
-using UVtools.Core.PixelEditor;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
+using UVtools.WPF.Structures;
 using UVtools.WPF.Windows;
 
 namespace UVtools.WPF
 {
-    public class MainWindow : WindowEx
+    public class MainWindow : WindowEx, INotifyPropertyChanged
     {
         #region BindableBase
         /// <summary>
@@ -87,12 +88,25 @@ namespace UVtools.WPF
 
         #region Controls
         public AdvancedImageBox LayerImageBox;
-        public Slider LayerSlider;
+        public SliderEx LayerSlider;
+        public Panel LayerNavigationTooltipPanel;
+        public Border LayerNavigationTooltipBorder;
         #endregion
 
         #region Members
         private uint _actualLayer;
         private bool _isGUIEnabled = true;
+        private bool _showLayerImageRotated;
+        private bool _showLayerImageDifference;
+        private bool _showLayerImageIssues = true;
+        private bool _showLayerImageCrosshairs = true;
+        private bool _isPixelEditorActive;
+        private bool _showLayerOutlinePrintVolumeBoundary;
+        private bool _showLayerOutlineLayerBoundary;
+        private bool _showLayerOutlineHollowAreas;
+        private bool _showLayerOutlineEdgeDetection;
+
+        private long _showLayerRenderMs;
         #endregion
 
         #region  GUI Models
@@ -108,13 +122,122 @@ namespace UVtools.WPF
             set => OnPropertyChanged();
         }
 
+        public bool ShowLayerImageRotated
+        {
+            get => _showLayerImageRotated;
+            set
+            {
+                if (SetProperty(ref _showLayerImageRotated, value))
+                {
+                    ShowLayer();
+                }
+            }
+        }
+
+        public bool ShowLayerImageDifference
+        {
+            get => _showLayerImageDifference;
+            set
+            {
+                if (SetProperty(ref _showLayerImageDifference, value))
+                {
+                    ShowLayer();
+                }
+            }
+        }
+
+        public bool ShowLayerImageIssues
+        {
+            get => _showLayerImageIssues;
+            set
+            {
+                if (SetProperty(ref _showLayerImageIssues, value))
+                {
+                    ShowLayer();
+                }
+            }
+        }
+
+        public bool ShowLayerImageCrosshairs
+        {
+            get => _showLayerImageCrosshairs;
+            set
+            {
+                if (SetProperty(ref _showLayerImageCrosshairs, value))
+                {
+                    ShowLayer();
+                }
+            }
+        }
+
+        public bool ShowLayerOutlinePrintVolumeBoundary
+        {
+            get => _showLayerOutlinePrintVolumeBoundary;
+            set
+            {
+                if (SetProperty(ref _showLayerOutlinePrintVolumeBoundary, value))
+                {
+                    ShowLayer();
+                }
+            }
+        }
+
+        public bool ShowLayerOutlineLayerBoundary
+        {
+            get => _showLayerOutlineLayerBoundary;
+            set
+            {
+                if (SetProperty(ref _showLayerOutlineLayerBoundary, value))
+                {
+                    ShowLayer();
+                }
+            }
+        }
+
+        public bool ShowLayerOutlineHollowAreas
+        {
+            get => _showLayerOutlineHollowAreas;
+            set
+            {
+                if (SetProperty(ref _showLayerOutlineHollowAreas, value))
+                {
+                    ShowLayer();
+                }
+            }
+        }
+
+        public bool ShowLayerOutlineEdgeDetection
+        {
+            get => _showLayerOutlineEdgeDetection;
+            set
+            {
+                if (SetProperty(ref _showLayerOutlineEdgeDetection, value))
+                {
+                    ShowLayer();
+                }
+            }
+        }
+
+        public bool IsPixelEditorActive
+        {
+            get => _isPixelEditorActive;
+            set => SetProperty(ref _isPixelEditorActive, value);
+        }
+
         public string MinimumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.LayerHeight}mm\n0";
         public string MaximumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.TotalHeight}mm\n{SlicerFile.LayerCount - 1}";
+        public string ActualLayerTooltip => SlicerFile is null ? "???" : $"{SlicerFile.GetHeightFromLayer(ActualLayer):0.00}mm\n{ActualLayer}\n{ActualLayer * 100 / (SlicerFile.LayerCount - 1)}%";
 
         public uint SliderMaximumValue => SlicerFile?.LayerCount - 1 ?? 0;
 
         public bool CanGoUp => _actualLayer < SliderMaximumValue;
         public bool CanGoDown => _actualLayer > 0;
+
+        public long ShowLayerRenderMs
+        {
+            get => _showLayerRenderMs;
+            set => SetProperty(ref _showLayerRenderMs, value);
+        }
         #endregion
 
         private uint ActualLayer
@@ -123,20 +246,51 @@ namespace UVtools.WPF
             set
             {
                 if (!SetProperty(ref _actualLayer, value)) return;
-                LayerSlider.Value = ActualLayer;
                 OnPropertyChanged(nameof(CanGoDown));
                 OnPropertyChanged(nameof(CanGoUp));
+                OnPropertyChanged(nameof(ActualLayerTooltip));
+                OnPropertyChanged(nameof(LayerNavigationTooltipMargin));
                 ShowLayer();
             }
         }
 
+        public Thickness LayerNavigationTooltipMargin
+        {
+            get
+            {
+                double top = 0;
+                if (LayerSlider != null)
+                {
+                    double trackerPos = LayerSlider.Track.Thumb.Bounds.Height / 2 + LayerSlider.Track.Thumb.Bounds.Top;
+                    double halfTooltipHeight = LayerNavigationTooltipBorder.Bounds.Height / 2;
+                    top = (trackerPos - halfTooltipHeight).Clamp(0,
+                        LayerSlider.Bounds.Height - LayerNavigationTooltipBorder.Bounds.Height);
+                    
+                }
+                return new Thickness(
+                    0,
+                    top,
+                    5,
+                    0);
+            }
+        }
+
+        
+
         public LayerCache LayerCache = new LayerCache();
+
+
         #endregion
 
         #region Constructors
 
         public MainWindow()
         {
+            _showLayerImageDifference = Settings.LayerPreview.ShowLayerDifference;
+            _showLayerOutlinePrintVolumeBoundary = Settings.LayerPreview.VolumeBoundsOutline;
+            _showLayerOutlineLayerBoundary = Settings.LayerPreview.LayerBoundsOutline;
+            _showLayerOutlineHollowAreas = Settings.LayerPreview.HollowOutline;
+
             DataContext = this;
             InitializeComponent();
 #if DEBUG
@@ -144,19 +298,30 @@ namespace UVtools.WPF
 #endif
             App.ThemeSelector?.EnableThemes(this);
             LayerImageBox = this.FindControl<AdvancedImageBox>("Layer.Image");
-            LayerSlider = this.FindControl<Slider>("Layer.Navigation.Slider");
-            //LayerSlider.PropertyChanged += (sender, args) => Debug.WriteLine($"{args.Property}: {args.NewValue}")
-            //PropertyChanged += OnPropertyChanged;
+            LayerSlider = this.FindControl<SliderEx>("Layer.Navigation.Slider");
+            LayerNavigationTooltipPanel = this.FindControl<Panel>("Layer.Navigation.Tooltip.Panel");
+            LayerNavigationTooltipBorder = this.FindControl<Border>("Layer.Navigation.Tooltip.Border");
+            /*LayerSlider.PropertyChanged += (sender, args) =>
+            {
+                Debug.WriteLine(args.Property.Name);
+                if (args.Property.Name == nameof(LayerSlider.Value))
+                {
+                    LayerNavigationTooltipPanel.Margin = LayerNavigationTooltipMargin;
+                    return;
+                }
+            };*/
+            PropertyChanged += OnPropertyChanged;
         }
 
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ActualLayer))
+            Debug.WriteLine(e.PropertyName);
+            /*if (e.PropertyName == nameof(ActualLayer))
             {
                 LayerSlider.Value = ActualLayer;
                 ShowLayer();
                 return;
-            }
+            }*/
         }
 
         private void InitializeComponent()
@@ -285,323 +450,330 @@ namespace UVtools.WPF
         void ShowLayer()
         {
             if (SlicerFile is null) return;
-            Debug.WriteLine($"Showing layer: {ActualLayer}");
+            Debug.WriteLine($"Showing layer: {_actualLayer}");
 
-            //int layerOnSlider = (int)(SlicerFile.LayerCount - layerNum - 1);
-            /*if (tbLayer.Value != layerNum)
-            {
-                tbLayer.Value = (int)layerNum;
-                return;
-            }
+            
 
-            if (IsChangingLayer) return;
-            IsChangingLayer = true;
-
-            AddLogVerbose($"Show Layer: {layerNum}");
-
-            ActualLayer = layerNum;
-            btnLastLayer.Enabled = btnNextLayer.Enabled = layerNum < SlicerFile.LayerCount - 1;
-            btnFirstLayer.Enabled = btnPreviousLayer.Enabled = layerNum > 0;*/
+            //AddLogVerbose($"Show Layer: {layerNum}");
 
 
             Stopwatch watch = Stopwatch.StartNew();
-            var layer = SlicerFile[ActualLayer];
+            var layer = SlicerFile[_actualLayer];
 
             try
             {
                 LayerCache.Image = layer.LayerMat;
 
-                var imageSpan = LayerCache.Image.GetPixelSpan<byte>();
-                var imageBgrSpan = LayerCache.ImageBgr.GetPixelSpan<byte>();
+                //var imageSpan = LayerCache.Image.GetPixelSpan<byte>();
+                //var imageBgrSpan = LayerCache.ImageBgr.GetPixelSpan<byte>();
 
+                unsafe
+                {
+                    var imageSpan = LayerCache.Image.GetBytePointer();
+                    var imageBgrSpan = LayerCache.ImageBgr.GetBytePointer();
 
-                /*if (btnLayerImageLayerOutlineEdgeDetection.Checked)
-                {
-                    using (var grayscale = new Mat())
+                    if (_showLayerOutlineEdgeDetection)
                     {
-                        CvInvoke.Canny(ActualLayerImage, grayscale, 80, 40, 3, true);
-                        CvInvoke.CvtColor(grayscale, ActualLayerImageBgr, ColorConversion.Gray2Bgr);
-                    }
-                }
-                else if (btnLayerImageLayerDifference.Checked)
-                {
-                    if (layerNum > 0 && layerNum < SlicerFile.LayerCount - 1)
-                    {
-                        using (var previousImage = SlicerFile[layerNum - 1].LayerMat)
-                        using (var nextImage = SlicerFile[layerNum + 1].LayerMat)
+                        using (var canny = new Mat())
                         {
-                            var previousSpan = previousImage.GetPixelSpan<byte>();
-                            var nextSpan = nextImage.GetPixelSpan<byte>();
-
-                            for (int pixel = 0; pixel < imageSpan.Length; pixel++)
-                            {
-                                if (imageSpan[pixel] != 0) continue;
-                                Color color = Color.Empty;
-                                if (previousSpan[pixel] > 0 && nextSpan[pixel] > 0)
-                                {
-                                    color = Settings.Default.PreviousNextLayerColor;
-                                }
-                                else if (previousSpan[pixel] > 0)
-                                {
-                                    color = Settings.Default.PreviousLayerColor;
-                                }
-                                else if (nextSpan[pixel] > 0)
-                                {
-                                    color = Settings.Default.NextLayerColor;
-                                }
-
-                                if (color.IsEmpty) continue;
-                                var bgrPixel = pixel * 3;
-                                imageBgrSpan[bgrPixel] = color.B; // B
-                                imageBgrSpan[++bgrPixel] = color.G; // G
-                                imageBgrSpan[++bgrPixel] = color.R; // R
-                            }
+                            CvInvoke.Canny(LayerCache.Image, canny, 80, 40, 3, true);
+                            CvInvoke.CvtColor(canny, LayerCache.ImageBgr, ColorConversion.Gray2Bgra);
                         }
                     }
-                }
-
-                var selectedIssues = flvIssues.SelectedObjects;
-
-                if (btnLayerImageHighlightIssues.Checked &&
-                    !ReferenceEquals(Issues, null))
-                {
-                    foreach (var issue in Issues)
+                    else if (_showLayerImageDifference)
                     {
-                        if (issue.LayerIndex != ActualLayer) continue;
-                        if (!issue.HaveValidPoint) continue;
-
-                        Color color = Color.Empty;
-
-                        if (issue.Type == LayerIssue.IssueType.ResinTrap)
+                        if (_actualLayer > 0 && _actualLayer < SlicerFile.LayerCount - 1)
                         {
-                            color = selectedIssues.Contains(issue)
-                                ? Settings.Default.ResinTrapHLColor
-                                : Settings.Default.ResinTrapColor;
+                            Mat previousImage = null;
+                            Mat nextImage = null;
 
+                            // Can improve performance on >4K images?
+                            Parallel.Invoke(
+                    () => { previousImage = SlicerFile[_actualLayer - 1].LayerMat; },
+                                () => { nextImage = SlicerFile[_actualLayer + 1].LayerMat; });
 
-                            using (var vec = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
+                            /*using (var previousImage = SlicerFile[_actualLayer - 1].LayerMat)
+                            using (var nextImage = SlicerFile[_actualLayer + 1].LayerMat)
+                            {*/
+                            //var previousSpan = previousImage.GetPixelSpan<byte>();
+                            //var nextSpan = nextImage.GetPixelSpan<byte>();
+
+                            var previousSpan = previousImage.GetBytePointer();
+                            var nextSpan = nextImage.GetBytePointer();
+
+                            int width = LayerCache.Image.Width;
+                            int channels = LayerCache.ImageBgr.NumberOfChannels;
+                            Parallel.For(0, LayerCache.Image.Height, y =>
                             {
-                                CvInvoke.DrawContours(ActualLayerImageBgr, vec, -1,
-                                    new MCvScalar(color.B, color.G, color.R), -1);
-                            }
+                                for (int x = 0; x < width; x++)
+                                {
+                                    int pixel = y * width + x;
+                                    if (imageSpan[pixel] != 0) continue;
+                                    Color color = Color.Empty;
+                                    if (previousSpan[pixel] > 0 && nextSpan[pixel] > 0)
+                                    {
+                                        color = Settings.LayerPreview.NextLayerDifferenceColor;
+                                    }
+                                    else if (previousSpan[pixel] > 0)
+                                    {
+                                        color = Settings.LayerPreview.PreviousLayerDifferenceColor;
+                                    }
+                                    else if (nextSpan[pixel] > 0)
+                                    {
+                                        color = Settings.LayerPreview.NextLayerDifferenceColor;
+                                    }
 
-                            if (btnLayerImageShowCrosshairs.Checked &&
-                                !Settings.Default.CrosshairShowOnlyOnSelectedIssues &&
-                                pbLayer.Zoom <= CrosshairFadeLevel)
-                            {
-                                DrawCrosshair(issue.BoundingRectangle);
-                            }
+                                    if (color.IsEmpty) continue;
+                                    var bgrPixel = pixel * channels;
+                                    imageBgrSpan[bgrPixel] = color.B; // B
+                                    imageBgrSpan[++bgrPixel] = color.G; // G
+                                    imageBgrSpan[++bgrPixel] = color.R; // R
+                                    //imageBgrSpan[++bgrPixel] = color.A; // A
+                                }
+                            });
 
-                            continue;
+                            previousImage.Dispose();
+                            nextImage.Dispose();
                         }
+                    }
 
-                        switch (issue.Type)
+                    /*
+                    var selectedIssues = flvIssues.SelectedObjects;
+    
+                    if (btnLayerImageHighlightIssues.Checked &&
+                        !ReferenceEquals(Issues, null))
+                    {
+                        foreach (var issue in Issues)
                         {
-                            case LayerIssue.IssueType.Island:
+                            if (issue.LayerIndex != ActualLayer) continue;
+                            if (!issue.HaveValidPoint) continue;
+    
+                            Color color = Color.Empty;
+    
+                            if (issue.Type == LayerIssue.IssueType.ResinTrap)
+                            {
                                 color = selectedIssues.Contains(issue)
-                                    ? Settings.Default.IslandHLColor
-                                    : Settings.Default.IslandColor;
+                                    ? Settings.Default.ResinTrapHLColor
+                                    : Settings.Default.ResinTrapColor;
+    
+    
+                                using (var vec = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
+                                {
+                                    CvInvoke.DrawContours(ActualLayerImageBgr, vec, -1,
+                                        new MCvScalar(color.B, color.G, color.R), -1);
+                                }
+    
                                 if (btnLayerImageShowCrosshairs.Checked &&
                                     !Settings.Default.CrosshairShowOnlyOnSelectedIssues &&
                                     pbLayer.Zoom <= CrosshairFadeLevel)
                                 {
                                     DrawCrosshair(issue.BoundingRectangle);
                                 }
-
-                                break;
-                            case LayerIssue.IssueType.TouchingBound:
-                                color = Settings.Default.TouchingBoundsColor;
-                                break;
+    
+                                continue;
+                            }
+    
+                            switch (issue.Type)
+                            {
+                                case LayerIssue.IssueType.Island:
+                                    color = selectedIssues.Contains(issue)
+                                        ? Settings.Default.IslandHLColor
+                                        : Settings.Default.IslandColor;
+                                    if (btnLayerImageShowCrosshairs.Checked &&
+                                        !Settings.Default.CrosshairShowOnlyOnSelectedIssues &&
+                                        pbLayer.Zoom <= CrosshairFadeLevel)
+                                    {
+                                        DrawCrosshair(issue.BoundingRectangle);
+                                    }
+    
+                                    break;
+                                case LayerIssue.IssueType.TouchingBound:
+                                    color = Settings.Default.TouchingBoundsColor;
+                                    break;
+                            }
+    
+                            foreach (var pixel in issue)
+                            {
+                                int pixelPos = ActualLayerImage.GetPixelPos(pixel);
+                                byte brightness = imageSpan[pixelPos];
+                                if (brightness == 0) continue;
+    
+                                int pixelBgrPos = pixelPos * ActualLayerImageBgr.NumberOfChannels;
+    
+                                var newColor = color.FactorColor(brightness, 80);
+    
+                                imageBgrSpan[pixelBgrPos] = newColor.B; // B
+                                imageBgrSpan[pixelBgrPos + 1] = newColor.G; // G
+                                imageBgrSpan[pixelBgrPos + 2] = newColor.R; // R
+                            }
                         }
-
-                        foreach (var pixel in issue)
-                        {
-                            int pixelPos = ActualLayerImage.GetPixelPos(pixel);
-                            byte brightness = imageSpan[pixelPos];
-                            if (brightness == 0) continue;
-
-                            int pixelBgrPos = pixelPos * ActualLayerImageBgr.NumberOfChannels;
-
-                            var newColor = color.FactorColor(brightness, 80);
-
-                            imageBgrSpan[pixelBgrPos] = newColor.B; // B
-                            imageBgrSpan[pixelBgrPos + 1] = newColor.G; // G
-                            imageBgrSpan[pixelBgrPos + 2] = newColor.R; // R
-                        }
-                    }
-                }
-
-                if (btnLayerImageLayerOutlinePrintVolumeBounds.Checked)
-                {
-                    CvInvoke.Rectangle(ActualLayerImageBgr, SlicerFile.LayerManager.BoundingRectangle,
-                        new MCvScalar(Settings.Default.OutlinePrintVolumeBoundsColor.B,
-                            Settings.Default.OutlinePrintVolumeBoundsColor.G,
-                            Settings.Default.OutlinePrintVolumeBoundsColor.R),
-                        Settings.Default.OutlinePrintVolumeBoundsLineThickness);
-                }
-
-                if (btnLayerImageLayerOutlineLayerBounds.Checked)
-                {
-                    CvInvoke.Rectangle(ActualLayerImageBgr, SlicerFile[layerNum].BoundingRectangle,
-                        new MCvScalar(Settings.Default.OutlineLayerBoundsColor.B,
-                            Settings.Default.OutlineLayerBoundsColor.G, Settings.Default.OutlineLayerBoundsColor.R),
-                        Settings.Default.OutlineLayerBoundsLineThickness);
-                }
-
-                if (btnLayerImageLayerOutlineHollowAreas.Checked)
-                {
-                    //CvInvoke.Threshold(ActualLayerImage, grayscale, 1, 255, ThresholdType.Binary);
-
-                    /*
-                     * hierarchy[i][0]: the index of the next contour of the same level
-                     * hierarchy[i][1]: the index of the previous contour of the same level
-                     * hierarchy[i][2]: the index of the first child
-                     * hierarchy[i][3]: the index of the parent
-                     */
-                /*    for (int i = 0; i < LayerCache.LayerContours.Size; i++)
+                    }*/
+    
+                    if (_showLayerOutlinePrintVolumeBoundary)
                     {
-                        if ((int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 2) == -1 &&
-                            (int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 3) != -1)
-                        {
-                            //var r = CvInvoke.BoundingRectangle(contours[i]);
-                            //CvInvoke.Rectangle(ActualLayerImageBgr, r, new MCvScalar(0, 0, 255), 2);
-                            CvInvoke.DrawContours(ActualLayerImageBgr, LayerCache.LayerContours, i,
-                                new MCvScalar(Settings.Default.OutlineHollowAreasColor.B,
-                                    Settings.Default.OutlineHollowAreasColor.G,
-                                    Settings.Default.OutlineHollowAreasColor.R),
-                                Settings.Default.OutlineHollowAreasLineThickness);
-                        }
+                        CvInvoke.Rectangle(LayerCache.ImageBgr, SlicerFile.LayerManager.BoundingRectangle,
+                            new MCvScalar(Settings.LayerPreview.VolumeBoundsOutlineColor.B,
+                                Settings.LayerPreview.VolumeBoundsOutlineColor.G,
+                                Settings.LayerPreview.VolumeBoundsOutlineColor.R),
+                            Settings.LayerPreview.VolumeBoundsOutlineThickness);
                     }
-                }
-
-                for (var index = 0; index < PixelHistory.Count; index++)
-                {
-                    if (PixelHistory[index].LayerIndex != ActualLayer) continue;
-                    var operation = PixelHistory[index];
-                    if (operation.OperationType == PixelOperation.PixelOperationType.Drawing)
+    
+                    if (_showLayerOutlineLayerBoundary)
                     {
-                        var operationDrawing = (PixelDrawing)operation;
-                        var color = operationDrawing.IsAdd
-                            ? (flvPixelHistory.SelectedObjects.Contains(operation)
-                                ? Settings.Default.PixelEditorAddPixelHLColor
-                                : Settings.Default.PixelEditorAddPixelColor)
-                            : (flvPixelHistory.SelectedObjects.Contains(operation)
-                                ? Settings.Default.PixelEditorRemovePixelHLColor
-                                : Settings.Default.PixelEditorRemovePixelColor);
-                        if (operationDrawing.BrushSize == 1)
-                        {
-                            ActualLayerImageBgr.SetByte(operation.Location.X, operation.Location.Y,
-                                new[] { color.B, color.G, color.R });
-                            continue;
-                        }
-
-                        switch (operationDrawing.BrushShape)
-                        {
-                            case PixelDrawing.BrushShapeType.Rectangle:
-                                CvInvoke.Rectangle(ActualLayerImageBgr, operationDrawing.Rectangle,
-                                    new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
-                                    operationDrawing.LineType);
-                                break;
-                            case PixelDrawing.BrushShapeType.Circle:
-                                CvInvoke.Circle(ActualLayerImageBgr, operation.Location, operationDrawing.BrushSize / 2,
-                                    new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
-                                    operationDrawing.LineType);
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
+                        CvInvoke.Rectangle(LayerCache.ImageBgr, SlicerFile[_actualLayer].BoundingRectangle,
+                            new MCvScalar(Settings.LayerPreview.LayerBoundsOutlineColor.B,
+                                Settings.LayerPreview.LayerBoundsOutlineColor.G, Settings.LayerPreview.LayerBoundsOutlineColor.R),
+                            Settings.LayerPreview.LayerBoundsOutlineThickness);
                     }
-                    else if (operation.OperationType == PixelOperation.PixelOperationType.Text)
+    
+                    if (_showLayerOutlineHollowAreas)
                     {
-                        var operationText = (PixelText)operation;
-                        var color = operationText.IsAdd
-                            ? (flvPixelHistory.SelectedObjects.Contains(operation)
-                                ? Settings.Default.PixelEditorAddPixelHLColor
-                                : Settings.Default.PixelEditorAddPixelColor)
-                            : (flvPixelHistory.SelectedObjects.Contains(operation)
-                                ? Settings.Default.PixelEditorRemovePixelHLColor
-                                : Settings.Default.PixelEditorRemovePixelColor);
-
-                        CvInvoke.PutText(ActualLayerImageBgr, operationText.Text, operationText.Location,
-                            operationText.Font, operationText.FontScale, new MCvScalar(color.B, color.G, color.R),
-                            operationText.Thickness, operationText.LineType, operationText.Mirror);
-                    }
-                    else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
-                    {
-                        if (imageSpan[ActualLayerImage.GetPixelPos(operation.Location)] < 10) continue;
-                        var color = flvPixelHistory.SelectedObjects.Contains(operation)
-                            ? Settings.Default.PixelEditorRemovePixelHLColor
-                            : Settings.Default.PixelEditorRemovePixelColor;
+                        //CvInvoke.Threshold(ActualLayerImage, grayscale, 1, 255, ThresholdType.Binary);
+    
+                        /*
+                         * hierarchy[i][0]: the index of the next contour of the same level
+                         * hierarchy[i][1]: the index of the previous contour of the same level
+                         * hierarchy[i][2]: the index of the first child
+                         * hierarchy[i][3]: the index of the parent
+                         */
                         for (int i = 0; i < LayerCache.LayerContours.Size; i++)
                         {
-                            if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], operation.Location, false) >= 0)
+                            if ((int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 2) == -1 &&
+                                (int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 3) != -1)
                             {
-                                CvInvoke.DrawContours(ActualLayerImageBgr, LayerCache.LayerContours, i,
-                                    new MCvScalar(color.B, color.G, color.R), -1);
-                                break;
+                                //var r = CvInvoke.BoundingRectangle(contours[i]);
+                                //CvInvoke.Rectangle(ActualLayerImageBgr, r, new MCvScalar(0, 0, 255), 2);
+                                CvInvoke.DrawContours(LayerCache.ImageBgr, LayerCache.LayerContours, i,
+                                    new MCvScalar(Settings.LayerPreview.HollowOutlineColor.B,
+                                        Settings.LayerPreview.HollowOutlineColor.G,
+                                        Settings.LayerPreview.HollowOutlineColor.R),
+                                    Settings.LayerPreview.HollowOutlineLineThickness);
                             }
                         }
                     }
-                    else if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
+    
+                    /*for (var index = 0; index < PixelHistory.Count; index++)
                     {
-                        var operationSupport = (PixelSupport)operation;
-                        var color = flvPixelHistory.SelectedObjects.Contains(operation)
-                            ? Settings.Default.PixelEditorSupportHLColor
-                            : Settings.Default.PixelEditorSupportColor;
-
-                        CvInvoke.Circle(ActualLayerImageBgr, operation.Location, operationSupport.TipDiameter / 2,
-                            new MCvScalar(color.B, color.G, color.R), -1);
+                        if (PixelHistory[index].LayerIndex != ActualLayer) continue;
+                        var operation = PixelHistory[index];
+                        if (operation.OperationType == PixelOperation.PixelOperationType.Drawing)
+                        {
+                            var operationDrawing = (PixelDrawing)operation;
+                            var color = operationDrawing.IsAdd
+                                ? (flvPixelHistory.SelectedObjects.Contains(operation)
+                                    ? Settings.Default.PixelEditorAddPixelHLColor
+                                    : Settings.Default.PixelEditorAddPixelColor)
+                                : (flvPixelHistory.SelectedObjects.Contains(operation)
+                                    ? Settings.Default.PixelEditorRemovePixelHLColor
+                                    : Settings.Default.PixelEditorRemovePixelColor);
+                            if (operationDrawing.BrushSize == 1)
+                            {
+                                ActualLayerImageBgr.SetByte(operation.Location.X, operation.Location.Y,
+                                    new[] { color.B, color.G, color.R });
+                                continue;
+                            }
+    
+                            switch (operationDrawing.BrushShape)
+                            {
+                                case PixelDrawing.BrushShapeType.Rectangle:
+                                    CvInvoke.Rectangle(ActualLayerImageBgr, operationDrawing.Rectangle,
+                                        new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
+                                        operationDrawing.LineType);
+                                    break;
+                                case PixelDrawing.BrushShapeType.Circle:
+                                    CvInvoke.Circle(ActualLayerImageBgr, operation.Location, operationDrawing.BrushSize / 2,
+                                        new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
+                                        operationDrawing.LineType);
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+                        }
+                        else if (operation.OperationType == PixelOperation.PixelOperationType.Text)
+                        {
+                            var operationText = (PixelText)operation;
+                            var color = operationText.IsAdd
+                                ? (flvPixelHistory.SelectedObjects.Contains(operation)
+                                    ? Settings.Default.PixelEditorAddPixelHLColor
+                                    : Settings.Default.PixelEditorAddPixelColor)
+                                : (flvPixelHistory.SelectedObjects.Contains(operation)
+                                    ? Settings.Default.PixelEditorRemovePixelHLColor
+                                    : Settings.Default.PixelEditorRemovePixelColor);
+    
+                            CvInvoke.PutText(ActualLayerImageBgr, operationText.Text, operationText.Location,
+                                operationText.Font, operationText.FontScale, new MCvScalar(color.B, color.G, color.R),
+                                operationText.Thickness, operationText.LineType, operationText.Mirror);
+                        }
+                        else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
+                        {
+                            if (imageSpan[ActualLayerImage.GetPixelPos(operation.Location)] < 10) continue;
+                            var color = flvPixelHistory.SelectedObjects.Contains(operation)
+                                ? Settings.Default.PixelEditorRemovePixelHLColor
+                                : Settings.Default.PixelEditorRemovePixelColor;
+                            for (int i = 0; i < LayerCache.LayerContours.Size; i++)
+                            {
+                                if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], operation.Location, false) >= 0)
+                                {
+                                    CvInvoke.DrawContours(ActualLayerImageBgr, LayerCache.LayerContours, i,
+                                        new MCvScalar(color.B, color.G, color.R), -1);
+                                    break;
+                                }
+                            }
+                        }
+                        else if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
+                        {
+                            var operationSupport = (PixelSupport)operation;
+                            var color = flvPixelHistory.SelectedObjects.Contains(operation)
+                                ? Settings.Default.PixelEditorSupportHLColor
+                                : Settings.Default.PixelEditorSupportColor;
+    
+                            CvInvoke.Circle(ActualLayerImageBgr, operation.Location, operationSupport.TipDiameter / 2,
+                                new MCvScalar(color.B, color.G, color.R), -1);
+                        }
+                        else if (operation.OperationType == PixelOperation.PixelOperationType.DrainHole)
+                        {
+                            var operationDrainHole = (PixelDrainHole)operation;
+                            var color = flvPixelHistory.SelectedObjects.Contains(operation)
+                                ? Settings.Default.PixelEditorDrainHoleHLColor
+                                : Settings.Default.PixelEditorDrainHoleColor;
+    
+                            CvInvoke.Circle(ActualLayerImageBgr, operation.Location, operationDrainHole.Diameter / 2,
+                                new MCvScalar(color.B, color.G, color.R), -1);
+                        }
                     }
-                    else if (operation.OperationType == PixelOperation.PixelOperationType.DrainHole)
+    
+                    // Show crosshairs for selected issues if crosshair mode is enabled via toolstrip button.
+                    // Even when enabled, crosshairs are hidden in pixel edit mode when SHIFT is pressed.
+                    if (btnLayerImageShowCrosshairs.Checked &&
+                        Settings.Default.CrosshairShowOnlyOnSelectedIssues &&
+                        !ReferenceEquals(Issues, null) &&
+                        flvIssues.SelectedIndices.Count > 0 &&
+                        pbLayer.Zoom <=
+                        CrosshairFadeLevel && // Only draw crosshairs when zoom level is below the configurable crosshair fade threshold.
+                        !(btnLayerImagePixelEdit.Checked && (ModifierKeys & Keys.Shift) != 0))
                     {
-                        var operationDrainHole = (PixelDrainHole)operation;
-                        var color = flvPixelHistory.SelectedObjects.Contains(operation)
-                            ? Settings.Default.PixelEditorDrainHoleHLColor
-                            : Settings.Default.PixelEditorDrainHoleColor;
-
-                        CvInvoke.Circle(ActualLayerImageBgr, operation.Location, operationDrainHole.Diameter / 2,
-                            new MCvScalar(color.B, color.G, color.R), -1);
-                    }
-                }
-
-                // Show crosshairs for selected issues if crosshair mode is enabled via toolstrip button.
-                // Even when enabled, crosshairs are hidden in pixel edit mode when SHIFT is pressed.
-                if (btnLayerImageShowCrosshairs.Checked &&
-                    Settings.Default.CrosshairShowOnlyOnSelectedIssues &&
-                    !ReferenceEquals(Issues, null) &&
-                    flvIssues.SelectedIndices.Count > 0 &&
-                    pbLayer.Zoom <=
-                    CrosshairFadeLevel && // Only draw crosshairs when zoom level is below the configurable crosshair fade threshold.
-                    !(btnLayerImagePixelEdit.Checked && (ModifierKeys & Keys.Shift) != 0))
-                {
-
-
-                    foreach (LayerIssue issue in selectedIssues)
-                    {
-                        // Don't render crosshairs for selected issue that are not on the current layer, or for 
-                        // issue types that don't have a specific location or bounds.
-                        if (issue.LayerIndex != ActualLayer || issue.Type == LayerIssue.IssueType.EmptyLayer
-                                                            || issue.Type == LayerIssue.IssueType.TouchingBound)
-                            continue;
-
-                        DrawCrosshair(issue.BoundingRectangle);
-                    }
-                }
-
-                if (btnLayerImageRotate.Checked)
-                {
-                    CvInvoke.Rotate(ActualLayerImageBgr, ActualLayerImageBgr, RotateFlags.Rotate90Clockwise);
-                    /*var roi = Rectangle.Round(pbLayer.SelectionRegion);
-                    if (roi != Rectangle.Empty)
-                    {
-                        pbLayer.SelectionRegion = G
+    
+    
+                        foreach (LayerIssue issue in selectedIssues)
+                        {
+                            // Don't render crosshairs for selected issue that are not on the current layer, or for 
+                            // issue types that don't have a specific location or bounds.
+                            if (issue.LayerIndex != ActualLayer || issue.Type == LayerIssue.IssueType.EmptyLayer
+                                                                || issue.Type == LayerIssue.IssueType.TouchingBound)
+                                continue;
+    
+                            DrawCrosshair(issue.BoundingRectangle);
+                        }
                     }*/
-                //}
+
+                    if (_showLayerImageRotated)
+                    {
+                        CvInvoke.Rotate(LayerCache.ImageBgr, LayerCache.ImageBgr, RotateFlags.Rotate90Clockwise);
+                    }
+                }
 
 
-                //watch.Restart();
                 LayerImageBox.Image = LayerCache.ImageBgr.ToBitmap();
-                
 
                 /*byte percent = (byte)((layerNum + 1) * 100 / SlicerFile.LayerCount);
 
@@ -630,6 +802,9 @@ namespace UVtools.WPF
                 pbLayer.Invalidate();
                 pbLayer.Update();
                 pbLayer.Refresh();*/
+
+                watch.Stop();
+                ShowLayerRenderMs = watch.ElapsedMilliseconds;
             }
             catch (Exception e)
             {

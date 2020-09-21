@@ -5,10 +5,12 @@
         xmlns:manager="clr-namespace:Avalonia.ThemeManager;assembly=Avalonia.ThemeManager"
         xmlns:uc="clr-namespace:UVtools.WPF.Controls"
         xmlns:idc="clr-namespace:Dock.Avalonia.Controls;assembly=Dock.Avalonia"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="600"
         x:Class="UVtools.WPF.MainWindow"
         Title="UVtools"
         Icon="/Assets/Icons/UVtools.ico"
+        MinWidth="1024"
+        MinHeight="600"
         >
   
   <DockPanel>
@@ -133,7 +135,11 @@
       </TabItem>
     </TabControl>
 
-    <Grid IsEnabled="{Binding IsFileLoaded}" DockPanel.Dock="Right" ColumnDefinitions="*" RowDefinitions="Auto,Auto,*,Auto,Auto,Auto"  Margin="5">
+    <Grid 
+      IsEnabled="{Binding IsFileLoaded}" 
+      DockPanel.Dock="Right" 
+      ColumnDefinitions="130" 
+      RowDefinitions="Auto,Auto,*,Auto,Auto,Auto,Auto"  Margin="5">
       <TextBlock
         Text="{Binding MaximumLayerString}"
         Name="Layer.Navigation.Up"
@@ -143,64 +149,109 @@
         Grid.Row="0"/>
       <RepeatButton 
         Grid.Row="1"
-        ToolTip.Tip="Navigate to up layer [W]"
-        HotKey="w"
+        ToolTip.Tip="Navigate to up layer [Ctrl + Up]"
+        HotKey="Ctrl + Up"
         Interval="100"
         IsEnabled="{Binding CanGoUp}"
         Command="{Binding GoNextLayer}">
         <Image Width="16" Height="16" Source="/Assets/Icons/arrow-up-16x16.png"/>
       </RepeatButton>
-      <Slider 
-        Name="Layer.Navigation.Slider"
-        Minimum="0"
-        Maximum="{Binding SliderMaximumValue}"
-        Ticks="{Binding SliderMaximumValue}"
-        Value="{Binding ActualLayer}"
-        TickFrequency="1"
-        TickPlacement="Outside"
-        SmallChange="1"
-        LargeChange="10"
-        IsSnapToTickEnabled="True"
-        Grid.Row="2"
-        Margin="0,5,0,5" 
-        HorizontalAlignment="Right"
-        Orientation="Vertical"/>
+
+      <Grid Grid.Row="2" ColumnDefinitions="*,16,Auto">
+        <Panel
+          Grid.Column="0"
+          Name="Layer.Navigation.Tooltip.Panel"
+          Margin="{Binding LayerNavigationTooltipMargin}"
+          HorizontalAlignment="Left"
+          >
+          <Border
+             Name="Layer.Navigation.Tooltip.Border"
+                  VerticalAlignment="Top"
+                  BorderBrush="AliceBlue"
+                  BorderThickness="5"
+                  CornerRadius="5"
+                  >
+            <TextBlock Padding="5" Text="{Binding ActualLayerTooltip}"/>
+          </Border>
+        </Panel>
+
+        <Image
+        Grid.Column="1"
+        Name="Layer.Navigation.Issues" Width="16"></Image>
+
+        <uc:SliderEx
+          Grid.Column="2"
+          Name="Layer.Navigation.Slider"
+          Minimum="0"
+          Maximum="{Binding SliderMaximumValue}"
+          Ticks="{Binding SliderMaximumValue}"
+          Value="{Binding ActualLayer}"
+          TickFrequency="1"
+          TickPlacement="Outside"
+          SmallChange="1"
+          LargeChange="10"
+          IsSnapToTickEnabled="True"
+          Margin="0,5,0,5"
+          HorizontalAlignment="Right"
+          Orientation="Vertical"/>
+      </Grid>
+
       <RepeatButton 
         Grid.Row="3"
-        ToolTip.Tip="Navigate to down layer [S]"
-        HotKey="s"
+        ToolTip.Tip="Navigate to down layer [Ctrl + Down]"
+        HotKey="Ctrl + Down"
         Interval="100"
         IsEnabled="{Binding CanGoDown}"
         Command="{Binding GoPreviousLayer}"
         >
         <Image Width="16" Height="16" Source="/Assets/Icons/arrow-down-16x16.png"/>
       </RepeatButton>
-      <StackPanel Margin="0,10,0,10" Grid.Row="4" Orientation="Horizontal">
-        <Button
-          ToolTip.Tip="Navigate to first layer [END]"
-          HotKey="END"
+
+      <NumericUpDown
+                        Grid.Row="4"
+                        Margin="0,5"
+                        Minimum="0"
+                        Maximum="{Binding SliderMaximumValue}"
+                        Value="{Binding ActualLayer}" />
+
+      <Grid Grid.Row="5" RowDefinitions="*" ColumnDefinitions="30,*,30">
+        <Button 
+          Grid.Column="0"
+          ToolTip.Tip="Navigate to first layer [Ctrl + Left]"
+          HotKey="Ctrl + Left"
           IsEnabled="{Binding CanGoDown}"
           Command="{Binding GoFirstLayer}"
           >
           <Image Width="16" Height="16" Source="/Assets/Icons/arrow-end-16x16.png"/>
         </Button>
-        <Button Margin="5,0,5,0"
+
+        <TextBlock
+        Grid.Column="1"
+        Text="{Binding MinimumLayerString}"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Center"
+        TextAlignment="Center"/>
+
+        <!--
+        <Button
+          Grid.Column="1"
+          Margin="5,0,5,0"
           ToolTip.Tip="Navigate to a selected layer [Ctrl + F]"
           HotKey="Ctrl + F"
                 >
           <Image Source="/Assets/Icons/search-16x16.png"/>
         </Button>
+        !-->
         <Button
-          ToolTip.Tip="Navigate to last layer [HOME]"
-          HotKey="HOME"
+          Grid.Column="2"
+          ToolTip.Tip="Navigate to last layer [Ctrl + Right]"
+          HotKey="Ctrl + Right"
           IsEnabled="{Binding CanGoUp}"
           Command="{Binding GoLastLayer}"
           >
           <Image Width="16" Height="16" Source="/Assets/Icons/arrow-top-16x16.png"/>
         </Button>
-      
-      </StackPanel>
-      <TextBlock Text="{Binding MinimumLayerString}" HorizontalAlignment="Center" TextAlignment="Center" Grid.Row="5"/>
+      </Grid>
     </Grid>
 
 
@@ -212,17 +263,85 @@
     <Grid
       IsEnabled="{Binding IsFileLoaded}"
       ColumnDefinitions="*" RowDefinitions="Auto,*,Auto"  Margin="5">
-      <Menu Grid.Row="0">
-        <MenuItem Header="_File">
-          <MenuItem Header="_Open..."/>
-          <Separator/>
-          <MenuItem Header="_Exit"/>
-        </MenuItem>
-        <MenuItem Header="_Edit">
-          <MenuItem Header="Copy"/>
-          <MenuItem Header="Paste"/>
-        </MenuItem>
-      </Menu>
+      <StackPanel HorizontalAlignment="Left" Grid.Row="0" Orientation="Horizontal" Spacing="1">
+        <ToggleButton
+          IsChecked="{Binding ShowLayerImageRotated}"
+          HotKey="Ctrl + R"
+          ToolTip.Tip="Auto rotate layer preview image at 90º (This can slow down the layer preview) [CTRL+R]"
+          >
+          <StackPanel Orientation="Horizontal">
+            <Image Source="/Assets/Icons/undo-alt-16x16.png"/>
+            <TextBlock Margin="5,0,5,0" Text="Rotate"/>
+          </StackPanel>
+        </ToggleButton>
+
+        <ToggleButton
+          IsChecked="{Binding ShowLayerImageDifference}"
+          ToolTip.Tip="Show layer differences where daker pixels were also present on previous layer and the white pixels the difference between previous and current layer."
+          >
+          <StackPanel Orientation="Horizontal">
+            <Image Source="/Assets/Icons/layers-16x16.png"/>
+            <TextBlock Margin="5,0,5,0" Text="Difference"/>
+          </StackPanel>
+        </ToggleButton>
+
+        <ToggleButton
+          IsChecked="{Binding ShowLayerImageIssues}"
+          ToolTip.Tip="Highlight Issues on current layer.\nValid only if Issues are calculated."
+          >
+          <StackPanel Orientation="Horizontal">
+            <Image Source="/Assets/Icons/warning-16x16.png"/>
+            <TextBlock Margin="5,0,5,0" Text="Issuess"/>
+          </StackPanel>
+        </ToggleButton>
+
+        <ToggleButton
+          IsChecked="{Binding ShowLayerImageCrosshairs}"
+          ToolTip.Tip="Show crosshairs for selected issues on the current layer."
+          >
+          <StackPanel Orientation="Horizontal">
+            <Image Source="/Assets/Icons/crosshairs-16x16.png"/>
+            <TextBlock Margin="5,0,5,0" Text="Crossharis"/>
+          </StackPanel>
+        </ToggleButton>
+
+        <Button 
+          ToolTip.Tip="Right click to access the various outlines."
+          >
+          <Button.ContextMenu>
+            <ContextMenu PlacementMode="Bottom">
+              <CheckBox 
+                IsChecked="{Binding ShowLayerOutlinePrintVolumeBoundary}"
+                Content="Print volume boundary"/>
+              <CheckBox
+                IsChecked="{Binding ShowLayerOutlineLayerBoundary}"
+                Content="Layer boundary"/>
+              <CheckBox
+                IsChecked="{Binding ShowLayerOutlineHollowAreas}"
+                Content="Hollow areas"/>
+              <CheckBox
+                IsChecked="{Binding ShowLayerOutlineEdgeDetection}"
+                Content="Edge detection"/>
+            </ContextMenu>
+          </Button.ContextMenu>
+          <StackPanel Orientation="Horizontal">
+            <Image Source="/Assets/Icons/geometry-16x16.png"/>
+            <TextBlock Margin="5,0,5,0" Text="Outline ⮟"/>
+          </StackPanel>
+        </Button>
+
+
+        <ToggleButton
+          IsChecked="{Binding IsPixelEditorActive}"
+          ToolTip.Tip="Edit layer image: Draw pixels, add supports and/or drain holes."
+          >
+          <StackPanel Orientation="Horizontal">
+            <Image Source="/Assets/Icons/pixel-16x16.png"/>
+            <TextBlock Margin="5,0,5,0" Text="Pixel editor"/>
+          </StackPanel>
+        </ToggleButton>
+
+      </StackPanel>
 
       <uc:AdvancedImageBox
         Grid.Row="1"
@@ -230,19 +349,9 @@
      Name="Layer.Image"
       />
 
-      <Menu
-        Grid.Row="2">
-        <MenuItem Header="_File">
-          <MenuItem Header="_Open..."/>
-          <Separator/>
-          <MenuItem Header="_Exit"/>
-        </MenuItem>
-        <MenuItem Header="_Edit">
-          <MenuItem Header="Copy"/>
-          <MenuItem Header="Paste"/>
-        </MenuItem>
-      </Menu>
-      
+      <StackPanel HorizontalAlignment="Left" Grid.Row="2" Orientation="Horizontal" Spacing="1">
+        <TextBlock Text="{Binding ShowLayerRenderMs}ms"/>
+      </StackPanel>
       
     </Grid>
 

@@ -6,6 +6,8 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System.Globalization;
+using System.Threading;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -29,6 +31,7 @@ namespace UVtools.WPF
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
+                Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-GB");
                 UserSettings.Load();
                 UserSettings.SetVersion();
 
