@@ -354,7 +354,9 @@ namespace UVtools.Core.FileFormats
 
 
         public abstract float PrintTime { get; }
-        
+
+        public float PrintTimeHours => (float) Math.Round(PrintTime / 3600, 2);
+
         public abstract float UsedMaterial { get; }
 
         public abstract float MaterialCost { get; }

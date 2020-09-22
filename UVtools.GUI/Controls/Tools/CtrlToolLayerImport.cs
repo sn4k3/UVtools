@@ -40,6 +40,7 @@ namespace UVtools.GUI.Controls.Tools
             Operation.ReplaceStartLayer = cbReplaceStartLayer.Checked;
             Operation.ReplaceSubsequentLayers = cbReplaceSubsequentLayers.Checked;
             Operation.DiscardRemainingLayers = cbDiscardRemainingLayers.Checked;
+            Operation.MergeImages = cbMergeImages.Checked;
             return true;
         }
 
@@ -79,10 +80,12 @@ namespace UVtools.GUI.Controls.Tools
             {
                 if (ReferenceEquals(sender, cbReplaceSubsequentLayers))
                 {
-                    cbDiscardRemainingLayers.Enabled = cbReplaceSubsequentLayers.Checked;
+                    cbDiscardRemainingLayers.Enabled = cbDiscardRemainingLayers.Enabled = cbReplaceSubsequentLayers.Checked;
+                    cbMergeImages.Enabled = cbReplaceSubsequentLayers.Checked;
                     if (!cbReplaceSubsequentLayers.Checked)
                     {
                         cbDiscardRemainingLayers.Checked = false;
+                        cbMergeImages.Checked = false;
                     }
                 }
 

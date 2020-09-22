@@ -80,6 +80,7 @@ namespace UVtools.Core.Operations
         public bool ReplaceStartLayer { get; set; }
         public bool ReplaceSubsequentLayers { get; set; }
         public bool DiscardRemainingLayers { get; set; }
+        public bool MergeImages { get; set; }
 
         public List<string> Files { get; } = new List<string>();
 

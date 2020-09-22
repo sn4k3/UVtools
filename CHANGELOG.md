@@ -1,5 +1,10 @@
 # Changelog
 
+## 22/09/2020 - v0.8.2.4
+
+* (Add) Layer Importer: Option to merge images
+* (Improvement) Layer difference computation time, faster render
+
 ## 19/09/2020 - v0.8.2.3
 
 * (Add) Tooltip for next and previous layer buttons with associated shortcut (#61)

@@ -108,35 +108,135 @@
       </MenuItem>
     </Menu>
 
-    <Menu DockPanel.Dock="Bottom"
-          IsEnabled="{Binding IsFileLoaded}"
-          >
-      <MenuItem Header="_File">
-        <MenuItem Header="_Open..."/>
-        <Separator/>
-        <MenuItem Header="_Exit"/>
-      </MenuItem>
-      <MenuItem Header="_Edit">
-        <MenuItem Header="Copy"/>
-        <MenuItem Header="Paste"/>
-      </MenuItem>
-    </Menu>
+    <Border Padding="5" DockPanel.Dock="Bottom" Background="WhiteSmoke" IsVisible="{Binding IsFileLoaded}">
+      <StackPanel 
+        VerticalAlignment="Center" 
+        Orientation="Horizontal" 
+        Spacing="5"
+            >
+        <TextBlock Text="{Binding SlicerFile.LayerHeight, StringFormat=Layer height: \{0\}mm}"/>
+        <TextBlock Text="|"/>
+      
+        <TextBlock Text="{Binding SlicerFile.BottomLayerCount, StringFormat=Bottom layers: \{0\}}"/>
+        <TextBlock Text="|"/>
+      
+        <TextBlock Text="{Binding SlicerFile.BottomExposureTime, StringFormat=Bottom exposure: \{0\}s}"/>
+        <TextBlock Text="|"/>
+      
+        <TextBlock Text="{Binding SlicerFile.ExposureTime, StringFormat=Exposure: \{0\}s}"/>
+
+        <TextBlock IsVisible="{Binding SlicerFile.PrintTimeHours}"
+                   Text="|"/>
+        <TextBlock IsVisible="{Binding SlicerFile.PrintTimeHours}"
+          Text="{Binding SlicerFile.PrintTimeHours, StringFormat=Print time: \{0\}h}"/>
+
+
+        <TextBlock IsVisible="{Binding SlicerFile.UsedMaterial}"
+                   Text="|"/>
+        <TextBlock IsVisible="{Binding SlicerFile.UsedMaterial}"
+                    Text="{Binding SlicerFile.UsedMaterial, StringFormat=Used material: \{0\}ml}"/>
+
+
+        <TextBlock IsVisible="{Binding SlicerFile.MaterialCost}"
+                   Text="|"/>
+        <TextBlock IsVisible="{Binding SlicerFile.MaterialCost}"
+                   Text="{Binding SlicerFile.MaterialCost, StringFormat=Material cost: \{0\}ml}"/>
+
+
+        <TextBlock IsVisible="{Binding SlicerFile.MaterialName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                   Text="|"/>
+        <TextBlock IsVisible="{Binding SlicerFile.MaterialName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                   Text="{Binding SlicerFile.MaterialName, StringFormat=Material: \{0\}}"/>
+
+
+        <TextBlock IsVisible="{Binding SlicerFile.MachineName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                   Text="|"/>
+        <TextBlock IsVisible="{Binding SlicerFile.MachineName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                   Text="{Binding SlicerFile.MachineName, StringFormat=Machine: \{0\}}"/>
+      </StackPanel>
+    </Border>
 
     <TabControl 
-      IsEnabled="{Binding IsFileLoaded}" 
       DockPanel.Dock="Left" 
       Width="400"
-      SelectedIndex="3">
-      <TabItem>
+      SelectedIndex="{Binding TabSelectedIndex}">
+      <TabItem IsEnabled="{Binding IsFileLoaded}" >
         <TabItem.Header>
           <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
             <Image Source="/Assets/Icons/button-info-16x16.png" Width="16"/>
             <TextBlock Margin="5,0,0,0">Information</TextBlock>
           </StackPanel>
         </TabItem.Header>
+
+        <Grid IsVisible="{Binding IsFileLoadeds}" RowDefinitions="Auto,Auto,Auto,*">
+          <StackPanel Background="WhiteSmoke"
+            Grid.Row="0" 
+            Orientation="Horizontal"
+            Spacing="5"
+            VerticalAlignment="Center">
+            <Button
+              IsEnabled="{Binding ThumbnailCanGoPrevious}"
+              Command="{Binding ThumbnailGoPrevious}"
+                    >
+              <Image Source="/Assets/Icons/back-16x16.png" Width="16"/>
+            </Button>
+
+            <TextBlock VerticalAlignment="Center">
+              <TextBlock.Text>
+                <MultiBinding StringFormat="\{0\}/\{1\}">
+                  <Binding Path="VisibleThumbnailIndex"/>
+                  <Binding Path="SlicerFile.CreatedThumbnailsCount"/>
+                </MultiBinding>
+              </TextBlock.Text>
+            </TextBlock>
+
+            <Button
+              IsEnabled="{Binding ThumbnailCanGoNext}"
+              Command="{Binding ThumbnailGoNext}"
+                    >
+              <Image Source="/Assets/Icons/next-16x16.png" Width="16"/>
+            </Button>
+
+          </StackPanel>
+
+          <StackPanel 
+            Grid.Row="0" 
+            Orientation="Horizontal" 
+            Spacing="5"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center">
+            <TextBlock VerticalAlignment="Center"
+                       Text="{Binding VisibleThumbnailResolution}"/>
+          </StackPanel>
+
+          <Image Grid.Row="1" Source="{Binding VisibleThumbnailImage}"/>
+
+          <DataGrid Grid.Row="3"
+                    CanUserReorderColumns="True"
+                    CanUserResizeColumns="True"
+                    CanUserSortColumns="True"
+                    GridLinesVisibility="All"
+                    IsReadOnly="True"
+                    ClipboardCopyMode="IncludeHeader"
+                    Items="{Binding SlicerProperties}">
+            <DataGrid.Columns>
+              <DataGridTextColumn  Header="Name"
+                                    Binding="{Binding Name}"
+                                    Width="Auto" />
+              <DataGridTextColumn Header="Value"
+                                  Binding="{Binding Value}"
+                                  Width="Auto" />
+              <DataGridTextColumn Header="Group"
+                                  Binding="{Binding Group}"
+                                  Width="Auto" />
+            </DataGrid.Columns>
+            
+          </DataGrid>
+        </Grid>
+        
       </TabItem>
 
-      <TabItem IsVisible="{Binding SlicerFile.HaveGCode}">
+      <TabItem IsVisible="{Binding HaveGCode}">
         <TabItem.Header>
           <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
             <Image Source="/Assets/Icons/code-16x16.png" Width="16"/>
@@ -146,7 +246,7 @@
       </TabItem>
 
 
-      <TabItem>
+      <TabItem IsEnabled="{Binding IsFileLoaded}" >
         <TabItem.Header>
           <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
             <Image Source="/Assets/Icons/warning-16x16.png" Width="16"/>
@@ -275,7 +375,6 @@
           Name="Layer.Navigation.Slider"
           Minimum="0"
           Maximum="{Binding SliderMaximumValue}"
-          Ticks="{Binding SliderMaximumValue}"
           Value="{Binding ActualLayer}"
           TickFrequency="1"
           TickPlacement="Outside"
@@ -357,7 +456,7 @@
       <StackPanel HorizontalAlignment="Left" Grid.Row="0" Orientation="Horizontal" Spacing="1">
         <ToggleButton
           IsChecked="{Binding ShowLayerImageRotated}"
-          HotKey="Ctrl + R"
+          HotKey="Ctrl+R"
           ToolTip.Tip="Auto rotate layer preview image at 90º (This can slow down the layer preview) [CTRL+R]"
           >
           <StackPanel Orientation="Horizontal">
@@ -397,10 +496,11 @@
         </ToggleButton>
 
         <Button 
-          ToolTip.Tip="Right click to access the various outlines."
+          ToolTip.Tip="Click to access the various outlines."
+          Command="{Binding #LayerPreviewOutlineContextMenu.Open}"
           >
           <Button.ContextMenu>
-            <ContextMenu PlacementMode="Bottom">
+            <ContextMenu Name="LayerPreviewOutlineContextMenu" PlacementMode="Bottom">
               <CheckBox 
                 IsChecked="{Binding ShowLayerOutlinePrintVolumeBoundary}"
                 Content="Print volume boundary"/>

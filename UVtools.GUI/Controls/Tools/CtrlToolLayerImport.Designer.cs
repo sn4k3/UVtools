@@ -48,6 +48,7 @@
             this.pbSelectedImage = new System.Windows.Forms.PictureBox();
             this.cbReplaceSubsequentLayers = new System.Windows.Forms.CheckBox();
             this.cbDiscardRemainingLayers = new System.Windows.Forms.CheckBox();
+            this.cbMergeImages = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.nmInsertAfterLayer)).BeginInit();
             this.tsBar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
@@ -276,11 +277,25 @@
             this.cbDiscardRemainingLayers.UseVisualStyleBackColor = true;
             this.cbDiscardRemainingLayers.CheckedChanged += new System.EventHandler(this.EventClick);
             // 
+            // cbMergeImages
+            // 
+            this.cbMergeImages.AutoSize = true;
+            this.cbMergeImages.Enabled = false;
+            this.cbMergeImages.Location = new System.Drawing.Point(244, 83);
+            this.cbMergeImages.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.cbMergeImages.Name = "cbMergeImages";
+            this.cbMergeImages.Size = new System.Drawing.Size(128, 24);
+            this.cbMergeImages.TabIndex = 41;
+            this.cbMergeImages.Text = "Merge images";
+            this.toolTip.SetToolTip(this.cbMergeImages, "Merge source layer with target layer\r\n(Require \"Replace subsequent layers\")");
+            this.cbMergeImages.UseVisualStyleBackColor = true;
+            this.cbMergeImages.CheckedChanged += new System.EventHandler(this.EventClick);
+            // 
             // CtrlToolLayerImport
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.Controls.Add(this.cbMergeImages);
             this.Controls.Add(this.cbDiscardRemainingLayers);
             this.Controls.Add(this.cbReplaceSubsequentLayers);
             this.Controls.Add(this.lbResult);
@@ -330,5 +345,6 @@
         private System.Windows.Forms.PictureBox pbSelectedImage;
         private System.Windows.Forms.CheckBox cbReplaceSubsequentLayers;
         private System.Windows.Forms.CheckBox cbDiscardRemainingLayers;
+        private System.Windows.Forms.CheckBox cbMergeImages;
     }
 }

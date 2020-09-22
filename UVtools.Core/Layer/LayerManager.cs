@@ -1343,6 +1343,16 @@ namespace UVtools.Core
             {
                 var mat = CvInvoke.Imread(operation.Files[i], ImreadModes.Grayscale);
                 uint layerIndex = (uint) (startIndex + i);
+                if (operation.MergeImages)
+                {
+                    if (!(this[layerIndex] is null))
+                    {
+                        using (var oldMat = this[layerIndex].LayerMat)
+                        {
+                            CvInvoke.Add(oldMat, mat, mat);
+                        }
+                    }
+                }
                 this[layerIndex] = new Layer(layerIndex, mat);
 
                 lock (progress.Mutex)

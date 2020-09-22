@@ -19,6 +19,7 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -102,6 +103,7 @@ namespace UVtools.WPF
         public Border LayerNavigationTooltipBorder;
 
         #region DataSets
+        public ObservableCollection<SlicerProperty> SlicerProperties { get; } = new ObservableCollection<SlicerProperty>();
         public ObservableCollection<LogItem> Logs { get; } = new ObservableCollection<LogItem>();
         public ObservableCollection<LayerIssue> Issues { get; } = new ObservableCollection<LayerIssue>();
         public ObservableCollection<PixelOperation> Drawings { get; } = new ObservableCollection<PixelOperation>();
@@ -113,6 +115,9 @@ namespace UVtools.WPF
         private uint _actualLayer;
         private bool _isGUIEnabled = true;
         private bool _canSave;
+        private int _tabSelectedIndex;
+        private uint _visibleThumbnailIndex;
+        private Bitmap _visibleThumbnailImage;
         private bool _isVerbose;
         private bool _showLayerImageRotated;
         private bool _showLayerImageDifference;
@@ -135,7 +140,7 @@ namespace UVtools.WPF
             {
                 if (!SetProperty(ref _isGUIEnabled, value)) return;
                 if (!_isGUIEnabled) return;
-                if (ProgressWindow.IsActive)
+                if (!(ProgressWindow is null))
                 {
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
@@ -151,15 +156,72 @@ namespace UVtools.WPF
 
         public bool IsFileLoaded
         {
-            get => !ReferenceEquals(SlicerFile, null);
+            get => !(SlicerFile is null);
             set => OnPropertyChanged();
         }
+
+        public bool HaveGCode => IsFileLoaded && SlicerFile.HaveGCode;
 
         public bool CanSave
         {
             get => _canSave;
             set => SetProperty(ref _canSave, value);
         }
+
+        public int TabSelectedIndex
+        {
+            get => _tabSelectedIndex;
+            set => SetProperty(ref _tabSelectedIndex, value);
+        }
+
+        public uint VisibleThumbnailIndex
+        {
+            get => _visibleThumbnailIndex;
+            set
+            {
+                SetProperty(ref _visibleThumbnailIndex, value);
+                OnPropertyChanged(nameof(ThumbnailCanGoPrevious));
+                OnPropertyChanged(nameof(ThumbnailCanGoNext));
+                if (value == 0)
+                {
+                    VisibleThumbnailImage = null;
+                    return;
+                }
+
+                if (SlicerFile is null) return;
+                if (_visibleThumbnailIndex > SlicerFile.Thumbnails.Length) return;
+                VisibleThumbnailImage = SlicerFile.Thumbnails[_visibleThumbnailIndex-1].ToBitmap();
+            }
+        }
+
+        public bool ThumbnailCanGoPrevious => SlicerFile is { } && _visibleThumbnailIndex > 1;
+        public bool ThumbnailCanGoNext => SlicerFile is { } && _visibleThumbnailIndex < SlicerFile.Thumbnails.Length;
+
+        public void ThumbnailGoPrevious()
+        {
+            if (!ThumbnailCanGoPrevious) return;
+            VisibleThumbnailIndex--;
+        }
+
+        public void ThumbnailGoNext()
+        {
+            if (!ThumbnailCanGoNext) return;
+            VisibleThumbnailIndex++;
+        }
+
+        public Bitmap VisibleThumbnailImage
+        {
+            get => _visibleThumbnailImage;
+            set
+            {
+                SetProperty(ref _visibleThumbnailImage, value);
+                OnPropertyChanged(nameof(VisibleThumbnailResolution));
+            }
+        }
+
+        public string VisibleThumbnailResolution => _visibleThumbnailImage is null ? null : $"{{Width: {_visibleThumbnailImage.Size.Width}, Height: {_visibleThumbnailImage.Size.Height}}}";
+
+
 
         public bool IsVerbose
         {
@@ -433,7 +495,9 @@ namespace UVtools.WPF
             SlicerFile?.Dispose();
             App.SlicerFile = null;
             LayerCache.Clear();
+            VisibleThumbnailIndex = 0;
             LayerImageBox.Image = null;
+            SlicerProperties.Clear();
             ResetDataContext();
         }
 
@@ -512,6 +576,21 @@ namespace UVtools.WPF
             LayerImageBox.Image = bitmapRgb;*/
 
             _actualLayer = actualLayer;
+            if(SlicerFile.CreatedThumbnailsCount > 0) VisibleThumbnailIndex = 1;
+
+            if (!(SlicerFile.Configs is null))
+            {
+                foreach (var config in SlicerFile.Configs)
+                {
+                    var type = config.GetType();
+                    foreach (var property in type.GetProperties())
+                    {
+                        SlicerProperties.Add(new SlicerProperty(property.Name, property.GetValue(config, null)?.ToString(), type.Name));
+                    }
+                }
+            }
+
+
             ShowLayer();
             
             ResetDataContext();

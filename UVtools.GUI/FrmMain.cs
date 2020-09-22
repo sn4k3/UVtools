@@ -2275,7 +2275,7 @@ namespace UVtools.GUI
         /// Shows a layer number
         /// </summary>
         /// <param name="layerNum">Layer number</param>
-        void ShowLayer(uint layerNum)
+        unsafe void ShowLayer(uint layerNum)
         {
             if (SlicerFile is null) return;
 
@@ -2316,8 +2316,10 @@ namespace UVtools.GUI
 
                 CvInvoke.CvtColor(ActualLayerImage, ActualLayerImageBgr, ColorConversion.Gray2Bgr);
 
-                var imageSpan = ActualLayerImage.GetPixelSpan<byte>();
-                var imageBgrSpan = ActualLayerImageBgr.GetPixelSpan<byte>();
+                //var imageSpan = ActualLayerImage.GetPixelSpan<byte>();
+                //var imageBgrSpan = ActualLayerImageBgr.GetPixelSpan<byte>();
+                var imageSpan = ActualLayerImage.GetBytePointer();
+                var imageBgrSpan = ActualLayerImageBgr.GetBytePointer();
 
 
                 if (btnLayerImageLayerOutlineEdgeDetection.Checked)
@@ -2332,71 +2334,30 @@ namespace UVtools.GUI
                 {
                     if (layerNum > 0 && layerNum < SlicerFile.LayerCount - 1)
                     {
-                        using (var previousImage = SlicerFile[layerNum - 1].LayerMat)
-                        using (var nextImage = SlicerFile[layerNum + 1].LayerMat)
+                        Mat previousImage = null;
+                        Mat nextImage = null;
+
+                        // Can improve performance on >4K images?
+                        Parallel.Invoke(
+                () => { previousImage = SlicerFile[ActualLayer - 1].LayerMat; },
+                            () => { nextImage = SlicerFile[ActualLayer + 1].LayerMat; });
+
+                        /*using (var previousImage = SlicerFile[_actualLayer - 1].LayerMat)
+                        using (var nextImage = SlicerFile[_actualLayer + 1].LayerMat)
+                        {*/
+                        //var previousSpan = previousImage.GetPixelSpan<byte>();
+                        //var nextSpan = nextImage.GetPixelSpan<byte>();
+
+                        var previousSpan = previousImage.GetBytePointer();
+                        var nextSpan = nextImage.GetBytePointer();
+
+                        int width = ActualLayerImage.Width;
+                        int channels = ActualLayerImageBgr.NumberOfChannels;
+                        Parallel.For(0, ActualLayerImageBgr.Height, y =>
                         {
-                            var previousSpan = previousImage.GetPixelSpan<byte>();
-                            var nextSpan = nextImage.GetPixelSpan<byte>();
-
-                            /*Parallel.For(0, imageSpan.Length, i =>
+                            for (int x = 0; x < width; x++)
                             {
-                                var currentByte = ActualLayerImage.GetSinglePixelSpan<byte>(i);
-                                var previousByte = previousImage.GetSinglePixelSpan<byte>(i);
-                                var nextByte = nextImage.GetSinglePixelSpan<byte>(i);
-
-                                if (currentByte[0] != 0) return;
-                                Color color = Color.Empty;
-                                if (previousByte[0] > 0 && nextByte[0] > 0)
-                                {
-                                    color = Settings.Default.PreviousNextLayerColor;
-                                }
-                                else if (previousByte[0] > 0)
-                                {
-                                    color = Settings.Default.PreviousLayerColor;
-                                }
-                                else if (nextByte[0] > 0)
-                                {
-                                    color = Settings.Default.NextLayerColor;
-                                }
-
-                                if (color.IsEmpty) return;
-                                ActualLayerImageBgr.SetByte(i * 3, new[]{ color.B , color.G, color.R });
-                            });*/
-
-                            /*Parallel.For(0, ActualLayerImage.Height, y =>
-                            {
-                                var currentSpan = ActualLayerImage.GetPixelRowSpan<byte>(y);
-                                var currentRGBSpan = ActualLayerImageBgr.GetPixelRowSpan<byte>(y);
-                                var previousSpan = previousImage.GetPixelRowSpan<byte>(y);
-                                var nextSpan = nextImage.GetPixelRowSpan<byte>(y);
-
-                                for (int x = 0; x < currentSpan.Length; x++)
-                                {
-                                    if (currentSpan[x] != 0) continue;
-                                    Color color = Color.Empty;
-                                    if (previousSpan[x] > 0 && nextSpan[x] > 0)
-                                    {
-                                        color = Settings.Default.PreviousNextLayerColor;
-                                    }
-                                    else if (previousSpan[x] > 0)
-                                    {
-                                        color = Settings.Default.PreviousLayerColor;
-                                    }
-                                    else if (nextSpan[x] > 0)
-                                    {
-                                        color = Settings.Default.NextLayerColor;
-                                    }
-
-                                    if (color.IsEmpty) continue;
-                                    var bgrPixel = x * 3;
-                                    currentRGBSpan[bgrPixel] = color.B; // B
-                                    currentRGBSpan[++bgrPixel] = color.G; // G
-                                    currentRGBSpan[++bgrPixel] = color.R; // R
-                                }
-                            });*/
-
-                            for (int pixel = 0; pixel < imageSpan.Length; pixel++)
-                            {
+                                int pixel = y * width + x;
                                 if (imageSpan[pixel] != 0) continue;
                                 Color color = Color.Empty;
                                 if (previousSpan[pixel] > 0 && nextSpan[pixel] > 0)
@@ -2413,12 +2374,16 @@ namespace UVtools.GUI
                                 }
 
                                 if (color.IsEmpty) continue;
-                                var bgrPixel = pixel * 3;
+                                var bgrPixel = pixel * channels;
                                 imageBgrSpan[bgrPixel] = color.B; // B
                                 imageBgrSpan[++bgrPixel] = color.G; // G
                                 imageBgrSpan[++bgrPixel] = color.R; // R
+                                                                    //imageBgrSpan[++bgrPixel] = color.A; // A
                             }
-                        }
+                        });
+
+                        previousImage.Dispose();
+                        nextImage.Dispose();
                     }
                 }
 
