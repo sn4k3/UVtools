@@ -6,6 +6,8 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 using Avalonia;
@@ -49,7 +51,19 @@ namespace UVtools.WPF
         }
 
         #region Utilities
-
+        public static void NewInstance(string filePath)
+        {
+            try
+            {
+                var info = new ProcessStartInfo("UVtools.exe", $"\"{filePath}\"");
+                Process.Start(info)?.Dispose();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
+            
+        }
 
         #endregion
     }

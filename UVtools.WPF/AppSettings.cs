@@ -27,7 +27,7 @@ namespace UVtools.WPF
         /// <summary>
         /// Returns the zoom level that will be used for autozoom actions
         /// </summary>
-        public const ushort LockedZoomLevel = 1200;
+        public static int LockedZoomLevel => ZoomLevels[UserSettings.Instance.LayerPreview.ZoomLockLevelIndex + ZoomLevelSkipCount];
 
 
         /// <summary>

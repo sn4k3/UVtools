@@ -11,27 +11,42 @@
         Icon="/Assets/Icons/UVtools.ico"
         MinWidth="1024"
         MinHeight="600"
+        DragDrop.AllowDrop="True"
         >
   
   <DockPanel>
     <Menu DockPanel.Dock="Top">
       <MenuItem Name="MainMenu.File" Header="_File">
-        <MenuItem Name="MainMenu.File.Open" Header="_Open" HotKey="Ctrl+O" InputGesture="Ctrl+O" Command="{Binding MenuFileOpenClicked}">
+        <MenuItem 
+          Name="MainMenu.File.Open" 
+          Header="_Open"
+          HotKey="Ctrl+O" InputGesture="Ctrl+O" 
+          Command="{Binding MenuFileOpenClicked}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\open-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Name="MainMenu.File.OpenNewWindow" Header="Open in _new window" HotKey="Ctrl+Shift+O" InputGesture="Ctrl+Shift+O" Command="{Binding ButtonClicked}">
+        <MenuItem Name="MainMenu.File.OpenNewWindow" Header="Open in _new window" HotKey="Ctrl+Shift+O" InputGesture="Ctrl+Shift+O" Command="{Binding MenuFileOpenNewWindowClicked}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\open-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Name="MainMenu.File.Reload" Header="_Reload" HotKey="Ctrl+F5" InputGesture="Ctrl+F5" IsEnabled="{Binding IsFileLoaded}">
+        <MenuItem 
+          Name="MainMenu.File.Reload" 
+          Header="_Reload" 
+          HotKey="Ctrl+F5" InputGesture="Ctrl+F5" 
+          IsEnabled="{Binding IsFileLoaded}"
+          Command="{Binding ReloadFile}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\file-refresh-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Name="MainMenu.File.Save" Header="_Save" HotKey="Ctrl+S" InputGesture="Ctrl+S">
+        <MenuItem 
+          Name="MainMenu.File.Save" 
+          Header="_Save" 
+          HotKey="Ctrl+S" InputGesture="Ctrl+S"
+          IsEnabled="{Binding CanSave}"
+          >
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\save-16x16.png"/>
           </MenuItem.Icon>
@@ -41,7 +56,12 @@
             <Image Source="\Assets\Icons\save-as-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Name="MainMenu.File.Close" Header="_Close" HotKey="Ctrl+W" InputGesture="Ctrl+W" IsEnabled="{Binding IsFileLoaded}">
+        <MenuItem 
+          Name="MainMenu.File.Close" 
+          Header="_Close" 
+          HotKey="Ctrl+W" InputGesture="Ctrl+W" 
+          IsEnabled="{Binding IsFileLoaded}"
+          Command="{Binding CloseFile}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\file-close-16x16.png"/>
           </MenuItem.Icon>
@@ -102,35 +122,106 @@
       </MenuItem>
     </Menu>
 
-    <TabControl IsEnabled="{Binding IsFileLoaded}" DockPanel.Dock="Left" Width="300">
-      <TabItem Header="Information" VerticalContentAlignment="Center">
-        <TextBlock Text="I am in the circle page !" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-      </TabItem>
+    <TabControl 
+      IsEnabled="{Binding IsFileLoaded}" 
+      DockPanel.Dock="Left" 
+      Width="400"
+      SelectedIndex="3">
       <TabItem>
         <TabItem.Header>
-          <TextBlock VerticalAlignment="Center">Issues</TextBlock>
+          <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+            <Image Source="/Assets/Icons/button-info-16x16.png" Width="16"/>
+            <TextBlock Margin="5,0,0,0">Information</TextBlock>
+          </StackPanel>
         </TabItem.Header>
-        <StackPanel>
-          <TextBlock Text="I am in the triangle page ! I'll put a button to show you that each page contains what you want." HorizontalAlignment="Left" VerticalAlignment="Center"/>
-          <Button>A button in the triangle page !</Button>
-        </StackPanel>
       </TabItem>
+
+      <TabItem IsVisible="{Binding SlicerFile.HaveGCode}">
+        <TabItem.Header>
+          <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+            <Image Source="/Assets/Icons/code-16x16.png" Width="16"/>
+            <TextBlock Margin="5,0,0,0">Gcode</TextBlock>
+          </StackPanel>
+        </TabItem.Header>
+      </TabItem>
+
+
       <TabItem>
         <TabItem.Header>
-          <TextBlock VerticalAlignment="Center">GCode</TextBlock>
+          <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+            <Image Source="/Assets/Icons/warning-16x16.png" Width="16"/>
+            <TextBlock Margin="5,0,0,0">Issues</TextBlock>
+          </StackPanel>
         </TabItem.Header>
-        <StackPanel Orientation="Horizontal">
-          <TextBlock Text="Square : " HorizontalAlignment="Left" VerticalAlignment="Center"/>
-          <Rectangle Fill="Blue" Width="63" Height="41"/>
-        </StackPanel>
+      
+      
       </TabItem>
+
       <TabItem>
         <TabItem.Header>
-          <TextBlock VerticalAlignment="Center">Log</TextBlock>
+          <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+            <Image Source="/Assets/Icons/log-16x16.png" Width="16"/>
+            <TextBlock Margin="5,0,0,0">Log</TextBlock>
+          </StackPanel>
         </TabItem.Header>
-        <StackPanel Orientation="Horizontal">
-          <TextBlock Text="Square : " HorizontalAlignment="Left" VerticalAlignment="Center"/>
-          <Rectangle Fill="Blue" Width="63" Height="41"/>
+        
+        <StackPanel Orientation="Vertical">
+
+          <Grid ColumnDefinitions="Auto,Auto,*">
+            <Button 
+              Grid.Column="0"
+              Command="{Binding Logs.Clear}">
+              <StackPanel Orientation="Horizontal">
+                <Image Source="/Assets/Icons/trash-16x16.png" Width="16"/>
+                <TextBlock Margin="5,0,0,0">Clear</TextBlock>
+              </StackPanel>
+            </Button>
+
+            <CheckBox
+              Grid.Column="1"
+              VerticalAlignment="Center"
+                      ToolTip.Tip="Shows extra information usefull to debug problems."
+                      IsChecked="{Binding IsVerbose}" 
+                      Content="Verbose"
+                      Margin="5,0,0,0"
+                      />
+
+            <TextBlock
+              Grid.Column="2"
+              HorizontalAlignment="Right"
+              VerticalAlignment="Center" 
+              Text="{Binding Logs.Count, StringFormat=Operations: \{0\}}"/>
+          </Grid>
+          
+          
+          <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" Orientation="Horizontal">
+            
+            
+            
+          </StackPanel>
+          <DataGrid Items="{Binding Logs}"
+                    CanUserReorderColumns="True"
+                    CanUserResizeColumns="True"
+                    CanUserSortColumns="True"
+                    GridLinesVisibility="All"
+                    IsReadOnly="True"
+                    ClipboardCopyMode="IncludeHeader"
+                    >
+            <DataGrid.Columns>
+              <DataGridTextColumn  Header="#"
+                                    Binding="{Binding Index}"
+                                    Width="Auto" />
+              <DataGridTextColumn Header="Started"
+                                  Binding="{Binding StartTime}"
+                                  Width="Auto" />
+              <DataGridTextColumn Header="Time(s)"
+                                  Binding="{Binding ElapsedTime}"
+                                  Width="Auto" />
+              <DataGridTextColumn Header="Description"
+                                  Binding="{Binding Description}"
+                                  Width="Auto" />
+              </DataGrid.Columns>
+          </DataGrid>
         </StackPanel>
       </TabItem>
     </TabControl>
@@ -287,7 +378,7 @@
 
         <ToggleButton
           IsChecked="{Binding ShowLayerImageIssues}"
-          ToolTip.Tip="Highlight Issues on current layer.\nValid only if Issues are calculated."
+          ToolTip.Tip="Highlight Issues on current layer. Valid only if Issues are calculated."
           >
           <StackPanel Orientation="Horizontal">
             <Image Source="/Assets/Icons/warning-16x16.png"/>
@@ -349,8 +440,69 @@
      Name="Layer.Image"
       />
 
-      <StackPanel HorizontalAlignment="Left" Grid.Row="2" Orientation="Horizontal" Spacing="1">
-        <TextBlock Text="{Binding ShowLayerRenderMs}ms"/>
+      <StackPanel Margin="0,5,0,0" Grid.Row="2" Orientation="Horizontal" Spacing="5">
+        <StackPanel
+          ToolTip.Tip="Number of pixels to cure on this layer image and the percetange of them against total lcd pixels"
+          VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
+          <Image Source="/Assets/Icons/pixel-16x16.png"/>
+          <TextBlock Text="{Binding LayerPixelCountStr, StringFormat=Pixels: \{0\}}"/>
+        </StackPanel>
+
+        <Button
+          ToolTip.Tip="Object volume bounds for current layer, position and size. Click: go to region"
+          >
+          <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
+            <Image Source="/Assets/Icons/expand-16x16.png"/>
+            <TextBlock Text="{Binding LayerBoundsStr, StringFormat=Bounds: \{0\}}"/>
+          </StackPanel>
+        </Button>
+
+        <Button
+          ToolTip.Tip="Region of interest selection over  layer. (NS): Not selected
+          Click: go to region | SHIFT + click: Clear ROI"
+          >
+          <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
+            <Image Source="/Assets/Icons/object-group-16x16.png"/>
+            <TextBlock Text="{Binding LayerROIStr, StringFormat=ROI: \{0\}}"/>
+          </StackPanel>
+        </Button>
+
+      </StackPanel>
+
+      <StackPanel Margin="0,5,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="2" Orientation="Horizontal" Spacing="5">
+
+        <Button
+          IsEnabled="{Binding LayerPixelPicker.IsSet}"
+          ToolTip.Tip="Pixel picker: Use CONTROL and over a pixel to get his position and brightness. Click: Center at position"          >
+          <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
+            <Image Source="/Assets/Icons/map-marker-16x16.png"/>
+            <TextBlock Text="{Binding LayerPixelPicker}"/>
+          </StackPanel>
+        </Button>
+
+        <Button
+          ToolTip.Tip="Layer image zoom level, use mouse scroll to zoom in/out into image. Ctrl + 0 OR double right click to scale to fit"
+          >
+          <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
+            <Image Source="/Assets/Icons/search-16x16.png"/>
+            <TextBlock Text="{Binding LayerZoomStr, StringFormat=Zoom: [ \{0\} ]}"/>
+          </StackPanel>
+        </Button>
+
+        <Button
+          ToolTip.Tip="Layer Resolution. Click: Zoom to fit"
+          Command="{Binding ZoomToFit}"
+          >
+          <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
+            <Image Source="/Assets/Icons/expand-16x16.png"/>
+            <TextBlock Text="{Binding LayerResolutionStr}"/>
+          </StackPanel>
+        </Button>
+        
+        
+        <TextBlock
+          ToolTip.Tip="Layer preview computation time."
+          VerticalAlignment="Center" Text="{Binding ShowLayerRenderMs, StringFormat=\{0\}ms}"/>
       </StackPanel>
       
     </Grid>

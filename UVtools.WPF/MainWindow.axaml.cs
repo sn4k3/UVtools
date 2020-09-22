@@ -6,22 +6,27 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
-using Emgu.CV.Util;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.PixelEditor;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
@@ -87,15 +92,28 @@ namespace UVtools.WPF
         #endregion
 
         #region Controls
+
+        public ProgressWindow ProgressWindow = new ProgressWindow();
+
+        //private ProgressWindow _progressWindow;
         public AdvancedImageBox LayerImageBox;
         public SliderEx LayerSlider;
         public Panel LayerNavigationTooltipPanel;
         public Border LayerNavigationTooltipBorder;
+
+        #region DataSets
+        public ObservableCollection<LogItem> Logs { get; } = new ObservableCollection<LogItem>();
+        public ObservableCollection<LayerIssue> Issues { get; } = new ObservableCollection<LayerIssue>();
+        public ObservableCollection<PixelOperation> Drawings { get; } = new ObservableCollection<PixelOperation>();
+        #endregion
+
         #endregion
 
         #region Members
         private uint _actualLayer;
         private bool _isGUIEnabled = true;
+        private bool _canSave;
+        private bool _isVerbose;
         private bool _showLayerImageRotated;
         private bool _showLayerImageDifference;
         private bool _showLayerImageIssues = true;
@@ -113,13 +131,40 @@ namespace UVtools.WPF
         public bool IsGUIEnabled
         {
             get => _isGUIEnabled;
-            set => SetProperty(ref _isGUIEnabled, value);
+            set
+            {
+                if (!SetProperty(ref _isGUIEnabled, value)) return;
+                if (!_isGUIEnabled) return;
+                if (ProgressWindow.IsActive)
+                {
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        ProgressWindow.Close();
+                        ProgressWindow.Dispose();
+                        ProgressWindow = new ProgressWindow();
+                    });
+                }
+
+
+            }
         }
 
         public bool IsFileLoaded
         {
             get => !ReferenceEquals(SlicerFile, null);
             set => OnPropertyChanged();
+        }
+
+        public bool CanSave
+        {
+            get => _canSave;
+            set => SetProperty(ref _canSave, value);
+        }
+
+        public bool IsVerbose
+        {
+            get => _isVerbose;
+            set => SetProperty(ref _isVerbose, value);
         }
 
         public bool ShowLayerImageRotated
@@ -233,6 +278,21 @@ namespace UVtools.WPF
         public bool CanGoUp => _actualLayer < SliderMaximumValue;
         public bool CanGoDown => _actualLayer > 0;
 
+        public string LayerPixelCountStr
+        {
+            get
+            {
+                if (!LayerCache.IsCached) return "0";
+                var pixelPercent =
+                    Math.Round(
+                        LayerCache.Layer.NonZeroPixelCount * 100.0 / (SlicerFile.ResolutionX * SlicerFile.ResolutionY), 2);
+                return $"{LayerCache.Layer.NonZeroPixelCount} ({pixelPercent}%)";
+            }
+        }
+
+        public string LayerBoundsStr => LayerCache.Layer is null ? "NS" : LayerCache.Layer.BoundingRectangle.ToString();
+        public string LayerROIStr => LayerCache.Layer is null ? "NS" : "TODO";
+
         public long ShowLayerRenderMs
         {
             get => _showLayerRenderMs;
@@ -240,7 +300,13 @@ namespace UVtools.WPF
         }
         #endregion
 
-        private uint ActualLayer
+        public PixelPicker LayerPixelPicker { get; } = new PixelPicker();
+
+        public string LayerZoomStr => $"{LayerImageBox.Zoom / 100}x"+
+                                      (AppSettings.LockedZoomLevel == LayerImageBox.Zoom ? "🔒" : string.Empty);
+        public string LayerResolutionStr => SlicerFile?.Resolution.ToString() ?? "Unloaded";
+
+        public uint ActualLayer
         {
             get => _actualLayer;
             set
@@ -250,6 +316,8 @@ namespace UVtools.WPF
                 OnPropertyChanged(nameof(CanGoUp));
                 OnPropertyChanged(nameof(ActualLayerTooltip));
                 OnPropertyChanged(nameof(LayerNavigationTooltipMargin));
+                OnPropertyChanged(nameof(LayerPixelCountStr));
+                OnPropertyChanged(nameof(LayerBoundsStr));
                 ShowLayer();
             }
         }
@@ -259,7 +327,7 @@ namespace UVtools.WPF
             get
             {
                 double top = 0;
-                if (LayerSlider != null)
+                if (LayerSlider?.Track != null)
                 {
                     double trackerPos = LayerSlider.Track.Thumb.Bounds.Height / 2 + LayerSlider.Track.Thumb.Bounds.Top;
                     double halfTooltipHeight = LayerNavigationTooltipBorder.Bounds.Height / 2;
@@ -279,19 +347,12 @@ namespace UVtools.WPF
 
         public LayerCache LayerCache = new LayerCache();
 
-
         #endregion
 
         #region Constructors
 
         public MainWindow()
         {
-            _showLayerImageDifference = Settings.LayerPreview.ShowLayerDifference;
-            _showLayerOutlinePrintVolumeBoundary = Settings.LayerPreview.VolumeBoundsOutline;
-            _showLayerOutlineLayerBoundary = Settings.LayerPreview.LayerBoundsOutline;
-            _showLayerOutlineHollowAreas = Settings.LayerPreview.HollowOutline;
-
-            DataContext = this;
             InitializeComponent();
 #if DEBUG
             //this.AttachDevTools();
@@ -301,6 +362,12 @@ namespace UVtools.WPF
             LayerSlider = this.FindControl<SliderEx>("Layer.Navigation.Slider");
             LayerNavigationTooltipPanel = this.FindControl<Panel>("Layer.Navigation.Tooltip.Panel");
             LayerNavigationTooltipBorder = this.FindControl<Border>("Layer.Navigation.Tooltip.Border");
+
+            _showLayerImageDifference = Settings.LayerPreview.ShowLayerDifference;
+            _showLayerOutlinePrintVolumeBoundary = Settings.LayerPreview.VolumeBoundsOutline;
+            _showLayerOutlineLayerBoundary = Settings.LayerPreview.LayerBoundsOutline;
+            _showLayerOutlineHollowAreas = Settings.LayerPreview.HollowOutline;
+
             /*LayerSlider.PropertyChanged += (sender, args) =>
             {
                 Debug.WriteLine(args.Property.Name);
@@ -311,7 +378,21 @@ namespace UVtools.WPF
                 }
             };*/
             PropertyChanged += OnPropertyChanged;
+            DataContext = this;
+            AddHandler(DragDrop.DropEvent, (sender, e) =>
+            {
+                ProcessFiles(e.Data.GetFileNames().ToArray());
+            });
+
+            AddLog($"{About.Software} start");
         }
+
+        public override void Show()
+        {
+            base.Show();
+            ProcessFiles(Program.Args);
+        }
+
 
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -332,14 +413,28 @@ namespace UVtools.WPF
 
         #region Events
 
-        public async void MenuFileOpenClicked()
+        public void MenuFileOpenClicked() => OpenFile();
+        public void MenuFileOpenNewWindowClicked() => OpenFile(true);
+
+        public async void OpenFile(bool newWindow = false)
         {
             var dialog = new OpenFileDialog
             {
-                AllowMultiple = false,
+                AllowMultiple = true,
+
             };
             var files = await dialog.ShowAsync(this);
-            ProcessFiles(files);
+            ProcessFiles(files, newWindow);
+        }
+
+        public void CloseFile()
+        {
+            if (SlicerFile is null) return;
+            SlicerFile?.Dispose();
+            App.SlicerFile = null;
+            LayerCache.Clear();
+            LayerImageBox.Image = null;
+            ResetDataContext();
         }
 
         public async void MenuFileSettingsClicked()
@@ -347,6 +442,7 @@ namespace UVtools.WPF
             SettingsWindow settingsWindow = new SettingsWindow();
             await settingsWindow.ShowDialog(this);
         }
+
         #endregion
 
         #region Methods
@@ -361,58 +457,63 @@ namespace UVtools.WPF
                     ProcessFile(files[i]);
                     continue;
                 }
+
+                App.NewInstance(files[i]);
+
             }
         }
 
-        void ReloadFile(uint actualLayer = 0)
+        void ReloadFile() => ReloadFile(_actualLayer);
+
+        void ReloadFile(uint actualLayer)
         {
             if (App.SlicerFile is null) return;
-            ProcessFile(App.SlicerFile.FileFullPath, actualLayer);
+            ProcessFile(SlicerFile.FileFullPath, _actualLayer);
         }
 
-        void ProcessFile(string fileName, uint actualLayer = 0)
+        async void ProcessFile(string fileName, uint actualLayer = 0)
         {
+            if (!File.Exists(fileName)) return;
+            CloseFile();
             var fileNameOnly = Path.GetFileName(fileName);
             App.SlicerFile = FileFormat.FindByExtension(fileName, true, true);
-            if (App.SlicerFile is null) return;
+            if (SlicerFile is null) return;
 
+            ProgressWindow.SetTitle($"Opening: {fileNameOnly}");
             IsGUIEnabled = false;
-
             var task = Task.Factory.StartNew(() =>
             {
                 try
                 {
-                    App.SlicerFile.Decode(fileName);
+                    SlicerFile.Decode(fileName, ProgressWindow.RestartProgress());
                 }
                 catch (OperationCanceledException)
                 {
-                    App.SlicerFile.Clear();
+                    SlicerFile.Clear();
                 }
                 finally
                 {
-                   /* Invoke((MethodInvoker)delegate
-                    {
-                        // Running on the UI thread
-                        EnableGUI(true);
-                    });*/
+                    IsGUIEnabled = true;
                 }
             });
 
             //ProgressWindow progressWindow = new ProgressWindow();
             //progressWindow.ShowDialog(this);
 
-            task.Wait();
+            await ProgressWindow.ShowDialog(this);
 
-            var mat = App.SlicerFile[0].LayerMat;
+            /*var mat = App.SlicerFile[0].LayerMat;
             var matRgb = App.SlicerFile[0].BrgMat;
 
             Debug.WriteLine("4K grayscale - BGRA convertion:");
             var bitmap = mat.ToBitmap();
             Debug.WriteLine("4K BGR - BGRA convertion:");
             var bitmapRgb = matRgb.ToBitmap();
-            LayerImageBox.Image = bitmapRgb;
+            LayerImageBox.Image = bitmapRgb;*/
+
+            _actualLayer = actualLayer;
+            ShowLayer();
             
-            IsGUIEnabled = true;
             ResetDataContext();
         }
 
@@ -444,6 +545,11 @@ namespace UVtools.WPF
             ActualLayer = SliderMaximumValue;
         }
 
+        public void ZoomToFit()
+        {
+            LayerImageBox.ZoomToFit();
+        }
+
         /// <summary>
         /// Shows a layer number
         /// </summary>
@@ -453,17 +559,11 @@ namespace UVtools.WPF
             Debug.WriteLine($"Showing layer: {_actualLayer}");
 
             
-
-            //AddLogVerbose($"Show Layer: {layerNum}");
-
-
             Stopwatch watch = Stopwatch.StartNew();
-            var layer = SlicerFile[_actualLayer];
+            LayerCache.Layer = SlicerFile[_actualLayer];
 
             try
             {
-                LayerCache.Image = layer.LayerMat;
-
                 //var imageSpan = LayerCache.Image.GetPixelSpan<byte>();
                 //var imageBgrSpan = LayerCache.ImageBgr.GetPixelSpan<byte>();
 
@@ -805,11 +905,31 @@ namespace UVtools.WPF
 
                 watch.Stop();
                 ShowLayerRenderMs = watch.ElapsedMilliseconds;
+                AddLogVerbose($"Show Layer: {_actualLayer}", watch.Elapsed.TotalSeconds);
             }
             catch (Exception e)
             {
                 Debug.WriteLine(e);
             }
+        }
+
+
+        public void AddLog(LogItem log)
+        {
+            log.Index = Logs.Count;
+            Logs.Insert(0, log);
+            //lbLogOperations.Text = $"Operations: {count}";
+        }
+
+        public void AddLog(string description, double elapsedTime = 0) =>
+            AddLog(new LogItem(Logs.Count, description, elapsedTime));
+       
+
+        public void AddLogVerbose(string description, double elapsedTime = 0)
+        {
+            if (!_isVerbose) return;
+            AddLog(description, elapsedTime);
+            Debug.WriteLine(description);
         }
 
         #endregion

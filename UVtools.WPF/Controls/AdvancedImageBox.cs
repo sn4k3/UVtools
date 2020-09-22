@@ -408,8 +408,17 @@ namespace UVtools.WPF.Controls
             set
             {
                 _image = value;
-                SizedContainer.Width = _image.Size.Width;
-                SizedContainer.Height = _image.Size.Height;
+                if (_image is null)
+                {
+                    SizedContainer.Width = 0;
+                    SizedContainer.Height = 0;
+                }
+                else
+                {
+                    SizedContainer.Width = _image.Size.Width;
+                    SizedContainer.Height = _image.Size.Height;
+                }
+
                 InvalidateVisual();
             }
         }

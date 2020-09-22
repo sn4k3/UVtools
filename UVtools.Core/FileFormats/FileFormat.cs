@@ -321,6 +321,8 @@ namespace UVtools.Core.FileFormats
             set => _haveModifiedLayers = value;
         } // => LayerManager.IsModified;
 
+        public Size Resolution => new Size((int) ResolutionX, (int) ResolutionY);
+
         public abstract uint ResolutionX { get; set; }
 
         public abstract uint ResolutionY { get; set; }
@@ -363,6 +365,7 @@ namespace UVtools.Core.FileFormats
 
         public StringBuilder GCode { get; set; }
 
+        public bool HaveGCode => !(GCode is null);
         public abstract object[] Configs { get; }
 
         public bool IsValid => !ReferenceEquals(FileFullPath, null);

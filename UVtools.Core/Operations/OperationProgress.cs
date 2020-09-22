@@ -6,11 +6,14 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using System.Diagnostics;
 using System.Threading;
+using UVtools.Core.Extensions;
+using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
-    public sealed class OperationProgress
+    public sealed class OperationProgress : BindableBase
     {
         public const string StatusDecodeThumbnails = "Decoded Thumbnails";
         public const string StatusGatherLayers = "Gathered Layers";
@@ -34,6 +37,11 @@ namespace UVtools.Core.Operations
         public CancellationToken Token => TokenSource.Token;
 
         private bool _canCancel = true;
+        private string _title = "Operation";
+        private string _itemName = StatusDecodeLayers;
+        private uint _processedItems;
+        private uint _itemCount;
+        
 
         public 
             OperationProgress()
@@ -50,6 +58,8 @@ namespace UVtools.Core.Operations
             _canCancel = canCancel;
         }
 
+        public Stopwatch StopWatch { get; } = new Stopwatch();
+
         /// <summary>
         /// Gets or sets if operation can be cancelled
         /// </summary>
@@ -60,35 +70,74 @@ namespace UVtools.Core.Operations
                 if (!_canCancel) return _canCancel;
                 return !Token.IsCancellationRequested && Token.CanBeCanceled && _canCancel;
             }
-            set => _canCancel = value;
+            set => SetProperty(ref _canCancel, value);
         }
 
         /// <summary>
         /// Gets or sets the item name for the operation
         /// </summary>
-        public string ItemName { get; set; } = StatusDecodeLayers;
+        public string Title
+        {
+            get => _title;
+            set => SetProperty(ref _title, value);
+        }
+
+        public string ElapsedTimeStr => $"{StopWatch.Elapsed.Minutes}m {StopWatch.Elapsed.Seconds}s {StopWatch.Elapsed.Milliseconds}ms";
+
+        /// <summary>
+        /// Gets or sets the item name for the operation
+        /// </summary>
+        public string ItemName
+        {
+            get => _itemName;
+            set => SetProperty(ref _itemName, value);
+        }
 
         /// <summary>
         /// Gets or sets the number of processed items
         /// </summary>
-        public uint ProcessedItems { get; set; }
+        public uint ProcessedItems
+        {
+            get => _processedItems;
+            set
+            {
+                //_processedItems = value;
+                SetProperty(ref _processedItems, value);
+                OnPropertyChanged(nameof(ProgressPercent));
+                OnPropertyChanged(nameof(Description));
+            }
+        }
 
         /// <summary>
         /// Gets or sets the total of item count on this operation
         /// </summary>
-        public uint ItemCount { get; set; }
+        public uint ItemCount
+        {
+            get => _itemCount;
+            set
+            {
+                SetProperty(ref _itemCount, value);
+                OnPropertyChanged(nameof(IsIndeterminate));
+                OnPropertyChanged(nameof(ProgressPercent));
+                OnPropertyChanged(nameof(Description));
+            }
+        }
 
         /// <summary>
         /// Gets the remaining items to be processed
         /// </summary>
         public uint RemainingItems => ItemCount - ProcessedItems;
 
-        public int ProgressStep => (int) Math.Min(ProcessedItems * 100 / ItemCount, 100);
+        public int ProgressStep => (int)ProgressPercent;
+
+        public string Description => ToString();
+
+        public bool IsIndeterminate => ItemCount == 0;
 
         /// <summary>
         /// Gets the progress from 0 to 100%
         /// </summary>
-        public double ProgressPercent => Math.Round(ProcessedItems * 100.0 / ItemCount, 2);
+        public double ProgressPercent => ItemCount == 0 ? 0 : Math.Round(ProcessedItems * 100.0 / ItemCount, 2).Clamp(0, 100);
 
         public static OperationProgress operator +(OperationProgress progress, uint value)
         {
@@ -121,6 +170,14 @@ namespace UVtools.Core.Operations
             return ItemCount == 0 ?
                 $"{ProcessedItems}/? {ItemName}" :
                 $"{ProcessedItems}/{ItemCount} {ItemName} | {ProgressPercent:0.00}%";
+        }
+
+        public void TriggerRefresh()
+        {
+            OnPropertyChanged(nameof(ElapsedTimeStr));
+            OnPropertyChanged(nameof(CanCancel));
+            //OnPropertyChanged(nameof(ProgressPercent));
+            //OnPropertyChanged(nameof(Description));
         }
     }
 }

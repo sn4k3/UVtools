@@ -22,6 +22,7 @@
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.0-preview5" />
     <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.0-preview5" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.0-preview5" />
     <PackageReference Include="Avalonia.ThemeManager" Version="0.10.0-preview3" />
     <PackageReference Include="Dock.Avalonia" Version="0.10.0-preview5" />

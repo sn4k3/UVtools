@@ -10,27 +10,34 @@ using System;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
+using UVtools.Core;
 
 namespace UVtools.WPF
 {
     public sealed class LayerCache
     {
+        private Layer _layer;
         private Mat _image;
         private Array _layerHierarchyJagged;
         private VectorOfVectorOfPoint _layerContours;
         private Mat _layerHierarchy;
 
-        public Mat Image
+        public bool IsCached => !ReferenceEquals(_layer, null);
+
+        public Layer Layer
         {
-            get => _image;
+            get => _layer;
             set
             {
                 Clear();
-                _image = value;
+                _layer = value;
+                _image = _layer.LayerMat;
                 ImageBgr = new Mat();
-                CvInvoke.CvtColor(value, ImageBgr, ColorConversion.Gray2Bgr);
+                CvInvoke.CvtColor(_image, ImageBgr, ColorConversion.Gray2Bgr);
             }
         }
+
+        public Mat Image => _image;
 
         public Mat ImageBgr { get; set; }
 
@@ -81,6 +88,7 @@ namespace UVtools.WPF
         /// </summary>
         public void Clear()
         {
+            _layer = null;
             _image?.Dispose();
             ImageBgr?.Dispose();
             _layerContours?.Dispose();

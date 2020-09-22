@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Drawing;
 using System.Text;
 using Emgu.CV;
 using UVtools.Core.Operations;
@@ -81,6 +82,8 @@ namespace UVtools.Core.FileFormats
         /// Gets the cached layers into compressed bytes
         /// </summary>
         LayerManager LayerManager { get; set; }
+
+        Size Resolution { get; }
 
         /// <summary>
         /// Gets the image width resolution
@@ -206,6 +209,11 @@ namespace UVtools.Core.FileFormats
         /// Gets the GCode, returns null if not supported
         /// </summary>
         StringBuilder GCode { get; set; }
+
+        /// <summary>
+        /// Gets if this file have available gcode
+        /// </summary>
+        bool HaveGCode { get; }
 
         /// <summary>
         /// Get all configuration objects with properties and values

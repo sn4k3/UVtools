@@ -11,7 +11,7 @@ namespace UVtools.GUI.Forms
     public partial class FrmLoading : Form
     {
         public Stopwatch StopWatch { get; } = new Stopwatch();
-        public OperationProgress Progress { get; set; }
+        public OperationProgress Progress { get; private set; }
 
         private LogItem OperationLog;
 
