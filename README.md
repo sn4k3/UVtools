@@ -1,4 +1,9 @@
 # UVtools
+
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-green.svg)](https://www.gnu.org/licenses/agpl-3.0)
+![Size](https://github-size-badge.herokuapp.com/:owner/:repo.svg)
+![Size](https://img.shields.io/github/downloads/:owner/:repo/total)
+
 **MSLA/DLP, file analysis, repair, conversion and manipulation**
 
 This simple tool can give you insight of supports and find some failures. Did you forget what resin or other settings you used on a project? This can also save you, check every setting that were used with or simply change them!
