@@ -1,7 +1,7 @@
 # UVtools
 
 ![License](https://img.shields.io/github/license/sn4k3/UVtools)
-![Size](https://github-size-badge.herokuapp.com/sn4k3/UVtools.svg)
+![GitHub repo size](https://img.shields.io/github/repo-size/sn4k3/UVtools)
 ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/sn4k3/UVtools?include_prereleases)
 ![Downloads](https://img.shields.io/github/downloads/sn4k3/UVtools/total)
 
