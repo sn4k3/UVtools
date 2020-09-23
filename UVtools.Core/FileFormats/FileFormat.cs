@@ -367,6 +367,8 @@ namespace UVtools.Core.FileFormats
 
         public StringBuilder GCode { get; set; }
 
+        public string GCodeStr => GCode?.ToString();
+
         public bool HaveGCode => !(GCode is null);
         public abstract object[] Configs { get; }
 
@@ -664,7 +666,7 @@ namespace UVtools.Core.FileFormats
                     {
                         if (progress.Token.IsCancellationRequested) return;
                         var byteArr = layer.CompressedBytes;
-                        using (FileStream stream = File.Create(Path.Combine(path, $"Layer{layer.Index}.png"),
+                        using (FileStream stream = File.Create(Path.Combine(path, $"Layer{layer.Index.ToString().PadLeft(LayerCount.ToString().Length, '0')}.png"),
                             byteArr.Length))
                         {
                             stream.Write(byteArr, 0, byteArr.Length);

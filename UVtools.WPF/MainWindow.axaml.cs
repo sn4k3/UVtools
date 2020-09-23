@@ -12,10 +12,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia;
-using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
@@ -24,6 +23,7 @@ using Avalonia.Threading;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using MessageBox.Avalonia.Enums;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -32,6 +32,7 @@ using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 using UVtools.WPF.Windows;
+using Helpers = UVtools.WPF.Controls.Helpers;
 
 namespace UVtools.WPF
 {
@@ -112,6 +113,8 @@ namespace UVtools.WPF
         #endregion
 
         #region Members
+
+        public Stopwatch LastStopWatch;
         private uint _actualLayer;
         private bool _isGUIEnabled = true;
         private bool _canSave;
@@ -142,6 +145,7 @@ namespace UVtools.WPF
                 if (!_isGUIEnabled) return;
                 if (!(ProgressWindow is null))
                 {
+                    LastStopWatch = ProgressWindow.StopWatch;
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         ProgressWindow.Close();
@@ -160,7 +164,12 @@ namespace UVtools.WPF
             set => OnPropertyChanged();
         }
 
-        public bool HaveGCode => IsFileLoaded && SlicerFile.HaveGCode;
+        public int TabSelectedIndex
+        {
+            get => _tabSelectedIndex;
+            set => SetProperty(ref _tabSelectedIndex, value);
+        }
+        #endregion
 
         public bool CanSave
         {
@@ -168,12 +177,8 @@ namespace UVtools.WPF
             set => SetProperty(ref _canSave, value);
         }
 
-        public int TabSelectedIndex
-        {
-            get => _tabSelectedIndex;
-            set => SetProperty(ref _tabSelectedIndex, value);
-        }
 
+        #region Thumbnails
         public uint VisibleThumbnailIndex
         {
             get => _visibleThumbnailIndex;
@@ -195,7 +200,7 @@ namespace UVtools.WPF
         }
 
         public bool ThumbnailCanGoPrevious => SlicerFile is { } && _visibleThumbnailIndex > 1;
-        public bool ThumbnailCanGoNext => SlicerFile is { } && _visibleThumbnailIndex < SlicerFile.Thumbnails.Length;
+        public bool ThumbnailCanGoNext => SlicerFile is { } && _visibleThumbnailIndex < SlicerFile.CreatedThumbnailsCount;
 
         public void ThumbnailGoPrevious()
         {
@@ -221,13 +226,221 @@ namespace UVtools.WPF
 
         public string VisibleThumbnailResolution => _visibleThumbnailImage is null ? null : $"{{Width: {_visibleThumbnailImage.Size.Width}, Height: {_visibleThumbnailImage.Size.Height}}}";
 
+        public async void OnClickThumbnailSave()
+        {
+            if (SlicerFile is null) return;
+            if (ReferenceEquals(SlicerFile.Thumbnails[_visibleThumbnailIndex-1], null))
+            {
+                return; // This should never happen!
+            }
 
+            var dialog = new SaveFileDialog
+            {
+                Filters = Helpers.PngFileFilter,
+                Directory = Path.GetDirectoryName(SlicerFile.FileFullPath),
+                InitialFileName = $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_thumbnail{_visibleThumbnailIndex}.png"
+            };
 
+            var filepath = await dialog.ShowAsync(this);
+
+            if (!string.IsNullOrEmpty(filepath))
+            {
+                SlicerFile.Thumbnails[_visibleThumbnailIndex - 1].Save(filepath);
+            }
+        }
+
+        public async void OnClickThumbnailImport()
+        {
+            if (_visibleThumbnailIndex <= 0) return;
+            if (ReferenceEquals(SlicerFile.Thumbnails[_visibleThumbnailIndex - 1], null))
+            {
+                return; // This should never happen!
+            }
+
+            var dialog = new OpenFileDialog
+            {
+                Filters = Helpers.ImagesFileFilter,
+                AllowMultiple = false
+            };
+
+            var filepath = await dialog.ShowAsync(this);
+
+            if (filepath is null || filepath.Length <= 0) return;
+            int i = (int) (_visibleThumbnailIndex - 1);
+            SlicerFile.SetThumbnail(i, filepath[0]);
+            VisibleThumbnailImage = SlicerFile.Thumbnails[i].ToBitmap();
+        }
+        #endregion
+
+        #region Slicer Properties
+
+        public async void OnClickPropertiesSaveFile()
+        {
+            if (SlicerFile?.Configs is null) return;
+
+            var dialog = new SaveFileDialog
+            {
+                Filters = Helpers.IniFileFilter,
+                Directory = Path.GetDirectoryName(SlicerFile.FileFullPath),
+                InitialFileName = $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_properties.ini"
+            };
+
+            var file = await dialog.ShowAsync(this);
+
+            if (string.IsNullOrEmpty(file)) return;
+
+            try
+            {
+                using (TextWriter tw = new StreamWriter(file))
+                {
+                    foreach (var config in SlicerFile.Configs)
+                    {
+                        var type = config.GetType();
+                        tw.WriteLine($"[{type.Name}]");
+                        foreach (var property in type.GetProperties())
+                        {
+                            tw.WriteLine($"{property.Name} = {property.GetValue(config)}");
+                        }
+
+                        tw.WriteLine();
+                    }
+
+                    tw.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                await this.MessageBoxError(e.Message, "Error occur while save properties");
+                return;
+            }
+
+            var result = await this.MessageBoxQuestion(
+                "Properties save was successful. Do you want open the file in the default editor?",
+                "Properties save complete");
+            if (result != ButtonResult.Yes) return;
+
+            try
+            {
+                using (Process.Start(file)) { }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
+        }
+
+        public void OnClickPropertiesSaveClipboard()
+        {
+            if (SlicerFile?.Configs is null) return;
+            var sb = new StringBuilder();
+            foreach (var config in SlicerFile.Configs)
+            {
+                var type = config.GetType();
+                sb.AppendLine($"[{type.Name}]");
+                foreach (var property in type.GetProperties())
+                {
+                    sb.AppendLine($"{property.Name} = {property.GetValue(config)}");
+                }
+
+                sb.AppendLine();
+            }
+
+            Application.Current.Clipboard.SetTextAsync(sb.ToString());
+        }
+        #endregion
+
+        #region GCode
+        public bool HaveGCode => IsFileLoaded && SlicerFile.HaveGCode;
+
+        public string GCodeStr => SlicerFile?.GCodeStr;
+        public int GCodeLines => !HaveGCode ? 0 : SlicerFile.GCodeStr.Split('\n').Length;
+
+        public void OnClickRebuildGcode()
+        {
+            if (!HaveGCode) return;
+            SlicerFile.RebuildGCode();
+            OnPropertyChanged(nameof(GCodeLines));
+            OnPropertyChanged(nameof(GCodeStr));
+        }
+
+        public async void OnClickGCodeSaveFile()
+        {
+            if (!HaveGCode) return;
+
+            var dialog = new SaveFileDialog
+            {
+                Filters = Helpers.IniFileFilter,
+                Directory = Path.GetDirectoryName(SlicerFile.FileFullPath),
+                InitialFileName = $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_gcode.txt"
+            };
+
+            var file = await dialog.ShowAsync(this);
+
+            if (string.IsNullOrEmpty(file)) return;
+
+            try
+            {
+                using (TextWriter tw = new StreamWriter(file))
+                {
+                    tw.Write(SlicerFile.GCodeStr);
+                    tw.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                await this.MessageBoxError(e.Message, "Error occur while save gcode");
+                return;
+            }
+
+            var result = await this.MessageBoxQuestion(
+                "GCode save was successful. Do you want open the file in the default editor?",
+                "GCode save complete");
+            if (result != ButtonResult.Yes) return;
+
+            try
+            {
+                using (Process.Start(file)) { }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
+        }
+
+        public void OnClickGCodeSaveClipboard()
+        {
+            if (!HaveGCode) return;
+            Application.Current.Clipboard.SetTextAsync(GCodeStr);
+        }
+
+        #endregion
+
+        #region Log
         public bool IsVerbose
         {
             get => _isVerbose;
             set => SetProperty(ref _isVerbose, value);
         }
+
+        public void AddLog(LogItem log)
+        {
+            log.Index = Logs.Count;
+            Logs.Insert(0, log);
+        }
+
+        public void AddLog(string description, double elapsedTime = 0) =>
+            AddLog(new LogItem(Logs.Count, description, elapsedTime));
+
+
+        public void AddLogVerbose(string description, double elapsedTime = 0)
+        {
+            if (!_isVerbose) return;
+            AddLog(description, elapsedTime);
+            Debug.WriteLine(description);
+        }
+        #endregion
+
+        #region Layer Preview
 
         public bool ShowLayerImageRotated
         {
@@ -333,7 +546,7 @@ namespace UVtools.WPF
 
         public string MinimumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.LayerHeight}mm\n0";
         public string MaximumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.TotalHeight}mm\n{SlicerFile.LayerCount - 1}";
-        public string ActualLayerTooltip => SlicerFile is null ? "???" : $"{SlicerFile.GetHeightFromLayer(ActualLayer):0.00}mm\n{ActualLayer}\n{ActualLayer * 100 / (SlicerFile.LayerCount - 1)}%";
+        public string ActualLayerTooltip => SlicerFile is null ? "???" : $"{SlicerFile.GetHeightFromLayer(ActualLayer):0.00}mm\n{ActualLayer}\n{(ActualLayer+1) * 100 / (SlicerFile.LayerCount)}%";
 
         public uint SliderMaximumValue => SlicerFile?.LayerCount - 1 ?? 0;
 
@@ -360,11 +573,10 @@ namespace UVtools.WPF
             get => _showLayerRenderMs;
             set => SetProperty(ref _showLayerRenderMs, value);
         }
-        #endregion
 
         public PixelPicker LayerPixelPicker { get; } = new PixelPicker();
 
-        public string LayerZoomStr => $"{LayerImageBox.Zoom / 100}x"+
+        public string LayerZoomStr => $"{LayerImageBox.Zoom / 100}x" +
                                       (AppSettings.LockedZoomLevel == LayerImageBox.Zoom ? "🔒" : string.Empty);
         public string LayerResolutionStr => SlicerFile?.Resolution.ToString() ?? "Unloaded";
 
@@ -395,7 +607,7 @@ namespace UVtools.WPF
                     double halfTooltipHeight = LayerNavigationTooltipBorder.Bounds.Height / 2;
                     top = (trackerPos - halfTooltipHeight).Clamp(0,
                         LayerSlider.Bounds.Height - LayerNavigationTooltipBorder.Bounds.Height);
-                    
+
                 }
                 return new Thickness(
                     0,
@@ -405,7 +617,7 @@ namespace UVtools.WPF
             }
         }
 
-        
+        #endregion
 
         public LayerCache LayerCache = new LayerCache();
 
@@ -439,19 +651,21 @@ namespace UVtools.WPF
                     return;
                 }
             };*/
-            PropertyChanged += OnPropertyChanged;
+            //PropertyChanged += OnPropertyChanged;
             DataContext = this;
+            
             AddHandler(DragDrop.DropEvent, (sender, e) =>
             {
                 ProcessFiles(e.Data.GetFileNames().ToArray());
             });
 
-            AddLog($"{About.Software} start");
+            UpdateTitle();
         }
 
         public override void Show()
         {
             base.Show();
+            AddLog($"{About.Software} start");
             ProcessFiles(Program.Args);
         }
 
@@ -510,6 +724,18 @@ namespace UVtools.WPF
         #endregion
 
         #region Methods
+
+        private void UpdateTitle()
+        {
+            Title = SlicerFile is null
+                ? $"{About.Software}   Version: {AppSettings.Version}"
+                : $"{About.Software}   File: {Path.GetFileName(SlicerFile.FileFullPath)} ({Math.Round(LastStopWatch.ElapsedMilliseconds / 1000m, 2)}s)   Version: {AppSettings.Version}";
+
+#if DEBUG
+            Title += "   [DEBUG]";
+#endif
+        }
+
         public void ProcessFiles(string[] files, bool openNewWindow = false)
         {
             if (files is null || files.Length == 0) return;
@@ -590,10 +816,12 @@ namespace UVtools.WPF
                 }
             }
 
+            UpdateTitle();
 
             ShowLayer();
             
             ResetDataContext();
+            InvalidateVisual();
         }
 
         public void GoFirstLayer()
@@ -632,7 +860,7 @@ namespace UVtools.WPF
         /// <summary>
         /// Shows a layer number
         /// </summary>
-        void ShowLayer()
+        unsafe void ShowLayer()
         {
             if (SlicerFile is null) return;
             Debug.WriteLine($"Showing layer: {_actualLayer}");
@@ -646,77 +874,75 @@ namespace UVtools.WPF
                 //var imageSpan = LayerCache.Image.GetPixelSpan<byte>();
                 //var imageBgrSpan = LayerCache.ImageBgr.GetPixelSpan<byte>();
 
-                unsafe
+                var imageSpan = LayerCache.Image.GetBytePointer();
+                var imageBgrSpan = LayerCache.ImageBgr.GetBytePointer();
+
+                if (_showLayerOutlineEdgeDetection)
                 {
-                    var imageSpan = LayerCache.Image.GetBytePointer();
-                    var imageBgrSpan = LayerCache.ImageBgr.GetBytePointer();
-
-                    if (_showLayerOutlineEdgeDetection)
+                    using (var canny = new Mat())
                     {
-                        using (var canny = new Mat())
-                        {
-                            CvInvoke.Canny(LayerCache.Image, canny, 80, 40, 3, true);
-                            CvInvoke.CvtColor(canny, LayerCache.ImageBgr, ColorConversion.Gray2Bgra);
-                        }
+                        CvInvoke.Canny(LayerCache.Image, canny, 80, 40, 3, true);
+                        CvInvoke.CvtColor(canny, LayerCache.ImageBgr, ColorConversion.Gray2Bgra);
                     }
-                    else if (_showLayerImageDifference)
+                }
+                else if (_showLayerImageDifference)
+                {
+                    if (_actualLayer > 0 && _actualLayer < SlicerFile.LayerCount - 1)
                     {
-                        if (_actualLayer > 0 && _actualLayer < SlicerFile.LayerCount - 1)
-                        {
-                            Mat previousImage = null;
-                            Mat nextImage = null;
+                        Mat previousImage = null;
+                        Mat nextImage = null;
 
-                            // Can improve performance on >4K images?
-                            Parallel.Invoke(
-                    () => { previousImage = SlicerFile[_actualLayer - 1].LayerMat; },
-                                () => { nextImage = SlicerFile[_actualLayer + 1].LayerMat; });
+                        // Can improve performance on >4K images?
+                        Parallel.Invoke(
+                            () => { previousImage = SlicerFile[_actualLayer - 1].LayerMat; },
+                            () => { nextImage = SlicerFile[_actualLayer + 1].LayerMat; });
 
-                            /*using (var previousImage = SlicerFile[_actualLayer - 1].LayerMat)
+                        /*using (var previousImage = SlicerFile[_actualLayer - 1].LayerMat)
                             using (var nextImage = SlicerFile[_actualLayer + 1].LayerMat)
                             {*/
-                            //var previousSpan = previousImage.GetPixelSpan<byte>();
-                            //var nextSpan = nextImage.GetPixelSpan<byte>();
+                        //var previousSpan = previousImage.GetPixelSpan<byte>();
+                        //var nextSpan = nextImage.GetPixelSpan<byte>();
 
-                            var previousSpan = previousImage.GetBytePointer();
-                            var nextSpan = nextImage.GetBytePointer();
+                        var previousSpan = previousImage.GetBytePointer();
+                        var nextSpan = nextImage.GetBytePointer();
 
-                            int width = LayerCache.Image.Width;
-                            int channels = LayerCache.ImageBgr.NumberOfChannels;
-                            Parallel.For(0, LayerCache.Image.Height, y =>
+                        int width = LayerCache.Image.Width;
+                        int channels = LayerCache.ImageBgr.NumberOfChannels;
+                        Parallel.For(0, LayerCache.Image.Height, y =>
+                        {
+                            for (int x = 0; x < width; x++)
                             {
-                                for (int x = 0; x < width; x++)
+                                int pixel = y * width + x;
+                                if (imageSpan[pixel] != 0) continue;
+                                Color color = Color.Empty;
+                                if (previousSpan[pixel] > 0 && nextSpan[pixel] > 0)
                                 {
-                                    int pixel = y * width + x;
-                                    if (imageSpan[pixel] != 0) continue;
-                                    Color color = Color.Empty;
-                                    if (previousSpan[pixel] > 0 && nextSpan[pixel] > 0)
-                                    {
-                                        color = Settings.LayerPreview.NextLayerDifferenceColor;
-                                    }
-                                    else if (previousSpan[pixel] > 0)
-                                    {
-                                        color = Settings.LayerPreview.PreviousLayerDifferenceColor;
-                                    }
-                                    else if (nextSpan[pixel] > 0)
-                                    {
-                                        color = Settings.LayerPreview.NextLayerDifferenceColor;
-                                    }
-
-                                    if (color.IsEmpty) continue;
-                                    var bgrPixel = pixel * channels;
-                                    imageBgrSpan[bgrPixel] = color.B; // B
-                                    imageBgrSpan[++bgrPixel] = color.G; // G
-                                    imageBgrSpan[++bgrPixel] = color.R; // R
-                                    //imageBgrSpan[++bgrPixel] = color.A; // A
+                                    color = Settings.LayerPreview.NextLayerDifferenceColor;
                                 }
-                            });
+                                else if (previousSpan[pixel] > 0)
+                                {
+                                    color = Settings.LayerPreview.PreviousLayerDifferenceColor;
+                                }
+                                else if (nextSpan[pixel] > 0)
+                                {
+                                    color = Settings.LayerPreview.NextLayerDifferenceColor;
+                                }
 
-                            previousImage.Dispose();
-                            nextImage.Dispose();
-                        }
+                                if (color.IsEmpty) continue;
+                                var bgrPixel = pixel * channels;
+                                imageBgrSpan[bgrPixel] = color.B; // B
+                                imageBgrSpan[++bgrPixel] = color.G; // G
+                                imageBgrSpan[++bgrPixel] = color.R; // R
+                                //imageBgrSpan[++bgrPixel] = color.A; // A
+                            }
+                        });
+
+                        previousImage.Dispose();
+                        nextImage.Dispose();
                     }
+                }
 
-                    /*
+                /*
                     var selectedIssues = flvIssues.SelectedObjects;
     
                     if (btnLayerImageHighlightIssues.Checked &&
@@ -788,50 +1014,50 @@ namespace UVtools.WPF
                         }
                     }*/
     
-                    if (_showLayerOutlinePrintVolumeBoundary)
-                    {
-                        CvInvoke.Rectangle(LayerCache.ImageBgr, SlicerFile.LayerManager.BoundingRectangle,
-                            new MCvScalar(Settings.LayerPreview.VolumeBoundsOutlineColor.B,
-                                Settings.LayerPreview.VolumeBoundsOutlineColor.G,
-                                Settings.LayerPreview.VolumeBoundsOutlineColor.R),
-                            Settings.LayerPreview.VolumeBoundsOutlineThickness);
-                    }
+                if (_showLayerOutlinePrintVolumeBoundary)
+                {
+                    CvInvoke.Rectangle(LayerCache.ImageBgr, SlicerFile.LayerManager.BoundingRectangle,
+                        new MCvScalar(Settings.LayerPreview.VolumeBoundsOutlineColor.B,
+                            Settings.LayerPreview.VolumeBoundsOutlineColor.G,
+                            Settings.LayerPreview.VolumeBoundsOutlineColor.R),
+                        Settings.LayerPreview.VolumeBoundsOutlineThickness);
+                }
     
-                    if (_showLayerOutlineLayerBoundary)
-                    {
-                        CvInvoke.Rectangle(LayerCache.ImageBgr, SlicerFile[_actualLayer].BoundingRectangle,
-                            new MCvScalar(Settings.LayerPreview.LayerBoundsOutlineColor.B,
-                                Settings.LayerPreview.LayerBoundsOutlineColor.G, Settings.LayerPreview.LayerBoundsOutlineColor.R),
-                            Settings.LayerPreview.LayerBoundsOutlineThickness);
-                    }
+                if (_showLayerOutlineLayerBoundary)
+                {
+                    CvInvoke.Rectangle(LayerCache.ImageBgr, SlicerFile[_actualLayer].BoundingRectangle,
+                        new MCvScalar(Settings.LayerPreview.LayerBoundsOutlineColor.B,
+                            Settings.LayerPreview.LayerBoundsOutlineColor.G, Settings.LayerPreview.LayerBoundsOutlineColor.R),
+                        Settings.LayerPreview.LayerBoundsOutlineThickness);
+                }
     
-                    if (_showLayerOutlineHollowAreas)
-                    {
-                        //CvInvoke.Threshold(ActualLayerImage, grayscale, 1, 255, ThresholdType.Binary);
+                if (_showLayerOutlineHollowAreas)
+                {
+                    //CvInvoke.Threshold(ActualLayerImage, grayscale, 1, 255, ThresholdType.Binary);
     
-                        /*
+                    /*
                          * hierarchy[i][0]: the index of the next contour of the same level
                          * hierarchy[i][1]: the index of the previous contour of the same level
                          * hierarchy[i][2]: the index of the first child
                          * hierarchy[i][3]: the index of the parent
                          */
-                        for (int i = 0; i < LayerCache.LayerContours.Size; i++)
+                    for (int i = 0; i < LayerCache.LayerContours.Size; i++)
+                    {
+                        if ((int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 2) == -1 &&
+                            (int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 3) != -1)
                         {
-                            if ((int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 2) == -1 &&
-                                (int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 3) != -1)
-                            {
-                                //var r = CvInvoke.BoundingRectangle(contours[i]);
-                                //CvInvoke.Rectangle(ActualLayerImageBgr, r, new MCvScalar(0, 0, 255), 2);
-                                CvInvoke.DrawContours(LayerCache.ImageBgr, LayerCache.LayerContours, i,
-                                    new MCvScalar(Settings.LayerPreview.HollowOutlineColor.B,
-                                        Settings.LayerPreview.HollowOutlineColor.G,
-                                        Settings.LayerPreview.HollowOutlineColor.R),
-                                    Settings.LayerPreview.HollowOutlineLineThickness);
-                            }
+                            //var r = CvInvoke.BoundingRectangle(contours[i]);
+                            //CvInvoke.Rectangle(ActualLayerImageBgr, r, new MCvScalar(0, 0, 255), 2);
+                            CvInvoke.DrawContours(LayerCache.ImageBgr, LayerCache.LayerContours, i,
+                                new MCvScalar(Settings.LayerPreview.HollowOutlineColor.B,
+                                    Settings.LayerPreview.HollowOutlineColor.G,
+                                    Settings.LayerPreview.HollowOutlineColor.R),
+                                Settings.LayerPreview.HollowOutlineLineThickness);
                         }
                     }
+                }
     
-                    /*for (var index = 0; index < PixelHistory.Count; index++)
+                /*for (var index = 0; index < PixelHistory.Count; index++)
                     {
                         if (PixelHistory[index].LayerIndex != ActualLayer) continue;
                         var operation = PixelHistory[index];
@@ -945,42 +1171,13 @@ namespace UVtools.WPF
                         }
                     }*/
 
-                    if (_showLayerImageRotated)
-                    {
-                        CvInvoke.Rotate(LayerCache.ImageBgr, LayerCache.ImageBgr, RotateFlags.Rotate90Clockwise);
-                    }
+                if (_showLayerImageRotated)
+                {
+                    CvInvoke.Rotate(LayerCache.ImageBgr, LayerCache.ImageBgr, RotateFlags.Rotate90Clockwise);
                 }
 
 
                 LayerImageBox.Image = LayerCache.ImageBgr.ToBitmap();
-
-                /*byte percent = (byte)((layerNum + 1) * 100 / SlicerFile.LayerCount);
-
-                float pixelPercent =
-                    (float)Math.Round(
-                        layer.NonZeroPixelCount * 100f / (SlicerFile.ResolutionX * SlicerFile.ResolutionY), 2);
-                tsLayerImagePixelCount.Text = $"Pixels: {layer.NonZeroPixelCount} ({pixelPercent}%)";
-                btnLayerBounds.Text = $"Bounds: {layer.BoundingRectangle}";
-                tsLayerImagePixelCount.Invalidate();
-                btnLayerBounds.Invalidate();
-                tsLayerInfo.Update();
-                tsLayerInfo.Refresh();
-
-                watch.Stop();
-                tsLayerPreviewTime.Text = $"{watch.ElapsedMilliseconds}ms";
-                //lbLayers.Text = $"{SlicerFile.GetHeightFromLayer(layerNum)} / {SlicerFile.TotalHeight}mm\n{layerNum} / {SlicerFile.LayerCount-1}\n{percent}%";
-                lbActualLayer.Text = $"{layer.PositionZ}mm\n{ActualLayer}\n{percent}%";
-                lbActualLayer.Location = new Point(lbActualLayer.Location.X,
-                    ((int)(tbLayer.Height - (float)tbLayer.Height / tbLayer.Maximum * tbLayer.Value) -
-                     lbActualLayer.Height / 2)
-                    .Clamp(1, tbLayer.Height - lbActualLayer.Height));
-
-                lbActualLayer.Invalidate();
-                lbActualLayer.Update();
-                lbActualLayer.Refresh();
-                pbLayer.Invalidate();
-                pbLayer.Update();
-                pbLayer.Refresh();*/
 
                 watch.Stop();
                 ShowLayerRenderMs = watch.ElapsedMilliseconds;
@@ -990,25 +1187,6 @@ namespace UVtools.WPF
             {
                 Debug.WriteLine(e);
             }
-        }
-
-
-        public void AddLog(LogItem log)
-        {
-            log.Index = Logs.Count;
-            Logs.Insert(0, log);
-            //lbLogOperations.Text = $"Operations: {count}";
-        }
-
-        public void AddLog(string description, double elapsedTime = 0) =>
-            AddLog(new LogItem(Logs.Count, description, elapsedTime));
-       
-
-        public void AddLogVerbose(string description, double elapsedTime = 0)
-        {
-            if (!_isVerbose) return;
-            AddLog(description, elapsedTime);
-            Debug.WriteLine(description);
         }
 
         #endregion

@@ -1,5 +1,9 @@
 # Changelog
 
+## ??/09/2020 - v0.8.2.5
+
+* (Fix) Extract: Use trail zeros to layer filenames
+
 ## 22/09/2020 - v0.8.2.4
 
 * (Add) Layer Importer: Option to merge images

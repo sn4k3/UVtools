@@ -19,7 +19,7 @@ namespace UVtools.WPF.Windows
 {
     public class ProgressWindow : Window, IDisposable
     {
-        public Stopwatch StopWatch { get; } = new Stopwatch();
+        public Stopwatch StopWatch => Progress.StopWatch;
         public OperationProgress Progress { get; } = new OperationProgress();
 
         private LogItem _logItem = new LogItem();

@@ -214,6 +214,7 @@ namespace UVtools.Core.FileFormats
         /// Gets the GCode, returns null if not supported
         /// </summary>
         StringBuilder GCode { get; set; }
+        string GCodeStr { get; }
 
         /// <summary>
         /// Gets if this file have available gcode
