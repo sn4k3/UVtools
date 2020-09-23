@@ -1,9 +1,9 @@
 # UVtools
 
-![License](https://img.shields.io/github/license/sn4k3/UVtools)
-![GitHub repo size](https://img.shields.io/github/repo-size/sn4k3/UVtools)
-![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/sn4k3/UVtools?include_prereleases)
-![Downloads](https://img.shields.io/github/downloads/sn4k3/UVtools/total)
+[![License](https://img.shields.io/github/license/sn4k3/UVtools)](https://github.com/sn4k3/UVtools/blob/master/LICENSE)
+[![GitHub repo size](https://img.shields.io/github/repo-size/sn4k3/UVtools)](https://github.com/sn4k3/UVtools)
+[![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/sn4k3/UVtools?include_prereleases)](https://github.com/sn4k3/UVtools/releases)
+[![Downloads](https://img.shields.io/github/downloads/sn4k3/UVtools/total)](https://github.com/sn4k3/UVtools/releases)
 
 **MSLA/DLP, file analysis, repair, conversion and manipulation**
 
