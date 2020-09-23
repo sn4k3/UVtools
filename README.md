@@ -1,8 +1,9 @@
 # UVtools
 
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-green.svg)](https://www.gnu.org/licenses/agpl-3.0)
-![Size](https://github-size-badge.herokuapp.com/:owner/:repo.svg)
-![Size](https://img.shields.io/github/downloads/:owner/:repo/total)
+![License](https://img.shields.io/github/license/sn4k3/UVtools)
+![Size](https://github-size-badge.herokuapp.com/sn4k3/UVtools.svg)
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/sn4k3/UVtools?include_prereleases)
+![Downloads](https://img.shields.io/github/downloads/sn4k3/UVtools/total)
 
 **MSLA/DLP, file analysis, repair, conversion and manipulation**
 
