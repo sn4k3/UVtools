@@ -14,18 +14,18 @@
         Icon="/Assets/Icons/UVtools.ico"
         >
   <StackPanel Orientation="Vertical">
-    <TextBlock Margin="10" Text="{Binding Title}"/>
-    <TextBlock Margin="10,0,10,10" Text="{Binding ElapsedTimeStr, StringFormat=Elapsed Time: \{0\}}"/>
-    <TextBlock Margin="10,0,10,10" Text="{Binding Description}" HorizontalAlignment="Center"/>
+    <TextBlock Margin="10" Text="{Binding Progress.Title}"/>
+    <TextBlock Margin="10,0,10,10" Text="{Binding Progress.ElapsedTimeStr, StringFormat=Elapsed Time: \{0\}}"/>
+    <TextBlock Margin="10,0,10,10" Text="{Binding Progress.Description}" HorizontalAlignment="Center"/>
     <Grid RowDefinitions="30" ColumnDefinitions="*,Auto">
       <ProgressBar 
         Minimum="0"
         Maximum="100"
-        IsIndeterminate="{Binding IsIndeterminate}"
-        Value="{Binding ProgressPercent}" Grid.Column="0" ShowProgressText="True"/>
+        IsIndeterminate="{Binding Progress.IsIndeterminate}"
+        Value="{Binding Progress.ProgressPercent}" Grid.Column="0" ShowProgressText="True"/>
       <Button
         IsEnabled="{Binding CanCancel}"
-        Command="{Binding TokenSource.Cancel}"
+        Command="{Binding OnClickCancel}"
         Grid.Column="1" 
         Padding="30,0" 
         IsCancel="True">Cancel</Button>

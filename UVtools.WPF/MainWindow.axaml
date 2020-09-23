@@ -157,6 +157,7 @@
     </Border>
 
     <TabControl 
+      Background="WhiteSmoke"
       DockPanel.Dock="Left" 
       Width="400"
       SelectedIndex="{Binding TabSelectedIndex}">
@@ -170,7 +171,7 @@
           </StackPanel>
         </TabItem.Header>
 
-        <Grid Background="WhiteSmoke" IsVisible="{Binding IsFileLoaded}" RowDefinitions="Auto,Auto,Auto,*">
+        <Grid IsVisible="{Binding IsFileLoaded}" RowDefinitions="Auto,Auto,Auto,*">
           <!-- Thumbnails -->
           <StackPanel 
             IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
@@ -402,7 +403,9 @@
         
       </TabItem>
 
-
+      <!-- 
+       Issues Tab
+      -->
       <TabItem
         ToolTip.Tip="Issues"
         IsEnabled="{Binding IsFileLoaded}" >
@@ -412,6 +415,10 @@
             <!--<TextBlock Margin="5,0,0,0">Issues</TextBlock>!-->
           </StackPanel>
         </TabItem.Header>
+
+        <Grid RowDefinitions="Auto,*">
+          
+        </Grid>
       
       
       </TabItem>

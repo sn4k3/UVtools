@@ -29,6 +29,7 @@ namespace UVtools.WPF
             get => _layer;
             set
             {
+                //if (ReferenceEquals(_layer, value)) return;
                 Clear();
                 _layer = value;
                 _image = _layer.LayerMat;

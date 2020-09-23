@@ -36,57 +36,8 @@ using Helpers = UVtools.WPF.Controls.Helpers;
 
 namespace UVtools.WPF
 {
-    public class MainWindow : WindowEx, INotifyPropertyChanged
+    public class MainWindow : WindowEx
     {
-        #region BindableBase
-        /// <summary>
-        ///     Multicast event for property change notifications.
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        ///     Checks if a property already matches a desired value.  Sets the property and
-        ///     notifies listeners only when necessary.
-        /// </summary>
-        /// <typeparam name="T">Type of the property.</typeparam>
-        /// <param name="storage">Reference to a property with both getter and setter.</param>
-        /// <param name="value">Desired value for the property.</param>
-        /// <param name="propertyName">
-        ///     Name of the property used to notify listeners.  This
-        ///     value is optional and can be provided automatically when invoked from compilers that
-        ///     support CallerMemberName.
-        /// </param>
-        /// <returns>
-        ///     True if the value was changed, false if the existing value matched the
-        ///     desired value.
-        /// </returns>
-        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
-        {
-            if (Equals(storage, value))
-            {
-                return false;
-            }
-
-            storage = value;
-            OnPropertyChanged(propertyName);
-            return true;
-        }
-
-        /// <summary>
-        ///     Notifies listeners that a property value has changed.
-        /// </summary>
-        /// <param name="propertyName">
-        ///     Name of the property used to notify listeners.  This
-        ///     value is optional and can be provided automatically when invoked from compilers
-        ///     that support <see cref="CallerMemberNameAttribute" />.
-        /// </param>
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            var eventHandler = PropertyChanged;
-            eventHandler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        #endregion
-
         #region Properties
         #region Redirects
         public UserSettings Settings => UserSettings.Instance;
@@ -184,18 +135,24 @@ namespace UVtools.WPF
             get => _visibleThumbnailIndex;
             set
             {
-                SetProperty(ref _visibleThumbnailIndex, value);
-                OnPropertyChanged(nameof(ThumbnailCanGoPrevious));
-                OnPropertyChanged(nameof(ThumbnailCanGoNext));
                 if (value == 0)
                 {
+                    SetProperty(ref _visibleThumbnailIndex, value);
+                    OnPropertyChanged(nameof(ThumbnailCanGoPrevious));
+                    OnPropertyChanged(nameof(ThumbnailCanGoNext));
                     VisibleThumbnailImage = null;
                     return;
                 }
 
-                if (SlicerFile is null) return;
-                if (_visibleThumbnailIndex > SlicerFile.Thumbnails.Length) return;
-                VisibleThumbnailImage = SlicerFile.Thumbnails[_visibleThumbnailIndex-1].ToBitmap();
+                if (!IsFileLoaded) return;
+                var index = value-1;
+                if (index >= SlicerFile.CreatedThumbnailsCount) return;
+                if (SlicerFile.Thumbnails[index] is null) return;
+                if (!SetProperty(ref _visibleThumbnailIndex, value)) return;
+                
+                VisibleThumbnailImage = SlicerFile.Thumbnails[index].ToBitmap();
+                OnPropertyChanged(nameof(ThumbnailCanGoPrevious));
+                OnPropertyChanged(nameof(ThumbnailCanGoNext));
             }
         }
 
@@ -434,9 +391,9 @@ namespace UVtools.WPF
 
         public void AddLogVerbose(string description, double elapsedTime = 0)
         {
+            Debug.WriteLine($"{description} ({elapsedTime}s)");
             if (!_isVerbose) return;
             AddLog(description, elapsedTime);
-            Debug.WriteLine(description);
         }
         #endregion
 
@@ -586,14 +543,26 @@ namespace UVtools.WPF
             set
             {
                 if (!SetProperty(ref _actualLayer, value)) return;
-                OnPropertyChanged(nameof(CanGoDown));
-                OnPropertyChanged(nameof(CanGoUp));
-                OnPropertyChanged(nameof(ActualLayerTooltip));
-                OnPropertyChanged(nameof(LayerNavigationTooltipMargin));
-                OnPropertyChanged(nameof(LayerPixelCountStr));
-                OnPropertyChanged(nameof(LayerBoundsStr));
+                InvalidateLayerNavigation();
                 ShowLayer();
             }
+        }
+
+        public void ForceUpdateActualLayer(uint layerIndex = 0)
+        {
+            _actualLayer = layerIndex;
+            InvalidateLayerNavigation();
+            ShowLayer();
+        }
+
+        public void InvalidateLayerNavigation()
+        {
+            OnPropertyChanged(nameof(CanGoDown));
+            OnPropertyChanged(nameof(CanGoUp));
+            OnPropertyChanged(nameof(ActualLayerTooltip));
+            OnPropertyChanged(nameof(LayerNavigationTooltipMargin));
+            OnPropertyChanged(nameof(LayerPixelCountStr));
+            OnPropertyChanged(nameof(LayerBoundsStr));
         }
 
         public Thickness LayerNavigationTooltipMargin
@@ -708,6 +677,7 @@ namespace UVtools.WPF
             if (SlicerFile is null) return;
             SlicerFile?.Dispose();
             App.SlicerFile = null;
+            _actualLayer = 0;
             LayerCache.Clear();
             VisibleThumbnailIndex = 0;
             LayerImageBox.Image = null;
@@ -771,38 +741,55 @@ namespace UVtools.WPF
 
             ProgressWindow.SetTitle($"Opening: {fileNameOnly}");
             IsGUIEnabled = false;
-            var task = Task.Factory.StartNew(() =>
+            var task = Task.Factory.StartNew(async () =>
             {
                 try
                 {
                     SlicerFile.Decode(fileName, ProgressWindow.RestartProgress());
+                    return true;
                 }
                 catch (OperationCanceledException)
                 {
-                    SlicerFile.Clear();
+                }
+                catch (Exception exception)
+                {
+                    await this.MessageBoxError(exception.ToString(), "Error opening the file");
                 }
                 finally
                 {
                     IsGUIEnabled = true;
                 }
+
+                return false;
             });
 
             //ProgressWindow progressWindow = new ProgressWindow();
             //progressWindow.ShowDialog(this);
 
-            await ProgressWindow.ShowDialog(this);
+            await ProgressWindow.ShowDialog<DialogResults>(this);
+            if (!task.Result.Result)
+            {
+                SlicerFile.Dispose();
+                App.SlicerFile = null;
+                return;
+            }
 
-            /*var mat = App.SlicerFile[0].LayerMat;
-            var matRgb = App.SlicerFile[0].BrgMat;
+            if (SlicerFile.LayerCount == 0)
+            {
+                await this.MessageBoxError("It seems this file has no layers.  Possible causes could be:\n" +
+                                "- File is empty\n" +
+                                "- File is corrupted\n" +
+                                "- File has not been sliced\n" +
+                                "- An internal programing error\n\n" +
+                                "Please check your file and retry", "Error reading file");
+                SlicerFile.Dispose();
+                App.SlicerFile = null;
+                return;
+            }
 
-            Debug.WriteLine("4K grayscale - BGRA convertion:");
-            var bitmap = mat.ToBitmap();
-            Debug.WriteLine("4K BGR - BGRA convertion:");
-            var bitmapRgb = matRgb.ToBitmap();
-            LayerImageBox.Image = bitmapRgb;*/
+            using Mat mat = SlicerFile[0].LayerMat;
 
-            _actualLayer = actualLayer;
-            if(SlicerFile.CreatedThumbnailsCount > 0) VisibleThumbnailIndex = 1;
+            VisibleThumbnailIndex = 1;
 
             if (!(SlicerFile.Configs is null))
             {
@@ -815,13 +802,24 @@ namespace UVtools.WPF
                     }
                 }
             }
-
+            
             UpdateTitle();
 
-            ShowLayer();
+            _actualLayer = actualLayer.Clamp(actualLayer, SliderMaximumValue);
             
+            if (!(mat is null) && Settings.LayerPreview.AutoRotateLayerBestView)
+            {
+               _showLayerImageRotated = mat.Height > mat.Width;
+            }
+
             ResetDataContext();
-            InvalidateVisual();
+
+            ShowLayer();
+
+            if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds)
+            {
+                ZoomToFit();
+            }
         }
 
         public void GoFirstLayer()
@@ -863,8 +861,6 @@ namespace UVtools.WPF
         unsafe void ShowLayer()
         {
             if (SlicerFile is null) return;
-            Debug.WriteLine($"Showing layer: {_actualLayer}");
-
             
             Stopwatch watch = Stopwatch.StartNew();
             LayerCache.Layer = SlicerFile[_actualLayer];

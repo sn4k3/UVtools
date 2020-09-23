@@ -9,34 +9,43 @@
 using System;
 using System.Diagnostics;
 using System.Timers;
-using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using UVtools.Core.Operations;
+using UVtools.WPF.Controls;
 using UVtools.WPF.Structures;
 
 namespace UVtools.WPF.Windows
 {
-    public class ProgressWindow : Window, IDisposable
+    public class ProgressWindow : WindowEx, IDisposable
     {
         public Stopwatch StopWatch => Progress.StopWatch;
         public OperationProgress Progress { get; } = new OperationProgress();
 
         private LogItem _logItem = new LogItem();
 
-        private Timer _timer;
+        private Timer _timer = new Timer(100) { AutoReset = true };
 
-        public bool CanCancel => Progress?.CanCancel ?? false;
+        public bool CanCancel
+        {
+            get => Progress?.CanCancel ?? false;
+            set
+            {
+                Progress.CanCancel = value;
+                OnPropertyChanged();
+            }
+        }
 
         public ProgressWindow()
         {
             InitializeComponent();
-            DataContext = Progress;
-            _timer = new Timer(100) {AutoReset = true};
+            
             _timer.Elapsed += (sender, args) =>
             {
                 Progress.TriggerRefresh();
             };
+
+            DataContext = this;
         }
 
         private void InitializeComponent()
@@ -53,6 +62,14 @@ namespace UVtools.WPF.Windows
             App.MainWindow.AddLog(_logItem);
         }
 
+        public void OnClickCancel()
+        {
+            if (!CanCancel) return;
+            DialogResult = DialogResults.Cancel;
+            OnPropertyChanged(nameof(CanCancel));
+            Progress.TokenSource.Cancel();
+        }
+
         public void SetTitle(string title)
         {
             Progress.Title = title;
@@ -61,7 +78,7 @@ namespace UVtools.WPF.Windows
 
         public OperationProgress RestartProgress(bool canCancel = true)
         {
-            Progress.CanCancel = canCancel;
+            CanCancel = canCancel;
             Progress.StopWatch.Restart();
 
             if (!_timer.Enabled)
@@ -70,7 +87,6 @@ namespace UVtools.WPF.Windows
                 _timer.Start();
             }
 
-            Dispatcher.UIThread.InvokeAsync(() => DataContext = Progress);
             return Progress;
         }
 

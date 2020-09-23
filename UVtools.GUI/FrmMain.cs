@@ -1878,7 +1878,7 @@ namespace UVtools.GUI
 
             if (SlicerFile.LayerCount == 0)
             {
-                MessageBox.Show("It seems this file has no layers.  Possilbe causes could be:\n" +
+                MessageBox.Show("It seems this file has no layers.  Possible causes could be:\n" +
                                 "- File is empty\n" +
                                 "- File is corrupted\n" +
                                 "- File has not been sliced\n" +
