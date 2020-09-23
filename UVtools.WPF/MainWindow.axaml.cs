@@ -20,6 +20,7 @@ using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using DynamicData;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -190,7 +191,6 @@ namespace UVtools.WPF
             {
                 return; // This should never happen!
             }
-
             var dialog = new SaveFileDialog
             {
                 Filters = Helpers.PngFileFilter,
@@ -372,6 +372,95 @@ namespace UVtools.WPF
 
         #endregion
 
+        #region Issues
+
+        public void OnClickDetectIssues()
+        {
+            if (!IsFileLoaded) return;
+            ComputeIssues(
+                GetIslandDetectionConfiguration(),
+                GetResinTrapDetectionConfiguration(),
+                GetTouchingBoundsDetectionConfiguration(),
+                Settings.Issues.ComputeEmptyLayers);
+        }
+
+        private async void ComputeIssues(IslandDetectionConfiguration islandConfig = null,
+            ResinTrapDetectionConfiguration resinTrapConfig = null,
+            TouchingBoundDetectionConfiguration touchingBoundConfig = null, bool emptyLayersConfig = true)
+        {
+
+            Issues.Clear();
+            IsGUIEnabled = false;
+
+            ProgressWindow.SetTitle("Computing Issues");
+
+            var task = Task.Factory.StartNew(async () =>
+            {
+                try
+                {
+                    var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, touchingBoundConfig,
+                        emptyLayersConfig, ProgressWindow.RestartProgress());
+                    return issues;
+                }
+                catch (OperationCanceledException)
+                {
+
+                }
+                catch (Exception ex)
+                {
+                    await this.MessageBoxError(ex.Message, "Error while trying compute issues");
+                }
+                finally
+                {
+                    IsGUIEnabled = true;
+                }
+
+                return null;
+            });
+
+            await ProgressWindow.ShowDialog(this);
+            if (task.Result.Result is null) return;
+            Issues.AddRange(task.Result.Result);
+            
+        }
+
+        public IslandDetectionConfiguration GetIslandDetectionConfiguration()
+        {
+            return new IslandDetectionConfiguration
+            {
+                Enabled = Settings.Issues.ComputeIslands,
+                AllowDiagonalBonds = Settings.Issues.IslandAllowDiagonalBonds,
+                BinaryThreshold = Settings.Issues.IslandBinaryThreshold,
+                RequiredAreaToProcessCheck = Settings.Issues.IslandRequiredAreaToProcessCheck,
+                RequiredPixelBrightnessToProcessCheck = Settings.Issues.IslandRequiredPixelBrightnessToProcessCheck,
+                RequiredPixelsToSupport = Settings.Issues.IslandRequiredPixelsToSupport,
+                RequiredPixelBrightnessToSupport = Settings.Issues.IslandRequiredPixelBrightnessToSupport
+            };
+        }
+
+        public ResinTrapDetectionConfiguration GetResinTrapDetectionConfiguration()
+        {
+            return new ResinTrapDetectionConfiguration
+            {
+                Enabled = Settings.Issues.ComputeResinTraps,
+                BinaryThreshold = Settings.Issues.ResinTrapBinaryThreshold,
+                RequiredAreaToProcessCheck = Settings.Issues.ResinTrapRequiredAreaToProcessCheck,
+                RequiredBlackPixelsToDrain = Settings.Issues.ResinTrapRequiredBlackPixelsToDrain,
+                MaximumPixelBrightnessToDrain = Settings.Issues.ResinTrapMaximumPixelBrightnessToDrain
+            };
+        }
+
+        public TouchingBoundDetectionConfiguration GetTouchingBoundsDetectionConfiguration()
+        {
+            return new TouchingBoundDetectionConfiguration
+            {
+                Enabled = Settings.Issues.ComputeTouchingBounds,
+                //MaximumPixelBrightness = 100
+            };
+        }
+
+        #endregion
+
         #region Log
         public bool IsVerbose
         {
@@ -543,16 +632,16 @@ namespace UVtools.WPF
             set
             {
                 if (!SetProperty(ref _actualLayer, value)) return;
-                InvalidateLayerNavigation();
                 ShowLayer();
+                InvalidateLayerNavigation();
             }
         }
 
         public void ForceUpdateActualLayer(uint layerIndex = 0)
         {
             _actualLayer = layerIndex;
-            InvalidateLayerNavigation();
             ShowLayer();
+            InvalidateLayerNavigation();
         }
 
         public void InvalidateLayerNavigation()
@@ -763,9 +852,6 @@ namespace UVtools.WPF
                 return false;
             });
 
-            //ProgressWindow progressWindow = new ProgressWindow();
-            //progressWindow.ShowDialog(this);
-
             await ProgressWindow.ShowDialog<DialogResults>(this);
             if (!task.Result.Result)
             {
@@ -805,7 +891,6 @@ namespace UVtools.WPF
             
             UpdateTitle();
 
-            _actualLayer = actualLayer.Clamp(actualLayer, SliderMaximumValue);
             
             if (!(mat is null) && Settings.LayerPreview.AutoRotateLayerBestView)
             {
@@ -814,8 +899,8 @@ namespace UVtools.WPF
 
             ResetDataContext();
 
-            ShowLayer();
-
+            ForceUpdateActualLayer(actualLayer.Clamp(actualLayer, SliderMaximumValue));
+            
             if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds)
             {
                 ZoomToFit();

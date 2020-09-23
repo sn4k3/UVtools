@@ -31,3 +31,4 @@
 * Jeremy Lauzon
 * Peter Teal
 * Ulrich Mandl
+* Erwin Ried

@@ -416,7 +416,109 @@
           </StackPanel>
         </TabItem.Header>
 
-        <Grid RowDefinitions="Auto,*">
+        <Grid 
+          RowDefinitions="Auto,*">
+          <StackPanel
+            Grid.Row="0"
+            Orientation="Horizontal"
+            Spacing="5"
+            VerticalAlignment="Center">
+            <Button
+              IsEnabled="{Binding IssueCanGoPrevious}"
+              Command="{Binding IssueGoPrevious}"
+                    >
+              <Image Source="/Assets/Icons/back-16x16.png" Width="16"/>
+            </Button>
+
+            <TextBlock VerticalAlignment="Center">
+              <TextBlock.Text>
+                <MultiBinding StringFormat="\{0\}/\{1\}">
+                  <Binding Path="#IssuesGrid.SelectedIndex"/>
+                  <Binding Path="Issues.Count"/>
+                </MultiBinding>
+              </TextBlock.Text>
+            </TextBlock>
+
+            <Button
+              IsEnabled="{Binding IssueCanGoNext}"
+              Command="{Binding IssueGoNext}"
+                    >
+              <Image Source="/Assets/Icons/next-16x16.png" Width="16"/>
+            </Button>
+
+          </StackPanel>
+
+          <StackPanel
+            Grid.Row="0"
+            Orientation="Horizontal"
+            Spacing="5"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center">
+
+            <Button
+              IsEnabled="{Binding VisibleThumbnailIndex}"
+              ToolTip.Tip="Replace the current preview image"
+              Command="{Binding OnClickThumbnailImport}">
+              <Image Source="/Assets/Icons/photo-16x16.png" />
+            </Button>
+
+            <Button
+              ToolTip.Tip="Compute Issues. Right click to access settings."
+              Command="{Binding OnClickDetectIssues}">
+
+              <Button.ContextMenu>
+                <ContextMenu PlacementMode="Bottom">
+                  <CheckBox
+                    IsChecked="{Binding Settings.Issues.ComputeIslands}"
+                    Content="Islands"/>
+                  <CheckBox
+                    IsChecked="{Binding Settings.Issues.ComputeResinTraps}"
+                    Content="Resin traps"/>
+                  <CheckBox
+                    IsChecked="{Binding Settings.Issues.ComputeTouchingBounds}"
+                    Content="Touching bounds"/>
+                  <CheckBox
+                    IsChecked="{Binding Settings.Issues.ComputeEmptyLayers}"
+                    Content="Empty layers"/>
+                </ContextMenu>
+              </Button.ContextMenu>
+              
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Image Source="/Assets/Icons/save-16x16.png" />
+                <TextBlock Text="Detect ⮟"/>
+              </StackPanel>
+
+            </Button>
+
+          </StackPanel>
+
+          <DataGrid
+                    Name="IssuesGrid"
+                    Grid.Row="1"
+                    CanUserReorderColumns="True"
+                    CanUserResizeColumns="True"
+                    CanUserSortColumns="True"
+                    GridLinesVisibility="All"
+                    IsReadOnly="True"
+                    ClipboardCopyMode="IncludeHeader"
+                    Items="{Binding Issues}">
+            <DataGrid.Columns>
+              <DataGridTextColumn  Header="Type"
+                                    Binding="{Binding Type}"
+                                    Width="Auto" />
+              <DataGridTextColumn Header="Layer"
+                                  Binding="{Binding LayerIndex}"
+                                  Width="Auto" />
+              <DataGridTextColumn Header="Position (X, Y)"
+                                  Binding="{Binding FirstPoint}"
+                                  Width="Auto" />
+              <DataGridTextColumn Header="Pixels"
+                                  Binding="{Binding PixelsCount}"
+                                  Width="Auto" />
+            </DataGrid.Columns>
+
+          </DataGrid>
+          
           
         </Grid>
       
