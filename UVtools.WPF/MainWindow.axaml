@@ -433,7 +433,7 @@
             <TextBlock VerticalAlignment="Center">
               <TextBlock.Text>
                 <MultiBinding StringFormat="\{0\}/\{1\}">
-                  <Binding Path="#IssuesGrid.SelectedIndex"/>
+                  <Binding Path="IssueSelectedIndexStr"/>
                   <Binding Path="Issues.Count"/>
                 </MultiBinding>
               </TextBlock.Text>
@@ -498,7 +498,9 @@
                     CanUserReorderColumns="True"
                     CanUserResizeColumns="True"
                     CanUserSortColumns="True"
-                    GridLinesVisibility="All"
+                    GridLinesVisibility="Horizontal"
+                    SelectionMode="Extended"
+                    SelectedIndex="{Binding IssueSelectedIndex, Mode=TwoWay}"
                     IsReadOnly="True"
                     ClipboardCopyMode="IncludeHeader"
                     Items="{Binding Issues}">
@@ -830,6 +832,7 @@
 
         <Button
           ToolTip.Tip="Object volume bounds for current layer, position and size. Click: go to region"
+          Command="{Binding ZoomToFitPrintVolume}"
           >
           <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
             <Image Source="/Assets/Icons/expand-16x16.png"/>
@@ -871,7 +874,7 @@
 
         <Button
           ToolTip.Tip="Layer Resolution. Click: Zoom to fit"
-          Command="{Binding ZoomToFit}"
+          Command="{Binding ZoomToFitSimple}"
           >
           <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
             <Image Source="/Assets/Icons/expand-16x16.png"/>

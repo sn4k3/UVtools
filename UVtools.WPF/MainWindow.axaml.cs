@@ -6,9 +6,11 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -17,14 +19,16 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using DynamicData;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using Emgu.CV.Util;
 using MessageBox.Avalonia.Enums;
+using ReactiveUI;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -33,7 +37,10 @@ using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 using UVtools.WPF.Windows;
+using Bitmap = Avalonia.Media.Imaging.Bitmap;
+using Color = UVtools.WPF.Structures.Color;
 using Helpers = UVtools.WPF.Controls.Helpers;
+using Point = Avalonia.Point;
 
 namespace UVtools.WPF
 {
@@ -54,6 +61,8 @@ namespace UVtools.WPF
         public SliderEx LayerSlider;
         public Panel LayerNavigationTooltipPanel;
         public Border LayerNavigationTooltipBorder;
+           
+        public DataGrid IssuesGrid;
 
         #region DataSets
         public ObservableCollection<SlicerProperty> SlicerProperties { get; } = new ObservableCollection<SlicerProperty>();
@@ -73,6 +82,9 @@ namespace UVtools.WPF
         private int _tabSelectedIndex;
         private uint _visibleThumbnailIndex;
         private Bitmap _visibleThumbnailImage;
+
+        private int _issueSelectedIndex = -1;
+
         private bool _isVerbose;
         private bool _showLayerImageRotated;
         private bool _showLayerImageDifference;
@@ -374,6 +386,82 @@ namespace UVtools.WPF
 
         #region Issues
 
+        public int IssueSelectedIndex
+        {
+            get => _issueSelectedIndex;
+            set
+            {
+                SetProperty(ref _issueSelectedIndex, value);
+                OnPropertyChanged(nameof(IssueSelectedIndexStr));
+            }
+        }
+
+        public string IssueSelectedIndexStr => (_issueSelectedIndex+1).ToString().PadLeft(Issues.Count.ToString().Length, '0');
+
+        private void IssuesGridOnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            //Debug.WriteLine(IssuesGrid.SelectedIndex);
+            //Debug.WriteLine(IssuesGrid.SelectedItems.Count);
+            if (IssuesGrid.SelectedItems.Count > 1) return;
+            
+        }
+
+        private void IssuesGridOnCellPointerPressed(object? sender, DataGridCellPointerPressedEventArgs e)
+        {
+            if(!(IssuesGrid.SelectedItem is LayerIssue issue)) return;
+            // Double clicking an issue will center and zoom into the 
+            // selected issue. Left click on an issue will zoom to fit.
+
+            var pointer = e.PointerPressedEventArgs.GetCurrentPoint(IssuesGrid);
+
+            if (e.PointerPressedEventArgs.ClickCount == 1)
+            {
+                if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
+                    (issue.X == -1 && issue.Y == -1))
+                {
+                    ZoomToFit();
+                }
+                else if (issue.X >= 0 && issue.Y >= 0)
+                {
+                    if (Settings.LayerPreview.ZoomIssues /*^ (ModifierKeys & Keys.Alt) != 0*/)
+                    {
+                        ZoomToIssue(issue);
+                    }
+                    else
+                    {
+                        //CenterLayerAt(GetTransposedIssueBounds(issue));
+                        // If issue is not already visible, center on it and bring it into view.
+                        // Issues already in view will not be centered, though their color may
+                        // change and the crosshair may move to reflect active selections.
+
+                        if (!LayerImageBox.GetSourceImageRegion().Contains(GetTransposedIssueBounds(issue)))
+                        {
+                            CenterAtIssue(issue);
+                        }
+                    }
+                }
+
+                ForceUpdateActualLayer(issue.LayerIndex);
+                return;
+            }
+
+            if (e.PointerPressedEventArgs.ClickCount == 2)
+            {
+                if (pointer.Properties.IsLeftButtonPressed)
+                {
+                    ZoomToIssue(issue);
+                    return;
+                }
+
+                if (pointer.Properties.IsRightButtonPressed)
+                {
+                    ZoomToFit();
+                    return;
+                }
+            }
+
+        }
+
         public void OnClickDetectIssues()
         {
             if (!IsFileLoaded) return;
@@ -642,6 +730,7 @@ namespace UVtools.WPF
             _actualLayer = layerIndex;
             ShowLayer();
             InvalidateLayerNavigation();
+            OnPropertyChanged(nameof(ActualLayer));
         }
 
         public void InvalidateLayerNavigation()
@@ -694,6 +783,9 @@ namespace UVtools.WPF
             LayerSlider = this.FindControl<SliderEx>("Layer.Navigation.Slider");
             LayerNavigationTooltipPanel = this.FindControl<Panel>("Layer.Navigation.Tooltip.Panel");
             LayerNavigationTooltipBorder = this.FindControl<Border>("Layer.Navigation.Tooltip.Border");
+            IssuesGrid = this.FindControl<DataGrid>("IssuesGrid");
+            IssuesGrid.SelectionChanged += IssuesGridOnSelectionChanged;
+            IssuesGrid.CellPointerPressed += IssuesGridOnCellPointerPressed;
 
             _showLayerImageDifference = Settings.LayerPreview.ShowLayerDifference;
             _showLayerOutlinePrintVolumeBoundary = Settings.LayerPreview.VolumeBoundsOutline;
@@ -771,6 +863,8 @@ namespace UVtools.WPF
             VisibleThumbnailIndex = 0;
             LayerImageBox.Image = null;
             SlicerProperties.Clear();
+            Issues.Clear();
+            Drawings.Clear();
             ResetDataContext();
         }
 
@@ -905,7 +999,7 @@ namespace UVtools.WPF
             {
                 ZoomToFit();
             }
-        }
+        } 
 
         public void GoFirstLayer()
         {
@@ -935,11 +1029,6 @@ namespace UVtools.WPF
             ActualLayer = SliderMaximumValue;
         }
 
-        public void ZoomToFit()
-        {
-            LayerImageBox.ZoomToFit();
-        }
-
         /// <summary>
         /// Shows a layer number
         /// </summary>
@@ -955,8 +1044,8 @@ namespace UVtools.WPF
                 //var imageSpan = LayerCache.Image.GetPixelSpan<byte>();
                 //var imageBgrSpan = LayerCache.ImageBgr.GetPixelSpan<byte>();
 
-                var imageSpan = LayerCache.Image.GetBytePointer();
-                var imageBgrSpan = LayerCache.ImageBgr.GetBytePointer();
+                var imageSpan = LayerCache.ImageSpan;
+                var imageBgrSpan = LayerCache.ImageBgrSpan;
 
                 if (_showLayerOutlineEdgeDetection)
                 {
@@ -1023,77 +1112,76 @@ namespace UVtools.WPF
                     }
                 }
 
-                /*
-                    var selectedIssues = flvIssues.SelectedObjects;
-    
-                    if (btnLayerImageHighlightIssues.Checked &&
-                        !ReferenceEquals(Issues, null))
+                
+                var selectedIssues = IssuesGrid.SelectedItems;
+                
+                if (_showLayerImageIssues && Issues.Count > 0)
+                {
+                    foreach (var issue in Issues)
                     {
-                        foreach (var issue in Issues)
+                        if (issue.LayerIndex != ActualLayer) continue;
+                        if (!issue.HaveValidPoint) continue;
+
+                        Color color = Color.Empty;
+
+                        if (issue.Type == LayerIssue.IssueType.ResinTrap)
                         {
-                            if (issue.LayerIndex != ActualLayer) continue;
-                            if (!issue.HaveValidPoint) continue;
-    
-                            Color color = Color.Empty;
-    
-                            if (issue.Type == LayerIssue.IssueType.ResinTrap)
+                            color = selectedIssues.Contains(issue)
+                                ? Settings.LayerPreview.ResinTrapHighlightColor
+                                : Settings.LayerPreview.ResinTrapColor;
+
+
+                            using (var vec = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
                             {
+                                CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1,
+                                    new MCvScalar(color.B, color.G, color.R), -1);
+                            }
+
+                            if (_showLayerImageCrosshairs &&
+                                !Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues &&
+                                LayerImageBox.Zoom <= AppSettings.CrosshairFadeLevel)
+                            {
+                                DrawCrosshair(issue.BoundingRectangle);
+                            }
+
+                            continue;
+                        }
+
+                        switch (issue.Type)
+                        {
+                            case LayerIssue.IssueType.Island:
                                 color = selectedIssues.Contains(issue)
-                                    ? Settings.Default.ResinTrapHLColor
-                                    : Settings.Default.ResinTrapColor;
-    
-    
-                                using (var vec = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
-                                {
-                                    CvInvoke.DrawContours(ActualLayerImageBgr, vec, -1,
-                                        new MCvScalar(color.B, color.G, color.R), -1);
-                                }
-    
-                                if (btnLayerImageShowCrosshairs.Checked &&
-                                    !Settings.Default.CrosshairShowOnlyOnSelectedIssues &&
-                                    pbLayer.Zoom <= CrosshairFadeLevel)
+                                    ? Settings.LayerPreview.IslandHighlightColor
+                                    : Settings.LayerPreview.IslandColor;
+                                if (_showLayerImageCrosshairs &&
+                                    !Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues &&
+                                    LayerImageBox.Zoom <= AppSettings.CrosshairFadeLevel)
                                 {
                                     DrawCrosshair(issue.BoundingRectangle);
                                 }
-    
-                                continue;
-                            }
-    
-                            switch (issue.Type)
-                            {
-                                case LayerIssue.IssueType.Island:
-                                    color = selectedIssues.Contains(issue)
-                                        ? Settings.Default.IslandHLColor
-                                        : Settings.Default.IslandColor;
-                                    if (btnLayerImageShowCrosshairs.Checked &&
-                                        !Settings.Default.CrosshairShowOnlyOnSelectedIssues &&
-                                        pbLayer.Zoom <= CrosshairFadeLevel)
-                                    {
-                                        DrawCrosshair(issue.BoundingRectangle);
-                                    }
-    
-                                    break;
-                                case LayerIssue.IssueType.TouchingBound:
-                                    color = Settings.Default.TouchingBoundsColor;
-                                    break;
-                            }
-    
-                            foreach (var pixel in issue)
-                            {
-                                int pixelPos = ActualLayerImage.GetPixelPos(pixel);
-                                byte brightness = imageSpan[pixelPos];
-                                if (brightness == 0) continue;
-    
-                                int pixelBgrPos = pixelPos * ActualLayerImageBgr.NumberOfChannels;
-    
-                                var newColor = color.FactorColor(brightness, 80);
-    
-                                imageBgrSpan[pixelBgrPos] = newColor.B; // B
-                                imageBgrSpan[pixelBgrPos + 1] = newColor.G; // G
-                                imageBgrSpan[pixelBgrPos + 2] = newColor.R; // R
-                            }
+
+                                break;
+                            case LayerIssue.IssueType.TouchingBound:
+                                color = Settings.LayerPreview.TouchingBoundsColor;
+                                break;
                         }
-                    }*/
+
+                        foreach (var pixel in issue)
+                        {
+                            int pixelPos = LayerCache.Image.GetPixelPos(pixel);
+                            byte brightness = imageSpan[pixelPos];
+                            if (brightness == 0) continue;
+
+                            int pixelBgrPos = pixelPos * LayerCache.ImageBgr.NumberOfChannels;
+
+                            var newColor = color.FactorColor(brightness, 80);
+
+                            imageBgrSpan[pixelBgrPos] = newColor.B; // B
+                            imageBgrSpan[pixelBgrPos + 1] = newColor.G; // G
+                            imageBgrSpan[pixelBgrPos + 2] = newColor.R; // R
+                        }
+                    }
+                }
     
                 if (_showLayerOutlinePrintVolumeBoundary)
                 {
@@ -1269,6 +1357,287 @@ namespace UVtools.WPF
                 Debug.WriteLine(e);
             }
         }
+
+        /// <summary>
+        /// Draw a crosshair around a rectangle
+        /// </summary>
+        /// <param name="rect"></param>
+        public void DrawCrosshair(Rectangle rect)
+        {
+            // Gradually increase line thickness from 1 to 3 at the lower-end of the zoom range.
+            // This prevents the crosshair lines from disappearing due to being too thin to
+            // render at very low zoom factors.
+            var lineThickness = (LayerImageBox.Zoom > 100) ? 1 : (LayerImageBox.Zoom < 50) ? 3 : 2;
+            var color = new MCvScalar(Settings.LayerPreview.CrosshairColor.B, Settings.LayerPreview.CrosshairColor.G,
+                Settings.LayerPreview.CrosshairColor.R);
+
+
+            // LEFT
+            var startPoint = new System.Drawing.Point(Math.Max(0, rect.X - Settings.LayerPreview.CrosshairMargin - 1),
+                rect.Y + rect.Height / 2);
+            var endPoint =
+                new System.Drawing.Point(
+                    Settings.LayerPreview.CrosshairLength == 0
+                        ? 0
+                        : (int)Math.Max(0, startPoint.X - Settings.LayerPreview.CrosshairLength + 1),
+                    startPoint.Y);
+
+            CvInvoke.Line(LayerCache.ImageBgr,
+                startPoint,
+                endPoint,
+                color,
+                lineThickness);
+
+
+            // RIGHT
+            startPoint.X = Math.Min(LayerCache.ImageBgr.Width,
+                rect.Right + Settings.LayerPreview.CrosshairMargin);
+            endPoint.X = Settings.LayerPreview.CrosshairLength == 0
+                ? LayerCache.ImageBgr.Width
+                : (int)Math.Min(LayerCache.ImageBgr.Width, startPoint.X + Settings.LayerPreview.CrosshairLength - 1);
+
+            CvInvoke.Line(LayerCache.ImageBgr,
+                startPoint,
+                endPoint,
+                color,
+                lineThickness);
+
+            // TOP
+            startPoint = new System.Drawing.Point(rect.X + rect.Width / 2,
+                Math.Max(0, rect.Y - Settings.LayerPreview.CrosshairMargin - 1));
+            endPoint = new System.Drawing.Point(startPoint.X,
+                (int)(Settings.LayerPreview.CrosshairLength == 0
+                    ? 0
+                    : Math.Max(0, startPoint.Y - Settings.LayerPreview.CrosshairLength + 1)));
+
+
+            CvInvoke.Line(LayerCache.ImageBgr,
+                startPoint,
+                endPoint,
+                color,
+                lineThickness);
+
+            // Bottom
+            startPoint.Y = Math.Min(LayerCache.ImageBgr.Height, rect.Bottom + Settings.LayerPreview.CrosshairMargin);
+            endPoint.Y = Settings.LayerPreview.CrosshairLength == 0
+                ? LayerCache.ImageBgr.Height
+                : (int)Math.Min(LayerCache.ImageBgr.Height, startPoint.Y + Settings.LayerPreview.CrosshairLength - 1);
+
+            CvInvoke.Line(LayerCache.ImageBgr,
+                startPoint,
+                endPoint,
+                color,
+                lineThickness);
+        }
+
+        #region Zoom
+        public Point GetTransposedPoint(Point point, bool clockWise = true)
+        {
+            if (!_showLayerImageRotated) return point;
+            return clockWise
+                ? new Point(point.Y, LayerCache.Image.Height - 1 - point.X)
+                : new Point(LayerCache.Image.Height - 1 - point.Y, point.X);
+        }
+
+        public Rectangle GetTransposedRectangle(RectangleF rectangleF, bool clockWise = true, bool ignoreLayerRotation = false) =>
+            GetTransposedRectangle(Rectangle.Round(rectangleF), clockWise, ignoreLayerRotation);
+
+        public Rectangle GetTransposedRectangle(Rectangle rectangle, bool clockWise = true, bool ignoreLayerRotation = false)
+        {
+            if (rectangle.IsEmpty || (!ignoreLayerRotation && !_showLayerImageRotated)) return rectangle;
+            return clockWise
+                ? new Rectangle(LayerCache.Image.Height - rectangle.Bottom,
+                    rectangle.Left, rectangle.Height, rectangle.Width)
+                //: new Rectangle(ActualLayerImage.Width - rectangle.Bottom, rectangle.Left, rectangle.Width, rectangle.Height);
+                //: new Rectangle(ActualLayerImage.Width - rectangle.Bottom, ActualLayerImage.Height-rectangle.Right, rectangle.Width, rectangle.Height); // Rotate90FlipX: // = Rotate270FlipY
+                //: new Rectangle(rectangle.Top, rectangle.Left, rectangle.Width, rectangle.Height); // Rotate270FlipX:  // = Rotate90FlipY
+                : new Rectangle(rectangle.Top, LayerCache.Image.Height - rectangle.Right, rectangle.Height, rectangle.Width); // Rotate90FlipNone:  // = Rotate270FlipXY
+        }
+
+        /// <summary>
+        /// Gets the bounding rectangle of the passed issue, automatically adjusting
+        /// the coordinates and width/height to account for whether or not the layer
+        /// preview image is rotated.  Used to ensure images are properly zoomed or
+        /// centered independent of the layer preview rotation.
+        /// </summary>
+        private Rectangle GetTransposedIssueBounds(LayerIssue issue)
+        {
+            if (issue.X >= 0 && issue.Y >= 0 && (issue.BoundingRectangle.IsEmpty || issue.Size == 1) &&
+                _showLayerImageRotated)
+                return new Rectangle(LayerCache.Image.Height - 1 - issue.Y,
+                    issue.X, 1, 1);
+
+            return GetTransposedRectangle(issue.BoundingRectangle);
+        }
+
+        /// <summary>
+        /// Centers layer view on a X,Y coordinate
+        /// </summary>
+        /// <param name="x">X coordinate</param>
+        /// <param name="y">X coordinate</param>
+        /// <param name="zoomLevel">Zoom level to set, 0 to ignore or negative value to get current locked zoom level</param>
+        public void CenterLayerAt(double x, double y, int zoomLevel = 0)
+        {
+            if (zoomLevel < 0) zoomLevel = AppSettings.LockedZoomLevel;
+            if (zoomLevel > 0) LayerImageBox.Zoom = zoomLevel;
+            LayerImageBox.CenterAt(x, y);
+        }
+
+        /// <summary>
+        /// Centers layer view on a X,Y coordinate
+        /// </summary>
+        /// <param name="x">X coordinate</param>
+        /// <param name="y">X coordinate</param>
+        /// <param name="zoomLevel">Zoom level to set, 0 to ignore or negative value to get current locked zoom level</param>
+        public void CenterLayerAt(int x, int y, int zoomLevel = 0)
+        {
+            if (zoomLevel < 0) zoomLevel = AppSettings.LockedZoomLevel;
+            if (zoomLevel > 0) LayerImageBox.Zoom = zoomLevel;
+            LayerImageBox.CenterAt(x, y);
+        }
+
+
+        public void CenterLayerAt(Rectangle rectangle, int zoomLevel = 0, bool zoomToRegion = false) => CenterLayerAt(rectangle.ToAvalonia(), zoomLevel, zoomToRegion);
+
+        /// <summary>
+        /// Centers layer view on a middle of a given rectangle
+        /// </summary>
+        /// <param name="rectangle">Rectangle holding coordinates and bounds</param>
+        /// <param name="zoomLevel">Zoom level to set, 0 to ignore or negative value to get current locked zoom level</param>
+        /// <param name="zoomToRegion">Auto zoom to a region and ensure that region area stays all visible when possible, when true this will overwrite zoomLevel</param></param>
+        public void CenterLayerAt(Rect rectangle, int zoomLevel = 0, bool zoomToRegion = false)
+        {
+            var viewPort = LayerImageBox.GetSourceImageRegion();
+            if (zoomToRegion ||
+                rectangle.Width * AppSettings.LockedZoomLevel / LayerImageBox.Zoom > viewPort.Width ||
+                rectangle.Height * AppSettings.LockedZoomLevel / LayerImageBox.Zoom > viewPort.Height)
+            {
+                //SupressLayerZoomEvent = true;
+                LayerImageBox.ZoomToRegion(rectangle);
+                //SupressLayerZoomEvent = false;
+                //pbLayer.ZoomOut(true);
+                return;
+            }
+
+            CenterLayerAt(rectangle.X + rectangle.Width / 2, rectangle.Y + rectangle.Height / 2, zoomLevel);
+        }
+
+        /// <summary>
+        /// Centers layer view on a <see cref="Point"/>
+        /// </summary>
+        /// <param name="point">Point holding X and Y coordinates</param>
+        /// <param name="zoomLevel">Zoom level to set, 0 to ignore or negative value to get current locked zoom level</param>
+        public void CenterLayerAt(System.Drawing.Point point, int zoomLevel = 0) => CenterLayerAt(point.X, point.Y, zoomLevel);
+
+
+        /// <summary>
+        /// Zoom the layer preview to the passed issue, or if appropriate for issue type,
+        /// Zoom to fit the plate or print bounds.
+        /// </summary>
+        private void ZoomToIssue(LayerIssue issue)
+        {
+            if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
+                (issue.X == -1 && issue.Y == -1))
+            {
+                ZoomToFit();
+                return;
+            }
+
+            if (issue.X >= 0 && issue.Y >= 0)
+            {
+                // Check to see if this zoom action will cross the crosshair fade threshold
+                /*if (tsLayerImageShowCrosshairs.Checked && !ReferenceEquals(Issues, null) && flvIssues.SelectedIndices.Count > 0
+                   && pbLayer.Zoom <= CrosshairFadeLevel && LockedZoomLevel > CrosshairFadeLevel)
+                {
+                    // Refresh the preview without the crosshairs before zooming-in.
+                    // Prevents zoomed-in crosshairs from breifly being displayed before
+                    // the Layer Preview is refreshed post-zoom.
+                    tsLayerImageShowCrosshairs.Checked = false;
+                    ShowLayer();
+                    tsLayerImageShowCrosshairs.Checked = true;
+                }*/
+
+                CenterLayerAt(GetTransposedIssueBounds(issue), AppSettings.LockedZoomLevel);
+
+            }
+        }
+
+        /// <summary>
+        /// Center the layer preview on the passed issue, or if appropriate for issue type,
+        /// Zoom to fit the plate or print bounds.
+        /// </summary>
+        private void CenterAtIssue(LayerIssue issue)
+        {
+            if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
+                (issue.X == -1 && issue.Y == -1))
+            {
+                ZoomToFit();
+            }
+
+            if (issue.X >= 0 && issue.Y >= 0)
+            {
+                CenterLayerAt(GetTransposedIssueBounds(issue));
+            }
+        }
+
+        public void ZoomToFitSimple()
+        {
+            LayerImageBox.ZoomToFit();
+        }
+
+        public void ZoomToFitPrintVolume()
+        {
+            LayerImageBox.ZoomToRegion(SlicerFile.LayerManager.BoundingRectangle);
+        }
+
+        private void ZoomToFit()
+        {
+            if (ReferenceEquals(SlicerFile, null)) return;
+
+            // If ALT key is pressed when ZoomToFit is performed, the configured option for 
+            // zoom to plate vs. zoom to print bounds will be inverted.
+            
+            if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds /*^ (Application. & KeyModifiers.Alt) != 0*/)
+            {
+                if (!_showLayerImageRotated)
+                {
+                    LayerImageBox.ZoomToRegion(SlicerFile.LayerManager.BoundingRectangle);
+                }
+                else
+                {
+                    LayerImageBox.ZoomToRegion(LayerCache.Image.Height - 1 - SlicerFile.LayerManager.BoundingRectangle.Bottom,
+                        SlicerFile.LayerManager.BoundingRectangle.X,
+                        SlicerFile.LayerManager.BoundingRectangle.Height,
+                        SlicerFile.LayerManager.BoundingRectangle.Width
+                    );
+                }
+            }
+            else
+            {
+                LayerImageBox.ZoomToFit();
+            }
+        }
+
+        /// <summary>
+        /// If there is an issue under the point location passed, that issue will be selected and
+        /// scrolled into view on the IssueList.
+        /// </summary>
+        private void SelectIssueAtPoint(System.Drawing.Point location)
+        {
+            //location = GetTransposedPoint(location);
+            // If location clicked is within an issue, activate it.
+            for (var i = 0; i < Issues.Count; i++)
+            {
+                LayerIssue issue = Issues[i];
+
+                if (issue.LayerIndex != ActualLayer) continue;
+                if (!GetTransposedIssueBounds(issue).Contains(location)) continue;
+
+                IssueSelectedIndex = i;
+                break;
+            }
+        }
+        #endregion
 
         #endregion
     }

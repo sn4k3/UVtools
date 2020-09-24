@@ -11,20 +11,20 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
 using UVtools.Core;
+using UVtools.Core.Extensions;
 
 namespace UVtools.WPF
 {
     public sealed class LayerCache
     {
         private Layer _layer;
-        private Mat _image;
         private Array _layerHierarchyJagged;
         private VectorOfVectorOfPoint _layerContours;
         private Mat _layerHierarchy;
 
         public bool IsCached => !ReferenceEquals(_layer, null);
 
-        public Layer Layer
+        public unsafe Layer Layer
         {
             get => _layer;
             set
@@ -32,15 +32,21 @@ namespace UVtools.WPF
                 //if (ReferenceEquals(_layer, value)) return;
                 Clear();
                 _layer = value;
-                _image = _layer.LayerMat;
+                Image = _layer.LayerMat;
                 ImageBgr = new Mat();
-                CvInvoke.CvtColor(_image, ImageBgr, ColorConversion.Gray2Bgr);
+                CvInvoke.CvtColor(Image, ImageBgr, ColorConversion.Gray2Bgr);
+
+                ImageSpan = Image.GetBytePointer();
+                ImageBgrSpan = ImageBgr.GetBytePointer();
             }
         }
 
-        public Mat Image => _image;
+        public Mat Image { get; private set; }
 
-        public Mat ImageBgr { get; set; }
+        public Mat ImageBgr { get; private set; }
+
+        public unsafe byte *ImageSpan { get; private set; }
+        public unsafe byte *ImageBgrSpan { get; private set; }
 
         public VectorOfVectorOfPoint LayerContours
         {
@@ -90,7 +96,7 @@ namespace UVtools.WPF
         public void Clear()
         {
             _layer = null;
-            _image?.Dispose();
+            Image?.Dispose();
             ImageBgr?.Dispose();
             _layerContours?.Dispose();
             _layerContours = null;

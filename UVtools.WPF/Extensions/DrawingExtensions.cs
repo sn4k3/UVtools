@@ -6,6 +6,9 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System.Drawing;
+using Avalonia;
+
 namespace UVtools.WPF.Extensions
 {
     public static class DrawingExtensions
@@ -18,6 +21,16 @@ namespace UVtools.WPF.Extensions
         public static System.Drawing.Color ToDotNet(this Avalonia.Media.Color color)
         {
             return System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B);
+        }
+
+        public static Rect ToAvalonia(this Rectangle rectangle)
+        {
+            return new Rect(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height); 
+        }
+
+        public static Rectangle ToDotNet(this Rect rectangle)
+        {
+            return new Rectangle((int) rectangle.X, (int) rectangle.Y, (int) rectangle.Width, (int) rectangle.Height);
         }
     }
 }

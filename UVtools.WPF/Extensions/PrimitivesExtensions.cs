@@ -12,6 +12,11 @@ namespace UVtools.WPF.Extensions
 {
     public static class PrimitivesExtensions
     {
+        public static System.Drawing.Point ToDotNet(this Point point)
+        {
+            return new System.Drawing.Point((int) point.X, (int) point.Y);
+        }
+
         public static bool IsEmpty(this Point point)
         {
             return point.X == 0 && point.Y == 0;

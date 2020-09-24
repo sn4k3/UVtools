@@ -63,5 +63,21 @@ namespace UVtools.WPF.Structures
         }
 
         public static Color Empty => new Color(0,0,0,0);
+
+        public Color FactorColor(byte pixelColor, byte min = 0, byte max = byte.MaxValue) =>
+            FactorColor(pixelColor / 255f, min, max);
+
+        public Color FactorColor(float factor, byte min = 0, byte max = byte.MaxValue)
+        {
+            byte r = (byte)(R == 0 ? 0 :
+                Math.Min(Math.Max(min, R * factor), max));
+
+            byte g = (byte)(G == 0 ? 0 :
+                Math.Min(Math.Max(min, G * factor), max));
+
+            byte b = (byte)(B == 0 ? 0 :
+                Math.Min(Math.Max(min, B * factor), max));
+            return Color.FromArgb(A, r, g, b);
+        }
     }
 }
