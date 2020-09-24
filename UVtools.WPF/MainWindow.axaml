@@ -46,12 +46,18 @@
           Header="_Save" 
           HotKey="Ctrl+S" InputGesture="Ctrl+S"
           IsEnabled="{Binding CanSave}"
+          Command="{Binding MenuFileSaveClicked}"
           >
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\save-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
-          <MenuItem Name="MainMenu.File.SaveAs" Header="Save _as" HotKey="Ctrl+Shift+S" InputGesture="Ctrl+Shift+S" IsEnabled="{Binding IsFileLoaded}">
+          <MenuItem 
+            Name="MainMenu.File.SaveAs"
+            Header="Save _as" 
+            HotKey="Ctrl+Shift+S" InputGesture="Ctrl+Shift+S" 
+            IsEnabled="{Binding IsFileLoaded}"
+            Command="{Binding MenuFileSaveAsClicked}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\save-as-16x16.png"/>
           </MenuItem.Icon>
@@ -69,13 +75,21 @@
         
           <Separator/>
         
-        <MenuItem Name="MainMenu.File.Extract" Header="_Extract" HotKey="Ctrl+E" InputGesture="Ctrl+E" IsEnabled="{Binding IsFileLoaded}">
+        <MenuItem 
+          Name="MainMenu.File.Extract" 
+          Header="_Extract" HotKey="Ctrl+E" InputGesture="Ctrl+E" 
+          IsEnabled="{Binding IsFileLoaded}"
+          Command="{Binding ExtractFile}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\extract-object-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
         
-        <MenuItem Name="MainMenu.File.Convert" Header="_Convert to" IsEnabled="{Binding IsFileLoaded}">
+        <MenuItem 
+          Name="MainMenu.File.Convert" 
+          Header="_Convert to" 
+          IsEnabled="{Binding IsFileLoaded}"
+          Items="{Binding MenuFileConvertItems}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\convert-16x16.png"/>
           </MenuItem.Icon>

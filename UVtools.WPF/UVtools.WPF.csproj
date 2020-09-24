@@ -42,6 +42,9 @@
     <None Remove="Assets\Icons\UVtools.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="Assets\selected.theme">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Themes - Copy\UVtoolsDark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>

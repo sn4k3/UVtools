@@ -13,7 +13,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia;
@@ -78,7 +77,9 @@ namespace UVtools.WPF
         public Stopwatch LastStopWatch;
         private uint _actualLayer;
         private bool _isGUIEnabled = true;
+        private uint _savesCount;
         private bool _canSave;
+        private MenuItem[] _menuFileConvertItems;
         private int _tabSelectedIndex;
         private uint _visibleThumbnailIndex;
         private Bitmap _visibleThumbnailImage;
@@ -135,10 +136,22 @@ namespace UVtools.WPF
         }
         #endregion
 
+        public uint SavesCount
+        {
+            get => _savesCount;
+            set => SetProperty(ref _savesCount, value);
+        }
+
         public bool CanSave
         {
             get => _canSave;
             set => SetProperty(ref _canSave, value);
+        }
+
+        public MenuItem[] MenuFileConvertItems
+        {
+            get => _menuFileConvertItems;
+            set => SetProperty(ref _menuFileConvertItems, value);
         }
 
 
@@ -786,7 +799,7 @@ namespace UVtools.WPF
             IssuesGrid = this.FindControl<DataGrid>("IssuesGrid");
             IssuesGrid.SelectionChanged += IssuesGridOnSelectionChanged;
             IssuesGrid.CellPointerPressed += IssuesGridOnCellPointerPressed;
-
+            
             _showLayerImageDifference = Settings.LayerPreview.ShowLayerDifference;
             _showLayerOutlinePrintVolumeBoundary = Settings.LayerPreview.VolumeBoundsOutline;
             _showLayerOutlineLayerBoundary = Settings.LayerPreview.LayerBoundsOutline;
@@ -808,7 +821,7 @@ namespace UVtools.WPF
             {
                 ProcessFiles(e.Data.GetFileNames().ToArray());
             });
-
+            
             UpdateTitle();
         }
 
@@ -842,12 +855,47 @@ namespace UVtools.WPF
         public void MenuFileOpenClicked() => OpenFile();
         public void MenuFileOpenNewWindowClicked() => OpenFile(true);
 
+        public async void MenuFileSaveClicked()
+        {
+            if (!CanSave) return;
+            await SaveFile();
+        }
+
+        public async void MenuFileSaveAsClicked()
+        {
+            if (!IsFileLoaded) return;
+            var ext = Path.GetExtension(SlicerFile.FileFullPath);
+            var extNoDot = ext.Remove(0, 1);
+            SaveFileDialog dialog = new SaveFileDialog
+            {
+                DefaultExtension = extNoDot,
+                Filters = new List<FileDialogFilter>
+                {
+                    new FileDialogFilter
+                    {
+                        Name = $"{ext} Files",
+                        Extensions = new List<string>
+                        {
+                            extNoDot
+                        }
+                    }
+                },
+                Directory = string.IsNullOrEmpty(Settings.General.DefaultDirectorySaveFile)
+                    ? Path.GetDirectoryName(SlicerFile.FileFullPath)
+                    : Settings.General.DefaultDirectorySaveFile,
+                InitialFileName = $"{Settings.General.FileSaveNamePrefix}{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}{Settings.General.FileSaveNameSuffix}"
+            };
+            var file = await dialog.ShowAsync(this);
+            if (string.IsNullOrEmpty(file)) return;
+            await SaveFile(file);
+        }
+
         public async void OpenFile(bool newWindow = false)
         {
             var dialog = new OpenFileDialog
             {
                 AllowMultiple = true,
-
+                Filters = Helpers.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia),
             };
             var files = await dialog.ShowAsync(this);
             ProcessFiles(files, newWindow);
@@ -924,7 +972,7 @@ namespace UVtools.WPF
 
             ProgressWindow.SetTitle($"Opening: {fileNameOnly}");
             IsGUIEnabled = false;
-            var task = Task.Factory.StartNew(async () =>
+            var task = Task.Factory.StartNew(() =>
             {
                 try
                 {
@@ -936,7 +984,7 @@ namespace UVtools.WPF
                 }
                 catch (Exception exception)
                 {
-                    await this.MessageBoxError(exception.ToString(), "Error opening the file");
+                    this.MessageBoxError(exception.ToString(), "Error opening the file");
                 }
                 finally
                 {
@@ -947,7 +995,7 @@ namespace UVtools.WPF
             });
 
             await ProgressWindow.ShowDialog<DialogResults>(this);
-            if (!task.Result.Result)
+            if (!task.Result)
             {
                 SlicerFile.Dispose();
                 App.SlicerFile = null;
@@ -965,6 +1013,31 @@ namespace UVtools.WPF
                 SlicerFile.Dispose();
                 App.SlicerFile = null;
                 return;
+            }
+
+            if (!(SlicerFile.ConvertToFormats is null))
+            {
+                List<MenuItem> menuItems = new List<MenuItem>();
+                foreach (var fileFormatType in SlicerFile.ConvertToFormats)
+                {
+                    FileFormat fileFormat = FileFormat.FindByType(fileFormatType);
+
+                    string extensions = fileFormat.FileExtensions.Length > 0
+                        ? $" ({fileFormat.GetFileExtensions()})"
+                        : string.Empty;
+
+                    var menuItem = new MenuItem
+                    {
+                        Header = fileFormat.GetType().Name.Replace("File", extensions),
+                        Tag = fileFormat
+                    };
+
+                    menuItem.Tapped += ConvertToOnTapped;
+
+                    menuItems.Add(menuItem);
+                }
+
+                MenuFileConvertItems = menuItems.ToArray();
             }
 
             using Mat mat = SlicerFile[0].LayerMat;
@@ -999,7 +1072,86 @@ namespace UVtools.WPF
             {
                 ZoomToFit();
             }
-        } 
+        }
+
+        private async void ConvertToOnTapped(object? sender, RoutedEventArgs e)
+        {
+            if (!(sender is MenuItem item)) return;
+            if (!(item.Tag is FileFormat fileFormat)) return;
+
+            SaveFileDialog dialog = new SaveFileDialog
+            {
+                InitialFileName = Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath),
+                Filters = Helpers.ToAvaloniaFileFilter(fileFormat.FileFilterAvalonia),
+                Directory = string.IsNullOrEmpty(Settings.General.DefaultDirectoryConvertFile)
+                    ? Path.GetDirectoryName(SlicerFile.FileFullPath)
+                    : Settings.General.DefaultDirectoryConvertFile
+            };
+
+            var result = await dialog.ShowAsync(this);
+            if (string.IsNullOrEmpty(result)) return;
+
+
+            IsGUIEnabled = false;
+            ProgressWindow.SetTitle(
+                $"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {Path.GetExtension(result)}");
+
+            Task<bool> task = Task<bool>.Factory.StartNew(() =>
+            {
+                try
+                {
+                    return SlicerFile.Convert(fileFormat, result, ProgressWindow.RestartProgress());
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    string extraMessage = string.Empty;
+                    if (SlicerFile.FileFullPath.EndsWith(".sl1"))
+                    {
+                        extraMessage = "Note: When converting from SL1 make sure you have the correct printer selected, you MUST use a UVtools base printer.\n" +
+                                       "Go to \"Help\" -> \"Install profiles into PrusaSlicer\" to install printers.\n";
+                    }
+
+                    this.MessageBoxError($"Convertion was not successful! Maybe not implemented...\n{extraMessage}{ex.Message}", "Convertion unsuccessful");
+                }
+                finally
+                {
+                    IsGUIEnabled = true;
+                }
+
+                return false;
+            });
+
+            await ProgressWindow.ShowDialog(this);
+
+            if (task.Result)
+            {
+                if (await this.MessageBoxQuestion(
+                    $"Conversion completed in {LastStopWatch.ElapsedMilliseconds / 1000}s\n\n" +
+                    $"Do you want to open {Path.GetFileName(result)} in a new window?",
+                    "Conversion complete") == ButtonResult.Yes)
+                {
+                    App.NewInstance(result);
+                }
+            }
+            else
+            {
+                try
+                {
+                    if (File.Exists(result))
+                    {
+                        File.Delete(result);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex);
+                }
+            }
+        }
+
 
         public void GoFirstLayer()
         {
@@ -1428,6 +1580,139 @@ namespace UVtools.WPF
                 endPoint,
                 color,
                 lineThickness);
+        }
+
+        public async Task<bool> SaveFile(string filepath = null)
+        {
+            if (filepath is null)
+            {
+                if (SavesCount == 0 && Settings.General.PromptOverwriteFileSave)
+                {
+                    var result = await this.MessageBoxQuestion(
+                        "Original input file will be overwritten.  Do you wish to proceed?", "Overwrite file?");
+
+                    if(result != ButtonResult.Yes) return false;
+                }
+
+                filepath = SlicerFile.FileFullPath;
+            }
+
+            var oldFile = SlicerFile.FileFullPath;
+            var tempFile = filepath + FileFormat.TemporaryFileAppend;
+
+            IsGUIEnabled = false;
+            ProgressWindow.SetTitle($"Saving {Path.GetFileName(filepath)}");
+
+            var task = Task<bool>.Factory.StartNew( () =>
+            {
+                bool result = false;
+
+                try
+                {
+                    SlicerFile.SaveAs(tempFile, ProgressWindow.RestartProgress());
+                    if (File.Exists(filepath))
+                    {
+                        File.Delete(filepath);
+                    }
+                    File.Move(tempFile, filepath);
+                    SlicerFile.FileFullPath = filepath;
+                    result = true;
+                }
+                catch (OperationCanceledException)
+                {
+                    SlicerFile.FileFullPath = oldFile;
+                    if (File.Exists(tempFile))
+                    {
+                        File.Delete(tempFile);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.MessageBoxError(ex.Message, "Error while saving the file");
+                }
+                finally
+                {
+                    IsGUIEnabled = true;
+                }
+
+                return result;
+            });
+
+            await ProgressWindow.ShowDialog(this);
+
+            if (task.Result)
+            {
+                SavesCount++;
+                CanSave = false;
+                UpdateTitle();
+            }
+
+            return task.Result;
+        }
+
+        public async void ExtractFile()
+        {
+            if (!IsFileLoaded) return;
+            string fileNameNoExt = Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath);
+            OpenFolderDialog dialog = new OpenFolderDialog
+            {
+                Directory = string.IsNullOrEmpty(Settings.General.DefaultDirectoryExtractFile)
+                    ? Path.GetDirectoryName(SlicerFile.FileFullPath)
+                    : Settings.General.DefaultDirectoryExtractFile,
+                Title =
+                    $"A \"{fileNameNoExt}\" folder will be created within your selected folder to dump the contents."
+            };
+
+            var result = await dialog.ShowAsync(this);
+            if (string.IsNullOrEmpty(result)) return;
+
+            string finalPath = Path.Combine(result, fileNameNoExt);
+
+            try
+            {
+                IsGUIEnabled = false;
+                ProgressWindow.SetTitle($"Extracting {Path.GetFileName(SlicerFile.FileFullPath)}");
+
+                var task = Task.Factory.StartNew(() =>
+                {
+                    try
+                    {
+                        SlicerFile.Extract(finalPath, true, true, ProgressWindow.RestartProgress());
+                    }
+                    catch (OperationCanceledException)
+                    {
+
+                    }
+                    finally
+                    {
+                        IsGUIEnabled = true;
+                    }
+                });
+
+                await ProgressWindow.ShowDialog(this);
+                
+
+                if (await this.MessageBoxQuestion(
+                        $"Extraction to {finalPath} completed in ({LastStopWatch.ElapsedMilliseconds / 1000}s)\n\n" +
+                        "'Yes' to open target folder, 'No' to continue.",
+                        "Extraction complete") == ButtonResult.Yes)
+                {
+                    try
+                    {
+                        using (Process.Start(finalPath))
+                        { }
+                    }
+                    catch (Exception e)
+                    {
+                        // ignored
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await this.MessageBoxError(ex.ToString(), "Error while try extracting the file");
+            }
+
         }
 
         #region Zoom

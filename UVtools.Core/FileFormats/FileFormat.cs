@@ -201,8 +201,33 @@ namespace UVtools.Core.FileFormats
             +
             AvaliableFormats.Aggregate(string.Empty,
                 (current, fileFormat) => $"{current}|" + fileFormat.FileFilter);
+
+        public static List<KeyValuePair<string, List<string>>> AllFileFiltersAvalonia
+        {
+            get
+            {
+                var result = new List<KeyValuePair<string, List<string>>>
+                {
+                    new KeyValuePair<string, List<string>>("All slicer files", new List<string>())
+                };
+                
+                for (int i = 0; i < AvaliableFormats.Length; i++)
+                {
+                    foreach (var fileExtension in AvaliableFormats[i].FileExtensions)
+                    {
+                        result[0].Value.Add(fileExtension.Extension);
+                        result.Add(new KeyValuePair<string, List<string>>(fileExtension.Description, new List<string>
+                        {
+                            fileExtension.Extension
+                        }));
+                    }
+                }
+
+                return result;
+            }
             
-            
+        }
+           
 
         /// <summary>
         /// Gets the count of available file extensions
@@ -265,6 +290,9 @@ namespace UVtools.Core.FileFormats
                 return result;
             }
         }
+
+        public List<KeyValuePair<string, List<string>>> FileFilterAvalonia 
+            => FileExtensions.Select(fileExt => new KeyValuePair<string, List<string>>(fileExt.Description, new List<string> {fileExt.Extension})).ToList();
 
         public string FileFilterExtensionsOnly
         {

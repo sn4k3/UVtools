@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls;
 
 namespace UVtools.WPF.Controls
@@ -63,5 +64,12 @@ namespace UVtools.WPF.Controls
                 }
             }
         };
+
+        public static List<FileDialogFilter> ToAvaloniaFileFilter(List<KeyValuePair<string, List<string>>> data)
+        {
+            var result = new List<FileDialogFilter>(data.Capacity);
+            result.AddRange(data.Select(kv => new FileDialogFilter {Name = kv.Key, Extensions = kv.Value}));
+            return result;
+        }
     }
 }
