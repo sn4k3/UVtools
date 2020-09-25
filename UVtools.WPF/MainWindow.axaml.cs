@@ -632,17 +632,44 @@ namespace UVtools.WPF
                 OnPropertyChanged(nameof(IssueSelectedIndexStr));
                 OnPropertyChanged(nameof(IssueCanGoPrevious));
                 OnPropertyChanged(nameof(IssueCanGoNext));
+                IssuesGridOnSelectionChanged();
             }
         }
 
         public string IssueSelectedIndexStr => (_issueSelectedIndex+1).ToString().PadLeft(Issues.Count.ToString().Length, '0');
 
-        private void IssuesGridOnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+        private void IssuesGridOnSelectionChanged(PointerPressedEventArgs pointer = null)
         {
-            //Debug.WriteLine(IssuesGrid.SelectedIndex);
-            //Debug.WriteLine(IssuesGrid.SelectedItems.Count);
             if (IssuesGrid.SelectedItems.Count > 1) return;
-            
+            if (!(IssuesGrid.SelectedItem is LayerIssue issue)) return;
+
+            if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
+                (issue.X == -1 && issue.Y == -1))
+            {
+                ZoomToFit(pointer);
+            }
+            else if (issue.X >= 0 && issue.Y >= 0)
+            {
+
+                if (Settings.LayerPreview.ZoomIssues ^ (!ReferenceEquals(pointer, null) && (pointer.KeyModifiers & KeyModifiers.Alt) != 0))
+                {
+                    ZoomToIssue(issue, pointer);
+                }
+                else
+                {
+                    //CenterLayerAt(GetTransposedIssueBounds(issue));
+                    // If issue is not already visible, center on it and bring it into view.
+                    // Issues already in view will not be centered, though their color may
+                    // change and the crosshair may move to reflect active selections.
+
+                    if (!LayerImageBox.GetSourceImageRegion().Contains(GetTransposedIssueBounds(issue).ToAvalonia()))
+                    {
+                        CenterAtIssue(issue, pointer);
+                    }
+                }
+            }
+
+            ForceUpdateActualLayer(issue.LayerIndex);
         }
 
         private void IssuesGridOnCellPointerPressed(object? sender, DataGridCellPointerPressedEventArgs e)
@@ -650,41 +677,8 @@ namespace UVtools.WPF
             if(!(IssuesGrid.SelectedItem is LayerIssue issue)) return;
             // Double clicking an issue will center and zoom into the 
             // selected issue. Left click on an issue will zoom to fit.
-
-            var pointer = e.PointerPressedEventArgs.GetCurrentPoint(IssuesGrid);
-
-            if (e.PointerPressedEventArgs.ClickCount == 1)
-            {
-                if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
-                    (issue.X == -1 && issue.Y == -1))
-                {
-                    ZoomToFit(e.PointerPressedEventArgs);
-                }
-                else if (issue.X >= 0 && issue.Y >= 0)
-                {
-                    
-                    if (Settings.LayerPreview.ZoomIssues ^ (e.PointerPressedEventArgs.KeyModifiers & KeyModifiers.Alt) != 0)
-                    {
-                        ZoomToIssue(issue, e.PointerPressedEventArgs);
-                    }
-                    else
-                    {
-                        //CenterLayerAt(GetTransposedIssueBounds(issue));
-                        // If issue is not already visible, center on it and bring it into view.
-                        // Issues already in view will not be centered, though their color may
-                        // change and the crosshair may move to reflect active selections.
-
-                        if (!LayerImageBox.GetSourceImageRegion().Contains(GetTransposedIssueBounds(issue).ToAvalonia()))
-                        {
-                            CenterAtIssue(issue, e.PointerPressedEventArgs);
-                        }
-                    }
-                }
-
-                ForceUpdateActualLayer(issue.LayerIndex);
-                return;
-            }
             
+            var pointer = e.PointerPressedEventArgs.GetCurrentPoint(IssuesGrid);
             if (e.PointerPressedEventArgs.ClickCount == 2)
             {
                 if (pointer.Properties.IsLeftButtonPressed)
@@ -1029,7 +1023,7 @@ namespace UVtools.WPF
             LayerNavigationTooltipPanel = this.FindControl<Panel>("Layer.Navigation.Tooltip.Panel");
             LayerNavigationTooltipBorder = this.FindControl<Border>("Layer.Navigation.Tooltip.Border");
             IssuesGrid = this.FindControl<DataGrid>("IssuesGrid");
-            IssuesGrid.SelectionChanged += IssuesGridOnSelectionChanged;
+            //IssuesGrid.SelectionChanged += IssuesGridOnSelectionChanged;
             IssuesGrid.CellPointerPressed += IssuesGridOnCellPointerPressed;
             
             _showLayerImageDifference = Settings.LayerPreview.ShowLayerDifference;
@@ -2047,7 +2041,7 @@ namespace UVtools.WPF
         /// Zoom the layer preview to the passed issue, or if appropriate for issue type,
         /// Zoom to fit the plate or print bounds.
         /// </summary>
-        private void ZoomToIssue(LayerIssue issue, PointerPressedEventArgs pointer)
+        private void ZoomToIssue(LayerIssue issue, PointerPressedEventArgs pointer = null)
         {
             if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
                 (issue.X == -1 && issue.Y == -1))
