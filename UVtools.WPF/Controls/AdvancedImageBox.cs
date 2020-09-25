@@ -18,8 +18,8 @@ using UVtools.WPF.Extensions;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using Brushes = Avalonia.Media.Brushes;
 using Pen = Avalonia.Media.Pen;
-using Point = System.Drawing.Point;
-using Size = System.Drawing.Size;
+using Point = Avalonia.Point;
+using Size = Avalonia.Size;
 
 
 namespace UVtools.WPF.Controls
@@ -542,7 +542,7 @@ namespace UVtools.WPF.Controls
             get
             {
                 var viewport = GetImageViewPort();
-                return new Point( (int) (viewport.Width / 2), (int) (viewport.Height / 2));
+                return new Point( (viewport.Width / 2), viewport.Height / 2);
             }
         }
 
@@ -702,7 +702,7 @@ namespace UVtools.WPF.Controls
                 // TODO: Really should update the source method to handle multiple increments rather than calling it multiple times
                 for (int i = 0; i < spins; i++)
                 {
-                   ProcessMouseZoom(e.Delta.Y > 0, e.GetPosition(this).ToDotNet());
+                   ProcessMouseZoom(e.Delta.Y > 0, e.GetPosition(this));
                 }
 
                 //InvalidateVisual();
@@ -781,7 +781,7 @@ namespace UVtools.WPF.Controls
         ///   <c>true</c> if the specified point is located within the image view port; otherwise, <c>false</c>.
         /// </returns>
         public virtual bool IsPointInImage(Point point)
-            => GetImageViewPort().Contains(point.ToAvalonia());
+            => GetImageViewPort().Contains(point);
 
         /// <summary>
         ///   Determines whether the specified point is located within the image view port
@@ -803,7 +803,7 @@ namespace UVtools.WPF.Controls
         ///   <c>true</c> if the specified point is located within the image view port; otherwise, <c>false</c>.
         /// </returns>
         public bool IsPointInImage(double x, double y)
-            => IsPointInImage(new Point((int) x, (int) y));
+            => IsPointInImage(new Point(x, y));
 
         /// <summary>
         ///   Converts the given client size point to represent a coordinate on the source image.
@@ -849,20 +849,20 @@ namespace UVtools.WPF.Controls
         /// <returns><c>Point.Empty</c> if the point could not be matched to the source image, otherwise the new translated point</returns>
         public virtual Point PointToImage(Point point, bool fitToBounds)
         {
-            int x;
-            int y;
+            double x;
+            double y;
 
             var viewport = GetImageViewPort();
 
-            if (!fitToBounds || viewport.Contains(point.ToAvalonia()))
+            if (!fitToBounds || viewport.Contains(point))
             {
-                x = (int) ((point.X + Offset.X - viewport.X) / ZoomFactor);
-                y = (int) ((point.Y + Offset.Y - viewport.Y) / ZoomFactor);
+                x = ((point.X + Offset.X - viewport.X) / ZoomFactor);
+                y = ((point.Y + Offset.Y - viewport.Y) / ZoomFactor);
                 
                 if (fitToBounds)
                 {
-                    x = x.Clamp(0, (int) Image.Size.Width);
-                    y = y.Clamp(0, (int) Image.Size.Height);
+                    x = x.Clamp(0, Image.Size.Width);
+                    y = y.Clamp(0, Image.Size.Height);
                 }
             }
             else
@@ -882,7 +882,7 @@ namespace UVtools.WPF.Controls
         /// <param name="relativeX">The X co-ordinate relative to the <c>x</c> parameter.</param>
         /// <param name="relativeY">The Y co-ordinate relative to the <c>y</c> parameter.</param>
         public void ScrollTo(double x, double y, double relativeX, double relativeY)
-            => ScrollTo(new Point((int) x, (int) y), new Point((int) relativeX, (int) relativeY));
+            => ScrollTo(new Point(x, y), new Point(relativeX, relativeY));
 
         /// <summary>
         ///   Scrolls the control to the given point in the image, offset at the specified display point
@@ -930,7 +930,7 @@ namespace UVtools.WPF.Controls
             if (_zoom != value)
             {
                 _zoom = value;
-                if (UpdateViewPort())
+                if (!UpdateViewPort())
                 {
                     InvalidateArrange();
                 }
@@ -1016,7 +1016,7 @@ namespace UVtools.WPF.Controls
         /// <param name="height">The height of the selection region.</param>
         public void ZoomToRegion(double x, double y, double width, double height)
         {
-            ZoomToRegion(new Rectangle((int)x, (int)y, (int)width, (int)height));
+            ZoomToRegion(new Rect(x, y, width, height));
         }
 
         /// <summary>
@@ -1028,37 +1028,39 @@ namespace UVtools.WPF.Controls
         /// <param name="height">The height of the selection region.</param>
         public void ZoomToRegion(int x, int y, int width, int height)
         {
-            ZoomToRegion(new Rectangle(x, y, width, height));
+            ZoomToRegion(new Rect(x, y, width, height));
         }
 
         /// <summary>
         ///   Adjusts the view port to fit the given region
         /// </summary>
         /// <param name="rectangle">The rectangle to fit the view port to.</param>
-        public virtual void ZoomToRegion(Rectangle rectangle)
+        public virtual void ZoomToRegion(Rectangle rectangle) => ZoomToRegion(rectangle.ToAvalonia());
+
+        /// <summary>
+        ///   Adjusts the view port to fit the given region
+        /// </summary>
+        /// <param name="rectangle">The rectangle to fit the view port to.</param>
+        public virtual void ZoomToRegion(Rect rectangle)
         {
-            var ratioX = Viewport.Width / rectangle.Width;
-            var ratioY = Viewport.Height / rectangle.Height;
-            var zoomFactor = Math.Min(ratioX, ratioY);
-            var cx = rectangle.X + rectangle.Width / 2;
-            var cy = rectangle.Y + rectangle.Height / 2;
+            {
+                var ratioX = Viewport.Width / rectangle.Width;
+                var ratioY = Viewport.Height / rectangle.Height;
+                var zoomFactor = Math.Min(ratioX, ratioY);
+                var cx = rectangle.X + rectangle.Width / 2;
+                var cy = rectangle.Y + rectangle.Height / 2;
 
-            Zoom = (int)(zoomFactor * 100);
-            CenterAt(new Point(cx, cy));
+                Zoom = (int)(zoomFactor * 100);
+                CenterAt(new Point(cx, cy));
+            }
         }
-
-        /// <summary>
-        ///   Adjusts the view port to fit the given region
-        /// </summary>
-        /// <param name="rectangle">The rectangle to fit the view port to.</param>
-        public virtual void ZoomToRegion(Rect rectangle) => ZoomToRegion(rectangle.ToDotNet());
 
         /// <summary>
         ///   Centers the given point in the image in the center of the control
         /// </summary>
         /// <param name="imageLocation">The point of the image to attempt to center.</param>
         public virtual void CenterAt(Point imageLocation)
-         => ScrollTo(imageLocation, new Point((int) (Viewport.Width / 2), (int) (Viewport.Height / 2)));
+         => ScrollTo(imageLocation, new Point(Viewport.Width / 2, Viewport.Height / 2));
 
         /// <summary>
         ///   Centers the given point in the image in the center of the control
@@ -1074,7 +1076,7 @@ namespace UVtools.WPF.Controls
         /// <param name="x">The X co-ordinate of the point to center.</param>
         /// <param name="y">The Y co-ordinate of the point to center.</param>
         public void CenterAt(double x, double y)
-         => CenterAt(new Point((int) x, (int) y));
+         => CenterAt(new Point(x, y));
 
         /// <summary>
         /// Resets the viewport to show the center of the image.
@@ -1181,7 +1183,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="Point"/> which has been scaled to match the current zoom level</returns>
         public virtual Point GetScaledPoint(Point source)
         {
-          return new Point((int)(source.X * this.ZoomFactor), (int)(source.Y * this.ZoomFactor));
+          return new Point(source.X * ZoomFactor, source.Y * ZoomFactor);
         }
 
         /// <summary>
@@ -1202,9 +1204,9 @@ namespace UVtools.WPF.Controls
         /// <param name="width">The width of the rectangle.</param>
         /// <param name="height">The height of the rectangle.</param>
         /// <returns>A <see cref="Rectangle"/> which has been scaled to match the current zoom level</returns>
-        public Rectangle GetScaledRectangle(int x, int y, int width, int height)
+        public Rect GetScaledRectangle(int x, int y, int width, int height)
         {
-          return GetScaledRectangle(new Rectangle(x, y, width, height));
+          return GetScaledRectangle(new Rect(x, y, width, height));
         }
 
         /// <summary>
@@ -1226,9 +1228,9 @@ namespace UVtools.WPF.Controls
         /// <param name="location">The location of the source rectangle.</param>
         /// <param name="size">The size of the source rectangle.</param>
         /// <returns>A <see cref="Rectangle"/> which has been scaled to match the current zoom level</returns>
-        public Rectangle GetScaledRectangle(Point location, Size size)
+        public Rect GetScaledRectangle(Point location, Size size)
         {
-          return GetScaledRectangle(new Rectangle(location, size));
+          return GetScaledRectangle(new Rect(location, size));
         }
 
         /// <summary>
@@ -1247,9 +1249,9 @@ namespace UVtools.WPF.Controls
         /// </summary>
         /// <param name="source">The source <see cref="Rectangle"/> to scale.</param>
         /// <returns>A <see cref="Rectangle"/> which has been scaled to match the current zoom level</returns>
-        public virtual Rectangle GetScaledRectangle(Rectangle source)
+        public virtual Rect GetScaledRectangle(Rect source)
         {
-          return new Rectangle((int)(source.Left * ZoomFactor), (int)(source.Top * this.ZoomFactor), (int)(source.Width * this.ZoomFactor), (int)(source.Height * this.ZoomFactor));
+          return new Rect(source.Left * ZoomFactor, source.Top * ZoomFactor, source.Width * ZoomFactor, source.Height * ZoomFactor);
         }
 
         /// <summary>
@@ -1301,7 +1303,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="Size"/> which has been resized to match the current zoom level</returns>
         public virtual Size GetScaledSize(Size source)
         {
-          return new Size((int)(source.Width * this.ZoomFactor), (int)(source.Height * this.ZoomFactor));
+          return new Size(source.Width * ZoomFactor, source.Height * ZoomFactor);
         }
 
         /// <summary>
@@ -1408,7 +1410,7 @@ namespace UVtools.WPF.Controls
                 return new Rect(sourceLeft, sourceTop, sourceWidth, sourceHeight);
            }
 
-           return new Rect(0, 0, (int) Image.Size.Width, (int) Image.Size.Height);
+           return new Rect(0, 0, Image.Size.Width, Image.Size.Height);
        }
 
         /// <summary>
@@ -1474,7 +1476,7 @@ namespace UVtools.WPF.Controls
             
             if (location.X > Viewport.Width) return;
             if (location.Y > Viewport.Height) return;
-            _startMousePosition = location.ToDotNet();
+            _startMousePosition = location;
             IsPanning = true;
         }
 

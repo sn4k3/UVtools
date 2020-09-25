@@ -658,13 +658,14 @@ namespace UVtools.WPF
                 if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
                     (issue.X == -1 && issue.Y == -1))
                 {
-                    ZoomToFit();
+                    ZoomToFit(e.PointerPressedEventArgs);
                 }
                 else if (issue.X >= 0 && issue.Y >= 0)
                 {
-                    if (Settings.LayerPreview.ZoomIssues /*^ (ModifierKeys & Keys.Alt) != 0*/)
+                    
+                    if (Settings.LayerPreview.ZoomIssues ^ (e.PointerPressedEventArgs.KeyModifiers & KeyModifiers.Alt) != 0)
                     {
-                        ZoomToIssue(issue);
+                        ZoomToIssue(issue, e.PointerPressedEventArgs);
                     }
                     else
                     {
@@ -675,7 +676,7 @@ namespace UVtools.WPF
 
                         if (!LayerImageBox.GetSourceImageRegion().Contains(GetTransposedIssueBounds(issue).ToAvalonia()))
                         {
-                            CenterAtIssue(issue);
+                            CenterAtIssue(issue, e.PointerPressedEventArgs);
                         }
                     }
                 }
@@ -683,18 +684,18 @@ namespace UVtools.WPF
                 ForceUpdateActualLayer(issue.LayerIndex);
                 return;
             }
-
+            
             if (e.PointerPressedEventArgs.ClickCount == 2)
             {
                 if (pointer.Properties.IsLeftButtonPressed)
                 {
-                    ZoomToIssue(issue);
+                    ZoomToIssue(issue, e.PointerPressedEventArgs);
                     return;
                 }
 
                 if (pointer.Properties.IsRightButtonPressed)
                 {
-                    ZoomToFit();
+                    ZoomToFit(e.PointerPressedEventArgs);
                     return;
                 }
             }
@@ -2046,12 +2047,12 @@ namespace UVtools.WPF
         /// Zoom the layer preview to the passed issue, or if appropriate for issue type,
         /// Zoom to fit the plate or print bounds.
         /// </summary>
-        private void ZoomToIssue(LayerIssue issue)
+        private void ZoomToIssue(LayerIssue issue, PointerPressedEventArgs pointer)
         {
             if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
                 (issue.X == -1 && issue.Y == -1))
             {
-                ZoomToFit();
+                ZoomToFit(pointer);
                 return;
             }
 
@@ -2079,12 +2080,12 @@ namespace UVtools.WPF
         /// Center the layer preview on the passed issue, or if appropriate for issue type,
         /// Zoom to fit the plate or print bounds.
         /// </summary>
-        private void CenterAtIssue(LayerIssue issue)
+        private void CenterAtIssue(LayerIssue issue, PointerPressedEventArgs pointer)
         {
             if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
                 (issue.X == -1 && issue.Y == -1))
             {
-                ZoomToFit();
+                ZoomToFit(pointer);
             }
 
             if (issue.X >= 0 && issue.Y >= 0)
@@ -2103,14 +2104,14 @@ namespace UVtools.WPF
             LayerImageBox.ZoomToRegion(SlicerFile.LayerManager.BoundingRectangle);
         }
 
-        private void ZoomToFit()
+        private void ZoomToFit(PointerPressedEventArgs pointer = null)
         {
-            if (ReferenceEquals(SlicerFile, null)) return;
+            if (!IsFileLoaded) return;
 
             // If ALT key is pressed when ZoomToFit is performed, the configured option for 
             // zoom to plate vs. zoom to print bounds will be inverted.
             
-            if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds /*^ (Application. & KeyModifiers.Alt) != 0*/)
+            if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds ^ (!ReferenceEquals(pointer, null) && (pointer.KeyModifiers & KeyModifiers.Alt) != 0))
             {
                 if (!_showLayerImageRotated)
                 {
