@@ -673,7 +673,7 @@ namespace UVtools.WPF
                         // Issues already in view will not be centered, though their color may
                         // change and the crosshair may move to reflect active selections.
 
-                        if (!LayerImageBox.GetSourceImageRegion().Contains(GetTransposedIssueBounds(issue)))
+                        if (!LayerImageBox.GetSourceImageRegion().Contains(GetTransposedIssueBounds(issue).ToAvalonia()))
                         {
                             CenterAtIssue(issue);
                         }
@@ -2016,28 +2016,21 @@ namespace UVtools.WPF
         }
 
 
-        public void CenterLayerAt(Rectangle rectangle, int zoomLevel = 0, bool zoomToRegion = false) => CenterLayerAt(rectangle.ToAvalonia(), zoomLevel, zoomToRegion);
-
-        /// <summary>
-        /// Centers layer view on a middle of a given rectangle
-        /// </summary>
-        /// <param name="rectangle">Rectangle holding coordinates and bounds</param>
-        /// <param name="zoomLevel">Zoom level to set, 0 to ignore or negative value to get current locked zoom level</param>
-        /// <param name="zoomToRegion">Auto zoom to a region and ensure that region area stays all visible when possible, when true this will overwrite zoomLevel</param></param>
-        public void CenterLayerAt(Rect rectangle, int zoomLevel = 0, bool zoomToRegion = false)
+        public void CenterLayerAt(Rectangle rectangle, int zoomLevel = 0, bool zoomToRegion = false)
         {
             var viewPort = LayerImageBox.GetSourceImageRegion();
             if (zoomToRegion ||
                 rectangle.Width * AppSettings.LockedZoomLevel / LayerImageBox.Zoom > viewPort.Width ||
                 rectangle.Height * AppSettings.LockedZoomLevel / LayerImageBox.Zoom > viewPort.Height)
             {
+                Debug.WriteLine("zoom to region");
                 //SupressLayerZoomEvent = true;
                 LayerImageBox.ZoomToRegion(rectangle);
                 //SupressLayerZoomEvent = false;
                 //pbLayer.ZoomOut(true);
                 return;
             }
-
+            Debug.WriteLine($"Center at {zoomLevel}");
             CenterLayerAt(rectangle.X + rectangle.Width / 2, rectangle.Y + rectangle.Height / 2, zoomLevel);
         }
 
@@ -2075,6 +2068,7 @@ namespace UVtools.WPF
                     ShowLayer();
                     tsLayerImageShowCrosshairs.Checked = true;
                 }*/
+                
 
                 CenterLayerAt(GetTransposedIssueBounds(issue), AppSettings.LockedZoomLevel);
 

@@ -17,6 +17,11 @@ namespace UVtools.WPF.Extensions
             return new System.Drawing.Point((int) point.X, (int) point.Y);
         }
 
+        public static Point ToAvalonia(this System.Drawing.Point point)
+        {
+            return new Point(point.X, point.Y);
+        }
+
         public static bool IsEmpty(this Point point)
         {
             return point.X == 0 && point.Y == 0;

@@ -3663,7 +3663,6 @@ namespace UVtools.GUI
                 pbLayer.ZoomOut(true);
                 return;
             }
-
             CenterLayerAt(rectangle.X + rectangle.Width / 2, rectangle.Y + rectangle.Height / 2, zoomLevel);
         }
 

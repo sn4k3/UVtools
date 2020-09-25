@@ -480,8 +480,9 @@ namespace UVtools.WPF.Controls
                 }
                 else
                 {
-                    SizedContainer.Width = _image.Size.Width;
-                    SizedContainer.Height = _image.Size.Height;
+                    UpdateViewPort();
+                    //SizedContainer.Width = _image.Size.Width;
+                    //SizedContainer.Height = _image.Size.Height;
                 }
 
                 InvalidateVisual();
@@ -540,8 +541,8 @@ namespace UVtools.WPF.Controls
         {
             get
             {
-                Rectangle viewport = GetImageViewPort();
-                return new Point((int) (viewport.Width / 2), (int) (viewport.Height / 2));
+                var viewport = GetImageViewPort();
+                return new Point( (int) (viewport.Width / 2), (int) (viewport.Height / 2));
             }
         }
 
@@ -780,7 +781,7 @@ namespace UVtools.WPF.Controls
         ///   <c>true</c> if the specified point is located within the image view port; otherwise, <c>false</c>.
         /// </returns>
         public virtual bool IsPointInImage(Point point)
-            => GetImageViewPort().Contains(point);
+            => GetImageViewPort().Contains(point.ToAvalonia());
 
         /// <summary>
         ///   Determines whether the specified point is located within the image view port
@@ -853,7 +854,7 @@ namespace UVtools.WPF.Controls
 
             var viewport = GetImageViewPort();
 
-            if (!fitToBounds || viewport.Contains(point))
+            if (!fitToBounds || viewport.Contains(point.ToAvalonia()))
             {
                 x = (int) ((point.X + Offset.X - viewport.X) / ZoomFactor);
                 y = (int) ((point.Y + Offset.Y - viewport.Y) / ZoomFactor);
@@ -929,7 +930,7 @@ namespace UVtools.WPF.Controls
             if (_zoom != value)
             {
                 _zoom = value;
-                if (!UpdateViewPort())
+                if (UpdateViewPort())
                 {
                     InvalidateArrange();
                 }
@@ -1107,7 +1108,7 @@ namespace UVtools.WPF.Controls
 
             if (changed)
             {
-                //Debug.WriteLine($"Update ViewPort: {DateTime.Now.Ticks}");
+                Debug.WriteLine($"Update ViewPort: {DateTime.Now.Ticks}");
                 InvalidateArrange();
             }
 
@@ -1361,8 +1362,8 @@ namespace UVtools.WPF.Controls
             if (Image is null) return;
             // Draw iamge
             context.DrawImage(Image,
-                GetSourceImageRegion().ToAvalonia(),
-                GetImageViewPort().ToAvalonia()
+                GetSourceImageRegion(),
+                GetImageViewPort()
                 );
             //SkiaContext.SkCanvas.dr
             // Draw pixel grid
@@ -1384,7 +1385,7 @@ namespace UVtools.WPF.Controls
                     context.DrawLine(pen, new Avalonia.Point(viewport.Y, y), new Avalonia.Point(viewport.Right, y));
                 }
 
-                context.DrawRectangle(pen, viewport.ToAvalonia());
+                context.DrawRectangle(pen, viewport);
             }
         }
 
@@ -1392,55 +1393,55 @@ namespace UVtools.WPF.Controls
        ///   Gets the source image region.
        /// </summary>
        /// <returns></returns>
-       public virtual Rectangle GetSourceImageRegion()
+       public virtual Rect GetSourceImageRegion()
        {
-           if (Image is null) return Rectangle.Empty;
+           if (Image is null) return Rect.Empty;
 
            if (SizeMode != SizeModes.Stretch)
            {
                var viewPort = GetImageViewPort();
-               int sourceLeft = (int) (Offset.X / ZoomFactor);
-               int sourceTop = (int) (Offset.Y / ZoomFactor);
-               int sourceWidth = (int) (viewPort.Width / ZoomFactor);
-               int sourceHeight = (int) (viewPort.Height / ZoomFactor);
+               double sourceLeft = (Offset.X / ZoomFactor);
+               double sourceTop = (Offset.Y / ZoomFactor);
+               double sourceWidth = (viewPort.Width / ZoomFactor);
+               double sourceHeight = (viewPort.Height / ZoomFactor);
 
-                return new Rectangle(sourceLeft, sourceTop, sourceWidth, sourceHeight);
+                return new Rect(sourceLeft, sourceTop, sourceWidth, sourceHeight);
            }
 
-           return new Rectangle(0, 0, (int) Image.Size.Width, (int) Image.Size.Height);
+           return new Rect(0, 0, (int) Image.Size.Width, (int) Image.Size.Height);
        }
 
         /// <summary>
         /// Gets the image view port.
         /// </summary>
         /// <returns></returns>
-        public virtual Rectangle GetImageViewPort()
+        public virtual Rect GetImageViewPort()
         {
-            if (Viewport.Width == 0 && Viewport.Height == 0) return Rectangle.Empty;
+            if (Viewport.Width == 0 && Viewport.Height == 0) return Rect.Empty;
 
-            int xOffset = 0;
-            int yOffset = 0;
-            int width;
-            int height;
+            double xOffset = 0;
+            double yOffset = 0;
+            double width;
+            double height;
 
             if (SizeMode != SizeModes.Stretch)
             {
                 if (AutoCenter)
                 {
-                    xOffset = (int) (!IsHorizontalBarVisible ? (Viewport.Width - ScaledImageWidth) / 2 : 0);
-                    yOffset = (int) (!IsVerticalBarVisible ? (Viewport.Height - ScaledImageHeight) / 2 : 0);
+                    xOffset = (!IsHorizontalBarVisible ? (Viewport.Width - ScaledImageWidth) / 2 : 0);
+                    yOffset = (!IsVerticalBarVisible ? (Viewport.Height - ScaledImageHeight) / 2 : 0);
                 }
 
-                width = (int) Math.Min(ScaledImageWidth - Math.Abs(Offset.X), Viewport.Width);
-                height = (int) Math.Min(ScaledImageHeight - Math.Abs(Offset.Y), Viewport.Height);
+                width = Math.Min(ScaledImageWidth - Math.Abs(Offset.X), Viewport.Width);
+                height = Math.Min(ScaledImageHeight - Math.Abs(Offset.Y), Viewport.Height);
             }
             else
             {
-                width = (int) Viewport.Width;
-                height = (int) Viewport.Height;
+                width = Viewport.Width;
+                height = Viewport.Height;
             }
 
-            return new Rectangle(xOffset, yOffset, width, height);
+            return new Rect(xOffset, yOffset, width, height);
         }
 
         /// <summary>
