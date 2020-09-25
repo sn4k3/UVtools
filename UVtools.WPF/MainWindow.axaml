@@ -116,9 +116,52 @@
           </MenuItem.Icon>
         </MenuItem>
       </MenuItem>
-      <MenuItem Header="_Edit">
-        <MenuItem Header="Copy"/>
-        <MenuItem Header="Paste"/>
+      <MenuItem Header="_Help">
+        <MenuItem 
+          Header="Website"
+          InputGesture="Ctrl + F1" HotKey="Ctrl + F1"
+          Command="{Binding OpenWebsite}">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\internet-explorer-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+        
+        <MenuItem
+          Header="Donate"
+          InputGesture="Ctrl + Shift + F1" HotKey="Ctrl + Shift + F1"
+          Command="{Binding OpenDonateWebsite}">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\donate-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+
+        <MenuItem
+          Header="About"
+          InputGesture="F1" HotKey="F1"
+          Command="{Binding MenuHelpAboutClicked}">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\button-info-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+
+        <MenuItem
+          Header="Benchmark"
+          Command="{Binding MenuHelpBenchmarkClicked}">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\microchip-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+
+        <Separator/>
+
+        <MenuItem
+          Header="Install profiles into PrusaSlicer"
+          Command="{Binding MenuHelpInstallProfilesClicked}">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\CNCMachine-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+        
       </MenuItem>
     </Menu>
 

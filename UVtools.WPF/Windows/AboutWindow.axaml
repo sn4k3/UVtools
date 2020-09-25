@@ -1,0 +1,46 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="UVtools.WPF.Windows.AboutWindow"
+        WindowStartupLocation="CenterOwner"
+        SizeToContent="WidthAndHeight"
+        CanResize="False"
+        Title="About UVtools"
+        Icon="/Assets/Icons/UVtools.ico">
+
+  <StackPanel Orientation="Vertical">
+    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+      <Image Source="/Assets/Icons/UVtools.ico" Width="256"/>
+      <Grid 
+        RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,*"
+        Margin="20"
+        >
+
+        <TextBlock Grid.Row="0" Text="{Binding Software}"/>
+        <TextBlock Grid.Row="2" Text="{Binding Version}"/>
+        <TextBlock Grid.Row="4" Text="{Binding Copyright}"/>
+        <TextBlock Grid.Row="6" Text="{Binding Company}"/>
+        <TextBox Grid.Row="8" 
+                 IsReadOnly="True"
+                 Text="{Binding Description}"/>
+      </Grid>
+    </StackPanel>
+
+    <Border Background="WhiteSmoke">
+        <Button 
+          Command="{Binding Close}"
+          HotKey="Escape"
+          Padding="10" 
+          Margin="20" 
+          HorizontalAlignment="Right">
+          <StackPanel Spacing="10" VerticalAlignment="Center" Orientation="Horizontal">
+            <Image Source="/Assets/Icons/exit-16x16.png"/>
+            <TextBlock Grid.Row="6" Text="Close"/>
+          </StackPanel>
+        </Button>
+    </Border>
+    
+  </StackPanel>
+</Window>

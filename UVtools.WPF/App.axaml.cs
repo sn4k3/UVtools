@@ -9,6 +9,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -55,8 +56,54 @@ namespace UVtools.WPF
         {
             try
             {
-                var info = new ProcessStartInfo("UVtools.exe", $"\"{filePath}\"");
+                var info = new ProcessStartInfo("UVtools.exe", $"\"{filePath}\"")
+                {
+                    UseShellExecute = true
+                };
                 Process.Start(info)?.Dispose();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
+        }
+
+        public static void OpenBrowser(string url)
+        {
+            try
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Process.Start("xdg-open", url);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Process.Start("open", url);
+                }
+                else
+                {
+                    // throw 
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
+            
+        }
+
+        public static void StartProcess(string name)
+        {
+            try
+            {
+                using (Process.Start(new ProcessStartInfo(name)
+                {
+                    UseShellExecute = true
+                })) { }
             }
             catch (Exception e)
             {

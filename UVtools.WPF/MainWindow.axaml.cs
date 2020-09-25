@@ -301,14 +301,7 @@ namespace UVtools.WPF
                 "Properties save complete");
             if (result != ButtonResult.Yes) return;
 
-            try
-            {
-                using (Process.Start(file)) { }
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e);
-            }
+            App.StartProcess(file);
         }
 
         public void OnClickPropertiesSaveClipboard()
@@ -379,14 +372,7 @@ namespace UVtools.WPF
                 "GCode save complete");
             if (result != ButtonResult.Yes) return;
 
-            try
-            {
-                using (Process.Start(file)) { }
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e);
-            }
+            App.StartProcess(file);
         }
 
         public void OnClickGCodeSaveClipboard()
@@ -823,11 +809,7 @@ namespace UVtools.WPF
             });
             
             UpdateTitle();
-        }
 
-        public override void Show()
-        {
-            base.Show();
             AddLog($"{About.Software} start");
             ProcessFiles(Program.Args);
         }
@@ -920,6 +902,21 @@ namespace UVtools.WPF
         {
             SettingsWindow settingsWindow = new SettingsWindow();
             await settingsWindow.ShowDialog(this);
+        }
+
+        public void OpenWebsite()
+        {
+            App.OpenBrowser(About.Website);
+        }
+
+        public void OpenDonateWebsite()
+        {
+            App.OpenBrowser(About.Donate);
+        }
+
+        public async void MenuHelpAboutClicked()
+        {
+            await new AboutWindow().ShowDialog(this);
         }
 
         #endregion
@@ -1120,7 +1117,7 @@ namespace UVtools.WPF
                 {
                     IsGUIEnabled = true;
                 }
-
+                
                 return false;
             });
 
@@ -1697,15 +1694,7 @@ namespace UVtools.WPF
                         "'Yes' to open target folder, 'No' to continue.",
                         "Extraction complete") == ButtonResult.Yes)
                 {
-                    try
-                    {
-                        using (Process.Start(finalPath))
-                        { }
-                    }
-                    catch (Exception e)
-                    {
-                        // ignored
-                    }
+                    App.StartProcess(finalPath);
                 }
             }
             catch (Exception ex)
