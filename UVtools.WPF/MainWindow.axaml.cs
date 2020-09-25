@@ -14,6 +14,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -66,7 +67,13 @@ namespace UVtools.WPF
         #region DataSets
         public ObservableCollection<SlicerProperty> SlicerProperties { get; } = new ObservableCollection<SlicerProperty>();
         public ObservableCollection<LogItem> Logs { get; } = new ObservableCollection<LogItem>();
-        public ObservableCollection<LayerIssue> Issues { get; } = new ObservableCollection<LayerIssue>();
+
+        public ObservableCollection<LayerIssue> Issues
+        {
+            get => _issues;
+            private set => SetProperty(ref _issues, value);
+        }
+
         public ObservableCollection<PixelOperation> Drawings { get; } = new ObservableCollection<PixelOperation>();
         #endregion
 
@@ -107,17 +114,19 @@ namespace UVtools.WPF
             set
             {
                 if (!SetProperty(ref _isGUIEnabled, value)) return;
-                if (!_isGUIEnabled) return;
-                if (!(ProgressWindow is null))
+                if (!_isGUIEnabled)
                 {
-                    LastStopWatch = ProgressWindow.StopWatch;
-                    Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        ProgressWindow.Close();
-                        ProgressWindow.Dispose();
-                        ProgressWindow = new ProgressWindow();
-                    });
+                    ProgressWindow = new ProgressWindow();
+                    return;
                 }
+                //if (ProgressWindow is null) return;
+
+                LastStopWatch = ProgressWindow.StopWatch;
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    ProgressWindow.Close();
+                    ProgressWindow.Dispose();
+                });
 
 
             }
@@ -385,13 +394,244 @@ namespace UVtools.WPF
 
         #region Issues
 
+        public bool IssueCanGoPrevious => Issues.Count > 0 && _issueSelectedIndex > 0;
+        public bool IssueCanGoNext => Issues.Count > 0 && _issueSelectedIndex < Issues.Count-1;
+
+        public void IssueGoPrevious()
+        {
+            if (!IssueCanGoPrevious) return;
+            IssueSelectedIndex--;
+        }
+
+        public void IssueGoNext()
+        {
+            if (!IssueCanGoNext) return;
+            IssueSelectedIndex++;
+        }
+
+        public async void OnClickIssueRemove()
+        {
+            if (IssuesGrid.SelectedItems.Count == 0) return;
+
+            if (await this.MessageBoxQuestion($"Are you sure you want to remove all selected {IssuesGrid.SelectedItems.Count} issues?\n\n" +
+                                    "Warning: Removing an island can cause other issues to appear if there is material present in the layers above it.\n" +
+                                    "Always check previous and next layers before performing an island removal.", "Remove Issues?") != ButtonResult.Yes) return;
+
+            Dictionary<uint, List<LayerIssue>> processIssues = new Dictionary<uint, List<LayerIssue>>();
+            List<uint> layersRemove = new List<uint>();
+
+
+            foreach (LayerIssue issue in IssuesGrid.SelectedItems)
+            {
+                if (issue.Type == LayerIssue.IssueType.TouchingBound) continue;
+
+                if (!processIssues.TryGetValue(issue.Layer.Index, out var issueList))
+                {
+                    issueList = new List<LayerIssue>();
+                    processIssues.Add(issue.Layer.Index, issueList);
+                }
+
+                issueList.Add(issue);
+                if (issue.Type == LayerIssue.IssueType.EmptyLayer)
+                {
+                    layersRemove.Add(issue.Layer.Index);
+                }
+            }
+
+
+            IsGUIEnabled = false;
+            ProgressWindow.SetTitle("Removing selected issues");
+            var progress = ProgressWindow.RestartProgress(false);
+
+            progress.Reset("Removing selected issues", (uint)processIssues.Count);
+            var task = Task<bool>.Factory.StartNew(() =>
+            {
+                bool result = false;
+                try
+                {
+                    Parallel.ForEach(processIssues, layerIssues =>
+                    {
+                        if (progress.Token.IsCancellationRequested) return;
+                        using (var image = SlicerFile[layerIssues.Key].LayerMat)
+                        {
+                            var bytes = image.GetPixelSpan<byte>();
+
+                            bool edited = false;
+
+                            foreach (var issue in layerIssues.Value)
+                            {
+                                if (issue.Type == LayerIssue.IssueType.Island)
+                                {
+                                    foreach (var pixel in issue)
+                                    {
+                                        bytes[image.GetPixelPos(pixel.X, pixel.Y)] = 0;
+                                    }
+
+                                    edited = true;
+                                }
+                                else if (issue.Type == LayerIssue.IssueType.ResinTrap)
+                                {
+                                    using (var contours =
+                                        new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
+                                    {
+                                        CvInvoke.DrawContours(image, contours, -1, new MCvScalar(255), -1);
+                                        //CvInvoke.DrawContours(image, contours, -1, new MCvScalar(255), 2);
+                                    }
+
+                                    edited = true;
+                                }
+
+                            }
+
+                            if (edited)
+                            {
+                                SlicerFile[layerIssues.Key].LayerMat = image;
+                                result = true;
+                            }
+                        }
+
+                        progress++;
+                    });
+
+                    if (layersRemove.Count > 0)
+                    {
+                        SlicerFile.LayerManager.RemoveLayers(layersRemove);
+                        result = true;
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    this.MessageBoxError(ex.Message, "Removal failed");
+                }
+                finally
+                {
+                    IsGUIEnabled = true;
+                }
+
+                return result;
+            });
+
+            await ProgressWindow.ShowDialog(this);
+
+            if (!task.Result) return;
+
+            var whiteListLayers = new List<uint>();
+
+            // Update GUI
+            var issueRemoveList = new List<LayerIssue>();
+            foreach (LayerIssue issue in IssuesGrid.SelectedItems)
+            {
+                switch (issue.Type)
+                {
+                    //if (!issue.HaveValidPoint) continue;
+                    case LayerIssue.IssueType.EmptyLayer:
+                    case LayerIssue.IssueType.ResinTrap:
+                        issueRemoveList.Add(issue);
+                        break;
+                    case LayerIssue.IssueType.Island:
+                    {
+                        issueRemoveList.Add(issue);
+                        var nextLayer = issue.Layer.Index + 1;
+                        if (nextLayer >= SlicerFile.LayerCount) continue;
+                        if (whiteListLayers.Contains(nextLayer)) continue;
+                        whiteListLayers.Add(nextLayer);
+                        break;
+                    }
+                }
+
+                //Issues.Remove(issue);
+                
+            }
+            
+            Issues.RemoveMany(issueRemoveList);
+
+            if (layersRemove.Count > 0)
+            {
+                ResetDataContext();
+            }
+
+            if (Settings.PixelEditor.PartialUpdateIslandsOnEditing)
+            { 
+                UpdateIslands(whiteListLayers);
+            }
+
+            ShowLayer(); // It will call latter so its a extra call
+            CanSave = true;
+        }
+
+        private async void UpdateIslands(List<uint> whiteListLayers)
+        {
+            if (whiteListLayers.Count == 0) return;
+            var islandConfig = GetIslandDetectionConfiguration();
+            var resinTrapConfig = new ResinTrapDetectionConfiguration { Enabled = false };
+            var touchingBoundConfig = new TouchingBoundDetectionConfiguration { Enabled = false };
+            islandConfig.Enabled = true;
+            islandConfig.WhiteListLayers = whiteListLayers;
+
+           
+            IsGUIEnabled = false;
+            ProgressWindow.SetTitle("Updating Issues");
+
+            
+            List<LayerIssue> toRemove = new List<LayerIssue>();
+            foreach (var layerIndex in islandConfig.WhiteListLayers)
+            {
+                foreach (var issue in Issues)
+                {
+                    if(issue.LayerIndex != layerIndex || issue.Type != LayerIssue.IssueType.Island) continue;
+                    toRemove.Add(issue);
+                }
+            }
+            Issues.RemoveMany(toRemove);
+
+            var result = Task<List<LayerIssue>>.Factory.StartNew(() =>
+            {
+                try
+                {
+                    var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig,
+                        touchingBoundConfig, false,
+                        ProgressWindow.RestartProgress());
+
+                    issues.RemoveAll(issue => issue.Type != LayerIssue.IssueType.Island); // Remove all non islands
+                    return issues;
+                }
+
+                catch (OperationCanceledException)
+                {
+
+                }
+                catch (Exception ex)
+                {
+                    this.MessageBoxError(ex.Message, "Error while trying to compute issues");
+                }
+                finally
+                {
+                    IsGUIEnabled = true;
+                }
+
+                return null;
+            });
+            
+            await ProgressWindow.ShowDialog(this);
+            
+            if (result.Result is null || result.Result.Count == 0) return;
+
+            Issues.AddRange(result.Result);
+            Issues = new ObservableCollection<LayerIssue>(Issues.OrderBy(issue => issue.Type)
+                .ThenBy(issue => issue.LayerIndex)
+                .ThenBy(issue => issue.PixelsCount).ToList());
+        }
+
         public int IssueSelectedIndex
         {
             get => _issueSelectedIndex;
             set
             {
-                SetProperty(ref _issueSelectedIndex, value);
+                if (!SetProperty(ref _issueSelectedIndex, value)) return;
                 OnPropertyChanged(nameof(IssueSelectedIndexStr));
+                OnPropertyChanged(nameof(IssueCanGoPrevious));
+                OnPropertyChanged(nameof(IssueCanGoNext));
             }
         }
 
@@ -481,7 +721,7 @@ namespace UVtools.WPF
 
             ProgressWindow.SetTitle("Computing Issues");
 
-            var task = Task.Factory.StartNew(async () =>
+            var task = Task<List<LayerIssue>>.Factory.StartNew(() =>
             {
                 try
                 {
@@ -495,7 +735,7 @@ namespace UVtools.WPF
                 }
                 catch (Exception ex)
                 {
-                    await this.MessageBoxError(ex.Message, "Error while trying compute issues");
+                    this.MessageBoxError(ex.Message, "Error while trying compute issues");
                 }
                 finally
                 {
@@ -506,9 +746,13 @@ namespace UVtools.WPF
             });
 
             await ProgressWindow.ShowDialog(this);
-            if (task.Result.Result is null) return;
-            Issues.AddRange(task.Result.Result);
-            
+            if (task.Result is null) return;
+            Issues.AddRange(task.Result);
+
+            OnPropertyChanged(nameof(IssueSelectedIndexStr));
+            OnPropertyChanged(nameof(IssueCanGoPrevious));
+            OnPropertyChanged(nameof(IssueCanGoNext));
+
         }
 
         public IslandDetectionConfiguration GetIslandDetectionConfiguration()
@@ -766,6 +1010,7 @@ namespace UVtools.WPF
         #endregion
 
         public LayerCache LayerCache = new LayerCache();
+        private ObservableCollection<LayerIssue> _issues = new ObservableCollection<LayerIssue>();
 
         #endregion
 

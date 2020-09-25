@@ -116,9 +116,14 @@
           </MenuItem.Icon>
         </MenuItem>
       </MenuItem>
+
+      <MenuItem Header="_Tools">
+      </MenuItem>
+      
+      
       <MenuItem Header="_Help">
         <MenuItem 
-          Header="Website"
+          Header="_Website"
           InputGesture="Ctrl + F1" HotKey="Ctrl + F1"
           Command="{Binding OpenWebsite}">
           <MenuItem.Icon>
@@ -127,7 +132,7 @@
         </MenuItem>
         
         <MenuItem
-          Header="Donate"
+          Header="_Donate"
           InputGesture="Ctrl + Shift + F1" HotKey="Ctrl + Shift + F1"
           Command="{Binding OpenDonateWebsite}">
           <MenuItem.Icon>
@@ -136,7 +141,7 @@
         </MenuItem>
 
         <MenuItem
-          Header="About"
+          Header="_About"
           InputGesture="F1" HotKey="F1"
           Command="{Binding MenuHelpAboutClicked}">
           <MenuItem.Icon>
@@ -145,7 +150,7 @@
         </MenuItem>
 
         <MenuItem
-          Header="Benchmark"
+          Header="_Benchmark"
           Command="{Binding MenuHelpBenchmarkClicked}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\microchip-16x16.png"/>
@@ -155,7 +160,7 @@
         <Separator/>
 
         <MenuItem
-          Header="Install profiles into PrusaSlicer"
+          Header="_Install profiles into PrusaSlicer"
           Command="{Binding MenuHelpInstallProfilesClicked}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\CNCMachine-16x16.png"/>
@@ -476,16 +481,18 @@
         <Grid 
           RowDefinitions="Auto,*">
           <StackPanel
+            IsEnabled="{Binding IsFileLoaded}"
             Grid.Row="0"
             Orientation="Horizontal"
             Spacing="5"
             VerticalAlignment="Center">
-            <Button
+            <RepeatButton
               IsEnabled="{Binding IssueCanGoPrevious}"
               Command="{Binding IssueGoPrevious}"
-                    >
+              Interval="100"
+              >
               <Image Source="/Assets/Icons/back-16x16.png" Width="16"/>
-            </Button>
+            </RepeatButton>
 
             <TextBlock VerticalAlignment="Center">
               <TextBlock.Text>
@@ -496,11 +503,25 @@
               </TextBlock.Text>
             </TextBlock>
 
-            <Button
+            <RepeatButton
               IsEnabled="{Binding IssueCanGoNext}"
               Command="{Binding IssueGoNext}"
+              Interval="100"
                     >
               <Image Source="/Assets/Icons/next-16x16.png" Width="16"/>
+            </RepeatButton>
+
+            <Button
+              ToolTip.Tip="Remove selected issue when possible. 
+Islands: All pixels are removed (turn black). 
+ResinTrap: All trap areas are filled with white pixels. 
+TouchingBounds: No action, need reslice."
+              IsEnabled="{Binding #IssuesGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+              Command="{Binding OnClickIssueRemove}">
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Image Source="/Assets/Icons/trash-16x16.png" />
+                <TextBlock VerticalAlignment="Center" Text="Remove"/>
+              </StackPanel>
             </Button>
 
           </StackPanel>
@@ -513,10 +534,12 @@
             VerticalAlignment="Center">
 
             <Button
-              IsEnabled="{Binding VisibleThumbnailIndex}"
-              ToolTip.Tip="Replace the current preview image"
-              Command="{Binding OnClickThumbnailImport}">
-              <Image Source="/Assets/Icons/photo-16x16.png" />
+              ToolTip.Tip="Attempt to repair issues"
+              Command="{Binding OnClickRepairIssues}">
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Image Source="/Assets/Icons/wrench-16x16.png" />
+                <TextBlock VerticalAlignment="Center" Text="Repair"/>
+              </StackPanel>
             </Button>
 
             <Button

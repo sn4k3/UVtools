@@ -9,6 +9,7 @@
 using System;
 using System.Diagnostics;
 using System.Timers;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using UVtools.Core.Operations;
@@ -39,6 +40,8 @@ namespace UVtools.WPF.Windows
         public ProgressWindow()
         {
             InitializeComponent();
+
+            Cursor = new Cursor(StandardCursorType.AppStarting);
             
             _timer.Elapsed += (sender, args) =>
             {
