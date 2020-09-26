@@ -278,8 +278,8 @@ namespace UVtools.Core
             if(ReferenceEquals(progress, null)) progress = new OperationProgress();
             progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
 
-            decimal xSteps = Math.Abs(operation.X - 1m) / (operation.LayerIndexEnd - operation.LayerIndexStart);
-            decimal ySteps = Math.Abs(operation.Y - 1m) / (operation.LayerIndexEnd - operation.LayerIndexStart);
+            decimal xSteps = Math.Abs(operation.X - 1) / (operation.LayerIndexEnd - operation.LayerIndexStart);
+            decimal ySteps = Math.Abs(operation.Y - 1) / (operation.LayerIndexEnd - operation.LayerIndexStart);
 
             Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
             {

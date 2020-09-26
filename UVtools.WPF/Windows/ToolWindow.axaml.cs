@@ -62,21 +62,41 @@ namespace UVtools.WPF.Windows
             get => _layerIndexStart;
             set
             {
-                SetProperty(ref _layerIndexStart, value);
-                if(!(ToolControl?.BaseOperation is null))
-                    ToolControl.BaseOperation.LayerIndexStart = _layerIndexStart;
+                if (!(ToolControl?.BaseOperation is null))
+                    ToolControl.BaseOperation.LayerIndexStart = value;
+                
+                if (!SetProperty(ref _layerIndexStart, value)) return;
+                OnPropertyChanged(nameof(LayerStartMM));
+                OnPropertyChanged(nameof(LayerRangeCountStr));
             }
         }
+
+        public float LayerStartMM => App.SlicerFile.GetHeightFromLayer(_layerIndexStart);
 
         public uint LayerIndexEnd
         {
             get => _layerIndexEnd;
             set
             {
-                SetProperty(ref _layerIndexEnd, value);
                 if (!(ToolControl?.BaseOperation is null))
-                    ToolControl.BaseOperation.LayerIndexEnd = _layerIndexEnd;
+                    ToolControl.BaseOperation.LayerIndexEnd = value;
+
+                if (!SetProperty(ref _layerIndexEnd, value)) return;
+                OnPropertyChanged(nameof(LayerEndMM));
+                OnPropertyChanged(nameof(LayerRangeCountStr));
             }
+        }
+
+        public float LayerEndMM => App.SlicerFile.GetHeightFromLayer(_layerIndexEnd);
+        
+        public string LayerRangeCountStr
+        {
+            get
+            {
+                uint layerCount = Math.Max(0, LayerIndexEnd - LayerIndexStart + 1);
+                return $"({layerCount} layers / {(decimal)App.SlicerFile.LayerHeight * layerCount}mm)";
+            }
+            
         }
 
         public uint MaximumLayerIndex => App.MainWindow?.SliderMaximumValue ?? 0;
@@ -188,7 +208,7 @@ namespace UVtools.WPF.Windows
             LayerRangeVisible = layerRangeVisible;
         }
 
-        public ToolWindow(ToolControl toolControl) : this( )
+        public ToolWindow(ToolControl toolControl) : this()
         {
             ToolControl = toolControl;
             toolControl.ParentWindow = this;
@@ -235,7 +255,7 @@ namespace UVtools.WPF.Windows
             timer.Elapsed += (sender, args) =>
             {
                 if (Bounds.Width == 0) return;
-                DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl?.Bounds.Width ?? 0);
+                DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl?.Bounds.Width ?? 0)-40;
                 Description = toolControl.BaseOperation.Description;
                 timer.Stop();
                 timer.Dispose();

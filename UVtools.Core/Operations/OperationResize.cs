@@ -12,6 +12,10 @@ namespace UVtools.Core.Operations
 {
     public class OperationResize : Operation
     {
+        private decimal _x = 100;
+        private decimal _y = 100;
+        private bool _constrainXy;
+        private bool _isFade;
         public override string Title => "Resize";
         public override string Description =>
             "Resize the model by a percentage in the X/Y plane.\n\n" +
@@ -42,11 +46,41 @@ namespace UVtools.Core.Operations
         }
 
 
-        public decimal X { get; set; }
-        public decimal Y { get; set; }
+        public decimal X
+        {
+            get => _x;
+            set
+            {
+                SetProperty(ref _x, value);
+                if (_constrainXy)
+                    Y = value;
+            }
+        }
 
-        public bool ConstrainXY { get; set; }
-        public bool IsFade { get; set; }
+        public decimal Y
+        {
+            get => _y;
+            set => SetProperty(ref _y, value);
+        }
+
+        public bool ConstrainXY
+        {
+            get => _constrainXy;
+            set
+            {
+                if (!SetProperty(ref _constrainXy, value)) return;
+                if (_constrainXy)
+                {
+                    Y = _x;
+                }
+            }
+        }
+
+        public bool IsFade
+        {
+            get => _isFade;
+            set => SetProperty(ref _isFade, value);
+        }
 
 
         public OperationResize()

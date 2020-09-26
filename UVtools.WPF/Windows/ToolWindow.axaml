@@ -133,17 +133,17 @@
           <TextBlock
             Grid.Row="2" Grid.Column="1"
             HorizontalAlignment="Center"
-            Text="mm" />
+            Text="{Binding LayerStartMM, StringFormat=(\{0\}mm)}" />
 
           <TextBlock
             Grid.Row="2" Grid.Column="3"
             HorizontalAlignment="Center"
-            Text="mm" />
+            Text="{Binding LayerEndMM, StringFormat=(\{0\}mm)}" />
 
           <TextBlock
             Grid.Row="2" Grid.Column="4"
             HorizontalAlignment="Center"
-            Text="Layers" />
+            Text="{Binding LayerRangeCountStr}" />
 
         </Grid>
       </StackPanel>

@@ -12,7 +12,7 @@ using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
-    public abstract class Operation
+    public abstract class Operation : BindableBase
     {
         public const byte ClassNameLength = 9;
 

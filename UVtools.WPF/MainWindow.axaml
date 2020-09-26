@@ -67,7 +67,7 @@
           Header="_Close" 
           HotKey="Ctrl+W" InputGesture="Ctrl+W" 
           IsEnabled="{Binding IsFileLoaded}"
-          Command="{Binding CloseFile}">
+          Command="{Binding OnMenuFileCloseFile}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\file-close-16x16.png"/>
           </MenuItem.Icon>
@@ -97,17 +97,28 @@
         
         <Separator/>
 
+        <MenuItem
+                Name="MainMenu.File.Fullscreen"
+                Header="_Fullscreen"
+                InputGesture="F11" HotKey="F11"
+                Command="{Binding OnMenuFileFullscreen}"
+          >
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\expand-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+
         <MenuItem Name="MainMenu.File.Settings" Header="_Settings" InputGesture="F12" HotKey="F12" Command="{Binding MenuFileSettingsClicked}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\settings-16x16.png"/>
           </MenuItem.Icon>
-        </MenuItem>
-        
+        </MenuItem>      
+
         <Separator/>
-        
+
         <MenuItem 
           Name="MainMenu.File.Exit"
-          Header="_Exit Alt+F4" 
+          Header="_Exit" 
           InputGesture="Alt+F4"
           Command="{Binding Close}"
           >

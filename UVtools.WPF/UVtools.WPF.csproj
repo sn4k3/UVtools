@@ -200,4 +200,9 @@
       <PackagePath></PackagePath>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Controls\Tools\ToolResizeControl.axaml.cs">
+      <DependentUpon>ToolResizeControl.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

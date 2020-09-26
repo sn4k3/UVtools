@@ -99,7 +99,6 @@ namespace UVtools.WPF
                 Icon = new Avalonia.Controls.Image
                 {
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/crop-16x16.png"))
-
                 }
             },
             new MenuItem
@@ -309,7 +308,7 @@ namespace UVtools.WPF
 
         public bool CanSave
         {
-            get => _canSave;
+            get => IsFileLoaded && _canSave;
             set => SetProperty(ref _canSave, value);
         }
 
@@ -1193,7 +1192,7 @@ namespace UVtools.WPF
                 {
                     if (!(menuTool.Tag is Operation operation)) continue;
                     menuTool.Header = operation.Title;
-                    menuTool.Click += (sender, args) => ShowRunOperation(operation.GetType());
+                    menuTool.Click += async (sender, args) => await ShowRunOperation(operation.GetType());
                 }
             }
             
@@ -1217,6 +1216,11 @@ namespace UVtools.WPF
             
             UpdateTitle();
 
+            if (Settings.General.StartMaximized)
+            {
+                WindowState = WindowState.Maximized;
+            }
+
             AddLog($"{About.Software} start");
             ProcessFiles(Program.Args);
         }
@@ -1237,6 +1241,10 @@ namespace UVtools.WPF
         {
             AvaloniaXamlLoader.Load(this);
         }
+        #endregion
+
+        #region Overrides
+
         #endregion
 
         #region Events
@@ -1290,19 +1298,41 @@ namespace UVtools.WPF
             ProcessFiles(files, newWindow);
         }
 
+        public async void OnMenuFileCloseFile()
+        {
+            if (CanSave && await this.MessageBoxQuestion("There are unsaved changes. Do you want close this file without saving?") !=
+                ButtonResult.Yes)
+            {
+                return;
+            }
+
+            CloseFile();
+        }
+
         public void CloseFile()
         {
             if (SlicerFile is null) return;
             SlicerFile?.Dispose();
             App.SlicerFile = null;
+            CanSave = false;
+
             _actualLayer = 0;
             LayerCache.Clear();
+
             VisibleThumbnailIndex = 0;
+
             LayerImageBox.Image = null;
+
             SlicerProperties.Clear();
             Issues.Clear();
             Drawings.Clear();
+
             ResetDataContext();
+        }
+
+        public void OnMenuFileFullscreen()
+        {
+            WindowState = WindowState == WindowState.FullScreen ? WindowState.Maximized : WindowState.FullScreen;
         }
 
         public async void MenuFileSettingsClicked()
@@ -1323,7 +1353,6 @@ namespace UVtools.WPF
 
         public async void MenuHelpAboutClicked()
         {
-            new ToolWindow(new ToolFlipControl()).Show(this);
             await new AboutWindow().ShowDialog(this);
         }
 
@@ -1581,7 +1610,7 @@ namespace UVtools.WPF
         /// </summary>
         unsafe void ShowLayer()
         {
-            if (SlicerFile is null) return;
+            if (!IsFileLoaded) return;
             
             Stopwatch watch = Stopwatch.StartNew();
             LayerCache.Layer = SlicerFile[_actualLayer];
@@ -2306,11 +2335,11 @@ namespace UVtools.WPF
         #endregion
 
         #region Operations
-        public Operation ShowRunOperation(Type type)
+        public async Task<Operation> ShowRunOperation(Type type)
         {
-            var operation = ShowOperation(type);
-            RunOperation(operation.Result);
-            return operation.Result;
+            var operation = await ShowOperation(type);
+            RunOperation(operation);
+            return operation;
         }
 
         public async Task<Operation> ShowOperation(Type type)
@@ -2351,7 +2380,7 @@ namespace UVtools.WPF
             return operation;
         }
 
-        public bool RunOperation(Operation baseOperation)
+        public async Task<bool> RunOperation(Operation baseOperation)
         {
             if (baseOperation is null) return false;
 
@@ -2483,7 +2512,7 @@ namespace UVtools.WPF
                 }
             });
 
-            ProgressWindow.ShowDialog(this);
+            await ProgressWindow.ShowDialog(this);
 
             ShowLayer();
             RefreshProperties();
