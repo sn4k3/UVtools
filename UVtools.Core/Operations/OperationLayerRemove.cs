@@ -13,6 +13,8 @@ namespace UVtools.Core.Operations
     {
         #region Overrides
 
+        public override Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.Current;
+        public override bool CanROI { get; set; } = false;
         public override bool PassActualLayerIndex => true;
 
         public override string Title => "Remove layers";

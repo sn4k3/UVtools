@@ -21,10 +21,17 @@ namespace UVtools.Core.Operations
         /// </summary>
         public string Id => GetType().Name.Remove(0, ClassNameLength);
 
+        public virtual Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.All;
+
         /// <summary>
         /// Gets if this operation should set layer range to the actual layer index on layer preview
         /// </summary>
         public virtual bool PassActualLayerIndex => false;
+
+        /// <summary>
+        /// Gets if this control can make use of ROI
+        /// </summary>
+        public virtual bool CanROI { get; set; } = true;
 
         /// <summary>
         /// Gets if this operation supports cancellation

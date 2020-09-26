@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using Emgu.CV.CvEnum;
 
 namespace UVtools.Core.Operations
@@ -27,8 +28,8 @@ namespace UVtools.Core.Operations
                 : $"Flipping {(MakeCopy == true ? "and blending " : "")}layers {LayerIndexStart} through {LayerIndexEnd} {FlipDirection}";
 
         public override string ProgressAction => "Flipped layers";
-        
-        public Enumerations.FlipDirection FlipDirection { get; set; }
+
+        public Enumerations.FlipDirection FlipDirection { get; set; } = Enumerations.FlipDirection.Horizontally;
 
         public bool MakeCopy { get; set; }
 
@@ -53,6 +54,8 @@ namespace UVtools.Core.Operations
                 return flipType;
             }
         }
+
+        public static Array FlipDirections => Enum.GetValues(typeof(Enumerations.FlipDirection));
 
 
 

@@ -21,6 +21,9 @@ namespace UVtools.Core.Operations
     public sealed class OperationLayerImport : Operation
     {
         #region Overrides
+
+        public override Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.None;
+        public override bool CanROI { get; set; } = false;
         public override string Title => "Import Layers";
 
         public override string Description =>

@@ -18,6 +18,8 @@ namespace UVtools.Core.Operations
     {
         #region Overrides
 
+        public override Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.None;
+        public override bool CanROI { get; set; } = false;
         public override string Title => "Adjust layer height";
         public override string Description =>
             "Adjust the layer height of the model\n\n" +

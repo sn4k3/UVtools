@@ -32,8 +32,10 @@ using ReactiveUI;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
 using UVtools.WPF.Controls;
+using UVtools.WPF.Controls.Tools;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 using UVtools.WPF.Windows;
@@ -640,7 +642,7 @@ namespace UVtools.WPF
 
         private void IssuesGridOnSelectionChanged(PointerPressedEventArgs pointer = null)
         {
-            if (IssuesGrid.SelectedItems.Count > 1) return;
+            if (IssuesGrid.SelectedItems.Count != 1) return;
             if (!(IssuesGrid.SelectedItem is LayerIssue issue)) return;
 
             if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
@@ -674,25 +676,25 @@ namespace UVtools.WPF
 
         private void IssuesGridOnCellPointerPressed(object? sender, DataGridCellPointerPressedEventArgs e)
         {
-            if(!(IssuesGrid.SelectedItem is LayerIssue issue)) return;
+            if (IssuesGrid.SelectedItems.Count != 1 || e.PointerPressedEventArgs.ClickCount == 2) return;
+            if (!(IssuesGrid.SelectedItem is LayerIssue issue)) return;
             // Double clicking an issue will center and zoom into the 
             // selected issue. Left click on an issue will zoom to fit.
             
             var pointer = e.PointerPressedEventArgs.GetCurrentPoint(IssuesGrid);
-            if (e.PointerPressedEventArgs.ClickCount == 2)
+            if (pointer.Properties.IsLeftButtonPressed)
             {
-                if (pointer.Properties.IsLeftButtonPressed)
-                {
-                    ZoomToIssue(issue, e.PointerPressedEventArgs);
-                    return;
-                }
-
-                if (pointer.Properties.IsRightButtonPressed)
-                {
-                    ZoomToFit(e.PointerPressedEventArgs);
-                    return;
-                }
+                ZoomToIssue(issue, e.PointerPressedEventArgs);
+                return;
             }
+
+            if (pointer.Properties.IsRightButtonPressed)
+            {
+                ZoomToFit(e.PointerPressedEventArgs);
+                return;
+            }
+
+            ForceUpdateActualLayer(issue.LayerIndex);
 
         }
 
@@ -1156,6 +1158,7 @@ namespace UVtools.WPF
 
         public async void MenuHelpAboutClicked()
         {
+            new ToolWindow(new ToolFlipControl()).Show(this);
             await new AboutWindow().ShowDialog(this);
         }
 

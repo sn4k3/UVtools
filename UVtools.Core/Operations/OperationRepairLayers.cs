@@ -14,6 +14,7 @@ namespace UVtools.Core.Operations
 {
     public class OperationRepairLayers : Operation
     {
+        public override bool CanROI { get; set; } = false;
         public override string Title => "Repair layers and issues";
         public override string Description => null;
 

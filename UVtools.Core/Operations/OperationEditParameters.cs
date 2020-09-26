@@ -12,6 +12,10 @@ namespace UVtools.Core.Operations
 {
     public class OperationEditParameters : Operation
     {
+        public override Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.None;
+
+        public override bool CanROI { get; set; } = false;
+
         public override string Title => "Edit print parameters";
 
         public override string Description =>

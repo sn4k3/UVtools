@@ -41,6 +41,8 @@ namespace UVtools.Core.Operations
 
         #region Overrides
 
+        public override Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.None;
+        public override bool CanROI { get; set; } = false;
         public override string Title => "Change print resolution";
         public override string Description =>
             "Crops or resizes all layer images to fit an alternate print area\n\n" +

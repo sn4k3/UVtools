@@ -1,0 +1,243 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="UVtools.WPF.Windows.ToolWindow"
+        CanResize="False"
+        SizeToContent="WidthAndHeight"
+        Title="Tool"
+        Icon="/Assets/Icons/UVtools.ico">
+  <StackPanel Orientation="Vertical">
+    
+    <!-- Description -->
+    <Border
+      Grid.Row="0"
+      Background="WhiteSmoke"
+      Padding="20"
+      IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+      >
+      <Panel>
+        <TextBlock
+          HorizontalAlignment="Left"
+          TextWrapping="Wrap"
+          MaxWidth="{Binding DescriptionMaxWidth}"
+          FontSize="16"
+          Text="{Binding Description}"/>
+      </Panel>
+    </Border>
+
+    <!-- Layer Range -->
+    <Border
+      Background="WhiteSmoke"
+      Margin="5"
+      BorderBrush="LightBlue"
+      BorderThickness="4"
+      IsVisible="{Binding LayerRangeVisible}">
+
+      <StackPanel Orientation="Vertical">
+        <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Layer range selector"/>
+
+        <Grid
+          RowDefinitions="Auto,5,Auto"
+          ColumnDefinitions="Auto,100,Auto,100,150"
+          Margin="15">
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            Text="From:"
+            Margin="0,0,10,0"
+            />
+
+          <NumericUpDown
+            Grid.Row="0"
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="{Binding MaximumLayerIndex}"
+            Value="{Binding LayerIndexStart}"
+            />
+
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            Text="To:"
+            Margin="20,0,10,0"
+            />
+
+          <NumericUpDown
+            Grid.Row="0"
+            Grid.Column="3"
+            VerticalAlignment="Center"
+            Maximum="{Binding MaximumLayerIndex}"
+            Value="{Binding LayerIndexEnd}"
+            />
+
+          <Button
+            Grid.Row="0"
+            Grid.Column="4"
+            Margin="10,0,0,0"
+            VerticalAlignment="Stretch"
+            Padding="10,0,10,0"
+            Content="Select ⮟"
+            Command="{Binding #LayerSelectPreset.Open}"
+            >
+            <Button.ContextMenu>
+              <ContextMenu Name="LayerSelectPreset" PlacementMode="Bottom">
+                <MenuItem
+                  Header="_All layers"
+                  HotKey="Ctrl + Shift + A" InputGesture="Ctrl + Shift + A"
+                  Command="{Binding SelectAllLayers}"
+                  />
+
+                <MenuItem
+                  Header="_Current layer"
+                  HotKey="Ctrl + Shift + C" InputGesture="Ctrl + Shift + C"
+                  Command="{Binding SelectCurrentLayer}"
+                  />
+
+                <Separator />
+
+                <MenuItem
+                  Header="_Bottom layers"
+                  HotKey="Ctrl + Shift + B" InputGesture="Ctrl + Shift + B"
+                  Command="{Binding SelectBottomLayers}"
+                  />
+
+                <MenuItem
+                  Header="_Normal layers"
+                  HotKey="Ctrl + Shift + N" InputGesture="Ctrl + Shift + N"
+                  Command="{Binding SelectNormalLayers}"
+                  />
+
+                <Separator />
+
+                <MenuItem
+                  Header="_First layer"
+                  HotKey="Ctrl + Shift + F" InputGesture="Ctrl + Shift + F"
+                  Command="{Binding SelectFirstLayer}"
+                  />
+
+                <MenuItem
+                  Header="_Last layer"
+                  HotKey="Ctrl + Shift + L" InputGesture="Ctrl + Shift + L"
+                  Command="{Binding SelectLastLayer}"
+                  />
+
+              </ContextMenu>
+            </Button.ContextMenu>
+          </Button>
+
+          <TextBlock
+            Grid.Row="2" Grid.Column="1"
+            HorizontalAlignment="Center"
+            Text="mm" />
+
+          <TextBlock
+            Grid.Row="2" Grid.Column="3"
+            HorizontalAlignment="Center"
+            Text="mm" />
+
+          <TextBlock
+            Grid.Row="2" Grid.Column="4"
+            HorizontalAlignment="Center"
+            Text="Layers" />
+
+        </Grid>
+      </StackPanel>
+
+    </Border>
+
+    <!-- ROI -->
+    <Border
+      Background="WhiteSmoke"
+      Margin="5"
+      BorderBrush="LightBlue"
+      BorderThickness="4"
+      IsVisible="{Binding IsROIVisible}"
+      >
+
+      <StackPanel Orientation="Vertical">
+        <TextBlock
+          Padding="10"
+          Background="LightBlue"
+          FontWeight="Bold"
+          Text="ROI - Region of interest"/>
+
+        <TextBlock Margin="15"
+                   Text="{Binding ROI, StringFormat=Region: \{0\}}" />
+
+        <StackPanel Spacing="20" Margin="15,0,15,15" Orientation="Horizontal">
+          <CheckBox 
+            Content="Clear ROI after perform the operation"
+            IsChecked="{Binding ClearROIAfterOperation}"
+            />
+          <Button 
+            Padding="5" 
+            Content="Clear ROI"
+            Command="{Binding ClearROI}"/>
+        </StackPanel>
+        
+      </StackPanel>
+
+    </Border>
+
+    <Border
+      Background="WhiteSmoke"
+      Margin="5"
+      BorderBrush="LightBlue"
+      BorderThickness="4">
+
+      <StackPanel Orientation="Vertical">
+        <TextBlock
+          Padding="10"
+          Background="LightBlue"
+          FontWeight="Bold"
+          Text="{Binding Title}"/>
+
+        <Border Margin="15" Child="{Binding ContentControl}"/>
+      </StackPanel>
+
+    </Border>
+
+    <Border Margin="0,10,0,0" Padding="5,20" Background="LightGray">
+      <Grid ColumnDefinitions="*">
+        <StackPanel Orientation="Horizontal">
+
+        </StackPanel>
+
+        <StackPanel Spacing="10" HorizontalAlignment="Right" Orientation="Horizontal">
+          <Button
+            Padding="10"
+            IsDefault="True"
+            IsEnabled="{Binding ButtonOkEnabled}"
+            Command="{Binding Process}">
+            <StackPanel
+              Orientation="Horizontal"
+              Spacing="10">
+              <Image Source="/Assets/Icons/accept-16x16.png"/>
+              <TextBlock Text="{Binding ButtonOkText}"/>
+            </StackPanel>
+          </Button>
+
+          <Button 
+            Padding="10"
+            IsCancel="True"
+            Command="{Binding Close}"
+            HotKey="Escape">
+            <StackPanel 
+              Orientation="Horizontal"
+              Spacing="10">
+              <Image Source="/Assets/Icons/exit-16x16.png"/>
+              <TextBlock Text="Cancel"/>
+            </StackPanel>
+          </Button>
+        </StackPanel>
+        
+      </Grid>
+    </Border>
+
+  </StackPanel>
+</Window>

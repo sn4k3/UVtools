@@ -6,6 +6,17 @@ namespace UVtools.Core
 {
     public class Enumerations
     {
+        public enum LayerRangeSelection : byte
+        {
+            None,
+            All,
+            Current,
+            Bottom,
+            Normal,
+            First,
+            Last
+        }
+
         public enum FlipDirection : byte
         {
             Horizontally,

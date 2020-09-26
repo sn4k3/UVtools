@@ -636,7 +636,7 @@ namespace UVtools.WPF.Controls
             set => SetProperty(ref _pixelGridThreshold, value);
         }
 
-        public RectangleF SelectionRegion
+        public Rect SelectionRegion
         {
             get => _selectionRegion;
             set => SetProperty(ref _selectionRegion, value);
@@ -660,7 +660,7 @@ namespace UVtools.WPF.Controls
         private bool _invertMouse = false;
         private bool _autoCenter = true;
         private SizeModes _sizeMode = SizeModes.Normal;
-        private RectangleF _selectionRegion;
+        private Rect _selectionRegion;
 
         public ContentControl FillContainer { get; } = new ContentControl
         {
@@ -1313,7 +1313,7 @@ namespace UVtools.WPF.Controls
         public virtual void SelectAll()
         {
             if (Image is null) return;
-            SelectionRegion = new RectangleF(0, 0, (float) Image.Size.Width, (float) Image.Size.Height);
+            SelectionRegion = new Rect(0, 0, Image.Size.Width, Image.Size.Height);
         }
 
         /// <summary>
@@ -1321,7 +1321,7 @@ namespace UVtools.WPF.Controls
         /// </summary>
         public virtual void SelectNone()
         {
-            SelectionRegion = RectangleF.Empty;
+            SelectionRegion = Rect.Empty;
         }
 
         #endregion

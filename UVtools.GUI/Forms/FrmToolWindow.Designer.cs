@@ -41,6 +41,7 @@ namespace UVtools.GUI.Forms
             this.lbLayerRangeFromMM = new System.Windows.Forms.Label();
             this.lbLayerRangeToMM = new System.Windows.Forms.Label();
             this.nmLayerRangeEnd = new System.Windows.Forms.NumericUpDown();
+            this.btnLayerRangeSelect = new UVtools.GUI.Controls.SplitButton();
             this.cmLayerRange = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.btnLayerRangeAllLayers = new System.Windows.Forms.ToolStripMenuItem();
             this.btnLayerRangeCurrentLayer = new System.Windows.Forms.ToolStripMenuItem();
@@ -61,11 +62,10 @@ namespace UVtools.GUI.Forms
             this.btnOk = new System.Windows.Forms.Button();
             this.pnROI = new System.Windows.Forms.Panel();
             this.gbROI = new System.Windows.Forms.GroupBox();
+            this.cbClearRoiAfterOperation = new System.Windows.Forms.CheckBox();
             this.lbRoi = new System.Windows.Forms.Label();
             this.btnClearRoi = new System.Windows.Forms.Button();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.cbClearRoiAfterOperation = new System.Windows.Forms.CheckBox();
-            this.btnLayerRangeSelect = new UVtools.GUI.Controls.SplitButton();
             this.pnDescription.SuspendLayout();
             this.pnLayerRange.SuspendLayout();
             this.gbLayerRange.SuspendLayout();
@@ -192,6 +192,16 @@ namespace UVtools.GUI.Forms
             this.nmLayerRangeEnd.Size = new System.Drawing.Size(120, 26);
             this.nmLayerRangeEnd.TabIndex = 14;
             this.nmLayerRangeEnd.ValueChanged += new System.EventHandler(this.EventValueChanged);
+            // 
+            // btnLayerRangeSelect
+            // 
+            this.btnLayerRangeSelect.Location = new System.Drawing.Point(359, 31);
+            this.btnLayerRangeSelect.Menu = this.cmLayerRange;
+            this.btnLayerRangeSelect.Name = "btnLayerRangeSelect";
+            this.btnLayerRangeSelect.Size = new System.Drawing.Size(180, 26);
+            this.btnLayerRangeSelect.TabIndex = 18;
+            this.btnLayerRangeSelect.Text = "Select";
+            this.btnLayerRangeSelect.UseVisualStyleBackColor = true;
             // 
             // cmLayerRange
             // 
@@ -435,6 +445,16 @@ namespace UVtools.GUI.Forms
             this.toolTip.SetToolTip(this.gbROI, "The impact of the operation will be limited to the ROI, which can be set directly" +
         " from the layer preview window.");
             // 
+            // cbClearRoiAfterOperation
+            // 
+            this.cbClearRoiAfterOperation.AutoSize = true;
+            this.cbClearRoiAfterOperation.Location = new System.Drawing.Point(11, 61);
+            this.cbClearRoiAfterOperation.Name = "cbClearRoiAfterOperation";
+            this.cbClearRoiAfterOperation.Size = new System.Drawing.Size(292, 24);
+            this.cbClearRoiAfterOperation.TabIndex = 3;
+            this.cbClearRoiAfterOperation.Text = "Clear ROI after perform the operation";
+            this.cbClearRoiAfterOperation.UseVisualStyleBackColor = true;
+            // 
             // lbRoi
             // 
             this.lbRoi.AutoSize = true;
@@ -463,26 +483,6 @@ namespace UVtools.GUI.Forms
             this.toolTip.ReshowDelay = 100;
             this.toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             this.toolTip.ToolTipTitle = "Information";
-            // 
-            // cbClearRoiAfterOperation
-            // 
-            this.cbClearRoiAfterOperation.AutoSize = true;
-            this.cbClearRoiAfterOperation.Location = new System.Drawing.Point(11, 61);
-            this.cbClearRoiAfterOperation.Name = "cbClearRoiAfterOperation";
-            this.cbClearRoiAfterOperation.Size = new System.Drawing.Size(292, 24);
-            this.cbClearRoiAfterOperation.TabIndex = 3;
-            this.cbClearRoiAfterOperation.Text = "Clear ROI after perform the operation";
-            this.cbClearRoiAfterOperation.UseVisualStyleBackColor = true;
-            // 
-            // btnLayerRangeSelect
-            // 
-            this.btnLayerRangeSelect.Location = new System.Drawing.Point(359, 31);
-            this.btnLayerRangeSelect.Menu = this.cmLayerRange;
-            this.btnLayerRangeSelect.Name = "btnLayerRangeSelect";
-            this.btnLayerRangeSelect.Size = new System.Drawing.Size(180, 26);
-            this.btnLayerRangeSelect.TabIndex = 18;
-            this.btnLayerRangeSelect.Text = "Select";
-            this.btnLayerRangeSelect.UseVisualStyleBackColor = true;
             // 
             // FrmToolWindow
             // 
