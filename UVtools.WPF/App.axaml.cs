@@ -9,11 +9,14 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform;
 using Avalonia.ThemeManager;
 using UVtools.Core.FileFormats;
 
@@ -110,6 +113,25 @@ namespace UVtools.WPF
                 Debug.WriteLine(e);
             }
             
+        }
+
+        public static Stream GetAsset(string url)
+        {
+            Uri uri;
+
+            // Allow for assembly overrides
+            if (url.StartsWith("avares://"))
+            {
+                uri = new Uri(url);
+            }
+            else
+            {
+                var assemblyName = Assembly.GetEntryAssembly().GetName().Name;
+                uri = new Uri($"avares://{assemblyName}{url}");
+            }
+
+            var res = AvaloniaLocator.Current.GetService<IAssetLoader>().Open(uri);
+            return res;
         }
 
         #endregion

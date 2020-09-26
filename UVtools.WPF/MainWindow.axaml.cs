@@ -21,6 +21,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using DynamicData;
 using Emgu.CV;
@@ -65,6 +66,159 @@ namespace UVtools.WPF
         public Border LayerNavigationTooltipBorder;
            
         public DataGrid IssuesGrid;
+
+        public static MenuItem[] MenuTools { get; } =
+        {
+            new MenuItem
+            {
+                Tag = new OperationEditParameters(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/wrench-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationRepairLayers(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/toolbox-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationMove(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/move-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationResize(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/crop-16x16.png"))
+
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationFlip(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/flip-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationRotate(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/sync-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationSolidify(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/square-solid-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationMorph(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/geometry-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationMask(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/mask-16x16.png"))
+                    }
+            },
+            new MenuItem
+            {
+                Tag = new OperationPixelDimming(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/pixel-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationThreshold(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/th-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationBlur(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/blur-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationPattern(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/pattern-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationLayerReHeight(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/ladder-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationChangeResolution(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/resize-16x16.png"))
+                }
+            },
+        };
+
+        public static MenuItem[] LayerActions { get; } =
+        {
+            new MenuItem
+            {
+                Tag = new OperationLayerImport(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/file-import-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationLayerClone(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/copy-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationLayerRemove(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/trash-16x16.png"))
+                }
+            },
+        };
 
         #region DataSets
         public ObservableCollection<SlicerProperty> SlicerProperties { get; } = new ObservableCollection<SlicerProperty>();
@@ -1033,6 +1187,17 @@ namespace UVtools.WPF
             _showLayerOutlineLayerBoundary = Settings.LayerPreview.LayerBoundsOutline;
             _showLayerOutlineHollowAreas = Settings.LayerPreview.HollowOutline;
 
+            foreach (var menuItem in new[] { MenuTools, LayerActions})
+            {
+                foreach (var menuTool in menuItem)
+                {
+                    if (!(menuTool.Tag is Operation operation)) continue;
+                    menuTool.Header = operation.Title;
+                    menuTool.Click += (sender, args) => ShowRunOperation(operation.GetType());
+                }
+            }
+            
+
             /*LayerSlider.PropertyChanged += (sender, args) =>
             {
                 Debug.WriteLine(args.Property.Name);
@@ -1284,17 +1449,7 @@ namespace UVtools.WPF
 
             VisibleThumbnailIndex = 1;
 
-            if (!(SlicerFile.Configs is null))
-            {
-                foreach (var config in SlicerFile.Configs)
-                {
-                    var type = config.GetType();
-                    foreach (var property in type.GetProperties())
-                    {
-                        SlicerProperties.Add(new SlicerProperty(property.Name, property.GetValue(config, null)?.ToString(), type.Name));
-                    }
-                }
-            }
+            RefreshProperties();
             
             UpdateTitle();
 
@@ -2150,6 +2305,222 @@ namespace UVtools.WPF
         }
         #endregion
 
+        #region Operations
+        public Operation ShowRunOperation(Type type)
+        {
+            var operation = ShowOperation(type);
+            RunOperation(operation.Result);
+            return operation.Result;
+        }
+
+        public async Task<Operation> ShowOperation(Type type)
+        {
+            var typeBase = typeof(ToolControl);
+            var classname = $"{typeBase.Namespace}.Tool{type.Name.Remove(0, Operation.ClassNameLength)}Control";
+            var controlType = Type.GetType(classname);
+            ToolControl control;
+
+            bool removeContent = false;
+            if (controlType is null)
+            {
+                controlType = typeBase;
+                removeContent = true;
+                control = new ToolControl(type.CreateInstance<Operation>());
+            }
+            else
+            {
+                control = controlType.CreateInstance<ToolControl>();
+                if (control is null) return null;
+            }
+
+            if (!control.CanRun)
+            {
+                return null;
+            }
+
+            if (removeContent)
+            {
+                control.IsVisible = false;
+            }
+
+            var window = new ToolWindow(control);
+            //window.ShowDialog(this);
+            await window.ShowDialog(this);
+            if (window.DialogResult != DialogResults.OK) return null;
+            var operation = control.BaseOperation;
+            return operation;
+        }
+
+        public bool RunOperation(Operation baseOperation)
+        {
+            if (baseOperation is null) return false;
+
+            switch (baseOperation)
+            {
+                case OperationEditParameters operation:
+                    /*foreach (var modifier in operation.Modifiers.Where(modifier => modifier.HasChanged))
+                    {
+                        SlicerFile.SetValueFromPrintParameterModifier(modifier, modifier.NewValue);
+                    }*/
+                    SlicerFile.SetValuesFromPrintParametersModifiers();
+                    RefreshProperties();
+
+                    CanSave = true;
+
+                    return false;
+                case OperationRepairLayers operation:
+                    if (ReferenceEquals(Issues, null))
+                    {
+                        var islandConfig = GetIslandDetectionConfiguration();
+                        islandConfig.Enabled =
+                            operation.RepairIslands && operation.RemoveIslandsBelowEqualPixelCount > 0;
+                        var resinTrapConfig = GetResinTrapDetectionConfiguration();
+                        resinTrapConfig.Enabled = operation.RepairResinTraps;
+                        var touchingBoundConfig = new TouchingBoundDetectionConfiguration { Enabled = false };
+
+                        if (islandConfig.Enabled || resinTrapConfig.Enabled)
+                        {
+                            ComputeIssues(islandConfig, resinTrapConfig, touchingBoundConfig, Settings.Issues.ComputeEmptyLayers);
+                        }
+                    }
+
+                    operation.Issues = Issues.ToList();
+
+                    break;
+            }
+
+            IsGUIEnabled = false;
+
+            ProgressWindow.SetTitle(baseOperation.ProgressTitle);
+
+            var task = Task.Factory.StartNew(async () =>
+            {
+                var backup = new Layer[baseOperation.LayerRangeCount];
+                uint i = 0;
+                for (uint layerIndex = baseOperation.LayerIndexStart; layerIndex <= baseOperation.LayerIndexEnd; layerIndex++)
+                {
+                    backup[i++] = SlicerFile[layerIndex].Clone();
+                }
+
+                try
+                {
+                    switch (baseOperation)
+                    {
+                        // Tools
+                        case OperationRepairLayers operation:
+                            SlicerFile.LayerManager.RepairLayers(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationMove operation:
+                            SlicerFile.LayerManager.Move(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationResize operation:
+                            SlicerFile.LayerManager.Resize(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationFlip operation:
+                            SlicerFile.LayerManager.Flip(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationRotate operation:
+                            SlicerFile.LayerManager.Rotate(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationSolidify operation:
+                            SlicerFile.LayerManager.Solidify(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationMorph operation:
+                            SlicerFile.LayerManager.Morph(operation, BorderType.Default, new MCvScalar(), ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationMask operation:
+                            SlicerFile.LayerManager.Mask(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationPixelDimming operation:
+                            SlicerFile.LayerManager.PixelDimming(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationThreshold operation:
+                            SlicerFile.LayerManager.ThresholdPixels(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationBlur operation:
+                            SlicerFile.LayerManager.Blur(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+
+                        case OperationChangeResolution operation:
+                            SlicerFile.LayerManager.ChangeResolution(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationLayerReHeight operation:
+                            SlicerFile.LayerManager.ReHeight(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationPattern operation:
+                            SlicerFile.LayerManager.Pattern(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        // Actions
+                        case OperationLayerImport operation:
+                            SlicerFile.LayerManager.Import(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationLayerClone operation:
+                            SlicerFile.LayerManager.CloneLayer(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationLayerRemove operation:
+                            SlicerFile.LayerManager.RemoveLayers(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+
+                        default:
+                            throw new NotImplementedException();
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    i = 0;
+                    for (uint layerIndex = baseOperation.LayerIndexStart; layerIndex <= baseOperation.LayerIndexEnd; layerIndex++)
+                    {
+                        SlicerFile[layerIndex] = backup[i++];
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await this.MessageBoxError(ex.Message, $"{baseOperation.Title} Error");
+                }
+                finally
+                {
+                    IsGUIEnabled = true;
+                }
+            });
+
+            ProgressWindow.ShowDialog(this);
+
+            ShowLayer();
+            RefreshProperties();
+            ResetDataContext();
+
+            CanSave = true;
+
+            switch (baseOperation)
+            {
+                // Tools
+                case OperationRepairLayers operation:
+                    OnClickDetectIssues();
+                    break;
+            }
+
+
+            return true;
+        }
+
         #endregion
-    }
+
+        public void RefreshProperties()
+        {
+            SlicerProperties.Clear();
+            if (!(SlicerFile.Configs is null))
+            {
+                foreach (var config in SlicerFile.Configs)
+                {
+                    var type = config.GetType();
+                    foreach (var property in type.GetProperties())
+                    {
+                        SlicerProperties.Add(new SlicerProperty(property.Name, property.GetValue(config, null)?.ToString(), type.Name));
+                    }
+                }
+            }
+        }
+
+        #endregion
+        }
 }

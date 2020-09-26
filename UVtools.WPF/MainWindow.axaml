@@ -117,7 +117,11 @@
         </MenuItem>
       </MenuItem>
 
-      <MenuItem Header="_Tools">
+      <MenuItem
+        Header="_Tools"
+        IsVisible="{Binding IsFileLoaded}"
+        IsEnabled="{Binding IsFileLoaded}"
+        Items="{Binding MenuTools}">
       </MenuItem>
       
       

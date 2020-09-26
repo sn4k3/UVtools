@@ -7,7 +7,7 @@ using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools
 {
-    public abstract class ToolControl : UserControl, INotifyPropertyChanged
+    public class ToolControl : UserControl, INotifyPropertyChanged
     {
         #region BindableBase
         /// <summary>
@@ -61,9 +61,16 @@ namespace UVtools.WPF.Controls.Tools
         public Operation BaseOperation = null;
         public ToolWindow ParentWindow = null;
 
+        public bool CanRun { get; set; } = true;
+
         public ToolControl()
         {
             InitializeComponent();
+        }
+
+        public ToolControl(Operation operation) : this()
+        {
+            BaseOperation = operation;
         }
 
         private void InitializeComponent()

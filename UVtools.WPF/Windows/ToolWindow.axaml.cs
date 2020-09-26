@@ -149,6 +149,8 @@ namespace UVtools.WPF.Windows
 
         #region Content
 
+        public bool IsContentVisible => ContentControl is null || ContentControl.IsVisible;
+
         public IControl ContentControl
         {
             get => _contentControl;
@@ -196,6 +198,8 @@ namespace UVtools.WPF.Windows
             IsROIVisible = toolControl.BaseOperation.CanROI;
             ContentControl = toolControl;
             ButtonOkText = toolControl.BaseOperation.ButtonOkText;
+
+            OnPropertyChanged(nameof(IsContentVisible));
 
             switch (toolControl.BaseOperation.LayerRangeSelection)
             {

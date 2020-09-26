@@ -56,8 +56,5 @@ namespace UVtools.Core.Operations
         }
 
         public static Array FlipDirections => Enum.GetValues(typeof(Enumerations.FlipDirection));
-
-
-
     }
 }

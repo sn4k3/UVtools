@@ -184,7 +184,9 @@
 
     </Border>
 
+    <!-- Content -->
     <Border
+      IsVisible="{Binding IsContentVisible}"
       Background="WhiteSmoke"
       Margin="5"
       BorderBrush="LightBlue"
