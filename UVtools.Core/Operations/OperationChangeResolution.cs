@@ -5,6 +5,8 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
+using System;
 using System.Drawing;
 using System.Text;
 using UVtools.Core.Objects;
@@ -13,12 +15,16 @@ namespace UVtools.Core.Operations
 {
     public sealed class OperationChangeResolution : Operation
     {
+        private uint _newResolutionX;
+        private uint _newResolutionY;
+
         #region Subclasses
         public class Resolution
         {
             public uint ResolutionX { get; }
             public uint ResolutionY { get; }
             public string Name { get; }
+            public bool IsEmpty => ResolutionX == 0 && ResolutionY == 0;
 
             public Resolution(uint resolutionX, uint resolutionY, string name = null)
             {
@@ -29,6 +35,7 @@ namespace UVtools.Core.Operations
 
             public override string ToString()
             {
+                if(IsEmpty) return string.Empty;
                 var str = $"{ResolutionX} x {ResolutionY}";
                 if (!string.IsNullOrEmpty(Name))
                 {
@@ -81,9 +88,21 @@ namespace UVtools.Core.Operations
         #region Properties
         public Size OldResolution { get; }
 
-        public uint NewResolutionX { get; set; }
-        public uint NewResolutionY { get; set; }
+        public uint NewResolutionX
+        {
+            get => _newResolutionX;
+            set => SetProperty(ref _newResolutionX, value);
+        }
+
+        public uint NewResolutionY
+        {
+            get => _newResolutionY;
+            set => SetProperty(ref _newResolutionY, value);
+        }
+
         public Rectangle VolumeBonds { get; }
+
+        public Size VolumeBondsSize => VolumeBonds.Size;
 
         #endregion
 
@@ -97,6 +116,8 @@ namespace UVtools.Core.Operations
         {
             OldResolution = oldResolution;
             VolumeBonds = volumeBonds;
+            NewResolutionX = (uint) oldResolution.Width;
+            NewResolutionY = (uint) oldResolution.Height;
         }
         #endregion
 
@@ -104,6 +125,7 @@ namespace UVtools.Core.Operations
         public static Resolution[] GetResolutions()
         {
             return new [] {
+                //new Resolution(0, 0, string.Empty),
                 new Resolution(854, 480, "FWVGA"),
                 new Resolution(960, 1708),
                 new Resolution(1080, 1920, "FHD"),
@@ -120,6 +142,9 @@ namespace UVtools.Core.Operations
                 new Resolution(3840, 2400, "WQUXGA"),
             };
         }
+
+        public static Resolution[] Presets => GetResolutions();
+
         #endregion
 
     }

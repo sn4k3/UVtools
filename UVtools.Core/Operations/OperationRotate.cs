@@ -12,6 +12,7 @@ namespace UVtools.Core.Operations
 {
     public class OperationRotate : Operation
     {
+        private decimal _angleDegrees = 90;
         public override string Title => "Rotate";
         public override string Description =>
             "Rotate the layers of the model.\n";
@@ -24,6 +25,10 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Rotated layers";
 
-        public decimal AngleDegrees { get; set; }
+        public decimal AngleDegrees
+        {
+            get => _angleDegrees;
+            set => SetProperty(ref _angleDegrees, value);
+        }
     }
 }

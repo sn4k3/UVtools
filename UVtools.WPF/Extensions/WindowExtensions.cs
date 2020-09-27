@@ -7,6 +7,7 @@
  */
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
 
@@ -28,7 +29,7 @@ namespace UVtools.WPF.Extensions
                     WindowStartupLocation = location,
                     CanResize = false
                 });
-            
+
             return await messageBoxStandardWindow.ShowDialog(window);
         }
 

@@ -6,12 +6,17 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using Emgu.CV.CvEnum;
 
 namespace UVtools.Core.Operations
 {
     public class OperationThreshold : Operation
     {
+        private byte _threshold = 127;
+        private byte _maximum = 255;
+        private ThresholdType _type = ThresholdType.Binary;
+
         public override string Title => "Threshold pixels";
         public override string Description =>
             "Manipulate pixel values based on a threshold.\n\n" +
@@ -26,12 +31,25 @@ namespace UVtools.Core.Operations
             $"Applying threshold {Threshold} with max {Maximum} from layers {LayerIndexStart} through {LayerIndexEnd}";
 
         public override string ProgressAction => "Thresholded layers";
-        
-        public byte Threshold { get; set; }
-        public byte Maximum { get; set; }
 
-        public ThresholdType Type { get; set; }
+        public byte Threshold
+        {
+            get => _threshold;
+            set => SetProperty(ref _threshold, value);
+        }
 
+        public byte Maximum
+        {
+            get => _maximum;
+            set => SetProperty(ref _maximum, value);
+        }
 
+        public ThresholdType Type
+        {
+            get => _type;
+            set => SetProperty(ref _type, value);
+        }
+
+        public static Array ThresholdTypes => Enum.GetValues(typeof(ThresholdType));
     }
 }

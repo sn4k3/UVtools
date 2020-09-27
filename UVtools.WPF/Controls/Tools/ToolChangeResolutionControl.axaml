@@ -1,0 +1,36 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Tools.ToolChangeResolutionControl">
+  <StackPanel Orientation="Vertical" Spacing="15">
+    <TextBlock Text="{Binding Operation.OldResolution, StringFormat=Current resolution (X/Y): \{0\}}"/>
+    <TextBlock Text="{Binding Operation.VolumeBondsSize, StringFormat=Object volume (X/Y): \{0\}}"/>
+
+    <StackPanel Orientation="Horizontal" Spacing="10">
+      <TextBlock VerticalAlignment="Center" Text="New X/Y:"/>
+      <NumericUpDown
+        MinWidth="100"
+        Minimum="1"
+        Maximum="50000"
+        Value="{Binding Operation.NewResolutionX}"
+        />
+
+      <TextBlock VerticalAlignment="Center" Text="x"/>
+
+      <NumericUpDown
+        MinWidth="100"
+        Minimum="1"
+        Maximum="50000"
+        Value="{Binding Operation.NewResolutionY}"
+        />
+
+      <ComboBox 
+        MinWidth="200"
+        SelectedItem="{Binding SelectedPresetItem}"
+        Items="{Binding Operation.Presets}"/>
+    </StackPanel>
+    
+  </StackPanel>
+</UserControl>

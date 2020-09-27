@@ -13,6 +13,7 @@ namespace UVtools.WPF
         public static void Main(string[] args)
         {
             Args = args;
+
             BuildAvaloniaApp()
                 .StartWithClassicDesktopLifetime(args);
         }
@@ -21,10 +22,11 @@ namespace UVtools.WPF
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
-                .With(new Win32PlatformOptions
-                {
-                    AllowEglInitialization = true,
-                })
+                .With(new Win32PlatformOptions { AllowEglInitialization = true})
+                .With(new X11PlatformOptions { UseGpu = true, UseEGL = true })
+                .With(new MacOSPlatformOptions { ShowInDock = true })
+                .With(new AvaloniaNativePlatformOptions { UseGpu = true })
+                .UseSkia()
                 .LogToDebug();
     }
 }

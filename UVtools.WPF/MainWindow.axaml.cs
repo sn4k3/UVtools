@@ -277,11 +277,22 @@ namespace UVtools.WPF
                 //if (ProgressWindow is null) return;
 
                 LastStopWatch = ProgressWindow.StopWatch;
-                Dispatcher.UIThread.InvokeAsync(() =>
+                ProgressWindow.Close();
+                ProgressWindow.Dispose();
+                /*if (Dispatcher.UIThread.CheckAccess())
                 {
                     ProgressWindow.Close();
                     ProgressWindow.Dispose();
-                });
+                }
+                else
+                {
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        ProgressWindow.Close();
+                        ProgressWindow.Dispose();
+                    });
+                }*/
+                
 
 
             }
@@ -456,7 +467,7 @@ namespace UVtools.WPF
             }
             catch (Exception e)
             {
-                await this.MessageBoxError(e.Message, "Error occur while save properties");
+                await this.MessageBoxError(e.ToString(), "Error occur while save properties");
                 return;
             }
 
@@ -527,7 +538,7 @@ namespace UVtools.WPF
             }
             catch (Exception e)
             {
-                await this.MessageBoxError(e.Message, "Error occur while save gcode");
+                await this.MessageBoxError(e.ToString(), "Error occur while save gcode");
                 return;
             }
 
@@ -599,8 +610,9 @@ namespace UVtools.WPF
             var progress = ProgressWindow.RestartProgress(false);
 
             progress.Reset("Removing selected issues", (uint)processIssues.Count);
-            var task = Task<bool>.Factory.StartNew(() =>
+            var task = await Task.Factory.StartNew(() =>
             {
+                ShowProgressWindow();
                 bool result = false;
                 try
                 {
@@ -657,19 +669,16 @@ namespace UVtools.WPF
                 }
                 catch (Exception ex)
                 {
-                    this.MessageBoxError(ex.Message, "Removal failed");
-                }
-                finally
-                {
-                    IsGUIEnabled = true;
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                        await this.MessageBoxError(ex.ToString(), "Removal failed"));
                 }
 
                 return result;
             });
 
-            await ProgressWindow.ShowDialog(this);
+            IsGUIEnabled = true;
 
-            if (!task.Result) return;
+            if (!task) return;
 
             var whiteListLayers = new List<uint>();
 
@@ -740,8 +749,9 @@ namespace UVtools.WPF
             }
             Issues.RemoveMany(toRemove);
 
-            var result = Task<List<LayerIssue>>.Factory.StartNew(() =>
+            var resultIssues =  await Task.Factory.StartNew(() =>
             {
+                ShowProgressWindow();
                 try
                 {
                     var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig,
@@ -758,21 +768,18 @@ namespace UVtools.WPF
                 }
                 catch (Exception ex)
                 {
-                    this.MessageBoxError(ex.Message, "Error while trying to compute issues");
-                }
-                finally
-                {
-                    IsGUIEnabled = true;
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                        await this.MessageBoxError(ex.ToString(), "Error while trying to compute issues"));
                 }
 
                 return null;
             });
-            
-            await ProgressWindow.ShowDialog(this);
-            
-            if (result.Result is null || result.Result.Count == 0) return;
 
-            Issues.AddRange(result.Result);
+            IsGUIEnabled = true;
+
+            if (resultIssues is null || resultIssues.Count == 0) return;
+
+            Issues.AddRange(resultIssues);
             Issues = new ObservableCollection<LayerIssue>(Issues.OrderBy(issue => issue.Type)
                 .ThenBy(issue => issue.LayerIndex)
                 .ThenBy(issue => issue.PixelsCount).ToList());
@@ -871,8 +878,9 @@ namespace UVtools.WPF
 
             ProgressWindow.SetTitle("Computing Issues");
 
-            var task = Task<List<LayerIssue>>.Factory.StartNew(() =>
+            var resultIssues = await Task.Factory.StartNew(() =>
             {
+                ShowProgressWindow();
                 try
                 {
                     var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, touchingBoundConfig,
@@ -885,19 +893,17 @@ namespace UVtools.WPF
                 }
                 catch (Exception ex)
                 {
-                    this.MessageBoxError(ex.Message, "Error while trying compute issues");
-                }
-                finally
-                {
-                    IsGUIEnabled = true;
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                        await this.MessageBoxError(ex.ToString(), "Error while trying compute issues"));
                 }
 
                 return null;
             });
 
-            await ProgressWindow.ShowDialog(this);
-            if (task.Result is null) return;
-            Issues.AddRange(task.Result);
+            IsGUIEnabled = true;
+
+            if (resultIssues is null) return;
+            Issues.AddRange(resultIssues);
 
             OnPropertyChanged(nameof(IssueSelectedIndexStr));
             OnPropertyChanged(nameof(IssueCanGoPrevious));
@@ -1406,8 +1412,10 @@ namespace UVtools.WPF
 
             ProgressWindow.SetTitle($"Opening: {fileNameOnly}");
             IsGUIEnabled = false;
-            var task = Task.Factory.StartNew(() =>
+            
+            var task = await Task.Factory.StartNew( () =>
             {
+                ShowProgressWindow();
                 try
                 {
                     SlicerFile.Decode(fileName, ProgressWindow.RestartProgress());
@@ -1418,18 +1426,16 @@ namespace UVtools.WPF
                 }
                 catch (Exception exception)
                 {
-                    this.MessageBoxError(exception.ToString(), "Error opening the file");
-                }
-                finally
-                {
-                    IsGUIEnabled = true;
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                        await this.MessageBoxError(exception.ToString(), "Error opening the file"));
                 }
 
                 return false;
             });
 
-            await ProgressWindow.ShowDialog<DialogResults>(this);
-            if (!task.Result)
+            IsGUIEnabled = true;
+
+            if (!task)
             {
                 SlicerFile.Dispose();
                 App.SlicerFile = null;
@@ -1479,22 +1485,39 @@ namespace UVtools.WPF
             VisibleThumbnailIndex = 1;
 
             RefreshProperties();
-            
+
             UpdateTitle();
 
-            
+
             if (!(mat is null) && Settings.LayerPreview.AutoRotateLayerBestView)
             {
-               _showLayerImageRotated = mat.Height > mat.Width;
+                _showLayerImageRotated = mat.Height > mat.Width;
             }
 
             ResetDataContext();
 
             ForceUpdateActualLayer(actualLayer.Clamp(actualLayer, SliderMaximumValue));
-            
+
             if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds)
             {
                 ZoomToFit();
+            }
+
+
+        }
+
+        private async void ShowProgressWindow()
+        {
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                await ProgressWindow.ShowDialog(this);
+            }
+            else
+            {
+                await Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    await ProgressWindow.ShowDialog(this);
+                });
             }
         }
 
@@ -1520,8 +1543,9 @@ namespace UVtools.WPF
             ProgressWindow.SetTitle(
                 $"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {Path.GetExtension(result)}");
 
-            Task<bool> task = Task<bool>.Factory.StartNew(() =>
+            var task = await Task.Factory.StartNew(() =>
             {
+                ShowProgressWindow();
                 try
                 {
                     return SlicerFile.Convert(fileFormat, result, ProgressWindow.RestartProgress());
@@ -1538,19 +1562,16 @@ namespace UVtools.WPF
                                        "Go to \"Help\" -> \"Install profiles into PrusaSlicer\" to install printers.\n";
                     }
 
-                    this.MessageBoxError($"Convertion was not successful! Maybe not implemented...\n{extraMessage}{ex.Message}", "Convertion unsuccessful");
-                }
-                finally
-                {
-                    IsGUIEnabled = true;
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                        await this.MessageBoxError($"Convertion was not successful! Maybe not implemented...\n{extraMessage}{ex}", "Convertion unsuccessful"));
                 }
                 
                 return false;
             });
 
-            await ProgressWindow.ShowDialog(this);
-
-            if (task.Result)
+            IsGUIEnabled = true;
+           
+            if (task)
             {
                 if (await this.MessageBoxQuestion(
                     $"Conversion completed in {LastStopWatch.ElapsedMilliseconds / 1000}s\n\n" +
@@ -2027,9 +2048,9 @@ namespace UVtools.WPF
             IsGUIEnabled = false;
             ProgressWindow.SetTitle($"Saving {Path.GetFileName(filepath)}");
 
-            var task = Task<bool>.Factory.StartNew( () =>
+            var task = await Task.Factory.StartNew( () =>
             {
-                bool result = false;
+                ShowProgressWindow();
 
                 try
                 {
@@ -2040,7 +2061,7 @@ namespace UVtools.WPF
                     }
                     File.Move(tempFile, filepath);
                     SlicerFile.FileFullPath = filepath;
-                    result = true;
+                    return true;
                 }
                 catch (OperationCanceledException)
                 {
@@ -2052,26 +2073,23 @@ namespace UVtools.WPF
                 }
                 catch (Exception ex)
                 {
-                    this.MessageBoxError(ex.Message, "Error while saving the file");
-                }
-                finally
-                {
-                    IsGUIEnabled = true;
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                        await this.MessageBoxError(ex.ToString(), "Error while saving the file"));
                 }
 
-                return result;
+                return false;
             });
 
-            await ProgressWindow.ShowDialog(this);
+            IsGUIEnabled = true;
 
-            if (task.Result)
+            if (task)
             {
                 SavesCount++;
                 CanSave = false;
                 UpdateTitle();
             }
 
-            return task.Result;
+            return task;
         }
 
         public async void ExtractFile()
@@ -2092,41 +2110,37 @@ namespace UVtools.WPF
 
             string finalPath = Path.Combine(result, fileNameNoExt);
 
-            try
+            IsGUIEnabled = false;
+            ProgressWindow.SetTitle($"Extracting {Path.GetFileName(SlicerFile.FileFullPath)}");
+
+            await Task.Factory.StartNew(() =>
             {
-                IsGUIEnabled = false;
-                ProgressWindow.SetTitle($"Extracting {Path.GetFileName(SlicerFile.FileFullPath)}");
-
-                var task = Task.Factory.StartNew(() =>
+                ShowProgressWindow();
+                try
                 {
-                    try
-                    {
-                        SlicerFile.Extract(finalPath, true, true, ProgressWindow.RestartProgress());
-                    }
-                    catch (OperationCanceledException)
-                    {
-
-                    }
-                    finally
-                    {
-                        IsGUIEnabled = true;
-                    }
-                });
-
-                await ProgressWindow.ShowDialog(this);
-                
-
-                if (await this.MessageBoxQuestion(
-                        $"Extraction to {finalPath} completed in ({LastStopWatch.ElapsedMilliseconds / 1000}s)\n\n" +
-                        "'Yes' to open target folder, 'No' to continue.",
-                        "Extraction complete") == ButtonResult.Yes)
-                {
-                    App.StartProcess(finalPath);
+                    SlicerFile.Extract(finalPath, true, true, ProgressWindow.RestartProgress());
                 }
-            }
-            catch (Exception ex)
+                catch (OperationCanceledException)
+                {
+
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                        await this.MessageBoxError(ex.ToString(), "Error while try extracting the file"));
+                }
+            });
+ 
+
+            IsGUIEnabled = true;
+
+
+            if (await this.MessageBoxQuestion(
+                $"Extraction to {finalPath} completed in ({LastStopWatch.ElapsedMilliseconds / 1000}s)\n\n" +
+                "'Yes' to open target folder, 'No' to continue.",
+                "Extraction complete") == ButtonResult.Yes)
             {
-                await this.MessageBoxError(ex.ToString(), "Error while try extracting the file");
+                App.StartProcess(finalPath);
             }
 
         }
@@ -2422,8 +2436,10 @@ namespace UVtools.WPF
 
             ProgressWindow.SetTitle(baseOperation.ProgressTitle);
 
-            var task = Task.Factory.StartNew(async () =>
+            await Task.Factory.StartNew(() =>
             {
+                ShowProgressWindow();
+
                 var backup = new Layer[baseOperation.LayerRangeCount];
                 uint i = 0;
                 for (uint layerIndex = baseOperation.LayerIndexStart; layerIndex <= baseOperation.LayerIndexEnd; layerIndex++)
@@ -2504,15 +2520,12 @@ namespace UVtools.WPF
                 }
                 catch (Exception ex)
                 {
-                    await this.MessageBoxError(ex.Message, $"{baseOperation.Title} Error");
-                }
-                finally
-                {
-                    IsGUIEnabled = true;
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                        await this.MessageBoxError(ex.ToString(), $"{baseOperation.Title} Error"));
                 }
             });
 
-            await ProgressWindow.ShowDialog(this);
+            IsGUIEnabled = true;
 
             ShowLayer();
             RefreshProperties();

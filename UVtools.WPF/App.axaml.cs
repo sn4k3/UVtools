@@ -18,7 +18,9 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.ThemeManager;
+using Emgu.CV;
 using UVtools.Core.FileFormats;
+using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF
 {
@@ -33,7 +35,7 @@ namespace UVtools.WPF
             AvaloniaXamlLoader.Load(this);
         }
 
-        public override void OnFrameworkInitializationCompleted()
+        public override async void OnFrameworkInitializationCompleted()
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
@@ -43,10 +45,24 @@ namespace UVtools.WPF
 
                 ThemeSelector = Avalonia.ThemeManager.ThemeSelector.Create("Assets/Themes");
                 ThemeSelector.LoadSelectedTheme("Assets/selected.theme");
-                desktop.MainWindow = MainWindow = new MainWindow
+                MainWindow = new MainWindow();
+
+                try
                 {
-                    //DataContext = Selector
-                };
+                    CvInvoke.CheckLibraryLoaded();
+                }
+                catch (Exception e)
+                {
+                    await MainWindow.MessageBoxError("UVtools can not run due lack of dependencies from cvextern/OpenCV\n" +
+                                                     "Please build or install this dependencies in order to run UVtools\n" +
+                                                     "Check manual or page at 'Requirements' section for help\n\n" +
+                                                     "Additional information:\n" +
+                                                     $"{e}", "UVtools can not run");
+                    return;
+                }
+                
+
+                desktop.MainWindow = MainWindow;
                 desktop.Exit += (sender, e) 
                     => ThemeSelector.SaveSelectedTheme("Assets/selected.theme");
             }
@@ -59,11 +75,18 @@ namespace UVtools.WPF
         {
             try
             {
-                var info = new ProcessStartInfo("UVtools.exe", $"\"{filePath}\"")
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    UseShellExecute = true
-                };
-                Process.Start(info)?.Dispose();
+                    var info = new ProcessStartInfo("UVtools.exe", $"\"{filePath}\"")
+                    {
+                        UseShellExecute = true
+                    };
+                    Process.Start(info).Dispose();
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Process.Start("dotnet", $"UVtools.dll \"{filePath}\"").Dispose();
+                }
             }
             catch (Exception e)
             {
@@ -77,15 +100,15 @@ namespace UVtools.WPF
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }).Dispose();
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    Process.Start("xdg-open", url);
+                    Process.Start("xdg-open", url).Dispose();
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    Process.Start("open", url);
+                    Process.Start("open", url).Dispose();
                 }
                 else
                 {
