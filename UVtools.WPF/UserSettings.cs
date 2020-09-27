@@ -13,7 +13,6 @@ using System.Xml.Serialization;
 using Avalonia.Media;
 using JetBrains.Annotations;
 using ReactiveUI;
-using UVtools.WPF.Extensions;
 using Color=UVtools.WPF.Structures.Color;
 
 namespace UVtools.WPF
@@ -21,6 +20,10 @@ namespace UVtools.WPF
     [Serializable]
     public sealed class UserSettings : ReactiveObject
     {
+        #region Constants
+        public const ushort SETTINGS_VERSION = 1;
+        #endregion
+
         #region Sub classes
         [Serializable]
         public sealed class GeneralUserSettings : ReactiveObject
@@ -35,6 +38,7 @@ namespace UVtools.WPF
             private bool _promptOverwriteFileSave = true;
             private string _fileSaveNamePrefix;
             private string _fileSaveNameSuffix = "_copy";
+            private int _maxDegreeOfParallelism;
 
             public bool StartMaximized
             {
@@ -94,6 +98,20 @@ namespace UVtools.WPF
             {
                 get => _fileSaveNameSuffix;
                 set => this.RaiseAndSetIfChanged(ref _fileSaveNameSuffix, value);
+            }
+
+            /// <summary>
+            /// Gets or sets the maximum number of concurrent tasks enabled by a ParallelOptions instance.
+            /// </summary>
+            public int MaxDegreeOfParallelism
+            {
+                get => _maxDegreeOfParallelism;
+                set => this.RaiseAndSetIfChanged(ref _maxDegreeOfParallelism,  value);
+            }
+
+            public GeneralUserSettings()
+            {
+                MaxDegreeOfParallelism = Environment.ProcessorCount;
             }
 
             public GeneralUserSettings Clone()
@@ -836,11 +854,12 @@ namespace UVtools.WPF
         private IssuesUserSettings _issues;
         private PixelEditorUserSettings _pixelEditor;
         private LayerRepairUserSettings _layerRepair;
-        private string _version;
+        private ushort _settingsVersion = SETTINGS_VERSION;
+        private string _appVersion;
         private uint _savesCount;
         private DateTime _modifiedDateTime;
 
-        
+
         public GeneralUserSettings General
         {
             get => _general ??= new GeneralUserSettings();
@@ -882,14 +901,20 @@ namespace UVtools.WPF
         public uint ResetCount { get; set; }
         */
 
+        public ushort SettingsVersion
+        {
+            get => _settingsVersion;
+            set => this.RaiseAndSetIfChanged(ref _settingsVersion,  value);
+        }
+
         /// <summary>
         /// Gets or sets the last running version of UVtools with these settings
         /// </summary>
         [NotNull]
-        public string Version
+        public string AppVersion
         {
-            get => _version ??= AppSettings.Version.ToString();
-            set => this.RaiseAndSetIfChanged(ref _version, value);
+            get => _appVersion ??= AppSettings.Version.ToString();
+            set => this.RaiseAndSetIfChanged(ref _appVersion, value);
         }
 
         /// <summary>
@@ -939,10 +964,21 @@ namespace UVtools.WPF
             }
 
             var serializer = new XmlSerializer(typeof(UserSettings));
-            using StreamReader myXmlReader = new StreamReader(FilePath);
+            using var myXmlReader = new StreamReader(FilePath);
             try
             {
                 _instance = (UserSettings)serializer.Deserialize(myXmlReader);
+                if (_instance.General.MaxDegreeOfParallelism <= 0)
+                    _instance.General.MaxDegreeOfParallelism = Environment.ProcessorCount;
+
+                if (_instance.SettingsVersion < SETTINGS_VERSION)
+                {
+                    // Upgrade
+
+                    _instance.SettingsVersion = SETTINGS_VERSION;
+                }
+
+                
             }
             catch (Exception e)
             {
@@ -960,7 +996,7 @@ namespace UVtools.WPF
             Instance.SavesCount++;
             _instance.ModifiedDateTime = DateTime.Now;
             var serializer = new XmlSerializer(_instance.GetType());
-            using StreamWriter myXmlWriter = new StreamWriter(FilePath);
+            using var myXmlWriter = new StreamWriter(FilePath);
             try
             {
                 serializer.Serialize(myXmlWriter, _instance);
@@ -973,7 +1009,7 @@ namespace UVtools.WPF
 
         public static void SetVersion()
         {
-            Instance.Version = AppSettings.Version.ToString();
+            Instance.AppVersion = AppSettings.Version.ToString();
         }
 
         public static object[] PackObjects => 
@@ -987,6 +1023,8 @@ namespace UVtools.WPF
             };
         #endregion
 
+        #region Methods
+
         public UserSettings Clone()
         {
             var clone = MemberwiseClone() as UserSettings;
@@ -997,5 +1035,7 @@ namespace UVtools.WPF
             clone.LayerRepair = clone.LayerRepair.Clone();
             return clone;
         }
+
+        #endregion
     }
 }

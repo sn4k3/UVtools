@@ -35,19 +35,19 @@ namespace UVtools.Core.Operations
         public byte Threshold
         {
             get => _threshold;
-            set => SetProperty(ref _threshold, value);
+            set => RaiseAndSetIfChanged(ref _threshold, value);
         }
 
         public byte Maximum
         {
             get => _maximum;
-            set => SetProperty(ref _maximum, value);
+            set => RaiseAndSetIfChanged(ref _maximum, value);
         }
 
         public ThresholdType Type
         {
             get => _type;
-            set => SetProperty(ref _type, value);
+            set => RaiseAndSetIfChanged(ref _type, value);
         }
 
         public static Array ThresholdTypes => Enum.GetValues(typeof(ThresholdType));

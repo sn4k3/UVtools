@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -19,7 +20,14 @@ namespace UVtools.Core.Objects
         /// <summary>
         ///     Multicast event for property change notifications.
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        private PropertyChangedEventHandler _propertyChanged;
+        private List<string> events = new List<string>();
+
+        public event PropertyChangedEventHandler PropertyChanged
+        {
+            add { _propertyChanged += value; events.Add("added"); }
+            remove { _propertyChanged -= value; events.Add("removed"); }
+        }
 
         /// <summary>
         ///     Checks if a property already matches a desired value.  Sets the property and
@@ -37,7 +45,7 @@ namespace UVtools.Core.Objects
         ///     True if the value was changed, false if the existing value matched the
         ///     desired value.
         /// </returns>
-        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
+        /*protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
         {
             if (Equals(storage, value))
             {
@@ -45,14 +53,21 @@ namespace UVtools.Core.Objects
             }
 
             storage = value;
-            OnPropertyChanged(propertyName);
+            RaisePropertyChanged(propertyName);
+            return true;
+        }*/
+
+        protected bool RaiseAndSetIfChanged<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+            field = value;
+            RaisePropertyChanged(propertyName);
             return true;
         }
 
-        protected bool SetProperty([CallerMemberName] string propertyName = null)
+
+        protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
         {
-            OnPropertyChanged(propertyName);
-            return true;
         }
 
         /// <summary>
@@ -63,10 +78,11 @@ namespace UVtools.Core.Objects
         ///     value is optional and can be provided automatically when invoked from compilers
         ///     that support <see cref="CallerMemberNameAttribute" />.
         /// </param>
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
-            var eventHandler = PropertyChanged;
-            eventHandler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            var e = new PropertyChangedEventArgs(propertyName);
+            OnPropertyChanged(e);
+            _propertyChanged?.Invoke(this, e);
         }
     }
 }

@@ -28,7 +28,7 @@ namespace UVtools.Core.Operations
         public decimal AngleDegrees
         {
             get => _angleDegrees;
-            set => SetProperty(ref _angleDegrees, value);
+            set => RaiseAndSetIfChanged(ref _angleDegrees, value);
         }
     }
 }

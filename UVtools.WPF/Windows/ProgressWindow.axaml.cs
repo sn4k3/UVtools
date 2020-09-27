@@ -33,7 +33,7 @@ namespace UVtools.WPF.Windows
             set
             {
                 Progress.CanCancel = value;
-                OnPropertyChanged();
+                RaisePropertyChanged();
             }
         }
 
@@ -69,7 +69,7 @@ namespace UVtools.WPF.Windows
         {
             if (!CanCancel) return;
             DialogResult = DialogResults.Cancel;
-            OnPropertyChanged(nameof(CanCancel));
+            RaisePropertyChanged(nameof(CanCancel));
             Progress.TokenSource.Cancel();
         }
 

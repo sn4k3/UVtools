@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
@@ -15,34 +16,25 @@ namespace UVtools.WPF.Controls.Tools
         /// <summary>
         ///     Multicast event for property change notifications.
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        private PropertyChangedEventHandler _propertyChanged;
+        private List<string> events = new List<string>();
 
-        /// <summary>
-        ///     Checks if a property already matches a desired value.  Sets the property and
-        ///     notifies listeners only when necessary.
-        /// </summary>
-        /// <typeparam name="T">Type of the property.</typeparam>
-        /// <param name="storage">Reference to a property with both getter and setter.</param>
-        /// <param name="value">Desired value for the property.</param>
-        /// <param name="propertyName">
-        ///     Name of the property used to notify listeners.  This
-        ///     value is optional and can be provided automatically when invoked from compilers that
-        ///     support CallerMemberName.
-        /// </param>
-        /// <returns>
-        ///     True if the value was changed, false if the existing value matched the
-        ///     desired value.
-        /// </returns>
-        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
+        public event PropertyChangedEventHandler PropertyChanged
         {
-            if (Equals(storage, value))
-            {
-                return false;
-            }
+            add { _propertyChanged += value; events.Add("added"); }
+            remove { _propertyChanged -= value; events.Add("removed"); }
+        }
 
-            storage = value;
-            OnPropertyChanged(propertyName);
+        protected bool RaiseAndSetIfChanged<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+            field = value;
+            RaisePropertyChanged(propertyName);
             return true;
+        }
+
+        protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
         }
 
         /// <summary>
@@ -53,10 +45,11 @@ namespace UVtools.WPF.Controls.Tools
         ///     value is optional and can be provided automatically when invoked from compilers
         ///     that support <see cref="CallerMemberNameAttribute" />.
         /// </param>
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
-            var eventHandler = PropertyChanged;
-            eventHandler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            var e = new PropertyChangedEventArgs(propertyName);
+            OnPropertyChanged(e);
+            _propertyChanged?.Invoke(this, e);
         }
         #endregion
 

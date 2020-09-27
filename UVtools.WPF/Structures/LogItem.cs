@@ -21,25 +21,25 @@ namespace UVtools.WPF.Structures
         public int Index
         {
             get => _index;
-            set => SetProperty(ref _index, value);
+            set => RaiseAndSetIfChanged(ref _index, value);
         }
 
         public string StartTime
         {
             get => _startTime;
-            set => SetProperty(ref _startTime, value);
+            set => RaiseAndSetIfChanged(ref _startTime, value);
         }
 
         public double ElapsedTime
         {
             get => _elapsedTime;
-            set => SetProperty(ref _elapsedTime, Math.Round(value, 2));
+            set => RaiseAndSetIfChanged(ref _elapsedTime, Math.Round(value, 2));
         }
 
         public string Description
         {
             get => _description;
-            set => SetProperty(ref _description, value);
+            set => RaiseAndSetIfChanged(ref _description, value);
         }
 
         public LogItem(int index, string description, double elapsedTime = 0)

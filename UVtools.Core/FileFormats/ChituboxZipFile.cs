@@ -9,6 +9,7 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -386,11 +387,17 @@ namespace UVtools.Core.FileFormats
                     {
                         HeaderSettings.LightPWM = byte.Parse(pwm.Groups[1].Value);
                     }
+                    var asd = exposureTime.NextMatch();
+                    var asd1 = currPos.Groups[1].Value;
+                    var asd2 = exposureTime.NextMatch().Groups[1].Value;
+
+                    var posZ = float.Parse(asd1, CultureInfo.InvariantCulture);
+                    var exp = float.Parse(asd2, CultureInfo.InvariantCulture) / 1000f;
 
                     LayerManager[layerIndex] = new Layer(layerIndex, entry.Open(), entry.Name)
                     {
-                        PositionZ = float.Parse(currPos.Groups[1].Value),
-                        ExposureTime = float.Parse(exposureTime.NextMatch().Groups[1].Value) / 1000f
+                        PositionZ = posZ,
+                        ExposureTime = exp
                     };
                     progress++;
                 }

@@ -79,7 +79,8 @@ namespace UVtools.GUI
         static void Main(string[] args)
         {
             Args = args;
-            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-GB");
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

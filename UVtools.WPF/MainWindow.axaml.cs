@@ -226,7 +226,7 @@ namespace UVtools.WPF
         public ObservableCollection<LayerIssue> Issues
         {
             get => _issues;
-            private set => SetProperty(ref _issues, value);
+            private set => RaiseAndSetIfChanged(ref _issues, value);
         }
 
         public ObservableCollection<PixelOperation> Drawings { get; } = new ObservableCollection<PixelOperation>();
@@ -268,7 +268,7 @@ namespace UVtools.WPF
             get => _isGUIEnabled;
             set
             {
-                if (!SetProperty(ref _isGUIEnabled, value)) return;
+                if (!RaiseAndSetIfChanged(ref _isGUIEnabled, value)) return;
                 if (!_isGUIEnabled)
                 {
                     ProgressWindow = new ProgressWindow();
@@ -301,32 +301,32 @@ namespace UVtools.WPF
         public bool IsFileLoaded
         {
             get => !(SlicerFile is null);
-            set => OnPropertyChanged();
+            set => RaisePropertyChanged();
         }
 
         public int TabSelectedIndex
         {
             get => _tabSelectedIndex;
-            set => SetProperty(ref _tabSelectedIndex, value);
+            set => RaiseAndSetIfChanged(ref _tabSelectedIndex, value);
         }
         #endregion
 
         public uint SavesCount
         {
             get => _savesCount;
-            set => SetProperty(ref _savesCount, value);
+            set => RaiseAndSetIfChanged(ref _savesCount, value);
         }
 
         public bool CanSave
         {
             get => IsFileLoaded && _canSave;
-            set => SetProperty(ref _canSave, value);
+            set => RaiseAndSetIfChanged(ref _canSave, value);
         }
 
         public MenuItem[] MenuFileConvertItems
         {
             get => _menuFileConvertItems;
-            set => SetProperty(ref _menuFileConvertItems, value);
+            set => RaiseAndSetIfChanged(ref _menuFileConvertItems, value);
         }
 
 
@@ -338,9 +338,9 @@ namespace UVtools.WPF
             {
                 if (value == 0)
                 {
-                    SetProperty(ref _visibleThumbnailIndex, value);
-                    OnPropertyChanged(nameof(ThumbnailCanGoPrevious));
-                    OnPropertyChanged(nameof(ThumbnailCanGoNext));
+                    RaiseAndSetIfChanged(ref _visibleThumbnailIndex, value);
+                    RaisePropertyChanged(nameof(ThumbnailCanGoPrevious));
+                    RaisePropertyChanged(nameof(ThumbnailCanGoNext));
                     VisibleThumbnailImage = null;
                     return;
                 }
@@ -349,11 +349,11 @@ namespace UVtools.WPF
                 var index = value-1;
                 if (index >= SlicerFile.CreatedThumbnailsCount) return;
                 if (SlicerFile.Thumbnails[index] is null) return;
-                if (!SetProperty(ref _visibleThumbnailIndex, value)) return;
+                if (!RaiseAndSetIfChanged(ref _visibleThumbnailIndex, value)) return;
                 
                 VisibleThumbnailImage = SlicerFile.Thumbnails[index].ToBitmap();
-                OnPropertyChanged(nameof(ThumbnailCanGoPrevious));
-                OnPropertyChanged(nameof(ThumbnailCanGoNext));
+                RaisePropertyChanged(nameof(ThumbnailCanGoPrevious));
+                RaisePropertyChanged(nameof(ThumbnailCanGoNext));
             }
         }
 
@@ -377,8 +377,8 @@ namespace UVtools.WPF
             get => _visibleThumbnailImage;
             set
             {
-                SetProperty(ref _visibleThumbnailImage, value);
-                OnPropertyChanged(nameof(VisibleThumbnailResolution));
+                RaiseAndSetIfChanged(ref _visibleThumbnailImage, value);
+                RaisePropertyChanged(nameof(VisibleThumbnailResolution));
             }
         }
 
@@ -509,8 +509,8 @@ namespace UVtools.WPF
         {
             if (!HaveGCode) return;
             SlicerFile.RebuildGCode();
-            OnPropertyChanged(nameof(GCodeLines));
-            OnPropertyChanged(nameof(GCodeStr));
+            RaisePropertyChanged(nameof(GCodeLines));
+            RaisePropertyChanged(nameof(GCodeStr));
         }
 
         public async void OnClickGCodeSaveFile()
@@ -790,10 +790,10 @@ namespace UVtools.WPF
             get => _issueSelectedIndex;
             set
             {
-                if (!SetProperty(ref _issueSelectedIndex, value)) return;
-                OnPropertyChanged(nameof(IssueSelectedIndexStr));
-                OnPropertyChanged(nameof(IssueCanGoPrevious));
-                OnPropertyChanged(nameof(IssueCanGoNext));
+                if (!RaiseAndSetIfChanged(ref _issueSelectedIndex, value)) return;
+                RaisePropertyChanged(nameof(IssueSelectedIndexStr));
+                RaisePropertyChanged(nameof(IssueCanGoPrevious));
+                RaisePropertyChanged(nameof(IssueCanGoNext));
                 IssuesGridOnSelectionChanged();
             }
         }
@@ -905,9 +905,9 @@ namespace UVtools.WPF
             if (resultIssues is null) return;
             Issues.AddRange(resultIssues);
 
-            OnPropertyChanged(nameof(IssueSelectedIndexStr));
-            OnPropertyChanged(nameof(IssueCanGoPrevious));
-            OnPropertyChanged(nameof(IssueCanGoNext));
+            RaisePropertyChanged(nameof(IssueSelectedIndexStr));
+            RaisePropertyChanged(nameof(IssueCanGoPrevious));
+            RaisePropertyChanged(nameof(IssueCanGoNext));
 
         }
 
@@ -952,7 +952,7 @@ namespace UVtools.WPF
         public bool IsVerbose
         {
             get => _isVerbose;
-            set => SetProperty(ref _isVerbose, value);
+            set => RaiseAndSetIfChanged(ref _isVerbose, value);
         }
 
         public void AddLog(LogItem log)
@@ -980,7 +980,7 @@ namespace UVtools.WPF
             get => _showLayerImageRotated;
             set
             {
-                if (SetProperty(ref _showLayerImageRotated, value))
+                if (RaiseAndSetIfChanged(ref _showLayerImageRotated, value))
                 {
                     ShowLayer();
                 }
@@ -992,7 +992,7 @@ namespace UVtools.WPF
             get => _showLayerImageDifference;
             set
             {
-                if (SetProperty(ref _showLayerImageDifference, value))
+                if (RaiseAndSetIfChanged(ref _showLayerImageDifference, value))
                 {
                     ShowLayer();
                 }
@@ -1004,7 +1004,7 @@ namespace UVtools.WPF
             get => _showLayerImageIssues;
             set
             {
-                if (SetProperty(ref _showLayerImageIssues, value))
+                if (RaiseAndSetIfChanged(ref _showLayerImageIssues, value))
                 {
                     ShowLayer();
                 }
@@ -1016,7 +1016,7 @@ namespace UVtools.WPF
             get => _showLayerImageCrosshairs;
             set
             {
-                if (SetProperty(ref _showLayerImageCrosshairs, value))
+                if (RaiseAndSetIfChanged(ref _showLayerImageCrosshairs, value))
                 {
                     ShowLayer();
                 }
@@ -1028,7 +1028,7 @@ namespace UVtools.WPF
             get => _showLayerOutlinePrintVolumeBoundary;
             set
             {
-                if (SetProperty(ref _showLayerOutlinePrintVolumeBoundary, value))
+                if (RaiseAndSetIfChanged(ref _showLayerOutlinePrintVolumeBoundary, value))
                 {
                     ShowLayer();
                 }
@@ -1040,7 +1040,7 @@ namespace UVtools.WPF
             get => _showLayerOutlineLayerBoundary;
             set
             {
-                if (SetProperty(ref _showLayerOutlineLayerBoundary, value))
+                if (RaiseAndSetIfChanged(ref _showLayerOutlineLayerBoundary, value))
                 {
                     ShowLayer();
                 }
@@ -1052,7 +1052,7 @@ namespace UVtools.WPF
             get => _showLayerOutlineHollowAreas;
             set
             {
-                if (SetProperty(ref _showLayerOutlineHollowAreas, value))
+                if (RaiseAndSetIfChanged(ref _showLayerOutlineHollowAreas, value))
                 {
                     ShowLayer();
                 }
@@ -1064,7 +1064,7 @@ namespace UVtools.WPF
             get => _showLayerOutlineEdgeDetection;
             set
             {
-                if (SetProperty(ref _showLayerOutlineEdgeDetection, value))
+                if (RaiseAndSetIfChanged(ref _showLayerOutlineEdgeDetection, value))
                 {
                     ShowLayer();
                 }
@@ -1074,7 +1074,7 @@ namespace UVtools.WPF
         public bool IsPixelEditorActive
         {
             get => _isPixelEditorActive;
-            set => SetProperty(ref _isPixelEditorActive, value);
+            set => RaiseAndSetIfChanged(ref _isPixelEditorActive, value);
         }
 
         public string MinimumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.LayerHeight}mm\n0";
@@ -1104,7 +1104,7 @@ namespace UVtools.WPF
         public long ShowLayerRenderMs
         {
             get => _showLayerRenderMs;
-            set => SetProperty(ref _showLayerRenderMs, value);
+            set => RaiseAndSetIfChanged(ref _showLayerRenderMs, value);
         }
 
         public PixelPicker LayerPixelPicker { get; } = new PixelPicker();
@@ -1118,7 +1118,7 @@ namespace UVtools.WPF
             get => _actualLayer;
             set
             {
-                if (!SetProperty(ref _actualLayer, value)) return;
+                if (!RaiseAndSetIfChanged(ref _actualLayer, value)) return;
                 ShowLayer();
                 InvalidateLayerNavigation();
             }
@@ -1129,17 +1129,17 @@ namespace UVtools.WPF
             _actualLayer = layerIndex;
             ShowLayer();
             InvalidateLayerNavigation();
-            OnPropertyChanged(nameof(ActualLayer));
+            RaisePropertyChanged(nameof(ActualLayer));
         }
 
         public void InvalidateLayerNavigation()
         {
-            OnPropertyChanged(nameof(CanGoDown));
-            OnPropertyChanged(nameof(CanGoUp));
-            OnPropertyChanged(nameof(ActualLayerTooltip));
-            OnPropertyChanged(nameof(LayerNavigationTooltipMargin));
-            OnPropertyChanged(nameof(LayerPixelCountStr));
-            OnPropertyChanged(nameof(LayerBoundsStr));
+            RaisePropertyChanged(nameof(CanGoDown));
+            RaisePropertyChanged(nameof(CanGoUp));
+            RaisePropertyChanged(nameof(ActualLayerTooltip));
+            RaisePropertyChanged(nameof(LayerNavigationTooltipMargin));
+            RaisePropertyChanged(nameof(LayerPixelCountStr));
+            RaisePropertyChanged(nameof(LayerBoundsStr));
         }
 
         public Thickness LayerNavigationTooltipMargin

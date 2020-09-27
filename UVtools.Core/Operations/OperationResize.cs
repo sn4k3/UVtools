@@ -51,7 +51,7 @@ namespace UVtools.Core.Operations
             get => _x;
             set
             {
-                SetProperty(ref _x, value);
+                RaiseAndSetIfChanged(ref _x, value);
                 if (_constrainXy)
                     Y = value;
             }
@@ -60,7 +60,7 @@ namespace UVtools.Core.Operations
         public decimal Y
         {
             get => _y;
-            set => SetProperty(ref _y, value);
+            set => RaiseAndSetIfChanged(ref _y, value);
         }
 
         public bool ConstrainXY
@@ -68,7 +68,7 @@ namespace UVtools.Core.Operations
             get => _constrainXy;
             set
             {
-                if (!SetProperty(ref _constrainXy, value)) return;
+                if (!RaiseAndSetIfChanged(ref _constrainXy, value)) return;
                 if (_constrainXy)
                 {
                     Y = _x;
@@ -79,7 +79,7 @@ namespace UVtools.Core.Operations
         public bool IsFade
         {
             get => _isFade;
-            set => SetProperty(ref _isFade, value);
+            set => RaiseAndSetIfChanged(ref _isFade, value);
         }
 
 

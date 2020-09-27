@@ -14,7 +14,7 @@ namespace UVtools.WPF.Controls.Tools
             get => _selectedPresetItem;
             set
             {
-                SetProperty(ref _selectedPresetItem, value);
+                RaiseAndSetIfChanged(ref _selectedPresetItem, value);
                 if (_selectedPresetItem is null || _selectedPresetItem.IsEmpty) return;
                 Operation.NewResolutionX = _selectedPresetItem.ResolutionX;
                 Operation.NewResolutionY = _selectedPresetItem.ResolutionY;

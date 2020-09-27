@@ -39,7 +39,9 @@ namespace UVtools.WPF
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-GB");
+                CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+                CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
                 UserSettings.Load();
                 UserSettings.SetVersion();
 

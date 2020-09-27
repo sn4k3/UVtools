@@ -30,40 +30,25 @@ namespace UVtools.WPF.Controls
         /// <summary>
         ///     Multicast event for property change notifications.
         /// </summary>
-        public event PropertyChangedEventHandler ImageBoxPropertyChanged;
+        private PropertyChangedEventHandler _propertyChanged;
+        private List<string> events = new List<string>();
 
-        /// <summary>
-        ///     Checks if a property already matches a desired value.  Sets the property and
-        ///     notifies listeners only when necessary.
-        /// </summary>
-        /// <typeparam name="T">Type of the property.</typeparam>
-        /// <param name="storage">Reference to a property with both getter and setter.</param>
-        /// <param name="value">Desired value for the property.</param>
-        /// <param name="propertyName">
-        ///     Name of the property used to notify listeners.  This
-        ///     value is optional and can be provided automatically when invoked from compilers that
-        ///     support CallerMemberName.
-        /// </param>
-        /// <returns>
-        ///     True if the value was changed, false if the existing value matched the
-        ///     desired value.
-        /// </returns>
-        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
+        public event PropertyChangedEventHandler PropertyChanged
         {
-            if (Equals(storage, value))
-            {
-                return false;
-            }
-            
-            storage = value;
-            OnPropertyChanged(propertyName);
+            add { _propertyChanged += value; events.Add("added"); }
+            remove { _propertyChanged -= value; events.Add("removed"); }
+        }
+        protected bool RaiseAndSetIfChanged<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+            field = value;
+            RaisePropertyChanged(propertyName);
             return true;
         }
 
-        protected bool SetProperty([CallerMemberName] string propertyName = null)
+
+        protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
         {
-            OnPropertyChanged(propertyName);
-            return true;
         }
 
         /// <summary>
@@ -74,10 +59,11 @@ namespace UVtools.WPF.Controls
         ///     value is optional and can be provided automatically when invoked from compilers
         ///     that support <see cref="CallerMemberNameAttribute" />.
         /// </param>
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
-            var eventHandler = ImageBoxPropertyChanged;
-            eventHandler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            var e = new PropertyChangedEventArgs(propertyName);
+            OnPropertyChanged(e);
+            _propertyChanged?.Invoke(this, e);
         }
         #endregion
 
@@ -443,7 +429,7 @@ namespace UVtools.WPF.Controls
         public byte GridCellSize
         {
             get => _gridCellSize;
-            set => SetProperty(ref _gridCellSize, value);
+            set => RaiseAndSetIfChanged(ref _gridCellSize, value);
         }
 
         /// <summary>
@@ -452,7 +438,7 @@ namespace UVtools.WPF.Controls
         public ISolidColorBrush GridColor
         {
             get => _gridColor;
-            set => SetProperty(ref _gridColor, value);
+            set => RaiseAndSetIfChanged(ref _gridColor, value);
         }
 
         /// <summary>
@@ -461,7 +447,7 @@ namespace UVtools.WPF.Controls
         public ISolidColorBrush GridColorAlternate
         {
             get => _gridColorAlternate;
-            set => SetProperty(ref _gridColorAlternate, value);
+            set => RaiseAndSetIfChanged(ref _gridColorAlternate, value);
         }
 
         /// <summary>
@@ -472,7 +458,7 @@ namespace UVtools.WPF.Controls
             get => _image;
             set
             {
-                if (!SetProperty(ref _image, value)) return;
+                if (!RaiseAndSetIfChanged(ref _image, value)) return;
                 if (_image is null)
                 {
                     SizedContainer.Width = 0;
@@ -513,7 +499,7 @@ namespace UVtools.WPF.Controls
         public bool ShowGrid
         {
             get => _showGrid;
-            set => SetProperty(ref _showGrid, value);
+            set => RaiseAndSetIfChanged(ref _showGrid, value);
         }
 
         public bool IsPanning
@@ -521,7 +507,7 @@ namespace UVtools.WPF.Controls
             get => _isPanning;
             protected set
             {
-                if (!SetProperty(ref _isPanning, value)) return;
+                if (!RaiseAndSetIfChanged(ref _isPanning, value)) return;
                 _startScrollPosition = Offset;
 
                 if (value)
@@ -549,44 +535,44 @@ namespace UVtools.WPF.Controls
         public bool AutoPan
         {
             get => _autoPan;
-            set => SetProperty(ref _autoPan, value);
+            set => RaiseAndSetIfChanged(ref _autoPan, value);
         }
 
         public PanMouseButtons PanWithMouseButtons
         {
             get => _panWithMouseButtons;
-            set => SetProperty(ref _panWithMouseButtons, value);
+            set => RaiseAndSetIfChanged(ref _panWithMouseButtons, value);
         }
 
         public bool PanWithArrows
         {
             get => _panWithArrows;
-            set => SetProperty(ref _panWithArrows, value);
+            set => RaiseAndSetIfChanged(ref _panWithArrows, value);
         }
 
         public bool InvertMouse
         {
             get => _invertMouse;
-            set => SetProperty(ref _invertMouse, value);
+            set => RaiseAndSetIfChanged(ref _invertMouse, value);
         }
 
         public bool AutoCenter
         {
             get => _autoCenter;
-            set => SetProperty(ref _autoCenter, value);
+            set => RaiseAndSetIfChanged(ref _autoCenter, value);
         }
 
         public SizeModes SizeMode
         {
             get => _sizeMode;
-            set => SetProperty(ref _sizeMode, value);
+            set => RaiseAndSetIfChanged(ref _sizeMode, value);
         }
 
         private bool _allowZoom = true;
         public virtual bool AllowZoom
         {
             get => _allowZoom;
-            set => SetProperty(ref _allowZoom, value);
+            set => RaiseAndSetIfChanged(ref _allowZoom, value);
         }
 
         ZoomLevelCollection _zoomLevels = ZoomLevelCollection.Default;
@@ -597,7 +583,7 @@ namespace UVtools.WPF.Controls
         public virtual ZoomLevelCollection ZoomLevels
         {
             get => _zoomLevels;
-            set => SetProperty(ref _zoomLevels, value);
+            set => RaiseAndSetIfChanged(ref _zoomLevels, value);
         }
 
         private int _zoom = 100;
@@ -621,7 +607,7 @@ namespace UVtools.WPF.Controls
         public virtual ISolidColorBrush PixelGridColor
         {
             get => _pixelGridColor;
-            set => SetProperty(ref _pixelGridColor, value);
+            set => RaiseAndSetIfChanged(ref _pixelGridColor, value);
         }
 
         private int _pixelGridThreshold = 5;
@@ -633,13 +619,13 @@ namespace UVtools.WPF.Controls
         public virtual int PixelGridThreshold
         {
             get => _pixelGridThreshold;
-            set => SetProperty(ref _pixelGridThreshold, value);
+            set => RaiseAndSetIfChanged(ref _pixelGridThreshold, value);
         }
 
         public Rect SelectionRegion
         {
             get => _selectionRegion;
-            set => SetProperty(ref _selectionRegion, value);
+            set => RaiseAndSetIfChanged(ref _selectionRegion, value);
         }
 
 
@@ -687,7 +673,7 @@ namespace UVtools.WPF.Controls
             //Container.PointerPressed += ScrollViewerOnPointerPressed;
             //Container.PointerReleased += ScrollViewerOnPointerReleased;
             
-            PropertyChanged += EventOnPropertyChanged;
+            base.PropertyChanged += EventOnPropertyChanged;
         }
 
         private void FillContainerOnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
@@ -935,7 +921,7 @@ namespace UVtools.WPF.Controls
                     InvalidateArrange();
                 }
 
-                OnPropertyChanged(nameof(Zoom));
+                RaisePropertyChanged(nameof(Zoom));
                 //this.OnZoomChanged(EventArgs.Empty);
                 //this.OnZoomed(new ImageBoxZoomEventArgs(actions, source, previousZoom, this.Zoom));
             }

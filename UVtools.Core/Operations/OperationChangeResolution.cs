@@ -91,13 +91,13 @@ namespace UVtools.Core.Operations
         public uint NewResolutionX
         {
             get => _newResolutionX;
-            set => SetProperty(ref _newResolutionX, value);
+            set => RaiseAndSetIfChanged(ref _newResolutionX, value);
         }
 
         public uint NewResolutionY
         {
             get => _newResolutionY;
-            set => SetProperty(ref _newResolutionY, value);
+            set => RaiseAndSetIfChanged(ref _newResolutionY, value);
         }
 
         public Rectangle VolumeBonds { get; }

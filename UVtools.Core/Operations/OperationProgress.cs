@@ -70,7 +70,7 @@ namespace UVtools.Core.Operations
                 if (!_canCancel) return _canCancel;
                 return !Token.IsCancellationRequested && Token.CanBeCanceled && _canCancel;
             }
-            set => SetProperty(ref _canCancel, value);
+            set => RaiseAndSetIfChanged(ref _canCancel, value);
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace UVtools.Core.Operations
         public string Title
         {
             get => _title;
-            set => SetProperty(ref _title, value);
+            set => RaiseAndSetIfChanged(ref _title, value);
         }
 
         public string ElapsedTimeStr => $"{StopWatch.Elapsed.Minutes}m {StopWatch.Elapsed.Seconds}s {StopWatch.Elapsed.Milliseconds}ms";
@@ -90,7 +90,7 @@ namespace UVtools.Core.Operations
         public string ItemName
         {
             get => _itemName;
-            set => SetProperty(ref _itemName, value);
+            set => RaiseAndSetIfChanged(ref _itemName, value);
         }
 
         /// <summary>
@@ -102,9 +102,9 @@ namespace UVtools.Core.Operations
             set
             {
                 //_processedItems = value;
-                SetProperty(ref _processedItems, value);
-                OnPropertyChanged(nameof(ProgressPercent));
-                OnPropertyChanged(nameof(Description));
+                RaiseAndSetIfChanged(ref _processedItems, value);
+                RaisePropertyChanged(nameof(ProgressPercent));
+                RaisePropertyChanged(nameof(Description));
             }
         }
 
@@ -116,10 +116,10 @@ namespace UVtools.Core.Operations
             get => _itemCount;
             set
             {
-                SetProperty(ref _itemCount, value);
-                OnPropertyChanged(nameof(IsIndeterminate));
-                OnPropertyChanged(nameof(ProgressPercent));
-                OnPropertyChanged(nameof(Description));
+                RaiseAndSetIfChanged(ref _itemCount, value);
+                RaisePropertyChanged(nameof(IsIndeterminate));
+                RaisePropertyChanged(nameof(ProgressPercent));
+                RaisePropertyChanged(nameof(Description));
             }
         }
 
@@ -174,8 +174,8 @@ namespace UVtools.Core.Operations
 
         public void TriggerRefresh()
         {
-            OnPropertyChanged(nameof(ElapsedTimeStr));
-            OnPropertyChanged(nameof(CanCancel));
+            RaisePropertyChanged(nameof(ElapsedTimeStr));
+            RaisePropertyChanged(nameof(CanCancel));
             //OnPropertyChanged(nameof(ProgressPercent));
             //OnPropertyChanged(nameof(Description));
         }

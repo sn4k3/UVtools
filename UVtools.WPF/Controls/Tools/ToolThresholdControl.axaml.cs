@@ -22,19 +22,19 @@ namespace UVtools.WPF.Controls.Tools
         public bool IsThresholdEnabled
         {
             get => _isThresholdEnabled;
-            set => SetProperty(ref _isThresholdEnabled, value);
+            set => RaiseAndSetIfChanged(ref _isThresholdEnabled, value);
         }
 
         public bool IsMaximumEnabled
         {
             get => _isMaximumEnabled;
-            set => SetProperty(ref _isMaximumEnabled, value);
+            set => RaiseAndSetIfChanged(ref _isMaximumEnabled, value);
         }
 
         public bool IsTypeEnabled
         {
             get => _isTypeEnabled;
-            set => SetProperty(ref _isTypeEnabled, value);
+            set => RaiseAndSetIfChanged(ref _isTypeEnabled, value);
         }
 
         public int SelectedPresetIndex
@@ -42,7 +42,7 @@ namespace UVtools.WPF.Controls.Tools
             get => _selectedPresetIndex;
             set
             {
-                if (!SetProperty(ref _selectedPresetIndex, value)) return;
+                if (!RaiseAndSetIfChanged(ref _selectedPresetIndex, value)) return;
 
                 switch (_selectedPresetIndex)
                 {

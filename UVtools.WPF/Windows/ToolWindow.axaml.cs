@@ -38,13 +38,13 @@ namespace UVtools.WPF.Windows
         public string Description
         {
             get => _description;
-            set => SetProperty(ref _description, value);
+            set => RaiseAndSetIfChanged(ref _description, value);
         }
 
         public double DescriptionMaxWidth
         {
             get => _descriptionMaxWidth;
-            set => SetProperty(ref _descriptionMaxWidth, value);
+            set => RaiseAndSetIfChanged(ref _descriptionMaxWidth, value);
         }
 
         #endregion
@@ -54,7 +54,7 @@ namespace UVtools.WPF.Windows
         public bool LayerRangeVisible
         {
             get => _layerRangeVisible;
-            set => SetProperty(ref _layerRangeVisible, value);
+            set => RaiseAndSetIfChanged(ref _layerRangeVisible, value);
         }
 
         public uint LayerIndexStart
@@ -65,9 +65,9 @@ namespace UVtools.WPF.Windows
                 if (!(ToolControl?.BaseOperation is null))
                     ToolControl.BaseOperation.LayerIndexStart = value;
                 
-                if (!SetProperty(ref _layerIndexStart, value)) return;
-                OnPropertyChanged(nameof(LayerStartMM));
-                OnPropertyChanged(nameof(LayerRangeCountStr));
+                if (!RaiseAndSetIfChanged(ref _layerIndexStart, value)) return;
+                RaisePropertyChanged(nameof(LayerStartMM));
+                RaisePropertyChanged(nameof(LayerRangeCountStr));
             }
         }
 
@@ -81,9 +81,9 @@ namespace UVtools.WPF.Windows
                 if (!(ToolControl?.BaseOperation is null))
                     ToolControl.BaseOperation.LayerIndexEnd = value;
 
-                if (!SetProperty(ref _layerIndexEnd, value)) return;
-                OnPropertyChanged(nameof(LayerEndMM));
-                OnPropertyChanged(nameof(LayerRangeCountStr));
+                if (!RaiseAndSetIfChanged(ref _layerIndexEnd, value)) return;
+                RaisePropertyChanged(nameof(LayerEndMM));
+                RaisePropertyChanged(nameof(LayerRangeCountStr));
             }
         }
 
@@ -140,19 +140,19 @@ namespace UVtools.WPF.Windows
         public bool IsROIVisible
         {
             get => ToolControl?.BaseOperation.HaveROI ?? _isROIVisible;
-            set => SetProperty(ref _isROIVisible, value);
+            set => RaiseAndSetIfChanged(ref _isROIVisible, value);
         }
 
         public Rect ROI
         {
             get => _roi;
-            set => SetProperty(ref _roi, value);
+            set => RaiseAndSetIfChanged(ref _roi, value);
         }
 
         public bool ClearROIAfterOperation
         {
             get => _clearRoiAfterOperation;
-            set => SetProperty(ref _clearRoiAfterOperation, value);
+            set => RaiseAndSetIfChanged(ref _clearRoiAfterOperation, value);
         }
 
         public async void ClearROI()
@@ -174,7 +174,7 @@ namespace UVtools.WPF.Windows
         public IControl ContentControl
         {
             get => _contentControl;
-            set => SetProperty(ref _contentControl, value);
+            set => RaiseAndSetIfChanged(ref _contentControl, value);
         }
 
         #endregion
@@ -184,13 +184,13 @@ namespace UVtools.WPF.Windows
         public bool ButtonOkEnabled
         {
             get => _buttonOkEnabled;
-            set => SetProperty(ref _buttonOkEnabled, value);
+            set => RaiseAndSetIfChanged(ref _buttonOkEnabled, value);
         }
 
         public string ButtonOkText
         {
             get => _buttonOkText;
-            set => SetProperty(ref _buttonOkText, value);
+            set => RaiseAndSetIfChanged(ref _buttonOkText, value);
         }
 
         #endregion
@@ -219,7 +219,7 @@ namespace UVtools.WPF.Windows
             ContentControl = toolControl;
             ButtonOkText = toolControl.BaseOperation.ButtonOkText;
 
-            OnPropertyChanged(nameof(IsContentVisible));
+            RaisePropertyChanged(nameof(IsContentVisible));
 
             switch (toolControl.BaseOperation.LayerRangeSelection)
             {
