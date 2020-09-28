@@ -1,4 +1,5 @@
-﻿using System.Timers;
+﻿using System.Diagnostics;
+using System.Timers;
 using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
 
@@ -18,7 +19,9 @@ namespace UVtools.WPF.Controls.Tools
                 if (_selectedPresetItem is null || _selectedPresetItem.IsEmpty) return;
                 Operation.NewResolutionX = _selectedPresetItem.ResolutionX;
                 Operation.NewResolutionY = _selectedPresetItem.ResolutionY;
-                Timer timer = new Timer(50);
+                
+                //SelectedPresetItem = null;
+                Timer timer = new Timer(1);
                 timer.Elapsed += (sender, args) =>
                 {
                     SelectedPresetItem = null;

@@ -206,11 +206,25 @@
 
     <Border Margin="0,10,0,0" Padding="5,20" Background="LightGray">
       <Grid ColumnDefinitions="*">
-        <StackPanel Orientation="Horizontal">
-
+        <StackPanel Spacing="10" Orientation="Horizontal">
+          <Button
+              Padding="10"
+              IsDefault="True"
+              IsVisible="{Binding IsButton1Visible}"
+              Command="{Binding OnButton1Click}">
+            <StackPanel
+              Orientation="Horizontal"
+              Spacing="10">
+              <Image Source="/Assets/Icons/undo-alt-16x16.png"/>
+              <TextBlock Text="{Binding Button1Text}"/>
+            </StackPanel>
+          </Button>
         </StackPanel>
 
-        <StackPanel Spacing="10" HorizontalAlignment="Right" Orientation="Horizontal">
+        <StackPanel 
+          Spacing="10" 
+          HorizontalAlignment="Right" 
+          Orientation="Horizontal">
           <Button
             Padding="10"
             IsDefault="True"

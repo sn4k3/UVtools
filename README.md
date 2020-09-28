@@ -92,6 +92,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 * Phrozen Shuffle 4K
 * Phrozen Sonic
 * Phrozen Sonic Mini
+* Phrozen Sonic Mini 4K
 * Phrozen Transform
 * Kelant S400
 * Wanhao D7
@@ -146,10 +147,20 @@ After some tests without failure you can increase your confidence and ignore thi
 1. 2 GB RAM or higher
 
 
-### Mac and Linux
+### Linux
 
-(Not supported yet)
 
+**Ubuntu**
+
+```bash
+wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+sudo apt-get update
+sudo apt-get install -y apt-transport-https
+sudo apt-get update
+sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libdc1394-22 libavcodec-dev libavformat-dev libswscale-dev libopenexr24 libtbb-dev dotnet-runtime-3.1
+```
 
 ## How to use
 

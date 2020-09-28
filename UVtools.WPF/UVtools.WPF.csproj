@@ -29,7 +29,7 @@
     <PackageReference Include="Emgu.CV.runtime.raspbian" Version="4.4.0.4061" />
     <PackageReference Include="Emgu.CV.runtime.ubuntu" Version="4.4.0.4061" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.4.0.4061" />
-    <PackageReference Include="MessageBox.Avalonia" Version="0.10.0-prev2" />
+    <PackageReference Include="MessageBox.Avalonia" Version="0.10.1-night" />
     <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.0-preview3" />
   </ItemGroup>
   <ItemGroup>
@@ -201,10 +201,13 @@
     <None Update="x64\libcvextern.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\CHANGELOG.md" Link="CHANGELOG.md" />
+    <None Include="..\CREDITS.md" Link="CREDITS.md" />
     <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+    <None Include="..\README.md" Link="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Controls\Tools\ToolResizeControl.axaml.cs">

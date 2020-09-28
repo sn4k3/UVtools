@@ -26,6 +26,7 @@ namespace UVtools.WPF.Extensions
                     ContentMessage = message,
                     Icon = icon,
                     Style = style,
+                    WindowIcon = new WindowIcon(App.GetAsset("/Assets/Icons/UVtools.ico")),
                     WindowStartupLocation = location,
                     CanResize = false
                 });
@@ -34,13 +35,13 @@ namespace UVtools.WPF.Extensions
         }
 
         public static async Task<ButtonResult> MessageBoxInfo(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, Style style = Style.None)
-            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} Information", buttons, Icon.Info, WindowStartupLocation.CenterOwner, style);
+            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Information", buttons, Icon.Info, WindowStartupLocation.CenterOwner, style);
 
         public static async Task<ButtonResult> MessageBoxError(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, Style style = Style.None)
-            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} Error", buttons, Icon.Error, WindowStartupLocation.CenterOwner, style);
+            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Error", buttons, Icon.Error, WindowStartupLocation.CenterOwner, style);
 
         public static async Task<ButtonResult> MessageBoxQuestion(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.YesNo, Style style = Style.None)
-            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} Question", buttons, Icon.Setting, WindowStartupLocation.CenterOwner, style);
+            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", buttons, Icon.Setting, WindowStartupLocation.CenterOwner, style);
 
 
         public static void ResetDataContext(this Window window)

@@ -44,6 +44,7 @@ using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using Color = UVtools.WPF.Structures.Color;
 using Helpers = UVtools.WPF.Controls.Helpers;
 using Point = Avalonia.Point;
+using Timer = System.Timers.Timer;
 
 namespace UVtools.WPF
 {
@@ -237,6 +238,7 @@ namespace UVtools.WPF
         #region Members
 
         public Stopwatch LastStopWatch;
+        private Timer _layerNavigationTooltipTimer = new Timer(1){AutoReset = false};
         private uint _actualLayer;
         private bool _isGUIEnabled = true;
         private uint _savesCount;
@@ -1137,9 +1139,10 @@ namespace UVtools.WPF
             RaisePropertyChanged(nameof(CanGoDown));
             RaisePropertyChanged(nameof(CanGoUp));
             RaisePropertyChanged(nameof(ActualLayerTooltip));
-            RaisePropertyChanged(nameof(LayerNavigationTooltipMargin));
+            //RaisePropertyChanged(nameof(LayerNavigationTooltipMargin));
             RaisePropertyChanged(nameof(LayerPixelCountStr));
             RaisePropertyChanged(nameof(LayerBoundsStr));
+            _layerNavigationTooltipTimer.Start();
         }
 
         public Thickness LayerNavigationTooltipMargin
@@ -1219,7 +1222,13 @@ namespace UVtools.WPF
             {
                 ProcessFiles(e.Data.GetFileNames().ToArray());
             });
-            
+
+            _layerNavigationTooltipTimer.Elapsed += (sender, args) =>
+            {
+                Dispatcher.UIThread.InvokeAsync(() => RaisePropertyChanged(nameof(LayerNavigationTooltipMargin)));
+            };
+
+
             UpdateTitle();
 
             if (Settings.General.StartMaximized)
@@ -1231,6 +1240,10 @@ namespace UVtools.WPF
             ProcessFiles(Program.Args);
         }
 
+        private void _layerSliderTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
 
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -2407,6 +2420,7 @@ namespace UVtools.WPF
                     }*/
                     SlicerFile.SetValuesFromPrintParametersModifiers();
                     RefreshProperties();
+                    ResetDataContext();
 
                     CanSave = true;
 

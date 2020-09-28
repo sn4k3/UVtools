@@ -6,13 +6,17 @@
 * (Add) Themes support
 * (Add) Fullscreen support (F11)
 * (Change) GUI was rewritten from Windows Forms to WPF Avalonia, C#
+* (Improvement) Edit print parameters: Dedicated reset button hides when value is unchanged
+* (Improvement) Edit print parameters: Show changes on confirm dialog
 * (Improvement) More detailed descriptions on error messages
 * (Improvement) GUI is now scalable
+* (Fix) Some islands wont remove from list select select many and click remove
 * (Fix) Many bug found and fixed during convertion
 
 ## ??/09/2020 - v0.8.2.5
 
 * (Fix) Extract: Use trail zeros to layer filenames
+* (Improvement) Edit print parameters: Show changes on confirm dialog
 
 ## 22/09/2020 - v0.8.2.4
 

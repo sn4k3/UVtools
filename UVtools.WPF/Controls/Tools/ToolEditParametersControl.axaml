@@ -1,0 +1,51 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Tools.ToolEditParametersControl">
+  <Grid 
+    Name="grid" 
+    RowDefinitions="Auto"
+    ColumnDefinitions="Auto,Auto,Auto,Auto,Auto"
+    VerticalAlignment="Center"
+    ShowGridLines="True"
+    >
+
+    <TextBlock 
+      Grid.Column="0"
+      VerticalAlignment="Center"
+      FontWeight="Bold"
+      Padding="15"
+      Text="Property"/>
+    <TextBlock
+      Grid.Column="1"
+      VerticalAlignment="Center"
+      HorizontalAlignment="Center"
+      FontWeight="Bold"
+      Padding="15"
+      Text="Old value"/>
+    <TextBlock
+      Grid.Column="2"
+      VerticalAlignment="Center"
+      HorizontalAlignment="Center"
+      FontWeight="Bold"
+      Padding="15"
+      Text="New value"/>
+    <TextBlock
+      Grid.Column="3"
+      VerticalAlignment="Center"
+      FontWeight="Bold"
+      Padding="15"
+      Text="Unit"/>
+    <TextBlock
+      Grid.Column="4"
+      VerticalAlignment="Center"
+      HorizontalAlignment="Center"
+      FontWeight="Bold"
+      Padding="15"
+      Text="Reset"/>
+
+
+  </Grid>
+</UserControl>

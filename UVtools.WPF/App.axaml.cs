@@ -16,6 +16,7 @@ using System.Threading;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.ThemeManager;
 using Emgu.CV;
@@ -159,6 +160,8 @@ namespace UVtools.WPF
             return res;
         }
 
+        public static Bitmap GetBitmapFromAsset(string url) => new Bitmap(GetAsset(url));
+        
         #endregion
     }
 }

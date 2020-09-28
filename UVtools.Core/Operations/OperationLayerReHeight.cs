@@ -16,6 +16,8 @@ namespace UVtools.Core.Operations
 {
     public sealed class OperationLayerReHeight : Operation
     {
+        private OperationLayerReHeightItem _item;
+
         #region Overrides
 
         public override Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.None;
@@ -51,7 +53,11 @@ namespace UVtools.Core.Operations
 
         #endregion
 
-        public OperationLayerReHeightItem Item { get; set; }
+        public OperationLayerReHeightItem Item
+        {
+            get => _item;
+            set => RaiseAndSetIfChanged(ref _item, value);
+        }
 
 
         public static OperationLayerReHeightItem[] GetItems(uint layerCount, decimal layerHeight)

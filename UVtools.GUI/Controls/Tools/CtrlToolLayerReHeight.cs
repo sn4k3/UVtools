@@ -17,6 +17,10 @@ namespace UVtools.GUI.Controls.Tools
     {
         public OperationLayerReHeight Operation { get; }
 
+        public OperationLayerReHeight.OperationLayerReHeightItem[] Presets { get; } = OperationLayerReHeight.GetItems(
+            Program.SlicerFile.LayerCount,
+            (decimal) Program.SlicerFile.LayerHeight);
+
 
         public CtrlToolLayerReHeight()
         {
@@ -25,13 +29,10 @@ namespace UVtools.GUI.Controls.Tools
             SetOperation(Operation);
 
             lbCurrent.Text = $"Current layers: {Program.SlicerFile.LayerCount} at {Program.SlicerFile.LayerHeight}mm";
-
-            var items = OperationLayerReHeight.GetItems(Program.SlicerFile.LayerCount,
-                (decimal) Program.SlicerFile.LayerHeight);
-
-            if (items.Length > 0)
+            
+            if (Presets.Length > 0)
             {
-                cbMultiplier.Items.AddRange(items);
+                cbMultiplier.Items.AddRange(Presets);
                 cbMultiplier.SelectedIndex = 0;
             }
             else

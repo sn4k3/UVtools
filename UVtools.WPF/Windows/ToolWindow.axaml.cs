@@ -15,6 +15,7 @@ namespace UVtools.WPF.Windows
     {
         public enum Callbacks : byte
         {
+            Init,
             ClearROI,
             Button1, // Reset to defaults
             Checkbox1, // Show Advanced
@@ -32,6 +33,8 @@ namespace UVtools.WPF.Windows
         private bool _clearRoiAfterOperation;
 
         private IControl _contentControl;
+        private bool _isButton1Visible;
+        private string _button1Text = "Reset to defaults";
 
         #region Description
 
@@ -181,6 +184,20 @@ namespace UVtools.WPF.Windows
 
         #region Actions
 
+        public bool IsButton1Visible
+        {
+            get => _isButton1Visible;
+            set => RaiseAndSetIfChanged(ref _isButton1Visible, value);
+        }
+
+        public string Button1Text
+        {
+            get => _button1Text;
+            set => RaiseAndSetIfChanged(ref _button1Text, value);
+        }
+
+        public void OnButton1Click() => ToolControl.Callback(Callbacks.Button1);
+
         public bool ButtonOkEnabled
         {
             get => _buttonOkEnabled;
@@ -261,6 +278,8 @@ namespace UVtools.WPF.Windows
                 timer.Dispose();
             };
             timer.Start();
+
+            toolControl.Callback(Callbacks.Init);
         }
 
         private void InitializeComponent()
