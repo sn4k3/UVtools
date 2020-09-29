@@ -1,0 +1,168 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Tools.ToolRepairLayersControl">
+
+  <StackPanel Orientation="Vertical" Spacing="15">
+    <StackPanel Orientation="Horizontal" Spacing="20">
+      <!-- Repair islands -->
+      <CheckBox
+        IsChecked="{Binding Operation.RepairIslands}"
+        Content="Repair islands"
+        >
+        <ToolTip.Tip>
+          <StackPanel>
+            <TextBlock FontWeight="Bold" Text="Repair islands:"/>
+            <TextBlock Text="If enabled, repair will first attempt to eliminate islands smaller than the pixel area removal threshold, and then runs the “gap closure” technique"/>
+          </StackPanel>
+        </ToolTip.Tip>
+      </CheckBox>
+
+      <!-- Repair resin traps -->
+      <CheckBox
+        IsChecked="{Binding Operation.RepairResinTraps}"
+        Content="Repair resin traps"
+        >
+        <ToolTip.Tip>
+          <StackPanel>
+            <TextBlock FontWeight="Bold" Text="Repair resin traps:"/>
+            <TextBlock Text="If enabled, repair will fill black pixels found within a resin trap with white pixels.
+&#x0a;Hollow areas will become solid."/>
+          </StackPanel>
+        </ToolTip.Tip>
+      </CheckBox>
+
+      <!-- Remove empty layers -->
+      <CheckBox
+        IsChecked="{Binding Operation.RemoveEmptyLayers}"
+        Content="Remove empty layers"
+        >
+        <ToolTip.Tip>
+          <StackPanel>
+            <TextBlock FontWeight="Bold" Text="Remove empty layers:"/>
+            <TextBlock Text="If enabled, repair will remove all layers with no white pixels.
+&#x0a;The model will be recalculated to ensure the correct Z height is maintained."/>
+          </StackPanel>
+        </ToolTip.Tip>
+      </CheckBox>
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" Spacing="10">
+
+      <!-- Do not remove islands larger than -->
+      <TextBlock
+        VerticalAlignment="Center"
+        Text="Do not remove islands larger than:">
+        <ToolTip.Tip>
+          <StackPanel>
+            <TextBlock FontWeight="Bold" Text="Do not remove islands larger than:"/>
+            <TextBlock Text="The pixel area theshold above which islands will not be removed by this repair.
+&#x0a;Islands remaining after repair will require supports to be added manually."/>
+          </StackPanel>
+        </ToolTip.Tip>
+        </TextBlock>
+      
+      <NumericUpDown
+        Increment="1"
+        Minimum="0"
+        Maximum="255"
+        Width="70"
+        Value="{Binding Operation.RemoveIslandsBelowEqualPixelCount}"
+        >
+        <ToolTip.Tip>
+          <StackPanel>
+            <TextBlock FontWeight="Bold" Text="Do not remove islands larger than:"/>
+            <TextBlock Text="The pixel area theshold above which islands will not be removed by this repair.
+&#x0a;Islands remaining after repair will require supports to be added manually."/>
+          </StackPanel>
+        </ToolTip.Tip>
+      </NumericUpDown>
+      <TextBlock
+        VerticalAlignment="Center"
+        Text="px"/>
+    </StackPanel>
+
+
+    <Grid 
+      IsVisible="{Binding ParentWindow.IsCheckBox1Checked}"
+      RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,10,70">
+
+      <!-- Gap closing iterations -->
+      <TextBlock
+        Grid.Row="0"
+        Grid.Column="0"
+        VerticalAlignment="Center"
+        Text="Gap closing iterations:">
+        <ToolTip.Tip>
+          <StackPanel>
+            <TextBlock FontWeight="Bold" Text="Gap closing iterations:"/>
+            <TextBlock Text="Attempt to repair islands by attaching them to other nearby islands in safe increments.
+&#x0a;If enabled, gap closing is attempted before island removal is attempted.
+&#x0a;Set iterations to 0 to disable.
+&#x0a;WARNING: Using high iteration values can destroy your model.  Low values recomended."/>
+          </StackPanel>
+        </ToolTip.Tip>
+      </TextBlock>
+
+      <NumericUpDown
+        Grid.Row="0"
+        Grid.Column="2"
+        Increment="1"
+        Minimum="0"
+        Maximum="255"
+        Value="{Binding Operation.GapClosingIterations}"
+        >
+        <ToolTip.Tip>
+          <StackPanel>
+            <TextBlock FontWeight="Bold" Text="Gap closing iterations:"/>
+            <TextBlock Text="Attempt to repair islands by attaching them to other nearby islands in safe increments.
+&#x0a;If enabled, gap closing is attempted before island removal is attempted.
+&#x0a;Set iterations to 0 to disable.
+&#x0a;WARNING: Using high iteration values can destroy your model.  Low values recomended."/>
+          </StackPanel>
+        </ToolTip.Tip>
+      </NumericUpDown>
+
+      <!-- Noise removal iterations: -->
+      <TextBlock
+        Grid.Row="2"
+        Grid.Column="0"
+        VerticalAlignment="Center"
+        Text="Noise removal iterations:">
+        <ToolTip.Tip>
+          <StackPanel>
+            <TextBlock FontWeight="Bold" Text="Noise removal iterations:"/>
+            <TextBlock Text="Remove individual or small clusters of pixels in iterations.
+&#x0a;This settings can remove noise from a layer, but will also remove fine details.
+&#x0a;Set iterations to 0 to diasble.
+&#x0a;WARNING: Even at low settings this operation has the potential to introduce new islands, as it may remove supporting material from previous layers."/>
+          </StackPanel>
+        </ToolTip.Tip>
+      </TextBlock>
+
+      <NumericUpDown
+        Grid.Row="2"
+        Grid.Column="2"
+        ToolTip.Tip="Remove individual or small clusters of pixels in iterations.  This settings can remove noise from a layer, but will also remove fine details. Set iterations to 0 to diasble. WARNING: Even at low settings this operation has the potential to introduce new islands, as it may remove supporting material from previous layers."
+        Increment="1"
+        Minimum="0"
+        Maximum="255"
+        Value="{Binding Operation.NoiseRemovalIterations}"
+        >
+        <ToolTip.Tip>
+          <StackPanel>
+            <TextBlock FontWeight="Bold" Text="Noise removal iterations:"/>
+            <TextBlock Text="Remove individual or small clusters of pixels in iterations.
+&#x0a;This settings can remove noise from a layer, but will also remove fine details.
+&#x0a;Set iterations to 0 to diasble.
+&#x0a;WARNING: Even at low settings this operation has the potential to introduce new islands, as it may remove supporting material from previous layers."/>
+          </StackPanel>
+        </ToolTip.Tip>
+      </NumericUpDown>
+    </Grid>
+    
+  </StackPanel>
+  
+</UserControl>

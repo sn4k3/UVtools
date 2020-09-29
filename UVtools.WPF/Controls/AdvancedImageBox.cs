@@ -646,7 +646,7 @@ namespace UVtools.WPF.Controls
         private bool _invertMouse = false;
         private bool _autoCenter = true;
         private SizeModes _sizeMode = SizeModes.Normal;
-        private Rect _selectionRegion;
+        private Rect _selectionRegion = Rect.Empty;
 
         public ContentControl FillContainer { get; } = new ContentControl
         {

@@ -150,7 +150,7 @@ After some tests without failure you can increase your confidence and ignore thi
 ### Linux
 
 
-**Ubuntu**
+**Ubuntu/Mint/Debian/Similars**
 
 ```bash
 wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
@@ -160,6 +160,22 @@ sudo apt-get update
 sudo apt-get install -y apt-transport-https
 sudo apt-get update
 sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libdc1394-22 libavcodec-dev libavformat-dev libswscale-dev libopenexr24 libtbb-dev dotnet-runtime-3.1
+```
+
+To run UVtools open his folder on a terminal and call one of:
+
+* `dotnet UVtools.dll`
+* `sh UVtools.sh`
+* As a pratical alternative you can create a shortcut on Desktop
+
+### Mac
+
+* Donwload and install: https://dotnet.microsoft.com/download/dotnet-core/thank-you/sdk-3.1.402-macos-x64-installer
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+brew install git
+brew install cmake
 ```
 
 ## How to use

@@ -177,6 +177,9 @@
     <None Update="Assets\selected.theme">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="libcvextern.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="libcvextern.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

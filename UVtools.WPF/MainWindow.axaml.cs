@@ -860,6 +860,11 @@ namespace UVtools.WPF
 
         }
 
+        public async void OnClickRepairIssues()
+        {
+            await ShowRunOperation(typeof(OperationRepairLayers));
+        }
+
         public void OnClickDetectIssues()
         {
             if (!IsFileLoaded) return;
@@ -1166,6 +1171,18 @@ namespace UVtools.WPF
             }
         }
 
+        #endregion
+
+        #region ROI
+        public Rectangle ROI
+        {
+            get
+            {
+                var rect = LayerImageBox.SelectionRegion;
+                return rect.IsEmpty ? Rectangle.Empty : GetTransposedRectangle(rect.ToDotNet(), false);
+            }
+            set => LayerImageBox.SelectionRegion = value.ToAvalonia();
+        }
         #endregion
 
         public LayerCache LayerCache = new LayerCache();

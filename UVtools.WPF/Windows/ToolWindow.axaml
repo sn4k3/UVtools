@@ -204,6 +204,7 @@
 
     </Border>
 
+    <!-- Actions -->
     <Border Margin="0,10,0,0" Padding="5,20" Background="LightGray">
       <Grid ColumnDefinitions="*">
         <StackPanel Spacing="10" Orientation="Horizontal">
@@ -219,6 +220,11 @@
               <TextBlock Text="{Binding Button1Text}"/>
             </StackPanel>
           </Button>
+
+          <CheckBox 
+            IsChecked="{Binding IsCheckBox1Checked}"
+            IsVisible="{Binding IsCheckBox1Visible}"
+            Content="{Binding CheckBox1Text}"/>
         </StackPanel>
 
         <StackPanel 

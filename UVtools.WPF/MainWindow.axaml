@@ -527,10 +527,10 @@
             </RepeatButton>
 
             <Button
-              ToolTip.Tip="Remove selected issue when possible. 
-Islands: All pixels are removed (turn black). 
-ResinTrap: All trap areas are filled with white pixels. 
-TouchingBounds: No action, need reslice."
+              ToolTip.Tip="Remove selected issue when possible.
+&#x0a;Islands: All pixels are removed (turn black).
+&#x0a;ResinTrap: All trap areas are filled with white pixels.
+&#x0a;TouchingBounds: No action, need reslice."
               IsEnabled="{Binding #IssuesGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
               Command="{Binding OnClickIssueRemove}">
               <StackPanel Orientation="Horizontal" Spacing="5">
@@ -549,6 +549,7 @@ TouchingBounds: No action, need reslice."
             VerticalAlignment="Center">
 
             <Button
+              IsEnabled="{Binding IsFileLoaded}"
               ToolTip.Tip="Attempt to repair issues"
               Command="{Binding OnClickRepairIssues}">
               <StackPanel Orientation="Horizontal" Spacing="5">
@@ -558,7 +559,8 @@ TouchingBounds: No action, need reslice."
             </Button>
 
             <Button
-              ToolTip.Tip="Compute Issues. Right click to access settings."
+              ToolTip.Tip="Compute Issues.
+&#x0a;Right click to access settings."
               Command="{Binding OnClickDetectIssues}">
 
               <Button.ContextMenu>
@@ -926,7 +928,8 @@ TouchingBounds: No action, need reslice."
         </StackPanel>
 
         <Button
-          ToolTip.Tip="Object volume bounds for current layer, position and size. Click: go to region"
+          ToolTip.Tip="Object volume bounds for current layer, position and size.
+&#x0a;Click: go to region"
           Command="{Binding ZoomToFitPrintVolume}"
           >
           <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
@@ -936,8 +939,9 @@ TouchingBounds: No action, need reslice."
         </Button>
 
         <Button
-          ToolTip.Tip="Region of interest selection over  layer. (NS): Not selected
-          Click: go to region | SHIFT + click: Clear ROI"
+          ToolTip.Tip="Region of interest selection over  layer.
+&#x0a;(NS): Not selected
+&#x0a;Click: go to region | SHIFT + click: Clear ROI"
           >
           <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
             <Image Source="/Assets/Icons/object-group-16x16.png"/>
@@ -951,7 +955,10 @@ TouchingBounds: No action, need reslice."
 
         <Button
           IsEnabled="{Binding LayerPixelPicker.IsSet}"
-          ToolTip.Tip="Pixel picker: Use CONTROL and over a pixel to get his position and brightness. Click: Center at position"          >
+          ToolTip.Tip="Pixel picker:
+&#x0a;Use CONTROL and over a pixel to get his position and brightness.
+&#x0a;Click: Center at position"
+          >
           <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
             <Image Source="/Assets/Icons/map-marker-16x16.png"/>
             <TextBlock Text="{Binding LayerPixelPicker}"/>
@@ -959,7 +966,8 @@ TouchingBounds: No action, need reslice."
         </Button>
 
         <Button
-          ToolTip.Tip="Layer image zoom level, use mouse scroll to zoom in/out into image. Ctrl + 0 OR double right click to scale to fit"
+          ToolTip.Tip="Layer image zoom level, use mouse scroll to zoom in/out into image.
+&#x0a;Ctrl + 0 OR double right click to scale to fit"
           >
           <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
             <Image Source="/Assets/Icons/search-16x16.png"/>
@@ -968,7 +976,8 @@ TouchingBounds: No action, need reslice."
         </Button>
 
         <Button
-          ToolTip.Tip="Layer Resolution. Click: Zoom to fit"
+          ToolTip.Tip="Layer Resolution.
+&#x0a;Click: Zoom to fit"
           Command="{Binding ZoomToFitSimple}"
           >
           <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
