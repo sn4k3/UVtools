@@ -162,7 +162,7 @@ sudo apt-get update
 sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libdc1394-22 libavcodec-dev libavformat-dev libswscale-dev libopenexr24 libtbb-dev dotnet-runtime-3.1
 ```
 
-To run UVtools open his folder on a terminal and call one of:
+To run UVtools open it folder on a terminal and call one of:
 
 * `dotnet UVtools.dll`
 * `sh UVtools.sh`
