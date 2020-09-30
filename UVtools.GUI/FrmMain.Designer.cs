@@ -260,6 +260,7 @@ namespace UVtools.GUI
             this.toolTipInformation = new System.Windows.Forms.ToolTip(this.components);
             this.layerScrollTimer = new System.Windows.Forms.Timer(this.components);
             this.mouseHoldTimer = new System.Windows.Forms.Timer(this.components);
+            this.tsIssuesDetectOverhangs = new System.Windows.Forms.ToolStripMenuItem();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).BeginInit();
@@ -1564,6 +1565,7 @@ namespace UVtools.GUI
             this.tsIssuesDetect.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.tsIssuesDetect.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsIssuesDetectIslands,
+            this.tsIssuesDetectOverhangs,
             this.tsIssuesDetectResinTraps,
             this.tsIssuesDetectTouchingBounds,
             this.tsIssuesDetectEmptyLayers});
@@ -1580,7 +1582,7 @@ namespace UVtools.GUI
             this.tsIssuesDetectIslands.CheckOnClick = true;
             this.tsIssuesDetectIslands.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tsIssuesDetectIslands.Name = "tsIssuesDetectIslands";
-            this.tsIssuesDetectIslands.Size = new System.Drawing.Size(166, 22);
+            this.tsIssuesDetectIslands.Size = new System.Drawing.Size(180, 22);
             this.tsIssuesDetectIslands.Text = "&Islands";
             // 
             // tsIssuesDetectResinTraps
@@ -1589,7 +1591,7 @@ namespace UVtools.GUI
             this.tsIssuesDetectResinTraps.CheckOnClick = true;
             this.tsIssuesDetectResinTraps.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tsIssuesDetectResinTraps.Name = "tsIssuesDetectResinTraps";
-            this.tsIssuesDetectResinTraps.Size = new System.Drawing.Size(166, 22);
+            this.tsIssuesDetectResinTraps.Size = new System.Drawing.Size(180, 22);
             this.tsIssuesDetectResinTraps.Text = "&Resin traps";
             // 
             // tsIssuesDetectTouchingBounds
@@ -1598,7 +1600,7 @@ namespace UVtools.GUI
             this.tsIssuesDetectTouchingBounds.CheckOnClick = true;
             this.tsIssuesDetectTouchingBounds.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tsIssuesDetectTouchingBounds.Name = "tsIssuesDetectTouchingBounds";
-            this.tsIssuesDetectTouchingBounds.Size = new System.Drawing.Size(166, 22);
+            this.tsIssuesDetectTouchingBounds.Size = new System.Drawing.Size(180, 22);
             this.tsIssuesDetectTouchingBounds.Text = "&Touching Bounds";
             // 
             // tsIssuesDetectEmptyLayers
@@ -1607,7 +1609,7 @@ namespace UVtools.GUI
             this.tsIssuesDetectEmptyLayers.CheckOnClick = true;
             this.tsIssuesDetectEmptyLayers.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tsIssuesDetectEmptyLayers.Name = "tsIssuesDetectEmptyLayers";
-            this.tsIssuesDetectEmptyLayers.Size = new System.Drawing.Size(166, 22);
+            this.tsIssuesDetectEmptyLayers.Size = new System.Drawing.Size(180, 22);
             this.tsIssuesDetectEmptyLayers.Text = "&Empty Layers";
             // 
             // toolStripSeparator12
@@ -2874,6 +2876,15 @@ namespace UVtools.GUI
             this.mouseHoldTimer.Interval = 1000;
             this.mouseHoldTimer.Tick += new System.EventHandler(this.EventTimerTick);
             // 
+            // tsIssuesDetectOverhangs
+            // 
+            this.tsIssuesDetectOverhangs.Checked = true;
+            this.tsIssuesDetectOverhangs.CheckOnClick = true;
+            this.tsIssuesDetectOverhangs.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsIssuesDetectOverhangs.Name = "tsIssuesDetectOverhangs";
+            this.tsIssuesDetectOverhangs.Size = new System.Drawing.Size(180, 22);
+            this.tsIssuesDetectOverhangs.Text = "&Overhangs";
+            // 
             // FrmMain
             // 
             this.AllowDrop = true;
@@ -3217,6 +3228,7 @@ namespace UVtools.GUI
         private System.Windows.Forms.ToolStripButton btnLayerMouseLocation;
         private System.Windows.Forms.ToolStripButton btnLayerResolution;
         public TransparentLabel lbLayerImageTooltipOverlay;
+        private System.Windows.Forms.ToolStripMenuItem tsIssuesDetectOverhangs;
     }
 }
 

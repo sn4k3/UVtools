@@ -26,6 +26,12 @@
         <Component Id="owc25ABE3DF1B281670E77FD3B882B58B9F" Guid="de5c6697-501a-2e10-da10-134ad4f060ad">
           <File Id="owf25ABE3DF1B281670E77FD3B882B58B9F" Source="$(var.SourceDir)\Cyotek.Windows.Forms.ImageBox.xml" KeyPath="yes" />
         </Component>
+        <Component Id="owcD03A5F10780E4BAB31F0BA2BC3146383" Guid="d144d6cc-6ae1-57d7-cae6-627840b6f17a">
+          <File Id="owfD03A5F10780E4BAB31F0BA2BC3146383" Source="$(var.SourceDir)\Emgu.CV.Bitmap.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcBBB242A927A3E56E02090CCA2E90BA92" Guid="741e1eb2-a7ed-c349-50a0-88544797620f">
+          <File Id="owfBBB242A927A3E56E02090CCA2E90BA92" Source="$(var.SourceDir)\Emgu.CV.Bitmap.xml" KeyPath="yes" />
+        </Component>
         <Component Id="owc0F288E77993D555E272ECFA1DF023DDA" Guid="ad374cb5-9215-37cb-d59d-88e4b3bc61bb">
           <File Id="owf0F288E77993D555E272ECFA1DF023DDA" Source="$(var.SourceDir)\Emgu.CV.Platform.NetCore.dll" KeyPath="yes" />
         </Component>
@@ -55,6 +61,9 @@
         </Component>
         <Component Id="owc0517117239E80E566282BE4546F8180F" Guid="c6cee878-746b-dc34-9583-946f27cba26a">
           <File Id="owf0517117239E80E566282BE4546F8180F" Source="$(var.SourceDir)\System.CommandLine.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcC44FBFE064FE5B25B9677334BAFFBB9F" Guid="7eaa9e75-cff6-90ab-c842-673d3b7d6d9b">
+          <File Id="owfC44FBFE064FE5B25B9677334BAFFBB9F" Source="$(var.SourceDir)\System.Drawing.Common.dll" KeyPath="yes" />
         </Component>
         <Component Id="owcF2B199C7800AE0BBCC0001E0A61F6988" Guid="405dfe99-fffe-4059-26e0-c7d1bd0a0bed">
           <File Id="owfF2B199C7800AE0BBCC0001E0A61F6988" Source="$(var.SourceDir)\System.Memory.dll" KeyPath="yes" />
@@ -192,6 +201,9 @@
             </Component>
             <Component Id="owcE3C5EB6B6F0C3F57765457D6609A1347" Guid="c6a7b466-f370-61cb-6ea8-4f58e1a1ae4f">
               <File Id="owfE3C5EB6B6F0C3F57765457D6609A1347" Source="$(var.SourceDir)\PrusaSlicer\printer\Phrozen Shuffle.ini" KeyPath="yes" />
+            </Component>
+            <Component Id="owc0C95EB1AA908390B033CF556246859BD" Guid="ee5430e3-60de-f716-a55e-0726c7138bf6">
+              <File Id="owf0C95EB1AA908390B033CF556246859BD" Source="$(var.SourceDir)\PrusaSlicer\printer\Phrozen Sonic Mini 4K.ini" KeyPath="yes" />
             </Component>
             <Component Id="owcA72B3137C7468BB42D62EE5D01D0FCA5" Guid="d03183f0-ec43-e8ce-13ef-65e19d5c4968">
               <File Id="owfA72B3137C7468BB42D62EE5D01D0FCA5" Source="$(var.SourceDir)\PrusaSlicer\printer\Phrozen Sonic Mini.ini" KeyPath="yes" />

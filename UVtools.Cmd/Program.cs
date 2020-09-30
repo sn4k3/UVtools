@@ -187,7 +187,7 @@ namespace UVtools.Cmd
                 {
                     Console.WriteLine("Computing Issues, please wait.");
                     sw.Restart();
-                    var issueList = fileFormat.LayerManager.GetAllIssues(null, null, null, true, progress);
+                    var issueList = fileFormat.LayerManager.GetAllIssues(null, null, null, null, true, progress);
                     sw.Stop();
                     
                     Console.WriteLine("Issues:");

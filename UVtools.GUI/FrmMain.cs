@@ -166,6 +166,7 @@ namespace UVtools.GUI
 
             btnLayerImageLayerDifference.Checked = Settings.Default.LayerDifferenceDefault;
             tsIssuesDetectIslands.Checked = Settings.Default.ComputeIslands;
+            tsIssuesDetectOverhangs.Checked = Settings.Default.ComputeOverhangs;
             tsIssuesDetectResinTraps.Checked = Settings.Default.ComputeResinTraps;
             tsIssuesDetectTouchingBounds.Checked = Settings.Default.ComputeTouchingBounds;
             tsIssuesDetectEmptyLayers.Checked = Settings.Default.ComputeEmptyLayers;
@@ -304,7 +305,7 @@ namespace UVtools.GUI
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e.Message);
+                Debug.WriteLine(e.ToString());
             }
         }
 
@@ -1088,7 +1089,7 @@ namespace UVtools.GUI
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message, "Removal failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(ex.ToString(), "Removal failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                     finally
                     {
@@ -1109,11 +1110,17 @@ namespace UVtools.GUI
                 var whiteListLayers = new List<uint>();
 
                 // Update GUI
-                List<LayerIssue> removeList = new List<LayerIssue>();
+                List<LayerIssue> removeSelectedObjects = new List<LayerIssue>();
                 foreach (LayerIssue issue in flvIssues.SelectedObjects)
                 {
                     //if (!issue.HaveValidPoint) continue;
-                    if (issue.Type == LayerIssue.IssueType.TouchingBound) continue;
+                    if (issue.Type != LayerIssue.IssueType.Island &&
+                        issue.Type != LayerIssue.IssueType.ResinTrap &&
+                        issue.Type != LayerIssue.IssueType.EmptyLayer) continue;
+
+                    Issues.Remove(issue);
+                    removeSelectedObjects.Add(issue);
+
                     if (issue.Type == LayerIssue.IssueType.Island)
                     {
                         var nextLayer = issue.Layer.Index + 1;
@@ -1121,12 +1128,9 @@ namespace UVtools.GUI
                         if (whiteListLayers.Contains(nextLayer)) continue;
                         whiteListLayers.Add(nextLayer);
                     }
-
-                    Issues.Remove(issue);
-                    removeList.Add(issue);
                 }
 
-                flvIssues.RemoveObjects(removeList);
+                flvIssues.RemoveObjects(removeSelectedObjects);
 
                 if (layersRemove.Count > 0)
                 {
@@ -1136,7 +1140,7 @@ namespace UVtools.GUI
 
                 if (Settings.Default.PartialUpdateIslandsOnEditing)
                 {
-                    UpdateIslands(whiteListLayers);
+                    UpdateIslandsOverhangs(whiteListLayers);
                 }
 
                 //ShowLayer(); // It will call latter so its a extra call
@@ -1157,8 +1161,12 @@ namespace UVtools.GUI
                 /*if (MessageBox.Show("Are you sure you want to compute issues?", "Issues Compute",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;*/
 
-                ComputeIssues(GetIslandDetectionConfiguration(), GetResinTrapDetectionConfiguration(),
-                    GetTouchingBoundsDetectionConfiguration(), tsIssuesDetectEmptyLayers.Checked);
+                ComputeIssues(
+                    GetIslandDetectionConfiguration(), 
+                    GetOverhangDetectionConfiguration(), 
+                    GetResinTrapDetectionConfiguration(),
+                    GetTouchingBoundsDetectionConfiguration(), 
+                    tsIssuesDetectEmptyLayers.Checked);
 
                 return;
             }
@@ -1438,7 +1446,7 @@ namespace UVtools.GUI
                                                "Go to \"Help\" -> \"Install profiles into PrusaSlicer\" to install printers.\n";
                             }
 
-                            MessageBox.Show($"Convertion was not successful! Maybe not implemented...\n{extraMessage}{ex.Message}",
+                            MessageBox.Show($"Convertion was not successful! Maybe not implemented...\n{extraMessage}{ex}",
                                 "Convertion unsuccessful", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                         finally
@@ -2054,7 +2062,7 @@ namespace UVtools.GUI
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message, "Error while saving the file", MessageBoxButtons.OK,
+                    MessageBox.Show(ex.ToString(), "Error while saving the file", MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                 }
                 finally
@@ -2426,6 +2434,18 @@ namespace UVtools.GUI
 
                         switch (issue.Type)
                         {
+                            case LayerIssue.IssueType.Overhang:
+                                color = selectedIssues.Contains(issue)
+                                    ? Settings.Default.OverhangHLColor
+                                    : Settings.Default.OverhangColor;
+                                if (btnLayerImageShowCrosshairs.Checked &&
+                                    !Settings.Default.CrosshairShowOnlyOnSelectedIssues &&
+                                    pbLayer.Zoom <= CrosshairFadeLevel)
+                                {
+                                    DrawCrosshair(issue.BoundingRectangle);
+                                }
+
+                                break;
                             case LayerIssue.IssueType.Island:
                                 color = selectedIssues.Contains(issue)
                                     ? Settings.Default.IslandHLColor
@@ -2442,6 +2462,8 @@ namespace UVtools.GUI
                                 color = Settings.Default.TouchingBoundsColor;
                                 break;
                         }
+
+                        if(color.IsEmpty) continue;
 
                         foreach (var pixel in issue)
                         {
@@ -3551,6 +3573,7 @@ namespace UVtools.GUI
         }
 
         private void ComputeIssues(IslandDetectionConfiguration islandConfig = null,
+            OverhangDetectionConfiguration overhangConfig = null,
             ResinTrapDetectionConfiguration resinTrapConfig = null,
             TouchingBoundDetectionConfiguration touchingBoundConfig = null, bool emptyLayersConfig = true)
         {
@@ -3565,7 +3588,7 @@ namespace UVtools.GUI
             {
                 try
                 {
-                    Issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, touchingBoundConfig,
+                    Issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapConfig, touchingBoundConfig,
                         emptyLayersConfig, FrmLoading.RestartProgress());
                 }
                 catch (OperationCanceledException)
@@ -3574,7 +3597,7 @@ namespace UVtools.GUI
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message, "Error while trying compute issues", MessageBoxButtons.OK,
+                    MessageBox.Show(ex.ToString(), "Error while trying compute issues", MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                 }
                 finally
@@ -3799,6 +3822,16 @@ namespace UVtools.GUI
             };
         }
 
+        public OverhangDetectionConfiguration GetOverhangDetectionConfiguration()
+        {
+            return new OverhangDetectionConfiguration
+            {
+                Enabled = tsIssuesDetectOverhangs.Checked,
+                IndependentFromIslands = Settings.Default.OverhangIndependentFromIslands,
+                ErodeIterations = Settings.Default.OverhangErodeIterations,
+            };
+        }
+
         public ResinTrapDetectionConfiguration GetResinTrapDetectionConfiguration()
         {
             return new ResinTrapDetectionConfiguration
@@ -3903,7 +3936,7 @@ namespace UVtools.GUI
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"{ex.Message}", "Drawing operation failed!", MessageBoxButtons.OK,
+                        MessageBox.Show(ex.ToString(), "Drawing operation failed!", MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
                     }
                     finally
@@ -3940,7 +3973,7 @@ namespace UVtools.GUI
                         }
                     }
 
-                    UpdateIslands(whiteListLayers);
+                    UpdateIslandsOverhangs(whiteListLayers);
                 }
             }
 
@@ -3958,18 +3991,21 @@ namespace UVtools.GUI
             menuFileSave.Enabled = true;
         }
 
-        private void UpdateIslands(List<uint> whiteListLayers)
+        private void UpdateIslandsOverhangs(List<uint> whiteListLayers)
         {
             if (whiteListLayers.Count == 0) return;
             var islandConfig = GetIslandDetectionConfiguration();
+            var overhangConfig = GetOverhangDetectionConfiguration();
             var resinTrapConfig = new ResinTrapDetectionConfiguration {Enabled = false};
             var touchingBoundConfig = new TouchingBoundDetectionConfiguration {Enabled = false};
             islandConfig.Enabled = true;
             islandConfig.WhiteListLayers = whiteListLayers;
+            overhangConfig.Enabled = true;
+            overhangConfig.WhiteListLayers = whiteListLayers;
 
-            if (ReferenceEquals(Issues, null))
+            if (Issues is null)
             {
-                ComputeIssues(islandConfig, resinTrapConfig, touchingBoundConfig, false);
+                ComputeIssues(islandConfig, overhangConfig, resinTrapConfig, touchingBoundConfig, false);
             }
             else
             {
@@ -3980,18 +4016,18 @@ namespace UVtools.GUI
                 {
                     Issues.RemoveAll(issue =>
                         issue.LayerIndex == layerIndex &&
-                        issue.Type == LayerIssue.IssueType.Island); // Remove all islands for update
+                        (issue.Type == LayerIssue.IssueType.Island || issue.Type == LayerIssue.IssueType.Overhang)); // Remove all islands and overhangs for update
                 }
 
                 Task.Factory.StartNew(() =>
                 {
                     try
                     {
-                        var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig,
+                        var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapConfig,
                             touchingBoundConfig, false,
                             FrmLoading.RestartProgress());
 
-                        issues.RemoveAll(issue => issue.Type != LayerIssue.IssueType.Island); // Remove all non islands
+                        issues.RemoveAll(issue => issue.Type != LayerIssue.IssueType.Island && issue.Type != LayerIssue.IssueType.Overhang); // Remove all non islands
                         Issues.AddRange(issues);
                         Issues = Issues.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex)
                             .ThenBy(issue => issue.PixelsCount).ToList();
@@ -4002,7 +4038,7 @@ namespace UVtools.GUI
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message, "Error while trying to compute issues",
+                        MessageBox.Show(ex.ToString(), "Error while trying to compute issues",
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
                     }
@@ -4154,18 +4190,22 @@ namespace UVtools.GUI
 
                     return false;
                 case OperationRepairLayers operation:
-                    if (ReferenceEquals(Issues, null))
+                    if (Issues is null)
                     {
                         var islandConfig = GetIslandDetectionConfiguration();
-                        islandConfig.Enabled =
-                            operation.RepairIslands && operation.RemoveIslandsBelowEqualPixelCount > 0;
+                        islandConfig.Enabled = operation.RepairIslands && operation.RemoveIslandsBelowEqualPixelCount > 0;
+                        var overhangConfig = new OverhangDetectionConfiguration {Enabled = false};
                         var resinTrapConfig = GetResinTrapDetectionConfiguration();
                         resinTrapConfig.Enabled = operation.RepairResinTraps;
                         var touchingBoundConfig = new TouchingBoundDetectionConfiguration {Enabled = false};
 
                         if (islandConfig.Enabled || resinTrapConfig.Enabled)
                         {
-                            ComputeIssues(islandConfig, resinTrapConfig, touchingBoundConfig,
+                            ComputeIssues(
+                                islandConfig, 
+                                overhangConfig,
+                                resinTrapConfig,
+                                touchingBoundConfig,
                                 tsIssuesDetectEmptyLayers.Checked);
                         }
                     }
@@ -4261,7 +4301,7 @@ namespace UVtools.GUI
                 }
                 catch (Exception ex)
                 {
-                    GUIExtensions.MessageBoxError($"{baseOperation.Title} Error", ex.Message);
+                    GUIExtensions.MessageBoxError($"{baseOperation.Title} Error", ex.ToString());
                 }
                 finally
                 {

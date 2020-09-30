@@ -82,6 +82,7 @@ namespace UVtools.GUI.Controls.Tools
                     Dock = DockStyle.Fill,
                     BackColor = Color.LightGray,
                     Enabled = false,
+                    Visible = false,
                     Tag = this
                 };
                 ResetButton.Click += ResetButton_Clicked;
@@ -90,7 +91,7 @@ namespace UVtools.GUI.Controls.Tools
             private void NewValue_ValueChanged(object sender, EventArgs e)
             {
                 Modifier.NewValue = NewValue.Value;
-                ResetButton.Enabled = Modifier.HasChanged;
+                ResetButton.Visible = ResetButton.Enabled = Modifier.HasChanged;
             }
 
             private void ResetButton_Clicked(object sender, EventArgs e)

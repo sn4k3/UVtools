@@ -370,10 +370,15 @@ namespace UVtools.Core.FileFormats
                 }
 
                 entry = inputFile.GetEntry($"{Path.GetFileNameWithoutExtension(fileFullPath)}.gcode");
-                if (ReferenceEquals(entry, null))
+                if (entry is null)
                 {
-                    Clear();
-                    throw new FileLoadException($"{Path.GetFileNameWithoutExtension(fileFullPath)}.gcode not found", fileFullPath);
+                    entry = inputFile.GetEntry("slice.gcode");
+                    if (entry is null)
+                    {
+                        Clear();
+                        throw new FileLoadException($"{Path.GetFileNameWithoutExtension(fileFullPath)}.gcode nor slice.gcode was found",
+                            fileFullPath);
+                    }
                 }
 
                 using (TextReader tr = new StreamReader(entry.Open()))

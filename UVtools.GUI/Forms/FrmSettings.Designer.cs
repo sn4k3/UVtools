@@ -179,6 +179,14 @@
             this.cbLayerRepairLayersIslands = new System.Windows.Forms.CheckBox();
             this.pnActions = new System.Windows.Forms.Panel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.cbComputeOverhangs = new System.Windows.Forms.CheckBox();
+            this.btnOverhangColor = new System.Windows.Forms.Button();
+            this.btnOverhangHLColor = new System.Windows.Forms.Button();
+            this.label47 = new System.Windows.Forms.Label();
+            this.groupBox11 = new System.Windows.Forms.GroupBox();
+            this.cbOverhangIndependentFromIslands = new System.Windows.Forms.CheckBox();
+            this.nmOverhangErodeIterations = new System.Windows.Forms.NumericUpDown();
+            this.label48 = new System.Windows.Forms.Label();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapBinaryThreshold)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapMaximumPixelBrightnessToDrain)).BeginInit();
@@ -214,6 +222,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultOpeningIterations)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultClosingIterations)).BeginInit();
             this.pnActions.SuspendLayout();
+            this.groupBox11.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmOverhangErodeIterations)).BeginInit();
             this.SuspendLayout();
             // 
             // colorDialog
@@ -226,7 +236,7 @@
             this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSave.Image = global::UVtools.GUI.Properties.Resources.Ok_24x24;
             this.btnSave.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnSave.Location = new System.Drawing.Point(301, 13);
+            this.btnSave.Location = new System.Drawing.Point(346, 13);
             this.btnSave.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(150, 48);
@@ -242,7 +252,7 @@
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Image = global::UVtools.GUI.Properties.Resources.Cancel_24x24;
             this.btnCancel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnCancel.Location = new System.Drawing.Point(459, 13);
+            this.btnCancel.Location = new System.Drawing.Point(504, 13);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(150, 48);
@@ -309,11 +319,11 @@
             // cbComputeResinTraps
             // 
             this.cbComputeResinTraps.AutoSize = true;
-            this.cbComputeResinTraps.Location = new System.Drawing.Point(164, 79);
+            this.cbComputeResinTraps.Location = new System.Drawing.Point(269, 79);
             this.cbComputeResinTraps.Name = "cbComputeResinTraps";
-            this.cbComputeResinTraps.Size = new System.Drawing.Size(107, 22);
+            this.cbComputeResinTraps.Size = new System.Drawing.Size(102, 22);
             this.cbComputeResinTraps.TabIndex = 17;
-            this.cbComputeResinTraps.Text = "Resin Traps";
+            this.cbComputeResinTraps.Text = "Resin traps";
             this.cbComputeResinTraps.UseVisualStyleBackColor = true;
             // 
             // groupBox3
@@ -327,9 +337,9 @@
             this.groupBox3.Controls.Add(this.nmResinTrapRequiredAreaToProcessCheck);
             this.groupBox3.Controls.Add(this.label11);
             this.groupBox3.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox3.Location = new System.Drawing.Point(3, 351);
+            this.groupBox3.Location = new System.Drawing.Point(3, 424);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(610, 162);
+            this.groupBox3.Size = new System.Drawing.Size(655, 150);
             this.groupBox3.TabIndex = 24;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Resin Traps";
@@ -366,7 +376,7 @@
             // 
             // nmResinTrapMaximumPixelBrightnessToDrain
             // 
-            this.nmResinTrapMaximumPixelBrightnessToDrain.Location = new System.Drawing.Point(10, 125);
+            this.nmResinTrapMaximumPixelBrightnessToDrain.Location = new System.Drawing.Point(10, 113);
             this.nmResinTrapMaximumPixelBrightnessToDrain.Maximum = new decimal(new int[] {
             150,
             0,
@@ -385,7 +395,7 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(73, 128);
+            this.label13.Location = new System.Drawing.Point(73, 116);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(425, 18);
             this.label13.TabIndex = 25;
@@ -395,7 +405,7 @@
             // 
             // nmResinTrapRequiredBlackPixelsToDrain
             // 
-            this.nmResinTrapRequiredBlackPixelsToDrain.Location = new System.Drawing.Point(10, 91);
+            this.nmResinTrapRequiredBlackPixelsToDrain.Location = new System.Drawing.Point(10, 83);
             this.nmResinTrapRequiredBlackPixelsToDrain.Maximum = new decimal(new int[] {
             255,
             0,
@@ -419,7 +429,7 @@
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(73, 94);
+            this.label12.Location = new System.Drawing.Point(73, 86);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(429, 18);
             this.label12.TabIndex = 23;
@@ -429,7 +439,7 @@
             // 
             // nmResinTrapRequiredAreaToProcessCheck
             // 
-            this.nmResinTrapRequiredAreaToProcessCheck.Location = new System.Drawing.Point(10, 57);
+            this.nmResinTrapRequiredAreaToProcessCheck.Location = new System.Drawing.Point(10, 53);
             this.nmResinTrapRequiredAreaToProcessCheck.Maximum = new decimal(new int[] {
             255,
             0,
@@ -453,7 +463,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(73, 60);
+            this.label11.Location = new System.Drawing.Point(73, 56);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(530, 18);
             this.label11.TabIndex = 21;
@@ -477,7 +487,7 @@
             this.groupBox2.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBox2.Location = new System.Drawing.Point(3, 114);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(610, 237);
+            this.groupBox2.Size = new System.Drawing.Size(655, 217);
             this.groupBox2.TabIndex = 23;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Islands";
@@ -514,14 +524,14 @@
             this.label21.Size = new System.Drawing.Size(289, 18);
             this.label21.TabIndex = 29;
             this.label21.Text = "Pixel intensity threshold for island detection";
-            this.toolTip.SetToolTip(this.label21, "Pixels below this threshold will be considered black during island detection.  \r\n" +
-        "Pixels equal to or above this theshold will be considred white during island det" +
-        "ection.\r\n0 to disable");
+            this.toolTip.SetToolTip(this.label21, "Pixels below this threshold will be considered black during island detection.\r\nPi" +
+        "xels equal to or above this theshold will be considred white during island detec" +
+        "tion.\r\n0 to disable");
             // 
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(73, 194);
+            this.label10.Location = new System.Drawing.Point(73, 178);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(442, 18);
             this.label10.TabIndex = 25;
@@ -531,7 +541,7 @@
             // 
             // nmIslandRequiredPixelBrightnessToSupport
             // 
-            this.nmIslandRequiredPixelBrightnessToSupport.Location = new System.Drawing.Point(10, 191);
+            this.nmIslandRequiredPixelBrightnessToSupport.Location = new System.Drawing.Point(10, 175);
             this.nmIslandRequiredPixelBrightnessToSupport.Maximum = new decimal(new int[] {
             255,
             0,
@@ -555,7 +565,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(73, 160);
+            this.label9.Location = new System.Drawing.Point(73, 148);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(432, 18);
             this.label9.TabIndex = 23;
@@ -564,7 +574,7 @@
             // 
             // nmIslandRequiredPixelsToSupport
             // 
-            this.nmIslandRequiredPixelsToSupport.Location = new System.Drawing.Point(10, 157);
+            this.nmIslandRequiredPixelsToSupport.Location = new System.Drawing.Point(10, 145);
             this.nmIslandRequiredPixelsToSupport.Maximum = new decimal(new int[] {
             255,
             0,
@@ -587,7 +597,7 @@
             // 
             // nmIslandRequiredAreaToProcessCheck
             // 
-            this.nmIslandRequiredAreaToProcessCheck.Location = new System.Drawing.Point(10, 89);
+            this.nmIslandRequiredAreaToProcessCheck.Location = new System.Drawing.Point(10, 85);
             this.nmIslandRequiredAreaToProcessCheck.Maximum = new decimal(new int[] {
             255,
             0,
@@ -611,7 +621,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(73, 92);
+            this.label7.Location = new System.Drawing.Point(73, 88);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(422, 18);
             this.label7.TabIndex = 19;
@@ -622,7 +632,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(73, 126);
+            this.label8.Location = new System.Drawing.Point(73, 118);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(390, 18);
             this.label8.TabIndex = 21;
@@ -632,7 +642,7 @@
             // 
             // nmIslandRequiredPixelBrightnessToProcessCheck
             // 
-            this.nmIslandRequiredPixelBrightnessToProcessCheck.Location = new System.Drawing.Point(10, 123);
+            this.nmIslandRequiredPixelBrightnessToProcessCheck.Location = new System.Drawing.Point(10, 115);
             this.nmIslandRequiredPixelBrightnessToProcessCheck.Maximum = new decimal(new int[] {
             255,
             0,
@@ -655,6 +665,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.cbComputeOverhangs);
             this.groupBox1.Controls.Add(this.cbComputeEmptyLayers);
             this.groupBox1.Controls.Add(this.label42);
             this.groupBox1.Controls.Add(this.cbComputeTouchingBounds);
@@ -665,7 +676,7 @@
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBox1.Location = new System.Drawing.Point(3, 3);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(610, 111);
+            this.groupBox1.Size = new System.Drawing.Size(655, 111);
             this.groupBox1.TabIndex = 22;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Common";
@@ -673,11 +684,11 @@
             // cbComputeEmptyLayers
             // 
             this.cbComputeEmptyLayers.AutoSize = true;
-            this.cbComputeEmptyLayers.Location = new System.Drawing.Point(427, 79);
+            this.cbComputeEmptyLayers.Location = new System.Drawing.Point(536, 79);
             this.cbComputeEmptyLayers.Name = "cbComputeEmptyLayers";
-            this.cbComputeEmptyLayers.Size = new System.Drawing.Size(117, 22);
+            this.cbComputeEmptyLayers.Size = new System.Drawing.Size(112, 22);
             this.cbComputeEmptyLayers.TabIndex = 21;
-            this.cbComputeEmptyLayers.Text = "Empty Layers";
+            this.cbComputeEmptyLayers.Text = "Empty layers";
             this.cbComputeEmptyLayers.UseVisualStyleBackColor = true;
             // 
             // label42
@@ -692,11 +703,11 @@
             // cbComputeTouchingBounds
             // 
             this.cbComputeTouchingBounds.AutoSize = true;
-            this.cbComputeTouchingBounds.Location = new System.Drawing.Point(272, 79);
+            this.cbComputeTouchingBounds.Location = new System.Drawing.Point(377, 79);
             this.cbComputeTouchingBounds.Name = "cbComputeTouchingBounds";
-            this.cbComputeTouchingBounds.Size = new System.Drawing.Size(155, 22);
+            this.cbComputeTouchingBounds.Size = new System.Drawing.Size(153, 22);
             this.cbComputeTouchingBounds.TabIndex = 19;
-            this.cbComputeTouchingBounds.Text = "Touching Boundary";
+            this.cbComputeTouchingBounds.Text = "Touching boundary";
             this.cbComputeTouchingBounds.UseVisualStyleBackColor = true;
             // 
             // cbAutoComputeIssuesClickOnTab
@@ -720,17 +731,17 @@
             this.tabSettings.Location = new System.Drawing.Point(0, 0);
             this.tabSettings.Name = "tabSettings";
             this.tabSettings.SelectedIndex = 0;
-            this.tabSettings.Size = new System.Drawing.Size(624, 669);
+            this.tabSettings.Size = new System.Drawing.Size(669, 712);
             this.tabSettings.TabIndex = 0;
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.groupBox4);
             this.tabPage1.Controls.Add(this.groupBox5);
+            this.tabPage1.Controls.Add(this.groupBox4);
             this.tabPage1.Location = new System.Drawing.Point(4, 27);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(616, 638);
+            this.tabPage1.Size = new System.Drawing.Size(661, 681);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "General";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -742,7 +753,7 @@
             this.groupBox4.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBox4.Location = new System.Drawing.Point(3, 3);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(610, 100);
+            this.groupBox4.Size = new System.Drawing.Size(655, 90);
             this.groupBox4.TabIndex = 15;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Startup";
@@ -772,17 +783,19 @@
             this.groupBox5.Controls.Add(this.tbFileSaveNameSuffix);
             this.groupBox5.Controls.Add(this.label27);
             this.groupBox5.Controls.Add(this.tbFileSaveNamePreffix);
-            this.groupBox5.Location = new System.Drawing.Point(3, 111);
+            this.groupBox5.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBox5.Location = new System.Drawing.Point(3, 93);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(610, 278);
+            this.groupBox5.Size = new System.Drawing.Size(655, 276);
             this.groupBox5.TabIndex = 54;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "File Dialog Settings";
             // 
             // btnFileExtractDefaultDirectoryClear
             // 
+            this.btnFileExtractDefaultDirectoryClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnFileExtractDefaultDirectoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
-            this.btnFileExtractDefaultDirectoryClear.Location = new System.Drawing.Point(571, 133);
+            this.btnFileExtractDefaultDirectoryClear.Location = new System.Drawing.Point(616, 133);
             this.btnFileExtractDefaultDirectoryClear.Name = "btnFileExtractDefaultDirectoryClear";
             this.btnFileExtractDefaultDirectoryClear.Size = new System.Drawing.Size(30, 24);
             this.btnFileExtractDefaultDirectoryClear.TabIndex = 76;
@@ -791,8 +804,9 @@
             // 
             // btnFileExtractDefaultDirectorySearch
             // 
+            this.btnFileExtractDefaultDirectorySearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnFileExtractDefaultDirectorySearch.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
-            this.btnFileExtractDefaultDirectorySearch.Location = new System.Drawing.Point(535, 133);
+            this.btnFileExtractDefaultDirectorySearch.Location = new System.Drawing.Point(580, 133);
             this.btnFileExtractDefaultDirectorySearch.Name = "btnFileExtractDefaultDirectorySearch";
             this.btnFileExtractDefaultDirectorySearch.Size = new System.Drawing.Size(30, 24);
             this.btnFileExtractDefaultDirectorySearch.TabIndex = 75;
@@ -810,16 +824,19 @@
             // 
             // tbFileExtractDefaultDirectory
             // 
+            this.tbFileExtractDefaultDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tbFileExtractDefaultDirectory.Location = new System.Drawing.Point(205, 133);
             this.tbFileExtractDefaultDirectory.Name = "tbFileExtractDefaultDirectory";
             this.tbFileExtractDefaultDirectory.ReadOnly = true;
-            this.tbFileExtractDefaultDirectory.Size = new System.Drawing.Size(324, 24);
+            this.tbFileExtractDefaultDirectory.Size = new System.Drawing.Size(369, 24);
             this.tbFileExtractDefaultDirectory.TabIndex = 73;
             // 
             // btnFileConvertDefaultDirectoryClear
             // 
+            this.btnFileConvertDefaultDirectoryClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnFileConvertDefaultDirectoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
-            this.btnFileConvertDefaultDirectoryClear.Location = new System.Drawing.Point(571, 167);
+            this.btnFileConvertDefaultDirectoryClear.Location = new System.Drawing.Point(616, 167);
             this.btnFileConvertDefaultDirectoryClear.Name = "btnFileConvertDefaultDirectoryClear";
             this.btnFileConvertDefaultDirectoryClear.Size = new System.Drawing.Size(30, 24);
             this.btnFileConvertDefaultDirectoryClear.TabIndex = 72;
@@ -828,8 +845,9 @@
             // 
             // btnFileConvertDefaultDirectorySearch
             // 
+            this.btnFileConvertDefaultDirectorySearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnFileConvertDefaultDirectorySearch.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
-            this.btnFileConvertDefaultDirectorySearch.Location = new System.Drawing.Point(535, 167);
+            this.btnFileConvertDefaultDirectorySearch.Location = new System.Drawing.Point(580, 167);
             this.btnFileConvertDefaultDirectorySearch.Name = "btnFileConvertDefaultDirectorySearch";
             this.btnFileConvertDefaultDirectorySearch.Size = new System.Drawing.Size(30, 24);
             this.btnFileConvertDefaultDirectorySearch.TabIndex = 71;
@@ -847,16 +865,19 @@
             // 
             // tbFileConvertDefaultDirectory
             // 
+            this.tbFileConvertDefaultDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tbFileConvertDefaultDirectory.Location = new System.Drawing.Point(205, 167);
             this.tbFileConvertDefaultDirectory.Name = "tbFileConvertDefaultDirectory";
             this.tbFileConvertDefaultDirectory.ReadOnly = true;
-            this.tbFileConvertDefaultDirectory.Size = new System.Drawing.Size(324, 24);
+            this.tbFileConvertDefaultDirectory.Size = new System.Drawing.Size(369, 24);
             this.tbFileConvertDefaultDirectory.TabIndex = 69;
             // 
             // btnFileSaveDefaultDirectoryClear
             // 
+            this.btnFileSaveDefaultDirectoryClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnFileSaveDefaultDirectoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
-            this.btnFileSaveDefaultDirectoryClear.Location = new System.Drawing.Point(571, 99);
+            this.btnFileSaveDefaultDirectoryClear.Location = new System.Drawing.Point(616, 99);
             this.btnFileSaveDefaultDirectoryClear.Name = "btnFileSaveDefaultDirectoryClear";
             this.btnFileSaveDefaultDirectoryClear.Size = new System.Drawing.Size(30, 24);
             this.btnFileSaveDefaultDirectoryClear.TabIndex = 68;
@@ -865,8 +886,9 @@
             // 
             // btnFileSaveDefaultDirectorySearch
             // 
+            this.btnFileSaveDefaultDirectorySearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnFileSaveDefaultDirectorySearch.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
-            this.btnFileSaveDefaultDirectorySearch.Location = new System.Drawing.Point(535, 99);
+            this.btnFileSaveDefaultDirectorySearch.Location = new System.Drawing.Point(580, 99);
             this.btnFileSaveDefaultDirectorySearch.Name = "btnFileSaveDefaultDirectorySearch";
             this.btnFileSaveDefaultDirectorySearch.Size = new System.Drawing.Size(30, 24);
             this.btnFileSaveDefaultDirectorySearch.TabIndex = 67;
@@ -884,16 +906,19 @@
             // 
             // tbFileSaveDefaultDirectory
             // 
+            this.tbFileSaveDefaultDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tbFileSaveDefaultDirectory.Location = new System.Drawing.Point(205, 99);
             this.tbFileSaveDefaultDirectory.Name = "tbFileSaveDefaultDirectory";
             this.tbFileSaveDefaultDirectory.ReadOnly = true;
-            this.tbFileSaveDefaultDirectory.Size = new System.Drawing.Size(324, 24);
+            this.tbFileSaveDefaultDirectory.Size = new System.Drawing.Size(369, 24);
             this.tbFileSaveDefaultDirectory.TabIndex = 65;
             // 
             // btnFileOpenDefaultDirectoryClear
             // 
+            this.btnFileOpenDefaultDirectoryClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnFileOpenDefaultDirectoryClear.Image = global::UVtools.GUI.Properties.Resources.delete_16x16;
-            this.btnFileOpenDefaultDirectoryClear.Location = new System.Drawing.Point(571, 65);
+            this.btnFileOpenDefaultDirectoryClear.Location = new System.Drawing.Point(616, 65);
             this.btnFileOpenDefaultDirectoryClear.Name = "btnFileOpenDefaultDirectoryClear";
             this.btnFileOpenDefaultDirectoryClear.Size = new System.Drawing.Size(30, 24);
             this.btnFileOpenDefaultDirectoryClear.TabIndex = 64;
@@ -902,8 +927,9 @@
             // 
             // btnFileOpenDefaultDirectorySearch
             // 
+            this.btnFileOpenDefaultDirectorySearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnFileOpenDefaultDirectorySearch.Image = global::UVtools.GUI.Properties.Resources.Open_16x16;
-            this.btnFileOpenDefaultDirectorySearch.Location = new System.Drawing.Point(535, 65);
+            this.btnFileOpenDefaultDirectorySearch.Location = new System.Drawing.Point(580, 65);
             this.btnFileOpenDefaultDirectorySearch.Name = "btnFileOpenDefaultDirectorySearch";
             this.btnFileOpenDefaultDirectorySearch.Size = new System.Drawing.Size(30, 24);
             this.btnFileOpenDefaultDirectorySearch.TabIndex = 63;
@@ -921,10 +947,12 @@
             // 
             // tbFileOpenDefaultDirectory
             // 
+            this.tbFileOpenDefaultDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tbFileOpenDefaultDirectory.Location = new System.Drawing.Point(205, 65);
             this.tbFileOpenDefaultDirectory.Name = "tbFileOpenDefaultDirectory";
             this.tbFileOpenDefaultDirectory.ReadOnly = true;
-            this.tbFileOpenDefaultDirectory.Size = new System.Drawing.Size(324, 24);
+            this.tbFileOpenDefaultDirectory.Size = new System.Drawing.Size(369, 24);
             this.tbFileOpenDefaultDirectory.TabIndex = 61;
             // 
             // label22
@@ -938,19 +966,21 @@
             // 
             // cbDefaultOpenFileExtension
             // 
-            this.cbDefaultOpenFileExtension.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbDefaultOpenFileExtension.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.cbDefaultOpenFileExtension.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbDefaultOpenFileExtension.FormattingEnabled = true;
             this.cbDefaultOpenFileExtension.Location = new System.Drawing.Point(205, 29);
             this.cbDefaultOpenFileExtension.Name = "cbDefaultOpenFileExtension";
-            this.cbDefaultOpenFileExtension.Size = new System.Drawing.Size(396, 26);
+            this.cbDefaultOpenFileExtension.Size = new System.Drawing.Size(441, 26);
             this.cbDefaultOpenFileExtension.TabIndex = 54;
             this.toolTip.SetToolTip(this.cbDefaultOpenFileExtension, "Sets default file extensions that will be filtered by the File Open Dialog Box.");
             // 
             // label28
             // 
+            this.label28.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label28.AutoSize = true;
-            this.label28.Location = new System.Drawing.Point(363, 236);
+            this.label28.Location = new System.Drawing.Point(408, 236);
             this.label28.Name = "label28";
             this.label28.Size = new System.Drawing.Size(48, 18);
             this.label28.TabIndex = 60;
@@ -968,7 +998,8 @@
             // 
             // tbFileSaveNameSuffix
             // 
-            this.tbFileSaveNameSuffix.Location = new System.Drawing.Point(417, 233);
+            this.tbFileSaveNameSuffix.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbFileSaveNameSuffix.Location = new System.Drawing.Point(462, 233);
             this.tbFileSaveNameSuffix.Name = "tbFileSaveNameSuffix";
             this.tbFileSaveNameSuffix.Size = new System.Drawing.Size(184, 24);
             this.tbFileSaveNameSuffix.TabIndex = 59;
@@ -998,7 +1029,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 27);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(616, 638);
+            this.tabPage2.Size = new System.Drawing.Size(661, 681);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Layer Preview";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -1008,9 +1039,9 @@
             this.groupBox9.Controls.Add(this.cbLayerAutoRotateBestView);
             this.groupBox9.Controls.Add(this.cbLayerZoomToFit);
             this.groupBox9.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox9.Location = new System.Drawing.Point(3, 491);
+            this.groupBox9.Location = new System.Drawing.Point(3, 530);
             this.groupBox9.Name = "groupBox9";
-            this.groupBox9.Size = new System.Drawing.Size(610, 63);
+            this.groupBox9.Size = new System.Drawing.Size(655, 63);
             this.groupBox9.TabIndex = 56;
             this.groupBox9.TabStop = false;
             this.groupBox9.Text = "Miscellaneous";
@@ -1050,9 +1081,9 @@
             this.groupBox8.Controls.Add(this.label39);
             this.groupBox8.Controls.Add(this.nmCrosshairLineMargin);
             this.groupBox8.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox8.Location = new System.Drawing.Point(3, 389);
+            this.groupBox8.Location = new System.Drawing.Point(3, 428);
             this.groupBox8.Name = "groupBox8";
-            this.groupBox8.Size = new System.Drawing.Size(610, 102);
+            this.groupBox8.Size = new System.Drawing.Size(655, 102);
             this.groupBox8.TabIndex = 55;
             this.groupBox8.TabStop = false;
             this.groupBox8.Text = "Crosshairs";
@@ -1083,16 +1114,17 @@
             this.cbCrosshairFadeLevel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbCrosshairFadeLevel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbCrosshairFadeLevel.FormattingEnabled = true;
-            this.cbCrosshairFadeLevel.Location = new System.Drawing.Point(165, 64);
+            this.cbCrosshairFadeLevel.Location = new System.Drawing.Point(160, 64);
             this.cbCrosshairFadeLevel.Name = "cbCrosshairFadeLevel";
-            this.cbCrosshairFadeLevel.Size = new System.Drawing.Size(74, 26);
+            this.cbCrosshairFadeLevel.Size = new System.Drawing.Size(141, 26);
             this.cbCrosshairFadeLevel.TabIndex = 54;
             this.toolTip.SetToolTip(this.cbCrosshairFadeLevel, "Determines the zoom factor after which the crosshairs will automatically be hidde" +
         "n.");
             // 
             // nmCrosshairLineLength
             // 
-            this.nmCrosshairLineLength.Location = new System.Drawing.Point(519, 34);
+            this.nmCrosshairLineLength.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.nmCrosshairLineLength.Location = new System.Drawing.Point(569, 35);
             this.nmCrosshairLineLength.Maximum = new decimal(new int[] {
             1000000,
             0,
@@ -1106,8 +1138,9 @@
             // 
             // label40
             // 
+            this.label40.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label40.AutoSize = true;
-            this.label40.Location = new System.Drawing.Point(577, 68);
+            this.label40.Location = new System.Drawing.Point(627, 69);
             this.label40.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label40.Name = "label40";
             this.label40.Size = new System.Drawing.Size(23, 18);
@@ -1116,8 +1149,9 @@
             // 
             // label36
             // 
+            this.label36.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label36.AutoSize = true;
-            this.label36.Location = new System.Drawing.Point(404, 37);
+            this.label36.Location = new System.Drawing.Point(454, 38);
             this.label36.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label36.Name = "label36";
             this.label36.Size = new System.Drawing.Size(108, 18);
@@ -1126,8 +1160,9 @@
             // 
             // label41
             // 
+            this.label41.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label41.AutoSize = true;
-            this.label41.Location = new System.Drawing.Point(386, 68);
+            this.label41.Location = new System.Drawing.Point(436, 69);
             this.label41.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label41.Name = "label41";
             this.label41.Size = new System.Drawing.Size(126, 18);
@@ -1136,8 +1171,9 @@
             // 
             // label39
             // 
+            this.label39.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label39.AutoSize = true;
-            this.label39.Location = new System.Drawing.Point(577, 34);
+            this.label39.Location = new System.Drawing.Point(627, 35);
             this.label39.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label39.Name = "label39";
             this.label39.Size = new System.Drawing.Size(23, 18);
@@ -1146,7 +1182,8 @@
             // 
             // nmCrosshairLineMargin
             // 
-            this.nmCrosshairLineMargin.Location = new System.Drawing.Point(519, 65);
+            this.nmCrosshairLineMargin.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.nmCrosshairLineMargin.Location = new System.Drawing.Point(569, 66);
             this.nmCrosshairLineMargin.Maximum = new decimal(new int[] {
             255,
             0,
@@ -1177,9 +1214,9 @@
             this.groupBox7.Controls.Add(this.label38);
             this.groupBox7.Controls.Add(this.cbZoomLockLevel);
             this.groupBox7.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox7.Location = new System.Drawing.Point(3, 292);
+            this.groupBox7.Location = new System.Drawing.Point(3, 331);
             this.groupBox7.Name = "groupBox7";
-            this.groupBox7.Size = new System.Drawing.Size(610, 97);
+            this.groupBox7.Size = new System.Drawing.Size(655, 97);
             this.groupBox7.TabIndex = 54;
             this.groupBox7.TabStop = false;
             this.groupBox7.Text = "Zoom";
@@ -1202,9 +1239,9 @@
             this.cbZoomToFit.Items.AddRange(new object[] {
             "Print Volume Boundary",
             "Layer Boundary"});
-            this.cbZoomToFit.Location = new System.Drawing.Point(128, 23);
+            this.cbZoomToFit.Location = new System.Drawing.Point(123, 24);
             this.cbZoomToFit.Name = "cbZoomToFit";
-            this.cbZoomToFit.Size = new System.Drawing.Size(188, 26);
+            this.cbZoomToFit.Size = new System.Drawing.Size(178, 26);
             this.cbZoomToFit.TabIndex = 55;
             this.toolTip.SetToolTip(this.cbZoomToFit, "Determines whether double-right-click will zoom out to layer boundary or to print" +
         " volume boundary.  Holding ALT during double-click will invert this behavior.");
@@ -1223,8 +1260,9 @@
             // 
             // label38
             // 
+            this.label38.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label38.AutoSize = true;
-            this.label38.Location = new System.Drawing.Point(403, 27);
+            this.label38.Location = new System.Drawing.Point(453, 27);
             this.label38.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label38.Name = "label38";
             this.label38.Size = new System.Drawing.Size(109, 18);
@@ -1236,7 +1274,7 @@
             this.cbZoomLockLevel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbZoomLockLevel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbZoomLockLevel.FormattingEnabled = true;
-            this.cbZoomLockLevel.Location = new System.Drawing.Point(524, 23);
+            this.cbZoomLockLevel.Location = new System.Drawing.Point(569, 23);
             this.cbZoomLockLevel.Name = "cbZoomLockLevel";
             this.cbZoomLockLevel.Size = new System.Drawing.Size(72, 26);
             this.cbZoomLockLevel.TabIndex = 53;
@@ -1246,6 +1284,9 @@
             // groupBox6
             // 
             this.groupBox6.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.groupBox6.Controls.Add(this.btnOverhangColor);
+            this.groupBox6.Controls.Add(this.btnOverhangHLColor);
+            this.groupBox6.Controls.Add(this.label47);
             this.groupBox6.Controls.Add(this.cbLayerTooltipOverlay);
             this.groupBox6.Controls.Add(this.label46);
             this.groupBox6.Controls.Add(this.nmLayerTooltipOverlayOpacity);
@@ -1286,7 +1327,7 @@
             this.groupBox6.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBox6.Location = new System.Drawing.Point(3, 3);
             this.groupBox6.Name = "groupBox6";
-            this.groupBox6.Size = new System.Drawing.Size(610, 289);
+            this.groupBox6.Size = new System.Drawing.Size(655, 328);
             this.groupBox6.TabIndex = 53;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Layer Colors";
@@ -1294,7 +1335,7 @@
             // cbLayerTooltipOverlay
             // 
             this.cbLayerTooltipOverlay.AutoSize = true;
-            this.cbLayerTooltipOverlay.Location = new System.Drawing.Point(430, 25);
+            this.cbLayerTooltipOverlay.Location = new System.Drawing.Point(423, 31);
             this.cbLayerTooltipOverlay.Name = "cbLayerTooltipOverlay";
             this.cbLayerTooltipOverlay.Size = new System.Drawing.Size(131, 22);
             this.cbLayerTooltipOverlay.TabIndex = 4;
@@ -1381,9 +1422,8 @@
             // 
             // cbOutlineHollowAreas
             // 
-            this.cbOutlineHollowAreas.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbOutlineHollowAreas.AutoSize = true;
-            this.cbOutlineHollowAreas.Location = new System.Drawing.Point(430, 121);
+            this.cbOutlineHollowAreas.Location = new System.Drawing.Point(423, 123);
             this.cbOutlineHollowAreas.Name = "cbOutlineHollowAreas";
             this.cbOutlineHollowAreas.Size = new System.Drawing.Size(131, 22);
             this.cbOutlineHollowAreas.TabIndex = 46;
@@ -1439,7 +1479,7 @@
             this.btnIslandColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnIslandColor.FlatAppearance.BorderSize = 2;
             this.btnIslandColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnIslandColor.Location = new System.Drawing.Point(544, 155);
+            this.btnIslandColor.Location = new System.Drawing.Point(589, 155);
             this.btnIslandColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnIslandColor.Name = "btnIslandColor";
             this.btnIslandColor.Size = new System.Drawing.Size(24, 24);
@@ -1455,7 +1495,7 @@
             this.btnIslandHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnIslandHLColor.FlatAppearance.BorderSize = 2;
             this.btnIslandHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnIslandHLColor.Location = new System.Drawing.Point(575, 155);
+            this.btnIslandHLColor.Location = new System.Drawing.Point(620, 155);
             this.btnIslandHLColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnIslandHLColor.Name = "btnIslandHLColor";
             this.btnIslandHLColor.Size = new System.Drawing.Size(24, 24);
@@ -1526,7 +1566,7 @@
             this.btnResinTrapColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnResinTrapColor.FlatAppearance.BorderSize = 2;
             this.btnResinTrapColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnResinTrapColor.Location = new System.Drawing.Point(544, 187);
+            this.btnResinTrapColor.Location = new System.Drawing.Point(589, 219);
             this.btnResinTrapColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnResinTrapColor.Name = "btnResinTrapColor";
             this.btnResinTrapColor.Size = new System.Drawing.Size(24, 24);
@@ -1542,7 +1582,7 @@
             this.btnResinTrapHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnResinTrapHLColor.FlatAppearance.BorderSize = 2;
             this.btnResinTrapHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnResinTrapHLColor.Location = new System.Drawing.Point(575, 187);
+            this.btnResinTrapHLColor.Location = new System.Drawing.Point(620, 219);
             this.btnResinTrapHLColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnResinTrapHLColor.Name = "btnResinTrapHLColor";
             this.btnResinTrapHLColor.Size = new System.Drawing.Size(24, 24);
@@ -1599,9 +1639,8 @@
             // 
             // cbOutlineLayerBounds
             // 
-            this.cbOutlineLayerBounds.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbOutlineLayerBounds.AutoSize = true;
-            this.cbOutlineLayerBounds.Location = new System.Drawing.Point(430, 89);
+            this.cbOutlineLayerBounds.Location = new System.Drawing.Point(423, 91);
             this.cbOutlineLayerBounds.Name = "cbOutlineLayerBounds";
             this.cbOutlineLayerBounds.Size = new System.Drawing.Size(131, 22);
             this.cbOutlineLayerBounds.TabIndex = 42;
@@ -1613,7 +1652,7 @@
             // 
             this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(398, 221);
+            this.label6.Location = new System.Drawing.Point(443, 253);
             this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(138, 18);
@@ -1643,12 +1682,12 @@
             // 
             this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(375, 158);
+            this.label4.Location = new System.Drawing.Point(420, 158);
             this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(161, 18);
             this.label4.TabIndex = 44;
-            this.label4.Text = "Island / Selected Island:";
+            this.label4.Text = "Island / Selected island:";
             // 
             // nmOutlineLayerBoundsLineThickness
             // 
@@ -1677,7 +1716,7 @@
             // 
             this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(323, 190);
+            this.label5.Location = new System.Drawing.Point(368, 222);
             this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(213, 18);
@@ -1710,7 +1749,7 @@
             this.btnTouchingBoundsColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnTouchingBoundsColor.FlatAppearance.BorderSize = 2;
             this.btnTouchingBoundsColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnTouchingBoundsColor.Location = new System.Drawing.Point(544, 219);
+            this.btnTouchingBoundsColor.Location = new System.Drawing.Point(589, 251);
             this.btnTouchingBoundsColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnTouchingBoundsColor.Name = "btnTouchingBoundsColor";
             this.btnTouchingBoundsColor.Size = new System.Drawing.Size(24, 24);
@@ -1721,9 +1760,8 @@
             // 
             // cbOutlinePrintVolumeBounds
             // 
-            this.cbOutlinePrintVolumeBounds.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbOutlinePrintVolumeBounds.AutoSize = true;
-            this.cbOutlinePrintVolumeBounds.Location = new System.Drawing.Point(430, 57);
+            this.cbOutlinePrintVolumeBounds.Location = new System.Drawing.Point(423, 59);
             this.cbOutlinePrintVolumeBounds.Name = "cbOutlinePrintVolumeBounds";
             this.cbOutlinePrintVolumeBounds.Size = new System.Drawing.Size(131, 22);
             this.cbOutlinePrintVolumeBounds.TabIndex = 38;
@@ -1750,7 +1788,7 @@
             // 
             this.label37.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label37.AutoSize = true;
-            this.label37.Location = new System.Drawing.Point(459, 254);
+            this.label37.Location = new System.Drawing.Point(504, 286);
             this.label37.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label37.Name = "label37";
             this.label37.Size = new System.Drawing.Size(77, 18);
@@ -1787,7 +1825,7 @@
             this.btnCrosshairColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnCrosshairColor.FlatAppearance.BorderSize = 2;
             this.btnCrosshairColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnCrosshairColor.Location = new System.Drawing.Point(544, 251);
+            this.btnCrosshairColor.Location = new System.Drawing.Point(589, 283);
             this.btnCrosshairColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnCrosshairColor.Name = "btnCrosshairColor";
             this.btnCrosshairColor.Size = new System.Drawing.Size(24, 24);
@@ -1799,12 +1837,13 @@
             // tabPage3
             // 
             this.tabPage3.Controls.Add(this.groupBox3);
+            this.tabPage3.Controls.Add(this.groupBox11);
             this.tabPage3.Controls.Add(this.groupBox2);
             this.tabPage3.Controls.Add(this.groupBox1);
             this.tabPage3.Location = new System.Drawing.Point(4, 27);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(616, 638);
+            this.tabPage3.Size = new System.Drawing.Size(661, 681);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Issues";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -1817,7 +1856,7 @@
             this.tabPage4.Location = new System.Drawing.Point(4, 27);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(616, 638);
+            this.tabPage4.Size = new System.Drawing.Size(661, 681);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Pixel Editor";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -1847,9 +1886,10 @@
             this.groupBox10.Controls.Add(this.label23);
             this.groupBox10.Controls.Add(this.btnPixelEditorAddPixelColor);
             this.groupBox10.Controls.Add(this.btnPixelEditorAddPixelHLColor);
-            this.groupBox10.Location = new System.Drawing.Point(0, 6);
+            this.groupBox10.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBox10.Location = new System.Drawing.Point(3, 3);
             this.groupBox10.Name = "groupBox10";
-            this.groupBox10.Size = new System.Drawing.Size(616, 162);
+            this.groupBox10.Size = new System.Drawing.Size(655, 162);
             this.groupBox10.TabIndex = 24;
             this.groupBox10.TabStop = false;
             this.groupBox10.Text = "Pixel Editor Colors";
@@ -1860,7 +1900,7 @@
             this.btnPixelEditorDrainHoleColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnPixelEditorDrainHoleColor.FlatAppearance.BorderSize = 2;
             this.btnPixelEditorDrainHoleColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPixelEditorDrainHoleColor.Location = new System.Drawing.Point(420, 122);
+            this.btnPixelEditorDrainHoleColor.Location = new System.Drawing.Point(401, 122);
             this.btnPixelEditorDrainHoleColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnPixelEditorDrainHoleColor.Name = "btnPixelEditorDrainHoleColor";
             this.btnPixelEditorDrainHoleColor.Size = new System.Drawing.Size(24, 24);
@@ -1875,7 +1915,7 @@
             this.btnPixelEditorDrainHoleHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnPixelEditorDrainHoleHLColor.FlatAppearance.BorderSize = 2;
             this.btnPixelEditorDrainHoleHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPixelEditorDrainHoleHLColor.Location = new System.Drawing.Point(452, 122);
+            this.btnPixelEditorDrainHoleHLColor.Location = new System.Drawing.Point(433, 122);
             this.btnPixelEditorDrainHoleHLColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnPixelEditorDrainHoleHLColor.Name = "btnPixelEditorDrainHoleHLColor";
             this.btnPixelEditorDrainHoleHLColor.Size = new System.Drawing.Size(24, 24);
@@ -1901,7 +1941,7 @@
             this.btnPixelEditorSupportColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnPixelEditorSupportColor.FlatAppearance.BorderSize = 2;
             this.btnPixelEditorSupportColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPixelEditorSupportColor.Location = new System.Drawing.Point(420, 90);
+            this.btnPixelEditorSupportColor.Location = new System.Drawing.Point(401, 90);
             this.btnPixelEditorSupportColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnPixelEditorSupportColor.Name = "btnPixelEditorSupportColor";
             this.btnPixelEditorSupportColor.Size = new System.Drawing.Size(24, 24);
@@ -1916,7 +1956,7 @@
             this.btnPixelEditorSupportHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnPixelEditorSupportHLColor.FlatAppearance.BorderSize = 2;
             this.btnPixelEditorSupportHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPixelEditorSupportHLColor.Location = new System.Drawing.Point(452, 90);
+            this.btnPixelEditorSupportHLColor.Location = new System.Drawing.Point(433, 90);
             this.btnPixelEditorSupportHLColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnPixelEditorSupportHLColor.Name = "btnPixelEditorSupportHLColor";
             this.btnPixelEditorSupportHLColor.Size = new System.Drawing.Size(24, 24);
@@ -1941,7 +1981,7 @@
             this.btnPixelEditorRemovePixelColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnPixelEditorRemovePixelColor.FlatAppearance.BorderSize = 2;
             this.btnPixelEditorRemovePixelColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPixelEditorRemovePixelColor.Location = new System.Drawing.Point(420, 58);
+            this.btnPixelEditorRemovePixelColor.Location = new System.Drawing.Point(401, 58);
             this.btnPixelEditorRemovePixelColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnPixelEditorRemovePixelColor.Name = "btnPixelEditorRemovePixelColor";
             this.btnPixelEditorRemovePixelColor.Size = new System.Drawing.Size(24, 24);
@@ -1956,7 +1996,7 @@
             this.btnPixelEditorRemovePixelHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnPixelEditorRemovePixelHLColor.FlatAppearance.BorderSize = 2;
             this.btnPixelEditorRemovePixelHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPixelEditorRemovePixelHLColor.Location = new System.Drawing.Point(452, 58);
+            this.btnPixelEditorRemovePixelHLColor.Location = new System.Drawing.Point(433, 58);
             this.btnPixelEditorRemovePixelHLColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnPixelEditorRemovePixelHLColor.Name = "btnPixelEditorRemovePixelHLColor";
             this.btnPixelEditorRemovePixelHLColor.Size = new System.Drawing.Size(24, 24);
@@ -1992,7 +2032,7 @@
             this.btnPixelEditorAddPixelColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnPixelEditorAddPixelColor.FlatAppearance.BorderSize = 2;
             this.btnPixelEditorAddPixelColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPixelEditorAddPixelColor.Location = new System.Drawing.Point(420, 26);
+            this.btnPixelEditorAddPixelColor.Location = new System.Drawing.Point(401, 26);
             this.btnPixelEditorAddPixelColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnPixelEditorAddPixelColor.Name = "btnPixelEditorAddPixelColor";
             this.btnPixelEditorAddPixelColor.Size = new System.Drawing.Size(24, 24);
@@ -2007,7 +2047,7 @@
             this.btnPixelEditorAddPixelHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnPixelEditorAddPixelHLColor.FlatAppearance.BorderSize = 2;
             this.btnPixelEditorAddPixelHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPixelEditorAddPixelHLColor.Location = new System.Drawing.Point(452, 26);
+            this.btnPixelEditorAddPixelHLColor.Location = new System.Drawing.Point(433, 26);
             this.btnPixelEditorAddPixelHLColor.Margin = new System.Windows.Forms.Padding(4);
             this.btnPixelEditorAddPixelHLColor.Name = "btnPixelEditorAddPixelHLColor";
             this.btnPixelEditorAddPixelHLColor.Size = new System.Drawing.Size(24, 24);
@@ -2042,7 +2082,7 @@
             this.tabPage5.Location = new System.Drawing.Point(4, 27);
             this.tabPage5.Name = "tabPage5";
             this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(616, 638);
+            this.tabPage5.Size = new System.Drawing.Size(661, 681);
             this.tabPage5.TabIndex = 4;
             this.tabPage5.Text = "Layer Repair";
             this.tabPage5.UseVisualStyleBackColor = true;
@@ -2168,9 +2208,9 @@
             this.pnActions.Controls.Add(this.btnSave);
             this.pnActions.Controls.Add(this.btnReset);
             this.pnActions.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnActions.Location = new System.Drawing.Point(0, 592);
+            this.pnActions.Location = new System.Drawing.Point(0, 635);
             this.pnActions.Name = "pnActions";
-            this.pnActions.Size = new System.Drawing.Size(624, 77);
+            this.pnActions.Size = new System.Drawing.Size(669, 77);
             this.pnActions.TabIndex = 19;
             // 
             // toolTip
@@ -2181,11 +2221,122 @@
             this.toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             this.toolTip.ToolTipTitle = "Information";
             // 
+            // cbComputeOverhangs
+            // 
+            this.cbComputeOverhangs.AutoSize = true;
+            this.cbComputeOverhangs.Location = new System.Drawing.Point(164, 79);
+            this.cbComputeOverhangs.Name = "cbComputeOverhangs";
+            this.cbComputeOverhangs.Size = new System.Drawing.Size(99, 22);
+            this.cbComputeOverhangs.TabIndex = 22;
+            this.cbComputeOverhangs.Text = "Overhangs";
+            this.cbComputeOverhangs.UseVisualStyleBackColor = true;
+            // 
+            // btnOverhangColor
+            // 
+            this.btnOverhangColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnOverhangColor.BackColor = System.Drawing.Color.White;
+            this.btnOverhangColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnOverhangColor.FlatAppearance.BorderSize = 2;
+            this.btnOverhangColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnOverhangColor.Location = new System.Drawing.Point(589, 187);
+            this.btnOverhangColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnOverhangColor.Name = "btnOverhangColor";
+            this.btnOverhangColor.Size = new System.Drawing.Size(24, 24);
+            this.btnOverhangColor.TabIndex = 70;
+            this.toolTip.SetToolTip(this.btnOverhangColor, "Islands on the layer that are not currently selected.");
+            this.btnOverhangColor.UseVisualStyleBackColor = false;
+            this.btnOverhangColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnOverhangHLColor
+            // 
+            this.btnOverhangHLColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnOverhangHLColor.BackColor = System.Drawing.Color.White;
+            this.btnOverhangHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnOverhangHLColor.FlatAppearance.BorderSize = 2;
+            this.btnOverhangHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnOverhangHLColor.Location = new System.Drawing.Point(620, 187);
+            this.btnOverhangHLColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnOverhangHLColor.Name = "btnOverhangHLColor";
+            this.btnOverhangHLColor.Size = new System.Drawing.Size(24, 24);
+            this.btnOverhangHLColor.TabIndex = 71;
+            this.toolTip.SetToolTip(this.btnOverhangHLColor, "Islands on the layer that are currently selected in the issue list.");
+            this.btnOverhangHLColor.UseVisualStyleBackColor = false;
+            this.btnOverhangHLColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // label47
+            // 
+            this.label47.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label47.AutoSize = true;
+            this.label47.Location = new System.Drawing.Point(371, 190);
+            this.label47.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label47.Name = "label47";
+            this.label47.Size = new System.Drawing.Size(210, 18);
+            this.label47.TabIndex = 69;
+            this.label47.Text = "Overhang / Selected overhang:";
+            // 
+            // groupBox11
+            // 
+            this.groupBox11.Controls.Add(this.nmOverhangErodeIterations);
+            this.groupBox11.Controls.Add(this.label48);
+            this.groupBox11.Controls.Add(this.cbOverhangIndependentFromIslands);
+            this.groupBox11.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBox11.Location = new System.Drawing.Point(3, 331);
+            this.groupBox11.Name = "groupBox11";
+            this.groupBox11.Size = new System.Drawing.Size(655, 93);
+            this.groupBox11.TabIndex = 25;
+            this.groupBox11.TabStop = false;
+            this.groupBox11.Text = "Overhangs";
+            // 
+            // cbOverhangIndependentFromIslands
+            // 
+            this.cbOverhangIndependentFromIslands.AutoSize = true;
+            this.cbOverhangIndependentFromIslands.Location = new System.Drawing.Point(10, 23);
+            this.cbOverhangIndependentFromIslands.Name = "cbOverhangIndependentFromIslands";
+            this.cbOverhangIndependentFromIslands.Size = new System.Drawing.Size(298, 22);
+            this.cbOverhangIndependentFromIslands.TabIndex = 31;
+            this.cbOverhangIndependentFromIslands.Text = "Include islands when detecting overhangs";
+            this.toolTip.SetToolTip(this.cbOverhangIndependentFromIslands, resources.GetString("cbOverhangIndependentFromIslands.ToolTip"));
+            this.cbOverhangIndependentFromIslands.UseVisualStyleBackColor = true;
+            // 
+            // nmOverhangErodeIterations
+            // 
+            this.nmOverhangErodeIterations.Location = new System.Drawing.Point(10, 51);
+            this.nmOverhangErodeIterations.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+            this.nmOverhangErodeIterations.Minimum = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            this.nmOverhangErodeIterations.Name = "nmOverhangErodeIterations";
+            this.nmOverhangErodeIterations.Size = new System.Drawing.Size(57, 24);
+            this.nmOverhangErodeIterations.TabIndex = 31;
+            this.toolTip.SetToolTip(this.nmOverhangErodeIterations, "Range 2-255");
+            this.nmOverhangErodeIterations.Value = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            // 
+            // label48
+            // 
+            this.label48.AutoSize = true;
+            this.label48.Location = new System.Drawing.Point(73, 54);
+            this.label48.Name = "label48";
+            this.label48.Size = new System.Drawing.Size(174, 18);
+            this.label48.TabIndex = 32;
+            this.label48.Text = "Minimum overhang depth";
+            this.toolTip.SetToolTip(this.label48, "The number of pixels that an overhang can protrude from the previous layer before" +
+        " it is detected and reported as an overhang.");
+            // 
             // FrmSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(624, 669);
+            this.ClientSize = new System.Drawing.Size(669, 712);
             this.Controls.Add(this.pnActions);
             this.Controls.Add(this.tabSettings);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -2245,6 +2396,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultOpeningIterations)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultClosingIterations)).EndInit();
             this.pnActions.ResumeLayout(false);
+            this.groupBox11.ResumeLayout(false);
+            this.groupBox11.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmOverhangErodeIterations)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2399,5 +2553,13 @@
         private System.Windows.Forms.Label label45;
         private System.Windows.Forms.Label label46;
         private System.Windows.Forms.NumericUpDown nmLayerTooltipOverlayOpacity;
+        private System.Windows.Forms.CheckBox cbComputeOverhangs;
+        private System.Windows.Forms.Button btnOverhangColor;
+        private System.Windows.Forms.Button btnOverhangHLColor;
+        private System.Windows.Forms.Label label47;
+        private System.Windows.Forms.GroupBox groupBox11;
+        private System.Windows.Forms.CheckBox cbOverhangIndependentFromIslands;
+        private System.Windows.Forms.NumericUpDown nmOverhangErodeIterations;
+        private System.Windows.Forms.Label label48;
     }
 }

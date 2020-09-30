@@ -12,12 +12,15 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>1701;1702;</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>1701;1702;</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.999-cibuild0010914-beta" />
@@ -26,9 +29,9 @@
     <PackageReference Include="Avalonia.Desktop" Version="0.10.999-cibuild0010914-beta" />
     <PackageReference Include="Avalonia.ThemeManager" Version="0.10.0-preview3" />
     <PackageReference Include="Dock.Avalonia" Version="0.10.0-preview5" />
-    <PackageReference Include="Emgu.CV.runtime.raspbian" Version="4.4.0.4061" />
-    <PackageReference Include="Emgu.CV.runtime.ubuntu" Version="4.4.0.4061" />
-    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.4.0.4061" />
+    <PackageReference Include="Emgu.CV.runtime.raspbian" Version="4.4.0.4077" />
+    <PackageReference Include="Emgu.CV.runtime.ubuntu" Version="4.4.0.4077" />
+    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.4.0.4077" />
     <PackageReference Include="MessageBox.Avalonia" Version="0.10.1-night" />
     <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.0-preview3" />
   </ItemGroup>

@@ -1,4 +1,5 @@
-﻿using Avalonia.Markup.Xaml;
+﻿using System.Threading.Tasks;
+using Avalonia.Markup.Xaml;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
@@ -36,11 +37,11 @@ namespace UVtools.WPF.Controls.Tools
         /// Validates if is safe to continue with operation
         /// </summary>
         /// <returns></returns>
-        public virtual bool ValidateForm()
+        public virtual async Task<bool> ValidateForm()
         {
             if (BaseOperation is null) return true;
             if (!UpdateOperation()) return false;
-            return ValidateFormFromString(BaseOperation.Validate());
+            return await ValidateFormFromString(BaseOperation.Validate());
         }
 
         /// <summary>
@@ -48,10 +49,10 @@ namespace UVtools.WPF.Controls.Tools
         /// </summary>
         /// <param name="text"></param>
         /// <returns></returns>
-        public bool ValidateFormFromString(string text)
+        public async Task<bool> ValidateFormFromString(string text)
         {
             if (string.IsNullOrEmpty(text)) return true;
-            ParentWindow.MessageBoxError(text);
+            await ParentWindow.MessageBoxError(text);
             return false;
         }
 
@@ -60,6 +61,6 @@ namespace UVtools.WPF.Controls.Tools
         /// </summary>
         /// <param name="text"></param>
         /// <returns></returns>
-        public bool ValidateFormFromString(StringTag text) => ValidateFormFromString(text?.ToString());
+        public async Task<bool> ValidateFormFromString(StringTag text) => await ValidateFormFromString(text?.ToString());
     }
 }

@@ -10,12 +10,12 @@
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
     <Description>MSLA/DLP, file analysis, repair, conversion and manipulation</Description>
-    <Version>0.8.2.4</Version>
+    <Version>0.8.3.0</Version>
     <Copyright>Copyright © 2020 PTRTECH</Copyright>
     <PackageIcon>UVtools.png</PackageIcon>
     <Platforms>AnyCPU;x64</Platforms>
-    <AssemblyVersion>0.8.2.4</AssemblyVersion>
-    <FileVersion>0.8.2.4</FileVersion>
+    <AssemblyVersion>0.8.3.0</AssemblyVersion>
+    <FileVersion>0.8.3.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -47,7 +47,7 @@
 
   <ItemGroup>
     <PackageReference Include="BinarySerializer" Version="8.5.3" />
-    <PackageReference Include="Emgu.CV" Version="4.4.0.4061" />
+    <PackageReference Include="Emgu.CV" Version="4.4.0.4077" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />

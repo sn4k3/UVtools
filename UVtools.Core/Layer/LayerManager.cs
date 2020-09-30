@@ -692,15 +692,18 @@ namespace UVtools.Core
         }
 
         public List<LayerIssue> GetAllIssues(
-            IslandDetectionConfiguration islandConfig = null, ResinTrapDetectionConfiguration resinTrapConfig = null,
+            IslandDetectionConfiguration islandConfig = null,
+            OverhangDetectionConfiguration overhangConfig = null, 
+            ResinTrapDetectionConfiguration resinTrapConfig = null,
             TouchingBoundDetectionConfiguration touchBoundConfig = null,
             bool emptyLayersConfig = true,
             OperationProgress progress = null)
         {
-            if(ReferenceEquals(islandConfig, null)) islandConfig = new IslandDetectionConfiguration();
-            if(ReferenceEquals(resinTrapConfig, null)) resinTrapConfig = new ResinTrapDetectionConfiguration();
-            if(ReferenceEquals(touchBoundConfig, null)) touchBoundConfig = new TouchingBoundDetectionConfiguration();
-            if(ReferenceEquals(progress, null)) progress = new OperationProgress();
+            if(islandConfig is null) islandConfig = new IslandDetectionConfiguration();
+            if(overhangConfig is null) overhangConfig = new OverhangDetectionConfiguration();
+            if(resinTrapConfig is null) resinTrapConfig = new ResinTrapDetectionConfiguration();
+            if(touchBoundConfig is null) touchBoundConfig = new TouchingBoundDetectionConfiguration();
+            if(progress is null) progress = new OperationProgress();
 
             var result = new ConcurrentBag<LayerIssue>();
             var layerHollowAreas = new ConcurrentDictionary<uint, List<LayerHollowArea>>();
@@ -711,7 +714,7 @@ namespace UVtools.Core
 
             Parallel.Invoke(() =>
             {
-                if (!islandConfig.Enabled && !touchBoundConfig.Enabled)
+                if (!islandConfig.Enabled && !overhangConfig.Enabled && !touchBoundConfig.Enabled)
                 {
                     islandsFinished = true;
                     return;
@@ -739,9 +742,14 @@ namespace UVtools.Core
                         }
 
                         // Spare a decoding cycle
-                        if (!touchBoundConfig.Enabled && 
+                        if (!touchBoundConfig.Enabled &&
+                            !overhangConfig.Enabled &&
                             (layer.Index == 0 || 
-                             (!ReferenceEquals(islandConfig.WhiteListLayers, null) && !islandConfig.WhiteListLayers.Contains(layer.Index)))
+                             (
+                                 (!ReferenceEquals(overhangConfig.WhiteListLayers, null) && !overhangConfig.WhiteListLayers.Contains(layer.Index)) &&
+                                 (!ReferenceEquals(islandConfig.WhiteListLayers, null) && !islandConfig.WhiteListLayers.Contains(layer.Index))
+                             )
+                             )
                             )
                         {
                             lock (progress.Mutex)
@@ -798,107 +806,212 @@ namespace UVtools.Core
                                 }
                             }
 
-                            if (layer.Index == 0 || !islandConfig.Enabled)
+                            if (layer.Index == 0)
                             {
                                 lock (progress.Mutex)
                                 {
                                     progress++;
                                 }
-                                return; // No islands for layer 0
+
+                                return; // No islands nor overhangs for layer 0
                             }
 
-                            if (!ReferenceEquals(islandConfig.WhiteListLayers, null)) // Check white list
+                            Mat previousImage = null;
+                            Span<byte> previousSpan = null;
+
+                            if (islandConfig.Enabled)
                             {
-                                if (!islandConfig.WhiteListLayers.Contains(layer.Index))
+                                if (!ReferenceEquals(islandConfig.WhiteListLayers, null)) // Check white list
                                 {
-                                    lock (progress.Mutex)
+                                    if (!islandConfig.WhiteListLayers.Contains(layer.Index))
                                     {
-                                        progress++;
+                                        lock (progress.Mutex)
+                                        {
+                                            progress++;
+                                        }
+
+                                        return;
                                     }
-                                    return;
                                 }
-                            }
 
-                            if (islandConfig.BinaryThreshold > 0)
-                            {
-                                CvInvoke.Threshold(image, image, islandConfig.BinaryThreshold, 255,
-                                    ThresholdType.Binary);
-                            }
-
-                            using (Mat labels = new Mat())
-                            using (Mat stats = new Mat())
-                            using (Mat centroids = new Mat())
-                            {
-                                var numLabels = CvInvoke.ConnectedComponentsWithStats(image, labels, stats, centroids,
-                                    islandConfig.AllowDiagonalBonds ? LineType.EightConnected : LineType.FourConnected);
-                                
-                                // Get array that contains details of each connected component
-                                var ccStats = stats.GetData();
-                                //stats[i][0]: Left Edge of Connected Component
-                                //stats[i][1]: Top Edge of Connected Component 
-                                //stats[i][2]: Width of Connected Component
-                                //stats[i][3]: Height of Connected Component
-                                //stats[i][4]: Total Area (in pixels) in Connected Component
-
-                                Span<int> labelSpan = labels.GetPixelSpan<int>();
-                                Mat previousImage = null;
-                                Span<byte> previousSpan = null;
-
-                                for (int i = 1; i < numLabels; i++)
+                                if (islandConfig.BinaryThreshold > 0)
                                 {
-                                    Rectangle rect = new Rectangle((int)ccStats.GetValue(i, (int)ConnectedComponentsTypes.Left),
-                                                                   (int)ccStats.GetValue(i, (int)ConnectedComponentsTypes.Top),
-                                                                   (int)ccStats.GetValue(i, (int)ConnectedComponentsTypes.Width),
-                                                                   (int)ccStats.GetValue(i, (int)ConnectedComponentsTypes.Height));
-                                    
-                                    if (rect.GetArea() < islandConfig.RequiredAreaToProcessCheck)
-                                        continue;
+                                    CvInvoke.Threshold(image, image, islandConfig.BinaryThreshold, 255,
+                                        ThresholdType.Binary);
+                                }
 
-                                    if (ReferenceEquals(previousImage, null))
+                                using (Mat labels = new Mat())
+                                using (Mat stats = new Mat())
+                                using (Mat centroids = new Mat())
+                                {
+                                    var numLabels = CvInvoke.ConnectedComponentsWithStats(image, labels, stats,
+                                        centroids,
+                                        islandConfig.AllowDiagonalBonds
+                                            ? LineType.EightConnected
+                                            : LineType.FourConnected);
+
+                                    // Get array that contains details of each connected component
+                                    var ccStats = stats.GetData();
+                                    //stats[i][0]: Left Edge of Connected Component
+                                    //stats[i][1]: Top Edge of Connected Component 
+                                    //stats[i][2]: Width of Connected Component
+                                    //stats[i][3]: Height of Connected Component
+                                    //stats[i][4]: Total Area (in pixels) in Connected Component
+
+                                    Span<int> labelSpan = labels.GetPixelSpan<int>();
+
+                                    for (int i = 1; i < numLabels; i++)
                                     {
-                                        previousImage = this[layer.Index - 1].LayerMat;
-                                        previousSpan = previousImage.GetPixelSpan<byte>();
-                                    }
+                                        Rectangle rect = new Rectangle(
+                                            (int) ccStats.GetValue(i, (int) ConnectedComponentsTypes.Left),
+                                            (int) ccStats.GetValue(i, (int) ConnectedComponentsTypes.Top),
+                                            (int) ccStats.GetValue(i, (int) ConnectedComponentsTypes.Width),
+                                            (int) ccStats.GetValue(i, (int) ConnectedComponentsTypes.Height));
 
-                                    List<Point> points = new List<Point>();
-                                    uint pixelsSupportingIsland = 0;
+                                        if (rect.GetArea() < islandConfig.RequiredAreaToProcessCheck)
+                                            continue;
 
-                                    for (int y = rect.Y; y < rect.Bottom; y++)
-                                    {
+                                        if (previousImage is null)
+                                        {
+                                            previousImage = this[layer.Index - 1].LayerMat;
+                                            previousSpan = previousImage.GetPixelSpan<byte>();
+                                        }
+
+                                        List<Point> points = new List<Point>();
+                                        uint pixelsSupportingIsland = 0;
+
+                                        for (int y = rect.Y; y < rect.Bottom; y++)
                                         for (int x = rect.X; x < rect.Right; x++)
                                         {
                                             int pixel = step * y + x;
                                             if (
-                                                labelSpan[pixel] != i || // Background pixel or a pixel from another component within the bounding rectangle
-                                                span[pixel] < islandConfig.RequiredPixelBrightnessToProcessCheck // Low brightness, ignore
+                                                labelSpan[pixel] !=
+                                                i || // Background pixel or a pixel from another component within the bounding rectangle
+                                                span[pixel] <
+                                                islandConfig
+                                                    .RequiredPixelBrightnessToProcessCheck // Low brightness, ignore
                                             ) continue;
 
                                             points.Add(new Point(x, y));
 
-                                            if (previousSpan[pixel] >= islandConfig.RequiredPixelBrightnessToSupport)
+                                            if (previousSpan[pixel] >=
+                                                islandConfig.RequiredPixelBrightnessToSupport)
                                             {
                                                 pixelsSupportingIsland++;
                                             }
                                         }
+
+                                        bool isIsland = true;
+                                        if (points.Count == 0) continue; // Should never happen
+                                        if (pixelsSupportingIsland >= islandConfig.RequiredPixelsToSupport)
+                                            isIsland = false; // Not a island, bounding is strong, i think...
+                                        else if (pixelsSupportingIsland > 0 &&
+                                            points.Count < islandConfig.RequiredPixelsToSupport &&
+                                            pixelsSupportingIsland >= Math.Max(1, points.Count / 2))
+                                            isIsland = false; // Not a island, but maybe weak bounding...
+
+
+                                        if (isIsland)
+                                        {
+                                            result.Add(new LayerIssue(layer, LayerIssue.IssueType.Island,
+                                                points.ToArray(),
+                                                rect));
+                                            continue;
+                                        }
+
+                                        // Check for overhangs
+                                        if (overhangConfig.Enabled && !overhangConfig.IndependentFromIslands)
+                                        {
+                                            points.Clear();
+                                            using (var imageRoi = new Mat(image, rect))
+                                            using (var previousImageRoi = new Mat(previousImage, rect))
+                                            using (var subtractedImage = new Mat())
+                                            {
+                                                var anchor = new Point(-1, -1);
+                                                CvInvoke.Subtract(imageRoi, previousImageRoi, subtractedImage);
+
+                                                CvInvoke.Erode(subtractedImage, subtractedImage, CvInvoke.GetStructuringElement(ElementShape.Rectangle,
+                                                        new Size(3, 3), anchor),
+                                                    anchor, overhangConfig.ErodeIterations, BorderType.Default,
+                                                    new MCvScalar());
+
+                                                var subtractedSpan = subtractedImage.GetPixelSpan<byte>();
+
+                                                for (int y = 0; y < subtractedImage.Height; y++)
+                                                for (int x = 0; x < subtractedImage.Step; x++)
+                                                {
+                                                    int labelX = rect.X + x;
+                                                    int labelY = rect.Y + y;
+                                                    int pixel = subtractedImage.GetPixelPos(x, y);
+                                                    int pixelLabel = labelY * step + labelX;
+                                                    if (labelSpan[pixelLabel] != i || subtractedSpan[pixel] == 0) continue;
+
+                                                    points.Add(new Point(labelX, labelY));
+                                                }
+
+                                                if (points.Count >= overhangConfig.RequiredPixelsToConsider)
+                                                {
+                                                    result.Add(new LayerIssue(
+                                                        layer, LayerIssue.IssueType.Overhang, points.ToArray(), rect
+                                                    ));
+                                                }
+                                            }
+                                        }
                                     }
 
-                                    if (points.Count == 0) continue; // Should never happen
-                                    if (pixelsSupportingIsland >= islandConfig.RequiredPixelsToSupport)
-                                        continue; // Not a island, bounding is strong, i think...
-                                    if (pixelsSupportingIsland > 0 &&
-                                        points.Count < islandConfig.RequiredPixelsToSupport &&
-                                        pixelsSupportingIsland >= Math.Max(1, points.Count / 2))
-                                        continue; // Not a island, but maybe weak bounding...
 
+                                }
+                            }
+                            
+                            if (!islandConfig.Enabled && overhangConfig.Enabled || 
+                                (islandConfig.Enabled && overhangConfig.Enabled && overhangConfig.IndependentFromIslands))
+                            {
+                                if (!ReferenceEquals(overhangConfig.WhiteListLayers, null)) // Check white list
+                                {
+                                    if (!overhangConfig.WhiteListLayers.Contains(layer.Index))
+                                    {
+                                        lock (progress.Mutex)
+                                        {
+                                            progress++;
+                                        }
 
-                                    var issue = new LayerIssue(layer, LayerIssue.IssueType.Island, points.ToArray(),
-                                        rect);
-                                    result.Add(issue);
+                                        return;
+                                    }
                                 }
 
+                                if (previousImage is null)
+                                {
+                                    previousImage = this[layer.Index - 1].LayerMat;
+                                }
 
-                                previousImage?.Dispose();
+                                using (var subtractedImage = new Mat())
+                                using (var vecPoints = new VectorOfPoint())
+                                {
+                                    var anchor = new Point(-1, -1);
+                                    CvInvoke.Subtract(image, previousImage, subtractedImage);
+
+                                    //subtractedImage.Save($"D:\\subtracted_image\\subtracted{layer.Index}.png");
+
+
+                                    CvInvoke.Erode(subtractedImage, subtractedImage, 
+                                        CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3,3), anchor), 
+                                        anchor, overhangConfig.ErodeIterations, BorderType.Default, new MCvScalar());
+
+                                    
+
+                                    CvInvoke.FindNonZero(subtractedImage, vecPoints);
+                                    if (vecPoints.Size >= overhangConfig.RequiredPixelsToConsider)
+                                    {
+                                        //subtractedImage.Save("D:\\subtracted_image\\subtracted_erroded.png");
+                                        result.Add(new LayerIssue(
+                                            layer, LayerIssue.IssueType.Overhang, vecPoints.ToArray(), layer.BoundingRectangle
+                                            ));
+                                    }
+                                }
                             }
+
+                            previousImage?.Dispose();
+
                         }
 
                         lock (progress.Mutex)

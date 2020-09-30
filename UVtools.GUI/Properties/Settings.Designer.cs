@@ -37,7 +37,7 @@ namespace UVtools.GUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Gold")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Yellow")]
         public global::System.Drawing.Color IslandColor {
             get {
                 return ((global::System.Drawing.Color)(this["IslandColor"]));
@@ -49,7 +49,7 @@ namespace UVtools.GUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Yellow")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Gold")]
         public global::System.Drawing.Color IslandHLColor {
             get {
                 return ((global::System.Drawing.Color)(this["IslandHLColor"]));
@@ -61,7 +61,7 @@ namespace UVtools.GUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("SandyBrown")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Orange")]
         public global::System.Drawing.Color ResinTrapColor {
             get {
                 return ((global::System.Drawing.Color)(this["ResinTrapColor"]));
@@ -73,7 +73,7 @@ namespace UVtools.GUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Orange")]
+        [global::System.Configuration.DefaultSettingValueAttribute("SandyBrown")]
         public global::System.Drawing.Color ResinTrapHLColor {
             get {
                 return ((global::System.Drawing.Color)(this["ResinTrapHLColor"]));
@@ -908,6 +908,66 @@ namespace UVtools.GUI.Properties {
             }
             set {
                 this["LayerTooltipOverlayOpacity"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("HotPink")]
+        public global::System.Drawing.Color OverhangColor {
+            get {
+                return ((global::System.Drawing.Color)(this["OverhangColor"]));
+            }
+            set {
+                this["OverhangColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("DeepPink")]
+        public global::System.Drawing.Color OverhangHLColor {
+            get {
+                return ((global::System.Drawing.Color)(this["OverhangHLColor"]));
+            }
+            set {
+                this["OverhangHLColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ComputeOverhangs {
+            get {
+                return ((bool)(this["ComputeOverhangs"]));
+            }
+            set {
+                this["ComputeOverhangs"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("49")]
+        public byte OverhangErodeIterations {
+            get {
+                return ((byte)(this["OverhangErodeIterations"]));
+            }
+            set {
+                this["OverhangErodeIterations"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool OverhangIndependentFromIslands {
+            get {
+                return ((bool)(this["OverhangIndependentFromIslands"]));
+            }
+            set {
+                this["OverhangIndependentFromIslands"] = value;
             }
         }
     }

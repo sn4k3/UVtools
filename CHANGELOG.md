@@ -1,22 +1,17 @@
 # Changelog
 
-## ??/??/2020 - v0.9.0.0
+## 30/09/2020 - v0.8.3.0
 
-* (Add) Multi-OS with Linux support
-* (Add) Themes support
-* (Add) Fullscreen support (F11)
-* (Change) GUI was rewritten from Windows Forms to WPF Avalonia, C#
+* (Add) Issue: Overhangs - Detects potential overhangs on layers (#64)
+* (Add) PrusaSlicer Printer: Phrozen Sonic Mini 4K
+* (Improvement) CWS: Allow read files with "slice*" filenames as content (#67)
+* (Improvement) Allow convert chitubox files to CWS Bene4 Mono printer, must configure a printer containing "Bene4 Mono" name on Chitubox (#67)
+* (Improvement) Edit print parameters: Show changes on confirm dialog
 * (Improvement) Edit print parameters: Dedicated reset button hides when value is unchanged
-* (Improvement) Edit print parameters: Show changes on confirm dialog
 * (Improvement) More detailed descriptions on error messages
-* (Improvement) GUI is now scalable
-* (Fix) Some islands wont remove from list select select many and click remove
-* (Fix) Many bug found and fixed during convertion
-
-## ??/09/2020 - v0.8.2.5
-
+* (Fix) Some islands wont remove from list when many selected and click remove
 * (Fix) Extract: Use trail zeros to layer filenames
-* (Improvement) Edit print parameters: Show changes on confirm dialog
+* (Fix) MSI installer not creating shortcuts (#66)
 
 ## 22/09/2020 - v0.8.2.4
 

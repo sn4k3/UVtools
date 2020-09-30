@@ -17,7 +17,7 @@ namespace UVtools.Core
     public class IslandDetectionConfiguration
     {
         /// <summary>
-        /// Gets if the detection is enabled
+        /// Gets or sets if the detection is enabled
         /// </summary>
         public bool Enabled { get; set; } = true;
 
@@ -62,10 +62,43 @@ namespace UVtools.Core
         public bool AllowDiagonalBonds  { get; set; } = false;
     }
 
+    /// <summary>
+    /// Overhang configuration
+    /// </summary>
+    public class OverhangDetectionConfiguration
+    {
+        /// <summary>
+        /// Gets or sets if the detection is enabled
+        /// </summary>
+        public bool Enabled { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a list of layers to check for overhangs, absent layers will not be checked.
+        /// Set to null to check every layer
+        /// </summary>
+        public List<uint> WhiteListLayers { get; set; } = null;
+
+        /// <summary>
+        /// Gets or sets if should take in consideration the islands, if yes a island can't be a overhang at same time, otherwise islands and overhangs can be shared
+        /// </summary>
+        public bool IndependentFromIslands { get; set; } = true;
+
+        /// <summary>
+        /// After compute overhangs, masses with a number of pixels bellow this number will be discarded (Not a overhang)
+        /// </summary>
+        public byte RequiredPixelsToConsider { get; set; } = 1;
+        
+        /// <summary>
+        /// Previous layer will be subtracted from current layer, after will erode by this value.
+        /// The survived pixels are potential overhangs.
+        /// </summary>
+        public byte ErodeIterations { get; set; } = 40;
+    }
+
     public class ResinTrapDetectionConfiguration
     {
         /// <summary>
-        /// Gets if the detection is enabled
+        /// Gets or sets if the detection is enabled
         /// </summary>
         public bool Enabled { get; set; } = true;
 
@@ -91,6 +124,7 @@ namespace UVtools.Core
         public byte MaximumPixelBrightnessToDrain { get; set; } = 30;
     }
 
+
     public class TouchingBoundDetectionConfiguration
     {
         /// <summary>
@@ -110,6 +144,7 @@ namespace UVtools.Core
         public enum IssueType : byte
         {
             Island,
+            Overhang,
             ResinTrap,
             TouchingBound,
             EmptyLayer,

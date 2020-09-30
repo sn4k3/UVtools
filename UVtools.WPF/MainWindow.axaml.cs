@@ -688,22 +688,18 @@ namespace UVtools.WPF
             var issueRemoveList = new List<LayerIssue>();
             foreach (LayerIssue issue in IssuesGrid.SelectedItems)
             {
-                switch (issue.Type)
+                if (issue.Type != LayerIssue.IssueType.Island &&
+                    issue.Type != LayerIssue.IssueType.ResinTrap &&
+                    issue.Type != LayerIssue.IssueType.EmptyLayer) continue;
+
+                issueRemoveList.Add(issue);
+
+                if (issue.Type == LayerIssue.IssueType.Island)
                 {
-                    //if (!issue.HaveValidPoint) continue;
-                    case LayerIssue.IssueType.EmptyLayer:
-                    case LayerIssue.IssueType.ResinTrap:
-                        issueRemoveList.Add(issue);
-                        break;
-                    case LayerIssue.IssueType.Island:
-                    {
-                        issueRemoveList.Add(issue);
-                        var nextLayer = issue.Layer.Index + 1;
-                        if (nextLayer >= SlicerFile.LayerCount) continue;
-                        if (whiteListLayers.Contains(nextLayer)) continue;
-                        whiteListLayers.Add(nextLayer);
-                        break;
-                    }
+                    var nextLayer = issue.Layer.Index + 1;
+                    if (nextLayer >= SlicerFile.LayerCount) continue;
+                    if (whiteListLayers.Contains(nextLayer)) continue;
+                    whiteListLayers.Add(nextLayer);
                 }
 
                 //Issues.Remove(issue);
@@ -730,6 +726,7 @@ namespace UVtools.WPF
         {
             if (whiteListLayers.Count == 0) return;
             var islandConfig = GetIslandDetectionConfiguration();
+            var overhangConfig = new OverhangDetectionConfiguration { Enabled = false };
             var resinTrapConfig = new ResinTrapDetectionConfiguration { Enabled = false };
             var touchingBoundConfig = new TouchingBoundDetectionConfiguration { Enabled = false };
             islandConfig.Enabled = true;
@@ -756,7 +753,7 @@ namespace UVtools.WPF
                 ShowProgressWindow();
                 try
                 {
-                    var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig,
+                    var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapConfig,
                         touchingBoundConfig, false,
                         ProgressWindow.RestartProgress());
 
@@ -2382,7 +2379,7 @@ namespace UVtools.WPF
         public async Task<Operation> ShowRunOperation(Type type)
         {
             var operation = await ShowOperation(type);
-            RunOperation(operation);
+            await RunOperation(operation);
             return operation;
         }
 

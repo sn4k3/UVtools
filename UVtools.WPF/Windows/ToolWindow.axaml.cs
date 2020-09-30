@@ -344,7 +344,7 @@ namespace UVtools.WPF.Windows
                     ToolControl.BaseOperation.ROI = App.MainWindow.ROI;
                 }
 
-                if (!ToolControl.ValidateForm()) return;
+                if (!await ToolControl.ValidateForm()) return;
                 if (!string.IsNullOrEmpty(ToolControl.BaseOperation.ConfirmationText))
                 {
                     if (await this.MessageBoxQuestion($"Are you sure you want to {ToolControl.BaseOperation.ConfirmationText}") !=

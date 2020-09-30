@@ -6,16 +6,16 @@
       <Value Profile="(Default)">Red</Value>
     </Setting>
     <Setting Name="IslandColor" Type="System.Drawing.Color" Scope="User">
-      <Value Profile="(Default)">Gold</Value>
-    </Setting>
-    <Setting Name="IslandHLColor" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">Yellow</Value>
     </Setting>
+    <Setting Name="IslandHLColor" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">Gold</Value>
+    </Setting>
     <Setting Name="ResinTrapColor" Type="System.Drawing.Color" Scope="User">
-      <Value Profile="(Default)">SandyBrown</Value>
+      <Value Profile="(Default)">Orange</Value>
     </Setting>
     <Setting Name="ResinTrapHLColor" Type="System.Drawing.Color" Scope="User">
-      <Value Profile="(Default)">Orange</Value>
+      <Value Profile="(Default)">SandyBrown</Value>
     </Setting>
     <Setting Name="TouchingBoundsColor" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">Red</Value>
@@ -223,6 +223,21 @@
     </Setting>
     <Setting Name="LayerTooltipOverlayOpacity" Type="System.Byte" Scope="User">
       <Value Profile="(Default)">210</Value>
+    </Setting>
+    <Setting Name="OverhangColor" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">HotPink</Value>
+    </Setting>
+    <Setting Name="OverhangHLColor" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">DeepPink</Value>
+    </Setting>
+    <Setting Name="ComputeOverhangs" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="OverhangErodeIterations" Type="System.Byte" Scope="User">
+      <Value Profile="(Default)">49</Value>
+    </Setting>
+    <Setting Name="OverhangIndependentFromIslands" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>
 </SettingsFile>

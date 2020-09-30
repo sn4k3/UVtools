@@ -60,6 +60,8 @@ namespace UVtools.GUI.Forms
                 btnNextLayerColor.BackColor = Settings.Default.NextLayerColor;
                 btnIslandColor.BackColor = Settings.Default.IslandColor;
                 btnIslandHLColor.BackColor = Settings.Default.IslandHLColor;
+                btnOverhangColor.BackColor = Settings.Default.OverhangColor;
+                btnOverhangHLColor.BackColor = Settings.Default.OverhangHLColor;
                 btnResinTrapColor.BackColor = Settings.Default.ResinTrapColor;
                 btnResinTrapHLColor.BackColor = Settings.Default.ResinTrapHLColor;
                 btnTouchingBoundsColor.BackColor = Settings.Default.TouchingBoundsColor;
@@ -94,6 +96,7 @@ namespace UVtools.GUI.Forms
                 cbComputeIssuesOnLoad.Checked = Settings.Default.ComputeIssuesOnLoad;
                 cbAutoComputeIssuesClickOnTab.Checked = Settings.Default.AutoComputeIssuesClickOnTab;
                 cbComputeIslands.Checked = Settings.Default.ComputeIslands;
+                cbComputeOverhangs.Checked = Settings.Default.ComputeOverhangs;
                 cbComputeResinTraps.Checked = Settings.Default.ComputeResinTraps;
                 cbComputeTouchingBounds.Checked = Settings.Default.ComputeTouchingBounds;
                 cbComputeEmptyLayers.Checked = Settings.Default.ComputeEmptyLayers;
@@ -104,6 +107,9 @@ namespace UVtools.GUI.Forms
                 nmIslandRequiredPixelBrightnessToProcessCheck.Value = Settings.Default.IslandRequiredPixelBrightnessToProcessCheck;
                 nmIslandRequiredPixelsToSupport.Value = Settings.Default.IslandRequiredPixelsToSupport;
                 nmIslandRequiredPixelBrightnessToSupport.Value = Settings.Default.IslandRequiredPixelBrightnessToSupport;
+
+                cbOverhangIndependentFromIslands.Checked = Settings.Default.OverhangIndependentFromIslands;
+                nmOverhangErodeIterations.Value = Settings.Default.OverhangErodeIterations;
 
                 nmResinTrapBinaryThreshold.Value = Settings.Default.ResinTrapBinaryThreshold;
                 nmResinTrapRequiredAreaToProcessCheck.Value = Settings.Default.ResinTrapRequiredAreaToProcessCheck;
@@ -148,6 +154,8 @@ namespace UVtools.GUI.Forms
                 ReferenceEquals(sender, btnNextLayerColor) ||
                 ReferenceEquals(sender, btnIslandColor) ||
                 ReferenceEquals(sender, btnIslandHLColor) ||
+                ReferenceEquals(sender, btnOverhangColor) ||
+                ReferenceEquals(sender, btnOverhangHLColor) ||
                 ReferenceEquals(sender, btnResinTrapColor) ||
                 ReferenceEquals(sender, btnResinTrapHLColor) ||
                 ReferenceEquals(sender, btnTouchingBoundsColor) ||
@@ -248,6 +256,8 @@ namespace UVtools.GUI.Forms
                 Settings.Default.NextLayerColor = btnNextLayerColor.BackColor;
                 Settings.Default.IslandColor = btnIslandColor.BackColor;
                 Settings.Default.IslandHLColor = btnIslandHLColor.BackColor;
+                Settings.Default.OverhangColor =   btnOverhangColor.BackColor;
+                Settings.Default.OverhangHLColor = btnOverhangHLColor.BackColor;
                 Settings.Default.ResinTrapColor = btnResinTrapColor.BackColor;
                 Settings.Default.ResinTrapHLColor = btnResinTrapHLColor.BackColor;
                 Settings.Default.TouchingBoundsColor = btnTouchingBoundsColor.BackColor;
@@ -280,6 +290,7 @@ namespace UVtools.GUI.Forms
                 Settings.Default.ComputeIssuesOnLoad = cbComputeIssuesOnLoad.Checked;
                 Settings.Default.AutoComputeIssuesClickOnTab = cbAutoComputeIssuesClickOnTab.Checked;
                 Settings.Default.ComputeIslands = cbComputeIslands.Checked;
+                Settings.Default.ComputeOverhangs = cbComputeOverhangs.Checked;
                 Settings.Default.ComputeResinTraps = cbComputeResinTraps.Checked;
                 Settings.Default.ComputeTouchingBounds = cbComputeTouchingBounds.Checked;
                 Settings.Default.ComputeEmptyLayers = cbComputeEmptyLayers.Checked;
@@ -290,6 +301,9 @@ namespace UVtools.GUI.Forms
                 Settings.Default.IslandRequiredPixelBrightnessToProcessCheck = (byte)nmIslandRequiredPixelBrightnessToProcessCheck.Value;
                 Settings.Default.IslandRequiredPixelsToSupport = (byte)nmIslandRequiredPixelsToSupport.Value;
                 Settings.Default.IslandRequiredPixelBrightnessToSupport = (byte)nmIslandRequiredPixelBrightnessToSupport.Value;
+
+                Settings.Default.OverhangIndependentFromIslands = cbOverhangIndependentFromIslands.Checked;
+                Settings.Default.OverhangErodeIterations = (byte)nmOverhangErodeIterations.Value;
 
                 Settings.Default.ResinTrapBinaryThreshold = (byte) nmResinTrapBinaryThreshold.Value;
                 Settings.Default.ResinTrapRequiredAreaToProcessCheck = (byte)nmResinTrapRequiredAreaToProcessCheck.Value;
