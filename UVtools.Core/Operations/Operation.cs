@@ -14,6 +14,7 @@ namespace UVtools.Core.Operations
 {
     public abstract class Operation : BindableBase
     {
+        private Rectangle _roi = Rectangle.Empty;
         public const byte ClassNameLength = 9;
 
         /// <summary>
@@ -95,7 +96,11 @@ namespace UVtools.Core.Operations
         /// <summary>
         /// Gets or sets an ROI to process this operation
         /// </summary>
-        public Rectangle ROI { get; set; } = Rectangle.Empty;
+        public Rectangle ROI
+        {
+            get => _roi;
+            set => RaiseAndSetIfChanged(ref _roi, value);
+        }
 
         public bool HaveROI => !ROI.IsEmpty;
 

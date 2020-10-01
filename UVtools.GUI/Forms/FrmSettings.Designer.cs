@@ -61,13 +61,13 @@
             this.label8 = new System.Windows.Forms.Label();
             this.nmIslandRequiredPixelBrightnessToProcessCheck = new System.Windows.Forms.NumericUpDown();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.cbComputeOverhangs = new System.Windows.Forms.CheckBox();
             this.cbComputeEmptyLayers = new System.Windows.Forms.CheckBox();
             this.label42 = new System.Windows.Forms.Label();
             this.cbComputeTouchingBounds = new System.Windows.Forms.CheckBox();
             this.cbAutoComputeIssuesClickOnTab = new System.Windows.Forms.CheckBox();
             this.tabSettings = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.btnFileExtractDefaultDirectoryClear = new System.Windows.Forms.Button();
             this.btnFileExtractDefaultDirectorySearch = new System.Windows.Forms.Button();
@@ -92,6 +92,7 @@
             this.tbFileSaveNameSuffix = new System.Windows.Forms.TextBox();
             this.label27 = new System.Windows.Forms.Label();
             this.tbFileSaveNamePreffix = new System.Windows.Forms.TextBox();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.groupBox9 = new System.Windows.Forms.GroupBox();
             this.cbLayerAutoRotateBestView = new System.Windows.Forms.CheckBox();
@@ -113,6 +114,9 @@
             this.label38 = new System.Windows.Forms.Label();
             this.cbZoomLockLevel = new System.Windows.Forms.ComboBox();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.btnOverhangColor = new System.Windows.Forms.Button();
+            this.btnOverhangHLColor = new System.Windows.Forms.Button();
+            this.label47 = new System.Windows.Forms.Label();
             this.cbLayerTooltipOverlay = new System.Windows.Forms.CheckBox();
             this.label46 = new System.Windows.Forms.Label();
             this.nmLayerTooltipOverlayOpacity = new System.Windows.Forms.NumericUpDown();
@@ -151,6 +155,10 @@
             this.nmOutlinePrintVolumeBoundsLineThickness = new System.Windows.Forms.NumericUpDown();
             this.btnCrosshairColor = new System.Windows.Forms.Button();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.groupBox11 = new System.Windows.Forms.GroupBox();
+            this.nmOverhangErodeIterations = new System.Windows.Forms.NumericUpDown();
+            this.label48 = new System.Windows.Forms.Label();
+            this.cbOverhangIndependentFromIslands = new System.Windows.Forms.CheckBox();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.cbCloseEditOnApply = new System.Windows.Forms.CheckBox();
             this.groupBox10 = new System.Windows.Forms.GroupBox();
@@ -179,14 +187,6 @@
             this.cbLayerRepairLayersIslands = new System.Windows.Forms.CheckBox();
             this.pnActions = new System.Windows.Forms.Panel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.cbComputeOverhangs = new System.Windows.Forms.CheckBox();
-            this.btnOverhangColor = new System.Windows.Forms.Button();
-            this.btnOverhangHLColor = new System.Windows.Forms.Button();
-            this.label47 = new System.Windows.Forms.Label();
-            this.groupBox11 = new System.Windows.Forms.GroupBox();
-            this.cbOverhangIndependentFromIslands = new System.Windows.Forms.CheckBox();
-            this.nmOverhangErodeIterations = new System.Windows.Forms.NumericUpDown();
-            this.label48 = new System.Windows.Forms.Label();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapBinaryThreshold)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapMaximumPixelBrightnessToDrain)).BeginInit();
@@ -201,8 +201,8 @@
             this.groupBox1.SuspendLayout();
             this.tabSettings.SuspendLayout();
             this.tabPage1.SuspendLayout();
-            this.groupBox4.SuspendLayout();
             this.groupBox5.SuspendLayout();
+            this.groupBox4.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox9.SuspendLayout();
             this.groupBox8.SuspendLayout();
@@ -215,6 +215,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineLayerBoundsLineThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlinePrintVolumeBoundsLineThickness)).BeginInit();
             this.tabPage3.SuspendLayout();
+            this.groupBox11.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmOverhangErodeIterations)).BeginInit();
             this.tabPage4.SuspendLayout();
             this.groupBox10.SuspendLayout();
             this.tabPage5.SuspendLayout();
@@ -222,8 +224,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultOpeningIterations)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultClosingIterations)).BeginInit();
             this.pnActions.SuspendLayout();
-            this.groupBox11.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nmOverhangErodeIterations)).BeginInit();
             this.SuspendLayout();
             // 
             // colorDialog
@@ -371,8 +371,8 @@
             this.label20.TabIndex = 27;
             this.label20.Text = "Pixel intensity threshold for resin trap detection";
             this.toolTip.SetToolTip(this.label20, "Pixels below this threshold will be considered black during resin trap detection." +
-        "  \r\nPixels equal to or above this theshold will be considred white during resin " +
-        "trap detection.\r\n0 to disable");
+        "\r\nPixels equal to or above this theshold will be considred white during resin tr" +
+        "ap detection.\r\n0 to disable");
             // 
             // nmResinTrapMaximumPixelBrightnessToDrain
             // 
@@ -681,6 +681,16 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Common";
             // 
+            // cbComputeOverhangs
+            // 
+            this.cbComputeOverhangs.AutoSize = true;
+            this.cbComputeOverhangs.Location = new System.Drawing.Point(164, 79);
+            this.cbComputeOverhangs.Name = "cbComputeOverhangs";
+            this.cbComputeOverhangs.Size = new System.Drawing.Size(99, 22);
+            this.cbComputeOverhangs.TabIndex = 22;
+            this.cbComputeOverhangs.Text = "Overhangs";
+            this.cbComputeOverhangs.UseVisualStyleBackColor = true;
+            // 
             // cbComputeEmptyLayers
             // 
             this.cbComputeEmptyLayers.AutoSize = true;
@@ -745,18 +755,6 @@
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "General";
             this.tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // groupBox4
-            // 
-            this.groupBox4.Controls.Add(this.cbStartMaximized);
-            this.groupBox4.Controls.Add(this.cbCheckForUpdatesOnStartup);
-            this.groupBox4.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox4.Location = new System.Drawing.Point(3, 3);
-            this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(655, 90);
-            this.groupBox4.TabIndex = 15;
-            this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "Startup";
             // 
             // groupBox5
             // 
@@ -1019,6 +1017,18 @@
             this.tbFileSaveNamePreffix.Name = "tbFileSaveNamePreffix";
             this.tbFileSaveNamePreffix.Size = new System.Drawing.Size(184, 24);
             this.tbFileSaveNamePreffix.TabIndex = 58;
+            // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.cbStartMaximized);
+            this.groupBox4.Controls.Add(this.cbCheckForUpdatesOnStartup);
+            this.groupBox4.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBox4.Location = new System.Drawing.Point(3, 3);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(655, 90);
+            this.groupBox4.TabIndex = 15;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "Startup";
             // 
             // tabPage2
             // 
@@ -1331,6 +1341,49 @@
             this.groupBox6.TabIndex = 53;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Layer Colors";
+            // 
+            // btnOverhangColor
+            // 
+            this.btnOverhangColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnOverhangColor.BackColor = System.Drawing.Color.White;
+            this.btnOverhangColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnOverhangColor.FlatAppearance.BorderSize = 2;
+            this.btnOverhangColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnOverhangColor.Location = new System.Drawing.Point(589, 187);
+            this.btnOverhangColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnOverhangColor.Name = "btnOverhangColor";
+            this.btnOverhangColor.Size = new System.Drawing.Size(24, 24);
+            this.btnOverhangColor.TabIndex = 70;
+            this.toolTip.SetToolTip(this.btnOverhangColor, "Islands on the layer that are not currently selected.");
+            this.btnOverhangColor.UseVisualStyleBackColor = false;
+            this.btnOverhangColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // btnOverhangHLColor
+            // 
+            this.btnOverhangHLColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnOverhangHLColor.BackColor = System.Drawing.Color.White;
+            this.btnOverhangHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnOverhangHLColor.FlatAppearance.BorderSize = 2;
+            this.btnOverhangHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnOverhangHLColor.Location = new System.Drawing.Point(620, 187);
+            this.btnOverhangHLColor.Margin = new System.Windows.Forms.Padding(4);
+            this.btnOverhangHLColor.Name = "btnOverhangHLColor";
+            this.btnOverhangHLColor.Size = new System.Drawing.Size(24, 24);
+            this.btnOverhangHLColor.TabIndex = 71;
+            this.toolTip.SetToolTip(this.btnOverhangHLColor, "Islands on the layer that are currently selected in the issue list.");
+            this.btnOverhangHLColor.UseVisualStyleBackColor = false;
+            this.btnOverhangHLColor.Click += new System.EventHandler(this.EventClick);
+            // 
+            // label47
+            // 
+            this.label47.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label47.AutoSize = true;
+            this.label47.Location = new System.Drawing.Point(371, 190);
+            this.label47.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label47.Name = "label47";
+            this.label47.Size = new System.Drawing.Size(210, 18);
+            this.label47.TabIndex = 69;
+            this.label47.Text = "Overhang / Selected overhang:";
             // 
             // cbLayerTooltipOverlay
             // 
@@ -1848,6 +1901,64 @@
             this.tabPage3.Text = "Issues";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
+            // groupBox11
+            // 
+            this.groupBox11.Controls.Add(this.nmOverhangErodeIterations);
+            this.groupBox11.Controls.Add(this.label48);
+            this.groupBox11.Controls.Add(this.cbOverhangIndependentFromIslands);
+            this.groupBox11.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBox11.Location = new System.Drawing.Point(3, 331);
+            this.groupBox11.Name = "groupBox11";
+            this.groupBox11.Size = new System.Drawing.Size(655, 93);
+            this.groupBox11.TabIndex = 25;
+            this.groupBox11.TabStop = false;
+            this.groupBox11.Text = "Overhangs";
+            // 
+            // nmOverhangErodeIterations
+            // 
+            this.nmOverhangErodeIterations.Location = new System.Drawing.Point(10, 51);
+            this.nmOverhangErodeIterations.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+            this.nmOverhangErodeIterations.Minimum = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            this.nmOverhangErodeIterations.Name = "nmOverhangErodeIterations";
+            this.nmOverhangErodeIterations.Size = new System.Drawing.Size(57, 24);
+            this.nmOverhangErodeIterations.TabIndex = 31;
+            this.toolTip.SetToolTip(this.nmOverhangErodeIterations, "Range 2-255");
+            this.nmOverhangErodeIterations.Value = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            // 
+            // label48
+            // 
+            this.label48.AutoSize = true;
+            this.label48.Location = new System.Drawing.Point(73, 54);
+            this.label48.Name = "label48";
+            this.label48.Size = new System.Drawing.Size(174, 18);
+            this.label48.TabIndex = 32;
+            this.label48.Text = "Minimum overhang depth";
+            this.toolTip.SetToolTip(this.label48, "The number of pixels that an overhang can protrude from the previous layer before" +
+        " it is detected and reported as an overhang.");
+            // 
+            // cbOverhangIndependentFromIslands
+            // 
+            this.cbOverhangIndependentFromIslands.AutoSize = true;
+            this.cbOverhangIndependentFromIslands.Location = new System.Drawing.Point(10, 23);
+            this.cbOverhangIndependentFromIslands.Name = "cbOverhangIndependentFromIslands";
+            this.cbOverhangIndependentFromIslands.Size = new System.Drawing.Size(298, 22);
+            this.cbOverhangIndependentFromIslands.TabIndex = 31;
+            this.cbOverhangIndependentFromIslands.Text = "Include islands when detecting overhangs";
+            this.toolTip.SetToolTip(this.cbOverhangIndependentFromIslands, resources.GetString("cbOverhangIndependentFromIslands.ToolTip"));
+            this.cbOverhangIndependentFromIslands.UseVisualStyleBackColor = true;
+            // 
             // tabPage4
             // 
             this.tabPage4.Controls.Add(this.cbCloseEditOnApply);
@@ -2221,117 +2332,6 @@
             this.toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             this.toolTip.ToolTipTitle = "Information";
             // 
-            // cbComputeOverhangs
-            // 
-            this.cbComputeOverhangs.AutoSize = true;
-            this.cbComputeOverhangs.Location = new System.Drawing.Point(164, 79);
-            this.cbComputeOverhangs.Name = "cbComputeOverhangs";
-            this.cbComputeOverhangs.Size = new System.Drawing.Size(99, 22);
-            this.cbComputeOverhangs.TabIndex = 22;
-            this.cbComputeOverhangs.Text = "Overhangs";
-            this.cbComputeOverhangs.UseVisualStyleBackColor = true;
-            // 
-            // btnOverhangColor
-            // 
-            this.btnOverhangColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOverhangColor.BackColor = System.Drawing.Color.White;
-            this.btnOverhangColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            this.btnOverhangColor.FlatAppearance.BorderSize = 2;
-            this.btnOverhangColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnOverhangColor.Location = new System.Drawing.Point(589, 187);
-            this.btnOverhangColor.Margin = new System.Windows.Forms.Padding(4);
-            this.btnOverhangColor.Name = "btnOverhangColor";
-            this.btnOverhangColor.Size = new System.Drawing.Size(24, 24);
-            this.btnOverhangColor.TabIndex = 70;
-            this.toolTip.SetToolTip(this.btnOverhangColor, "Islands on the layer that are not currently selected.");
-            this.btnOverhangColor.UseVisualStyleBackColor = false;
-            this.btnOverhangColor.Click += new System.EventHandler(this.EventClick);
-            // 
-            // btnOverhangHLColor
-            // 
-            this.btnOverhangHLColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOverhangHLColor.BackColor = System.Drawing.Color.White;
-            this.btnOverhangHLColor.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            this.btnOverhangHLColor.FlatAppearance.BorderSize = 2;
-            this.btnOverhangHLColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnOverhangHLColor.Location = new System.Drawing.Point(620, 187);
-            this.btnOverhangHLColor.Margin = new System.Windows.Forms.Padding(4);
-            this.btnOverhangHLColor.Name = "btnOverhangHLColor";
-            this.btnOverhangHLColor.Size = new System.Drawing.Size(24, 24);
-            this.btnOverhangHLColor.TabIndex = 71;
-            this.toolTip.SetToolTip(this.btnOverhangHLColor, "Islands on the layer that are currently selected in the issue list.");
-            this.btnOverhangHLColor.UseVisualStyleBackColor = false;
-            this.btnOverhangHLColor.Click += new System.EventHandler(this.EventClick);
-            // 
-            // label47
-            // 
-            this.label47.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label47.AutoSize = true;
-            this.label47.Location = new System.Drawing.Point(371, 190);
-            this.label47.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label47.Name = "label47";
-            this.label47.Size = new System.Drawing.Size(210, 18);
-            this.label47.TabIndex = 69;
-            this.label47.Text = "Overhang / Selected overhang:";
-            // 
-            // groupBox11
-            // 
-            this.groupBox11.Controls.Add(this.nmOverhangErodeIterations);
-            this.groupBox11.Controls.Add(this.label48);
-            this.groupBox11.Controls.Add(this.cbOverhangIndependentFromIslands);
-            this.groupBox11.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox11.Location = new System.Drawing.Point(3, 331);
-            this.groupBox11.Name = "groupBox11";
-            this.groupBox11.Size = new System.Drawing.Size(655, 93);
-            this.groupBox11.TabIndex = 25;
-            this.groupBox11.TabStop = false;
-            this.groupBox11.Text = "Overhangs";
-            // 
-            // cbOverhangIndependentFromIslands
-            // 
-            this.cbOverhangIndependentFromIslands.AutoSize = true;
-            this.cbOverhangIndependentFromIslands.Location = new System.Drawing.Point(10, 23);
-            this.cbOverhangIndependentFromIslands.Name = "cbOverhangIndependentFromIslands";
-            this.cbOverhangIndependentFromIslands.Size = new System.Drawing.Size(298, 22);
-            this.cbOverhangIndependentFromIslands.TabIndex = 31;
-            this.cbOverhangIndependentFromIslands.Text = "Include islands when detecting overhangs";
-            this.toolTip.SetToolTip(this.cbOverhangIndependentFromIslands, resources.GetString("cbOverhangIndependentFromIslands.ToolTip"));
-            this.cbOverhangIndependentFromIslands.UseVisualStyleBackColor = true;
-            // 
-            // nmOverhangErodeIterations
-            // 
-            this.nmOverhangErodeIterations.Location = new System.Drawing.Point(10, 51);
-            this.nmOverhangErodeIterations.Maximum = new decimal(new int[] {
-            255,
-            0,
-            0,
-            0});
-            this.nmOverhangErodeIterations.Minimum = new decimal(new int[] {
-            2,
-            0,
-            0,
-            0});
-            this.nmOverhangErodeIterations.Name = "nmOverhangErodeIterations";
-            this.nmOverhangErodeIterations.Size = new System.Drawing.Size(57, 24);
-            this.nmOverhangErodeIterations.TabIndex = 31;
-            this.toolTip.SetToolTip(this.nmOverhangErodeIterations, "Range 2-255");
-            this.nmOverhangErodeIterations.Value = new decimal(new int[] {
-            2,
-            0,
-            0,
-            0});
-            // 
-            // label48
-            // 
-            this.label48.AutoSize = true;
-            this.label48.Location = new System.Drawing.Point(73, 54);
-            this.label48.Name = "label48";
-            this.label48.Size = new System.Drawing.Size(174, 18);
-            this.label48.TabIndex = 32;
-            this.label48.Text = "Minimum overhang depth";
-            this.toolTip.SetToolTip(this.label48, "The number of pixels that an overhang can protrude from the previous layer before" +
-        " it is detected and reported as an overhang.");
-            // 
             // FrmSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
@@ -2366,10 +2366,10 @@
             this.groupBox1.PerformLayout();
             this.tabSettings.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
-            this.groupBox4.ResumeLayout(false);
-            this.groupBox4.PerformLayout();
             this.groupBox5.ResumeLayout(false);
             this.groupBox5.PerformLayout();
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
             this.tabPage2.ResumeLayout(false);
             this.groupBox9.ResumeLayout(false);
             this.groupBox9.PerformLayout();
@@ -2386,6 +2386,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlineLayerBoundsLineThickness)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmOutlinePrintVolumeBoundsLineThickness)).EndInit();
             this.tabPage3.ResumeLayout(false);
+            this.groupBox11.ResumeLayout(false);
+            this.groupBox11.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nmOverhangErodeIterations)).EndInit();
             this.tabPage4.ResumeLayout(false);
             this.tabPage4.PerformLayout();
             this.groupBox10.ResumeLayout(false);
@@ -2396,9 +2399,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultOpeningIterations)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmLayerRepairDefaultClosingIterations)).EndInit();
             this.pnActions.ResumeLayout(false);
-            this.groupBox11.ResumeLayout(false);
-            this.groupBox11.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nmOverhangErodeIterations)).EndInit();
             this.ResumeLayout(false);
 
         }

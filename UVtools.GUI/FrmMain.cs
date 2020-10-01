@@ -55,9 +55,10 @@ namespace UVtools.GUI
             new OperationMenuItem(new OperationRotate(), Resources.sync_16x16),
             new OperationMenuItem(new OperationSolidify(), Resources.square_solid_16x16),
             new OperationMenuItem(new OperationMorph(), Resources.Geometry_16x16),
+            new OperationMenuItem(new OperationThreshold(), Resources.th_16x16),
+            new OperationMenuItem(new OperationArithmetic(), Resources.square_root_16x16),
             new OperationMenuItem(new OperationMask(), Resources.mask_16x16),
             new OperationMenuItem(new OperationPixelDimming(), Resources.pixel_16x16),
-            new OperationMenuItem(new OperationThreshold(), Resources.th_16x16),
             new OperationMenuItem(new OperationBlur(), Resources.blur_16x16),
             new OperationMenuItem(new OperationPattern(), Resources.pattern_16x16),
             new OperationMenuItem(new OperationLayerReHeight(), Resources.ladder_16x16),
@@ -4254,14 +4255,17 @@ namespace UVtools.GUI
                         case OperationMorph operation:
                             SlicerFile.LayerManager.Morph(operation, BorderType.Default, new MCvScalar(), FrmLoading.RestartProgress(operation.CanCancel));
                             break;
+                        case OperationThreshold operation:
+                            SlicerFile.LayerManager.ThresholdPixels(operation, FrmLoading.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationArithmetic operation:
+                            SlicerFile.LayerManager.Arithmetic(operation, FrmLoading.RestartProgress(operation.CanCancel));
+                            break;
                         case OperationMask operation:
                             SlicerFile.LayerManager.Mask(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         case OperationPixelDimming operation:
                             SlicerFile.LayerManager.PixelDimming(operation, FrmLoading.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationThreshold operation:
-                            SlicerFile.LayerManager.ThresholdPixels(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         case OperationBlur operation:
                             SlicerFile.LayerManager.Blur(operation, FrmLoading.RestartProgress(operation.CanCancel));

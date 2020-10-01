@@ -1,5 +1,42 @@
 # Changelog
 
+## ??/??/2020 - v0.9.0.0
+
+* (Add) Multi-OS with Linux support
+* (Add) Themes support
+* (Add) Fullscreen support (F11)
+* (Change) GUI was rewritten from Windows Forms to WPF Avalonia, C#
+* (Improvement) GUI is now scalable
+* (Fix) Some bug found and fixed during convertion
+
+## 01/10/2020 - v0.8.4.0
+
+* (Add) Tool: Arithmetic operations
+* (Add) Allow convert chitubox zip to cbddlp, ctb, photon, phz, pws, pw0, cws, zcodex
+* (Add) When using filenames containing "bene4_mono" and when converting to cws it will use the GRAY2RGB encoding (#67)
+* (Add) Hint on how to use layer re-height tool when it fails to launch
+* (Add) PrusaSlicer Printer: Creality LD-006
+* (Add) PrusaSlicer Printer: EPAX E6 Mono
+* (Add) PrusaSlicer Printer: EPAX E10 Mono
+* (Add) PrusaSlicer Printer: EPAX X1K 2K Mono
+* (Add) PrusaSlicer Printer: Elegoo Mars C
+* (Add) PrusaSlicer Printer: Longer 3D Orange4K
+* (Add) PrusaSlicer Printer: Phrozen Shuffle XL Lite
+* (Add) PrusaSlicer Printer: Phrozen Shuffle 16
+* (Add) PrusaSlicer Printer: Phrozen Sonic 4K
+* (Add) PrusaSlicer Printer: Phrozen Sonic Mighty 4K
+* (Add) PrusaSlicer Printer: Voxelab Proxima
+* (Add) PrusaSlicer Printer: QIDI S-Box
+* (Fix) PrusaSlicer Printer: Elegoo Saturn - name and resolution
+* (Fix) PrusaSlicer Printer: AnyCubic Photon S - display width/height
+* (Fix) PrusaSlicer Printer: Epax X10 4K Mono - Y Resolution
+* (Fix) PrusaSlicer Printer: EPAX X133 4K Mono - display width/height
+* (Fix) PrusaSlicer Printer: Phrozen Shuffle Lite - display width/height
+* (Fix) All PrusaSlicer Printers were reviewed and some bugs were fixed
+* (Fix) Chitubox 3D preview when use files converted with UVtools (#68)
+* (Fix) Overhangs: False-positives when previous or current layer as draker pixels, it now threshold pixels before proceed (#64)
+* (Change) Tools: Placed "Threshold" menu item after "Morph"
+
 ## 30/09/2020 - v0.8.3.0
 
 * (Add) Issue: Overhangs - Detects potential overhangs on layers (#64)

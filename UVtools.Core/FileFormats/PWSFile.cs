@@ -1337,6 +1337,10 @@ namespace UVtools.Core.FileFormats
                 file.OutputSettings.AntiAliasingValue = ValidateAntiAliasingLevel();
                 file.OutputSettings.AntiAliasing = file.OutputSettings.AntiAliasingValue > 1;
 
+                file.Printer = MachineName.Contains("Bene4 Mono") ||
+                               FileFullPath.Contains("bene4_mono")
+                    ? CWSFile.PrinterType.BeneMono : CWSFile.PrinterType.Elfin;
+
                 file.Encode(fileFullPath, progress);
 
                 return true;

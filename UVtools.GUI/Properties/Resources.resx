@@ -133,11 +133,20 @@
   <data name="island-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\island-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="ladder-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\ladder-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="filter-filled-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\filter-filled-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="layers-alt-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\layers-alt-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="mask-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\mask-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Back-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Back-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="move-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\move-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -145,8 +154,8 @@
   <data name="cursor-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\cursor-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Cancel-32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Cancel-32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="undo-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\undo-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Lock-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Lock-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -238,17 +247,17 @@
   <data name="pattern-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\pattern-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="pixel-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\pixel-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Extract-object-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Extract-object-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="checkbox-marked-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\checkbox-marked-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="burn-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\burn-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="minus_16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\minus_16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Cancel-32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Cancel-32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="sort-alpha-up-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\sort-alpha-up-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -256,11 +265,11 @@
   <data name="trash-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\trash-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="accept-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\accept-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="file-image-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\file-image-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Geometry-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Geometry-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="refresh-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\refresh-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -283,23 +292,11 @@
   <data name="bowling-ball-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\bowling-ball-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Extract-object-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Extract-object-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="file-import-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\file-import-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="undo-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\undo-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="square-solid-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\square-solid-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="chessboard-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\chessboard-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="filter-filled-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\filter-filled-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="burn-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\burn-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="arrow-down-double-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\arrow-down-double-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -310,11 +307,17 @@
   <data name="Button-Info-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Button-Info-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="plus-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\plus-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Global-Network-icon-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Global-Network-icon-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="plus-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\plus-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="file-import-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\file-import-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pixel_edit" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pixel_edit.cur;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="photo-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\photo-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -343,8 +346,8 @@
   <data name="expand-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\expand-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="accept-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\accept-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Geometry-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Geometry-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="copy_16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\copy_16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -364,19 +367,19 @@
   <data name="eye-24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\eye-24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="ladder-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\ladder-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="pixel-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\pixel-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Back-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\Back-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="expand-alt-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\expand-alt-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="chessboard-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\chessboard-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="object-group-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\object-group-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="pixel_edit" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\pixel_edit.cur;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="expand-alt-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\expand-alt-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="square-root-16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\square-root-16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

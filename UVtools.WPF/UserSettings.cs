@@ -25,6 +25,8 @@ namespace UVtools.WPF
         #endregion
 
         #region Sub classes
+
+        #region General
         [Serializable]
         public sealed class GeneralUserSettings : ReactiveObject
         {
@@ -119,7 +121,9 @@ namespace UVtools.WPF
                 return MemberwiseClone() as GeneralUserSettings;
             }
         }
+        #endregion
 
+        #region Layer Preview
         [Serializable]
         public sealed class LayerPreviewUserSettings : ReactiveObject
         {
@@ -138,10 +142,12 @@ namespace UVtools.WPF
             private Color _nextLayerDifferenceColor = new Color(255, 0, 255, 255);
             private Color _bothLayerDifferenceColor = new Color(255, 255, 0, 0);
             private bool _showLayerDifference = false;
-            private Color _islandColor = new Color(255, 255,215, 0);
-            private Color _islandHighlightColor = new Color(255, 255,255, 0);
-            private Color _resinTrapColor = new Color(255, 244, 164, 96);
-            private Color _resinTrapHighlightColor = new Color(255, 255, 165, 0);
+            private Color _islandColor = new Color(255, 255, 255, 0); 
+            private Color _islandHighlightColor = new Color(255, 255, 215, 0);
+            private Color _overhangColor = new Color(255, 255, 105, 180);
+            private Color _overhangHighlightColor = new Color(255, 255, 20, 147);
+            private Color _resinTrapColor = new Color(255, 255, 165, 0);
+            private Color _resinTrapHighlightColor = new Color(255, 244, 164, 96); 
             private Color _touchingBoundsColor = new Color(255, 255, 0, 0);
             private Color _crosshairColor = new Color(255, 255, 0, 0);
             private bool _zoomToFitPrintVolumeBounds = true;
@@ -335,7 +341,7 @@ namespace UVtools.WPF
             public SolidColorBrush IslandBrush
             {
                 get => new SolidColorBrush(_islandColor.ToAvalonia());
-                set => IslandHighlightColor = new Color(value);
+                set => IslandColor = new Color(value);
             }
 
             public Color IslandHighlightColor
@@ -353,6 +359,40 @@ namespace UVtools.WPF
             {
                 get => new SolidColorBrush(_islandHighlightColor.ToAvalonia());
                 set => IslandHighlightColor = new Color(value);
+            }
+
+            public Color OverhangColor
+            {
+                get => _overhangColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _overhangColor, value);
+                    this.RaisePropertyChanged(nameof(OverhangBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush OverhangBrush
+            {
+                get => new SolidColorBrush(_overhangColor.ToAvalonia());
+                set => OverhangColor = new Color(value);
+            }
+
+            public Color OverhangHighlightColor
+            {
+                get => _overhangHighlightColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _overhangHighlightColor, value);
+                    this.RaisePropertyChanged(nameof(OverhangHighlightBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush OverhangHighlightBrush
+            {
+                get => new SolidColorBrush(_overhangHighlightColor.ToAvalonia());
+                set => OverhangHighlightColor = new Color(value);
             }
 
             public Color ResinTrapColor
@@ -482,13 +522,16 @@ namespace UVtools.WPF
             }
 
         }
+        #endregion
 
+        #region Issues
         [Serializable]
         public sealed class IssuesUserSettings : ReactiveObject
         {
             private bool _computeIssuesOnLoad = false;
             private bool _computeIssuesOnClickTab = true;
             private bool _computeIslands = true;
+            private bool _computeOverhangs = true;
             private bool _computeResinTraps = true;
             private bool _computeTouchingBounds = true;
             private bool _computeEmptyLayers = true;
@@ -498,6 +541,8 @@ namespace UVtools.WPF
             private byte _islandRequiredPixelBrightnessToProcessCheck = 1;
             private byte _islandRequiredPixelsToSupport = 10;
             private byte _islandRequiredPixelBrightnessToSupport = 150;
+            private bool _overhangIndependentFromIslands = true;
+            private byte _overhangErodeIterations = 49;
             private byte _resinTrapBinaryThreshold = 127;
             private byte _resinTrapRequiredAreaToProcessCheck = 17;
             private byte _resinTrapRequiredBlackPixelsToDrain = 10;
@@ -519,6 +564,12 @@ namespace UVtools.WPF
             {
                 get => _computeIslands;
                 set => this.RaiseAndSetIfChanged(ref _computeIslands, value);
+            }
+
+            public bool ComputeOverhangs
+            {
+                get => _computeOverhangs;
+                set => this.RaiseAndSetIfChanged(ref _computeOverhangs, value);
             }
 
             public bool ComputeResinTraps
@@ -575,7 +626,18 @@ namespace UVtools.WPF
                 set => this.RaiseAndSetIfChanged(ref _islandRequiredPixelBrightnessToSupport, value);
             }
 
+            public bool OverhangIndependentFromIslands
+            {
+                get => _overhangIndependentFromIslands;
+                set => this.RaiseAndSetIfChanged(ref _overhangIndependentFromIslands, value);
+            }
 
+            public byte OverhangErodeIterations
+            {
+                get => _overhangErodeIterations;
+                set => this.RaiseAndSetIfChanged(ref _overhangErodeIterations, value);
+            }
+            
             public byte ResinTrapBinaryThreshold
             {
                 get => _resinTrapBinaryThreshold;
@@ -606,6 +668,7 @@ namespace UVtools.WPF
             }
 
         }
+        #endregion
 
         [Serializable]
         public sealed class PixelEditorUserSettings : ReactiveObject

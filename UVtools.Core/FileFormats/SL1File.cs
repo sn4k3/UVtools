@@ -720,6 +720,9 @@ namespace UVtools.Core.FileFormats
                 {
                     file.HeaderSettings.ResolutionX = PrinterSettings.DisplayPixelsY;
                     file.HeaderSettings.ResolutionY = PrinterSettings.DisplayPixelsX;
+
+                    file.HeaderSettings.BedSizeX = PrinterSettings.DisplayHeight;
+                    file.HeaderSettings.BedSizeY = PrinterSettings.DisplayWidth;
                 }
 
                 file.SetThumbnails(Thumbnails);
@@ -871,6 +874,9 @@ namespace UVtools.Core.FileFormats
                 {
                     file.HeaderSettings.ResolutionX = ResolutionY;
                     file.HeaderSettings.ResolutionY = ResolutionX;
+
+                    file.HeaderSettings.BedSizeX = PrinterSettings.DisplayHeight;
+                    file.HeaderSettings.BedSizeY = PrinterSettings.DisplayWidth;
                 }
 
                 file.SetThumbnails(Thumbnails);
@@ -1013,8 +1019,10 @@ namespace UVtools.Core.FileFormats
                 }
 
                 file.Printer = LookupCustomValue<bool>("NOVAMAKER_GRAY2RGB_ENCODE", false, true) ||
-                               MachineName.Contains("Bene4 Mono") ? CWSFile.PrinterType.BeneMono : CWSFile.PrinterType.Elfin;
-
+                               MachineName.Contains("Bene4 Mono") ||
+                               FileFullPath.Contains("bene4_mono") 
+                    ? CWSFile.PrinterType.BeneMono : CWSFile.PrinterType.Elfin;
+                
                 file.Encode(fileFullPath, progress);
 
                 return true;

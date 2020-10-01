@@ -833,6 +833,16 @@ namespace UVtools.GUI.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap square_root_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("square-root-16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap square_solid_16x16 {
             get {
                 object obj = ResourceManager.GetObject("square-solid-16x16", resourceCulture);

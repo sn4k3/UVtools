@@ -115,6 +115,11 @@ namespace UVtools.Core.FileFormats
         #region Universal Properties
 
         /// <summary>
+        /// Gets the last layer index
+        /// </summary>
+        uint LastLayerIndex { get; }
+
+        /// <summary>
         /// Gets the number of layers present in this file
         /// </summary>
         uint LayerCount { get; set; }

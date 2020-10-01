@@ -123,9 +123,6 @@
   <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>131, 17</value>
   </metadata>
-  <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>131, 17</value>
-  </metadata>
   <data name="cbIslandAllowDiagonalBonds.ToolTip" xml:space="preserve">
     <value>If enabled, components touching by even a single diagonal bond will be considered a single component for the purposes of island detection.
 Enabling this will result in faster island detection. but some potential islands with weak bonds to other components may not be detected.</value>

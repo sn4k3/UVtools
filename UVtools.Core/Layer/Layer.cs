@@ -235,7 +235,7 @@ namespace UVtools.Core
                 return BoundingRectangle;
             }
             bool needDispose = false;
-            if (ReferenceEquals(mat, null))
+            if (mat is null)
             {
                 mat = LayerMat;
                 needDispose = true;

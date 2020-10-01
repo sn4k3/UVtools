@@ -504,7 +504,6 @@ namespace UVtools.Core
                 }
             });
             progress.Token.ThrowIfCancellationRequested();
-
         }
 
         /*public void MutateErode(uint startLayerIndex, uint endLayerIndex, int iterationsStart = 1, int iterationsEnd = 1, bool isFade = false, OperationProgress progress = null,
@@ -657,6 +656,62 @@ namespace UVtools.Core
             });
             progress.Token.ThrowIfCancellationRequested();
         }*/
+
+        public void Arithmetic(OperationArithmetic operation, OperationProgress progress = null)
+        {
+            if (!operation.IsValid) return;
+            if (progress is null) progress = new OperationProgress();
+            progress.Reset(operation.ProgressAction, (uint)operation.Operations.Count);
+
+            using (Mat result = this[operation.Operations[0].LayerIndex].LayerMat)
+            {
+                Mat resultRoi = operation.GetRoiOrDefault(result);
+                for (int i = 1; i < operation.Operations.Count; i++)
+                {
+                    using (var image = this[operation.Operations[i].LayerIndex].LayerMat)
+                    {
+                        Mat imageRoi = operation.GetRoiOrDefault(image);
+                        switch (operation.Operations[i - 1].Operator)
+                        {
+                            case OperationArithmetic.ArithmeticOperators.Add:
+                                CvInvoke.Add(resultRoi, imageRoi, resultRoi);
+                                break;
+                            case OperationArithmetic.ArithmeticOperators.Subtract:
+                                CvInvoke.Subtract(resultRoi, imageRoi, resultRoi);
+                                break;
+                            case OperationArithmetic.ArithmeticOperators.Multiply:
+                                CvInvoke.Multiply(resultRoi, imageRoi, resultRoi);
+                                break;
+                            case OperationArithmetic.ArithmeticOperators.Divide:
+                                CvInvoke.Divide(resultRoi, imageRoi, resultRoi);
+                                break;
+                            case OperationArithmetic.ArithmeticOperators.BitwiseAnd:
+                                CvInvoke.BitwiseAnd(resultRoi, imageRoi, resultRoi);
+                                break;
+                            case OperationArithmetic.ArithmeticOperators.BitwiseOr:
+                                CvInvoke.BitwiseOr(resultRoi, imageRoi, resultRoi);
+                                break;
+                            case OperationArithmetic.ArithmeticOperators.BitwiseXor:
+                                CvInvoke.BitwiseXor(resultRoi, imageRoi, resultRoi);
+                                break;
+                        }
+                    }
+                }
+
+                Parallel.ForEach(operation.SetLayers, layerIndex =>
+                {
+                    if (operation.Operations.Count == 1 && operation.HaveROI)
+                    {
+                        var mat = this[layerIndex].LayerMat;
+                        var matRoi = operation.GetRoiOrDefault(mat);
+                        resultRoi.CopyTo(matRoi);
+                        this[layerIndex].LayerMat = mat;
+                        return;
+                    }
+                    this[layerIndex].LayerMat = result;
+                });
+            }
+        }
 
         public void ThresholdPixels(OperationThreshold operation, OperationProgress progress)
         {
@@ -929,6 +984,7 @@ namespace UVtools.Core
                                             {
                                                 var anchor = new Point(-1, -1);
                                                 CvInvoke.Subtract(imageRoi, previousImageRoi, subtractedImage);
+                                                CvInvoke.Threshold(subtractedImage, subtractedImage, 127, 255, ThresholdType.Binary);
 
                                                 CvInvoke.Erode(subtractedImage, subtractedImage, CvInvoke.GetStructuringElement(ElementShape.Rectangle,
                                                         new Size(3, 3), anchor),
@@ -988,7 +1044,10 @@ namespace UVtools.Core
                                 using (var vecPoints = new VectorOfPoint())
                                 {
                                     var anchor = new Point(-1, -1);
+
+
                                     CvInvoke.Subtract(image, previousImage, subtractedImage);
+                                    CvInvoke.Threshold(subtractedImage, subtractedImage, 127, 255, ThresholdType.Binary);
 
                                     //subtractedImage.Save($"D:\\subtracted_image\\subtracted{layer.Index}.png");
 
@@ -1901,5 +1960,7 @@ namespace UVtools.Core
 
 
         #endregion
+
+        
     }
 }

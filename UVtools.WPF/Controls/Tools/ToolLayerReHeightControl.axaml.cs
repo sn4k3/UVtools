@@ -21,7 +21,8 @@ namespace UVtools.WPF.Controls.Tools
 
             if (Presets.Length == 0)
             {
-                App.MainWindow.MessageBoxInfo("No valid configuration to be able to re-height, closing this tool now.", "Not possible to re-height");
+                App.MainWindow.MessageBoxInfo("No valid configuration to be able to re-height.\n" +
+                                              "As workaround clone first or last layer and try re run this tool.", "Not possible to re-height");
                 CanRun = false;
             }
             else

@@ -152,6 +152,7 @@ namespace UVtools.GUI
             this.tsIssueRemove = new System.Windows.Forms.ToolStripButton();
             this.tsIssuesDetect = new System.Windows.Forms.ToolStripSplitButton();
             this.tsIssuesDetectIslands = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsIssuesDetectOverhangs = new System.Windows.Forms.ToolStripMenuItem();
             this.tsIssuesDetectResinTraps = new System.Windows.Forms.ToolStripMenuItem();
             this.tsIssuesDetectTouchingBounds = new System.Windows.Forms.ToolStripMenuItem();
             this.tsIssuesDetectEmptyLayers = new System.Windows.Forms.ToolStripMenuItem();
@@ -260,7 +261,6 @@ namespace UVtools.GUI
             this.toolTipInformation = new System.Windows.Forms.ToolTip(this.components);
             this.layerScrollTimer = new System.Windows.Forms.Timer(this.components);
             this.mouseHoldTimer = new System.Windows.Forms.Timer(this.components);
-            this.tsIssuesDetectOverhangs = new System.Windows.Forms.ToolStripMenuItem();
             this.menu.SuspendLayout();
             this.mainTable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scCenter)).BeginInit();
@@ -1582,8 +1582,17 @@ namespace UVtools.GUI
             this.tsIssuesDetectIslands.CheckOnClick = true;
             this.tsIssuesDetectIslands.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tsIssuesDetectIslands.Name = "tsIssuesDetectIslands";
-            this.tsIssuesDetectIslands.Size = new System.Drawing.Size(180, 22);
+            this.tsIssuesDetectIslands.Size = new System.Drawing.Size(166, 22);
             this.tsIssuesDetectIslands.Text = "&Islands";
+            // 
+            // tsIssuesDetectOverhangs
+            // 
+            this.tsIssuesDetectOverhangs.Checked = true;
+            this.tsIssuesDetectOverhangs.CheckOnClick = true;
+            this.tsIssuesDetectOverhangs.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsIssuesDetectOverhangs.Name = "tsIssuesDetectOverhangs";
+            this.tsIssuesDetectOverhangs.Size = new System.Drawing.Size(166, 22);
+            this.tsIssuesDetectOverhangs.Text = "&Overhangs";
             // 
             // tsIssuesDetectResinTraps
             // 
@@ -1591,7 +1600,7 @@ namespace UVtools.GUI
             this.tsIssuesDetectResinTraps.CheckOnClick = true;
             this.tsIssuesDetectResinTraps.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tsIssuesDetectResinTraps.Name = "tsIssuesDetectResinTraps";
-            this.tsIssuesDetectResinTraps.Size = new System.Drawing.Size(180, 22);
+            this.tsIssuesDetectResinTraps.Size = new System.Drawing.Size(166, 22);
             this.tsIssuesDetectResinTraps.Text = "&Resin traps";
             // 
             // tsIssuesDetectTouchingBounds
@@ -1600,7 +1609,7 @@ namespace UVtools.GUI
             this.tsIssuesDetectTouchingBounds.CheckOnClick = true;
             this.tsIssuesDetectTouchingBounds.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tsIssuesDetectTouchingBounds.Name = "tsIssuesDetectTouchingBounds";
-            this.tsIssuesDetectTouchingBounds.Size = new System.Drawing.Size(180, 22);
+            this.tsIssuesDetectTouchingBounds.Size = new System.Drawing.Size(166, 22);
             this.tsIssuesDetectTouchingBounds.Text = "&Touching Bounds";
             // 
             // tsIssuesDetectEmptyLayers
@@ -1609,7 +1618,7 @@ namespace UVtools.GUI
             this.tsIssuesDetectEmptyLayers.CheckOnClick = true;
             this.tsIssuesDetectEmptyLayers.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tsIssuesDetectEmptyLayers.Name = "tsIssuesDetectEmptyLayers";
-            this.tsIssuesDetectEmptyLayers.Size = new System.Drawing.Size(180, 22);
+            this.tsIssuesDetectEmptyLayers.Size = new System.Drawing.Size(166, 22);
             this.tsIssuesDetectEmptyLayers.Text = "&Empty Layers";
             // 
             // toolStripSeparator12
@@ -2875,15 +2884,6 @@ namespace UVtools.GUI
             // 
             this.mouseHoldTimer.Interval = 1000;
             this.mouseHoldTimer.Tick += new System.EventHandler(this.EventTimerTick);
-            // 
-            // tsIssuesDetectOverhangs
-            // 
-            this.tsIssuesDetectOverhangs.Checked = true;
-            this.tsIssuesDetectOverhangs.CheckOnClick = true;
-            this.tsIssuesDetectOverhangs.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tsIssuesDetectOverhangs.Name = "tsIssuesDetectOverhangs";
-            this.tsIssuesDetectOverhangs.Size = new System.Drawing.Size(180, 22);
-            this.tsIssuesDetectOverhangs.Text = "&Overhangs";
             // 
             // FrmMain
             // 

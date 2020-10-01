@@ -283,9 +283,9 @@
                 
               </Grid>
 
-              <Grid Margin="15,0,15,15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+              <Grid Margin="15,0,15,15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,*,Auto,Auto">
 
-                <!--Previous layer difference  & island-->
+                <!--Previous layer difference  & Island-->
                 <TextBlock Grid.Row="0" Grid.Column="0"
                            VerticalAlignment="Center"
                            Text="Previous layer difference:"/>
@@ -325,7 +325,7 @@
                         CommandParameter="IslandHighlightColor"
                         />
 
-                <!--Next layer difference  & Resin trap-->
+                <!--Next layer difference  & Overhang-->
                 <TextBlock Grid.Row="2" Grid.Column="0"
                            VerticalAlignment="Center"
                            Text="Next layer difference:"/>
@@ -339,33 +339,34 @@
                         Command="{Binding SelectColor}"
                         CommandParameter="NextLayerDifferenceColor"
                         />
+
                 <TextBlock Grid.Row="2" Grid.Column="2"
                           Margin="10,0,0,0"
                           HorizontalAlignment="Right"
                           VerticalAlignment="Center"
-                          Text="Resin trap / Selected Resin trap:"/>
+                          Text="Overhang / Selected overhang:"/>
                 <Button Grid.Row="2" Grid.Column="3"
                         Margin="10,0,0,0"
                         Padding="10"
                         BorderBrush="Black"
                         BorderThickness="2"
                          VerticalAlignment="Center"
-                        Background="{Binding Settings.LayerPreview.ResinTrapBrush}"
+                        Background="{Binding Settings.LayerPreview.OverhangBrush}"
                         Command="{Binding SelectColor}"
-                        CommandParameter="ResinTrapColor"
+                        CommandParameter="OverhangColor"
                         />
                 <Button Grid.Row="2" Grid.Column="4"
                         Margin="10,0,0,0"
                         Padding="10"
                         BorderBrush="Black"
                         BorderThickness="2"
-                        VerticalAlignment="Center"
-                        Background="{Binding Settings.LayerPreview.ResinTrapHighlightBrush}"
+                         VerticalAlignment="Center"
+                        Background="{Binding Settings.LayerPreview.OverhangHighlightBrush}"
                         Command="{Binding SelectColor}"
-                        CommandParameter="ResinTrapHighlightColor"
+                        CommandParameter="OverhangHighlightColor"
                         />
 
-                <!--Next&prev layer difference & Touching boundary-->
+                <!--Next&prev layer difference & Resin traps-->
                 <TextBlock Grid.Row="4" Grid.Column="0"
                            VerticalAlignment="Center"
                            Text="Prev &amp; next layer difference:"/>
@@ -379,12 +380,47 @@
                         Command="{Binding SelectColor}"
                         CommandParameter="BothLayerDifferenceColor"
                         />
+
                 <TextBlock Grid.Row="4" Grid.Column="2"
                           Margin="10,0,0,0"
                           HorizontalAlignment="Right"
                           VerticalAlignment="Center"
-                          Text="Touching boundary:"/>
+                          Text="Resin trap / Selected Resin trap:"/>
                 <Button Grid.Row="4" Grid.Column="3"
+                        Margin="10,0,0,0"
+                        Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                         VerticalAlignment="Center"
+                        Background="{Binding Settings.LayerPreview.ResinTrapBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="ResinTrapColor"
+                        />
+                <Button Grid.Row="4" Grid.Column="4"
+                        Margin="10,0,0,0"
+                        Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                        VerticalAlignment="Center"
+                        Background="{Binding Settings.LayerPreview.ResinTrapHighlightBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="ResinTrapHighlightColor"
+                        />
+                
+                
+                <!--Diff & Touching bounds-->
+                <CheckBox Grid.Row="6" Grid.Column="0"
+                          Grid.ColumnSpan="3"
+                          Content="Show layer diff colors by default"
+                          IsChecked="{Binding Settings.LayerPreview.ShowLayerDifference}"
+                          />
+
+                <TextBlock Grid.Row="6" Grid.Column="2"
+                          Margin="10,0,0,0"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Center"
+                          Text="Touching boundary:"/>
+                <Button Grid.Row="6" Grid.Column="3"
                         Margin="10,0,0,0"
                         Padding="10"
                         BorderBrush="Black"
@@ -395,19 +431,13 @@
                         CommandParameter="TouchingBoundsColor"
                         />
 
-                <!--Diff & Crosshair-->
-                <CheckBox Grid.Row="6" Grid.Column="0"
-                          Grid.ColumnSpan="3"
-                          Content="Show layer diff colors by default"
-                          IsChecked="{Binding Settings.LayerPreview.ShowLayerDifference}"
-                          />
-                
-                <TextBlock Grid.Row="6" Grid.Column="2"
+                <!-- Crosshair -->
+                <TextBlock Grid.Row="8" Grid.Column="2"
                           Margin="10,0,0,0"
                           HorizontalAlignment="Right"
                           VerticalAlignment="Center"
                           Text="Crosshair:"/>
-                <Button Grid.Row="6" Grid.Column="3"
+                <Button Grid.Row="8" Grid.Column="3"
                         Margin="10,0,0,0"
                         Padding="10"
                         BorderBrush="Black"
@@ -480,7 +510,7 @@
 
             <StackPanel Orientation="Vertical">
               <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Crosshairs"/>
-              <Grid Margin="15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,100,*,Auto,Auto">
+              <Grid Margin="15" RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,100,*,Auto,Auto">
                 <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
                            VerticalAlignment="Center"
                            Content="Show crosshairs for selected issues only"
@@ -592,6 +622,8 @@
                 <TextBlock Text="Compute:"/>
                 <CheckBox Content="Islands"
                           IsChecked="{Binding Settings.Issues.ComputeIslands}"/>
+                <CheckBox Content="Overhangs"
+                          IsChecked="{Binding Settings.Issues.ComputeOverhangs}"/>
                 <CheckBox Content="Resin traps"
                           IsChecked="{Binding Settings.Issues.ComputeResinTraps}"/>
                 <CheckBox Content="Touching boundary"
@@ -610,8 +642,11 @@
 
             <StackPanel Orientation="Vertical">
               <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Islands"/>
-              <CheckBox Margin="15" Content="Allow diagonal bonds during island detection"
+              <CheckBox Margin="15" 
+                        Content="Allow diagonal bonds during island detection"
                         IsChecked="{Binding Settings.Issues.IslandAllowDiagonalBonds}"
+                        ToolTip.Tip="If enabled, components touching by even a single diagonal bond will be considered a single component for the purposes of island detection.
+&#x0a;Enabling this will result in faster island detection. but some potential islands with weak bonds to other components may not be detected."
                         />
 
                 
@@ -621,7 +656,13 @@
                                 Maximum="254"
                                Value="{Binding Settings.Issues.IslandBinaryThreshold}"
                                 />
-                <TextBlock VerticalAlignment="Center" Text="Pixel intensity threshold for island detection"/>
+                <TextBlock 
+                  VerticalAlignment="Center" 
+                  Text="Pixel intensity threshold for island detection"
+                  ToolTip.Tip="Pixels below this threshold will be considered black during island detection.
+&#x0a;Pixels equal to or above this theshold will be considred white during island detection.
+&#x0a;0 to disable."
+                  />
               </StackPanel>
 
               <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
@@ -630,7 +671,11 @@
                                 Maximum="255"
                                Value="{Binding Settings.Issues.IslandRequiredAreaToProcessCheck}"
                                 />
-                <TextBlock VerticalAlignment="Center" Text="Bounding area required for an object to be considered an island"/>
+                <TextBlock 
+                  VerticalAlignment="Center" 
+                  Text="Bounding area required for an object to be considered an island"
+                  ToolTip.Tip="Objects with bounding area smaller than this value will not be considered an island even if unsupported."
+                  />
               </StackPanel>
               
               <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
@@ -639,16 +684,25 @@
                                 Maximum="255"
                                Value="{Binding Settings.Issues.IslandRequiredPixelBrightnessToProcessCheck}"
                                 />
-                <TextBlock VerticalAlignment="Center" Text="Minimum pixel intensity to consider a pixel part of an island"/>
+                <TextBlock 
+                  VerticalAlignment="Center" 
+                  Text="Minimum pixel intensity to consider a pixel part of an island"
+                  ToolTip.Tip="Pixels with an intensity below this threshold will not be considerd as part of an island."
+                  />
               </StackPanel>
 
               <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
                 <NumericUpDown Width="60"
                                 Minimum="1"
                                 Maximum="255"
-                               Value="{Binding Settings.Issues.IslandRequiredPixelsToSupport}"
+                                Value="{Binding Settings.Issues.IslandRequiredPixelsToSupport}"
                                 />
-                <TextBlock VerticalAlignment="Center" Text="Supporting safe pixels required to considerer an island supported"/>
+                <TextBlock
+                  VerticalAlignment="Center" 
+                  Text="Supporting safe pixels required to considerer an island supported"
+                  ToolTip.Tip="An island supported by at least this number of safe pixels will always be considered supported.
+&#x0a;An island supported by less than this number of pixels will only be considered supported if the number of supporting pixels is at least half the area of the island itself."
+                  />
               </StackPanel>
 
 
@@ -658,8 +712,44 @@
                                 Maximum="255"
                                Value="{Binding Settings.Issues.IslandRequiredPixelBrightnessToSupport}"
                                 />
-                <TextBlock VerticalAlignment="Center" Text="Minimum intensity of a supporting pixel before it is considered safe"/>
+                <TextBlock 
+                  VerticalAlignment="Center"
+                  Text="Minimum intensity of a supporting pixel before it is considered safe"
+                  ToolTip.Tip="Pixels below this threshold will not be considered when counting supporting pixels for an island."
+                  />
               </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <Border
+              Margin="5"
+              BorderBrush="LightBlue"
+              BorderThickness="4">
+
+            <StackPanel Orientation="Vertical">
+              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Overhangs"/>
+
+              <CheckBox
+                Margin="15"
+                Content="Include islands when detecting overhangs"
+                ToolTip.Tip="If enabled, overhangs will be computed everywhere, including on islands. An overhang on an island will always be detected and reported. (Faster)
+&#x0a;If disabled, islands are disregarded when computing overhangs. An overhang that is on an island will never be detected or reported.  (Slower)
+&#x0a;When island detection is disabled and overhang detection is enabled, overhangs will always be computed everywhere."
+                IsChecked="{Binding Settings.Issues.OverhangIndependentFromIslands}"/>
+
+              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <NumericUpDown Width="60"
+                                Minimum="2"
+                                Maximum="255"
+                                Value="{Binding Settings.Issues.OverhangErodeIterations}"
+                                />
+                <TextBlock 
+                  VerticalAlignment="Center"
+                  Text="Minimum overhang depth"
+                  ToolTip.Tip="The number of pixels that an overhang can protrude from the previous layer before it is detected and reported as an overhang."
+                  />
+              </StackPanel>
+              
             </StackPanel>
           </Border>
 
@@ -677,7 +767,14 @@
                                 Maximum="254"
                                Value="{Binding Settings.Issues.ResinTrapBinaryThreshold}"
                                 />
-                <TextBlock VerticalAlignment="Center" Text="Pixel intensity threshold for resin trap detection"/>
+                <TextBlock 
+                  VerticalAlignment="Center" 
+                  Text="Pixel intensity threshold for resin trap detection"
+                  ToolTip.Tip="Pixels below this threshold will be considered black during resin trap detection.
+&#x0a;Pixels equal to or above this theshold will be considred white during resin trap detection.
+&#x0a;0 to disable."
+                  />
+
               </StackPanel>
 
               <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
@@ -686,7 +783,11 @@
                                 Maximum="255"
                                Value="{Binding Settings.Issues.ResinTrapRequiredAreaToProcessCheck}"
                                 />
-                <TextBlock VerticalAlignment="Center" Text="Bounding area required for an object to be processed during resin trap detection"/>
+                <TextBlock 
+                  VerticalAlignment="Center" 
+                  Text="Bounding area required for an object to be processed during resin trap detection"
+                  ToolTip.Tip="Objects with bounding area smaller than this value will not be processed during resin trip detection."
+                  />
               </StackPanel>
 
               <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
@@ -695,7 +796,11 @@
                                 Maximum="255"
                                Value="{Binding Settings.Issues.ResinTrapRequiredBlackPixelsToDrain}"
                                 />
-                <TextBlock VerticalAlignment="Center" Text="Number of drain pixels required to disqualify a potential resin trap"/>
+                <TextBlock 
+                  VerticalAlignment="Center" 
+                  Text="Number of drain pixels required to disqualify a potential resin trap"
+                  ToolTip.Tip="The drain pixel area required to consider a potential resin trap sufficiently drained (no longer a resin trap)."
+                  />
               </StackPanel>
 
               <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
@@ -704,7 +809,11 @@
                                 Maximum="150"
                                Value="{Binding Settings.Issues.ResinTrapMaximumPixelBrightnessToDrain}"
                                 />
-                <TextBlock VerticalAlignment="Center" Text="Maximum pixel intensity for a pixel to be considered a drain pixel"/>
+                <TextBlock 
+                  VerticalAlignment="Center" 
+                  Text="Maximum pixel intensity for a pixel to be considered a drain pixel"
+                  ToolTip.Tip="Pixels below this intensity threshold will not be counted when evaluating if a potential resin trap is sufficiently drained."
+                  />
               </StackPanel>
             </StackPanel>
           </Border>

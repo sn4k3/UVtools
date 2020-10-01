@@ -198,6 +198,12 @@
     <Compile Include="Controls\Tools\CtrlToolRepairLayers.Designer.cs">
       <DependentUpon>CtrlToolRepairLayers.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\Tools\CtrlToolArithmetic.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Tools\CtrlToolArithmetic.Designer.cs">
+      <DependentUpon>CtrlToolArithmetic.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Tools\CtrlToolSolidify.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -365,6 +371,9 @@
     <EmbeddedResource Include="Controls\Tools\CtrlToolRepairLayers.resx">
       <DependentUpon>CtrlToolRepairLayers.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Tools\CtrlToolArithmetic.resx">
+      <DependentUpon>CtrlToolArithmetic.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\Tools\CtrlToolSolidify.resx">
       <DependentUpon>CtrlToolSolidify.cs</DependentUpon>
     </EmbeddedResource>
@@ -512,6 +521,7 @@
     <None Include="Images\minus_16x16.png" />
     <None Include="Images\sync-16x16.png" />
     <None Include="Images\object-group-16x16.png" />
+    <None Include="Images\square-root-16x16.png" />
     <Content Include="Resources\pixel_edit.cur" />
     <Content Include="UVtools.ico" />
     <None Include="UVtools.png" />

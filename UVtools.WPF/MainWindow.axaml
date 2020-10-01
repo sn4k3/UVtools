@@ -569,6 +569,9 @@
                     IsChecked="{Binding Settings.Issues.ComputeIslands}"
                     Content="Islands"/>
                   <CheckBox
+                    IsChecked="{Binding Settings.Issues.ComputeOverhangs}"
+                    Content="Overhangs"/>
+                  <CheckBox
                     IsChecked="{Binding Settings.Issues.ComputeResinTraps}"
                     Content="Resin traps"/>
                   <CheckBox

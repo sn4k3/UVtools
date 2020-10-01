@@ -714,25 +714,27 @@ namespace UVtools.WPF
             }
 
             if (Settings.PixelEditor.PartialUpdateIslandsOnEditing)
-            { 
-                UpdateIslands(whiteListLayers);
+            {
+                UpdateIslandsOverhangs(whiteListLayers);
             }
 
             ShowLayer(); // It will call latter so its a extra call
             CanSave = true;
         }
 
-        private async void UpdateIslands(List<uint> whiteListLayers)
+        private async void UpdateIslandsOverhangs(List<uint> whiteListLayers)
         {
             if (whiteListLayers.Count == 0) return;
             var islandConfig = GetIslandDetectionConfiguration();
-            var overhangConfig = new OverhangDetectionConfiguration { Enabled = false };
+            var overhangConfig = GetOverhangDetectionConfiguration();
             var resinTrapConfig = new ResinTrapDetectionConfiguration { Enabled = false };
             var touchingBoundConfig = new TouchingBoundDetectionConfiguration { Enabled = false };
             islandConfig.Enabled = true;
             islandConfig.WhiteListLayers = whiteListLayers;
+            overhangConfig.Enabled = true;
+            overhangConfig.WhiteListLayers = whiteListLayers;
 
-           
+
             IsGUIEnabled = false;
             ProgressWindow.SetTitle("Updating Issues");
 
@@ -742,7 +744,7 @@ namespace UVtools.WPF
             {
                 foreach (var issue in Issues)
                 {
-                    if(issue.LayerIndex != layerIndex || issue.Type != LayerIssue.IssueType.Island) continue;
+                    if(issue.LayerIndex != layerIndex && (issue.Type == LayerIssue.IssueType.Island || issue.Type == LayerIssue.IssueType.Overhang)) continue;
                     toRemove.Add(issue);
                 }
             }
@@ -757,7 +759,7 @@ namespace UVtools.WPF
                         touchingBoundConfig, false,
                         ProgressWindow.RestartProgress());
 
-                    issues.RemoveAll(issue => issue.Type != LayerIssue.IssueType.Island); // Remove all non islands
+                    issues.RemoveAll(issue => issue.Type != LayerIssue.IssueType.Island && issue.Type != LayerIssue.IssueType.Overhang); // Remove all non islands and overhangs
                     return issues;
                 }
 
@@ -867,12 +869,14 @@ namespace UVtools.WPF
             if (!IsFileLoaded) return;
             ComputeIssues(
                 GetIslandDetectionConfiguration(),
+                GetOverhangDetectionConfiguration(),
                 GetResinTrapDetectionConfiguration(),
                 GetTouchingBoundsDetectionConfiguration(),
                 Settings.Issues.ComputeEmptyLayers);
         }
 
         private async void ComputeIssues(IslandDetectionConfiguration islandConfig = null,
+            OverhangDetectionConfiguration overhangConfig = null,
             ResinTrapDetectionConfiguration resinTrapConfig = null,
             TouchingBoundDetectionConfiguration touchingBoundConfig = null, bool emptyLayersConfig = true)
         {
@@ -887,7 +891,7 @@ namespace UVtools.WPF
                 ShowProgressWindow();
                 try
                 {
-                    var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, resinTrapConfig, touchingBoundConfig,
+                    var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapConfig, touchingBoundConfig,
                         emptyLayersConfig, ProgressWindow.RestartProgress());
                     return issues;
                 }
@@ -926,6 +930,16 @@ namespace UVtools.WPF
                 RequiredPixelBrightnessToProcessCheck = Settings.Issues.IslandRequiredPixelBrightnessToProcessCheck,
                 RequiredPixelsToSupport = Settings.Issues.IslandRequiredPixelsToSupport,
                 RequiredPixelBrightnessToSupport = Settings.Issues.IslandRequiredPixelBrightnessToSupport
+            };
+        }
+
+        public OverhangDetectionConfiguration GetOverhangDetectionConfiguration()
+        {
+            return new OverhangDetectionConfiguration
+            {
+                Enabled = Settings.Issues.ComputeOverhangs,
+                IndependentFromIslands = Settings.Issues.OverhangIndependentFromIslands,
+                ErodeIterations = Settings.Issues.OverhangErodeIterations,
             };
         }
 
@@ -1347,6 +1361,7 @@ namespace UVtools.WPF
             if (SlicerFile is null) return;
             SlicerFile?.Dispose();
             App.SlicerFile = null;
+            TabSelectedIndex = 0;
             CanSave = false;
 
             _actualLayer = 0;
@@ -1785,10 +1800,24 @@ namespace UVtools.WPF
                                 }
 
                                 break;
+                            case LayerIssue.IssueType.Overhang:
+                                color = selectedIssues.Contains(issue)
+                                    ? Settings.LayerPreview.OverhangHighlightColor
+                                    : Settings.LayerPreview.OverhangColor;
+                                if (_showLayerImageCrosshairs &&
+                                    !Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues &&
+                                    LayerImageBox.Zoom <= AppSettings.CrosshairFadeLevel)
+                                {
+                                    DrawCrosshair(issue.BoundingRectangle);
+                                }
+
+                                break;
                             case LayerIssue.IssueType.TouchingBound:
                                 color = Settings.LayerPreview.TouchingBoundsColor;
                                 break;
                         }
+
+                        if(color.IsEmpty) continue;
 
                         foreach (var pixel in issue)
                         {
@@ -2440,18 +2469,18 @@ namespace UVtools.WPF
 
                     return false;
                 case OperationRepairLayers operation:
-                    if (ReferenceEquals(Issues, null))
+                    if (Issues is null)
                     {
                         var islandConfig = GetIslandDetectionConfiguration();
-                        islandConfig.Enabled =
-                            operation.RepairIslands && operation.RemoveIslandsBelowEqualPixelCount > 0;
+                        islandConfig.Enabled = operation.RepairIslands && operation.RemoveIslandsBelowEqualPixelCount > 0;
+                        var overhangConfig = new OverhangDetectionConfiguration { Enabled = false };
                         var resinTrapConfig = GetResinTrapDetectionConfiguration();
                         resinTrapConfig.Enabled = operation.RepairResinTraps;
                         var touchingBoundConfig = new TouchingBoundDetectionConfiguration { Enabled = false };
 
                         if (islandConfig.Enabled || resinTrapConfig.Enabled)
                         {
-                            ComputeIssues(islandConfig, resinTrapConfig, touchingBoundConfig, Settings.Issues.ComputeEmptyLayers);
+                            ComputeIssues(islandConfig, overhangConfig, resinTrapConfig, touchingBoundConfig, Settings.Issues.ComputeEmptyLayers);
                         }
                     }
 

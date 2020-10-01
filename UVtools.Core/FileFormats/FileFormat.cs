@@ -361,6 +361,8 @@ namespace UVtools.Core.FileFormats
 
         public float TotalHeight => LayerCount == 0 ? 0 : this[LayerCount - 1].PositionZ; //(float)Math.Round(LayerCount * LayerHeight, 2);
 
+        public uint LastLayerIndex => LayerCount - 1;
+
         public virtual uint LayerCount
         {
             get => LayerManager?.Count ?? 0;

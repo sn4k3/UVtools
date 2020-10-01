@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Text;
 using UVtools.Core.Objects;
@@ -41,13 +42,22 @@ namespace UVtools.Core.Operations
         }
 
         private Rectangle _dstRoi = Rectangle.Empty;
+        private uint _imageWidth;
+        private uint _imageHeight;
+        private Enumerations.Anchor _anchor = Enumerations.Anchor.MiddleCenter;
+        private int _marginLeft;
+        private int _marginTop;
+        private int _marginRight;
+        private int _marginBottom;
+        private bool _isCutMove = true;
+        private bool _isWithinBoundary;
+
         public Rectangle DstRoi
         {
             get
             {
                 if(!_dstRoi.IsEmpty) return _dstRoi;
                 CalculateDstRoi();
-
                 return _dstRoi;
             }
         }
@@ -94,20 +104,102 @@ namespace UVtools.Core.Operations
             _dstRoi.X -= MarginRight;
             _dstRoi.Y += MarginTop;
             _dstRoi.Y -= MarginBottom;
+
+            IsWithinBoundary = !(DstRoi.IsEmpty || DstRoi.X < 0 || DstRoi.Y < 0 ||
+                                 DstRoi.Width == 0 || DstRoi.Right > ImageWidth ||
+                                 DstRoi.Height == 0 || DstRoi.Bottom > ImageHeight);
+
+            RaisePropertyChanged(nameof(DstRoi));
+            RaisePropertyChanged(nameof(LocationXStr));
+            RaisePropertyChanged(nameof(LocationYStr));
         }
 
 
-        public uint ImageWidth { get; set; }
-        public uint ImageHeight { get; set; }
+        public uint ImageWidth
+        {
+            get => _imageWidth;
+            set => RaiseAndSetIfChanged(ref _imageWidth, value);
+        }
 
-        public Enumerations.Anchor Anchor { get; set; }
+        public uint ImageHeight
+        {
+            get => _imageHeight;
+            set => RaiseAndSetIfChanged(ref _imageHeight, value);
+        }
 
-        public int MarginLeft { get; set; } = 0;
-        public int MarginTop { get; set; } = 0;
-        public int MarginRight { get; set; } = 0;
-        public int MarginBottom { get; set; } = 0;
+        public Enumerations.Anchor Anchor
+        {
+            get => _anchor;
+            set
+            {
+                RaiseAndSetIfChanged(ref _anchor, value);
+                CalculateDstRoi();
+            }
+        }
 
-        public bool IsCutMove { get; set; } = true;
+        public int MarginLeft
+        {
+            get => _marginLeft;
+            set
+            {
+                RaiseAndSetIfChanged(ref _marginLeft, value);
+                CalculateDstRoi();
+            }
+        }
+
+        public int MarginTop
+        {
+            get => _marginTop;
+            set
+            {
+                RaiseAndSetIfChanged(ref _marginTop, value);
+                CalculateDstRoi();
+            }
+        }
+
+        public int MarginRight
+        {
+            get => _marginRight;
+            set
+            {
+                RaiseAndSetIfChanged(ref _marginRight, value);
+                CalculateDstRoi();
+            }
+        }
+
+        public int MarginBottom
+        {
+            get => _marginBottom;
+            set
+            {
+                RaiseAndSetIfChanged(ref _marginBottom, value);
+                CalculateDstRoi();
+            }
+        }
+
+        public bool IsCutMove
+        {
+            get => _isCutMove;
+            set => RaiseAndSetIfChanged(ref _isCutMove, value);
+        }
+
+        public string LocationXStr => $"X: {DstRoi.X} / {ImageWidth - ROI.Width}";
+        public string LocationYStr => $"Y: {DstRoi.Y} / {ImageHeight - ROI.Height}";
+
+        public string LocationWidthStr => $"Width: {ROI.Width} / {ImageWidth}";
+        public string LocationHeightStr => $"Height: {ROI.Height} / {ImageHeight}";
+
+        public bool IsWithinBoundary
+        {
+            get => _isWithinBoundary;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _isWithinBoundary, value)) return;
+                RaisePropertyChanged(nameof(IsWithinBoundaryStr));
+            }
+        }
+
+        public string IsWithinBoundaryStr => "Model within boundary: " + (_isWithinBoundary ? "Yes" : "No");
 
         public OperationMove()
         {
@@ -121,16 +213,25 @@ namespace UVtools.Core.Operations
             Anchor = anchor;
         }
 
+        public void Reset()
+        {
+            MarginLeft = MarginTop = MarginRight = MarginBottom = 0;
+            Anchor = Enumerations.Anchor.MiddleCenter;
+            IsCutMove = true;
+        }
+
+
+        public void SetAnchor(byte value)
+        {
+            Anchor = (Enumerations.Anchor)value;
+        }
+
 
 
         public bool ValidateBounds()
         {
             CalculateDstRoi();
-            if (DstRoi.IsEmpty || DstRoi.X < 0 || DstRoi.Y < 0) return false;
-            if (DstRoi.Width == 0 || DstRoi.Right > ImageWidth) return false;
-            if (DstRoi.Height == 0 || DstRoi.Bottom > ImageHeight) return false;
-
-            return true;
+            return IsWithinBoundary;
         }
     }
 }
