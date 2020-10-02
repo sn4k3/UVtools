@@ -3,14 +3,14 @@ using UVtools.Core.Operations;
 
 namespace UVtools.WPF.Controls.Tools
 {
-    public class ToolRotateControl : ToolControl
+    public class ToolArithmeticControl : ToolControl
     {
-        public OperationRotate Operation { get; }
+        public OperationArithmetic Operation { get; }
 
-        public ToolRotateControl()
+        public ToolArithmeticControl()
         {
             InitializeComponent();
-            BaseOperation = Operation = new OperationRotate();
+            BaseOperation = Operation = new OperationArithmetic();
         }
 
         private void InitializeComponent()

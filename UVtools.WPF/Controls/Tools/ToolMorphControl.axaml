@@ -1,0 +1,84 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:uc="clr-namespace:UVtools.WPF.Controls"
+             mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="400"
+             x:Class="UVtools.WPF.Controls.Tools.ToolMorphControl">
+
+  <StackPanel>
+    <Grid RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,10,*">
+      <TextBlock
+        ToolTip.Tip="Selects the number of iterations/passes to perform on each layer using this mutator.
+  &#x0a;Enable the 'Fade in/out' to fade the iteration over layers, you can use a start iteration higher than end to perform a inverse fade.
+  &#x0a;WARNING: Using high iteration values can destroy your model depending on the mutator being used, please use low values or with caution!"
+      VerticalAlignment="Center"
+      Text="Iterations:"/>
+
+
+      <StackPanel
+        Grid.Row="0"
+        Grid.Column="2"
+        Orientation="Horizontal" Spacing="10">
+
+        <NumericUpDown
+          Minimum="1"
+          Width="70"
+          Value="{Binding Operation.IterationsStart}"
+          />
+
+        <TextBlock
+          VerticalAlignment="Center"
+          Text="To:"
+          IsEnabled="{Binding Operation.FadeInOut}"/>
+
+        <NumericUpDown
+          Minimum="1"
+          Width="70"
+          Value="{Binding Operation.IterationsEnd}"
+          IsEnabled="{Binding Operation.FadeInOut}"
+          />
+
+        <CheckBox
+          ToolTip.Tip="Allow the number of iterations to be gradually varied as the operation progresses from the starting layer to the ending layer."
+          Content="Fade in/out"
+          IsChecked="{Binding Operation.FadeInOut}"
+          />
+      </StackPanel>
+
+      <TextBlock
+          Grid.Row="2"
+          Grid.Column="0"
+          VerticalAlignment="Center"
+          Text="Operation:"/>
+
+      <ComboBox
+        Grid.Row="2"
+        Grid.Column="2"
+        SelectedIndex="{Binding MorphSelectedIndex}"
+        Items="{Binding Operation.MorphOperations}"
+        />
+
+    </Grid>
+
+    <Border 
+      Margin="0,10,0,0" 
+      >
+      <Expander>
+        <Expander.Header>
+          <TextBlock Text="Kernel - Advanced options (Click to expand)"
+                     FontWeight="Bold"
+                     Cursor="Hand"
+                     />
+        </Expander.Header>
+        <uc:KernelControl
+          Name="KernelCtrl"
+          Margin="0,10,0,0"
+          />
+      </Expander>
+    </Border>
+
+  </StackPanel>
+  
+  
+</UserControl>

@@ -16,6 +16,14 @@ namespace UVtools.Core.Objects
         public Matrix<byte> Matrix { get; set; }
         public Point Anchor { get; set; }
 
+        public Kernel()
+        {
+        }
 
+        public Kernel(Matrix<byte> matrix, Point anchor)
+        {
+            Matrix = matrix;
+            Anchor = anchor;
+        }
     }
 }

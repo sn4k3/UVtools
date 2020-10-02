@@ -13,6 +13,11 @@ namespace UVtools.Core.Operations
 {
     public sealed class OperationMorph : Operation
     {
+        private MorphOp _morphOperation = MorphOp.Erode;
+        private uint _iterationsStart = 1;
+        private uint _iterationsEnd = 1;
+        private bool _fadeInOut;
+
         #region Overrides
 
         public override string Title => "Morph";
@@ -41,11 +46,29 @@ namespace UVtools.Core.Operations
             new StringTag("Gradient - Removes the interior areas of objects", MorphOp.Gradient),
         };
 
-        public MorphOp MorphOperation { get; set; } = MorphOp.Erode;
+        public MorphOp MorphOperation
+        {
+            get => _morphOperation;
+            set => RaiseAndSetIfChanged(ref _morphOperation, value);
+        }
 
-        public uint IterationsStart { get; set; }
-        public uint IterationsEnd { get; set; }
-        public bool FadeInOut { get; set; }
+        public uint IterationsStart
+        {
+            get => _iterationsStart;
+            set => RaiseAndSetIfChanged(ref _iterationsStart, value);
+        }
+
+        public uint IterationsEnd
+        {
+            get => _iterationsEnd;
+            set => RaiseAndSetIfChanged(ref _iterationsEnd, value);
+        }
+
+        public bool FadeInOut
+        {
+            get => _fadeInOut;
+            set => RaiseAndSetIfChanged(ref _fadeInOut, value);
+        }
 
         public Kernel Kernel { get; set; } = new Kernel();
 

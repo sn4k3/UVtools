@@ -35,7 +35,6 @@ namespace UVtools.WPF.Controls.Tools
                 case ToolWindow.Callbacks.Init:
                     ParentWindow.LayerRangeVisible = false;
                     ParentWindow.IsCheckBox1Visible = true;
-                    DataContext = this;
                     break;
                 case ToolWindow.Callbacks.Checkbox1:
                     ParentWindow.LayerRangeVisible = ParentWindow.IsCheckBox1Checked;

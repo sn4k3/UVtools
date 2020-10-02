@@ -22,7 +22,6 @@ namespace UVtools.WPF.Controls.Tools
             var roi = App.MainWindow.ROI;
             BaseOperation = Operation = new OperationMove(roi.IsEmpty ? App.SlicerFile.LayerManager.BoundingRectangle : roi, (uint)App.MainWindow.LayerCache.Image.Width,
                 (uint)App.MainWindow.LayerCache.Image.Height);
-            DataContext = this;
 
             Operation.PropertyChanged += (sender, e) =>
             {

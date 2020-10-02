@@ -155,8 +155,6 @@ namespace UVtools.WPF.Controls.Tools
 
                 rowIndex++;
             }
-
-            DataContext = this;
         }
 
         private void InitializeComponent()

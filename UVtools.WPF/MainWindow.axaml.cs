@@ -136,6 +136,22 @@ namespace UVtools.WPF
             },
             new MenuItem
             {
+                Tag = new OperationThreshold(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/th-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationArithmetic(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/square-root-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
                 Tag = new OperationMask(),
                 Icon = new Avalonia.Controls.Image
                 {
@@ -148,14 +164,6 @@ namespace UVtools.WPF
                 Icon = new Avalonia.Controls.Image
                 {
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/pixel-16x16.png"))
-                }
-            },
-            new MenuItem
-            {
-                Tag = new OperationThreshold(),
-                Icon = new Avalonia.Controls.Image
-                {
-                    Source = new Bitmap(App.GetAsset("/Assets/Icons/th-16x16.png"))
                 }
             },
             new MenuItem
@@ -2530,14 +2538,17 @@ namespace UVtools.WPF
                         case OperationMorph operation:
                             SlicerFile.LayerManager.Morph(operation, BorderType.Default, new MCvScalar(), ProgressWindow.RestartProgress(operation.CanCancel));
                             break;
+                        case OperationThreshold operation:
+                            SlicerFile.LayerManager.ThresholdPixels(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationArithmetic operation:
+                            SlicerFile.LayerManager.Arithmetic(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
                         case OperationMask operation:
                             SlicerFile.LayerManager.Mask(operation, ProgressWindow.RestartProgress(operation.CanCancel));
                             break;
                         case OperationPixelDimming operation:
                             SlicerFile.LayerManager.PixelDimming(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationThreshold operation:
-                            SlicerFile.LayerManager.ThresholdPixels(operation, ProgressWindow.RestartProgress(operation.CanCancel));
                             break;
                         case OperationBlur operation:
                             SlicerFile.LayerManager.Blur(operation, ProgressWindow.RestartProgress(operation.CanCancel));

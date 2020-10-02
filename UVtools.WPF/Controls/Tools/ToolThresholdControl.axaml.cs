@@ -75,7 +75,6 @@ namespace UVtools.WPF.Controls.Tools
         {
             InitializeComponent();
             BaseOperation = Operation = new OperationThreshold();
-            DataContext = this;
         }
 
         private void InitializeComponent()

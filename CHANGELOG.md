@@ -34,7 +34,7 @@
 * (Fix) PrusaSlicer Printer: Phrozen Shuffle Lite - display width/height
 * (Fix) All PrusaSlicer Printers were reviewed and some bugs were fixed
 * (Fix) Chitubox 3D preview when use files converted with UVtools (#68)
-* (Fix) Overhangs: False-positives when previous or current layer as draker pixels, it now threshold pixels before proceed (#64)
+* (Fix) Overhangs: False-positives when previous or current layer has draker pixels, it now threshold pixels before proceed (#64)
 * (Change) Tools: Placed "Threshold" menu item after "Morph"
 
 ## 30/09/2020 - v0.8.3.0

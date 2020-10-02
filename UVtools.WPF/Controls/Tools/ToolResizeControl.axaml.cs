@@ -12,7 +12,6 @@ namespace UVtools.WPF.Controls.Tools
         {
             InitializeComponent();
             BaseOperation = Operation = new OperationResize();
-            DataContext = this;
         }
 
         private void InitializeComponent()

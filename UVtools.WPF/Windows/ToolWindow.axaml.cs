@@ -320,6 +320,7 @@ namespace UVtools.WPF.Windows
             timer.Start();
 
             toolControl.Callback(Callbacks.Init);
+            toolControl.DataContext = toolControl;
         }
 
         private void InitializeComponent()

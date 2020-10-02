@@ -11,7 +11,6 @@ namespace UVtools.WPF.Controls.Tools
         {
             InitializeComponent();
             BaseOperation = Operation = new OperationFlip();
-            DataContext = this;
         }
 
         private void InitializeComponent()

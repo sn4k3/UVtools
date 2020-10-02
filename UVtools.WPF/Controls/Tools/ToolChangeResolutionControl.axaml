@@ -29,7 +29,8 @@
       <ComboBox 
         MinWidth="200"
         SelectedItem="{Binding SelectedPresetItem}"
-        Items="{Binding Operation.Presets}"/>
+        Items="{Binding Operation.Presets}"
+        PlaceholderText="Resolution presets"/>
     </StackPanel>
     
   </StackPanel>

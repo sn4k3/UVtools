@@ -35,7 +35,6 @@ namespace UVtools.WPF.Controls.Tools
         {
             InitializeComponent();
             BaseOperation = Operation = new OperationChangeResolution(App.SlicerFile.Resolution, App.SlicerFile.LayerManager.BoundingRectangle);
-            DataContext = this;
         }
 
         private void InitializeComponent()

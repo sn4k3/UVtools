@@ -32,7 +32,7 @@
     <PackageReference Include="Emgu.CV.runtime.raspbian" Version="4.4.0.4077" />
     <PackageReference Include="Emgu.CV.runtime.ubuntu" Version="4.4.0.4077" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.4.0.4077" />
-    <PackageReference Include="MessageBox.Avalonia" Version="0.10.1-night" />
+    <PackageReference Include="MessageBox.Avalonia" Version="0.10.2-night" />
     <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.0-preview3" />
   </ItemGroup>
   <ItemGroup>

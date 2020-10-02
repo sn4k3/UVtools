@@ -29,9 +29,6 @@ namespace UVtools.WPF.Controls.Tools
             {
                 Operation.Item = Presets[0];
             }
-
-            
-            DataContext = this;
         }
 
         private void InitializeComponent()
