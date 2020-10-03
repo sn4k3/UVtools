@@ -1753,7 +1753,7 @@ namespace UVtools.Core
             progress.Token.ThrowIfCancellationRequested();
 
             if (operation.Anchor == Enumerations.Anchor.None) return;
-            var operationMove = new OperationMove(BoundingRectangle, 0, 0, operation.Anchor)
+            var operationMove = new OperationMove(BoundingRectangle, operation.ImageWidth, operation.ImageHeight, operation.Anchor)
             {
                 LayerIndexStart = operation.LayerIndexStart, LayerIndexEnd = operation.LayerIndexEnd
             };

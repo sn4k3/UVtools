@@ -205,7 +205,7 @@ namespace UVtools.Core.Operations
         {
         }
 
-        public OperationMove(Rectangle srcRoi, uint imageWidth = 0, uint imageHeight = 0, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter)
+        public OperationMove(Rectangle srcRoi, uint imageWidth, uint imageHeight, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter)
         {
             ROI = srcRoi;
             ImageWidth = imageWidth;

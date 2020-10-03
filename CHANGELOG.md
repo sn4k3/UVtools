@@ -9,6 +9,10 @@
 * (Improvement) GUI is now scalable
 * (Fix) Some bug found and fixed during convertion
 
+## 01/10/2020 - v0.8.4.1
+
+* (Fix) Tool - Pattern: Unable to use an anchor
+
 ## 01/10/2020 - v0.8.4.0
 
 * (Add) Tool: Arithmetic operations

@@ -13,6 +13,17 @@ namespace UVtools.Core.Operations
 {
     public class OperationPattern : Operation
     {
+        private Enumerations.Anchor _anchor = Enumerations.Anchor.None;
+        private ushort _colSpacing;
+        private ushort _rowSpacing;
+        private ushort _maxColSpacing;
+        private ushort _maxRowSpacing;
+        private ushort _cols = 1;
+        private ushort _rows = 1;
+        private ushort _maxCols;
+        private ushort _maxRows;
+        private bool _isWithinBoundary = true;
+
         #region Overrides
 
         public override string Title => "Pattern";
@@ -45,24 +56,121 @@ namespace UVtools.Core.Operations
 
         #endregion
 
-        public Enumerations.Anchor Anchor { get; set; }
+        public Enumerations.Anchor Anchor
+        {
+            get => _anchor;
+            set => RaiseAndSetIfChanged(ref _anchor, value);
+        }
 
         public uint ImageWidth { get; }
         public uint ImageHeight { get; }
 
-        public ushort MarginCol { get; set; }
-        public ushort MarginRow { get; set; }
+        public ushort Cols
+        {
+            get => _cols;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _cols, value)) return;
+                RaisePropertyChanged(nameof(InfoCols));
+                RaisePropertyChanged(nameof(InfoWidthStr));
+                RaisePropertyChanged(nameof(InfoModelWithinBoundaryStr));
+                ValidateBounds();
+            }
+        }
 
-        public ushort MaxMarginCol { get; set; }
-        public ushort MaxMarginRow { get; set; }
+        public ushort Rows
+        {
+            get => _rows;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _rows, value)) return;
+                RaisePropertyChanged(nameof(InfoRows));
+                RaisePropertyChanged(nameof(InfoHeightStr));
+                RaisePropertyChanged(nameof(InfoModelWithinBoundaryStr));
+                ValidateBounds();
+            }
+        }
 
-        public ushort Cols { get; set; } = 1;
-        public ushort Rows { get; set; } = 1;
+        public ushort MaxCols
+        {
+            get => _maxCols;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _maxCols, value)) return;
+                RaisePropertyChanged(nameof(InfoCols));
+                ValidateBounds();
+            }
+        }
 
-        public ushort MaxCols { get; set; }
-        public ushort MaxRows { get; set; }
+        public ushort MaxRows
+        {
+            get => _maxRows;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _maxRows, value)) return;
+                RaisePropertyChanged(nameof(InfoRows));
+                ValidateBounds();
+            }
+        }
 
-        public Size GetPatternVolume => new Size(Cols * ROI.Width + (Cols - 1) * MarginCol, Rows * ROI.Height + (Rows - 1) * MarginRow);
+        public ushort ColSpacing
+        {
+            get => _colSpacing;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _colSpacing, value)) return;
+                RaisePropertyChanged(nameof(InfoWidthStr));
+                RaisePropertyChanged(nameof(InfoModelWithinBoundaryStr));
+                ValidateBounds();
+            }
+        }
+
+        public ushort RowSpacing
+        {
+            get => _rowSpacing;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _rowSpacing, value)) return;
+                RaisePropertyChanged(nameof(InfoHeightStr));
+                RaisePropertyChanged(nameof(InfoModelWithinBoundaryStr));
+                ValidateBounds();
+            }
+        }
+
+        public ushort MaxColSpacing
+        {
+            get => _maxColSpacing;
+            set => RaiseAndSetIfChanged(ref _maxColSpacing, value);
+        }
+
+        public ushort MaxRowSpacing
+        {
+            get => _maxRowSpacing;
+            set => RaiseAndSetIfChanged(ref _maxRowSpacing, value);
+        }
+
+        public string InfoCols => $"Columns: {Cols} / {MaxCols}";
+        public string InfoRows => $"Rows: {Rows} / {MaxRows}";
+
+        public string InfoWidthStr =>
+            $"Width: {GetPatternVolume.Width} (Min: {ROI.Width}, Max: {ImageWidth})";
+
+        public string InfoHeightStr =>
+            $"Width: {GetPatternVolume.Height} (Min: {ROI.Height}, Max: {ImageHeight})";
+
+        public bool IsWithinBoundary
+        {
+            get => _isWithinBoundary;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _isWithinBoundary, value)) return;
+                RaisePropertyChanged(nameof(InfoModelWithinBoundaryStr));
+            }
+        }
+
+        public string InfoModelWithinBoundaryStr => "Model within boundary: " + (_isWithinBoundary ? "Yes" : "No");
+
+        public Size GetPatternVolume => new Size(Cols * ROI.Width + (Cols - 1) * ColSpacing, Rows * ROI.Height + (Rows - 1) * RowSpacing);
 
         public OperationPattern()
         {
@@ -74,6 +182,12 @@ namespace UVtools.Core.Operations
             ImageHeight = (uint) resolution.Height;
 
             SetRoi(srcRoi);
+            Fill();
+        }
+
+        public void SetAnchor(byte value)
+        {
+            Anchor = (Enumerations.Anchor)value;
         }
 
         public void SetRoi(Rectangle srcRoi)
@@ -83,53 +197,9 @@ namespace UVtools.Core.Operations
             MaxCols = (ushort)(ImageWidth / srcRoi.Width);
             MaxRows = (ushort)(ImageHeight / srcRoi.Height);
 
-            MaxMarginCol = CalculateMarginCol(MaxCols);
-            MaxMarginRow = CalculateMarginRow(MaxRows);
+            MaxColSpacing = CalculateAutoColSpacing(MaxCols);
+            MaxRowSpacing = CalculateAutoRowSpacing(MaxRows);
         }
-
-
-        /*public void CalculateDstRoi()
-        {
-            _dstRoi.Size = SrcRoi.Size;
-
-            switch (Anchor)
-            {
-                case Anchor.TopLeft:
-                    _dstRoi.Location = new Point(0, 0);
-                    break;
-                case Anchor.TopCenter:
-                    _dstRoi.Location = new Point((int)(ImageWidth / 2 - SrcRoi.Width / 2), 0);
-                    break;
-                case Anchor.TopRight:
-                    _dstRoi.Location = new Point((int)(ImageWidth - SrcRoi.Width), 0);
-                    break;
-                case Anchor.MiddleLeft:
-                    _dstRoi.Location = new Point(0, (int)(ImageHeight / 2 - SrcRoi.Height / 2));
-                    break;
-                case Anchor.MiddleCenter:
-                    _dstRoi.Location = new Point((int)(ImageWidth / 2 - SrcRoi.Width / 2), (int)(ImageHeight / 2 - SrcRoi.Height / 2));
-                    break;
-                case Anchor.MiddleRight:
-                    _dstRoi.Location = new Point((int)(ImageWidth - SrcRoi.Width), (int)(ImageHeight / 2 - SrcRoi.Height / 2));
-                    break;
-                case Anchor.BottomLeft:
-                    _dstRoi.Location = new Point(0, (int)(ImageHeight - SrcRoi.Height));
-                    break;
-                case Anchor.BottomCenter:
-                    _dstRoi.Location = new Point((int)(ImageWidth / 2 - SrcRoi.Width / 2), (int)(ImageHeight - SrcRoi.Height));
-                    break;
-                case Anchor.BottomRight:
-                    _dstRoi.Location = new Point((int)(ImageWidth - SrcRoi.Width), (int)(ImageHeight - SrcRoi.Height));
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            _dstRoi.X += MarginLeft;
-            _dstRoi.X -= MarginRight;
-            _dstRoi.Y += MarginTop;
-            _dstRoi.Y -= MarginBottom;
-        }*/
 
         /// <summary>
         /// Fills the plate with maximum cols and rows
@@ -137,19 +207,19 @@ namespace UVtools.Core.Operations
         public void Fill()
         {
             Cols = MaxCols;
-            MarginCol = MaxMarginCol;
+            ColSpacing = MaxColSpacing;
 
             Rows = MaxRows;
-            MarginRow = MaxMarginRow;
+            RowSpacing = MaxRowSpacing;
         }
 
-        public ushort CalculateMarginCol(ushort cols)
+        public ushort CalculateAutoColSpacing(ushort cols)
         {
             if (cols <= 1) return 0;
             return (ushort)((ImageWidth - ROI.Width * cols) / cols);
         }
 
-        public ushort CalculateMarginRow(ushort rows)
+        public ushort CalculateAutoRowSpacing(ushort rows)
         {
             if (rows <= 1) return 0;
             return (ushort)((ImageHeight - ROI.Height * rows) / rows);
@@ -160,15 +230,24 @@ namespace UVtools.Core.Operations
             var patternVolume = GetPatternVolume;
 
             return new Rectangle(new Point(
-                (int) (col * ROI.Width + col * MarginCol + (ImageWidth - patternVolume.Width) / 2), 
-                (int) (row * ROI.Height + row * MarginRow + (ImageHeight - patternVolume.Height) / 2)), ROI.Size);
+                (int) (col * ROI.Width + col * ColSpacing + (ImageWidth - patternVolume.Width) / 2), 
+                (int) (row * ROI.Height + row * RowSpacing + (ImageHeight - patternVolume.Height) / 2)), ROI.Size);
+        }
+
+        public void FillColumnSpacing()
+        {
+            ColSpacing = CalculateAutoColSpacing(_cols);
+        }
+
+        public void FillRowSpacing()
+        {
+            RowSpacing = CalculateAutoRowSpacing(_rows);
         }
 
         public bool ValidateBounds()
         {
             var volume = GetPatternVolume;
-            if (volume.Width > ImageWidth || volume.Height > ImageHeight) return false;
-            return true;
+            return IsWithinBoundary = volume.Width <= ImageWidth && volume.Height <= ImageHeight;
         }
     }
 }

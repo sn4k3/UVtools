@@ -46,8 +46,8 @@ namespace UVtools.GUI.Controls.Tools
                 nmCols.Maximum = Operation.MaxCols;
                 nmRows.Maximum = Operation.MaxRows;
 
-                nmMarginCol.Value = Operation.MaxMarginCol;
-                nmMarginRow.Value = Operation.MaxMarginRow;
+                nmMarginCol.Value = Operation.MaxColSpacing;
+                nmMarginRow.Value = Operation.MaxRowSpacing;
                 nmCols.Value = Operation.MaxCols;
                 nmRows.Value = Operation.MaxRows;
                 Operation.Fill();
@@ -86,8 +86,8 @@ namespace UVtools.GUI.Controls.Tools
                 i++;
             }
 
-            Operation.MarginCol = (ushort)nmMarginCol.Value;
-            Operation.MarginRow = (ushort)nmMarginRow.Value;
+            Operation.ColSpacing = (ushort)nmMarginCol.Value;
+            Operation.RowSpacing = (ushort)nmMarginRow.Value;
 
             Operation.Cols = (ushort)nmCols.Value;
             Operation.Rows = (ushort)nmRows.Value;
@@ -102,8 +102,8 @@ namespace UVtools.GUI.Controls.Tools
             ButtonOkEnabled = insideBounds && (Operation.Cols > 1 || Operation.Rows > 1);
             lbInsideBounds.Text = "Model within boundary: " + (insideBounds ? "Yes" : "No");
 
-            lbVolumeWidth.Text = $"Width: {Operation.GetPatternVolume.Width} (Min:{Operation.ROI.Width}, Max:{Operation.ImageWidth})";
-            lbVolumeHeight.Text = $"Height: {Operation.GetPatternVolume.Height} (Min:{Operation.ROI.Height}, Max:{Operation.ImageHeight})";
+            lbVolumeWidth.Text = $"Width: {Operation.GetPatternVolume.Width} (Min: {Operation.ROI.Width}, Max: {Operation.ImageWidth})";
+            lbVolumeHeight.Text = $"Height: {Operation.GetPatternVolume.Height} (Min: {Operation.ROI.Height}, Max: {Operation.ImageHeight})";
 
             lbCols.Text = $"Columns: {nmCols.Value} / {Operation.MaxCols}";
             lbRows.Text = $"Rows: {nmRows.Value} / {Operation.MaxRows}";
@@ -114,14 +114,14 @@ namespace UVtools.GUI.Controls.Tools
             if (ReferenceEquals(sender, btnAutoMarginCol))
             {
                 UpdateOperation();
-                nmMarginCol.Value = Operation.CalculateMarginCol((ushort)nmCols.Value).Clamp(0, (ushort) nmMarginCol.Maximum);
+                nmMarginCol.Value = Operation.CalculateAutoColSpacing((ushort)nmCols.Value).Clamp(0, (ushort) nmMarginCol.Maximum);
                 return;
             }
 
             if (ReferenceEquals(sender, btnAutoMarginRow))
             {
                 UpdateOperation();
-                nmMarginRow.Value = Operation.CalculateMarginRow((ushort)nmRows.Value).Clamp(0, (ushort) nmMarginRow.Maximum);
+                nmMarginRow.Value = Operation.CalculateAutoRowSpacing((ushort)nmRows.Value).Clamp(0, (ushort) nmMarginRow.Maximum);
                 return;
             }
         }

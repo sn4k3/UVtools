@@ -13,6 +13,9 @@ namespace UVtools.Core.Operations
 {
     public sealed class OperationBlur : Operation
     {
+        private BlurAlgorithm _blurOperation = BlurAlgorithm.Blur;
+        private uint _size = 1;
+
         #region Overrides
 
         public override string Title => "Blur";
@@ -55,26 +58,6 @@ namespace UVtools.Core.Operations
 
         #endregion
 
-        #region Properties
-
-
-        public static StringTag[] BlurTypes => new[]
-        {
-            new StringTag("Blur: Normalized box filter", BlurAlgorithm.Blur),
-            new StringTag("Pyramid: Down/up-sampling step of Gaussian pyramid decomposition", BlurAlgorithm.Pyramid),
-            new StringTag("Median Blur: Each pixel becomes the median of its surrounding pixels", BlurAlgorithm.MedianBlur),
-            new StringTag("Gaussian Blur: Each pixel is a sum of fractions of each pixel in its neighborhood", BlurAlgorithm.GaussianBlur),
-            new StringTag("Filter 2D: Applies an arbitrary linear filter to an image", BlurAlgorithm.Filter2D),
-        };
-
-        public BlurAlgorithm BlurOperation { get; set; } = BlurAlgorithm.Blur;
-
-        public uint Size { get; set; } = 1;
-
-        public Kernel Kernel { get; set; } = new Kernel();
-
-        #endregion
-
         #region Enums
         public enum BlurAlgorithm
         {
@@ -85,5 +68,34 @@ namespace UVtools.Core.Operations
             Filter2D
         }
         #endregion
+
+        #region Properties
+
+        public static StringTag[] BlurTypes => new[]
+        {
+            new StringTag("Blur: Normalized box filter", BlurAlgorithm.Blur),
+            new StringTag("Pyramid: Down/up-sampling step of Gaussian pyramid decomposition", BlurAlgorithm.Pyramid),
+            new StringTag("Median Blur: Each pixel becomes the median of its surrounding pixels", BlurAlgorithm.MedianBlur),
+            new StringTag("Gaussian Blur: Each pixel is a sum of fractions of each pixel in its neighborhood", BlurAlgorithm.GaussianBlur),
+            new StringTag("Filter 2D: Applies an arbitrary linear filter to an image", BlurAlgorithm.Filter2D),
+        };
+
+        public BlurAlgorithm BlurOperation
+        {
+            get => _blurOperation;
+            set => RaiseAndSetIfChanged(ref _blurOperation, value);
+        }
+
+        public uint Size
+        {
+            get => _size;
+            set => RaiseAndSetIfChanged(ref _size, value);
+        }
+
+        public Kernel Kernel { get; set; } = new Kernel();
+
+        #endregion
+
+        
     }
 }

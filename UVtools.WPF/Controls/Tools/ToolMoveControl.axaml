@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="250"
              x:Class="UVtools.WPF.Controls.Tools.ToolMoveControl">
+  
   <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,10,Auto">
     <StackPanel Grid.Row="0" Grid.Column="0" 
                 VerticalAlignment="Center"

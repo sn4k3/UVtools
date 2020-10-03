@@ -1135,8 +1135,8 @@ namespace UVtools.WPF
 
         public PixelPicker LayerPixelPicker { get; } = new PixelPicker();
 
-        public string LayerZoomStr => $"{LayerImageBox.Zoom / 100}x" +
-                                      (AppSettings.LockedZoomLevel == LayerImageBox.Zoom ? "🔒" : string.Empty);
+        public string LayerZoomStr => $"{LayerImageBox.Zoom / 100m}x" +
+                                      (AppSettings.LockedZoomLevel == LayerImageBox.Zoom ? " 🔒" : string.Empty);
         public string LayerResolutionStr => SlicerFile?.Resolution.ToString() ?? "Unloaded";
 
         public uint ActualLayer
@@ -1144,6 +1144,7 @@ namespace UVtools.WPF
             get => _actualLayer;
             set
             {
+                if (DataContext is null) return;
                 if (!RaiseAndSetIfChanged(ref _actualLayer, value)) return;
                 ShowLayer();
                 InvalidateLayerNavigation();
@@ -1240,7 +1241,16 @@ namespace UVtools.WPF
                     menuTool.Click += async (sender, args) => await ShowRunOperation(operation.GetType());
                 }
             }
-            
+
+
+            LayerImageBox.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == nameof(LayerImageBox.Zoom))
+                {
+                    RaisePropertyChanged(nameof(LayerZoomStr));
+                    return;
+                }
+            };
 
             /*LayerSlider.PropertyChanged += (sender, args) =>
             {

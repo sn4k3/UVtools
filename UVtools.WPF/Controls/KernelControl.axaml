@@ -12,6 +12,7 @@
                 VerticalAlignment="Stretch"
                 AcceptsReturn="True"
                 Watermark="Kernel matrix"
+                UseFloatingWatermark="True"
                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
                 ScrollViewer.VerticalScrollBarVisibility="Auto"
                 Text="{Binding MatrixText}"

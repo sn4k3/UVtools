@@ -1,0 +1,48 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:uc="clr-namespace:UVtools.WPF.Controls"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Tools.ToolBlurControl">
+
+  <StackPanel Spacing="10">
+    <Grid 
+      ColumnDefinitions="Auto,10,*"
+      RowDefinitions="Auto,10,Auto">
+
+      <TextBlock 
+        VerticalAlignment="Center"
+        Text="Algorithm:"/>
+      <ComboBox
+        Grid.Column="2"
+        HorizontalAlignment="Left"
+        SelectedIndex="{Binding SelectedAlgorithmIndex}"
+        Width="450"
+        Items="{Binding Operation.BlurTypes}"
+        />
+
+      <TextBlock 
+        VerticalAlignment="Center"
+        Grid.Row="2"
+        IsEnabled="{Binding IsSizeEnabled}"
+        Text="Size:"/>
+      <NumericUpDown
+        Grid.Row="2"
+        Grid.Column="2"
+        HorizontalAlignment="Left"
+        Width="80"
+        Minimum="1"
+        IsEnabled="{Binding IsSizeEnabled}"
+        Value="{Binding Operation.Size}"
+        />
+    </Grid>
+
+    <uc:KernelControl
+      Name="KernelCtrl"
+      IsVisible="{Binding $parent[UserControl].IsKernelVisible}"
+      />
+    
+  </StackPanel>
+
+</UserControl>

@@ -248,7 +248,9 @@
           </StackPanel>
         </TabItem.Header>
 
-        <Grid IsVisible="{Binding IsFileLoaded}" RowDefinitions="Auto,Auto,Auto,*">
+        <Grid 
+          IsVisible="{Binding IsFileLoaded}" 
+          RowDefinitions="Auto,Auto,Auto,*">
           <!-- Thumbnails -->
           <StackPanel 
             IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
@@ -309,6 +311,7 @@
 
           <Image
             IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
+            Stretch="None"
             Grid.Row="1" Source="{Binding VisibleThumbnailImage}"/>
 
 
@@ -759,7 +762,6 @@
           Maximum="{Binding SliderMaximumValue}"
           Value="{Binding ActualLayer}"
           TickFrequency="1"
-          TickPlacement="Outside"
           SmallChange="1"
           LargeChange="10"
           IsSnapToTickEnabled="True"

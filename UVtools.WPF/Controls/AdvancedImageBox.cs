@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.CompilerServices;
+using System.Timers;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -13,6 +14,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Skia;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using UVtools.Core.Extensions;
 using UVtools.WPF.Extensions;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
@@ -586,7 +588,19 @@ namespace UVtools.WPF.Controls
             set => RaiseAndSetIfChanged(ref _zoomLevels, value);
         }
 
+        private int _oldZoom = 100;
         private int _zoom = 100;
+
+        /// <summary>
+        ///   Gets or sets the zoom.
+        /// </summary>
+        /// <value>The zoom.</value>
+        public virtual int OldZoom
+        {
+            get => _oldZoom;
+            set => RaiseAndSetIfChanged(ref _oldZoom, value);
+        }
+
         /// <summary>
         ///   Gets or sets the zoom.
         /// </summary>
@@ -594,7 +608,24 @@ namespace UVtools.WPF.Controls
         public virtual int Zoom
         {
             get => _zoom;
-            set => SetZoom(value, value > Zoom ? ImageZoomActions.ZoomIn : ImageZoomActions.ZoomOut);
+            set
+            {
+                var previousZoom = _zoom;
+                var newZoom = value.Clamp(MinZoom, MaxZoom);
+
+                if (_zoom == newZoom) return;
+                _zoom = newZoom;
+                if (!UpdateViewPort())
+                {
+                    InvalidateArrange();
+                }
+
+                OldZoom = previousZoom;
+                RaisePropertyChanged(nameof(Zoom));
+                //this.OnZoomChanged(EventArgs.Empty);
+                //this.OnZoomed(new ImageBoxZoomEventArgs(actions, source, previousZoom, this.Zoom));
+                //SetZoom(value, value > Zoom ? ImageZoomActions.ZoomIn : ImageZoomActions.ZoomOut);
+            }
         }
 
         public virtual bool IsActualSize => Zoom == 100;
@@ -751,7 +782,7 @@ namespace UVtools.WPF.Controls
             int newZoom = GetZoomLevel(action);
 
             RestoreSizeMode();
-            SetZoom(newZoom, action);
+            Zoom = newZoom;
 
             if (preservePosition && Zoom != currentZoom)
             {
@@ -891,7 +922,7 @@ namespace UVtools.WPF.Controls
             var y = imageLocation.Y * ZoomFactor - relativeDisplayPoint.Y;
             
             Offset = new Vector(x, y);
-            Debug.WriteLine(
+            /*Debug.WriteLine(
                 $"X/Y: {x},{y} | \n" +
                 $"Offset: {Offset} | \n" +
                 $"ZoomFactor: {ZoomFactor} | \n" +
@@ -899,32 +930,7 @@ namespace UVtools.WPF.Controls
                 $"MAX: {HorizontalScrollBarMaximum},{VerticalScrollBarMaximum} \n" +
                 $"ViewPort: {Viewport.Width},{Viewport.Height} \n" +
                 $"Container: {SizedContainer.Width},{SizedContainer.Height} \n" +
-                $"Relative: {relativeDisplayPoint}");
-        }
-
-        /// <summary>
-        /// Updates the current zoom.
-        /// </summary>
-        /// <param name="value">The new zoom value.</param>
-        /// <param name="actions">The zoom actions that caused the value to be updated.</param>
-        /// <param name="source">The source of the zoom operation.</param>
-        private void SetZoom(int value, ImageZoomActions actions)
-        {
-            var previousZoom = _zoom;
-            value = value.Clamp(MinZoom, MaxZoom);
-            
-            if (_zoom != value)
-            {
-                _zoom = value;
-                if (!UpdateViewPort())
-                {
-                    InvalidateArrange();
-                }
-
-                RaisePropertyChanged(nameof(Zoom));
-                //this.OnZoomChanged(EventArgs.Empty);
-                //this.OnZoomed(new ImageBoxZoomEventArgs(actions, source, previousZoom, this.Zoom));
-            }
+                $"Relative: {relativeDisplayPoint}");*/
         }
 
         /// <summary>
@@ -939,7 +945,7 @@ namespace UVtools.WPF.Controls
         /// <param name="preservePosition"><c>true</c> if the current scrolling position should be preserved relative to the new zoom level, <c>false</c> to reset.</param>
         public virtual void ZoomIn(bool preservePosition)
         {
-            //this.PerformZoomIn(ImageBoxActionSources.Unknown, preservePosition);
+            PerformZoom(ImageZoomActions.ZoomIn, preservePosition);
         }
 
         /// <summary>
@@ -954,7 +960,7 @@ namespace UVtools.WPF.Controls
         /// <param name="preservePosition"><c>true</c> if the current scrolling position should be preserved relative to the new zoom level, <c>false</c> to reset.</param>
         public virtual void ZoomOut(bool preservePosition)
         {
-           // this.PerformZoomOut(ImageBoxActionSources.Unknown, preservePosition);
+           PerformZoom(ImageZoomActions.ZoomOut, preservePosition);
         }
 
         /// <summary>
@@ -1029,16 +1035,34 @@ namespace UVtools.WPF.Controls
         /// <param name="rectangle">The rectangle to fit the view port to.</param>
         public virtual void ZoomToRegion(Rect rectangle)
         {
-            {
-                var ratioX = Viewport.Width / rectangle.Width;
-                var ratioY = Viewport.Height / rectangle.Height;
-                var zoomFactor = Math.Min(ratioX, ratioY);
-                var cx = rectangle.X + rectangle.Width / 2;
-                var cy = rectangle.Y + rectangle.Height / 2;
+            var ratioX = Viewport.Width / rectangle.Width;
+            var ratioY = Viewport.Height / rectangle.Height;
+            var zoomFactor = Math.Min(ratioX, ratioY);
+            var cx = rectangle.X + rectangle.Width / 2;
+            var cy = rectangle.Y + rectangle.Height / 2;
 
-                Zoom = (int)(zoomFactor * 100);
-                CenterAt(new Point(cx, cy));
-            }
+
+            Debug.WriteLine($"Before zoom: {Viewport}");
+            Zoom = (int) (zoomFactor * 100); // This function sets the zoom so viewport will change
+            Debug.WriteLine($"After zoom, viewport changed: {Viewport}");
+
+            //CenterAt(new Point(cx, cy)); // If i call this here, it will move to the wrong position due wrong viewport
+
+            Timer timer = new Timer(1)
+            {
+                AutoReset = false,
+            };
+            timer.Elapsed += (sender, args) =>
+            {
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    // This will fix centerAt position
+                    Debug.WriteLine($"1ms delayed viewport: {Viewport}");
+                    CenterAt(new Point(cx, cy));
+                });
+            };
+            timer.Start();
+
         }
 
         /// <summary>
@@ -1110,7 +1134,8 @@ namespace UVtools.WPF.Controls
         private void PerformActualSize()
         {
             SizeMode = SizeModes.Normal;
-            SetZoom(100, ImageZoomActions.ActualSize | (Zoom < 100 ? ImageZoomActions.ZoomIn : ImageZoomActions.ZoomOut));
+            //SetZoom(100, ImageZoomActions.ActualSize | (Zoom < 100 ? ImageZoomActions.ZoomIn : ImageZoomActions.ZoomOut));
+            Zoom = 100;
         }
 
         private void EventOnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)

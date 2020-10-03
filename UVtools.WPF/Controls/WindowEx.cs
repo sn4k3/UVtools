@@ -71,10 +71,10 @@ namespace UVtools.WPF.Controls
             Close(DialogResult);
         }
 
-        public void ResetDataContext()
+        public virtual void ResetDataContext()
         {
             var old = DataContext;
-            DataContext = new object();
+            DataContext = null;
             DataContext = old;
         }
     }
