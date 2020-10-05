@@ -11,6 +11,7 @@
 
 ## 01/10/2020 - v0.8.4.1
 
+* (Fix) Tool - Layer Clone: Layer information was the same as heights, fixed to show the result of operation in layers
 * (Fix) Tool - Pattern: Unable to use an anchor
 
 ## 01/10/2020 - v0.8.4.0

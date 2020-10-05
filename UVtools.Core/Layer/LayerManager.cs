@@ -1513,7 +1513,7 @@ namespace UVtools.Core
                 //new ParallelOptions{MaxDegreeOfParallelism = 1},
                 i =>
             {
-                var mat = CvInvoke.Imread(operation.Files[i], ImreadModes.Grayscale);
+                var mat = CvInvoke.Imread(operation.Files[i].TagString, ImreadModes.Grayscale);
                 uint layerIndex = (uint) (startIndex + i);
                 if (operation.MergeImages)
                 {

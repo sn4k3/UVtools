@@ -1,0 +1,119 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Tools.ToolLayerImportControl">
+
+  <StackPanel Spacing="10">
+    <StackPanel Spacing="10" Orientation="Horizontal">
+      <TextBlock 
+        VerticalAlignment="Center"
+        Text="Insert after layer:"/>
+      <NumericUpDown 
+        Width="70"
+        Minimum="0"
+        Maximum="{Binding MaximumLayer}"
+        Value="{Binding Operation.InsertAfterLayerIndex}"
+        />
+      <TextBlock
+        VerticalAlignment="Center"
+        Text="{Binding InfoLayerHeightStr}"/>
+    </StackPanel>
+
+    <StackPanel Spacing="10" Orientation="Horizontal">
+      <CheckBox
+        IsChecked="{Binding Operation.ReplaceStartLayer}"
+        Content="Replace this layer"/>
+
+      <CheckBox
+        IsChecked="{Binding Operation.ReplaceSubsequentLayers}"
+        Content="Replace subsequent layers"/>
+
+      <CheckBox
+        IsChecked="{Binding Operation.DiscardRemainingLayers}"
+        Content="Discard remaining layers"/>
+
+      <CheckBox
+        IsChecked="{Binding Operation.MergeImages}"
+        Content="Merge images"/>
+    </StackPanel>
+    
+    <CheckBox
+      IsChecked="{Binding IsAutoSortLayersByFileNameChecked}"
+      Content="Auto sort layers by file name"/>
+
+
+    <TextBlock Text="{Binding InfoImportResult}" />
+
+
+    <Border BorderBrush="Gray" BorderThickness="1" Padding="5">
+      <Grid>
+        <StackPanel Spacing="5" Orientation="Horizontal">
+          <Button Padding="5" Command="{Binding AddFiles}">
+            <StackPanel Spacing="5" Orientation="Horizontal">
+              <TextBlock Text="Add"/>
+              <Image Source="/Assets/Icons/plus-16x16.png"/>
+            </StackPanel>
+          </Button>
+          <Button
+            Padding="5"
+            IsEnabled="{Binding #FilesListBox.SelectedItems.Count}"
+            Command="{Binding RemoveFiles}">
+            <StackPanel Spacing="5" Orientation="Horizontal">
+              <TextBlock Text="Remove"/>
+              <Image Source="/Assets/Icons/minus-16x16.png"/>
+            </StackPanel>
+          </Button>
+        </StackPanel>
+
+        <StackPanel
+          HorizontalAlignment="Right"
+          Spacing="5" Orientation="Horizontal">
+          <Button Padding="5" 
+                  IsEnabled="{Binding Operation.Files.Count}"
+                  Command="{Binding Operation.Sort}">
+            <StackPanel Spacing="5" Orientation="Horizontal">
+              <TextBlock Text="Sort by file name"/>
+              <Image Source="/Assets/Icons/sort-alpha-up-16x16.png"/>
+            </StackPanel>
+          </Button>
+
+          <Button 
+            IsEnabled="{Binding Operation.Files.Count}"
+            Padding="5" Command="{Binding ClearFiles}">
+            <StackPanel Spacing="5" Orientation="Horizontal">
+              <TextBlock Text="Clear"/>
+              <Image Source="/Assets/Icons/delete-16x16.png"/>
+            </StackPanel>
+          </Button>
+
+          <TextBlock
+            VerticalAlignment="Center"
+            Text="{Binding Operation.Files.Count, StringFormat=Layers: \{0\}}"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Grid
+      ColumnDefinitions="400,400"
+      RowDefinitions="400"
+      >
+      <ListBox
+        Name="FilesListBox"
+        SelectionMode="Multiple"
+        SelectedItem="{Binding SelectedFile}"
+        Items="{Binding Operation.Files}" />
+
+      <Image 
+        Grid.Column="1"
+        Stretch="Uniform"
+        Source="{Binding PreviewImage}"/>
+    </Grid>
+    
+    
+  </StackPanel>
+
+  
+  
+</UserControl>

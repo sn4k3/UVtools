@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
-using Avalonia;
+﻿using System.Drawing;
 using ReactiveUI;
 
 namespace UVtools.WPF.Structures
@@ -36,6 +32,13 @@ namespace UVtools.WPF.Structures
             Location = location;
             Brightness = brightness;
             IsSet = true;
+        }
+
+        public void Reset()
+        {
+            Location = Point.Empty;
+            Brightness = 0;
+            IsSet = false;
         }
 
         public override string ToString()

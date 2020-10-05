@@ -8,8 +8,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
@@ -20,6 +22,13 @@ namespace UVtools.Core.Operations
 {
     public sealed class OperationLayerImport : Operation
     {
+        private uint _insertAfterLayerIndex;
+        private bool _replaceStartLayer;
+        private bool _replaceSubsequentLayers;
+        private bool _discardRemainingLayers;
+        private bool _mergeImages;
+        private ObservableCollection<StringTag> _files = new ObservableCollection<StringTag>();
+
         #region Overrides
 
         public override Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.None;
@@ -44,10 +53,10 @@ namespace UVtools.Core.Operations
 
         public override StringTag Validate(params object[] parameters)
         {
-            var result = new ConcurrentBag<string>();
+            var result = new ConcurrentBag<StringTag>();
             Parallel.ForEach(Files, file =>
             {
-                using (Mat mat = CvInvoke.Imread(file, ImreadModes.AnyColor))
+                using (Mat mat = CvInvoke.Imread(file.TagString, ImreadModes.AnyColor))
                 {
                     if (mat.Size != FileResolution)
                     {
@@ -69,7 +78,7 @@ namespace UVtools.Core.Operations
                     message.AppendLine("... Too many to show ...");
                     break;
                 }
-                message.AppendLine(Path.GetFileNameWithoutExtension(file));
+                message.AppendLine(file.Content);
             }
 
             return new StringTag(message.ToString(), result);
@@ -79,13 +88,42 @@ namespace UVtools.Core.Operations
         #region Properties
 
         public Size FileResolution { get; }
-        public uint InsertAfterLayerIndex { get; set; }
-        public bool ReplaceStartLayer { get; set; }
-        public bool ReplaceSubsequentLayers { get; set; }
-        public bool DiscardRemainingLayers { get; set; }
-        public bool MergeImages { get; set; }
 
-        public List<string> Files { get; } = new List<string>();
+        public uint InsertAfterLayerIndex
+        {
+            get => _insertAfterLayerIndex;
+            set => RaiseAndSetIfChanged(ref _insertAfterLayerIndex, value);
+        }
+
+        public bool ReplaceStartLayer
+        {
+            get => _replaceStartLayer;
+            set => RaiseAndSetIfChanged(ref _replaceStartLayer, value);
+        }
+
+        public bool ReplaceSubsequentLayers
+        {
+            get => _replaceSubsequentLayers;
+            set => RaiseAndSetIfChanged(ref _replaceSubsequentLayers, value);
+        }
+
+        public bool DiscardRemainingLayers
+        {
+            get => _discardRemainingLayers;
+            set => RaiseAndSetIfChanged(ref _discardRemainingLayers, value);
+        }
+
+        public bool MergeImages
+        {
+            get => _mergeImages;
+            set => RaiseAndSetIfChanged(ref _mergeImages, value);
+        }
+
+        public ObservableCollection<StringTag> Files
+        {
+            get => _files;
+            set => RaiseAndSetIfChanged(ref _files, value);
+        }
 
         public int Count => Files.Count;
         #endregion
@@ -103,9 +141,22 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Methods
+
+        public void AddFile(string file)
+        {
+            Files.Add(new StringTag(Path.GetFileNameWithoutExtension(file), file));
+        }
+
         public void Sort()
         {
-            Files.Sort((file1, file2) => string.Compare(Path.GetFileNameWithoutExtension(file1), Path.GetFileNameWithoutExtension(file2), StringComparison.Ordinal));
+            var sortedFiles = Files.ToList();
+            sortedFiles.Sort((file1, file2) => string.Compare(Path.GetFileNameWithoutExtension(file1.TagString), Path.GetFileNameWithoutExtension(file2.TagString), StringComparison.Ordinal));
+            Files.Clear();
+            foreach (var file in sortedFiles)
+            {
+                Files.Add(file);
+            }
+            //Files.Sort((file1, file2) => string.Compare(Path.GetFileNameWithoutExtension(file1), Path.GetFileNameWithoutExtension(file2), StringComparison.Ordinal));
         }
         
 

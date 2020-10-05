@@ -14,12 +14,14 @@ namespace UVtools.Core.PixelEditor
 {
     public class PixelText : PixelOperation
     {
-        public FontFace Font { get; }
+        public override PixelOperationType OperationType => PixelOperationType.Text;
 
-        public double FontScale { get; }
-        public ushort Thickness { get; }
-        public string Text { get; }
-        public bool Mirror { get; }
+        public FontFace Font { get; set; }
+
+        public double FontScale { get; set; }
+        public ushort Thickness { get; set; }
+        public string Text { get; set; }
+        public bool Mirror { get; set; }
 
         public bool IsAdd { get; }
 
@@ -27,7 +29,9 @@ namespace UVtools.Core.PixelEditor
 
         public Rectangle Rectangle { get; }
 
-        public PixelText(uint layerIndex, Point location, LineType lineType, FontFace font, double fontScale, ushort thickness, string text, bool mirror, bool isAdd) : base(PixelOperationType.Text, layerIndex, location, lineType)
+        public PixelText(){}
+
+        public PixelText(uint layerIndex, Point location, LineType lineType, FontFace font, double fontScale, ushort thickness, string text, bool mirror, bool isAdd) : base(layerIndex, location, lineType)
         {
             Font = font;
             FontScale = fontScale;
@@ -41,5 +45,7 @@ namespace UVtools.Core.PixelEditor
             Size = CvInvoke.GetTextSize(text, font, fontScale, thickness, ref baseLine);
             Rectangle = new Rectangle(location, Size);
         }
+
+        
     }
 }

@@ -5,13 +5,18 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
+using System;
 using System.Drawing;
 using Emgu.CV.CvEnum;
+using UVtools.Core.Objects;
 
 namespace UVtools.Core.PixelEditor
 {
-    public class PixelOperation
+    public abstract class PixelOperation : BindableBase
     {
+        private uint _index;
+
         public enum PixelOperationType : byte
         {
             Drawing,
@@ -24,12 +29,16 @@ namespace UVtools.Core.PixelEditor
         /// <summary>
         /// Gets or sets the index number to show on GUI
         /// </summary>
-        public uint Index { get; set; }
+        public uint Index
+        {
+            get => _index;
+            set => RaiseAndSetIfChanged(ref _index, value);
+        }
 
         /// <summary>
         /// Gets the <see cref="PixelOperationType"/>
         /// </summary>
-        public PixelOperationType OperationType { get; }
+        public abstract PixelOperationType OperationType { get; }
 
         /// <summary>
         /// Gets the layer index
@@ -44,19 +53,38 @@ namespace UVtools.Core.PixelEditor
         /// <summary>
         /// Gets the <see cref="LineType"/> for the draw operation
         /// </summary>
-        public LineType LineType { get; }
+        public LineType LineType { get; set; } = LineType.AntiAlias;
+
+        public LineType[] LineTypes => new[]
+        {
+            LineType.FourConnected,
+            LineType.EightConnected,
+            LineType.AntiAlias
+        };
+
+        public uint LayersBelow { get; set; }
+
+        public uint LayersAbove { get; set; }
 
         /// <summary>
         /// Gets the total size of the operation
         /// </summary>
         public Size Size { get; private protected set; } = Size.Empty;
 
-        public PixelOperation(PixelOperationType operationType, uint layerIndex, Point location, LineType lineType = LineType.AntiAlias)
+        protected PixelOperation()
         {
-            OperationType = operationType;
+        }
+
+        protected PixelOperation(uint layerIndex, Point location, LineType lineType = LineType.AntiAlias)
+        {
             Location = location;
             LayerIndex = layerIndex;
             LineType = lineType;
+        }
+
+        public PixelOperation Clone()
+        {
+            return (PixelOperation) MemberwiseClone();
         }
     }
 }

@@ -10,8 +10,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Drawing;
-using System.IO;
-using System.Text;
 using System.Windows.Forms;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
@@ -55,7 +53,7 @@ namespace UVtools.GUI.Controls.Tools
             message.Content += "\nDo you want to remove all invalid files from list?";
             if (MessageBoxError(message.ToString(), MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                ConcurrentBag<string> result = (ConcurrentBag<string>)message.Tag;
+                ConcurrentBag<StringTag> result = (ConcurrentBag<StringTag>)message.Tag;
                 foreach (var file in result)
                 {
                     Operation.Files.Remove(file);
@@ -104,7 +102,10 @@ namespace UVtools.GUI.Controls.Tools
                 {
                     if (fileOpen.ShowDialog() != DialogResult.OK) return;
 
-                    Operation.Files.AddRange(fileOpen.FileNames);
+                    foreach (var filename in fileOpen.FileNames)
+                    {
+                        Operation.AddFile(filename);
+                    }
 
                     if (cbAutoSort.Checked)
                     {
@@ -121,7 +122,7 @@ namespace UVtools.GUI.Controls.Tools
             {
                 foreach (StringTag selectedItem in lbFiles.SelectedItems)
                 {
-                    Operation.Files.Remove(selectedItem.TagString);
+                    Operation.Files.Remove(selectedItem);
                 }
                 UpdateListBox();
                 
@@ -189,8 +190,7 @@ namespace UVtools.GUI.Controls.Tools
 
             foreach (var file in Operation.Files)
             {
-                var stringTag = new StringTag(Path.GetFileNameWithoutExtension(file), file);
-                lbFiles.Items.Add(stringTag);
+                lbFiles.Items.Add(file);
             }
 
             ButtonOkEnabled = btnRemove.Enabled = btnSort.Enabled = btnClear.Enabled = Operation.Files.Count > 0;

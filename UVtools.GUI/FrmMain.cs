@@ -2806,57 +2806,56 @@ namespace UVtools.GUI
             // the cross cursor is displayed even before the pblayer control has focus.
             // This ensures the user is aware that even in this case, a click in the layer
             // preview will draw a pixel.
-            if (ReferenceEquals(sender, this) && !ReferenceEquals(SlicerFile, null))
+            if (!ReferenceEquals(sender, this) || ReferenceEquals(SlicerFile, null)) return;
+            
+            // This event repeats for as long as the key is pressed, so if we've
+            // already set the cursor from a previous key down event, just return.
+            if (!ReferenceEquals(pbLayer.Cursor.Tag, null) || pbLayer.Cursor == pixelEditCursor || pbLayer.Cursor == Cursors.Cross
+                || pbLayer.Cursor == Cursors.Hand || pbLayer.SelectionMode == ImageBoxSelectionMode.Rectangle) return;
+
+            // Pixel Edit is active, Shift is down, and the cursor is over the image region.
+            if (pbLayer.ClientRectangle.Contains(pbLayer.PointToClient(MousePosition)))
             {
-                // This event repeats for as long as the key is pressed, so if we've
-                // already set the cursor from a previous key down event, just return.
-                if (!ReferenceEquals(pbLayer.Cursor.Tag, null) || pbLayer.Cursor == pixelEditCursor || pbLayer.Cursor == Cursors.Cross
-                                                             || pbLayer.Cursor == Cursors.Hand || pbLayer.SelectionMode == ImageBoxSelectionMode.Rectangle) return;
-
-                // Pixel Edit is active, Shift is down, and the cursor is over the image region.
-                if (pbLayer.ClientRectangle.Contains(pbLayer.PointToClient(MousePosition)))
+                if (e.Modifiers == Keys.Shift)
                 {
-                    if (e.Modifiers == Keys.Shift)
+                    if (btnLayerImagePixelEdit.Checked)
                     {
-                        if (btnLayerImagePixelEdit.Checked)
-                        {
-                            pbLayer.PanMode = ImageBoxPanMode.None;
-                            lbLayerImageTooltipOverlay.Text = "Pixel editing is on:\n" +
-                                                       "» Click over a pixel to draw\n" +
-                                                       "» Hold CTRL to clear pixels";
-
-                            UpdatePixelEditorCursor();
-                        }
-                        else
-                        {
-                            pbLayer.Cursor = Cursors.Cross;
-                            pbLayer.SelectionMode = ImageBoxSelectionMode.Rectangle;
-                            lbLayerImageTooltipOverlay.Text = "ROI selection mode:\n" +
-                                                       "» Left-click drag to select a fixed region\n" +
-                                                       "» Left-click + ALT drag to select specific objects\n" +
-                                                       "» Right click on a specific object to select it\n" +
-                                                       "Press Esc to clear the ROI";
-                        }
-
-                        lbLayerImageTooltipOverlay.Visible = Settings.Default.LayerTooltipOverlay;
-
-                        return;
-                    }
-                    if (e.Modifiers == Keys.Control)
-                    {
-                        pbLayer.Cursor = Cursors.Hand;
                         pbLayer.PanMode = ImageBoxPanMode.None;
-                        lbLayerImageTooltipOverlay.Text = "Issue selection mode:\n" +
-                                                   "» Click over an issue to select it";
+                        lbLayerImageTooltipOverlay.Text = "Pixel editing is on:\n" +
+                                                          "» Click over a pixel to draw\n" +
+                                                          "» Hold CTRL to clear pixels";
 
-                        lbLayerImageTooltipOverlay.Visible = Settings.Default.LayerTooltipOverlay;
-
-                        return;
+                        UpdatePixelEditorCursor();
                     }
-                }
+                    else
+                    {
+                        pbLayer.Cursor = Cursors.Cross;
+                        pbLayer.SelectionMode = ImageBoxSelectionMode.Rectangle;
+                        lbLayerImageTooltipOverlay.Text = "ROI selection mode:\n" +
+                                                          "» Left-click drag to select a fixed region\n" +
+                                                          "» Left-click + ALT drag to select specific objects\n" +
+                                                          "» Right click on a specific object to select it\n" +
+                                                          "Press Esc to clear the ROI";
+                    }
 
-                return;
+                    lbLayerImageTooltipOverlay.Visible = Settings.Default.LayerTooltipOverlay;
+
+                    return;
+                }
+                if (e.Modifiers == Keys.Control)
+                {
+                    pbLayer.Cursor = Cursors.Hand;
+                    pbLayer.PanMode = ImageBoxPanMode.None;
+                    lbLayerImageTooltipOverlay.Text = "Issue selection mode:\n" +
+                                                      "» Click over an issue to select it";
+
+                    lbLayerImageTooltipOverlay.Visible = Settings.Default.LayerTooltipOverlay;
+
+                    return;
+                }
             }
+
+            return;
         }
 
         private void EventKeyUp(object sender, KeyEventArgs e)

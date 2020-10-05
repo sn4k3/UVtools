@@ -1,5 +1,6 @@
 ﻿using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
+using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools
 {
@@ -11,11 +12,28 @@ namespace UVtools.WPF.Controls.Tools
         {
             InitializeComponent();
             BaseOperation = Operation = new OperationArithmetic();
+            Operation.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == nameof(Operation.Sentence))
+                {
+                    ParentWindow.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.Sentence);
+                }
+            };
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        public override void Callback(ToolWindow.Callbacks callback)
+        {
+            switch (callback)
+            {
+                case ToolWindow.Callbacks.Init:
+                    ParentWindow.ButtonOkEnabled = false;
+                    break;
+            }
         }
     }
 }

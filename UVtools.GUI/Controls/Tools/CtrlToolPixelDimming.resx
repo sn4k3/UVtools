@@ -131,6 +131,6 @@ Enable  the "Fade in/out" to fade the iteration over layers, you can use a start
 WARNING: Using high iteration values can destroy your model depending on the mutator being used, please use low values or with caution!</value>
   </data>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>25</value>
+    <value>121</value>
   </metadata>
 </root>

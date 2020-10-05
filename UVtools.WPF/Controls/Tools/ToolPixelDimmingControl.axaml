@@ -1,0 +1,223 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="800"
+             x:Class="UVtools.WPF.Controls.Tools.ToolPixelDimmingControl">
+  <StackPanel Spacing="10">
+    <StackPanel Spacing="10" Orientation="Horizontal">
+      <TextBlock
+        VerticalAlignment="Center"
+        Text="Border size:"
+        />
+      <NumericUpDown
+        Minimum="0"
+        Maximum="1000"
+        Width="80"
+        Value="{Binding Operation.BorderSize}"
+        />
+      <TextBlock
+        VerticalAlignment="Center"
+        Text="px"
+        />
+
+      <CheckBox
+        Margin="20,0,0,0"
+        Content="Dim only borders"
+        IsChecked="{Binding Operation.BordersOnly}"
+        />
+
+           
+    </StackPanel>
+    
+    <Grid 
+      RowDefinitions="200"
+        ColumnDefinitions="400,10,400"
+        >
+        <TextBox
+          AcceptsReturn="True"
+          Watermark="Pattern"
+          UseFloatingWatermark="True"
+           TextWrapping="NoWrap"
+          Text="{Binding PatternText}"
+          />
+      <TextBox
+        Grid.Column="2"
+          AcceptsReturn="True"
+          Watermark="Alternate pattern (Optional)"
+          UseFloatingWatermark="True"
+           TextWrapping="NoWrap"
+        Text="{Binding AlternatePatternText}"
+          />
+      </Grid>
+
+    <Border
+      BorderBrush="LightGray"
+      BorderThickness="1"
+      Margin="0,5"
+      Padding="5"
+      >
+
+      <StackPanel Spacing="10">
+        <TextBlock FontWeight="Bold" Text="Pixel dimming generator"/>
+
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBlock 
+            VerticalAlignment="Center"
+            Text="Brightness:"/>
+          <NumericUpDown
+            Minimum="0"
+            Maximum="254"
+            Width="80"
+            Value="{Binding DimGenBrightness}"
+            />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button
+            Padding="10"
+            Content="Chessboard"
+            Width="100"
+            Command="{Binding GeneratePixelDimming}"
+            CommandParameter="Chessboard"
+            />
+          <Button
+            Padding="10"
+            Content="Sparse"
+            Width="100"
+            Command="{Binding GeneratePixelDimming}"
+            CommandParameter="Sparse"
+            />
+          <Button
+            Padding="10"
+            Content="Crosses"
+            Width="100"
+            Command="{Binding GeneratePixelDimming}"
+            CommandParameter="Crosses"
+            />
+          <Button
+            Padding="10"
+            Content="Strips"
+            Width="100"
+            Command="{Binding GeneratePixelDimming}"
+            CommandParameter="Strips"
+            />
+          <Button
+            Padding="10"
+            Content="Pyramid"
+            Width="100"
+            Command="{Binding GeneratePixelDimming}"
+            CommandParameter="Pyramid"
+            />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button
+            Padding="10"
+            Content="Rhombus"
+            Width="100"
+            Command="{Binding GeneratePixelDimming}"
+            CommandParameter="Rhombus"
+            />
+          <Button
+            Padding="10"
+            Content="Waves"
+            Width="100"
+            Command="{Binding GeneratePixelDimming}"
+            CommandParameter="Waves"
+            />
+          <Button
+            Padding="10"
+            Content="Slashes"
+            Width="100"
+            Command="{Binding GeneratePixelDimming}"
+            CommandParameter="Slashes"
+            />
+          <Button
+            Padding="10"
+            Content="Hearts"
+            Width="100"
+            Command="{Binding GeneratePixelDimming}"
+            CommandParameter="Hearts"
+            />
+          <Button
+            Padding="10"
+            Content="Solid"
+            Width="100"
+            Command="{Binding GeneratePixelDimming}"
+            CommandParameter="Solid"
+            />
+        </StackPanel>
+        
+      </StackPanel>
+    </Border>
+
+    <Border
+      BorderBrush="LightGray"
+      BorderThickness="1"
+      Padding="5"
+      >
+
+      <StackPanel Spacing="10">
+        <TextBlock FontWeight="Bold" Text="Infill generator"/>
+
+        <TextBlock Text="Warning: This function can generate a large number of resin traps. (Use with caution)"/>
+
+
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBlock
+            VerticalAlignment="Center"
+            Text="Thickness:"/>
+          <NumericUpDown
+            Minimum="5"
+            Maximum="10000"
+            Width="80"
+            Value="{Binding InfillGenThickness}"
+            />
+          <TextBlock
+            VerticalAlignment="Center"
+            Text="px"/>
+
+          <TextBlock
+            Margin="20,0,0,0"
+            VerticalAlignment="Center"
+            Text="Spacing:"/>
+          <NumericUpDown
+            Minimum="5"
+            Maximum="10000"
+            Width="80"
+            Value="{Binding InfillGenSpacing}"
+            />
+          <TextBlock
+            VerticalAlignment="Center"
+            Text="px"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button
+            Padding="10"
+            Content="Rectilinear"
+            Width="100"
+            Command="{Binding GenerateInfill}"
+            CommandParameter="Rectilinear"
+            />
+          <Button
+            Padding="10"
+            Content="Square grid"
+            Width="100"
+            Command="{Binding GenerateInfill}"
+            CommandParameter="Square grid"
+            />
+          <Button
+            Padding="10"
+            Content="Waves"
+            Width="100"
+            Command="{Binding GenerateInfill}"
+            CommandParameter="Waves"
+            />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+    
+  </StackPanel>
+</UserControl>

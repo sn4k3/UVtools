@@ -12,13 +12,15 @@ namespace UVtools.Core.Operations
 {
     public sealed class OperationLayerClone : Operation
     {
+        private uint _clones = 1;
+
         #region Overrides
 
         public override Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.Current;
         public override bool CanROI { get; set; } = false;
         public override bool PassActualLayerIndex => true;
 
-        public override string Title => "Clone layer(s)";
+        public override string Title => "Clone layers";
         public override string Description =>
             "Clone layers.\n\n" +
             "Useful to increase the height of the model or add additional structure by duplicating layers. For example, can be used to increase the raft height for added stability.";
@@ -50,7 +52,11 @@ namespace UVtools.Core.Operations
         /// <summary>
         /// Gets or sets the number of clones
         /// </summary>
-        public uint Clones { get; set; } = 1;
+        public uint Clones
+        {
+            get => _clones;
+            set => RaiseAndSetIfChanged(ref _clones, value);
+        }
 
         #endregion
     }

@@ -35,8 +35,8 @@ namespace UVtools.GUI.Controls.Tools
         {
             uint extraLayers = (uint)Math.Max(0, (ParentToolWindow.nmLayerRangeEnd.Value - ParentToolWindow.nmLayerRangeStart.Value + 1) * nmClones.Value);
             float extraHeight = (float)Math.Round(extraLayers * Program.SlicerFile.LayerHeight, 2);
-            lbLayersCount.Text = $"Layers: {Program.SlicerFile.TotalHeight} → {Program.SlicerFile.TotalHeight + extraLayers} (+ {extraLayers})";
-            lbHeights.Text = $"Heights: {Program.SlicerFile.TotalHeight}mm → {Program.SlicerFile.TotalHeight + extraHeight}mm (+ {extraHeight}mm)";
+            lbLayersCount.Text = $"Result layers: {Program.SlicerFile.LayerCount} → {Program.SlicerFile.LayerCount + extraLayers} (+ {extraLayers})";
+            lbHeights.Text = $"Result heights: {Program.SlicerFile.TotalHeight}mm → {Program.SlicerFile.TotalHeight + extraHeight}mm (+ {extraHeight}mm)";
         }
 
         public override bool UpdateOperation()

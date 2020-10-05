@@ -15,6 +15,8 @@ namespace UVtools.Core.Operations
     public abstract class Operation : BindableBase
     {
         private Rectangle _roi = Rectangle.Empty;
+        private uint _layerIndexEnd;
+        private uint _layerIndexStart;
         public const byte ClassNameLength = 9;
 
         /// <summary>
@@ -84,12 +86,20 @@ namespace UVtools.Core.Operations
         /// <summary>
         /// Gets the start layer index where operation will starts in
         /// </summary>
-        public virtual uint LayerIndexStart { get; set; }
+        public virtual uint LayerIndexStart
+        {
+            get => _layerIndexStart;
+            set => RaiseAndSetIfChanged(ref _layerIndexStart, value);
+        }
 
         /// <summary>
         /// Gets the end layer index where operation will ends in
         /// </summary>
-        public virtual uint LayerIndexEnd { get; set; }
+        public virtual uint LayerIndexEnd
+        {
+            get => _layerIndexEnd;
+            set => RaiseAndSetIfChanged(ref _layerIndexEnd, value);
+        }
 
         public uint LayerRangeCount => LayerIndexEnd - LayerIndexStart + 1;
 

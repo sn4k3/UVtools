@@ -13,6 +13,9 @@ namespace UVtools.Core.PixelEditor
 {
     public class PixelDrawing : PixelOperation
     {
+        private BrushShapeType _brushShape = BrushShapeType.Rectangle;
+        private ushort _brushSize = 1;
+        private short _thickness = -1;
         public const byte MinRectangleBrush = 1;
         public const byte MinCircleBrush = 7;
         public enum BrushShapeType : byte
@@ -21,22 +24,47 @@ namespace UVtools.Core.PixelEditor
             Circle
         }
 
-        public BrushShapeType BrushShape { get; }
+        public override PixelOperationType OperationType => PixelOperationType.Drawing;
 
-        public ushort BrushSize { get; }
-        public short Thickness { get; }
+        public static BrushShapeType[] BrushShapeTypes => (BrushShapeType[])Enum.GetValues(typeof(BrushShapeType));
 
-        //public ushort LayersBelow { get; }
+        public BrushShapeType BrushShape
+        {
+            get => _brushShape;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _brushShape, value)) return;
+                if (_brushShape == BrushShapeType.Circle)
+                {
+                    BrushSize = Math.Max(MinCircleBrush, BrushSize);
+                }
+            }
+        }
 
-        //public ushort LayersAbove { get; }
+        public ushort BrushSize
+        {
+            get => _brushSize;
+            set => RaiseAndSetIfChanged(ref _brushSize, value);
+        }
 
-        public bool IsAdd { get; }
+        public short Thickness
+        {
+            get => _thickness;
+            set => RaiseAndSetIfChanged(ref _thickness, value);
+        }
+
+        public bool IsAdd { get;  }
 
         public byte Color { get; }
 
         public Rectangle Rectangle { get; }
 
-        public PixelDrawing(uint layerIndex, Point location, LineType lineType, BrushShapeType brushShape, ushort brushSize, short thickness,  bool isAdd) : base(PixelOperationType.Drawing, layerIndex, location, lineType)
+        public PixelDrawing() 
+        {
+
+        }
+
+        public PixelDrawing(uint layerIndex, Point location, LineType lineType, BrushShapeType brushShape, ushort brushSize, short thickness,  bool isAdd) : base(layerIndex, location, lineType)
         {
             BrushShape = brushShape;
             BrushSize = brushSize;
@@ -50,5 +78,7 @@ namespace UVtools.Core.PixelEditor
             Rectangle = new Rectangle(Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos), brushSize-1, brushSize-1);
             Size = new Size(BrushSize, BrushSize);
         }
+
+        
     }
 }

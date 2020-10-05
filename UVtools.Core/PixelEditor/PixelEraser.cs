@@ -13,7 +13,13 @@ namespace UVtools.Core.PixelEditor
     {
         public const byte Diameter = 4;
 
-        public PixelEraser(uint layerIndex, Point location) : base(PixelOperationType.Eraser, layerIndex, location)
+        public override PixelOperationType OperationType => PixelOperationType.Eraser;
+
+        public PixelEraser()
+        {
+        }
+
+        public PixelEraser(uint layerIndex, Point location) : base(layerIndex, location)
         {
             Size = new Size(Diameter, Diameter);
         }

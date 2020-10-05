@@ -20,7 +20,7 @@ namespace UVtools.Core.Operations
             "Mask the intensity of the LCD output using a greyscale input image.\n\n" +
             "Useful to correct LCD light uniformity for a specific printer.\n\n" +
             "NOTE:  This operation should be run only after repairs and other transformations.  The provided" +
-            "input mask image must match the ouput resolution of the target printer.";
+            "input mask image must match the output resolution of the target printer.";
 
         public override string ConfirmationText =>
             $"mask layers from {LayerIndexStart} through {LayerIndexEnd}";
@@ -42,5 +42,13 @@ namespace UVtools.Core.Operations
         }
 
         public Mat Mask { get; set; }
+
+        public bool HaveMask => !(Mask is null);
+
+        public void InvertMask()
+        {
+            if (!HaveMask) return;
+            CvInvoke.BitwiseNot(Mask, Mask);
+        }
     }
 }

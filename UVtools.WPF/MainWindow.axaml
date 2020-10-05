@@ -311,7 +311,7 @@
 
           <Image
             IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
-            Stretch="None"
+            Stretch="Uniform"
             Grid.Row="1" Source="{Binding VisibleThumbnailImage}"/>
 
 
@@ -630,6 +630,7 @@
       
       </TabItem>
 
+      <!-- Pixel Editor !-->
       <TabItem
         ToolTip.Tip="Pixel editor"
         IsEnabled="{Binding IsPixelEditorActive}">
@@ -639,6 +640,270 @@
             <!--<TextBlock Margin="5,0,0,0">Pixel editor</TextBlock>!-->
           </StackPanel>
         </TabItem.Header>
+
+        <StackPanel Orientation="Vertical">
+          <TabControl SelectedIndex="{Binding SelectedPixelOperationTabIndex}">
+            <!-- Drawing !-->
+            <TabItem
+              ToolTip.Tip="Drawing"
+              >
+              <TabItem.Header
+                >
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                  <Image Source="/Assets/Icons/pencil-alt-24x24.png" Width="24"/>
+                  <TextBlock
+                    IsVisible="{Binding $parent[TabItem].IsSelected}"
+                    Margin="5,0,0,0"
+                    Text="Drawing" />
+                </StackPanel>
+              </TabItem.Header>
+
+              <StackPanel Spacing="10" Margin="5">
+                <Border Background="LightGray" BorderThickness="1" BorderBrush="Black">
+                  <TextBlock Padding="10" Text="Shift+Left click to add white pixels
+&#x0a;Shift+Right click to remove pixels"/>
+                </Border>
+
+                <Grid
+      
+                  RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,Auto"
+                      ColumnDefinitions="Auto,10,Auto,10,Auto,10,Auto">
+
+                  <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Line type:" />
+                  <ComboBox
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    Grid.ColumnSpan="5"
+                    Items="{Binding DrawingPixelDrawing.LineTypes}"
+                    SelectedItem="{Binding DrawingPixelDrawing.LineType}"
+                    />
+
+                  <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Brush shape:" />
+                  <ComboBox
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    Grid.ColumnSpan="5"
+                    Items="{Binding DrawingPixelDrawing.BrushShapeTypes}"
+                    SelectedItem="{Binding DrawingPixelDrawing.BrushShape}"
+        />
+
+                  <TextBlock
+                    Grid.Row="4"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Brush diameter:" />
+                  <NumericUpDown
+                    Grid.Row="4"
+                    Grid.Column="2"
+                    Grid.ColumnSpan="3"
+                    Minimum="1"
+                    Value="{Binding DrawingPixelDrawing.BrushSize}"/>
+                  <TextBlock
+                    Grid.Row="4"
+                    Grid.Column="6"
+                    VerticalAlignment="Center"
+                    Text="px" />
+
+                  <TextBlock
+                    Grid.Row="6"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Thickness:" />
+                  <NumericUpDown
+                    Grid.Row="6"
+                    Grid.Column="2"
+                    Grid.ColumnSpan="3"
+                    Minimum="-1"
+                    Value="{Binding DrawingPixelDrawing.Thickness}"
+                    />
+                  <TextBlock
+                    Grid.Row="6"
+                    Grid.Column="6"
+                    VerticalAlignment="Center"
+                    Text="px" />
+
+                  <TextBlock
+                    Grid.Row="8"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Layers depth:" />
+                  <NumericUpDown
+                    Grid.Row="8"
+                    Grid.Column="2"
+                    Minimum="0"
+                    Width="80"
+                    Value="{Binding DrawingPixelDrawing.LayersBelow}"
+                    />
+                  <TextBlock
+                    Grid.Row="9"
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Text="Below" />
+
+                  <NumericUpDown
+                    Grid.Row="8"
+                    Grid.Column="4"
+                    Minimum="0"
+                    Width="80"
+                    Value="{Binding DrawingPixelDrawing.LayersAbove}"
+                    />
+                  <TextBlock
+                    Grid.Row="9"
+                    Grid.Column="4"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Text="Above" />
+
+                </Grid>
+
+              </StackPanel>
+
+            </TabItem>
+
+            <!-- Text !-->
+            <TabItem
+              ToolTip.Tip="Text"
+              >
+              <TabItem.Header>
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                  <Image Source="/Assets/Icons/font-24x24.png" Width="24"/>
+                  <TextBlock
+                    IsVisible="{Binding $parent[TabItem].IsSelected}"
+                    Margin="5,0,0,0"
+                    Text="Text" />
+                </StackPanel>
+              </TabItem.Header>
+            </TabItem>
+
+            <!-- Eraser !-->
+            <TabItem
+              ToolTip.Tip="Eraser"
+              >
+              <TabItem.Header>
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                  <Image Source="/Assets/Icons/eraser-24x24.png" Width="24"/>
+                  <TextBlock
+                    IsVisible="{Binding $parent[TabItem].IsSelected}"
+                    Margin="5,0,0,0"
+                    Text="Eraser" />
+                </StackPanel>
+              </TabItem.Header>
+            </TabItem>
+
+            <!-- Supports !-->
+            <TabItem
+              ToolTip.Tip="Supports"
+              >
+              <TabItem.Header>
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                  <Image Source="/Assets/Icons/code-branch-24x24.png" Width="24"/>
+                  <TextBlock
+                    IsVisible="{Binding $parent[TabItem].IsSelected}"
+                    Margin="5,0,0,0"
+                    Text="Supports" />
+                </StackPanel>
+              </TabItem.Header>
+            </TabItem>
+
+            <!-- Drain holes !-->
+            <TabItem
+              ToolTip.Tip="Drain holes"
+              >
+              <TabItem.Header>
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                  <Image Source="/Assets/Icons/ring-24x24.png" Width="24"/>
+                  <TextBlock
+                    IsVisible="{Binding $parent[TabItem].IsSelected}"
+                    Margin="5,0,0,0"
+                    Text="Drain holes" />
+                </StackPanel>
+              </TabItem.Header>
+            </TabItem>
+            
+          </TabControl>
+
+          <!-- Toolbar !-->
+          <Grid Background="WhiteSmoke">
+
+            <StackPanel Orientation="Horizontal" Spacing="5">
+              <Button IsEnabled="{Binding #DrawingsGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+              Command="{Binding OnClickDrawingRemove}">
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                  <Image Source="/Assets/Icons/trash-16x16.png"/>
+                  <TextBlock 
+                    VerticalAlignment="Center"
+                    Text="Remove"/>
+                </StackPanel>
+              </Button>
+
+              <Button IsEnabled="{Binding Drawings.Count}"
+                      Command="{Binding OnClickDrawingClear}">
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                  <Image Source="/Assets/Icons/delete-16x16.png"/>
+                  <TextBlock 
+                    VerticalAlignment="Center"
+                    Text="Clear" 
+                    />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+
+            <StackPanel 
+              HorizontalAlignment="Right" 
+              Orientation="Horizontal" 
+              Spacing="10" 
+              >
+              <Button IsEnabled="{Binding Drawings.Count}">
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                  <Image Source="/Assets/Icons/accept-16x16.png"/>
+                  <TextBlock Text="{Binding Drawings.Count, StringFormat=Apply \{0\} operations}"/>
+                </StackPanel>
+              </Button>
+
+            </StackPanel>
+          </Grid>
+
+          <DataGrid VerticalAlignment="Stretch"
+                    Name="DrawingsGrid"
+                    Grid.Row="1"
+                    CanUserReorderColumns="True"
+                    CanUserResizeColumns="True"
+                    CanUserSortColumns="True"
+                    GridLinesVisibility="Horizontal"
+                    SelectionMode="Extended"
+                    IsReadOnly="True"
+                    ClipboardCopyMode="IncludeHeader"
+                    Items="{Binding Drawings}">
+            <DataGrid.Columns>
+              <DataGridTextColumn  Header="#"
+                                    Binding="{Binding Index}"
+                                    Width="Auto" />
+              <DataGridTextColumn Header="Operation"
+                                  Binding="{Binding OperationType}"
+                                  Width="Auto" />
+              <DataGridTextColumn Header="Layer"
+                                  Binding="{Binding LayerIndex}"
+                                  Width="Auto" />
+              <DataGridTextColumn Header="Position (X, Y)"
+                                  Binding="{Binding Location}"
+                                  Width="Auto" />
+            </DataGrid.Columns>
+
+          </DataGrid>
+          
+        </StackPanel>
+        
+        
+        
       </TabItem>
 
       <TabItem ToolTip.Tip="Log">
@@ -918,10 +1183,36 @@
 
       </StackPanel>
 
+      
+      <StackPanel HorizontalAlignment="Right" Grid.Row="0" Orientation="Horizontal" Spacing="1">
+        <Button
+          Command="{Binding #LayerActionsContextMenu.Open}"
+          >
+          <StackPanel Orientation="Horizontal">
+            <Image Source="/Assets/Icons/layers-alt-16x16.png"/>
+            <TextBlock Margin="5,0,5,0" Text="Actions ⮟"/>
+          </StackPanel>
+          <Button.ContextMenu>
+            <ContextMenu Name="LayerActionsContextMenu" PlacementMode="Bottom" Items="{Binding LayerActionsMenu}"/>
+           </Button.ContextMenu>
+        </Button>
+
+        <Button
+          Command="{Binding SaveCurrentLayerImage}"
+          ToolTip.Tip="Save layer image to a file">
+          <StackPanel Orientation="Horizontal">
+            <Image Source="/Assets/Icons/save-16x16.png"/>
+          </StackPanel>
+        </Button>
+
+
+      </StackPanel>
+
       <uc:AdvancedImageBox
+        Focusable="True"
         Grid.Row="1"
      GridCellSize="15"
-     Name="Layer.Image"
+     Name="LayerImage"
       />
 
       <StackPanel Margin="0,5,0,0" Grid.Row="2" Orientation="Horizontal" Spacing="5">
@@ -944,9 +1235,11 @@
         </Button>
 
         <Button
-          ToolTip.Tip="Region of interest selection over  layer.
+          IsEnabled="{Binding #LayerImage.HaveSelection}"
+          Command="{Binding }"
+          ToolTip.Tip="Region of interest selection over layer.
 &#x0a;(NS): Not selected
-&#x0a;Click: go to region | SHIFT + click: Clear ROI"
+&#x0a;Click: go to region | ESC: Clear ROI"
           >
           <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
             <Image Source="/Assets/Icons/object-group-16x16.png"/>
@@ -960,6 +1253,7 @@
 
         <Button
           IsEnabled="{Binding LayerPixelPicker.IsSet}"
+          Command="{Binding OnLayerPixelPickerClicked}"
           ToolTip.Tip="Pixel picker:
 &#x0a;Use CONTROL and over a pixel to get his position and brightness.
 &#x0a;Click: Center at position"

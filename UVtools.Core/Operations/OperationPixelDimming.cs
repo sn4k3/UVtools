@@ -14,6 +14,11 @@ namespace UVtools.Core.Operations
 {
     public class OperationPixelDimming : Operation
     {
+        private uint _borderSize = 5;
+        private bool _bordersOnly;
+        private Matrix<byte> _evenPattern;
+        private Matrix<byte> _oddPattern;
+
         #region Overrides
         public override string Title => "Pixel dimming";
         public override string Description =>
@@ -51,10 +56,30 @@ namespace UVtools.Core.Operations
 
         #region Properties
 
-        public uint BorderSize { get; set; }
-        public bool BordersOnly { get; set; }
-        public Matrix<byte> EvenPattern { get; set; }
-        public Matrix<byte> OddPattern { get; set; }
+        public uint BorderSize
+        {
+            get => _borderSize;
+            set => RaiseAndSetIfChanged(ref _borderSize, value);
+        }
+
+        public bool BordersOnly
+        {
+            get => _bordersOnly;
+            set => RaiseAndSetIfChanged(ref _bordersOnly, value);
+        }
+
+        public Matrix<byte> EvenPattern
+        {
+            get => _evenPattern;
+            set => RaiseAndSetIfChanged(ref _evenPattern, value);
+        }
+
+        public Matrix<byte> OddPattern
+        {
+            get => _oddPattern;
+            set => RaiseAndSetIfChanged(ref _oddPattern, value);
+        }
+
         #endregion
     }
 }

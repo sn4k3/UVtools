@@ -28,7 +28,6 @@ namespace UVtools.WPF.Windows
         private uint _layerIndexStart;
         private uint _layerIndexEnd;
         private bool _isROIVisible;
-        private Rectangle _roi = Rectangle.Empty;
         private bool _clearRoiAfterOperation;
 
         private IControl _contentControl;
@@ -101,7 +100,7 @@ namespace UVtools.WPF.Windows
         {
             get
             {
-                uint layerCount = Math.Max(0, LayerIndexEnd - LayerIndexStart + 1);
+                uint layerCount = (uint) Math.Max(0, (int)LayerIndexEnd - LayerIndexStart + 1);
                 return $"({layerCount} layers / {(decimal)App.SlicerFile.LayerHeight * layerCount}mm)";
             }
             
@@ -155,11 +154,7 @@ namespace UVtools.WPF.Windows
             set => RaiseAndSetIfChanged(ref _isROIVisible, value);
         }
 
-        public Rectangle ROI
-        {
-            get => _roi;
-            set => RaiseAndSetIfChanged(ref _roi, value);
-        }
+        public Rectangle ROI => App.MainWindow.ROI;
 
         public bool ClearROIAfterOperation
         {
@@ -249,14 +244,14 @@ namespace UVtools.WPF.Windows
         public ToolWindow() 
         {
             InitializeComponent();
-            DataContext = this;
             SelectAllLayers();
 
-            var ROI = App.MainWindow.ROI;
             if (ROI != Rectangle.Empty)
             {
                 IsROIVisible = true;
             }
+
+            DataContext = this;
         }
 
         public ToolWindow(string description = null, bool layerRangeVisible = true) : this()
@@ -275,8 +270,6 @@ namespace UVtools.WPF.Windows
             //IsROIVisible = toolControl.BaseOperation.CanROI;
             ContentControl = toolControl;
             ButtonOkText = toolControl.BaseOperation.ButtonOkText;
-
-            RaisePropertyChanged(nameof(IsContentVisible));
 
             switch (toolControl.BaseOperation.LayerRangeSelection)
             {
@@ -303,6 +296,9 @@ namespace UVtools.WPF.Windows
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
+            RaisePropertyChanged(nameof(IsContentVisible));
+            RaisePropertyChanged(nameof(IsROIVisible));
 
             // Ensure the description don't stretch window
             var timer = new Timer(10)
