@@ -705,6 +705,7 @@
                     Grid.Column="2"
                     Grid.ColumnSpan="3"
                     Minimum="1"
+                    Maximum="255"
                     Value="{Binding DrawingPixelDrawing.BrushSize}"/>
                   <TextBlock
                     Grid.Row="4"
@@ -722,6 +723,7 @@
                     Grid.Column="2"
                     Grid.ColumnSpan="3"
                     Minimum="-1"
+                    Maximum="255"
                     Value="{Binding DrawingPixelDrawing.Thickness}"
                     />
                   <TextBlock
@@ -782,6 +784,125 @@
                     Text="Text" />
                 </StackPanel>
               </TabItem.Header>
+
+              <StackPanel Spacing="10" Margin="5">
+                <Border Background="LightGray" BorderThickness="1" BorderBrush="Black">
+                  <TextBlock Padding="10" Text="Shift+Left click to add text
+&#x0a;Shift+Right click to remove text"/>
+                </Border>
+
+                <Grid
+      RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,Auto"
+      ColumnDefinitions="Auto,10,Auto,10,Auto">
+
+                  <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Line type:" />
+                  <ComboBox
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    Grid.ColumnSpan="3"
+                    Items="{Binding DrawingPixelText.LineTypes}"
+                    SelectedItem="{Binding DrawingPixelText.LineType}"/>
+
+                  <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Font face:" />
+                  <ComboBox
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    Grid.ColumnSpan="3"
+                    Items="{Binding DrawingPixelText.FontFaces}"
+                    SelectedItem="{Binding DrawingPixelText.Font}"/>
+
+                  <TextBlock
+                    Grid.Row="4"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Font scale:" />
+                  <NumericUpDown
+                    Grid.Row="4"
+                    Grid.Column="2"
+                    Grid.ColumnSpan="3"
+                    Minimum="0.1"
+                    Maximum="255"
+                    Increment="0.1"
+                    Value="{Binding DrawingPixelText.FontScale}"/>
+
+
+                  <TextBlock
+                    Grid.Row="6"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Thickness:" />
+                  <NumericUpDown
+                    Grid.Row="6"
+                    Grid.Column="2"
+                    Grid.ColumnSpan="3"
+                    Minimum="1"
+                    Maximum="255"
+                    Value="{Binding DrawingPixelText.Thickness}"/>
+
+                  <TextBlock
+                    Grid.Row="8"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Text:" />
+                  <TextBox
+                    Grid.Row="8"
+                    Grid.Column="2"
+                    Grid.ColumnSpan="3"
+                    Text="{Binding DrawingPixelText.Text}"/>
+
+                  <CheckBox
+                  Grid.Row="10"
+                  Grid.Column="2"
+                  Grid.ColumnSpan="3"
+                  Content="Flip text Vertically"
+                  IsChecked="{Binding DrawingPixelText.Mirror}"/>
+
+
+                  <TextBlock
+                    Grid.Row="12"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Layers depth:" />
+                  <NumericUpDown
+                    Grid.Row="12"
+                    Grid.Column="2"
+                    Minimum="0"
+                    Width="80"
+                    Value="{Binding DrawingPixelText.LayersBelow}"
+                    />
+                  <TextBlock
+                    Grid.Row="14"
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Text="Below" />
+
+                  <NumericUpDown
+                    Grid.Row="12"
+                    Grid.Column="4"
+                    Minimum="0"
+                    Width="80"
+                    Value="{Binding DrawingPixelText.LayersAbove}"
+                    />
+                  <TextBlock
+                    Grid.Row="14"
+                    Grid.Column="4"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Text="Above" />
+
+                </Grid>
+
+              </StackPanel>
+              
             </TabItem>
 
             <!-- Eraser !-->
@@ -797,6 +918,53 @@
                     Text="Eraser" />
                 </StackPanel>
               </TabItem.Header>
+
+              <StackPanel Spacing="10" Margin="5">
+                <Border Background="LightGray" BorderThickness="1" BorderBrush="Black">
+                  <TextBlock Padding="10" Text="Shift+click over a white pixel to remove whole linked area. (Fill with black)"/>
+                </Border>
+
+                <Grid
+      RowDefinitions="Auto,Auto"
+      ColumnDefinitions="Auto,10,Auto,10,Auto">
+
+                  <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Layers depth:" />
+                  <NumericUpDown
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    Minimum="0"
+                    Width="80"
+                    Value="{Binding DrawingPixelEraser.LayersBelow}"
+                    />
+                  <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Text="Below" />
+
+                  <NumericUpDown
+                    Grid.Row="0"
+                    Grid.Column="4"
+                    Minimum="0"
+                    Width="80"
+                    Value="{Binding DrawingPixelEraser.LayersAbove}"
+                    />
+                  <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="4"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Text="Above" />
+
+                </Grid>
+
+              </StackPanel>
+
             </TabItem>
 
             <!-- Supports !-->
@@ -812,6 +980,69 @@
                     Text="Supports" />
                 </StackPanel>
               </TabItem.Header>
+
+              <StackPanel Spacing="10" Margin="5">
+                <Border Background="LightGray" BorderThickness="1" BorderBrush="Black">
+                  <TextBlock Padding="10" Text="Shift+click under a island to add a primitive support.
+&#x0a;Note: this operation can't be previewed."/>
+                </Border>
+                <Grid
+                  RowDefinitions="Auto,10,Auto,10,Auto"
+                  ColumnDefinitions="Auto,10,100,5,Auto">
+                  <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Tip diameter:" />
+                  <NumericUpDown
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    Minimum="1"
+                    Maximum="255"
+                    Value="{Binding DrawingPixelSupport.TipDiameter}"/>
+                  <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="4"
+                    VerticalAlignment="Center"
+                    Text="px" />
+
+                  <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Pillar diameter:" />
+                  <NumericUpDown
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    Minimum="1"
+                    Maximum="255"
+                    Value="{Binding DrawingPixelSupport.PillarDiameter}"/>
+                  <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="4"
+                    VerticalAlignment="Center"
+                    Text="px" />
+
+                  <TextBlock
+                    Grid.Row="4"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Base diameter:" />
+                  <NumericUpDown
+                    Grid.Row="4"
+                    Grid.Column="2"
+                    Minimum="1"
+                    Maximum="255"
+                    Value="{Binding DrawingPixelSupport.BaseDiameter}"/>
+                  <TextBlock
+                    Grid.Row="4"
+                    Grid.Column="4"
+                    VerticalAlignment="Center"
+                    Text="px" />
+
+                </Grid>
+              </StackPanel>
+
             </TabItem>
 
             <!-- Drain holes !-->
@@ -827,14 +1058,79 @@
                     Text="Drain holes" />
                 </StackPanel>
               </TabItem.Header>
+
+              <StackPanel Spacing="10" Margin="5">
+                <Border Background="LightGray" BorderThickness="1" BorderBrush="Black">
+                  <TextBlock Padding="10" Text="Shift+click to add a vertical drain hole.
+&#x0a;Note: this operation can't be previewed."/>
+                </Border>
+                <Grid
+                  RowDefinitions="Auto,10,Auto,10,Auto"
+                  ColumnDefinitions="Auto,10,100,5,Auto">
+                  <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Tip diameter:" />
+                  <NumericUpDown
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    Minimum="1"
+                    Maximum="255"
+                    Value="{Binding DrawingPixelSupport.TipDiameter}"/>
+                  <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="4"
+                    VerticalAlignment="Center"
+                    Text="px" />
+
+                  <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Pillar diameter:" />
+                  <NumericUpDown
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    Minimum="1"
+                    Maximum="255"
+                    Value="{Binding DrawingPixelSupport.PillarDiameter}"/>
+                  <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="4"
+                    VerticalAlignment="Center"
+                    Text="px" />
+
+                  <TextBlock
+                    Grid.Row="4"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Hole diameter:" />
+                  <NumericUpDown
+                    Grid.Row="4"
+                    Grid.Column="2"
+                    Minimum="20"
+                    Maximum="255"
+                    Value="{Binding DrawingPixelDrainHole.Diameter}"/>
+                  <TextBlock
+                    Grid.Row="4"
+                    Grid.Column="4"
+                    VerticalAlignment="Center"
+                    Text="px" />
+
+                </Grid>
+              </StackPanel>
+
             </TabItem>
             
           </TabControl>
 
           <!-- Toolbar !-->
-          <Grid Background="WhiteSmoke">
+          <Grid Background="WhiteSmoke"
+                RowDefinitions="Auto,*"
+                >
 
-            <StackPanel Orientation="Horizontal" Spacing="5">
+            <StackPanel Orientation="Horizontal" Spacing="1">
               <Button IsEnabled="{Binding #DrawingsGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
               Command="{Binding OnClickDrawingRemove}">
                 <StackPanel Orientation="Horizontal" Spacing="5">
@@ -863,16 +1159,15 @@
               Spacing="10" 
               >
               <Button IsEnabled="{Binding Drawings.Count}">
-                <StackPanel Orientation="Horizontal" Spacing="5">
+                <StackPanel Orientation="Horizontal" Spacing="1">
                   <Image Source="/Assets/Icons/accept-16x16.png"/>
                   <TextBlock Text="{Binding Drawings.Count, StringFormat=Apply \{0\} operations}"/>
                 </StackPanel>
               </Button>
 
             </StackPanel>
-          </Grid>
 
-          <DataGrid VerticalAlignment="Stretch"
+            <DataGrid
                     Name="DrawingsGrid"
                     Grid.Row="1"
                     CanUserReorderColumns="True"
@@ -883,26 +1178,26 @@
                     IsReadOnly="True"
                     ClipboardCopyMode="IncludeHeader"
                     Items="{Binding Drawings}">
-            <DataGrid.Columns>
-              <DataGridTextColumn  Header="#"
-                                    Binding="{Binding Index}"
+              <DataGrid.Columns>
+                <DataGridTextColumn  Header="#"
+                                      Binding="{Binding Index}"
+                                      Width="Auto" />
+                <DataGridTextColumn Header="Operation"
+                                    Binding="{Binding OperationType}"
                                     Width="Auto" />
-              <DataGridTextColumn Header="Operation"
-                                  Binding="{Binding OperationType}"
-                                  Width="Auto" />
-              <DataGridTextColumn Header="Layer"
-                                  Binding="{Binding LayerIndex}"
-                                  Width="Auto" />
-              <DataGridTextColumn Header="Position (X, Y)"
-                                  Binding="{Binding Location}"
-                                  Width="Auto" />
-            </DataGrid.Columns>
+                <DataGridTextColumn Header="Layer"
+                                    Binding="{Binding LayerIndex}"
+                                    Width="Auto" />
+                <DataGridTextColumn Header="Position (X, Y)"
+                                    Binding="{Binding Location}"
+                                    Width="Auto" />
+              </DataGrid.Columns>
 
-          </DataGrid>
-          
+            </DataGrid>
+
+          </Grid>
+
         </StackPanel>
-        
-        
         
       </TabItem>
 
@@ -1195,6 +1490,15 @@
           <Button.ContextMenu>
             <ContextMenu Name="LayerActionsContextMenu" PlacementMode="Bottom" Items="{Binding LayerActionsMenu}"/>
            </Button.ContextMenu>
+        </Button>
+
+        <Button
+          Command="{Binding ShowLayer}"
+          HotKey="F5"
+          ToolTip.Tip="Refresh current layer [F5]">
+          <StackPanel Orientation="Horizontal">
+            <Image Source="/Assets/Icons/refresh-16x16.png"/>
+          </StackPanel>
         </Button>
 
         <Button

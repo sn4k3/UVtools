@@ -161,7 +161,7 @@ namespace UVtools.WPF
         }
 
         public static Bitmap GetBitmapFromAsset(string url) => new Bitmap(GetAsset(url));
-        
+
         #endregion
     }
 }

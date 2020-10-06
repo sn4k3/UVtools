@@ -24,10 +24,10 @@
     <NoWarn>1701;1702;</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.999-cibuild0010914-beta" />
+    <PackageReference Include="Avalonia" Version="0.10.999-cibuild0010986-beta" />
     <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.999-cibuild0010914-beta" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.999-cibuild0010914-beta" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.999-cibuild0010986-beta" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.999-cibuild0010986-beta" />
     <PackageReference Include="Avalonia.ThemeManager" Version="0.10.0-preview3" />
     <PackageReference Include="Dock.Avalonia" Version="0.10.0-preview5" />
     <PackageReference Include="Emgu.CV.runtime.raspbian" Version="4.4.0.4077" />
@@ -47,135 +47,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Update="arm\libcvextern.so">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\AnyCubic Photon S.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\AnyCubic Photon Zero.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\AnyCubic Photon.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Creality LD-002H.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Creality LD-002R.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Elegoo Mars 2 Pro.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Elegoo Mars Saturn.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Elegoo Mars.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\EPAX X1.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\EPAX X10 4K Mono.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\EPAX X10.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\EPAX X133 4K Mono.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\EPAX X156 4K Color.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Kelant S400.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Longer Orange 10.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Longer Orange 30.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Nova3D Bene4 Mono.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Nova3D Elfin.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Peopoly Phenom L.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Peopoly Phenom Noir.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Peopoly Phenom.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Phrozen Shuffle 4K.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Phrozen Shuffle Lite.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Phrozen Shuffle XL.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Phrozen Shuffle.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Phrozen Sonic Mini 4K.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Phrozen Sonic Mini.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Phrozen Sonic.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Phrozen Transform.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\QIDI Shadow5.5.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\QIDI Shadow6.0 Pro.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Voxelab Polaris.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Wanhao D7.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Wanhao D8.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\printer\Zortrax Inkspire.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\sla_print\Universal 0.025 UltraDetail - Heavy Supports.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\sla_print\Universal 0.025 UltraDetail - Medium Supports.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\sla_print\Universal 0.035 Detail - Heavy Supports.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\sla_print\Universal 0.035 Detail - Medium Supports.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\sla_print\Universal 0.05 Normal - Heavy Supports.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\sla_print\Universal 0.05 Normal - Medium Supports.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\sla_print\Universal 0.1 Fast - Heavy Supports.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\PrusaSlicer\sla_print\Universal 0.1 Fast - Medium Supports.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Assets\selected.theme">
@@ -242,4 +113,7 @@
       <DependentUpon>%(Filename)</DependentUpon>
     </Compile>
   </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /i /y /d /s $(ProjectDir)..\PrusaSlicer $(ProjectDir)$(OutDir)\Assets\PrusaSlicer" />
+  </Target>
 </Project>

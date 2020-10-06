@@ -11,13 +11,28 @@ namespace UVtools.Core.PixelEditor
 {
     public class PixelSupport : PixelOperation
     {
+        private byte _tipDiameter = 19;
+        private byte _pillarDiameter = 32;
+        private byte _baseDiameter = 60;
         public override PixelOperationType OperationType => PixelOperationType.Supports;
 
-        public byte TipDiameter { get; set; }
+        public byte TipDiameter
+        {
+            get => _tipDiameter;
+            set => RaiseAndSetIfChanged(ref _tipDiameter, value);
+        }
 
-        public byte PillarDiameter { get; set; }
+        public byte PillarDiameter
+        {
+            get => _pillarDiameter;
+            set => RaiseAndSetIfChanged(ref _pillarDiameter, value);
+        }
 
-        public byte BaseDiameter { get; set; }
+        public byte BaseDiameter
+        {
+            get => _baseDiameter;
+            set => RaiseAndSetIfChanged(ref _baseDiameter, value);
+        }
 
         public PixelSupport(){}
 

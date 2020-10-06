@@ -24,7 +24,7 @@ namespace UVtools.WPF.Extensions
     public static class BitmapExtension
     {
         public static int GetStep(this WriteableBitmap bitmap)
-         => (int)(bitmap.Size.Width * 4);
+         => (int)bitmap.Size.Width;
 
         /// <summary>
         /// Gets the total length of this <see cref="WriteableBitmap"/></param>
@@ -32,10 +32,13 @@ namespace UVtools.WPF.Extensions
         /// <param name="bitmap"></param>
         /// <returns>The total length of this <see cref="WriteableBitmap"/></returns>
         public static int GetLength(this WriteableBitmap bitmap)
-         => (int) (bitmap.Size.Width * 4 * bitmap.Size.Height);
+         => (int) (bitmap.Size.Width * bitmap.Size.Height);
 
         public static int GetPixelPos(this WriteableBitmap bitmap, int x, int y)
-         => (int)(bitmap.Size.Width * 4 * y + x);
+         => (int)(bitmap.Size.Width * y + x);
+
+        public static int GetPixelPos(this WriteableBitmap bitmap, System.Drawing.Point location) =>
+            bitmap.GetPixelPos(location.X, location.Y);
 
         /// <summary>
         /// Gets a single pixel span to manipulate or read pixels
@@ -43,33 +46,33 @@ namespace UVtools.WPF.Extensions
         /// <typeparam name="T">Pixel type</typeparam>
         /// <param name="mat"><see cref="Mat"/> Input</param>
         /// <returns>A <see cref="Span{T}"/> containing all pixels in data memory</returns>
-        public static unsafe Span<byte> GetPixelSpan(this WriteableBitmap bitmap)
+        public static unsafe Span<uint> GetPixelSpan(this WriteableBitmap bitmap)
         {
             using var l = bitmap.Lock();
-            return new Span<byte>(l.Address.ToPointer(), bitmap.GetLength());
+            return new Span<uint>(l.Address.ToPointer(), bitmap.GetLength());
         }
 
         
-        public static unsafe Span<byte> GetPixelSpan(this WriteableBitmap bitmap, int length, int offset = 0)
+        public static unsafe Span<uint> GetPixelSpan(this WriteableBitmap bitmap, int length, int offset = 0)
         {
             using var l = bitmap.Lock();
-            return new Span<byte>(IntPtr.Add(l.Address, offset).ToPointer(), length);
+            return new Span<uint>(IntPtr.Add(l.Address, offset).ToPointer(), length);
         }
 
-        public static Span<byte> GetSinglePixelSpan(this WriteableBitmap bitmap, int x, int y, int length = 3)
+        public static Span<uint> GetSinglePixelSpan(this WriteableBitmap bitmap, int x, int y, int length = 1)
         {
             using var l = bitmap.Lock();
             return bitmap.GetPixelSpan(length, bitmap.GetPixelPos(x, y));
         }
 
-        public static Span<byte> GetSinglePixelPosSpan(this WriteableBitmap bitmap, int pos, int length = 3)
+        public static Span<uint> GetSinglePixelPosSpan(this WriteableBitmap bitmap, int pos, int length = 3)
          => bitmap.GetPixelSpan(length, pos);
 
 
-        public static unsafe Span<byte> GetPixelRowSpan(this WriteableBitmap bitmap, int y, int length = 0, int offset = 0)
+        public static unsafe Span<uint> GetPixelRowSpan(this WriteableBitmap bitmap, int y, int length = 0, int offset = 0)
         {
             using var l = bitmap.Lock();
-            return new Span<byte>(IntPtr.Add(l.Address, (int) (bitmap.Size.Width * 4 * y + offset)).ToPointer(), (int) (length == 0 ? bitmap.Size.Width * 4 : length));
+            return new Span<uint>(IntPtr.Add(l.Address, (int) (bitmap.Size.Width * y + offset)).ToPointer(), (int) (length == 0 ? bitmap.Size.Width : length));
         }
 
         public static SKBitmap ToSkBitmap(this Mat mat)

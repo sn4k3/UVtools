@@ -14,14 +14,44 @@ namespace UVtools.Core.PixelEditor
 {
     public class PixelText : PixelOperation
     {
+        private FontFace _font;
+        private double _fontScale = 1;
+        private ushort _thickness = 1;
+        private string _text;
+        private bool _mirror;
         public override PixelOperationType OperationType => PixelOperationType.Text;
 
-        public FontFace Font { get; set; }
+        public static FontFace[] FontFaces => (FontFace[]) Enum.GetValues(typeof(FontFace));
 
-        public double FontScale { get; set; }
-        public ushort Thickness { get; set; }
-        public string Text { get; set; }
-        public bool Mirror { get; set; }
+        public FontFace Font
+        {
+            get => _font;
+            set => RaiseAndSetIfChanged(ref _font, value);
+        }
+
+        public double FontScale
+        {
+            get => _fontScale;
+            set => RaiseAndSetIfChanged(ref _fontScale, value);
+        }
+
+        public ushort Thickness
+        {
+            get => _thickness;
+            set => RaiseAndSetIfChanged(ref _thickness, value);
+        }
+
+        public string Text
+        {
+            get => _text;
+            set => RaiseAndSetIfChanged(ref _text, value);
+        }
+
+        public bool Mirror
+        {
+            get => _mirror;
+            set => RaiseAndSetIfChanged(ref _mirror, value);
+        }
 
         public bool IsAdd { get; }
 

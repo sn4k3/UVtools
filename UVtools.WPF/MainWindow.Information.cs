@@ -9,16 +9,19 @@ using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Emgu.CV.CvEnum;
 using MessageBox.Avalonia.Enums;
+using UVtools.Core;
 using UVtools.Core.PixelEditor;
-using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
+using Helpers = UVtools.WPF.Controls.Helpers;
 using Point = System.Drawing.Point;
 
 namespace UVtools.WPF
@@ -26,9 +29,35 @@ namespace UVtools.WPF
     public partial class MainWindow
     {
         public ObservableCollection<SlicerProperty> SlicerProperties { get; } = new ObservableCollection<SlicerProperty>();
+        public DataGrid PropertiesGrid;
 
         private uint _visibleThumbnailIndex;
         private Bitmap _visibleThumbnailImage;
+
+        public void InitInformation()
+        {
+            PropertiesGrid = this.Find<DataGrid>("PropertiesGrid");
+            PropertiesGrid.KeyUp += PropertiesGridOnKeyUp;
+        }
+
+        private void PropertiesGridOnKeyUp(object? sender, KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.Escape:
+                    PropertiesGrid.SelectedItems.Clear();
+                    break;
+                case Key.Multiply:
+                    var selectedItems = PropertiesGrid.SelectedItems.OfType<SlicerProperty>().ToList();
+                    PropertiesGrid.SelectedItems.Clear();
+                    foreach (SlicerProperty item in SlicerProperties)
+                    {
+                        if (!selectedItems.Contains(item))
+                            PropertiesGrid.SelectedItems.Add(item);
+                    }
+                    break;
+            }
+        }
 
         #region Thumbnails
         public uint VisibleThumbnailIndex

@@ -51,6 +51,14 @@ namespace UVtools.WPF
         #endregion
 
         #region Methods
+
+        public void InitIssues()
+        {
+            IssuesGrid = this.FindControl<DataGrid>("IssuesGrid");
+            IssuesGrid.CellPointerPressed += IssuesGridOnCellPointerPressed;
+            IssuesGrid.KeyUp += IssuesGridOnKeyUp;
+        }
+
         public void IssueGoPrevious()
         {
             if (!IssueCanGoPrevious) return;
@@ -287,7 +295,7 @@ namespace UVtools.WPF
 
         public string IssueSelectedIndexStr => (_issueSelectedIndex + 1).ToString().PadLeft(Issues.Count.ToString().Length, '0');
 
-        private void IssuesGridOnSelectionChanged(PointerPressedEventArgs pointer = null)
+        private void IssuesGridOnSelectionChanged()
         {
             if (IssuesGrid.SelectedItems.Count != 1) return;
             if (!(IssuesGrid.SelectedItem is LayerIssue issue)) return;
@@ -295,14 +303,14 @@ namespace UVtools.WPF
             if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
                 (issue.X == -1 && issue.Y == -1))
             {
-                ZoomToFit(pointer);
+                ZoomToFit();
             }
             else if (issue.X >= 0 && issue.Y >= 0)
             {
 
-                if (Settings.LayerPreview.ZoomIssues ^ (!ReferenceEquals(pointer, null) && (pointer.KeyModifiers & KeyModifiers.Alt) != 0))
+                if (Settings.LayerPreview.ZoomIssues ^ (_globalModifiers & KeyModifiers.Alt) != 0)
                 {
-                    ZoomToIssue(issue, pointer);
+                    ZoomToIssue(issue);
                 }
                 else
                 {
@@ -313,7 +321,7 @@ namespace UVtools.WPF
 
                     if (!LayerImageBox.GetSourceImageRegion().Contains(GetTransposedIssueBounds(issue).ToAvalonia()))
                     {
-                        CenterAtIssue(issue, pointer);
+                        CenterAtIssue(issue);
                     }
                 }
             }
@@ -331,18 +339,42 @@ namespace UVtools.WPF
             var pointer = e.PointerPressedEventArgs.GetCurrentPoint(IssuesGrid);
             if (pointer.Properties.IsLeftButtonPressed)
             {
-                ZoomToIssue(issue, e.PointerPressedEventArgs);
+                ZoomToIssue(issue);
                 return;
             }
 
             if (pointer.Properties.IsRightButtonPressed)
             {
-                ZoomToFit(e.PointerPressedEventArgs);
+                ZoomToFit();
                 return;
             }
 
             ForceUpdateActualLayer(issue.LayerIndex);
 
+        }
+
+        private void IssuesGridOnKeyUp(object? sender, KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.Escape:
+                    IssuesGrid.SelectedItems.Clear();
+                    break;
+                case Key.Multiply:
+                    var selectedItems = IssuesGrid.SelectedItems.OfType<LayerIssue>().ToList();
+                    IssuesGrid.SelectedItems.Clear();
+                    foreach (LayerIssue item in Issues)
+                    {
+                        if (!selectedItems.Contains(item))
+                            IssuesGrid.SelectedItems.Add(item);
+                    }
+                    
+
+                    break;
+                case Key.Delete:
+                    OnClickIssueRemove();
+                    break;
+            }
         }
 
         public async void OnClickRepairIssues()

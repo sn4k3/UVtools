@@ -11,12 +11,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -57,6 +59,77 @@ namespace UVtools.WPF
 
         public LayerCache LayerCache = new LayerCache();
         private Point _lastPixelMouseLocation = Point.Empty;
+
+        public void InitLayerPreview()
+        {
+            LayerImageBox = this.FindControl<AdvancedImageBox>("LayerImage");
+            LayerSlider = this.FindControl<SliderEx>("Layer.Navigation.Slider");
+            LayerNavigationTooltipPanel = this.FindControl<Panel>("Layer.Navigation.Tooltip.Panel");
+            LayerNavigationTooltipBorder = this.FindControl<Border>("Layer.Navigation.Tooltip.Border");
+
+            _showLayerImageDifference = Settings.LayerPreview.ShowLayerDifference;
+            _showLayerOutlinePrintVolumeBoundary = Settings.LayerPreview.VolumeBoundsOutline;
+            _showLayerOutlineLayerBoundary = Settings.LayerPreview.LayerBoundsOutline;
+            _showLayerOutlineHollowAreas = Settings.LayerPreview.HollowOutline;
+
+            LayerImageBox.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == nameof(LayerImageBox.Zoom))
+                {
+                    RaisePropertyChanged(nameof(LayerZoomStr));
+                    AddLogVerbose($"Zoomed from {LayerImageBox.OldZoom} to {LayerImageBox.Zoom}");
+
+                    if (ShowLayerImageCrosshairs &&
+                        Issues.Count > 0 &&
+                        (LayerImageBox.OldZoom < 50 &&
+                         LayerImageBox.Zoom >= 50 // Trigger refresh as crosshair thickness increases at lower zoom levels
+                         || LayerImageBox.OldZoom > 100 && LayerImageBox.Zoom <= 100
+                         || LayerImageBox.OldZoom >= 50 && LayerImageBox.OldZoom <= 100 && (LayerImageBox.Zoom < 50 || LayerImageBox.Zoom > 100)
+                         || LayerImageBox.OldZoom <= AppSettings.CrosshairFadeLevel &&
+                         LayerImageBox.Zoom > AppSettings.CrosshairFadeLevel // Trigger refresh as zoom level manually crosses fade threshold
+                         || LayerImageBox.OldZoom > AppSettings.CrosshairFadeLevel && LayerImageBox.Zoom <= AppSettings.CrosshairFadeLevel)
+
+                    )
+                    {
+                        if (Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues)
+                        {
+                            if (IssuesGrid.SelectedItems.Count == 0 || !IssuesGrid.SelectedItems.Cast<LayerIssue>().Any(
+                                issue => // Find a valid candidate to update layer preview, otherwise quit
+                                    issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
+                                    issue.Type != LayerIssue.IssueType.TouchingBound)) return;
+                        }
+                        else
+                        {
+                            if (!Issues.Any(
+                                issue => // Find a valid candidate to update layer preview, otherwise quit
+                                    issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
+                                    issue.Type != LayerIssue.IssueType.TouchingBound)) return;
+                        }
+
+                        // A timer is used here rather than invoking ShowLayer directly to eliminate sublte visual flashing
+                        // that will occur on the transition when the crosshair fades or unfades if ShowLayer is called directly.
+                        ShowLayer();
+                    }
+
+                    return;
+                }
+
+                if (e.PropertyName == nameof(LayerImageBox.SelectionRegion))
+                {
+                    RaisePropertyChanged(nameof(LayerROIStr));
+                }
+
+            };
+
+            LayerImageBox.PointerMoved += LayerImageBoxOnPointerMoved;
+            LayerImageBox.KeyUp += LayerImageBox_KeyUp;
+            LayerImageBox.PointerReleased += LayerImageBox_PointerReleased;
+
+            _layerNavigationTooltipTimer.Elapsed += (sender, args) =>
+            {
+                Dispatcher.UIThread.InvokeAsync(() => RaisePropertyChanged(nameof(LayerNavigationTooltipMargin)));
+            };
+        }
 
         public bool ShowLayerImageRotated
         {
@@ -308,6 +381,11 @@ namespace UVtools.WPF
             if (SlicerFile is null) return;
             if (!CanGoUp) return;
             ActualLayer = SliderMaximumValue;
+        }
+
+        public void RefreshLayerImage()
+        {
+            LayerImageBox.Image = LayerCache.ImageBgr.ToBitmap();
         }
 
         /// <summary>
@@ -821,12 +899,12 @@ namespace UVtools.WPF
         /// Zoom the layer preview to the passed issue, or if appropriate for issue type,
         /// Zoom to fit the plate or print bounds.
         /// </summary>
-        private void ZoomToIssue(LayerIssue issue, PointerPressedEventArgs pointer = null)
+        private void ZoomToIssue(LayerIssue issue)
         {
             if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
                 (issue.X == -1 && issue.Y == -1))
             {
-                ZoomToFit(pointer);
+                ZoomToFit();
                 return;
             }
 
@@ -854,12 +932,12 @@ namespace UVtools.WPF
         /// Center the layer preview on the passed issue, or if appropriate for issue type,
         /// Zoom to fit the plate or print bounds.
         /// </summary>
-        private void CenterAtIssue(LayerIssue issue, PointerPressedEventArgs pointer)
+        private void CenterAtIssue(LayerIssue issue)
         {
             if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
                 (issue.X == -1 && issue.Y == -1))
             {
-                ZoomToFit(pointer);
+                ZoomToFit();
             }
 
             if (issue.X >= 0 && issue.Y >= 0)
@@ -878,14 +956,14 @@ namespace UVtools.WPF
             LayerImageBox.ZoomToRegion(SlicerFile.LayerManager.BoundingRectangle);
         }
 
-        private void ZoomToFit(PointerPressedEventArgs pointer = null)
+        private void ZoomToFit()
         {
             if (!IsFileLoaded) return;
 
             // If ALT key is pressed when ZoomToFit is performed, the configured option for 
             // zoom to plate vs. zoom to print bounds will be inverted.
 
-            if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds ^ (!ReferenceEquals(pointer, null) && (pointer.KeyModifiers & KeyModifiers.Alt) != 0))
+            if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds ^ (_globalModifiers & KeyModifiers.Alt) != 0)
             {
                 if (!_showLayerImageRotated)
                 {
@@ -959,8 +1037,10 @@ namespace UVtools.WPF
             //location = pbLayer.PointToImage(e.Location);
             _lastPixelMouseLocation = Point.Empty;
 
+            var imagePosition = LayerImageBox.PointToImage(pointer.Position).ToDotNet();
+
             // Left or Alt-Right Adds pixel, Right or Alt-Left removes pixel
-            DrawPixel(e.InitialPressMouseButton == MouseButton.Left ^ (e.KeyModifiers & KeyModifiers.Alt) != 0, pointer.Position.ToDotNet(), e.KeyModifiers);
+            DrawPixel(e.InitialPressMouseButton == MouseButton.Left ^ (e.KeyModifiers & KeyModifiers.Alt) != 0, imagePosition, e.KeyModifiers);
         }
 
         private void LayerImageBox_KeyUp(object? sender, KeyEventArgs e)
@@ -971,71 +1051,7 @@ namespace UVtools.WPF
                 e.Handled = true;
                 return;
             }
-            if (e.Key == Key.LeftShift ||
-                e.Key == Key.RightShift ||
-                (e.KeyModifiers & KeyModifiers.Shift) == 0 ||
-                (e.KeyModifiers & KeyModifiers.Control) == 0)
-            {
-                LayerImageBox.Cursor = StaticControls.ArrowCursor;
-                LayerImageBox.AutoPan = true;
-                LayerImageBox.SelectionMode = AdvancedImageBox.SelectionModes.None;
-                //lbLayerImageTooltipOverlay.Visible = false;
-                e.Handled = true;
-            }
         }
-
-        private void LayerImageBox_KeyDown(object? sender, KeyEventArgs e)
-        {
-            if (e.Handled 
-                || !IsFileLoaded 
-                || LayerImageBox.IsPanning
-                || LayerImageBox.Cursor == StaticControls.CrossCursor
-                || LayerImageBox.Cursor == StaticControls.HandCursor
-                || LayerImageBox.SelectionMode == AdvancedImageBox.SelectionModes.Rectangle
-                ) return;
-            
-            // Pixel Edit is active, Shift is down, and the cursor is over the image region.
-            if (e.KeyModifiers == KeyModifiers.Shift)
-            {
-                if (IsPixelEditorActive)
-                {
-                    LayerImageBox.AutoPan = false;
-                    LayerImageBox.Cursor = StaticControls.CrossCursor;
-                    /*lbLayerImageTooltipOverlay.Text = "Pixel editing is on:\n" +
-                                                      "» Click over a pixel to draw\n" +
-                                                      "» Hold CTRL to clear pixels";
-
-                    UpdatePixelEditorCursor();*/
-                }
-                else
-                {
-                    LayerImageBox.Cursor = StaticControls.CrossCursor;
-                    LayerImageBox.SelectionMode = AdvancedImageBox.SelectionModes.Rectangle;
-                    /*lbLayerImageTooltipOverlay.Text = "ROI selection mode:\n" +
-                                                      "» Left-click drag to select a fixed region\n" +
-                                                      "» Left-click + ALT drag to select specific objects\n" +
-                                                      "» Right click on a specific object to select it\n" +
-                                                      "Press Esc to clear the ROI";*/
-                }
-
-                //lbLayerImageTooltipOverlay.Visible = Settings.Default.LayerTooltipOverlay;
-                e.Handled = true;
-                return;
-            }
-
-            if (e.KeyModifiers == KeyModifiers.Control)
-            {
-                LayerImageBox.Cursor = StaticControls.HandCursor;
-                LayerImageBox.AutoPan = false;
-                /*lbLayerImageTooltipOverlay.Text = "Issue selection mode:\n" +
-                                                  "» Click over an issue to select it";
-
-                lbLayerImageTooltipOverlay.Visible = Settings.Default.LayerTooltipOverlay;*/
-                e.Handled = true;
-                return;
-            }
-        }
-
 
         private void LayerImageBoxOnPointerMoved(object? sender, PointerEventArgs e)
         {

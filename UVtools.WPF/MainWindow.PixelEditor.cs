@@ -8,14 +8,20 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using DynamicData;
+using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using MessageBox.Avalonia.Enums;
+using UVtools.Core.Extensions;
 using UVtools.Core.PixelEditor;
 using UVtools.WPF.Extensions;
 
@@ -39,17 +45,54 @@ namespace UVtools.WPF
             set => RaiseAndSetIfChanged(ref _selectedPixelOperationTabIndex, value);
         }
 
+        public void InitPixelEditor()
+        {
+            DrawingsGrid = this.FindControl<DataGrid>("DrawingsGrid");
+            DrawingsGrid.KeyUp += DrawingsGridOnKeyUp;
+            DrawingsGrid.SelectionChanged += (sender, args) =>
+            {
+                ShowLayer();
+            };
+        }
+
+        private void DrawingsGridOnKeyUp(object? sender, KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.Escape:
+                    DrawingsGrid.SelectedItems.Clear();
+                    break;
+                case Key.Multiply:
+                    var selectedItems = DrawingsGrid.SelectedItems.OfType<PixelOperation>().ToList();
+                    DrawingsGrid.SelectedItems.Clear();
+                    foreach (PixelOperation item in Drawings)
+                    {
+                        if (!selectedItems.Contains(item))
+                            DrawingsGrid.SelectedItems.Add(item);
+                    }
+
+
+                    break;
+                case Key.Delete:
+                    OnClickDrawingRemove();
+                    break;
+            }
+        }
+
         public void OnClickDrawingRemove()
         {
             if (DrawingsGrid.SelectedItems.Count == 0) return;
             Drawings.RemoveMany(DrawingsGrid.SelectedItems.Cast<PixelOperation>());
+            ShowLayer();
         }
 
         public async void OnClickDrawingClear()
         {
-            if(await this.MessageBoxQuestion($"Are you sure you want to clear {Drawings.Count} operations?",
+            if (Drawings.Count == 0) return;
+            if (await this.MessageBoxQuestion($"Are you sure you want to clear {Drawings.Count} operations?",
                 "Clear pixel editor operations?") != ButtonResult.Yes) return;
             Drawings.Clear();
+            ShowLayer();
         }
 
         void DrawPixel(bool isAdd, Point location, KeyModifiers keyModifiers)
@@ -77,160 +120,160 @@ namespace UVtools.WPF
                 return;
             }
 
-            PixelOperation operation = null;
-            //Bitmap bmp = pbLayer.Image as Bitmap;
+            WriteableBitmap bitmap = (WriteableBitmap)LayerImageBox.Image;
+            //var context = CreateRenderTarget().CreateDrawingContext(bitmap);
 
+
+            //Bitmap bmp = pbLayer.Image as Bitmap;
             if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Drawing)
             {
                 uint minLayer = Math.Max(0, _actualLayer - DrawingPixelDrawing.LayersBelow);
-                uint maxLayer = Math.Min(SlicerFile.LayerCount - 1,
-                    _actualLayer + DrawingPixelDrawing.LayersAbove);
+                uint maxLayer = Math.Min(SlicerFile.LayerCount - 1, _actualLayer + DrawingPixelDrawing.LayersAbove);
                 for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
                 {
-                    operation = new PixelDrawing(layerIndex, realLocation, DrawingPixelDrawing.LineType,
+                    var operationDrawing = new PixelDrawing(layerIndex, realLocation, DrawingPixelDrawing.LineType,
                         DrawingPixelDrawing.BrushShape, DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.Thickness, isAdd);
 
                     //if (PixelHistory.Contains(operation)) continue;
-                    Drawings.Add(operation);
+                    Drawings.Add(operationDrawing);
 
-                    if (layerIndex == ActualLayer)
+                    if (layerIndex == _actualLayer)
                     {
-                        /*using (var gfx = Graphics.FromImage(bmp))
+                        var color = isAdd
+                            ? Settings.PixelEditor.AddPixelColor
+                            : Settings.PixelEditor.RemovePixelColor;
+
+                        if (operationDrawing.BrushSize == 1)
                         {
-                            int shiftPos = brushSize / 2;
-                            gfx.SmoothingMode = SmoothingMode.HighSpeed;
-
-                            var color = isAdd
-                                ? (flvPixelHistory.SelectedObjects.Contains(operation)
-                                    ? Settings.Default.PixelEditorAddPixelHLColor
-                                    : Settings.Default.PixelEditorAddPixelColor)
-                                : (flvPixelHistory.SelectedObjects.Contains(operation)
-                                    ? Settings.Default.PixelEditorRemovePixelHLColor
-                                    : Settings.Default.PixelEditorRemovePixelColor);
-                            if (lineType == LineType.AntiAlias && brushSize > 1)
+                            unsafe
                             {
-                                gfx.SmoothingMode = SmoothingMode.AntiAlias;
+                                using (var bl = bitmap.Lock())
+                                {
+                                    var data = (uint*)bl.Address.ToPointer();
+                                    data[bitmap.GetPixelPos(location)] =
+                                        color.ToUint32();
+                                }
                             }
+                            
+                            LayerImageBox.InvalidateArrange();
+                               // LayerCache.ImageBgr.SetByte(operationDrawing.Location.X, operationDrawing.Location.Y,
+                                 //   new[] { color.B, color.G, color.R });
+                            continue;
+                        }
 
-                            switch (shapeType)
-                            {
-                                case PixelDrawing.BrushShapeType.Rectangle:
-                                    if (thickness > 0)
-                                        gfx.DrawRectangle(new Pen(color, thickness), Math.Max(0, location.X - shiftPos),
-                                            Math.Max(0, location.Y - shiftPos),
-                                            (int)nmPixelEditorDrawingBrushSize.Value,
-                                            (int)nmPixelEditorDrawingBrushSize.Value);
-                                    else
-                                        gfx.FillRectangle(new SolidBrush(color), Math.Max(0, location.X - shiftPos),
-                                            Math.Max(0, location.Y - shiftPos),
-                                            (int)nmPixelEditorDrawingBrushSize.Value,
-                                            (int)nmPixelEditorDrawingBrushSize.Value);
-                                    break;
-                                case PixelDrawing.BrushShapeType.Circle:
-                                    if (thickness > 0)
-                                        gfx.DrawEllipse(new Pen(color, thickness), Math.Max(0, location.X - shiftPos),
-                                            Math.Max(0, location.Y - shiftPos),
-                                            (int)nmPixelEditorDrawingBrushSize.Value,
-                                            (int)nmPixelEditorDrawingBrushSize.Value);
-                                    else
-                                        gfx.FillEllipse(new SolidBrush(color), Math.Max(0, location.X - shiftPos),
-                                            Math.Max(0, location.Y - shiftPos),
-                                            (int)nmPixelEditorDrawingBrushSize.Value,
-                                            (int)nmPixelEditorDrawingBrushSize.Value);
-                                    break;
-                                default:
-                                    throw new ArgumentOutOfRangeException();
-                            }
-                        }*/
+                        switch (operationDrawing.BrushShape)
+                        {
+                            case PixelDrawing.BrushShapeType.Rectangle:
+                                CvInvoke.Rectangle(LayerCache.ImageBgr, GetTransposedRectangle(operationDrawing.Rectangle),
+                                    new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
+                                    operationDrawing.LineType);
+                                break;
+                            case PixelDrawing.BrushShapeType.Circle:
+                                CvInvoke.Circle(LayerCache.ImageBgr, location, operationDrawing.BrushSize / 2,
+                                    new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
+                                    operationDrawing.LineType);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+
+                        RefreshLayerImage();
                     }
                 }
             }
-            /*else if (tabControlPixelEditor.SelectedIndex == (byte)PixelOperation.PixelOperationType.Text)
+            else if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Text)
             {
-                if (string.IsNullOrEmpty(tbPixelEditorTextText.Text) || nmPixelEditorTextFontScale.Value < 0.2m) return;
+                if (string.IsNullOrEmpty(DrawingPixelText.Text) || DrawingPixelText.FontScale < 0.2) return;
 
-                LineType lineType = (LineType)cbPixelEditorTextLineType.SelectedItem;
-                FontFace fontFace = (FontFace)cbPixelEditorTextFontFace.SelectedItem;
-
-                uint minLayer = (uint)Math.Max(0, ActualLayer - nmPixelEditorTextLayersBelow.Value);
-                uint maxLayer = (uint)Math.Min(SlicerFile.LayerCount - 1,
-                    ActualLayer + nmPixelEditorTextLayersAbove.Value);
+                uint minLayer = Math.Max(0, ActualLayer - DrawingPixelText.LayersBelow);
+                uint maxLayer = Math.Min(SlicerFile.LayerCount - 1,
+                    ActualLayer + DrawingPixelText.LayersAbove);
                 for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
                 {
-                    operation = new PixelText(layerIndex, realLocation, lineType,
-                        fontFace, (double)nmPixelEditorTextFontScale.Value, (ushort)nmPixelEditorTextThickness.Value,
-                        tbPixelEditorTextText.Text, cbPixelEditorTextMirror.Checked, isAdd);
+                    var operationText = new PixelText(layerIndex, realLocation, DrawingPixelText.LineType,
+                        DrawingPixelText.Font, DrawingPixelText.FontScale, DrawingPixelText.Thickness,
+                        DrawingPixelText.Text, DrawingPixelText.Mirror, isAdd);
 
-                    if (PixelHistory.Contains(operation)) continue;
-                    PixelHistory.Add(operation);
+                    //if (PixelHistory.Contains(operation)) continue;
+                    //PixelHistory.Add(operation);
+                    Drawings.Add(operationText);
+
+                    /*var color = isAdd
+                        ? Settings.PixelEditor.AddPixelColor : Settings.PixelEditor.RemovePixelColor;
+
+                    if (layerIndex == _actualLayer)
+                    {
+                        CvInvoke.PutText(LayerCache.ImageBgr, operationText.Text, location,
+                            operationText.Font, operationText.FontScale, new MCvScalar(color.B, color.G, color.R),
+                            operationText.Thickness, operationText.LineType, operationText.Mirror);
+                        RefreshLayerImage();
+                    }*/
                 }
 
                 ShowLayer();
                 return;
             }
-            else if (tabControlPixelEditor.SelectedIndex == (byte)PixelOperation.PixelOperationType.Eraser)
+            else if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Eraser)
             {
-                if (ActualLayerImage.GetByte(realLocation) < 10) return;
-                uint minLayer = (uint)Math.Max(0, ActualLayer - nmPixelEditorEraserLayersBelow.Value);
-                uint maxLayer = (uint)Math.Min(SlicerFile.LayerCount - 1,
-                    ActualLayer + nmPixelEditorEraserLayersAbove.Value);
+                if (LayerCache.Image.GetByte(realLocation) < 10) return;
+                uint minLayer = Math.Max(0, ActualLayer - DrawingPixelEraser.LayersBelow);
+                uint maxLayer = Math.Min(SlicerFile.LayerCount - 1,
+                    ActualLayer + DrawingPixelEraser.LayersAbove);
                 for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
                 {
-                    operation = new PixelEraser(layerIndex, realLocation);
+                    var operationEraser = new PixelEraser(layerIndex, realLocation);
 
-                    if (PixelHistory.Contains(operation)) continue;
-                    PixelHistory.Add(operation);
+                    //if (PixelHistory.Contains(operation)) continue;
+                    Drawings.Add(operationEraser);
+
+                    /*if (layerIndex == _actualLayer)
+                    {
+                        for (int i = 0; i < LayerCache.LayerContours.Size; i++)
+                        {
+                            if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], operationEraser.Location, false) >= 0)
+                            {
+                                CvInvoke.DrawContours(LayerCache.ImageBgr, LayerCache.LayerContours, i,
+                                    new MCvScalar(Settings.PixelEditor.RemovePixelColor.B, Settings.PixelEditor.RemovePixelColor.G, Settings.PixelEditor.RemovePixelColor.R), -1);
+                                RefreshLayerImage();
+                                break;
+                            }
+                        }
+                    }*/
                 }
 
                 ShowLayer();
                 return;
             }
-            else if (tabControlPixelEditor.SelectedIndex == (byte)PixelOperation.PixelOperationType.Supports)
+            else if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Supports)
             {
                 if (ActualLayer == 0) return;
-                operation = new PixelSupport(ActualLayer, realLocation,
-                    (byte)nmPixelEditorSupportsTipDiameter.Value, (byte)nmPixelEditorSupportsPillarDiameter.Value,
-                    (byte)nmPixelEditorSupportsBaseDiameter.Value);
+                var operationSupport = new PixelSupport(ActualLayer, realLocation,
+                    DrawingPixelSupport.TipDiameter, DrawingPixelSupport.PillarDiameter,
+                    DrawingPixelSupport.BaseDiameter);
 
-                if (PixelHistory.Contains(operation)) return;
-                PixelHistory.Add(operation);
+                //if (PixelHistory.Contains(operation)) return;
+                Drawings.Add(operationSupport);
 
-                SolidBrush brush = new SolidBrush(flvPixelHistory.SelectedObjects.Contains(operation)
-                    ? Settings.Default.PixelEditorSupportHLColor
-                    : Settings.Default.PixelEditorSupportColor);
-                using (var gfx = Graphics.FromImage(bmp))
-                {
-                    int shiftPos = (int)nmPixelEditorSupportsTipDiameter.Value / 2;
-                    gfx.SmoothingMode = SmoothingMode.HighSpeed;
-                    gfx.FillEllipse(brush, Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos),
-                        (int)nmPixelEditorSupportsTipDiameter.Value, (int)nmPixelEditorSupportsTipDiameter.Value);
-                }
+                CvInvoke.Circle(LayerCache.ImageBgr, location, operationSupport.TipDiameter / 2,
+                    new MCvScalar(Settings.PixelEditor.SupportsColor.B, Settings.PixelEditor.SupportsColor.G, Settings.PixelEditor.SupportsColor.R), -1);
+                RefreshLayerImage();
             }
-            else if (tabControlPixelEditor.SelectedIndex == (byte)PixelOperation.PixelOperationType.DrainHole)
+            else if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.DrainHole)
             {
                 if (ActualLayer == 0) return;
-                operation = new PixelDrainHole(ActualLayer, realLocation, (byte)nmPixelEditorDrainHoleDiameter.Value);
+                var operationDrainHole = new PixelDrainHole(ActualLayer, realLocation, DrawingPixelDrainHole.Diameter);
 
-                if (PixelHistory.Contains(operation)) return;
-                PixelHistory.Add(operation);
+                //if (PixelHistory.Contains(operation)) return;
+                Drawings.Add(operationDrainHole);
 
-                SolidBrush brush = new SolidBrush(flvPixelHistory.SelectedObjects.Contains(operation)
-                    ? Settings.Default.PixelEditorDrainHoleHLColor
-                    : Settings.Default.PixelEditorDrainHoleColor);
-                using (var gfx = Graphics.FromImage(bmp))
-                {
-                    int shiftPos = (int)nmPixelEditorDrainHoleDiameter.Value / 2;
-                    gfx.SmoothingMode = SmoothingMode.HighSpeed;
-                    gfx.FillEllipse(brush, Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos),
-                        (int)nmPixelEditorDrainHoleDiameter.Value, (int)nmPixelEditorDrainHoleDiameter.Value);
-                }
+                CvInvoke.Circle(LayerCache.ImageBgr, operationDrainHole.Location, operationDrainHole.Diameter / 2,
+                    new MCvScalar(Settings.PixelEditor.DrainHoleColor.B, Settings.PixelEditor.DrainHoleColor.G, Settings.PixelEditor.DrainHoleColor.R), -1);
+                RefreshLayerImage();
             }
             else
             {
                 throw new NotImplementedException("Missing pixel operation");
             }
-
-            */
         }
     }
 }
