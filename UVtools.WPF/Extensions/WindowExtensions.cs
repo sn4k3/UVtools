@@ -5,6 +5,8 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Threading;
@@ -43,6 +45,30 @@ namespace UVtools.WPF.Extensions
         public static async Task<ButtonResult> MessageBoxQuestion(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.YesNo, Style style = Style.None)
             => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", buttons, Icon.Setting, WindowStartupLocation.CenterOwner, style);
 
+
+        public static void ShowDialogSync(this Window window, Window parent = null)
+        {
+            if (parent is null) parent = window;
+            using (var source = new CancellationTokenSource())
+            {
+                window.ShowDialog(parent).ContinueWith(t => source.Cancel(), TaskScheduler.FromCurrentSynchronizationContext());
+                Dispatcher.UIThread.MainLoop(source.Token);
+            }
+        }
+
+        public static T ShowDialogSync<T>(this Window window, Window parent = null)
+        {
+            if (parent is null) parent = window;
+            using (var source = new CancellationTokenSource())
+            {
+                var task = window.ShowDialog<T>(parent);
+                task.ContinueWith(t => source.Cancel(), TaskScheduler.FromCurrentSynchronizationContext());
+                Dispatcher.UIThread.MainLoop(source.Token);
+                return task.Result;
+            }
+
+            return default(T);
+        }
 
         public static void ResetDataContext(this Window window)
         {

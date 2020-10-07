@@ -584,6 +584,11 @@ namespace UVtools.WPF
             await new AboutWindow().ShowDialog(this);
         }
 
+        public async void MenuHelpInstallProfilesClicked()
+        {
+            await new PrusaSlicerManager().ShowDialog(this);
+        }
+
         #endregion
 
         #region Methods
