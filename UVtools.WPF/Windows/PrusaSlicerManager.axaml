@@ -28,7 +28,7 @@
                 Width="18" Height="18"
                 BorderBrush="Black"
                 BorderThickness="2"
-                Background="Green"></Border>
+                Background="Green"/>
 
               <TextBlock
                 VerticalAlignment="Center"
@@ -41,7 +41,7 @@
                 Width="18" Height="18"
                 BorderBrush="Black"
                 BorderThickness="2"
-                Background="Red"></Border>
+                Background="Red"/>
 
               <TextBlock
                 VerticalAlignment="Center"
@@ -54,7 +54,7 @@
                 Width="18" Height="18"
                 BorderBrush="Black"
                 BorderThickness="2"
-                Background="Black"></Border>
+                Background="Black"/>
 
               <TextBlock
                 VerticalAlignment="Center"
@@ -113,9 +113,11 @@
           HorizontalAlignment="Right"
           Orientation="Horizontal" 
           Spacing="5">
-            <Button Padding="10">
+            <Button Padding="10"
+                    Command="{Binding InstallProfiles}"
+                    >
               <StackPanel Orientation="Horizontal" Spacing="10">
-                <Image Source="/Assets/Icons/refresh-16x16.png"/>
+                <Image Source="/Assets/Icons/accept-16x16.png"/>
                 <TextBlock Text="Install selected profiles"/>
               </StackPanel>
             </Button>
@@ -146,7 +148,7 @@
 
         <Grid RowDefinitions="Auto,Auto,*">
 
-          <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Printer profiles"/>
+          <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Print profiles"/>
 
           <StackPanel
             Grid.Row="1"
@@ -209,6 +211,7 @@
           <ListBox
             Grid.Row="2"
             SelectionMode="Toggle"
+            VirtualizationMode="None"
             Items="{Binding Profiles[0].Items}"/>
         </Grid>
       </Border>
@@ -285,6 +288,7 @@
             <ListBox
               Grid.Row="2"
             SelectionMode="Toggle"
+            VirtualizationMode="None"
             Items="{Binding Profiles[1].Items}"/>
           </Grid>
       </Border>

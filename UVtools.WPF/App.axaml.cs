@@ -167,6 +167,27 @@ namespace UVtools.WPF
             return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         }
 
+        public static string GetPrusaSlicerDirectory()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}{Path.DirectorySeparatorChar}PrusaSlicer";
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}{Path.DirectorySeparatorChar}.PrusaSlicer";
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return string.Format("{0}{1}Library{1}Application Support{1}PrusaSlicer",
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), Path.DirectorySeparatorChar);
+            }
+
+            return null;
+        }
+
         #endregion
     }
 }

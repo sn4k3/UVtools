@@ -586,6 +586,17 @@ namespace UVtools.WPF
 
         public async void MenuHelpInstallProfilesClicked()
         {
+            var PEFolder = App.GetPrusaSlicerDirectory();
+            if (string.IsNullOrEmpty(PEFolder) || !Directory.Exists(PEFolder))
+            {
+                if(await this.MessageBoxQuestion(
+                    "Unable to detect PrusaSlicer on your system, please ensure you have latest version installed.\n" +
+                    $"Was looking on: {PEFolder}\n\n" +
+                    "Click 'Yes' to open the PrusaSlicer webpage for download\n" +
+                    "Click 'No' to dismiss",
+                    "Unable to detect PrusaSlicer") == ButtonResult.Yes) App.OpenBrowser("https://www.prusa3d.com/prusaslicer/");
+                return;
+            }
             await new PrusaSlicerManager().ShowDialog(this);
         }
 

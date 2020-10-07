@@ -45,6 +45,21 @@ namespace UVtools.WPF.Structures
             set => RaiseAndSetIfChanged(ref _updates, value);
         }
 
+        public string SelectedFiles
+        {
+            get
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (CheckBox item in Items)
+                {
+                    if (!item.IsChecked.HasValue || !item.IsChecked.Value) continue;
+                    sb.AppendLine(item.Content.ToString());
+                }
+
+                return sb.ToString();
+            }
+        }
+
         public PEProfileFolder(FolderType type)
         {
             Type = type;
@@ -54,16 +69,12 @@ namespace UVtools.WPF.Structures
                 case FolderType.Print:
                     SourcePath = string.Format("{0}{1}Assets{1}PrusaSlicer{1}sla_print",
                         App.GetApplicationPath(), Path.DirectorySeparatorChar);
-                    TargetPath = string.Format("{0}{1}PrusaSlicer{1}sla_print",
-                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                        Path.DirectorySeparatorChar);
+                    TargetPath = $"{App.GetPrusaSlicerDirectory()}{Path.DirectorySeparatorChar}sla_print";
                     break;
                 case FolderType.Printer:
                     SourcePath = string.Format("{0}{1}Assets{1}PrusaSlicer{1}printer",
                         App.GetApplicationPath(), Path.DirectorySeparatorChar);
-                    TargetPath = string.Format("{0}{1}PrusaSlicer{1}printer",
-                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                        Path.DirectorySeparatorChar);
+                    TargetPath = $"{App.GetPrusaSlicerDirectory()}{Path.DirectorySeparatorChar}printer";
                     break;
             }
 
@@ -86,8 +97,8 @@ namespace UVtools.WPF.Structures
             {
                 Items.Add(new CheckBox
                 {
-                    Content = files[i].Name,
-                    Tag = files
+                    Content = Path.GetFileNameWithoutExtension(files[i].Name),
+                    Tag = files[i]
                 });
 
                 if (folderExists)
