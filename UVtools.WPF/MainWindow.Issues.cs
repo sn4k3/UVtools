@@ -62,6 +62,7 @@ namespace UVtools.WPF
         {
             IssuesGrid = this.FindControl<DataGrid>("IssuesGrid");
             IssuesGrid.CellPointerPressed += IssuesGridOnCellPointerPressed;
+            IssuesGrid.SelectionChanged += IssuesGridOnSelectionChanged;
             IssuesGrid.KeyUp += IssuesGridOnKeyUp;
         }
 
@@ -293,16 +294,18 @@ namespace UVtools.WPF
                 RaisePropertyChanged(nameof(IssueSelectedIndexStr));
                 RaisePropertyChanged(nameof(IssueCanGoPrevious));
                 RaisePropertyChanged(nameof(IssueCanGoNext));
-                IssuesGridOnSelectionChanged();
             }
         }
 
         public string IssueSelectedIndexStr => (_issueSelectedIndex + 1).ToString().PadLeft(Issues.Count.ToString().Length, '0');
 
-        private void IssuesGridOnSelectionChanged()
+        private void IssuesGridOnSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            if (IssuesGrid.SelectedItems.Count != 1) return;
-            if (!(IssuesGrid.SelectedItem is LayerIssue issue)) return;
+            if (!(IssuesGrid.SelectedItem is LayerIssue issue))
+            {
+                ShowLayer();
+                return;
+            }
 
             if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
                 (issue.X == -1 && issue.Y == -1))
@@ -333,19 +336,15 @@ namespace UVtools.WPF
             ForceUpdateActualLayer(issue.LayerIndex);
         }
 
+        
         private void IssuesGridOnCellPointerPressed(object? sender, DataGridCellPointerPressedEventArgs e)
         {
-            if (IssuesGrid.SelectedItems.Count != 1 || e.PointerPressedEventArgs.ClickCount == 2) return;
+            if (e.PointerPressedEventArgs.ClickCount == 2) return;
             if (!(IssuesGrid.SelectedItem is LayerIssue issue)) return;
             // Double clicking an issue will center and zoom into the 
             // selected issue. Left click on an issue will zoom to fit.
-
+            
             var pointer = e.PointerPressedEventArgs.GetCurrentPoint(IssuesGrid);
-            if (pointer.Properties.IsLeftButtonPressed)
-            {
-                ZoomToIssue(issue);
-                return;
-            }
 
             if (pointer.Properties.IsRightButtonPressed)
             {
@@ -353,7 +352,7 @@ namespace UVtools.WPF
                 return;
             }
 
-            ForceUpdateActualLayer(issue.LayerIndex);
+            //ForceUpdateActualLayer(issue.LayerIndex);
 
         }
 
@@ -475,7 +474,8 @@ namespace UVtools.WPF
                 return;
             }
 
-            var tickFrequencySize = LayerSlider.Track.Bounds.Height * LayerSlider.TickFrequency / (LayerSlider.Maximum - LayerSlider.Minimum);
+            //var tickFrequencySize = LayerSlider.Track.Bounds.Height * LayerSlider.TickFrequency / (LayerSlider.Maximum - LayerSlider.Minimum);
+            var tickFrequencySize = _issuesSliderCanvas.Bounds.Height * LayerSlider.TickFrequency / (LayerSlider.Maximum - LayerSlider.Minimum);
             foreach (var value in issuesCountPerLayer)
             {
                 var yPos = tickFrequencySize * value.Key;

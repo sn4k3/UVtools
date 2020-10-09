@@ -231,6 +231,7 @@ namespace UVtools.WPF
 
 
         private PointerEventArgs _globalPointerEventArgs;
+        private PointerPoint _globalPointerPoint;
         private KeyModifiers _globalModifiers;
 
         #endregion
@@ -359,10 +360,12 @@ namespace UVtools.WPF
                     return;
                 }
             };*/
-            //PropertyChanged += OnPropertyChanged;
+            PropertyChanged += OnPropertyChanged;
+            var clientSizeObs = this.GetObservable(ClientSizeProperty);
+            clientSizeObs.Subscribe(size => UpdateLayerTrackerHighlightIssues());
+            var windowStateObs = this.GetObservable(WindowStateProperty);
+            windowStateObs.Subscribe(size => UpdateLayerTrackerHighlightIssues());
             
-            
-
 
             UpdateTitle();
 
@@ -378,6 +381,7 @@ namespace UVtools.WPF
                 ProcessFiles(e.Data.GetFileNames().ToArray());
             });
 
+            
             AddLog($"{About.Software} start");
             ProcessFiles(Program.Args);
         }
@@ -407,6 +411,18 @@ namespace UVtools.WPF
             base.OnPointerMoved(e);
             _globalPointerEventArgs = e;
             _globalModifiers = e.KeyModifiers;
+        }
+
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+            _globalPointerPoint = e.GetCurrentPoint(this);
+        }
+
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
+        {
+            base.OnPointerReleased(e);
+            _globalPointerPoint = e.GetCurrentPoint(this);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -482,6 +498,8 @@ namespace UVtools.WPF
                 e.Handled = true;
             }
         }
+
+        
 
         #endregion
 
@@ -1069,13 +1087,15 @@ namespace UVtools.WPF
             await Task.Factory.StartNew(() =>
             {
                 ShowProgressWindow(baseOperation.ProgressTitle);
+                var backup = SlicerFile.LayerManager.Clone();
 
-                var backup = new Layer[baseOperation.LayerRangeCount];
+
+                /*var backup = new Layer[baseOperation.LayerRangeCount];
                 uint i = 0;
                 for (uint layerIndex = baseOperation.LayerIndexStart; layerIndex <= baseOperation.LayerIndexEnd; layerIndex++)
                 {
                     backup[i++] = SlicerFile[layerIndex].Clone();
-                }
+                }*/
 
                 try
                 {
@@ -1145,11 +1165,12 @@ namespace UVtools.WPF
                 }
                 catch (OperationCanceledException)
                 {
-                    i = 0;
+                    SlicerFile.LayerManager = backup;
+                    /*i = 0;
                     for (uint layerIndex = baseOperation.LayerIndexStart; layerIndex <= baseOperation.LayerIndexEnd; layerIndex++)
                     {
                         SlicerFile[layerIndex] = backup[i++];
-                    }
+                    }*/
                 }
                 catch (Exception ex)
                 {

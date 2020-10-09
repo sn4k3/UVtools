@@ -46,7 +46,7 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Imported layers";
 
-        public override bool CanCancel => false;
+        public override bool CanCancel => true;
 
         public override uint LayerIndexStart => InsertAfterLayerIndex + (ReplaceStartLayer ? 0u : 1);
         public override uint LayerIndexEnd => (uint)(LayerIndexStart + Count - 1);

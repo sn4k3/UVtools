@@ -1317,7 +1317,7 @@
 
         <Canvas
           Grid.Column="1"
-          Margin="0,5"
+          Margin="0,15"
           Background="WhiteSmoke"
           Name="Layer.Navigation.IssuesCanvas" Width="20"/>
 

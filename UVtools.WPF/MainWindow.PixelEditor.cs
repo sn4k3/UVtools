@@ -26,6 +26,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using MessageBox.Avalonia.Enums;
 using SkiaSharp;
+using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.PixelEditor;
 using UVtools.WPF.Extensions;
@@ -54,10 +55,48 @@ namespace UVtools.WPF
         {
             DrawingsGrid = this.FindControl<DataGrid>("DrawingsGrid");
             DrawingsGrid.KeyUp += DrawingsGridOnKeyUp;
-            DrawingsGrid.SelectionChanged += (sender, args) =>
+            DrawingsGrid.SelectionChanged += DrawingsGridOnSelectionChanged;
+            DrawingsGrid.CellPointerPressed += DrawingsGridOnCellPointerPressed;
+        }
+
+        private void DrawingsGridOnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (!(DrawingsGrid.SelectedItem is PixelOperation operation))
             {
                 ShowLayer();
-            };
+                return;
+            }
+
+            Point location = GetTransposedPoint(operation.Location, false);
+
+            if (Settings.LayerPreview.ZoomIssues ^ (_globalModifiers & KeyModifiers.Alt) != 0)
+            {
+                CenterLayerAt(new Rectangle(location, operation.Size), AppSettings.LockedZoomLevel);
+            }
+            else
+            {
+                CenterLayerAt(location);
+            }
+
+
+            ForceUpdateActualLayer(operation.LayerIndex);
+        }
+
+        private void DrawingsGridOnCellPointerPressed(object? sender, DataGridCellPointerPressedEventArgs e)
+        {
+            if (e.PointerPressedEventArgs.ClickCount == 2) return;
+            if (!(DrawingsGrid.SelectedItem is LayerIssue issue)) return;
+            // Double clicking an issue will center and zoom into the 
+            // selected issue. Left click on an issue will zoom to fit.
+
+            var pointer = e.PointerPressedEventArgs.GetCurrentPoint(DrawingsGrid);
+
+            if (pointer.Properties.IsRightButtonPressed)
+            {
+                ZoomToFit();
+                return;
+            }
+
         }
 
         private void DrawingsGridOnKeyUp(object? sender, KeyEventArgs e)

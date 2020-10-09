@@ -2,7 +2,7 @@
 
 ## ??/??/2020 - v0.9.0.0
 
-* (Add) Multi-OS with Linux support
+* (Add) Multi-OS with Linux and MacOS support
 * (Add) Themes support
 * (Add) Fullscreen support (F11)
 * (Change) GUI was rewritten from Windows Forms to WPF Avalonia, C#
@@ -11,6 +11,9 @@
 
 ## 01/10/2020 - v0.8.4.1
 
+* (Change) On operations, instead of partial backup a whole backup is made, this allow cancel operations which changes layer count and other structure changes
+* (Fix) Tool - Layer Import: Allow cancel operation
+* (Fix) Tool - Layer Import: When importing layers that increase the total layer count of the file program stays forever on progress
 * (Fix) Tool - Layer Clone: Layer information was the same as heights, fixed to show the result of operation in layers
 * (Fix) Tool - Pattern: Unable to use an anchor
 

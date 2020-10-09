@@ -4221,12 +4221,14 @@ namespace UVtools.GUI
 
             var task = Task.Factory.StartNew(() =>
             {
-                var backup = new Layer[baseOperation.LayerRangeCount];
+                /*var backup = new Layer[baseOperation.LayerRangeCount];
                 uint i = 0;
                 for (uint layerIndex = baseOperation.LayerIndexStart; layerIndex <= baseOperation.LayerIndexEnd; layerIndex++)
                 {
                     backup[i++] = SlicerFile[layerIndex].Clone();
-                }
+                }*/
+
+                var backup = SlicerFile.LayerManager.Clone();
 
                 try
                 {
@@ -4296,11 +4298,12 @@ namespace UVtools.GUI
                 }
                 catch (OperationCanceledException)
                 {
-                    i = 0;
+                    /*i = 0;
                     for (uint layerIndex = baseOperation.LayerIndexStart; layerIndex <= baseOperation.LayerIndexEnd; layerIndex++)
                     {
                         SlicerFile[layerIndex] = backup[i++];
-                    }
+                    }*/
+                    SlicerFile.LayerManager = backup;
                 }
                 catch (Exception ex)
                 {
