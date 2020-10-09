@@ -641,7 +641,7 @@
           </StackPanel>
         </TabItem.Header>
 
-        <StackPanel Orientation="Vertical">
+        <Grid RowDefinitions="Auto,Auto,*">
           <TabControl SelectedIndex="{Binding SelectedPixelOperationTabIndex}">
             <!-- Drawing !-->
             <TabItem
@@ -1126,78 +1126,78 @@
           </TabControl>
 
           <!-- Toolbar !-->
-          <Grid Background="WhiteSmoke"
-                RowDefinitions="Auto,*"
-                >
+          <StackPanel
+            Grid.Row="1"
+            Orientation="Horizontal" Spacing="1">
+            <Button IsEnabled="{Binding #DrawingsGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+            Command="{Binding OnClickDrawingRemove}">
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Image Source="/Assets/Icons/trash-16x16.png"/>
+                <TextBlock 
+                  VerticalAlignment="Center"
+                  Text="Remove"/>
+              </StackPanel>
+            </Button>
 
-            <StackPanel Orientation="Horizontal" Spacing="1">
-              <Button IsEnabled="{Binding #DrawingsGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-              Command="{Binding OnClickDrawingRemove}">
-                <StackPanel Orientation="Horizontal" Spacing="5">
-                  <Image Source="/Assets/Icons/trash-16x16.png"/>
-                  <TextBlock 
-                    VerticalAlignment="Center"
-                    Text="Remove"/>
-                </StackPanel>
-              </Button>
+            <Button IsEnabled="{Binding Drawings.Count}"
+                    Command="{Binding OnClickDrawingClear}">
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Image Source="/Assets/Icons/delete-16x16.png"/>
+                <TextBlock 
+                  VerticalAlignment="Center"
+                  Text="Clear" 
+                  />
+              </StackPanel>
+            </Button>
+          </StackPanel>
 
-              <Button IsEnabled="{Binding Drawings.Count}"
-                      Command="{Binding OnClickDrawingClear}">
-                <StackPanel Orientation="Horizontal" Spacing="5">
-                  <Image Source="/Assets/Icons/delete-16x16.png"/>
-                  <TextBlock 
-                    VerticalAlignment="Center"
-                    Text="Clear" 
-                    />
-                </StackPanel>
-              </Button>
-            </StackPanel>
+          <StackPanel 
+            Grid.Row="1"
+            HorizontalAlignment="Right" 
+            Orientation="Horizontal" 
+            Spacing="10" 
+            >
+            
+            <Button IsEnabled="{Binding Drawings.Count}"
+                    Command="{Binding DrawModifications}"
+                    CommandParameter="false">
+              <StackPanel Orientation="Horizontal" Spacing="1">
+                <Image Source="/Assets/Icons/accept-16x16.png"/>
+                <TextBlock Text="{Binding Drawings.Count, StringFormat=Apply \{0\} operations}"/>
+              </StackPanel>
+            </Button>
 
-            <StackPanel 
-              HorizontalAlignment="Right" 
-              Orientation="Horizontal" 
-              Spacing="10" 
-              >
-              <Button IsEnabled="{Binding Drawings.Count}">
-                <StackPanel Orientation="Horizontal" Spacing="1">
-                  <Image Source="/Assets/Icons/accept-16x16.png"/>
-                  <TextBlock Text="{Binding Drawings.Count, StringFormat=Apply \{0\} operations}"/>
-                </StackPanel>
-              </Button>
+          </StackPanel>
 
-            </StackPanel>
+          <DataGrid
+                  Name="DrawingsGrid"
+                  Grid.Row="2"
+                  CanUserReorderColumns="True"
+                  CanUserResizeColumns="True"
+                  CanUserSortColumns="True"
+                  GridLinesVisibility="Horizontal"
+                  SelectionMode="Extended"
+                  IsReadOnly="True"
+                  ClipboardCopyMode="IncludeHeader"
+                  Items="{Binding Drawings}">
+            <DataGrid.Columns>
+              <DataGridTextColumn  Header="#"
+                                   Binding="{Binding Index}"
+                                   Width="Auto" />
+              <DataGridTextColumn Header="Operation"
+                                  Binding="{Binding OperationType}"
+                                  Width="Auto" />
+              <DataGridTextColumn Header="Layer"
+                                  Binding="{Binding LayerIndex}"
+                                  Width="Auto" />
+              <DataGridTextColumn Header="Position (X, Y)"
+                                  Binding="{Binding Location}"
+                                  Width="Auto" />
+            </DataGrid.Columns>
 
-            <DataGrid
-                    Name="DrawingsGrid"
-                    Grid.Row="1"
-                    CanUserReorderColumns="True"
-                    CanUserResizeColumns="True"
-                    CanUserSortColumns="True"
-                    GridLinesVisibility="Horizontal"
-                    SelectionMode="Extended"
-                    IsReadOnly="True"
-                    ClipboardCopyMode="IncludeHeader"
-                    Items="{Binding Drawings}">
-              <DataGrid.Columns>
-                <DataGridTextColumn  Header="#"
-                                      Binding="{Binding Index}"
-                                      Width="Auto" />
-                <DataGridTextColumn Header="Operation"
-                                    Binding="{Binding OperationType}"
-                                    Width="Auto" />
-                <DataGridTextColumn Header="Layer"
-                                    Binding="{Binding LayerIndex}"
-                                    Width="Auto" />
-                <DataGridTextColumn Header="Position (X, Y)"
-                                    Binding="{Binding Location}"
-                                    Width="Auto" />
-              </DataGrid.Columns>
+          </DataGrid>
 
-            </DataGrid>
-
-          </Grid>
-
-        </StackPanel>
+        </Grid>
         
       </TabItem>
 
@@ -1293,7 +1293,7 @@
         <Image Width="16" Height="16" Source="/Assets/Icons/arrow-up-16x16.png"/>
       </RepeatButton>
 
-      <Grid Grid.Row="2" ColumnDefinitions="*,16,Auto">
+      <Grid Grid.Row="2" ColumnDefinitions="*,20,Auto">
         <Panel
           Grid.Column="0"
           Name="Layer.Navigation.Tooltip.Panel"
@@ -1311,9 +1311,15 @@
           </Border>
         </Panel>
 
-        <Image
+        <!--<Image
         Grid.Column="1"
-        Name="Layer.Navigation.Issues" Width="16"></Image>
+        Name="Layer.Navigation.Issues" Width="16"></Image>!-->
+
+        <Canvas
+          Grid.Column="1"
+          Margin="0,5"
+          Background="WhiteSmoke"
+          Name="Layer.Navigation.IssuesCanvas" Width="20"/>
 
         <uc:SliderEx
           Grid.Column="2"
@@ -1322,10 +1328,11 @@
           Maximum="{Binding SliderMaximumValue}"
           Value="{Binding ActualLayer}"
           TickFrequency="1"
+          TickPlacement="Outside"
           SmallChange="1"
           LargeChange="10"
           IsSnapToTickEnabled="True"
-          Margin="0,5,0,5"
+          Margin="0,5"
           HorizontalAlignment="Right"
           Orientation="Vertical"/>
       </Grid>

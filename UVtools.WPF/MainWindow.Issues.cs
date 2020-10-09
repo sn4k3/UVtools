@@ -14,9 +14,13 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 using DynamicData;
 using Emgu.CV;
 using Emgu.CV.Structure;
@@ -26,6 +30,8 @@ using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
+using Brushes = Avalonia.Media.Brushes;
+using Size = Avalonia.Size;
 
 namespace UVtools.WPF
 {
@@ -102,13 +108,12 @@ namespace UVtools.WPF
 
 
             IsGUIEnabled = false;
-            ProgressWindow.SetTitle("Removing selected issues");
-            var progress = ProgressWindow.RestartProgress(false);
-
-            progress.Reset("Removing selected issues", (uint)processIssues.Count);
+            
             var task = await Task.Factory.StartNew(() =>
             {
-                ShowProgressWindow();
+                ShowProgressWindow("Removing selected issues");
+                var progress = ProgressWindow.RestartProgress(false);
+                progress.Reset("Removing selected issues", (uint)processIssues.Count);
                 bool result = false;
                 try
                 {
@@ -230,7 +235,6 @@ namespace UVtools.WPF
 
 
             IsGUIEnabled = false;
-            ProgressWindow.SetTitle("Updating Issues");
 
 
             List<LayerIssue> toRemove = new List<LayerIssue>();
@@ -246,7 +250,7 @@ namespace UVtools.WPF
 
             var resultIssues = await Task.Factory.StartNew(() =>
             {
-                ShowProgressWindow();
+                ShowProgressWindow("Updating Issues");
                 try
                 {
                     var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapConfig,
@@ -402,11 +406,10 @@ namespace UVtools.WPF
             Issues.Clear();
             IsGUIEnabled = false;
 
-            ProgressWindow.SetTitle("Computing Issues");
 
             var resultIssues = await Task.Factory.StartNew(() =>
             {
-                ShowProgressWindow();
+                ShowProgressWindow("Computing Issues");
                 try
                 {
                     var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapConfig, touchingBoundConfig,
@@ -428,13 +431,58 @@ namespace UVtools.WPF
 
             IsGUIEnabled = true;
 
-            if (resultIssues is null) return;
+
+
+            if (resultIssues is null)
+            {
+                UpdateLayerTrackerHighlightIssues();
+                return;
+            }
             Issues.AddRange(resultIssues);
+            UpdateLayerTrackerHighlightIssues();
 
             RaisePropertyChanged(nameof(IssueSelectedIndexStr));
             RaisePropertyChanged(nameof(IssueCanGoPrevious));
             RaisePropertyChanged(nameof(IssueCanGoNext));
 
+        }
+
+        public Dictionary<uint, uint> GetIssuesCountPerLayer()
+        {
+            if (Issues is null || Issues.Count == 0) return null;
+            Dictionary<uint, uint> layerIndexIssueCount = new Dictionary<uint, uint>();
+            foreach (var issue in Issues)
+            {
+                if (!layerIndexIssueCount.ContainsKey(issue.LayerIndex))
+                {
+                    layerIndexIssueCount.Add(issue.LayerIndex, 1);
+                }
+                else
+                {
+                    layerIndexIssueCount[issue.LayerIndex]++;
+                }
+            }
+
+            return layerIndexIssueCount;
+        }
+
+        void UpdateLayerTrackerHighlightIssues()
+        {
+            _issuesSliderCanvas.Children.Clear();
+            var issuesCountPerLayer = GetIssuesCountPerLayer();
+            if (issuesCountPerLayer is null)
+            {
+                return;
+            }
+
+            var tickFrequencySize = LayerSlider.Track.Bounds.Height * LayerSlider.TickFrequency / (LayerSlider.Maximum - LayerSlider.Minimum);
+            foreach (var value in issuesCountPerLayer)
+            {
+                var yPos = tickFrequencySize * value.Key;
+                var line = new Line{StrokeThickness = 1, Stroke = Brushes.Red, EndPoint = new Avalonia.Point(_issuesSliderCanvas.Width, 0)};
+                _issuesSliderCanvas.Children.Add(line);
+                Canvas.SetBottom(line, yPos);
+            }
         }
 
         public IslandDetectionConfiguration GetIslandDetectionConfiguration()

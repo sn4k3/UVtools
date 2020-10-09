@@ -7,22 +7,17 @@
  */
 using System;
 using System.Collections.ObjectModel;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Emgu.CV.CvEnum;
 using MessageBox.Avalonia.Enums;
-using UVtools.Core;
-using UVtools.Core.PixelEditor;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using Helpers = UVtools.WPF.Controls.Helpers;
-using Point = System.Drawing.Point;
 
 namespace UVtools.WPF
 {

@@ -3928,7 +3928,7 @@ namespace UVtools.GUI
                 {
                     try
                     {
-                        SlicerFile.LayerManager.DrawModifications(PixelHistory, FrmLoading.RestartProgress());
+                        SlicerFile.LayerManager.DrawModifications(PixelHistory.Items, FrmLoading.RestartProgress());
                     }
                     catch (OperationCanceledException)
                     {

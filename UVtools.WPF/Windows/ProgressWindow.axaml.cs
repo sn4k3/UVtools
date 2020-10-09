@@ -51,6 +51,11 @@ namespace UVtools.WPF.Windows
             DataContext = this;
         }
 
+        public ProgressWindow(string title) : this()
+        {
+            SetTitle(title);
+        }
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);

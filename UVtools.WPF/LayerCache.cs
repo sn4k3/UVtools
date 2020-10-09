@@ -7,9 +7,12 @@
  */
 
 using System;
+using Avalonia.Media.Imaging;
+using Avalonia.Skia;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
+using SkiaSharp;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 
@@ -21,6 +24,8 @@ namespace UVtools.WPF
         private Array _layerHierarchyJagged;
         private VectorOfVectorOfPoint _layerContours;
         private Mat _layerHierarchy;
+        private SKCanvas _canvas;
+        private WriteableBitmap _bitmap;
 
         public bool IsCached => !ReferenceEquals(_layer, null);
 
@@ -47,6 +52,35 @@ namespace UVtools.WPF
 
         public unsafe byte *ImageSpan { get; private set; }
         public unsafe byte *ImageBgrSpan { get; private set; }
+
+        public WriteableBitmap Bitmap
+        {
+            get => _bitmap;
+            set
+            {
+                _bitmap = value;
+                _canvas?.Dispose();
+                _canvas = null;
+            }
+        }
+
+        public SKCanvas Canvas
+        {
+            get
+            {
+                if (_canvas is null)
+                {
+                    using (var framebuffer = Bitmap.Lock())
+                    {
+                        var info = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
+                            framebuffer.Format.ToSkColorType(), SKAlphaType.Premul);
+                        return SKSurface.Create(info, framebuffer.Address, framebuffer.RowBytes).Canvas;
+                    }
+                }
+
+                return _canvas;
+            }
+        }
 
         public VectorOfVectorOfPoint LayerContours
         {

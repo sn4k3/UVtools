@@ -41,6 +41,8 @@ namespace UVtools.WPF
         public SliderEx LayerSlider;
         public Panel LayerNavigationTooltipPanel;
         public Border LayerNavigationTooltipBorder;
+        private Canvas _issuesSliderCanvas;
+
 
         private Timer _layerNavigationTooltipTimer = new Timer(1) { AutoReset = false };
         private uint _actualLayer;
@@ -66,6 +68,9 @@ namespace UVtools.WPF
             LayerSlider = this.FindControl<SliderEx>("Layer.Navigation.Slider");
             LayerNavigationTooltipPanel = this.FindControl<Panel>("Layer.Navigation.Tooltip.Panel");
             LayerNavigationTooltipBorder = this.FindControl<Border>("Layer.Navigation.Tooltip.Border");
+            _issuesSliderCanvas = this.Find<Canvas>("Layer.Navigation.IssuesCanvas");
+
+
 
             _showLayerImageDifference = Settings.LayerPreview.ShowLayerDifference;
             _showLayerOutlinePrintVolumeBoundary = Settings.LayerPreview.VolumeBoundsOutline;
@@ -243,6 +248,10 @@ namespace UVtools.WPF
                 if (_isPixelEditorActive)
                 {
                     TabSelectedIndex = 3;
+                }
+                else
+                {
+                    DrawModifications(true);
                 }
             }
         }
@@ -719,7 +728,7 @@ namespace UVtools.WPF
                 }
 
 
-                LayerImageBox.Image = LayerCache.ImageBgr.ToBitmap();
+                LayerImageBox.Image = LayerCache.Bitmap = LayerCache.ImageBgr.ToBitmap();
 
                 watch.Stop();
                 ShowLayerRenderMs = watch.ElapsedMilliseconds;

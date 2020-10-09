@@ -12,7 +12,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -31,7 +33,9 @@ using UVtools.WPF.Controls.Tools;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Windows;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
+using Ellipse = Avalonia.Controls.Shapes.Ellipse;
 using Helpers = UVtools.WPF.Controls.Helpers;
+using Path = System.IO.Path;
 
 namespace UVtools.WPF
 {
@@ -223,6 +227,8 @@ namespace UVtools.WPF
         private bool _canSave;
         private MenuItem[] _menuFileConvertItems;
         private int _tabSelectedIndex;
+        private int _lastTabSelectedIndex;
+
 
         private PointerEventArgs _globalPointerEventArgs;
         private KeyModifiers _globalModifiers;
@@ -274,7 +280,9 @@ namespace UVtools.WPF
             get => _tabSelectedIndex;
             set
             {
+                var lastTab = _tabSelectedIndex;
                 if (!RaiseAndSetIfChanged(ref _tabSelectedIndex, value)) return;
+                LastTabSelectedIndex = lastTab;
                 if (_firstTimeOnIssues)
                 {
                     _firstTimeOnIssues = false;
@@ -284,6 +292,12 @@ namespace UVtools.WPF
                     }
                 }
             }
+        }
+
+        public int LastTabSelectedIndex
+        {
+            get => _lastTabSelectedIndex;
+            set => RaiseAndSetIfChanged(ref _lastTabSelectedIndex, value);
         }
 
         #endregion
@@ -321,6 +335,7 @@ namespace UVtools.WPF
             InitPixelEditor();
             InitLayerPreview();
 
+            
             //IssuesGrid.SelectionChanged += IssuesGridOnSelectionChanged;
 
 
@@ -553,6 +568,7 @@ namespace UVtools.WPF
 
             SlicerProperties.Clear();
             Issues.Clear();
+            _issuesSliderCanvas.Children.Clear();
             Drawings.Clear();
 
             ResetDataContext();
@@ -649,12 +665,11 @@ namespace UVtools.WPF
             App.SlicerFile = FileFormat.FindByExtension(fileName, true, true);
             if (SlicerFile is null) return;
 
-            ProgressWindow.SetTitle($"Opening: {fileNameOnly}");
             IsGUIEnabled = false;
             
             var task = await Task.Factory.StartNew( () =>
             {
-                ShowProgressWindow();
+                ShowProgressWindow($"Opening: {fileNameOnly}");
                 try
                 {
                     SlicerFile.Decode(fileName, ProgressWindow.RestartProgress());
@@ -749,19 +764,26 @@ namespace UVtools.WPF
 
         }
 
-        private async void ShowProgressWindow()
+        private async void ShowProgressWindow(string title)
         {
             if (Dispatcher.UIThread.CheckAccess())
             {
+                ProgressWindow.SetTitle(title);
                 await ProgressWindow.ShowDialog(this);
             }
             else
             {
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
+                    ProgressWindow.SetTitle(title);
                     await ProgressWindow.ShowDialog(this);
                 });
             }
+        }
+
+        private void ShowProgressWindowSync(string title)
+        {
+            ProgressWindow = new ProgressWindow(title);
         }
 
         private async void ConvertToOnTapped(object? sender, RoutedEventArgs e)
@@ -783,12 +805,10 @@ namespace UVtools.WPF
 
 
             IsGUIEnabled = false;
-            ProgressWindow.SetTitle(
-                $"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {Path.GetExtension(result)}");
 
             var task = await Task.Factory.StartNew(() =>
             {
-                ShowProgressWindow();
+                ShowProgressWindow($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {Path.GetExtension(result)}");
                 try
                 {
                     return SlicerFile.Convert(fileFormat, result, ProgressWindow.RestartProgress());
@@ -862,11 +882,10 @@ namespace UVtools.WPF
             var tempFile = filepath + FileFormat.TemporaryFileAppend;
 
             IsGUIEnabled = false;
-            ProgressWindow.SetTitle($"Saving {Path.GetFileName(filepath)}");
 
             var task = await Task.Factory.StartNew( () =>
             {
-                ShowProgressWindow();
+                ShowProgressWindow($"Saving {Path.GetFileName(filepath)}");
 
                 try
                 {
@@ -927,11 +946,10 @@ namespace UVtools.WPF
             string finalPath = Path.Combine(result, fileNameNoExt);
 
             IsGUIEnabled = false;
-            ProgressWindow.SetTitle($"Extracting {Path.GetFileName(SlicerFile.FileFullPath)}");
 
             await Task.Factory.StartNew(() =>
             {
-                ShowProgressWindow();
+                ShowProgressWindow($"Extracting {Path.GetFileName(SlicerFile.FileFullPath)}");
                 try
                 {
                     SlicerFile.Extract(finalPath, true, true, ProgressWindow.RestartProgress());
@@ -1048,11 +1066,9 @@ namespace UVtools.WPF
 
             IsGUIEnabled = false;
 
-            ProgressWindow.SetTitle(baseOperation.ProgressTitle);
-
             await Task.Factory.StartNew(() =>
             {
-                ShowProgressWindow();
+                ShowProgressWindow(baseOperation.ProgressTitle);
 
                 var backup = new Layer[baseOperation.LayerRangeCount];
                 uint i = 0;

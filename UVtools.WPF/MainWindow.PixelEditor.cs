@@ -7,20 +7,25 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Skia;
+using Avalonia.Threading;
 using DynamicData;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using MessageBox.Avalonia.Enums;
+using SkiaSharp;
 using UVtools.Core.Extensions;
 using UVtools.Core.PixelEditor;
 using UVtools.WPF.Extensions;
@@ -147,9 +152,9 @@ namespace UVtools.WPF
                         {
                             unsafe
                             {
-                                using (var bl = bitmap.Lock())
+                                using (var framebuffer = bitmap.Lock())
                                 {
-                                    var data = (uint*)bl.Address.ToPointer();
+                                    var data = (uint*)framebuffer.Address.ToPointer();
                                     data[bitmap.GetPixelPos(location)] =
                                         color.ToUint32();
                                 }
@@ -164,20 +169,43 @@ namespace UVtools.WPF
                         switch (operationDrawing.BrushShape)
                         {
                             case PixelDrawing.BrushShapeType.Rectangle:
-                                CvInvoke.Rectangle(LayerCache.ImageBgr, GetTransposedRectangle(operationDrawing.Rectangle),
+                                
+                                LayerCache.Canvas.DrawRect(operationDrawing.Rectangle.X, 
+                                    operationDrawing.Rectangle.Y, 
+                                    operationDrawing.Rectangle.Width, 
+                                    operationDrawing.Rectangle.Height,
+                                    new SKPaint
+                                    {
+                                        IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
+                                        Color = new SKColor(color.ToUint32()),
+                                        IsStroke = operationDrawing.Thickness >= 0,
+                                        StrokeWidth = operationDrawing.Thickness
+                                    } );
+                                /*CvInvoke.Rectangle(LayerCache.ImageBgr, GetTransposedRectangle(operationDrawing.Rectangle),
                                     new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
-                                    operationDrawing.LineType);
+                                    operationDrawing.LineType);*/
                                 break;
                             case PixelDrawing.BrushShapeType.Circle:
-                                CvInvoke.Circle(LayerCache.ImageBgr, location, operationDrawing.BrushSize / 2,
+
+                               
+                                LayerCache.Canvas.DrawCircle(location.X, location.Y, operationDrawing.BrushSize / 2f,
+                                    new SKPaint
+                                    {
+                                        IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
+                                        Color = new SKColor(color.ToUint32()),
+                                        IsStroke = operationDrawing.Thickness >= 0,
+                                        StrokeWidth = operationDrawing.Thickness
+                                    });
+
+                                /*CvInvoke.Circle(LayerCache.ImageBgr, location, operationDrawing.BrushSize / 2,
                                     new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
-                                    operationDrawing.LineType);
+                                    operationDrawing.LineType);*/
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }
-
-                        RefreshLayerImage();
+                        LayerImageBox.InvalidateVisual();
+                        //RefreshLayerImage();
                     }
                 }
             }
@@ -274,6 +302,110 @@ namespace UVtools.WPF
             {
                 throw new NotImplementedException("Missing pixel operation");
             }
+        }
+
+        public async void DrawModifications(bool exitEditor)
+        {
+            if (Drawings.Count == 0)
+            {
+                if (exitEditor)
+                {
+                    TabSelectedIndex = LastTabSelectedIndex;
+                }
+
+                return;
+            }
+
+            ButtonResult result;
+
+            if (exitEditor)
+            {
+                result = await this.MessageBoxQuestion(
+                    "There are edit operations that have not been applied.  " +
+                    "Would you like to apply all operations before closing the editor?",
+                    "Closing image editor?", ButtonEnum.YesNoCancel);
+            }
+            else
+            {
+
+                result = await this.MessageBoxQuestion(
+                    "Are you sure you want to apply all operations?",
+                    "Apply image editor changes?");
+
+                // For the "apply" case, We aren't exiting the editor, so map "No" to "Cancel" here
+                // in order to prevent pixel history from being cleared.
+                result = result == ButtonResult.No ? ButtonResult.Cancel : ButtonResult.Yes;
+            }
+
+            if (result == ButtonResult.Cancel)
+            {
+                IsPixelEditorActive = true;
+                return;
+            }
+
+            if (result == ButtonResult.Yes)
+            {
+                IsGUIEnabled = false;
+
+                var task = await Task.Factory.StartNew(async () =>
+                {
+                    ShowProgressWindow("Drawing pixels");
+                    try
+                    {
+                        SlicerFile.LayerManager.DrawModifications(Drawings, ProgressWindow.RestartProgress());
+                    }
+                    catch (OperationCanceledException)
+                    {
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(async () =>
+                        {
+                            await this.MessageBoxError(ex.ToString(), "Drawing operation failed!");
+                        });
+                    }
+
+                    return false;
+                });
+
+                IsGUIEnabled = true;
+
+
+                if (Settings.PixelEditor.PartialUpdateIslandsOnEditing)
+                {
+                    List<uint> whiteListLayers = new List<uint>();
+                    foreach (var item in Drawings)
+                    {
+                        if (item.OperationType != PixelOperation.PixelOperationType.Drawing &&
+                            item.OperationType != PixelOperation.PixelOperationType.Text &&
+                            item.OperationType != PixelOperation.PixelOperationType.Eraser &&
+                            item.OperationType != PixelOperation.PixelOperationType.Supports) continue;
+                        if (whiteListLayers.Contains(item.LayerIndex)) continue;
+                        whiteListLayers.Add(item.LayerIndex);
+
+                        uint nextLayer = item.LayerIndex + 1;
+                        if (nextLayer < SlicerFile.LayerCount &&
+                            !whiteListLayers.Contains(nextLayer))
+                        {
+                            whiteListLayers.Add(nextLayer);
+                        }
+                    }
+
+                    //UpdateIslandsOverhangs(whiteListLayers);
+                }
+            }
+
+            Drawings.Clear();
+            ShowLayer();
+
+            if (exitEditor || (Settings.PixelEditor.CloseEditorOnApply && result == ButtonResult.Yes))
+            {
+                IsPixelEditorActive = false;
+                TabSelectedIndex = LastTabSelectedIndex;
+            }
+
+            CanSave = true;
         }
     }
 }

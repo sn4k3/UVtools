@@ -58,7 +58,7 @@ namespace UVtools.WPF.Extensions
 
         public static T ShowDialogSync<T>(this Window window, Window parent = null)
         {
-            if (parent is null) parent = window;
+            parent ??= window;
             using (var source = new CancellationTokenSource())
             {
                 var task = window.ShowDialog<T>(parent);
@@ -66,8 +66,6 @@ namespace UVtools.WPF.Extensions
                 Dispatcher.UIThread.MainLoop(source.Token);
                 return task.Result;
             }
-
-            return default(T);
         }
 
         public static void ResetDataContext(this Window window)

@@ -1761,15 +1761,15 @@ namespace UVtools.Core
 
         }
 
-        public void DrawModifications(PixelHistory pixelHistory, OperationProgress progress = null)
+        public void DrawModifications(IList<PixelOperation> drawings, OperationProgress progress = null)
         {
             if (ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset("Drawings", (uint) pixelHistory.Count);
+            progress.Reset("Drawings", (uint) drawings.Count);
 
             ConcurrentDictionary<uint, Mat> modifiedLayers = new ConcurrentDictionary<uint, Mat>();
-            for (var i = 0; i < pixelHistory.Count; i++)
+            for (var i = 0; i < drawings.Count; i++)
             {
-                var operation = pixelHistory[i];
+                var operation = drawings[i];
                 VectorOfVectorOfPoint layerContours = null;
                 Mat layerHierarchy = null;
 
