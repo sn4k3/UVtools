@@ -33,7 +33,7 @@ namespace UVtools.WPF.Windows
         public const string RunsAbbreviation = "TDPS";
         public const string StressCPUTestName = "Stress CPU (Run until stop)";
 
-        private RNGCryptoServiceProvider _randomProvider = new RNGCryptoServiceProvider();
+        private readonly RNGCryptoServiceProvider _randomProvider = new RNGCryptoServiceProvider();
 
         private CancellationTokenSource _tokenSource;
         private CancellationToken _token => _tokenSource.Token;

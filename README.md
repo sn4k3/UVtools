@@ -68,10 +68,14 @@ But also, i need victims for test subject. Proceed at your own risk!
 
 ## Available printers for PrusaSlicer
 
+* EPAX E6 Mono
+* EPAX E10 Mono
 * EPAX X1
 * EPAX X10
+* EPAX X10 4K Mono
 * EPAX X133 4K Mono
 * EPAX X156 4K Color
+* EPAX X1K 2K Mono
 * Zortrax Inkspire
 * Nova3D Elfin
 * Nova3D Bene4 Mono
@@ -80,17 +84,23 @@ But also, i need victims for test subject. Proceed at your own risk!
 * AnyCubic Photon Zero
 * Elegoo Mars
 * Elegoo Mars 2 Pro
-* Elegoo Mars Saturn
+* Elegoo Mars C
+* Elegoo Saturn
 * Peopoly Phenom
 * Peopoly Phenom L
 * Peopoly Phenom Noir
 * QIDI Shadow5.5
 * QIDI Shadow6.0 Pro
+* QIDI S-Box
 * Phrozen Shuffle
 * Phrozen Shuffle Lite
 * Phrozen Shuffle XL
+* Phrozen Shuffle XL Lite
+* Phrozen Shuffle 16
 * Phrozen Shuffle 4K
 * Phrozen Sonic
+* Phrozen Sonic 4K
+* Phrozen Sonic Mighty 4K
 * Phrozen Sonic Mini
 * Phrozen Sonic Mini 4K
 * Phrozen Transform
@@ -99,9 +109,12 @@ But also, i need victims for test subject. Proceed at your own risk!
 * Wanhao D8
 * Creality LD-002R
 * Creality LD-002H
+* Creality LD-006
 * Voxelab Polaris
+* Voxelab Proxima
 * Longer Orange 10
 * Longer Orange 30
+* Longer Orange4K
 
 ## Available profiles for PrusaSlicer
 
