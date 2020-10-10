@@ -1,185 +1,208 @@
-﻿/*
- *                     GNU AFFERO GENERAL PUBLIC LICENSE
- *                       Version 3, 19 November 2007
- *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
- *  Everyone is permitted to copy and distribute verbatim copies
- *  of this license document, but changing it is not allowed.
- */
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
-using UVtools.GUI.Controls;
+using UVtools.WPF.Controls;
+using UVtools.WPF.Extensions;
+using UVtools.WPF.Structures;
 
-namespace UVtools.GUI.Forms
+namespace UVtools.WPF.Windows
 {
-    public partial class FrmBenchmark : Form
+    public class BenchmarkWindow : WindowEx
     {
-        private CancellationTokenSource TokenSource { get; set; }
-        private CancellationToken Token => TokenSource.Token;
-
-        private RNGCryptoServiceProvider RandomProvider { get; }
-
+        private int _testSelectedIndex;
+        private string _singleThreadTdps = $"0 {RunsAbbreviation}";
+        private string _multiThreadTdps = $"0 {RunsAbbreviation}";
+        private string _devSingleThreadTdps = $"{Tests[0].DevSingleThreadResult} {RunsAbbreviation}";
+        private string _devMultiThreadTdps = $"{Tests[0].DevMultiThreadResult} {RunsAbbreviation}";
+        private bool _isRunning;
+        private string _startStopButtonText = "Start";
         private const ushort SingleThreadTests = 100;
         private const ushort MultiThreadTests = 1000;
 
         public const string RunsAbbreviation = "TDPS";
         public const string StressCPUTestName = "Stress CPU (Run until stop)";
 
-        public FrmBenchmark()
+        private RNGCryptoServiceProvider _randomProvider = new RNGCryptoServiceProvider();
+
+        private CancellationTokenSource _tokenSource;
+        private CancellationToken _token => _tokenSource.Token;
+
+        public static BenchmarkTest[] Tests =>
+            new[]
+            {
+                new BenchmarkTest("4K Random CBBDLP Enconde", "Test4KRandomCBBDLPEncode", 40.30f, 246.30f),
+                new BenchmarkTest("8K Random CBBDLP Enconde", "Test8KRandomCBBDLPEncode", 9.70f, 64.10f),
+                new BenchmarkTest("4K Random CBT Enconde", "Test4KRandomCBTEncode", 13.50f, 113.30f),
+                new BenchmarkTest("8K Random CBT Enconde", "Test8KRandomCBTEncode", 3.40f, 28.20f),
+                new BenchmarkTest("4K Random PW0 Enconde", "Test4KRandomPW0Encode", 14.10f, 89.00f),
+                new BenchmarkTest("8K Random PW0 Enconde", "Test8KRandomPW0Encode", 3.50f, 22.40f),
+                new BenchmarkTest(StressCPUTestName, "Test4KRandomCBTEncode", 0, 0),
+            };
+
+        public string Description  => "Benchmark your machine against pre-defined tests.\n" +
+                                      "This will use all compution power avaliable, CPU will be exhausted\n." +
+                                      "Run the test while your PC is idle or not in heavy load.\n" +
+                                      "Results are in 'tests done per second' (TDPS)\n" +
+                                      "\n" +
+                                      "To your reference you are competing against developer system:\n"+
+                                      $"CPU: {BenchmarkTest.DEVCPU}\n" +
+                                      $"RAM: {BenchmarkTest.DEVRAM}";
+
+        public int TestSelectedIndex
+        {
+            get => _testSelectedIndex;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _testSelectedIndex, value)) return;
+                DevSingleThreadTDPS = $"{Tests[_testSelectedIndex].DevSingleThreadResult} {RunsAbbreviation}";
+                DevMultiThreadTDPS = $"{Tests[_testSelectedIndex].DevMultiThreadResult} {RunsAbbreviation}";
+            }
+        }
+
+        public string SingleThreadTDPS
+        {
+            get => _singleThreadTdps;
+            set => RaiseAndSetIfChanged(ref _singleThreadTdps, value);
+        }
+
+        public string MultiThreadTDPS
+        {
+            get => _multiThreadTdps;
+            set => RaiseAndSetIfChanged(ref _multiThreadTdps, value);
+        }
+
+        public string DevSingleThreadTDPS
+        {
+            get => _devSingleThreadTdps;
+            set => RaiseAndSetIfChanged(ref _devSingleThreadTdps, value);
+        }
+
+        public string DevMultiThreadTDPS
+        {
+            get => _devMultiThreadTdps;
+            set => RaiseAndSetIfChanged(ref _devMultiThreadTdps, value);
+        }
+
+        public string StartStopButtonText
+        {
+            get => _startStopButtonText;
+            set => RaiseAndSetIfChanged(ref _startStopButtonText, value);
+        }
+
+        public bool IsRunning
+        {
+            get => _isRunning;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _isRunning, value)) return;
+                StartStopButtonText = _isRunning ? "Stop" : "Start";
+            }
+        }
+
+        public BenchmarkWindow()
         {
             InitializeComponent();
-            lbDescription.Text += $"CPU: {BenchmarkTest.DEVCPU}\nRAM: {BenchmarkTest.DEVRAM}";
-            RandomProvider = new RNGCryptoServiceProvider();
 
-            cbTest.Items.AddRange(
-                new object[]
+            DataContext = this;
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
+
+        protected override bool HandleClosing() => IsRunning;
+
+        public void StartStop()
+        {
+            if (IsRunning)
+            {
+                if (!_token.CanBeCanceled || _token.IsCancellationRequested) return;
+                _tokenSource.Cancel();
+            }
+            else
+            {
+                BenchmarkTest benchmark = Tests[_testSelectedIndex];
+                SingleThreadTDPS = $"Running {SingleThreadTests} tests";
+                MultiThreadTDPS = $"Running {MultiThreadTests} tests";
+                return;
+                _tokenSource = new CancellationTokenSource();
+                MethodInfo theMethod = GetType().GetMethod(benchmark.FunctionName);
+
+                Task.Factory.StartNew(() =>
                 {
-                    new BenchmarkTest("4K Random CBBDLP Enconde", "Test4KRandomCBBDLPEncode", 40.30f, 246.30f), 
-                    new BenchmarkTest("8K Random CBBDLP Enconde", "Test8KRandomCBBDLPEncode", 9.70f, 64.10f),
-                    new BenchmarkTest("4K Random CBT Enconde", "Test4KRandomCBTEncode", 13.50f, 113.30f),
-                    new BenchmarkTest("8K Random CBT Enconde", "Test8KRandomCBTEncode", 3.40f, 28.20f),
-                    new BenchmarkTest("4K Random PW0 Enconde", "Test4KRandomPW0Encode", 14.10f, 89.00f),
-                    new BenchmarkTest("8K Random PW0 Enconde", "Test8KRandomPW0Encode", 3.50f, 22.40f),
-                    new BenchmarkTest(StressCPUTestName, "Test4KRandomCBTEncode", 0, 0),
-                }
-            );
-            cbTest.SelectedIndex = 0;
-        }
-
-        private void FrmBenchmark_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (!btnStart.Enabled)
-                e.Cancel = true;
-        }
-
-        private void EventClicked(object sender, EventArgs e)
-        {
-            if (ReferenceEquals(sender, btnStart))
-            {
-                StartBenchmark();
-                return;
-            }
-            if (ReferenceEquals(sender, btnStop))
-            {
-                TokenSource.Cancel();
-                return;
-            }
-        }
-
-        private void EventSelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (ReferenceEquals(sender, cbTest))
-            {
-                BenchmarkTest benchmark = cbTest.SelectedItem as BenchmarkTest;
-                lbSingleThreadDevResults.Text = $"Single Thread: {benchmark.DevSingleThreadResult} {RunsAbbreviation}";
-                lbMultiThreadDevResults.Text = $"Multi Thread: {benchmark.DevMultiThreadResult} {RunsAbbreviation}";
-                return;
-            }
-        }
-
-        private void StartBenchmark()
-        {
-            if (!btnStart.Enabled) return;
-            cbTest.Enabled =
-            btnStart.Enabled = false;
-            btnStop.Enabled = true;
-
-            TokenSource = new CancellationTokenSource();
-
-            progressBar.Style = ProgressBarStyle.Marquee;
-
-            BenchmarkTest benchmark = cbTest.SelectedItem as BenchmarkTest;
-            MethodInfo theMethod = GetType().GetMethod(benchmark.FunctionName);
-
-            if (!benchmark.Name.Equals(StressCPUTestName))
-            {
-                lbSingleThreadResults.Text = $"Single Thread: Running {SingleThreadTests} tests";
-                lbMultiThreadResults.Text = $"Multi Thread: Running {MultiThreadTests} tests";
-            }
-                
-            
-            Task.Factory.StartNew(() =>
-            {
-                try
-                {
-                    if (benchmark.Name.Equals(StressCPUTestName))
-                    {
-                        while (true)
-                        {
-                            if (Token.IsCancellationRequested) break;
-                            Parallel.For(0, MultiThreadTests, i =>
-                            {
-                                if (Token.IsCancellationRequested) return;
-                                theMethod.Invoke(this, null);
-                            });
-                        }
-                        
-                        return;
-                    }
-
                     Stopwatch sw = Stopwatch.StartNew();
-                    for (int i = 0; i < SingleThreadTests; i++)
+                    try
                     {
-                        if(Token.IsCancellationRequested) Token.ThrowIfCancellationRequested();
-                        theMethod.Invoke(this, null);
-                    }
-
-                    sw.Stop();
-                    Invoke((MethodInvoker) delegate
-                    {
-                        // Running on the UI thread
-                        UpdateResults(true, sw.ElapsedMilliseconds);
-                    });
-
-                    if (Token.IsCancellationRequested) Token.ThrowIfCancellationRequested();
-
-                    sw.Restart();
-                    Parallel.For(0, MultiThreadTests, i =>
+                        if (benchmark.Name.Equals(StressCPUTestName))
                         {
-                            if (Token.IsCancellationRequested) return;
+                            while (true)
+                            {
+                                if (_token.IsCancellationRequested) break;
+                                Parallel.For(0, MultiThreadTests, i =>
+                                {
+                                    if (_token.IsCancellationRequested) return;
+                                    theMethod.Invoke(this, null);
+                                });
+                            }
+
+                            return;
+                        }
+
+                        
+                        for (int i = 0; i < SingleThreadTests; i++)
+                        {
+                            if (_token.IsCancellationRequested) _token.ThrowIfCancellationRequested();
+                            theMethod.Invoke(this, null);
+                        }
+
+                        sw.Stop();
+                        var singleMiliseconds = sw.ElapsedMilliseconds;
+                        Dispatcher.UIThread.InvokeAsync(() => UpdateResults(true, singleMiliseconds));
+
+                        if (_token.IsCancellationRequested) _token.ThrowIfCancellationRequested();
+
+                        sw.Restart();
+                        Parallel.For(0, MultiThreadTests, i =>
+                        {
+                            if (_token.IsCancellationRequested) return;
                             theMethod.Invoke(this, null);
                         });
 
-                    sw.Stop();
+                        sw.Stop();
 
-                    if (Token.IsCancellationRequested) Token.ThrowIfCancellationRequested();
-
-                    Invoke((MethodInvoker)delegate
+                        if (_token.IsCancellationRequested) _token.ThrowIfCancellationRequested();
+                        var multiMiliseconds = sw.ElapsedMilliseconds;
+                        Dispatcher.UIThread.InvokeAsync(() => UpdateResults(false, multiMiliseconds));
+                    }
+                    catch (OperationCanceledException)
                     {
-                        // Running on the UI thread
-                        UpdateResults(false, sw.ElapsedMilliseconds);
-                    });
-                }
-                catch (OperationCanceledException)
-                {
 
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                finally
-                {
-                    Invoke((MethodInvoker)StopBenchmark);
-                }
-            }, Token);
-        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Dispatcher.UIThread.InvokeAsync(() => this.MessageBoxError(ex.ToString(), "Error"));
+                        
+                    }
+                    finally
+                    {
+                        Dispatcher.UIThread.InvokeAsync(() => IsRunning = !IsRunning);
+                    }
+                }, _token);
 
-        private void StopBenchmark()
-        {
-            btnStart.Enabled = true;
-            btnStop.Enabled = false;
-            cbTest.Enabled = true;
-            progressBar.Style = ProgressBarStyle.Blocks;
+                IsRunning = !IsRunning;
+            }
         }
 
         private void UpdateResults(bool isSingleThread, long milliseconds)
@@ -187,10 +210,10 @@ namespace UVtools.GUI.Forms
             decimal seconds = Math.Round(milliseconds / 1000m, 2);
             //var text = (isSingleThread ? "Single" : "Multi") + $" Thread: {Math.Round(SingleThreadTests / seconds, 2)} OPS ({seconds}s)";
 
-            if(isSingleThread)
-                lbSingleThreadResults.Text = $"Single Thread: {Math.Round(SingleThreadTests / seconds, 2)} {RunsAbbreviation} ({SingleThreadTests} tests / {seconds}s)";
+            if (isSingleThread)
+                SingleThreadTDPS = $"{Math.Round(SingleThreadTests / seconds, 2)} {RunsAbbreviation} ({SingleThreadTests} tests / {seconds}s)";
             else
-                lbMultiThreadResults.Text = $"Multi Thread: {Math.Round(MultiThreadTests / seconds, 2)} {RunsAbbreviation} ({MultiThreadTests} tests / {seconds}s)"; ;
+                MultiThreadTDPS = $"{Math.Round(MultiThreadTests / seconds, 2)} {RunsAbbreviation} ({MultiThreadTests} tests / {seconds}s)";
         }
 
         #region Tests
@@ -400,7 +423,7 @@ namespace UVtools.GUI.Forms
         public Mat RandomMat(int width, int height)
         {
             var bytes = new byte[width * height];
-            RandomProvider.GetBytes(bytes);
+            _randomProvider.GetBytes(bytes);
             Mat mat = new Mat(new Size(width, height), DepthType.Cv8U, 1);
             mat.SetBytes(bytes);
             return mat;
@@ -443,7 +466,5 @@ namespace UVtools.GUI.Forms
         }
 
         #endregion
-
-
     }
 }

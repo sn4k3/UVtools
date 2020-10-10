@@ -618,6 +618,11 @@ namespace UVtools.WPF
             await new AboutWindow().ShowDialog(this);
         }
 
+        public async void MenuHelpBenchmarkClicked()
+        {
+            await new BenchmarkWindow().ShowDialog(this);
+        }
+
         public async void MenuHelpInstallProfilesClicked()
         {
             var PEFolder = App.GetPrusaSlicerDirectory();
