@@ -8,7 +8,9 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
+using UVtools.Core.Objects;
 
 namespace UVtools.GUI.Forms
 {
@@ -53,7 +55,8 @@ namespace UVtools.GUI.Forms
                     if (targetFileInfo.Exists)
                     {
                         installedCount++;
-                        if (targetFileInfo.Length != fileInfo.Length || targetFileInfo.LastWriteTime != fileInfo.LastWriteTime)
+                        if (targetFileInfo.Length != fileInfo.Length || !StaticObjects.GetHashSha256(targetFileInfo.FullName).SequenceEqual(StaticObjects.GetHashSha256(fileInfo.FullName)))
+                            //if (targetFileInfo.Length != fileInfo.Length || targetFileInfo.LastWriteTime != fileInfo.LastWriteTime)
                         {
                             item.ForeColor = Color.Red;
                             item.Checked = true;

@@ -9,9 +9,12 @@
 * (Improvement) GUI is now scalable
 * (Fix) Some bug found and fixed during convertion
 
-## 01/10/2020 - v0.8.4.1
+## 10/10/2020 - v0.8.4.1
 
+* (Add) Tool - Modify print parameters: Value unit to confirmation text
+* (Change) Tool - Modify print parameters: Maximum allowed exposure times from 255s to 1000s (#69)
 * (Change) On operations, instead of partial backup a whole backup is made, this allow cancel operations which changes layer count and other structure changes
+* (Improvement) PrusaSlicer profile manager: Files are now checked against checksum instead write time to prevent trigger an false update when using MSI installer
 * (Fix) Tool - Layer Import: Allow cancel operation
 * (Fix) Tool - Layer Import: When importing layers that increase the total layer count of the file program stays forever on progress
 * (Fix) Tool - Layer Clone: Layer information was the same as heights, fixed to show the result of operation in layers

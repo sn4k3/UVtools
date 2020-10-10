@@ -32,7 +32,7 @@ namespace UVtools.Core.Operations
                 foreach (var modifier in Modifiers)
                 {
                     if(!modifier.HasChanged) continue;
-                    sb.AppendLine($"{modifier.Name}: {modifier.OldValue} » {modifier.NewValue}");
+                    sb.AppendLine($"{modifier.Name}: {modifier.OldValue}{modifier.ValueUnit} » {modifier.NewValue}{modifier.ValueUnit}");
                 }
                 return $"commit print parameter changes?\n{sb}";
             }

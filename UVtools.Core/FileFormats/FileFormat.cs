@@ -57,8 +57,8 @@ namespace UVtools.Core.FileFormats
             
             #region Instances
             public static PrintParameterModifier BottomLayerCount { get; } = new PrintParameterModifier("Bottom layer count", null, "layers",0, ushort.MaxValue, 0);
-            public static PrintParameterModifier BottomExposureSeconds { get; } = new PrintParameterModifier("Bottom exposure time", null, "s", 0.1M, byte.MaxValue, 2);
-            public static PrintParameterModifier ExposureSeconds { get; } = new PrintParameterModifier("Exposure time", null, "s", 0.1M, byte.MaxValue, 2);
+            public static PrintParameterModifier BottomExposureSeconds { get; } = new PrintParameterModifier("Bottom exposure time", null, "s", 0.1M, 1000, 2);
+            public static PrintParameterModifier ExposureSeconds { get; } = new PrintParameterModifier("Exposure time", null, "s", 0.1M, 1000, 2);
             
             public static PrintParameterModifier BottomLayerOffTime { get; } = new PrintParameterModifier("Bottom layer off seconds", null, "s");
             public static PrintParameterModifier LayerOffTime { get; } = new PrintParameterModifier("Layer off seconds", null, "s");
