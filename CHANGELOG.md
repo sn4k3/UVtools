@@ -9,10 +9,11 @@
 * (Improvement) GUI is now scalable
 * (Fix) Some bug found and fixed during convertion
 
-## /10/2020 - v0.8.4.2
+## 10/10/2020 - v0.8.4.2
 
 * (Fix) pws and pw0: Error when try to save or copy to clipboard the slicer information / properties
-* (Fix) phton, ctb, cbbdlp, pws, pw0, phz: Rare cases were decoding image generate noise and malformed image
+* (Fix) photon, ctb, cbbdlp, phz, pws, pw0: Rare cases were decoding image generate noise and malformed image
+* (Fix) Rare cases where manipulation of images generate areas with noise
 
 ## 10/10/2020 - v0.8.4.1
 

@@ -1120,6 +1120,15 @@ namespace UVtools.WPF.Controls
         }
 
         /// <summary>
+        /// Zooms to current selection region
+        /// </summary>
+        public void ZoomToSelectionRegion()
+        {
+            if (!HaveSelection) return;
+            ZoomToRegion(SelectionRegion);
+        }
+
+        /// <summary>
         ///   Centers the given point in the image in the center of the control
         /// </summary>
         /// <param name="imageLocation">The point of the image to attempt to center.</param>

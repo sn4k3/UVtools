@@ -57,10 +57,14 @@ namespace UVtools.WPF
         private bool _showLayerOutlineHollowAreas;
         private bool _showLayerOutlineEdgeDetection;
 
+        private bool _isTooltipOverlayVisible;
+        private string _tooltipOverlayText;
+
         private long _showLayerRenderMs;
 
         public LayerCache LayerCache = new LayerCache();
         private Point _lastPixelMouseLocation = Point.Empty;
+
 
         public void InitLayerPreview()
         {
@@ -265,6 +269,18 @@ namespace UVtools.WPF
         public bool CanGoUp => _actualLayer < SliderMaximumValue;
         public bool CanGoDown => _actualLayer > 0;
 
+        public bool IsTooltipOverlayVisible
+        {
+            get => _isTooltipOverlayVisible;
+            set => RaiseAndSetIfChanged(ref _isTooltipOverlayVisible, value);
+        }
+
+        public string TooltipOverlayText
+        {
+            get => _tooltipOverlayText;
+            set => RaiseAndSetIfChanged(ref _tooltipOverlayText, value);
+        }
+
         public string LayerPixelCountStr
         {
             get
@@ -361,6 +377,11 @@ namespace UVtools.WPF
                 return rect.IsEmpty ? Rectangle.Empty : GetTransposedRectangle(rect.ToDotNet(), false);
             }
             set => LayerImageBox.SelectionRegion = value.ToAvalonia();
+        }
+
+        public void OnROIClick()
+        {
+            LayerImageBox.ZoomToSelectionRegion();
         }
         #endregion
 

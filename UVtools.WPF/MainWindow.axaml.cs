@@ -447,24 +447,24 @@ namespace UVtools.WPF
                 {
                     LayerImageBox.AutoPan = false;
                     LayerImageBox.Cursor = StaticControls.CrossCursor;
-                    /*lbLayerImageTooltipOverlay.Text = "Pixel editing is on:\n" +
+                    TooltipOverlayText = "Pixel editing is on:\n" +
                                                       "» Click over a pixel to draw\n" +
                                                       "» Hold CTRL to clear pixels";
 
-                    UpdatePixelEditorCursor();*/
+                    //UpdatePixelEditorCursor();
                 }
                 else
                 {
                     LayerImageBox.Cursor = StaticControls.CrossCursor;
                     LayerImageBox.SelectionMode = AdvancedImageBox.SelectionModes.Rectangle;
-                    /*lbLayerImageTooltipOverlay.Text = "ROI selection mode:\n" +
-                                                      "» Left-click drag to select a fixed region\n" +
-                                                      "» Left-click + ALT drag to select specific objects\n" +
-                                                      "» Right click on a specific object to select it\n" +
-                                                      "Press Esc to clear the ROI";*/
+                    TooltipOverlayText = "ROI selection mode:\n" +
+                                         "» Left-click drag to select a fixed region\n" +
+                                         "» Left-click + ALT drag to select specific objects\n" +
+                                         "» Right click on a specific object to select it\n" +
+                                         "Press Esc to clear the ROI";
                 }
 
-                //lbLayerImageTooltipOverlay.Visible = Settings.Default.LayerTooltipOverlay;
+                IsTooltipOverlayVisible = Settings.LayerPreview.TooltipOverlay;
                 e.Handled = true;
                 return;
             }
@@ -473,10 +473,10 @@ namespace UVtools.WPF
             {
                 LayerImageBox.Cursor = StaticControls.HandCursor;
                 LayerImageBox.AutoPan = false;
-                /*lbLayerImageTooltipOverlay.Text = "Issue selection mode:\n" +
-                                                  "» Click over an issue to select it";
+                TooltipOverlayText = "Issue selection mode:\n" +
+                                     "» Click over an issue to select it";
 
-                lbLayerImageTooltipOverlay.Visible = Settings.Default.LayerTooltipOverlay;*/
+                IsTooltipOverlayVisible = Settings.LayerPreview.TooltipOverlay;
                 e.Handled = true;
                 return;
             }
@@ -494,7 +494,7 @@ namespace UVtools.WPF
                 LayerImageBox.Cursor = StaticControls.ArrowCursor;
                 LayerImageBox.AutoPan = true;
                 LayerImageBox.SelectionMode = AdvancedImageBox.SelectionModes.None;
-                //lbLayerImageTooltipOverlay.Visible = false;
+                IsTooltipOverlayVisible = false;
                 e.Handled = true;
             }
         }

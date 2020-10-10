@@ -101,6 +101,7 @@ namespace UVtools.WPF
 
         private void DrawingsGridOnKeyUp(object? sender, KeyEventArgs e)
         {
+            
             switch (e.Key)
             {
                 case Key.Escape:
@@ -264,7 +265,7 @@ namespace UVtools.WPF
                     //if (PixelHistory.Contains(operation)) continue;
                     //PixelHistory.Add(operation);
                     Drawings.Add(operationText);
-
+                    
                     /*var color = isAdd
                         ? Settings.PixelEditor.AddPixelColor : Settings.PixelEditor.RemovePixelColor;
 

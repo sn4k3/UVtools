@@ -641,7 +641,7 @@
           </StackPanel>
         </TabItem.Header>
 
-        <Grid RowDefinitions="Auto,Auto,*">
+        <Grid RowDefinitions="Auto,20,Auto,*">
           <TabControl SelectedIndex="{Binding SelectedPixelOperationTabIndex}">
             <!-- Drawing !-->
             <TabItem
@@ -1065,55 +1065,21 @@
 &#x0a;Note: this operation can't be previewed."/>
                 </Border>
                 <Grid
-                  RowDefinitions="Auto,10,Auto,10,Auto"
+                  RowDefinitions="Auto"
                   ColumnDefinitions="Auto,10,100,5,Auto">
                   <TextBlock
                     Grid.Row="0"
                     Grid.Column="0"
                     VerticalAlignment="Center"
-                    Text="Tip diameter:" />
-                  <NumericUpDown
-                    Grid.Row="0"
-                    Grid.Column="2"
-                    Minimum="1"
-                    Maximum="255"
-                    Value="{Binding DrawingPixelSupport.TipDiameter}"/>
-                  <TextBlock
-                    Grid.Row="0"
-                    Grid.Column="4"
-                    VerticalAlignment="Center"
-                    Text="px" />
-
-                  <TextBlock
-                    Grid.Row="2"
-                    Grid.Column="0"
-                    VerticalAlignment="Center"
-                    Text="Pillar diameter:" />
-                  <NumericUpDown
-                    Grid.Row="2"
-                    Grid.Column="2"
-                    Minimum="1"
-                    Maximum="255"
-                    Value="{Binding DrawingPixelSupport.PillarDiameter}"/>
-                  <TextBlock
-                    Grid.Row="2"
-                    Grid.Column="4"
-                    VerticalAlignment="Center"
-                    Text="px" />
-
-                  <TextBlock
-                    Grid.Row="4"
-                    Grid.Column="0"
-                    VerticalAlignment="Center"
                     Text="Hole diameter:" />
                   <NumericUpDown
-                    Grid.Row="4"
+                    Grid.Row="0"
                     Grid.Column="2"
                     Minimum="20"
                     Maximum="255"
                     Value="{Binding DrawingPixelDrainHole.Diameter}"/>
                   <TextBlock
-                    Grid.Row="4"
+                    Grid.Row="0"
                     Grid.Column="4"
                     VerticalAlignment="Center"
                     Text="px" />
@@ -1127,7 +1093,7 @@
 
           <!-- Toolbar !-->
           <StackPanel
-            Grid.Row="1"
+            Grid.Row="2"
             Orientation="Horizontal" Spacing="1">
             <Button IsEnabled="{Binding #DrawingsGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
             Command="{Binding OnClickDrawingRemove}">
@@ -1152,7 +1118,7 @@
           </StackPanel>
 
           <StackPanel 
-            Grid.Row="1"
+            Grid.Row="2"
             HorizontalAlignment="Right" 
             Orientation="Horizontal" 
             Spacing="10" 
@@ -1171,7 +1137,7 @@
 
           <DataGrid
                   Name="DrawingsGrid"
-                  Grid.Row="2"
+                  Grid.Row="3"
                   CanUserReorderColumns="True"
                   CanUserResizeColumns="True"
                   CanUserSortColumns="True"
@@ -1526,6 +1492,16 @@
      Name="LayerImage"
       />
 
+      <Canvas Grid.Row="1" Margin="20"
+              IsVisible="{Binding IsTooltipOverlayVisible}"
+              >
+        <Border
+        Background="{Binding Settings.LayerPreview.TooltipOverlayBackgroundBrush}" Padding="10">
+          <TextBlock Text="{Binding TooltipOverlayText}" />
+        </Border>
+      </Canvas>
+      
+
       <StackPanel Margin="0,5,0,0" Grid.Row="2" Orientation="Horizontal" Spacing="5">
         <StackPanel
           ToolTip.Tip="Number of pixels to cure on this layer image and the percetange of them against total lcd pixels"
@@ -1547,7 +1523,7 @@
 
         <Button
           IsEnabled="{Binding #LayerImage.HaveSelection}"
-          Command="{Binding }"
+          Command="{Binding OnROIClick}"
           ToolTip.Tip="Region of interest selection over layer.
 &#x0a;(NS): Not selected
 &#x0a;Click: go to region | ESC: Clear ROI"
