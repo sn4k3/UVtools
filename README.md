@@ -149,6 +149,8 @@ After some tests without failure you can increase your confidence and ignore thi
 
 ### Linux
 
+**NOTE: This instructions are for the upcoming multi-os UVtools on development.
+The current public build will only work in windows.**
 
 **Ubuntu/Mint/Debian/Similars**
 
@@ -169,6 +171,9 @@ To run UVtools open it folder on a terminal and call one of:
 * As a pratical alternative you can create a shortcut on Desktop
 
 ### Mac
+
+**NOTE: This instructions are for the upcoming multi-os UVtools on development.
+The current public build will only work in windows.**
 
 * Donwload and install: https://dotnet.microsoft.com/download/dotnet-core/thank-you/sdk-3.1.402-macos-x64-installer
 

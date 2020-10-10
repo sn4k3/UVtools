@@ -23,8 +23,8 @@ namespace UVtools.WPF.Windows
         private int _testSelectedIndex;
         private string _singleThreadTdps = $"0 {RunsAbbreviation}";
         private string _multiThreadTdps = $"0 {RunsAbbreviation}";
-        private string _devSingleThreadTdps = $"{Tests[0].DevSingleThreadResult} {RunsAbbreviation}";
-        private string _devMultiThreadTdps = $"{Tests[0].DevMultiThreadResult} {RunsAbbreviation}";
+        private string _devSingleThreadTdps = $"{Tests[0].DevSingleThreadResult} {RunsAbbreviation} ({SingleThreadTests} tests / {Math.Round(SingleThreadTests / Tests[0].DevSingleThreadResult, 2)}s)";
+        private string _devMultiThreadTdps = $"{Tests[0].DevMultiThreadResult} {RunsAbbreviation} ({MultiThreadTests} tests / {Math.Round(MultiThreadTests / Tests[0].DevMultiThreadResult, 2)}s)";
         private bool _isRunning;
         private string _startStopButtonText = "Start";
         private const ushort SingleThreadTests = 100;
@@ -51,7 +51,7 @@ namespace UVtools.WPF.Windows
             };
 
         public string Description  => "Benchmark your machine against pre-defined tests.\n" +
-                                      "This will use all compution power avaliable, CPU will be exhausted\n." +
+                                      "This will use all compution power avaliable, CPU will be exhausted.\n" +
                                       "Run the test while your PC is idle or not in heavy load.\n" +
                                       "Results are in 'tests done per second' (TDPS)\n" +
                                       "\n" +
@@ -65,8 +65,8 @@ namespace UVtools.WPF.Windows
             set
             {
                 if(!RaiseAndSetIfChanged(ref _testSelectedIndex, value)) return;
-                DevSingleThreadTDPS = $"{Tests[_testSelectedIndex].DevSingleThreadResult} {RunsAbbreviation}";
-                DevMultiThreadTDPS = $"{Tests[_testSelectedIndex].DevMultiThreadResult} {RunsAbbreviation}";
+                DevSingleThreadTDPS = $"{Tests[_testSelectedIndex].DevSingleThreadResult} {RunsAbbreviation} ({SingleThreadTests} tests / {Math.Round(SingleThreadTests / Tests[_testSelectedIndex].DevSingleThreadResult, 2)}s)";
+                DevMultiThreadTDPS = $"{Tests[_testSelectedIndex].DevMultiThreadResult} {RunsAbbreviation} ({MultiThreadTests} tests / {Math.Round(MultiThreadTests / Tests[_testSelectedIndex].DevMultiThreadResult, 2)}s)";
             }
         }
 
@@ -136,7 +136,7 @@ namespace UVtools.WPF.Windows
                 BenchmarkTest benchmark = Tests[_testSelectedIndex];
                 SingleThreadTDPS = $"Running {SingleThreadTests} tests";
                 MultiThreadTDPS = $"Running {MultiThreadTests} tests";
-                return;
+                
                 _tokenSource = new CancellationTokenSource();
                 MethodInfo theMethod = GetType().GetMethod(benchmark.FunctionName);
 
