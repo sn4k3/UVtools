@@ -877,11 +877,22 @@ namespace UVtools.GUI
                             {
                                 var type = config.GetType();
                                 tw.WriteLine($"[{type.Name}]");
-                                foreach (var property in type.GetProperties())
+                                foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
                                 {
-                                    tw.WriteLine($"{property.Name} = {property.GetValue(config)}");
+                                    if (property.Name.Equals("Item")) continue;
+                                    var value = property.GetValue(config);
+                                    switch (value)
+                                    {
+                                        case null:
+                                            continue;
+                                        case IList list:
+                                            tw.WriteLine($"{property.Name} = {list.Count}");
+                                            break;
+                                        default:
+                                            tw.WriteLine($"{property.Name} = {value}");
+                                            break;
+                                    }
                                 }
-
                                 tw.WriteLine();
                             }
 
@@ -910,9 +921,21 @@ namespace UVtools.GUI
                 {
                     var type = config.GetType();
                     sb.AppendLine($"[{type.Name}]");
-                    foreach (var property in type.GetProperties())
+                    foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
                     {
-                        sb.AppendLine($"{property.Name} = {property.GetValue(config)}");
+                        if (property.Name.Equals("Item")) continue;
+                        var value = property.GetValue(config);
+                        switch (value)
+                        {
+                            case null:
+                                continue;
+                            case IList list:
+                                sb.AppendLine($"{property.Name} = {list.Count}");
+                                break;
+                            default:
+                                sb.AppendLine($"{property.Name} = {value}");
+                                break;
+                        }
                     }
 
                     sb.AppendLine();

@@ -284,10 +284,10 @@ namespace UVtools.Core.FileFormats
                 Section = new Section(SectionMark, this);
             }
 
-            public Mat Decode(bool consumeData = true)
+            public unsafe Mat Decode(bool consumeData = true)
             {
                 Mat image = new Mat(new Size((int) Width, (int) Height), DepthType.Cv8U, 3);
-                var span = image.GetPixelSpan<byte>();
+                var span = image.GetBytePointer();
 
                 int pixel = 0;
                 for (uint i = 0; i < Data.Length; i += 2)
@@ -313,9 +313,10 @@ namespace UVtools.Core.FileFormats
                 return image;
             }
 
-            public static Preview Encode(Mat image)
+            public static unsafe Preview Encode(Mat image)
             {
-                var span = image.GetPixelSpan<byte>();
+                var span = image.GetBytePointer();
+                var imageLength = image.GetLength();
 
                 Preview preview = new Preview
                 {
@@ -326,7 +327,7 @@ namespace UVtools.Core.FileFormats
                 };
 
                 int i = 0;
-                for (int pixel = 0; pixel < span.Length; pixel += image.NumberOfChannels)
+                for (int pixel = 0; pixel < imageLength; pixel += image.NumberOfChannels)
                 {
                     // BGR
                     int b = span[pixel] >> 3;
@@ -424,10 +425,11 @@ namespace UVtools.Core.FileFormats
                 return EncodedRle;
             }
 
-            private Mat DecodePWS()
+            private unsafe Mat DecodePWS()
             {
-                var image = new Mat(new Size((int) Parent.ResolutionX, (int) Parent.ResolutionY), DepthType.Cv8U, 1);
-                var span = image.GetPixelSpan<byte>();
+                var image = EmguExtensions.InitMat(Parent.Resolution);
+                var span = image.GetBytePointer();
+                var imageLength = image.GetLength();
 
                 int index = 0;
                 for (byte bit = 0; bit < Parent.AntiAliasing; bit++)
@@ -450,13 +452,13 @@ namespace UVtools.Core.FileFormats
 
                         pixel += reps;
 
-                        if (pixel == span.Length)
+                        if (pixel == imageLength)
                         {
                             index++;
                             break;
                         }
 
-                        if (pixel > span.Length)
+                        if (pixel > imageLength)
                         {
                             image.Dispose();
                             throw new FileLoadException("Error image ran off the end");
@@ -464,7 +466,7 @@ namespace UVtools.Core.FileFormats
                     }
                 }
 
-                for (int i = 0; i < span.Length; i++)
+                for (int i = 0; i < imageLength; i++)
                 {
                     int newC = span[i] * (256 / Parent.AntiAliasing);
 
@@ -479,10 +481,11 @@ namespace UVtools.Core.FileFormats
                 return image;
             }
 
-            public byte[] EncodePWS(Mat image)
+            public unsafe byte[] EncodePWS(Mat image)
             {
                 List<byte> rawData = new List<byte>();
-                var span = image.GetPixelSpan<byte>();
+                var span = image.GetBytePointer();
+                var imageLength = image.GetLength();
 
                 bool obit;
                 int rep;
@@ -516,7 +519,7 @@ namespace UVtools.Core.FileFormats
                     byte threshold = (byte)(256 / Parent.AntiAliasing * aalevel - 1);
 
 
-                    for (int pixel = 0; pixel < span.Length; pixel++)
+                    for (int pixel = 0; pixel < imageLength; pixel++)
                     {
                         var nbit = span[pixel] >= threshold;
 
@@ -547,10 +550,11 @@ namespace UVtools.Core.FileFormats
                 return rawData.ToArray();
             }
 
-            private Mat DecodePW0()
+            private unsafe Mat DecodePW0()
             {
-                var image = new Mat(new Size((int)Parent.ResolutionX, (int)Parent.ResolutionY), DepthType.Cv8U, 1);
-                var span = image.GetPixelSpan<byte>();
+                var image = EmguExtensions.InitMat(Parent.Resolution);
+                var span = image.GetBytePointer();
+                var imageLength = image.GetLength();
 
                 uint n = 0;
                 for (int index = 0; index < EncodedRle.Length; index++)
@@ -590,32 +594,33 @@ namespace UVtools.Core.FileFormats
                     n += reps;
 
 
-                    if (n == span.Length)
+                    if (n == imageLength)
                     {
                         //index++;
                         break;
                     }
 
-                    if (n > span.Length)
+                    if (n > imageLength)
                     {
                         image.Dispose();
-                        throw new FileLoadException($"Error image ran off the end: {n - reps}({reps}) of {span.Length}");
+                        throw new FileLoadException($"Error image ran off the end: {n - reps}({reps}) of {imageLength}");
                     }
                 }
 
-                if (n != span.Length)
+                if (n != imageLength)
                 {
                     image.Dispose();
-                    throw new FileLoadException($"Error image ended short: {n} of {span.Length}");
+                    throw new FileLoadException($"Error image ended short: {n} of {imageLength}");
                 }
 
                 return image;
             }
 
-            public byte[] EncodePW0(Mat image)
+            public unsafe byte[] EncodePW0(Mat image)
             {
                 List<byte> rawData = new List<byte>();
-                var span = image.GetPixelSpan<byte>();
+                var span = image.GetBytePointer();
+                var imageLength = image.GetLength();
 
                 int lastColor = -1;
                 int reps = 0;
@@ -654,7 +659,7 @@ namespace UVtools.Core.FileFormats
                     }
                 }
 
-                for (int i = 0; i < span.Length; i++)
+                for (int i = 0; i < imageLength; i++)
                 {
                     int color = span[i] >> 4;
 

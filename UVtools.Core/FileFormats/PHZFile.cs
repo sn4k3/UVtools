@@ -306,11 +306,10 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(6)] public uint Unknown3    { get; set; }
             [FieldOrder(7)] public uint Unknown4    { get; set; }
 
-            public Mat Decode(byte[] rawImageData)
+            public unsafe Mat Decode(byte[] rawImageData)
             {
                 var image = new Mat(new Size((int)ResolutionX, (int)ResolutionY), DepthType.Cv8U, 3);
-                var span = image.GetPixelSpan<byte>();
-                
+                var span = image.GetBytePointer();
 
                 int pixel = 0;
                 for (uint n = 0; n < ImageLength; n++)
@@ -339,10 +338,12 @@ namespace UVtools.Core.FileFormats
                 return image;
             }
 
-            public static byte[] Encode(Mat image)
+            public static unsafe byte[] Encode(Mat image)
             {
                 List<byte> rawData = new List<byte>();
-                var span = image.GetPixelSpan<byte>();
+                var span = image.GetBytePointer();
+                var imageLength = image.GetLength();
+
                 ushort color15 = 0;
                 uint rep = 0;
 
@@ -373,7 +374,7 @@ namespace UVtools.Core.FileFormats
                     }
                 }
 
-                for (int pixel = 0; pixel < span.Length; pixel += image.NumberOfChannels)
+                for (int pixel = 0; pixel < imageLength; pixel += image.NumberOfChannels)
                 {
                     var ncolor15 =
                         (span[pixel] >> 3)
@@ -461,10 +462,10 @@ namespace UVtools.Core.FileFormats
                     parent.HeaderSettings.LayerOffTime);
             }
 
-            public Mat Decode(uint layerIndex, bool consumeData = true)
+            public unsafe Mat Decode(uint layerIndex, bool consumeData = true)
             {
-                var image = new Mat(new Size((int)Parent.ResolutionX, (int)Parent.ResolutionY), DepthType.Cv8U, 1);
-                var span = image.GetPixelSpan<byte>();
+                var image = EmguExtensions.InitMat(Parent.Resolution);
+                var span = image.GetBytePointer();
 
                 if (Parent.HeaderSettings.EncryptionKey > 0)
                 {

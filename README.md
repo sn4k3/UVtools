@@ -62,8 +62,8 @@ But also, i need victims for test subject. Proceed at your own risk!
 * ZCodex (Z-Suite)
 * CWS (NovaMaker)
 * LGS (Longer Orange 10)
-* LGS30 (onger Orange 30)
-* UVJ
+* LGS30 (Longer Orange 30)
+* UVJ (Zip file for manual manipulation format)
 * Image files (png, jpg, jpeg, gif, bmp)
 
 ## Available printers for PrusaSlicer

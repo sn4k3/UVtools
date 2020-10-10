@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using BinarySerialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 
@@ -359,13 +360,10 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(6)] public uint Unknown3    { get; set; }
             [FieldOrder(7)] public uint Unknown4    { get; set; }
 
-            public Mat Decode(byte[] rawImageData)
+            public unsafe Mat Decode(byte[] rawImageData)
             {
                 var image = new Mat(new Size((int) ResolutionX, (int) ResolutionY), DepthType.Cv8U, 3);
-                var span = image.GetPixelSpan<byte>();
-                //var image = EmguExtensions.CreateMat(out var bytes, new Size((int) ResolutionX, (int) ResolutionY), 3);
-                //var image = new MatBytes(new Size((int)ResolutionX, (int)ResolutionY), 3);
-                //var bytes = image.Bytes;
+                var span = image.GetBytePointer();
 
                 int pixel = 0;
                 for (int n = 0; n < rawImageData.Length; n++)
@@ -398,13 +396,14 @@ namespace UVtools.Core.FileFormats
                 return $"{nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(ImageOffset)}: {ImageOffset}, {nameof(ImageLength)}: {ImageLength}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}";
             }
 
-            public byte[] Encode(Mat image)
+            public unsafe byte[] Encode(Mat image)
             {
                 List<byte> rawData = new List<byte>();
                 ushort color15 = 0;
                 uint rep = 0;
 
-                var span = image.GetPixelSpan<byte>();
+                var span = image.GetBytePointer();
+                var imageLength = image.GetLength();
 
                 void RleRGB15()
                 {
@@ -434,7 +433,7 @@ namespace UVtools.Core.FileFormats
                 }
 
                 int pixel = 0;
-                while (pixel < span.Length)
+                while (pixel < imageLength)
                 {
                     var ncolor15 =
                         // bgr
@@ -541,10 +540,11 @@ namespace UVtools.Core.FileFormats
                 return image;
             }
 
-            public static Mat DecodeCbddlpImage(ChituboxFile parent, uint layerIndex)
+            public static unsafe Mat DecodeCbddlpImage(ChituboxFile parent, uint layerIndex)
             {
-                var image = new Mat(new Size((int)parent.HeaderSettings.ResolutionX, (int)parent.HeaderSettings.ResolutionY), DepthType.Cv8U, 1);
-                var span = image.GetPixelSpan<byte>();
+                var image = EmguExtensions.InitMat(parent.Resolution);
+                var span = image.GetBytePointer();
+                var imageLength = image.GetLength();
 
                 for (byte bit = 0; bit < parent.AntiAliasing; bit++)
                 {
@@ -568,12 +568,12 @@ namespace UVtools.Core.FileFormats
 
                         n += reps;
 
-                        if (n == span.Length)
+                        if (n == imageLength)
                         {
                             break;
                         }
 
-                        if (n > span.Length)
+                        if (n > imageLength)
                         {
                             image.Dispose();
                             throw new FileLoadException("Error image ran off the end");
@@ -581,7 +581,7 @@ namespace UVtools.Core.FileFormats
                     }
                 }
 
-                for (int i = 0; i < span.Length; i++)
+                for (int i = 0; i < imageLength; i++)
                 {
                     int newC = span[i] * (256 / parent.AntiAliasing);
 
@@ -598,13 +598,10 @@ namespace UVtools.Core.FileFormats
                 return image;
             }
 
-            private Mat DecodeCbtImage(uint layerIndex)
+            private unsafe Mat DecodeCbtImage(uint layerIndex)
             {
-                //Mat image = new Mat(new Size((int)Parent.HeaderSettings.ResolutionX, (int)Parent.HeaderSettings.ResolutionY), DepthType.Cv8U, 1);
-                //var bytes = image.GetBytes();
-                //var image = EmguExtensions.CreateMat(out var bytes, new Size((int)Parent.HeaderSettings.ResolutionX, (int)Parent.HeaderSettings.ResolutionY));
-                var image = new Mat(new Size((int)Parent.HeaderSettings.ResolutionX, (int)Parent.HeaderSettings.ResolutionY), DepthType.Cv8U, 1);
-                var span = image.GetPixelSpan<byte>();
+                var image = EmguExtensions.InitMat(Parent.Resolution);
+                var span = image.GetBytePointer();
 
                 if (Parent.HeaderSettings.EncryptionKey > 0)
                 {
@@ -616,7 +613,7 @@ namespace UVtools.Core.FileFormats
                 for (var n = 0; n < EncodedRle.Length; n++)
                 {
                     byte code = EncodedRle[n];
-                    uint stride = 1;
+                    int stride = 1;
 
                     if ((code & 0x80) == 0x80) // It's a run
                     {
@@ -631,18 +628,17 @@ namespace UVtools.Core.FileFormats
                         }
                         else if ((slen & 0xc0) == 0x80)
                         {
-                            stride = (uint)(((slen & 0x3f) << 8) + EncodedRle[n + 1]);
+                            stride = ((slen & 0x3f) << 8) + EncodedRle[n + 1];
                             n++;
                         }
                         else if ((slen & 0xe0) == 0xc0)
                         {
-                            stride = (uint)(((slen & 0x1f) << 16) + (EncodedRle[n + 1] << 8) + EncodedRle[n + 2]);
+                            stride = ((slen & 0x1f) << 16) + (EncodedRle[n + 1] << 8) + EncodedRle[n + 2];
                             n += 2;
                         }
                         else if ((slen & 0xf0) == 0xe0)
                         {
-                            stride = (uint)(((slen & 0xf) << 24) + (EncodedRle[n + 1] << 16) + (EncodedRle[n + 2] << 8) + EncodedRle[n + 3]);
-
+                            stride = ((slen & 0xf) << 24) + (EncodedRle[n + 1] << 16) + (EncodedRle[n + 2] << 8) + EncodedRle[n + 3];
                             n += 3;
                         }
                         else
@@ -662,11 +658,11 @@ namespace UVtools.Core.FileFormats
 
                     if (code == 0) // Ignore blacks, spare cycles
                     {
-                        pixel += (int)stride;
+                        pixel += stride;
                         continue;
                     }
 
-                    while (stride-- > 0)
+                    for (; stride > 0; stride--)
                     {
                         span[pixel] = code;
                         pixel++;
@@ -681,10 +677,11 @@ namespace UVtools.Core.FileFormats
                 return Parent.IsCbtFile ? EncodeCbtImage(image, layerIndex) : EncodeCbddlpImage(image, aaIndex);
             }
 
-            public byte[] EncodeCbddlpImage(Mat image, byte bit)
+            public unsafe byte[] EncodeCbddlpImage(Mat image, byte bit)
             {
                 List<byte> rawData = new List<byte>();
-                var span = image.GetPixelSpan<byte>();
+                var span = image.GetBytePointer();
+                var imageLength = image.GetLength();
 
                 bool obit = false;
                 int rep = 0;
@@ -712,7 +709,7 @@ namespace UVtools.Core.FileFormats
                     rawData.Add(by);
                 }
 
-                for (int pixel = 0; pixel < span.Length; pixel++)
+                for (int pixel = 0; pixel < imageLength; pixel++)
                 {
                     var nbit = span[pixel] >= threshold;
 
@@ -743,12 +740,13 @@ namespace UVtools.Core.FileFormats
                 return EncodedRle;
             }
 
-            private byte[] EncodeCbtImage(Mat image, uint layerIndex)
+            private unsafe byte[] EncodeCbtImage(Mat image, uint layerIndex)
             {
                 List<byte> rawData = new List<byte>();
                 byte color = byte.MaxValue >> 1;
                 uint stride = 0;
-                var span = image.GetPixelSpan<byte>();
+                var span = image.GetBytePointer();
+                var imageLength = image.GetLength();
 
                 void AddRep()
                 {
@@ -801,7 +799,7 @@ namespace UVtools.Core.FileFormats
                 }
 
 
-                for (int pixel = 0; pixel < span.Length; pixel++)
+                for (int pixel = 0; pixel < imageLength; pixel++)
                 {
                     var grey7 = (byte) (span[pixel] >> 1);
 
@@ -1424,6 +1422,7 @@ namespace UVtools.Core.FileFormats
 
 
                         inputFile.Read(layerData.EncodedRle, 0, (int) layerData.DataSize);
+                        
                         progress++;
                         progress.Token.ThrowIfCancellationRequested();
                     }
@@ -1434,6 +1433,7 @@ namespace UVtools.Core.FileFormats
                 progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
                 Parallel.For(0, LayerCount, layerIndex =>
+                //for (int layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
                     if (progress.Token.IsCancellationRequested)
                     {

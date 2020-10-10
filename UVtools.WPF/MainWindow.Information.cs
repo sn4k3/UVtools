@@ -6,9 +6,11 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Avalonia;
 using Avalonia.Controls;
@@ -178,14 +180,24 @@ namespace UVtools.WPF
                     {
                         var type = config.GetType();
                         tw.WriteLine($"[{type.Name}]");
-                        foreach (var property in type.GetProperties())
+                        foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
                         {
-                            tw.WriteLine($"{property.Name} = {property.GetValue(config)}");
+                            if (property.Name.Equals("Item")) continue;
+                            var value = property.GetValue(config);
+                            switch (value)
+                            {
+                                case null:
+                                    continue;
+                                case IList list:
+                                    tw.WriteLine($"{property.Name} = {list.Count}");
+                                    break;
+                                default:
+                                    tw.WriteLine($"{property.Name} = {value}");
+                                    break;
+                            }
                         }
-
                         tw.WriteLine();
                     }
-
                     tw.Close();
                 }
             }
@@ -211,9 +223,21 @@ namespace UVtools.WPF
             {
                 var type = config.GetType();
                 sb.AppendLine($"[{type.Name}]");
-                foreach (var property in type.GetProperties())
+                foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
-                    sb.AppendLine($"{property.Name} = {property.GetValue(config)}");
+                    if (property.Name.Equals("Item")) continue;
+                    var value = property.GetValue(config);
+                    switch (value)
+                    {
+                        case null:
+                            continue;
+                        case IList list:
+                            sb.AppendLine($"{property.Name} = {list.Count}");
+                            break;
+                        default:
+                            sb.AppendLine($"{property.Name} = {value}");
+                            break;
+                    }
                 }
 
                 sb.AppendLine();
@@ -225,14 +249,26 @@ namespace UVtools.WPF
         public void RefreshProperties()
         {
             SlicerProperties.Clear();
-            if (!(SlicerFile.Configs is null))
+            if (SlicerFile.Configs is null) return;
+            foreach (var config in SlicerFile.Configs)
             {
-                foreach (var config in SlicerFile.Configs)
+                var type = config.GetType();
+                foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
-                    var type = config.GetType();
-                    foreach (var property in type.GetProperties())
+                    if (property.Name.Equals("Item")) continue;
+                    var value = property.GetValue(config);
+                    switch (value)
                     {
-                        SlicerProperties.Add(new SlicerProperty(property.Name, property.GetValue(config, null)?.ToString(), type.Name));
+                        case null:
+                            continue;
+                        case IList list:
+                            SlicerProperties.Add(new SlicerProperty(property.Name, list.Count.ToString(),
+                                config.GetType().Name));
+                            break;
+                        default:
+                            SlicerProperties.Add(
+                                new SlicerProperty(property.Name, value.ToString(), config.GetType().Name));
+                            break;
                     }
                 }
             }

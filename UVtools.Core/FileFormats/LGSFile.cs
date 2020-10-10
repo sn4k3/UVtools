@@ -97,11 +97,12 @@ namespace UVtools.Core.FileFormats
             [FieldLength(nameof(DataSize))]
             public byte[] EncodedRle { get; set; }
 
-            public byte[] Encode(Mat mat)
+            public unsafe byte[] Encode(Mat mat)
             {
                 List<byte> rawData = new List<byte>();
                 List<byte> chunk = new List<byte>();
-                var spanMat = mat.GetPixelSpan<byte>();
+                var spanMat = mat.GetBytePointer();
+                var imageLength = mat.GetLength();
 
                 uint span = 0;
                 byte lc = 0;
@@ -114,7 +115,7 @@ namespace UVtools.Core.FileFormats
                     rawData.AddRange(chunk.ToArray());
                 }
 
-                for (int i = 0; i < spanMat.Length; i++)
+                for (int i = 0; i < imageLength; i++)
                 {
                     byte c = (byte) (spanMat[i] & 0xf0);
                     
@@ -137,10 +138,11 @@ namespace UVtools.Core.FileFormats
                 return EncodedRle;
             }
 
-            public Mat Decode(bool consumeRle = true)
+            public unsafe Mat Decode(bool consumeRle = true)
             {
-                Mat mat = new Mat(new Size((int)Parent.HeaderSettings.ResolutionX, (int) Parent.HeaderSettings.ResolutionY), DepthType.Cv8U, 1);
-                var matSpan = mat.GetPixelSpan<byte>();
+                var mat = EmguExtensions.InitMat(Parent.Resolution);
+                var matSpan = mat.GetBytePointer();
+                var imageLength = mat.GetLength();
 
                 byte last = 0;
                 int span = 0;
@@ -158,7 +160,7 @@ namespace UVtools.Core.FileFormats
                     {
                         for(; span > 0; span--)
                         {
-                            if (index >= matSpan.Length)
+                            if (index >= imageLength)
                             {
                                 throw new FileLoadException($"'{span}' bytes to many");
                             }
@@ -175,7 +177,7 @@ namespace UVtools.Core.FileFormats
 
                 for (; span > 0; span--)
                 {
-                    if (index >= matSpan.Length)
+                    if (index >= imageLength)
                     {
                         throw new FileLoadException($"'{span}' bytes to many");
                     }
@@ -183,9 +185,9 @@ namespace UVtools.Core.FileFormats
                     matSpan[index++] = last;
                 }
 
-                if (index != matSpan.Length)
+                if (index != imageLength)
                 {
-                    throw new FileLoadException($"Incomplete buffer, expected: {matSpan.Length}, got: {index}");
+                    throw new FileLoadException($"Incomplete buffer, expected: {imageLength}, got: {index}");
                 }
 
 
@@ -332,13 +334,14 @@ namespace UVtools.Core.FileFormats
 
         #region Methods
 
-        public byte[] PreviewEncode(Mat mat)
+        public unsafe byte[] PreviewEncode(Mat mat)
         {
             byte[] bytes = new byte[mat.Width * mat.Height * 2];
-            var span = mat.GetPixelSpan<byte>();
+            var span = mat.GetBytePointer();
+            var imageLength = mat.GetLength();
 
             int index = 0;
-            for (int i = 0; i < span.Length; i+=3)
+            for (int i = 0; i < imageLength; i+=3)
             {
                 byte b = span[i];
                 byte g = span[i+1];
@@ -407,10 +410,10 @@ namespace UVtools.Core.FileFormats
             Debug.WriteLine("-End-");
         }
 
-        public Mat PreviewDecode(byte []data)
+        public unsafe Mat PreviewDecode(byte []data)
         {
             Mat mat = new Mat((int) HeaderSettings.PreviewSizeY, (int)HeaderSettings.PreviewSizeX, DepthType.Cv8U, 3);
-            var span = mat.GetPixelSpan<byte>();
+            var span = mat.GetBytePointer();
             int spanIndex = 0;
             for (int i = 0; i < data.Length; i+=2)
             {

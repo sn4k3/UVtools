@@ -11,11 +11,14 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 
 namespace UVtools.Core.Extensions
 {
     public static class EmguExtensions
     {
+        public static readonly MCvScalar BlackByte = new MCvScalar(0);
+
         public static unsafe byte* GetBytePointer(this Mat mat)
         {
             return (byte*)mat.DataPointer.ToPointer();
@@ -181,7 +184,7 @@ namespace UVtools.Core.Extensions
         /// <returns>Blanked <see cref="Mat"/></returns>
         public static Mat CloneBlank(this Mat mat)
         {
-            return new Mat(new Size(mat.Width, mat.Height), mat.Depth, mat.NumberOfChannels);
+            return InitMat(mat.Size, mat.Depth, mat.NumberOfChannels);
         }
 
         public static byte GetByte(this Mat mat, int pos)
@@ -209,6 +212,13 @@ namespace UVtools.Core.Extensions
 
         public static void SetBytes(this Mat mat, byte[] value) =>
             Marshal.Copy(value, 0, mat.DataPointer, value.Length);
+
+        public static Mat InitMat(Size size, DepthType depthType = DepthType.Cv8U, int channels = 1)
+        {
+            var mat = new Mat(size, depthType, channels);
+            mat.SetTo(BlackByte);
+            return mat;
+        }
 
     }
 }
