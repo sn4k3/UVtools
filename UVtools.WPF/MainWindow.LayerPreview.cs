@@ -1060,6 +1060,18 @@ namespace UVtools.WPF
                 return;
             }
 
+            if ((e.KeyModifiers & KeyModifiers.Control) != 0)
+            {
+                if (!LayerImageBox.IsPointInImage(pointer.Position)) return;
+                var location = LayerImageBox.PointToImage(pointer.Position).ToDotNet();
+
+                // Check to see if the clicked location is an issue,
+                // and if so, select it in the ListView.
+                SelectIssueAtPoint(location);
+
+                return;
+            }
+
             // Shift must be pressed for any pixel edit action, middle button is ignored.
             if (!IsPixelEditorActive || e.InitialPressMouseButton == MouseButton.Middle ||
                 (e.KeyModifiers & KeyModifiers.Shift) == 0) return;

@@ -188,12 +188,14 @@ To run UVtools open it folder on a terminal and call one of:
 **NOTE: This instructions are for the upcoming multi-os UVtools on development.
 The current public build will only work in windows.**
 
+<!--- 
 * Donwload and install: https://dotnet.microsoft.com/download/dotnet-core/thank-you/sdk-3.1.402-macos-x64-installer
+-->
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-brew install git
-brew install cmake
+brew analytics off
+brew install libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb dotnet
 ```
 
 ## How to use
