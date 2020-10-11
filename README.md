@@ -195,7 +195,8 @@ The current public build will only work in windows.**
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 brew analytics off
-brew install libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb dotnet
+brew install libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb
+brew cask install dotnet
 ```
 
 ## How to use
