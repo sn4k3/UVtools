@@ -131,4 +131,18 @@ WARNING: Even at low settings this operation has the potential to introduce new 
 Set iterations to 0 to disable.
 WARNING: Using high iteration values can destroy your model.  Low values recomended.</value>
   </data>
+  <data name="label4.ToolTip" xml:space="preserve">
+    <value>If the removal of an island in the current layer results in a new island being introduce in the layer above, the island in the layer above will also be automatically removed.
+This process will repeat for up to the number of layers specified. Set to 0 to repeat until there are no more valid islands to remove.
+
+NOTE: Use with caution as this can remove large portions of your model if proper supports have not been added beforehand.
+            Using this function with high values can be extremely slow depending on resolution and issue count.</value>
+  </data>
+  <data name="nmRemoveIslandsRecursiveIterations.ToolTip" xml:space="preserve">
+    <value>If the removal of an island in the current layer results in a new island being introduce in the layer above, the island in the layer above will also be automatically removed.
+This process will repeat for up to the number of layers specified. Set to 0 to repeat until there are no more valid islands to remove.
+
+NOTE: Use with caution as this can remove large portions of your model if proper supports have not been added beforehand.
+            Using this function with high values can be extremely slow depending on resolution and issue count.</value>
+  </data>
 </root>

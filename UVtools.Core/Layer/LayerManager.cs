@@ -1348,10 +1348,85 @@ namespace UVtools.Core
         public void RepairLayers(OperationRepairLayers operation, OperationProgress progress = null)
         {
             if(ReferenceEquals(progress, null)) progress = new OperationProgress();
-            progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
+            
 
             var issues = operation.Issues;
 
+            // Remove islands
+            if (!ReferenceEquals(issues, null)
+                && !ReferenceEquals(operation.IslandDetectionConfig, null)
+                && operation.RepairIslands
+                && operation.RemoveIslandsBelowEqualPixelCount > 0
+                && operation.RemoveIslandsRecursiveIterations != 1)
+            {
+                progress.Reset("Removed recursive islands", 0);
+                ushort limit = operation.RemoveIslandsRecursiveIterations == 0
+                    ? ushort.MaxValue
+                    : operation.RemoveIslandsRecursiveIterations;
+
+                var recursiveIssues = issues;
+                ConcurrentBag<uint> islandsToRecompute = null;
+
+                var islandConfig = operation.IslandDetectionConfig;
+                var overhangConfig = new OverhangDetectionConfiguration(false);
+                var touchingBoundsConfig = new TouchingBoundDetectionConfiguration(false);
+                var resinTrapsConfig = new ResinTrapDetectionConfiguration(false);
+                var emptyLayersConfig = false;
+
+                islandConfig.Enabled = true;
+                islandConfig.RequiredAreaToProcessCheck = (byte) Math.Ceiling(operation.RemoveIslandsBelowEqualPixelCount/2m);
+
+                for (uint i = 0; i < limit; i++)
+                {
+                    if (i > 0)
+                    {
+                        /*var whiteList = islandsToRecompute.GroupBy(u => u)
+                            .Select(grp => grp.First())
+                            .ToList();*/
+                        islandConfig.WhiteListLayers = islandsToRecompute.ToList();
+                        recursiveIssues = GetAllIssues(islandConfig, overhangConfig, resinTrapsConfig, touchingBoundsConfig, emptyLayersConfig);
+                        //Debug.WriteLine(i);
+                    }
+
+                    var issuesGroup = 
+                        recursiveIssues
+                        .Where(issue => issue.Type == LayerIssue.IssueType.Island &&
+                                        issue.Pixels.Length <= operation.RemoveIslandsBelowEqualPixelCount)
+                        .GroupBy(issue => issue.LayerIndex);
+
+                    if (!issuesGroup.Any()) break; // Nothing to process
+                    islandsToRecompute = new ConcurrentBag<uint>();
+                    Parallel.ForEach(issuesGroup, group =>
+                    {
+                        if (progress.Token.IsCancellationRequested) return;
+                        Layer layer = this[group.Key];
+                        Mat image = layer.LayerMat;
+                        Span<byte> bytes = image.GetPixelSpan<byte>();
+                        foreach (var issue in group)
+                        {
+                            foreach (var issuePixel in issue.Pixels)
+                            {
+                                bytes[image.GetPixelPos(issuePixel)] = 0;
+                            }
+
+                            lock (progress.Mutex)
+                            {
+                                progress++;
+                            }
+                        }
+
+                        var nextLayerIndex = group.Key + 1;
+                        if(nextLayerIndex < Count)
+                            islandsToRecompute.Add(nextLayerIndex);
+
+                        layer.LayerMat = image;
+                    });
+
+                    if (islandsToRecompute.IsEmpty) break; // No more leftovers
+                }
+            }
+
+            progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
             if (operation.RepairIslands || operation.RepairResinTraps)
             {
                 Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd, layerIndex =>
@@ -1362,13 +1437,13 @@ namespace UVtools.Core
 
                     void initImage()
                     {
-                        if(ReferenceEquals(image, null))
+                        if(image is null)
                             image = layer.LayerMat;
                     }
 
                     if (!ReferenceEquals(issues, null))
                     {
-                        if (operation.RepairIslands && operation.RemoveIslandsBelowEqualPixelCount > 0)
+                        if (operation.RepairIslands && operation.RemoveIslandsBelowEqualPixelCount > 0 && operation.RemoveIslandsRecursiveIterations == 1)
                         {
                             Span<byte> bytes = null;
                             foreach (var issue in issues)

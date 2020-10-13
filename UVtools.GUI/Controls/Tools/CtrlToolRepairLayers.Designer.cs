@@ -40,10 +40,14 @@
             this.cbRemoveEmptyLayers = new System.Windows.Forms.CheckBox();
             this.cbRepairResinTraps = new System.Windows.Forms.CheckBox();
             this.cbRepairIslands = new System.Windows.Forms.CheckBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.nmRemoveIslandsRecursiveIterations = new System.Windows.Forms.NumericUpDown();
+            this.label5 = new System.Windows.Forms.Label();
             this.groupAdvancedSettings.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmOpeningIterations)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmClosingIterations)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmRemoveIslandsBelowEqualPixels)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmRemoveIslandsRecursiveIterations)).BeginInit();
             this.SuspendLayout();
             // 
             // groupAdvancedSettings
@@ -52,7 +56,7 @@
             this.groupAdvancedSettings.Controls.Add(this.label1);
             this.groupAdvancedSettings.Controls.Add(this.nmClosingIterations);
             this.groupAdvancedSettings.Controls.Add(this.lbIterationsStart);
-            this.groupAdvancedSettings.Location = new System.Drawing.Point(3, 87);
+            this.groupAdvancedSettings.Location = new System.Drawing.Point(3, 111);
             this.groupAdvancedSettings.Name = "groupAdvancedSettings";
             this.groupAdvancedSettings.Size = new System.Drawing.Size(601, 110);
             this.groupAdvancedSettings.TabIndex = 31;
@@ -106,7 +110,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(319, 46);
+            this.label3.Location = new System.Drawing.Point(341, 46);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(25, 20);
             this.label3.TabIndex = 30;
@@ -117,15 +121,16 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(3, 46);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(250, 20);
+            this.label2.Size = new System.Drawing.Size(276, 20);
             this.label2.TabIndex = 29;
-            this.label2.Text = "Do not remove islands larger than:";
+            this.label2.Text = "Remove islands equal or smaller than:";
             this.toolTip.SetToolTip(this.label2, "The pixel area theshold above which islands will not be removed by this repair.  " +
-        " Islands remaining after repair will require supports to be added manually.");
+        " Islands remaining after repair will require supports to be added manually.\r\n0 =" +
+        " Disable: Do not remove any island");
             // 
             // nmRemoveIslandsBelowEqualPixels
             // 
-            this.nmRemoveIslandsBelowEqualPixels.Location = new System.Drawing.Point(259, 43);
+            this.nmRemoveIslandsBelowEqualPixels.Location = new System.Drawing.Point(281, 43);
             this.nmRemoveIslandsBelowEqualPixels.Maximum = new decimal(new int[] {
             255,
             0,
@@ -135,7 +140,8 @@
             this.nmRemoveIslandsBelowEqualPixels.Size = new System.Drawing.Size(58, 26);
             this.nmRemoveIslandsBelowEqualPixels.TabIndex = 28;
             this.toolTip.SetToolTip(this.nmRemoveIslandsBelowEqualPixels, "The pixel area theshold above which islands will not be removed by this repair.  " +
-        " Islands remaining after repair will require supports to be added manually.");
+        " Islands remaining after repair will require supports to be added manually.\r\n0 =" +
+        " Disable: Do not remove any island\r\n");
             // 
             // cbRemoveEmptyLayers
             // 
@@ -179,12 +185,46 @@
         " area removal threshold, and then runs the “gap closure” technique.\r\n");
             this.cbRepairIslands.UseVisualStyleBackColor = true;
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(3, 77);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(265, 20);
+            this.label4.TabIndex = 32;
+            this.label4.Text = "Recursively remove islands for up to:";
+            this.toolTip.SetToolTip(this.label4, resources.GetString("label4.ToolTip"));
+            // 
+            // nmRemoveIslandsRecursiveIterations
+            // 
+            this.nmRemoveIslandsRecursiveIterations.Location = new System.Drawing.Point(281, 74);
+            this.nmRemoveIslandsRecursiveIterations.Maximum = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
+            this.nmRemoveIslandsRecursiveIterations.Name = "nmRemoveIslandsRecursiveIterations";
+            this.nmRemoveIslandsRecursiveIterations.Size = new System.Drawing.Size(58, 26);
+            this.nmRemoveIslandsRecursiveIterations.TabIndex = 33;
+            this.toolTip.SetToolTip(this.nmRemoveIslandsRecursiveIterations, resources.GetString("nmRemoveIslandsRecursiveIterations.ToolTip"));
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(341, 77);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(50, 20);
+            this.label5.TabIndex = 34;
+            this.label5.Text = "layers";
+            // 
             // CtrlToolRepairLayers
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
-            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.nmRemoveIslandsRecursiveIterations);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.groupAdvancedSettings);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -197,12 +237,13 @@
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LayerRangeVisible = false;
             this.Name = "CtrlToolRepairLayers";
-            this.Size = new System.Drawing.Size(607, 200);
+            this.Size = new System.Drawing.Size(607, 224);
             this.groupAdvancedSettings.ResumeLayout(false);
             this.groupAdvancedSettings.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmOpeningIterations)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmClosingIterations)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmRemoveIslandsBelowEqualPixels)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmRemoveIslandsRecursiveIterations)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -221,5 +262,8 @@
         private System.Windows.Forms.CheckBox cbRemoveEmptyLayers;
         private System.Windows.Forms.CheckBox cbRepairResinTraps;
         private System.Windows.Forms.CheckBox cbRepairIslands;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.NumericUpDown nmRemoveIslandsRecursiveIterations;
+        private System.Windows.Forms.Label label5;
     }
 }

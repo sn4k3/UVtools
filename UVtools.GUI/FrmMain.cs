@@ -4259,6 +4259,7 @@ namespace UVtools.GUI
                     {
                         // Tools
                         case OperationRepairLayers operation:
+                            operation.IslandDetectionConfig = GetIslandDetectionConfiguration();
                             SlicerFile.LayerManager.RepairLayers(operation, FrmLoading.RestartProgress(operation.CanCancel));
                             break;
                         case OperationMove operation:
@@ -4378,7 +4379,9 @@ namespace UVtools.GUI
                     ? 1
                     : nmPixelEditorDrawingThickness.Value);
 
-                int diameter = (brushSize * pbLayer.Zoom / 100);
+
+                var cursorSize = thickness > 1 ? brushSize + thickness : brushSize;
+                int diameter = (int) (cursorSize * pbLayer.ZoomFactor);
                 if (brushSize > 1 && diameter >= _pixelEditorCursorMinDiamater)
                 {
                     bitmap = new Bitmap(diameter, diameter, PixelFormat.Format32bppArgb);
@@ -4392,7 +4395,7 @@ namespace UVtools.GUI
                             case PixelDrawing.BrushShapeType.Rectangle:
                                 if (thickness >= 1)
                                 {
-                                    gr.DrawRectangle(new Pen(_pixelEditorCursorBrush, thickness), 0, 0, diameter, diameter);
+                                    gr.DrawRectangle(new Pen(_pixelEditorCursorBrush, (int)(thickness * 2 * pbLayer.ZoomFactor)), 0, 0, diameter, diameter);
                                 }
                                 else
                                 {
@@ -4402,7 +4405,7 @@ namespace UVtools.GUI
                             case PixelDrawing.BrushShapeType.Circle:
                                 if (thickness >= 1)
                                 {
-                                    gr.DrawEllipse(new Pen(_pixelEditorCursorBrush, thickness), 0, 0, diameter, diameter);
+                                    gr.DrawEllipse(new Pen(_pixelEditorCursorBrush, (int)(thickness * 2 * pbLayer.ZoomFactor)), 0, 0, diameter, diameter);
                                 }
                                 else
                                 {

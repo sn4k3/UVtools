@@ -1108,6 +1108,7 @@ namespace UVtools.WPF
                     {
                         // Tools
                         case OperationRepairLayers operation:
+                            operation.IslandDetectionConfig = GetIslandDetectionConfiguration();
                             SlicerFile.LayerManager.RepairLayers(operation, ProgressWindow.RestartProgress(operation.CanCancel));
                             break;
                         case OperationMove operation:

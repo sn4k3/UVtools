@@ -49,40 +49,93 @@
       </CheckBox>
     </StackPanel>
 
-    <StackPanel Orientation="Horizontal" Spacing="10">
+    <Grid ColumnDefinitions="Auto,10,Auto,5,Auto"
+          RowDefinitions="Auto,10,Auto">
 
-      <!-- Do not remove islands larger than -->
+      <!-- Remove islands equal or smaller than -->
       <TextBlock
-        VerticalAlignment="Center"
-        Text="Do not remove islands larger than:">
+        Grid.Row="0"
+        Grid.Column="0"
+          VerticalAlignment="Center"
+          Text="Remove islands equal or smaller than:">
+          <ToolTip.Tip>
+            <StackPanel>
+              <TextBlock FontWeight="Bold" Text="Remove islands equal or smaller than:"/>
+              <TextBlock Text="The pixel area theshold above which islands will not be removed by this repair.
+  &#x0a;Islands remaining after repair will require supports to be added manually."/>
+            </StackPanel>
+          </ToolTip.Tip>
+          </TextBlock>
+      
+        <NumericUpDown
+          Grid.Row="0"
+          Grid.Column="2"
+          Increment="1"
+          Minimum="0"
+          Maximum="255"
+          Width="70"
+          Value="{Binding Operation.RemoveIslandsBelowEqualPixelCount}"
+          >
+          <ToolTip.Tip>
+            <StackPanel>
+              <TextBlock FontWeight="Bold" Text="Remove islands equal or smaller than:"/>
+              <TextBlock Text="The pixel area theshold above which islands will not be removed by this repair.
+&#x0a;Islands remaining after repair will require supports to be added manually."/>
+            </StackPanel>
+          </ToolTip.Tip>
+        </NumericUpDown>
+      <TextBlock
+        Grid.Row="0"
+        Grid.Column="4"
+          VerticalAlignment="Center"
+          Text="px"/>
+
+
+      <!-- Recursively remove islands for up to -->
+      <TextBlock
+        Grid.Row="2"
+        Grid.Column="0"
+          VerticalAlignment="Center"
+          Text="Recursively remove islands for up to:">
         <ToolTip.Tip>
           <StackPanel>
-            <TextBlock FontWeight="Bold" Text="Do not remove islands larger than:"/>
-            <TextBlock Text="The pixel area theshold above which islands will not be removed by this repair.
-&#x0a;Islands remaining after repair will require supports to be added manually."/>
+            <TextBlock FontWeight="Bold" Text="Recursively remove islands for up to:"/>
+            <TextBlock Text="If the removal of an island in the current layer results in a new island being introduce in the layer above, the island in the layer above will also be automatically removed.
+&#x0a;This process will repeat for up to the number of layers specified. Set to 0 to repeat until there are no more valid islands to remove.
+&#x0a;
+&#x0a;NOTE: Use with caution as this can remove large portions of your model if proper supports have not been added beforehand.
+&#x0a;           Using this function with high values can be extremely slow depending on resolution and issue count."/>
           </StackPanel>
         </ToolTip.Tip>
-        </TextBlock>
-      
+      </TextBlock>
+
       <NumericUpDown
+        Grid.Row="2"
+        Grid.Column="2"
         Increment="1"
         Minimum="0"
-        Maximum="255"
+        Maximum="65535"
         Width="70"
-        Value="{Binding Operation.RemoveIslandsBelowEqualPixelCount}"
-        >
+        Value="{Binding Operation.RemoveIslandsRecursiveIterations}"
+          >
         <ToolTip.Tip>
           <StackPanel>
-            <TextBlock FontWeight="Bold" Text="Do not remove islands larger than:"/>
-            <TextBlock Text="The pixel area theshold above which islands will not be removed by this repair.
-&#x0a;Islands remaining after repair will require supports to be added manually."/>
+            <TextBlock FontWeight="Bold" Text="Recursively remove islands for up to:"/>
+            <TextBlock Text="If the removal of an island in the current layer results in a new island being introduce in the layer above, the island in the layer above will also be automatically removed.
+&#x0a;This process will repeat for up to the number of layers specified. Set to 0 to repeat until there are no more valid islands to remove.
+&#x0a;
+&#x0a;NOTE: Use with caution as this can remove large portions of your model if proper supports have not been added beforehand.
+&#x0a;           Using this function with high values can be extremely slow depending on resolution and issue count."/>
           </StackPanel>
         </ToolTip.Tip>
       </NumericUpDown>
       <TextBlock
-        VerticalAlignment="Center"
-        Text="px"/>
-    </StackPanel>
+        Grid.Row="2"
+        Grid.Column="4"
+          VerticalAlignment="Center"
+          Text="layers"/>
+
+    </Grid>
 
 
     <Grid 

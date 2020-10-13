@@ -14,6 +14,24 @@ namespace UVtools.Core
 {
     #region LayerIssue Class
 
+    public class IssuesDetectionConfiguration
+    {
+        public IslandDetectionConfiguration IslandConfig { get; }
+        public OverhangDetectionConfiguration OverhangConfig { get; }
+        public ResinTrapDetectionConfiguration ResinTrapConfig { get; }
+        public TouchingBoundDetectionConfiguration TouchingBoundConfig { get; }
+        public bool EmptyLayerConfig { get; }
+
+        public IssuesDetectionConfiguration(IslandDetectionConfiguration islandConfig, OverhangDetectionConfiguration overhangConfig, ResinTrapDetectionConfiguration resinTrapConfig, TouchingBoundDetectionConfiguration touchingBoundConfig, bool emptyLayerConfig)
+        {
+            IslandConfig = islandConfig;
+            OverhangConfig = overhangConfig;
+            ResinTrapConfig = resinTrapConfig;
+            TouchingBoundConfig = touchingBoundConfig;
+            EmptyLayerConfig = emptyLayerConfig;
+        }
+    }
+
     public class IslandDetectionConfiguration
     {
         /// <summary>
@@ -60,6 +78,11 @@ namespace UVtools.Core
         /// will be considered..
         /// </summary>
         public bool AllowDiagonalBonds  { get; set; } = false;
+
+        public IslandDetectionConfiguration(bool enabled = true)
+        {
+            Enabled = enabled;
+        }
     }
 
     /// <summary>
@@ -93,6 +116,11 @@ namespace UVtools.Core
         /// The survived pixels are potential overhangs.
         /// </summary>
         public byte ErodeIterations { get; set; } = 40;
+
+        public OverhangDetectionConfiguration(bool enabled = true)
+        {
+            Enabled = enabled;
+        }
     }
 
     public class ResinTrapDetectionConfiguration
@@ -122,6 +150,11 @@ namespace UVtools.Core
         /// Gets the maximum pixel brightness to be a drain pixel (0-150)
         /// </summary>
         public byte MaximumPixelBrightnessToDrain { get; set; } = 30;
+
+        public ResinTrapDetectionConfiguration(bool enabled = true)
+        {
+            Enabled = enabled;
+        }
     }
 
 
@@ -136,6 +169,11 @@ namespace UVtools.Core
         /// Gets the maximum pixel brightness to be a touching bound
         /// </summary>
         public byte MaximumPixelBrightness { get; set; } = 200;
+
+        public TouchingBoundDetectionConfiguration(bool enabled = true)
+        {
+            Enabled = enabled;
+        }
     }
 
 

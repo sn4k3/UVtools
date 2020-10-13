@@ -9,6 +9,11 @@
 * (Improvement) GUI is now scalable
 * (Fix) Some bug found and fixed during convertion
 
+## 13/10/2020 - v0.8.4.3
+
+* (Add) Tool - Layer repair: Allow remove islands recursively (#74)
+* (Fix) Pixel Editor: Cursor dimentions when using brushes with thickness > 1 (#73)
+
 ## 10/10/2020 - v0.8.4.2
 
 * (Fix) pws and pw0: Error when try to save or copy to clipboard the slicer information / properties

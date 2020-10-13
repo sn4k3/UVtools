@@ -951,46 +951,52 @@
                 BorderBrush="LightBlue"
                 BorderThickness="4">
 
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" Spacing="15">
               <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Default values"/>
-
-              <StackPanel Orientation="Horizontal" Margin="15" Spacing="10">
-                <NumericUpDown
-                  Value="{Binding Settings.LayerRepair.ClosingIterations}"
-                  Width="60"
-                  Minimum="0"
-                  Maximum="255"
-                                />
-                <TextBlock VerticalAlignment="Center" Text="Default 'Gap Closing' iterations"/>
-              </StackPanel>
-
-              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
-                <NumericUpDown 
-                  Value="{Binding Settings.LayerRepair.OpeningIterations}"
-                  Width="60"
-                  Minimum="0"
-                  Maximum="255"
-                                />
-                <TextBlock VerticalAlignment="Center" Text="Default 'Noise Removal' iterations"/>
-              </StackPanel>
-
-              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
-                <NumericUpDown 
-                  Value="{Binding Settings.LayerRepair.RemoveIslandsBelowEqualPixels}"
-                  Width="60"
-                  Minimum="0"
-                  Maximum="255"
-                                />
-                <TextBlock VerticalAlignment="Center" Text="Default maximum pixel area for Island removal (0 = disable)"/>
-              </StackPanel>
 
               <CheckBox IsChecked="{Binding Settings.LayerRepair.RepairIslands}"
                 Margin="15,0" Content="Attempt to repair islands by default"/>
               <CheckBox IsChecked="{Binding Settings.LayerRepair.RepairResinTraps}"
-                Margin="15,15,15,0" Content="Remove empty layers by default"/>
+                Margin="15,0" Content="Remove empty layers by default"/>
               <CheckBox IsChecked="{Binding Settings.LayerRepair.RemoveEmptyLayers}"
-                Margin="15" Content="Attempt to repair resin traps by default"/>
-              
+                Margin="15,0" Content="Attempt to repair resin traps by default"/>
+
+              <StackPanel Orientation="Horizontal" Margin="15,0" Spacing="10">
+                <NumericUpDown 
+                  Value="{Binding Settings.LayerRepair.RemoveIslandsBelowEqualPixels}"
+                  Width="70"
+                  Minimum="0"
+                  Maximum="255"/>
+                <TextBlock VerticalAlignment="Center" Text="Default maximum pixel area for Island removal (0 = disable)"/>
+              </StackPanel>
+
+              <StackPanel Orientation="Horizontal" Margin="15,0" Spacing="10">
+                <NumericUpDown
+                  Value="{Binding Settings.LayerRepair.RemoveIslandsRecursiveIterations}"
+                  Width="70"
+                  Minimum="0"
+                  Maximum="65535"/>
+                <TextBlock VerticalAlignment="Center" Text="Default maximum layers for recursive island removal (0 = All)"/>
+              </StackPanel>
+
+              <StackPanel Orientation="Horizontal" Margin="15,0" Spacing="10">
+                <NumericUpDown
+                  Value="{Binding Settings.LayerRepair.ClosingIterations}"
+                  Width="70"
+                  Minimum="0"
+                  Maximum="255"/>
+                <TextBlock VerticalAlignment="Center" Text="Default 'Gap Closing' iterations"/>
+              </StackPanel>
+
+              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <NumericUpDown
+                  Value="{Binding Settings.LayerRepair.OpeningIterations}"
+                  Width="70"
+                  Minimum="0"
+                  Maximum="255"/>
+                <TextBlock VerticalAlignment="Center" Text="Default 'Noise Removal' iterations"/>
+              </StackPanel>
+
             </StackPanel>
           </Border>
 

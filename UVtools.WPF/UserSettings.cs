@@ -841,30 +841,13 @@ namespace UVtools.WPF
         [Serializable]
         public sealed class LayerRepairUserSettings : ReactiveObject
         {
-            private byte _closingIterations = 2;
-            private byte _openingIterations = 0;
-            private byte _removeIslandsBelowEqualPixels = 10;
             private bool _repairIslands = true;
             private bool _repairResinTraps = true;
             private bool _removeEmptyLayers = true;
-
-            public byte ClosingIterations
-            {
-                get => _closingIterations;
-                set => this.RaiseAndSetIfChanged(ref _closingIterations, value);
-            }
-
-            public byte OpeningIterations
-            {
-                get => _openingIterations;
-                set => this.RaiseAndSetIfChanged(ref _openingIterations, value);
-            }
-
-            public byte RemoveIslandsBelowEqualPixels
-            {
-                get => _removeIslandsBelowEqualPixels;
-                set => this.RaiseAndSetIfChanged(ref _removeIslandsBelowEqualPixels, value);
-            }
+            private byte _removeIslandsBelowEqualPixels = 10;
+            private ushort _removeIslandsRecursiveIterations = 4;
+            private byte _closingIterations = 2;
+            private byte _openingIterations = 0;
 
             public bool RepairIslands
             {
@@ -882,6 +865,30 @@ namespace UVtools.WPF
             {
                 get => _removeEmptyLayers;
                 set => this.RaiseAndSetIfChanged(ref _removeEmptyLayers, value);
+            }
+
+            public byte RemoveIslandsBelowEqualPixels
+            {
+                get => _removeIslandsBelowEqualPixels;
+                set => this.RaiseAndSetIfChanged(ref _removeIslandsBelowEqualPixels, value);
+            }
+
+            public ushort RemoveIslandsRecursiveIterations
+            {
+                get => _removeIslandsRecursiveIterations;
+                set => this.RaiseAndSetIfChanged(ref _removeIslandsRecursiveIterations, value);
+            }
+
+            public byte ClosingIterations
+            {
+                get => _closingIterations;
+                set => this.RaiseAndSetIfChanged(ref _closingIterations, value);
+            }
+
+            public byte OpeningIterations
+            {
+                get => _openingIterations;
+                set => this.RaiseAndSetIfChanged(ref _openingIterations, value);
             }
 
             public LayerRepairUserSettings Clone()

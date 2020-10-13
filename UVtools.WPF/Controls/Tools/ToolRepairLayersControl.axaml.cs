@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Avalonia.Markup.Xaml;
+﻿using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
 
@@ -18,6 +17,7 @@ namespace UVtools.WPF.Controls.Tools
                 RepairResinTraps = UserSettings.Instance.LayerRepair.RepairResinTraps,
                 RemoveEmptyLayers = UserSettings.Instance.LayerRepair.RemoveEmptyLayers,
                 RemoveIslandsBelowEqualPixelCount = UserSettings.Instance.LayerRepair.RemoveIslandsBelowEqualPixels,
+                RemoveIslandsRecursiveIterations = UserSettings.Instance.LayerRepair.RemoveIslandsRecursiveIterations,
                 GapClosingIterations = UserSettings.Instance.LayerRepair.ClosingIterations,
                 NoiseRemovalIterations = UserSettings.Instance.LayerRepair.OpeningIterations,
             };

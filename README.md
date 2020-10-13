@@ -190,14 +190,20 @@ The current public build will only work in windows.**
 
 <!--- 
 * Donwload and install: https://dotnet.microsoft.com/download/dotnet-core/thank-you/sdk-3.1.402-macos-x64-installer
+brew install libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb
 -->
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 brew analytics off
-brew install libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb
 brew cask install dotnet
 ```
+
+To run UVtools open it folder on a terminal and call one of:
+
+* `dotnet UVtools.dll`
+* `sh UVtools.sh`
+* As a pratical alternative you can create a shortcut on Desktop
 
 ## How to use
 

@@ -25,6 +25,7 @@ namespace UVtools.GUI.Controls.Tools
             cbRepairResinTraps.Checked = Properties.Settings.Default.LayerRepairResinTraps;
             cbRemoveEmptyLayers.Checked = Properties.Settings.Default.LayerRepairRemoveEmptyLayers;
             nmRemoveIslandsBelowEqualPixels.Value = Properties.Settings.Default.LayerRepairRemoveIslandsBelowEqualPixelsDefault;
+            nmRemoveIslandsRecursiveIterations.Value = Properties.Settings.Default.LayerRepairRemoveIslandsRecursiveIterations;
 
             nmClosingIterations.Value = Properties.Settings.Default.LayerRepairDefaultClosingIterations;
             nmOpeningIterations.Value = Properties.Settings.Default.LayerRepairDefaultOpeningIterations;
@@ -39,6 +40,7 @@ namespace UVtools.GUI.Controls.Tools
             Operation.RepairResinTraps = cbRepairResinTraps.Checked;
             Operation.RemoveEmptyLayers = cbRemoveEmptyLayers.Checked;
             Operation.RemoveIslandsBelowEqualPixelCount = (byte) nmRemoveIslandsBelowEqualPixels.Value;
+            Operation.RemoveIslandsRecursiveIterations = (ushort) nmRemoveIslandsRecursiveIterations.Value;
             Operation.GapClosingIterations = (uint) nmClosingIterations.Value;
             Operation.NoiseRemovalIterations = (uint) nmOpeningIterations.Value;
 

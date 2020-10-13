@@ -970,5 +970,17 @@ namespace UVtools.GUI.Properties {
                 this["OverhangIndependentFromIslands"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("4")]
+        public short LayerRepairRemoveIslandsRecursiveIterations {
+            get {
+                return ((short)(this["LayerRepairRemoveIslandsRecursiveIterations"]));
+            }
+            set {
+                this["LayerRepairRemoveIslandsRecursiveIterations"] = value;
+            }
+        }
     }
 }
