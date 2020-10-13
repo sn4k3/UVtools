@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Drawing;
-using System.Timers;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using MessageBox.Avalonia.Enums;
 using UVtools.Core;
 using UVtools.WPF.Controls;
@@ -301,19 +300,14 @@ namespace UVtools.WPF.Windows
             RaisePropertyChanged(nameof(IsROIVisible));
 
             // Ensure the description don't stretch window
-            var timer = new Timer(10)
+            DispatcherTimer.Run(() =>
             {
-                AutoReset = true
-            };
-            timer.Elapsed += (sender, args) =>
-            {
-                if (Bounds.Width == 0) return;
-                DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl?.Bounds.Width ?? 0)-40;
+                if (Bounds.Width == 0) return true;
+                DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl?.Bounds.Width ?? 0) - 40;
                 Description = toolControl.BaseOperation.Description;
-                timer.Stop();
-                timer.Dispose();
-            };
-            timer.Start();
+                return false;
+            }, TimeSpan.FromMilliseconds(1));
+
 
             toolControl.Callback(Callbacks.Init);
             toolControl.DataContext = toolControl;

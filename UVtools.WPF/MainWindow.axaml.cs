@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -19,6 +20,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -31,6 +33,7 @@ using UVtools.Core.Operations;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Controls.Tools;
 using UVtools.WPF.Extensions;
+using UVtools.WPF.Structures;
 using UVtools.WPF.Windows;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using Ellipse = Avalonia.Controls.Shapes.Ellipse;
@@ -42,6 +45,8 @@ namespace UVtools.WPF
     public partial class MainWindow : WindowEx
     {
         #region Redirects
+
+        public AppVersionChecker VersionChecker => App.VersionChecker;
         public UserSettings Settings => UserSettings.Instance;
         public FileFormat SlicerFile => App.SlicerFile;
         #endregion
@@ -360,7 +365,7 @@ namespace UVtools.WPF
                     return;
                 }
             };*/
-            PropertyChanged += OnPropertyChanged;
+            //PropertyChanged += OnPropertyChanged;
             var clientSizeObs = this.GetObservable(ClientSizeProperty);
             clientSizeObs.Subscribe(size => UpdateLayerTrackerHighlightIssues());
             var windowStateObs = this.GetObservable(WindowStateProperty);
@@ -369,7 +374,9 @@ namespace UVtools.WPF
 
             UpdateTitle();
 
-            if (Settings.General.StartMaximized)
+            if (Settings.General.StartMaximized 
+                || ClientSize.Width > Screens.Primary.Bounds.Width
+                || ClientSize.Height > Screens.Primary.Bounds.Height)
             {
                 WindowState = WindowState.Maximized;
             }
@@ -383,6 +390,12 @@ namespace UVtools.WPF
 
             
             AddLog($"{About.Software} start");
+
+            if (Settings.General.CheckForUpdatesOnStartup)
+            {
+                Task.Factory.StartNew(VersionChecker.Check);
+            }
+
             ProcessFiles(Program.Args);
         }
 
@@ -638,6 +651,8 @@ namespace UVtools.WPF
             }
             await new PrusaSlicerManager().ShowDialog(this);
         }
+
+        public void MenuNewVersionClicked() => App.OpenBrowser(VersionChecker.Url);
 
         #endregion
 

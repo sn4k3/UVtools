@@ -183,6 +183,15 @@
         </MenuItem>
         
       </MenuItem>
+
+      <MenuItem 
+        Background="LimeGreen"
+        IsVisible="{Binding VersionChecker.HaveNewVersion}"
+        Header="{Binding VersionChecker.VersionAnnouncementText}"
+        Command="{Binding MenuNewVersionClicked}"
+        >
+      </MenuItem>
+      
     </Menu>
 
     <Border Padding="5" DockPanel.Dock="Bottom" Background="WhiteSmoke" IsVisible="{Binding IsFileLoaded}">

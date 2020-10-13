@@ -44,7 +44,7 @@ namespace UVtools.WPF
         private Canvas _issuesSliderCanvas;
 
 
-        private Timer _layerNavigationTooltipTimer = new Timer(1) { AutoReset = false };
+        private Timer _layerNavigationTooltipTimer = new Timer(0.1) { AutoReset = false };
         private uint _actualLayer;
 
         private bool _showLayerImageRotated;
@@ -81,6 +81,7 @@ namespace UVtools.WPF
             _showLayerOutlineLayerBoundary = Settings.LayerPreview.LayerBoundsOutline;
             _showLayerOutlineHollowAreas = Settings.LayerPreview.HollowOutline;
 
+            LayerImageBox.ZoomLevels = new AdvancedImageBox.ZoomLevelCollection(AppSettings.ZoomLevels);
             LayerImageBox.PropertyChanged += (sender, e) =>
             {
                 if (e.PropertyName == nameof(LayerImageBox.Zoom))

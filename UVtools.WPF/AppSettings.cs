@@ -1,8 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿/*
+ *                     GNU AFFERO GENERAL PUBLIC LICENSE
+ *                       Version 3, 19 November 2007
+ *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ *  Everyone is permitted to copy and distribute verbatim copies
+ *  of this license document, but changing it is not allowed.
+ */
+using System;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.WPF
@@ -14,7 +19,7 @@ namespace UVtools.WPF
         // These settings eliminate very small zoom factors from the ImageBox default values,
         // while ensuring that 4K/5K build plates can still easily fit on screen.  
         public static readonly int[] ZoomLevels =
-            {20, 25, 30, 50, 75, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1200, 1600};
+            {20, 25, 30, 50, 75, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1200, 1600, 3200};
 
         // Count of the bottom portion of the full zoom range which will be skipped for
         // assignable actions such as auto-zoom level, and crosshair fade level.  If values

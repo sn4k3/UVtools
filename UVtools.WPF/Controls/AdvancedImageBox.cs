@@ -11,8 +11,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
-using Avalonia.Skia;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using UVtools.Core.Extensions;
@@ -116,7 +114,7 @@ namespace UVtools.WPF.Controls
                 {
                     return new ZoomLevelCollection(new[]
                                                    {
-                                         7, 10, 15, 20, 25, 30, 50, 70, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1200, 1600
+                                         7, 10, 15, 20, 25, 30, 50, 70, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1200, 1600, 3200
                                        });
                 }
             }
@@ -444,6 +442,16 @@ namespace UVtools.WPF.Controls
         public static readonly int MaxZoom = 3500;
         #endregion
 
+        public bool CanRender
+        {
+            get => _canRender;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _canRender, value)) return;
+                if(_canRender) TriggerRender();
+            }
+        }
+
         /// <summary>
         /// Gets or sets the basic cell size
         /// </summary>
@@ -480,20 +488,10 @@ namespace UVtools.WPF.Controls
             set
             {
                 if (!RaiseAndSetIfChanged(ref _image, value)) return;
-                if (_image is null)
-                {
-                    SizedContainer.Width = 0;
-                    SizedContainer.Height = 0;
-                    SelectNone();
-                }
-                else
-                {
-                    UpdateViewPort();
-                    //SizedContainer.Width = _image.Size.Width;
-                    //SizedContainer.Height = _image.Size.Height;
-                }
 
-                InvalidateVisual();
+                SelectNone();
+                UpdateViewPort();
+                TriggerRender();
             }
         }
 
@@ -642,15 +640,13 @@ namespace UVtools.WPF.Controls
             get => _zoom;
             set
             {
-                var previousZoom = _zoom;
                 var newZoom = value.Clamp(MinZoom, MaxZoom);
 
                 if (_zoom == newZoom) return;
+                var previousZoom = _zoom;
                 _zoom = newZoom;
-                if (!UpdateViewPort())
-                {
-                    InvalidateArrange();
-                }
+                UpdateViewPort();
+                TriggerRender();
 
                 OldZoom = previousZoom;
                 RaisePropertyChanged(nameof(Zoom));
@@ -703,7 +699,7 @@ namespace UVtools.WPF.Controls
             set
             {
                 if(!RaiseAndSetIfChanged(ref _selectionRegion, value)) return;
-                InvalidateArrange();
+                TriggerRender();
                 RaisePropertyChanged(nameof(HaveSelection));
             }
         }
@@ -731,16 +727,17 @@ namespace UVtools.WPF.Controls
         private ISolidColorBrush _selectionColor = new SolidColorBrush(new Color(127, 0, 128, 255));
         private Rect _selectionRegion = Rect.Empty;
         private SelectionModes _selectionMode = SelectionModes.None;
-        
+        private bool _canRender = true;
+
 
         public ContentControl FillContainer { get; } = new ContentControl
         {
             Background = Brushes.Transparent
         };
 
-        public ContentControl SizedContainer { get; } = new ContentControl
+        public ContentControl SizedContainer { get; private set; } = new ContentControl
         {
-            Background = Brushes.Transparent
+            
         };
 
         Type IStyleable.StyleKey => typeof(ScrollViewer);
@@ -757,27 +754,43 @@ namespace UVtools.WPF.Controls
             //Container.PointerMoved += ScrollViewerOnPointerMoved;
             //Container.PointerPressed += ScrollViewerOnPointerPressed;
             //Container.PointerReleased += ScrollViewerOnPointerReleased;
-            
-            base.PropertyChanged += EventOnPropertyChanged;
+        }
+
+        protected override void OnScrollChanged(ScrollChangedEventArgs e)
+        {
+            Debug.WriteLine($"ViewportDelta: {e.ViewportDelta} | OffsetDelta: {e.OffsetDelta} | ExtentDelta: {e.ExtentDelta}");
+            if (!e.ViewportDelta.IsDefault)
+            {
+                UpdateViewPort();
+            }
+
+            TriggerRender();
+
+            base.OnScrollChanged(e);
         }
 
         private void FillContainerOnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
         {
-            if (Image is null) return;
+            Debug.WriteLine("mouse whell");
             e.Handled = true;
+            if (Image is null) return;
             if (AllowZoom && SizeMode == SizeModes.Normal)
             {
                 // The MouseWheel event can contain multiple "spins" of the wheel so we need to adjust accordingly
-                double spins = Math.Abs(e.Delta.Y);
+                //double spins = Math.Abs(e.Delta.Y);
                 //Debug.WriteLine(e.GetPosition(this));
                 // TODO: Really should update the source method to handle multiple increments rather than calling it multiple times
-                for (int i = 0; i < spins; i++)
-                {
-                   ProcessMouseZoom(e.Delta.Y > 0, e.GetPosition(this));
-                }
-
-                //InvalidateVisual();
+                /*for (int i = 0; i < spins; i++)
+                {*/
+                ProcessMouseZoom(e.Delta.Y > 0, e.GetPosition(this));
+                //}
             }
+        }
+
+        public void TriggerRender()
+        {
+            if (!_canRender) return;
+            InvalidateVisual();
         }
 
         private void ProcessMouseZoom(bool isZoomIn, Point cursorPosition)
@@ -834,6 +847,9 @@ namespace UVtools.WPF.Controls
             Point currentPixel = PointToImage(relativePoint);
             int currentZoom = Zoom;
             int newZoom = GetZoomLevel(action);
+
+            if (preservePosition && Zoom != currentZoom)
+                CanRender = false;
 
             RestoreSizeMode();
             Zoom = newZoom;
@@ -972,10 +988,40 @@ namespace UVtools.WPF.Controls
         /// <param name="relativeDisplayPoint">The relative display point to offset scrolling by.</param>
         public virtual void ScrollTo(Point imageLocation, Point relativeDisplayPoint)
         {
+            CanRender = false;
             var x = imageLocation.X * ZoomFactor - relativeDisplayPoint.X;
             var y = imageLocation.Y * ZoomFactor - relativeDisplayPoint.Y;
-            
-            Offset = new Vector(x, y);
+
+            //Offset = new Vector(x, y);
+
+            _canRender = true;
+
+            DispatcherTimer.RunOnce(() =>
+            {
+                // TODO: Remove this delay?
+                //Debug.WriteLine($"1ms delayed viewport: {Viewport}");
+                //CenterAt(new Point(cx, cy));
+
+                Offset = new Vector(x, y);
+            }, TimeSpan.FromTicks(1), DispatcherPriority.MaxValue);
+
+
+            /*Timer timer = new Timer(0.1)
+            {
+                AutoReset = false,
+            };
+            timer.Elapsed += (sender, args) =>
+            {
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    Offset = new Vector(x, y);
+                    CanRender = true;
+                    timer.Dispose();
+                });
+            };
+            timer.Start();*/
+
+
             /*Debug.WriteLine(
                 $"X/Y: {x},{y} | \n" +
                 $"Offset: {Offset} | \n" +
@@ -1095,28 +1141,9 @@ namespace UVtools.WPF.Controls
             var cx = rectangle.X + rectangle.Width / 2;
             var cy = rectangle.Y + rectangle.Height / 2;
 
-
-            Debug.WriteLine($"Before zoom: {Viewport}");
+            CanRender = false;
             Zoom = (int) (zoomFactor * 100); // This function sets the zoom so viewport will change
-            Debug.WriteLine($"After zoom, viewport changed: {Viewport}");
-
-            //CenterAt(new Point(cx, cy)); // If i call this here, it will move to the wrong position due wrong viewport
-
-            Timer timer = new Timer(1)
-            {
-                AutoReset = false,
-            };
-            timer.Elapsed += (sender, args) =>
-            {
-                Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    // This will fix centerAt position
-                    Debug.WriteLine($"1ms delayed viewport: {Viewport}");
-                    CenterAt(new Point(cx, cy));
-                });
-            };
-            timer.Start();
-
+            CenterAt(new Point(cx, cy)); // If i call this here, it will move to the wrong position due wrong viewport
         }
 
         /// <summary>
@@ -1168,12 +1195,19 @@ namespace UVtools.WPF.Controls
 
         private bool UpdateViewPort()
         {
-            if (Image is null) return false;
+            if (Image is null)
+            {
+                SizedContainer.Width = 0;
+                SizedContainer.Height = 0;
+                return true;
+            }
 
             var scaledImageWidth = ScaledImageWidth;
             var scaledImageHeight = ScaledImageHeight;
             var width = scaledImageWidth <= Viewport.Width ? Viewport.Width : scaledImageWidth;
             var height = scaledImageHeight <= Viewport.Height ? Viewport.Height : scaledImageHeight;
+
+            
 
             bool changed = false;
             if (SizedContainer.Width != width)
@@ -1188,11 +1222,17 @@ namespace UVtools.WPF.Controls
                 changed = true;
             }
 
-            if (changed)
+            /*if (changed)
             {
-                Debug.WriteLine($"Update ViewPort: {DateTime.Now.Ticks}");
-                InvalidateArrange();
-            }
+                var newContainer = new ContentControl
+                {
+                    Width = width,
+                    Height = height
+                };
+                FillContainer.Content = SizedContainer = newContainer;
+                Debug.WriteLine($"Updated ViewPort: {DateTime.Now.Ticks}");
+                //TriggerRender();
+            }*/
 
             return changed;
         }
@@ -1206,24 +1246,6 @@ namespace UVtools.WPF.Controls
             SizeMode = SizeModes.Normal;
             //SetZoom(100, ImageZoomActions.ActualSize | (Zoom < 100 ? ImageZoomActions.ZoomIn : ImageZoomActions.ZoomOut));
             Zoom = 100;
-        }
-
-        private void EventOnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
-        {
-            //Debug.WriteLine(e.Property.Name);
-            if (e.Property.Name == nameof(VerticalScrollBarValue) ||
-                e.Property.Name == nameof(HorizontalScrollBarValue))
-            {
-                InvalidateArrange();
-                return;
-            }
-
-            if(e.Property.Name.Equals(nameof(Viewport)))
-            {
-                //if (SupressViewPortPropertyChange) return;
-                UpdateViewPort();
-                return;
-            }
         }
 
         #region Overrides
@@ -1410,8 +1432,6 @@ namespace UVtools.WPF.Controls
         public void LoadImage(string path)
         {
             Image = new Bitmap(path);
-            //ImageControl.Source = Image;
-            //ImageControl.InvalidateVisual();
         }
 
         public override void Render(DrawingContext context)
@@ -1732,7 +1752,7 @@ namespace UVtools.WPF.Controls
         /// <value>The height of the scaled image.</value>
         protected virtual double ScaledImageHeight => Image.Size.Height * ZoomFactor;
 
-        public double ZoomFactor => Zoom / 100.0;
+        public double ZoomFactor => _zoom / 100.0;
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {

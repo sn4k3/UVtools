@@ -22,6 +22,7 @@ using Avalonia.ThemeManager;
 using Emgu.CV;
 using UVtools.Core.FileFormats;
 using UVtools.WPF.Extensions;
+using UVtools.WPF.Structures;
 
 namespace UVtools.WPF
 {
@@ -30,6 +31,8 @@ namespace UVtools.WPF
         public static IThemeSelector? ThemeSelector { get; set; }
         public static MainWindow MainWindow;
         public static FileFormat SlicerFile = null;
+
+        public static AppVersionChecker VersionChecker { get; } = new AppVersionChecker();
 
         public override void Initialize()
         {
