@@ -14,6 +14,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -136,6 +137,17 @@ namespace UVtools.Core.FileFormats
         {
             get => HeaderSettings.ResolutionY;
             set => HeaderSettings.ResolutionY = value;
+        }
+
+        public override float DisplayWidth
+        {
+            get => HeaderSettings.MachineX;
+            set => HeaderSettings.MachineX = value;
+        }
+        public override float DisplayHeight
+        {
+            get => HeaderSettings.MachineY;
+            set => HeaderSettings.MachineX = value;
         }
 
         public override byte AntiAliasing => HeaderSettings.AntiAliasing;

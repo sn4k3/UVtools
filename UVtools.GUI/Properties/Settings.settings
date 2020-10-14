@@ -242,5 +242,8 @@
     <Setting Name="LayerRepairRemoveIslandsRecursiveIterations" Type="System.Int16" Scope="User">
       <Value Profile="(Default)">4</Value>
     </Setting>
+    <Setting Name="LoadDemoFileOnStartup" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

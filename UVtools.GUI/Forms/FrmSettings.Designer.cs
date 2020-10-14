@@ -187,6 +187,7 @@
             this.cbLayerRepairLayersIslands = new System.Windows.Forms.CheckBox();
             this.pnActions = new System.Windows.Forms.Panel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.cbLoadDemoFileOnStartup = new System.Windows.Forms.CheckBox();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapBinaryThreshold)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapMaximumPixelBrightnessToDrain)).BeginInit();
@@ -782,7 +783,7 @@
             this.groupBox5.Controls.Add(this.label27);
             this.groupBox5.Controls.Add(this.tbFileSaveNamePreffix);
             this.groupBox5.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox5.Location = new System.Drawing.Point(3, 93);
+            this.groupBox5.Location = new System.Drawing.Point(3, 123);
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Size = new System.Drawing.Size(655, 276);
             this.groupBox5.TabIndex = 54;
@@ -1020,12 +1021,13 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.cbLoadDemoFileOnStartup);
             this.groupBox4.Controls.Add(this.cbStartMaximized);
             this.groupBox4.Controls.Add(this.cbCheckForUpdatesOnStartup);
             this.groupBox4.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBox4.Location = new System.Drawing.Point(3, 3);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(655, 90);
+            this.groupBox4.Size = new System.Drawing.Size(655, 120);
             this.groupBox4.TabIndex = 15;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Startup";
@@ -2332,6 +2334,16 @@
             this.toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             this.toolTip.ToolTipTitle = "Information";
             // 
+            // cbLoadDemoFileOnStartup
+            // 
+            this.cbLoadDemoFileOnStartup.AutoSize = true;
+            this.cbLoadDemoFileOnStartup.Location = new System.Drawing.Point(6, 79);
+            this.cbLoadDemoFileOnStartup.Name = "cbLoadDemoFileOnStartup";
+            this.cbLoadDemoFileOnStartup.Size = new System.Drawing.Size(361, 22);
+            this.cbLoadDemoFileOnStartup.TabIndex = 8;
+            this.cbLoadDemoFileOnStartup.Text = "Loads a demo file on startup if no file was specified";
+            this.cbLoadDemoFileOnStartup.UseVisualStyleBackColor = true;
+            // 
             // FrmSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
@@ -2561,5 +2573,6 @@
         private System.Windows.Forms.CheckBox cbOverhangIndependentFromIslands;
         private System.Windows.Forms.NumericUpDown nmOverhangErodeIterations;
         private System.Windows.Forms.Label label48;
+        private System.Windows.Forms.CheckBox cbLoadDemoFileOnStartup;
     }
 }

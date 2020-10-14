@@ -104,6 +104,9 @@
         <Component Id="owc0C1077539E2B54F2460D2C0993613EFB" Guid="fc6ae2db-2865-9eb4-5753-4f2f941fdf16">
           <File Id="owf0C1077539E2B54F2460D2C0993613EFB" Source="$(var.SourceDir)\UVtools.pdb" KeyPath="yes" />
         </Component>
+        <Component Id="owc1FE1E0B70F7D880A2FB9AFA8E0E36EF5" Guid="545300b7-5398-2ce2-788f-02287a83e8a7">
+          <File Id="owf1FE1E0B70F7D880A2FB9AFA8E0E36EF5" Source="$(var.SourceDir)\UVtools_demo_file.sl1" KeyPath="yes" />
+        </Component>
         <Component Id="owcE56A1A43062CD54830A538D93042A2F9" Guid="97edfcac-9e9e-3019-6b8f-d6377d7dc1a1">
           <File Id="owfE56A1A43062CD54830A538D93042A2F9" Source="$(var.SourceDir)\UVtoolsCmd.deps.json" KeyPath="yes" />
         </Component>

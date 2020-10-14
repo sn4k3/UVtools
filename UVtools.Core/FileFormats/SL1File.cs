@@ -327,6 +327,17 @@ namespace UVtools.Core.FileFormats
             set => PrinterSettings.DisplayPixelsY = value;
         }
 
+        public override float DisplayWidth
+        {
+            get => PrinterSettings.DisplayWidth;
+            set => PrinterSettings.DisplayWidth = value;
+        }
+        public override float DisplayHeight
+        {
+            get => PrinterSettings.DisplayHeight;
+            set => PrinterSettings.DisplayHeight = value;
+        }
+
         public override byte AntiAliasing => (byte) (PrinterSettings.GammaCorrection > 0 ? LookupCustomValue(Keyword_AntiAliasing, 4) : 1);
 
         public override float LayerHeight

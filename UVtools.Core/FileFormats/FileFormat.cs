@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
@@ -349,11 +350,32 @@ namespace UVtools.Core.FileFormats
             set => _haveModifiedLayers = value;
         } // => LayerManager.IsModified;
 
-        public Size Resolution => new Size((int) ResolutionX, (int) ResolutionY);
-
+        public Size Resolution
+        {
+            get => new Size((int)ResolutionX, (int)ResolutionY);
+            set
+            {
+                ResolutionX = (uint) value.Width;
+                ResolutionY = (uint) value.Height;
+            }
+        } 
+        
         public abstract uint ResolutionX { get; set; }
 
         public abstract uint ResolutionY { get; set; }
+
+        public SizeF Display
+        {
+            get => new SizeF(DisplayWidth, DisplayHeight);
+            set
+            {
+                DisplayWidth = value.Width;
+                DisplayHeight = value.Height;
+            }
+        }
+
+        public abstract float DisplayWidth { get; set; }
+        public abstract float DisplayHeight { get; set; }
         public bool HaveAntiAliasing => AntiAliasing > 1;
         public abstract byte AntiAliasing { get; }
 

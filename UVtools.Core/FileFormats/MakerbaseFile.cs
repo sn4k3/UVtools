@@ -100,6 +100,9 @@ namespace UVtools.Core.FileFormats
             set => temp = 0;
         }
 
+        public override float DisplayWidth { get; set; }
+        public override float DisplayHeight { get; set; }
+
         public override byte AntiAliasing => 1;
 
         public override float LayerHeight

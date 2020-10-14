@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Inventor
+CAD/OldVersions/
+.lockfile
+
 # User-specific files
 *.rsuser
 *.suo

@@ -37,6 +37,17 @@ namespace UVtools.Core.FileFormats
             set => throw new NotImplementedException();
         }
 
+        public override float DisplayWidth
+        {
+            get => ResolutionX;
+            set => ResolutionX = (uint) value;
+        }
+        public override float DisplayHeight
+        {
+            get => ResolutionY;
+            set => ResolutionY = (uint)value;
+        }
+
         public override byte AntiAliasing { get; } = 1;
         public override float LayerHeight { get; set; } = 0;
         public override float PrintTime { get; } = 0;

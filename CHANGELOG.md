@@ -9,6 +9,13 @@
 * (Improvement) GUI is now scalable
 * (Fix) Some bug found and fixed during convertion
 
+## 14/10/2020 - v0.8.5.0
+
+* (Add) Tool - Calculator: Convert millimeters to pixels
+* (Add) Tool - Calculator: Find the optimal "Ligth-Off Delay"
+* (Add) Internal abstraction of display size to all file formats
+* (Add) Default demo file that loads on startup when no file is specified (this can be disable/enabled on settings)
+
 ## 13/10/2020 - v0.8.4.3
 
 * (Add) Tool - Layer repair: Allow remove islands recursively (#74)

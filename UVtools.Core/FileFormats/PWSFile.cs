@@ -815,6 +815,17 @@ namespace UVtools.Core.FileFormats
             set => HeaderSettings.ResolutionY = value;
         }
 
+        public override float DisplayWidth
+        {
+            get => 0;
+            set { }
+        }
+        public override float DisplayHeight
+        {
+            get => 0;
+            set { }
+        }
+
         public override byte AntiAliasing => (byte) HeaderSettings.AntiAliasing;
 
         public override float LayerHeight

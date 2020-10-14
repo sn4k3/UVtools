@@ -184,6 +184,11 @@ namespace UVtools.GUI.Forms
             btnOk.Enabled = content.ButtonOkEnabled;
             //content.AutoSize = true;
 
+            if (string.IsNullOrEmpty(content.ButtonOkText))
+            {
+                btnOk.Visible = false;
+            }
+
             if (!content.CanROI)
             {
                 pnROI.Visible = false;

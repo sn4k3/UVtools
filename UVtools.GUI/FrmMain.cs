@@ -63,6 +63,7 @@ namespace UVtools.GUI
             new OperationMenuItem(new OperationPattern(), Resources.pattern_16x16),
             new OperationMenuItem(new OperationLayerReHeight(), Resources.ladder_16x16),
             new OperationMenuItem(new OperationChangeResolution(), Resources.resize_16x16),
+            new OperationMenuItem(new OperationCalculator(), Resources.calculator_16x16),
         };
 
         public static readonly OperationMenuItem[] LayerActions = {
@@ -134,6 +135,12 @@ namespace UVtools.GUI
 
         // Track last open tab for when PixelEditor tab is removed.
         public TabPage ControlLeftLastTab { get; set; }
+
+        public bool CanSave
+        {
+            get => menuFileSave.Enabled;
+            set => menuFileSave.Enabled = value;
+        }
 
         public uint SavesCount { get; set; }
 
@@ -329,6 +336,11 @@ namespace UVtools.GUI
             base.OnShown(e);
             AddLog("UVtools Start");
             ProcessFile(Program.Args);
+
+            if (SlicerFile is null && Settings.Default.LoadDemoFileOnStartup)
+            {
+                ProcessFile(About.DemoFile);
+            }
         }
 
         protected override void OnKeyPress(KeyPressEventArgs e)
@@ -824,7 +836,7 @@ namespace UVtools.GUI
                     SlicerFile.SetThumbnail(i, fileOpen.FileName);
                     pbThumbnail.Image = SlicerFile.Thumbnails[i].ToBitmap();
                     SlicerFile.RequireFullEncode = true;
-                    menuFileSave.Enabled = true;
+                    CanSave = true;
                 }
             }
 
@@ -1169,7 +1181,7 @@ namespace UVtools.GUI
 
                 //ShowLayer(); // It will call latter so its a extra call
                 UpdateIssuesInfo();
-                menuFileSave.Enabled = true;
+                CanSave = true;
 
                 return;
             }
@@ -1872,6 +1884,7 @@ namespace UVtools.GUI
 
         void ProcessFile(string fileName, uint actualLayer = 0)
         {
+            if (!File.Exists(fileName)) return;
             Clear();
 
             var fileNameOnly = Path.GetFileName(fileName);
@@ -2106,7 +2119,7 @@ namespace UVtools.GUI
             if (task.Result)
             {
                 SavesCount++;
-                menuFileSave.Enabled = false;
+                CanSave = false;
                 UpdateTitle();
             }
 
@@ -3547,7 +3560,7 @@ namespace UVtools.GUI
             pbLayer.Invalidate();
             //pbLayer.Update();
             //pbLayer.Refresh();
-            //menuFileSave.Enabled = menuFileSaveAs.Enabled = true;
+            //CanSavemenuFileSaveAs.Enabled = true;
             //sw.Stop();
             //Debug.WriteLine(sw.ElapsedMilliseconds);
         }
@@ -4011,7 +4024,7 @@ namespace UVtools.GUI
             RefreshPixelHistory();
             ShowLayer();
 
-            menuFileSave.Enabled = true;
+            CanSave = true;
         }
 
         private void UpdateIslandsOverhangs(List<uint> whiteListLayers)
@@ -4209,7 +4222,7 @@ namespace UVtools.GUI
                     SlicerFile.SetValuesFromPrintParametersModifiers();
                     RefreshInfo();
 
-                    menuFileSave.Enabled = true;
+                    CanSave = true;
 
                     return false;
                 case OperationRepairLayers operation:
@@ -4349,7 +4362,7 @@ namespace UVtools.GUI
             UpdateLayerLimits();
             RefreshInfo();
 
-            menuFileSave.Enabled = true;
+            CanSave = true;
 
             switch (baseOperation)
             {

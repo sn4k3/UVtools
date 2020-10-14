@@ -95,6 +95,21 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         uint ResolutionY { get; set; }
 
+        /// <summary>
+        /// Gets the size of display in millimeters
+        /// </summary>
+        SizeF Display { get; set; }
+
+        /// <summary>
+        /// Gets or sets the display width in millimeters
+        /// </summary>
+        float DisplayWidth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the display height in millimeters
+        /// </summary>
+        float DisplayHeight { get; set; }
+
         bool HaveAntiAliasing { get; }
 
         /// <summary>

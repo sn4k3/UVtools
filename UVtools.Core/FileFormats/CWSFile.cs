@@ -164,6 +164,17 @@ namespace UVtools.Core.FileFormats
             set => OutputSettings.YResolution = SliceSettings.Yres = (ushort) value;
         }
 
+        public override float DisplayWidth
+        {
+            get => OutputSettings.PlatformXSize;
+            set => OutputSettings.PlatformXSize = value;
+        }
+        public override float DisplayHeight
+        {
+            get => OutputSettings.PlatformYSize;
+            set => OutputSettings.PlatformYSize = value;
+        }
+
         public override byte AntiAliasing => (byte) OutputSettings.AntiAliasingValue;
 
         public override float LayerHeight
@@ -579,7 +590,7 @@ namespace UVtools.Core.FileFormats
                     }
                 }
                 // delay = max(extra['wait'], 500) + int(((int(lift)/(extra['lift_feed']/60)) + (int(lift)/(extra['lift_retract']/60)))*1000)
-                uint extraDelay = (uint)(((LiftHeight / (LiftSpeed / 60f)) + (LiftHeight / (RetractSpeed / 60f))) * 1000);
+                uint extraDelay = (uint)(OperationCalculator.LightOffDelayC.Calculate(LiftHeight, LiftHeight, RetractSpeed) * 1000);
                 if (layerIndex < BottomLayerCount)
                 {
                     extraDelay = (uint)Math.Max(extraDelay + 10000, layer.ExposureTime * 1000);

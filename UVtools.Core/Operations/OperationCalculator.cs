@@ -1,0 +1,272 @@
+﻿/*
+ *                     GNU AFFERO GENERAL PUBLIC LICENSE
+ *                       Version 3, 19 November 2007
+ *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ *  Everyone is permitted to copy and distribute verbatim copies
+ *  of this license document, but changing it is not allowed.
+ */
+
+using System;
+using System.Drawing;
+using UVtools.Core.Objects;
+
+namespace UVtools.Core.Operations
+{
+    public class OperationCalculator : Operation
+    {
+        public override string Title => "Calculator";
+        public override string Description => null;
+
+        public override string ConfirmationText => null;
+
+        public override string ProgressTitle => null;
+
+        public override string ProgressAction => null;
+
+        public override Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.None;
+        public override bool CanROI => false;
+
+        public MillimetersToPixels CalcMillimetersToPixels { get; set; }
+        public LightOffDelayC CalcLightOffDelay { get; set; }
+
+        public OperationCalculator()
+        {
+        }
+
+        public abstract class Calculation : BindableBase
+        {
+            public abstract string Description { get; }
+            public abstract string Formula { get; }
+        }
+
+        public sealed class MillimetersToPixels : Calculation
+        {
+            private uint _resolutionX;
+            private uint _resolutionY;
+            private decimal _displayWidth;
+            private decimal _displayHeight;
+            private decimal _millimeters = 1;
+
+            public override string Description => "Converts from Millimeters to Pixels";
+            public override string Formula => "Pixels = Resolution / Display * Millimeters";
+
+            public MillimetersToPixels(Size resolution, SizeF display, decimal millimeters = 1)
+            {
+                _resolutionX = (uint) resolution.Width;
+                _resolutionY = (uint) resolution.Height;
+
+                _displayWidth = (decimal) display.Width;
+                _displayHeight = (decimal) display.Height;
+
+                _millimeters = millimeters;
+            }
+
+            public uint ResolutionX
+            {
+                get => _resolutionX;
+                set
+                {
+                    if(!RaiseAndSetIfChanged(ref _resolutionX, value)) return;
+                    RaisePropertyChanged(nameof(PixelsPerMillimeterX));
+                    RaisePropertyChanged(nameof(PixelsX));
+                }
+            }
+
+            public uint ResolutionY
+            {
+                get => _resolutionY;
+                set
+                {
+                    if(!RaiseAndSetIfChanged(ref _resolutionY, value)) return;
+                    RaisePropertyChanged(nameof(PixelsPerMillimeterY));
+                    RaisePropertyChanged(nameof(PixelsY));
+                }
+            }
+
+            public decimal DisplayWidth
+            {
+                get => _displayWidth;
+                set
+                {
+                    if(!RaiseAndSetIfChanged(ref _displayWidth, value)) return;
+                    RaisePropertyChanged(nameof(PixelsPerMillimeterX));
+                    RaisePropertyChanged(nameof(PixelsX));
+                }
+            }
+
+            public decimal DisplayHeight
+            {
+                get => _displayHeight;
+                set
+                {
+                    if(!RaiseAndSetIfChanged(ref _displayHeight, value)) return;
+                    RaisePropertyChanged(nameof(PixelsPerMillimeterY));
+                    RaisePropertyChanged(nameof(PixelsY));
+                }
+            }
+
+            public decimal Millimeters
+            {
+                get => _millimeters;
+                set
+                {
+                    if(!RaiseAndSetIfChanged(ref _millimeters, value)) return;
+                    RaisePropertyChanged(nameof(PixelsX));
+                    RaisePropertyChanged(nameof(PixelsY));
+                }
+            }
+
+            public decimal PixelsPerMillimeterX => DisplayWidth > 0 ? Math.Round(ResolutionX / DisplayWidth, 3) : 0;
+            public decimal PixelsPerMillimeterY => DisplayHeight > 0 ? Math.Round(ResolutionY / DisplayHeight, 3) : 0;
+
+            public decimal PixelsX => PixelsPerMillimeterX * Millimeters;
+            public decimal PixelsY => PixelsPerMillimeterY * Millimeters;
+
+            
+        }
+
+        public sealed class LightOffDelayC : Calculation
+        {
+            private decimal _liftHeight;
+            private decimal _bottomLiftHeight;
+            private decimal _liftSpeed;
+            private decimal _bottomLiftSpeed;
+            private decimal _retractSpeed;
+            private decimal _bottomRetractSpeed;
+            private decimal _waitTime = 2.5m;
+            private decimal _bottomWaitTime = 3m;
+
+            public override string Description =>
+                "Calculates the required light-off delay (Moving time from the build plate + additional time for resin to stabilize) given The lifting height, speed and retract to wait x seconds before cure a new layer.\n" +
+                "Light-off delay is crucial for gaining higher-resolution and sharper prints.\n" +
+                "When the build plate retracts, it is important to allow enough time for the resin to stabilize before the UV lights turn on. This would ideally be around 2-3s.";
+
+            public override string Formula => "Light-off delay = Lifting height / (Lifting speed / 60) + Lifting height / (Retract speed / 60) + Desired wait seconds";
+
+            public decimal LiftHeight
+            {
+                get => _liftHeight;
+                set
+                {
+                    if(!RaiseAndSetIfChanged(ref _liftHeight, value)) return;
+                    RaisePropertyChanged(nameof(LightOffDelay));
+                }
+            }
+
+            public decimal BottomLiftHeight
+            {
+                get => _bottomLiftHeight;
+                set
+                {
+                    if(!RaiseAndSetIfChanged(ref _bottomLiftHeight, value)) return;
+                    RaisePropertyChanged(nameof(BottomLightOffDelay));
+                }
+            }
+
+            public decimal LiftSpeed
+            {
+                get => _liftSpeed;
+                set
+                {
+                    if(!RaiseAndSetIfChanged(ref _liftSpeed, value)) return;
+                    RaisePropertyChanged(nameof(LightOffDelay));
+                }
+            }
+
+            public decimal BottomLiftSpeed
+            {
+                get => _bottomLiftSpeed;
+                set
+                {
+                    if(!RaiseAndSetIfChanged(ref _bottomLiftSpeed, value)) return;
+                    RaisePropertyChanged(nameof(BottomLightOffDelay));
+                }
+            }
+
+            public decimal RetractSpeed
+            {
+                get => _retractSpeed;
+                set
+                {
+                    if(!RaiseAndSetIfChanged(ref _retractSpeed, value)) return;
+                    RaisePropertyChanged(nameof(LightOffDelay));
+                }
+            }
+
+            public decimal BottomRetractSpeed
+            {
+                get => _bottomRetractSpeed;
+                set
+                {
+                    if (!RaiseAndSetIfChanged(ref _bottomRetractSpeed, value)) return;
+                    RaisePropertyChanged(nameof(BottomLightOffDelay));
+                }
+            }
+
+            public decimal WaitTime
+            {
+                get => _waitTime;
+                set
+                {
+                    if(!RaiseAndSetIfChanged(ref _waitTime, value)) return;
+                    RaisePropertyChanged(nameof(LightOffDelay));
+                }
+            }
+
+            public decimal BottomWaitTime
+            {
+                get => _bottomWaitTime;
+                set
+                {
+                    if (!RaiseAndSetIfChanged(ref _bottomWaitTime, value)) return;
+                    RaisePropertyChanged(nameof(BottomLightOffDelay));
+                }
+            }
+
+            public decimal LightOffDelay => Calculate(_liftHeight, _liftSpeed, _retractSpeed, _waitTime);
+
+            public decimal BottomLightOffDelay => Calculate(_bottomLiftHeight, _bottomLiftSpeed, _bottomRetractSpeed, _bottomWaitTime);
+
+            public LightOffDelayC()
+            {
+            }
+
+            public LightOffDelayC(decimal liftHeight, decimal bottomLiftHeight, decimal liftSpeed, decimal bottomLiftSpeed, decimal retractSpeed, decimal bottomRetractSpeed, decimal waitTime = 2.5m, decimal bottomWaitTime = 3m)
+            {
+                _liftHeight = liftHeight;
+                _bottomLiftHeight = bottomLiftHeight;
+                _liftSpeed = liftSpeed;
+                _bottomLiftSpeed = bottomLiftSpeed;
+                _retractSpeed = retractSpeed;
+                _bottomRetractSpeed = bottomRetractSpeed;
+                _waitTime = waitTime;
+                _bottomWaitTime = bottomWaitTime;
+            }
+
+            public static decimal Calculate(decimal liftHeight, decimal liftSpeed, decimal retract, decimal waitTime = 0)
+            {
+                try
+                {
+                    return Math.Round(liftHeight / (liftSpeed / 60m) + liftHeight / (retract / 60m) + waitTime, 2);
+                }
+                catch (Exception)
+                {
+                    return 0;
+                }
+            }
+
+            public static float Calculate(float liftHeight, float liftSpeed, float retract, float waitTime = 0)
+            {
+                try
+                {
+                    return (float) Math.Round(liftHeight / (liftSpeed / 60f) + liftHeight / (retract / 60f) + waitTime, 2);
+                }
+                catch (Exception)
+                {
+                    return 0;
+                }
+                
+            }
+        }
+    }
+}

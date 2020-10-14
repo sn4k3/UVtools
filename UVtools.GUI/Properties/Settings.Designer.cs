@@ -982,5 +982,17 @@ namespace UVtools.GUI.Properties {
                 this["LayerRepairRemoveIslandsRecursiveIterations"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool LoadDemoFileOnStartup {
+            get {
+                return ((bool)(this["LoadDemoFileOnStartup"]));
+            }
+            set {
+                this["LoadDemoFileOnStartup"] = value;
+            }
+        }
     }
 }

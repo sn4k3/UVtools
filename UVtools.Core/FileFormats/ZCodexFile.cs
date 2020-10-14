@@ -179,6 +179,17 @@ namespace UVtools.Core.FileFormats
             set => throw new NotImplementedException();
         }
 
+        public override float DisplayWidth
+        {
+            get => 74.67f;
+            set {}
+        }
+        public override float DisplayHeight
+        {
+            get => 132.88f;
+            set { }
+        }
+
         public override byte AntiAliasing => UserSettings.AntiAliasing;
 
         public override float LayerHeight

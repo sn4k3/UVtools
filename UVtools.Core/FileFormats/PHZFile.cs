@@ -724,6 +724,19 @@ namespace UVtools.Core.FileFormats
             set => HeaderSettings.ResolutionY = value;
         }
 
+        public override float DisplayWidth
+        {
+            get => HeaderSettings.BedSizeX;
+            set => HeaderSettings.BedSizeX = value;
+        }
+
+
+        public override float DisplayHeight
+        {
+            get => HeaderSettings.BedSizeY;
+            set => HeaderSettings.BedSizeY = value;
+        }
+
         public override byte AntiAliasing => (byte) HeaderSettings.AntiAliasLevelInfo;
 
         public override float LayerHeight

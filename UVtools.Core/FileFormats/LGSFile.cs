@@ -42,8 +42,8 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(3)] public uint Uint_10 { get; set; } = 30; // 0x10: 30 ?
             [FieldOrder(4)] public uint Uint_14 { get; set; } = 0; // 0x14: 0 ?
             [FieldOrder(5)] public uint Uint_18 { get; set; } = 34; // 0x18: 34 ?
-            [FieldOrder(6)] public float PixelPerMmY { get; set; }
-            [FieldOrder(7)] public float PixelPerMmX { get; set; }
+            [FieldOrder(6)] public float PixelPerMmX { get; set; }
+            [FieldOrder(7)] public float PixelPerMmY { get; set; }
             [FieldOrder(8)] public float ResolutionX { get; set; }
             [FieldOrder(9)] public float ResolutionY { get; set; }
             [FieldOrder(10)] public float LayerHeight { get; set; }
@@ -244,6 +244,18 @@ namespace UVtools.Core.FileFormats
         {
             get => (uint)HeaderSettings.ResolutionY;
             set => HeaderSettings.ResolutionY = value;
+        }
+
+        public override float DisplayWidth
+        {
+            get => ResolutionX / HeaderSettings.PixelPerMmX;
+            set { }
+        }
+
+        public override float DisplayHeight
+        {
+            get => ResolutionY / HeaderSettings.PixelPerMmY;
+            set { }
         }
 
         public override byte AntiAliasing => 4;

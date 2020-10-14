@@ -192,6 +192,12 @@
     <Compile Include="Controls\Tools\CtrlToolEditEditParameters.Designer.cs">
       <DependentUpon>CtrlToolEditEditParameters.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\Tools\CtrlToolCalculator.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Tools\CtrlToolCalculator.Designer.cs">
+      <DependentUpon>CtrlToolCalculator.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Tools\CtrlToolRepairLayers.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -368,6 +374,9 @@
     <EmbeddedResource Include="Controls\Tools\CtrlToolEditEditParameters.resx">
       <DependentUpon>CtrlToolEditEditParameters.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Tools\CtrlToolCalculator.resx">
+      <DependentUpon>CtrlToolCalculator.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\Tools\CtrlToolRepairLayers.resx">
       <DependentUpon>CtrlToolRepairLayers.cs</DependentUpon>
     </EmbeddedResource>
@@ -463,6 +472,10 @@
     <None Include="..\README.md">
       <Link>README.md</Link>
     </None>
+    <None Include="..\UVtools.CAD\UVtools_demo_file.sl1">
+      <Link>UVtools_demo_file.sl1</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -522,6 +535,7 @@
     <None Include="Images\sync-16x16.png" />
     <None Include="Images\object-group-16x16.png" />
     <None Include="Images\square-root-16x16.png" />
+    <None Include="Images\calculator-16x16.png" />
     <Content Include="Resources\pixel_edit.cur" />
     <Content Include="UVtools.ico" />
     <None Include="UVtools.png" />

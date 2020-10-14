@@ -15,5 +15,7 @@ namespace UVtools.Core
         public static string Company = "PTRTECH";
         public static string Website = "https://github.com/sn4k3/UVtools";
         public static string Donate = "https://paypal.me/SkillTournament";
+
+        public static string DemoFile = "UVtools_demo_file.sl1";
     }
 }

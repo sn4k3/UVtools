@@ -168,6 +168,17 @@ namespace UVtools.Core.FileFormats
             set => JsonSettings.Properties.Size.Y = (ushort) value;
         }
 
+        public override float DisplayWidth
+        {
+            get => JsonSettings.Properties.Size.Millimeter.X;
+            set => JsonSettings.Properties.Size.Millimeter.X = value;
+        }
+        public override float DisplayHeight
+        {
+            get => JsonSettings.Properties.Size.Millimeter.Y;
+            set => JsonSettings.Properties.Size.Millimeter.Y = value;
+        }
+
         public override byte AntiAliasing => JsonSettings.Properties.AntiAliasLevel;
 
         public override float LayerHeight

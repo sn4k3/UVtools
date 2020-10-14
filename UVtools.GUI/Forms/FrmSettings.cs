@@ -38,8 +38,9 @@ namespace UVtools.GUI.Forms
             try
             {
                 // General
-                cbCheckForUpdatesOnStartup.Checked = Settings.Default.CheckForUpdatesOnStartup;
                 cbStartMaximized.Checked = Settings.Default.StartMaximized;
+                cbCheckForUpdatesOnStartup.Checked = Settings.Default.CheckForUpdatesOnStartup;
+                cbLoadDemoFileOnStartup.Checked = Settings.Default.LoadDemoFileOnStartup;
                 cbDefaultOpenFileExtension.SelectedIndex = Settings.Default.DefaultOpenFileExtension;
                 tbFileOpenDefaultDirectory.Text = Settings.Default.FileOpenDefaultDirectory;
                 tbFileSaveDefaultDirectory.Text = Settings.Default.FileSaveDefaultDirectory;
@@ -235,8 +236,9 @@ namespace UVtools.GUI.Forms
             if (ReferenceEquals(sender, btnSave))
             {
                 // General
-                Settings.Default.CheckForUpdatesOnStartup = cbCheckForUpdatesOnStartup.Checked;
                 Settings.Default.StartMaximized = cbStartMaximized.Checked;
+                Settings.Default.CheckForUpdatesOnStartup = cbCheckForUpdatesOnStartup.Checked;
+                Settings.Default.LoadDemoFileOnStartup = cbLoadDemoFileOnStartup.Checked;
                 Settings.Default.DefaultOpenFileExtension = (byte) cbDefaultOpenFileExtension.SelectedIndex;
                 Settings.Default.FileOpenDefaultDirectory = tbFileOpenDefaultDirectory.Text;
                 Settings.Default.FileSaveDefaultDirectory = tbFileSaveDefaultDirectory.Text;
