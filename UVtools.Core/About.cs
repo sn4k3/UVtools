@@ -6,6 +6,8 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System.IO;
+
 namespace UVtools.Core
 {
     public static class About

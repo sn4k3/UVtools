@@ -71,6 +71,8 @@ namespace UVtools.Core.Operations
         /// </summary>
         public virtual string ProgressAction => Id;
 
+        public bool HaveAction => !string.IsNullOrEmpty(ProgressAction);
+
         /// <summary>
         /// Validates the operation
         /// </summary>

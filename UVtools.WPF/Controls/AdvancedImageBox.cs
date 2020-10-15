@@ -992,7 +992,7 @@ namespace UVtools.WPF.Controls
             var x = imageLocation.X * ZoomFactor - relativeDisplayPoint.X;
             var y = imageLocation.Y * ZoomFactor - relativeDisplayPoint.Y;
 
-            //Offset = new Vector(x, y);
+            Offset = new Vector(x, y);
 
             _canRender = true;
 
@@ -1022,7 +1022,7 @@ namespace UVtools.WPF.Controls
             timer.Start();*/
 
 
-            /*Debug.WriteLine(
+            Debug.WriteLine(
                 $"X/Y: {x},{y} | \n" +
                 $"Offset: {Offset} | \n" +
                 $"ZoomFactor: {ZoomFactor} | \n" +
@@ -1030,7 +1030,7 @@ namespace UVtools.WPF.Controls
                 $"MAX: {HorizontalScrollBarMaximum},{VerticalScrollBarMaximum} \n" +
                 $"ViewPort: {Viewport.Width},{Viewport.Height} \n" +
                 $"Container: {SizedContainer.Width},{SizedContainer.Height} \n" +
-                $"Relative: {relativeDisplayPoint}");*/
+                $"Relative: {relativeDisplayPoint}");
         }
 
         /// <summary>

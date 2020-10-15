@@ -318,24 +318,41 @@ namespace UVtools.Core.FileFormats
         public override uint ResolutionX
         {
             get => PrinterSettings.DisplayPixelsX;
-            set => PrinterSettings.DisplayPixelsX = value;
+            set
+            {
+                PrinterSettings.DisplayPixelsX = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override uint ResolutionY
         {
             get => PrinterSettings.DisplayPixelsY;
-            set => PrinterSettings.DisplayPixelsY = value;
+            set
+            {
+                PrinterSettings.DisplayPixelsY = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float DisplayWidth
         {
             get => PrinterSettings.DisplayWidth;
-            set => PrinterSettings.DisplayWidth = value;
+            set
+            {
+                PrinterSettings.DisplayWidth = value;
+                RaisePropertyChanged();
+            }
         }
+
         public override float DisplayHeight
         {
             get => PrinterSettings.DisplayHeight;
-            set => PrinterSettings.DisplayHeight = value;
+            set
+            {
+                PrinterSettings.DisplayHeight = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override byte AntiAliasing => (byte) (PrinterSettings.GammaCorrection > 0 ? LookupCustomValue(Keyword_AntiAliasing, 4) : 1);
@@ -343,7 +360,11 @@ namespace UVtools.Core.FileFormats
         public override float LayerHeight
         {
             get => OutputConfigSettings.LayerHeight;
-            set => OutputConfigSettings.LayerHeight = value;
+            set
+            {
+                OutputConfigSettings.LayerHeight = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override uint LayerCount
@@ -352,25 +373,38 @@ namespace UVtools.Core.FileFormats
             {
                 OutputConfigSettings.NumSlow = 0;
                 OutputConfigSettings.NumFast = (ushort) LayerCount;
+                RaisePropertyChanged();
             }
         }
 
         public override ushort BottomLayerCount
         {
             get => OutputConfigSettings.NumFade;
-            set => OutputConfigSettings.NumFade = value;
+            set
+            {
+                OutputConfigSettings.NumFade = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float BottomExposureTime
         {
             get => OutputConfigSettings.ExpTimeFirst;
-            set => OutputConfigSettings.ExpTimeFirst = value;
+            set
+            {
+                OutputConfigSettings.ExpTimeFirst = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float ExposureTime
         {
             get => OutputConfigSettings.ExpTime;
-            set => OutputConfigSettings.ExpTime = value;
+            set
+            {
+                OutputConfigSettings.ExpTime = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float PrintTime => OutputConfigSettings.PrintTime;

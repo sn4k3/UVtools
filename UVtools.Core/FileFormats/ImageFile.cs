@@ -40,12 +40,21 @@ namespace UVtools.Core.FileFormats
         public override float DisplayWidth
         {
             get => ResolutionX;
-            set => ResolutionX = (uint) value;
+            set
+            {
+                ResolutionX = (uint) value;
+                RaisePropertyChanged();
+            }
         }
+
         public override float DisplayHeight
         {
             get => ResolutionY;
-            set => ResolutionY = (uint)value;
+            set
+            {
+                ResolutionY = (uint) value;
+                RaisePropertyChanged();
+            }
         }
 
         public override byte AntiAliasing { get; } = 1;

@@ -86,6 +86,9 @@
       <PackagePath></PackagePath>
     </None>
     <None Include="..\README.md" Link="README.md" />
+    <None Include="..\UVtools.CAD\UVtools_demo_file.sl1" Link="UVtools_demo_file.sl1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Controls\Tools\ToolLayerRemoveControl.axaml.cs">

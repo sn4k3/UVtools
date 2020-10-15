@@ -2296,7 +2296,7 @@ namespace UVtools.GUI
         /// <summary>
         /// Reshow current layer
         /// </summary>
-        void ShowLayer() => ShowLayer(Math.Min(ActualLayer, SlicerFile.LayerCount - 1));
+        void ShowLayer() => ShowLayer(Math.Min(ActualLayer, SlicerFile.LastLayerIndex));
 
         void ShowLayer(bool direction)
         {

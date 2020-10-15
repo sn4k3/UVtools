@@ -237,13 +237,21 @@ namespace UVtools.Core.FileFormats
         public override uint ResolutionX
         {
             get => (uint) HeaderSettings.ResolutionX;
-            set => HeaderSettings.ResolutionX = value;
+            set
+            {
+                HeaderSettings.ResolutionX = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override uint ResolutionY
         {
             get => (uint)HeaderSettings.ResolutionY;
-            set => HeaderSettings.ResolutionY = value;
+            set
+            {
+                HeaderSettings.ResolutionY = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float DisplayWidth
@@ -263,7 +271,11 @@ namespace UVtools.Core.FileFormats
         public override float LayerHeight
         {
             get => HeaderSettings.LayerHeight;
-            set => HeaderSettings.LayerHeight = value;
+            set
+            {
+                HeaderSettings.LayerHeight = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override uint LayerCount
@@ -274,55 +286,91 @@ namespace UVtools.Core.FileFormats
         public override ushort BottomLayerCount
         {
             get => (ushort)(HeaderSettings.BottomHeight / LayerHeight);
-            set => HeaderSettings.BottomHeight = value * LayerHeight;
+            set
+            {
+                HeaderSettings.BottomHeight = value * LayerHeight;
+                RaisePropertyChanged();
+            }
         }
 
         public override float BottomExposureTime
         {
             get => (float)Math.Round(HeaderSettings.BottomExposureTimeMs / 1000, 2);
-            set => HeaderSettings.BottomExposureTimeMs = value * 1000;
+            set
+            {
+                HeaderSettings.BottomExposureTimeMs = value * 1000;
+                RaisePropertyChanged();
+            }
         }
 
         public override float ExposureTime
         {
             get => (float)Math.Round(HeaderSettings.ExposureTimeMs / 1000, 2);
-            set => HeaderSettings.ExposureTimeMs = value * 1000;
+            set
+            {
+                HeaderSettings.ExposureTimeMs = value * 1000;
+                RaisePropertyChanged();
+            }
         }
 
         public override float BottomLayerOffTime
         {
             get => HeaderSettings.BottomLightOffDelayMs;
-            set => HeaderSettings.BottomLightOffDelayMs = value;
+            set
+            {
+                HeaderSettings.BottomLightOffDelayMs = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float LayerOffTime
         {
             get => HeaderSettings.LightOffDelayMs;
-            set => HeaderSettings.LightOffDelayMs = value;
+            set
+            {
+                HeaderSettings.LightOffDelayMs = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float BottomLiftHeight
         {
             get => HeaderSettings.BottomLiftHeight;
-            set => HeaderSettings.BottomLiftHeight = value;
+            set
+            {
+                HeaderSettings.BottomLiftHeight = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float LiftHeight
         {
             get => HeaderSettings.LiftHeight;
-            set => HeaderSettings.LiftHeight = value;
+            set
+            {
+                HeaderSettings.LiftHeight = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float BottomLiftSpeed
         {
             get => HeaderSettings.BottomLiftSpeed;
-            set => HeaderSettings.BottomLiftSpeed = HeaderSettings.BottomLiftSpeed_ = value;
+            set
+            {
+                HeaderSettings.BottomLiftSpeed = HeaderSettings.BottomLiftSpeed_ = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float LiftSpeed
         {
             get => HeaderSettings.LiftSpeed;
-            set => HeaderSettings.LiftSpeed = HeaderSettings.LiftSpeed_ = value;
+            set
+            {
+                HeaderSettings.LiftSpeed = HeaderSettings.LiftSpeed_ = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float PrintTime => 0;

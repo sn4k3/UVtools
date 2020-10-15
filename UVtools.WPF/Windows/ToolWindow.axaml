@@ -234,6 +234,7 @@
           <Button
             Padding="10"
             IsDefault="True"
+            IsVisible="{Binding ButtonOkVisible}"
             IsEnabled="{Binding ButtonOkEnabled}"
             Command="{Binding Process}">
             <StackPanel

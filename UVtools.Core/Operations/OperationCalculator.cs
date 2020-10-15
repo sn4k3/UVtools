@@ -116,11 +116,11 @@ namespace UVtools.Core.Operations
                 }
             }
 
-            public decimal PixelsPerMillimeterX => DisplayWidth > 0 ? Math.Round(ResolutionX / DisplayWidth, 3) : 0;
-            public decimal PixelsPerMillimeterY => DisplayHeight > 0 ? Math.Round(ResolutionY / DisplayHeight, 3) : 0;
+            public decimal PixelsPerMillimeterX => DisplayWidth > 0 ? Math.Round(ResolutionX / DisplayWidth, 2) : 0;
+            public decimal PixelsPerMillimeterY => DisplayHeight > 0 ? Math.Round(ResolutionY / DisplayHeight, 2) : 0;
 
-            public decimal PixelsX => PixelsPerMillimeterX * Millimeters;
-            public decimal PixelsY => PixelsPerMillimeterY * Millimeters;
+            public decimal PixelsX => Math.Round(PixelsPerMillimeterX * Millimeters, 2);
+            public decimal PixelsY => Math.Round(PixelsPerMillimeterY * Millimeters, 2);
 
             
         }

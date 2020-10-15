@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
+using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats
@@ -25,7 +26,7 @@ namespace UVtools.Core.FileFormats
     /// <summary>
     /// Slicer <see cref="FileFormat"/> representation
     /// </summary>
-    public abstract class FileFormat : IFileFormat, IDisposable, IEquatable<FileFormat>, IEnumerable<Layer>
+    public abstract class FileFormat : BindableBase, IFileFormat, IDisposable, IEquatable<FileFormat>, IEnumerable<Layer>
     {
         public const string TemporaryFileAppend = ".tmp";
         #region Enums
@@ -357,6 +358,7 @@ namespace UVtools.Core.FileFormats
             {
                 ResolutionX = (uint) value.Width;
                 ResolutionY = (uint) value.Height;
+                RaisePropertyChanged();
             }
         } 
         
@@ -371,6 +373,7 @@ namespace UVtools.Core.FileFormats
             {
                 DisplayWidth = value.Width;
                 DisplayHeight = value.Height;
+                RaisePropertyChanged();
             }
         }
 

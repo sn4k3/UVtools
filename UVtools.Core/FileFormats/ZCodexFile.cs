@@ -195,7 +195,11 @@ namespace UVtools.Core.FileFormats
         public override float LayerHeight
         {
             get => ResinMetadataSettings.LayerThickness;
-            set => ResinMetadataSettings.LayerThickness = value;
+            set
+            {
+                ResinMetadataSettings.LayerThickness = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override uint LayerCount
@@ -205,43 +209,68 @@ namespace UVtools.Core.FileFormats
                 UserSettings.MaxLayer = LayerCount - 1;
                 ResinMetadataSettings.TotalLayersCount = LayerCount;
                 RebuildGCode();
+                RaisePropertyChanged();
             }
         }
 
         public override ushort BottomLayerCount
         {
             get => ResinMetadataSettings.BottomLayersNumber;
-            set => ResinMetadataSettings.BottomLayersNumber = value;
+            set
+            {
+                ResinMetadataSettings.BottomLayersNumber = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float BottomExposureTime
         {
             get => (float) Math.Round(UserSettings.BottomLayerExposureTime / 1000f, 2);
-            set => UserSettings.BottomLayerExposureTime = (uint) (value * 1000f);
+            set
+            {
+                UserSettings.BottomLayerExposureTime = (uint) (value * 1000f);
+                RaisePropertyChanged();
+            }
         }
 
         public override float ExposureTime
         {
             get => (float) Math.Round(UserSettings.LayerExposureTime / 1000f, 2);
-            set => UserSettings.LayerExposureTime = (uint) (value * 1000f);
+            set
+            {
+                UserSettings.LayerExposureTime = (uint) (value * 1000f);
+                RaisePropertyChanged();
+            }
         }
 
         public override float LiftHeight
         {
             get => UserSettings.ZLiftDistance;
-            set => UserSettings.ZLiftDistance = value;
+            set
+            {
+                UserSettings.ZLiftDistance = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float LiftSpeed
         {
             get => UserSettings.ZLiftFeedRate;
-            set => UserSettings.ZLiftFeedRate = value;
+            set
+            {
+                UserSettings.ZLiftFeedRate = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float RetractSpeed
         {
             get => UserSettings.ZLiftRetractRate;
-            set => UserSettings.ZLiftRetractRate = value;
+            set
+            {
+                UserSettings.ZLiftRetractRate = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float PrintTime => ResinMetadataSettings.PrintTime;

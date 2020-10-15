@@ -426,6 +426,13 @@ namespace UVtools.WPF
         {
             if (!IsFileLoaded) return;
 
+            var sanitizedLayerIndex = Math.Min(_actualLayer, SlicerFile.LastLayerIndex);
+            if (sanitizedLayerIndex != _actualLayer)
+            {
+                _actualLayer = sanitizedLayerIndex;
+                InvalidateLayerNavigation();
+            }
+
             Stopwatch watch = Stopwatch.StartNew();
             LayerCache.Layer = SlicerFile[_actualLayer];
 

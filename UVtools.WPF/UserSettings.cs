@@ -32,6 +32,7 @@ namespace UVtools.WPF
         {
             private bool _startMaximized = true;
             private bool _checkForUpdatesOnStartup = true;
+            private bool _loadDemoFileOnStartup = true;
             private byte _defaultOpenFileExtensionIndex;
             private string _defaultDirectoryOpenFile;
             private string _defaultDirectorySaveFile;
@@ -52,6 +53,12 @@ namespace UVtools.WPF
             {
                 get => _checkForUpdatesOnStartup;
                 set => this.RaiseAndSetIfChanged(ref _checkForUpdatesOnStartup, value);
+            }
+
+            public bool LoadDemoFileOnStartup
+            {
+                get => _loadDemoFileOnStartup;
+                set => this.RaiseAndSetIfChanged(ref _loadDemoFileOnStartup, value);
             }
 
             public byte DefaultOpenFileExtensionIndex
@@ -670,6 +677,7 @@ namespace UVtools.WPF
         }
         #endregion
 
+        #region Pixel Editor
         [Serializable]
         public sealed class PixelEditorUserSettings : ReactiveObject
         {
@@ -837,7 +845,9 @@ namespace UVtools.WPF
                 return MemberwiseClone() as PixelEditorUserSettings;
             }
         }
+        #endregion
 
+        #region Layer Repair
         [Serializable]
         public sealed class LayerRepairUserSettings : ReactiveObject
         {
@@ -896,6 +906,7 @@ namespace UVtools.WPF
                 return MemberwiseClone() as LayerRepairUserSettings;
             }
         }
+        #endregion
 
         #endregion
 

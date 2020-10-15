@@ -191,6 +191,7 @@ namespace UVtools.GUI.Controls.Tools
             {
                 Program.SlicerFile.BottomLiftHeight = (float)Operation.CalcLightOffDelay.BottomLiftHeight;
                 Program.SlicerFile.BottomLiftSpeed = (float)Operation.CalcLightOffDelay.BottomLiftSpeed;
+                Program.SlicerFile.RetractSpeed = (float)Operation.CalcLightOffDelay.RetractSpeed;
                 Program.SlicerFile.BottomLayerOffTime = (float)Operation.CalcLightOffDelay.BottomLightOffDelay;
                 Program.FrmMain.CanSave = true;
                 lbLightOffDelayCurrentBottomValue.Text = $"Current value: {Program.SlicerFile.BottomLayerOffTime}";

@@ -806,13 +806,21 @@ namespace UVtools.Core.FileFormats
         public override uint ResolutionX
         {
             get => HeaderSettings.ResolutionX;
-            set => HeaderSettings.ResolutionX = value;
+            set
+            {
+                HeaderSettings.ResolutionX = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override uint ResolutionY
         {
             get => HeaderSettings.ResolutionY;
-            set => HeaderSettings.ResolutionY = value;
+            set
+            {
+                HeaderSettings.ResolutionY = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float DisplayWidth
@@ -831,54 +839,90 @@ namespace UVtools.Core.FileFormats
         public override float LayerHeight
         {
             get => HeaderSettings.LayerHeight;
-            set => HeaderSettings.LayerHeight = value;
+            set
+            {
+                HeaderSettings.LayerHeight = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override uint LayerCount
         {
-            set => LayersDefinition.LayersCount = LayerCount;
+            set
+            {
+                LayersDefinition.LayersCount = LayerCount;
+                RaisePropertyChanged();
+            }
         }
 
         public override ushort BottomLayerCount
         {
             get => (ushort)HeaderSettings.BottomLayersCount;
-            set => HeaderSettings.BottomLayersCount = value;
+            set
+            {
+                HeaderSettings.BottomLayersCount = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float BottomExposureTime
         {
             get => HeaderSettings.BottomExposureSeconds;
-            set => HeaderSettings.BottomExposureSeconds = value;
+            set
+            {
+                HeaderSettings.BottomExposureSeconds = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float ExposureTime
         {
             get => HeaderSettings.LayerExposureTime;
-            set => HeaderSettings.LayerExposureTime = value;
+            set
+            {
+                HeaderSettings.LayerExposureTime = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float LayerOffTime
         {
             get => HeaderSettings.LayerOffTime;
-            set => HeaderSettings.LayerOffTime = value;
+            set
+            {
+                HeaderSettings.LayerOffTime = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float LiftHeight
         {
             get => HeaderSettings.LiftHeight;
-            set => HeaderSettings.LiftHeight = value;
+            set
+            {
+                HeaderSettings.LiftHeight = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float LiftSpeed
         {
             get => (float) Math.Round(HeaderSettings.LiftSpeed * 60, 2);
-            set => HeaderSettings.LiftSpeed = (float) Math.Round(value / 60, 2);
+            set
+            {
+                HeaderSettings.LiftSpeed = (float) Math.Round(value / 60, 2);
+                RaisePropertyChanged();
+            }
         }
 
         public override float RetractSpeed
         {
             get => (float)Math.Round(HeaderSettings.RetractSpeed * 60, 2);
-            set => HeaderSettings.RetractSpeed = (float)Math.Round(value / 60, 2);
+            set
+            {
+                HeaderSettings.RetractSpeed = (float) Math.Round(value / 60, 2);
+                RaisePropertyChanged();
+            }
         }
 
         public override float PrintTime => 0;

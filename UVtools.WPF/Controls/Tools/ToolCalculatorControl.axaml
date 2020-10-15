@@ -1,0 +1,507 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Tools.ToolCalculatorControl">
+  <TabControl>
+    <TabItem Header="Millimeters to pixels">
+      <Grid RowDefinitions="Auto,10,Auto,30,Auto">
+        <Border 
+          Background="White"
+          BorderBrush="Black" BorderThickness="1" Padding="10">
+          <TextBlock VerticalAlignment="Center">
+            <TextBlock.Text>
+              <MultiBinding StringFormat="\{0\}&#x0a;&#x0a;Formula: \{1\}">
+                <Binding Path="Operation.CalcMillimetersToPixels.Description"/>
+                <Binding Path="Operation.CalcMillimetersToPixels.Formula"/>
+              </MultiBinding>
+            </TextBlock.Text>
+          </TextBlock>
+        </Border>
+
+
+        <Grid
+          Grid.Row="2"
+          RowDefinitions="Auto,10,Auto"
+          ColumnDefinitions="Auto,10,100,5,Auto,30,Auto,10,100,5,Auto"
+        >
+
+          <!-- Resolution -->
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Resolution X:"/>
+          <NumericUpDown
+            Grid.Row="0"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="100000"
+            Value="{Binding Operation.CalcMillimetersToPixels.ResolutionX}"
+          />
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="4"
+            VerticalAlignment="Center"
+            Text="px"/>
+
+          <TextBlock
+            Grid.Row="2"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Resolution Y:"/>
+          <NumericUpDown
+            Grid.Row="2"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="100000"
+            Value="{Binding Operation.CalcMillimetersToPixels.ResolutionY}"
+          />
+          <TextBlock
+            Grid.Row="2"
+            Grid.Column="4"
+            VerticalAlignment="Center"
+            Text="px"/>
+
+
+          <!-- Display -->
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="6"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Display width:"/>
+          <NumericUpDown
+            Grid.Row="0"
+            Grid.Column="8"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="100000"
+            Increment="0.01"
+            FormatString="{}{0:#,0.00}"
+            Value="{Binding Operation.CalcMillimetersToPixels.DisplayWidth}"
+          />
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="10"
+            VerticalAlignment="Center"
+            Text="mm"/>
+
+          <TextBlock
+            Grid.Row="2"
+            Grid.Column="6"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Display height:"/>
+          <NumericUpDown
+            Grid.Row="2"
+            Grid.Column="8"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="100000"
+            Increment="0.01"
+            FormatString="{}{0:#,0.00}"
+            Value="{Binding Operation.CalcMillimetersToPixels.DisplayHeight}"
+          />
+          <TextBlock
+            Grid.Row="2"
+            Grid.Column="10"
+            VerticalAlignment="Center"
+            Text="mm"/>
+
+        </Grid>
+
+        <Grid
+          Grid.Row="4"
+          RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+          ColumnDefinitions="Auto,10,100,5,Auto"
+        >
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Input millimeters:"/>
+          <NumericUpDown
+            Grid.Row="0"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="100000"
+            Increment="0.01"
+            FormatString="{}{0:#,0.00}"
+            Value="{Binding Operation.CalcMillimetersToPixels.Millimeters}"
+          />
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="4"
+            VerticalAlignment="Center"
+            Text="mm"/>
+
+          <TextBlock
+            Grid.Row="2"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="X pixels per millimeter:"/>
+          <TextBox
+            Grid.Row="2"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            IsReadOnly="True"
+            Text="{Binding Operation.CalcMillimetersToPixels.PixelsPerMillimeterX}"
+          />
+          <TextBlock
+            Grid.Row="2"
+            Grid.Column="4"
+            VerticalAlignment="Center"
+            Text="ppmmX"/>
+
+          <TextBlock
+            Grid.Row="4"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Y pixels per millimeter:"/>
+          <TextBox
+            Grid.Row="4"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            IsReadOnly="True"
+            Text="{Binding Operation.CalcMillimetersToPixels.PixelsPerMillimeterY}"
+          />
+          <TextBlock
+            Grid.Row="4"
+            Grid.Column="4"
+            VerticalAlignment="Center"
+            Text="ppmmY"/>
+
+          <TextBlock
+            Grid.Row="6"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            FontWeight="Bold"
+            HorizontalAlignment="Right"
+            Text="X Pixels"/>
+          <TextBox
+            Grid.Row="6"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            IsReadOnly="True"
+            FontWeight="Bold"
+            Text="{Binding Operation.CalcMillimetersToPixels.PixelsX}"
+          />
+          <TextBlock
+            Grid.Row="6"
+            Grid.Column="4"
+            FontWeight="Bold"
+            VerticalAlignment="Center"
+            Text="px"/>
+
+          <TextBlock
+            Grid.Row="8"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            FontWeight="Bold"
+            HorizontalAlignment="Right"
+            Text="Y Pixels"/>
+          <TextBox
+            Grid.Row="8"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            IsReadOnly="True"
+            FontWeight="Bold"
+            Text="{Binding Operation.CalcMillimetersToPixels.PixelsY}"
+          />
+          <TextBlock
+            Grid.Row="8"
+            Grid.Column="4"
+            FontWeight="Bold"
+            VerticalAlignment="Center"
+            Text="px"/>
+        </Grid>
+       
+      </Grid>
+      
+    </TabItem>
+
+    <TabItem Header="Light-off delay">
+
+      <Grid RowDefinitions="Auto,10,Auto">
+        <Border
+          Background="White"
+          BorderBrush="Black" BorderThickness="1" Padding="10">
+          <TextBlock VerticalAlignment="Center">
+            <TextBlock.Text>
+              <MultiBinding StringFormat="\{0\}&#x0a;&#x0a;Formula: \{1\}">
+                <Binding Path="Operation.CalcLightOffDelay.Description"/>
+                <Binding Path="Operation.CalcLightOffDelay.Formula"/>
+              </MultiBinding>
+            </TextBlock.Text>
+          </TextBlock>
+        </Border>
+
+
+        <Grid
+          Grid.Row="2"
+          RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+          ColumnDefinitions="Auto,10,100,5,Auto,30,Auto,10,100,5,Auto"
+        >
+
+          <!-- Normal -->
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Lift height:"/>
+          <NumericUpDown
+            Grid.Row="0"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="1000"
+            Increment="0.01"
+            Value="{Binding Operation.CalcLightOffDelay.LiftHeight}"/>
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="4"
+            VerticalAlignment="Center"
+            Text="mm"/>
+
+          <TextBlock
+            Grid.Row="2"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Lift speed:"/>
+          <NumericUpDown
+            Grid.Row="2"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="1000"
+            Increment="0.01"
+            Value="{Binding Operation.CalcLightOffDelay.LiftSpeed}"/>
+          <TextBlock
+            Grid.Row="2"
+            Grid.Column="4"
+            VerticalAlignment="Center"
+            Text="mm/min"/>
+
+          <TextBlock
+            Grid.Row="4"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Retract speed:"/>
+          <NumericUpDown
+            Grid.Row="4"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="1000"
+            Increment="0.01"
+            Value="{Binding Operation.CalcLightOffDelay.RetractSpeed}"/>
+          <TextBlock
+            Grid.Row="4"
+            Grid.Column="4"
+            VerticalAlignment="Center"
+            Text="mm/min"/>
+
+          <TextBlock
+            Grid.Row="6"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Desired wait time:"/>
+          <NumericUpDown
+            Grid.Row="6"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="1000"
+            Increment="0.01"
+            Value="{Binding Operation.CalcLightOffDelay.WaitTime}"/>
+          <TextBlock
+            Grid.Row="6"
+            Grid.Column="4"
+            VerticalAlignment="Center"
+            Text="s"/>
+
+          <TextBlock
+            Grid.Row="8"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            FontWeight="Bold"
+            Text="Light-off delay:"/>
+          <TextBox
+            Grid.Row="8"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            IsReadOnly="true"
+            FontWeight="Bold"
+            Text="{Binding Operation.CalcLightOffDelay.LightOffDelay}"/>
+          <TextBlock
+            Grid.Row="8"
+            Grid.Column="4"
+            FontWeight="Bold"
+            VerticalAlignment="Center"
+            Text="s"/>
+
+          <Button
+            Grid.Row="10"
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Padding="10"
+            Content="Set this parameters on file"
+            Command="{Binding LightOffDelaySetParameters}"
+            CommandParameter="1"/>
+
+          <TextBlock
+            Grid.Row="12"
+            Grid.Column="0"
+            Grid.ColumnSpan="5"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center"
+            Text="{Binding SlicerFile.LayerOffTime, StringFormat=Current value: \{0\}}"/>
+
+
+          <!-- Bottom -->
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="6"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Bottom lift height:"/>
+          <NumericUpDown
+            Grid.Row="0"
+            Grid.Column="8"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="1000"
+            Increment="0.01"
+            Value="{Binding Operation.CalcLightOffDelay.BottomLiftHeight}"/>
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="10"
+            VerticalAlignment="Center"
+            Text="mm"/>
+
+          <TextBlock
+            Grid.Row="2"
+            Grid.Column="6"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Bottom lift speed:"/>
+          <NumericUpDown
+            Grid.Row="2"
+            Grid.Column="8"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="1000"
+            Increment="0.01"
+            Value="{Binding Operation.CalcLightOffDelay.BottomLiftSpeed}"/>
+          <TextBlock
+            Grid.Row="2"
+            Grid.Column="10"
+            VerticalAlignment="Center"
+            Text="mm/min"/>
+
+          <!--
+          <TextBlock
+            Grid.Row="4"
+            Grid.Column="6"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Retract speed:"/>
+          <NumericUpDown
+            Grid.Row="4"
+            Grid.Column="8"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="1000"
+            Increment="0.01"
+            Value="{Binding Operation.CalcLightOffDelay.RetractSpeed}"/>
+          <TextBlock
+            Grid.Row="4"
+            Grid.Column="10"
+            VerticalAlignment="Center"
+            Text="mm/min"/>
+          -->
+          <TextBlock
+            Grid.Row="6"
+            Grid.Column="6"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Bottom desired wait time:"/>
+          <NumericUpDown
+            Grid.Row="6"
+            Grid.Column="8"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="1000"
+            Increment="0.01"
+            Value="{Binding Operation.CalcLightOffDelay.BottomWaitTime}"/>
+          <TextBlock
+            Grid.Row="6"
+            Grid.Column="10"
+            VerticalAlignment="Center"
+            Text="s"/>
+
+          <TextBlock
+            Grid.Row="8"
+            Grid.Column="6"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            FontWeight="Bold"
+            Text="Bottom light-off delay:"/>
+          <TextBox
+            Grid.Row="8"
+            Grid.Column="8"
+            VerticalAlignment="Center"
+            IsReadOnly="true"
+            FontWeight="Bold"
+            Text="{Binding Operation.CalcLightOffDelay.BottomLightOffDelay}"/>
+          <TextBlock
+            Grid.Row="8"
+            Grid.Column="10"
+            FontWeight="Bold"
+            VerticalAlignment="Center"
+            Text="s"/>
+
+          <Button
+            Grid.Row="10"
+            Grid.Column="6"
+            Grid.ColumnSpan="3"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Padding="10"
+            Content="Set this parameters on file"
+            Command="{Binding LightOffDelaySetParameters}"
+            CommandParameter="0"/>
+
+          <TextBlock
+            Grid.Row="12"
+            Grid.Column="6"
+            Grid.ColumnSpan="5"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center"
+            Text="{Binding SlicerFile.BottomLayerOffTime, StringFormat=Current value: \{0\}}"/>
+
+        </Grid>
+
+      </Grid>
+
+    </TabItem>
+    
+  </TabControl>
+</UserControl>

@@ -155,24 +155,41 @@ namespace UVtools.Core.FileFormats
         public override uint ResolutionX
         {
             get => SliceSettings.Xres;
-            set => OutputSettings.XResolution = SliceSettings.Xres = (ushort) value;
+            set
+            {
+                OutputSettings.XResolution = SliceSettings.Xres = (ushort) value;
+                RaisePropertyChanged();
+            }
         }
 
         public override uint ResolutionY
         {
             get => SliceSettings.Yres;
-            set => OutputSettings.YResolution = SliceSettings.Yres = (ushort) value;
+            set
+            {
+                OutputSettings.YResolution = SliceSettings.Yres = (ushort) value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float DisplayWidth
         {
             get => OutputSettings.PlatformXSize;
-            set => OutputSettings.PlatformXSize = value;
+            set
+            {
+                OutputSettings.PlatformXSize = value;
+                RaisePropertyChanged();
+            }
         }
+
         public override float DisplayHeight
         {
             get => OutputSettings.PlatformYSize;
-            set => OutputSettings.PlatformYSize = value;
+            set
+            {
+                OutputSettings.PlatformYSize = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override byte AntiAliasing => (byte) OutputSettings.AntiAliasingValue;
@@ -180,7 +197,11 @@ namespace UVtools.Core.FileFormats
         public override float LayerHeight
         {
             get => SliceSettings.Thickness;
-            set => OutputSettings.LayerThickness = SliceSettings.Thickness = value; 
+            set
+            {
+                OutputSettings.LayerThickness = SliceSettings.Thickness = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override uint LayerCount
@@ -196,49 +217,81 @@ namespace UVtools.Core.FileFormats
         public override ushort BottomLayerCount
         {
             get => SliceSettings.HeadLayersNum;
-            set => SliceSettings.HeadLayersNum = value;
+            set
+            {
+                SliceSettings.HeadLayersNum = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float BottomExposureTime
         {
             get => (float) Math.Round(SliceSettings.HeadLayersExpoMs / 1000f, 2);
-            set => SliceSettings.HeadLayersExpoMs = (uint) (value * 1000f);
+            set
+            {
+                SliceSettings.HeadLayersExpoMs = (uint) (value * 1000f);
+                RaisePropertyChanged();
+            }
         }
 
         public override float ExposureTime
         {
             get => (float) Math.Round(SliceSettings.LayersExpoMs / 1000f, 2);
-            set => SliceSettings.LayersExpoMs = (uint) (value * 1000f);
+            set
+            {
+                SliceSettings.LayersExpoMs = (uint) (value * 1000f);
+                RaisePropertyChanged();
+            }
         }
-        
+
         public override float LiftHeight
         {
             get => SliceSettings.LiftDistance;
-            set => SliceSettings.LiftDistance = value;
+            set
+            {
+                SliceSettings.LiftDistance = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float LiftSpeed
         {
             get => SliceSettings.LiftDownSpeed;
-            set => SliceSettings.LiftDownSpeed = value;
+            set
+            {
+                SliceSettings.LiftDownSpeed = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float RetractSpeed
         {
             get => OutputSettings.ZLiftRetractRate;
-            set => OutputSettings.ZLiftRetractRate = value;
+            set
+            {
+                OutputSettings.ZLiftRetractRate = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override byte BottomLightPWM
         {
             get => OutputSettings.BottomLightPWM;
-            set => OutputSettings.BottomLightPWM = value;
+            set
+            {
+                OutputSettings.BottomLightPWM = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override byte LightPWM
         {
             get => OutputSettings.LightPWM;
-            set => OutputSettings.LightPWM = value;
+            set
+            {
+                OutputSettings.LightPWM = value;
+                RaisePropertyChanged();
+            }
         }
 
 

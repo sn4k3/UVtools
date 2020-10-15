@@ -38,6 +38,7 @@ namespace UVtools.WPF.Windows
 
         private bool _buttonOkEnabled = true;
         private string _buttonOkText = "Ok";
+        private bool _buttonOkVisible = true;
 
         #region Description
 
@@ -230,6 +231,12 @@ namespace UVtools.WPF.Windows
             set => RaiseAndSetIfChanged(ref _buttonOkEnabled, value);
         }
 
+        public bool ButtonOkVisible
+        {
+            get => _buttonOkVisible;
+            set => RaiseAndSetIfChanged(ref _buttonOkVisible, value);
+        }
+
         public string ButtonOkText
         {
             get => _buttonOkText;
@@ -269,6 +276,7 @@ namespace UVtools.WPF.Windows
             //IsROIVisible = toolControl.BaseOperation.CanROI;
             ContentControl = toolControl;
             ButtonOkText = toolControl.BaseOperation.ButtonOkText;
+            ButtonOkVisible = ButtonOkEnabled = toolControl.BaseOperation.HaveAction;
 
             switch (toolControl.BaseOperation.LayerRangeSelection)
             {

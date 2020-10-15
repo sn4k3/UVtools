@@ -999,24 +999,41 @@ namespace UVtools.Core.FileFormats
         public override uint ResolutionX
         {
             get => HeaderSettings.ResolutionX;
-            set => HeaderSettings.ResolutionX = value;
+            set
+            {
+                HeaderSettings.ResolutionX = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override uint ResolutionY
         {
             get => HeaderSettings.ResolutionY;
-            set => HeaderSettings.ResolutionY = value;
+            set
+            {
+                HeaderSettings.ResolutionY = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float DisplayWidth
         {
             get => HeaderSettings.BedSizeX;
-            set => HeaderSettings.BedSizeX = value;
+            set
+            {
+                HeaderSettings.BedSizeX = value;
+                RaisePropertyChanged();
+            }
         }
+
         public override float DisplayHeight
         {
             get => HeaderSettings.BedSizeY;
-            set => HeaderSettings.BedSizeY = value;
+            set
+            {
+                HeaderSettings.BedSizeY = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override byte AntiAliasing => (byte) (IsCbtFile ? SlicerInfoSettings.AntiAliasLevel : HeaderSettings.AntiAliasLevel);
@@ -1024,7 +1041,11 @@ namespace UVtools.Core.FileFormats
         public override float LayerHeight
         {
             get => HeaderSettings.LayerHeightMilimeter;
-            set => HeaderSettings.LayerHeightMilimeter = value;
+            set
+            {
+                HeaderSettings.LayerHeightMilimeter = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override uint LayerCount
@@ -1039,73 +1060,121 @@ namespace UVtools.Core.FileFormats
         public override ushort BottomLayerCount
         {
             get => (ushort) HeaderSettings.BottomLayersCount;
-            set => HeaderSettings.BottomLayersCount = value;
+            set
+            {
+                HeaderSettings.BottomLayersCount = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float BottomExposureTime
         {
             get => HeaderSettings.BottomExposureSeconds;
-            set => HeaderSettings.BottomExposureSeconds = value;
+            set
+            {
+                HeaderSettings.BottomExposureSeconds = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float ExposureTime
         {
             get => HeaderSettings.LayerExposureSeconds;
-            set => HeaderSettings.LayerExposureSeconds = value;
+            set
+            {
+                HeaderSettings.LayerExposureSeconds = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float BottomLayerOffTime
         {
             get => PrintParametersSettings.BottomLightOffDelay;
-            set => PrintParametersSettings.BottomLightOffDelay = value;
+            set
+            {
+                PrintParametersSettings.BottomLightOffDelay = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float LayerOffTime
         {
             get => PrintParametersSettings.LightOffDelay;
-            set => HeaderSettings.LayerOffTime = PrintParametersSettings.LightOffDelay = value;
+            set
+            {
+                HeaderSettings.LayerOffTime = PrintParametersSettings.LightOffDelay = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float BottomLiftHeight
         {
             get => PrintParametersSettings.BottomLiftHeight;
-            set => PrintParametersSettings.BottomLiftHeight = value;
+            set
+            {
+                PrintParametersSettings.BottomLiftHeight = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float LiftHeight
         {
             get => PrintParametersSettings.LiftHeight;
-            set => PrintParametersSettings.LiftHeight = value;
+            set
+            {
+                PrintParametersSettings.LiftHeight = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float BottomLiftSpeed
         {
             get => PrintParametersSettings.BottomLiftSpeed;
-            set => PrintParametersSettings.BottomLiftSpeed = value;
+            set
+            {
+                PrintParametersSettings.BottomLiftSpeed = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float LiftSpeed
         {
             get => PrintParametersSettings.LiftSpeed;
-            set => PrintParametersSettings.LiftSpeed = value;
+            set
+            {
+                PrintParametersSettings.LiftSpeed = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float RetractSpeed
         {
             get => PrintParametersSettings.RetractSpeed;
-            set => PrintParametersSettings.RetractSpeed = value;
+            set
+            {
+                PrintParametersSettings.RetractSpeed = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override byte BottomLightPWM
         {
             get => (byte) HeaderSettings.BottomLightPWM;
-            set => HeaderSettings.BottomLightPWM = value;
+            set
+            {
+                HeaderSettings.BottomLightPWM = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override byte LightPWM
         {
             get => (byte) HeaderSettings.BottomLightPWM;
-            set => HeaderSettings.BottomLightPWM = value;
+            set
+            {
+                HeaderSettings.BottomLightPWM = value;
+                RaisePropertyChanged();
+            }
         }
 
         public override float PrintTime => HeaderSettings.PrintTime;

@@ -94,8 +94,8 @@
         </Component>
         <Component Id="owc21B8C8C0F69E3CD1398B9A0674DF07BD" Guid="1e472543-e636-904d-da5b-cddaac2d36b1">
           <File Id="owf21B8C8C0F69E3CD1398B9A0674DF07BD" Source="$(var.SourceDir)\UVtools.exe" KeyPath="yes">
-            <Shortcut Id="sc6327849DA5C02D2396E91B8B1892E03C" Name="UVtools" Directory="DesktopFolder" />
-            <Shortcut Id="sc2F2092C02FDD8EB21E756F58C31B70A7" Name="UVtools" Directory="StartMenuFolder" />
+            <Shortcut Id="sc6327849DA5C02D2396E91B8B1892E03C" Name="UVtools" Directory="DesktopFolder" WorkingDirectory="MergeRedirectFolder" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" />
+            <Shortcut Id="sc2F2092C02FDD8EB21E756F58C31B70A7" Name="UVtools" Directory="StartMenuFolder" WorkingDirectory="MergeRedirectFolder" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" />
           </File>
         </Component>
         <Component Id="owcFD68A2B6BB01205FB923D13D9A1EB333" Guid="a2bfa40e-e0f8-47b6-2570-e609ea5e428d">

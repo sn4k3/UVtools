@@ -36,7 +36,6 @@ using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 using UVtools.WPF.Windows;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
-using Ellipse = Avalonia.Controls.Shapes.Ellipse;
 using Helpers = UVtools.WPF.Controls.Helpers;
 using Path = System.IO.Path;
 
@@ -183,6 +182,14 @@ namespace UVtools.WPF
                 Icon = new Avalonia.Controls.Image
                 {
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/resize-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationCalculator(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/calculator-16x16.png"))
                 }
             },
         };
@@ -387,8 +394,11 @@ namespace UVtools.WPF
             {
                 ProcessFiles(e.Data.GetFileNames().ToArray());
             });
+        }
 
-            
+        protected override void OnOpened(EventArgs e)
+        {
+            base.OnOpened(e);
             AddLog($"{About.Software} start");
 
             if (Settings.General.CheckForUpdatesOnStartup)
@@ -397,6 +407,10 @@ namespace UVtools.WPF
             }
 
             ProcessFiles(Program.Args);
+            if (!IsFileLoaded && Settings.General.LoadDemoFileOnStartup)
+            {
+                ProcessFile(About.DemoFile);
+            }
         }
 
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
