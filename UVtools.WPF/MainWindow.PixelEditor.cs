@@ -209,11 +209,11 @@ namespace UVtools.WPF
                         switch (operationDrawing.BrushShape)
                         {
                             case PixelDrawing.BrushShapeType.Rectangle:
-                                
-                                LayerCache.Canvas.DrawRect(operationDrawing.Rectangle.X, 
-                                    operationDrawing.Rectangle.Y, 
-                                    operationDrawing.Rectangle.Width, 
-                                    operationDrawing.Rectangle.Height,
+
+                                int shiftPos = operationDrawing.BrushSize / 2;
+                                LayerCache.Canvas.DrawRect(location.X - shiftPos, location.Y - shiftPos, 
+                                    operationDrawing.BrushSize, 
+                                    operationDrawing.BrushSize,
                                     new SKPaint
                                     {
                                         IsAntialias = operationDrawing.LineType == LineType.AntiAlias,

@@ -24,10 +24,10 @@
     <NoWarn>1701;1702;</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.999-cibuild0011267-beta" />
+    <PackageReference Include="Avalonia" Version="0.10.999-cibuild0011383-beta" />
     <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.999-cibuild0011267-beta" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.999-cibuild0011267-beta" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.999-cibuild0011383-beta" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.999-cibuild0011383-beta" />
     <PackageReference Include="Avalonia.ThemeManager" Version="0.10.0-preview3" />
     <PackageReference Include="Dock.Avalonia" Version="0.10.0-preview5" />
     <PackageReference Include="Emgu.CV.runtime.raspbian" Version="4.4.0.4099" />
@@ -91,6 +91,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Controls\AdvancedImageBox.axaml.cs">
+      <DependentUpon>AdvancedImageBox.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Controls\Tools\ToolLayerRemoveControl.axaml.cs">
       <DependentUpon>ToolLayerRemoveControl.axaml</DependentUpon>
     </Compile>

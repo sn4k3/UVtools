@@ -1,0 +1,36 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.AdvancedImageBox">
+  <Grid
+    RowDefinitions="*,Auto"
+    ColumnDefinitions="*,Auto"
+    >
+
+    <ContentControl
+      Name="ViewPort"
+      Background="Transparent"
+      />
+
+    <ScrollBar
+      Name="VerticalScrollBar"
+      Grid.Column="1"
+      Orientation="Vertical"
+      ViewportSize="{Binding #ViewPort.Bounds.Height}"
+      Minimum="0"
+      Visibility="Auto"
+      />
+      
+    <ScrollBar
+      Name="HorizontalScrollBar"
+      Grid.Row="1"
+      Orientation="Horizontal"
+      ViewportSize="{Binding #ViewPort.Bounds.Width}"
+      Minimum="0"
+      Visibility="Auto"
+      />
+    
+  </Grid>
+</UserControl>

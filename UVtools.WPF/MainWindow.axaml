@@ -1494,24 +1494,37 @@
 
       </StackPanel>
 
-      <uc:AdvancedImageBox
-        Focusable="True"
+      <Border
         Grid.Row="1"
-     GridCellSize="15"
-     Name="LayerImage"
-      />
+        BorderBrush="WhiteSmoke"
+        BorderThickness="5"
+        >
+        <uc:AdvancedImageBox
+          Focusable="True"
+          ShowGrid="False"
+          GridCellSize="15"
+          Name="LayerImage"
+        />
+      </Border>
+      
 
       <Canvas Grid.Row="1" Margin="20"
               IsVisible="{Binding IsTooltipOverlayVisible}"
               >
         <Border
-        Background="{Binding Settings.LayerPreview.TooltipOverlayBackgroundBrush}" Padding="10">
+          BorderThickness="1"
+          BorderBrush="Black"
+          Background="{Binding Settings.LayerPreview.TooltipOverlayBackgroundBrush}" 
+          Padding="10"
+          CornerRadius="5"
+          >
           <TextBlock Text="{Binding TooltipOverlayText}" />
         </Border>
       </Canvas>
       
+      
 
-      <StackPanel Margin="0,5,0,0" Grid.Row="2" Orientation="Horizontal" Spacing="5">
+      <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="5">
         <StackPanel
           ToolTip.Tip="Number of pixels to cure on this layer image and the percetange of them against total lcd pixels"
           VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">

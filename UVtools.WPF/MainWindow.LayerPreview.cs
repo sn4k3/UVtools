@@ -17,6 +17,7 @@ using System.Timers;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Emgu.CV;
@@ -37,6 +38,16 @@ namespace UVtools.WPF
 {
     public partial class MainWindow
     {
+        #region Enum
+
+        public enum ZoomToFitType : byte
+        {
+            Auto,
+            Image,
+            Volume,
+            Selection
+        };
+        #endregion
         public AdvancedImageBox LayerImageBox;
         public SliderEx LayerSlider;
         public Panel LayerNavigationTooltipPanel;
@@ -134,12 +145,17 @@ namespace UVtools.WPF
             LayerImageBox.PointerMoved += LayerImageBoxOnPointerMoved;
             LayerImageBox.KeyUp += LayerImageBox_KeyUp;
             LayerImageBox.PointerReleased += LayerImageBox_PointerReleased;
+            LayerImageBox.PointerPressed += LayerImageBoxOnPointerPressed;
+            LayerImageBox.DoubleTapped += LayerImageBoxOnDoubleTapped;
 
             _layerNavigationTooltipTimer.Elapsed += (sender, args) =>
             {
                 Dispatcher.UIThread.InvokeAsync(() => RaisePropertyChanged(nameof(LayerNavigationTooltipMargin)));
             };
         }
+
+
+
 
         public bool ShowLayerImageRotated
         {
@@ -382,7 +398,7 @@ namespace UVtools.WPF
 
         public void OnROIClick()
         {
-            LayerImageBox.ZoomToSelectionRegion();
+            ZoomToFit(ZoomToFitType.Selection);
         }
         #endregion
 
@@ -916,9 +932,9 @@ namespace UVtools.WPF
             {
                 Debug.WriteLine("zoom to region");
                 //SupressLayerZoomEvent = true;
-                LayerImageBox.ZoomToRegion(rectangle);
+                LayerImageBox.ZoomToRegion(rectangle, 10);
                 //SupressLayerZoomEvent = false;
-                LayerImageBox.ZoomOut(true);
+                //LayerImageBox.ZoomOut(true);
                 return;
             }
             Debug.WriteLine($"Center at {zoomLevel}");
@@ -986,40 +1002,58 @@ namespace UVtools.WPF
 
         public void ZoomToFitSimple()
         {
-            LayerImageBox.ZoomToFit();
+            ZoomToFit(ZoomToFitType.Image);
         }
 
         public void ZoomToFitPrintVolume()
         {
-            LayerImageBox.ZoomToRegion(SlicerFile.LayerManager.BoundingRectangle);
+            ZoomToFit(ZoomToFitType.Volume);
         }
 
-        private void ZoomToFit()
+        private void ZoomToFit(ZoomToFitType fitType = ZoomToFitType.Auto)
         {
             if (!IsFileLoaded) return;
 
+            const byte margin = 10;
             // If ALT key is pressed when ZoomToFit is performed, the configured option for 
             // zoom to plate vs. zoom to print bounds will be inverted.
 
-            if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds ^ (_globalModifiers & KeyModifiers.Alt) != 0)
+            switch (fitType)
             {
-                if (!_showLayerImageRotated)
-                {
-                    LayerImageBox.ZoomToRegion(SlicerFile.LayerManager.BoundingRectangle);
-                }
-                else
-                {
-                    LayerImageBox.ZoomToRegion(LayerCache.Image.Height - 1 - SlicerFile.LayerManager.BoundingRectangle.Bottom,
-                        SlicerFile.LayerManager.BoundingRectangle.X,
-                        SlicerFile.LayerManager.BoundingRectangle.Height,
-                        SlicerFile.LayerManager.BoundingRectangle.Width
-                    );
-                }
+                case ZoomToFitType.Auto:
+                    if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds ^ (_globalModifiers & KeyModifiers.Alt) != 0)
+                    {
+                        if (!_showLayerImageRotated)
+                        {
+                            LayerImageBox.ZoomToRegion(SlicerFile.LayerManager.BoundingRectangle, margin);
+                        }
+                        else
+                        {
+                            LayerImageBox.ZoomToRegion(LayerCache.Image.Height - 1 - SlicerFile.LayerManager.BoundingRectangle.Bottom,
+                                SlicerFile.LayerManager.BoundingRectangle.X,
+                                SlicerFile.LayerManager.BoundingRectangle.Height,
+                                SlicerFile.LayerManager.BoundingRectangle.Width, margin
+                            );
+                        }
+                    }
+                    else
+                    {
+                        LayerImageBox.ZoomToFit();
+                    }
+                    break;
+                case ZoomToFitType.Image:
+                    LayerImageBox.ZoomToFit();
+                    break;
+                case ZoomToFitType.Volume:
+                    LayerImageBox.ZoomToRegion(GetTransposedRectangle(SlicerFile.LayerManager.BoundingRectangle), margin);
+                    break;
+                case ZoomToFitType.Selection:
+                    LayerImageBox.ZoomToSelectionRegion(margin);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(fitType), fitType, null);
             }
-            else
-            {
-                LayerImageBox.ZoomToFit();
-            }
+            
         }
 
         /// <summary>
@@ -1045,13 +1079,15 @@ namespace UVtools.WPF
         private void LayerImageBox_PointerReleased(object? sender, PointerReleasedEventArgs e)
         {
             var pointer = e.GetCurrentPoint(LayerImageBox);
+            if (!LayerImageBox.IsPointInImage(pointer.Position)) return;
+            Point location = LayerImageBox.PointToImage(pointer.Position).ToDotNet();
             if (LayerImageBox.SelectionMode == AdvancedImageBox.SelectionModes.Rectangle)
             {
                 if (e.InitialPressMouseButton == MouseButton.Left)
                 {
                     if ((e.KeyModifiers & KeyModifiers.Alt) != 0)
                     {
-                        if (SelectObjectRoi(ROI) == 0) SelectObjectRoi(pointer.Position.ToDotNet());
+                        if (SelectObjectRoi(ROI) == 0) SelectObjectRoi(location);
                         return;
                     }
                     return;
@@ -1060,7 +1096,7 @@ namespace UVtools.WPF
                 if (e.InitialPressMouseButton == MouseButton.Right)
                 {
                     if (!LayerImageBox.IsPointInImage(pointer.Position)) return;
-                    SelectObjectRoi(pointer.Position.ToDotNet());
+                    SelectObjectRoi(location);
                     
                     return;
                 }
@@ -1070,9 +1106,6 @@ namespace UVtools.WPF
 
             if ((e.KeyModifiers & KeyModifiers.Control) != 0)
             {
-                if (!LayerImageBox.IsPointInImage(pointer.Position)) return;
-                var location = LayerImageBox.PointToImage(pointer.Position).ToDotNet();
-
                 // Check to see if the clicked location is an issue,
                 // and if so, select it in the ListView.
                 SelectIssueAtPoint(location);
@@ -1083,14 +1116,41 @@ namespace UVtools.WPF
             // Shift must be pressed for any pixel edit action, middle button is ignored.
             if (!IsPixelEditorActive || e.InitialPressMouseButton == MouseButton.Middle ||
                 (e.KeyModifiers & KeyModifiers.Shift) == 0) return;
-            //if (!pbLayer.IsPointInImage(e.Location)) return;
-            //location = pbLayer.PointToImage(e.Location);
             _lastPixelMouseLocation = Point.Empty;
 
-            var imagePosition = LayerImageBox.PointToImage(pointer.Position).ToDotNet();
-
             // Left or Alt-Right Adds pixel, Right or Alt-Left removes pixel
-            DrawPixel(e.InitialPressMouseButton == MouseButton.Left ^ (e.KeyModifiers & KeyModifiers.Alt) != 0, imagePosition, e.KeyModifiers);
+            DrawPixel(e.InitialPressMouseButton == MouseButton.Left ^ (e.KeyModifiers & KeyModifiers.Alt) != 0, location, e.KeyModifiers);
+        }
+
+        private void LayerImageBoxOnPointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            if (e.ClickCount != 2 || (e.KeyModifiers & KeyModifiers.Alt) != 0 || (e.KeyModifiers & KeyModifiers.Shift) != 0) return;
+            var pointer = e.GetCurrentPoint(LayerImageBox);
+            if (pointer.Properties.IsLeftButtonPressed)
+            {
+                if (!LayerImageBox.IsPointInImage(pointer.Position)) return;
+                var location = LayerImageBox.PointToImage(pointer.Position).ToDotNet();
+                CenterLayerAt(location, AppSettings.LockedZoomLevel);
+
+                // Check to see if the clicked location is an issue, and if so, select it in the ListView.
+                SelectIssueAtPoint(location);
+
+                return;
+            }
+
+            if (pointer.Properties.IsRightButtonPressed)
+            {
+                ZoomToFit();
+                return; 
+            }
+            e.Handled = true;
+        }
+
+        private void LayerImageBoxOnDoubleTapped(object? sender, RoutedEventArgs e)
+        {
+            if ((_globalModifiers & KeyModifiers.Alt) != 0 || (_globalModifiers & KeyModifiers.Shift) != 0) return;
+            
+            e.Handled = true;
         }
 
         private void LayerImageBox_KeyUp(object? sender, KeyEventArgs e)
@@ -1100,6 +1160,23 @@ namespace UVtools.WPF
                 LayerImageBox.SelectNone();
                 e.Handled = true;
                 return;
+            }
+
+            if ((e.KeyModifiers & KeyModifiers.Control) != 0)
+            {
+                if (e.Key == Key.D0 || e.Key == Key.NumPad0)
+                {
+                    ZoomToFit();
+                    e.Handled = true;
+                    return;
+                }
+
+                if (e.Key == Key.R)
+                {
+                    ShowLayerImageRotated = !_showLayerImageRotated;
+                    e.Handled = true;
+                    return;
+                }
             }
         }
 
@@ -1115,8 +1192,8 @@ namespace UVtools.WPF
                 Point realLocation = GetTransposedPoint(location);
                 unsafe
                 {
-                    var brigthness = LayerCache.ImageSpan[LayerCache.Image.GetPixelPos(realLocation)];
-                    LayerPixelPicker.Set(realLocation, brigthness);
+                    var brightness = LayerCache.ImageSpan[LayerCache.Image.GetPixelPos(realLocation)];
+                    LayerPixelPicker.Set(realLocation, brightness);
                 }
 
                 RaisePropertyChanged(nameof(LayerPixelPicker));

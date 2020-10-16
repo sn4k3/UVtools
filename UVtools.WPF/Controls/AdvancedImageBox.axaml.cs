@@ -5,13 +5,12 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.CompilerServices;
-using System.Timers;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using Avalonia.Styling;
 using Avalonia.Threading;
 using UVtools.Core.Extensions;
 using UVtools.WPF.Extensions;
@@ -22,11 +21,28 @@ using Pen = Avalonia.Media.Pen;
 using Point = Avalonia.Point;
 using Size = Avalonia.Size;
 
-
 namespace UVtools.WPF.Controls
 {
-    public class AdvancedImageBox : ScrollViewer, IStyleable, INotifyPropertyChanged
+    public class AdvancedImageBox : UserControl
     {
+        public ScrollBar HorizontalScrollBar { get; }
+        public ScrollBar VerticalScrollBar { get; }
+        public ContentControl ViewPortControl { get; }
+
+        public Vector Offset
+        {
+            get => new Vector(HorizontalScrollBar.Value, VerticalScrollBar.Value);
+            set
+            {
+                HorizontalScrollBar.Value = value.X;
+                VerticalScrollBar.Value = value.Y;
+                RaisePropertyChanged();
+                TriggerRender();
+            }
+        }
+
+        public Size Viewport => ViewPortControl.Bounds.Size;
+
         #region Bindable Base
         /// <summary>
         ///     Multicast event for property change notifications.
@@ -78,7 +94,7 @@ namespace UVtools.WPF.Controls
             #region Public Constructors
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="ZoomLevelCollection"/> class.
+            /// Initializes a new instance of the <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection"/> class.
             /// </summary>
             public ZoomLevelCollection()
             {
@@ -86,7 +102,7 @@ namespace UVtools.WPF.Controls
             }
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="ZoomLevelCollection"/> class.
+            /// Initializes a new instance of the <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection"/> class.
             /// </summary>
             /// <param name="collection">The default values to populate the collection with.</param>
             /// <exception cref="System.ArgumentNullException">Thrown if the <c>collection</c> parameter is null</exception>
@@ -108,11 +124,11 @@ namespace UVtools.WPF.Controls
             /// <summary>
             /// Returns the default zoom levels
             /// </summary>
-            public static ZoomLevelCollection Default
+            public static AdvancedImageBox.ZoomLevelCollection Default
             {
                 get
                 {
-                    return new ZoomLevelCollection(new[]
+                    return new AdvancedImageBox.ZoomLevelCollection(new[]
                                                    {
                                          7, 10, 15, 20, 25, 30, 50, 70, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1200, 1600, 3200
                                        });
@@ -124,10 +140,10 @@ namespace UVtools.WPF.Controls
             #region Public Properties
 
             /// <summary>
-            /// Gets the number of elements contained in the <see cref="ZoomLevelCollection" />.
+            /// Gets the number of elements contained in the <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection" />.
             /// </summary>
             /// <returns>
-            /// The number of elements contained in the <see cref="ZoomLevelCollection" />.
+            /// The number of elements contained in the <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection" />.
             /// </returns>
             public int Count => List.Count;
 
@@ -176,7 +192,7 @@ namespace UVtools.WPF.Controls
             }
 
             /// <summary>
-            /// Adds a range of items to the <see cref="ZoomLevelCollection"/>.
+            /// Adds a range of items to the <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection"/>.
             /// </summary>
             /// <param name="collection">The items to add to the collection.</param>
             /// <exception cref="System.ArgumentNullException">Thrown if the <c>collection</c> parameter is null.</exception>
@@ -318,7 +334,7 @@ namespace UVtools.WPF.Controls
             }
 
             /// <summary>
-            /// Removes the element at the specified index of the <see cref="ZoomLevelCollection"/>.
+            /// Removes the element at the specified index of the <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection"/>.
             /// </summary>
             /// <param name="index">The zero-based index of the element to remove.</param>
             public void RemoveAt(int index)
@@ -327,9 +343,9 @@ namespace UVtools.WPF.Controls
             }
 
             /// <summary>
-            /// Copies the elements of the <see cref="ZoomLevelCollection"/> to a new array.
+            /// Copies the elements of the <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection"/> to a new array.
             /// </summary>
-            /// <returns>An array containing copies of the elements of the <see cref="ZoomLevelCollection"/>.</returns>
+            /// <returns>An array containing copies of the elements of the <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection"/>.</returns>
             public int[] ToArray()
             {
                 int[] results;
@@ -347,7 +363,7 @@ namespace UVtools.WPF.Controls
             /// <summary>
             /// Returns an enumerator that iterates through a collection.
             /// </summary>
-            /// <returns>An <see cref="ZoomLevelCollection" /> object that can be used to iterate through the collection.</returns>
+            /// <returns>An <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection" /> object that can be used to iterate through the collection.</returns>
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
@@ -361,7 +377,7 @@ namespace UVtools.WPF.Controls
         #region Enums
 
         /// <summary>
-        /// Determines the sizing mode of an image hosted in an <see cref="AdvancedImageBox" /> control.
+        /// Determines the sizing mode of an image hosted in an <see cref="UVtools.WPF.Controls.AdvancedImageBox" /> control.
         /// </summary>
         public enum SizeModes : byte
         {
@@ -447,8 +463,8 @@ namespace UVtools.WPF.Controls
             get => _canRender;
             set
             {
-                if(!RaiseAndSetIfChanged(ref _canRender, value)) return;
-                if(_canRender) TriggerRender();
+                if (!RaiseAndSetIfChanged(ref _canRender, value)) return;
+                if (_canRender) TriggerRender();
             }
         }
 
@@ -489,7 +505,11 @@ namespace UVtools.WPF.Controls
             {
                 if (!RaiseAndSetIfChanged(ref _image, value)) return;
 
-                SelectNone();
+                if (Image is null)
+                {
+                    SelectNone();
+                }
+
                 UpdateViewPort();
                 TriggerRender();
             }
@@ -554,7 +574,7 @@ namespace UVtools.WPF.Controls
             get
             {
                 var viewport = GetImageViewPort();
-                return new Point( (viewport.Width / 2), viewport.Height / 2);
+                return new Point((viewport.Width / 2), viewport.Height / 2);
             }
         }
 
@@ -564,7 +584,7 @@ namespace UVtools.WPF.Controls
             set => RaiseAndSetIfChanged(ref _autoPan, value);
         }
 
-        public MouseButtons PanWithMouseButtons
+        public AdvancedImageBox.MouseButtons PanWithMouseButtons
         {
             get => _panWithMouseButtons;
             set => RaiseAndSetIfChanged(ref _panWithMouseButtons, value);
@@ -576,7 +596,7 @@ namespace UVtools.WPF.Controls
             set => RaiseAndSetIfChanged(ref _panWithArrows, value);
         }
 
-        public MouseButtons SelectWithMouseButtons
+        public AdvancedImageBox.MouseButtons SelectWithMouseButtons
         {
             get => _selectWithMouseButtons;
             set => RaiseAndSetIfChanged(ref _selectWithMouseButtons, value);
@@ -594,7 +614,7 @@ namespace UVtools.WPF.Controls
             set => RaiseAndSetIfChanged(ref _autoCenter, value);
         }
 
-        public SizeModes SizeMode
+        public AdvancedImageBox.SizeModes SizeMode
         {
             get => _sizeMode;
             set => RaiseAndSetIfChanged(ref _sizeMode, value);
@@ -607,12 +627,12 @@ namespace UVtools.WPF.Controls
             set => RaiseAndSetIfChanged(ref _allowZoom, value);
         }
 
-        ZoomLevelCollection _zoomLevels = ZoomLevelCollection.Default;
+        AdvancedImageBox.ZoomLevelCollection _zoomLevels = AdvancedImageBox.ZoomLevelCollection.Default;
         /// <summary>
         ///   Gets or sets the zoom levels.
         /// </summary>
         /// <value>The zoom levels.</value>
-        public virtual ZoomLevelCollection ZoomLevels
+        public virtual AdvancedImageBox.ZoomLevelCollection ZoomLevels
         {
             get => _zoomLevels;
             set => RaiseAndSetIfChanged(ref _zoomLevels, value);
@@ -681,7 +701,7 @@ namespace UVtools.WPF.Controls
             set => RaiseAndSetIfChanged(ref _pixelGridThreshold, value);
         }
 
-        public SelectionModes SelectionMode
+        public AdvancedImageBox.SelectionModes SelectionMode
         {
             get => _selectionMode;
             set => RaiseAndSetIfChanged(ref _selectionMode, value);
@@ -698,7 +718,7 @@ namespace UVtools.WPF.Controls
             get => _selectionRegion;
             set
             {
-                if(!RaiseAndSetIfChanged(ref _selectionRegion, value)) return;
+                if (!RaiseAndSetIfChanged(ref _selectionRegion, value)) return;
                 TriggerRender();
                 RaisePropertyChanged(nameof(HaveSelection));
             }
@@ -730,33 +750,29 @@ namespace UVtools.WPF.Controls
         private bool _canRender = true;
 
 
-        public ContentControl FillContainer { get; } = new ContentControl
-        {
-            Background = Brushes.Transparent
-        };
-
-        public ContentControl SizedContainer { get; private set; } = new ContentControl
-        {
-            
-        };
-
-        Type IStyleable.StyleKey => typeof(ScrollViewer);
-
         public AdvancedImageBox()
         {
-            Content = FillContainer;
-            FillContainer.Content = SizedContainer;
-            FillContainer.PointerWheelChanged += FillContainerOnPointerWheelChanged;
-            
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+            InitializeComponent();
+            HorizontalScrollBar = this.FindControl<ScrollBar>("HorizontalScrollBar");
+            VerticalScrollBar = this.FindControl<ScrollBar>("VerticalScrollBar");
+            ViewPortControl = this.FindControl<ContentControl>("ViewPort");
 
-            //Container.PointerMoved += ScrollViewerOnPointerMoved;
-            //Container.PointerPressed += ScrollViewerOnPointerPressed;
-            //Container.PointerReleased += ScrollViewerOnPointerReleased;
+            HorizontalScrollBar.Scroll += ScrollBarOnScroll;
+            VerticalScrollBar.Scroll += ScrollBarOnScroll;
+            ViewPortControl.PointerWheelChanged += FillContainerOnPointerWheelChanged;
         }
 
-        protected override void OnScrollChanged(ScrollChangedEventArgs e)
+        private void ScrollBarOnScroll(object? sender, ScrollEventArgs e)
+        {
+            TriggerRender();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
+
+        /*protected override void OnScrollChanged(ScrollChangedEventArgs e)
         {
             Debug.WriteLine($"ViewportDelta: {e.ViewportDelta} | OffsetDelta: {e.OffsetDelta} | ExtentDelta: {e.ExtentDelta}");
             if (!e.ViewportDelta.IsDefault)
@@ -767,7 +783,7 @@ namespace UVtools.WPF.Controls
             TriggerRender();
 
             base.OnScrollChanged(e);
-        }
+        }*/
 
         private void FillContainerOnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
         {
@@ -782,7 +798,7 @@ namespace UVtools.WPF.Controls
                 // TODO: Really should update the source method to handle multiple increments rather than calling it multiple times
                 /*for (int i = 0; i < spins; i++)
                 {*/
-                ProcessMouseZoom(e.Delta.Y > 0, e.GetPosition(this));
+                ProcessMouseZoom(e.Delta.Y > 0, e.GetPosition(ViewPortControl));
                 //}
             }
         }
@@ -794,7 +810,7 @@ namespace UVtools.WPF.Controls
         }
 
         private void ProcessMouseZoom(bool isZoomIn, Point cursorPosition)
-         =>   PerformZoom(isZoomIn ? ZoomActions.ZoomIn : ZoomActions.ZoomOut, true, cursorPosition);
+         => PerformZoom(isZoomIn ? ZoomActions.ZoomIn : ZoomActions.ZoomOut, true, cursorPosition);
 
         /// <summary>
         /// Returns an appropriate zoom level based on the specified action, relative to the current zoom level.
@@ -839,7 +855,7 @@ namespace UVtools.WPF.Controls
             }
         }
 
-        private void PerformZoom(ZoomActions action, bool preservePosition) 
+        private void PerformZoom(ZoomActions action, bool preservePosition)
             => PerformZoom(action, preservePosition, CenterPoint);
 
         private void PerformZoom(ZoomActions action, bool preservePosition, Point relativePoint)
@@ -945,7 +961,7 @@ namespace UVtools.WPF.Controls
             {
                 x = ((point.X + Offset.X - viewport.X) / ZoomFactor);
                 y = ((point.Y + Offset.Y - viewport.Y) / ZoomFactor);
-                
+
                 if (fitToBounds)
                 {
                     x = x.Clamp(0, Image.Size.Width);
@@ -988,48 +1004,22 @@ namespace UVtools.WPF.Controls
         /// <param name="relativeDisplayPoint">The relative display point to offset scrolling by.</param>
         public virtual void ScrollTo(Point imageLocation, Point relativeDisplayPoint)
         {
-            CanRender = false;
+            //CanRender = false;
             var x = imageLocation.X * ZoomFactor - relativeDisplayPoint.X;
             var y = imageLocation.Y * ZoomFactor - relativeDisplayPoint.Y;
 
-            Offset = new Vector(x, y);
 
             _canRender = true;
-
-            DispatcherTimer.RunOnce(() =>
-            {
-                // TODO: Remove this delay?
-                //Debug.WriteLine($"1ms delayed viewport: {Viewport}");
-                //CenterAt(new Point(cx, cy));
-
-                Offset = new Vector(x, y);
-            }, TimeSpan.FromTicks(1), DispatcherPriority.MaxValue);
-
-
-            /*Timer timer = new Timer(0.1)
-            {
-                AutoReset = false,
-            };
-            timer.Elapsed += (sender, args) =>
-            {
-                Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    Offset = new Vector(x, y);
-                    CanRender = true;
-                    timer.Dispose();
-                });
-            };
-            timer.Start();*/
-
+            Offset = new Vector(x, y);
 
             Debug.WriteLine(
                 $"X/Y: {x},{y} | \n" +
                 $"Offset: {Offset} | \n" +
                 $"ZoomFactor: {ZoomFactor} | \n" +
                 $"Image Location: {imageLocation}\n" +
-                $"MAX: {HorizontalScrollBarMaximum},{VerticalScrollBarMaximum} \n" +
+                $"MAX: {HorizontalScrollBar.Maximum},{VerticalScrollBar.Maximum} \n" +
                 $"ViewPort: {Viewport.Width},{Viewport.Height} \n" +
-                $"Container: {SizedContainer.Width},{SizedContainer.Height} \n" +
+                $"Container: {HorizontalScrollBar.ViewportSize},{VerticalScrollBar.ViewportSize} \n" +
                 $"Relative: {relativeDisplayPoint}");
         }
 
@@ -1060,7 +1050,7 @@ namespace UVtools.WPF.Controls
         /// <param name="preservePosition"><c>true</c> if the current scrolling position should be preserved relative to the new zoom level, <c>false</c> to reset.</param>
         public virtual void ZoomOut(bool preservePosition)
         {
-           PerformZoom(ZoomActions.ZoomOut, preservePosition);
+            PerformZoom(ZoomActions.ZoomOut, preservePosition);
         }
 
         /// <summary>
@@ -1106,9 +1096,10 @@ namespace UVtools.WPF.Controls
         /// <param name="y">The Y co-ordinate of the selection region.</param>
         /// <param name="width">The width of the selection region.</param>
         /// <param name="height">The height of the selection region.</param>
-        public void ZoomToRegion(double x, double y, double width, double height)
+        /// <param name="margin">Give a margin to rectangle by a value to zoom-out that pixel value</param>
+        public void ZoomToRegion(double x, double y, double width, double height, double margin = 0)
         {
-            ZoomToRegion(new Rect(x, y, width, height));
+            ZoomToRegion(new Rect(x, y, width, height), margin);
         }
 
         /// <summary>
@@ -1118,23 +1109,27 @@ namespace UVtools.WPF.Controls
         /// <param name="y">The Y co-ordinate of the selection region.</param>
         /// <param name="width">The width of the selection region.</param>
         /// <param name="height">The height of the selection region.</param>
-        public void ZoomToRegion(int x, int y, int width, int height)
+        /// <param name="margin">Give a margin to rectangle by a value to zoom-out that pixel value</param>
+        public void ZoomToRegion(int x, int y, int width, int height, double margin = 0)
         {
-            ZoomToRegion(new Rect(x, y, width, height));
+            ZoomToRegion(new Rect(x, y, width, height), margin);
         }
 
         /// <summary>
         ///   Adjusts the view port to fit the given region
         /// </summary>
         /// <param name="rectangle">The rectangle to fit the view port to.</param>
-        public virtual void ZoomToRegion(Rectangle rectangle) => ZoomToRegion(rectangle.ToAvalonia());
+        /// <param name="margin">Give a margin to rectangle by a value to zoom-out that pixel value</param>
+        public virtual void ZoomToRegion(Rectangle rectangle, double margin = 0) => ZoomToRegion(rectangle.ToAvalonia(), margin);
 
         /// <summary>
         ///   Adjusts the view port to fit the given region
         /// </summary>
         /// <param name="rectangle">The rectangle to fit the view port to.</param>
-        public virtual void ZoomToRegion(Rect rectangle)
+        /// <param name="margin">Give a margin to rectangle by a value to zoom-out that pixel value</param>
+        public virtual void ZoomToRegion(Rect rectangle, double margin = 0)
         {
+            if (margin > 0) rectangle = rectangle.Inflate(margin);
             var ratioX = Viewport.Width / rectangle.Width;
             var ratioY = Viewport.Height / rectangle.Height;
             var zoomFactor = Math.Min(ratioX, ratioY);
@@ -1142,17 +1137,17 @@ namespace UVtools.WPF.Controls
             var cy = rectangle.Y + rectangle.Height / 2;
 
             CanRender = false;
-            Zoom = (int) (zoomFactor * 100); // This function sets the zoom so viewport will change
+            Zoom = (int)(zoomFactor * 100); // This function sets the zoom so viewport will change
             CenterAt(new Point(cx, cy)); // If i call this here, it will move to the wrong position due wrong viewport
         }
 
         /// <summary>
         /// Zooms to current selection region
         /// </summary>
-        public void ZoomToSelectionRegion()
+        public void ZoomToSelectionRegion(double margin = 0)
         {
             if (!HaveSelection) return;
-            ZoomToRegion(SelectionRegion);
+            ZoomToRegion(SelectionRegion, margin);
         }
 
         /// <summary>
@@ -1190,35 +1185,35 @@ namespace UVtools.WPF.Controls
         /// </summary>
         public virtual void CenterToImage()
         {
-            Offset = new Vector(HorizontalScrollBarMaximum / 2, VerticalScrollBarMaximum / 2);
+            Offset = new Vector(HorizontalScrollBar.Maximum / 2, VerticalScrollBar.Maximum / 2);
         }
 
         private bool UpdateViewPort()
         {
             if (Image is null)
             {
-                SizedContainer.Width = 0;
-                SizedContainer.Height = 0;
+                HorizontalScrollBar.Maximum = 0;
+                VerticalScrollBar.Maximum = 0;
                 return true;
             }
 
             var scaledImageWidth = ScaledImageWidth;
             var scaledImageHeight = ScaledImageHeight;
-            var width = scaledImageWidth <= Viewport.Width ? Viewport.Width : scaledImageWidth;
-            var height = scaledImageHeight <= Viewport.Height ? Viewport.Height : scaledImageHeight;
-
-            
+            var width = scaledImageWidth - HorizontalScrollBar.ViewportSize;
+            var height = scaledImageHeight - VerticalScrollBar.ViewportSize;
+            //var width = scaledImageWidth <= Viewport.Width ? Viewport.Width : scaledImageWidth;
+            //var height = scaledImageHeight <= Viewport.Height ? Viewport.Height : scaledImageHeight;
 
             bool changed = false;
-            if (SizedContainer.Width != width)
+            if (HorizontalScrollBar.Maximum != width)
             {
-                SizedContainer.Width = width;
+                HorizontalScrollBar.Maximum = width;
                 changed = true;
             }
 
-            if (SizedContainer.Height != height)
+            if (VerticalScrollBar.Maximum != scaledImageHeight)
             {
-                SizedContainer.Height = height;
+                VerticalScrollBar.Maximum = height;
                 changed = true;
             }
 
@@ -1265,7 +1260,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="Point"/> which has been scaled to match the current zoom level</returns>
         public Point GetScaledPoint(int x, int y)
         {
-          return GetScaledPoint(new Point(x, y));
+            return GetScaledPoint(new Point(x, y));
         }
 
         /// <summary>
@@ -1276,7 +1271,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="Point"/> which has been scaled to match the current zoom level</returns>
         public PointF GetScaledPoint(float x, float y)
         {
-          return GetScaledPoint(new PointF(x, y));
+            return GetScaledPoint(new PointF(x, y));
         }
 
         /// <summary>
@@ -1286,7 +1281,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="Point"/> which has been scaled to match the current zoom level</returns>
         public virtual Point GetScaledPoint(Point source)
         {
-          return new Point(source.X * ZoomFactor, source.Y * ZoomFactor);
+            return new Point(source.X * ZoomFactor, source.Y * ZoomFactor);
         }
 
         /// <summary>
@@ -1296,7 +1291,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="PointF"/> which has been scaled to match the current zoom level</returns>
         public virtual PointF GetScaledPoint(PointF source)
         {
-          return new PointF((float)(source.X * this.ZoomFactor), (float)(source.Y * this.ZoomFactor));
+            return new PointF((float)(source.X * this.ZoomFactor), (float)(source.Y * this.ZoomFactor));
         }
 
         /// <summary>
@@ -1309,7 +1304,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="Rectangle"/> which has been scaled to match the current zoom level</returns>
         public Rect GetScaledRectangle(int x, int y, int width, int height)
         {
-          return GetScaledRectangle(new Rect(x, y, width, height));
+            return GetScaledRectangle(new Rect(x, y, width, height));
         }
 
         /// <summary>
@@ -1322,7 +1317,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="RectangleF"/> which has been scaled to match the current zoom level</returns>
         public RectangleF GetScaledRectangle(float x, float y, float width, float height)
         {
-          return GetScaledRectangle(new RectangleF(x, y, width, height));
+            return GetScaledRectangle(new RectangleF(x, y, width, height));
         }
 
         /// <summary>
@@ -1333,7 +1328,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="Rectangle"/> which has been scaled to match the current zoom level</returns>
         public Rect GetScaledRectangle(Point location, Size size)
         {
-          return GetScaledRectangle(new Rect(location, size));
+            return GetScaledRectangle(new Rect(location, size));
         }
 
         /// <summary>
@@ -1344,7 +1339,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="Rectangle"/> which has been scaled to match the current zoom level</returns>
         public RectangleF GetScaledRectangle(PointF location, SizeF size)
         {
-          return GetScaledRectangle(new RectangleF(location, size));
+            return GetScaledRectangle(new RectangleF(location, size));
         }
 
         /// <summary>
@@ -1354,7 +1349,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="Rectangle"/> which has been scaled to match the current zoom level</returns>
         public virtual Rect GetScaledRectangle(Rect source)
         {
-          return new Rect(source.Left * ZoomFactor, source.Top * ZoomFactor, source.Width * ZoomFactor, source.Height * ZoomFactor);
+            return new Rect(source.Left * ZoomFactor, source.Top * ZoomFactor, source.Width * ZoomFactor, source.Height * ZoomFactor);
         }
 
         /// <summary>
@@ -1364,7 +1359,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="RectangleF"/> which has been scaled to match the current zoom level</returns>
         public virtual RectangleF GetScaledRectangle(RectangleF source)
         {
-          return new RectangleF((float)(source.Left * ZoomFactor), (float)(source.Top * ZoomFactor), (float)(source.Width * ZoomFactor), (float)(source.Height * ZoomFactor));
+            return new RectangleF((float)(source.Left * ZoomFactor), (float)(source.Top * ZoomFactor), (float)(source.Width * ZoomFactor), (float)(source.Height * ZoomFactor));
         }
 
         /// <summary>
@@ -1375,7 +1370,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="SizeF"/> which has been resized to match the current zoom level</returns>
         public SizeF GetScaledSize(float width, float height)
         {
-          return this.GetScaledSize(new SizeF(width, height));
+            return this.GetScaledSize(new SizeF(width, height));
         }
 
         /// <summary>
@@ -1386,7 +1381,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="Size"/> which has been resized to match the current zoom level</returns>
         public Size GetScaledSize(int width, int height)
         {
-          return this.GetScaledSize(new Size(width, height));
+            return this.GetScaledSize(new Size(width, height));
         }
 
         /// <summary>
@@ -1396,7 +1391,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="SizeF"/> which has been resized to match the current zoom level</returns>
         public virtual SizeF GetScaledSize(SizeF source)
         {
-          return new SizeF((float)(source.Width * this.ZoomFactor), (float)(source.Height * this.ZoomFactor));
+            return new SizeF((float)(source.Width * this.ZoomFactor), (float)(source.Height * this.ZoomFactor));
         }
 
         /// <summary>
@@ -1406,7 +1401,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="Size"/> which has been resized to match the current zoom level</returns>
         public virtual Size GetScaledSize(Size source)
         {
-          return new Size(source.Width * ZoomFactor, source.Height * ZoomFactor);
+            return new Size(source.Width * ZoomFactor, source.Height * ZoomFactor);
         }
 
         /// <summary>
@@ -1437,7 +1432,7 @@ namespace UVtools.WPF.Controls
         public override void Render(DrawingContext context)
         {
             Debug.WriteLine($"Render: {DateTime.Now.Ticks}");
-            //   base.Render(context);
+            base.Render(context);
 
             // Draw Grid
             if (ShowGrid)
@@ -1458,10 +1453,10 @@ namespace UVtools.WPF.Controls
                 }
 
             }
-            else
+            /*else
             {
                 context.FillRectangle(Background, new Rect(0, 0, Viewport.Width, Viewport.Height));
-            }
+            }*/
 
             if (Image is null) return;
             // Draw iamge
@@ -1603,8 +1598,8 @@ namespace UVtools.WPF.Controls
             var offsetX = viewport.Left + Offset.X;
             var offsetY = viewport.Top + Offset.Y;
 
-            return new Rectangle(new System.Drawing.Point((int) (scaled.Left + offsetX), (int) (scaled.Top + offsetY)), 
-                new System.Drawing.Size((int) scaled.Size.Width, (int) scaled.Size.Height));
+            return new Rectangle(new System.Drawing.Point((int)(scaled.Left + offsetX), (int)(scaled.Top + offsetY)),
+                new System.Drawing.Size((int)scaled.Size.Width, (int)scaled.Size.Height));
         }
 
         /// <summary>
@@ -1615,97 +1610,97 @@ namespace UVtools.WPF.Controls
         ///   A <see cref="T:System.Drawing.Rectangle" /> structure remapped to fit the image boundaries
         /// </returns>
         public Rectangle FitRectangle(Rectangle rectangle)
-       {
-           if (Image is null) return Rectangle.Empty;
+        {
+            if (Image is null) return Rectangle.Empty;
             var x = rectangle.X;
-           var y = rectangle.Y;
-           var w = rectangle.Width;
-           var h = rectangle.Height;
+            var y = rectangle.Y;
+            var w = rectangle.Width;
+            var h = rectangle.Height;
 
-           if (x < 0)
-           {
-               x = 0;
-           }
+            if (x < 0)
+            {
+                x = 0;
+            }
 
-           if (y < 0)
-           {
-               y = 0;
-           }
+            if (y < 0)
+            {
+                y = 0;
+            }
 
-           if (x + w > Image.Size.Width)
-           {
-               w = (int) (Image.Size.Width - x);
-           }
+            if (x + w > Image.Size.Width)
+            {
+                w = (int)(Image.Size.Width - x);
+            }
 
-           if (y + h > Image.Size.Height)
-           {
-               h = (int) (Image.Size.Height - y);
-           }
+            if (y + h > Image.Size.Height)
+            {
+                h = (int)(Image.Size.Height - y);
+            }
 
-           return new Rectangle(x, y, w, h);
-       }
+            return new Rectangle(x, y, w, h);
+        }
 
-       /// <summary>
-       ///   Fits a given <see cref="T:System.Drawing.RectangleF" /> to match image boundaries
-       /// </summary>
-       /// <param name="rectangle">The rectangle.</param>
-       /// <returns>
-       ///   A <see cref="T:System.Drawing.RectangleF" /> structure remapped to fit the image boundaries
-       /// </returns>
-       public Rect FitRectangle(Rect rectangle)
-       {
-           if(Image is null) return Rect.Empty;
-           var x = rectangle.X;
-           var y = rectangle.Y;
-           var w = rectangle.Width;
-           var h = rectangle.Height;
+        /// <summary>
+        ///   Fits a given <see cref="T:System.Drawing.RectangleF" /> to match image boundaries
+        /// </summary>
+        /// <param name="rectangle">The rectangle.</param>
+        /// <returns>
+        ///   A <see cref="T:System.Drawing.RectangleF" /> structure remapped to fit the image boundaries
+        /// </returns>
+        public Rect FitRectangle(Rect rectangle)
+        {
+            if (Image is null) return Rect.Empty;
+            var x = rectangle.X;
+            var y = rectangle.Y;
+            var w = rectangle.Width;
+            var h = rectangle.Height;
 
-           if (x < 0)
-           {
-               w -= -x;
-               x = 0;
-           }
+            if (x < 0)
+            {
+                w -= -x;
+                x = 0;
+            }
 
-           if (y < 0)
-           {
-               h -= -y;
-               y = 0;
-           }
+            if (y < 0)
+            {
+                h -= -y;
+                y = 0;
+            }
 
-           if (x + w > Image.Size.Width)
-           {
-               w = Image.Size.Width - x;
-           }
+            if (x + w > Image.Size.Width)
+            {
+                w = Image.Size.Width - x;
+            }
 
-           if (y + h > Image.Size.Height)
-           {
-               h = Image.Size.Height - y;
-           }
+            if (y + h > Image.Size.Height)
+            {
+                h = Image.Size.Height - y;
+            }
 
-           return new Rect(x, y, w, h);
-       }
+            return new Rect(x, y, w, h);
+        }
 
         /// <summary>
         ///   Gets the source image region.
         /// </summary>
         /// <returns></returns>
         public virtual Rect GetSourceImageRegion()
-       {
-           if (Image is null) return Rect.Empty;
+        {
+            if (Image is null) return Rect.Empty;
 
-           if (SizeMode != SizeModes.Stretch)
-           {
-               var viewPort = GetImageViewPort();
-               double sourceLeft = (Offset.X / ZoomFactor);
-               double sourceTop = (Offset.Y / ZoomFactor);
-               double sourceWidth = (viewPort.Width / ZoomFactor);
-               double sourceHeight = (viewPort.Height / ZoomFactor);
+            if (SizeMode != SizeModes.Stretch)
+            {
+                var viewPort = GetImageViewPort();
+                double sourceLeft = (Offset.X / ZoomFactor);
+                double sourceTop = (Offset.Y / ZoomFactor);
+                double sourceWidth = (viewPort.Width / ZoomFactor);
+                double sourceHeight = (viewPort.Height / ZoomFactor);
 
                 return new Rect(sourceLeft, sourceTop, sourceWidth, sourceHeight);
-           }
+            }
 
-           return new Rect(0, 0, Image.Size.Width, Image.Size.Height);
-       }
+            return new Rect(0, 0, Image.Size.Width, Image.Size.Height);
+        }
 
         /// <summary>
         /// Gets the image view port.
@@ -1787,9 +1782,9 @@ namespace UVtools.WPF.Controls
 
                 IsPanning = true;
             }
-            
+
             var location = pointer.Position;
-            
+
             if (location.X > Viewport.Width) return;
             if (location.Y > Viewport.Height) return;
             _startMousePosition = location;

@@ -693,7 +693,6 @@ namespace UVtools.Core.FileFormats
                 for (int i = 0; i < data.Length; i++)
                 {
                     crc16 = (ushort) ((crc16 << 8) ^ CRC16Table[((crc16 >> 8) ^ CRC16Table[data[i]]) & 0xff]);
-
                 }
 
                 crc16 = (ushort) ((CRC16Table[crc16 & 0xff] * 0x100) + CRC16Table[(crc16 >> 8) & 0xff]);
@@ -772,7 +771,8 @@ namespace UVtools.Core.FileFormats
 
         public override FileExtension[] FileExtensions { get; } = {
             new FileExtension("pws", "Photon Workshop PWS Files"),
-            new FileExtension("pw0", "Photon Workshop PW0 Files")
+            new FileExtension("pw0", "Photon Workshop PW0 Files"),
+            new FileExtension("pwmx", "Photon Workshop PWMX Files")
         };
 
         public override Type[] ConvertToFormats { get; } =
@@ -927,9 +927,9 @@ namespace UVtools.Core.FileFormats
 
         public override float PrintTime => 0;
 
-        public override float UsedMaterial => HeaderSettings.Volume;
+        public override float UsedMaterial => (float) Math.Round(HeaderSettings.Volume, 2);
 
-        public override float MaterialCost => HeaderSettings.Price;
+        public override float MaterialCost => (float) Math.Round(HeaderSettings.Price, 2);
 
         public override string MaterialName => null;
         public override string MachineName => LayerFormat == LayerRleFormat.PWS ? "AnyCubic Photon S" : "AnyCubic Photon Zero";
@@ -1090,7 +1090,7 @@ namespace UVtools.Core.FileFormats
                     Debug.WriteLine(PreviewSettings);
 
                     uint datasize = PreviewSettings.Width * PreviewSettings.Height * 2;
-                    PreviewSettings.Validate(datasize);
+                    //PreviewSettings.Validate(datasize);
 
                     PreviewSettings.Data = new byte[datasize];
                     inputFile.ReadBytes(PreviewSettings.Data);

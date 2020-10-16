@@ -23,7 +23,7 @@
 * For ideas and permission to use his project (uv3dp)
 * https://github.com/ezrec/uv3dp
 
-# Supporters
+# Supporters / Contributors
 
 * Ingo Strohmenger
 * Sven Vogt
@@ -33,3 +33,4 @@
 * Ulrich Mandl
 * Erwin Ried
 * Matthias Keila
+* Frank Henriquez 
