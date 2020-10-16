@@ -420,7 +420,10 @@
         <TabItem.Header>
           <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
             <Image Source="/Assets/Icons/code-32x32.png" Width="32"/>
-            <!--<TextBlock Margin="5,0,0,0">Gcode</TextBlock>!-->
+            <!--<TextBlock 
+              IsVisible="{Binding $parent[TabItem].IsSelected}"
+              VerticalAlignment="Center"
+              Margin="5,0,0,0">Gcode</TextBlock>!-->
           </StackPanel>
         </TabItem.Header>
 
@@ -1500,8 +1503,7 @@
         BorderThickness="5"
         >
         <uc:AdvancedImageBox
-          Focusable="True"
-          ShowGrid="False"
+          ShowGrid="{Binding Settings.LayerPreview.ShowBackgroudGrid}"
           GridCellSize="15"
           Name="LayerImage"
         />

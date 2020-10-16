@@ -166,6 +166,7 @@ namespace UVtools.WPF
             private byte _crosshairMargin = 5;
             private bool _autoRotateLayerBestView = true;
             private bool _layerZoomToFitOnLoad = true;
+            private bool _showBackgroudGrid;
 
             public Color TooltipOverlayBackgroundColor
             {
@@ -521,6 +522,12 @@ namespace UVtools.WPF
             {
                 get => _layerZoomToFitOnLoad;
                 set => this.RaiseAndSetIfChanged(ref _layerZoomToFitOnLoad, value);
+            }
+
+            public bool ShowBackgroudGrid
+            {
+                get => _showBackgroudGrid;
+                set => this.RaiseAndSetIfChanged(ref _showBackgroudGrid, value);
             }
 
             public LayerPreviewUserSettings Clone()

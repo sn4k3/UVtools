@@ -592,6 +592,12 @@
                 />
                 
               </StackPanel>
+
+              <CheckBox
+                Margin="15,0,15,15"
+                Content="Show square grid as background "
+                IsChecked="{Binding Settings.LayerPreview.ShowBackgroudGrid}"
+                />
               
             </StackPanel>
           </Border>

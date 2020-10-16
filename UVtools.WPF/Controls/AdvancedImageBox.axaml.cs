@@ -94,7 +94,7 @@ namespace UVtools.WPF.Controls
             #region Public Constructors
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection"/> class.
+            /// Initializes a new instance of the <see cref="ZoomLevelCollection"/> class.
             /// </summary>
             public ZoomLevelCollection()
             {
@@ -102,7 +102,7 @@ namespace UVtools.WPF.Controls
             }
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection"/> class.
+            /// Initializes a new instance of the <see cref="ZoomLevelCollection"/> class.
             /// </summary>
             /// <param name="collection">The default values to populate the collection with.</param>
             /// <exception cref="System.ArgumentNullException">Thrown if the <c>collection</c> parameter is null</exception>
@@ -124,11 +124,11 @@ namespace UVtools.WPF.Controls
             /// <summary>
             /// Returns the default zoom levels
             /// </summary>
-            public static AdvancedImageBox.ZoomLevelCollection Default
+            public static ZoomLevelCollection Default
             {
                 get
                 {
-                    return new AdvancedImageBox.ZoomLevelCollection(new[]
+                    return new ZoomLevelCollection(new[]
                                                    {
                                          7, 10, 15, 20, 25, 30, 50, 70, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1200, 1600, 3200
                                        });
@@ -140,10 +140,10 @@ namespace UVtools.WPF.Controls
             #region Public Properties
 
             /// <summary>
-            /// Gets the number of elements contained in the <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection" />.
+            /// Gets the number of elements contained in the <see cref="ZoomLevelCollection" />.
             /// </summary>
             /// <returns>
-            /// The number of elements contained in the <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection" />.
+            /// The number of elements contained in the <see cref="ZoomLevelCollection" />.
             /// </returns>
             public int Count => List.Count;
 
@@ -192,7 +192,7 @@ namespace UVtools.WPF.Controls
             }
 
             /// <summary>
-            /// Adds a range of items to the <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection"/>.
+            /// Adds a range of items to the <see cref="ZoomLevelCollection"/>.
             /// </summary>
             /// <param name="collection">The items to add to the collection.</param>
             /// <exception cref="System.ArgumentNullException">Thrown if the <c>collection</c> parameter is null.</exception>
@@ -334,7 +334,7 @@ namespace UVtools.WPF.Controls
             }
 
             /// <summary>
-            /// Removes the element at the specified index of the <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection"/>.
+            /// Removes the element at the specified index of the <see cref="ZoomLevelCollection"/>.
             /// </summary>
             /// <param name="index">The zero-based index of the element to remove.</param>
             public void RemoveAt(int index)
@@ -343,9 +343,9 @@ namespace UVtools.WPF.Controls
             }
 
             /// <summary>
-            /// Copies the elements of the <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection"/> to a new array.
+            /// Copies the elements of the <see cref="ZoomLevelCollection"/> to a new array.
             /// </summary>
-            /// <returns>An array containing copies of the elements of the <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection"/>.</returns>
+            /// <returns>An array containing copies of the elements of the <see cref="ZoomLevelCollection"/>.</returns>
             public int[] ToArray()
             {
                 int[] results;
@@ -363,7 +363,7 @@ namespace UVtools.WPF.Controls
             /// <summary>
             /// Returns an enumerator that iterates through a collection.
             /// </summary>
-            /// <returns>An <see cref="UVtools.WPF.Controls.AdvancedImageBox.ZoomLevelCollection" /> object that can be used to iterate through the collection.</returns>
+            /// <returns>An <see cref="ZoomLevelCollection" /> object that can be used to iterate through the collection.</returns>
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
@@ -533,13 +533,16 @@ namespace UVtools.WPF.Controls
             }
         }
 
+        public static readonly DirectProperty<AdvancedImageBox, bool> ShowGridProperty =
+            AvaloniaProperty.RegisterDirect<AdvancedImageBox, bool>(nameof(ShowGrid),
+                c => c.ShowGrid, (c, v) => c.ShowGrid = v);
         /// <summary>
         /// Gets or sets if the checkerboard background should be displayed
         /// </summary>
         public bool ShowGrid
         {
             get => _showGrid;
-            set => RaiseAndSetIfChanged(ref _showGrid, value);
+            set => SetAndRaise(ShowGridProperty, ref _showGrid, value);
         }
 
         public bool IsPanning
@@ -584,7 +587,7 @@ namespace UVtools.WPF.Controls
             set => RaiseAndSetIfChanged(ref _autoPan, value);
         }
 
-        public AdvancedImageBox.MouseButtons PanWithMouseButtons
+        public MouseButtons PanWithMouseButtons
         {
             get => _panWithMouseButtons;
             set => RaiseAndSetIfChanged(ref _panWithMouseButtons, value);
@@ -596,7 +599,7 @@ namespace UVtools.WPF.Controls
             set => RaiseAndSetIfChanged(ref _panWithArrows, value);
         }
 
-        public AdvancedImageBox.MouseButtons SelectWithMouseButtons
+        public MouseButtons SelectWithMouseButtons
         {
             get => _selectWithMouseButtons;
             set => RaiseAndSetIfChanged(ref _selectWithMouseButtons, value);
@@ -614,7 +617,7 @@ namespace UVtools.WPF.Controls
             set => RaiseAndSetIfChanged(ref _autoCenter, value);
         }
 
-        public AdvancedImageBox.SizeModes SizeMode
+        public SizeModes SizeMode
         {
             get => _sizeMode;
             set => RaiseAndSetIfChanged(ref _sizeMode, value);
@@ -627,12 +630,12 @@ namespace UVtools.WPF.Controls
             set => RaiseAndSetIfChanged(ref _allowZoom, value);
         }
 
-        AdvancedImageBox.ZoomLevelCollection _zoomLevels = AdvancedImageBox.ZoomLevelCollection.Default;
+        ZoomLevelCollection _zoomLevels = ZoomLevelCollection.Default;
         /// <summary>
         ///   Gets or sets the zoom levels.
         /// </summary>
         /// <value>The zoom levels.</value>
-        public virtual AdvancedImageBox.ZoomLevelCollection ZoomLevels
+        public virtual ZoomLevelCollection ZoomLevels
         {
             get => _zoomLevels;
             set => RaiseAndSetIfChanged(ref _zoomLevels, value);
@@ -701,7 +704,7 @@ namespace UVtools.WPF.Controls
             set => RaiseAndSetIfChanged(ref _pixelGridThreshold, value);
         }
 
-        public AdvancedImageBox.SelectionModes SelectionMode
+        public SelectionModes SelectionMode
         {
             get => _selectionMode;
             set => RaiseAndSetIfChanged(ref _selectionMode, value);
@@ -753,6 +756,10 @@ namespace UVtools.WPF.Controls
         public AdvancedImageBox()
         {
             InitializeComponent();
+
+            FocusableProperty.OverrideDefaultValue(typeof(AdvancedImageBox), true);
+            AffectsRender<AdvancedImageBox>(ShowGridProperty);
+
             HorizontalScrollBar = this.FindControl<ScrollBar>("HorizontalScrollBar");
             VerticalScrollBar = this.FindControl<ScrollBar>("VerticalScrollBar");
             ViewPortControl = this.FindControl<ContentControl>("ViewPort");
@@ -1503,7 +1510,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="Point"/> which has been repositioned to match the current zoom level and image offset</returns>
         public virtual Point GetOffsetPoint(System.Drawing.Point source)
         {
-            var offset = GetOffsetPoint(new Point(source.X, source.Y));
+            var offset = GetOffsetPoint(new Point (source.X, source.Y));
 
             return new Point((int)offset.X, (int)offset.Y);
         }

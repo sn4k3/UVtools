@@ -31,6 +31,11 @@
       Minimum="0"
       Visibility="Auto"
       />
-    
+
+    <Border
+      Grid.Row="1"
+      Grid.Column="1"
+      Background="WhiteSmoke"
+      />
   </Grid>
 </UserControl>
