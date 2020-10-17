@@ -127,10 +127,6 @@
     <value>If enabled, components touching by even a single diagonal bond will be considered a single component for the purposes of island detection.
 Enabling this will result in faster island detection. but some potential islands with weak bonds to other components may not be detected.</value>
   </data>
-  <data name="label9.ToolTip" xml:space="preserve">
-    <value>An island supported by at least this number of safe pixels will always be considered supported.
-An island supported by less than this number of pixels will only be considered supported if the number of supporting pixels is at least half the area of the island itself.</value>
-  </data>
   <data name="cbOverhangIndependentFromIslands.ToolTip" xml:space="preserve">
     <value>If enabled, overhangs will be computed everywhere, including on islands. An overhang on an island will always be detected and reported. (Faster)
 If disabled, islands are disregarded when computing overhangs. An overhang that is on an island will never be detected or reported.  (Slower)

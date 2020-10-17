@@ -19,7 +19,9 @@
     BorderThickness="5"
     CornerRadius="5"
     >
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto"
+          ColumnDefinitions="*"
+          >
       <TextBlock
         Grid.Row="0"
         Margin="10" Text="{Binding Progress.Title}"/>
@@ -34,16 +36,19 @@
         Grid.Row="3"
         RowDefinitions="30" ColumnDefinitions="*,Auto">
         <ProgressBar
+          Grid.Column="0"
           Minimum="0"
           Maximum="100"
           IsIndeterminate="{Binding Progress.IsIndeterminate}"
-          Value="{Binding Progress.ProgressPercent}" Grid.Column="0" ShowProgressText="True"/>
+          Value="{Binding Progress.ProgressPercent}"  ShowProgressText="True"/>
         <Button
           IsEnabled="{Binding CanCancel}"
           Command="{Binding OnClickCancel}"
           Grid.Column="1"
           Padding="30,0"
-          IsCancel="True">Cancel</Button>
+          IsCancel="True"
+          Content="Cancel"
+          />
       </Grid>
     </Grid>
   </Border>

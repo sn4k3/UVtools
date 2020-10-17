@@ -189,7 +189,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="LayerRepairRemoveIslandsBelowEqualPixelsDefault" Type="System.Byte" Scope="User">
-      <Value Profile="(Default)">10</Value>
+      <Value Profile="(Default)">5</Value>
     </Setting>
     <Setting Name="PartialUpdateIslandsOnEditing" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
@@ -244,6 +244,9 @@
     </Setting>
     <Setting Name="LoadDemoFileOnStartup" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="IslandRequiredPixelsToSupportMultiplier" Type="System.Decimal" Scope="User">
+      <Value Profile="(Default)">0.25</Value>
     </Setting>
   </Settings>
 </SettingsFile>

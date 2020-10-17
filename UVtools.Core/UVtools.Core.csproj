@@ -10,12 +10,12 @@
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
     <Description>MSLA/DLP, file analysis, repair, conversion and manipulation</Description>
-    <Version>0.8.5.0</Version>
+    <Version>0.8.6.0</Version>
     <Copyright>Copyright © 2020 PTRTECH</Copyright>
     <PackageIcon>UVtools.png</PackageIcon>
     <Platforms>AnyCPU;x64</Platforms>
-    <AssemblyVersion>0.8.5.0</AssemblyVersion>
-    <FileVersion>0.8.5.0</FileVersion>
+    <AssemblyVersion>0.8.6.0</AssemblyVersion>
+    <FileVersion>0.8.6.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -3853,6 +3853,7 @@ namespace UVtools.GUI
                 BinaryThreshold = Settings.Default.IslandBinaryThreshold,
                 RequiredAreaToProcessCheck = Settings.Default.IslandRequiredAreaToProcessCheck,
                 RequiredPixelBrightnessToProcessCheck = Settings.Default.IslandRequiredPixelBrightnessToProcessCheck,
+                RequiredPixelsToSupportMultiplier = Settings.Default.IslandRequiredPixelsToSupportMultiplier,
                 RequiredPixelsToSupport = Settings.Default.IslandRequiredPixelsToSupport,
                 RequiredPixelBrightnessToSupport = Settings.Default.IslandRequiredPixelBrightnessToSupport
             };

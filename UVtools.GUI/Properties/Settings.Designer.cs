@@ -769,7 +769,7 @@ namespace UVtools.GUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
         public byte LayerRepairRemoveIslandsBelowEqualPixelsDefault {
             get {
                 return ((byte)(this["LayerRepairRemoveIslandsBelowEqualPixelsDefault"]));
@@ -992,6 +992,18 @@ namespace UVtools.GUI.Properties {
             }
             set {
                 this["LoadDemoFileOnStartup"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.25")]
+        public decimal IslandRequiredPixelsToSupportMultiplier {
+            get {
+                return ((decimal)(this["IslandRequiredPixelsToSupportMultiplier"]));
+            }
+            set {
+                this["IslandRequiredPixelsToSupportMultiplier"] = value;
             }
         }
     }

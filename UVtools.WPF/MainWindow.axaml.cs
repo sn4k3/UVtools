@@ -598,6 +598,12 @@ namespace UVtools.WPF
             if (SlicerFile is null) return;
             SlicerFile?.Dispose();
             App.SlicerFile = null;
+
+            SlicerProperties.Clear();
+            Issues.Clear();
+            _issuesSliderCanvas.Children.Clear();
+            Drawings.Clear();
+
             TabSelectedIndex = 0;
             _firstTimeOnIssues = true;
             IsPixelEditorActive = false;
@@ -610,11 +616,6 @@ namespace UVtools.WPF
 
             LayerImageBox.Image = null;
             LayerPixelPicker.Reset();
-
-            SlicerProperties.Clear();
-            Issues.Clear();
-            _issuesSliderCanvas.Children.Clear();
-            Drawings.Clear();
 
             ResetDataContext();
         }

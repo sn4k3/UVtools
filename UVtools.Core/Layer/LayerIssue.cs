@@ -67,6 +67,11 @@ namespace UVtools.Core
         public byte RequiredPixelsToSupport { get; set; } = 10;
 
         /// <summary>
+        /// Gets the required multiplier from the island pixels to support same island and discard it as a issue
+        /// </summary>
+        public decimal RequiredPixelsToSupportMultiplier { get; set; } = 0.25m;
+
+        /// <summary>
         /// Gets the required brightness of supporting pixels to count as a valid support (0-255)
         /// </summary>
         public byte RequiredPixelBrightnessToSupport { get; set; } = 150;

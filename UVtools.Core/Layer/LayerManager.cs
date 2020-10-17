@@ -958,12 +958,21 @@ namespace UVtools.Core
 
                                         bool isIsland = true;
                                         if (points.Count == 0) continue; // Should never happen
-                                        if (pixelsSupportingIsland >= islandConfig.RequiredPixelsToSupport)
+
+                                        if (points.Count == 92 && points[0].X == 876 && points[0].Y == 884)
+                                        {
+
+                                        }
+
+                                        var requiredSupportingPixels = Math.Max(1, points.Count * islandConfig.RequiredPixelsToSupportMultiplier);
+                                        if (pixelsSupportingIsland >= requiredSupportingPixels)
+                                            isIsland = false;
+                                        /*if (pixelsSupportingIsland >= islandConfig.RequiredPixelsToSupport)
                                             isIsland = false; // Not a island, bounding is strong, i think...
                                         else if (pixelsSupportingIsland > 0 &&
                                             points.Count < islandConfig.RequiredPixelsToSupport &&
                                             pixelsSupportingIsland >= Math.Max(1, points.Count / 2))
-                                            isIsland = false; // Not a island, but maybe weak bounding...
+                                            isIsland = false; // Not a island, but maybe weak bounding...*/
 
 
                                         if (isIsland)

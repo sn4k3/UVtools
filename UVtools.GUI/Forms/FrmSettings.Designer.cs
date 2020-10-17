@@ -55,7 +55,7 @@
             this.label10 = new System.Windows.Forms.Label();
             this.nmIslandRequiredPixelBrightnessToSupport = new System.Windows.Forms.NumericUpDown();
             this.label9 = new System.Windows.Forms.Label();
-            this.nmIslandRequiredPixelsToSupport = new System.Windows.Forms.NumericUpDown();
+            this.nmIslandRequiredPixelsToSupportMultiplier = new System.Windows.Forms.NumericUpDown();
             this.nmIslandRequiredAreaToProcessCheck = new System.Windows.Forms.NumericUpDown();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
@@ -93,6 +93,7 @@
             this.label27 = new System.Windows.Forms.Label();
             this.tbFileSaveNamePreffix = new System.Windows.Forms.TextBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.cbLoadDemoFileOnStartup = new System.Windows.Forms.CheckBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.groupBox9 = new System.Windows.Forms.GroupBox();
             this.cbLayerAutoRotateBestView = new System.Windows.Forms.CheckBox();
@@ -187,7 +188,6 @@
             this.cbLayerRepairLayersIslands = new System.Windows.Forms.CheckBox();
             this.pnActions = new System.Windows.Forms.Panel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.cbLoadDemoFileOnStartup = new System.Windows.Forms.CheckBox();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapBinaryThreshold)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmResinTrapMaximumPixelBrightnessToDrain)).BeginInit();
@@ -196,7 +196,7 @@
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmIslandBinaryThreshold)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredPixelBrightnessToSupport)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredPixelsToSupport)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredPixelsToSupportMultiplier)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredAreaToProcessCheck)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredPixelBrightnessToProcessCheck)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -480,7 +480,7 @@
             this.groupBox2.Controls.Add(this.label10);
             this.groupBox2.Controls.Add(this.nmIslandRequiredPixelBrightnessToSupport);
             this.groupBox2.Controls.Add(this.label9);
-            this.groupBox2.Controls.Add(this.nmIslandRequiredPixelsToSupport);
+            this.groupBox2.Controls.Add(this.nmIslandRequiredPixelsToSupportMultiplier);
             this.groupBox2.Controls.Add(this.nmIslandRequiredAreaToProcessCheck);
             this.groupBox2.Controls.Add(this.label7);
             this.groupBox2.Controls.Add(this.label8);
@@ -568,33 +568,41 @@
             this.label9.AutoSize = true;
             this.label9.Location = new System.Drawing.Point(73, 148);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(432, 18);
+            this.label9.Size = new System.Drawing.Size(420, 18);
             this.label9.TabIndex = 23;
-            this.label9.Text = "Supporting safe pixels required to considerer an island supported\r\n";
-            this.toolTip.SetToolTip(this.label9, resources.GetString("label9.ToolTip"));
+            this.label9.Text = "Supporting safe pixels required over a multiplier on island pixels";
+            this.toolTip.SetToolTip(this.label9, "An island supported by at least it pixels multiplied by this value will always be" +
+        " considered supported.\r\nFormula: Supporting pixels >= Island pixels * this value" +
+        "");
             // 
-            // nmIslandRequiredPixelsToSupport
+            // nmIslandRequiredPixelsToSupportMultiplier
             // 
-            this.nmIslandRequiredPixelsToSupport.Location = new System.Drawing.Point(10, 145);
-            this.nmIslandRequiredPixelsToSupport.Maximum = new decimal(new int[] {
-            255,
+            this.nmIslandRequiredPixelsToSupportMultiplier.DecimalPlaces = 2;
+            this.nmIslandRequiredPixelsToSupportMultiplier.Increment = new decimal(new int[] {
+            5,
             0,
             0,
-            0});
-            this.nmIslandRequiredPixelsToSupport.Minimum = new decimal(new int[] {
-            1,
+            131072});
+            this.nmIslandRequiredPixelsToSupportMultiplier.Location = new System.Drawing.Point(10, 145);
+            this.nmIslandRequiredPixelsToSupportMultiplier.Maximum = new decimal(new int[] {
+            95,
             0,
             0,
-            0});
-            this.nmIslandRequiredPixelsToSupport.Name = "nmIslandRequiredPixelsToSupport";
-            this.nmIslandRequiredPixelsToSupport.Size = new System.Drawing.Size(57, 24);
-            this.nmIslandRequiredPixelsToSupport.TabIndex = 22;
-            this.toolTip.SetToolTip(this.nmIslandRequiredPixelsToSupport, "Range 1-255");
-            this.nmIslandRequiredPixelsToSupport.Value = new decimal(new int[] {
-            1,
+            131072});
+            this.nmIslandRequiredPixelsToSupportMultiplier.Minimum = new decimal(new int[] {
+            5,
             0,
             0,
-            0});
+            131072});
+            this.nmIslandRequiredPixelsToSupportMultiplier.Name = "nmIslandRequiredPixelsToSupportMultiplier";
+            this.nmIslandRequiredPixelsToSupportMultiplier.Size = new System.Drawing.Size(57, 24);
+            this.nmIslandRequiredPixelsToSupportMultiplier.TabIndex = 22;
+            this.toolTip.SetToolTip(this.nmIslandRequiredPixelsToSupportMultiplier, "Range 0.05-0.95");
+            this.nmIslandRequiredPixelsToSupportMultiplier.Value = new decimal(new int[] {
+            50,
+            0,
+            0,
+            131072});
             // 
             // nmIslandRequiredAreaToProcessCheck
             // 
@@ -1031,6 +1039,16 @@
             this.groupBox4.TabIndex = 15;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Startup";
+            // 
+            // cbLoadDemoFileOnStartup
+            // 
+            this.cbLoadDemoFileOnStartup.AutoSize = true;
+            this.cbLoadDemoFileOnStartup.Location = new System.Drawing.Point(6, 79);
+            this.cbLoadDemoFileOnStartup.Name = "cbLoadDemoFileOnStartup";
+            this.cbLoadDemoFileOnStartup.Size = new System.Drawing.Size(361, 22);
+            this.cbLoadDemoFileOnStartup.TabIndex = 8;
+            this.cbLoadDemoFileOnStartup.Text = "Loads a demo file on startup if no file was specified";
+            this.cbLoadDemoFileOnStartup.UseVisualStyleBackColor = true;
             // 
             // tabPage2
             // 
@@ -2334,16 +2352,6 @@
             this.toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             this.toolTip.ToolTipTitle = "Information";
             // 
-            // cbLoadDemoFileOnStartup
-            // 
-            this.cbLoadDemoFileOnStartup.AutoSize = true;
-            this.cbLoadDemoFileOnStartup.Location = new System.Drawing.Point(6, 79);
-            this.cbLoadDemoFileOnStartup.Name = "cbLoadDemoFileOnStartup";
-            this.cbLoadDemoFileOnStartup.Size = new System.Drawing.Size(361, 22);
-            this.cbLoadDemoFileOnStartup.TabIndex = 8;
-            this.cbLoadDemoFileOnStartup.Text = "Loads a demo file on startup if no file was specified";
-            this.cbLoadDemoFileOnStartup.UseVisualStyleBackColor = true;
-            // 
             // FrmSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
@@ -2371,7 +2379,7 @@
             this.groupBox2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nmIslandBinaryThreshold)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredPixelBrightnessToSupport)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredPixelsToSupport)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredPixelsToSupportMultiplier)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredAreaToProcessCheck)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nmIslandRequiredPixelBrightnessToProcessCheck)).EndInit();
             this.groupBox1.ResumeLayout(false);
@@ -2432,7 +2440,7 @@
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.NumericUpDown nmIslandRequiredPixelsToSupport;
+        private System.Windows.Forms.NumericUpDown nmIslandRequiredPixelsToSupportMultiplier;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.NumericUpDown nmIslandRequiredPixelBrightnessToSupport;
         private System.Windows.Forms.GroupBox groupBox3;

@@ -9,6 +9,15 @@
 * (Improvement) GUI is now scalable
 * (Fix) Some bug found and fixed during convertion
 
+## 14/10/2020 - v0.8.6.0
+
+* (Change) Island detection system:
+  * **Before**: A island is consider safe by just have a static amount of pixels, this mean it's possible to have a mass with 100000px supported by only 10px (If safe pixels are configured to this value), so there's no relation with island size and it supporting size. This leads to a big problem and not detecting some potential/unsafe islands.
+  * **Now:** Instead of a static number of safe pixels, now there's a multiplier value, which will multiply the island total pixels per the multiplier, the supporting pixels count must be higher than the result of the multiplication.
+    *  **Formula:** Supporting pixels >= Island pixels * multiplier
+    *  **Example:** Multiplier of 0.25, an island with 1000px * 0.25 = 250px, so this island will not be considered if below exists at least 250px to support it, otherwise will be flagged as an island.
+    *  **Notes:** This is a much more fair system but still not optimal, bridges and big planes with micro supports can trigger false islands. While this is a improvement over old system it's not perfect and you probably will have islands which you must ignore. Renember that you not have to clear out the issue list! Simply step over and ignore the issues you think are false-positives.
+
 ## 14/10/2020 - v0.8.5.0
 
 * (Add) Tool - Calculator: Convert millimeters to pixels

@@ -106,7 +106,7 @@ namespace UVtools.GUI.Forms
                 nmIslandBinaryThreshold.Value = Settings.Default.IslandBinaryThreshold;
                 nmIslandRequiredAreaToProcessCheck.Value = Settings.Default.IslandRequiredAreaToProcessCheck;
                 nmIslandRequiredPixelBrightnessToProcessCheck.Value = Settings.Default.IslandRequiredPixelBrightnessToProcessCheck;
-                nmIslandRequiredPixelsToSupport.Value = Settings.Default.IslandRequiredPixelsToSupport;
+                nmIslandRequiredPixelsToSupportMultiplier.Value = Settings.Default.IslandRequiredPixelsToSupportMultiplier;
                 nmIslandRequiredPixelBrightnessToSupport.Value = Settings.Default.IslandRequiredPixelBrightnessToSupport;
 
                 cbOverhangIndependentFromIslands.Checked = Settings.Default.OverhangIndependentFromIslands;
@@ -301,7 +301,7 @@ namespace UVtools.GUI.Forms
                 Settings.Default.IslandBinaryThreshold = (byte)nmIslandBinaryThreshold.Value;
                 Settings.Default.IslandRequiredAreaToProcessCheck = (byte) nmIslandRequiredAreaToProcessCheck.Value;
                 Settings.Default.IslandRequiredPixelBrightnessToProcessCheck = (byte)nmIslandRequiredPixelBrightnessToProcessCheck.Value;
-                Settings.Default.IslandRequiredPixelsToSupport = (byte)nmIslandRequiredPixelsToSupport.Value;
+                Settings.Default.IslandRequiredPixelsToSupportMultiplier = nmIslandRequiredPixelsToSupportMultiplier.Value;
                 Settings.Default.IslandRequiredPixelBrightnessToSupport = (byte)nmIslandRequiredPixelBrightnessToSupport.Value;
 
                 Settings.Default.OverhangIndependentFromIslands = cbOverhangIndependentFromIslands.Checked;
