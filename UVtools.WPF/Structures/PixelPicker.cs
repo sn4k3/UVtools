@@ -18,7 +18,7 @@ namespace UVtools.WPF.Structures
         public Point Location
         {
             get => _location;
-            private set => this.RaiseAndSetIfChanged(ref _location, value);
+            set => this.RaiseAndSetIfChanged(ref _location, value);
         }
 
         public byte Brightness

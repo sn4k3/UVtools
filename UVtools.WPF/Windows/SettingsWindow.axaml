@@ -699,6 +699,22 @@
 
               <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
                 <NumericUpDown Width="60"
+                                Minimum="0.05"
+                                Maximum="0.95"
+                                Increment="0.05"
+                                Value="{Binding Settings.Issues.IslandRequiredPixelsToSupportMultiplier}"
+                                />
+                <TextBlock
+                  VerticalAlignment="Center"
+                  Text="Supporting safe pixels required over a multiplier on island pixels"
+                  ToolTip.Tip="An island supported by at least it pixels multiplied by this value will always be considered supported.
+&#x0a;Formula: Supporting pixels >= Island pixels * this value"
+                  />
+              </StackPanel>
+
+              <!--
+              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <NumericUpDown Width="60"
                                 Minimum="1"
                                 Maximum="255"
                                 Value="{Binding Settings.Issues.IslandRequiredPixelsToSupport}"
@@ -724,6 +740,7 @@
                   ToolTip.Tip="Pixels below this threshold will not be considered when counting supporting pixels for an island."
                   />
               </StackPanel>
+              -->
             </StackPanel>
           </Border>
 
@@ -838,7 +855,7 @@
             <StackPanel Orientation="Vertical">
               <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Colors &amp; highlights"/>
 
-              <Grid Margin="15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,Auto">
+              <Grid Margin="15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,Auto">
                 <TextBlock Grid.Row="0" Grid.Column="0"
                   VerticalAlignment="Center"
                   Text="Pixel add operation / (Selected):"/>
@@ -922,6 +939,19 @@
                         Background="{Binding Settings.PixelEditor.DrainHoleHighlightBrush}"
                         Command="{Binding SelectColor}"
                         CommandParameter="DrainHoleHighlightColor"
+                        />
+
+                <TextBlock Grid.Row="8" Grid.Column="0"
+                  VerticalAlignment="Center"
+                  Text="Drawing cursor:"/>
+
+                <Button Grid.Row="8" Grid.Column="1"
+                        Margin="10,0,0,0" Padding="10"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                        Background="{Binding Settings.PixelEditor.CursorBrush}"
+                        Command="{Binding SelectColor}"
+                        CommandParameter="CursorColor"
                         />
               </Grid>
               

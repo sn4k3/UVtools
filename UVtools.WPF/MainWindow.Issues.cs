@@ -215,14 +215,14 @@ namespace UVtools.WPF
 
             if (Settings.PixelEditor.PartialUpdateIslandsOnEditing)
             {
-                UpdateIslandsOverhangs(whiteListLayers);
+                await UpdateIslandsOverhangs(whiteListLayers);
             }
 
             ShowLayer(); // It will call latter so its a extra call
             CanSave = true;
         }
 
-        private async void UpdateIslandsOverhangs(List<uint> whiteListLayers)
+        private async Task UpdateIslandsOverhangs(List<uint> whiteListLayers)
         {
             if (whiteListLayers.Count == 0) return;
             var islandConfig = GetIslandDetectionConfiguration();
@@ -238,16 +238,15 @@ namespace UVtools.WPF
             IsGUIEnabled = false;
 
 
-            List<LayerIssue> toRemove = new List<LayerIssue>();
+            var issueList = Issues.ToList();
             foreach (var layerIndex in islandConfig.WhiteListLayers)
             {
                 foreach (var issue in Issues)
                 {
                     if (issue.LayerIndex != layerIndex && (issue.Type == LayerIssue.IssueType.Island || issue.Type == LayerIssue.IssueType.Overhang)) continue;
-                    toRemove.Add(issue);
+                    issueList.Remove(issue);
                 }
             }
-            Issues.RemoveMany(toRemove);
 
             var resultIssues = await Task.Factory.StartNew(() =>
             {
@@ -278,11 +277,14 @@ namespace UVtools.WPF
             IsGUIEnabled = true;
 
             if (resultIssues is null || resultIssues.Count == 0) return;
-
-            Issues.AddRange(resultIssues);
-            Issues = new ObservableCollection<LayerIssue>(Issues.OrderBy(issue => issue.Type)
+            
+            issueList.AddRange(resultIssues);
+            issueList = issueList.OrderBy(issue => issue.Type)
                 .ThenBy(issue => issue.LayerIndex)
-                .ThenBy(issue => issue.PixelsCount).ToList());
+                .ThenBy(issue => issue.PixelsCount).ToList();
+
+            Issues.Clear();
+            Issues.AddRange(issueList);
         }
 
         public int IssueSelectedIndex
@@ -429,9 +431,7 @@ namespace UVtools.WPF
             });
 
             IsGUIEnabled = true;
-
-
-
+            
             if (resultIssues is null)
             {
                 UpdateLayerTrackerHighlightIssues();
@@ -439,6 +439,8 @@ namespace UVtools.WPF
             }
             Issues.AddRange(resultIssues);
             UpdateLayerTrackerHighlightIssues();
+
+            ShowLayer();
 
             RaisePropertyChanged(nameof(IssueSelectedIndexStr));
             RaisePropertyChanged(nameof(IssueCanGoPrevious));
@@ -494,6 +496,7 @@ namespace UVtools.WPF
                 BinaryThreshold = Settings.Issues.IslandBinaryThreshold,
                 RequiredAreaToProcessCheck = Settings.Issues.IslandRequiredAreaToProcessCheck,
                 RequiredPixelBrightnessToProcessCheck = Settings.Issues.IslandRequiredPixelBrightnessToProcessCheck,
+                RequiredPixelsToSupportMultiplier = Settings.Issues.IslandRequiredPixelsToSupportMultiplier,
                 RequiredPixelsToSupport = Settings.Issues.IslandRequiredPixelsToSupport,
                 RequiredPixelBrightnessToSupport = Settings.Issues.IslandRequiredPixelBrightnessToSupport
             };

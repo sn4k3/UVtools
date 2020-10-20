@@ -32,7 +32,7 @@ namespace UVtools.WPF.Extensions
                     WindowStartupLocation = location,
                     CanResize = false
                 });
-
+            
             return await messageBoxStandardWindow.ShowDialog(window);
         }
 

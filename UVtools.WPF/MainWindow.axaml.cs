@@ -11,16 +11,12 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.Threading;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -238,13 +234,13 @@ namespace UVtools.WPF
         private uint _savesCount;
         private bool _canSave;
         private MenuItem[] _menuFileConvertItems;
-        private int _tabSelectedIndex;
-        private int _lastTabSelectedIndex;
-
 
         private PointerEventArgs _globalPointerEventArgs;
         private PointerPoint _globalPointerPoint;
         private KeyModifiers _globalModifiers;
+        private TabItem _selectedTabItem;
+        private TabItem _lastSelectedTab;
+        private TabItem _lastSelectedTabItem;
 
         #endregion
 
@@ -287,19 +283,24 @@ namespace UVtools.WPF
             set => RaisePropertyChanged();
         }
 
-        
-        public int TabSelectedIndex
+        public TabItem TabInformation { get; }
+        public TabItem TabGCode { get; }
+        public TabItem TabIssues { get; }
+        public TabItem TabPixelEditor { get; }
+        public TabItem TabLog { get; }
+
+        public TabItem SelectedTabItem
         {
-            get => _tabSelectedIndex;
+            get => _selectedTabItem;
             set
             {
-                var lastTab = _tabSelectedIndex;
-                if (!RaiseAndSetIfChanged(ref _tabSelectedIndex, value)) return;
-                LastTabSelectedIndex = lastTab;
+                var lastTab = _selectedTabItem;
+                if (!RaiseAndSetIfChanged(ref _selectedTabItem, value)) return;
+                LastSelectedTabItem = lastTab;
                 if (_firstTimeOnIssues)
                 {
                     _firstTimeOnIssues = false;
-                    if (_tabSelectedIndex == 2 && Settings.Issues.ComputeIssuesOnClickTab)
+                    if (ReferenceEquals(_selectedTabItem, TabIssues) && Settings.Issues.ComputeIssuesOnClickTab)
                     {
                         OnClickDetectIssues();
                     }
@@ -307,10 +308,10 @@ namespace UVtools.WPF
             }
         }
 
-        public int LastTabSelectedIndex
+        public TabItem LastSelectedTabItem
         {
-            get => _lastTabSelectedIndex;
-            set => RaiseAndSetIfChanged(ref _lastTabSelectedIndex, value);
+            get => _lastSelectedTabItem;
+            set => RaiseAndSetIfChanged(ref _lastSelectedTabItem, value);
         }
 
         #endregion
@@ -348,8 +349,12 @@ namespace UVtools.WPF
             InitPixelEditor();
             InitLayerPreview();
 
-            
-            //IssuesGrid.SelectionChanged += IssuesGridOnSelectionChanged;
+
+            TabInformation = this.FindControl<TabItem>("TabInformation");
+            TabGCode = this.FindControl<TabItem>("TabGCode");
+            TabIssues = this.FindControl<TabItem>("TabIssues");
+            TabPixelEditor = this.FindControl<TabItem>("TabPixelEditor");
+            TabLog = this.FindControl<TabItem>("TabLog");
 
 
             foreach (var menuItem in new[] { MenuTools, LayerActionsMenu })
@@ -459,6 +464,7 @@ namespace UVtools.WPF
             if (e.Handled
                 || !IsFileLoaded
                 || LayerImageBox.IsPanning
+                || !(LayerImageBox.TrackerImage is null)
                 || LayerImageBox.Cursor == StaticControls.CrossCursor
                 || LayerImageBox.Cursor == StaticControls.HandCursor
                 || LayerImageBox.SelectionMode == AdvancedImageBox.SelectionModes.Rectangle
@@ -478,7 +484,7 @@ namespace UVtools.WPF
                                                       "» Click over a pixel to draw\n" +
                                                       "» Hold CTRL to clear pixels";
 
-                    //UpdatePixelEditorCursor();
+                    UpdatePixelEditorCursor();
                 }
                 else
                 {
@@ -518,6 +524,7 @@ namespace UVtools.WPF
                 (e.KeyModifiers & KeyModifiers.Shift) == 0 ||
                 (e.KeyModifiers & KeyModifiers.Control) == 0)
             {
+                LayerImageBox.TrackerImage = null;
                 LayerImageBox.Cursor = StaticControls.ArrowCursor;
                 LayerImageBox.AutoPan = true;
                 LayerImageBox.SelectionMode = AdvancedImageBox.SelectionModes.None;
@@ -604,7 +611,7 @@ namespace UVtools.WPF
             _issuesSliderCanvas.Children.Clear();
             Drawings.Clear();
 
-            TabSelectedIndex = 0;
+            SelectedTabItem = TabInformation;
             _firstTimeOnIssues = true;
             IsPixelEditorActive = false;
             CanSave = false;
@@ -678,7 +685,7 @@ namespace UVtools.WPF
             Title = (SlicerFile is null
                 ? $"{About.Software}   Version: {AppSettings.Version}"
                 : $"{About.Software}   File: {Path.GetFileName(SlicerFile.FileFullPath)} ({Math.Round(LastStopWatch.ElapsedMilliseconds / 1000m, 2)}s)   Version: {AppSettings.Version}")
-                    + "   [PREVIEW ALPHA RELEASE]";
+                    ;
 
 #if DEBUG
             Title += "   [DEBUG]";
