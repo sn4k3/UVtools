@@ -715,7 +715,23 @@
                   />
                 </StackPanel>
 
-                <!--
+                
+              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <NumericUpDown Width="60"
+                                Minimum="0.05"
+                                Maximum="0.95"
+                                Increment="0.05"
+                                Value="{Binding Settings.Issues.IslandRequiredPixelsToSupportMultiplier}"
+                                />
+                <TextBlock
+                  VerticalAlignment="Center"
+                  Text="Supporting safe pixels required over a multiplier on island pixels"
+                  ToolTip.Tip="An island supported by at least it pixels multiplied by this value will always be considered supported.
+&#x0a;Formula: Supporting pixels >= Island pixels * this value"
+                  />
+              </StackPanel>
+
+              <!--
               <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
                 <NumericUpDown Width="60"
                                 Minimum="1"
