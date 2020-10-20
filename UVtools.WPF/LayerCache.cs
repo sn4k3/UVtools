@@ -24,7 +24,7 @@ namespace UVtools.WPF
         private Array _layerHierarchyJagged;
         private VectorOfVectorOfPoint _layerContours;
         private Mat _layerHierarchy;
-        private SKCanvas _canvas;
+        //private SKCanvas _canvas;
         private WriteableBitmap _bitmap;
 
         public bool IsCached => !ReferenceEquals(_layer, null);
@@ -59,8 +59,8 @@ namespace UVtools.WPF
             set
             {
                 _bitmap = value;
-                _canvas?.Dispose();
-                _canvas = null;
+                //_canvas?.Dispose();
+                //_canvas = null;
             }
         }
 
@@ -68,17 +68,12 @@ namespace UVtools.WPF
         {
             get
             {
-                if (_canvas is null)
+                using (var framebuffer = Bitmap.Lock())
                 {
-                    using (var framebuffer = Bitmap.Lock())
-                    {
-                        var info = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
-                            framebuffer.Format.ToSkColorType(), SKAlphaType.Premul);
-                        return SKSurface.Create(info, framebuffer.Address, framebuffer.RowBytes).Canvas;
-                    }
+                    var info = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
+                        framebuffer.Format.ToSkColorType(), SKAlphaType.Premul);
+                    return SKSurface.Create(info, framebuffer.Address, framebuffer.RowBytes).Canvas;
                 }
-
-                return _canvas;
             }
         }
 

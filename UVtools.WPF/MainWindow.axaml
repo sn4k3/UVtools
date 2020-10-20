@@ -246,8 +246,9 @@
       Background="WhiteSmoke"
       DockPanel.Dock="Left" 
       Width="400"
-      SelectedIndex="{Binding TabSelectedIndex}">
+      SelectedItem="{Binding SelectedTabItem}">
       <TabItem
+        Name="TabInformation"
         ToolTip.Tip="Information"
         IsEnabled="{Binding IsFileLoaded}" >
         <TabItem.Header>
@@ -415,6 +416,7 @@
       </TabItem>
 
       <TabItem
+        Name="TabGCode"
         ToolTip.Tip="GCode"
         IsEnabled="{Binding HaveGCode}">
         <TabItem.Header>
@@ -499,6 +501,7 @@
        Issues Tab
       -->
       <TabItem
+        Name="TabIssues"
         ToolTip.Tip="Issues"
         IsEnabled="{Binding IsFileLoaded}" >
         <TabItem.Header>
@@ -517,6 +520,8 @@
             Spacing="5"
             VerticalAlignment="Center">
             <RepeatButton
+              HotKey="Ctrl + Shift + Down"
+              ToolTip.Tip="Go to the previous issue [Ctrl + Shift + Down]"
               IsEnabled="{Binding IssueCanGoPrevious}"
               Command="{Binding IssueGoPrevious}"
               Interval="100"
@@ -534,6 +539,8 @@
             </TextBlock>
 
             <RepeatButton
+              HotKey="Ctrl + Shift + Up"
+              ToolTip.Tip="Go to the next issue [Ctrl + Shift + Up]"
               IsEnabled="{Binding IssueCanGoNext}"
               Command="{Binding IssueGoNext}"
               Interval="100"
@@ -644,6 +651,7 @@
 
       <!-- Pixel Editor !-->
       <TabItem
+        Name="TabPixelEditor"
         ToolTip.Tip="Pixel editor"
         IsEnabled="{Binding IsPixelEditorActive}">
         <TabItem.Header>
@@ -1179,7 +1187,9 @@
         
       </TabItem>
 
-      <TabItem ToolTip.Tip="Log">
+      <TabItem
+          Name="TabLog"
+          ToolTip.Tip="Log">
         <TabItem.Header>
           <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
             <Image Source="/Assets/Icons/book-32x32.png" Width="32"/>

@@ -151,10 +151,23 @@ namespace UVtools.WPF.Extensions
 
                         break;
                     case 4:
-                        var srcPixels4 = (uint*) (void*) mat.DataPointer;
-                        for (uint i = 0; i < dataCount; i++)
+
+                        if (mat.Depth == DepthType.Cv8U)
                         {
-                            targetPixels[i] = srcPixels4[i];
+                            var srcPixels4 = (byte*)(void*)mat.DataPointer;
+                            uint pixel4 = 0;
+                            for (uint i = 0; i < dataCount; i++)
+                            {
+                                targetPixels[i] = (uint)(srcPixels4[pixel4++] | srcPixels4[pixel4++] << 8 | srcPixels4[pixel4++] << 16 | srcPixels4[pixel4++] << 24);
+                            }
+                        }
+                        else if (mat.Depth == DepthType.Cv32S)
+                        {
+                            var srcPixels4 = (uint*) (void*) mat.DataPointer;
+                            for (uint i = 0; i < dataCount; i++)
+                            {
+                                targetPixels[i] = srcPixels4[i];
+                            }
                         }
 
                         break;

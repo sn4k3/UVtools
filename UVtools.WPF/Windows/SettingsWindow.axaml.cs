@@ -16,11 +16,18 @@ namespace UVtools.WPF.Windows
 {
     public class SettingsWindow : WindowEx
     {
+        private double _scrollViewerMaxHeight;
         public UserSettings SettingsBackup { get; }
         public UserSettings Settings => UserSettings.Instance;
 
         public string[] FileOpenDialogFilters { get; }
         public string[] ZoomRanges { get; }
+
+        public double ScrollViewerMaxHeight
+        {
+            get => _scrollViewerMaxHeight;
+            set => RaiseAndSetIfChanged(ref _scrollViewerMaxHeight, value);
+        }
 
         public SettingsWindow()
         {
@@ -39,6 +46,10 @@ namespace UVtools.WPF.Windows
             // ZoomLevels constant array, and add those strings to the comboboxes.
             ZoomRanges = AppSettings.ZoomLevels.Skip(AppSettings.ZoomLevelSkipCount).Select(
                 s => Convert.ToString(s / 100, CultureInfo.InvariantCulture) + "x").ToArray();
+
+            
+            //MaxHeight = Screens.Primary.WorkingArea.Height - 50;
+            ScrollViewerMaxHeight = Screens.Primary.WorkingArea.Height - 700;
 
             DataContext = this;
             InitializeComponent();

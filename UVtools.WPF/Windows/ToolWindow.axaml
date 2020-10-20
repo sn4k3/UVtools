@@ -199,6 +199,8 @@
           FontWeight="Bold"
           Text="{Binding Title}"/>
 
+        <!--<ScrollViewer Padding="15"
+                      Content="{Binding ContentControl}"/>!-->
         <Border Margin="15" Child="{Binding ContentControl}"/>
       </StackPanel>
 

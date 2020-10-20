@@ -11,7 +11,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using Avalonia.Threading;
 using UVtools.Core.Extensions;
 using UVtools.WPF.Extensions;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
@@ -515,6 +514,31 @@ namespace UVtools.WPF.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets an image to follow the mouse pointer
+        /// </summary>
+        public Bitmap TrackerImage
+        {
+            get => _trackerImage;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _trackerImage, value)) return;
+                RaisePropertyChanged(nameof(HaveTrackerImage));
+                TriggerRender();
+            }
+        }
+
+        public bool HaveTrackerImage => !(_trackerImage is null);
+
+        /// <summary>
+        /// Gets or sets if the tracker image will be scaled to the current zoom
+        /// </summary>
+        public bool TrackerImageAutoZoom
+        {
+            get => _trackerImageAutoZoom;
+            set => RaiseAndSetIfChanged(ref _trackerImageAutoZoom, value);
+        }
+
         public bool IsHorizontalBarVisible
         {
             get
@@ -543,6 +567,12 @@ namespace UVtools.WPF.Controls
         {
             get => _showGrid;
             set => SetAndRaise(ShowGridProperty, ref _showGrid, value);
+        }
+
+        public Point PointerPosition
+        {
+            get => _pointerPosition;
+            private set => RaiseAndSetIfChanged(ref _pointerPosition, value);
         }
 
         public bool IsPanning
@@ -577,7 +607,7 @@ namespace UVtools.WPF.Controls
             get
             {
                 var viewport = GetImageViewPort();
-                return new Point((viewport.Width / 2), viewport.Height / 2);
+                return new Point(viewport.Width / 2, viewport.Height / 2);
             }
         }
 
@@ -736,6 +766,8 @@ namespace UVtools.WPF.Controls
         private bool _isPanning;
         private bool _isSelecting;
         private Bitmap _image;
+        private Bitmap _trackerImage;
+        private bool _trackerImageAutoZoom = true;
         private byte _gridCellSize;
         private ISolidColorBrush _gridColor = Brushes.Gainsboro;
         private ISolidColorBrush _gridColorAlternate = Brushes.White;
@@ -751,6 +783,8 @@ namespace UVtools.WPF.Controls
         private Rect _selectionRegion = Rect.Empty;
         private SelectionModes _selectionMode = SelectionModes.None;
         private bool _canRender = true;
+        private Point _pointerPosition;
+        
 
 
         public AdvancedImageBox()
@@ -810,9 +844,11 @@ namespace UVtools.WPF.Controls
             }
         }
 
-        public void TriggerRender()
+        public void TriggerRender(bool renderOnlyCursorTracker = false)
         {
             if (!_canRender) return;
+            if (renderOnlyCursorTracker && _trackerImage is null) return;
+                
             InvalidateVisual();
         }
 
@@ -1019,7 +1055,7 @@ namespace UVtools.WPF.Controls
             _canRender = true;
             Offset = new Vector(x, y);
 
-            Debug.WriteLine(
+            /*Debug.WriteLine(
                 $"X/Y: {x},{y} | \n" +
                 $"Offset: {Offset} | \n" +
                 $"ZoomFactor: {ZoomFactor} | \n" +
@@ -1027,7 +1063,7 @@ namespace UVtools.WPF.Controls
                 $"MAX: {HorizontalScrollBar.Maximum},{VerticalScrollBar.Maximum} \n" +
                 $"ViewPort: {Viewport.Width},{Viewport.Height} \n" +
                 $"Container: {HorizontalScrollBar.ViewportSize},{VerticalScrollBar.ViewportSize} \n" +
-                $"Relative: {relativeDisplayPoint}");
+                $"Relative: {relativeDisplayPoint}");*/
         }
 
         /// <summary>
@@ -1467,10 +1503,26 @@ namespace UVtools.WPF.Controls
 
             if (Image is null) return;
             // Draw iamge
-            context.DrawImage(Image,
+            context.DrawImage(_image,
                 GetSourceImageRegion(),
                 GetImageViewPort()
             );
+
+            if (HaveTrackerImage && _pointerPosition.X >= 0 && _pointerPosition.Y >= 0)
+            {
+                var destSize = TrackerImageAutoZoom 
+                    ? new Size(_trackerImage.Size.Width * ZoomFactor, _trackerImage.Size.Height * ZoomFactor)
+                    : _image.Size;
+
+                var destPos = new Point(
+                    _pointerPosition.X - destSize.Width / 2,
+                    _pointerPosition.Y - destSize.Height / 2
+                    );
+                context.DrawImage(_trackerImage,
+                    new Rect(destPos, destSize)
+                );
+            }
+
             //SkiaContext.SkCanvas.dr
             // Draw pixel grid
             var pixelSize = ZoomFactor;
@@ -1806,15 +1858,27 @@ namespace UVtools.WPF.Controls
             IsSelecting = false;
         }
 
+        protected override void OnPointerLeave(PointerEventArgs e)
+        {
+            base.OnPointerLeave(e);
+            PointerPosition = new Point(-1,-1);
+            TriggerRender(true);
+            e.Handled = true;
+        }
+
         protected override void OnPointerMoved(PointerEventArgs e)
         {
             base.OnPointerMoved(e);
             if (e.Handled) return;
 
-            if (!IsPanning && !IsSelecting) return;
             var pointer = e.GetCurrentPoint(this);
-            var location = pointer.Position;
+            PointerPosition = pointer.Position;
 
+            if (!IsPanning && !IsSelecting)
+            {
+                TriggerRender(true);
+                return;
+            }
 
             if (IsPanning)
             {
@@ -1823,13 +1887,13 @@ namespace UVtools.WPF.Controls
 
                 if (!InvertMouse)
                 {
-                    x = _startScrollPosition.X + (_startMousePosition.X - location.X);
-                    y = _startScrollPosition.Y + (_startMousePosition.Y - location.Y);
+                    x = _startScrollPosition.X + (_startMousePosition.X - _pointerPosition.X);
+                    y = _startScrollPosition.Y + (_startMousePosition.Y - _pointerPosition.Y);
                 }
                 else
                 {
-                    x = (_startScrollPosition.X - (_startMousePosition.X - location.X));
-                    y = (_startScrollPosition.Y - (_startMousePosition.Y - location.Y));
+                    x = (_startScrollPosition.X - (_startMousePosition.X - _pointerPosition.X));
+                    y = (_startScrollPosition.Y - (_startMousePosition.Y - _pointerPosition.Y));
                 }
 
                 Offset = new Vector(x, y);
@@ -1843,26 +1907,26 @@ namespace UVtools.WPF.Controls
 
                 var imageOffset = GetImageViewPort().Position;
 
-                if (location.X < _startMousePosition.X)
+                if (_pointerPosition.X < _startMousePosition.X)
                 {
-                    x = location.X;
-                    w = _startMousePosition.X - location.X;
+                    x = _pointerPosition.X;
+                    w = _startMousePosition.X - _pointerPosition.X;
                 }
                 else
                 {
                     x = _startMousePosition.X;
-                    w = location.X - _startMousePosition.X;
+                    w = _pointerPosition.X - _startMousePosition.X;
                 }
 
-                if (location.Y < _startMousePosition.Y)
+                if (_pointerPosition.Y < _startMousePosition.Y)
                 {
-                    y = location.Y;
-                    h = _startMousePosition.Y - location.Y;
+                    y = _pointerPosition.Y;
+                    h = _startMousePosition.Y - _pointerPosition.Y;
                 }
                 else
                 {
                     y = _startMousePosition.Y;
-                    h = location.Y - _startMousePosition.Y;
+                    h = _pointerPosition.Y - _startMousePosition.Y;
                 }
 
                 x -= imageOffset.X - Offset.X;

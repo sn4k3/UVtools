@@ -18,6 +18,9 @@ namespace UVtools.Core.Extensions
     public static class EmguExtensions
     {
         public static readonly MCvScalar BlackByte = new MCvScalar(0);
+        public static readonly MCvScalar Black3Byte = new MCvScalar(0, 0, 0);
+        public static readonly MCvScalar Transparent4Byte = new MCvScalar(0, 0, 0, 0);
+        public static readonly MCvScalar Black4Byte = new MCvScalar(0, 0, 0, 255);
 
         public static unsafe byte* GetBytePointer(this Mat mat)
         {
@@ -216,7 +219,19 @@ namespace UVtools.Core.Extensions
         public static Mat InitMat(Size size, DepthType depthType = DepthType.Cv8U, int channels = 1)
         {
             var mat = new Mat(size, depthType, channels);
-            mat.SetTo(BlackByte);
+            switch (channels)
+            {
+                case 1:
+                    mat.SetTo(BlackByte);
+                    break;
+                case 3:
+                    mat.SetTo(Black3Byte);
+                    break;
+                case 4:
+                    mat.SetTo(Transparent4Byte);
+                    break;
+            }
+            
             return mat;
         }
 

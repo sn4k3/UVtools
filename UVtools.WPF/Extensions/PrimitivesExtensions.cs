@@ -21,10 +21,5 @@ namespace UVtools.WPF.Extensions
         {
             return new Point(point.X, point.Y);
         }
-
-        public static bool IsEmpty(this Point point)
-        {
-            return point.X == 0 && point.Y == 0;
-        }
     }
 }

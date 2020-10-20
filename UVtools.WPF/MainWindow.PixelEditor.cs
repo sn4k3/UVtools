@@ -314,7 +314,7 @@ namespace UVtools.WPF
             }
             else if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Supports)
             {
-                if (ActualLayer == 0) return;
+                if (_actualLayer == 0) return;
                 var operationSupport = new PixelSupport(ActualLayer, realLocation,
                     DrawingPixelSupport.TipDiameter, DrawingPixelSupport.PillarDiameter,
                     DrawingPixelSupport.BaseDiameter);
@@ -328,13 +328,13 @@ namespace UVtools.WPF
             }
             else if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.DrainHole)
             {
-                if (ActualLayer == 0) return;
+                if (_actualLayer == 0) return;
                 var operationDrainHole = new PixelDrainHole(ActualLayer, realLocation, DrawingPixelDrainHole.Diameter);
 
                 //if (PixelHistory.Contains(operation)) return;
                 Drawings.Add(operationDrainHole);
 
-                CvInvoke.Circle(LayerCache.ImageBgr, operationDrainHole.Location, operationDrainHole.Diameter / 2,
+                CvInvoke.Circle(LayerCache.ImageBgr, location, operationDrainHole.Diameter / 2,
                     new MCvScalar(Settings.PixelEditor.DrainHoleColor.B, Settings.PixelEditor.DrainHoleColor.G, Settings.PixelEditor.DrainHoleColor.R), -1);
                 RefreshLayerImage();
             }
@@ -348,9 +348,9 @@ namespace UVtools.WPF
         {
             if (Drawings.Count == 0)
             {
-                if (exitEditor)
+                if (exitEditor && !ReferenceEquals(LastSelectedTabItem, TabPixelEditor))
                 {
-                    TabSelectedIndex = LastTabSelectedIndex;
+                    SelectedTabItem = LastSelectedTabItem;
                 }
 
                 return;
@@ -432,7 +432,7 @@ namespace UVtools.WPF
                         }
                     }
 
-                    //UpdateIslandsOverhangs(whiteListLayers);
+                    await UpdateIslandsOverhangs(whiteListLayers);
                 }
             }
 
@@ -442,7 +442,10 @@ namespace UVtools.WPF
             if (exitEditor || (Settings.PixelEditor.CloseEditorOnApply && result == ButtonResult.Yes))
             {
                 IsPixelEditorActive = false;
-                TabSelectedIndex = LastTabSelectedIndex;
+                if (!ReferenceEquals(LastSelectedTabItem, TabPixelEditor))
+                {
+                    SelectedTabItem = LastSelectedTabItem;
+                }
             }
 
             CanSave = true;

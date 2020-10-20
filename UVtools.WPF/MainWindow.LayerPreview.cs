@@ -33,6 +33,7 @@ using UVtools.WPF.Structures;
 using Color = UVtools.WPF.Structures.Color;
 using Helpers = UVtools.WPF.Controls.Helpers;
 using Point = System.Drawing.Point;
+using Size = Avalonia.Size;
 
 namespace UVtools.WPF
 {
@@ -162,17 +163,15 @@ namespace UVtools.WPF
             get => _showLayerImageRotated;
             set
             {
-                if (RaiseAndSetIfChanged(ref _showLayerImageRotated, value))
+                if (!RaiseAndSetIfChanged(ref _showLayerImageRotated, value)) return;
+                var rect = LayerImageBox.SelectionRegion;
+                if (!rect.IsEmpty)
                 {
-                    var rect = LayerImageBox.SelectionRegion;
-                    if (!rect.IsEmpty)
-                    {
-                        LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet(), _showLayerImageRotated, true).ToAvalonia();
-                    }
-
-                    ZoomToFit();
-                    ShowLayer();
+                    LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet(), _showLayerImageRotated, true).ToAvalonia();
                 }
+
+                ZoomToFit();
+                ShowLayer();
             }
         }
 
@@ -181,10 +180,8 @@ namespace UVtools.WPF
             get => _showLayerImageDifference;
             set
             {
-                if (RaiseAndSetIfChanged(ref _showLayerImageDifference, value))
-                {
-                    ShowLayer();
-                }
+                if (!RaiseAndSetIfChanged(ref _showLayerImageDifference, value)) return;
+                ShowLayer();
             }
         }
 
@@ -205,10 +202,8 @@ namespace UVtools.WPF
             get => _showLayerImageCrosshairs;
             set
             {
-                if (RaiseAndSetIfChanged(ref _showLayerImageCrosshairs, value))
-                {
-                    ShowLayer();
-                }
+                if (!RaiseAndSetIfChanged(ref _showLayerImageCrosshairs, value)) return;
+                ShowLayer();
             }
         }
 
@@ -217,10 +212,8 @@ namespace UVtools.WPF
             get => _showLayerOutlinePrintVolumeBoundary;
             set
             {
-                if (RaiseAndSetIfChanged(ref _showLayerOutlinePrintVolumeBoundary, value))
-                {
-                    ShowLayer();
-                }
+                if (!RaiseAndSetIfChanged(ref _showLayerOutlinePrintVolumeBoundary, value)) return;
+                ShowLayer();
             }
         }
 
@@ -229,10 +222,8 @@ namespace UVtools.WPF
             get => _showLayerOutlineLayerBoundary;
             set
             {
-                if (RaiseAndSetIfChanged(ref _showLayerOutlineLayerBoundary, value))
-                {
-                    ShowLayer();
-                }
+                if (!RaiseAndSetIfChanged(ref _showLayerOutlineLayerBoundary, value)) return;
+                ShowLayer();
             }
         }
 
@@ -241,10 +232,8 @@ namespace UVtools.WPF
             get => _showLayerOutlineHollowAreas;
             set
             {
-                if (RaiseAndSetIfChanged(ref _showLayerOutlineHollowAreas, value))
-                {
-                    ShowLayer();
-                }
+                if (!RaiseAndSetIfChanged(ref _showLayerOutlineHollowAreas, value)) return;
+                ShowLayer();
             }
         }
 
@@ -253,10 +242,8 @@ namespace UVtools.WPF
             get => _showLayerOutlineEdgeDetection;
             set
             {
-                if (RaiseAndSetIfChanged(ref _showLayerOutlineEdgeDetection, value))
-                {
-                    ShowLayer();
-                }
+                if (!RaiseAndSetIfChanged(ref _showLayerOutlineEdgeDetection, value)) return;
+                ShowLayer();
             }
         }
 
@@ -268,7 +255,7 @@ namespace UVtools.WPF
                 if (!RaiseAndSetIfChanged(ref _isPixelEditorActive, value)) return;
                 if (_isPixelEditorActive)
                 {
-                    TabSelectedIndex = 3;
+                    SelectedTabItem = TabPixelEditor;
                 }
                 else
                 {
@@ -857,9 +844,9 @@ namespace UVtools.WPF
                 lineThickness);
         }
 
-        public Point GetTransposedPoint(Point point, bool clockWise = true)
+        public Point GetTransposedPoint(Point point, bool clockWise = true, bool ignoreLayerRotation = false)
         {
-            if (!_showLayerImageRotated) return point;
+            if (!_showLayerImageRotated && !ignoreLayerRotation) return point;
             return clockWise
                 ? new Point(point.Y, LayerCache.Image.Height - 1 - point.X)
                 : new Point(LayerCache.Image.Height - 1 - point.Y, point.X);
@@ -946,7 +933,7 @@ namespace UVtools.WPF
         /// </summary>
         /// <param name="point">Point holding X and Y coordinates</param>
         /// <param name="zoomLevel">Zoom level to set, 0 to ignore or negative value to get current locked zoom level</param>
-        public void CenterLayerAt(System.Drawing.Point point, int zoomLevel = 0) => CenterLayerAt(point.X, point.Y, zoomLevel);
+        public void CenterLayerAt(Point point, int zoomLevel = 0) => CenterLayerAt(point.X, point.Y, zoomLevel);
 
 
         /// <summary>
@@ -1060,7 +1047,7 @@ namespace UVtools.WPF
         /// If there is an issue under the point location passed, that issue will be selected and
         /// scrolled into view on the IssueList.
         /// </summary>
-        private void SelectIssueAtPoint(System.Drawing.Point location)
+        private void SelectIssueAtPoint(Point location)
         {
             //location = GetTransposedPoint(location);
             // If location clicked is within an issue, activate it.
@@ -1072,6 +1059,7 @@ namespace UVtools.WPF
                 if (!GetTransposedIssueBounds(issue).Contains(location)) continue;
 
                 IssueSelectedIndex = i;
+                SelectedTabItem = TabIssues;
                 break;
             }
         }
@@ -1276,7 +1264,7 @@ namespace UVtools.WPF
         public void OnLayerPixelPickerClicked()
         {
             if (!LayerPixelPicker.IsSet) return;
-            LayerImageBox.CenterAt(LayerPixelPicker.Location);
+            CenterLayerAt(GetTransposedPoint(LayerPixelPicker.Location, false), -1);
         }
 
         public async void SaveCurrentLayerImage()
@@ -1292,6 +1280,110 @@ namespace UVtools.WPF
             if (string.IsNullOrEmpty(result)) return;
 
             LayerCache.ImageBgr.Save(result);
+        }
+
+        const byte _pixelEditorCursorMinDiamater = 10;
+        public void UpdatePixelEditorCursor()
+        {
+            Mat cursor = null;
+            MCvScalar _pixelEditorCursorColor = new MCvScalar(
+                Settings.PixelEditor.CursorColor.B, 
+                Settings.PixelEditor.CursorColor.G,
+                Settings.PixelEditor.CursorColor.R,
+                Settings.PixelEditor.CursorColor.A);
+            switch ((PixelOperation.PixelOperationType)SelectedPixelOperationTabIndex)
+            {
+                case PixelOperation.PixelOperationType.Drawing:
+                    
+                    if (DrawingPixelDrawing.BrushSize > 1)
+                    {
+                        cursor = EmguExtensions.InitMat(new System.Drawing.Size(DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.BrushSize), DepthType.Cv8U, 4);
+                        switch (DrawingPixelDrawing.BrushShape)
+                        {
+                            case PixelDrawing.BrushShapeType.Rectangle:
+                                CvInvoke.Rectangle(cursor,
+                                    new Rectangle(Point.Empty, new System.Drawing.Size(DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.BrushSize)),
+                                    _pixelEditorCursorColor, DrawingPixelDrawing.Thickness, DrawingPixelDrawing.LineType);
+                                _pixelEditorCursorColor.V3 = 255;
+                                CvInvoke.Rectangle(cursor,
+                                    new Rectangle(Point.Empty, new System.Drawing.Size(DrawingPixelDrawing.BrushSize-1, DrawingPixelDrawing.BrushSize-1)),
+                                    _pixelEditorCursorColor, 1, DrawingPixelDrawing.LineType);
+                                break;
+                            case PixelDrawing.BrushShapeType.Circle:
+                                var center = new Point(DrawingPixelDrawing.BrushSize / 2, DrawingPixelDrawing.BrushSize / 2);
+                                CvInvoke.Circle(cursor,
+                                   center,
+                                   center.X,
+                                   _pixelEditorCursorColor,
+                                   DrawingPixelDrawing.Thickness, DrawingPixelDrawing.LineType
+                                   );
+                                _pixelEditorCursorColor.V3 = 255;
+                                CvInvoke.Circle(cursor,
+                                    center,
+                                    center.X,
+                                    _pixelEditorCursorColor,
+                                    1, DrawingPixelDrawing.LineType
+                                );
+                                break;
+                        }
+                    }
+                    break;
+                case PixelOperation.PixelOperationType.Text:
+                    break;
+                    var text = DrawingPixelText.Text;
+                    if (string.IsNullOrEmpty(text) || DrawingPixelText.FontScale < 0.2) return;
+
+                    int baseLine = 0;
+                    var size = CvInvoke.GetTextSize(text, DrawingPixelText.Font, DrawingPixelText.FontScale, DrawingPixelText.Thickness, ref baseLine);
+                    cursor = EmguExtensions.InitMat(size, DepthType.Cv8U, 4);
+                    CvInvoke.PutText(cursor, text, new Point(0, 0), DrawingPixelText.Font, DrawingPixelText.FontScale, _pixelEditorCursorColor, DrawingPixelText.Thickness, DrawingPixelText.LineType, DrawingPixelText.Mirror);
+                    break;
+                case PixelOperation.PixelOperationType.Supports:
+                case PixelOperation.PixelOperationType.DrainHole:
+                    var diameter = SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Supports ?
+                        DrawingPixelSupport.TipDiameter : DrawingPixelDrainHole.Diameter;
+
+                    if (diameter >= _pixelEditorCursorMinDiamater)
+                    {
+                        cursor = EmguExtensions.InitMat(new System.Drawing.Size(diameter, diameter), DepthType.Cv8U, 4);
+                        var center = new Point(diameter / 2, diameter / 2);
+                        CvInvoke.Circle(cursor,
+                            center,
+                            center.X,
+                            _pixelEditorCursorColor,
+                            -1, LineType.AntiAlias
+                        );
+                        _pixelEditorCursorColor.V3 = 255;
+                        CvInvoke.Circle(cursor,
+                            center,
+                            center.X,
+                            _pixelEditorCursorColor,
+                            1, LineType.AntiAlias
+                        );
+                    }
+                    break;
+            }
+
+            if (!(cursor is null))
+            {
+                LayerImageBox.TrackerImage = cursor.ToBitmap();
+                //cursor.Save("D:\\Cursor.png");
+                //LayerImageBox.TrackerImage.Save("D:\\CursorAVA.png");
+            }
+            /*else if (tabControlPixelEditor.SelectedIndex == (byte)PixelOperation.PixelOperationType.Text)
+            {
+                var text = tbPixelEditorTextText.Text;
+                if (string.IsNullOrEmpty(text) || nmPixelEditorTextFontScale.Value < 0.2m) return;
+
+                LineType lineType = (LineType)cbPixelEditorTextLineType.SelectedItem;
+                FontFace fontFace = (FontFace)cbPixelEditorTextFontFace.SelectedItem;
+                double scale = (double) nmPixelEditorTextFontScale.Value * pbLayer.Zoom / 100;
+                int thickness = (int) nmPixelEditorTextThickness.Value;
+                int baseLine = 0;
+                var size = CvInvoke.GetTextSize(text, fontFace, scale, thickness, ref baseLine);
+                mat = new Mat(size, DepthType.Cv8U, 4);
+                CvInvoke.PutText(mat, text, new Point(0,0), fontFace, scale, new MCvScalar(255,100,255, 255), thickness, lineType, cbPixelEditorTextMirror.Checked);
+            }*/
         }
     }
 }

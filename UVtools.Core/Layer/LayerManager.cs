@@ -956,17 +956,10 @@ namespace UVtools.Core
                                             }
                                         }
 
-                                        bool isIsland = true;
                                         if (points.Count == 0) continue; // Should never happen
 
-                                        if (points.Count == 92 && points[0].X == 876 && points[0].Y == 884)
-                                        {
-
-                                        }
-
                                         var requiredSupportingPixels = Math.Max(1, points.Count * islandConfig.RequiredPixelsToSupportMultiplier);
-                                        if (pixelsSupportingIsland >= requiredSupportingPixels)
-                                            isIsland = false;
+
                                         /*if (pixelsSupportingIsland >= islandConfig.RequiredPixelsToSupport)
                                             isIsland = false; // Not a island, bounding is strong, i think...
                                         else if (pixelsSupportingIsland > 0 &&
@@ -975,12 +968,11 @@ namespace UVtools.Core
                                             isIsland = false; // Not a island, but maybe weak bounding...*/
 
 
-                                        if (isIsland)
+                                        if (pixelsSupportingIsland < requiredSupportingPixels)
                                         {
                                             result.Add(new LayerIssue(layer, LayerIssue.IssueType.Island,
                                                 points.ToArray(),
                                                 rect));
-                                            continue;
                                         }
 
                                         // Check for overhangs

@@ -554,6 +554,7 @@ namespace UVtools.WPF
             private byte _islandRequiredAreaToProcessCheck = 1;
             private byte _islandRequiredPixelBrightnessToProcessCheck = 1;
             private byte _islandRequiredPixelsToSupport = 10;
+            private decimal _islandRequiredPixelsToSupportMultiplier = 0.25m;
             private byte _islandRequiredPixelBrightnessToSupport = 150;
             private bool _overhangIndependentFromIslands = true;
             private byte _overhangErodeIterations = 49;
@@ -620,6 +621,12 @@ namespace UVtools.WPF
             {
                 get => _islandRequiredAreaToProcessCheck;
                 set => this.RaiseAndSetIfChanged(ref _islandRequiredAreaToProcessCheck, value);
+            }
+
+            public decimal IslandRequiredPixelsToSupportMultiplier
+            {
+                get => _islandRequiredPixelsToSupportMultiplier;
+                set => this.RaiseAndSetIfChanged(ref _islandRequiredPixelsToSupportMultiplier, value);
             }
 
             public byte IslandRequiredPixelsToSupport
@@ -696,6 +703,7 @@ namespace UVtools.WPF
             private Color _supportsHighlightColor = new Color(255, 0, 139, 139);
             private Color _drainHoleColor = new Color(255, 142, 69, 133);
             private Color _drainHoleHighlightColor = new Color(255, 159, 0, 197);
+            private Color _cursorColor = new Color(150, 52, 152, 219);
             private bool _partialUpdateIslandsOnEditing = true;
             private bool _closeEditorOnApply;
 
@@ -835,6 +843,23 @@ namespace UVtools.WPF
                 set => DrainHoleHighlightColor = new Color(value);
             }
 
+            public Color CursorColor
+            {
+                get => _cursorColor;
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _cursorColor, value);
+                    this.RaisePropertyChanged(nameof(CursorBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush CursorBrush
+            {
+                get => new SolidColorBrush(_cursorColor.ToAvalonia());
+                set => CursorColor = new Color(value);
+            }
+
             public bool PartialUpdateIslandsOnEditing
             {
                 get => _partialUpdateIslandsOnEditing;
@@ -861,7 +886,7 @@ namespace UVtools.WPF
             private bool _repairIslands = true;
             private bool _repairResinTraps = true;
             private bool _removeEmptyLayers = true;
-            private byte _removeIslandsBelowEqualPixels = 10;
+            private byte _removeIslandsBelowEqualPixels = 5;
             private ushort _removeIslandsRecursiveIterations = 4;
             private byte _closingIterations = 2;
             private byte _openingIterations = 0;
