@@ -1,6 +1,6 @@
 # Changelog
 
-## ??/??/2020 - v0.9.0.0
+## 10/22/2020 - v1.0.0.0
 
 * (Add) Multi-OS with Linux and MacOS support
 * (Add) Themes support
