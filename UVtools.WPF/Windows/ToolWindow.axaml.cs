@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -39,6 +40,13 @@ namespace UVtools.WPF.Windows
         private bool _buttonOkEnabled = true;
         private string _buttonOkText = "Ok";
         private bool _buttonOkVisible = true;
+        private double _scrollViewerMaxHeight=double.PositiveInfinity;
+
+        public double ScrollViewerMaxHeight
+        {
+            get => _scrollViewerMaxHeight;
+            set => RaiseAndSetIfChanged(ref _scrollViewerMaxHeight, value);
+        }
 
         #region Description
 
@@ -256,8 +264,6 @@ namespace UVtools.WPF.Windows
             {
                 IsROIVisible = true;
             }
-
-            DataContext = this;
         }
 
         public ToolWindow(string description = null, bool layerRangeVisible = true) : this()
@@ -270,6 +276,7 @@ namespace UVtools.WPF.Windows
         {
             ToolControl = toolControl;
             toolControl.ParentWindow = this;
+            toolControl.Margin = new Thickness(15);
 
             Title = toolControl.BaseOperation.Title;
             LayerRangeVisible = toolControl.BaseOperation.LayerRangeSelection != Enumerations.LayerRangeSelection.None;
@@ -304,27 +311,40 @@ namespace UVtools.WPF.Windows
                     throw new ArgumentOutOfRangeException();
             }
 
-            RaisePropertyChanged(nameof(IsContentVisible));
-            RaisePropertyChanged(nameof(IsROIVisible));
+            //RaisePropertyChanged(nameof(IsContentVisible));
+            //RaisePropertyChanged(nameof(IsROIVisible));
+
 
             // Ensure the description don't stretch window
             DispatcherTimer.Run(() =>
             {
                 if (Bounds.Width == 0) return true;
-                DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl?.Bounds.Width ?? 0) - 40;
+                ScrollViewerMaxHeight = Screens.Primary.WorkingArea.Height - Bounds.Height + ToolControl.Bounds.Height - 250;
+                DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl.Bounds.Width) - 40;
                 Description = toolControl.BaseOperation.Description;
                 return false;
             }, TimeSpan.FromMilliseconds(1));
 
-
             toolControl.Callback(Callbacks.Init);
             toolControl.DataContext = toolControl;
+            DataContext = this;
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
         }
+
+        /*protected override void OnOpened(EventArgs e)
+        {
+            base.OnOpened(e);
+            if (!(ToolControl is null))
+            {
+                DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl?.Bounds.Width ?? 0) - 40;
+                Description = ToolControl.BaseOperation.Description;
+            }            
+            DataContext = this;
+        }*/
 
         public async void Process()
         {

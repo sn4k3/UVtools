@@ -17,11 +17,23 @@ namespace UVtools.WPF.Windows
     public class SettingsWindow : WindowEx
     {
         private double _scrollViewerMaxHeight;
+        private int _selectedTabIndex;
         public UserSettings SettingsBackup { get; }
         public UserSettings Settings => UserSettings.Instance;
 
         public string[] FileOpenDialogFilters { get; }
         public string[] ZoomRanges { get; }
+
+        public int SelectedTabIndex
+        {
+            get => _selectedTabIndex;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _selectedTabIndex, value)) return;
+                SizeToContent = SizeToContent.Manual;
+                SizeToContent = SizeToContent.Height;
+            }
+        }
 
         public double ScrollViewerMaxHeight
         {
@@ -49,7 +61,8 @@ namespace UVtools.WPF.Windows
 
             
             //MaxHeight = Screens.Primary.WorkingArea.Height - 50;
-            ScrollViewerMaxHeight = Screens.Primary.WorkingArea.Height - 700;
+            ScrollViewerMaxHeight = Screens.Primary.WorkingArea.Height - 200;
+
 
             DataContext = this;
             InitializeComponent();

@@ -3,146 +3,149 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:cp="clr-namespace:ThemeEditor.Controls.ColorPicker;assembly=ThemeEditor.Controls.ColorPicker"
-        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="450"
         x:Class="UVtools.WPF.Windows.SettingsWindow"
         WindowStartupLocation="CenterOwner"
-        SizeToContent="WidthAndHeight"
-        CanResize="false"
-        MinWidth="500"
+        MinWidth="600"
+        Width="700"
+        SizeToContent="Height"
+        CanResize="False"
         Title="UVtools - Settings"
         Icon="/Assets/Icons/UVtools.ico"
         >
   <StackPanel Orientation="Vertical" Spacing="10">
-    <TabControl>
+    <TabControl SelectedIndex="{Binding SelectedTabIndex}">
       <TabItem Header="General" VerticalContentAlignment="Center">
-        <StackPanel Orientation="Vertical" Spacing="5">
-          <Border 
-            Margin="5"
-          BorderBrush="LightBlue"
-          BorderThickness="4"
+        <ScrollViewer MaxHeight="{Binding ScrollViewerMaxHeight}">
+          <StackPanel Orientation="Vertical" Spacing="5">
+            <Border
+              Margin="5"
+            BorderBrush="LightBlue"
+            BorderThickness="4"
           >
 
-            <StackPanel Orientation="Vertical">
-              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Startup"/>
-              <StackPanel Margin="15" Orientation="Vertical" Spacing="15">
-                <CheckBox IsChecked="{Binding Settings.General.StartMaximized}" Content="Start maximized"/>
-                <CheckBox IsChecked="{Binding Settings.General.CheckForUpdatesOnStartup}" Content="Check for updates on startup"/>
+              <StackPanel Orientation="Vertical">
+                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Startup"/>
+                <StackPanel Margin="15" Orientation="Vertical" Spacing="15">
+                  <CheckBox IsChecked="{Binding Settings.General.StartMaximized}" Content="Start maximized"/>
+                  <CheckBox IsChecked="{Binding Settings.General.CheckForUpdatesOnStartup}" Content="Check for updates on startup"/>
+                  <CheckBox IsChecked="{Binding Settings.General.LoadDemoFileOnStartup}" Content="Loads a demo file on startup if no file was specified"/>
+                </StackPanel>
+
               </StackPanel>
-            
-            </StackPanel>
+            </Border>
 
-
-          </Border>
-
-          <Border
-            Margin="5"
-          BorderBrush="LightBlue"
-          BorderThickness="4"
+            <Border
+              Margin="5"
+            BorderBrush="LightBlue"
+            BorderThickness="4"
           >
 
-            <StackPanel Orientation="Vertical">
-              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="File dialog"/>
-              <Grid Margin="15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,*,Auto,Auto">
-                <TextBlock 
-                  VerticalAlignment="Center" 
-                  Grid.Row="0" Grid.Column="0" 
-                  Text="File open dialog filters:"/>
-                <ComboBox Items="{Binding FileOpenDialogFilters}"
-                          SelectedIndex="{Binding Settings.General.DefaultOpenFileExtensionIndex}"
-                          Margin="10,0,0,0" 
-                          Grid.ColumnSpan="3" Grid.Row="0" Grid.Column="1"/>
+              <StackPanel Orientation="Vertical">
+                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="File dialog"/>
+                <Grid Margin="15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,*,Auto,Auto">
+                  <TextBlock
+                    VerticalAlignment="Center"
+                    Grid.Row="0" Grid.Column="0"
+                    Text="File open dialog filters:"/>
+                  <ComboBox Items="{Binding FileOpenDialogFilters}"
+                            SelectedIndex="{Binding Settings.General.DefaultOpenFileExtensionIndex}"
+                            HorizontalAlignment="Left"
+                            Width="435"
+                            MaxDropDownHeight="300"
+                            Grid.ColumnSpan="3" Grid.Row="0" Grid.Column="2"/>
 
-                <TextBlock VerticalAlignment="Center"
-                           Grid.Row="2" Grid.Column="0"
-                           Text="File open default directory:"/>
-                <TextBox
-                  Name="General.DefaultDirectoryOpenFile"
-                  Text="{Binding Settings.General.DefaultDirectoryOpenFile}"
-                  Margin="10,0,0,0" Grid.Row="2" Grid.Column="1" IsReadOnly="True"/>
-                <Button Grid.Row="2" Grid.Column="2"
-                        Command="{Binding GeneralOpenFolderField}"
-                        CommandParameter="DefaultDirectoryOpenFile">
-                  <Image Source="/Assets/Icons/open-16x16.png"/>
-                </Button>
-                <Button Grid.Row="2" Grid.Column="3"
-                        Command="{Binding GeneralClearField}"
-                        CommandParameter="DefaultDirectoryOpenFile">
-                  <Image Source="/Assets/Icons/delete-16x16.png"/>
-                </Button>
+                  <TextBlock VerticalAlignment="Center"
+                             Grid.Row="2" Grid.Column="0"
+                             Text="File open default directory:"/>
+                  <TextBox
+                    Name="General.DefaultDirectoryOpenFile"
+                    Text="{Binding Settings.General.DefaultDirectoryOpenFile}"
+                    Grid.Row="2" Grid.Column="2" IsReadOnly="True"/>
+                  <Button Grid.Row="2" Grid.Column="3"
+                          Command="{Binding GeneralOpenFolderField}"
+                          CommandParameter="DefaultDirectoryOpenFile">
+                    <Image Source="/Assets/Icons/open-16x16.png"/>
+                  </Button>
+                  <Button Grid.Row="2" Grid.Column="4"
+                          Command="{Binding GeneralClearField}"
+                          CommandParameter="DefaultDirectoryOpenFile">
+                    <Image Source="/Assets/Icons/delete-16x16.png"/>
+                  </Button>
 
-                <TextBlock VerticalAlignment="Center" 
-                           Grid.Row="4" Grid.Column="0"
-                           Text="File save as default directory:"/>
-                <TextBox 
-                  Name="General.DefaultDirectorySaveFile"
-                  Text="{Binding Settings.General.DefaultDirectorySaveFile}"
-                  Margin="10,0,0,0" Grid.Row="4" Grid.Column="1" IsReadOnly="True"/>
-                <Button Grid.Row="4" Grid.Column="2"
-                        Command="{Binding GeneralOpenFolderField}"
-                        CommandParameter="DefaultDirectorySaveFile">
-                  <Image Source="/Assets/Icons/open-16x16.png"/>
-                </Button>
-                <Button Grid.Row="4" Grid.Column="3"
-                        Command="{Binding GeneralClearField}"
-                        CommandParameter="DefaultDirectorySaveFile">
-                  <Image Source="/Assets/Icons/delete-16x16.png"/>
-                </Button>
+                  <TextBlock VerticalAlignment="Center"
+                             Grid.Row="4" Grid.Column="0"
+                             Text="File save as default directory:"/>
+                  <TextBox
+                    Name="General.DefaultDirectorySaveFile"
+                    Text="{Binding Settings.General.DefaultDirectorySaveFile}"
+                    Grid.Row="4" Grid.Column="2" IsReadOnly="True"/>
+                  <Button Grid.Row="4" Grid.Column="3"
+                          Command="{Binding GeneralOpenFolderField}"
+                          CommandParameter="DefaultDirectorySaveFile">
+                    <Image Source="/Assets/Icons/open-16x16.png"/>
+                  </Button>
+                  <Button Grid.Row="4" Grid.Column="4"
+                          Command="{Binding GeneralClearField}"
+                          CommandParameter="DefaultDirectorySaveFile">
+                    <Image Source="/Assets/Icons/delete-16x16.png"/>
+                  </Button>
 
-                <TextBlock VerticalAlignment="Center" 
-                           Grid.Row="6" Grid.Column="0"
-                           Text="File extract default directory:"/>
-                <TextBox
-                  Name="General.DefaultDirectoryExtractFile"
-                  Text="{Binding Settings.General.DefaultDirectoryExtractFile}"
-                  Margin="10,0,0,0" Grid.Row="6" Grid.Column="1" IsReadOnly="True"/>
-                <Button Grid.Row="6" Grid.Column="2"
-                        Command="{Binding GeneralOpenFolderField}"
-                        CommandParameter="DefaultDirectoryExtractFile">
-                  <Image Source="/Assets/Icons/open-16x16.png"/>
-                </Button>
-                <Button Grid.Row="6" Grid.Column="3"
-                        Command="{Binding GeneralClearField}"
-                        CommandParameter="DefaultDirectoryExtractFile">
-                  <Image Source="/Assets/Icons/delete-16x16.png"/>
-                </Button>
+                  <TextBlock VerticalAlignment="Center"
+                             Grid.Row="6" Grid.Column="0"
+                             Text="File extract default directory:"/>
+                  <TextBox
+                    Name="General.DefaultDirectoryExtractFile"
+                    Text="{Binding Settings.General.DefaultDirectoryExtractFile}"
+                    Grid.Row="6" Grid.Column="2" IsReadOnly="True"/>
+                  <Button Grid.Row="6" Grid.Column="3"
+                          Command="{Binding GeneralOpenFolderField}"
+                          CommandParameter="DefaultDirectoryExtractFile">
+                    <Image Source="/Assets/Icons/open-16x16.png"/>
+                  </Button>
+                  <Button Grid.Row="6" Grid.Column="4"
+                          Command="{Binding GeneralClearField}"
+                          CommandParameter="DefaultDirectoryExtractFile">
+                    <Image Source="/Assets/Icons/delete-16x16.png"/>
+                  </Button>
 
-                <TextBlock VerticalAlignment="Center" 
-                           Grid.Row="8" Grid.Column="0"
-                           Text="File convert default directory:"/>
-                <TextBox 
-                  Name="General.DefaultDirectoryConvertFile"
-                  Text="{Binding Settings.General.DefaultDirectoryConvertFile}"
-                  Margin="10,0,0,0" Grid.Row="8" Grid.Column="1" IsReadOnly="True"/>
-                <Button Grid.Row="8" Grid.Column="2"
-                        Command="{Binding GeneralOpenFolderField}"
-                        CommandParameter="DefaultDirectoryConvertFile">
-                  <Image Source="/Assets/Icons/open-16x16.png"/>
-                </Button>
-                <Button 
-                  Command="{Binding GeneralClearField}"
-                  CommandParameter="DefaultDirectoryConvertFile"
-                  Grid.Row="8" Grid.Column="3">
-                  <Image Source="/Assets/Icons/delete-16x16.png"/>
-                </Button>
-                
-              </Grid>
-              <CheckBox IsChecked="{Binding Settings.General.PromptOverwriteFileSave}" Margin="15,0" Content="On file 'Save' prompt for file overwrite for the first time" />
+                  <TextBlock VerticalAlignment="Center"
+                             Grid.Row="8" Grid.Column="0"
+                             Text="File convert default directory:"/>
+                  <TextBox
+                    Name="General.DefaultDirectoryConvertFile"
+                    Text="{Binding Settings.General.DefaultDirectoryConvertFile}"
+                    Grid.Row="8" Grid.Column="2" IsReadOnly="True"/>
+                  <Button Grid.Row="8" Grid.Column="3"
+                          Command="{Binding GeneralOpenFolderField}"
+                          CommandParameter="DefaultDirectoryConvertFile">
+                    <Image Source="/Assets/Icons/open-16x16.png"/>
+                  </Button>
+                  <Button
+                    Command="{Binding GeneralClearField}"
+                    CommandParameter="DefaultDirectoryConvertFile"
+                    Grid.Row="8" Grid.Column="4">
+                    <Image Source="/Assets/Icons/delete-16x16.png"/>
+                  </Button>
 
-              <Grid Margin="15" ColumnDefinitions="Auto,*,Auto,*">
-                <TextBlock VerticalAlignment="Center" Grid.Column="0" Text="File 'Save as' prefix:"/>
-                <TextBox Text="{Binding Settings.General.FileSaveNamePrefix}"
-                         Grid.Column="1" Margin="10,0,10,0"/>
-                <TextBlock VerticalAlignment="Center" Grid.Column="2" Text="Suffix:"/>
-                <TextBox Text="{Binding Settings.General.FileSaveNameSuffix}"
-                         Grid.Column="3" Margin="10,0,0,0"/>
-              </Grid>
-            </StackPanel>
+                </Grid>
+                <CheckBox IsChecked="{Binding Settings.General.PromptOverwriteFileSave}" Margin="15,0" Content="On file 'Save' prompt for file overwrite for the first time" />
+
+                <Grid Margin="15" ColumnDefinitions="Auto,*,Auto,*">
+                  <TextBlock VerticalAlignment="Center" Grid.Column="0" Text="File 'Save as' prefix:"/>
+                  <TextBox Text="{Binding Settings.General.FileSaveNamePrefix}"
+                           Grid.Column="1" Margin="10,0,10,0"/>
+                  <TextBlock VerticalAlignment="Center" Grid.Column="2" Text="Suffix:"/>
+                  <TextBox Text="{Binding Settings.General.FileSaveNameSuffix}"
+                           Grid.Column="3" Margin="10,0,0,0"/>
+                </Grid>
+              </StackPanel>
 
 
-          </Border>
+            </Border>
 
-        </StackPanel>
-
+          </StackPanel>
+        </ScrollViewer>
 
       </TabItem>
       <TabItem Header="Layer preview" VerticalContentAlignment="Center">
@@ -865,197 +868,201 @@
       </TabItem>
 
       <TabItem Header="Pixel editor" VerticalContentAlignment="Center">
-        <StackPanel Orientation="Vertical">
-          <Border
-                Margin="5"
-                BorderBrush="LightBlue"
-                BorderThickness="4">
+        <ScrollViewer MaxHeight="{Binding ScrollViewerMaxHeight}">
+          <StackPanel Orientation="Vertical">
+            <Border
+                  Margin="5"
+                  BorderBrush="LightBlue"
+                  BorderThickness="4">
 
-            <StackPanel Orientation="Vertical">
-              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Colors &amp; highlights"/>
+              <StackPanel Orientation="Vertical">
+                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Colors &amp; highlights"/>
 
-              <Grid Margin="15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,Auto">
-                <TextBlock Grid.Row="0" Grid.Column="0"
-                  VerticalAlignment="Center"
-                  Text="Pixel add operation / (Selected):"/>
+                <Grid Margin="15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,Auto">
+                  <TextBlock Grid.Row="0" Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Pixel add operation / (Selected):"/>
 
-                <Button Grid.Row="0" Grid.Column="1"
-                        Margin="10,0,0,0" Padding="10"
-                        BorderBrush="Black"
-                        BorderThickness="2"
-                        Background="{Binding Settings.PixelEditor.AddPixelBrush}"
-                        Command="{Binding SelectColor}"
-                        CommandParameter="AddPixelColor"
+                  <Button Grid.Row="0" Grid.Column="1"
+                          Margin="10,0,0,0" Padding="10"
+                          BorderBrush="Black"
+                          BorderThickness="2"
+                          Background="{Binding Settings.PixelEditor.AddPixelBrush}"
+                          Command="{Binding SelectColor}"
+                          CommandParameter="AddPixelColor"
                         />
-                <Button Grid.Row="0" Grid.Column="2"
-                        Margin="10,0,0,0" Padding="10"
-                        BorderBrush="Black"
-                        BorderThickness="2"
-                        Background="{Binding Settings.PixelEditor.AddPixelHighlightBrush}"
-                        Command="{Binding SelectColor}"
-                        CommandParameter="AddPixelHighlightColor"
-                        />
-
-
-                <TextBlock Grid.Row="2" Grid.Column="0"
-                  VerticalAlignment="Center"
-                  Text="Pixel remove operation / (Selected):"/>
-
-                <Button Grid.Row="2" Grid.Column="1"
-                        Margin="10,0,0,0" Padding="10"
-                        BorderBrush="Black"
-                        BorderThickness="2"
-                        Background="{Binding Settings.PixelEditor.RemovePixelBrush}"
-                        Command="{Binding SelectColor}"
-                        CommandParameter="RemovePixelColor"
-                        />
-                <Button Grid.Row="2" Grid.Column="2"
-                        Margin="10,0,0,0" Padding="10"
-                        BorderBrush="Black"
-                        BorderThickness="2"
-                        Background="{Binding Settings.PixelEditor.RemovePixelHighlightBrush}"
-                        Command="{Binding SelectColor}"
-                        CommandParameter="RemovePixelHighlightColor"
+                  <Button Grid.Row="0" Grid.Column="2"
+                          Margin="10,0,0,0" Padding="10"
+                          BorderBrush="Black"
+                          BorderThickness="2"
+                          Background="{Binding Settings.PixelEditor.AddPixelHighlightBrush}"
+                          Command="{Binding SelectColor}"
+                          CommandParameter="AddPixelHighlightColor"
                         />
 
-                <TextBlock Grid.Row="4" Grid.Column="0"
-                  VerticalAlignment="Center"
-                  Text="Support operation / (Selected):"/>
 
-                <Button Grid.Row="4" Grid.Column="1"
-                        Margin="10,0,0,0" Padding="10"
-                        BorderBrush="Black"
-                        BorderThickness="2"
-                        Background="{Binding Settings.PixelEditor.SupportsBrush}"
-                        Command="{Binding SelectColor}"
-                        CommandParameter="SupportsColor"
-                        />
-                <Button Grid.Row="4" Grid.Column="2"
-                        Margin="10,0,0,0" Padding="10"
-                        BorderBrush="Black"
-                        BorderThickness="2"
-                        Background="{Binding Settings.PixelEditor.SupportsHighlightBrush}"
-                        Command="{Binding SelectColor}"
-                        CommandParameter="SupportsHighlightColor"
-                        />
+                  <TextBlock Grid.Row="2" Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Pixel remove operation / (Selected):"/>
 
-                <TextBlock Grid.Row="6" Grid.Column="0"
-                  VerticalAlignment="Center"
-                  Text="Drain hole operation / (Selected):"/>
-
-                <Button Grid.Row="6" Grid.Column="1"
-                        Margin="10,0,0,0" Padding="10"
-                        BorderBrush="Black"
-                        BorderThickness="2"
-                        Background="{Binding Settings.PixelEditor.DrainHoleBrush}"
-                        Command="{Binding SelectColor}"
-                        CommandParameter="DrainHoleColor"
+                  <Button Grid.Row="2" Grid.Column="1"
+                          Margin="10,0,0,0" Padding="10"
+                          BorderBrush="Black"
+                          BorderThickness="2"
+                          Background="{Binding Settings.PixelEditor.RemovePixelBrush}"
+                          Command="{Binding SelectColor}"
+                          CommandParameter="RemovePixelColor"
                         />
-                <Button Grid.Row="6" Grid.Column="2"
-                        Margin="10,0,0,0" Padding="10"
-                        BorderBrush="Black"
-                        BorderThickness="2"
-                        Background="{Binding Settings.PixelEditor.DrainHoleHighlightBrush}"
-                        Command="{Binding SelectColor}"
-                        CommandParameter="DrainHoleHighlightColor"
+                  <Button Grid.Row="2" Grid.Column="2"
+                          Margin="10,0,0,0" Padding="10"
+                          BorderBrush="Black"
+                          BorderThickness="2"
+                          Background="{Binding Settings.PixelEditor.RemovePixelHighlightBrush}"
+                          Command="{Binding SelectColor}"
+                          CommandParameter="RemovePixelHighlightColor"
                         />
 
-                <TextBlock Grid.Row="8" Grid.Column="0"
-                  VerticalAlignment="Center"
-                  Text="Drawing cursor:"/>
+                  <TextBlock Grid.Row="4" Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Support operation / (Selected):"/>
 
-                <Button Grid.Row="8" Grid.Column="1"
-                        Margin="10,0,0,0" Padding="10"
-                        BorderBrush="Black"
-                        BorderThickness="2"
-                        Background="{Binding Settings.PixelEditor.CursorBrush}"
-                        Command="{Binding SelectColor}"
-                        CommandParameter="CursorColor"
+                  <Button Grid.Row="4" Grid.Column="1"
+                          Margin="10,0,0,0" Padding="10"
+                          BorderBrush="Black"
+                          BorderThickness="2"
+                          Background="{Binding Settings.PixelEditor.SupportsBrush}"
+                          Command="{Binding SelectColor}"
+                          CommandParameter="SupportsColor"
                         />
-              </Grid>
-              
-            </StackPanel>
-          </Border>
+                  <Button Grid.Row="4" Grid.Column="2"
+                          Margin="10,0,0,0" Padding="10"
+                          BorderBrush="Black"
+                          BorderThickness="2"
+                          Background="{Binding Settings.PixelEditor.SupportsHighlightBrush}"
+                          Command="{Binding SelectColor}"
+                          CommandParameter="SupportsHighlightColor"
+                        />
 
-          <Border
-                Margin="5"
-                BorderBrush="LightBlue"
-                BorderThickness="4">
+                  <TextBlock Grid.Row="6" Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Drain hole operation / (Selected):"/>
 
-            <StackPanel Orientation="Vertical">
-              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Actions"/>
+                  <Button Grid.Row="6" Grid.Column="1"
+                          Margin="10,0,0,0" Padding="10"
+                          BorderBrush="Black"
+                          BorderThickness="2"
+                          Background="{Binding Settings.PixelEditor.DrainHoleBrush}"
+                          Command="{Binding SelectColor}"
+                          CommandParameter="DrainHoleColor"
+                        />
+                  <Button Grid.Row="6" Grid.Column="2"
+                          Margin="10,0,0,0" Padding="10"
+                          BorderBrush="Black"
+                          BorderThickness="2"
+                          Background="{Binding Settings.PixelEditor.DrainHoleHighlightBrush}"
+                          Command="{Binding SelectColor}"
+                          CommandParameter="DrainHoleHighlightColor"
+                        />
 
-              <CheckBox
-                IsChecked="{Binding Settings.PixelEditor.PartialUpdateIslandsOnEditing}"
-                Margin="15"
-                Content="Refresh issues for modified layers"/>
-              <CheckBox 
-                IsChecked="{Binding Settings.PixelEditor.CloseEditorOnApply}"
-                Margin="15,0,15,15"
-                Content="Close pixel editor after operations are applied"/>
-            </StackPanel>
-          </Border>
+                  <TextBlock Grid.Row="8" Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Drawing cursor:"/>
 
-        </StackPanel>
+                  <Button Grid.Row="8" Grid.Column="1"
+                          Margin="10,0,0,0" Padding="10"
+                          BorderBrush="Black"
+                          BorderThickness="2"
+                          Background="{Binding Settings.PixelEditor.CursorBrush}"
+                          Command="{Binding SelectColor}"
+                          CommandParameter="CursorColor"
+                        />
+                </Grid>
+
+              </StackPanel>
+            </Border>
+
+            <Border
+                  Margin="5"
+                  BorderBrush="LightBlue"
+                  BorderThickness="4">
+
+              <StackPanel Orientation="Vertical">
+                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Actions"/>
+
+                <CheckBox
+                  IsChecked="{Binding Settings.PixelEditor.PartialUpdateIslandsOnEditing}"
+                  Margin="15"
+                  Content="Refresh issues for modified layers"/>
+                <CheckBox
+                  IsChecked="{Binding Settings.PixelEditor.CloseEditorOnApply}"
+                  Margin="15,0,15,15"
+                  Content="Close pixel editor after operations are applied"/>
+              </StackPanel>
+            </Border>
+
+          </StackPanel>
+        </ScrollViewer>
       </TabItem>
 
       <TabItem Header="Layer repair" VerticalContentAlignment="Center">
-        <StackPanel Orientation="Vertical">
-          <Border
-                Margin="5"
-                BorderBrush="LightBlue"
-                BorderThickness="4">
+        <ScrollViewer MaxHeight="{Binding ScrollViewerMaxHeight}">
+          <StackPanel Orientation="Vertical">
+            <Border
+                  Margin="5"
+                  BorderBrush="LightBlue"
+                  BorderThickness="4">
 
-            <StackPanel Orientation="Vertical" Spacing="15">
-              <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Default values"/>
+              <StackPanel Orientation="Vertical" Spacing="15">
+                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Default values"/>
 
-              <CheckBox IsChecked="{Binding Settings.LayerRepair.RepairIslands}"
-                Margin="15,0" Content="Attempt to repair islands by default"/>
-              <CheckBox IsChecked="{Binding Settings.LayerRepair.RepairResinTraps}"
-                Margin="15,0" Content="Remove empty layers by default"/>
-              <CheckBox IsChecked="{Binding Settings.LayerRepair.RemoveEmptyLayers}"
-                Margin="15,0" Content="Attempt to repair resin traps by default"/>
+                <CheckBox IsChecked="{Binding Settings.LayerRepair.RepairIslands}"
+                  Margin="15,0" Content="Attempt to repair islands by default"/>
+                <CheckBox IsChecked="{Binding Settings.LayerRepair.RepairResinTraps}"
+                  Margin="15,0" Content="Remove empty layers by default"/>
+                <CheckBox IsChecked="{Binding Settings.LayerRepair.RemoveEmptyLayers}"
+                  Margin="15,0" Content="Attempt to repair resin traps by default"/>
 
-              <StackPanel Orientation="Horizontal" Margin="15,0" Spacing="10">
-                <NumericUpDown 
-                  Value="{Binding Settings.LayerRepair.RemoveIslandsBelowEqualPixels}"
-                  Width="70"
-                  Minimum="0"
-                  Maximum="255"/>
-                <TextBlock VerticalAlignment="Center" Text="Default maximum pixel area for Island removal (0 = disable)"/>
+                <StackPanel Orientation="Horizontal" Margin="15,0" Spacing="10">
+                  <NumericUpDown
+                    Value="{Binding Settings.LayerRepair.RemoveIslandsBelowEqualPixels}"
+                    Width="70"
+                    Minimum="0"
+                    Maximum="255"/>
+                  <TextBlock VerticalAlignment="Center" Text="Default maximum pixel area for Island removal (0 = disable)"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="15,0" Spacing="10">
+                  <NumericUpDown
+                    Value="{Binding Settings.LayerRepair.RemoveIslandsRecursiveIterations}"
+                    Width="70"
+                    Minimum="0"
+                    Maximum="65535"/>
+                  <TextBlock VerticalAlignment="Center" Text="Default maximum layers for recursive island removal (0 = All)"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="15,0" Spacing="10">
+                  <NumericUpDown
+                    Value="{Binding Settings.LayerRepair.ClosingIterations}"
+                    Width="70"
+                    Minimum="0"
+                    Maximum="255"/>
+                  <TextBlock VerticalAlignment="Center" Text="Default 'Gap Closing' iterations"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                  <NumericUpDown
+                    Value="{Binding Settings.LayerRepair.OpeningIterations}"
+                    Width="70"
+                    Minimum="0"
+                    Maximum="255"/>
+                  <TextBlock VerticalAlignment="Center" Text="Default 'Noise Removal' iterations"/>
+                </StackPanel>
+
               </StackPanel>
+            </Border>
 
-              <StackPanel Orientation="Horizontal" Margin="15,0" Spacing="10">
-                <NumericUpDown
-                  Value="{Binding Settings.LayerRepair.RemoveIslandsRecursiveIterations}"
-                  Width="70"
-                  Minimum="0"
-                  Maximum="65535"/>
-                <TextBlock VerticalAlignment="Center" Text="Default maximum layers for recursive island removal (0 = All)"/>
-              </StackPanel>
-
-              <StackPanel Orientation="Horizontal" Margin="15,0" Spacing="10">
-                <NumericUpDown
-                  Value="{Binding Settings.LayerRepair.ClosingIterations}"
-                  Width="70"
-                  Minimum="0"
-                  Maximum="255"/>
-                <TextBlock VerticalAlignment="Center" Text="Default 'Gap Closing' iterations"/>
-              </StackPanel>
-
-              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
-                <NumericUpDown
-                  Value="{Binding Settings.LayerRepair.OpeningIterations}"
-                  Width="70"
-                  Minimum="0"
-                  Maximum="255"/>
-                <TextBlock VerticalAlignment="Center" Text="Default 'Noise Removal' iterations"/>
-              </StackPanel>
-
-            </StackPanel>
-          </Border>
-
-        </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
       </TabItem>
 
     </TabControl>

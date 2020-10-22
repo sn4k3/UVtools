@@ -41,12 +41,12 @@ namespace UVtools.WPF.Windows
         public static BenchmarkTest[] Tests =>
             new[]
             {
-                new BenchmarkTest("4K Random CBBDLP Enconde", "Test4KRandomCBBDLPEncode", 40.30f, 246.30f),
-                new BenchmarkTest("8K Random CBBDLP Enconde", "Test8KRandomCBBDLPEncode", 9.70f, 64.10f),
-                new BenchmarkTest("4K Random CBT Enconde", "Test4KRandomCBTEncode", 13.50f, 113.30f),
-                new BenchmarkTest("8K Random CBT Enconde", "Test8KRandomCBTEncode", 3.40f, 28.20f),
-                new BenchmarkTest("4K Random PW0 Enconde", "Test4KRandomPW0Encode", 14.10f, 89.00f),
-                new BenchmarkTest("8K Random PW0 Enconde", "Test8KRandomPW0Encode", 3.50f, 22.40f),
+                new BenchmarkTest("4K Random CBBDLP Enconde", "Test4KRandomCBBDLPEncode", 57.14f, 401.61f),
+                new BenchmarkTest("8K Random CBBDLP Enconde", "Test8KRandomCBBDLPEncode", 12.03f, 99.80f),
+                new BenchmarkTest("4K Random CBT Enconde", "Test4KRandomCBTEncode", 19.05f, 124.38f),
+                new BenchmarkTest("8K Random CBT Enconde", "Test8KRandomCBTEncode", 4.03f, 35.64f),
+                new BenchmarkTest("4K Random PW0 Enconde", "Test4KRandomPW0Encode", 18.85f, 103.00f),
+                new BenchmarkTest("8K Random PW0 Enconde", "Test8KRandomPW0Encode", 4.07f, 26.65f),
                 new BenchmarkTest(StressCPUTestName, "Test4KRandomCBTEncode", 0, 0),
             };
 

@@ -2,89 +2,155 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <?define ComponentRules="OneToOne"?>
   <!-- SourceDir instructs IsWiX the location of the directory that contains files for this merge module -->
-  <?define SourceDir="..\UVtools.GUI\bin\Release"?>
-  <Module Id="UVtools" Language="1033" Version="0.8.0.0">
+  <?define SourceDir="..\UVtools.WPF\bin\Release\netcoreapp3.1"?>
+  <Module Id="UVtools" Language="1033" Version="1.0.0.0">
     <Package Id="12aaa1cf-ff06-4a02-abd5-2ac01ac4f83b" Manufacturer="PTRTECH" InstallerVersion="200" Keywords="MSLA, DLP" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" InstallScope="perMachine" />
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="DesktopFolder" />
       <Directory Id="MergeRedirectFolder">
-        <Component Id="owc55D108694B5DE9E772548F1CA0A8CAB2" Guid="b22da61c-21cf-d943-2651-127d1c8bb869">
-          <File Id="owf55D108694B5DE9E772548F1CA0A8CAB2" Source="$(var.SourceDir)\ApplicationManagement.dll" KeyPath="yes" />
+        <Component Id="owcD7380A80B6429BB4DD3659354FF3599A" Guid="20b81152-3892-057d-a7ba-4ecf09ee3857">
+          <File Id="owfD7380A80B6429BB4DD3659354FF3599A" Source="$(var.SourceDir)\Avalonia.Animation.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcCBA06267CD7D69F59C478AB8551B1F8B" Guid="0540f694-8b6f-e03c-6003-48c1fa3e72e8">
+          <File Id="owfCBA06267CD7D69F59C478AB8551B1F8B" Source="$(var.SourceDir)\Avalonia.Base.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcC02D5A123FCE6AFFB4061750C62E6AA6" Guid="4640e05c-e685-ab89-a262-216faf27d765">
+          <File Id="owfC02D5A123FCE6AFFB4061750C62E6AA6" Source="$(var.SourceDir)\Avalonia.Controls.DataGrid.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc43312941CA94028E1397B9994C2D7ED9" Guid="81d7abba-5527-f12c-e97c-c1be0d913f98">
+          <File Id="owf43312941CA94028E1397B9994C2D7ED9" Source="$(var.SourceDir)\Avalonia.Controls.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc9BCEC280F9C4B1B69CD49CBD48B8C865" Guid="c66f1b6d-cfe8-9edb-dcc2-4a4dae306a98">
+          <File Id="owf9BCEC280F9C4B1B69CD49CBD48B8C865" Source="$(var.SourceDir)\Avalonia.DesignerSupport.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc5B4A40E91AC07B12DFE396FA497C9227" Guid="0741d6ce-ea95-9492-6e0e-a1dfc41f3ef9">
+          <File Id="owf5B4A40E91AC07B12DFE396FA497C9227" Source="$(var.SourceDir)\Avalonia.Desktop.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc27A5D1506739847D9D7688256879A937" Guid="30f2e89f-1e95-77b9-1c3b-90bd4d875160">
+          <File Id="owf27A5D1506739847D9D7688256879A937" Source="$(var.SourceDir)\Avalonia.DesktopRuntime.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc6C15ADD7A5EE7A0CBEFD35B0027BBEB7" Guid="9c4a8ab3-598c-8e7c-0295-5c068334ab67">
+          <File Id="owf6C15ADD7A5EE7A0CBEFD35B0027BBEB7" Source="$(var.SourceDir)\Avalonia.Dialogs.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc437B704291AF430E7FAF436BD9105196" Guid="bd31c36f-0a7a-7980-fd46-9cbfa0be3c05">
+          <File Id="owf437B704291AF430E7FAF436BD9105196" Source="$(var.SourceDir)\Avalonia.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc8B7F38628C7EDDC3DFDEFB877EF5DC10" Guid="b04773d8-71fe-651f-6f2d-98411ae7bce9">
+          <File Id="owf8B7F38628C7EDDC3DFDEFB877EF5DC10" Source="$(var.SourceDir)\Avalonia.FreeDesktop.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc5AD74C3398CCA7C990D4B281B84DCEBB" Guid="21e9caf1-f88c-633b-dbf8-b8f4f94c8032">
+          <File Id="owf5AD74C3398CCA7C990D4B281B84DCEBB" Source="$(var.SourceDir)\Avalonia.Input.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcEACB5F0F57103C4EE185E047FF1826F1" Guid="df1d0500-505f-9591-d7db-9dcd37ba2a35">
+          <File Id="owfEACB5F0F57103C4EE185E047FF1826F1" Source="$(var.SourceDir)\Avalonia.Interactivity.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcA3CC643938FE3DDCDA48D353D25E3C16" Guid="cabcc50e-a385-3ecf-5c74-026f44d595a8">
+          <File Id="owfA3CC643938FE3DDCDA48D353D25E3C16" Source="$(var.SourceDir)\Avalonia.Layout.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcC0B00F3CD5A0DCEFD01DC823C07E6F72" Guid="7030563e-1fd3-b3e9-0540-5f20b4d225de">
+          <File Id="owfC0B00F3CD5A0DCEFD01DC823C07E6F72" Source="$(var.SourceDir)\Avalonia.Markup.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcF8D46916EBAD015C45AD96CFA020065B" Guid="e65fa3f1-f330-eee1-9307-9a4d0835d4c2">
+          <File Id="owfF8D46916EBAD015C45AD96CFA020065B" Source="$(var.SourceDir)\Avalonia.Markup.Xaml.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc2360F1EA9FE0B1355D5D44A01B139070" Guid="5f41891e-50bf-de85-90a5-56cbc18299b8">
+          <File Id="owf2360F1EA9FE0B1355D5D44A01B139070" Source="$(var.SourceDir)\Avalonia.Markup.Xaml.Loader.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc429F500BA073A0E6269B9341D14183BD" Guid="dcb4ad79-d927-c83e-1938-b2872b68db22">
+          <File Id="owf429F500BA073A0E6269B9341D14183BD" Source="$(var.SourceDir)\Avalonia.Native.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc4E185369FC40F6DAFEBB23AA25A98904" Guid="b6be3442-f344-161b-bce4-a08b16f6f69d">
+          <File Id="owf4E185369FC40F6DAFEBB23AA25A98904" Source="$(var.SourceDir)\Avalonia.OpenGL.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc397D62110086E82DFDBC4309C538AA6F" Guid="2eb88c06-e0e9-8e19-92d2-ba888100f24c">
+          <File Id="owf397D62110086E82DFDBC4309C538AA6F" Source="$(var.SourceDir)\Avalonia.ReactiveUI.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcD69CFCE9EE400CCC3A2DC69ECB3AFB9C" Guid="a4b34c19-87d5-7b3f-61a5-4a897c32202f">
+          <File Id="owfD69CFCE9EE400CCC3A2DC69ECB3AFB9C" Source="$(var.SourceDir)\Avalonia.Remote.Protocol.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcFAF24430FC9CE0D7B5510DC5C18085B1" Guid="b0bc07e7-111c-67a3-a90f-8bc47f0dcbb2">
+          <File Id="owfFAF24430FC9CE0D7B5510DC5C18085B1" Source="$(var.SourceDir)\Avalonia.Skia.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcA08BB73AE310A316EDFF2172A1050F82" Guid="07375671-126d-c2a6-be8f-5b5f6d2891a1">
+          <File Id="owfA08BB73AE310A316EDFF2172A1050F82" Source="$(var.SourceDir)\Avalonia.Styling.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc1FF8D55293A8E313D576AAE895471628" Guid="03163101-1cdb-415b-e8cc-ce48bb5a13fc">
+          <File Id="owf1FF8D55293A8E313D576AAE895471628" Source="$(var.SourceDir)\Avalonia.ThemeManager.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc0A621F7F94C102165C804D54ABDE7987" Guid="67ee26ea-3112-bccb-cb21-5160ed8c5ada">
+          <File Id="owf0A621F7F94C102165C804D54ABDE7987" Source="$(var.SourceDir)\Avalonia.Themes.Default.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcD4D4EB0A8A39F9F6F27EBDA5D1FB4D0E" Guid="2ecd96fd-496d-b0bb-e1ec-a66a3c36b7d9">
+          <File Id="owfD4D4EB0A8A39F9F6F27EBDA5D1FB4D0E" Source="$(var.SourceDir)\Avalonia.Themes.Fluent.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc77EB2CE808BEF35774814EF5F8D10B9E" Guid="2d6fcbc6-4a40-bed7-bc41-53b8225f6f26">
+          <File Id="owf77EB2CE808BEF35774814EF5F8D10B9E" Source="$(var.SourceDir)\Avalonia.Visuals.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc07DA187FA8A4CCDC82718DE31A9734BD" Guid="ecdaa657-70ce-e068-4118-cc4e2fe28e05">
+          <File Id="owf07DA187FA8A4CCDC82718DE31A9734BD" Source="$(var.SourceDir)\Avalonia.Win32.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc6DF1BE170002EC6C0C7009FA4A0218DE" Guid="aef7ebfb-7776-5184-87d4-13d7d0adb51b">
+          <File Id="owf6DF1BE170002EC6C0C7009FA4A0218DE" Source="$(var.SourceDir)\Avalonia.X11.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc0F7CC7ACEA840EC81FADDEE08D4B54C3" Guid="8de4454d-fc84-51cf-d44c-612dcea01607">
           <File Id="owf0F7CC7ACEA840EC81FADDEE08D4B54C3" Source="$(var.SourceDir)\BinarySerializer.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owcD105ECB58FF1CF51ADAD527C6D66FF5F" Guid="21d48ca2-4a61-bbdc-371e-b0aab538c74a">
-          <File Id="owfD105ECB58FF1CF51ADAD527C6D66FF5F" Source="$(var.SourceDir)\CHANGELOG.md" KeyPath="yes" />
-        </Component>
-        <Component Id="owc2730402761C4A57C259620B9B5A65161" Guid="869585d9-61dc-7a31-7b2f-4843155764e3">
-          <File Id="owf2730402761C4A57C259620B9B5A65161" Source="$(var.SourceDir)\CREDITS.md" KeyPath="yes" />
-        </Component>
-        <Component Id="owc8EF635BC57066045F57245051BEECCE4" Guid="1cf9ad54-dcb8-07dc-af17-486d614620f7">
-          <File Id="owf8EF635BC57066045F57245051BEECCE4" Source="$(var.SourceDir)\Cyotek.Windows.Forms.ImageBox.dll" KeyPath="yes" />
-        </Component>
-        <Component Id="owc25ABE3DF1B281670E77FD3B882B58B9F" Guid="de5c6697-501a-2e10-da10-134ad4f060ad">
-          <File Id="owf25ABE3DF1B281670E77FD3B882B58B9F" Source="$(var.SourceDir)\Cyotek.Windows.Forms.ImageBox.xml" KeyPath="yes" />
-        </Component>
-        <Component Id="owcD03A5F10780E4BAB31F0BA2BC3146383" Guid="d144d6cc-6ae1-57d7-cae6-627840b6f17a">
-          <File Id="owfD03A5F10780E4BAB31F0BA2BC3146383" Source="$(var.SourceDir)\Emgu.CV.Bitmap.dll" KeyPath="yes" />
-        </Component>
-        <Component Id="owcBBB242A927A3E56E02090CCA2E90BA92" Guid="741e1eb2-a7ed-c349-50a0-88544797620f">
-          <File Id="owfBBB242A927A3E56E02090CCA2E90BA92" Source="$(var.SourceDir)\Emgu.CV.Bitmap.xml" KeyPath="yes" />
+        <Component Id="owc0810B538AB40CCE1552F9EF3F42953A3" Guid="f95c1be6-57ee-5b8f-1c0f-2f4e227d8d79">
+          <File Id="owf0810B538AB40CCE1552F9EF3F42953A3" Source="$(var.SourceDir)\DynamicData.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc63D81B12D4DED477220E84E2AEBD7DBE" Guid="b08152e4-c420-0b27-69c4-3f58ac0a5fc7">
           <File Id="owf63D81B12D4DED477220E84E2AEBD7DBE" Source="$(var.SourceDir)\Emgu.CV.Platform.NetStandard.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owcAA2708C3C163D011C2BDB733607572F0" Guid="8bab3501-a8d1-62ca-59e2-c8f528af796e">
-          <File Id="owfAA2708C3C163D011C2BDB733607572F0" Source="$(var.SourceDir)\Emgu.CV.Platform.NetStandard.xml" KeyPath="yes" />
+        <Component Id="owc596D9175D838C2B55E7BD869B446D92E" Guid="5a816164-9ca0-8b4c-5481-76eff54d3b1c">
+          <File Id="owf596D9175D838C2B55E7BD869B446D92E" Source="$(var.SourceDir)\HarfBuzzSharp.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owc08C959AF4C2883BEBDD9830863C05E9E" Guid="0a3d45eb-02e4-a772-acdb-d6fefb9f9907">
-          <File Id="owf08C959AF4C2883BEBDD9830863C05E9E" Source="$(var.SourceDir)\LICENSE" KeyPath="yes" />
+        <Component Id="owcB4617140E4B8CB31110519BDA453AF9F" Guid="91471bb5-2f18-7710-ec5c-84629d1a627c">
+          <File Id="owfB4617140E4B8CB31110519BDA453AF9F" Source="$(var.SourceDir)\JetBrains.Annotations.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc78A4AE6F184EDF0B8006BF850B100248" Guid="4b8833ff-a07f-7ea5-69d3-97ebbee528a4">
+          <File Id="owf78A4AE6F184EDF0B8006BF850B100248" Source="$(var.SourceDir)\libcvextern.dylib" KeyPath="yes" />
+        </Component>
+        <Component Id="owc0D4FE9E810FADA83CD6B68F54844D575" Guid="c8b67178-232f-4a24-708b-5394472b26e3">
+          <File Id="owf0D4FE9E810FADA83CD6B68F54844D575" Source="$(var.SourceDir)\libcvextern.so" KeyPath="yes" />
+        </Component>
+        <Component Id="owc6262D65DF7B3DF80C034B72467CAE882" Guid="4941cd5b-5666-87fe-5a6a-5ebdd5ee2524">
+          <File Id="owf6262D65DF7B3DF80C034B72467CAE882" Source="$(var.SourceDir)\MessageBox.Avalonia.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc7609DFEE03B95E830FD72B0699C9CF8C" Guid="c7b987b7-1a3c-0d2c-7831-ad6f4c3871e7">
+          <File Id="owf7609DFEE03B95E830FD72B0699C9CF8C" Source="$(var.SourceDir)\Microsoft.Win32.SystemEvents.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc3FC8434C1A84605AEEBC6A100CA2F3E1" Guid="47d7e276-db6d-424e-d797-1a69e1e24b3b">
           <File Id="owf3FC8434C1A84605AEEBC6A100CA2F3E1" Source="$(var.SourceDir)\Newtonsoft.Json.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owc13D7087665CB79E62B3952E7D228D5FE" Guid="822b90ba-24c8-485d-2215-c7181ec77ef7">
-          <File Id="owf13D7087665CB79E62B3952E7D228D5FE" Source="$(var.SourceDir)\ObjectListView.dll" KeyPath="yes" />
+        <Component Id="owcBFCA0BB8CBE4A68414FA088B4F7F3D22" Guid="babeb74f-9861-b222-a49a-ec268c3cd3ca">
+          <File Id="owfBFCA0BB8CBE4A68414FA088B4F7F3D22" Source="$(var.SourceDir)\ReactiveUI.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owcA212B04CC70B85A277AD8BBCCFCAA000" Guid="e632fc42-27d5-3b03-28f0-0408861fef13">
-          <File Id="owfA212B04CC70B85A277AD8BBCCFCAA000" Source="$(var.SourceDir)\ObjectListView.xml" KeyPath="yes" />
+        <Component Id="owc6BF307AC8A97E0C4BD18833248972AF7" Guid="d579a123-e5f2-c392-ad0d-92a327f7cb9a">
+          <File Id="owf6BF307AC8A97E0C4BD18833248972AF7" Source="$(var.SourceDir)\SharpGen.Runtime.COM.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owc266C4DEC591C8A54CCC1D3C61FC512AA" Guid="2224179c-4d85-88a2-23e2-bc0c27cadd0e">
-          <File Id="owf266C4DEC591C8A54CCC1D3C61FC512AA" Source="$(var.SourceDir)\System.Buffers.dll" KeyPath="yes" />
+        <Component Id="owc4990FD9A89E72BAF9765435F1E74B9F4" Guid="5a419f92-199e-237a-8e8c-853a3a83f069">
+          <File Id="owf4990FD9A89E72BAF9765435F1E74B9F4" Source="$(var.SourceDir)\SharpGen.Runtime.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owcB3975236E57AF3476C692D6E3C40D3A7" Guid="5d90e46b-650b-92f7-6d00-2dd61f8a4944">
-          <File Id="owfB3975236E57AF3476C692D6E3C40D3A7" Source="$(var.SourceDir)\System.Buffers.xml" KeyPath="yes" />
+        <Component Id="owc363CAFE6342F1E71AB07D13BAEEE5FF0" Guid="8e946fdc-ea52-7c4b-a8b3-69e1ecf51086">
+          <File Id="owf363CAFE6342F1E71AB07D13BAEEE5FF0" Source="$(var.SourceDir)\SkiaSharp.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owc0517117239E80E566282BE4546F8180F" Guid="c6cee878-746b-dc34-9583-946f27cba26a">
-          <File Id="owf0517117239E80E566282BE4546F8180F" Source="$(var.SourceDir)\System.CommandLine.dll" KeyPath="yes" />
+        <Component Id="owcB6B3A58616D1CC4857D00CF30CE2144F" Guid="9e96df83-7e62-ac6c-85b4-2a92ac85ef1e">
+          <File Id="owfB6B3A58616D1CC4857D00CF30CE2144F" Source="$(var.SourceDir)\Splat.dll" KeyPath="yes" />
         </Component>
         <Component Id="owcC44FBFE064FE5B25B9677334BAFFBB9F" Guid="7eaa9e75-cff6-90ab-c842-673d3b7d6d9b">
           <File Id="owfC44FBFE064FE5B25B9677334BAFFBB9F" Source="$(var.SourceDir)\System.Drawing.Common.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owcF2B199C7800AE0BBCC0001E0A61F6988" Guid="405dfe99-fffe-4059-26e0-c7d1bd0a0bed">
-          <File Id="owfF2B199C7800AE0BBCC0001E0A61F6988" Source="$(var.SourceDir)\System.Memory.dll" KeyPath="yes" />
+        <Component Id="owc784C102062996900FDDFF7A76CCC6BEA" Guid="c0228705-c52a-22a0-45e2-aeea6d7780a0">
+          <File Id="owf784C102062996900FDDFF7A76CCC6BEA" Source="$(var.SourceDir)\System.Reactive.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owc39A04829552DF7980DAF116FC429509C" Guid="9062fe86-c227-5b70-9578-26e6cab46440">
-          <File Id="owf39A04829552DF7980DAF116FC429509C" Source="$(var.SourceDir)\System.Memory.xml" KeyPath="yes" />
+        <Component Id="owc659AD7BAD61D23D57810ADB460B5F787" Guid="24c8a539-f0c6-e966-b480-914f2f28b932">
+          <File Id="owf659AD7BAD61D23D57810ADB460B5F787" Source="$(var.SourceDir)\System.Reactive.xml" KeyPath="yes" />
         </Component>
-        <Component Id="owcACF44A9199404726B3D0BCAC3DDC9884" Guid="6f6141de-d259-6b2b-c804-923361cfa667">
-          <File Id="owfACF44A9199404726B3D0BCAC3DDC9884" Source="$(var.SourceDir)\System.Numerics.Vectors.dll" KeyPath="yes" />
+        <Component Id="owc9AB8ED587037D049D47A65028C17AE93" Guid="b99f6da4-b6ca-790b-a463-f4e997e409d6">
+          <File Id="owf9AB8ED587037D049D47A65028C17AE93" Source="$(var.SourceDir)\ThemeEditor.Controls.ColorPicker.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owcAA55BD7B81B013F159882A754BED353D" Guid="381d46d2-a95c-fb17-e35f-8a168dd2b2f9">
-          <File Id="owfAA55BD7B81B013F159882A754BED353D" Source="$(var.SourceDir)\System.Numerics.Vectors.xml" KeyPath="yes" />
-        </Component>
-        <Component Id="owc342C8E4E3FD4C3812596B5DEA9DFA6DF" Guid="0dbd5985-58a6-164d-ee5c-e36378843e69">
-          <File Id="owf342C8E4E3FD4C3812596B5DEA9DFA6DF" Source="$(var.SourceDir)\System.Reflection.TypeExtensions.dll" KeyPath="yes" />
-        </Component>
-        <Component Id="owcDAF8FAAFEF02D81A63FBF6FDEC9B5412" Guid="a735c89f-9a82-5036-d846-2a4443d5215a">
-          <File Id="owfDAF8FAAFEF02D81A63FBF6FDEC9B5412" Source="$(var.SourceDir)\System.Reflection.TypeExtensions.xml" KeyPath="yes" />
-        </Component>
-        <Component Id="owc496161876FAED4A7A0471BC80B909F19" Guid="7fe0a99f-4733-5247-2280-d9c79313b3a1">
-          <File Id="owf496161876FAED4A7A0471BC80B909F19" Source="$(var.SourceDir)\System.Runtime.CompilerServices.Unsafe.dll" KeyPath="yes" />
-        </Component>
-        <Component Id="owc912B341D759C6D4043ED430D16F8011A" Guid="fab0f014-28b2-d48f-5aa8-5a8e3bcf3ffb">
-          <File Id="owf912B341D759C6D4043ED430D16F8011A" Source="$(var.SourceDir)\System.Runtime.CompilerServices.Unsafe.xml" KeyPath="yes" />
+        <Component Id="owc708079DD5FA0D491EA8FDC1BFDF3B8AF" Guid="b7d422cf-5f2c-ca34-3fd3-d4b2b2af2ab2">
+          <File Id="owf708079DD5FA0D491EA8FDC1BFDF3B8AF" Source="$(var.SourceDir)\Tmds.DBus.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc540CF8CDBE6617C60879532E387E1716" Guid="bd0331df-7b7e-28be-f87a-809cdbfa07f0">
           <File Id="owf540CF8CDBE6617C60879532E387E1716" Source="$(var.SourceDir)\UVtools.Core.dll" KeyPath="yes" />
@@ -92,208 +158,341 @@
         <Component Id="owcBD6C2CB73106BCF8D5385465839D3344" Guid="efab6672-7297-cbab-c613-743b21593319">
           <File Id="owfBD6C2CB73106BCF8D5385465839D3344" Source="$(var.SourceDir)\UVtools.Core.pdb" KeyPath="yes" />
         </Component>
+        <Component Id="owc9AB1BE4516D59D2F9C38FFC7B627F14B" Guid="fb636012-fe7e-5836-ba11-f212e40901bd">
+          <File Id="owf9AB1BE4516D59D2F9C38FFC7B627F14B" Source="$(var.SourceDir)\UVtools.deps.json" KeyPath="yes" />
+        </Component>
+        <Component Id="owcF7BAF7350DBF794C7897F55847D0B0A6" Guid="fe62833b-b06a-875e-fdec-53e669cdde54">
+          <File Id="owfF7BAF7350DBF794C7897F55847D0B0A6" Source="$(var.SourceDir)\UVtools.dll" KeyPath="yes" />
+        </Component>
         <Component Id="owc21B8C8C0F69E3CD1398B9A0674DF07BD" Guid="1e472543-e636-904d-da5b-cddaac2d36b1">
           <File Id="owf21B8C8C0F69E3CD1398B9A0674DF07BD" Source="$(var.SourceDir)\UVtools.exe" KeyPath="yes">
-            <Shortcut Id="sc6327849DA5C02D2396E91B8B1892E03C" Name="UVtools" Directory="DesktopFolder" WorkingDirectory="MergeRedirectFolder" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" />
-            <Shortcut Id="sc2F2092C02FDD8EB21E756F58C31B70A7" Name="UVtools" Directory="StartMenuFolder" WorkingDirectory="MergeRedirectFolder" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" />
+            <Shortcut Id="sc218BF75801887335D1B30BAFB94BA631" Name="UVtools" Directory="scd220707349D4C8FA275285514283F3E2A" WorkingDirectory="MergeRedirectFolder" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" />
+            <Shortcut Id="sc2F2092C02FDD8EB21E756F58C31B70A7" Name="UVtools" Directory="StartMenuFolder" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" WorkingDirectory="MergeRedirectFolder" />
           </File>
-        </Component>
-        <Component Id="owcFD68A2B6BB01205FB923D13D9A1EB333" Guid="a2bfa40e-e0f8-47b6-2570-e609ea5e428d">
-          <File Id="owfFD68A2B6BB01205FB923D13D9A1EB333" Source="$(var.SourceDir)\UVtools.exe.config" KeyPath="yes" />
         </Component>
         <Component Id="owc0C1077539E2B54F2460D2C0993613EFB" Guid="fc6ae2db-2865-9eb4-5753-4f2f941fdf16">
           <File Id="owf0C1077539E2B54F2460D2C0993613EFB" Source="$(var.SourceDir)\UVtools.pdb" KeyPath="yes" />
         </Component>
+        <Component Id="owcE981F89C0DDF33039D11D16C235AC6A4" Guid="bac9dfcc-6b0a-0d1a-d562-492224c52805">
+          <File Id="owfE981F89C0DDF33039D11D16C235AC6A4" Source="$(var.SourceDir)\UVtools.runtimeconfig.dev.json" KeyPath="yes" />
+        </Component>
+        <Component Id="owc8B5F65BBC0ED56607BB35C1BA7A63823" Guid="a5f52e20-3806-8061-10a3-5daa4730459f">
+          <File Id="owf8B5F65BBC0ED56607BB35C1BA7A63823" Source="$(var.SourceDir)\UVtools.runtimeconfig.json" KeyPath="yes" />
+        </Component>
+        <Component Id="owc7930FE48C019D2CCA4CF8D89B3EC5B7F" Guid="bce775e0-f4af-d90c-3d33-1a882c35a706">
+          <File Id="owf7930FE48C019D2CCA4CF8D89B3EC5B7F" Source="$(var.SourceDir)\UVtools.sh" KeyPath="yes" />
+        </Component>
         <Component Id="owc1FE1E0B70F7D880A2FB9AFA8E0E36EF5" Guid="545300b7-5398-2ce2-788f-02287a83e8a7">
           <File Id="owf1FE1E0B70F7D880A2FB9AFA8E0E36EF5" Source="$(var.SourceDir)\UVtools_demo_file.sl1" KeyPath="yes" />
         </Component>
-        <Component Id="owcE56A1A43062CD54830A538D93042A2F9" Guid="97edfcac-9e9e-3019-6b8f-d6377d7dc1a1">
-          <File Id="owfE56A1A43062CD54830A538D93042A2F9" Source="$(var.SourceDir)\UVtoolsCmd.deps.json" KeyPath="yes" />
-        </Component>
-        <Component Id="owc0E305B983BD1AF09581ED4997D7E85ED" Guid="c24bfcd6-55aa-0509-f1f0-86b87d4f7d17">
-          <File Id="owf0E305B983BD1AF09581ED4997D7E85ED" Source="$(var.SourceDir)\UVtoolsCmd.dll" KeyPath="yes" />
-        </Component>
-        <Component Id="owcF3C69C370296234BECE8A6E9414BA938" Guid="91dd69f3-350b-ffc9-6030-3ec11aac16dc">
-          <File Id="owfF3C69C370296234BECE8A6E9414BA938" Source="$(var.SourceDir)\UVtoolsCmd.exe" KeyPath="yes" />
-        </Component>
-        <Component Id="owc0BA04EBA55A828242AC648F3806CE8F3" Guid="68bb485f-4b09-d863-394c-cd87049021a0">
-          <File Id="owf0BA04EBA55A828242AC648F3806CE8F3" Source="$(var.SourceDir)\UVtoolsCmd.pdb" KeyPath="yes" />
-        </Component>
-        <Component Id="owc59F6487971C89DDBCF40A8A690169334" Guid="b83137d1-2f79-c6e5-0e72-fb84e2059f28">
-          <File Id="owf59F6487971C89DDBCF40A8A690169334" Source="$(var.SourceDir)\UVtoolsCmd.runtimeconfig.dev.json" KeyPath="yes" />
-        </Component>
-        <Component Id="owc76C7AC737F3567A5F2C89DBE21A3BE39" Guid="01949189-492b-8d45-dc95-3e341f5d690c">
-          <File Id="owf76C7AC737F3567A5F2C89DBE21A3BE39" Source="$(var.SourceDir)\UVtoolsCmd.runtimeconfig.json" KeyPath="yes" />
-        </Component>
-        <Directory Id="owdF7EC390A16A84F49221C0816B06C7316" Name="PrusaSlicer">
-          <Directory Id="owd6830BAD7B93348EE48856553BF6B1294" Name="printer">
-            <Component Id="owc0C5D1EB90B2065C71E0743A0ABEC1D12" Guid="ede4de2a-8340-d293-f703-d556ddc2f6f4">
-              <File Id="owf0C5D1EB90B2065C71E0743A0ABEC1D12" Source="$(var.SourceDir)\PrusaSlicer\printer\AnyCubic Photon S.ini" KeyPath="yes" />
+        <Directory Id="owd9F9F77C9E3C3E4DA718760164D5303B8" Name="Assets">
+          <Component Id="owc0061A4888EBC5BCE20291B65069108BE" Guid="d5b06b4a-ae54-c317-aa82-c9a80ac059e5">
+            <File Id="owf0061A4888EBC5BCE20291B65069108BE" Source="$(var.SourceDir)\Assets\selected.theme" KeyPath="yes" />
+          </Component>
+          <Directory Id="owd09EA423812736FC896B5C82AE8837139" Name="PrusaSlicer">
+            <Directory Id="owd44E5BD2F3F078D3F66FB8FE12300C21C" Name="printer">
+              <Component Id="owc2EABADD977D38E081AEBDA1E4F66ABAC" Guid="21cff034-fa0c-8768-77a8-0466b9adfa34">
+                <File Id="owf2EABADD977D38E081AEBDA1E4F66ABAC" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon S.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc52FABCDB07DFFBA3A0BA85FC86A4E849" Guid="8d9ec4f5-bf5c-b1ec-16d2-704dfcb6e5ee">
+                <File Id="owf52FABCDB07DFFBA3A0BA85FC86A4E849" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon Zero.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc1C3DE0BEF10A5791E37D4C3D97AED5E1" Guid="b1851a14-1200-d448-1acd-b229bf6ac918">
+                <File Id="owf1C3DE0BEF10A5791E37D4C3D97AED5E1" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc0402794BACCC21B2ADA93D76665B1076" Guid="f9949f30-9613-fe85-e9f8-432d4764ed1f">
+                <File Id="owf0402794BACCC21B2ADA93D76665B1076" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Creality LD-002H.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcA366EE5E18C0300113B84236C2D5827D" Guid="3c683456-5a2b-319a-ad7f-931df564c0da">
+                <File Id="owfA366EE5E18C0300113B84236C2D5827D" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Creality LD-002R.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc8304FE0C53C6793457DFBC941289A9EB" Guid="91d411b9-d7a0-e718-f688-83a34880ebcb">
+                <File Id="owf8304FE0C53C6793457DFBC941289A9EB" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Creality LD-006.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcAB1BB9D30236925105FC2E5CE2ED6D1A" Guid="8ba56c46-b915-5a96-dde6-e9c2084379d8">
+                <File Id="owfAB1BB9D30236925105FC2E5CE2ED6D1A" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Elegoo Mars 2 Pro.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc99BA1976940D6CE22287790F6985BB6A" Guid="ce2d1d6b-39d2-a53b-8702-6412a7c5afc0">
+                <File Id="owf99BA1976940D6CE22287790F6985BB6A" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Elegoo Mars C.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc0E234E55CBA190E83DA52025540F8A3D" Guid="b1a97eca-4b0e-9d3f-f196-ea03f123fc3d">
+                <File Id="owf0E234E55CBA190E83DA52025540F8A3D" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Elegoo Mars.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc87C1B7E42025B6AC6C87D1D36775BBDE" Guid="b9b191bf-dadb-4140-1220-41a04f4cbc28">
+                <File Id="owf87C1B7E42025B6AC6C87D1D36775BBDE" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Elegoo Saturn.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc4C4D2614316012195906A5E4914A2378" Guid="47ad31b3-87d5-b2bb-ba98-e95100744f0b">
+                <File Id="owf4C4D2614316012195906A5E4914A2378" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX E10 Mono.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc34F4D06FF0857772BE25072A0237697F" Guid="5cba601d-e3b6-39ac-bd29-0dea035b868f">
+                <File Id="owf34F4D06FF0857772BE25072A0237697F" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX E6 Mono.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc0706B6998D6F521C34E62ABB5D993AB8" Guid="8d4ca610-f357-9fcb-8fca-2c08cc940e8e">
+                <File Id="owf0706B6998D6F521C34E62ABB5D993AB8" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX X1.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc6CD1D731C774A9FC303E119C78FDD2CD" Guid="e75de2d4-c7e2-71ee-338a-0ffcc7da4607">
+                <File Id="owf6CD1D731C774A9FC303E119C78FDD2CD" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX X10 4K Mono.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcAAF100D9FA50AAFA27C478251BD36C84" Guid="5e816d43-7553-1fe3-d9f9-d1bb491c0c89">
+                <File Id="owfAAF100D9FA50AAFA27C478251BD36C84" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX X10.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcEBD7F25427880807A3B22D07EFDFE10A" Guid="ca8ac24d-39e2-79bb-d596-207c58c8b996">
+                <File Id="owfEBD7F25427880807A3B22D07EFDFE10A" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX X133 4K Mono.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcABD51FD4BD0E86B40C3E60EF1FFF2652" Guid="63b5c52b-f496-6709-076f-593ba96acde3">
+                <File Id="owfABD51FD4BD0E86B40C3E60EF1FFF2652" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX X156 4K Color.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcF60AE43E2FCAA44993EA41F9AAF52544" Guid="2a01f334-9752-ff6c-f433-5906b10abdd0">
+                <File Id="owfF60AE43E2FCAA44993EA41F9AAF52544" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX X1K 2K Mono.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcC00A40A7EB735EEF0CDE42F7CB633263" Guid="f1e176aa-405d-b293-f693-46886a0cda3e">
+                <File Id="owfC00A40A7EB735EEF0CDE42F7CB633263" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Kelant S400.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc7B488E0A9D9B2656D06620E0CEEFDA13" Guid="7c2fe9e4-adb9-72d1-c0f4-ee7311cabadf">
+                <File Id="owf7B488E0A9D9B2656D06620E0CEEFDA13" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Longer Orange 10.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc227006E17D85BD8103B64C6480AF8A6F" Guid="33dff0a8-a2a6-7ad5-51b1-a91bc258b227">
+                <File Id="owf227006E17D85BD8103B64C6480AF8A6F" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Longer Orange 30.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcCF42E79995933F0457692A2F239FCBB5" Guid="fa18ff15-0e8a-1624-2359-2a9fc30791f0">
+                <File Id="owfCF42E79995933F0457692A2F239FCBB5" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Longer Orange4K.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc60E90B40E8992C21339B84C28DFE9891" Guid="e8e24d92-2cb1-0bec-3963-817532a4c171">
+                <File Id="owf60E90B40E8992C21339B84C28DFE9891" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Bene4 Mono.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc2D13CB27790279041B7046CCA000768B" Guid="c27b7fdd-753f-0d08-6310-6ecef6ae4fa4">
+                <File Id="owf2D13CB27790279041B7046CCA000768B" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Elfin.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc66B3B56E9ED020CAA7BBA3FAC953C136" Guid="cffd69b2-fd9b-7837-4f02-4bf3f71ec59f">
+                <File Id="owf66B3B56E9ED020CAA7BBA3FAC953C136" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Peopoly Phenom L.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc13438B96466244BCB8EEF225433BC787" Guid="99b981b3-c851-900a-abaa-a18535df5331">
+                <File Id="owf13438B96466244BCB8EEF225433BC787" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Peopoly Phenom Noir.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcA1B48C5E1FE8B630F74308849833290E" Guid="4d77c8e5-87d3-b989-e9ea-e5500471a42b">
+                <File Id="owfA1B48C5E1FE8B630F74308849833290E" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Peopoly Phenom.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc15A71F3BB1B2AEB10916D29E37F38D12" Guid="e0fb086d-6925-6100-dc4c-39a463226be2">
+                <File Id="owf15A71F3BB1B2AEB10916D29E37F38D12" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Shuffle 16.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcE8409009BD6763D828E850D38FA8BD82" Guid="2382b129-458a-d22d-da5e-184f4acca3dd">
+                <File Id="owfE8409009BD6763D828E850D38FA8BD82" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Shuffle 4K.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc11A60D48E52212F18E2C477C8578E239" Guid="256837b3-d391-abbd-5adf-21f67c78aefa">
+                <File Id="owf11A60D48E52212F18E2C477C8578E239" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Shuffle Lite.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcC03ED35E13CDFC9FBEB4F599236CB5FD" Guid="04521b5a-c5d5-f767-819b-af64f8e04110">
+                <File Id="owfC03ED35E13CDFC9FBEB4F599236CB5FD" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Shuffle XL Lite.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcCD40C11D90FC0E69173DC0CA0331A4F7" Guid="b319eb54-612a-50cd-c1ac-0fb29a76ccc0">
+                <File Id="owfCD40C11D90FC0E69173DC0CA0331A4F7" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Shuffle XL.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc24E8828277D098684F005D40D8EE197A" Guid="8102e631-084a-0997-df55-0a1ba6683205">
+                <File Id="owf24E8828277D098684F005D40D8EE197A" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Shuffle.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcD15E0DC3059CA06E77AAFA92F637FC45" Guid="2445b075-6cd5-7cac-0619-61929f0bbf89">
+                <File Id="owfD15E0DC3059CA06E77AAFA92F637FC45" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Sonic 4K.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc36D6BBE9B18A4A65DFD3D79CF21B429B" Guid="2596c453-e070-b45d-df5c-9669e1a8c625">
+                <File Id="owf36D6BBE9B18A4A65DFD3D79CF21B429B" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Sonic Mighty 4K.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc89B07C29965B83AB351559075302123F" Guid="678cf4a8-183b-35b9-47fa-ab71d6ec8723">
+                <File Id="owf89B07C29965B83AB351559075302123F" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Sonic Mini 4K.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc62BB0F9A288719E16F573299E1D996F7" Guid="f1f6e606-dfa0-07b5-2cae-26f89b424056">
+                <File Id="owf62BB0F9A288719E16F573299E1D996F7" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Sonic Mini.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc51A8602AF8B1F794D75D755035BCA481" Guid="c6a1905b-627c-c872-cf21-d2b69c84db8d">
+                <File Id="owf51A8602AF8B1F794D75D755035BCA481" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Sonic.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcFE299618D4ED99513A75713869AEB4B2" Guid="7e76d3e8-e561-5fcc-e266-d43e670840c2">
+                <File Id="owfFE299618D4ED99513A75713869AEB4B2" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Transform.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcACB41397AF3AAB714FF18711FC3D3D1B" Guid="a47810c7-ddf5-3a76-3113-c0cdab0551bf">
+                <File Id="owfACB41397AF3AAB714FF18711FC3D3D1B" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\QIDI S-Box.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcF5CA849F66CC478E38B67212127BE7A2" Guid="cdecb062-fe09-44e6-db2d-a4b81fcf4c73">
+                <File Id="owfF5CA849F66CC478E38B67212127BE7A2" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\QIDI Shadow5.5.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc696F0AF8084A6AA7624CA0947E245A47" Guid="6aa7d092-d68b-a44d-f2c7-0a590404b19f">
+                <File Id="owf696F0AF8084A6AA7624CA0947E245A47" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\QIDI Shadow6.0 Pro.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcF90F5AD6941B0C5CF8C0CB134ED5C5D5" Guid="186b397e-cd3b-855a-524e-cd48a48d5758">
+                <File Id="owfF90F5AD6941B0C5CF8C0CB134ED5C5D5" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Voxelab Polaris.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc7F9A29B71850B673CBE3B2BE64A68AAA" Guid="08fa14b5-632c-7453-8805-078ce4e7ef9d">
+                <File Id="owf7F9A29B71850B673CBE3B2BE64A68AAA" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Voxelab Proxima.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcADA4A8BCF46DF0463053836AF5844507" Guid="a0052256-a256-d7c2-e8ab-fa76b6405a56">
+                <File Id="owfADA4A8BCF46DF0463053836AF5844507" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Wanhao D7.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcA5775C19FF4675471A8C0D8A95A8FD99" Guid="61438068-0851-2e9b-2d6a-49cf5d31931f">
+                <File Id="owfA5775C19FF4675471A8C0D8A95A8FD99" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Wanhao D8.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc5A0969A08E1AC292A7F06D07A9C219FC" Guid="c767b03e-f767-4482-621d-04b79c6735f9">
+                <File Id="owf5A0969A08E1AC292A7F06D07A9C219FC" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Zortrax Inkspire.ini" KeyPath="yes" />
+              </Component>
+            </Directory>
+            <Directory Id="owd324203F33CD6B2D491618D3D363F997F" Name="sla_print">
+              <Component Id="owc41FE63F25880E5E4D3CEA71EBD852385" Guid="1ba12bdd-a46f-fc86-8cc3-7da5b8f14609">
+                <File Id="owf41FE63F25880E5E4D3CEA71EBD852385" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.025 UltraDetail - Heavy Supports.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcA0B8FBCBD1A4173B45BA94F0E1E1C67E" Guid="0128c1a1-a9c4-ee47-bf69-56e64bdbf266">
+                <File Id="owfA0B8FBCBD1A4173B45BA94F0E1E1C67E" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.025 UltraDetail - Medium Supports.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcF7480920216B5D545244DAD3B157F915" Guid="37497b06-511e-8000-454b-f6cc91ad8e3c">
+                <File Id="owfF7480920216B5D545244DAD3B157F915" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.035 Detail - Heavy Supports.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc3EC82AA8BBA5F58285C6B572699C3EEA" Guid="51996820-0c91-375a-d43a-a71610706d06">
+                <File Id="owf3EC82AA8BBA5F58285C6B572699C3EEA" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.035 Detail - Medium Supports.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcC4EC407B090C47EBE3ABDE911C434B63" Guid="4bcff130-af1a-1715-f04f-8b22e50680dd">
+                <File Id="owfC4EC407B090C47EBE3ABDE911C434B63" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.05 Normal - Heavy Supports.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc5C47C07A27D86292990E17E9F5C68987" Guid="57884306-5184-0776-b0be-5aaf576ff822">
+                <File Id="owf5C47C07A27D86292990E17E9F5C68987" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.05 Normal - Medium Supports.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcB8B31F13E6BE0274BB89D48BB3C5DA65" Guid="3eaaf9a4-3327-7d66-a578-42c8a53214de">
+                <File Id="owfB8B31F13E6BE0274BB89D48BB3C5DA65" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.1 Fast - Heavy Supports.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcD02936F8537D5E1A8838BA53E493CA0B" Guid="05d01723-d21f-c5de-e159-54d916c4865c">
+                <File Id="owfD02936F8537D5E1A8838BA53E493CA0B" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.1 Fast - Medium Supports.ini" KeyPath="yes" />
+              </Component>
+            </Directory>
+          </Directory>
+          <Directory Id="owd3C9733484C5396DFA2187B16A03E99EE" Name="Themes">
+            <Component Id="owc8FC2048E54A772802D3C5BDA3396EA16" Guid="78cf5bb5-81ef-4238-905d-232b26df5d07">
+              <File Id="owf8FC2048E54A772802D3C5BDA3396EA16" Source="$(var.SourceDir)\Assets\Themes\UVtools.themes" KeyPath="yes" />
             </Component>
-            <Component Id="owc518BC218498F95CE45BB60850FF7F20A" Guid="fcd15fa3-d1a5-ddf6-5f98-63beb7517c20">
-              <File Id="owf518BC218498F95CE45BB60850FF7F20A" Source="$(var.SourceDir)\PrusaSlicer\printer\AnyCubic Photon Zero.ini" KeyPath="yes" />
+            <Component Id="owc5DC3A0BB04297E8A8A4EFE28D90102F2" Guid="b9bf81cc-e04d-0b0c-b35d-e7983878abdf">
+              <File Id="owf5DC3A0BB04297E8A8A4EFE28D90102F2" Source="$(var.SourceDir)\Assets\Themes\UVtoolsDark.xaml" KeyPath="yes" />
             </Component>
-            <Component Id="owc9F0ED1D4E7D104FE0DC61D9F7CFE999A" Guid="9d8198ed-268b-949f-3b40-9967c446da71">
-              <File Id="owf9F0ED1D4E7D104FE0DC61D9F7CFE999A" Source="$(var.SourceDir)\PrusaSlicer\printer\AnyCubic Photon.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc2D65B5F143AFF68394B6D49E35F733CB" Guid="f40836a1-6896-dfa1-8626-d57f46549860">
-              <File Id="owf2D65B5F143AFF68394B6D49E35F733CB" Source="$(var.SourceDir)\PrusaSlicer\printer\Creality LD-002H.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc7EDB8251A3EA203AF2B7D4CA7ACE2CD2" Guid="ee32d320-1828-deba-29ca-a05a60720cfc">
-              <File Id="owf7EDB8251A3EA203AF2B7D4CA7ACE2CD2" Source="$(var.SourceDir)\PrusaSlicer\printer\Creality LD-002R.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc7BA7D4FCDDEF70FBBCEF1F90C14B1F60" Guid="53721bb3-9851-f5b1-ad0f-2c759915e79f">
-              <File Id="owf7BA7D4FCDDEF70FBBCEF1F90C14B1F60" Source="$(var.SourceDir)\PrusaSlicer\printer\Creality LD-006.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc9F847F8652D12A49A3141CEED1453FBE" Guid="94d9a62e-4dd1-7b92-a5cd-2ba6b168a7fa">
-              <File Id="owf9F847F8652D12A49A3141CEED1453FBE" Source="$(var.SourceDir)\PrusaSlicer\printer\Elegoo Mars 2 Pro.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcCB3AD91E177F80F7BCCF178752A083F7" Guid="76cb8819-5436-c720-120a-b9dcef3f966d">
-              <File Id="owfCB3AD91E177F80F7BCCF178752A083F7" Source="$(var.SourceDir)\PrusaSlicer\printer\Elegoo Mars C.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc4D5073ED375E0DF9EFA87FDD048B32C6" Guid="d8c3b91c-2830-d4b2-0813-0cbcfbdc272d">
-              <File Id="owf4D5073ED375E0DF9EFA87FDD048B32C6" Source="$(var.SourceDir)\PrusaSlicer\printer\Elegoo Mars.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcD356A901EAF1AE721204F999DB785790" Guid="e44af69f-6168-4558-e97d-7432474782fc">
-              <File Id="owfD356A901EAF1AE721204F999DB785790" Source="$(var.SourceDir)\PrusaSlicer\printer\Elegoo Saturn.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc19F234AE201F75426410EFD420A3CBB1" Guid="c03a027a-5105-9223-b2ac-bb7f46ec54cd">
-              <File Id="owf19F234AE201F75426410EFD420A3CBB1" Source="$(var.SourceDir)\PrusaSlicer\printer\EPAX E10 Mono.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcC5A030FF488FD3D246425D95DF2507E4" Guid="da19c0d2-f6a9-92ea-72e1-baae669802ca">
-              <File Id="owfC5A030FF488FD3D246425D95DF2507E4" Source="$(var.SourceDir)\PrusaSlicer\printer\EPAX E6 Mono.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc76AABDF1DF0C1F5E05FF1F07A1630357" Guid="e472beae-9800-814f-adcb-846954b58041">
-              <File Id="owf76AABDF1DF0C1F5E05FF1F07A1630357" Source="$(var.SourceDir)\PrusaSlicer\printer\EPAX X1.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcDA2EA6E2743E70BDDA7CAB980D1B2CEC" Guid="5ee7032c-2c78-95e0-56d7-695c7fff3ad9">
-              <File Id="owfDA2EA6E2743E70BDDA7CAB980D1B2CEC" Source="$(var.SourceDir)\PrusaSlicer\printer\EPAX X10 4K Mono.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc96C59034EB76D71E85BCE617CECE04D8" Guid="c082b835-0284-a751-669b-6171ff55fd10">
-              <File Id="owf96C59034EB76D71E85BCE617CECE04D8" Source="$(var.SourceDir)\PrusaSlicer\printer\EPAX X10.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc6B72C7720CEFE972272B28F4BFCF4845" Guid="898755b8-1325-b207-f85d-dda138939535">
-              <File Id="owf6B72C7720CEFE972272B28F4BFCF4845" Source="$(var.SourceDir)\PrusaSlicer\printer\EPAX X133 4K Mono.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcBDCC55E8DE3569F9053A05EA9D764EF5" Guid="a25864cd-e8db-0b68-21f8-3624b9ed3c66">
-              <File Id="owfBDCC55E8DE3569F9053A05EA9D764EF5" Source="$(var.SourceDir)\PrusaSlicer\printer\EPAX X156 4K Color.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc865AAD6B00A81712785000011C07A4BB" Guid="d867e50b-1c82-d3ce-8ebf-5b8ed8471c90">
-              <File Id="owf865AAD6B00A81712785000011C07A4BB" Source="$(var.SourceDir)\PrusaSlicer\printer\EPAX X1K 2K Mono.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc5C3D57BA78B3FB633FE137C11ABFF046" Guid="a58b5655-abbc-1a7e-e875-ddb174b93fae">
-              <File Id="owf5C3D57BA78B3FB633FE137C11ABFF046" Source="$(var.SourceDir)\PrusaSlicer\printer\Kelant S400.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcFCD3F2B490292D122B02F78E1C8137A4" Guid="66bb69a8-b2d7-af1a-b706-349eb0bb43e1">
-              <File Id="owfFCD3F2B490292D122B02F78E1C8137A4" Source="$(var.SourceDir)\PrusaSlicer\printer\Longer Orange 10.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcCD3FA8F4F716D59DDA660C2C9FB0BB8A" Guid="8ef9b770-8922-5402-8ceb-50a241c13cde">
-              <File Id="owfCD3FA8F4F716D59DDA660C2C9FB0BB8A" Source="$(var.SourceDir)\PrusaSlicer\printer\Longer Orange 30.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc3B553567EB7790179844621DC7E38010" Guid="35a48265-0635-f831-5671-23f1efc3f7c3">
-              <File Id="owf3B553567EB7790179844621DC7E38010" Source="$(var.SourceDir)\PrusaSlicer\printer\Longer Orange4K.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcC2B2D27208C6B67DB65F8BDEBC49EF5E" Guid="f97bbee5-4b5d-c8b5-ba5c-4d50b21cef66">
-              <File Id="owfC2B2D27208C6B67DB65F8BDEBC49EF5E" Source="$(var.SourceDir)\PrusaSlicer\printer\Nova3D Bene4 Mono.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc2C278182AFE0ABA208CC627D83CBF3C3" Guid="d7c4029a-678e-65f9-a321-7fbfbc638575">
-              <File Id="owf2C278182AFE0ABA208CC627D83CBF3C3" Source="$(var.SourceDir)\PrusaSlicer\printer\Nova3D Elfin.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc546AD041611346E8506BB31D2F47E34F" Guid="ba21e583-c82a-9c6e-20c1-0e416cd9b0d8">
-              <File Id="owf546AD041611346E8506BB31D2F47E34F" Source="$(var.SourceDir)\PrusaSlicer\printer\Peopoly Phenom L.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcB3E343D0AF1C11367418C5C702943E47" Guid="0b9d51c3-427e-10fa-e4db-13f1953c42a2">
-              <File Id="owfB3E343D0AF1C11367418C5C702943E47" Source="$(var.SourceDir)\PrusaSlicer\printer\Peopoly Phenom Noir.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc4DA3CE0E7C9E7FD0420BC98008CE61A5" Guid="842b1dda-c430-b658-0171-98317cda4b73">
-              <File Id="owf4DA3CE0E7C9E7FD0420BC98008CE61A5" Source="$(var.SourceDir)\PrusaSlicer\printer\Peopoly Phenom.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc0BF6983F624A20B3AA39441CCEA38D61" Guid="d9f107b3-afbb-a2a3-208b-99a636ba9ab9">
-              <File Id="owf0BF6983F624A20B3AA39441CCEA38D61" Source="$(var.SourceDir)\PrusaSlicer\printer\Phrozen Shuffle 16.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcECDE9AFF31975330B052BE067CBF7747" Guid="59279739-67c2-e878-98e4-8a6fd7228af7">
-              <File Id="owfECDE9AFF31975330B052BE067CBF7747" Source="$(var.SourceDir)\PrusaSlicer\printer\Phrozen Shuffle 4K.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc068BB7319947EA7DE29B950E2A6D568E" Guid="07cdd63b-4ff0-45bb-6bc8-a06e7d4d2d65">
-              <File Id="owf068BB7319947EA7DE29B950E2A6D568E" Source="$(var.SourceDir)\PrusaSlicer\printer\Phrozen Shuffle Lite.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc2F2CCD96C838CC00EEA7B6CF9058BAA9" Guid="3e763f36-0ce2-b765-63d1-386943fe22b9">
-              <File Id="owf2F2CCD96C838CC00EEA7B6CF9058BAA9" Source="$(var.SourceDir)\PrusaSlicer\printer\Phrozen Shuffle XL Lite.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc4F7DA68FBE5404E7947C6E57D830BD18" Guid="b8861542-b10b-6c76-61d1-cfe9c2ef6c1e">
-              <File Id="owf4F7DA68FBE5404E7947C6E57D830BD18" Source="$(var.SourceDir)\PrusaSlicer\printer\Phrozen Shuffle XL.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcE3C5EB6B6F0C3F57765457D6609A1347" Guid="c6a7b466-f370-61cb-6ea8-4f58e1a1ae4f">
-              <File Id="owfE3C5EB6B6F0C3F57765457D6609A1347" Source="$(var.SourceDir)\PrusaSlicer\printer\Phrozen Shuffle.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc739836FD830C1821DE31F3798C6D4C98" Guid="95cf2e0a-6c60-8c58-ef59-41a29b58558d">
-              <File Id="owf739836FD830C1821DE31F3798C6D4C98" Source="$(var.SourceDir)\PrusaSlicer\printer\Phrozen Sonic 4K.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc4E6CA96FA8F08FAE13350280E0DA9E7B" Guid="320c610d-b350-eee6-cc92-4233416d0545">
-              <File Id="owf4E6CA96FA8F08FAE13350280E0DA9E7B" Source="$(var.SourceDir)\PrusaSlicer\printer\Phrozen Sonic Mighty 4K.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc0C95EB1AA908390B033CF556246859BD" Guid="ee5430e3-60de-f716-a55e-0726c7138bf6">
-              <File Id="owf0C95EB1AA908390B033CF556246859BD" Source="$(var.SourceDir)\PrusaSlicer\printer\Phrozen Sonic Mini 4K.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcA72B3137C7468BB42D62EE5D01D0FCA5" Guid="d03183f0-ec43-e8ce-13ef-65e19d5c4968">
-              <File Id="owfA72B3137C7468BB42D62EE5D01D0FCA5" Source="$(var.SourceDir)\PrusaSlicer\printer\Phrozen Sonic Mini.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc054C138D5EFB06BD1FBC0745B3022AC2" Guid="50a52fd5-27b6-ec62-7f7d-3fbbe3b87576">
-              <File Id="owf054C138D5EFB06BD1FBC0745B3022AC2" Source="$(var.SourceDir)\PrusaSlicer\printer\Phrozen Sonic.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcF1C81BD9CF13A9B24A54441843BC646E" Guid="fcb5bbfe-5ddb-c7da-a07b-b72f1dcfcae5">
-              <File Id="owfF1C81BD9CF13A9B24A54441843BC646E" Source="$(var.SourceDir)\PrusaSlicer\printer\Phrozen Transform.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcA1F8D23CE191722B73B87151DDD24A67" Guid="8d065a43-f022-0837-7445-0b5f99df43de">
-              <File Id="owfA1F8D23CE191722B73B87151DDD24A67" Source="$(var.SourceDir)\PrusaSlicer\printer\QIDI S-Box.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcB4A5F5F4294ED25C4B87C67D8C33B83E" Guid="d3660efe-4e98-ff85-c0a0-8338b8af02f0">
-              <File Id="owfB4A5F5F4294ED25C4B87C67D8C33B83E" Source="$(var.SourceDir)\PrusaSlicer\printer\QIDI Shadow5.5.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcA3F28F12E3289ECC5D85DE40DF866B26" Guid="509cc36e-f75c-132e-2c61-66f31434a7cb">
-              <File Id="owfA3F28F12E3289ECC5D85DE40DF866B26" Source="$(var.SourceDir)\PrusaSlicer\printer\QIDI Shadow6.0 Pro.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcA2B1227B6887F96BE420BAA2A0E92921" Guid="74a541bf-cf28-0f5f-60f4-7196cc1880ce">
-              <File Id="owfA2B1227B6887F96BE420BAA2A0E92921" Source="$(var.SourceDir)\PrusaSlicer\printer\Voxelab Polaris.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc1C9AD057389FF91246638EFAF633C191" Guid="cde67087-b133-6eb9-f26a-fbd1f14838d8">
-              <File Id="owf1C9AD057389FF91246638EFAF633C191" Source="$(var.SourceDir)\PrusaSlicer\printer\Voxelab Proxima.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcB527CA38F45FBB0A2DD46961788AE79C" Guid="743425a9-38e2-6c9a-c52e-f64281bf0ec5">
-              <File Id="owfB527CA38F45FBB0A2DD46961788AE79C" Source="$(var.SourceDir)\PrusaSlicer\printer\Wanhao D7.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc0052488B3D5653FA4AC17575E3AA0158" Guid="5952c8ed-8253-42aa-ac71-674ba4e89db9">
-              <File Id="owf0052488B3D5653FA4AC17575E3AA0158" Source="$(var.SourceDir)\PrusaSlicer\printer\Wanhao D8.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc0FA446796B886C670DBAE19746E53173" Guid="e57a604a-c22f-8ef9-78b6-8a8aca78ae84">
-              <File Id="owf0FA446796B886C670DBAE19746E53173" Source="$(var.SourceDir)\PrusaSlicer\printer\Zortrax Inkspire.ini" KeyPath="yes" />
+            <Component Id="owc1C747838BFE31FEA5A7861F1A3EA7452" Guid="f0f45eb8-ed72-6b39-0ec5-45f400b332cd">
+              <File Id="owf1C747838BFE31FEA5A7861F1A3EA7452" Source="$(var.SourceDir)\Assets\Themes\UVtoolsLight.xaml" KeyPath="yes" />
             </Component>
           </Directory>
-          <Directory Id="owd73003341B520ABE88202958ACA4D0CED" Name="sla_print">
-            <Component Id="owc4ACEFD4B0896C4BAD024C72FFF0A6BC2" Guid="507e2a66-2730-7436-b5c6-fa2e55d92633">
-              <File Id="owf4ACEFD4B0896C4BAD024C72FFF0A6BC2" Source="$(var.SourceDir)\PrusaSlicer\sla_print\Universal 0.025 UltraDetail - Heavy Supports.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc2E4A743F333D821D9E8A9ACE10E395E1" Guid="7c83a0fc-d4b2-1466-f858-9b3dedf76db8">
-              <File Id="owf2E4A743F333D821D9E8A9ACE10E395E1" Source="$(var.SourceDir)\PrusaSlicer\sla_print\Universal 0.025 UltraDetail - Medium Supports.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc4CF09676D1047D5A9AE525720CD23889" Guid="f9eda29c-878e-4a0d-4771-b0dcf5845ad3">
-              <File Id="owf4CF09676D1047D5A9AE525720CD23889" Source="$(var.SourceDir)\PrusaSlicer\sla_print\Universal 0.035 Detail - Heavy Supports.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc6E914D5581C8ED28A35CB38BC082C898" Guid="152fcbb9-57d4-ab6e-93cd-a97ed733b4d3">
-              <File Id="owf6E914D5581C8ED28A35CB38BC082C898" Source="$(var.SourceDir)\PrusaSlicer\sla_print\Universal 0.035 Detail - Medium Supports.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcA8BB3AB3E1F0631497BA1B5B7D1984C9" Guid="3792b202-b280-6cb5-2e23-f035b7327afa">
-              <File Id="owfA8BB3AB3E1F0631497BA1B5B7D1984C9" Source="$(var.SourceDir)\PrusaSlicer\sla_print\Universal 0.05 Normal - Heavy Supports.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc6D432DE0183CB703A1A78CEC841D8812" Guid="e97f8dc8-510a-5ca2-b01c-9d2ab5e08710">
-              <File Id="owf6D432DE0183CB703A1A78CEC841D8812" Source="$(var.SourceDir)\PrusaSlicer\sla_print\Universal 0.05 Normal - Medium Supports.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owcB7DEA765E56C3696E3273C599128A7D8" Guid="764640eb-d1bb-187c-c87b-5624a5875d73">
-              <File Id="owfB7DEA765E56C3696E3273C599128A7D8" Source="$(var.SourceDir)\PrusaSlicer\sla_print\Universal 0.1 Fast - Heavy Supports.ini" KeyPath="yes" />
-            </Component>
-            <Component Id="owc939DBAAB0E7C39AB8FFF73D72594EAC0" Guid="4f43e49a-fdbe-d19c-6e4e-b951491c2fc9">
-              <File Id="owf939DBAAB0E7C39AB8FFF73D72594EAC0" Source="$(var.SourceDir)\PrusaSlicer\sla_print\Universal 0.1 Fast - Medium Supports.ini" KeyPath="yes" />
-            </Component>
+        </Directory>
+        <Directory Id="owdBF28E7F1782E32C92B2CAA92105E7DA0" Name="runtimes">
+          <Directory Id="owdC6A1AEFECBF0A2DE1F88B018090711E2" Name="linux-arm">
+            <Directory Id="owd617D2DD6EE84B974BE709F2E1722D585" Name="native">
+              <Component Id="owc06400294BD32250A45AD8D28DC9D2601" Guid="354109de-77ed-91d9-a2a6-11b37ec46764">
+                <File Id="owf06400294BD32250A45AD8D28DC9D2601" Source="$(var.SourceDir)\runtimes\linux-arm\native\libHarfBuzzSharp.so" KeyPath="yes" />
+              </Component>
+              <Component Id="owc347B03371531C34651F2E97B23C850E7" Guid="3ac9d0dc-26a8-f08f-4b14-4e51f57257ae">
+                <File Id="owf347B03371531C34651F2E97B23C850E7" Source="$(var.SourceDir)\runtimes\linux-arm\native\libSkiaSharp.so" KeyPath="yes" />
+              </Component>
+            </Directory>
+          </Directory>
+          <Directory Id="owd6F2AE932234BA47911EB1ECD58F66368" Name="linux-arm64">
+            <Directory Id="owdFCFE80F2F1930F105F0788041ED8D4E3" Name="native">
+              <Component Id="owc0644B6A9D52D12060767D47628A9E08C" Guid="670134c6-52ac-1bef-73b8-005bb99ecb12">
+                <File Id="owf0644B6A9D52D12060767D47628A9E08C" Source="$(var.SourceDir)\runtimes\linux-arm64\native\libHarfBuzzSharp.so" KeyPath="yes" />
+              </Component>
+              <Component Id="owc135EA1D3430DBC90FB8E96F2191D8F13" Guid="eee2c5e4-6bf0-f73d-3533-ce911e91c29e">
+                <File Id="owf135EA1D3430DBC90FB8E96F2191D8F13" Source="$(var.SourceDir)\runtimes\linux-arm64\native\libSkiaSharp.so" KeyPath="yes" />
+              </Component>
+            </Directory>
+          </Directory>
+          <Directory Id="owdD3C6D08658AA9E98BDEFC184131031EF" Name="linux-musl-x64">
+            <Directory Id="owdCC33DFC5AE4A99EB1A8A5DF9F4F25106" Name="native">
+              <Component Id="owc11B8CD04C05A6C8E9235BC1DE21463F0" Guid="3002bddf-de7d-0c37-8014-e09dde3cfbd8">
+                <File Id="owf11B8CD04C05A6C8E9235BC1DE21463F0" Source="$(var.SourceDir)\runtimes\linux-musl-x64\native\libHarfBuzzSharp.so" KeyPath="yes" />
+              </Component>
+              <Component Id="owcD0B7332C27AE652FCEE611D179DC5A49" Guid="40211e3d-656b-442d-52fd-64599eec49ef">
+                <File Id="owfD0B7332C27AE652FCEE611D179DC5A49" Source="$(var.SourceDir)\runtimes\linux-musl-x64\native\libSkiaSharp.so" KeyPath="yes" />
+              </Component>
+            </Directory>
+          </Directory>
+          <Directory Id="owd556291CEC15CE19FDBB87DF3B325B56F" Name="linux-x64">
+            <Directory Id="owdAD75A314791B679E18192844AC45FBE1" Name="native">
+              <Component Id="owc1880BEFEB746715CA6F896F985351B5B" Guid="1758bc3a-dfb4-bd2c-b866-01b79169baa5">
+                <File Id="owf1880BEFEB746715CA6F896F985351B5B" Source="$(var.SourceDir)\runtimes\linux-x64\native\libHarfBuzzSharp.so" KeyPath="yes" />
+              </Component>
+              <Component Id="owcB5E491BF1899604E0DA5BACB0CE1EFE7" Guid="e6614f30-9dd2-de48-0a31-65e74b510de7">
+                <File Id="owfB5E491BF1899604E0DA5BACB0CE1EFE7" Source="$(var.SourceDir)\runtimes\linux-x64\native\libSkiaSharp.so" KeyPath="yes" />
+              </Component>
+            </Directory>
+          </Directory>
+          <Directory Id="owd3CD72BF57EA19F64F22DD127C870F0E7" Name="osx">
+            <Directory Id="owd0E26F835006F73849909592CF7CD7D92" Name="native">
+              <Component Id="owc63F8EBE530EF65B743C642E06994E5B6" Guid="a26b2ec0-d0ed-06fb-c65d-b18571be71a0">
+                <File Id="owf63F8EBE530EF65B743C642E06994E5B6" Source="$(var.SourceDir)\runtimes\osx\native\libAvaloniaNative.dylib" KeyPath="yes" />
+              </Component>
+              <Component Id="owc8ADA513DA1910763A16A32A0FA9CD3E3" Guid="f586ea51-bd57-42e5-c035-75b950f71dc1">
+                <File Id="owf8ADA513DA1910763A16A32A0FA9CD3E3" Source="$(var.SourceDir)\runtimes\osx\native\libHarfBuzzSharp.dylib" KeyPath="yes" />
+              </Component>
+              <Component Id="owcD9EC42BB2A6C33399CEB9553E7FF13E1" Guid="73a4b80e-f3e4-6095-73f9-c023b9ae33d0">
+                <File Id="owfD9EC42BB2A6C33399CEB9553E7FF13E1" Source="$(var.SourceDir)\runtimes\osx\native\libSkiaSharp.dylib" KeyPath="yes" />
+              </Component>
+            </Directory>
+          </Directory>
+          <Directory Id="owd87A5E449AD9392823A58760FB908E24D" Name="unix">
+            <Directory Id="owd0EBAEB8B6BD41BA5E65612D460B101A3" Name="lib">
+              <Directory Id="owdCF67F5CD278E94BC31DEA7E052481F3C" Name="netcoreapp2.0">
+                <Component Id="owc7785632DDB4F3A15581F1812493FD22C" Guid="f42c1a65-7db6-2cf4-963c-d4b38c43a7c4">
+                  <File Id="owf7785632DDB4F3A15581F1812493FD22C" Source="$(var.SourceDir)\runtimes\unix\lib\netcoreapp2.0\System.Drawing.Common.dll" KeyPath="yes" />
+                </Component>
+              </Directory>
+            </Directory>
+          </Directory>
+          <Directory Id="owdE8459012E85EF895F4D7FE30FF6E8267" Name="win">
+            <Directory Id="owdC163318E67EFDCE0B896108800A15455" Name="lib">
+              <Directory Id="owdC9C087285946FE3B7A71615E0B825E74" Name="netcoreapp2.0">
+                <Component Id="owc9D9EC872ED4AF0A91F656CDA92A03CD4" Guid="25929d9b-62bf-c253-283f-66601aee7dcb">
+                  <File Id="owf9D9EC872ED4AF0A91F656CDA92A03CD4" Source="$(var.SourceDir)\runtimes\win\lib\netcoreapp2.0\Microsoft.Win32.SystemEvents.dll" KeyPath="yes" />
+                </Component>
+                <Component Id="owcA5987B6A2079F892EF984F59BE36370D" Guid="f40e5eb8-9f01-3b7a-23ab-e1a46780da77">
+                  <File Id="owfA5987B6A2079F892EF984F59BE36370D" Source="$(var.SourceDir)\runtimes\win\lib\netcoreapp2.0\System.Drawing.Common.dll" KeyPath="yes" />
+                </Component>
+              </Directory>
+            </Directory>
+          </Directory>
+          <Directory Id="owdAABA5F09C75767C406C5539CD7F20030" Name="win7-x64">
+            <Directory Id="owd5777C140FF7E84A3D3F7CCEF36AC1996" Name="native">
+              <Component Id="owc91777EF68DD1467D9A6C42D6460A8777" Guid="c874a7a2-53f9-67bc-043a-dde0ac08b48f">
+                <File Id="owf91777EF68DD1467D9A6C42D6460A8777" Source="$(var.SourceDir)\runtimes\win7-x64\native\av_libglesv2.dll" KeyPath="yes" />
+              </Component>
+            </Directory>
+          </Directory>
+          <Directory Id="owd01DBB5CF07B2ACE2E693F31D049BCD78" Name="win7-x86">
+            <Directory Id="owd8B18EF56D86AB5DA68A7A076E04003BD" Name="native">
+              <Component Id="owc159E8174837264C5007070ACA82FA70F" Guid="1e243638-16ee-2c65-5e36-087b71ac931a">
+                <File Id="owf159E8174837264C5007070ACA82FA70F" Source="$(var.SourceDir)\runtimes\win7-x86\native\av_libglesv2.dll" KeyPath="yes" />
+              </Component>
+            </Directory>
+          </Directory>
+          <Directory Id="owdE5F4984A074B06AB916298BF6A56CF44" Name="win-arm64">
+            <Directory Id="owdE1E93812BF8760F936688A296A3D31FC" Name="native">
+              <Component Id="owc9692BEA16B4CB769A7E097910CEFEA79" Guid="e3585836-c33b-26ed-338f-ea48f8f5c055">
+                <File Id="owf9692BEA16B4CB769A7E097910CEFEA79" Source="$(var.SourceDir)\runtimes\win-arm64\native\av_libglesv2.dll" KeyPath="yes" />
+              </Component>
+              <Component Id="owc9AC17F83871B0BF66421DDA16023D92B" Guid="9c622830-b46e-163e-9789-0af7ac63ad74">
+                <File Id="owf9AC17F83871B0BF66421DDA16023D92B" Source="$(var.SourceDir)\runtimes\win-arm64\native\libHarfBuzzSharp.dll" KeyPath="yes" />
+              </Component>
+              <Component Id="owc84E0CB3CCDDC2FEDB19A5D2879AACD84" Guid="568acb91-f330-fd9c-8830-dd1831e0913f">
+                <File Id="owf84E0CB3CCDDC2FEDB19A5D2879AACD84" Source="$(var.SourceDir)\runtimes\win-arm64\native\libSkiaSharp.dll" KeyPath="yes" />
+              </Component>
+            </Directory>
+          </Directory>
+          <Directory Id="owd771C5C3DC29DF4A4B043FB9590CAB7C3" Name="win-x64">
+            <Directory Id="owdEB440828DC2B3C970045074AEB045D37" Name="native">
+              <Component Id="owc205924684486CE35676F9CD9BA74773B" Guid="59524c92-d012-0f92-61e6-2e73cc8b32cb">
+                <File Id="owf205924684486CE35676F9CD9BA74773B" Source="$(var.SourceDir)\runtimes\win-x64\native\libHarfBuzzSharp.dll" KeyPath="yes" />
+              </Component>
+              <Component Id="owcB1184B053C439A3A8535D617A081ED89" Guid="9d59c1f4-58be-6d72-54f3-e9d6898ff0be">
+                <File Id="owfB1184B053C439A3A8535D617A081ED89" Source="$(var.SourceDir)\runtimes\win-x64\native\libSkiaSharp.dll" KeyPath="yes" />
+              </Component>
+            </Directory>
+          </Directory>
+          <Directory Id="owdB4F695B772F52E42751F0202C23B302A" Name="win-x86">
+            <Directory Id="owd645F06F492760FA8A3ADF782CF530DAB" Name="native">
+              <Component Id="owc97E8A7CFF67FE571A6D5D82E8A6B1F05" Guid="0a3fb801-f08a-c381-94cb-434ef745b88a">
+                <File Id="owf97E8A7CFF67FE571A6D5D82E8A6B1F05" Source="$(var.SourceDir)\runtimes\win-x86\native\libHarfBuzzSharp.dll" KeyPath="yes" />
+              </Component>
+              <Component Id="owc2818B54769093033C90688B0DC041F8C" Guid="220ad8b8-3469-ffbf-2c4c-ba90490bd0ad">
+                <File Id="owf2818B54769093033C90688B0DC041F8C" Source="$(var.SourceDir)\runtimes\win-x86\native\libSkiaSharp.dll" KeyPath="yes" />
+              </Component>
+            </Directory>
           </Directory>
         </Directory>
         <Directory Id="owd37EA32A018DF9B31395A1FCE42233062" Name="x64">

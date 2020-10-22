@@ -6,6 +6,7 @@
         x:Class="UVtools.WPF.Windows.ToolWindow"
         CanResize="False"
         SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterOwner"
         Title="Tool"
         Icon="/Assets/Icons/UVtools.ico">
   <StackPanel Orientation="Vertical">
@@ -199,9 +200,10 @@
           FontWeight="Bold"
           Text="{Binding Title}"/>
 
-        <!--<ScrollViewer Padding="15"
-                      Content="{Binding ContentControl}"/>!-->
-        <Border Margin="15" Child="{Binding ContentControl}"/>
+        <ScrollViewer 
+                      MaxHeight="{Binding ScrollViewerMaxHeight}"
+                      Content="{Binding ContentControl}"/>
+        <!--<Border Margin="15" Child="{Binding ContentControl}"/>!-->
       </StackPanel>
 
     </Border>

@@ -47,7 +47,7 @@ namespace UVtools.Core.Operations
             "Perform arithmetic operations over the layers pixels.\n\n" +
             "Available operators:\n" +
             " +  -  *  /  = Add, Subtract, Multiply, Divide\n" +
-            " &&  |  ^  = Bitwise AND, OR, XOR\n\n" +
+            " &  |  ^  = Bitwise AND, OR, XOR\n\n" +
             "Syntax: <set_to_layer_indexes> = <layer_index> <operator> <layer_index>\n" +
             "When: \"<set_to_layer_indexes> =\" is omitted, the result will assign to the first layer on the sentence.\n\n" +
             "Example 1: 10+11\n" +

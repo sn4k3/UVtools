@@ -20,6 +20,7 @@
       Orientation="Vertical"
       ViewportSize="{Binding #ViewPort.Bounds.Height}"
       Minimum="0"
+      Maximum="0"
       Visibility="Auto"
       />
       
@@ -29,6 +30,7 @@
       Orientation="Horizontal"
       ViewportSize="{Binding #ViewPort.Bounds.Width}"
       Minimum="0"
+      Maximum="0"
       Visibility="Auto"
       />
 

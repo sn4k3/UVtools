@@ -579,10 +579,18 @@ namespace UVtools.WPF
 
         public async void OpenFile(bool newWindow = false)
         {
+            var filters = Helpers.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
+            var orderedFilters = new List<FileDialogFilter> {filters[Settings.General.DefaultOpenFileExtensionIndex]};
+            for (int i = 0; i < filters.Count; i++)
+            {
+                if(i == Settings.General.DefaultOpenFileExtensionIndex) continue;
+                orderedFilters.Add(filters[i]);
+            }
+
             var dialog = new OpenFileDialog
             {
                 AllowMultiple = true,
-                Filters = Helpers.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia),
+                Filters = orderedFilters,
                 Directory = Settings.General.DefaultDirectoryOpenFile
             };
             var files = await dialog.ShowAsync(this);

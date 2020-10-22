@@ -3,7 +3,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
-             x:Class="UVtools.WPF.Controls.Tools.ToolArithmeticControl">
+             x:Class="UVtools.WPF.Controls.Tools.ToolArithmeticControl"
+             Width="720"
+             >
 
   <StackPanel Spacing="10">
     <TextBlock Text="Sentence:"/>
