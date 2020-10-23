@@ -1,9 +1,10 @@
 ﻿using System.Drawing;
 using ReactiveUI;
+using UVtools.Core.Objects;
 
 namespace UVtools.WPF.Structures
 {
-    public class PixelPicker : ReactiveObject
+    public class PixelPicker : BindableBase
     {
         private bool _isSet;
         private Point _location = new Point(0,0);
@@ -12,19 +13,19 @@ namespace UVtools.WPF.Structures
         public bool IsSet
         {
             get => _isSet;
-            private set => this.RaiseAndSetIfChanged(ref _isSet, value);
+            private set => RaiseAndSetIfChanged(ref _isSet, value);
         }
 
         public Point Location
         {
             get => _location;
-            set => this.RaiseAndSetIfChanged(ref _location, value);
+            set => RaiseAndSetIfChanged(ref _location, value);
         }
 
         public byte Brightness
         {
             get => _brightness;
-            private set => this.RaiseAndSetIfChanged(ref _brightness, value);
+            private set => RaiseAndSetIfChanged(ref _brightness, value);
         }
 
         public void Set(Point location, byte brightness)

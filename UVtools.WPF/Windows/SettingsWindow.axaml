@@ -664,7 +664,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
                   <NumericUpDown Width="60"
-                                  Minimum="1"
+                                  Minimum="0"
                                   Maximum="254"
                                  Value="{Binding Settings.Issues.IslandBinaryThreshold}"
                                 />
@@ -718,23 +718,21 @@
                   />
                 </StackPanel>
 
-                
-              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
-                <NumericUpDown Width="60"
-                                Minimum="0.05"
-                                Maximum="0.95"
-                                Increment="0.05"
-                                Value="{Binding Settings.Issues.IslandRequiredPixelsToSupportMultiplier}"
-                                />
-                <TextBlock
-                  VerticalAlignment="Center"
-                  Text="Supporting safe pixels required over a multiplier on island pixels"
-                  ToolTip.Tip="An island supported by at least it pixels multiplied by this value will always be considered supported.
-&#x0a;Formula: Supporting pixels >= Island pixels * this value"
-                  />
-              </StackPanel>
 
-              <!--
+                <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                  <NumericUpDown Width="60"
+                                  Minimum="50"
+                                  Maximum="255"
+                                 Value="{Binding Settings.Issues.IslandRequiredPixelBrightnessToSupport}"
+                                />
+                  <TextBlock
+                    VerticalAlignment="Center"
+                    Text="Minimum intensity of a supporting pixel before it is considered safe"
+                    ToolTip.Tip="Pixels below this threshold will not be considered when counting supporting pixels for an island."
+                  />
+                </StackPanel>
+
+                <!--
               <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
                 <NumericUpDown Width="60"
                                 Minimum="1"
@@ -1018,9 +1016,9 @@
                 <CheckBox IsChecked="{Binding Settings.LayerRepair.RepairIslands}"
                   Margin="15,0" Content="Attempt to repair islands by default"/>
                 <CheckBox IsChecked="{Binding Settings.LayerRepair.RepairResinTraps}"
-                  Margin="15,0" Content="Remove empty layers by default"/>
-                <CheckBox IsChecked="{Binding Settings.LayerRepair.RemoveEmptyLayers}"
                   Margin="15,0" Content="Attempt to repair resin traps by default"/>
+                <CheckBox IsChecked="{Binding Settings.LayerRepair.RemoveEmptyLayers}"
+                  Margin="15,0" Content="Remove empty layers by default"/>
 
                 <StackPanel Orientation="Horizontal" Margin="15,0" Spacing="10">
                   <NumericUpDown

@@ -483,7 +483,6 @@ namespace UVtools.WPF
                     TooltipOverlayText = "Pixel editing is on:\n" +
                                                       "» Click over a pixel to draw\n" +
                                                       "» Hold CTRL to clear pixels";
-
                     UpdatePixelEditorCursor();
                 }
                 else

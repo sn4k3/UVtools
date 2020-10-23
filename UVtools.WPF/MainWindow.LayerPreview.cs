@@ -33,7 +33,6 @@ using UVtools.WPF.Structures;
 using Color = UVtools.WPF.Structures.Color;
 using Helpers = UVtools.WPF.Controls.Helpers;
 using Point = System.Drawing.Point;
-using Size = Avalonia.Size;
 
 namespace UVtools.WPF
 {
@@ -49,7 +48,8 @@ namespace UVtools.WPF
             Selection
         };
         #endregion
-        public AdvancedImageBox LayerImageBox;
+
+        public AdvancedImageBox LayerImageBox { get; private set; }
         public SliderEx LayerSlider;
         public Panel LayerNavigationTooltipPanel;
         public Border LayerNavigationTooltipBorder;

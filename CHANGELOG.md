@@ -1,5 +1,12 @@
 # Changelog
 
+## 23/10/2020 - v1.0.0.2
+
+* (Fix) ROI selection button on bottom was always disabled even when a region is selected
+* (Fix) Settings - Issues- "Pixel intensity threshold" defaults to 0, but can't be set back to 0 after change (minimum is 1). (#78)
+* (Fix) Settings - Issues - "Supporting safe pixels..." is present twice (#78)
+* (Fix) Settings - Layer repair - Empty layers / Resin traps texts are swapped in the settings window (#78)
+
 ## 23/10/2020 - v1.0.0.1
 
 * (Change) Checked and click buttons highlight color for better distinguish

@@ -1556,7 +1556,7 @@
         </Button>
 
         <Button
-          IsEnabled="{Binding #LayerImage.HaveSelection}"
+          IsEnabled="{Binding IsFileLoaded}"
           Command="{Binding OnROIClick}"
           ToolTip.Tip="Region of interest selection over layer.
 &#x0a;(NS): Not selected
