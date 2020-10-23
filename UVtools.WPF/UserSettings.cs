@@ -9,10 +9,12 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Xml.Serialization;
 using Avalonia.Media;
 using JetBrains.Annotations;
 using ReactiveUI;
+using UVtools.Core;
 using Color=UVtools.WPF.Structures.Color;
 
 namespace UVtools.WPF
@@ -943,10 +945,21 @@ namespace UVtools.WPF
         #endregion
 
         #region Singleton
+
+        public static string SettingsFolder
+        {
+            get
+            {
+                var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), About.Software);
+                Directory.CreateDirectory(path);
+                return path;
+            }
+        }
+
         /// <summary>
         /// Default filepath for store <see cref="UserSettings"/>
         /// </summary>
-        private const string FilePath = "Assets/usersettings.xml";
+        private static string FilePath => Path.Combine(SettingsFolder, "usersettings.xml");
 
 
         private static UserSettings _instance;
@@ -1077,9 +1090,9 @@ namespace UVtools.WPF
             }
 
             var serializer = new XmlSerializer(typeof(UserSettings));
-            using var myXmlReader = new StreamReader(FilePath);
             try
             {
+                using var myXmlReader = new StreamReader(FilePath);
                 _instance = (UserSettings)serializer.Deserialize(myXmlReader);
                 if (_instance.General.MaxDegreeOfParallelism <= 0)
                     _instance.General.MaxDegreeOfParallelism = Environment.ProcessorCount;
@@ -1109,9 +1122,9 @@ namespace UVtools.WPF
             Instance.SavesCount++;
             _instance.ModifiedDateTime = DateTime.Now;
             var serializer = new XmlSerializer(_instance.GetType());
-            using var myXmlWriter = new StreamWriter(FilePath);
             try
             {
+                using var myXmlWriter = new StreamWriter(FilePath);
                 serializer.Serialize(myXmlWriter, _instance);
             }
             catch (Exception e)

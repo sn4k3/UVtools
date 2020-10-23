@@ -38,9 +38,9 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public override string ProgressTitle => null;
+        public override string ProgressTitle => "Change print parameters";
 
-        public override string ProgressAction => null;
+        public override string ProgressAction => "Changing print parameters";
 
         public override StringTag Validate(params object[] parameters)
         {

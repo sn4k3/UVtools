@@ -50,7 +50,17 @@ namespace UVtools.WPF
                 UserSettings.SetVersion();
 
                 ThemeSelector = Avalonia.ThemeManager.ThemeSelector.Create("Assets/Themes");
-                ThemeSelector.LoadSelectedTheme("Assets/selected.theme");
+                ThemeSelector.LoadSelectedTheme(Path.Combine(UserSettings.SettingsFolder, "selected.theme"));
+                if (ThemeSelector.SelectedTheme.Name == "UVtoolsDark")
+                {
+                    foreach (var theme in ThemeSelector.Themes)
+                    {
+                        if (theme.Name != "UVtoolsLight") continue;
+                        theme.ApplyTheme();
+                        break;
+                    }
+                }
+
                 MainWindow = new MainWindow();
 
                 try
@@ -70,7 +80,7 @@ namespace UVtools.WPF
 
                 desktop.MainWindow = MainWindow;
                 desktop.Exit += (sender, e) 
-                    => ThemeSelector.SaveSelectedTheme("Assets/selected.theme");
+                    => ThemeSelector.SaveSelectedTheme(Path.Combine(UserSettings.SettingsFolder, "selected.theme"));
             }
 
             base.OnFrameworkInitializationCompleted();

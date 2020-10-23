@@ -1,6 +1,12 @@
 # Changelog
 
-## 10/22/2020 - v1.0.0.0
+## 23/10/2020 - v1.0.0.1
+
+* (Change) Checked and click buttons highlight color for better distinguish
+* (Fix) Move user settings to LocalUser folder to allow save without run as admin
+* (Fix) Save button for print parameters were invisible
+
+## 22/10/2020 - v1.0.0.0
 
 * (Add) Multi-OS with Linux and MacOS support
 * (Add) Themes support

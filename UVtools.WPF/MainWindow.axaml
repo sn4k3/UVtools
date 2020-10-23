@@ -1406,7 +1406,7 @@
 
         <ToggleButton
           IsChecked="{Binding ShowLayerImageDifference}"
-          ToolTip.Tip="Show layer differences where daker pixels were also present on previous layer and the white pixels the difference between previous and current layer."
+          ToolTip.Tip="Show layer differences where darker pixels were also present on previous layer and the white pixels the difference between previous and current layer."
           >
           <StackPanel Orientation="Horizontal">
             <Image Source="/Assets/Icons/layers-16x16.png"/>
@@ -1420,7 +1420,7 @@
           >
           <StackPanel Orientation="Horizontal">
             <Image Source="/Assets/Icons/warning-16x16.png"/>
-            <TextBlock Margin="5,0,5,0" Text="Issuess"/>
+            <TextBlock Margin="5,0,5,0" Text="Issues"/>
           </StackPanel>
         </ToggleButton>
 
@@ -1430,7 +1430,7 @@
           >
           <StackPanel Orientation="Horizontal">
             <Image Source="/Assets/Icons/crosshairs-16x16.png"/>
-            <TextBlock Margin="5,0,5,0" Text="Crossharis"/>
+            <TextBlock Margin="5,0,5,0" Text="Crosshairs"/>
           </StackPanel>
         </ToggleButton>
 

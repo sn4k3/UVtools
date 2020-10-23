@@ -12,16 +12,16 @@
         <Color x:Key="ThemeBorderLowColor">#FFAAAAAA</Color>
         <Color x:Key="ThemeBorderMidColor">#FF888888</Color>
         <Color x:Key="ThemeBorderHighColor">#FF333333</Color>
-        <Color x:Key="ThemeControlLowColor">#FFFFFFFF</Color>
-        <Color x:Key="ThemeControlMidColor">#FFAAAAAA</Color>
-        <Color x:Key="ThemeControlHighColor">#FF888888</Color>
+        <Color x:Key="ThemeControlLowColor">#FFFFFFFF</Color><!--  !-->
+        <Color x:Key="ThemeControlMidColor">#FFAAAAAA</Color><!-- Controls normal state background  !-->
+        <Color x:Key="ThemeControlHighColor">#f1c40f</Color> <!-- Checked and clicked controls !-->
         <Color x:Key="ThemeControlHighlightLowColor">#FFF0F0F0</Color>
-        <Color x:Key="ThemeControlHighlightMidColor">#FFD0D0D0</Color>
+        <Color x:Key="ThemeControlHighlightMidColor">#FFD0D0D0</Color><!-- Tab background !-->
         <Color x:Key="ThemeControlHighlightHighColor">#FF808080</Color>
         <Color x:Key="ThemeForegroundColor">#FF000000</Color>
         <Color x:Key="ThemeForegroundLowColor">#FF808080</Color>
 
-        <Color x:Key="HighlightColor">#FF086F9E</Color>
+        <Color x:Key="HighlightColor">#FF086F9E</Color> <!-- Highlight text, checks, radios !-->
         <Color x:Key="ErrorColor">#FFFF0000</Color>
         <Color x:Key="ErrorLowColor">#10FF0000</Color>
 

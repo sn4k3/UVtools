@@ -48,7 +48,7 @@
     "HighlightColor": "#FF119EDA",
     "ErrorColor": "#FFFF0000",
     "ErrorLowColor": "#10FF0000",
-    "ThemeBorderThickness": "11",
+    "ThemeBorderThickness": "1",
     "ThemeDisabledOpacity": 0.5,
     "FontSizeSmall": 12.0,
     "FontSizeNormal": 14.0,
