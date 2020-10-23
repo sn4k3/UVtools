@@ -187,9 +187,6 @@
           <File Id="owf1FE1E0B70F7D880A2FB9AFA8E0E36EF5" Source="$(var.SourceDir)\UVtools_demo_file.sl1" KeyPath="yes" />
         </Component>
         <Directory Id="owd9F9F77C9E3C3E4DA718760164D5303B8" Name="Assets">
-          <Component Id="owc0061A4888EBC5BCE20291B65069108BE" Guid="d5b06b4a-ae54-c317-aa82-c9a80ac059e5">
-            <File Id="owf0061A4888EBC5BCE20291B65069108BE" Source="$(var.SourceDir)\Assets\selected.theme" KeyPath="yes" />
-          </Component>
           <Directory Id="owd09EA423812736FC896B5C82AE8837139" Name="PrusaSlicer">
             <Directory Id="owd44E5BD2F3F078D3F66FB8FE12300C21C" Name="printer">
               <Component Id="owc2EABADD977D38E081AEBDA1E4F66ABAC" Guid="21cff034-fa0c-8768-77a8-0466b9adfa34">
