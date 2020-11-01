@@ -149,13 +149,23 @@ namespace UVtools.WPF
             LayerImageBox.PointerPressed += LayerImageBoxOnPointerPressed;
             LayerImageBox.DoubleTapped += LayerImageBoxOnDoubleTapped;
 
+            _issuesSliderCanvas.PointerWheelChanged += LayerSliderOnPointerWheelChanged;
+            LayerSlider.PointerWheelChanged += LayerSliderOnPointerWheelChanged;
+            //this.FindControl<Grid>("LayerNavigationSliderGrid").PointerWheelChanged += LayerSliderOnPointerWheelChanged;
+
             _layerNavigationTooltipTimer.Elapsed += (sender, args) =>
             {
                 Dispatcher.UIThread.InvokeAsync(() => RaisePropertyChanged(nameof(LayerNavigationTooltipMargin)));
             };
         }
 
-
+        private void LayerSliderOnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+        {
+            if (e.Delta.Y > 0)
+                ActualLayer++;
+            else if (e.Delta.Y < 0 && _actualLayer > 0)
+                ActualLayer--;
+        }
 
 
         public bool ShowLayerImageRotated
@@ -268,7 +278,7 @@ namespace UVtools.WPF
         public string MaximumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.TotalHeight}mm\n{SlicerFile.LayerCount - 1}";
         public string ActualLayerTooltip => SlicerFile is null ? "???" : $"{SlicerFile.GetHeightFromLayer(ActualLayer):0.00}mm\n{ActualLayer}\n{(ActualLayer + 1) * 100 / (SlicerFile.LayerCount)}%";
 
-        public uint SliderMaximumValue => SlicerFile?.LayerCount - 1 ?? 0;
+        public uint SliderMaximumValue => SlicerFile?.LastLayerIndex ?? 0;
 
         public bool CanGoUp => _actualLayer < SliderMaximumValue;
         public bool CanGoDown => _actualLayer > 0;
@@ -606,7 +616,7 @@ namespace UVtools.WPF
                         Settings.LayerPreview.VolumeBoundsOutlineThickness);
                 }
 
-                if (_showLayerOutlineLayerBoundary)
+                if (_showLayerOutlineLayerBoundary && !SlicerFile[_actualLayer].BoundingRectangle.IsEmpty)
                 {
                     CvInvoke.Rectangle(LayerCache.ImageBgr, SlicerFile[_actualLayer].BoundingRectangle,
                         new MCvScalar(Settings.LayerPreview.LayerBoundsOutlineColor.B,

@@ -206,10 +206,10 @@ namespace UVtools.Core.FileFormats
         {
             set
             {
-                UserSettings.MaxLayer = LayerCount - 1;
+                UserSettings.MaxLayer = LastLayerIndex;
                 ResinMetadataSettings.TotalLayersCount = LayerCount;
-                RebuildGCode();
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(NormalLayerCount));
             }
         }
 

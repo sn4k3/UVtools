@@ -190,6 +190,8 @@ namespace UVtools.Core.Operations
                 {
                     if(!RaiseAndSetIfChanged(ref _retractSpeed, value)) return;
                     RaisePropertyChanged(nameof(LightOffDelay));
+
+                    BottomRetractSpeed = _retractSpeed;
                 }
             }
 
@@ -223,9 +225,9 @@ namespace UVtools.Core.Operations
                 }
             }
 
-            public decimal LightOffDelay => Calculate(_liftHeight, _liftSpeed, _retractSpeed, _waitTime);
+            public decimal LightOffDelay => CalculateSeconds(_liftHeight, _liftSpeed, _retractSpeed, _waitTime);
 
-            public decimal BottomLightOffDelay => Calculate(_bottomLiftHeight, _bottomLiftSpeed, _bottomRetractSpeed, _bottomWaitTime);
+            public decimal BottomLightOffDelay => CalculateSeconds(_bottomLiftHeight, _bottomLiftSpeed, _bottomRetractSpeed, _bottomWaitTime);
 
             public LightOffDelayC()
             {
@@ -243,7 +245,7 @@ namespace UVtools.Core.Operations
                 _bottomWaitTime = bottomWaitTime;
             }
 
-            public static decimal Calculate(decimal liftHeight, decimal liftSpeed, decimal retract, decimal waitTime = 0)
+            public static decimal CalculateSeconds(decimal liftHeight, decimal liftSpeed, decimal retract, decimal waitTime = 0)
             {
                 try
                 {
@@ -255,11 +257,11 @@ namespace UVtools.Core.Operations
                 }
             }
 
-            public static float Calculate(float liftHeight, float liftSpeed, float retract, float waitTime = 0)
+            public static float CalculateSeconds(float liftHeight, float liftSpeed, float retract, float extraWaitTime = 0)
             {
                 try
                 {
-                    return (float) Math.Round(liftHeight / (liftSpeed / 60f) + liftHeight / (retract / 60f) + waitTime, 2);
+                    return (float) Math.Round(liftHeight / (liftSpeed / 60f) + liftHeight / (retract / 60f) + extraWaitTime, 2);
                 }
                 catch (Exception)
                 {
@@ -267,6 +269,9 @@ namespace UVtools.Core.Operations
                 }
                 
             }
+
+            public static uint CalculateMilliseconds(float liftHeight, float liftSpeed, float retract, float extraWaitTime = 0) =>
+                (uint) (CalculateSeconds(liftHeight, liftSpeed, retract, extraWaitTime) * 1000);
         }
     }
 }

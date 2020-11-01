@@ -12,13 +12,13 @@
 
   <StackPanel Orientation="Vertical">
     <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-      <Image Source="/Assets/Icons/UVtools.ico" Width="256"/>
+      <Image Margin="20,0,0,0" Source="/Assets/Icons/UVtools_alt.ico" Width="256"/>
       <Grid 
         RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,*"
         Margin="20"
         >
 
-        <TextBlock Grid.Row="0" Text="{Binding Software}"/>
+        <TextBlock Grid.Row="0" Text="{Binding Software}" FontWeight="Bold"/>
         <TextBlock Grid.Row="2" Text="{Binding Version}"/>
         <TextBlock Grid.Row="4" Text="{Binding Copyright}"/>
         <TextBlock Grid.Row="6" Text="{Binding Company}"/>

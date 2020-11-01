@@ -172,6 +172,14 @@
           </MenuItem.Icon>
         </MenuItem>
 
+        <MenuItem
+          Header="_Open settings folder"
+          Command="{Binding MenuHelpOpenSettingsFolderClicked}">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\open-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+
         <Separator/>
 
         <MenuItem
@@ -180,8 +188,7 @@
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\CNCMachine-16x16.png"/>
           </MenuItem.Icon>
-        </MenuItem>
-        
+        </MenuItem>       
       </MenuItem>
 
       <MenuItem 
@@ -1281,10 +1288,12 @@
         <Image Width="16" Height="16" Source="/Assets/Icons/arrow-up-16x16.png"/>
       </RepeatButton>
 
-      <Grid Grid.Row="2" ColumnDefinitions="*,20,Auto">
+      <Grid 
+        Name="LayerNavigationSliderGrid"
+        Grid.Row="2" ColumnDefinitions="*,20,Auto">
         <Panel
           Grid.Column="0"
-          Name="Layer.Navigation.Tooltip.Panel"
+          Name="LayerNavigationTooltipPanel"
           Margin="{Binding LayerNavigationTooltipMargin}"
           HorizontalAlignment="Left"
           >
@@ -1307,7 +1316,8 @@
           Grid.Column="1"
           Margin="0,15"
           Background="WhiteSmoke"
-          Name="Layer.Navigation.IssuesCanvas" Width="20"/>
+          Name="Layer.Navigation.IssuesCanvas" Width="20"
+          />
 
         <uc:SliderEx
           Grid.Column="2"

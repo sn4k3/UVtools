@@ -198,6 +198,8 @@ namespace UVtools.Core.FileFormats
 
         public override byte AntiAliasing => JsonSettings.Properties.AntiAliasLevel;
 
+        public override bool SupportPerLayerSettings => true;
+
         public override float LayerHeight
         {
             get => JsonSettings.Properties.Size.LayerHeight;
@@ -213,8 +215,8 @@ namespace UVtools.Core.FileFormats
             set
             {
                 JsonSettings.Properties.Size.Layers = LayerCount;
-                JsonSettings.Layers.Clear();
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(NormalLayerCount));
             }
         }
 
@@ -363,24 +365,25 @@ namespace UVtools.Core.FileFormats
         {
             base.Encode(fileFullPath, progress);
 
-            if (JsonSettings.Layers.Count == 0)
+            // Redo layer data
+            JsonSettings.Layers.Clear();
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                var layer = this[layerIndex];
+                JsonSettings.Layers.Add(new LayerData
                 {
-                    JsonSettings.Layers.Add(new LayerData
+                    Z = layer.PositionZ,
+                    Exposure = new Exposure
                     {
-                        Z = this[layerIndex].PositionZ,
-                        Exposure = new Exposure
-                        {
-                            LiftHeight = GetInitialLayerValueOrNormal(layerIndex, JsonSettings.Properties.Bottom.LiftHeight, JsonSettings.Properties.Exposure.LiftHeight),
-                            LiftSpeed = GetInitialLayerValueOrNormal(layerIndex, JsonSettings.Properties.Bottom.LiftSpeed, JsonSettings.Properties.Exposure.LiftSpeed),
-                            LightOnTime = GetInitialLayerValueOrNormal(layerIndex, BottomExposureTime, ExposureTime),
-                            LightOffTime = GetInitialLayerValueOrNormal(layerIndex, JsonSettings.Properties.Bottom.LightOffTime, JsonSettings.Properties.Exposure.LightOffTime),
-                            LightPWM = GetInitialLayerValueOrNormal(layerIndex, JsonSettings.Properties.Bottom.LightPWM, JsonSettings.Properties.Exposure.LightPWM),
-                            RetractSpeed = GetInitialLayerValueOrNormal(layerIndex, JsonSettings.Properties.Bottom.RetractSpeed, JsonSettings.Properties.Exposure.RetractSpeed),
-                        }
-                    });
-                }
+                        LiftHeight = layer.LiftHeight,
+                        LiftSpeed = layer.LiftSpeed,
+                        RetractHeight = layer.LiftHeight+1,
+                        RetractSpeed = layer.RetractSpeed,
+                        LightOffTime = layer.LayerOffTime,
+                        LightOnTime = layer.ExposureTime,
+                        LightPWM = layer.LightPWM
+                    }
+                });
             }
 
             using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
@@ -445,7 +448,7 @@ namespace UVtools.Core.FileFormats
                 }
 
                 JsonSettings = Helpers.JsonDeserializeObject<Settings>(entry.Open());
-
+                
                 LayerManager = new LayerManager(JsonSettings.Properties.Size.Layers, this);
 
                 entry = inputFile.GetEntry(FilePreviewTinyName);
@@ -476,7 +479,12 @@ namespace UVtools.Core.FileFormats
                     LayerManager[layerIndex] = new Layer(layerIndex, entry.Open(), entry.Name)
                     {
                         PositionZ = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int) layerIndex].Z : GetHeightFromLayer(layerIndex),
-                        ExposureTime = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LightOnTime : GetInitialLayerValueOrNormal(layerIndex, BottomExposureTime, ExposureTime)
+                        LiftHeight = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LiftHeight : GetInitialLayerValueOrNormal(layerIndex, BottomLiftHeight, LiftHeight),
+                        LiftSpeed = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LiftSpeed : GetInitialLayerValueOrNormal(layerIndex, BottomLiftSpeed, LiftSpeed),
+                        RetractSpeed = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.RetractSpeed : RetractSpeed,
+                        LayerOffTime = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LightOffTime : GetInitialLayerValueOrNormal(layerIndex, BottomLayerOffTime, LayerOffTime),
+                        ExposureTime = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LightOnTime : GetInitialLayerValueOrNormal(layerIndex, BottomExposureTime, ExposureTime),
+                        LightPWM = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LightPWM : GetInitialLayerValueOrNormal(layerIndex, BottomLightPWM, LightPWM),
                     };
                 }
                 
@@ -484,35 +492,6 @@ namespace UVtools.Core.FileFormats
             }
 
             LayerManager.GetBoundingRectangle(progress);
-        }
-
-        public override byte SetValuesFromPrintParametersModifiers()
-        {
-            var count = base.SetValuesFromPrintParametersModifiers();
-            if (count == 0) return 0;
-
-            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-            {
-                // Bottom : others
-                if (JsonSettings.Layers.Count <= layerIndex) break;
-
-                JsonSettings.Layers[(int)layerIndex].Exposure.LiftHeight =
-                    GetInitialLayerValueOrNormal(layerIndex, JsonSettings.Properties.Bottom.LiftHeight, JsonSettings.Properties.Exposure.LiftHeight);
-                JsonSettings.Layers[(int)layerIndex].Exposure.LightPWM =
-                    GetInitialLayerValueOrNormal(layerIndex, JsonSettings.Properties.Bottom.LightPWM, JsonSettings.Properties.Exposure.LightPWM);
-                JsonSettings.Layers[(int)layerIndex].Exposure.LiftSpeed =
-                    GetInitialLayerValueOrNormal(layerIndex, JsonSettings.Properties.Bottom.LiftSpeed, JsonSettings.Properties.Exposure.LiftSpeed);
-                JsonSettings.Layers[(int)layerIndex].Exposure.LightOnTime =
-                    GetInitialLayerValueOrNormal(layerIndex, JsonSettings.Properties.Bottom.LightOnTime, JsonSettings.Properties.Exposure.LightOnTime);
-                JsonSettings.Layers[(int)layerIndex].Exposure.RetractSpeed =
-                    GetInitialLayerValueOrNormal(layerIndex, JsonSettings.Properties.Bottom.RetractSpeed, JsonSettings.Properties.Exposure.RetractSpeed);
-                JsonSettings.Layers[(int)layerIndex].Exposure.LightOffTime =
-                    GetInitialLayerValueOrNormal(layerIndex, JsonSettings.Properties.Bottom.LightOffTime, JsonSettings.Properties.Exposure.LightOffTime);
-                JsonSettings.Layers[(int)layerIndex].Exposure.RetractHeight =
-                    GetInitialLayerValueOrNormal(layerIndex, JsonSettings.Properties.Bottom.RetractHeight, JsonSettings.Properties.Exposure.RetractHeight);
-            }
-
-            return count;
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)

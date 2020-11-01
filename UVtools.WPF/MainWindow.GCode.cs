@@ -28,6 +28,8 @@ namespace UVtools.WPF
             SlicerFile.RebuildGCode();
             RaisePropertyChanged(nameof(GCodeLines));
             RaisePropertyChanged(nameof(GCodeStr));
+
+            CanSave = true;
         }
 
         public async void OnClickGCodeSaveFile()

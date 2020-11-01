@@ -25,6 +25,7 @@ namespace UVtools.WPF.Windows
         private string _description;
         private double _descriptionMaxWidth;
         private bool _layerRangeVisible = true;
+        private bool _layerRangeSync;
         private uint _layerIndexStart;
         private uint _layerIndexEnd;
         private bool _isROIVisible;
@@ -72,6 +73,19 @@ namespace UVtools.WPF.Windows
             set => RaiseAndSetIfChanged(ref _layerRangeVisible, value);
         }
 
+        public bool LayerRangeSync
+        {
+            get => _layerRangeSync;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _layerRangeSync, value)) return;
+                if (_layerRangeSync)
+                {
+                    LayerIndexEnd = _layerIndexStart;
+                }
+            }
+        }
+
         public uint LayerIndexStart
         {
             get => _layerIndexStart;
@@ -83,6 +97,13 @@ namespace UVtools.WPF.Windows
                 if (!RaiseAndSetIfChanged(ref _layerIndexStart, value)) return;
                 RaisePropertyChanged(nameof(LayerStartMM));
                 RaisePropertyChanged(nameof(LayerRangeCountStr));
+
+                if (_layerRangeSync)
+                {
+                    LayerIndexEnd = _layerIndexStart;
+                }
+
+                App.MainWindow.ActualLayer = _layerIndexStart;
             }
         }
 

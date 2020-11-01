@@ -8,6 +8,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -27,7 +28,7 @@ namespace UVtools.Core.FileFormats
     {
         #region Constants
 
-        public const string GCodeStart = "G28 ; Auto Home{0}" +
+        public const string GCodeStart =  "G28 ;Auto Home{0}" +
                                           "G21 ;Set units to be mm{0}" +
                                           "G91 ;Relative Positioning{0}" +
                                           "M17 ;Enable motors{0}" +
@@ -61,7 +62,7 @@ namespace UVtools.Core.FileFormats
             [DisplayName("Bottom Layers Time")] public uint BottomLayersTime { get; set; } = 35000;
             [DisplayName("Number of Bottom Layers")] public ushort NumberBottomLayers { get; set; } = 3;
             [DisplayName("Blanking Layer Time")] public uint BlankingLayerTime { get; set; } = 1000;
-            [DisplayName("BuildDirection")] public string BuildDirection { get; set; } = "Bottom_Up";
+            [DisplayName("Build Direction")] public string BuildDirection { get; set; } = "Bottom_Up";
             [DisplayName("Lift Distance")] public float LiftDistance { get; set; } = 4;
             [DisplayName("Slide/Tilt Value")] public byte TiltValue { get; set; }
             [DisplayName("Use Mainlift GCode Tab")] public bool UseMainliftGCodeTab { get; set; }
@@ -148,6 +149,15 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LightPWM,
         };
 
+        public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+            PrintParameterModifier.ExposureSeconds,
+            //PrintParameterModifier.LayerOffTime,
+            PrintParameterModifier.LiftHeight,
+            PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.RetractSpeed,
+            PrintParameterModifier.LightPWM,
+        };
+
         public override byte ThumbnailsCount { get; } = 0;
 
         public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = null;
@@ -210,7 +220,8 @@ namespace UVtools.Core.FileFormats
             {
                 OutputSettings.LayersNum = LayerCount;
                 SliceSettings.LayersNum = LayerCount;
-                RebuildGCode();
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(NormalLayerCount));
             }
         }
 
@@ -416,8 +427,9 @@ namespace UVtools.Core.FileFormats
                     string line;
                     while ((line = tr.ReadLine()) != null)
                     {
+                        line = line.Replace("# ", string.Empty);
                         if (string.IsNullOrEmpty(line)) continue;
-                        if(line[0] == '#') continue;
+                        //if(line[0] == '#') continue;
 
                         var splitLine = line.Split('=');
                         if(splitLine.Length < 2) continue;
@@ -490,10 +502,19 @@ namespace UVtools.Core.FileFormats
                 {
                     if (!zipArchiveEntry.Name.EndsWith(".png") || progress.Token.IsCancellationRequested) return;
 
+                    var layerIndexStr = string.Empty;
+                    var layerStr = zipArchiveEntry.Name.Substring(0, zipArchiveEntry.Name.Length - 4);
+                    for (int i = layerStr.Length-1; i >= 0; i--)
+                    {
+                        if(layerStr[i] < '0' || layerStr[i] > '9') break;
+                        layerIndexStr = $"{layerStr[i]}{layerIndexStr}";
+                    }
+
+                    if (string.IsNullOrEmpty(layerIndexStr)) return;
+
                     // - .png - 4 numbers
-                    string layerStr =
-                        zipArchiveEntry.Name.Substring(zipArchiveEntry.Name.Length - 4 - layerSize, layerSize);
-                    uint layerIndex = uint.Parse(layerStr);
+                    // string layerStr = zipArchiveEntry.Name.Substring(zipArchiveEntry.Name.Length - 4 - layerSize, layerSize);
+                    uint layerIndex = uint.Parse(layerIndexStr);
 
                     var startStr = $"{GCodeKeywordSlice} {layerIndex}";
                     var stripGcode =
@@ -504,9 +525,44 @@ namespace UVtools.Core.FileFormats
                         .Trim(' ', '\n', '\r', '\t');
                     //var startCurrPos = stripGcode.Remove(0, ";currPos:".Length);
 
+                    float liftHeight = GetInitialLayerValueOrNormal(layerIndex, BottomLiftHeight, LiftHeight);
+                    float liftSpeed = GetInitialLayerValueOrNormal(layerIndex, BottomLiftSpeed, LiftSpeed);
+                    float retractSpeed = RetractSpeed;
+                    float lightOffDelay = GetInitialLayerValueOrNormal(layerIndex, BottomLayerOffTime, LayerOffTime);
+                    byte pwm = GetInitialLayerValueOrNormal(layerIndex, BottomLightPWM, LightPWM); ;
+                    float exposureTime = GetInitialLayerValueOrNormal(layerIndex, BottomExposureTime, ExposureTime);
 
                     //var currPos = Regex.Match(stripGcode, "G1 Z([+-]?([0-9]*[.])?[0-9]+)", RegexOptions.IgnoreCase);
-                    var exposureTime = Regex.Match(stripGcode, ";<Delay> (\\d+)", RegexOptions.IgnoreCase);
+                    var moveG1Regex = Regex.Match(stripGcode, @"G1 Z([+-]?([0-9]*[.])?[0-9]+) F(\d+)", RegexOptions.IgnoreCase);
+                    var pwmM106Regex = Regex.Match(stripGcode, @"M106 S(\d+)", RegexOptions.IgnoreCase);
+                    var exposureTimeRegex = Regex.Match(stripGcode, ";<Delay> (\\d+)", RegexOptions.IgnoreCase);
+
+                    if (moveG1Regex.Success)
+                    {
+                        liftHeight = float.Parse(moveG1Regex.Groups[1].Value, CultureInfo.InvariantCulture);
+                        liftSpeed = float.Parse(moveG1Regex.Groups[3].Value, CultureInfo.InvariantCulture);
+                        moveG1Regex = moveG1Regex.NextMatch();
+                        if (moveG1Regex.Success)
+                        {
+                            //float retractHeight = Math.Abs(float.Parse(moveG1Regex.Groups[1].Value, CultureInfo.InvariantCulture));
+                            retractSpeed = float.Parse(moveG1Regex.Groups[3].Value, CultureInfo.InvariantCulture);
+                        }
+                    }
+
+                    if (pwmM106Regex.Success)
+                    {
+                        pwm = byte.Parse(pwmM106Regex.Groups[1].Value);
+                    }
+                    if (layerIndex == 0)
+                    {
+                        OutputSettings.BottomLightPWM = pwm;
+                    }
+
+                    if (exposureTimeRegex.Success)
+                    {
+                        exposureTime = (float)Math.Round(float.Parse(exposureTimeRegex.Groups[1].Value, CultureInfo.InvariantCulture) / 1000f, 2);
+                    }
+
                     /*var pwm = Regex.Match(stripGcode, "M106 S(\\d+)", RegexOptions.IgnoreCase);
                     if (layerIndex < InitialLayerCount)
                     {
@@ -560,7 +616,12 @@ namespace UVtools.Core.FileFormats
                             new Layer(layerIndex, buffer, zipArchiveEntry.Name)
                             {
                                 PositionZ = GetHeightFromLayer(layerIndex),
-                                ExposureTime = float.Parse(exposureTime.Groups[1].Value) / 1000f
+                                LiftHeight = liftHeight,
+                                LiftSpeed = liftSpeed,
+                                RetractSpeed = retractSpeed,
+                                LayerOffTime = lightOffDelay,
+                                LightPWM = pwm,
+                                ExposureTime = exposureTime,
                             };
                     }
                     else
@@ -581,7 +642,12 @@ namespace UVtools.Core.FileFormats
                                     new Layer(layerIndex, matDecode, zipArchiveEntry.Name)
                                     {
                                         PositionZ = GetHeightFromLayer(layerIndex),
-                                        ExposureTime = float.Parse(exposureTime.Groups[1].Value) / 1000f
+                                        LiftHeight = liftHeight,
+                                        LiftSpeed = liftSpeed,
+                                        RetractSpeed = retractSpeed,
+                                        LayerOffTime = lightOffDelay,
+                                        LightPWM = pwm,
+                                        ExposureTime = exposureTime,
                                     };
                             }
                         }
@@ -625,25 +691,25 @@ namespace UVtools.Core.FileFormats
             {
                 Layer layer = this[layerIndex];
                 GCode.AppendLine($"{GCodeKeywordSlice} {layerIndex}");
-                GCode.AppendLine($"M106 S{GetInitialLayerValueOrNormal(layerIndex, OutputSettings.BottomLightPWM, OutputSettings.LightPWM)}");
+                GCode.AppendLine($"M106 S{layer.LightPWM}");
                 GCode.AppendLine($"{GCodeKeywordDelay} {layer.ExposureTime * 1000}");
                 GCode.AppendLine("M106 S0");
                 GCode.AppendLine(GCodeKeywordSliceBlank);
 
                 if (lastZPosition != layer.PositionZ)
                 {
-                    if (LiftHeight > 0)
+                    if (layer.LiftHeight > 0)
                     {
-                        GCode.AppendLine($"G1 Z{LiftHeight} F{LiftSpeed}");
-                        GCode.AppendLine($"G1 Z-{Math.Round(LiftHeight - layer.PositionZ + lastZPosition, 2)} F{RetractSpeed}");
+                        GCode.AppendLine($"G1 Z{layer.LiftHeight} F{layer.LiftSpeed}");
+                        GCode.AppendLine($"G1 Z-{Math.Round(layer.LiftHeight - layer.PositionZ + lastZPosition, 2)} F{layer.RetractSpeed}");
                     }
                     else
                     {
-                        GCode.AppendLine($"G1 Z{Math.Round(layer.PositionZ - lastZPosition, 2)} F{LiftSpeed}");
+                        GCode.AppendLine($"G1 Z{Math.Round(layer.PositionZ - lastZPosition, 2)} F{layer.LiftSpeed}");
                     }
                 }
                 // delay = max(extra['wait'], 500) + int(((int(lift)/(extra['lift_feed']/60)) + (int(lift)/(extra['lift_retract']/60)))*1000)
-                uint extraDelay = (uint)(OperationCalculator.LightOffDelayC.Calculate(LiftHeight, LiftHeight, RetractSpeed) * 1000);
+                uint extraDelay = OperationCalculator.LightOffDelayC.CalculateMilliseconds(layer.LiftHeight, layer.LiftSpeed, layer.RetractSpeed);
                 if (layerIndex < BottomLayerCount)
                 {
                     extraDelay = (uint)Math.Max(extraDelay + 10000, layer.ExposureTime * 1000);

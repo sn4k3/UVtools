@@ -15,6 +15,8 @@ namespace UVtools.Core.Operations
 {
     public class OperationEditParameters : Operation
     {
+        private bool _perLayerOverride;
+
         public override Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.None;
 
         public override bool CanROI { get; set; } = false;
@@ -22,7 +24,8 @@ namespace UVtools.Core.Operations
         public override string Title => "Edit print parameters";
 
         public override string Description =>
-            "Edits the available print parameters.";
+            "Edits the available print parameters.\n" +
+            "Note: Set global parameters will override all per layer settings when they are available.";
 
         public override string ConfirmationText
         {
@@ -34,7 +37,20 @@ namespace UVtools.Core.Operations
                     if(!modifier.HasChanged) continue;
                     sb.AppendLine($"{modifier.Name}: {modifier.OldValue}{modifier.ValueUnit} » {modifier.NewValue}{modifier.ValueUnit}");
                 }
-                return $"commit print parameter changes?\n{sb}";
+                var text = "commit print parameter changes";
+                if (_perLayerOverride)
+                {
+                    if (LayerRangeCount == 1)
+                    {
+                        text += $" to layer {LayerIndexStart}";
+                    }
+                    else
+                    {
+                        text += $" from layer {LayerIndexStart} to {LayerIndexEnd}";
+                    }
+                }
+
+                return $"{text}?\n{sb}";
             }
         }
 
@@ -57,6 +73,15 @@ namespace UVtools.Core.Operations
         }
 
         public FileFormat.PrintParameterModifier[] Modifiers { get; set; }
+
+        /// <summary>
+        /// Gets or sets if parameters are global or per layer inside a layer range
+        /// </summary>
+        public bool PerLayerOverride
+        {
+            get => _perLayerOverride;
+            set => RaiseAndSetIfChanged(ref _perLayerOverride, value);
+        }
 
         public OperationEditParameters()
         {

@@ -48,7 +48,7 @@ namespace UVtools.WPF.Structures
                                      searchFor.Length;
                     var endIndex = htmlCode.IndexOf("\"", startIndex, StringComparison.InvariantCultureIgnoreCase);
                     var version = htmlCode.Substring(startIndex, endIndex - startIndex);
-                    if (string.Compare(version, $"v{AppSettings.AssemblyVersion}", StringComparison.OrdinalIgnoreCase) > 0)
+                    if (string.Compare(version, $"v{AppSettings.VersionStr}", StringComparison.OrdinalIgnoreCase) > 0)
                     {
                         Dispatcher.UIThread.InvokeAsync(() =>
                         {

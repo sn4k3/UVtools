@@ -13,7 +13,7 @@
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <Nullable>enable</Nullable>
-    <Version>1.0.0.2</Version>
+    <Version>1.1.0</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -24,16 +24,16 @@
     <NoWarn>1701;1702;</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.999-cibuild0011401-beta" />
+    <PackageReference Include="Avalonia" Version="0.10.0-preview6" />
     <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.999-cibuild0011401-beta" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.999-cibuild0011401-beta" />
-    <PackageReference Include="Avalonia.ThemeManager" Version="0.10.0-preview3" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.0-preview6" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.0-preview6" />
+    <PackageReference Include="Avalonia.ThemeManager" Version="0.10.0-preview6" />
     <PackageReference Include="Emgu.CV.runtime.raspbian" Version="4.4.0.4099" />
     <PackageReference Include="Emgu.CV.runtime.ubuntu" Version="4.4.0.4099" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.4.0.4099" />
-    <PackageReference Include="MessageBox.Avalonia" Version="0.10.2-night" />
-    <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.0-preview3" />
+    <PackageReference Include="MessageBox.Avalonia" Version="0.10.0-prev2" />
+    <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.0-preview6" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\UVtools.Core\UVtools.Core.csproj" />

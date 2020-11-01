@@ -716,7 +716,6 @@ namespace UVtools.Core.FileFormats
                     LayerManager = LayerManager,
                     HeaderSettings =
                     {
-                        Version = 2,
                         BedSizeX = PrinterSettings.DisplayWidth,
                         BedSizeY = PrinterSettings.DisplayHeight,
                         BedSizeZ = PrinterSettings.MaxPrintHeight,

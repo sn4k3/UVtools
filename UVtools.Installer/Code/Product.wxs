@@ -7,18 +7,24 @@
   
   The Product@Id attribute (ProductCode Property) will be a random GUID for each build.  This is to support "Major Upgrades" where each install 
   is a seamless uninstall/reinstall.
+  Version="$(var.MSIProductVersion)"
   -->
   <Product Id="*" Name="UVtools" Language="1033" Version="$(var.MSIProductVersion)" Manufacturer="PTRTECH" UpgradeCode="1ea6d212-15c0-425e-b2ec-4b6c60817552">
     <Package InstallerVersion="301" Compressed="yes" InstallScope="perMachine" />
     <MediaTemplate EmbedCab="yes" />
     <!-- Major Upgrade Rule to disallow downgrades -->
-    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MajorUpgrade
+      AllowDowngrades="no"
+      AllowSameVersionUpgrades="yes"
+      IgnoreRemoveFailure="no"
+      DowngradeErrorMessage="A newer version of [ProductName] is already installed."
+      Schedule="afterInstallInitialize" />
     <!--Common Launch Condition-->
     <!-- Examples at http://wixtoolset.org/documentation/manual/v3/customactions/wixnetfxextension.html -->
     <PropertyRef Id="NETFRAMEWORK45" />
     <Condition Message="[ProductName] requires .NET Framework 4.8.">Installed OR NETFRAMEWORK45</Condition>
     <!-- Include User Interface Experience -->
-    <Icon Id="Icon.ico" SourceFile="..\UVtools.GUI\UVtools.ico" />
+    <Icon Id="Icon.ico" SourceFile="..\UVtools.WPF\UVtools.ico" />
     <Property Id="ARPPRODUCTICON" Value="Icon.ico"></Property>
     <UIRef Id="UI" />
     <!-- Include Features and Directories Fragment -->

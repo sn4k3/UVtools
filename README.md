@@ -54,11 +54,13 @@ But also, i need victims for test subject. Proceed at your own risk!
 * SL1 (PrusaSlicer)
 * Zip (Chitubox)
 * Photon (Chitubox)
+* Photons (Chitubox) [Read-only]
 * CBDDLP (Chitubox)
 * CBT (Chitubox)
 * PHZ (Chitubox)
 * PWS (Photon Workshop)
 * PW0 (Photon Workshop)
+* PWMX (Photon Workshop) [Not finished]
 * ZCodex (Z-Suite)
 * CWS (NovaMaker)
 * LGS (Longer Orange 10)

@@ -1,5 +1,35 @@
 # Changelog
 
+## 01/11/2020 - v1.1.0
+
+* (Add) photons file format (Read-only)
+* (Add) Allow mouse scroll wheel on layer slider and issue tracker to change layers (#81)
+* (Add) Menu - Help - Open settings folder: To open user settings folder
+* (Add) When a file doesn't have a print time field or it's 0, UVtools calculate the approximate time based on parameters
+* (Add) Per layer settings override on UVtools layer core
+* (Add) Tool - Edit print parameters: Allow change per layer settings on a layer range
+* (Add) Tool Window - Layer range synchronization and lock for single layer navigation (Checkbox)
+* (Add) Tool Window - Change the start layer index on range will also change the layer image on background
+* (Improvement) Adapt every file format to accept per layer settings where possible
+* (Improvement) Better gcode checks and per layer settings parses
+* (Change) When converting to CTB, version 3 of the file will be used instead of version 2
+* (Change) When converting to photon or cbddlp, version 2 of the file will be used instead of version 2
+* (Change) New logo, thanks to (Vinicius Silva @photonsters)
+* (Fix) MSI installer was creating multiple entries/uninstallers on windows Apps and Features (#79)
+* (Fix) Release builder script (CreateRelease.WPF.ps1): Replace backslash with shash for zip releases (#82)
+* (Fix) CWS file reader when come from Chitubox (#84)
+* (Fix) CWS was introducing a big delay after each layer, LiftHeight was being used 2 times instead of LiftSpeed (#85)
+* (Fix) CWS fix Build Direction property name, was lacking a whitespace
+* (Fix) Layer bounds was being show for empty layers on 0x0 position with 1px wide
+* (Fix) Empty layers caused miscalculation of print volume bounds
+* (Fix) Recalculate GCode didn't unlock save button
+* (Fix) Tool - Calculator - Light-Off Delay: Wasn't calculating bottom layers
+* (Change) Drop a digit from program version for simplicity, now: MAJOR.MINOR.PATCH 
+  * **Major:** new UI, lots of new features, conceptual change, incompatible API changes, etc.
+  * **Minor:** add functionality in a backwards-compatible manner
+  * **Patch:** backwards-compatible bug fixes
+* (Upgrade) Avalonia framework to preview6
+
 ## 23/10/2020 - v1.0.0.2
 
 * (Fix) ROI selection button on bottom was always disabled even when a region is selected

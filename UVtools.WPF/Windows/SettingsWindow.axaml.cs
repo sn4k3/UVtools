@@ -43,7 +43,7 @@ namespace UVtools.WPF.Windows
 
         public SettingsWindow()
         {
-            Title += $" [v{AppSettings.Version}]";
+            Title += $" [v{AppSettings.VersionStr}]";
             SettingsBackup = UserSettings.Instance.Clone();
 
             var fileFormats = new List<string>

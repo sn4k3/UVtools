@@ -1,4 +1,7 @@
-﻿using System.Globalization;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -14,8 +17,10 @@ namespace UVtools.WPF.Controls.Tools
     public class ToolEditParametersControl : ToolControl
     {
         public OperationEditParameters Operation { get; }
+        public bool SupportPerLayerSettings => App.SlicerFile.SupportPerLayerSettings;
 
         public RowControl[] RowControls;
+        private Grid grid;
 
         public sealed class RowControl
         {
@@ -113,7 +118,23 @@ namespace UVtools.WPF.Controls.Tools
                 return;
             }
 
-            Grid grid = this.FindControl<Grid>("grid");
+            grid = this.FindControl<Grid>("grid");
+            PopulateGrid();
+
+            Operation.PropertyChanged += OperationOnPropertyChanged;
+        }
+
+        public void PopulateGrid()
+        {
+            const byte cols = 5;
+            if (grid.Children.Count > cols)
+            {
+                grid.Children.RemoveRange(cols, grid.Children.Count - cols);
+            }
+            if (grid.RowDefinitions.Count > 1)
+            {
+                grid.RowDefinitions.RemoveRange(1, grid.RowDefinitions.Count-1);
+            }
 
             int rowIndex = 1;
             RowControls = new RowControl[Operation.Modifiers.Length];
@@ -122,7 +143,7 @@ namespace UVtools.WPF.Controls.Tools
             {
                 grid.RowDefinitions.Add(new RowDefinition());
                 byte column = 0;
-                
+
                 var rowControl = new RowControl(modifier);
                 grid.Children.Add(rowControl.Name);
                 grid.Children.Add(rowControl.OldValue);
@@ -166,6 +187,8 @@ namespace UVtools.WPF.Controls.Tools
             {
                 case ToolWindow.Callbacks.Init:
                     ParentWindow.IsButton1Visible = true;
+                    ParentWindow.SelectCurrentLayer();
+                    ParentWindow.LayerRangeSync = true;
                     break;
                 case ToolWindow.Callbacks.Button1:
                     foreach (var rowControl in RowControls)
@@ -173,6 +196,33 @@ namespace UVtools.WPF.Controls.Tools
                         rowControl.NewValue.Value = (double) rowControl.Modifier.OldValue;
                     }
                     break;
+            }
+        }
+
+        private void OperationOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Operation.LayerIndexStart))
+            {
+                App.SlicerFile.RefreshPrintParametersPerLayerModifiersValues(Operation.LayerIndexStart);
+                PopulateGrid();
+                return;
+            }
+            if (e.PropertyName == nameof(Operation.PerLayerOverride))
+            {
+                if (Operation.PerLayerOverride)
+                {
+                    Operation.Modifiers = App.SlicerFile.PrintParameterPerLayerModifiers;
+                    App.SlicerFile.RefreshPrintParametersPerLayerModifiersValues(Operation.LayerIndexStart);
+                }
+                else
+                {
+                    Operation.Modifiers = App.SlicerFile.PrintParameterModifiers;
+                    App.SlicerFile.RefreshPrintParametersModifiersValues();
+                }
+
+                ParentWindow.LayerRangeVisible = Operation.PerLayerOverride;
+                PopulateGrid();
+                return;
             }
         }
     }

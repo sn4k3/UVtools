@@ -15,6 +15,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 using Stream = System.IO.Stream;
 
@@ -44,15 +45,43 @@ namespace UVtools.Core
         /// </summary>
         public Rectangle BoundingRectangle { get; internal set; } = Rectangle.Empty;
 
+        public bool IsBottomLayer => Index < ParentLayerManager.SlicerFile.BottomLayerCount;
+        public bool IsNormalLayer => !IsBottomLayer;
+
         /// <summary>
         /// Gets the layer index
         /// </summary>
         public uint Index { get; set; }
 
         /// <summary>
-        /// Gets or sets the exposure time in seconds
+        /// Gets or sets the normal layer exposure time in seconds
         /// </summary>
         public float ExposureTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the layer off time in seconds
+        /// </summary>
+        public float LayerOffTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lift height in mm
+        /// </summary>
+        public float LiftHeight { get; set; } = 5;
+
+        /// <summary>
+        /// Gets or sets the speed in mm/min
+        /// </summary>
+        public float LiftSpeed { get; set; } = 100;
+
+        /// <summary>
+        /// Gets the speed in mm/min for the retracts
+        /// </summary>
+        public float RetractSpeed { get; set; } = 100;
+
+        /// <summary>
+        /// Gets or sets the pwm value from 0 to 255
+        /// </summary>
+        public byte LightPWM { get; set; } = 255;
 
         /// <summary>
         /// Gets or sets the layer position on Z in mm
@@ -245,7 +274,7 @@ namespace UVtools.Core
             {
                 CvInvoke.FindNonZero(mat, nonZeroMat);
                 NonZeroPixelCount = (uint)nonZeroMat.Height;
-                BoundingRectangle = CvInvoke.BoundingRectangle(nonZeroMat);
+                BoundingRectangle = NonZeroPixelCount > 0 ? CvInvoke.BoundingRectangle(nonZeroMat) : Rectangle.Empty;
             }
 
 
@@ -268,6 +297,62 @@ namespace UVtools.Core
                 return null;
 
             return ParentLayerManager[Index + 1];
+        }
+
+        public bool SetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier, decimal value)
+        {
+            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.ExposureSeconds))
+            {
+                ExposureTime = (float)value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.LayerOffTime))
+            {
+                LayerOffTime = (float)value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.LiftHeight))
+            {
+                LiftHeight = (float)value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.LiftSpeed))
+            {
+                LiftSpeed = (float)value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.RetractSpeed))
+            {
+                RetractSpeed = (float)value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.LightPWM))
+            {
+                LightPWM = (byte)value;
+                return true;
+            }
+
+            return false;
+        }
+
+        public byte SetValuesFromPrintParametersModifiers(FileFormat.PrintParameterModifier[] modifiers)
+        {
+            if (modifiers is null) return 0;
+            byte changed = 0;
+            foreach (var modifier in modifiers)
+            {
+                if (!modifier.HasChanged) continue;
+                modifier.OldValue = modifier.NewValue;
+                SetValueFromPrintParameterModifier(modifier, modifier.NewValue);
+                changed++;
+            }
+
+            return changed;
         }
 
         /// <summary>

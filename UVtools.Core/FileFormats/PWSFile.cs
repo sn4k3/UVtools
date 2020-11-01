@@ -297,11 +297,6 @@ namespace UVtools.Core.FileFormats
                     var g = (color16 >> 5) & 0x3f;
                     var b = (color16 >> 0) & 0x1f;
 
-                    /*span[pixel++] = new Rgba32(
-                        (byte)((r << 3) | (r & 0x7)), 
-                        (byte)((g << 2) | (g & 0x3)),
-                        (byte)((b << 3) | (b & 0x7))
-                        );*/
                     span[pixel++] = (byte) ((b << 3) | (b & 0x7));
                     span[pixel++] = (byte) ((g << 2) | (g & 0x3));
                     span[pixel++] = (byte) ((r << 3) | (r & 0x7));
@@ -403,11 +398,15 @@ namespace UVtools.Core.FileFormats
             public LayerData(PWSFile parent, uint layerIndex)
             {
                 Parent = parent;
-                LiftHeight = Parent.HeaderSettings.LiftHeight;
-                LiftSpeed = Parent.HeaderSettings.LiftSpeed;
+                RefreshLayerData(layerIndex);
+            }
 
-                LayerPositionZ = parent[layerIndex].PositionZ;
-                LayerExposure = parent[layerIndex].ExposureTime;
+            public void RefreshLayerData(uint layerIndex)
+            {
+                LayerPositionZ = Parent[layerIndex].PositionZ;
+                LayerExposure = Parent[layerIndex].ExposureTime;
+                LiftHeight = Parent[layerIndex].LiftHeight;
+                LiftSpeed = Parent[layerIndex].LiftSpeed;
             }
 
             public Mat Decode(bool consumeData = true)
@@ -799,9 +798,15 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.RetractSpeed,
         };
 
+        public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+            PrintParameterModifier.ExposureSeconds,
+            PrintParameterModifier.LiftHeight,
+            PrintParameterModifier.LiftSpeed,
+        };
+
         public override byte ThumbnailsCount { get; } = 1;
 
-        public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = {new System.Drawing.Size(224, 168)};
+        public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = {new Size(224, 168)};
 
         public override uint ResolutionX
         {
@@ -852,6 +857,7 @@ namespace UVtools.Core.FileFormats
             {
                 LayersDefinition.LayersCount = LayerCount;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(NormalLayerCount));
             }
         }
 
@@ -1145,7 +1151,9 @@ namespace UVtools.Core.FileFormats
                         this[layerIndex] = new Layer((uint) layerIndex, image)
                         {
                             PositionZ = LayersDefinition[(uint)layerIndex].LayerPositionZ,
-                            ExposureTime = LayersDefinition[(uint)layerIndex].LayerExposure
+                            ExposureTime = LayersDefinition[(uint)layerIndex].LayerExposure,
+                            LiftHeight = LayersDefinition[(uint)layerIndex].LiftHeight,
+                            LiftSpeed = LayersDefinition[(uint)layerIndex].LiftSpeed,
                         };
                     }
 
@@ -1187,11 +1195,10 @@ namespace UVtools.Core.FileFormats
                 outputFile.Seek(FileMarkSettings.LayerDefinitionAddress + Helpers.Serializer.SizeOf(HeaderSettings.Section) + Helpers.Serializer.SizeOf(LayersDefinition), SeekOrigin.Begin);
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
+                    LayersDefinition[layerIndex].RefreshLayerData(layerIndex);
                     Helpers.SerializeWriteFileStream(outputFile, LayersDefinition[layerIndex]);
                 }
             }
-
-            //Decode(FileFullPath, progress);
         }
 
         public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)

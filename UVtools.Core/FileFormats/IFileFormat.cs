@@ -41,6 +41,11 @@ namespace UVtools.Core.FileFormats
         FileFormat.PrintParameterModifier[] PrintParameterModifiers { get; }
 
         /// <summary>
+        /// Gets the available <see cref="FileFormat.PrintParameterModifier"/> per layer
+        /// </summary>
+        FileFormat.PrintParameterModifier[] PrintParameterPerLayerModifiers { get; }
+
+        /// <summary>
         /// Gets the file filter for open and save dialogs
         /// </summary>
         string FileFilter { get; }
@@ -75,8 +80,6 @@ namespace UVtools.Core.FileFormats
         /// Gets the thumbnails for this <see cref="FileFormat"/>
         /// </summary>
         Mat[] Thumbnails { get; set; }
-
-
 
         /// <summary>
         /// Gets the cached layers into compressed bytes
@@ -127,12 +130,17 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         float TotalHeight { get; }
 
-        #region Universal Properties
-
         /// <summary>
         /// Gets the last layer index
         /// </summary>
         uint LastLayerIndex { get; }
+
+        #region Universal Properties
+
+        /// <summary>
+        /// Gets if this format support per layer override settings
+        /// </summary>
+        bool SupportPerLayerSettings { get; }
 
         /// <summary>
         /// Gets the number of layers present in this file
@@ -143,6 +151,11 @@ namespace UVtools.Core.FileFormats
         /// Gets or sets the number of initial layer count
         /// </summary>
         ushort BottomLayerCount { get; set; }
+
+        /// <summary>
+        /// Gets the number of normal layer count
+        /// </summary>
+        uint NormalLayerCount { get; }
 
         /// <summary>
         /// Gets or sets the initial exposure time for <see cref="BottomLayerCount"/> in seconds
@@ -204,6 +217,11 @@ namespace UVtools.Core.FileFormats
         /// Gets the estimate print time in seconds
         /// </summary>
         float PrintTime { get; }
+
+        /// <summary>
+        /// Gets the estimate print time in seconds, if print doesn't support it it will be calculated
+        /// </summary>
+        float PrintTimeOrComputed { get; }
 
         /// <summary>
         /// Gets the estimate print time in hours
@@ -375,6 +393,7 @@ namespace UVtools.Core.FileFormats
         T GetInitialLayerValueOrNormal<T>(uint layerIndex, T initialLayerValue, T normalLayerValue);
 
         void RefreshPrintParametersModifiersValues();
+        void RefreshPrintParametersPerLayerModifiersValues(uint layerIndex);
 
         /// <summary>
         /// Gets the value attributed to <see cref="FileFormat.PrintParameterModifier"/>
@@ -392,6 +411,8 @@ namespace UVtools.Core.FileFormats
         bool SetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier, decimal value);
 
         byte SetValuesFromPrintParametersModifiers();
+
+        void EditPrintParameters(OperationEditParameters operation);
 
         /// <summary>
         /// Rebuilds GCode based on current settings

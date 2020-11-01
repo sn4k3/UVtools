@@ -454,12 +454,14 @@ namespace UVtools.Core.FileFormats
             public LayerData(PHZFile parent, uint layerIndex)
             {
                 Parent = parent;
-                LayerPositionZ = parent[layerIndex].PositionZ;
-                LayerExposure = parent[layerIndex].ExposureTime;
+                RefreshLayerData(layerIndex);
+            }
 
-                LayerOffTimeSeconds = parent.GetInitialLayerValueOrNormal(layerIndex,
-                    parent.HeaderSettings.BottomLightOffDelay,
-                    parent.HeaderSettings.LayerOffTime);
+            public void RefreshLayerData(uint layerIndex)
+            {
+                LayerPositionZ = Parent[layerIndex].PositionZ;
+                LayerExposure = Parent[layerIndex].ExposureTime;
+                LayerOffTimeSeconds = Parent[layerIndex].LayerOffTime;
             }
 
             public unsafe Mat Decode(uint layerIndex, bool consumeData = true)
@@ -708,6 +710,11 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LightPWM,
         };
 
+        public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+            PrintParameterModifier.ExposureSeconds,
+            PrintParameterModifier.LayerOffTime,
+        };
+
         public override byte ThumbnailsCount { get; } = 2;
 
         public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = {new System.Drawing.Size(400, 300), new System.Drawing.Size(200, 125)};
@@ -770,6 +777,8 @@ namespace UVtools.Core.FileFormats
             set
             {
                 HeaderSettings.LayerCount = LayerCount;
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(NormalLayerCount));
                 HeaderSettings.OverallHeightMilimeter = TotalHeight;
             }
         }
@@ -1153,7 +1162,8 @@ namespace UVtools.Core.FileFormats
                         this[layerIndex] = new Layer((uint) layerIndex, image)
                         {
                             PositionZ = LayersDefinitions[layerIndex].LayerPositionZ,
-                            ExposureTime = LayersDefinitions[layerIndex].LayerExposure
+                            ExposureTime = LayersDefinitions[layerIndex].LayerExposure,
+                            LayerOffTime = LayersDefinitions[layerIndex].LayerOffTimeSeconds
                         };
                     }
 
@@ -1200,28 +1210,12 @@ namespace UVtools.Core.FileFormats
                 uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
                 for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
                 {
+                    LayersDefinitions[layerIndex].RefreshLayerData(layerIndex);
                     outputFile.Seek(layerOffset, SeekOrigin.Begin);
                     Helpers.SerializeWriteFileStream(outputFile, LayersDefinitions[layerIndex]);
                     layerOffset += (uint)Helpers.Serializer.SizeOf(LayersDefinitions[layerIndex]);
                 }
             }
-
-            //Decode(FileFullPath, progress);
-        }
-
-        public override byte SetValuesFromPrintParametersModifiers()
-        {
-            var count = base.SetValuesFromPrintParametersModifiers();
-            if (count == 0) return 0;
-
-            for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
-            {
-                // Bottom : others
-                LayersDefinitions[layerIndex].LayerExposure = this[layerIndex].ExposureTime;
-                LayersDefinitions[layerIndex].LayerOffTimeSeconds = GetInitialLayerValueOrNormal(layerIndex, HeaderSettings.BottomLightOffDelay, HeaderSettings.LayerOffTime);
-            }
-
-            return count;
         }
 
         public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
@@ -1234,7 +1228,6 @@ namespace UVtools.Core.FileFormats
                     HeaderSettings
                         =
                         {
-                            Version = 2,
                             BedSizeX = HeaderSettings.BedSizeX,
                             BedSizeY = HeaderSettings.BedSizeY,
                             BedSizeZ = HeaderSettings.BedSizeZ,

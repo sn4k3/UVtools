@@ -165,15 +165,24 @@ namespace UVtools.Core
         /// <summary>
         /// Rebuild layer properties based on slice settings
         /// </summary>
-        public void RebuildLayersProperties()
+        public void RebuildLayersProperties(bool recalculateZPos = true)
         {
             //var layerHeight = SlicerFile.LayerHeight;
             for (uint layerIndex = 0; layerIndex < Count; layerIndex++)
             {
                 var layer = this[layerIndex];
                 layer.Index = layerIndex;
-                layer.PositionZ = SlicerFile.GetHeightFromLayer(layerIndex);
-                layer.ExposureTime = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
+                layer.ExposureTime  = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
+                layer.LiftHeight    = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
+                layer.LiftSpeed     = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
+                layer.RetractSpeed  = SlicerFile.RetractSpeed;
+                layer.LightPWM      = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
+                layer.LayerOffTime  = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLayerOffTime, SlicerFile.LayerOffTime);
+
+                if (recalculateZPos)
+                {
+                    layer.PositionZ = SlicerFile.GetHeightFromLayer(layerIndex);
+                }
             }
         }
 
@@ -212,6 +221,7 @@ namespace UVtools.Core
             progress?.Reset(OperationProgress.StatusCalculatingBounds, Count);
             for (int i = 1; i < Count; i++)
             {
+                if(this[i].BoundingRectangle.IsEmpty) continue;
                 _boundingRectangle = Rectangle.Union(_boundingRectangle, this[i].BoundingRectangle);
                 if (ReferenceEquals(progress, null)) continue;
                 progress++;

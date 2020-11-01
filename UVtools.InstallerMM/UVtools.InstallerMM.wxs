@@ -119,6 +119,9 @@
         <Component Id="owc7609DFEE03B95E830FD72B0699C9CF8C" Guid="c7b987b7-1a3c-0d2c-7831-ad6f4c3871e7">
           <File Id="owf7609DFEE03B95E830FD72B0699C9CF8C" Source="$(var.SourceDir)\Microsoft.Win32.SystemEvents.dll" KeyPath="yes" />
         </Component>
+        <Component Id="owcC64805E458FD0630011C0F519E9CA9E7" Guid="4b534498-a1a1-b38c-3d4b-d63b915c6d88">
+          <File Id="owfC64805E458FD0630011C0F519E9CA9E7" Source="$(var.SourceDir)\Microsoft.Windows.SDK.NET.dll" KeyPath="yes" />
+        </Component>
         <Component Id="owc3FC8434C1A84605AEEBC6A100CA2F3E1" Guid="47d7e276-db6d-424e-d797-1a69e1e24b3b">
           <File Id="owf3FC8434C1A84605AEEBC6A100CA2F3E1" Source="$(var.SourceDir)\Newtonsoft.Json.dll" KeyPath="yes" />
         </Component>

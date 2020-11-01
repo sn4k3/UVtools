@@ -15,6 +15,7 @@ namespace UVtools.WPF
     public static class AppSettings
     {
         public static Version Version => Assembly.GetEntryAssembly().GetName().Version;
+        public static string VersionStr => Version.ToString(3);
         // Supported ZoomLevels for Layer Preview.
         // These settings eliminate very small zoom factors from the ImageBox default values,
         // while ensuring that 4K/5K build plates can still easily fit on screen.  

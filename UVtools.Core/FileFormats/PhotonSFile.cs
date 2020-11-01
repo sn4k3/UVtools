@@ -22,80 +22,81 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats
 {
-    public class LGSFile : FileFormat
+    public class PhotonSFile : FileFormat
     {
+        public const byte RLEEncodingLimit = 128; // 128;
+
         #region Sub Classes
-        
+
         #region Header
 
         public class Header
         {
-            public const string NameValue = "Longer3D";
-            //[FieldOrder(0)]  public uint Offset1     { get; set; }
+            public const uint ResolutionX = 1440;
+            public const uint ResolutionY = 2560;
 
-            /// <summary>
-            /// Gets the file tag = MKSDLP
-            /// </summary>
-            [FieldOrder(0)] [FieldLength(8)] public string Name { get; set; } = NameValue; // 0x00:
-            [FieldOrder(1)] public uint Uint_08 { get; set; } = 4278190081; // 0x08: 0xff000001 ?
-            [FieldOrder(2)] public uint Uint_0c { get; set; } = 1; // 0x0c: 1 ?
-            [FieldOrder(3)] public uint Uint_10 { get; set; } = 30; // 0x10: 30 ?
-            [FieldOrder(4)] public uint Uint_14 { get; set; } = 0; // 0x14: 0 ?
-            [FieldOrder(5)] public uint Uint_18 { get; set; } = 34; // 0x18: 34 ?
-            [FieldOrder(6)] public float PixelPerMmX { get; set; }
-            [FieldOrder(7)] public float PixelPerMmY { get; set; }
-            [FieldOrder(8)] public float ResolutionX { get; set; }
-            [FieldOrder(9)] public float ResolutionY { get; set; }
-            [FieldOrder(10)] public float LayerHeight { get; set; }
-            [FieldOrder(11)] public float ExposureTimeMs { get; set; }
-            [FieldOrder(12)] public float BottomExposureTimeMs { get; set; }
-            [FieldOrder(13)] public float Float_38 { get; set; } = 10; // 0x38: 10
-            [FieldOrder(14)] public float LightOffDelayMs { get; set; } = 2000;
-            [FieldOrder(15)] public float BottomLightOffDelayMs { get; set; }
-            [FieldOrder(16)] public float BottomHeight { get; set; }
-            [FieldOrder(17)] public float Float_48 { get; set; } = 0.6f; // 0x48: 0.6
-            [FieldOrder(18)] public float BottomLiftHeight { get; set; } = 4;
-            [FieldOrder(19)] public float LiftHeight { get; set; }
-            [FieldOrder(20)] public float LiftSpeed { get; set; } = 150;
-            [FieldOrder(21)] public float LiftSpeed_ { get; set; } = 150;
-            [FieldOrder(22)] public float BottomLiftSpeed { get; set; } = 90;
-            [FieldOrder(23)] public float BottomLiftSpeed_ { get; set; } = 90;
-            [FieldOrder(24)] public float Float_64 { get; set; } = 5; // 0x64: 5?
-            [FieldOrder(25)] public float Float_68 { get; set; } = 60; // 0x68: 60?
-            [FieldOrder(26)] public float Float_6c { get; set; } = 10; // 0x6c: 10?
-            [FieldOrder(27)] public float Float_70 { get; set; } = 600; // 0x70: 600?
-            [FieldOrder(28)] public float Float_74 { get; set; } = 600; // 0x70: 600?
-            [FieldOrder(29)] public float Float_78 { get; set; } = 2; // 0x78: 2?
-            [FieldOrder(30)] public float Float_7c { get; set; } = 0.2f; // 0x7c: 0.2?
-            [FieldOrder(31)] public float Float_80 { get; set; } = 60; // 0x80: 60?
-            [FieldOrder(32)] public float Float_84 { get; set; } = 1; // 0x84: 1?
-            [FieldOrder(33)] public float Float_88 { get; set; } = 6; // 0x88: 6?
-            [FieldOrder(34)] public float Float_8c { get; set; } = 150; // 0x8c: 150 ?
-            [FieldOrder(35)] public float Float_90 { get; set; } = 1001; // 0x90: 1001 ?
-            [FieldOrder(36)] public float Float_94 { get; set; } = 140;// 0x94: 140 for Longer 10, 170 for Longer 30?
-            [FieldOrder(37)] public uint Uint_98 { get; set; } // 0x98: 0 ?
-            [FieldOrder(38)] public uint Uint_9c { get; set; } // 0x9c: 0 ?
-            [FieldOrder(39)] public uint Uint_a0 { get; set; } // 0xa0: 0 ?
-            [FieldOrder(40)] public uint LayerCount { get; set; }
-            [FieldOrder(41)] public uint Uint_a8 { get; set; } = 4; // 0xa8: 4 ?
-            [FieldOrder(42)] public uint PreviewSizeX { get; set; } = 120;
-            [FieldOrder(43)] public uint PreviewSizeY { get; set; } = 150;
+            public const float DisplayWidth = 68.04f;
+            public const float DisplayHeight = 120.96f;
+            public const float BuildZ = 150f;
+
+            public const uint TAG1 = 2;
+            public const ushort TAG2 = 49;
+
+
+            [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public uint Tag1 { get; set; } = TAG1; // 2
+            [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public ushort Tag2 { get; set; } = TAG2; // 49
+            [FieldOrder(2)] [FieldEndianness(Endianness.Big)] public double XYPixelSize { get; set; } = 0.04725; // 0.04725
+            [FieldOrder(3)] [FieldEndianness(Endianness.Big)] public double LayerHeight { get; set; }
+            [FieldOrder(4)] [FieldEndianness(Endianness.Big)] public double ExposureSeconds { get; set; }
+            [FieldOrder(5)] [FieldEndianness(Endianness.Big)] public double LayerOffSeconds { get; set; }
+            [FieldOrder(6)] [FieldEndianness(Endianness.Big)] public double BottomExposureSeconds { get; set; }
+            [FieldOrder(7)] [FieldEndianness(Endianness.Big)] public uint BottomLayerCount { get; set; }
+            [FieldOrder(8)] [FieldEndianness(Endianness.Big)] public double LiftHeight { get; set; } // mm
+            [FieldOrder(9)] [FieldEndianness(Endianness.Big)] public double LiftSpeed { get; set; } // mm/s
+            [FieldOrder(10)] [FieldEndianness(Endianness.Big)] public double RetractSpeed { get; set; } // mm/s
+            [FieldOrder(11)] [FieldEndianness(Endianness.Big)] public double Volume { get; set; } // ml
+            [FieldOrder(12)] [FieldEndianness(Endianness.Big)] public uint PreviewResolutionX { get; set; } = 225;
+            [FieldOrder(13)] [FieldEndianness(Endianness.Big)] public uint Unknown2 { get; set; } = 42;
+            [FieldOrder(14)] [FieldEndianness(Endianness.Big)] public uint PreviewResolutionY { get; set; } = 168;
+            [FieldOrder(15)] [FieldEndianness(Endianness.Big)] public uint Unknown4 { get; set; } = 10;
+
+            public override string ToString()
+            {
+                return $"{nameof(Tag1)}: {Tag1}, {nameof(Tag2)}: {Tag2}, {nameof(XYPixelSize)}: {XYPixelSize}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureSeconds)}: {ExposureSeconds}, {nameof(LayerOffSeconds)}: {LayerOffSeconds}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Volume)}: {Volume}, {nameof(PreviewResolutionX)}: {PreviewResolutionX}, {nameof(Unknown2)}: {Unknown2}, {nameof(PreviewResolutionY)}: {PreviewResolutionY}, {nameof(Unknown4)}: {Unknown4}";
+            }
+        }
+
+        public class LayerHeader
+        {
+            [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public uint LayerCount { get; set; }
+
+            public override string ToString()
+            {
+                return $"{nameof(LayerCount)}: {LayerCount}";
+            }
         }
 
         #endregion
 
-        #region LayerData
+        #region LayerDef
 
         public class LayerData
         {
-            [Ignore] public LGSFile Parent { get; set; }
+            [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public uint Unknown1 { get; set; } = 44944;
+            [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public uint Unknown2 { get; set; } = 0;
+            [FieldOrder(2)] [FieldEndianness(Endianness.Big)] public uint Unknown3 { get; set; } = 0;
+            [FieldOrder(3)] [FieldEndianness(Endianness.Big)] public uint ResolutionX { get; set; } = 1440;
+            [FieldOrder(4)] [FieldEndianness(Endianness.Big)] public uint ResolutionY { get; set; } = 2560;
+            [FieldOrder(5)] [FieldEndianness(Endianness.Big)] public uint DataSize { get; set; }
+            [Ignore] public uint RleDataSize => (DataSize >> 3) - 4;
+            [FieldOrder(6)] [FieldEndianness(Endianness.Big)] public uint Unknown5 { get; set; } = 2684702720;
 
-            [FieldOrder(0)]
-            public uint DataSize { get; set; }
+            [Ignore] public byte[] EncodedRle { get; set; }
 
-            [FieldOrder(1)]
-            [FieldLength(nameof(DataSize))]
-            public byte[] EncodedRle { get; set; }
+            public override string ToString()
+            {
+                return $"{nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(DataSize)}: {DataSize}, {nameof(RleDataSize)}: {RleDataSize}, {nameof(Unknown5)}: {Unknown5}, {nameof(EncodedRle)}: {EncodedRle.Length}";
+            }
 
             public unsafe byte[] Encode(Mat mat)
             {
@@ -104,92 +105,45 @@ namespace UVtools.Core.FileFormats
                 var spanMat = mat.GetBytePointer();
                 var imageLength = mat.GetLength();
 
-                uint span = 0;
-                byte lc = 0;
-
-                void addSpan(){
-                    chunk.Clear();
-                    for (; span > 0; span >>= 4) {
-                        chunk.Insert(0, (byte)((byte)(span & 0xf) | (lc & 0xf0)));
-                    }
-                    rawData.AddRange(chunk.ToArray());
-                }
-
-                for (int i = 0; i < imageLength; i++)
-                {
-                    byte c = (byte) (spanMat[i] & 0xf0);
-                    
-                    if (c == lc)
-                    {
-                        span++;
-                    }
-                    else
-                    {
-                        addSpan();
-                        span = 1;
-                    }
-
-                    lc = c;
-                }
-
-                addSpan();
+                
                 EncodedRle = rawData.ToArray();
-                DataSize = (uint) EncodedRle.Length;
+                DataSize = (uint)(EncodedRle.Length * 8 + 32);
                 return EncodedRle;
             }
 
             public unsafe Mat Decode(bool consumeRle = true)
             {
-                var mat = EmguExtensions.InitMat(Parent.Resolution);
+                var mat = EmguExtensions.InitMat(new Size((int) ResolutionX, (int) ResolutionY));
                 var matSpan = mat.GetBytePointer();
                 var imageLength = mat.GetLength();
 
-                byte last = 0;
-                int span = 0;
-                int index = 0;
-
-                foreach (var b in EncodedRle)
+                int pixel = 0;
+                foreach (var run in EncodedRle)
                 {
-                    byte color = (byte) ((b & 0xf0) | (b >> 4));
+                    byte col = (byte) ((run & 0x01) * 255);
 
-                    if (color == last)
+                    var numPixelsInRun =
+                        (((run & 128) > 0 ? 1 : 0) |
+                         ((run & 64) > 0 ? 2 : 0) |
+                         ((run & 32) > 0 ? 4 : 0) |
+                         ((run & 16) > 0 ? 8 : 0) |
+                         ((run &  8) > 0 ? 16 : 0) |
+                         ((run &  4) > 0 ? 32 : 0) |
+                         ((run &  2) > 0 ? 64 : 0)) + 1;
+                    
+                    for (; numPixelsInRun > 0; numPixelsInRun--)
                     {
-                        span = (span << 4) | (b & 0xf);
-                    }
-                    else
-                    {
-                        for(; span > 0; span--)
+                        if (pixel > imageLength)
                         {
-                            if (index >= imageLength)
-                            {
-                                throw new FileLoadException($"'{span}' bytes to many");
-                            }
-
-                            matSpan[index++] = last;
+                            mat.Dispose();
+                            throw new FileLoadException($"Error image ran off the end, expecting {imageLength} pixels");
                         }
-
-                        span = b & 0xf;
-
+                        matSpan[pixel++] = col;
                     }
-
-                    last = color;
                 }
 
-                for (; span > 0; span--)
-                {
-                    if (index >= imageLength)
-                    {
-                        throw new FileLoadException($"'{span}' bytes to many");
-                    }
-
-                    matSpan[index++] = last;
-                }
-
-                if (index != imageLength)
-                {
-                    throw new FileLoadException($"Incomplete buffer, expected: {imageLength}, got: {index}");
-                }
-
+                // Not required as mat is all black by default
+                //for (;pixel < imageLength; pixel++) matSpan[pixel] = 0;
 
                 if (consumeRle)
                     EncodedRle = null;
@@ -204,11 +158,11 @@ namespace UVtools.Core.FileFormats
         #region Properties
 
         public Header HeaderSettings { get; protected internal set; } = new Header();
+        public LayerHeader LayerSettings { get; protected internal set; } = new LayerHeader();
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("lgs", "Longer Orange 10 Files"),
-            new FileExtension("lgs30", "Longer Orange 30 Files"),
+            new FileExtension("photons", "Chitubox PhotonS Files"),
         };
 
         public override Type[] ConvertToFormats { get; } =
@@ -222,55 +176,53 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.BottomExposureSeconds,
             PrintParameterModifier.ExposureSeconds,
 
-            PrintParameterModifier.BottomLayerOffTime,
+            //PrintParameterModifier.BottomLayerOffTime,
             PrintParameterModifier.LayerOffTime,
-            PrintParameterModifier.BottomLiftHeight,
-            PrintParameterModifier.BottomLiftSpeed,
+            //PrintParameterModifier.BottomLiftHeight,
+            //PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.RetractSpeed,
         };
 
         public override byte ThumbnailsCount { get; } = 1;
 
-        public override Size[] ThumbnailsOriginalSize { get; } = {new Size(120, 150)};
+        public override Size[] ThumbnailsOriginalSize { get; } = {new Size(225, 168) };
 
         public override uint ResolutionX
         {
-            get => (uint) HeaderSettings.ResolutionX;
+            get => Header.ResolutionX;
             set
             {
-                HeaderSettings.ResolutionX = value;
-                RaisePropertyChanged();
+                
             }
         }
 
         public override uint ResolutionY
         {
-            get => (uint)HeaderSettings.ResolutionY;
+            get => Header.ResolutionY;
             set
             {
-                HeaderSettings.ResolutionY = value;
-                RaisePropertyChanged();
             }
         }
 
         public override float DisplayWidth
         {
-            get => ResolutionX / HeaderSettings.PixelPerMmX;
+            get => Header.DisplayWidth;
             set { }
         }
 
         public override float DisplayHeight
         {
-            get => ResolutionY / HeaderSettings.PixelPerMmY;
+            get => Header.DisplayHeight;
             set { }
         }
 
-        public override byte AntiAliasing => 4;
+        public override byte AntiAliasing => 1;
 
         public override float LayerHeight
         {
-            get => HeaderSettings.LayerHeight;
+            get => (float) Math.Round(HeaderSettings.LayerHeight);
             set
             {
                 HeaderSettings.LayerHeight = value;
@@ -282,7 +234,7 @@ namespace UVtools.Core.FileFormats
         {
             set
             {
-                HeaderSettings.LayerCount = LayerCount;
+                LayerSettings.LayerCount = LayerCount;
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(NormalLayerCount));
             }
@@ -290,35 +242,35 @@ namespace UVtools.Core.FileFormats
 
         public override ushort BottomLayerCount
         {
-            get => (ushort)(HeaderSettings.BottomHeight / LayerHeight);
+            get => (ushort) HeaderSettings.BottomLayerCount;
             set
             {
-                HeaderSettings.BottomHeight = value * LayerHeight;
+                HeaderSettings.BottomLayerCount = value;
                 RaisePropertyChanged();
             }
         }
 
         public override float BottomExposureTime
         {
-            get => (float)Math.Round(HeaderSettings.BottomExposureTimeMs / 1000, 2);
+            get => (float) HeaderSettings.BottomExposureSeconds;
             set
             {
-                HeaderSettings.BottomExposureTimeMs = value * 1000;
+                HeaderSettings.BottomExposureSeconds = value;
                 RaisePropertyChanged();
             }
         }
 
         public override float ExposureTime
         {
-            get => (float)Math.Round(HeaderSettings.ExposureTimeMs / 1000, 2);
+            get => (float)HeaderSettings.ExposureSeconds;
             set
             {
-                HeaderSettings.ExposureTimeMs = value * 1000;
+                HeaderSettings.ExposureSeconds = value;
                 RaisePropertyChanged();
             }
         }
 
-        public override float BottomLayerOffTime
+        /*public override float BottomLayerOffTime
         {
             get => HeaderSettings.BottomLightOffDelayMs;
             set
@@ -326,19 +278,19 @@ namespace UVtools.Core.FileFormats
                 HeaderSettings.BottomLightOffDelayMs = value;
                 RaisePropertyChanged();
             }
-        }
+        }*/
 
         public override float LayerOffTime
         {
-            get => HeaderSettings.LightOffDelayMs;
+            get => (float) HeaderSettings.LayerOffSeconds;
             set
             {
-                HeaderSettings.LightOffDelayMs = value;
+                HeaderSettings.LayerOffSeconds = value;
                 RaisePropertyChanged();
             }
         }
 
-        public override float BottomLiftHeight
+        /*public override float BottomLiftHeight
         {
             get => HeaderSettings.BottomLiftHeight;
             set
@@ -346,11 +298,11 @@ namespace UVtools.Core.FileFormats
                 HeaderSettings.BottomLiftHeight = value;
                 RaisePropertyChanged();
             }
-        }
+        }*/
 
         public override float LiftHeight
         {
-            get => HeaderSettings.LiftHeight;
+            get => (float) HeaderSettings.LiftHeight;
             set
             {
                 HeaderSettings.LiftHeight = value;
@@ -358,7 +310,7 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float BottomLiftSpeed
+        /*public override float BottomLiftSpeed
         {
             get => HeaderSettings.BottomLiftSpeed;
             set
@@ -366,33 +318,43 @@ namespace UVtools.Core.FileFormats
                 HeaderSettings.BottomLiftSpeed = HeaderSettings.BottomLiftSpeed_ = value;
                 RaisePropertyChanged();
             }
-        }
+        }*/
 
         public override float LiftSpeed
         {
-            get => HeaderSettings.LiftSpeed;
+            get => (float) Math.Round(HeaderSettings.LiftSpeed * 60.0);
             set
             {
-                HeaderSettings.LiftSpeed = HeaderSettings.LiftSpeed_ = value;
+                HeaderSettings.LiftSpeed = Math.Round(value / 60.0);
+                RaisePropertyChanged();
+            }
+        }
+
+        public override float RetractSpeed
+        {
+            get => (float)Math.Round(HeaderSettings.RetractSpeed * 60.0);
+            set
+            {
+                HeaderSettings.RetractSpeed = Math.Round(value / 60.0);
                 RaisePropertyChanged();
             }
         }
 
         public override float PrintTime => 0;
 
-        public override float UsedMaterial => 0;
+        public override float UsedMaterial => (float) HeaderSettings.Volume;
 
         public override float MaterialCost => 0;
 
         public override string MaterialName => "Unknown";
-        public override string MachineName => null;
+        public override string MachineName => "Anycubic Photon S";
         
         public override object[] Configs => new object[] { HeaderSettings };
 
         #endregion
 
         #region Constructors
-        public LGSFile()
+        public PhotonSFile()
         {
         }
         #endregion
@@ -429,16 +391,12 @@ namespace UVtools.Core.FileFormats
         {
             base.Encode(fileFullPath, progress);
 
-            if (ResolutionY >= 2560) // Longer Orange 30
-            {
-                HeaderSettings.Float_94 = 170;
-            }
-            
             //uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
             using (var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write))
             {
                 outputFile.WriteSerialize(HeaderSettings);
                 outputFile.WriteBytes(PreviewEncode(Thumbnails[0]));
+                outputFile.WriteSerialize(LayerSettings);
 
                 LayerData[] layerData = new LayerData[LayerCount];
 
@@ -464,6 +422,7 @@ namespace UVtools.Core.FileFormats
                 {
                     progress.Token.ThrowIfCancellationRequested();
                     outputFile.WriteSerialize(layerData[layerIndex]);
+                    outputFile.WriteBytes(layerData[layerIndex].EncodedRle);
                     progress++;
                 }
             }
@@ -477,19 +436,24 @@ namespace UVtools.Core.FileFormats
 
         public unsafe Mat PreviewDecode(byte []data)
         {
-            Mat mat = new Mat((int) HeaderSettings.PreviewSizeY, (int)HeaderSettings.PreviewSizeX, DepthType.Cv8U, 3);
+            Mat mat = new Mat((int) HeaderSettings.PreviewResolutionX, (int)HeaderSettings.PreviewResolutionY, DepthType.Cv8U, 3);
             var span = mat.GetBytePointer();
             int spanIndex = 0;
             for (int i = 0; i < data.Length; i+=2)
             {
-                ushort rgb15 = (ushort) ((ushort)(data[i + 0] << 8) | data[i + 1]);
-                byte r = (byte) ((((rgb15 >> 11) & 0x1f) << 3) | 0x7);
-                byte g = (byte) ((((rgb15 >> 6) & 0x1f) << 3) | 0x7);
-                byte b = (byte) ((((rgb15 >> 0) & 0x1f) << 3) | 0x7);
+                ushort color16 = (ushort)(data[i] + (data[i + 1] << 8));
 
-                span[spanIndex++] = b;
-                span[spanIndex++] = g;
-                span[spanIndex++] = r;
+                var r = (color16 >> 11) & 0x1F;
+                var g = (color16 >> 5) & 0x3F;
+                var b = (color16 >> 0) & 0x1F;
+
+                /*span[spanIndex++] = (byte)(b << 3);
+                span[spanIndex++] = (byte)(g << 2);
+                span[spanIndex++] = (byte)(r << 3);*/
+
+                span[spanIndex++] = (byte)((b << 3) | (b & 0x7));
+                span[spanIndex++] = (byte)((g << 2) | (g & 0x3));
+                span[spanIndex++] = (byte)((r << 3) | (r & 0x7));
             }
 
             return mat;
@@ -502,39 +466,42 @@ namespace UVtools.Core.FileFormats
             using (var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read))
             {
                 HeaderSettings = Helpers.Deserialize<Header>(inputFile);
-                if (HeaderSettings.Name != Header.NameValue)
+                if (HeaderSettings.Tag1 != Header.TAG1 || HeaderSettings.Tag2 != Header.TAG2)
                 {
-                    throw new FileLoadException("Not a valid LGS file!", fileFullPath);
+                    throw new FileLoadException("Not a valid PHOTONS file! TAGs doesn't match", fileFullPath);
                 }
 
-                // Fix inconsistencies found of different version of plugin and slicers
-                if (ResolutionX > ResolutionY)
-                {
-                    var oldX = ResolutionX;
-                    ResolutionX = ResolutionY;
-                    ResolutionY = oldX;
-                }
+                HeaderSettings.LayerHeight = Math.Round(HeaderSettings.LayerHeight, 2);
+                HeaderSettings.Volume = Math.Round(HeaderSettings.Volume, 2);
 
-                int previewSize = (int) (HeaderSettings.PreviewSizeX * HeaderSettings.PreviewSizeY * 2);
+                int previewSize = (int) (HeaderSettings.PreviewResolutionX * HeaderSettings.PreviewResolutionY * 2);
                 byte[] previewData = new byte[previewSize];
 
 
                 uint currentOffset = (uint) Helpers.Serializer.SizeOf(HeaderSettings);
                 currentOffset += inputFile.ReadBytes(previewData);
                 Thumbnails[0] = PreviewDecode(previewData);
+
+                LayerSettings = Helpers.Deserialize<LayerHeader>(inputFile);
+                currentOffset += (uint)Helpers.Serializer.SizeOf(LayerSettings);
+
+                Debug.WriteLine(HeaderSettings);
+                Debug.WriteLine(LayerSettings);
   
 
-                LayerData[] layerData = new LayerData[HeaderSettings.LayerCount];
-                progress.Reset(OperationProgress.StatusGatherLayers, HeaderSettings.LayerCount);
+                LayerData[] layerData = new LayerData[LayerSettings.LayerCount];
+                progress.Reset(OperationProgress.StatusGatherLayers, LayerSettings.LayerCount);
 
-                for (int layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
+                for (int layerIndex = 0; layerIndex < LayerSettings.LayerCount; layerIndex++)
                 {
                     progress.Token.ThrowIfCancellationRequested();
                     layerData[layerIndex] = Helpers.Deserialize<LayerData>(inputFile);
-                    layerData[layerIndex].Parent = this;
+                    layerData[layerIndex].EncodedRle = new byte[layerData[layerIndex].RleDataSize];
+                    currentOffset += inputFile.ReadBytes(layerData[layerIndex].EncodedRle);
+                    Debug.WriteLine($"Layer {layerIndex} -> {layerData[layerIndex]}");
                 }
 
-                LayerManager = new LayerManager(HeaderSettings.LayerCount, this);
+                LayerManager = new LayerManager(LayerSettings.LayerCount, this);
                 progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
                 Parallel.For(0, LayerCount, 

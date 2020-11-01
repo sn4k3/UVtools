@@ -665,6 +665,11 @@ namespace UVtools.WPF
             await new BenchmarkWindow().ShowDialog(this);
         }
 
+        public void MenuHelpOpenSettingsFolderClicked()
+        {
+            App.StartProcess(UserSettings.SettingsFolder);
+        }
+
         public async void MenuHelpInstallProfilesClicked()
         {
             var PEFolder = App.GetPrusaSlicerDirectory();
@@ -690,8 +695,8 @@ namespace UVtools.WPF
         private void UpdateTitle()
         {
             Title = (SlicerFile is null
-                ? $"{About.Software}   Version: {AppSettings.Version}"
-                : $"{About.Software}   File: {Path.GetFileName(SlicerFile.FileFullPath)} ({Math.Round(LastStopWatch.ElapsedMilliseconds / 1000m, 2)}s)   Version: {AppSettings.Version}")
+                ? $"{About.Software}   Version: {AppSettings.VersionStr}"
+                : $"{About.Software}   File: {Path.GetFileName(SlicerFile.FileFullPath)} ({Math.Round(LastStopWatch.ElapsedMilliseconds / 1000m, 2)}s)   Version: {AppSettings.VersionStr}")
                     ;
 
 #if DEBUG
@@ -1103,7 +1108,7 @@ namespace UVtools.WPF
                     {
                         SlicerFile.SetValueFromPrintParameterModifier(modifier, modifier.NewValue);
                     }*/
-                    SlicerFile.SetValuesFromPrintParametersModifiers();
+                    SlicerFile.EditPrintParameters(operation);
                     RefreshProperties();
                     ResetDataContext();
 

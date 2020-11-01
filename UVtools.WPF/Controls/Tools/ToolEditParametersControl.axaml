@@ -4,48 +4,55 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolEditParametersControl">
-  <Grid 
-    Name="grid" 
-    RowDefinitions="Auto"
-    ColumnDefinitions="Auto,Auto,Auto,Auto,Auto"
-    VerticalAlignment="Center"
-    ShowGridLines="True"
+
+  <StackPanel Spacing="15">
+
+    <CheckBox
+      IsChecked="{Binding Operation.PerLayerOverride}"
+      IsVisible="{Binding SupportPerLayerSettings}"
+      Content="Change settings per a layer range"/>
+
+    <Grid
+      Name="grid"
+      RowDefinitions="Auto"
+      ColumnDefinitions="Auto,Auto,Auto,Auto,*"
+      VerticalAlignment="Center"
+      ShowGridLines="True"
     >
 
-    <TextBlock 
-      Grid.Column="0"
-      VerticalAlignment="Center"
-      FontWeight="Bold"
-      Padding="15"
-      Text="Property"/>
-    <TextBlock
-      Grid.Column="1"
-      VerticalAlignment="Center"
-      HorizontalAlignment="Center"
-      FontWeight="Bold"
-      Padding="15"
-      Text="Old value"/>
-    <TextBlock
-      Grid.Column="2"
-      VerticalAlignment="Center"
-      HorizontalAlignment="Center"
-      FontWeight="Bold"
-      Padding="15"
-      Text="New value"/>
-    <TextBlock
-      Grid.Column="3"
-      VerticalAlignment="Center"
-      FontWeight="Bold"
-      Padding="15"
-      Text="Unit"/>
-    <TextBlock
-      Grid.Column="4"
-      VerticalAlignment="Center"
-      HorizontalAlignment="Center"
-      FontWeight="Bold"
-      Padding="15"
-      Text="Reset"/>
-
-
-  </Grid>
+      <TextBlock
+        Grid.Column="0"
+        VerticalAlignment="Center"
+        FontWeight="Bold"
+        Padding="15"
+        Text="Property"/>
+      <TextBlock
+        Grid.Column="1"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Center"
+        FontWeight="Bold"
+        Padding="15"
+        Text="Old value"/>
+      <TextBlock
+        Grid.Column="2"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Center"
+        FontWeight="Bold"
+        Padding="15"
+        Text="New value"/>
+      <TextBlock
+        Grid.Column="3"
+        VerticalAlignment="Center"
+        FontWeight="Bold"
+        Padding="15"
+        Text="Unit"/>
+      <TextBlock
+        Grid.Column="4"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Center"
+        FontWeight="Bold"
+        Padding="15"
+        Text="Reset"/>
+    </Grid>
+  </StackPanel>
 </UserControl>

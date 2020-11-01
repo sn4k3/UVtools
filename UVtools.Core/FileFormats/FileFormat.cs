@@ -7,8 +7,11 @@
  */
 
 using System;
+using System.CodeDom.Compiler;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -180,6 +183,7 @@ namespace UVtools.Core.FileFormats
             new SL1File(),      // Prusa SL1
             new ChituboxZipFile(),      // Zip
             new ChituboxFile(), // cbddlp, cbt, photon
+            new PhotonSFile(), // photons
             new PHZFile(), // phz
             new PWSFile(),   // PSW
             new ZCodexFile(),   // zcodex
@@ -274,6 +278,7 @@ namespace UVtools.Core.FileFormats
         public abstract Type[] ConvertToFormats { get; }
 
         public abstract PrintParameterModifier[] PrintParameterModifiers { get; }
+        public virtual PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = null;
 
         public string FileFilter {
             get
@@ -387,6 +392,7 @@ namespace UVtools.Core.FileFormats
         public float TotalHeight => LayerCount == 0 ? 0 : this[LayerCount - 1].PositionZ; //(float)Math.Round(LayerCount * LayerHeight, 2);
 
         public uint LastLayerIndex => LayerCount - 1;
+        public virtual bool SupportPerLayerSettings => !(PrintParameterPerLayerModifiers is null || PrintParameterPerLayerModifiers.Length == 0);
 
         public virtual uint LayerCount
         {
@@ -395,6 +401,7 @@ namespace UVtools.Core.FileFormats
         }
 
         public virtual ushort BottomLayerCount { get; set; }
+        public uint NormalLayerCount => LayerCount - BottomLayerCount;
         public virtual float BottomExposureTime { get; set; }
         public virtual float ExposureTime { get; set; }
         public virtual float BottomLayerOffTime { get; set; }
@@ -409,8 +416,20 @@ namespace UVtools.Core.FileFormats
 
 
         public abstract float PrintTime { get; }
+        //(header.numberOfLayers - header.bottomLayers) * (double) header.exposureTimeSeconds + (double) header.bottomLayers * (double) header.exposureBottomTimeSeconds + (double) header.offTimeSeconds * (double) header.numberOfLayers);
+        public virtual float PrintTimeOrComputed
+        {
+            get
+            {
+                if (PrintTime > 0) return PrintTime;
+                return NormalLayerCount * ExposureTime +
+                       NormalLayerCount * LayerOffTime +
+                       BottomLayerCount * BottomExposureTime +
+                       NormalLayerCount * BottomLayerOffTime;
+            }
+        }
 
-        public float PrintTimeHours => (float) Math.Round(PrintTime / 3600, 2);
+        public float PrintTimeHours => (float) Math.Round(PrintTimeOrComputed / 3600, 2);
 
         public abstract float UsedMaterial { get; }
 
@@ -434,7 +453,39 @@ namespace UVtools.Core.FileFormats
         protected FileFormat()
         {
             Thumbnails = new Mat[ThumbnailsCount];
+            PropertyChanged += OnPropertyChanged;
         }
+
+        private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Debug.WriteLine(e.PropertyName);
+            if (e.PropertyName == nameof(LayerCount)) 
+            {
+                LayerManager.RebuildLayersProperties();
+                RebuildGCode();
+                return;
+            }
+            if (
+                e.PropertyName == nameof(BottomLayerCount) ||
+                e.PropertyName == nameof(BottomExposureTime) ||
+                e.PropertyName == nameof(ExposureTime) ||
+                e.PropertyName == nameof(BottomLayerOffTime) ||
+                e.PropertyName == nameof(LayerOffTime) ||
+                e.PropertyName == nameof(BottomLiftHeight) ||
+                e.PropertyName == nameof(LiftHeight) ||
+                e.PropertyName == nameof(BottomLiftSpeed) ||
+                e.PropertyName == nameof(LiftSpeed) ||
+                e.PropertyName == nameof(RetractSpeed) ||
+                e.PropertyName == nameof(BottomLightPWM) ||
+                e.PropertyName == nameof(LightPWM)
+            )
+            {
+                LayerManager.RebuildLayersProperties(false);
+                RebuildGCode();
+                return;
+            }
+        }
+
         #endregion
 
         #region Indexers
@@ -828,6 +879,42 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        public void RefreshPrintParametersPerLayerModifiersValues(uint layerIndex)
+        {
+            if (PrintParameterPerLayerModifiers is null) return;
+            var layer = this[layerIndex];
+
+            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.ExposureSeconds))
+            {
+                PrintParameterModifier.ExposureSeconds.OldValue = (decimal)layer.ExposureTime;
+            }
+
+            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LayerOffTime))
+            {
+                PrintParameterModifier.LayerOffTime.OldValue = (decimal)layer.LayerOffTime;
+            }
+
+            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LiftHeight))
+            {
+                PrintParameterModifier.LiftHeight.OldValue = (decimal)layer.LiftHeight;
+            }
+
+            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LiftSpeed))
+            {
+                PrintParameterModifier.LiftSpeed.OldValue = (decimal)layer.LiftSpeed;
+            }
+
+            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.RetractSpeed))
+            {
+                PrintParameterModifier.RetractSpeed.OldValue = (decimal)layer.RetractSpeed;
+            }
+
+            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LightPWM))
+            {
+                PrintParameterModifier.LightPWM.OldValue = layer.LightPWM;
+            }
+        }
+
         public object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
         {
             if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerCount))
@@ -930,7 +1017,7 @@ namespace UVtools.Core.FileFormats
             return false;
         }
 
-        public virtual byte SetValuesFromPrintParametersModifiers()
+        public byte SetValuesFromPrintParametersModifiers()
         {
             if (PrintParameterModifiers is null) return 0;
             byte changed = 0;
@@ -942,20 +1029,26 @@ namespace UVtools.Core.FileFormats
                 changed++;
             }
 
-            if (changed == 0) return changed;
-
-            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-            {
-                this[layerIndex].ExposureTime = GetInitialLayerValueOrNormal(layerIndex, BottomExposureTime, ExposureTime);
-            }
-
-            RebuildGCode();
-
             return changed;
         }
 
-        public virtual void RebuildGCode()
-        { }
+        public void EditPrintParameters(OperationEditParameters operation)
+        {
+            if (operation.PerLayerOverride)
+            {
+                for (uint layerIndex = operation.LayerIndexStart; layerIndex <= operation.LayerIndexEnd; layerIndex++)
+                {
+                    this[layerIndex].SetValuesFromPrintParametersModifiers(operation.Modifiers);
+                }
+                RebuildGCode();
+            }
+            else
+            {
+                SetValuesFromPrintParametersModifiers();
+            }
+        }
+
+        public virtual void RebuildGCode() { }
 
         public void Save(OperationProgress progress = null)
         {

@@ -28,7 +28,7 @@ namespace UVtools.WPF.Extensions
                     ContentMessage = message,
                     Icon = icon,
                     Style = style,
-                    WindowIcon = new WindowIcon(App.GetAsset("/Assets/Icons/UVtools.ico")),
+                    //WindowIcon = new WindowIcon(App.GetAsset("/Assets/Icons/UVtools.ico")),
                     WindowStartupLocation = location,
                     CanResize = false
                 });
