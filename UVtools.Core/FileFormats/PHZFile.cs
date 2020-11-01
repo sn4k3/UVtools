@@ -1163,7 +1163,11 @@ namespace UVtools.Core.FileFormats
                         {
                             PositionZ = LayersDefinitions[layerIndex].LayerPositionZ,
                             ExposureTime = LayersDefinitions[layerIndex].LayerExposure,
-                            LayerOffTime = LayersDefinitions[layerIndex].LayerOffTimeSeconds
+                            LiftHeight = GetInitialLayerValueOrNormal((uint)layerIndex, BottomLiftHeight, LiftHeight),
+                            LiftSpeed = GetInitialLayerValueOrNormal((uint)layerIndex, BottomLiftSpeed, LiftSpeed),
+                            RetractSpeed = RetractSpeed,
+                            LayerOffTime = LayersDefinitions[layerIndex].LayerOffTimeSeconds,
+                            LightPWM = GetInitialLayerValueOrNormal((uint)layerIndex, BottomLightPWM, LightPWM),
                         };
                     }
 

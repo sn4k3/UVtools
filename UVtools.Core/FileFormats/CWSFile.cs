@@ -612,16 +612,16 @@ namespace UVtools.Core.FileFormats
 
                     if (Printer == PrinterType.Elfin)
                     {
-                        LayerManager[layerIndex] =
+                        this[layerIndex] =
                             new Layer(layerIndex, buffer, zipArchiveEntry.Name)
                             {
                                 PositionZ = GetHeightFromLayer(layerIndex),
+                                ExposureTime = exposureTime,
                                 LiftHeight = liftHeight,
                                 LiftSpeed = liftSpeed,
                                 RetractSpeed = retractSpeed,
                                 LayerOffTime = lightOffDelay,
                                 LightPWM = pwm,
-                                ExposureTime = exposureTime,
                             };
                     }
                     else
@@ -638,16 +638,16 @@ namespace UVtools.Core.FileFormats
                                     spanDecode[i] = span[i];
                                 }
 
-                                LayerManager[layerIndex] =
+                                this[layerIndex] =
                                     new Layer(layerIndex, matDecode, zipArchiveEntry.Name)
                                     {
                                         PositionZ = GetHeightFromLayer(layerIndex),
+                                        ExposureTime = exposureTime,
                                         LiftHeight = liftHeight,
                                         LiftSpeed = liftSpeed,
                                         RetractSpeed = retractSpeed,
                                         LayerOffTime = lightOffDelay,
                                         LightPWM = pwm,
-                                        ExposureTime = exposureTime,
                                     };
                             }
                         }

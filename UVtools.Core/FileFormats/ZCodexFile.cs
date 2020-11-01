@@ -326,14 +326,14 @@ namespace UVtools.Core.FileFormats
 
                     if (lastZPosition != layer.PositionZ)
                     {
-                        if (LiftHeight > 0)
+                        if (layer.LiftHeight > 0)
                         {
-                            GCode.AppendLine($"G1 Z{LiftHeight} F{LiftSpeed}");
-                            GCode.AppendLine($"G1 Z-{Math.Round(LiftHeight - layer.PositionZ + lastZPosition, 2)} F{RetractSpeed}");
+                            GCode.AppendLine($"G1 Z{layer.LiftHeight} F{layer.LiftSpeed}");
+                            GCode.AppendLine($"G1 Z-{Math.Round(layer.LiftHeight - layer.PositionZ + lastZPosition, 2)} F{layer.RetractSpeed}");
                         }
                         else
                         {
-                            GCode.AppendLine($"G1 Z{Math.Round(layer.PositionZ- lastZPosition, 2)} F{LiftSpeed}");
+                            GCode.AppendLine($"G1 Z{Math.Round(layer.PositionZ- lastZPosition, 2)} F{layer.LiftSpeed}");
                         }
                     }
                     /*else
@@ -488,7 +488,11 @@ M106 S0
                             this[layerIndex] = new Layer((uint) layerIndex, LayersSettings[layerIndex].LayerEntry.Open(), LayersSettings[layerIndex].LayerEntry.Name)
                             {
                                 PositionZ = currentHeight,
-                                ExposureTime = GetInitialLayerValueOrNormal((uint) layerIndex, BottomExposureTime, ExposureTime)
+                                ExposureTime = GetInitialLayerValueOrNormal((uint) layerIndex, BottomExposureTime, ExposureTime),
+                                LiftHeight = GetInitialLayerValueOrNormal((uint) layerIndex, BottomLiftHeight, LiftHeight),
+                                LiftSpeed = GetInitialLayerValueOrNormal((uint) layerIndex, BottomLiftSpeed, LiftSpeed),
+                                RetractSpeed = RetractSpeed,
+                                LightPWM = GetInitialLayerValueOrNormal((uint) layerIndex, BottomLightPWM, LightPWM),
                             };
                             layerIndex++;
 

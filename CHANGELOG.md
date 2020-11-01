@@ -1,5 +1,12 @@
 # Changelog
 
+## 01/11/2020 - v1.1.1
+
+* (Fix) PHZ, PWS, LGS, SL1 and ZCodex per layer settings and implement missing properties on decode
+* (Fix) LGS and PHZ Zip wasn't setting the position z per layer
+* (Fix) Add missing ctb v3 per layer settings on edit parameters window
+* (Fix) PWS per layer settings internal LiftSpeed was calculating in mm/min, changed to mm/sec
+
 ## 01/11/2020 - v1.1.0
 
 * (Add) photons file format (Read-only)
@@ -13,7 +20,7 @@
 * (Improvement) Adapt every file format to accept per layer settings where possible
 * (Improvement) Better gcode checks and per layer settings parses
 * (Change) When converting to CTB, version 3 of the file will be used instead of version 2
-* (Change) When converting to photon or cbddlp, version 2 of the file will be used instead of version 2
+* (Change) When converting to photon or cbddlp, version 2 of the file will be used
 * (Change) New logo, thanks to (Vinicius Silva @photonsters)
 * (Fix) MSI installer was creating multiple entries/uninstallers on windows Apps and Features (#79)
 * (Fix) Release builder script (CreateRelease.WPF.ps1): Replace backslash with shash for zip releases (#82)

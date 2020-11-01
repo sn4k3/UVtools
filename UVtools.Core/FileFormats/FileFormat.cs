@@ -406,11 +406,11 @@ namespace UVtools.Core.FileFormats
         public virtual float ExposureTime { get; set; }
         public virtual float BottomLayerOffTime { get; set; }
         public virtual float LayerOffTime { get; set; }
-        public virtual float BottomLiftHeight { get; set; }
-        public virtual float LiftHeight { get; set; }
-        public virtual float BottomLiftSpeed { get; set; }
-        public virtual float LiftSpeed { get; set; }
-        public virtual float RetractSpeed { get; set; }
+        public virtual float BottomLiftHeight { get; set; } = 5;
+        public virtual float LiftHeight { get; set; } = 5;
+        public virtual float BottomLiftSpeed { get; set; } = 100;
+        public virtual float LiftSpeed { get; set; } = 100;
+        public virtual float RetractSpeed { get; set; } = 100;
         public virtual byte BottomLightPWM { get; set; } = 255;
         public virtual byte LightPWM { get; set; } = 255;
 

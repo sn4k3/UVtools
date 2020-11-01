@@ -461,7 +461,15 @@ namespace UVtools.Core.FileFormats
 
                     if (IsPHZZip) // PHZ file
                     {
-                        LayerManager[layerIndex] = new Layer(layerIndex, entry.Open(), entry.Name);
+                        this[layerIndex] = new Layer(layerIndex, entry.Open(), entry.Name)
+                        {
+                            PositionZ = GetHeightFromLayer(layerIndex),
+                            ExposureTime = GetInitialLayerValueOrNormal(layerIndex, BottomExposureTime, ExposureTime),
+                            LiftHeight = GetInitialLayerValueOrNormal(layerIndex, BottomLiftHeight, LiftHeight),
+                            LiftSpeed = GetInitialLayerValueOrNormal(layerIndex, BottomLiftSpeed, LiftSpeed),
+                            RetractSpeed = RetractSpeed,
+                            LightPWM = GetInitialLayerValueOrNormal(layerIndex, BottomLightPWM, LightPWM),
+                        };
                         progress++;
                         continue;;
                     }
@@ -537,15 +545,15 @@ namespace UVtools.Core.FileFormats
                         }
                     }
 
-                    LayerManager[layerIndex] = new Layer(layerIndex, entry.Open(), entry.Name)
+                    this[layerIndex] = new Layer(layerIndex, entry.Open(), entry.Name)
                     {
                         PositionZ = posZ,
+                        ExposureTime = exposureTime,
                         LiftHeight = liftHeight,
                         LiftSpeed = liftSpeed,
                         RetractSpeed = retractSpeed,
                         LayerOffTime = lightOffDelay,
                         LightPWM = pwm,
-                        ExposureTime = exposureTime,
                     };
                     progress++;
                 }

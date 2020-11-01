@@ -586,6 +586,16 @@ namespace UVtools.Core.FileFormats
                     }
                 }
 
+                BottomLiftHeight = LookupCustomValue<float>(Keyword_BottomLiftHeight, 5);
+                BottomLiftSpeed = LookupCustomValue<float>(Keyword_BottomLiftSpeed, 100);
+                LiftHeight = LookupCustomValue<float>(Keyword_LiftHeight, 5);
+                LiftSpeed = LookupCustomValue<float>(Keyword_LiftSpeed, 100);
+                RetractSpeed = LookupCustomValue<float>(Keyword_RetractSpeed, 100);
+                BottomLayerOffTime = LookupCustomValue<float>(Keyword_BottomLightOffDelay, 0);
+                LayerOffTime = LookupCustomValue<float>(Keyword_LayerOffTime, 0);
+                BottomLightPWM = LookupCustomValue<byte>(Keyword_BottomLightPWM, 255);
+                LightPWM = LookupCustomValue<byte>(Keyword_LightPWM, 255);
+
                 LayerManager = new LayerManager((uint) (OutputConfigSettings.NumSlow + OutputConfigSettings.NumFast), this);
 
                 progress.ItemCount = LayerCount;
@@ -616,10 +626,14 @@ namespace UVtools.Core.FileFormats
                     // - .png - 5 numbers
                     string layerStr = entity.Name.Substring(entity.Name.Length - 4 - 5, 5);
                     uint iLayer = uint.Parse(layerStr);
-                    LayerManager[iLayer] = new Layer(iLayer, entity.Open(), entity.Name)
+                    this[iLayer] = new Layer(iLayer, entity.Open(), entity.Name)
                     {
                         PositionZ = GetHeightFromLayer(iLayer),
-                        ExposureTime = GetInitialLayerValueOrNormal(iLayer, BottomExposureTime, ExposureTime)
+                        ExposureTime = GetInitialLayerValueOrNormal(iLayer, BottomExposureTime, ExposureTime),
+                        LiftHeight = GetInitialLayerValueOrNormal(iLayer, BottomLiftHeight, LiftHeight),
+                        LiftSpeed = GetInitialLayerValueOrNormal(iLayer, BottomLiftSpeed, LiftSpeed),
+                        RetractSpeed = RetractSpeed,
+                        LightPWM = GetInitialLayerValueOrNormal(iLayer, BottomLightPWM, LightPWM),
                     };
                     progress.ProcessedItems++;
                 }

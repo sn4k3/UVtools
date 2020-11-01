@@ -406,7 +406,7 @@ namespace UVtools.Core.FileFormats
                 LayerPositionZ = Parent[layerIndex].PositionZ;
                 LayerExposure = Parent[layerIndex].ExposureTime;
                 LiftHeight = Parent[layerIndex].LiftHeight;
-                LiftSpeed = Parent[layerIndex].LiftSpeed;
+                LiftSpeed = (float) Math.Round(Parent[layerIndex].LiftSpeed / 60, 2);
             }
 
             public Mat Decode(bool consumeData = true)
@@ -1153,7 +1153,9 @@ namespace UVtools.Core.FileFormats
                             PositionZ = LayersDefinition[(uint)layerIndex].LayerPositionZ,
                             ExposureTime = LayersDefinition[(uint)layerIndex].LayerExposure,
                             LiftHeight = LayersDefinition[(uint)layerIndex].LiftHeight,
-                            LiftSpeed = LayersDefinition[(uint)layerIndex].LiftSpeed,
+                            LiftSpeed = (float)Math.Round(LayersDefinition[(uint)layerIndex].LiftSpeed * 60, 2),
+                            RetractSpeed = RetractSpeed,
+                            LightPWM = GetInitialLayerValueOrNormal((uint) layerIndex, BottomLightPWM, LightPWM)
                         };
                     }
 
@@ -1219,8 +1221,8 @@ namespace UVtools.Core.FileFormats
                         LayerHeight = LayerHeight,
                         LayerExposureTime = ExposureTime,
                         LiftHeight = LiftHeight,
-                        LiftSpeed = LiftSpeed / 60,
-                        RetractSpeed = RetractSpeed / 60,
+                        LiftSpeed = LiftSpeed,
+                        RetractSpeed = RetractSpeed,
                         LayerOffTime = HeaderSettings.LayerOffTime,
                         BottomLayersCount = BottomLayerCount,
                         BottomExposureSeconds = BottomExposureTime,
