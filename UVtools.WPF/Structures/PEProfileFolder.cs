@@ -68,12 +68,12 @@ namespace UVtools.WPF.Structures
             {
                 case FolderType.Print:
                     SourcePath = string.Format("{0}{1}Assets{1}PrusaSlicer{1}sla_print",
-                        App.GetApplicationPath(), Path.DirectorySeparatorChar);
+                        App.ApplicationPath, Path.DirectorySeparatorChar);
                     TargetPath = $"{App.GetPrusaSlicerDirectory()}{Path.DirectorySeparatorChar}sla_print";
                     break;
                 case FolderType.Printer:
                     SourcePath = string.Format("{0}{1}Assets{1}PrusaSlicer{1}printer",
-                        App.GetApplicationPath(), Path.DirectorySeparatorChar);
+                        App.ApplicationPath, Path.DirectorySeparatorChar);
                     TargetPath = $"{App.GetPrusaSlicerDirectory()}{Path.DirectorySeparatorChar}printer";
                     break;
             }

@@ -88,7 +88,7 @@ namespace UVtools.Core.FileFormats
             }*/
 
             LayerManager = new LayerManager(1, this);
-            this[0] = new Layer(0, ImageMat, Path.GetFileName(fileFullPath));
+            this[0] = new Layer(0, ImageMat, LayerManager);
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)

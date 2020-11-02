@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -161,6 +162,13 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.RetractSpeed,
             PrintParameterModifier.LiftSpeed,
+        };
+
+        public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+            PrintParameterModifier.LiftHeight,
+            PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.RetractSpeed,
+            PrintParameterModifier.LightPWM,
         };
 
         public override byte ThumbnailsCount { get; } = 1;
@@ -458,41 +466,48 @@ M106 S0
                             var startStr = $"{GCodeKeywordSlice} {layerIndex}";
                             var stripGcode = gcode.Substring(gcode.IndexOf(startStr, StringComparison.InvariantCultureIgnoreCase) + startStr.Length).Trim(' ', '\n', '\r', '\t');
 
-                            var currPos = Regex.Match(stripGcode, "G1 Z([+-]?([0-9]*[.])?[0-9]+)", RegexOptions.IgnoreCase);
-                            //var exposureTime = Regex.Match(stripGcode, ";<Delay> (\\d+)", RegexOptions.IgnoreCase);
-                            /*var pwm = Regex.Match(stripGcode, "M106 S(\\d+)", RegexOptions.IgnoreCase);
-                            if (layerIndex < InitialLayerCount)
+                            float liftHeight = 0;
+                            float liftSpeed = GetInitialLayerValueOrNormal((uint)layerIndex, BottomLiftSpeed, LiftSpeed);
+                            float retractSpeed = RetractSpeed;
+                            byte pwm = GetInitialLayerValueOrNormal((uint)layerIndex, BottomLightPWM, LightPWM); ;
+
+                            //var currPos = Regex.Match(stripGcode, "G1 Z([+-]?([0-9]*[.])?[0-9]+)", RegexOptions.IgnoreCase);
+                            var moveG1Regex = Regex.Match(stripGcode, @"G1 Z([+-]?([0-9]*[.])?[0-9]+) F(\d+)", RegexOptions.IgnoreCase);
+                            var pwmM106Regex = Regex.Match(stripGcode, @"M106 S(\d+)", RegexOptions.IgnoreCase);
+
+                            if (moveG1Regex.Success)
                             {
-                                OutputSettings.BottomLayerLightPWM = byte.Parse(pwm.Groups[1].Value);
-                            }
-                            else
-                            {
-                                OutputSettings.LayerLightPWM = byte.Parse(pwm.Groups[1].Value);
-                            }*/
-                            if (currPos.Success)
-                            {
-                                var nextMatch = currPos.NextMatch();
-                                if (nextMatch.Success)
+                                var liftHeightTemp = float.Parse(moveG1Regex.Groups[1].Value, CultureInfo.InvariantCulture);
+                                var liftSpeedTemp = float.Parse(moveG1Regex.Groups[3].Value, CultureInfo.InvariantCulture);
+                                moveG1Regex = moveG1Regex.NextMatch();
+                                if (moveG1Regex.Success)
                                 {
-                                    currentHeight = (float)Math.Round(currentHeight + float.Parse(currPos.Groups[1].Value) + float.Parse(currPos.NextMatch().Groups[1].Value), 2);
+                                    liftHeight = liftHeightTemp;
+                                    liftSpeed = liftSpeedTemp;
+                                    var retractHeight = float.Parse(moveG1Regex.Groups[1].Value, CultureInfo.InvariantCulture);
+                                    retractSpeed = float.Parse(moveG1Regex.Groups[3].Value, CultureInfo.InvariantCulture);
+                                    currentHeight = (float)Math.Round(currentHeight + liftHeightTemp + retractHeight, 2);
                                 }
                                 else
                                 {
-                                    currentHeight = (float)Math.Round(currentHeight + float.Parse(currPos.Groups[1].Value), 2);
+                                    currentHeight = (float) Math.Round(currentHeight + liftHeightTemp);
                                 }
-                                
                             }
 
+                            if (pwmM106Regex.Success)
+                            {
+                                pwm = byte.Parse(pwmM106Regex.Groups[1].Value);
+                            }
+                           
                             LayersSettings[layerIndex].LayerFileIndex = layerFileIndex;
                             LayersSettings[layerIndex].LayerEntry = inputFile.GetEntry(layerimagePath);
-                            this[layerIndex] = new Layer((uint) layerIndex, LayersSettings[layerIndex].LayerEntry.Open(), LayersSettings[layerIndex].LayerEntry.Name)
+                            this[layerIndex] = new Layer((uint) layerIndex, LayersSettings[layerIndex].LayerEntry.Open(), LayerManager)
                             {
                                 PositionZ = currentHeight,
-                                ExposureTime = GetInitialLayerValueOrNormal((uint) layerIndex, BottomExposureTime, ExposureTime),
-                                LiftHeight = GetInitialLayerValueOrNormal((uint) layerIndex, BottomLiftHeight, LiftHeight),
-                                LiftSpeed = GetInitialLayerValueOrNormal((uint) layerIndex, BottomLiftSpeed, LiftSpeed),
-                                RetractSpeed = RetractSpeed,
-                                LightPWM = GetInitialLayerValueOrNormal((uint) layerIndex, BottomLightPWM, LightPWM),
+                                LiftHeight = liftHeight,
+                                LiftSpeed = liftSpeed,
+                                RetractSpeed = retractSpeed,
+                                LightPWM = pwm
                             };
                             layerIndex++;
 

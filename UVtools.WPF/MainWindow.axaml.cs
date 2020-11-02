@@ -404,7 +404,8 @@ namespace UVtools.WPF
         protected override void OnOpened(EventArgs e)
         {
             base.OnOpened(e);
-            AddLog($"{About.Software} start");
+            Program.ProgramStartupTime.Stop();
+            AddLog($"{About.Software} start", Program.ProgramStartupTime.Elapsed.TotalSeconds);
 
             if (Settings.General.CheckForUpdatesOnStartup)
             {
@@ -549,6 +550,7 @@ namespace UVtools.WPF
 
         public async void MenuFileSaveAsClicked()
         {
+            //await this.MessageBoxInfo(Path.Combine(App.ApplicationPath, "Assets", "Themes"));
             if (!IsFileLoaded) return;
             var ext = Path.GetExtension(SlicerFile.FileFullPath);
             var extNoDot = ext.Remove(0, 1);

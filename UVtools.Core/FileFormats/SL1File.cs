@@ -524,7 +524,7 @@ namespace UVtools.Core.FileFormats
                     progress.Token.ThrowIfCancellationRequested();
                     Layer layer = this[layerIndex];
                     var layerImagePath = $"{Path.GetFileNameWithoutExtension(fileFullPath)}{layerIndex:D5}.png";
-                    layer.Filename = layerImagePath;
+                    //layer.Filename = layerImagePath;
                     outputFile.PutFileContent(layerImagePath, layer.CompressedBytes, ZipArchiveMode.Create);
                     progress++;
                 }
@@ -626,15 +626,7 @@ namespace UVtools.Core.FileFormats
                     // - .png - 5 numbers
                     string layerStr = entity.Name.Substring(entity.Name.Length - 4 - 5, 5);
                     uint iLayer = uint.Parse(layerStr);
-                    this[iLayer] = new Layer(iLayer, entity.Open(), entity.Name)
-                    {
-                        PositionZ = GetHeightFromLayer(iLayer),
-                        ExposureTime = GetInitialLayerValueOrNormal(iLayer, BottomExposureTime, ExposureTime),
-                        LiftHeight = GetInitialLayerValueOrNormal(iLayer, BottomLiftHeight, LiftHeight),
-                        LiftSpeed = GetInitialLayerValueOrNormal(iLayer, BottomLiftSpeed, LiftSpeed),
-                        RetractSpeed = RetractSpeed,
-                        LightPWM = GetInitialLayerValueOrNormal(iLayer, BottomLightPWM, LightPWM),
-                    };
+                    this[iLayer] = new Layer(iLayer, entity.Open(), LayerManager);
                     progress.ProcessedItems++;
                 }
             }
@@ -645,17 +637,6 @@ namespace UVtools.Core.FileFormats
 
             Debug.WriteLine(Statistics);
         }
-
-        /*public override Image<L8> GetLayerImage(uint layerIndex)
-        {
-            //Stopwatch sw = Stopwatch.StartNew();
-            var image = Image.Load<L8>(DecompressLayer(Layers[layerIndex]));
-            //Debug.WriteLine(sw.ElapsedMilliseconds);
-
-            return layerIndex >= LayerCount ? null : image;
-            //return layerIndex >= LayerCount ? null : Image.Load<L8>(LayerEntries[(int)layerIndex].Open());
-            //return layerIndex >= LayerCount ? null : Image.Load<L8>(DecompressLayer(Layers[layerIndex]));
-        }*/
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)
         {

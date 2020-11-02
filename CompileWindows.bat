@@ -6,9 +6,9 @@ if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\MSBuild\Cu
 
 IF [%MSBUILD_PATH%] == [] GOTO noMSBuild
 
-echo PrusaSL1Viewer.sln Compile
+echo UVtools.sln Compile
 echo %MSBUILD_PATH%
-%MSBUILD_PATH% -p:Configuration=Release PrusaSL1Viewer.sln
+%MSBUILD_PATH% -p:Configuration=Release UVtools.sln
 GOTO end
 
 

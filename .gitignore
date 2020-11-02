@@ -21,6 +21,7 @@ UVtools.CAD/OldVersions/
 mono_crash.*
 
 # Build results
+publish/
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/

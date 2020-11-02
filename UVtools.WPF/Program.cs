@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Avalonia;
 
 namespace UVtools.WPF
@@ -6,12 +7,15 @@ namespace UVtools.WPF
     public static class Program
     {
         public static string[] Args;
+
+        public static Stopwatch ProgramStartupTime;
         // Initialization code. Don't use any Avalonia, third-party APIs or any
         // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
         // yet and stuff might break.
         [STAThread]
         public static void Main(string[] args)
         {
+            ProgramStartupTime = Stopwatch.StartNew();
             Args = args;
 
             BuildAvaloniaApp()

@@ -12,9 +12,9 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <Nullable>enable</Nullable>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
   </PropertyGroup>
+  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>1701;1702;</NoWarn>
@@ -45,23 +45,11 @@
     <None Remove="Assets\Icons\UVtools.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="arm\libcvextern.so">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\selected.theme">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="libcvextern.dylib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="libcvextern.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Themes - Copy\UVtoolsDark.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="Themes - Copy\UVtoolsLight.xaml">
-      <Generator>MSBuild:Compile</Generator>
     </None>
     <None Update="Assets\Themes\UVtools.themes">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -79,6 +67,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\CHANGELOG.md" Link="CHANGELOG.md" />
+    <None Include="..\CreateRelease.WPF.ps1" Link="CreateRelease.WPF.ps1" />
     <None Include="..\CREDITS.md" Link="CREDITS.md" />
     <None Include="..\LICENSE">
       <Pack>True</Pack>
@@ -118,7 +107,7 @@
       <DependentUpon>%(Filename)</DependentUpon>
     </Compile>
   </ItemGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /i /y /d /s $(ProjectDir)..\PrusaSlicer $(ProjectDir)$(OutDir)\Assets\PrusaSlicer" />
-  </Target>
+  <ItemGroup>
+    <None Include="..\PrusaSlicer\**" CopyToOutputDirectory="PreserveNewest" LinkBase="Assets\PrusaSlicer" />
+  </ItemGroup>
 </Project>

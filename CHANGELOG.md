@@ -1,5 +1,28 @@
 # Changelog
 
+## 02/11/2020 - v1.1.2
+
+* (Add) Program start elapsed seconds on Log
+* (Add) Lift heights @ speeds, retract speed, light-off information to status bar
+* (Fix) Per layer settings are being lost when doing operations via tools that changes the layer count
+* (Fix) Current layer height mm was being calculated instead of showing the stored position Z value (For hacked files)
+* (Fix) Zip: By using hacked gcodes were possible to do a lift sequence without returning back to Z layer position
+* (Fix) ZCodex: Read per layer lift height/speed, retract speed and pwm from GCode
+* (Fix) Status bar, layer top and bottom bar: Break content down for the next line if window size overlaps the controls
+* (Fix) Status bar: Make right buttons same height as left buttons
+* (Improvement) CWS: Better gcode parser for decoding
+* (Change) GCodes: Cure commands (Light-on/Cure time/Light-off) are only exposed when exposure time and pwm are present and greater than 0 [Safe guard]
+* (Change) Zip: If only one G0 command found per layer, it will be associated to the cure z position (No lift height)
+* (Change) Merged bottom/normal exposure times on status bar
+* (Change) Tabs: Change controls spacing from 5 to 2 for better looking
+* (Change) Deploy UVtools self-contained per platform specific: (#89)
+  * Platform optimized 
+  * Reduced the package size
+  * Includes .NET Core assemblies and dont require the installation of .NET Core
+  * Can execute UVtools by double click on "UVtools" file or via ".\UVtools" on terminal
+  * **Naming:** UVtools_[os]-[architecture]_v[version].zip
+  * **"universal"** zip file that includes the portable version, os and architecture independent but requires dotnet to run, these build were used in all previous versions
+
 ## 01/11/2020 - v1.1.1
 
 * (Fix) PHZ, PWS, LGS, SL1 and ZCodex per layer settings and implement missing properties on decode

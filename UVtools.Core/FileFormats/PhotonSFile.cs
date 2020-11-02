@@ -512,16 +512,7 @@ namespace UVtools.Core.FileFormats
 
                     using (var image = layerData[layerIndex].Decode())
                     {
-                        this[layerIndex] = new Layer((uint) layerIndex, image)
-                        {
-                            PositionZ = GetHeightFromLayer((uint)layerIndex),
-                            ExposureTime = GetInitialLayerValueOrNormal((uint)layerIndex, BottomExposureTime, ExposureTime),
-                            LiftHeight = GetInitialLayerValueOrNormal((uint)layerIndex, BottomLiftHeight, LiftHeight),
-                            LiftSpeed = GetInitialLayerValueOrNormal((uint)layerIndex, BottomLiftSpeed, LiftSpeed),
-                            RetractSpeed = RetractSpeed,
-                            LightPWM = GetInitialLayerValueOrNormal((uint)layerIndex, BottomLightPWM, LightPWM),
-                        };
-
+                        this[layerIndex] = new Layer((uint) layerIndex, image, LayerManager);
                         lock (progress.Mutex)
                         {
                             progress++;

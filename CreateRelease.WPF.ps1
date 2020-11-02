@@ -10,6 +10,9 @@
 # https://gist.github.com/lantrix/738ebfa616d5222a8b1db947793bc3fc
 #
 
+####################################
+###        Fix Zip slash         ###
+####################################
 Add-Type -AssemblyName System.Text.Encoding
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
@@ -23,11 +26,148 @@ class FixedEncoder : System.Text.UTF8Encoding {
     }
 }
 
+####################################
+###         Configuration        ###
+####################################
+# Profilling
+$stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
+$deployStopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
+$stopWatch.Start()
 
-cd $PSScriptRoot
-$version = (Get-Command UVtools.WPF\bin\Release\netcoreapp3.1\UVtools.dll).FileVersionInfo.ProductVersion
-echo "UVtools v$version"
+# Script working directory
+Set-Location $PSScriptRoot
 
-#[IO.Compression.ZipFile]::CreateFromDirectory("$PSScriptRoot\UVtools.WPF\bin\Release\netcoreapp3.1", "$PSScriptRoot\UVtools.WPF\bin\UVtools_v$version.zip")
-[System.IO.Compression.ZipFile]::CreateFromDirectory("$PSScriptRoot\UVtools.WPF\bin\Release\netcoreapp3.1", "$PSScriptRoot\UVtools.WPF\bin\UVtools_v$version.zip", [System.IO.Compression.CompressionLevel]::Optimal, $false, [FixedEncoder]::new())
-Copy-Item "$PSScriptRoot\UVtools.Installer\bin\Release\UVtools.msi" -Destination "$PSScriptRoot\UVtools.WPF\bin\UVtools_v$version.msi"
+# Variables
+$software = "UVtools"
+$project = "UVtools.WPF"
+$buildWith = "Release"
+$releaseFolder = "$PSScriptRoot\$project\bin\$buildWith\netcoreapp3.1"
+$publishFolder = "$PSScriptRoot\publish"
+
+#$version = (Get-Command "$releaseFolder\UVtools.dll").FileVersionInfo.ProductVersion
+$projectXml = [Xml] (Get-Content "$PSScriptRoot\$project\$project.csproj")
+$version = "$($projectXml.Project.PropertyGroup.Version)".Trim();
+if([string]::IsNullOrWhiteSpace($version)){
+    Write-Error "Can not detect the UVtools version, does $project\$project.csproj exists?"
+    exit
+}
+
+# MSI Variables
+$installers = @("UVtools.InstallerMM", "UVtools.Installer")
+$msiSourceFile = "$PSScriptRoot\UVtools.Installer\bin\Release\UVtools.msi"
+$msiTargetFile = "$publishFolder\${software}_${runtime}_v$version.msi"
+$msbuild = "`"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe`" /t:Build /p:Configuration=$buildWith /p:MSIProductVersion=$version"
+
+Write-Output "
+####################################
+###  UVtools builder & deployer  ###
+####################################
+Version: $version [$buildWith]
+"
+
+####################################
+###   Clean up previous publish  ###
+####################################
+# Clean up previous publish
+Remove-Item $publishFolder -Recurse -ErrorAction Ignore # Clean
+
+####################################
+###    Self-contained runtimes   ###
+####################################
+$runtimes = 
+@{
+    "win-x64" = @{
+        "extraCmd" = "-p:PublishReadyToRun=true"
+        "exclude" = @("libcvextern.so", "libcvextern.dylib", "UVtools.sh")
+    }
+    "linux-x64" = @{
+        "extraCmd" = "-p:PublishReadyToRun=true"
+        "exclude" = @("x86", "x64", "libcvextern.dylib")
+    }
+    "rhel-x64" = @{
+        "extraCmd" = "-p:PublishReadyToRun=true"
+        "exclude" = @("x86", "x64", "libcvextern.dylib")
+    }
+    #"unix-x64" = @{
+    #    "extraCmd" = "-p:PublishReadyToRun=true"
+    #    "exclude" = @("x86", "x64", "libcvextern.dylib")
+    #}
+    "osx-x64" = @{
+        "extraCmd" = "-p:PublishReadyToRun=true"
+        "exclude" = @("x86", "x64", "libcvextern.so")
+    }
+}
+
+foreach ($obj in $runtimes.GetEnumerator()) {
+    # Configuration
+    $deployStopWatch.Restart()
+    $runtime = $obj.Name;       # runtime name
+    $extraCmd = $obj.extraCmd;  # extra cmd to run with dotnet
+    $targetZip = "$publishFolder\${software}_${runtime}_v$version.zip"  # Target zip filename
+    
+    # Deploy
+    Write-Output "################################
+Building: $runtime"
+    dotnet publish $project -o "$publishFolder\$runtime" -c $buildWith -r $runtime $extraCmd
+    
+    # Cleanup
+    Remove-Item "$releaseFolder\$runtime" -Recurse -ErrorAction Ignore  
+    foreach ($excludeObj in $obj.Value.exclude) {
+        Write-Output "Excluding: $excludeObj"
+        Remove-Item "$publishFolder\$runtime\$excludeObj" -Recurse -ErrorAction Ignore
+    }
+
+    # Zip
+    Write-Output "Compressing $runtime to: $targetZip"
+    [System.IO.Compression.ZipFile]::CreateFromDirectory("$publishFolder\$runtime", $targetZip, [System.IO.Compression.CompressionLevel]::Optimal, $false, [FixedEncoder]::new())
+    $deployStopWatch.Stop()
+
+    Write-Output "Took: $($deployStopWatch.Elapsed)
+################################
+"
+}
+
+# Universal package
+$deployStopWatch.Restart()
+$runtime = "universal-x86-x64"
+$targetZip = "$publishFolder\${software}_${runtime}_v$version.zip"
+
+Write-Output "################################
+Building: $runtime"
+dotnet build $project -c $buildWith
+
+Write-Output "Compressing $runtime to: $targetZip"
+[System.IO.Compression.ZipFile]::CreateFromDirectory($releaseFolder, $targetZip, [System.IO.Compression.CompressionLevel]::Optimal, $false, [FixedEncoder]::new())
+Write-Output "Took: $($deployStopWatch.Elapsed)
+################################
+"
+$stopWatch.Stop()
+
+
+# MSI Installer for Windows
+$deployStopWatch.Restart()
+$runtime = 'win-x64'
+Write-Output "################################
+Building: $runtime MSI Installer"
+
+foreach($installer in $installers)
+{
+    # Clean and build MSI
+    Remove-Item "$PSScriptRoot\$installer\obj" -Recurse -ErrorAction Ignore
+    Remove-Item "$PSScriptRoot\$installer\bin" -Recurse -ErrorAction Ignore
+    iex "& $msbuild $installer\$installer.wixproj"
+}
+
+Copy-Item $msiSourceFile $msiTargetFile
+
+Write-Output "Took: $($deployStopWatch.Elapsed)
+################################
+"
+
+
+
+Write-Output "
+####################################
+###           Completed          ###
+####################################
+In: $($stopWatch.Elapsed)"

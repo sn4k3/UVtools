@@ -107,7 +107,7 @@ namespace UVtools.WPF.Windows
             }
         }
 
-        public float LayerStartMM => App.SlicerFile.GetHeightFromLayer(_layerIndexStart);
+        public float LayerStartMM => App.SlicerFile[_layerIndexStart].PositionZ;
 
         public uint LayerIndexEnd
         {
@@ -123,7 +123,7 @@ namespace UVtools.WPF.Windows
             }
         }
 
-        public float LayerEndMM => App.SlicerFile.GetHeightFromLayer(_layerIndexEnd);
+        public float LayerEndMM => App.SlicerFile[_layerIndexEnd].PositionZ;
         
         public string LayerRangeCountStr
         {

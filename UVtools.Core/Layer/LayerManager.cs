@@ -48,6 +48,8 @@ namespace UVtools.Core
         /// </summary>
         public uint Count => (uint) Layers.Length;
 
+        public byte LayerDigits => (byte) Layers.Length.ToString().Length;
+
         /// <summary>
         /// Gets if any layer got modified, otherwise false
         /// </summary>
@@ -1611,7 +1613,7 @@ namespace UVtools.Core
                         }
                     }
                 }
-                this[layerIndex] = new Layer(layerIndex, mat);
+                this[layerIndex] = new Layer(layerIndex, mat, this);
 
                 lock (progress.Mutex)
                 {
@@ -1750,15 +1752,10 @@ namespace UVtools.Core
                 {
                     for (byte i = 0; i < operation.Item.Modifier; i++)
                     {
-                        Layers[newLayerIndex] =
-                            new Layer(newLayerIndex, oldLayer.CompressedBytes, null, this)
-                            {
-                                PositionZ = (float)(operation.Item.LayerHeight * (newLayerIndex + 1)),
-                                ExposureTime = oldLayer.ExposureTime,
-                                BoundingRectangle = oldLayer.BoundingRectangle,
-                                NonZeroPixelCount = oldLayer.NonZeroPixelCount
-
-                            };
+                        var newLayer = oldLayer.Clone();
+                        newLayer.Index = newLayerIndex;
+                        newLayer.PositionZ = (float) (operation.Item.LayerHeight * (newLayerIndex + 1));
+                        Layers[newLayerIndex] = newLayer;
                         newLayerIndex++;
                         progress++;
                     }
@@ -1775,11 +1772,11 @@ namespace UVtools.Core
                             }
                         }
 
-                        Layers[newLayerIndex] = new Layer(newLayerIndex, mat, null, this)
-                        {
-                            PositionZ = (float)(operation.Item.LayerHeight * (newLayerIndex + 1)),
-                            ExposureTime = oldLayer.ExposureTime
-                        };
+                        var newLayer = oldLayer.Clone();
+                        newLayer.Index = newLayerIndex;
+                        newLayer.PositionZ = (float) (operation.Item.LayerHeight * (newLayerIndex + 1));
+                        newLayer.LayerMat = mat;
+                        Layers[newLayerIndex] = newLayer;
                         newLayerIndex++;
                         layerIndex--;
                         progress++;

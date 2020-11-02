@@ -49,9 +49,9 @@ namespace UVtools.WPF
                 UserSettings.Load();
                 UserSettings.SetVersion();
 
-                ThemeSelector = Avalonia.ThemeManager.ThemeSelector.Create("Assets/Themes");
+                ThemeSelector = Avalonia.ThemeManager.ThemeSelector.Create(Path.Combine(ApplicationPath, "Assets", "Themes"));
                 ThemeSelector.LoadSelectedTheme(Path.Combine(UserSettings.SettingsFolder, "selected.theme"));
-                if (ThemeSelector.SelectedTheme.Name == "UVtoolsDark")
+                if (ThemeSelector.SelectedTheme.Name == "UVtoolsDark" || ThemeSelector.SelectedTheme.Name == "Light")
                 {
                     foreach (var theme in ThemeSelector.Themes)
                     {
@@ -99,7 +99,11 @@ namespace UVtools.WPF
                     };
                     Process.Start(info).Dispose();
                 }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                else if(File.Exists("UVtools"))
+                {
+                    Process.Start("UVtools", $"\"{filePath}\"").Dispose();
+                }
+                else
                 {
                     Process.Start("dotnet", $"UVtools.dll \"{filePath}\"").Dispose();
                 }
@@ -175,10 +179,7 @@ namespace UVtools.WPF
 
         public static Bitmap GetBitmapFromAsset(string url) => new Bitmap(GetAsset(url));
 
-        public static string GetApplicationPath()
-        {
-            return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        }
+        public static string ApplicationPath => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
         public static string GetPrusaSlicerDirectory()
         {

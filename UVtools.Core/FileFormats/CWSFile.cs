@@ -495,8 +495,6 @@ namespace UVtools.Core.FileFormats
                 //float currentHeight = 0;
 
 
-                int layerSize = OutputSettings.LayersNum.ToString().Length;
-
                 inputFile.Entries.AsParallel().ForAllInApproximateOrder(zipArchiveEntry =>
                     //foreach (var zipArchiveEntry in inputFile.Entries)
                 {
@@ -525,7 +523,7 @@ namespace UVtools.Core.FileFormats
                         .Trim(' ', '\n', '\r', '\t');
                     //var startCurrPos = stripGcode.Remove(0, ";currPos:".Length);
 
-                    float liftHeight = GetInitialLayerValueOrNormal(layerIndex, BottomLiftHeight, LiftHeight);
+                    float liftHeight = 0;
                     float liftSpeed = GetInitialLayerValueOrNormal(layerIndex, BottomLiftSpeed, LiftSpeed);
                     float retractSpeed = RetractSpeed;
                     float lightOffDelay = GetInitialLayerValueOrNormal(layerIndex, BottomLayerOffTime, LayerOffTime);
@@ -539,12 +537,13 @@ namespace UVtools.Core.FileFormats
 
                     if (moveG1Regex.Success)
                     {
-                        liftHeight = float.Parse(moveG1Regex.Groups[1].Value, CultureInfo.InvariantCulture);
-                        liftSpeed = float.Parse(moveG1Regex.Groups[3].Value, CultureInfo.InvariantCulture);
+                        var liftHeightTemp = float.Parse(moveG1Regex.Groups[1].Value, CultureInfo.InvariantCulture);
+                        var liftSpeedTemp = float.Parse(moveG1Regex.Groups[3].Value, CultureInfo.InvariantCulture);
                         moveG1Regex = moveG1Regex.NextMatch();
                         if (moveG1Regex.Success)
                         {
-                            //float retractHeight = Math.Abs(float.Parse(moveG1Regex.Groups[1].Value, CultureInfo.InvariantCulture));
+                            liftHeight = liftHeightTemp;
+                            liftSpeed = liftSpeedTemp;
                             retractSpeed = float.Parse(moveG1Regex.Groups[3].Value, CultureInfo.InvariantCulture);
                         }
                     }
@@ -613,9 +612,8 @@ namespace UVtools.Core.FileFormats
                     if (Printer == PrinterType.Elfin)
                     {
                         this[layerIndex] =
-                            new Layer(layerIndex, buffer, zipArchiveEntry.Name)
+                            new Layer(layerIndex, buffer, LayerManager)
                             {
-                                PositionZ = GetHeightFromLayer(layerIndex),
                                 ExposureTime = exposureTime,
                                 LiftHeight = liftHeight,
                                 LiftSpeed = liftSpeed,
@@ -639,9 +637,8 @@ namespace UVtools.Core.FileFormats
                                 }
 
                                 this[layerIndex] =
-                                    new Layer(layerIndex, matDecode, zipArchiveEntry.Name)
+                                    new Layer(layerIndex, matDecode, LayerManager)
                                     {
-                                        PositionZ = GetHeightFromLayer(layerIndex),
                                         ExposureTime = exposureTime,
                                         LiftHeight = liftHeight,
                                         LiftSpeed = liftSpeed,
@@ -691,9 +688,12 @@ namespace UVtools.Core.FileFormats
             {
                 Layer layer = this[layerIndex];
                 GCode.AppendLine($"{GCodeKeywordSlice} {layerIndex}");
-                GCode.AppendLine($"M106 S{layer.LightPWM}");
-                GCode.AppendLine($"{GCodeKeywordDelay} {layer.ExposureTime * 1000}");
-                GCode.AppendLine("M106 S0");
+                if (layer.ExposureTime > 0 && layer.LightPWM > 0)
+                {
+                    GCode.AppendLine($"M106 S{layer.LightPWM}");
+                    GCode.AppendLine($"{GCodeKeywordDelay} {layer.ExposureTime * 1000}");
+                    GCode.AppendLine("M106 S0");
+                }
                 GCode.AppendLine(GCodeKeywordSliceBlank);
 
                 if (lastZPosition != layer.PositionZ)

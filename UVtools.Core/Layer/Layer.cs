@@ -16,6 +16,7 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using Stream = System.IO.Stream;
 
@@ -24,7 +25,7 @@ namespace UVtools.Core
     /// <summary>
     /// Represent a Layer
     /// </summary>
-    public class Layer : IEquatable<Layer>, IEquatable<uint>
+    public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     {
         #region Properties
 
@@ -35,15 +36,25 @@ namespace UVtools.Core
         /// </summary>
         public LayerManager ParentLayerManager { get; set; }
 
+        public FileFormat SlicerFile => ParentLayerManager?.SlicerFile;
+
         /// <summary>
         /// Gets the number of non zero pixels on this layer image
         /// </summary>
-        public uint NonZeroPixelCount { get; internal set; }
+        public uint NonZeroPixelCount
+        {
+            get => _nonZeroPixelCount;
+            internal set => RaiseAndSetIfChanged(ref _nonZeroPixelCount, value);
+        }
 
         /// <summary>
         /// Gets the bounding rectangle for the image area
         /// </summary>
-        public Rectangle BoundingRectangle { get; internal set; } = Rectangle.Empty;
+        public Rectangle BoundingRectangle
+        {
+            get => _boundingRectangle;
+            internal set => RaiseAndSetIfChanged(ref _boundingRectangle, value);
+        }
 
         public bool IsBottomLayer => Index < ParentLayerManager.SlicerFile.BottomLayerCount;
         public bool IsNormalLayer => !IsBottomLayer;
@@ -51,44 +62,88 @@ namespace UVtools.Core
         /// <summary>
         /// Gets the layer index
         /// </summary>
-        public uint Index { get; set; }
+        public uint Index
+        {
+            get => _index;
+            set => RaiseAndSetIfChanged(ref _index, value);
+        }
 
         /// <summary>
         /// Gets or sets the normal layer exposure time in seconds
         /// </summary>
-        public float ExposureTime { get; set; }
+        public float ExposureTime
+        {
+            get => _exposureTime;
+            set => RaiseAndSetIfChanged(ref _exposureTime, value);
+        }
 
         /// <summary>
         /// Gets or sets the layer off time in seconds
         /// </summary>
-        public float LayerOffTime { get; set; }
+        public float LayerOffTime
+        {
+            get => _layerOffTime;
+            set => RaiseAndSetIfChanged(ref _layerOffTime, value);
+        }
 
         /// <summary>
         /// Gets or sets the lift height in mm
         /// </summary>
-        public float LiftHeight { get; set; } = 5;
+        public float LiftHeight
+        {
+            get => _liftHeight;
+            set => RaiseAndSetIfChanged(ref _liftHeight, value);
+        }
 
         /// <summary>
         /// Gets or sets the speed in mm/min
         /// </summary>
-        public float LiftSpeed { get; set; } = 100;
+        public float LiftSpeed
+        {
+            get => _liftSpeed;
+            set => RaiseAndSetIfChanged(ref _liftSpeed, value);
+        }
 
         /// <summary>
         /// Gets the speed in mm/min for the retracts
         /// </summary>
-        public float RetractSpeed { get; set; } = 100;
+        public float RetractSpeed
+        {
+            get => _retractSpeed;
+            set => RaiseAndSetIfChanged(ref _retractSpeed, value);
+        }
 
         /// <summary>
         /// Gets or sets the pwm value from 0 to 255
         /// </summary>
-        public byte LightPWM { get; set; } = 255;
+        public byte LightPWM
+        {
+            get => _lightPwm;
+            set => RaiseAndSetIfChanged(ref _lightPwm, value);
+        }
 
         /// <summary>
         /// Gets or sets the layer position on Z in mm
         /// </summary>
-        public float PositionZ { get; set; }
+        public float PositionZ
+        {
+            get => _positionZ;
+            set => RaiseAndSetIfChanged(ref _positionZ, value);
+        }
 
         private byte[] _compressedBytes;
+        private uint _nonZeroPixelCount;
+        private Rectangle _boundingRectangle = Rectangle.Empty;
+        private uint _index;
+        private float _exposureTime;
+        private float _layerOffTime = FileFormat.DefaultLightOffDelay;
+        private float _liftHeight = FileFormat.DefaultLiftHeight;
+        private float _liftSpeed = FileFormat.DefaultLiftSpeed;
+        private float _retractSpeed = FileFormat.DefaultRetractSpeed;
+        private byte _lightPwm = FileFormat.DefaultLightPWM;
+        private float _positionZ;
+        private bool _isModified;
+
         /// <summary>
         /// Gets or sets layer image compressed data
         /// </summary>
@@ -105,14 +160,18 @@ namespace UVtools.Core
         }
 
         /// <summary>
-        /// Gets the original filename, null if no filename attached with layer
+        /// Gets a computed layer filename, padding zeros are equal to layer count digits
         /// </summary>
-        public string Filename { get; set; }
+        public string Filename => $"layer{Index.ToString().PadLeft(ParentLayerManager.LayerDigits, '0')}.png";
 
         /// <summary>
         /// Gets if layer has been modified
         /// </summary>
-        public bool IsModified { get; set; }
+        public bool IsModified
+        {
+            get => _isModified;
+            set => RaiseAndSetIfChanged(ref _isModified, value);
+        }
 
         /// <summary>
         /// Gets or sets a new image instance
@@ -134,6 +193,8 @@ namespace UVtools.Core
 
                     GetBoundingRectangle(value, true);
                 }
+
+                RaisePropertyChanged();
             }
         }
 
@@ -153,27 +214,37 @@ namespace UVtools.Core
         #endregion
 
         #region Constructor
-        public Layer(uint index, byte[] compressedBytes, string filename = null, LayerManager pararentLayerManager = null)
+        public Layer(uint index, byte[] compressedBytes, LayerManager parentLayerManager)
         {
-            ParentLayerManager = pararentLayerManager;
+            ParentLayerManager = parentLayerManager;
             Index = index;
-            Filename = filename ?? $"Layer{index}.png";
+            //Filename = filename ?? $"Layer{index}.png";
             CompressedBytes = compressedBytes;
             IsModified = false;
             /*if (compressedBytes.Length > 0)
             {
                 GetBoundingRectangle();
             }*/
+
+            if (!(parentLayerManager is null))
+            {
+                _positionZ = SlicerFile.GetHeightFromLayer(index);
+                _exposureTime = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
+                _liftHeight = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
+                _liftSpeed = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
+                _retractSpeed = SlicerFile.RetractSpeed;
+                _lightPwm = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
+            }
         }
 
-        public Layer(uint index, Mat layerMat, string filename = null, LayerManager pararentLayerManager = null) : this(index, new byte[0], filename, pararentLayerManager)
+        public Layer(uint index, Mat layerMat, LayerManager parentLayerManager) : this(index, new byte[0], parentLayerManager)
         {
             LayerMat = layerMat;
             IsModified = false;
         }
 
 
-        public Layer(uint index, Stream stream, string filename = null, LayerManager pararentLayerManager = null) : this(index, stream.ToArray(), filename, pararentLayerManager)
+        public Layer(uint index, Stream stream, LayerManager parentLayerManager) : this(index, stream.ToArray(), parentLayerManager)
         { }
         #endregion
 
@@ -249,9 +320,10 @@ namespace UVtools.Core
         #endregion
 
         #region Formaters
+
         public override string ToString()
         {
-            return $"{nameof(Index)}: {Index}, {nameof(Filename)}: {Filename}, {nameof(IsModified)}: {IsModified}";
+            return $"{nameof(Index)}: {Index}, {nameof(Filename)}: {Filename}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(BoundingRectangle)}: {BoundingRectangle}, {nameof(IsBottomLayer)}: {IsBottomLayer}, {nameof(IsNormalLayer)}: {IsNormalLayer}, {nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LayerOffTime)}: {LayerOffTime}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(LightPWM)}: {LightPWM}, {nameof(IsModified)}: {IsModified}";
         }
         #endregion
 
@@ -940,10 +1012,15 @@ namespace UVtools.Core
         }
         public Layer Clone()
         {
-            return new Layer(Index, CompressedBytes.ToArray(), Filename, ParentLayerManager)
+            return new Layer(Index, CompressedBytes.ToArray(), ParentLayerManager)
             {
                 PositionZ = PositionZ,
                 ExposureTime = ExposureTime,
+                LiftHeight = LiftHeight,
+                LiftSpeed = LiftSpeed,
+                RetractSpeed = RetractSpeed,
+                LayerOffTime = LayerOffTime,
+                LightPWM = LightPWM,
                 BoundingRectangle = BoundingRectangle,
                 NonZeroPixelCount = NonZeroPixelCount,
             };

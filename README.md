@@ -159,12 +159,15 @@ After some tests without failure you can increase your confidence and ignore thi
 1. Windows 7 or greater
    1. If on Windows 10 N or NK: [Media Feature Pack](https://www.microsoft.com/download/details.aspx?id=48231) must be installed
 1. .NET Framework 4.8 installed (Comes pre-installed on Windows 10 with last updates)
-1. 2 GB RAM or higher
+1. 4GB RAM or higher
 
 
 ### Linux
 
 **Ubuntu/Mint/Debian/Similars**
+
+1. CentOS, Debian, Fedora, Ubuntu, and derivatives
+1. 4GB RAM or higher
 
 ```bash
 wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
@@ -178,11 +181,16 @@ sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libdc1394-22 libav
 
 To run UVtools open it folder on a terminal and call one of:
 
+* Double-click UVtools file
 * `dotnet UVtools.dll`
 * `sh UVtools.sh`
 * As a pratical alternative you can create a shortcut on Desktop
 
 ### Mac
+
+1. macOS 10.12 Sierra
+   1. If on a previous macOS version, use the universal UVtools package 
+1. 4GB RAM or higher
 
 <!--- 
 * Donwload and install: https://dotnet.microsoft.com/download/dotnet-core/thank-you/sdk-3.1.402-macos-x64-installer
@@ -197,6 +205,7 @@ brew cask install dotnet
 
 To run UVtools open it folder on a terminal and call one of:
 
+* Double-click UVtools file
 * `dotnet UVtools.dll`
 * `sh UVtools.sh`
 * As a pratical alternative you can create a shortcut on Desktop
@@ -205,10 +214,10 @@ To run UVtools open it folder on a terminal and call one of:
 
 There are multiple ways to open your file:
 
-1. Open UVtools.exe and load your file (CTRL + O) (File -> Open)
-2. Open UVtools.exe and drag and drop your file inside window
+1. Open UVtools and load your file (CTRL + O) (File -> Open)
+2. Open UVtools and drag and drop your file inside window
 3. Drag and drop file into UVtools.exe
-4. Set UVtools.exe the default program to open your files
+4. Set UVtools the default program to open your files
 
 ## Library -> Developers
 

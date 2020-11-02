@@ -1159,15 +1159,11 @@ namespace UVtools.Core.FileFormats
 
                     using (var image = LayersDefinitions[layerIndex].Decode((uint) layerIndex, true))
                     {
-                        this[layerIndex] = new Layer((uint) layerIndex, image)
+                        this[layerIndex] = new Layer((uint) layerIndex, image, LayerManager)
                         {
                             PositionZ = LayersDefinitions[layerIndex].LayerPositionZ,
                             ExposureTime = LayersDefinitions[layerIndex].LayerExposure,
-                            LiftHeight = GetInitialLayerValueOrNormal((uint)layerIndex, BottomLiftHeight, LiftHeight),
-                            LiftSpeed = GetInitialLayerValueOrNormal((uint)layerIndex, BottomLiftSpeed, LiftSpeed),
-                            RetractSpeed = RetractSpeed,
                             LayerOffTime = LayersDefinitions[layerIndex].LayerOffTimeSeconds,
-                            LightPWM = GetInitialLayerValueOrNormal((uint)layerIndex, BottomLightPWM, LightPWM),
                         };
                     }
 

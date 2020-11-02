@@ -476,7 +476,7 @@ namespace UVtools.Core.FileFormats
                     entry = inputFile.GetEntry($"{FolderImageName}/{layerIndex:D8}.png");
                     if (ReferenceEquals(entry, null)) continue;
 
-                    this[layerIndex] = new Layer(layerIndex, entry.Open(), entry.Name)
+                    this[layerIndex] = new Layer(layerIndex, entry.Open(), LayerManager)
                     {
                         PositionZ = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int) layerIndex].Z : GetHeightFromLayer(layerIndex),
                         LiftHeight = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LiftHeight : GetInitialLayerValueOrNormal(layerIndex, BottomLiftHeight, LiftHeight),

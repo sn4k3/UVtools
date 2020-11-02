@@ -172,6 +172,16 @@ namespace UVtools.Core.FileFormats
         #region Constants
         private const string ExtractConfigFileName = "Configuration";
         private const string ExtractConfigFileExtension = "ini";
+
+        public const float DefaultBottomLiftHeight = 5;
+        public const float DefaultLiftHeight = 5;
+        public const float DefaultBottomLiftSpeed = 100;
+        public const float DefaultLiftSpeed = 100;
+        public const float DefaultRetractSpeed = 100;
+        public const float DefaultBottomLightOffDelay = 0;
+        public const float DefaultLightOffDelay = 0;
+        public const byte DefaultBottomLightPWM = 255;
+        public const byte DefaultLightPWM = 255;
         #endregion
 
         #region Static Methods
@@ -404,15 +414,15 @@ namespace UVtools.Core.FileFormats
         public uint NormalLayerCount => LayerCount - BottomLayerCount;
         public virtual float BottomExposureTime { get; set; }
         public virtual float ExposureTime { get; set; }
-        public virtual float BottomLayerOffTime { get; set; }
-        public virtual float LayerOffTime { get; set; }
-        public virtual float BottomLiftHeight { get; set; } = 5;
-        public virtual float LiftHeight { get; set; } = 5;
-        public virtual float BottomLiftSpeed { get; set; } = 100;
-        public virtual float LiftSpeed { get; set; } = 100;
-        public virtual float RetractSpeed { get; set; } = 100;
-        public virtual byte BottomLightPWM { get; set; } = 255;
-        public virtual byte LightPWM { get; set; } = 255;
+        public virtual float BottomLayerOffTime { get; set; } = DefaultBottomLightOffDelay;
+        public virtual float LayerOffTime { get; set; } = DefaultLightOffDelay;
+        public virtual float BottomLiftHeight { get; set; } = DefaultBottomLiftHeight;
+        public virtual float LiftHeight { get; set; } = DefaultLiftHeight;
+        public virtual float BottomLiftSpeed { get; set; } = DefaultBottomLiftSpeed;
+        public virtual float LiftSpeed { get; set; } = DefaultLiftSpeed;
+        public virtual float RetractSpeed { get; set; } = DefaultRetractSpeed;
+        public virtual byte BottomLightPWM { get; set; } = DefaultBottomLightPWM;
+        public virtual byte LightPWM { get; set; } = DefaultLightPWM;
 
 
         public abstract float PrintTime { get; }
@@ -772,7 +782,7 @@ namespace UVtools.Core.FileFormats
                     {
                         if (progress.Token.IsCancellationRequested) return;
                         var byteArr = layer.CompressedBytes;
-                        using (FileStream stream = File.Create(Path.Combine(path, $"Layer{layer.Index.ToString().PadLeft(LayerCount.ToString().Length, '0')}.png"),
+                        using (FileStream stream = File.Create(Path.Combine(path, layer.Filename),
                             byteArr.Length))
                         {
                             stream.Write(byteArr, 0, byteArr.Length);
