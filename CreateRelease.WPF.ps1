@@ -55,7 +55,6 @@ if([string]::IsNullOrWhiteSpace($version)){
 # MSI Variables
 $installers = @("UVtools.InstallerMM", "UVtools.Installer")
 $msiSourceFile = "$PSScriptRoot\UVtools.Installer\bin\Release\UVtools.msi"
-$msiTargetFile = "$publishFolder\${software}_${runtime}_v$version.msi"
 $msbuild = "`"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe`" /t:Build /p:Configuration=$buildWith /p:MSIProductVersion=$version"
 
 Write-Output "
@@ -147,6 +146,7 @@ $stopWatch.Stop()
 # MSI Installer for Windows
 $deployStopWatch.Restart()
 $runtime = 'win-x64'
+$msiTargetFile = "$publishFolder\${software}_${runtime}_v$version.msi"
 Write-Output "################################
 Building: $runtime MSI Installer"
 
@@ -158,6 +158,7 @@ foreach($installer in $installers)
     iex "& $msbuild $installer\$installer.wixproj"
 }
 
+Write-Output "Coping $runtime MSI to: $msiTargetFile"
 Copy-Item $msiSourceFile $msiTargetFile
 
 Write-Output "Took: $($deployStopWatch.Elapsed)
