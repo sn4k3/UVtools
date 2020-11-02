@@ -19,7 +19,7 @@
   * Platform optimized 
   * Reduced the package size
   * Includes .NET Core assemblies and dont require the installation of .NET Core
-  * Can execute UVtools by double click on "UVtools" file or via ".\UVtools" on terminal
+  * Can execute UVtools by double click on "UVtools" file or via "./UVtools" on terminal
   * **Naming:** UVtools_[os]-[architecture]_v[version].zip
   * **"universal"** zip file that includes the portable version, os and architecture independent but requires dotnet to run, these build were used in all previous versions
 
