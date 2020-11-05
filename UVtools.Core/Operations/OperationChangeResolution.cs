@@ -13,6 +13,7 @@ using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public sealed class OperationChangeResolution : Operation
     {
         private uint _newResolutionX;
@@ -48,8 +49,8 @@ namespace UVtools.Core.Operations
 
         #region Overrides
 
-        public override Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.None;
-        public override bool CanROI { get; set; } = false;
+        public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
+        public override bool CanROI => false;
         public override string Title => "Change print resolution";
         public override string Description =>
             "Crops or resizes all layer images to fit an alternate print area\n\n" +
@@ -144,6 +145,35 @@ namespace UVtools.Core.Operations
         }
 
         public static Resolution[] Presets => GetResolutions();
+
+        public override string ToString()
+        {
+            var result = $"{_newResolutionX} x {_newResolutionY}";
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
+
+        #endregion
+
+        #region Equality
+
+        private bool Equals(OperationChangeResolution other)
+        {
+            return _newResolutionX == other._newResolutionX && _newResolutionY == other._newResolutionY;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return ReferenceEquals(this, obj) || obj is OperationChangeResolution other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((int) _newResolutionX * 397) ^ (int) _newResolutionY;
+            }
+        }
 
         #endregion
 

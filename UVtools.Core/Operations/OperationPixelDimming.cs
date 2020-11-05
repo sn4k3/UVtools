@@ -6,12 +6,15 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Text;
+using System.Xml.Serialization;
 using Emgu.CV;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public class OperationPixelDimming : Operation
     {
         private uint _borderSize = 5;
@@ -68,16 +71,50 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _bordersOnly, value);
         }
 
+        [XmlIgnore]
         public Matrix<byte> EvenPattern
         {
             get => _evenPattern;
             set => RaiseAndSetIfChanged(ref _evenPattern, value);
         }
 
+        [XmlIgnore]
         public Matrix<byte> OddPattern
         {
             get => _oddPattern;
             set => RaiseAndSetIfChanged(ref _oddPattern, value);
+        }
+
+        #endregion
+
+        public override string ToString()
+        {
+            var result = $"[Border: {_borderSize}px] [Only borders: {_bordersOnly}]" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
+
+        #region Equality
+
+        protected bool Equals(OperationPixelDimming other)
+        {
+            return _borderSize == other._borderSize && _bordersOnly == other._bordersOnly;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is null) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((OperationPixelDimming) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((int) _borderSize * 397) ^ _bordersOnly.GetHashCode();
+            }
         }
 
         #endregion

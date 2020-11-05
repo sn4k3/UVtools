@@ -20,7 +20,9 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.ThemeManager;
 using Emgu.CV;
+using UVtools.Core;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 
@@ -48,6 +50,8 @@ namespace UVtools.WPF
 
                 UserSettings.Load();
                 UserSettings.SetVersion();
+
+                OperationProfiles.Load();
 
                 ThemeSelector = Avalonia.ThemeManager.ThemeSelector.Create(Path.Combine(ApplicationPath, "Assets", "Themes"));
                 ThemeSelector.LoadSelectedTheme(Path.Combine(UserSettings.SettingsFolder, "selected.theme"));
@@ -87,25 +91,24 @@ namespace UVtools.WPF
         }
 
         #region Utilities
+
+        public static string AppExecutable = Path.Combine(ApplicationPath, About.Software);
+        public static string AppExecutableQuoted = $"\"{AppExecutable}\"";
         public static void NewInstance(string filePath)
         {
             try
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    var info = new ProcessStartInfo("UVtools.exe", $"\"{filePath}\"")
-                    {
-                        UseShellExecute = true
-                    };
-                    Process.Start(info).Dispose();
+                    StartProcess($"{AppExecutable}.exe", $"\"{filePath}\"");
                 }
-                else if(File.Exists("UVtools"))
+                else if(File.Exists(AppExecutable)) // Direct execute
                 {
-                    Process.Start("UVtools", $"\"{filePath}\"").Dispose();
+                    StartProcess(AppExecutable, $"\"{filePath}\"");
                 }
                 else
                 {
-                    Process.Start("dotnet", $"UVtools.dll \"{filePath}\"").Dispose();
+                    StartProcess("dotnet", $"UVtools.dll \"{filePath}\"");
                 }
             }
             catch (Exception e)
@@ -142,11 +145,11 @@ namespace UVtools.WPF
             
         }
 
-        public static void StartProcess(string name)
+        public static void StartProcess(string name, string arguments = null)
         {
             try
             {
-                using (Process.Start(new ProcessStartInfo(name)
+                using (Process.Start(new ProcessStartInfo(name, arguments)
                 {
                     UseShellExecute = true
                 })) { }
@@ -155,7 +158,6 @@ namespace UVtools.WPF
             {
                 Debug.WriteLine(e);
             }
-            
         }
 
         public static Stream GetAsset(string url)

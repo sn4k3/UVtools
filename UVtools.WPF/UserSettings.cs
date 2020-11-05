@@ -9,7 +9,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Xml.Serialization;
 using Avalonia.Media;
 using JetBrains.Annotations;
@@ -951,7 +950,16 @@ namespace UVtools.WPF
             get
             {
                 var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), About.Software);
-                Directory.CreateDirectory(path);
+                try
+                {
+                    if (!Directory.Exists(path))
+                        Directory.CreateDirectory(path);
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
+                }
+                
                 return path;
             }
         }

@@ -6,12 +6,15 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml.Serialization;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public class OperationRepairLayers : Operation
     {
         private bool _repairIslands = true;
@@ -21,7 +24,7 @@ namespace UVtools.Core.Operations
         private ushort _removeIslandsRecursiveIterations = 4;
         private uint _gapClosingIterations = 1;
         private uint _noiseRemovalIterations = 0;
-        public override bool CanROI { get; set; } = false;
+        public override bool CanROI => false;
         public override string Title => "Repair layers and issues";
         public override string Description => null;
 
@@ -31,6 +34,8 @@ namespace UVtools.Core.Operations
             $"Reparing layers {LayerIndexStart} through {LayerIndexEnd}";
 
         public override string ProgressAction => "Repaired layers";
+
+        public override bool CanHaveProfiles => false;
 
         public override StringTag Validate(params object[] parameters)
         {
@@ -86,8 +91,10 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _noiseRemovalIterations, value);
         }
 
+        [XmlIgnore]
         public IslandDetectionConfiguration IslandDetectionConfig { get; set; }
 
+        [XmlIgnore]
         public List<LayerIssue> Issues { get; set; }
 
     }

@@ -6,11 +6,14 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
+using System.Xml.Serialization;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public sealed class OperationMorph : Operation
     {
         private MorphOp _morphOperation = MorphOp.Erode;
@@ -46,6 +49,19 @@ namespace UVtools.Core.Operations
             new StringTag("Gradient - Removes the interior areas of objects", MorphOp.Gradient),
         };
 
+        public byte MorphOperationIndex
+        {
+            get
+            {
+                for (byte i = 0; i < MorphOperations.Length; i++)
+                {
+                    if ((MorphOp) MorphOperations[i].Tag == MorphOperation) return i;
+                }
+
+                return 0;
+            }
+        }
+
         public MorphOp MorphOperation
         {
             get => _morphOperation;
@@ -70,7 +86,41 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _fadeInOut, value);
         }
 
+        [XmlIgnore]
         public Kernel Kernel { get; set; } = new Kernel();
+
+        public override string ToString()
+        {
+            var result = $"[{_morphOperation}] [Iterations: {_iterationsStart}/{_iterationsEnd}] [Fade: {_fadeInOut}]" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
+
+        #endregion
+
+        #region Equality
+
+        private bool Equals(OperationMorph other)
+        {
+            return _morphOperation == other._morphOperation && _iterationsStart == other._iterationsStart && _iterationsEnd == other._iterationsEnd && _fadeInOut == other._fadeInOut;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return ReferenceEquals(this, obj) || obj is OperationMorph other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (int) _morphOperation;
+                hashCode = (hashCode * 397) ^ (int) _iterationsStart;
+                hashCode = (hashCode * 397) ^ (int) _iterationsEnd;
+                hashCode = (hashCode * 397) ^ _fadeInOut.GetHashCode();
+                return hashCode;
+            }
+        }
 
         #endregion
     }

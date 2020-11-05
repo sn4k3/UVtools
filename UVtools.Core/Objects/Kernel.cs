@@ -6,11 +6,13 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Drawing;
 using Emgu.CV;
 
 namespace UVtools.Core.Objects
 {
+    [Serializable]
     public sealed class Kernel
     {
         public Matrix<byte> Matrix { get; set; }

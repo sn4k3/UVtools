@@ -6,13 +6,16 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Text;
+using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public class OperationMask : Operation
     {
         public override string Title => "Mask";
@@ -30,6 +33,8 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Masked layers";
 
+        public override bool CanHaveProfiles => false;
+
         public override StringTag Validate(params object[] parameters)
         {
             var sb = new StringBuilder();
@@ -41,6 +46,7 @@ namespace UVtools.Core.Operations
             return new StringTag(sb.ToString());
         }
 
+        [XmlIgnore]
         public Mat Mask { get; set; }
 
         public bool HaveMask => !(Mask is null);

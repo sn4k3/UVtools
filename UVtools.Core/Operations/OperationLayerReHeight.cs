@@ -14,14 +14,15 @@ using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public sealed class OperationLayerReHeight : Operation
     {
         private OperationLayerReHeightItem _item;
 
         #region Overrides
 
-        public override Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.None;
-        public override bool CanROI { get; set; } = false;
+        public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
+        public override bool CanROI => false;
         public override string Title => "Adjust layer height";
         public override string Description =>
             "Adjust the layer height of the model\n\n" +
@@ -37,6 +38,8 @@ namespace UVtools.Core.Operations
         public override string ProgressAction => "Height adjusted layers";
 
         public override bool CanCancel => false;
+
+        public override bool CanHaveProfiles => false;
 
         public override StringTag Validate(params object[] parameters)
         {

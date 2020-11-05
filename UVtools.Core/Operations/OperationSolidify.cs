@@ -6,8 +6,11 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
+
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public sealed class OperationSolidify : Operation
     {
         #region Overrides
@@ -25,6 +28,8 @@ namespace UVtools.Core.Operations
             $"Solidifying layers {LayerIndexStart} through {LayerIndexEnd}";
 
         public override string ProgressAction => "Solidified layers";
+
+        public override bool CanHaveProfiles => false;
 
         #endregion
     }

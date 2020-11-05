@@ -8,7 +8,7 @@ namespace UVtools.WPF.Controls.Tools
     public class ToolChangeResolutionControl : ToolControl
     {
         private OperationChangeResolution.Resolution _selectedPresetItem;
-        public OperationChangeResolution Operation { get; }
+        public OperationChangeResolution Operation => BaseOperation as OperationChangeResolution;
 
         public OperationChangeResolution.Resolution SelectedPresetItem
         {
@@ -34,7 +34,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolChangeResolutionControl()
         {
             InitializeComponent();
-            BaseOperation = Operation = new OperationChangeResolution(App.SlicerFile.Resolution, App.SlicerFile.LayerManager.BoundingRectangle);
+            BaseOperation = new OperationChangeResolution(App.SlicerFile.Resolution, App.SlicerFile.LayerManager.BoundingRectangle);
         }
 
         private void InitializeComponent()

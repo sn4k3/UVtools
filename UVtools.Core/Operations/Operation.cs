@@ -6,17 +6,22 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Drawing;
+using System.Xml.Serialization;
 using Emgu.CV;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public abstract class Operation : BindableBase
     {
         private Rectangle _roi = Rectangle.Empty;
         private uint _layerIndexEnd;
         private uint _layerIndexStart;
+        private string _profileName;
+        private Enumerations.LayerRangeSelection _layerRangeSelection = Enumerations.LayerRangeSelection.All;
         public const byte ClassNameLength = 9;
 
         /// <summary>
@@ -24,7 +29,16 @@ namespace UVtools.Core.Operations
         /// </summary>
         public string Id => GetType().Name.Remove(0, ClassNameLength);
 
-        public virtual Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.All;
+        public virtual Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.All;
+
+        /// <summary>
+        /// Gets the last used layer range selection, returns none if custom
+        /// </summary>
+        public Enumerations.LayerRangeSelection LayerRangeSelection
+        {
+            get => _layerRangeSelection;
+            set => RaiseAndSetIfChanged(ref _layerRangeSelection, value);
+        }
 
         /// <summary>
         /// Gets if this operation should set layer range to the actual layer index on layer preview
@@ -32,9 +46,14 @@ namespace UVtools.Core.Operations
         public virtual bool PassActualLayerIndex => false;
 
         /// <summary>
-        /// Gets if this control can make use of ROI
+        /// Gets if this operation can make use of ROI
         /// </summary>
-        public virtual bool CanROI { get; set; } = true;
+        public virtual bool CanROI => true;
+
+        /// <summary>
+        /// Gets if this operation can store profiles
+        /// </summary>
+        public virtual bool CanHaveProfiles => true;
 
         /// <summary>
         /// Gets if this operation supports cancellation
@@ -106,8 +125,18 @@ namespace UVtools.Core.Operations
         public uint LayerRangeCount => LayerIndexEnd - LayerIndexStart + 1;
 
         /// <summary>
+        /// Gets the name for this profile
+        /// </summary>
+        public string ProfileName
+        {
+            get => _profileName;
+            set => RaiseAndSetIfChanged(ref _profileName, value);
+        }
+
+        /// <summary>
         /// Gets or sets an ROI to process this operation
         /// </summary>
+        [XmlIgnore]
         public Rectangle ROI
         {
             get => _roi;
@@ -119,6 +148,32 @@ namespace UVtools.Core.Operations
         public Mat GetRoiOrDefault(Mat defaultMat)
         {
             return HaveROI ? new Mat(defaultMat, ROI) : defaultMat;
+        }
+
+        public virtual Operation Clone()
+        {
+            return MemberwiseClone() as Operation;
+        }
+
+        public override string ToString()
+        {
+            if (!string.IsNullOrEmpty(ProfileName)) return ProfileName;
+
+            var result = $"{Title}: {LayerRangeString}";
+            return result;
+        }
+
+        public virtual string LayerRangeString 
+        {
+            get
+            {
+                if (LayerRangeSelection == Enumerations.LayerRangeSelection.None)
+                {
+                    return $" [Layers: {LayerIndexStart}-{LayerIndexEnd}]";
+                }
+
+                return $" [Layers: {LayerRangeSelection}]";
+            }
         }
     }
 }

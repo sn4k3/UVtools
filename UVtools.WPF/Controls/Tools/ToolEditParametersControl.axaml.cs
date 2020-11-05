@@ -16,7 +16,7 @@ namespace UVtools.WPF.Controls.Tools
 {
     public class ToolEditParametersControl : ToolControl
     {
-        public OperationEditParameters Operation { get; }
+        public OperationEditParameters Operation => BaseOperation as OperationEditParameters;
         public bool SupportPerLayerSettings => App.SlicerFile.SupportPerLayerSettings;
 
         public RowControl[] RowControls;
@@ -110,7 +110,7 @@ namespace UVtools.WPF.Controls.Tools
             InitializeComponent();
 
             App.SlicerFile.RefreshPrintParametersModifiersValues();
-            BaseOperation = Operation = new OperationEditParameters(App.SlicerFile.PrintParameterModifiers);
+            BaseOperation = new OperationEditParameters(App.SlicerFile.PrintParameterModifiers);
 
             if (Operation.Modifiers is null || Operation.Modifiers.Length == 0)
             {

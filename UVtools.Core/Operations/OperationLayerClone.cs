@@ -5,19 +5,22 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
+using System;
 using System.Text;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public sealed class OperationLayerClone : Operation
     {
         private uint _clones = 1;
 
         #region Overrides
 
-        public override Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.Current;
-        public override bool CanROI { get; set; } = false;
+        public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.Current;
+        public override bool CanROI => false;
         public override bool PassActualLayerIndex => true;
 
         public override string Title => "Clone layers";
@@ -33,6 +36,8 @@ namespace UVtools.Core.Operations
         public override string ProgressAction => "Cloned layers";
 
         public override bool CanCancel => false;
+
+        public override bool CanHaveProfiles => false;
 
         public override StringTag Validate(params object[] parameters)
         {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Emgu.CV.CvEnum;
@@ -10,7 +11,7 @@ namespace UVtools.WPF.Controls.Tools
     public class ToolMorphControl : ToolControl
     {
         private byte _morphSelectedIndex;
-        public OperationMorph Operation { get; }
+        public OperationMorph Operation => BaseOperation as OperationMorph;
 
         private KernelControl _kernelCtrl;
 
@@ -27,7 +28,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolMorphControl()
         {
             InitializeComponent();
-            BaseOperation = Operation = new OperationMorph();
+            BaseOperation = new OperationMorph();
             _kernelCtrl = this.Find<KernelControl>("KernelCtrl");
         }
 

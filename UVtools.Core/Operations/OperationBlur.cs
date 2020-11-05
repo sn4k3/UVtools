@@ -6,11 +6,14 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Text;
+using System.Xml.Serialization;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public sealed class OperationBlur : Operation
     {
         private BlurAlgorithm _blurOperation = BlurAlgorithm.Blur;
@@ -80,6 +83,19 @@ namespace UVtools.Core.Operations
             new StringTag("Filter 2D: Applies an arbitrary linear filter to an image", BlurAlgorithm.Filter2D),
         };
 
+        public byte BlurTypeIndex
+        {
+            get
+            {
+                for (byte i = 0; i < BlurTypes.Length; i++)
+                {
+                    if ((BlurAlgorithm)BlurTypes[i].Tag == BlurOperation) return i;
+                }
+
+                return 0;
+            }
+        }
+
         public BlurAlgorithm BlurOperation
         {
             get => _blurOperation;
@@ -92,10 +108,36 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _size, value);
         }
 
+        [XmlIgnore]
         public Kernel Kernel { get; set; } = new Kernel();
+
+        public override string ToString()
+        {
+            var result = $"[{_blurOperation}] [Size: {_size}]" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
 
         #endregion
 
-        
+        #region Equality
+        private bool Equals(OperationBlur other)
+        {
+            return _blurOperation == other._blurOperation && _size == other._size;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return ReferenceEquals(this, obj) || obj is OperationBlur other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((int) _blurOperation * 397) ^ (int) _size;
+            }
+        }
+        #endregion
     }
 }

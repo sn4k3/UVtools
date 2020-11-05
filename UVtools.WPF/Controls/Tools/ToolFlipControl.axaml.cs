@@ -5,12 +5,12 @@ namespace UVtools.WPF.Controls.Tools
 {
     public class ToolFlipControl : ToolControl
     {
-        public OperationFlip Operation { get; }
+        public OperationFlip Operation => BaseOperation as OperationFlip;
 
         public ToolFlipControl()
         {
             InitializeComponent();
-            BaseOperation = Operation = new OperationFlip();
+            BaseOperation = new OperationFlip();
         }
 
         private void InitializeComponent()

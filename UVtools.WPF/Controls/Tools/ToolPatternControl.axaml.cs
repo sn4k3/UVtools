@@ -8,7 +8,7 @@ namespace UVtools.WPF.Controls.Tools
 {
     public class ToolPatternControl : ToolControl
     {
-        public OperationPattern Operation { get; }
+        public OperationPattern Operation => BaseOperation as OperationPattern;
         private bool _isDefaultAnchorChecked = true;
 
         public bool IsDefaultAnchorChecked
@@ -21,7 +21,7 @@ namespace UVtools.WPF.Controls.Tools
         {
             InitializeComponent();
             var roi = App.MainWindow.ROI;
-            BaseOperation = Operation = new OperationPattern(roi.IsEmpty ? App.SlicerFile.LayerManager.BoundingRectangle : roi, App.SlicerFile.Resolution);
+            BaseOperation = new OperationPattern(roi.IsEmpty ? App.SlicerFile.LayerManager.BoundingRectangle : roi, App.SlicerFile.Resolution);
 
             if (Operation.MaxRows < 2 && Operation.MaxCols < 2)
             {

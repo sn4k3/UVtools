@@ -1,14 +1,20 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Drawing;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using DynamicData;
 using MessageBox.Avalonia.Enums;
 using UVtools.Core;
+using UVtools.Core.Extensions;
+using UVtools.Core.Operations;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Controls.Tools;
 using UVtools.WPF.Extensions;
+using UVtools.WPF.Structures;
 
 namespace UVtools.WPF.Windows
 {
@@ -29,7 +35,13 @@ namespace UVtools.WPF.Windows
         private uint _layerIndexStart;
         private uint _layerIndexEnd;
         private bool _isROIVisible;
+
         private bool _clearRoiAfterOperation;
+
+        private bool _isProfilesVisible;
+        private ObservableCollection<Operation> _profiles = new ObservableCollection<Operation>();
+        private Operation _selectedProfileItem;
+        private string _profileText;
 
         private IControl _contentControl;
         private bool _isButton1Visible;
@@ -42,6 +54,8 @@ namespace UVtools.WPF.Windows
         private string _buttonOkText = "Ok";
         private bool _buttonOkVisible = true;
         private double _scrollViewerMaxHeight=double.PositiveInfinity;
+        
+
 
         public double ScrollViewerMaxHeight
         {
@@ -92,8 +106,12 @@ namespace UVtools.WPF.Windows
             set
             {
                 if (!(ToolControl?.BaseOperation is null))
+                {
+                    ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.None;
                     ToolControl.BaseOperation.LayerIndexStart = value;
-                
+                }
+
+                value = value.Clamp(0, App.SlicerFile.LastLayerIndex);
                 if (!RaiseAndSetIfChanged(ref _layerIndexStart, value)) return;
                 RaisePropertyChanged(nameof(LayerStartMM));
                 RaisePropertyChanged(nameof(LayerRangeCountStr));
@@ -115,8 +133,12 @@ namespace UVtools.WPF.Windows
             set
             {
                 if (!(ToolControl?.BaseOperation is null))
+                {
+                    ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.None;
                     ToolControl.BaseOperation.LayerIndexEnd = value;
+                }
 
+                value = value.Clamp(0, App.SlicerFile.LastLayerIndex);
                 if (!RaiseAndSetIfChanged(ref _layerIndexEnd, value)) return;
                 RaisePropertyChanged(nameof(LayerEndMM));
                 RaisePropertyChanged(nameof(LayerRangeCountStr));
@@ -141,33 +163,74 @@ namespace UVtools.WPF.Windows
         {
             LayerIndexStart = 0;
             LayerIndexEnd = MaximumLayerIndex;
+            if(!(ToolControl is null))
+                ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.All;
         }
 
         public void SelectCurrentLayer()
         {
             LayerIndexStart = LayerIndexEnd = App.MainWindow.ActualLayer;
+            if (!(ToolControl is null))
+                ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.Current;
         }
 
         public void SelectBottomLayers()
         {
             LayerIndexStart = 0;
             LayerIndexEnd = App.SlicerFile.BottomLayerCount-1u;
+            if (!(ToolControl is null))
+                ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.Bottom;
         }
 
         public void SelectNormalLayers()
         {
             LayerIndexStart = App.SlicerFile.BottomLayerCount;
             LayerIndexEnd = MaximumLayerIndex;
+            if (!(ToolControl is null))
+                ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.Normal;
         }
 
         public void SelectFirstLayer()
         {
             LayerIndexStart = LayerIndexEnd = 0;
+            if (!(ToolControl is null))
+                ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.First;
         }
 
         public void SelectLastLayer()
         {
             LayerIndexStart = LayerIndexEnd = MaximumLayerIndex;
+            if (!(ToolControl is null))
+                ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.Last;
+        }
+
+        public void SelectLayers(Enumerations.LayerRangeSelection range)
+        {
+            switch (range)
+            {
+                case Enumerations.LayerRangeSelection.None:
+                    break;
+                case Enumerations.LayerRangeSelection.All:
+                    SelectAllLayers();
+                    break;
+                case Enumerations.LayerRangeSelection.Current:
+                    SelectCurrentLayer();
+                    break;
+                case Enumerations.LayerRangeSelection.Bottom:
+                    SelectBottomLayers();
+                    break;
+                case Enumerations.LayerRangeSelection.Normal:
+                    SelectNormalLayers();
+                    break;
+                case Enumerations.LayerRangeSelection.First:
+                    SelectFirstLayer();
+                    break;
+                case Enumerations.LayerRangeSelection.Last:
+                    SelectLastLayer();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
         #endregion
 
@@ -199,6 +262,98 @@ namespace UVtools.WPF.Windows
             IsROIVisible = false;
             App.MainWindow.LayerImageBox.SelectNone();
             ToolControl?.Callback(Callbacks.ClearROI);
+        }
+
+        #endregion
+
+        #region Profiles
+        public bool IsProfilesVisible
+        {
+            get => _isProfilesVisible;
+            set => RaiseAndSetIfChanged(ref _isProfilesVisible, value);
+        }
+
+        public ObservableCollection<Operation> Profiles
+        {
+            get => _profiles;
+            set => RaiseAndSetIfChanged(ref _profiles, value);
+        }
+
+        public Operation SelectedProfileItem
+        {
+            get => _selectedProfileItem;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _selectedProfileItem, value) || value is null) return;
+                var operation = _selectedProfileItem.Clone();
+                operation.ProfileName = null;
+                ToolControl.BaseOperation = operation;
+                SelectLayers(operation.LayerRangeSelection);
+
+                if (operation is OperationMorph operationMorph && ToolControl is ToolMorphControl toolMorphControl)
+                {
+                    toolMorphControl.MorphSelectedIndex = operationMorph.MorphOperationIndex;
+                }
+                else if (operation is OperationBlur operationBlur && ToolControl is ToolBlurControl toolBlurControl)
+                {
+                    toolBlurControl.SelectedAlgorithmIndex = operationBlur.BlurTypeIndex;
+                }
+            }
+        }
+
+        public string ProfileText
+        {
+            get => _profileText;
+            set => RaiseAndSetIfChanged(ref _profileText, value);
+        }
+
+        public async void AddProfile()
+        {
+            var name = string.IsNullOrWhiteSpace(_profileText) ? null : _profileText.Trim();
+            var operation = OperationProfiles.FindByName(ToolControl.BaseOperation, name);
+            if (!(operation is null))
+            {
+                if (await this.MessageBoxQuestion(
+                    $"A profile with same name or settings already exists.\nDo you want to overwrite:\n{operation}",
+                    "Overwrite profile?") != ButtonResult.Yes) return;
+                /*var index = OperationProfiles.Instance.IndexOf(operation);
+                OperationProfiles.Profiles[index] = ToolControl.BaseOperation;
+                index = Profiles.IndexOf(operation);
+                Profiles[index] = ToolControl.BaseOperation;*/
+                
+                OperationProfiles.RemoveProfile(operation, false);
+                Profiles.Remove(operation);
+            }
+
+            var toAdd = ToolControl.BaseOperation.Clone();
+            toAdd.ProfileName = string.IsNullOrWhiteSpace(_profileText) ? null : _profileText.Trim();
+            OperationProfiles.AddProfile(toAdd);
+            Profiles.Insert(0, toAdd);
+
+            ProfileText = null;
+        }
+
+        public async void RemoveSelectedProfile()
+        {
+            if (_selectedProfileItem is null) return;
+            if (await this.MessageBoxQuestion(
+                $"Are you sure you want to remove the selected profile?\n{_selectedProfileItem}",
+                "Remove selected profile?") != ButtonResult.Yes) return;
+
+            OperationProfiles.RemoveProfile(_selectedProfileItem);
+            Profiles.Remove(_selectedProfileItem);
+            SelectedProfileItem = null;
+        }
+
+        public async void ClearProfiles()
+        {
+            if (Profiles.Count == 0) return;
+            if (await this.MessageBoxQuestion(
+                $"Are you sure you want to clear all the {Profiles.Count} profiles?",
+                "Clear all profiles?") != ButtonResult.Yes) return;
+
+            OperationProfiles.ClearProfiles(Profiles[0].GetType());
+            Profiles.Clear();
         }
 
         #endregion
@@ -300,41 +455,23 @@ namespace UVtools.WPF.Windows
             toolControl.Margin = new Thickness(15);
 
             Title = toolControl.BaseOperation.Title;
-            LayerRangeVisible = toolControl.BaseOperation.LayerRangeSelection != Enumerations.LayerRangeSelection.None;
+            LayerRangeVisible = toolControl.BaseOperation.StartLayerRangeSelection != Enumerations.LayerRangeSelection.None;
             //IsROIVisible = toolControl.BaseOperation.CanROI;
             ContentControl = toolControl;
             ButtonOkText = toolControl.BaseOperation.ButtonOkText;
             ButtonOkVisible = ButtonOkEnabled = toolControl.BaseOperation.HaveAction;
 
-            switch (toolControl.BaseOperation.LayerRangeSelection)
-            {
-                case Enumerations.LayerRangeSelection.None:
-                    break;
-                case Enumerations.LayerRangeSelection.All:
-                    SelectAllLayers();
-                    break;
-                case Enumerations.LayerRangeSelection.Current:
-                    SelectCurrentLayer();
-                    break;
-                case Enumerations.LayerRangeSelection.Bottom:
-                    SelectBottomLayers();
-                    break;
-                case Enumerations.LayerRangeSelection.Normal:
-                    SelectNormalLayers();
-                    break;
-                case Enumerations.LayerRangeSelection.First:
-                    SelectFirstLayer();
-                    break;
-                case Enumerations.LayerRangeSelection.Last:
-                    SelectLastLayer();
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            SelectLayers(toolControl.BaseOperation.StartLayerRangeSelection);
 
             //RaisePropertyChanged(nameof(IsContentVisible));
             //RaisePropertyChanged(nameof(IsROIVisible));
 
+            if (ToolControl.BaseOperation.CanHaveProfiles)
+            {
+                var profiles = OperationProfiles.GetOperations(ToolControl.BaseOperation.GetType());
+                Profiles.AddRange(profiles);
+                IsProfilesVisible = true;
+            }
 
             // Ensure the description don't stretch window
             DispatcherTimer.Run(() =>

@@ -20,6 +20,7 @@ using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public sealed class OperationLayerImport : Operation
     {
         private uint _insertAfterLayerIndex;
@@ -31,8 +32,8 @@ namespace UVtools.Core.Operations
 
         #region Overrides
 
-        public override Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.None;
-        public override bool CanROI { get; set; } = false;
+        public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
+        public override bool CanROI => false;
         public override string Title => "Import Layers";
 
         public override string Description =>
@@ -50,6 +51,8 @@ namespace UVtools.Core.Operations
 
         public override uint LayerIndexStart => InsertAfterLayerIndex + (ReplaceStartLayer ? 0u : 1);
         public override uint LayerIndexEnd => (uint)(LayerIndexStart + Count - 1);
+
+        public override bool CanHaveProfiles => false;
 
         public override StringTag Validate(params object[] parameters)
         {

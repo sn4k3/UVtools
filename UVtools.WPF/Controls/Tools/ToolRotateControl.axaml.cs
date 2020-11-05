@@ -5,12 +5,12 @@ namespace UVtools.WPF.Controls.Tools
 {
     public class ToolRotateControl : ToolControl
     {
-        public OperationRotate Operation { get; }
+        public OperationRotate Operation => BaseOperation as OperationRotate;
 
         public ToolRotateControl()
         {
             InitializeComponent();
-            BaseOperation = Operation = new OperationRotate();
+            BaseOperation = new OperationRotate();
         }
 
         private void InitializeComponent()

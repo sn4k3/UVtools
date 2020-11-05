@@ -10,6 +10,7 @@ using System;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public class OperationRotate : Operation
     {
         private decimal _angleDegrees = 90;
@@ -30,5 +31,34 @@ namespace UVtools.Core.Operations
             get => _angleDegrees;
             set => RaiseAndSetIfChanged(ref _angleDegrees, value);
         }
+
+        public override string ToString()
+        {
+            var result = $"[Angle: {Math.Abs(_angleDegrees)}º {(AngleDegrees < 0 ? "CCW" : "CW")}]" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
+
+        #region Equality
+
+        protected bool Equals(OperationRotate other)
+        {
+            return _angleDegrees == other._angleDegrees;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is null) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((OperationRotate) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return _angleDegrees.GetHashCode();
+        }
+
+        #endregion
     }
 }

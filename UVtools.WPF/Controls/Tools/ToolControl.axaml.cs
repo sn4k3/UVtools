@@ -9,7 +9,19 @@ namespace UVtools.WPF.Controls.Tools
 {
     public class ToolControl : UserControlEx
     {
-        public Operation BaseOperation = null;
+        private Operation _baseOperation;
+
+        public Operation BaseOperation
+        {
+            get => _baseOperation;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _baseOperation, value)) return;
+                if (DataContext is null) return;
+                ResetDataContext();
+            }
+        }
+
         public ToolWindow ParentWindow { get; set; } = null;
 
         public bool CanRun { get; set; } = true;
@@ -32,6 +44,12 @@ namespace UVtools.WPF.Controls.Tools
         public virtual void Callback(ToolWindow.Callbacks callback) { }
 
         public virtual bool UpdateOperation() => true;
+
+        /*public virtual void SetOperation(Operation operation)
+        {
+            BaseOperation = operation;
+            ResetDataContext();
+        }*/
 
         /// <summary>
         /// Validates if is safe to continue with operation

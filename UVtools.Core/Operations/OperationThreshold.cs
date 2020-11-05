@@ -11,6 +11,7 @@ using Emgu.CV.CvEnum;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public class OperationThreshold : Operation
     {
         private byte _threshold = 127;
@@ -51,5 +52,40 @@ namespace UVtools.Core.Operations
         }
 
         public static Array ThresholdTypes => Enum.GetValues(typeof(ThresholdType));
+
+        public override string ToString()
+        {
+            var result = $"[{_type} = {_threshold} / {_maximum}]" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
+
+        #region Equality
+
+        protected bool Equals(OperationThreshold other)
+        {
+            return _threshold == other._threshold && _maximum == other._maximum && _type == other._type;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((OperationThreshold) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = _threshold.GetHashCode();
+                hashCode = (hashCode * 397) ^ _maximum.GetHashCode();
+                hashCode = (hashCode * 397) ^ (int) _type;
+                return hashCode;
+            }
+        }
+
+        #endregion
     }
 }

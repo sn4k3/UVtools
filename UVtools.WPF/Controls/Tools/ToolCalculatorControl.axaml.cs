@@ -6,14 +6,14 @@ namespace UVtools.WPF.Controls.Tools
 {
     public class ToolCalculatorControl : ToolControl
     {
-        public OperationCalculator Operation { get; }
+        public OperationCalculator Operation => BaseOperation as OperationCalculator;
 
         public FileFormat SlicerFile => App.SlicerFile;
 
         public ToolCalculatorControl()
         {
             InitializeComponent();
-            BaseOperation = Operation = new OperationCalculator
+            BaseOperation = new OperationCalculator
             {
                 CalcMillimetersToPixels = new OperationCalculator.MillimetersToPixels(SlicerFile.Resolution, SlicerFile.Display),
                 CalcLightOffDelay = new OperationCalculator.LightOffDelayC(

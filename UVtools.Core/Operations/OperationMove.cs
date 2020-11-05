@@ -13,6 +13,7 @@ using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public class OperationMove : Operation
     {
         public override string Title => "Move";
@@ -28,6 +29,8 @@ namespace UVtools.Core.Operations
             (IsCutMove ? "Moving" : "Copying") +$" model to {{X={DstRoi.X},Y={DstRoi.Y}}}";
 
         public override string ProgressAction => (IsCutMove ? "Moved" : "Copied")+" layers";
+
+        public override bool CanHaveProfiles => false;
 
         public override StringTag Validate(params object[] parameters)
         {

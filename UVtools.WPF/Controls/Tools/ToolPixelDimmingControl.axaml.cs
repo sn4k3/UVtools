@@ -28,7 +28,7 @@ namespace UVtools.WPF.Controls.Tools
         private byte _dimGenBrightness = 127;
         private ushort _infillGenThickness = 10;
         private ushort _infillGenSpacing = 20;
-        public OperationPixelDimming Operation { get; }
+        public OperationPixelDimming Operation => BaseOperation as OperationPixelDimming;
 
         public string PatternText
         {
@@ -63,7 +63,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolPixelDimmingControl()
         {
             InitializeComponent();
-            BaseOperation = Operation = new OperationPixelDimming();
+            BaseOperation = new OperationPixelDimming();
             GeneratePixelDimming("Chessboard");
         }
 

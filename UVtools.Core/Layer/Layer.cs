@@ -685,7 +685,7 @@ namespace UVtools.Core
                 var halfHeight = target.Height / 2.0f;
                 using (var translateTransform = new Matrix<double>(2, 3))
                 {
-                    CvInvoke.GetRotationMatrix2D(new PointF(halfWidth, halfHeight), (double) operation.AngleDegrees, 1.0, translateTransform);
+                    CvInvoke.GetRotationMatrix2D(new PointF(halfWidth, halfHeight), (double) -operation.AngleDegrees, 1.0, translateTransform);
                     /*var rect = new RotatedRect(PointF.Empty, mat.Size, (float) angle).MinAreaRect();
                     translateTransform[0, 2] += rect.Width / 2.0 - mat.Cols / 2.0;
                     translateTransform[0, 2] += rect.Height / 2.0 - mat.Rows / 2.0;*/

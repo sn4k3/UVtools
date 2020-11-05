@@ -20,7 +20,7 @@ namespace UVtools.WPF.Controls.Tools
         private byte _genMaximumBrightness = byte.MaxValue;
         private uint _genDiameter;
         private Bitmap _maskImage;
-        public OperationMask Operation { get; }
+        public OperationMask Operation => BaseOperation as OperationMask;
 
         public bool IsMaskInverted
         {
@@ -69,7 +69,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolMaskControl()
         {
             InitializeComponent();
-            BaseOperation = Operation = new OperationMask();
+            BaseOperation = new OperationMask();
         }
 
         private void InitializeComponent()

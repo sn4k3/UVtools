@@ -688,7 +688,49 @@ namespace UVtools.WPF
             await new PrusaSlicerManager().ShowDialog(this);
         }
 
-        public void MenuNewVersionClicked() => App.OpenBrowser(VersionChecker.Url);
+        public async void MenuNewVersionClicked()
+        {
+            var result =
+                await this.MessageBoxQuestion(
+                    $"Do you like to auto-update {About.Software} v{AppSettings.Version} to v{VersionChecker.Version}?\n\n" +
+                    "Yes: Auto update\n" +
+                    "No:  Manual update\n" +
+                    "Cancel: No action", "Update UVtools?", ButtonEnum.YesNoCancel);
+
+            if (result == ButtonResult.Yes)
+            {
+                IsGUIEnabled = false;
+
+                var task = await Task.Factory.StartNew(async () =>
+                {
+                    ShowProgressWindow($"Downloading: {VersionChecker.Filename}");
+                    try
+                    {
+                        VersionChecker.AutoUpgrade(ProgressWindow.RestartProgress(false));
+                        return true;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+                    catch (Exception exception)
+                    {
+                        Dispatcher.UIThread.InvokeAsync(async () =>
+                            await this.MessageBoxError(exception.ToString(), "Error opening the file"));
+                    }
+
+                    return false;
+                });
+
+                IsGUIEnabled = true;
+                
+                return;
+            }
+            if (result == ButtonResult.No)
+            {
+                App.OpenBrowser(VersionChecker.UrlLatestRelease);
+                return;
+            }
+        } 
 
         #endregion
 

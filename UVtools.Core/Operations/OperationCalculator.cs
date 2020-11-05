@@ -12,6 +12,7 @@ using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public class OperationCalculator : Operation
     {
         public override string Title => "Calculator";
@@ -23,8 +24,10 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => null;
 
-        public override Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.None;
+        public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
         public override bool CanROI => false;
+
+        public override bool CanHaveProfiles => false;
 
         public MillimetersToPixels CalcMillimetersToPixels { get; set; }
         public LightOffDelayC CalcLightOffDelay { get; set; }

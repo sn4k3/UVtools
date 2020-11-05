@@ -6,12 +6,12 @@ namespace UVtools.WPF.Controls.Tools
 {
     public class ToolRepairLayersControl : ToolControl
     {
-        public OperationRepairLayers Operation { get; }
+        public OperationRepairLayers Operation => BaseOperation as OperationRepairLayers;
 
         public ToolRepairLayersControl()
         {
             InitializeComponent();
-            BaseOperation = Operation = new OperationRepairLayers
+            BaseOperation = new OperationRepairLayers
             {
                 RepairIslands = UserSettings.Instance.LayerRepair.RepairIslands,
                 RepairResinTraps = UserSettings.Instance.LayerRepair.RepairResinTraps,

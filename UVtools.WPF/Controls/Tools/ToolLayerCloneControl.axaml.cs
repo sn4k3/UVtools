@@ -6,7 +6,7 @@ namespace UVtools.WPF.Controls.Tools
 {
     public class ToolLayerCloneControl : ToolControl
     {
-        public OperationLayerClone Operation { get; }
+        public OperationLayerClone Operation => BaseOperation as OperationLayerClone;
 
         public uint ExtraLayers => (uint)Math.Max(0, ((int)Operation.LayerIndexEnd - Operation.LayerIndexStart + 1) * Operation.Clones);
 
@@ -31,7 +31,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolLayerCloneControl()
         {
             InitializeComponent();
-            BaseOperation = Operation = new OperationLayerClone();
+            BaseOperation = new OperationLayerClone();
             Operation.PropertyChanged += (sender, args) =>
             {
                 RaisePropertyChanged(nameof(InfoLayersStr));

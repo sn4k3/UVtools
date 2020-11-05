@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using Avalonia;
+using Avalonia.Threading;
+using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF
 {
@@ -18,8 +20,26 @@ namespace UVtools.WPF
             ProgramStartupTime = Stopwatch.StartNew();
             Args = args;
 
+            // Add the event handler for handling non-UI thread exceptions to the event.
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+
             BuildAvaloniaApp()
                 .StartWithClassicDesktopLifetime(args);
+        }
+
+        private static async void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            try
+            {
+                Exception ex = (Exception)e.ExceptionObject;
+                string errorMsg = "An application error occurred. Please contact the administrator with the following information:\n\n" +
+                                  $"{ex}";
+
+                await App.MainWindow.MessageBoxError(errorMsg, "Fatal Non-UI Error");
+            }
+            catch (Exception exc)
+            {
+            }
         }
 
         // Avalonia configuration, don't remove; also used by visual designer.

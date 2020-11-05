@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Linq;
 using System.Text;
 using UVtools.Core.FileFormats;
@@ -13,13 +14,14 @@ using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public class OperationEditParameters : Operation
     {
         private bool _perLayerOverride;
 
-        public override Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.None;
+        public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
 
-        public override bool CanROI { get; set; } = false;
+        public override bool CanROI => false;
 
         public override string Title => "Edit print parameters";
 
@@ -57,6 +59,8 @@ namespace UVtools.Core.Operations
         public override string ProgressTitle => "Change print parameters";
 
         public override string ProgressAction => "Changing print parameters";
+
+        public override bool CanHaveProfiles => false;
 
         public override StringTag Validate(params object[] parameters)
         {

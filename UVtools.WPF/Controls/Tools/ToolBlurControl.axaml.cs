@@ -10,7 +10,7 @@ namespace UVtools.WPF.Controls.Tools
         private bool _isSizeEnabled = true;
         private bool _isKernelVisible;
         private KernelControl _kernelCtrl;
-        public OperationBlur Operation { get; }
+        public OperationBlur Operation => BaseOperation as OperationBlur;
 
         public int SelectedAlgorithmIndex
         {
@@ -40,7 +40,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolBlurControl()
         {
             InitializeComponent();
-            BaseOperation = Operation = new OperationBlur();
+            BaseOperation = new OperationBlur();
             _kernelCtrl = this.Find<KernelControl>("KernelCtrl");
         }
 

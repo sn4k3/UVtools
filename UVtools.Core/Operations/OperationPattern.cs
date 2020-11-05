@@ -5,12 +5,15 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
+using System;
 using System.Drawing;
 using System.Text;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public class OperationPattern : Operation
     {
         private Enumerations.Anchor _anchor = Enumerations.Anchor.None;
@@ -36,6 +39,8 @@ namespace UVtools.Core.Operations
             $"Patterning the object across {Cols} columns and {Rows} rows";
 
         public override string ProgressAction => "Patterned layers";
+
+        public override bool CanHaveProfiles => false;
 
         public override StringTag Validate(params object[] parameters)
         {

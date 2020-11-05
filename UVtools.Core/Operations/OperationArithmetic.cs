@@ -9,11 +9,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml.Serialization;
 using Emgu.CV;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public class OperationArithmetic : Operation
     {
         private string _sentence;
@@ -85,8 +87,10 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _sentence, value);
         }
 
+        [XmlIgnore]
         public List<ArithmeticOperation> Operations { get; } = new List<ArithmeticOperation>();
 
+        [XmlIgnore]
         public List<uint> SetLayers { get; } = new List<uint>();
 
         public bool IsValid => SetLayers.Count > 0 & Operations.Count > 0;
@@ -181,9 +185,29 @@ namespace UVtools.Core.Operations
             return true;
         }
 
-        public OperationArithmetic()
+        public override string ToString()
         {
-            
+            var result = $"{_sentence}" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
+
+        protected bool Equals(OperationArithmetic other)
+        {
+            return _sentence == other._sentence;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is null) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((OperationArithmetic) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (_sentence != null ? _sentence.GetHashCode() : 0);
         }
     }
 }

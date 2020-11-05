@@ -10,7 +10,7 @@ namespace UVtools.WPF.Controls.Tools
         private bool _isThresholdEnabled = true;
         private bool _isMaximumEnabled = true;
         private bool _isTypeEnabled = true;
-        public OperationThreshold Operation { get; }
+        public OperationThreshold Operation => BaseOperation as OperationThreshold;
 
         public string[] Presets => new[]
         {
@@ -74,7 +74,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolThresholdControl()
         {
             InitializeComponent();
-            BaseOperation = Operation = new OperationThreshold();
+            BaseOperation = new OperationThreshold();
         }
 
         private void InitializeComponent()

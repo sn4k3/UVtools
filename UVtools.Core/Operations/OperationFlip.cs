@@ -11,8 +11,12 @@ using Emgu.CV.CvEnum;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public class OperationFlip : Operation
     {
+        private bool _makeCopy;
+        private Enumerations.FlipDirection _flipDirection = Enumerations.FlipDirection.Horizontally;
+
         public override string Title => "Flip";
         public override string Description =>
             "Flip the layers of the model vertically and/or horizontally.";
@@ -29,9 +33,19 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Flipped layers";
 
-        public Enumerations.FlipDirection FlipDirection { get; set; } = Enumerations.FlipDirection.Horizontally;
+        public Enumerations.FlipDirection FlipDirection
+        {
+            get => _flipDirection;
+            set => RaiseAndSetIfChanged(ref _flipDirection, value);
+        }
 
-        public bool MakeCopy { get; set; }
+        public bool MakeCopy
+        {
+            get => _makeCopy;
+            set => RaiseAndSetIfChanged(ref _makeCopy, value);
+        }
+
+        public static Array FlipDirections => Enum.GetValues(typeof(Enumerations.FlipDirection));
 
         public FlipType FlipTypeOpenCV
         {
@@ -55,6 +69,36 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public static Array FlipDirections => Enum.GetValues(typeof(Enumerations.FlipDirection));
+        public override string ToString()
+        {
+            var result = $"[{_flipDirection}] [Blend: {_makeCopy}]" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
+
+        #region Equality
+
+        protected bool Equals(OperationFlip other)
+        {
+            return _makeCopy == other._makeCopy && _flipDirection == other._flipDirection;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is null) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((OperationFlip) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (_makeCopy.GetHashCode() * 397) ^ (int) _flipDirection;
+            }
+        }
+
+        #endregion
     }
 }

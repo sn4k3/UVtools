@@ -7,7 +7,7 @@ namespace UVtools.WPF.Controls.Tools
     public class ToolMoveControl : ToolControl
     {
         private bool _isMiddleCenterChecked = true;
-        public OperationMove Operation { get; }
+        public OperationMove Operation => BaseOperation as OperationMove;
 
         public bool IsMiddleCenterChecked
         {
@@ -19,7 +19,7 @@ namespace UVtools.WPF.Controls.Tools
         {
             InitializeComponent();
             var roi = App.MainWindow.ROI;
-            BaseOperation = Operation = new OperationMove(roi.IsEmpty ? App.SlicerFile.LayerManager.BoundingRectangle : roi, (uint)App.MainWindow.LayerCache.Image.Width,
+            BaseOperation = new OperationMove(roi.IsEmpty ? App.SlicerFile.LayerManager.BoundingRectangle : roi, (uint)App.MainWindow.LayerCache.Image.Width,
                 (uint)App.MainWindow.LayerCache.Image.Height);
 
             Operation.PropertyChanged += (sender, e) =>

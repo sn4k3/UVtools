@@ -5,11 +5,14 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
+using System;
 using System.Text;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public class OperationResize : Operation
     {
         private decimal _x = 100;
@@ -31,7 +34,7 @@ namespace UVtools.Core.Operations
         public override string ProgressTitle =>
             $"Resizing from layers {LayerIndexStart} to {LayerIndexEnd} at X:{X}%  Y:{Y}% ";
 
-        public override string ProgressAction => "Reiszed layers";
+        public override string ProgressAction => "Resized layers";
 
         public override StringTag Validate(params object[] parameters)
         {
@@ -86,5 +89,41 @@ namespace UVtools.Core.Operations
         public OperationResize()
         {
         }
+
+        public override string ToString()
+        {
+            var result = $"[X: {_x}%, Y: {_y}%] [Fade: {_isFade}] [Constrain: {_constrainXy}]"+ LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
+
+        #region Equality
+
+        protected bool Equals(OperationResize other)
+        {
+            return _x == other._x && _y == other._y && _constrainXy == other._constrainXy && _isFade == other._isFade;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is null) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((OperationResize) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = _x.GetHashCode();
+                hashCode = (hashCode * 397) ^ _y.GetHashCode();
+                hashCode = (hashCode * 397) ^ _constrainXy.GetHashCode();
+                hashCode = (hashCode * 397) ^ _isFade.GetHashCode();
+                return hashCode;
+            }
+        }
+
+        #endregion
     }
 }

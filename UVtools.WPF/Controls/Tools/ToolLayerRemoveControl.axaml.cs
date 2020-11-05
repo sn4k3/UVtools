@@ -6,7 +6,7 @@ namespace UVtools.WPF.Controls.Tools
 {
     public class ToolLayerRemoveControl : ToolControl
     {
-        public OperationLayerRemove Operation { get; }
+        public OperationLayerRemove Operation => BaseOperation as OperationLayerRemove;
 
         public uint ExtraLayers => (uint)Math.Max(0, (int)Operation.LayerIndexEnd - Operation.LayerIndexStart + 1);
 
@@ -31,7 +31,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolLayerRemoveControl()
         {
             InitializeComponent();
-            BaseOperation = Operation = new OperationLayerRemove();
+            BaseOperation = new OperationLayerRemove();
             Operation.PropertyChanged += (sender, args) =>
             {
                 RaisePropertyChanged(nameof(InfoLayersStr));

@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
@@ -12,7 +11,6 @@ using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Windows;
-using Path = System.IO.Path;
 
 namespace UVtools.WPF.Controls.Tools
 {
@@ -23,8 +21,8 @@ namespace UVtools.WPF.Controls.Tools
         private Bitmap _previewImage;
 
         private ListBox FilesListBox;
-       
-        public OperationLayerImport Operation { get; }
+
+        public OperationLayerImport Operation => BaseOperation as OperationLayerImport;
 
         public uint MaximumLayer => App.SlicerFile.LastLayerIndex;
 
@@ -83,7 +81,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolLayerImportControl()
         {
             InitializeComponent();
-            BaseOperation = Operation = new OperationLayerImport(App.SlicerFile.Resolution);
+            BaseOperation = new OperationLayerImport(App.SlicerFile.Resolution);
             Operation.Files.CollectionChanged += (sender, args) => RefreshGUI();
             Operation.PropertyChanged += (sender, args) => RefreshGUI();
             FilesListBox = this.Find<ListBox>("FilesListBox");

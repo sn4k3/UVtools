@@ -1,5 +1,18 @@
 # Changelog
 
+## 05/11/2020 - v1.1.3
+
+* (Add) Auto-updater: When a new version is detected UVtools still show the same green button at top, 
+on click, it will prompt for auto or manual update.
+On Linux and Mac the script will kill all UVtools instances and auto-upgrade.
+On Windows the user must close all instances and continue with the shown MSI installation
+* (Add) Tool profiles: Create and remove named presets for some tools
+* (Add) Event handler for handling non-UI thread exceptions
+* (Fix) Mac: File - Open in a new window was not working
+* (Fix) Tool - Rotate: Allow negative angles
+* (Fix) Tool - Rotate: The operation was inverting the angle
+* (Fix) Tools: Select normal layers can crash the program with small files with low layer count, eg: 3 layers total
+
 ## 02/11/2020 - v1.1.2
 
 * (Add) Program start elapsed seconds on Log

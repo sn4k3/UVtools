@@ -5,16 +5,19 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
+using System;
 using System.Text;
 
 namespace UVtools.Core.Operations
 {
+    [Serializable]
     public sealed class OperationLayerRemove : Operation
     {
         #region Overrides
 
-        public override Enumerations.LayerRangeSelection LayerRangeSelection => Enumerations.LayerRangeSelection.Current;
-        public override bool CanROI { get; set; } = false;
+        public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.Current;
+        public override bool CanROI => false;
         public override bool PassActualLayerIndex => true;
 
         public override string Title => "Remove layers";
@@ -31,6 +34,8 @@ namespace UVtools.Core.Operations
         public override string ProgressAction => "Removed layers";
 
         public override bool CanCancel => false;
+
+        public override bool CanHaveProfiles => false;
 
         #endregion
 

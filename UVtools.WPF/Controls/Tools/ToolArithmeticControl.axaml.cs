@@ -6,12 +6,12 @@ namespace UVtools.WPF.Controls.Tools
 {
     public class ToolArithmeticControl : ToolControl
     {
-        public OperationArithmetic Operation { get; }
+        public OperationArithmetic Operation => BaseOperation as OperationArithmetic;
 
         public ToolArithmeticControl()
         {
             InitializeComponent();
-            BaseOperation = Operation = new OperationArithmetic();
+            BaseOperation = new OperationArithmetic();
             Operation.PropertyChanged += (sender, e) =>
             {
                 if (e.PropertyName == nameof(Operation.Sentence))
