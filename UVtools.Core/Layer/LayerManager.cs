@@ -237,11 +237,27 @@ namespace UVtools.Core
         /// </summary>
         /// <param name="index">Layer index</param>
         /// <param name="layer">Layer to add</param>
-        public void AddLayer(uint index, Layer layer)
+        /// <param name="makeClone">True to add a clone of the layer</param>
+        public void AddLayer(uint index, Layer layer, bool makeClone = false)
         {
             //layer.Index = index;
-            Layers[index] = layer;
+            Layers[index] = makeClone ? layer.Clone() : layer;
             layer.ParentLayerManager = this;
+        }
+
+        /// <summary>
+        /// Add a list of layers
+        /// </summary>
+        /// <param name="layers">Layers to add</param>
+        /// <param name="makeClone">True to add a clone of layers</param>
+        public void AddLayers(IEnumerable<Layer> layers, bool makeClone = false)
+        {
+            //layer.Index = index;
+            foreach (var layer in layers)
+            {
+                layer.ParentLayerManager = this;
+                Layers[layer.Index] = makeClone ? layer.Clone() : layer;
+            }
         }
 
         /// <summary>
@@ -2025,6 +2041,24 @@ namespace UVtools.Core
         }
 
         /// <summary>
+        /// Reallocate with new size
+        /// </summary>
+        /// <returns></returns>
+        public LayerManager Reallocate(uint newLayerCount, bool makeClone = false)
+        {
+            LayerManager layerManager = new LayerManager(newLayerCount, SlicerFile);
+            foreach (var layer in this)
+            {
+                if (layer.Index >= newLayerCount) break;
+                layerManager[layer.Index] = makeClone ? layer.Clone() : layer;
+            }
+
+            layerManager.BoundingRectangle = Rectangle.Empty;
+
+            return layerManager;
+        }
+
+        /// <summary>
         /// Clone this object
         /// </summary>
         /// <returns></returns>
@@ -2035,9 +2069,8 @@ namespace UVtools.Core
             {
                 layerManager[layer.Index] = layer.Clone();
             }
-
             layerManager.BoundingRectangle = BoundingRectangle;
-
+            
             return layerManager;
         }
 

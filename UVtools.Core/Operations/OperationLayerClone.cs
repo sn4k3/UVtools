@@ -64,5 +64,12 @@ namespace UVtools.Core.Operations
         }
 
         #endregion
+
+        public override string ToString()
+        {
+            var result = $"[Clones: {Clones}]" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
     }
 }

@@ -111,9 +111,9 @@ namespace UVtools.WPF.Structures
                     string tag_name = json.tag_name;
                     if (string.IsNullOrEmpty(tag_name)) return false;
                     tag_name = tag_name.Trim(' ', 'v', 'V');
-                    Debug.WriteLine($"Version checker: v{AppSettings.VersionStr} <=> v{tag_name}");
+                    Debug.WriteLine($"Version checker: v{App.VersionStr} <=> v{tag_name}");
 
-                    if (string.Compare(tag_name, AppSettings.VersionStr, StringComparison.OrdinalIgnoreCase) > 0)
+                    if (string.Compare(tag_name, App.VersionStr, StringComparison.OrdinalIgnoreCase) > 0)
                     {
                         Dispatcher.UIThread.InvokeAsync(() =>
                         {
@@ -190,7 +190,7 @@ namespace UVtools.WPF.Structures
                             using (var stream = File.CreateText(upgradeFile))
                             {
                                 stream.WriteLine("#!/bin/bash");
-                                stream.WriteLine($"echo {About.Software} v{AppSettings.Version} updater script");
+                                stream.WriteLine($"echo {About.Software} v{App.Version} updater script");
                                 stream.WriteLine($"cd '{App.ApplicationPath}'");
                                 stream.WriteLine($"killall {About.Software}");
                                 stream.WriteLine("sleep 0.5");

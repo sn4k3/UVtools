@@ -289,7 +289,7 @@ namespace UVtools.WPF.Windows
                 operation.ProfileName = null;
                 ToolControl.BaseOperation = operation;
                 SelectLayers(operation.LayerRangeSelection);
-
+                
                 if (operation is OperationMorph operationMorph && ToolControl is ToolMorphControl toolMorphControl)
                 {
                     toolMorphControl.MorphSelectedIndex = operationMorph.MorphOperationIndex;
@@ -477,7 +477,7 @@ namespace UVtools.WPF.Windows
             DispatcherTimer.Run(() =>
             {
                 if (Bounds.Width == 0) return true;
-                ScrollViewerMaxHeight = Screens.Primary.WorkingArea.Height - Bounds.Height + ToolControl.Bounds.Height - 250;
+                ScrollViewerMaxHeight = Screens.Primary.WorkingArea.Height / Screens.Primary.PixelDensity - Bounds.Height + ToolControl.Bounds.Height - 250;
                 DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl.Bounds.Width) - 40;
                 Description = toolControl.BaseOperation.Description;
                 return false;

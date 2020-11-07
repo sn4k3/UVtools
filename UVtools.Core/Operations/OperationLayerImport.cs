@@ -178,7 +178,12 @@ namespace UVtools.Core.Operations
             return (uint)(totalLayers + Files.Count - (ReplaceStartLayer ? 1 : 0));
         }
 
-        
+        public override string ToString()
+        {
+            var result = $"[Files: {Count}]" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
 
         #endregion
     }

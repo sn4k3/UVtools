@@ -11,12 +11,28 @@ using System.Collections.Generic;
 
 namespace UVtools.Core.Objects
 {
-    public class StringTag : IComparable<StringTag>
+    public class StringTag : BindableBase, IEquatable<StringTag>, IComparable<StringTag>
     {
-        public string Content { get; set; }
+        private string _content;
+        private object _tag;
 
-        public object Tag { get; set; }
-        public string TagString => Tag.ToString();
+        public string Content
+        {
+            get => _content;
+            set => RaiseAndSetIfChanged(ref _content, value);
+        }
+
+        public object Tag
+        {
+            get => _tag;
+            set => RaiseAndSetIfChanged(ref _tag, value);
+        }
+
+        public string TagString
+        {
+            get => Tag.ToString();
+            set => Tag = value;
+        } 
 
         public StringTag(object content, object tag = null)
         {
@@ -27,6 +43,27 @@ namespace UVtools.Core.Objects
         {
             Content = content;
             Tag = tag;
+        }
+
+        public bool Equals(StringTag other)
+        {
+            return _content == other._content && Equals(_tag, other._tag);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((StringTag) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((_content != null ? _content.GetHashCode() : 0) * 397) ^ (_tag != null ? _tag.GetHashCode() : 0);
+            }
         }
 
         private sealed class ContentEqualityComparer : IEqualityComparer<StringTag>

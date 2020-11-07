@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,6 +27,7 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core;
 using UVtools.Core.Extensions;
+using UVtools.Core.Objects;
 using UVtools.Core.PixelEditor;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
@@ -338,15 +340,31 @@ namespace UVtools.WPF
                 if (!RaiseAndSetIfChanged(ref _actualLayer, value)) return;
                 ShowLayer();
                 InvalidateLayerNavigation();
+                var layer = LayerCache.Layer;
+                CurrentLayerProperties.Clear();
+                CurrentLayerProperties.Add(new StringTag(nameof(layer.Index), $"{layer.Index}"));
+                //CurrentLayerProperties.Add(new KeyValuePair<string, string>(nameof(layer.Filename), layer.Filename));
+                CurrentLayerProperties.Add(new StringTag(nameof(layer.PositionZ), $"{layer.PositionZ.ToString(CultureInfo.InvariantCulture)}mm"));
+                CurrentLayerProperties.Add(new StringTag(nameof(layer.IsBottomLayer), layer.IsBottomLayer.ToString()));
+                //CurrentLayerProperties.Add(new StringTag(nameof(layer.BoundingRectangle), layer.BoundingRectangle.ToString()));
+                //CurrentLayerProperties.Add(new StringTag(nameof(layer.NonZeroPixelCount), layer.NonZeroPixelCount.ToString()));
+                CurrentLayerProperties.Add(new StringTag(nameof(layer.ExposureTime), $"{layer.ExposureTime.ToString(CultureInfo.InvariantCulture)}s"));
+                CurrentLayerProperties.Add(new StringTag(nameof(layer.LiftHeight), $"{layer.LiftHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min"));
+                //CurrentLayerProperties.Adnew StringTagg>(nameof(layer.LiftSpeed), $"{layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min"));
+                CurrentLayerProperties.Add(new StringTag(nameof(layer.RetractSpeed), $"{layer.RetractSpeed.ToString(CultureInfo.InvariantCulture)}mm/min"));
+                CurrentLayerProperties.Add(new StringTag(nameof(layer.LayerOffTime), $"{layer.LayerOffTime.ToString(CultureInfo.InvariantCulture)}s"));
+                CurrentLayerProperties.Add(new StringTag(nameof(layer.LightPWM), layer.LightPWM.ToString()));
             }
         }
 
         public void ForceUpdateActualLayer(uint layerIndex = 0)
         {
-            _actualLayer = layerIndex;
-            ShowLayer();
+            //_actualLayer = layerIndex;
+            /*ShowLayer();
             InvalidateLayerNavigation();
-            RaisePropertyChanged(nameof(ActualLayer));
+            RaisePropertyChanged(nameof(ActualLayer));*/
+            _actualLayer = uint.MaxValue;
+            ActualLayer = layerIndex;
         }
 
         public void InvalidateLayerNavigation()

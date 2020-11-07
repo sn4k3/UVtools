@@ -353,9 +353,23 @@ namespace UVtools.Core.FileFormats
         public abstract Size[] ThumbnailsOriginalSize { get; }
 
         public Mat[] Thumbnails { get; set; }
-        public LayerManager LayerManager { get; set; }
+
+        public LayerManager LayerManager
+        {
+            get => _layerManager;
+            set
+            {
+                var oldLayerManager = _layerManager;
+                if (!RaiseAndSetIfChanged(ref _layerManager, value) || oldLayerManager is null || value is null) return;
+                if (oldLayerManager.Count != LayerCount)
+                {
+                    LayerCount = _layerManager.Count;
+                }
+            }
+        }
 
         private bool _haveModifiedLayers;
+        private LayerManager _layerManager;
 
         /// <summary>
         /// Gets or sets if modifications require a full encode to save
@@ -407,7 +421,7 @@ namespace UVtools.Core.FileFormats
         public virtual uint LayerCount
         {
             get => LayerManager?.Count ?? 0;
-            set => throw new NotImplementedException();
+            set { }
         }
 
         public virtual ushort BottomLayerCount { get; set; }
@@ -469,8 +483,9 @@ namespace UVtools.Core.FileFormats
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             Debug.WriteLine(e.PropertyName);
-            if (e.PropertyName == nameof(LayerCount)) 
+            if (e.PropertyName == nameof(LayerCount))
             {
+                if (this[LayerCount - 1] is null) return; // Not initialized
                 LayerManager.RebuildLayersProperties();
                 RebuildGCode();
                 return;

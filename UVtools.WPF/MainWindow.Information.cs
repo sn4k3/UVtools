@@ -7,7 +7,9 @@
  */
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -16,6 +18,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using MessageBox.Avalonia.Enums;
+using UVtools.Core.Objects;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
@@ -27,32 +30,80 @@ namespace UVtools.WPF
     {
         public ObservableCollection<SlicerProperty> SlicerProperties { get; } = new ObservableCollection<SlicerProperty>();
         public DataGrid PropertiesGrid;
+        public DataGrid CurrentLayerGrid;
 
         private uint _visibleThumbnailIndex;
         private Bitmap _visibleThumbnailImage;
+        private ObservableCollection<StringTag> _currentLayerProperties = new ObservableCollection<StringTag>();
+
+        public ObservableCollection<StringTag> CurrentLayerProperties
+        {
+            get => _currentLayerProperties;
+            set => RaiseAndSetIfChanged(ref _currentLayerProperties, value);
+        }
 
         public void InitInformation()
         {
-            PropertiesGrid = this.Find<DataGrid>("PropertiesGrid");
-            PropertiesGrid.KeyUp += PropertiesGridOnKeyUp;
+            PropertiesGrid = this.Find<DataGrid>(nameof(PropertiesGrid));
+            CurrentLayerGrid = this.Find<DataGrid>(nameof(CurrentLayerGrid));
+            PropertiesGrid.KeyUp += GridOnKeyUp;
+            CurrentLayerGrid.KeyUp += GridOnKeyUp;
+            /*CurrentLayerGrid.BeginningEdit += (sender, e) =>
+            {
+                if (e.Row.DataContext is StringTag stringTag)
+                {
+                    if (e.Column.DisplayIndex == 0
+                        || e.Row.DataContext.ToString() != nameof(LayerCache.Layer.ExposureTime)
+                        && e.Row.DataContext.ToString() != nameof(LayerCache.Layer.LightPWM)
+                    )
+                    {
+                        e.Cancel = true;
+                    }
+                }
+                else
+                {
+                    e.Cancel = true;
+                }
+            };
+            CurrentLayerGrid.RowEditEnding += (sender, e) =>
+            {
+                if (e.EditAction == DataGridEditAction.Cancel) return;
+                if (!(e.Row.DataContext is StringTag stringTag)) return;
+                if (float.TryParse(stringTag.TagString, out var result)) return;
+                e.Cancel = true;
+            };
+            CurrentLayerGrid.RowEditEnded += (sender, e) =>
+            {
+                if (e.EditAction == DataGridEditAction.Cancel) return;
+                if (!(e.Row.DataContext is StringTag stringTag)) return;
+                switch (stringTag.Content)
+                {
+                    //case nameof(LayerCache.)
+                }
+            };*/
+
         }
 
-        private void PropertiesGridOnKeyUp(object? sender, KeyEventArgs e)
+        private void GridOnKeyUp(object? sender, KeyEventArgs e)
         {
-            switch (e.Key)
+            if (sender is DataGrid dataGrid)
             {
-                case Key.Escape:
-                    PropertiesGrid.SelectedItems.Clear();
-                    break;
-                case Key.Multiply:
-                    var selectedItems = PropertiesGrid.SelectedItems.OfType<SlicerProperty>().ToList();
-                    PropertiesGrid.SelectedItems.Clear();
-                    foreach (SlicerProperty item in SlicerProperties)
-                    {
-                        if (!selectedItems.Contains(item))
-                            PropertiesGrid.SelectedItems.Add(item);
-                    }
-                    break;
+                switch (e.Key)
+                {
+                    case Key.Escape:
+                        dataGrid.SelectedItems.Clear();
+                        break;
+                    case Key.Multiply:
+                        foreach (var item in dataGrid.Items)
+                        {
+                            if (dataGrid.SelectedItems.Contains(item))
+                                dataGrid.SelectedItems.Remove(item);
+                            else
+                                dataGrid.SelectedItems.Add(item);
+                        }
+
+                        break;
+                }
             }
         }
 

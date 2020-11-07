@@ -25,6 +25,7 @@ using MessageBox.Avalonia.Enums;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Managers;
 using UVtools.Core.Operations;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Controls.Tools;
@@ -44,6 +45,7 @@ namespace UVtools.WPF
         public AppVersionChecker VersionChecker => App.VersionChecker;
         public UserSettings Settings => UserSettings.Instance;
         public FileFormat SlicerFile => App.SlicerFile;
+        public ClipboardManager Clipboard => ClipboardManager.Instance;
         #endregion
 
         #region Controls
@@ -347,6 +349,7 @@ namespace UVtools.WPF
             InitInformation();
             InitIssues();
             InitPixelEditor();
+            InitClipboardLayers();
             InitLayerPreview();
 
 
@@ -383,12 +386,11 @@ namespace UVtools.WPF
             var windowStateObs = this.GetObservable(WindowStateProperty);
             windowStateObs.Subscribe(size => UpdateLayerTrackerHighlightIssues());
             
-
             UpdateTitle();
 
             if (Settings.General.StartMaximized 
-                || ClientSize.Width > Screens.Primary.Bounds.Width
-                || ClientSize.Height > Screens.Primary.Bounds.Height)
+                || ClientSize.Width > Screens.Primary.Bounds.Width / Screens.Primary.PixelDensity
+                || ClientSize.Height > Screens.Primary.Bounds.Height / Screens.Primary.PixelDensity)
             {
                 WindowState = WindowState.Maximized;
             }
@@ -417,6 +419,12 @@ namespace UVtools.WPF
             {
                 ProcessFile(About.DemoFile);
             }
+
+            DispatcherTimer.Run(() =>
+            {
+                UpdateTitle();
+                return true;
+            }, TimeSpan.FromSeconds(1));
         }
 
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -612,6 +620,9 @@ namespace UVtools.WPF
         public void CloseFile()
         {
             if (SlicerFile is null) return;
+
+            ClipboardManager.Instance.Reset();
+
             SlicerFile?.Dispose();
             App.SlicerFile = null;
 
@@ -692,7 +703,7 @@ namespace UVtools.WPF
         {
             var result =
                 await this.MessageBoxQuestion(
-                    $"Do you like to auto-update {About.Software} v{AppSettings.Version} to v{VersionChecker.Version}?\n\n" +
+                    $"Do you like to auto-update {About.Software} v{App.Version} to v{VersionChecker.Version}?\n\n" +
                     "Yes: Auto update\n" +
                     "No:  Manual update\n" +
                     "Cancel: No action", "Update UVtools?", ButtonEnum.YesNoCancel);
@@ -739,9 +750,11 @@ namespace UVtools.WPF
         private void UpdateTitle()
         {
             Title = (SlicerFile is null
-                ? $"{About.Software}   Version: {AppSettings.VersionStr}"
-                : $"{About.Software}   File: {Path.GetFileName(SlicerFile.FileFullPath)} ({Math.Round(LastStopWatch.ElapsedMilliseconds / 1000m, 2)}s)   Version: {AppSettings.VersionStr}")
+                ? $"{About.Software}   Version: {App.VersionStr}"
+                : $"{About.Software}   File: {Path.GetFileName(SlicerFile.FileFullPath)} ({Math.Round(LastStopWatch.ElapsedMilliseconds / 1000m, 2)}s)   Version: {App.VersionStr}")
                     ;
+
+            Title += $"   RAM: {SizeExtensions.SizeSuffix(Environment.WorkingSet)}";
 
 #if DEBUG
             Title += "   [DEBUG]";
@@ -824,6 +837,8 @@ namespace UVtools.WPF
                 App.SlicerFile = null;
                 return;
             }
+
+            ClipboardManager.Instance.Init(SlicerFile);
 
             if (!(SlicerFile.ConvertToFormats is null))
             {
@@ -1182,11 +1197,11 @@ namespace UVtools.WPF
 
             IsGUIEnabled = false;
 
-            await Task.Factory.StartNew(() =>
+            LayerManager backup = null;
+            var result = await Task.Factory.StartNew(() =>
             {
                 ShowProgressWindow(baseOperation.ProgressTitle);
-                var backup = SlicerFile.LayerManager.Clone();
-
+                backup = SlicerFile.LayerManager.Clone();
 
                 /*var backup = new Layer[baseOperation.LayerRangeCount];
                 uint i = 0;
@@ -1261,6 +1276,8 @@ namespace UVtools.WPF
                         default:
                             throw new NotImplementedException();
                     }
+
+                    return true;
                 }
                 catch (OperationCanceledException)
                 {
@@ -1276,24 +1293,33 @@ namespace UVtools.WPF
                     Dispatcher.UIThread.InvokeAsync(async () =>
                         await this.MessageBoxError(ex.ToString(), $"{baseOperation.Title} Error"));
                 }
+
+                return false;
             });
+
 
             IsGUIEnabled = true;
 
-            ShowLayer();
-            RefreshProperties();
-            ResetDataContext();
-
-            CanSave = true;
-
-            switch (baseOperation)
+            if (result)
             {
-                // Tools
-                case OperationRepairLayers operation:
-                    OnClickDetectIssues();
-                    break;
-            }
+                string description = baseOperation.ToString();
+                if (!description.StartsWith(baseOperation.Title)) description = $"{baseOperation.Title}: {description}";
+                ClipboardManager.Instance.Clip(description, backup);
 
+                ShowLayer();
+                RefreshProperties();
+                ResetDataContext();
+
+                CanSave = true;
+
+                switch (baseOperation)
+                {
+                    // Tools
+                    case OperationRepairLayers operation:
+                        OnClickDetectIssues();
+                        break;
+                }
+            }
 
             return true;
         }

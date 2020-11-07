@@ -43,7 +43,7 @@ namespace UVtools.WPF.Windows
 
         public SettingsWindow()
         {
-            Title += $" [v{AppSettings.VersionStr}]";
+            Title += $" [v{App.VersionStr}]";
             SettingsBackup = UserSettings.Instance.Clone();
 
             var fileFormats = new List<string>
@@ -61,7 +61,7 @@ namespace UVtools.WPF.Windows
 
             
             //MaxHeight = Screens.Primary.WorkingArea.Height - 50;
-            ScrollViewerMaxHeight = Screens.Primary.WorkingArea.Height - 200;
+            ScrollViewerMaxHeight = Screens.Primary.WorkingArea.Height / Screens.Primary.PixelDensity - 200;
 
 
             DataContext = this;

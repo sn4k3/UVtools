@@ -96,6 +96,5 @@ namespace UVtools.Core.Operations
 
         [XmlIgnore]
         public List<LayerIssue> Issues { get; set; }
-
     }
 }

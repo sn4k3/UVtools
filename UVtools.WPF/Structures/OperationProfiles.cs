@@ -49,15 +49,14 @@ namespace UVtools.WPF.Structures
         #endregion
 
         #region Singleton
-        private static OperationProfiles _instance;
+
+        private static Lazy<OperationProfiles> _instanceHolder =
+            new Lazy<OperationProfiles>(() => new OperationProfiles());
+
         /// <summary>
         /// Instance of <see cref="UserSettings"/> (singleton)
         /// </summary>
-        public static OperationProfiles Instance
-        {
-            get => _instance ??= new OperationProfiles();
-            internal set => _instance = value;
-        }
+        public static OperationProfiles Instance => _instanceHolder.Value;
 
         //public static List<Operation> Operations => _instance.Operations;
         #endregion
@@ -179,7 +178,8 @@ namespace UVtools.WPF.Structures
             try
             {
                 using var myXmlReader = new StreamReader(FilePath);
-                _instance = (OperationProfiles)serializer.Deserialize(myXmlReader);
+                var instance = (OperationProfiles) serializer.Deserialize(myXmlReader);
+                _instanceHolder = new Lazy<OperationProfiles>(() => instance);
             }
             catch (Exception e)
             {
@@ -254,7 +254,7 @@ namespace UVtools.WPF.Structures
         public static List<T> GetOperations<T>()
         {
             var result = new List<T>();
-            foreach (var operation in _instance)
+            foreach (var operation in Instance)
             {
                 if (operation is T operationCast)
                 {

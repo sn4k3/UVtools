@@ -1,5 +1,13 @@
 # Changelog
 
+## 07/11/2020 - v1.2.0
+
+* (Add) RAM usage on title bar
+* (Add) Clipboard manager: Undo (Ctrl + Z) and Redo (Ctrl + Y) modifications (Memory optimized)
+* (Add) Current layer properties on information tab
+* (Fix) Long windows with system zoom bigger than 100% were being hidden and overflow (#90)
+* (Fix) Do not recompute issues nor properties nor reshow layer if operation is cancelled or failed
+
 ## 05/11/2020 - v1.1.3
 
 * (Add) Auto-updater: When a new version is detected UVtools still show the same green button at top, 

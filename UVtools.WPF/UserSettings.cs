@@ -1047,7 +1047,7 @@ namespace UVtools.WPF
         [NotNull]
         public string AppVersion
         {
-            get => _appVersion ??= AppSettings.Version.ToString();
+            get => _appVersion ??= App.Version.ToString();
             set => this.RaiseAndSetIfChanged(ref _appVersion, value);
         }
 
@@ -1143,7 +1143,7 @@ namespace UVtools.WPF
 
         public static void SetVersion()
         {
-            Instance.AppVersion = AppSettings.Version.ToString();
+            Instance.AppVersion = App.Version.ToString();
         }
 
         public static object[] PackObjects => 

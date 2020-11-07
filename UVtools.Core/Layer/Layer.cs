@@ -287,16 +287,19 @@ namespace UVtools.Core
 
         public bool Equals(Layer other)
         {
-            if (ReferenceEquals(null, other)) return false;
+            if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
-            return Equals(_compressedBytes, other._compressedBytes);
+            if (_index != other._index) return false;
+            if (_compressedBytes.Length != other._compressedBytes.Length) return false;
+            return _compressedBytes.AsSpan().SequenceEqual(other._compressedBytes.AsSpan());
+            //return Equals(_compressedBytes, other._compressedBytes);
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((Layer)obj);
         }
 

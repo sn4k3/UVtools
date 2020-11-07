@@ -312,7 +312,7 @@
 
         <Grid 
           IsVisible="{Binding IsFileLoaded}" 
-          RowDefinitions="Auto,Auto,Auto,*">
+          RowDefinitions="Auto,Auto,Auto,*,Auto,Auto">
           <!-- Thumbnails -->
           <StackPanel 
             IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
@@ -446,7 +446,7 @@
                     CanUserReorderColumns="True"
                     CanUserResizeColumns="True"
                     CanUserSortColumns="True"
-                    GridLinesVisibility="All"
+                    GridLinesVisibility="Horizontal"
                     IsReadOnly="True"
                     ClipboardCopyMode="IncludeHeader"
                     Items="{Binding SlicerProperties}">
@@ -462,7 +462,36 @@
                                   Width="Auto" />
             </DataGrid.Columns>
             
+            </DataGrid>
+        
+            <TextBlock Grid.Row="4"
+                       Text="Layer data" 
+                       ToolTip.Tip="Shows the properties for the current selected layer"
+                       FontWeight="Bold" 
+                       TextAlignment="Center"
+                       Padding="0,10"/>
+            <DataGrid 
+                    IsVisible="{Binding IsFileLoaded}"
+                    Name="CurrentLayerGrid"
+                    Grid.Row="5"
+                    CanUserReorderColumns="False"
+                    CanUserResizeColumns="False"
+                    CanUserSortColumns="False"
+                    GridLinesVisibility="Horizontal"
+                    IsReadOnly="True"
+                    ClipboardCopyMode="IncludeHeader"
+                    Items="{Binding CurrentLayerProperties}">
+            <DataGrid.Columns>
+              <DataGridTextColumn  Header="Name"
+                                    Binding="{Binding Content}"
+                                    Width="Auto" />
+              <DataGridTextColumn Header="Value"
+                                  Binding="{Binding TagString}"
+                                  Width="Auto" />
+            </DataGrid.Columns>
+            
           </DataGrid>
+      
         </Grid>
         
       </TabItem>
@@ -1239,30 +1268,86 @@
         
       </TabItem>
 
-      <!--
+      
       <TabItem
-          Name="TabLayers"
-          ToolTip.Tip="Layers">
+          Name="TabClipboard"
+          IsEnabled="{Binding IsFileLoaded}"
+          ToolTip.Tip="Clipboard">
         <TabItem.Header>
           <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-            <Image Source="/Assets/Icons/book-32x32.png" Width="32"/>
-            <TextBlock Margin="5,0,0,0">Layers</TextBlock>
+            <Image Source="/Assets/Icons/clipboard-32x32.png" Width="32"/>
+            <!--<TextBlock Margin="5,0,0,0">Clipboard</TextBlock>!-->
           </StackPanel>
         </TabItem.Header>
 
-        <TreeView Items="{Binding SlicerFile.LayerManager.Layers}"
-                  AutoScrollToSelectedItem="True">
+        <Grid RowDefinitions="Auto,*">
+          <StackPanel Orientation="Horizontal" Spacing="2">
+            <!--
+            <Button
+              IsEnabled="{Binding Clipboard.Items.Count}"
+              Command="{Binding Clipboard.SetToOldest}"
+              ToolTip.Tip="Go to first clip">
+              <Image Source="/Assets/Icons/arrow-end-16x16.png" Width="16"/>
+            </Button>
+            !-->
+            
+            <Button
+              IsEnabled="{Binding Clipboard.CanUndo}"
+              Command="{Binding Clipboard.Undo}"
+              HotKey="Ctrl + Z"
+              ToolTip.Tip="Undo [Ctrl + Z]">
+              <Image Source="/Assets/Icons/undo-16x16.png" Width="16"/>
+            </Button>
 
-          <TreeView.ItemTemplate>
-            <DataTemplate>
-              <TreeViewItem Header="{Binding Index}"/>
-            </DataTemplate>
-          </TreeView.ItemTemplate>
+            <TextBlock VerticalAlignment="Center">
+              <TextBlock.Text>
+                <MultiBinding StringFormat="\{0\}/\{1\}">
+                  <Binding Path="Clipboard.CurrentIndexCountStr"/>
+                  <Binding Path="Clipboard.Items.Count"/>
+                </MultiBinding>
+              </TextBlock.Text>
+            </TextBlock>
 
-        </TreeView>
-        
+            <Button
+              IsEnabled="{Binding Clipboard.CanRedo}"
+              Command="{Binding Clipboard.Redo}"
+              HotKey="Ctrl + Y"
+              ToolTip.Tip="Redo [Ctrl + Y]"
+                    >
+              <Image Source="/Assets/Icons/redo-16x16.png" Width="16"/>
+            </Button>
+            
+            <!--
+          <Button
+              IsEnabled="{Binding Clipboard.Items.Count}"
+              Command="{Binding Clipboard.SetToNewest}"
+              ToolTip.Tip="Go to first clip">
+              <Image Source="/Assets/Icons/arrow-top-16x16.png" Width="16"/>
+            </Button>
+            !-->
+            
+          </StackPanel>
+          
+          <StackPanel Orientation="Horizontal" Spacing="2" HorizontalAlignment="Right">
+            <Button
+              IsEnabled="{Binding Clipboard.Items.Count}"
+              Command="{Binding ClipboardClear}"
+              ToolTip.Tip="Clear all clips"
+                    >
+              <Image Source="/Assets/Icons/delete-16x16.png" Width="16"/>
+            </Button>
+          </StackPanel>
+          
+          <ListBox 
+            Grid.Row="1"
+            Name="ClipboardList"
+            SelectionMode="Single"
+            AutoScrollToSelectedItem="True"
+            SelectedIndex="{Binding Clipboard.CurrentIndex}"
+            Items="{Binding Clipboard.Items}" />
+        </Grid>
       </TabItem>
-  !-->
+  
 
       <TabItem
           Name="TabLog"

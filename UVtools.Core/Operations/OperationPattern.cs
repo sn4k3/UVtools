@@ -254,5 +254,12 @@ namespace UVtools.Core.Operations
             var volume = GetPatternVolume;
             return IsWithinBoundary = volume.Width <= ImageWidth && volume.Height <= ImageHeight;
         }
+
+        public override string ToString()
+        {
+            var result = $"[Rows: {Rows}] [Cols: {Cols}]" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
     }
 }

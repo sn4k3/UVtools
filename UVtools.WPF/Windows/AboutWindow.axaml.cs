@@ -7,10 +7,10 @@ namespace UVtools.WPF.Windows
     public class AboutWindow : WindowEx
     {
         public string Software => About.Software;
-        public string Version => $"Version: {AppSettings.VersionStr}";
-        public string Copyright => AppSettings.AssemblyCopyright;
-        public string Company => AppSettings.AssemblyCompany;
-        public string Description => AppSettings.AssemblyDescription;
+        public string Version => $"Version: {App.VersionStr}";
+        public string Copyright => App.AssemblyCopyright;
+        public string Company => App.AssemblyCompany;
+        public string Description => App.AssemblyDescription;
 
 
         public AboutWindow()

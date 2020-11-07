@@ -387,6 +387,8 @@ namespace UVtools.WPF
             {
                 IsGUIEnabled = false;
 
+                Clipboard.Snapshot();
+
                 var task = await Task.Factory.StartNew(async () =>
                 {
                     ShowProgressWindow("Drawing pixels");
@@ -411,6 +413,7 @@ namespace UVtools.WPF
 
                 IsGUIEnabled = true;
 
+                Clipboard.Clip($"Draw {Drawings.Count} modifications");
 
                 if (Settings.PixelEditor.PartialUpdateIslandsOnEditing)
                 {

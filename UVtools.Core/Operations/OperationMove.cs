@@ -236,5 +236,12 @@ namespace UVtools.Core.Operations
             CalculateDstRoi();
             return IsWithinBoundary;
         }
+
+        public override string ToString()
+        {
+            var result = $"[{ROI} -> {DstRoi}] [Cut: {IsCutMove}]" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
     }
 }
