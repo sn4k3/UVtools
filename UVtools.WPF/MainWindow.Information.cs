@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -18,6 +19,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using MessageBox.Avalonia.Enums;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
@@ -323,6 +325,32 @@ namespace UVtools.WPF
                     }
                 }
             }
+        }
+        #endregion
+
+        #region Current Layer
+
+        public void AddCurrentLayerData()
+        {
+            var layer = LayerCache.Layer;
+            CurrentLayerProperties.Clear();
+            CurrentLayerProperties.Add(new StringTag(nameof(layer.Index), $"{layer.Index}"));
+            //CurrentLayerProperties.Add(new KeyValuePair<string, string>(nameof(layer.Filename), layer.Filename));
+            CurrentLayerProperties.Add(new StringTag(nameof(layer.PositionZ), $"{layer.PositionZ.ToString(CultureInfo.InvariantCulture)}mm"));
+            CurrentLayerProperties.Add(new StringTag(nameof(layer.IsBottomLayer), layer.IsBottomLayer.ToString()));
+            CurrentLayerProperties.Add(new StringTag(nameof(layer.IsModified), layer.IsModified.ToString()));
+            //CurrentLayerProperties.Add(new StringTag(nameof(layer.BoundingRectangle), layer.BoundingRectangle.ToString()));
+            //CurrentLayerProperties.Add(new StringTag(nameof(layer.NonZeroPixelCount), layer.NonZeroPixelCount.ToString()));
+            CurrentLayerProperties.Add(new StringTag(nameof(layer.ExposureTime), $"{layer.ExposureTime.ToString(CultureInfo.InvariantCulture)}s"));
+            if(SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LiftHeight))
+                CurrentLayerProperties.Add(new StringTag(nameof(layer.LiftHeight), $"{layer.LiftHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min"));
+            //CurrentLayerProperties.Adnew StringTagg>(nameof(layer.LiftSpeed), $"{layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min"));
+            if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.RetractSpeed))
+                CurrentLayerProperties.Add(new StringTag(nameof(layer.RetractSpeed), $"{layer.RetractSpeed.ToString(CultureInfo.InvariantCulture)}mm/min"));
+            if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LayerOffTime))
+                CurrentLayerProperties.Add(new StringTag(nameof(layer.LayerOffTime), $"{layer.LayerOffTime.ToString(CultureInfo.InvariantCulture)}s"));
+            if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LightPWM))
+                CurrentLayerProperties.Add(new StringTag(nameof(layer.LightPWM), layer.LightPWM.ToString()));
         }
         #endregion
     }

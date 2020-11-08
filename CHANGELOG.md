@@ -1,5 +1,14 @@
 # Changelog
 
+## 07/11/2020 - v1.2.1
+
+* (Add) IsModified property to current layer information, indicates if layer have unsaved changes
+* (Add) Splitter between preview image and properties to resize the vertical space between that two controls
+* (Fix) Unable to save file with made modifications, layer IsModified property were lost when entering on clipboard
+* (Fix) After made a modification clipboard tries to restores that same modification (Redundant)
+* (Fix) Current layer data doesn't refresh when refreshing current layer, made changes not to show in
+* (Fix) Hides not supported properties from current layer data given the file format
+
 ## 07/11/2020 - v1.2.0
 
 * (Add) RAM usage on title bar

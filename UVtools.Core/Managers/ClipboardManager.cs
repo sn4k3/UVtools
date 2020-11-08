@@ -85,7 +85,7 @@ namespace UVtools.Core.Managers
         private int _currentIndex = -1;
         private LayerManager _snapshotLayerManager;
         private bool _reallocatedLayerCount;
-        private bool _changedByClip;
+        private bool _suppressRestore;
 
         /// <summary>
         /// Gets the index of current item
@@ -94,13 +94,14 @@ namespace UVtools.Core.Managers
             get => _currentIndex;
             set
             {
-                if (value >= Count) value = Count-1;
                 if (_currentIndex == value) return;
+                if (value < -1) value = -1;
+                if (value >= Count) value = Count-1;
                 var oldIndex = _currentIndex;
                 _currentIndex = value;
                 //if (!RaiseAndSetIfChanged(ref _currentIndex, value)) return;
 
-                if (value >= 0)
+                if (value >= 0 && !SuppressRestore)
                 {
                     int dir = oldIndex < _currentIndex ? 1 : -1;
 
@@ -136,10 +137,10 @@ namespace UVtools.Core.Managers
 
         public string CurrentIndexCountStr => (CurrentIndex + 1).ToString().PadLeft(Count.ToString().Length, '0');
 
-        public bool ChangedByClip
+        public bool SuppressRestore
         {
-            get => _changedByClip;
-            set => RaiseAndSetIfChanged(ref _changedByClip, value);
+            get => _suppressRestore;
+            set => RaiseAndSetIfChanged(ref _suppressRestore, value);
         }
 
         public bool ReallocatedLayerCount
@@ -290,7 +291,7 @@ namespace UVtools.Core.Managers
                     return;
             }
 
-            ChangedByClip = true;
+            SuppressRestore = true;
             var oldCurrentIndex = _currentIndex;
             CurrentIndex = -1;
 
@@ -304,7 +305,7 @@ namespace UVtools.Core.Managers
             Insert(0, clip);
             
             CurrentIndex = 0;
-            ChangedByClip = false;
+            SuppressRestore = false;
         }
 
         public void Undo()

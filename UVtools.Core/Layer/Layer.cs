@@ -134,25 +134,25 @@ namespace UVtools.Core
         private byte[] _compressedBytes;
         private uint _nonZeroPixelCount;
         private Rectangle _boundingRectangle = Rectangle.Empty;
+        private bool _isModified;
         private uint _index;
+        private float _positionZ;
         private float _exposureTime;
         private float _layerOffTime = FileFormat.DefaultLightOffDelay;
         private float _liftHeight = FileFormat.DefaultLiftHeight;
         private float _liftSpeed = FileFormat.DefaultLiftSpeed;
         private float _retractSpeed = FileFormat.DefaultRetractSpeed;
         private byte _lightPwm = FileFormat.DefaultLightPWM;
-        private float _positionZ;
-        private bool _isModified;
 
         /// <summary>
         /// Gets or sets layer image compressed data
         /// </summary>
         public byte[] CompressedBytes
         {
-            get => LayerManager.DecompressLayer(_compressedBytes);
+            get => _compressedBytes;
             set
             {
-                _compressedBytes = LayerManager.CompressLayer(value);
+                _compressedBytes = value;
                 IsModified = true;
                 if (!ReferenceEquals(ParentLayerManager, null))
                     ParentLayerManager.BoundingRectangle = Rectangle.Empty;
@@ -1015,17 +1015,18 @@ namespace UVtools.Core
         }
         public Layer Clone()
         {
-            return new Layer(Index, CompressedBytes.ToArray(), ParentLayerManager)
+            return new Layer(_index, CompressedBytes.ToArray(), ParentLayerManager)
             {
-                PositionZ = PositionZ,
-                ExposureTime = ExposureTime,
-                LiftHeight = LiftHeight,
-                LiftSpeed = LiftSpeed,
-                RetractSpeed = RetractSpeed,
-                LayerOffTime = LayerOffTime,
-                LightPWM = LightPWM,
-                BoundingRectangle = BoundingRectangle,
-                NonZeroPixelCount = NonZeroPixelCount,
+                PositionZ = _positionZ,
+                ExposureTime = _exposureTime,
+                LiftHeight = _liftHeight,
+                LiftSpeed = _liftSpeed,
+                RetractSpeed = _retractSpeed,
+                LayerOffTime = _layerOffTime,
+                LightPWM = _lightPwm,
+                BoundingRectangle = _boundingRectangle,
+                NonZeroPixelCount = _nonZeroPixelCount,
+                IsModified = _isModified,
             };
         }
 

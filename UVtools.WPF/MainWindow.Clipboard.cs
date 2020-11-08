@@ -30,7 +30,9 @@ namespace UVtools.WPF
         {
             if (e.PropertyName == nameof(Clipboard.CurrentIndex))
             {
-                if (Clipboard.CurrentIndex < 0 || Clipboard.ChangedByClip) return;
+                if (Clipboard.CurrentIndex < 0 || Clipboard.SuppressRestore) return;
+
+                AddLogVerbose($"Clipboard change: {Clipboard.CurrentIndex}");
 
                 if (Clipboard.ReallocatedLayerCount)
                 {

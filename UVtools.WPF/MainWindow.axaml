@@ -312,7 +312,7 @@
 
         <Grid 
           IsVisible="{Binding IsFileLoaded}" 
-          RowDefinitions="Auto,Auto,Auto,*,Auto,Auto">
+          RowDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto">
           <!-- Thumbnails -->
           <StackPanel 
             IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
@@ -375,12 +375,13 @@
             IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
             Stretch="Uniform"
             Grid.Row="1" Source="{Binding VisibleThumbnailImage}"/>
-
+          
+          <GridSplitter Grid.Row="2" ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" Background="Transparent" Height="5"/>
 
           <!-- Properties -->
           <StackPanel
             IsVisible="{Binding SlicerProperties.Count}"
-            Grid.Row="2"
+            Grid.Row="3"
             Orientation="Horizontal"
             Spacing="5"
             VerticalAlignment="Center">
@@ -398,10 +399,10 @@
               />
 
           </StackPanel>
-
+          
           <StackPanel
             IsVisible="{Binding SlicerProperties.Count}"
-            Grid.Row="2"
+            Grid.Row="3"
             Orientation="Horizontal"
             Spacing="2"
             HorizontalAlignment="Right"
@@ -438,11 +439,11 @@
             </Button>
 
           </StackPanel>
-
+          
           <DataGrid 
                     IsVisible="{Binding SlicerProperties.Count}"
                     Name="PropertiesGrid"
-                    Grid.Row="3"
+                    Grid.Row="4"
                     CanUserReorderColumns="True"
                     CanUserResizeColumns="True"
                     CanUserSortColumns="True"
@@ -464,7 +465,7 @@
             
             </DataGrid>
         
-            <TextBlock Grid.Row="4"
+            <TextBlock Grid.Row="5"
                        Text="Layer data" 
                        ToolTip.Tip="Shows the properties for the current selected layer"
                        FontWeight="Bold" 
@@ -473,7 +474,7 @@
             <DataGrid 
                     IsVisible="{Binding IsFileLoaded}"
                     Name="CurrentLayerGrid"
-                    Grid.Row="5"
+                    Grid.Row="6"
                     CanUserReorderColumns="False"
                     CanUserResizeColumns="False"
                     CanUserSortColumns="False"

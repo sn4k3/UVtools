@@ -119,14 +119,14 @@ namespace UVtools.WPF
                         {
                             if (IssuesGrid.SelectedItems.Count == 0 || !IssuesGrid.SelectedItems.Cast<LayerIssue>().Any(
                                 issue => // Find a valid candidate to update layer preview, otherwise quit
-                                    issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
+                                    issue.LayerIndex == _actualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
                                     issue.Type != LayerIssue.IssueType.TouchingBound)) return;
                         }
                         else
                         {
                             if (!Issues.Any(
                                 issue => // Find a valid candidate to update layer preview, otherwise quit
-                                    issue.LayerIndex == ActualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
+                                    issue.LayerIndex == _actualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
                                     issue.Type != LayerIssue.IssueType.TouchingBound)) return;
                         }
 
@@ -340,20 +340,6 @@ namespace UVtools.WPF
                 if (!RaiseAndSetIfChanged(ref _actualLayer, value)) return;
                 ShowLayer();
                 InvalidateLayerNavigation();
-                var layer = LayerCache.Layer;
-                CurrentLayerProperties.Clear();
-                CurrentLayerProperties.Add(new StringTag(nameof(layer.Index), $"{layer.Index}"));
-                //CurrentLayerProperties.Add(new KeyValuePair<string, string>(nameof(layer.Filename), layer.Filename));
-                CurrentLayerProperties.Add(new StringTag(nameof(layer.PositionZ), $"{layer.PositionZ.ToString(CultureInfo.InvariantCulture)}mm"));
-                CurrentLayerProperties.Add(new StringTag(nameof(layer.IsBottomLayer), layer.IsBottomLayer.ToString()));
-                //CurrentLayerProperties.Add(new StringTag(nameof(layer.BoundingRectangle), layer.BoundingRectangle.ToString()));
-                //CurrentLayerProperties.Add(new StringTag(nameof(layer.NonZeroPixelCount), layer.NonZeroPixelCount.ToString()));
-                CurrentLayerProperties.Add(new StringTag(nameof(layer.ExposureTime), $"{layer.ExposureTime.ToString(CultureInfo.InvariantCulture)}s"));
-                CurrentLayerProperties.Add(new StringTag(nameof(layer.LiftHeight), $"{layer.LiftHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min"));
-                //CurrentLayerProperties.Adnew StringTagg>(nameof(layer.LiftSpeed), $"{layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min"));
-                CurrentLayerProperties.Add(new StringTag(nameof(layer.RetractSpeed), $"{layer.RetractSpeed.ToString(CultureInfo.InvariantCulture)}mm/min"));
-                CurrentLayerProperties.Add(new StringTag(nameof(layer.LayerOffTime), $"{layer.LayerOffTime.ToString(CultureInfo.InvariantCulture)}s"));
-                CurrentLayerProperties.Add(new StringTag(nameof(layer.LightPWM), layer.LightPWM.ToString()));
             }
         }
 
@@ -789,6 +775,8 @@ namespace UVtools.WPF
 
 
                 LayerImageBox.Image = LayerCache.Bitmap = LayerCache.ImageBgr.ToBitmap();
+
+                AddCurrentLayerData();
 
                 watch.Stop();
                 ShowLayerRenderMs = watch.ElapsedMilliseconds;
