@@ -43,8 +43,8 @@ namespace UVtools.GUI.Controls.Tools
         public override bool UpdateOperation()
         {
             base.UpdateOperation();
-            Operation.BorderSize = (uint) nmBorderSize.Value;
-            Operation.BordersOnly = cbDimsOnlyBorders.Checked;
+            Operation.WallThickness = (uint) nmBorderSize.Value;
+            Operation.WallsOnly = cbDimsOnlyBorders.Checked;
 
 
             var matrixTextbox = new[]
@@ -95,8 +95,8 @@ namespace UVtools.GUI.Controls.Tools
                 }
             }
 
-            Operation.EvenPattern = matrixTextbox[0].Pattern;
-            Operation.OddPattern = matrixTextbox[1].Pattern;
+            Operation.Pattern = matrixTextbox[0].Pattern;
+            Operation.AlternatePattern = matrixTextbox[1].Pattern;
             return true;
         }
 

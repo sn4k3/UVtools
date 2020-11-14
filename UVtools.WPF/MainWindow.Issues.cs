@@ -52,6 +52,8 @@ namespace UVtools.WPF
             private set => RaiseAndSetIfChanged(ref _issues, value);
         }
 
+        public readonly List<LayerIssue> IgnoredIssues = new List<LayerIssue>();
+
         public bool IssueCanGoPrevious => Issues.Count > 0 && _issueSelectedIndex > 0;
         public bool IssueCanGoNext => Issues.Count > 0 && _issueSelectedIndex < Issues.Count - 1;
         #endregion
@@ -84,7 +86,7 @@ namespace UVtools.WPF
 
             if (await this.MessageBoxQuestion($"Are you sure you want to remove all selected {IssuesGrid.SelectedItems.Count} issues?\n\n" +
                                     "Warning: Removing an island can cause other issues to appear if there is material present in the layers above it.\n" +
-                                    "Always check previous and next layers before performing an island removal.", "Remove Issues?") != ButtonResult.Yes) return;
+                                    "Always check previous and next layers before performing an island removal.", $"Remove {IssuesGrid.SelectedItems.Count} Issues?") != ButtonResult.Yes) return;
 
             Dictionary<uint, List<LayerIssue>> processIssues = new Dictionary<uint, List<LayerIssue>>();
             List<uint> layersRemove = new List<uint>();
@@ -222,6 +224,35 @@ namespace UVtools.WPF
             CanSave = true;
         }
 
+        public async void OnClickIssueIgnore()
+        {
+            if ((_globalModifiers & KeyModifiers.Alt) != 0)
+            {
+                if(IgnoredIssues.Count == 0) return;
+                if (await this.MessageBoxQuestion(
+                        $"Are you sure you want to re-enable {IgnoredIssues.Count} ignored issues?\n" +
+                        "A full re-detect will be required to get the ignored issues.\n", $"Re-enable {IgnoredIssues.Count} Issues?") !=
+                    ButtonResult.Yes) return;
+
+                IgnoredIssues.Clear();
+
+                return;
+            }
+
+            if (IssuesGrid.SelectedItems.Count == 0) return;
+
+            if (await this.MessageBoxQuestion(
+                    $"Are you sure you want to hide and ignore all selected {IssuesGrid.SelectedItems.Count} issues?\n" +
+                    "The ignored issues won't be re-detected.\n", $"Ignore {IssuesGrid.SelectedItems.Count} Issues?") !=
+                ButtonResult.Yes) return;
+
+            var list = IssuesGrid.SelectedItems.Cast<LayerIssue>().ToArray();
+            IgnoredIssues.AddRange(list);
+            IssuesGrid.SelectedItems.Clear();
+            Issues.RemoveMany(list);
+            ShowLayer();
+        }
+
         private async Task UpdateIslandsOverhangs(List<uint> whiteListLayers)
         {
             if (whiteListLayers.Count == 0) return;
@@ -254,7 +285,7 @@ namespace UVtools.WPF
                 try
                 {
                     var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapConfig,
-                        touchingBoundConfig, false,
+                        touchingBoundConfig, false, IgnoredIssues,
                         ProgressWindow.RestartProgress());
 
                     issues.RemoveAll(issue => issue.Type != LayerIssue.IssueType.Island && issue.Type != LayerIssue.IssueType.Overhang); // Remove all non islands and overhangs
@@ -414,7 +445,7 @@ namespace UVtools.WPF
                 try
                 {
                     var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapConfig, touchingBoundConfig,
-                        emptyLayersConfig, ProgressWindow.RestartProgress());
+                        emptyLayersConfig, IgnoredIssues, ProgressWindow.RestartProgress());
                     return issues;
                 }
                 catch (OperationCanceledException)
@@ -529,7 +560,11 @@ namespace UVtools.WPF
             return new TouchingBoundDetectionConfiguration
             {
                 Enabled = Settings.Issues.ComputeTouchingBounds,
-                //MaximumPixelBrightness = 100
+                MinimumPixelBrightness = UserSettings.Instance.Issues.TouchingBoundMinimumPixelBrightness,
+                MarginLeft = UserSettings.Instance.Issues.TouchingBoundMarginLeft,
+                MarginTop = UserSettings.Instance.Issues.TouchingBoundMarginTop,
+                MarginRight = UserSettings.Instance.Issues.TouchingBoundMarginRight,
+                MarginBottom = UserSettings.Instance.Issues.TouchingBoundMarginBottom,
             };
         }
 

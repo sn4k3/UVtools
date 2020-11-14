@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using Avalonia.Markup.Xaml;
 using Emgu.CV;
 using UVtools.Core.Extensions;
@@ -116,8 +117,8 @@ namespace UVtools.WPF.Controls.Tools
                 }
             }
 
-            Operation.EvenPattern = stringMatrix[0].Pattern;
-            Operation.OddPattern = stringMatrix[1].Pattern;
+            Operation.Pattern = stringMatrix[0].Pattern;
+            Operation.AlternatePattern = stringMatrix[1].Pattern;
 
             return true;
         }
@@ -329,6 +330,64 @@ namespace UVtools.WPF.Controls.Tools
 
                 PatternText = p1.Trim('\n', '\r');
                 AlternatePatternText = null;
+                return;
+            }
+
+            if (pattern == "Lattice")
+            {
+                var p1 = string.Empty;
+                var p2 = string.Empty;
+
+                var zeros = Math.Max(0, _infillGenSpacing - _infillGenThickness * 2);
+
+                // Pillar
+                for (int i = 0; i < _infillGenThickness; i++)
+                {
+                    p1 += "255 ".Repeat(_infillGenThickness);
+                    p1 += "0 ".Repeat(zeros);
+                    p1 += "255 ".Repeat(_infillGenThickness);
+                    p1 = p1.Trim() + '\n';
+                }
+
+                for (int i = 0; i < zeros; i++)
+                {
+                    p1 += "0 ".Repeat(_infillGenSpacing);
+                    p1 = p1.Trim() + '\n';
+                }
+
+                for (int i = 0; i < _infillGenThickness; i++)
+                {
+                    p1 += "255 ".Repeat(_infillGenThickness);
+                    p1 += "0 ".Repeat(zeros);
+                    p1 += "255 ".Repeat(_infillGenThickness);
+                    p1 = p1.Trim() + '\n';
+                }
+
+                // Square
+                for (int i = 0; i < _infillGenThickness; i++)
+                {
+                    p2 += "255 ".Repeat(_infillGenSpacing);
+                    p2 = p2.Trim() + '\n';
+                }
+
+                for (int i = 0; i < zeros; i++)
+                {
+                    p2 += "255 ".Repeat(_infillGenThickness);
+                    p2 += "0 ".Repeat(zeros);
+                    p2 += "255 ".Repeat(_infillGenThickness);
+                    p2 = p2.Trim() + '\n';
+                }
+
+                for (int i = 0; i < _infillGenThickness; i++)
+                {
+                    p2 += "255 ".Repeat(_infillGenSpacing);
+                    p2 = p2.Trim() + '\n';
+                }
+
+                
+
+                PatternText = p1.Trim('\n', '\r');
+                AlternatePatternText = p2.Trim('\n', '\r'); ;
                 return;
             }
         }

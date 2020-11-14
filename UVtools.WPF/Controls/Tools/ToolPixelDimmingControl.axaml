@@ -8,13 +8,13 @@
     <StackPanel Spacing="10" Orientation="Horizontal">
       <TextBlock
         VerticalAlignment="Center"
-        Text="Border size:"
+        Text="Wall thickness:"
         />
       <NumericUpDown
         Minimum="0"
         Maximum="1000"
         Width="80"
-        Value="{Binding Operation.BorderSize}"
+        Value="{Binding Operation.WallThickness}"
         />
       <TextBlock
         VerticalAlignment="Center"
@@ -23,8 +23,24 @@
 
       <CheckBox
         Margin="20,0,0,0"
-        Content="Dim only borders"
-        IsChecked="{Binding Operation.BordersOnly}"
+        Content="Dim only walls"
+        IsChecked="{Binding Operation.WallsOnly}"
+        />
+
+      <TextBlock
+        Margin="20,0,0,0"
+        VerticalAlignment="Center"
+        Text="Alternate the pattern every:"
+        />
+      <NumericUpDown
+        Minimum="1"
+        Maximum="{Binding ushort.MaxValue}"
+        Width="80"
+        Value="{Binding Operation.AlternatePatternPerLayers}"
+        />
+      <TextBlock
+        VerticalAlignment="Center"
+        Text="layers"
         />
 
            
@@ -221,6 +237,13 @@
               Width="100"
               Command="{Binding GenerateInfill}"
               CommandParameter="Waves"
+            />
+            <Button
+              Padding="10"
+              Content="Lattice"
+              Width="100"
+              Command="{Binding GenerateInfill}"
+              CommandParameter="Lattice"
             />
           </StackPanel>
         </StackPanel>

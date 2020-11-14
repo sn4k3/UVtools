@@ -426,17 +426,17 @@ namespace UVtools.Core
             if (progress is null) progress = new OperationProgress();
             progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
 
-            if (operation.EvenPattern is null)
+            if (operation.Pattern is null)
             {
-                operation.EvenPattern = new Matrix<byte>(2, 2)
+                operation.Pattern = new Matrix<byte>(2, 2)
                 {
                     [0, 0] = 127, [0, 1] = 255,
                     [1, 0] = 255, [1, 1] = 127,
                 };
 
-                if (operation.OddPattern is null)
+                if (operation.AlternatePattern is null)
                 {
-                    operation.OddPattern = new Matrix<byte>(2, 2)
+                    operation.AlternatePattern = new Matrix<byte>(2, 2)
                     {
                         [0, 0] = 255, [0, 1] = 127,
                         [1, 0] = 127, [1, 1] = 255,
@@ -444,29 +444,29 @@ namespace UVtools.Core
                 }
             }
 
-            if (operation.OddPattern is null)
+            if (operation.AlternatePattern is null)
             {
-                operation.OddPattern = operation.EvenPattern;
+                operation.AlternatePattern = operation.Pattern;
             }
 
             using (Mat mat = this[0].LayerMat)
-            using (Mat matEven = mat.CloneBlank())
-            using (Mat matOdd = mat.CloneBlank())
+            using (Mat matPattern = mat.CloneBlank())
+            using (Mat matAlternatePattern = mat.CloneBlank())
             {
                 Mat target = operation.GetRoiOrDefault(mat);
 
-                CvInvoke.Repeat(operation.EvenPattern, target.Rows / operation.EvenPattern.Rows + 1,
-                    target.Cols / operation.EvenPattern.Cols + 1, matEven);
-                CvInvoke.Repeat(operation.OddPattern, target.Rows / operation.OddPattern.Rows + 1,
-                    target.Cols / operation.OddPattern.Cols + 1, matOdd);
+                CvInvoke.Repeat(operation.Pattern, target.Rows / operation.Pattern.Rows + 1,
+                    target.Cols / operation.Pattern.Cols + 1, matPattern);
+                CvInvoke.Repeat(operation.AlternatePattern, target.Rows / operation.AlternatePattern.Rows + 1,
+                    target.Cols / operation.AlternatePattern.Cols + 1, matAlternatePattern);
 
-                using (var evenPatternMask = new Mat(matEven, new Rectangle(0, 0, target.Width, target.Height)))
-                using (var oddPatternMask = new Mat(matOdd, new Rectangle(0, 0, target.Width, target.Height)))
+                using (var patternMask = new Mat(matPattern, new Rectangle(0, 0, target.Width, target.Height)))
+                using (var alternatePatternMask = new Mat(matAlternatePattern, new Rectangle(0, 0, target.Width, target.Height)))
                 {
                     Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
                     {
                         if (progress.Token.IsCancellationRequested) return;
-                        this[layerIndex].PixelDimming(operation, evenPatternMask, oddPatternMask);
+                        this[layerIndex].PixelDimming(operation, patternMask, alternatePatternMask);
                         lock (progress.Mutex)
                         {
                             progress++;
@@ -476,6 +476,22 @@ namespace UVtools.Core
             }
 
             progress.Token.ThrowIfCancellationRequested();
+        }
+
+        public void Infill(OperationInfill operation, OperationProgress progress)
+        {
+            if (progress is null) progress = new OperationProgress();
+            progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
+
+            Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+                this[layerIndex].Infill(operation);
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
         }
 
         private void MutateGetVarsIterationFade(uint startLayerIndex, uint endLayerIndex, int iterationsStart, int iterationsEnd, ref bool isFade, out float iterationSteps, out int maxIteration)
@@ -780,18 +796,29 @@ namespace UVtools.Core
             ResinTrapDetectionConfiguration resinTrapConfig = null,
             TouchingBoundDetectionConfiguration touchBoundConfig = null,
             bool emptyLayersConfig = true,
+            List<LayerIssue> ignoredIssues = null,
             OperationProgress progress = null)
         {
-            if(islandConfig is null) islandConfig = new IslandDetectionConfiguration();
+            
+            if (islandConfig is null) islandConfig = new IslandDetectionConfiguration();
             if(overhangConfig is null) overhangConfig = new OverhangDetectionConfiguration();
             if(resinTrapConfig is null) resinTrapConfig = new ResinTrapDetectionConfiguration();
             if(touchBoundConfig is null) touchBoundConfig = new TouchingBoundDetectionConfiguration();
             if(progress is null) progress = new OperationProgress();
-
+            
             var result = new ConcurrentBag<LayerIssue>();
             var layerHollowAreas = new ConcurrentDictionary<uint, List<LayerHollowArea>>();
 
             bool islandsFinished = false;
+
+            bool IsIgnored(LayerIssue issue) => !(ignoredIssues is null) && ignoredIssues.Count > 0 && ignoredIssues.Contains(issue);
+
+            bool AddIssue(LayerIssue issue)
+            {
+                if (IsIgnored(issue)) return false;
+                result.Add(issue);
+                return true;
+            }
 
             progress.Reset(OperationProgress.StatusIslands, Count);
 
@@ -813,7 +840,7 @@ namespace UVtools.Core
                         {
                             if (emptyLayersConfig)
                             {
-                                result.Add(new LayerIssue(layer, LayerIssue.IssueType.EmptyLayer));
+                                AddIssue(new LayerIssue(layer, LayerIssue.IssueType.EmptyLayer));
                             }
 
                             lock (progress.Mutex)
@@ -851,41 +878,75 @@ namespace UVtools.Core
                             {
                                 // TouchingBounds Checker
                                 List<Point> pixels = new List<Point>();
-                                for (int x = 0; x < image.Width; x++) // Check Top and Bottom bounds
+                                bool touchTop = layer.BoundingRectangle.Top <= touchBoundConfig.MarginTop;
+                                bool touchBottom = layer.BoundingRectangle.Bottom >= image.Height - touchBoundConfig.MarginBottom;
+                                bool touchLeft = layer.BoundingRectangle.Left <= touchBoundConfig.MarginLeft;
+                                bool touchRight = layer.BoundingRectangle.Right >= image.Width - touchBoundConfig.MarginRight;
+                                if (touchTop || touchBottom)
                                 {
-                                    if (span[x] >= touchBoundConfig.MaximumPixelBrightness) // Top
+                                    for (int x = 0; x < image.Width; x++) // Check Top and Bottom bounds
                                     {
-                                        pixels.Add(new Point(x, 0));
-                                    }
+                                        if (touchTop)
+                                        {
+                                            for (int y = 0; y < touchBoundConfig.MarginTop; y++) // Top
+                                            {
+                                                if (span[image.GetPixelPos(x, y)] >=
+                                                    touchBoundConfig.MinimumPixelBrightness)
+                                                {
+                                                    pixels.Add(new Point(x, y));
+                                                }
+                                            }
+                                        }
 
-                                    if (span[step * image.Height - step + x] >=
-                                        touchBoundConfig.MaximumPixelBrightness) // Bottom
-                                    {
-                                        pixels.Add(new Point(x, image.Height - 1));
+                                        if (touchBottom)
+                                        {
+                                            for (int y = image.Height - touchBoundConfig.MarginBottom; y < image.Height; y++) // Bottom
+                                            {
+                                                if (span[image.GetPixelPos(x, y)] >=
+                                                    touchBoundConfig.MinimumPixelBrightness)
+                                                {
+                                                    pixels.Add(new Point(x, y));
+                                                }
+                                            }
+                                        }
+
                                     }
                                 }
 
-                                for (int y = 0; y < image.Height; y++) // Check Left and Right bounds
+                                if (touchLeft || touchRight)
                                 {
-                                    if (span[y * step] >= touchBoundConfig.MaximumPixelBrightness) // Left
+                                    for (int y = touchBoundConfig.MarginTop; y < image.Height - touchBoundConfig.MarginBottom; y++) // Check Left and Right bounds
                                     {
-                                        pixels.Add(new Point(0, y));
-                                    }
+                                        if (touchLeft)
+                                        {
+                                            for (int x = 0; x < touchBoundConfig.MarginLeft; x++) // Left
+                                            {
+                                                if (span[image.GetPixelPos(x, y)] >=
+                                                    touchBoundConfig.MinimumPixelBrightness)
+                                                {
+                                                    pixels.Add(new Point(x, y));
+                                                }
+                                            }
+                                        }
 
-                                    if (span[y * step + step - 1] >= touchBoundConfig.MaximumPixelBrightness) // Right
-                                    {
-                                        pixels.Add(new Point(step - 1, y));
+                                        if (touchRight)
+                                        {
+                                            for (int x = image.Width - touchBoundConfig.MarginRight; x < image.Width; x++) // Right
+                                            {
+                                                if (span[image.GetPixelPos(x, y)] >=
+                                                    touchBoundConfig.MinimumPixelBrightness)
+                                                {
+                                                    pixels.Add(new Point(x, y));
+                                                }
+                                            }
+                                        }
                                     }
                                 }
 
                                 if (pixels.Count > 0)
                                 {
-                                    result.Add(new LayerIssue(layer, LayerIssue.IssueType.TouchingBound,
+                                    AddIssue(new LayerIssue(layer, LayerIssue.IssueType.TouchingBound,
                                         pixels.ToArray()));
-                                    /*result.TryAdd(layer.Index, new List<LayerIssue>
-                                        {
-                                            new LayerIssue(layer, LayerIssue.IssueType.TouchingBound, pixels.ToArray())
-                                        });*/
                                 }
                             }
 
@@ -998,7 +1059,7 @@ namespace UVtools.Core
 
                                         if (pixelsSupportingIsland < requiredSupportingPixels)
                                         {
-                                            result.Add(new LayerIssue(layer, LayerIssue.IssueType.Island,
+                                            AddIssue(new LayerIssue(layer, LayerIssue.IssueType.Island,
                                                 points.ToArray(),
                                                 rect));
                                         }
@@ -1036,7 +1097,7 @@ namespace UVtools.Core
 
                                                 if (points.Count >= overhangConfig.RequiredPixelsToConsider)
                                                 {
-                                                    result.Add(new LayerIssue(
+                                                    AddIssue(new LayerIssue(
                                                         layer, LayerIssue.IssueType.Overhang, points.ToArray(), rect
                                                     ));
                                                 }
@@ -1091,7 +1152,7 @@ namespace UVtools.Core
                                     if (vecPoints.Size >= overhangConfig.RequiredPixelsToConsider)
                                     {
                                         //subtractedImage.Save("D:\\subtracted_image\\subtracted_erroded.png");
-                                        result.Add(new LayerIssue(
+                                        AddIssue(new LayerIssue(
                                             layer, LayerIssue.IssueType.Overhang, vecPoints.ToArray(), layer.BoundingRectangle
                                             ));
                                     }
@@ -1367,7 +1428,7 @@ namespace UVtools.Core
                         where area.Type == LayerHollowArea.AreaType.Trap 
                         select new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contour, area.BoundingRectangle))
                 {
-                    result.Add(issue);
+                    AddIssue(issue);
                 }
             }
 
@@ -2076,6 +2137,7 @@ namespace UVtools.Core
 
 
         #endregion
+
 
         
     }

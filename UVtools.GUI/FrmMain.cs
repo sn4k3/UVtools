@@ -3625,7 +3625,7 @@ namespace UVtools.GUI
                 try
                 {
                     Issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapConfig, touchingBoundConfig,
-                        emptyLayersConfig, FrmLoading.RestartProgress());
+                        emptyLayersConfig, null, FrmLoading.RestartProgress());
                 }
                 catch (OperationCanceledException)
                 {
@@ -4061,7 +4061,7 @@ namespace UVtools.GUI
                     try
                     {
                         var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapConfig,
-                            touchingBoundConfig, false,
+                            touchingBoundConfig, false, null,
                             FrmLoading.RestartProgress());
 
                         issues.RemoveAll(issue => issue.Type != LayerIssue.IssueType.Island && issue.Type != LayerIssue.IssueType.Overhang); // Remove all non islands

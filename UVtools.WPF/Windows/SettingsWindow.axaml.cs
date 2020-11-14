@@ -61,7 +61,7 @@ namespace UVtools.WPF.Windows
 
             
             //MaxHeight = Screens.Primary.WorkingArea.Height - 50;
-            ScrollViewerMaxHeight = Screens.Primary.WorkingArea.Height / Screens.Primary.PixelDensity - 200;
+            ScrollViewerMaxHeight = Screens.Primary.WorkingArea.Height / Screens.Primary.PixelDensity - 300;
 
 
             DataContext = this;

@@ -94,5 +94,13 @@ namespace UVtools.Core.FileFormats
 
         public static IEqualityComparer<FileExtension> ExtensionComparer { get; } = new ExtensionEqualityComparer();
         #endregion
+
+        #region Methods
+
+        public FileFormat GetFileFormat()
+        {
+            return FileFormat.FindByExtension(Extension);
+        }
+        #endregion
     }
 }

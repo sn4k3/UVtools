@@ -71,5 +71,13 @@ namespace UVtools.WPF.Controls
             result.AddRange(data.Select(kv => new FileDialogFilter {Name = kv.Key, Extensions = kv.Value}));
             return result;
         }
+
+        public static List<FileDialogFilter> ToAvaloniaFilter(string name, string extension)
+        {
+            return new List<FileDialogFilter>(1)
+            {
+                new FileDialogFilter {Name = name, Extensions = new List<string>(1) {extension}}
+            };
+        }
     }
 }

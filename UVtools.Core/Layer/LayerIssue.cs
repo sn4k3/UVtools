@@ -5,16 +5,18 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Runtime.CompilerServices;
+using System.Linq;
 
 namespace UVtools.Core
 {
     #region LayerIssue Class
 
-    public class IssuesDetectionConfiguration
+    public sealed class IssuesDetectionConfiguration
     {
         public IslandDetectionConfiguration IslandConfig { get; }
         public OverhangDetectionConfiguration OverhangConfig { get; }
@@ -32,7 +34,7 @@ namespace UVtools.Core
         }
     }
 
-    public class IslandDetectionConfiguration
+    public sealed class IslandDetectionConfiguration
     {
         /// <summary>
         /// Gets or sets if the detection is enabled
@@ -93,7 +95,7 @@ namespace UVtools.Core
     /// <summary>
     /// Overhang configuration
     /// </summary>
-    public class OverhangDetectionConfiguration
+    public sealed class OverhangDetectionConfiguration
     {
         /// <summary>
         /// Gets or sets if the detection is enabled
@@ -128,7 +130,7 @@ namespace UVtools.Core
         }
     }
 
-    public class ResinTrapDetectionConfiguration
+    public sealed class ResinTrapDetectionConfiguration
     {
         /// <summary>
         /// Gets or sets if the detection is enabled
@@ -163,7 +165,7 @@ namespace UVtools.Core
     }
 
 
-    public class TouchingBoundDetectionConfiguration
+    public sealed class TouchingBoundDetectionConfiguration
     {
         /// <summary>
         /// Gets if the detection is enabled
@@ -171,9 +173,30 @@ namespace UVtools.Core
         public bool Enabled { get; set; } = true;
 
         /// <summary>
-        /// Gets the maximum pixel brightness to be a touching bound
+        /// Gets the minimum pixel brightness to be a touching bound
         /// </summary>
-        public byte MaximumPixelBrightness { get; set; } = 200;
+        public byte MinimumPixelBrightness { get; set; } = 127;
+
+        /// <summary>
+        /// Gets or sets the margin in pixels from left edge to check for touching white pixels
+        /// </summary>
+        public byte MarginLeft { get; set; } = 5;
+
+        /// <summary>
+        /// Gets or sets the margin in pixels from top to check for touching white pixels
+        /// </summary>
+        public byte MarginTop { get; set; } = 5;
+
+        /// <summary>
+        /// Gets or sets the margin in pixels from right edge to check for touching white pixels
+        /// </summary>
+        public byte MarginRight { get; set; } = 5;
+
+        /// <summary>
+        /// Gets or sets the margin in pixels from bottom edge to check for touching white pixels
+        /// </summary>
+        public byte MarginBottom { get; set; } = 5;
+
 
         public TouchingBoundDetectionConfiguration(bool enabled = true)
         {
@@ -182,7 +205,7 @@ namespace UVtools.Core
     }
 
 
-    public class LayerIssue : IEnumerable<Point>
+    public class LayerIssue : IEquatable<LayerIssue>, IEnumerable<Point>
     {
         public enum IssueType : byte
         {
@@ -284,6 +307,38 @@ namespace UVtools.Core
         public override string ToString()
         {
             return $"{nameof(Type)}: {Type}, Layer: {Layer.Index}, {nameof(X)}: {X}, {nameof(Y)}: {Y}, {nameof(Size)}: {Size}";
+        }
+
+        public bool Equals(LayerIssue other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return Layer.Index == other.Layer.Index
+                   && Type == other.Type 
+                   && PixelsCount == other.PixelsCount 
+                   && !(Pixels is null) && !(other.Pixels is null) && Pixels.SequenceEqual(other.Pixels)
+                   //&& BoundingRectangle.Equals(other.BoundingRectangle)
+                ;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((LayerIssue) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (Layer != null ? Layer.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (int) Type;
+                hashCode = (hashCode * 397) ^ (Pixels != null ? Pixels.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ BoundingRectangle.GetHashCode();
+                return hashCode;
+            }
         }
     }
     #endregion

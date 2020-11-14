@@ -14,12 +14,13 @@ using Avalonia.Media;
 using JetBrains.Annotations;
 using ReactiveUI;
 using UVtools.Core;
+using UVtools.Core.Objects;
 using Color=UVtools.WPF.Structures.Color;
 
 namespace UVtools.WPF
 {
     [Serializable]
-    public sealed class UserSettings : ReactiveObject
+    public sealed class UserSettings : BindableBase
     {
         #region Constants
         public const ushort SETTINGS_VERSION = 1;
@@ -29,7 +30,7 @@ namespace UVtools.WPF
 
         #region General
         [Serializable]
-        public sealed class GeneralUserSettings : ReactiveObject
+        public sealed class GeneralUserSettings : BindableBase
         {
             private bool _startMaximized = true;
             private bool _checkForUpdatesOnStartup = true;
@@ -133,7 +134,7 @@ namespace UVtools.WPF
 
         #region Layer Preview
         [Serializable]
-        public sealed class LayerPreviewUserSettings : ReactiveObject
+        public sealed class LayerPreviewUserSettings : BindableBase
         {
             private Color _tooltipOverlayBackgroundColor = new Color(210, 255, 255, 192);
             private bool _tooltipOverlay = true;
@@ -541,7 +542,7 @@ namespace UVtools.WPF
 
         #region Issues
         [Serializable]
-        public sealed class IssuesUserSettings : ReactiveObject
+        public sealed class IssuesUserSettings : BindableBase
         {
             private bool _computeIssuesOnLoad = false;
             private bool _computeIssuesOnClickTab = true;
@@ -563,6 +564,12 @@ namespace UVtools.WPF
             private byte _resinTrapRequiredAreaToProcessCheck = 17;
             private byte _resinTrapRequiredBlackPixelsToDrain = 10;
             private byte _resinTrapMaximumPixelBrightnessToDrain = 30;
+            private byte _touchingBoundMinimumPixelBrightness = 127;
+            private byte _touchingBoundMarginLeft = 5;
+            private byte _touchingBoundMarginTop = 5;
+            private byte _touchingBoundMarginRight = 5;
+            private byte _touchingBoundMarginBottom = 5;
+            private bool _touchingBoundSyncMargins = true;
 
             public bool ComputeIssuesOnLoad
             {
@@ -684,6 +691,70 @@ namespace UVtools.WPF
                 set => this.RaiseAndSetIfChanged(ref _resinTrapMaximumPixelBrightnessToDrain, value);
             }
 
+            public byte TouchingBoundMinimumPixelBrightness
+            {
+                get => _touchingBoundMinimumPixelBrightness;
+                set => RaiseAndSetIfChanged(ref _touchingBoundMinimumPixelBrightness, value);
+            }
+
+            public byte TouchingBoundMarginLeft
+            {
+                get => _touchingBoundMarginLeft;
+                set
+                {
+                    if(!RaiseAndSetIfChanged(ref _touchingBoundMarginLeft, value)) return;
+                    if (_touchingBoundSyncMargins)
+                    {
+                        TouchingBoundMarginRight = value;
+                    }
+                }
+            }
+
+            public byte TouchingBoundMarginTop
+            {
+                get => _touchingBoundMarginTop;
+                set
+                {
+                    if (!RaiseAndSetIfChanged(ref _touchingBoundMarginTop, value)) return;
+                    if (_touchingBoundSyncMargins)
+                    {
+                        TouchingBoundMarginBottom = value;
+                    }
+                }
+            }
+
+            public byte TouchingBoundMarginRight
+            {
+                get => _touchingBoundMarginRight;
+                set
+                {
+                    if(!RaiseAndSetIfChanged(ref _touchingBoundMarginRight, value)) return;
+                    if (_touchingBoundSyncMargins)
+                    {
+                        TouchingBoundMarginLeft = value;
+                    }
+                }
+            }
+
+            public byte TouchingBoundMarginBottom
+            {
+                get => _touchingBoundMarginBottom;
+                set
+                {
+                    if(!RaiseAndSetIfChanged(ref _touchingBoundMarginBottom, value)) return;
+                    if (_touchingBoundSyncMargins)
+                    {
+                        TouchingBoundMarginTop = value;
+                    }
+                }
+            }
+
+            public bool TouchingBoundSyncMargins
+            {
+                get => _touchingBoundSyncMargins;
+                set => RaiseAndSetIfChanged(ref _touchingBoundSyncMargins, value);
+            }
+
             public IssuesUserSettings Clone()
             {
                 return MemberwiseClone() as IssuesUserSettings;
@@ -694,7 +765,7 @@ namespace UVtools.WPF
 
         #region Pixel Editor
         [Serializable]
-        public sealed class PixelEditorUserSettings : ReactiveObject
+        public sealed class PixelEditorUserSettings : BindableBase
         {
             private Color _addPixelColor = new Color(255, 144, 238, 144);
             private Color _addPixelHighlightColor = new Color(255, 0, 255, 0);
@@ -882,7 +953,7 @@ namespace UVtools.WPF
 
         #region Layer Repair
         [Serializable]
-        public sealed class LayerRepairUserSettings : ReactiveObject
+        public sealed class LayerRepairUserSettings : BindableBase
         {
             private bool _repairIslands = true;
             private bool _repairResinTraps = true;

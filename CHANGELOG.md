@@ -1,6 +1,32 @@
 # Changelog
 
-## 07/11/2020 - v1.2.1
+## 14/11/2020 - v1.3.0
+
+* (Add) Changelog description to the new version update dialog
+* (Add) Tool - Infill: Proper configurable infills
+* (Add) Pixel area as "px²" to the layer bounds and ROI at layer bottom information bar
+* (Add) Pixel dimming: Alternate pattern every x layers
+* (Add) Pixel dimming: Lattice infill
+* (Add) Solidify: Required minimum/maximum area to solidify found areas (Default values will produce the old behaviour)
+* (Add) Issues: Allow to hide and ignore selected issues
+* (Add) Issue - Touch boundary: Allow to configure Left, Top, Right, Bottom margins in pixels, defaults to 5px (#94)
+* (Add) UVJ: Allow convert to another formats (#96)
+* (Add) Setters to some internal Core properties for more abstraction
+* (Improvement) Issue - Touch boundary: Only check boundary pixels if layer bounds overlap the set margins, otherwise, it will not waste cycles on check individual rows of pixels when not need to
+* (Change) Place .ctb extension show first than .cbddlp due more popular this days
+* (Change) Pixel dimming: Text "Borders" to "Walls"
+* (Change) Issues: Remove "Remove" text from button, keep only the icon to free up space
+* (Change) Ungroup extensions on "covert to" menu (#97)
+* (Fix) Issues: Detect button has a incorrect "save" icon
+* (Fix) SL1: Increase NumSlow property limit
+* (Fix) UVJ: not decoding nor showing preview images
+* (Fix) "Convert to" menu shows same options than previous loaded file when current file dont support convertions (#96)
+* (Fix) Hides "Convert to" menu when unable to convert to another format (#96)
+* (Fix) Program crash when demo file is disabled and tries to load a file in
+* (Fix) Rare crash on startup when mouse dont move in startup period and user types a key in meanwhile
+* (Fix) On a slow startup on progress window it will show "Decoded layers" as default text, changed to "Initializing"
+
+## 08/11/2020 - v1.2.1
 
 * (Add) IsModified property to current layer information, indicates if layer have unsaved changes
 * (Add) Splitter between preview image and properties to resize the vertical space between that two controls

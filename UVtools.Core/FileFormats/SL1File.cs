@@ -255,7 +255,7 @@ namespace UVtools.Core.FileFormats
             public string MaterialName { get; set; }
             public ushort NumFade { get; set; }
             public ushort NumFast { get; set; }
-            public byte NumSlow { get; set; }
+            public ushort NumSlow { get; set; }
             public string PrintProfile { get; set; }
             public float PrintTime { get; set; }
             public string PrinterModel { get; set; }
@@ -289,15 +289,15 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Archive;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("sl1", "PrusaSlicer SL1 Files")
+            new FileExtension("sl1", "PrusaSlicer SL1")
         };
 
         public override Type[] ConvertToFormats { get; } =
         {
             typeof(ChituboxFile),
             typeof(ChituboxZipFile),
-            typeof(PWSFile),
             typeof(PHZFile),
+            typeof(PWSFile),
             typeof(ZCodexFile),
             typeof(CWSFile),
             typeof(LGSFile),
@@ -407,15 +407,47 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float PrintTime => OutputConfigSettings.PrintTime;
+        public override float PrintTime
+        {
+            get => OutputConfigSettings.PrintTime;
+            set
+            {
+                OutputConfigSettings.PrintTime = value;
+                RaisePropertyChanged();
+            }
+        }
 
-        public override float UsedMaterial => OutputConfigSettings.UsedMaterial;
+        public override float UsedMaterial
+        {
+            get => OutputConfigSettings.UsedMaterial;
+            set
+            {
+                OutputConfigSettings.UsedMaterial = value;
+                RaisePropertyChanged();
+            }
+        }
 
         public override float MaterialCost => (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.BottleCost / MaterialSettings.BottleVolume, 2);
 
-        public override string MaterialName => OutputConfigSettings.MaterialName;
+        public override string MaterialName
+        {
+            get => OutputConfigSettings.MaterialName;
+            set
+            {
+                OutputConfigSettings.MaterialName = value;
+                RaisePropertyChanged();
+            }
+        }
 
-        public override string MachineName => PrinterSettings.PrinterSettingsId;
+        public override string MachineName
+        {
+            get => PrinterSettings.PrinterSettingsId;
+            set
+            {
+                PrinterSettings.PrinterSettingsId = value;
+                RaisePropertyChanged();
+            }
+        }
 
         public override object[] Configs => new object[] { PrinterSettings, MaterialSettings, PrintSettings, OutputConfigSettings };
         #endregion
@@ -569,14 +601,18 @@ namespace UVtools.Core.FileFormats
                             var fieldName = IniKeyToMemberName(keyValue[0]);
                             bool foundMember = false;
 
+                            
                             foreach (var obj in Configs)
                             {
                                 var attribute = obj.GetType().GetProperty(fieldName);
                                 if (ReferenceEquals(attribute, null)) continue;
                                 Helpers.SetPropertyValue(attribute, obj, keyValue[1]);
+
                                 Statistics.ImplementedKeys.Add(keyValue[0]);
                                 foundMember = true;
                             }
+                           
+                            
 
                             if (!foundMember)
                             {

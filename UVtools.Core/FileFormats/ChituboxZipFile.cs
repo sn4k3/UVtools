@@ -93,7 +93,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Archive;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("zip", "Chitubox Zip Files")
+            new FileExtension("zip", "Chitubox Zip")
         };
 
         public override Type[] ConvertToFormats { get; } = {
@@ -317,15 +317,56 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float PrintTime => HeaderSettings.EstimatedPrintTime;
+        public override float PrintTime
+        {
+            get => HeaderSettings.EstimatedPrintTime;
+            set
+            {
+                HeaderSettings.EstimatedPrintTime = value;
+                RaisePropertyChanged();
+            }
+        }
 
-        public override float UsedMaterial => HeaderSettings.Weight;
+        public override float UsedMaterial
+        {
+            get => HeaderSettings.Weight;
+            set
+            {
+                HeaderSettings.Weight = value;
+                RaisePropertyChanged();
+            }
+        }
 
-        public override float MaterialCost => HeaderSettings.Price;
+        public override float MaterialCost
+        {
+            get => HeaderSettings.Price;
+            set
+            {
+                HeaderSettings.Price = value;
+                RaisePropertyChanged();
+            }
+        }
 
-        public override string MaterialName => HeaderSettings.Resin;
+        public override string MaterialName
+        {
+            get => HeaderSettings.Resin;
+            set
+            {
+                HeaderSettings.Resin = value;
+                RaisePropertyChanged();
+            }
+        }
 
-        public override string MachineName => HeaderSettings.MachineType;
+        public override string MachineName
+        {
+            get => HeaderSettings.MachineType;
+            set
+            {
+                HeaderSettings.MachineType = value;
+                RequireFullEncode = true;
+                RaisePropertyChanged();
+            }
+        }
 
         public override object[] Configs => new object[] { HeaderSettings };
 

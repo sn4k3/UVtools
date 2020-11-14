@@ -309,13 +309,13 @@ namespace UVtools.WPF
             }
         }
 
-        public string LayerBoundsStr => LayerCache.Layer is null ? "NS" : LayerCache.Layer.BoundingRectangle.ToString();
+        public string LayerBoundsStr => LayerCache.Layer is null ? "NS" : $"{LayerCache.Layer.BoundingRectangle} ({LayerCache.Layer.BoundingRectangle.GetArea()}px²)";
         public string LayerROIStr
         {
             get
             {
                 var roi = ROI;
-                return roi.IsEmpty ? "NS" : roi.ToString();
+                return roi.IsEmpty ? "NS" : $"{roi} ({roi.GetArea()}px²)";
             }
         }
 
@@ -540,7 +540,7 @@ namespace UVtools.WPF
 
                         if (issue.Type == LayerIssue.IssueType.ResinTrap)
                         {
-                            color = selectedIssues.Contains(issue)
+                            color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
                                 ? Settings.LayerPreview.ResinTrapHighlightColor
                                 : Settings.LayerPreview.ResinTrapColor;
 
@@ -564,7 +564,7 @@ namespace UVtools.WPF
                         switch (issue.Type)
                         {
                             case LayerIssue.IssueType.Island:
-                                color = selectedIssues.Contains(issue)
+                                color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
                                     ? Settings.LayerPreview.IslandHighlightColor
                                     : Settings.LayerPreview.IslandColor;
                                 if (_showLayerImageCrosshairs &&
@@ -576,7 +576,7 @@ namespace UVtools.WPF
 
                                 break;
                             case LayerIssue.IssueType.Overhang:
-                                color = selectedIssues.Contains(issue)
+                                color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
                                     ? Settings.LayerPreview.OverhangHighlightColor
                                     : Settings.LayerPreview.OverhangColor;
                                 if (_showLayerImageCrosshairs &&

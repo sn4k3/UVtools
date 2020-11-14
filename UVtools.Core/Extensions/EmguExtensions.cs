@@ -17,6 +17,7 @@ namespace UVtools.Core.Extensions
 {
     public static class EmguExtensions
     {
+        public static readonly MCvScalar WhiteByte = new MCvScalar(255);
         public static readonly MCvScalar BlackByte = new MCvScalar(0);
         public static readonly MCvScalar Black3Byte = new MCvScalar(0, 0, 0);
         public static readonly MCvScalar Transparent4Byte = new MCvScalar(0, 0, 0, 0);

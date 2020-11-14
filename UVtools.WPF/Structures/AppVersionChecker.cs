@@ -6,15 +6,12 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
-using ABI.Windows.Data.Json;
 using Avalonia.Threading;
 using Newtonsoft.Json;
 using UVtools.Core;
@@ -29,6 +26,7 @@ namespace UVtools.WPF.Structures
         public const string GitHubReleaseApi = "https://api.github.com/repos/sn4k3/UVtools/releases/latest";
         private string _version;
         private string _url;
+        private string _changelog;
 
         public string Filename
         {
@@ -83,6 +81,12 @@ namespace UVtools.WPF.Structures
             }
         }
 
+        public string Changelog
+        {
+            get => _changelog;
+            set => RaiseAndSetIfChanged(ref _changelog, value);
+        }
+
         public string VersionAnnouncementText => $"New version v{_version} is available!";
 
         public string UrlLatestRelease => $"{About.Website}/releases/latest";
@@ -113,12 +117,15 @@ namespace UVtools.WPF.Structures
                     tag_name = tag_name.Trim(' ', 'v', 'V');
                     Debug.WriteLine($"Version checker: v{App.VersionStr} <=> v{tag_name}");
 
+                    Changelog = json.body;
+
                     if (string.Compare(tag_name, App.VersionStr, StringComparison.OrdinalIgnoreCase) > 0)
                     {
                         Dispatcher.UIThread.InvokeAsync(() =>
                         {
                             Version = tag_name;
-                            Debug.WriteLine($"New version detected: {DownloadLink}");
+                            Debug.WriteLine($"New version detected: {DownloadLink}\n" + 
+                                                  $"{_changelog}");
                         });
                         return true;
                     }

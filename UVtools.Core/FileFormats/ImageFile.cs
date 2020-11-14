@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Operations;
@@ -59,11 +58,11 @@ namespace UVtools.Core.FileFormats
 
         public override byte AntiAliasing { get; } = 1;
         public override float LayerHeight { get; set; } = 0;
-        public override float PrintTime { get; } = 0;
+        /*public override float PrintTime { get; } = 0;
         public override float UsedMaterial { get; } = 0;
         public override float MaterialCost { get; } = 0;
         public override string MaterialName { get; } = null;
-        public override string MachineName { get; } = null;
+        public override string MachineName { get; } = null;*/
         public override object[] Configs { get; } = null;
 
         private Mat ImageMat { get; set; }

@@ -679,7 +679,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("phz", "Chitubox PHZ Files"),
+            new FileExtension("phz", "Chitubox PHZ"),
         };
 
         public override Type[] ConvertToFormats { get; } =
@@ -903,15 +903,48 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float PrintTime => HeaderSettings.PrintTime;
+        public override float PrintTime
+        {
+            get => HeaderSettings.PrintTime;
+            set
+            {
+                HeaderSettings.PrintTime = (uint) value;
+                RaisePropertyChanged();
+            }
+        }
 
-        public override float UsedMaterial => (float) Math.Round(HeaderSettings.VolumeMl, 2);
+        public override float UsedMaterial
+        {
+            get => (float) Math.Round(HeaderSettings.VolumeMl, 2);
+            set
+            {
+                HeaderSettings.VolumeMl = (float)Math.Round(value, 2);
+                RaisePropertyChanged();
+            }
+        }
 
-        public override float MaterialCost => (float) Math.Round(HeaderSettings.CostDollars, 2);
+        public override float MaterialCost
+        {
+            get => (float) Math.Round(HeaderSettings.CostDollars, 2);
+            set
+            {
+                HeaderSettings.CostDollars = (float)Math.Round(value, 2);
+                RaisePropertyChanged();
+            }
+        }
 
-        public override string MaterialName => "Unknown";
-        public override string MachineName => HeaderSettings.MachineName;
-        
+        public override string MachineName
+        {
+            get => HeaderSettings.MachineName;
+            set
+            {
+                HeaderSettings.MachineName = value;
+                HeaderSettings.MachineNameSize = (uint)HeaderSettings.MachineName.Length;
+                RequireFullEncode = true;
+                RaisePropertyChanged();
+            }
+        }
+
         public override object[] Configs => new object[] { HeaderSettings };
 
         #endregion

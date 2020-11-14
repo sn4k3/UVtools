@@ -769,9 +769,9 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("pws", "Photon Workshop PWS Files"),
-            new FileExtension("pw0", "Photon Workshop PW0 Files"),
-            new FileExtension("pwmx", "Photon Workshop PWMX Files")
+            new FileExtension("pws", "Photon Workshop PWS"),
+            new FileExtension("pw0", "Photon Workshop PW0"),
+            new FileExtension("pwmx", "Photon Workshop PWMX")
         };
 
         public override Type[] ConvertToFormats { get; } =
@@ -931,13 +931,26 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float PrintTime => 0;
+        public override float UsedMaterial
+        {
+            get => (float) Math.Round(HeaderSettings.Volume, 2);
+            set
+            {
+                HeaderSettings.Volume = (float)Math.Round(value, 2);
+                RaisePropertyChanged();
+            }
+        }
 
-        public override float UsedMaterial => (float) Math.Round(HeaderSettings.Volume, 2);
+        public override float MaterialCost
+        {
+            get => (float) Math.Round(HeaderSettings.Price, 2);
+            set
+            {
+                HeaderSettings.Price = (float)Math.Round(value, 2);
+                RaisePropertyChanged();
+            }
+        }
 
-        public override float MaterialCost => (float) Math.Round(HeaderSettings.Price, 2);
-
-        public override string MaterialName => null;
         public override string MachineName => LayerFormat == LayerRleFormat.PWS ? "AnyCubic Photon S" : "AnyCubic Photon Zero";
         
         public override object[] Configs => new object[] { FileMarkSettings, HeaderSettings, PreviewSettings, LayersDefinition };

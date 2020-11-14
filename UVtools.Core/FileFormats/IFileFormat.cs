@@ -57,6 +57,11 @@ namespace UVtools.Core.FileFormats
         string FileFilterExtensionsOnly { get; }
 
         /// <summary>
+        /// Gets or sets if change a global property should rebuild every layer data based on them
+        /// </summary>
+        bool SuppressRebuildProperties { get; set; }
+
+        /// <summary>
         /// Gets the input file path loaded into this <see cref="FileFormat"/>
         /// </summary>
         string FileFullPath { get; set; }
@@ -216,7 +221,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the estimate print time in seconds
         /// </summary>
-        float PrintTime { get; }
+        float PrintTime { get; set; }
 
         /// <summary>
         /// Gets the estimate print time in seconds, if print doesn't support it it will be calculated
@@ -231,22 +236,22 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the estimate used material in ml
         /// </summary>
-        float UsedMaterial { get; }
+        float UsedMaterial { get; set; }
 
         /// <summary>
         /// Gets the estimate material cost
         /// </summary>
-        float MaterialCost { get; }
+        float MaterialCost { get; set; }
 
         /// <summary>
         /// Gets the material name
         /// </summary>
-        string MaterialName { get; }
+        string MaterialName { get; set; }
 
         /// <summary>
         /// Gets the machine name
         /// </summary>
-        string MachineName { get; }
+        string MachineName { get; set; }
 
         /// <summary>
         /// Gets the GCode, returns null if not supported

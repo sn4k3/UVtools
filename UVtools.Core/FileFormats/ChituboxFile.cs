@@ -957,17 +957,17 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("cbddlp", "Chitubox DLP Files"),
-            new FileExtension("ctb", "Chitubox CTB Files"),
-            new FileExtension("photon", "Chitubox Photon Files"),
+            new FileExtension("ctb", "Chitubox CTB"),
+            new FileExtension("cbddlp", "Chitubox CBDDLP"),
+            new FileExtension("photon", "Chitubox Photon"),
         };
 
         public override Type[] ConvertToFormats { get; } =
         {
             typeof(ChituboxFile),
             typeof(ChituboxZipFile),
-            typeof(PWSFile),
             typeof(PHZFile),
+            typeof(PWSFile),
             typeof(ZCodexFile),
             typeof(CWSFile),
             typeof(UVJFile),
@@ -1209,15 +1209,48 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float PrintTime => HeaderSettings.PrintTime;
+        public override float PrintTime
+        {
+            get => HeaderSettings.PrintTime;
+            set
+            {
+                HeaderSettings.PrintTime = (uint) value;
+                RaisePropertyChanged();
+            }
+        }
 
-        public override float UsedMaterial => (float) Math.Round(PrintParametersSettings.VolumeMl, 2);
+        public override float UsedMaterial
+        {
+            get => (float) Math.Round(PrintParametersSettings.VolumeMl, 2);
+            set
+            {
+                PrintParametersSettings.VolumeMl = (float) Math.Round(value, 2);
+                RaisePropertyChanged();
+            }
+        }
 
-        public override float MaterialCost => (float) Math.Round(PrintParametersSettings.CostDollars, 2);
+        public override float MaterialCost
+        {
+            get => (float) Math.Round(PrintParametersSettings.CostDollars, 2);
+            set
+            {
+                PrintParametersSettings.CostDollars = (float) Math.Round(value, 2);
+                RaisePropertyChanged();
+            }
+        }
 
-        public override string MaterialName => "Unknown";
-        public override string MachineName => SlicerInfoSettings.MachineName;
-        
+        public override string MachineName
+        {
+            get => SlicerInfoSettings.MachineName;
+            set
+            {
+                SlicerInfoSettings.MachineName = value;
+                SlicerInfoSettings.MachineNameSize = (uint) SlicerInfoSettings.MachineName.Length;
+                RequireFullEncode = true;
+                RaisePropertyChanged();
+            }
+        }
+
         public override object[] Configs => new[] { (object)HeaderSettings, PrintParametersSettings, SlicerInfoSettings };
 
         public bool IsCbddlpFile => HeaderSettings.Magic == MAGIC_CBDDLP;

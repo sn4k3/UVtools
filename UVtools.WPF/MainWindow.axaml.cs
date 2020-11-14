@@ -152,6 +152,14 @@ namespace UVtools.WPF
             },
             new MenuItem
             {
+                Tag = new OperationInfill(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/stroopwafel-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
                 Tag = new OperationBlur(),
                 Icon = new Avalonia.Controls.Image
                 {
@@ -230,7 +238,7 @@ namespace UVtools.WPF
 
         #region Members
 
-        public Stopwatch LastStopWatch;
+        public Stopwatch LastStopWatch = new Stopwatch();
         
         private bool _isGUIEnabled = true;
         private uint _savesCount;
@@ -479,7 +487,7 @@ namespace UVtools.WPF
                 || LayerImageBox.SelectionMode == AdvancedImageBox.SelectionModes.Rectangle
                 ) return;
 
-            var imageBoxMousePosition = _globalPointerEventArgs.GetPosition(LayerImageBox);
+            var imageBoxMousePosition = _globalPointerEventArgs?.GetPosition(LayerImageBox) ?? new Point(-1, -1);
             if (imageBoxMousePosition.X < 0 || imageBoxMousePosition.Y < 0) return;
 
             // Pixel Edit is active, Shift is down, and the cursor is over the image region.
@@ -621,6 +629,8 @@ namespace UVtools.WPF
         {
             if (SlicerFile is null) return;
 
+            MenuFileConvertItems = null;
+
             ClipboardManager.Instance.Reset();
 
             SlicerFile?.Dispose();
@@ -628,6 +638,7 @@ namespace UVtools.WPF
 
             SlicerProperties.Clear();
             Issues.Clear();
+            IgnoredIssues.Clear();
             _issuesSliderCanvas.Children.Clear();
             Drawings.Clear();
 
@@ -703,10 +714,12 @@ namespace UVtools.WPF
         {
             var result =
                 await this.MessageBoxQuestion(
-                    $"Do you like to auto-update {About.Software} v{App.Version} to v{VersionChecker.Version}?\n\n" +
+                    $"Do you like to auto-update {About.Software} v{App.Version} to v{VersionChecker.Version}?\n" +
                     "Yes: Auto update\n" +
                     "No:  Manual update\n" +
-                    "Cancel: No action", "Update UVtools?", ButtonEnum.YesNoCancel);
+                    "Cancel: No action\n\n" +
+                    "Changelog:\n" +
+                    $"{VersionChecker.Changelog}", $"Update UVtools to v{VersionChecker.Version}?", ButtonEnum.YesNoCancel);
 
             if (result == ButtonResult.Yes)
             {
@@ -749,9 +762,9 @@ namespace UVtools.WPF
 
         private void UpdateTitle()
         {
-            Title = (SlicerFile is null
-                ? $"{About.Software}   Version: {App.VersionStr}"
-                : $"{About.Software}   File: {Path.GetFileName(SlicerFile.FileFullPath)} ({Math.Round(LastStopWatch.ElapsedMilliseconds / 1000m, 2)}s)   Version: {App.VersionStr}")
+            Title = SlicerFile is null
+                    ? $"{About.Software}   Version: {App.VersionStr}"
+                    : $"{About.Software}   File: {Path.GetFileName(SlicerFile.FileFullPath)} ({Math.Round(LastStopWatch.ElapsedMilliseconds / 1000m, 2)}s)   Version: {App.VersionStr}"
                     ;
 
             Title += $"   RAM: {SizeExtensions.SizeSuffix(Environment.WorkingSet)}";
@@ -846,8 +859,20 @@ namespace UVtools.WPF
                 foreach (var fileFormatType in SlicerFile.ConvertToFormats)
                 {
                     FileFormat fileFormat = FileFormat.FindByType(fileFormatType);
+                    if(fileFormat.FileExtensions is null) continue;
+                    foreach (var fileExtension in fileFormat.FileExtensions)
+                    {
+                        var menuItem = new MenuItem
+                        {
+                            Header = fileExtension.Description,
+                            Tag = fileExtension
+                        };
 
-                    string extensions = fileFormat.FileExtensions.Length > 0
+                        menuItem.Tapped += ConvertToOnTapped;
+
+                        menuItems.Add(menuItem);
+                    }
+                    /*string extensions = fileFormat.FileExtensions.Length > 0
                         ? $" ({fileFormat.GetFileExtensions()})"
                         : string.Empty;
 
@@ -859,7 +884,7 @@ namespace UVtools.WPF
 
                     menuItem.Tapped += ConvertToOnTapped;
 
-                    menuItems.Add(menuItem);
+                    menuItems.Add(menuItem);*/
                 }
 
                 MenuFileConvertItems = menuItems.ToArray();
@@ -920,12 +945,12 @@ namespace UVtools.WPF
         private async void ConvertToOnTapped(object? sender, RoutedEventArgs e)
         {
             if (!(sender is MenuItem item)) return;
-            if (!(item.Tag is FileFormat fileFormat)) return;
+            if (!(item.Tag is FileExtension fileExtension)) return;
 
             SaveFileDialog dialog = new SaveFileDialog
             {
                 InitialFileName = Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath),
-                Filters = Helpers.ToAvaloniaFileFilter(fileFormat.FileFilterAvalonia),
+                Filters = Helpers.ToAvaloniaFilter(fileExtension.Description, fileExtension.Extension),
                 Directory = string.IsNullOrEmpty(Settings.General.DefaultDirectoryConvertFile)
                     ? Path.GetDirectoryName(SlicerFile.FileFullPath)
                     : Settings.General.DefaultDirectoryConvertFile
@@ -942,7 +967,7 @@ namespace UVtools.WPF
                 ShowProgressWindow($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {Path.GetExtension(result)}");
                 try
                 {
-                    return SlicerFile.Convert(fileFormat, result, ProgressWindow.RestartProgress());
+                    return SlicerFile.Convert(fileExtension.GetFileFormat(), result, ProgressWindow.RestartProgress());
                 }
                 catch (OperationCanceledException)
                 {
@@ -1248,6 +1273,9 @@ namespace UVtools.WPF
                             break;
                         case OperationPixelDimming operation:
                             SlicerFile.LayerManager.PixelDimming(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationInfill operation:
+                            SlicerFile.LayerManager.Infill(operation, ProgressWindow.RestartProgress(operation.CanCancel));
                             break;
                         case OperationBlur operation:
                             SlicerFile.LayerManager.Blur(operation, ProgressWindow.RestartProgress(operation.CanCancel));

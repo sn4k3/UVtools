@@ -162,7 +162,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("photons", "Chitubox PhotonS Files"),
+            new FileExtension("photons", "Chitubox PhotonS"),
         };
 
         public override Type[] ConvertToFormats { get; } =
@@ -340,13 +340,17 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float PrintTime => 0;
 
-        public override float UsedMaterial => (float) HeaderSettings.Volume;
+        public override float UsedMaterial
+        {
+            get => (float) HeaderSettings.Volume;
+            set
+            {
+                HeaderSettings.Volume = Math.Round(value, 2);
+                RaisePropertyChanged();
+            }
+        }
 
-        public override float MaterialCost => 0;
-
-        public override string MaterialName => "Unknown";
         public override string MachineName => "Anycubic Photon S";
         
         public override object[] Configs => new object[] { HeaderSettings };

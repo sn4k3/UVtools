@@ -12,7 +12,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <Version>1.2.1</Version>
+    <Version>1.3.0</Version>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -42,8 +42,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\Icons\clipboard-32x32.png" />
+    <None Remove="Assets\Icons\eye-slash-16x16.png" />
     <None Remove="Assets\Icons\layers-alt-32x32.png" />
     <None Remove="Assets\Icons\redo-16x16.png" />
+    <None Remove="Assets\Icons\stroopwafel-16x16.png" />
     <None Remove="Assets\Icons\UVtools.ico" />
   </ItemGroup>
   <ItemGroup>

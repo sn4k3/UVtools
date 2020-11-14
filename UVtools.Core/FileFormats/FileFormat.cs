@@ -7,15 +7,12 @@
  */
 
 using System;
-using System.CodeDom.Compiler;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
@@ -193,8 +190,8 @@ namespace UVtools.Core.FileFormats
             new SL1File(),      // Prusa SL1
             new ChituboxZipFile(),      // Zip
             new ChituboxFile(), // cbddlp, cbt, photon
-            new PhotonSFile(), // photons
             new PHZFile(), // phz
+            new PhotonSFile(), // photons
             new PWSFile(),   // PSW
             new ZCodexFile(),   // zcodex
             new CWSFile(),   // CWS
@@ -330,6 +327,8 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        public bool SuppressRebuildProperties { get; set; }
+
         public string FileFullPath { get; set; }
 
         public abstract byte ThumbnailsCount { get; }
@@ -439,7 +438,7 @@ namespace UVtools.Core.FileFormats
         public virtual byte LightPWM { get; set; } = DefaultLightPWM;
 
 
-        public abstract float PrintTime { get; }
+        public virtual float PrintTime { get; set; }
         //(header.numberOfLayers - header.bottomLayers) * (double) header.exposureTimeSeconds + (double) header.bottomLayers * (double) header.exposureBottomTimeSeconds + (double) header.offTimeSeconds * (double) header.numberOfLayers);
         public virtual float PrintTimeOrComputed
         {
@@ -455,13 +454,13 @@ namespace UVtools.Core.FileFormats
 
         public float PrintTimeHours => (float) Math.Round(PrintTimeOrComputed / 3600, 2);
 
-        public abstract float UsedMaterial { get; }
+        public virtual float UsedMaterial { get; set; }
 
-        public abstract float MaterialCost { get; }
+        public virtual float MaterialCost { get; set; }
 
-        public abstract string MaterialName { get; }
-        
-        public abstract string MachineName { get; }
+        public virtual string MaterialName { get; set; }
+
+        public virtual string MachineName { get; set; } = "Unknown";
 
         public StringBuilder GCode { get; set; }
 
@@ -482,7 +481,7 @@ namespace UVtools.Core.FileFormats
 
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            Debug.WriteLine(e.PropertyName);
+            if (SuppressRebuildProperties) return;
             if (e.PropertyName == nameof(LayerCount))
             {
                 if (this[LayerCount - 1] is null) return; // Not initialized
@@ -1084,9 +1083,7 @@ namespace UVtools.Core.FileFormats
 
         public abstract bool Convert(Type to, string fileFullPath, OperationProgress progress = null);
         public bool Convert(FileFormat to, string fileFullPath, OperationProgress progress = null)
-        {
-            return Convert(to.GetType(), fileFullPath, progress);
-        }
+            => Convert(to.GetType(), fileFullPath, progress);
 
         public byte ValidateAntiAliasingLevel()
         {

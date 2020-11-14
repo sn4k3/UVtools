@@ -730,6 +730,20 @@ namespace UVtools.Core
                             for (int i = 0; i < contours.Size; i++)
                             {
                                 if ((int)arr.GetValue(0, i, 2) != -1 || (int)arr.GetValue(0, i, 3) == -1) continue;
+                                if (operation.MinimumArea > 1)
+                                {
+                                    var rectangle = CvInvoke.BoundingRectangle(contours[i]);
+                                    if (operation.AreaCheckType == OperationSolidify.AreaCheckTypes.More)
+                                    {
+                                        if (rectangle.GetArea() < operation.MinimumArea) continue;
+                                    }
+                                    else
+                                    {
+                                        if (rectangle.GetArea() > operation.MinimumArea) continue;
+                                    }
+                                    
+                                }
+
                                 CvInvoke.DrawContours(target, contours, i, new MCvScalar(255), -1);
                             }
                         }
@@ -751,7 +765,7 @@ namespace UVtools.Core
             }
         }
 
-        public void MutatePixelDimming(Matrix<byte> evenPattern = null, Matrix<byte> oddPattern = null, ushort borderSize = 5)
+        /*public void MutatePixelDimming(Matrix<byte> evenPattern = null, Matrix<byte> oddPattern = null, ushort borderSize = 5)
         {
             var anchor = new Point(-1, -1);
             var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
@@ -808,16 +822,16 @@ namespace UVtools.Core
                     }
                 }
             }
-        }
+        }*/
 
-        public void PixelDimming(OperationPixelDimming operation, Mat evenPatternMask, Mat oddPatternMask = null)
+        public void PixelDimming(OperationPixelDimming operation, Mat patternMask, Mat alternatePatternMask = null)
         {
             var anchor = new Point(-1, -1);
             var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
             
-            if (ReferenceEquals(oddPatternMask, null))
+            if (ReferenceEquals(alternatePatternMask, null))
             {
-                oddPatternMask = evenPatternMask;
+                alternatePatternMask = patternMask;
             }
 
             using (Mat dst = LayerMat)
@@ -826,19 +840,225 @@ namespace UVtools.Core
             {
                 Mat target = operation.GetRoiOrDefault(dst);
 
-                CvInvoke.Erode(target, erode, kernel, anchor, (int) operation.BorderSize, BorderType.Reflect101, default);
+                CvInvoke.Erode(target, erode, kernel, anchor, (int) operation.WallThickness, BorderType.Reflect101, default);
                 CvInvoke.Subtract(target, erode, diff);
-                if (operation.BordersOnly)
+
+                
+                if (operation.WallsOnly)
                 {
-                    CvInvoke.BitwiseAnd(diff, Index % 2 == 0 ? evenPatternMask : oddPatternMask, target);
+                    CvInvoke.BitwiseAnd(diff, operation.IsNormalPattern(Index) ? patternMask : alternatePatternMask, target);
                     CvInvoke.Add(erode, target, target);
                 }
                 else
                 {
-                    CvInvoke.BitwiseAnd(erode, Index % 2 == 0 ? evenPatternMask : oddPatternMask, target);
+                    CvInvoke.BitwiseAnd(erode, operation.IsNormalPattern(Index) ? patternMask : alternatePatternMask, target);
                     CvInvoke.Add(target, diff, target);
                 }
                 
+                LayerMat = dst;
+            }
+        }
+
+        public void Infill(OperationInfill operation)
+        {
+            var anchor = new Point(-1, -1);
+            var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+
+            uint layerIndex = Index - operation.LayerIndexStart;
+            var infillColor = new MCvScalar(operation.InfillBrightness);
+
+            Mat patternMask = null;
+            using (Mat dst = LayerMat)
+            using (Mat erode = new Mat())
+            using (Mat diff = new Mat())
+            {
+                Mat target = operation.GetRoiOrDefault(dst);
+
+                /*if (operation.InfillType == OperationInfill.InfillAlgorithm.Rhombus)
+                {
+                    const double rotationAngle = 55;
+                    patternMask = target.CloneBlank();
+                    int offsetLayerPos = (int)(layerIndex % operation.InfillSpacing);
+                    var pivot = new Point( operation.InfillThickness / 2, operation.InfillThickness / 2);
+
+                    Point[] points1 = {
+                        new Point(operation.InfillThickness / 4, operation.InfillThickness / 2), // Left
+                        new Point(operation.InfillThickness / 2, 0), // Top
+                        new Point((int) (operation.InfillThickness / 1.25), operation.InfillThickness / 2), // Right
+                        new Point(operation.InfillThickness / 2, operation.InfillThickness) // Bottom
+                    };
+                    var vec1 = new VectorOfPoint(points1);
+                    
+                    
+                    Point[] points2 = {
+                        points1[0].Rotate(rotationAngle, pivot),
+                        points1[1].Rotate(rotationAngle, pivot),
+                        points1[2].Rotate(rotationAngle, pivot),
+                        points1[3].Rotate(rotationAngle, pivot),
+                    };
+                    var vec2 = new VectorOfPoint(points2);
+
+                    Point[] points3 = {
+                        points1[0].Rotate(-rotationAngle, pivot),
+                        points1[1].Rotate(-rotationAngle, pivot),
+                        points1[2].Rotate(-rotationAngle, pivot),
+                        points1[3].Rotate(-rotationAngle, pivot),
+                    };
+                    var vec3 = new VectorOfPoint(points3);
+
+                    
+                    /*int halfPos = (operation.InfillThickness + offsetPos) / 2;
+
+                    Point[] points = {
+                        new Point(0+offsetPos, halfPos), // Left
+                        new Point(halfPos, 0+offsetPos), // Top
+                        new Point(operation.InfillThickness+offsetPos, halfPos), // Right
+                        new Point(halfPos, operation.InfillThickness+offsetPos) // Bottom
+                    }; */
+           /*         for (int y = 0; y < patternMask.Height; y += operation.InfillSpacing)
+                    {
+                        for (int x = 0; x < patternMask.Width; x+=operation.InfillSpacing)
+                        {
+                            CvInvoke.FillPoly(patternMask, vec1, infillColor, LineType.EightConnected, default, new Point(x, y+offsetLayerPos));
+                            CvInvoke.FillPoly(patternMask, vec2, infillColor, LineType.EightConnected, default, new Point(x- offsetLayerPos, y+ offsetLayerPos));
+                            CvInvoke.FillPoly(patternMask, vec3, infillColor, LineType.EightConnected, default, new Point(x+ offsetLayerPos, y+ offsetLayerPos));
+                        }
+                    }
+
+                    patternMask.Save("D:\\mask.png");
+
+
+                }
+                else*/ if (operation.InfillType == OperationInfill.InfillAlgorithm.CubicSimple ||
+                           operation.InfillType == OperationInfill.InfillAlgorithm.CubicCenterLink ||
+                           operation.InfillType == OperationInfill.InfillAlgorithm.CubicInterlinked)
+                {
+                    using (var infillPattern = EmguExtensions.InitMat(new Size(operation.InfillSpacing, operation.InfillSpacing)))
+                    using (Mat matPattern = dst.CloneBlank())
+                    {
+                        bool firstPattern = true;
+                        uint accumulator = 0;
+                        uint step = 0;
+                        while (accumulator < layerIndex)
+                        {
+                            firstPattern = true;
+                            accumulator += operation.InfillSpacing;
+
+                            if (accumulator >= layerIndex) break;
+                            firstPattern = false;
+                            accumulator += operation.InfillThickness;
+                        }
+
+                        if (firstPattern)
+                        {
+                            int thickness = operation.InfillThickness / 2;
+                            // Top Left
+                            CvInvoke.Rectangle(infillPattern,
+                                new Rectangle(0, 0, thickness, thickness),
+                                infillColor, -1);
+
+                            // Top Right
+                            CvInvoke.Rectangle(infillPattern,
+                                new Rectangle(infillPattern.Width - thickness, 0, thickness, thickness),
+                                infillColor, -1);
+
+                            // Bottom Left
+                            CvInvoke.Rectangle(infillPattern,
+                                new Rectangle(0, infillPattern.Height - thickness, thickness, thickness),
+                                infillColor, -1);
+
+                            // Bottom Right
+                            CvInvoke.Rectangle(infillPattern,
+                                new Rectangle(infillPattern.Width - thickness, infillPattern.Height - thickness,
+                                    thickness, thickness),
+                                infillColor, -1);
+
+                            if (operation.InfillType == OperationInfill.InfillAlgorithm.CubicCenterLink ||
+                                operation.InfillType == OperationInfill.InfillAlgorithm.CubicInterlinked)
+                            {
+                                // Center cross
+                                int margin = (int) (operation.InfillSpacing - accumulator + layerIndex) - thickness;
+                                int marginInv = (int) (accumulator - layerIndex) - thickness;
+                                CvInvoke.Rectangle(infillPattern,
+                                    new Rectangle(margin, margin, operation.InfillThickness, operation.InfillThickness),
+                                    infillColor, -1);
+
+                                CvInvoke.Rectangle(infillPattern,
+                                    new Rectangle(marginInv, marginInv, operation.InfillThickness, operation.InfillThickness),
+                                    infillColor, -1);
+
+                                CvInvoke.Rectangle(infillPattern,
+                                    new Rectangle(margin, marginInv, operation.InfillThickness, operation.InfillThickness),
+                                    infillColor, -1);
+
+                                CvInvoke.Rectangle(infillPattern,
+                                    new Rectangle(marginInv, margin, operation.InfillThickness, operation.InfillThickness),
+                                    infillColor, -1);
+
+                                if (operation.InfillType == OperationInfill.InfillAlgorithm.CubicInterlinked)
+                                {
+                                    CvInvoke.Rectangle(infillPattern,
+                                        new Rectangle(margin, -thickness, operation.InfillThickness, operation.InfillThickness),
+                                        infillColor, -1);
+
+                                    CvInvoke.Rectangle(infillPattern,
+                                        new Rectangle(marginInv, -thickness, operation.InfillThickness, operation.InfillThickness),
+                                        infillColor, -1);
+
+                                    CvInvoke.Rectangle(infillPattern,
+                                        new Rectangle(-thickness, margin, operation.InfillThickness, operation.InfillThickness),
+                                        infillColor, -1);
+
+                                    CvInvoke.Rectangle(infillPattern,
+                                        new Rectangle(-thickness, marginInv, operation.InfillThickness, operation.InfillThickness),
+                                        infillColor, -1);
+                                    
+                                    CvInvoke.Rectangle(infillPattern,
+                                        new Rectangle(operation.InfillSpacing - thickness, margin, operation.InfillThickness, operation.InfillThickness),
+                                        infillColor, -1);
+
+                                    CvInvoke.Rectangle(infillPattern,
+                                        new Rectangle(operation.InfillSpacing - thickness, marginInv, operation.InfillThickness, operation.InfillThickness),
+                                        infillColor, -1);
+
+                                    CvInvoke.Rectangle(infillPattern,
+                                        new Rectangle(margin, operation.InfillSpacing - thickness, operation.InfillThickness, operation.InfillThickness),
+                                        infillColor, -1);
+
+                                    CvInvoke.Rectangle(infillPattern,
+                                        new Rectangle(marginInv, operation.InfillSpacing - thickness, operation.InfillThickness, operation.InfillThickness),
+                                        infillColor, -1);
+                                }
+                            }
+
+                            
+                        }
+                        else
+                        {
+                            CvInvoke.Rectangle(infillPattern,
+                                new Rectangle(0, 0, operation.InfillSpacing, operation.InfillSpacing),
+                                infillColor, operation.InfillThickness);
+                        }
+
+                        
+                        {
+                            CvInvoke.Repeat(infillPattern, target.Rows / infillPattern.Rows + 1,
+                                target.Cols / infillPattern.Cols + 1, matPattern);
+                            patternMask = new Mat(matPattern, new Rectangle(0, 0, target.Width, target.Height));
+                        }
+                    }
+                }
+
+
+                CvInvoke.Erode(target, erode, kernel, anchor, operation.WallThickness, BorderType.Reflect101,
+                    default);
+                CvInvoke.Subtract(target, erode, diff);
+
+
+                CvInvoke.BitwiseAnd(erode, patternMask, target);
+                CvInvoke.Add(target, diff, target);
+                patternMask?.Dispose();
+
                 LayerMat = dst;
             }
         }
@@ -1033,6 +1253,6 @@ namespace UVtools.Core
         #endregion
 
 
-        
+
     }
 }

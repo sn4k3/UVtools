@@ -89,6 +89,7 @@
           Name="MainMenu.File.Convert" 
           Header="_Convert to" 
           IsEnabled="{Binding IsFileLoaded}"
+          IsVisible="{Binding MenuFileConvertItems, Converter={x:Static ObjectConverters.IsNotNull}}"
           Items="{Binding MenuFileConvertItems}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\convert-16x16.png"/>
@@ -631,6 +632,14 @@
             </RepeatButton>
 
             <Button
+              ToolTip.Tip="Hides and ignores the selected issues, they won't be re-detected.
+&#x0a;ALT + Click to re-enable the ignored issues."
+              IsEnabled="{Binding #IssuesGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+              Command="{Binding OnClickIssueIgnore}">
+                <Image Source="/Assets/Icons/eye-slash-16x16.png" />
+            </Button>
+
+            <Button
               ToolTip.Tip="Remove selected issue when possible.
 &#x0a;Islands: All pixels are removed (turn black).
 &#x0a;ResinTrap: All trap areas are filled with white pixels.
@@ -639,7 +648,7 @@
               Command="{Binding OnClickIssueRemove}">
               <StackPanel Orientation="Horizontal" Spacing="5">
                 <Image Source="/Assets/Icons/trash-16x16.png" />
-                <TextBlock VerticalAlignment="Center" Text="Remove"/>
+                <!--<TextBlock VerticalAlignment="Center" Text="Remove"/>!-->
               </StackPanel>
             </Button>
 
@@ -688,7 +697,7 @@
               </Button.ContextMenu>
               
               <StackPanel Orientation="Horizontal" Spacing="5">
-                <Image Source="/Assets/Icons/save-16x16.png" />
+                <Image Source="/Assets/Icons/refresh-16x16.png" />
                 <TextBlock Text="Detect ⮟"/>
               </StackPanel>
 
@@ -1716,7 +1725,7 @@
       <Grid
         IsEnabled="{Binding IsFileLoaded}"
         Grid.Row="2"
-        ColumnDefinitions="*,*" RowDefinitions="Auto" Margin="5">
+        ColumnDefinitions="4*,2*" RowDefinitions="Auto" Margin="5">
         <WrapPanel Orientation="Horizontal">
           <StackPanel
             ToolTip.Tip="Number of pixels to cure on this layer image and the percentage of them against total lcd pixels"

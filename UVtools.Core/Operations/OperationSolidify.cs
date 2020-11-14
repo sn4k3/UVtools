@@ -13,6 +13,14 @@ namespace UVtools.Core.Operations
     [Serializable]
     public sealed class OperationSolidify : Operation
     {
+        public enum AreaCheckTypes
+        {
+            More,
+            Less
+        }
+        private uint _minimumArea = 1;
+        private AreaCheckTypes _areaCheckType = AreaCheckTypes.More;
+
         #region Overrides
 
         public override string Title => "Solidify";
@@ -29,7 +37,29 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Solidified layers";
 
-        public override bool CanHaveProfiles => false;
+        /// <summary>
+        /// Gets the minimum required area to solidify it
+        /// </summary>
+        public uint MinimumArea
+        {
+            get => _minimumArea;
+            set => RaiseAndSetIfChanged(ref _minimumArea, Math.Max(1, value));
+        }
+
+        public AreaCheckTypes AreaCheckType
+        {
+            get => _areaCheckType;
+            set => RaiseAndSetIfChanged(ref _areaCheckType, value);
+        }
+
+        public static Array AreaCheckTypeItems => Enum.GetValues(typeof(AreaCheckTypes));
+
+        public override string ToString()
+        {
+            var result = $"[Area: ={_areaCheckType} than {_minimumArea}px²]" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
 
         #endregion
     }

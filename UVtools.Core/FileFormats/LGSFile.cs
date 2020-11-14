@@ -207,8 +207,8 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("lgs", "Longer Orange 10 Files"),
-            new FileExtension("lgs30", "Longer Orange 30 Files"),
+            new FileExtension("lgs", "Longer Orange 10"),
+            new FileExtension("lgs30", "Longer Orange 30"),
         };
 
         public override Type[] ConvertToFormats { get; } =
@@ -378,14 +378,14 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float PrintTime => 0;
+        /*public override float PrintTime => 0;
 
         public override float UsedMaterial => 0;
 
         public override float MaterialCost => 0;
 
         public override string MaterialName => "Unknown";
-        public override string MachineName => null;
+        public override string MachineName => null;*/
         
         public override object[] Configs => new object[] { HeaderSettings };
 

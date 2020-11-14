@@ -148,7 +148,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Archive;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("zcodex", "Z-Suite ZCodex Files")
+            new FileExtension("zcodex", "Z-Suite ZCodex")
         };
 
         public override Type[] ConvertToFormats { get; } = null;
@@ -281,15 +281,45 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float PrintTime => ResinMetadataSettings.PrintTime;
+        public override float PrintTime
+        {
+            get => ResinMetadataSettings.PrintTime;
+            set
+            {
+                ResinMetadataSettings.PrintTime = (uint) value;
+                RaisePropertyChanged();
+            }
+        }
 
-        public override float UsedMaterial => ResinMetadataSettings.TotalMaterialVolumeUsed;
+        public override float UsedMaterial
+        {
+            get => ResinMetadataSettings.TotalMaterialVolumeUsed;
+            set
+            {
+                ResinMetadataSettings.TotalMaterialVolumeUsed = (float) Math.Round(value, 2);
+                RaisePropertyChanged();
+            }
+        }
 
-        public override float MaterialCost => 0;
+        public override string MaterialName
+        {
+            get => ResinMetadataSettings.Material;
+            set
+            {
+                ResinMetadataSettings.Material = value;
+                RaisePropertyChanged();
+            }
+        }
 
-        public override string MaterialName => ResinMetadataSettings.Material;
-
-        public override string MachineName => ZCodeMetadataSettings.PrinterName;
+        public override string MachineName
+        {
+            get => ZCodeMetadataSettings.PrinterName;
+            set
+            {
+                ZCodeMetadataSettings.PrinterName = value;
+                RaisePropertyChanged();
+            }
+        }
 
         public override object[] Configs => new[] {(object) ResinMetadataSettings, UserSettings, ZCodeMetadataSettings};
         #endregion

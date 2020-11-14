@@ -17,10 +17,11 @@ namespace UVtools.Core.Operations
     [Serializable]
     public class OperationPixelDimming : Operation
     {
-        private uint _borderSize = 5;
-        private bool _bordersOnly;
-        private Matrix<byte> _evenPattern;
-        private Matrix<byte> _oddPattern;
+        private uint _wallThickness = 5;
+        private bool _wallsOnly;
+        private Matrix<byte> _pattern;
+        private Matrix<byte> _alternatePattern;
+        private ushort _alternatePatternPerLayers = 1;
 
         #region Overrides
         public override string Title => "Pixel dimming";
@@ -43,12 +44,12 @@ namespace UVtools.Core.Operations
         public override StringTag Validate(params object[] parameters)
         {
             var sb = new StringBuilder();
-            if (BorderSize == 0 && BordersOnly)
+            if (WallThickness == 0 && WallsOnly)
             {
                 sb.AppendLine("Border size must be positive in order to use \"Dim only borders\" function.");
             }
 
-            if (EvenPattern is null && OddPattern is null)
+            if (Pattern is null && AlternatePattern is null)
             {
                 sb.AppendLine("Either even or odd pattern must contain a valid matrix.");
             }
@@ -59,46 +60,66 @@ namespace UVtools.Core.Operations
 
         #region Properties
 
-        public uint BorderSize
+        public uint WallThickness
         {
-            get => _borderSize;
-            set => RaiseAndSetIfChanged(ref _borderSize, value);
+            get => _wallThickness;
+            set => RaiseAndSetIfChanged(ref _wallThickness, value);
         }
 
-        public bool BordersOnly
+        public bool WallsOnly
         {
-            get => _bordersOnly;
-            set => RaiseAndSetIfChanged(ref _bordersOnly, value);
+            get => _wallsOnly;
+            set => RaiseAndSetIfChanged(ref _wallsOnly, value);
+        }
+
+        /// <summary>
+        /// Use the alternate pattern every <see cref="AlternatePatternPerLayers"/> layers
+        /// </summary>
+        public ushort AlternatePatternPerLayers
+        {
+            get => _alternatePatternPerLayers;
+            set => RaiseAndSetIfChanged(ref _alternatePatternPerLayers, Math.Max((ushort)1, value));
         }
 
         [XmlIgnore]
-        public Matrix<byte> EvenPattern
+        public Matrix<byte> Pattern
         {
-            get => _evenPattern;
-            set => RaiseAndSetIfChanged(ref _evenPattern, value);
+            get => _pattern;
+            set => RaiseAndSetIfChanged(ref _pattern, value);
         }
 
         [XmlIgnore]
-        public Matrix<byte> OddPattern
+        public Matrix<byte> AlternatePattern
         {
-            get => _oddPattern;
-            set => RaiseAndSetIfChanged(ref _oddPattern, value);
+            get => _alternatePattern;
+            set => RaiseAndSetIfChanged(ref _alternatePattern, value);
         }
 
         #endregion
 
+        #region Methods
+
+        public bool IsNormalPattern(uint layerIndex)
+        {
+            return layerIndex / AlternatePatternPerLayers % 2 == 0;
+        }
+
+        public bool IsAlternatePattern(uint layerIndex) => !IsNormalPattern(layerIndex);
+
         public override string ToString()
         {
-            var result = $"[Border: {_borderSize}px] [Only borders: {_bordersOnly}]" + LayerRangeString;
+            var result = $"[Border: {_wallThickness}px] [Only borders: {_wallsOnly}] [Alternate every: {_alternatePatternPerLayers}]" + LayerRangeString;
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
         }
+
+        #endregion
 
         #region Equality
 
         protected bool Equals(OperationPixelDimming other)
         {
-            return _borderSize == other._borderSize && _bordersOnly == other._bordersOnly;
+            return _wallThickness == other._wallThickness && _wallsOnly == other._wallsOnly;
         }
 
         public override bool Equals(object obj)
@@ -113,7 +134,7 @@ namespace UVtools.Core.Operations
         {
             unchecked
             {
-                return ((int) _borderSize * 397) ^ _bordersOnly.GetHashCode();
+                return ((int) _wallThickness * 397) ^ _wallsOnly.GetHashCode();
             }
         }
 

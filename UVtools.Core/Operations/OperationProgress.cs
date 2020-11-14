@@ -38,7 +38,7 @@ namespace UVtools.Core.Operations
 
         private bool _canCancel = true;
         private string _title = "Operation";
-        private string _itemName = StatusDecodeLayers;
+        private string _itemName = "Initializing";
         private uint _processedItems;
         private uint _itemCount;
         

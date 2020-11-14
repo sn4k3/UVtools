@@ -126,7 +126,7 @@ namespace UVtools.Core.FileFormats
         public PrinterType Printer { get; set; } = PrinterType.Unknown;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("cws", "NovaMaker CWS Files"),
+            new FileExtension("cws", "NovaMaker CWS"),
             //new FileExtension("cws", "NovaMaker Bene Mono CWS Files", "Bene")
         };
 
@@ -306,7 +306,7 @@ namespace UVtools.Core.FileFormats
         }
 
 
-        public override float PrintTime => 0;
+        /*public override float PrintTime => 0;
 
         public override float UsedMaterial => 0;
 
@@ -314,7 +314,7 @@ namespace UVtools.Core.FileFormats
 
         public override string MaterialName => string.Empty;
 
-        public override string MachineName => "Unknown";
+        public override string MachineName => "Unknown";*/
 
         public override object[] Configs => new object[] { SliceSettings, OutputSettings};
         #endregion
