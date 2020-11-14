@@ -33,6 +33,7 @@ namespace UVtools.WPF.Structures
         //[XmlElement(typeof(OperationMove))]
         //[XmlElement(typeof(OperationPattern))]
         [XmlElement(typeof(OperationPixelDimming))]
+        [XmlElement(typeof(OperationInfill))]
         //[XmlElement(typeof(OperationRepairLayers))]
         [XmlElement(typeof(OperationResize))]
         [XmlElement(typeof(OperationRotate))]

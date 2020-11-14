@@ -1,5 +1,10 @@
 # Changelog
 
+## /11/2020 - v1.3.1
+
+* (Fix) Tool - Infill: Allow save profiles
+* (Fix) Material cost was showing as ml instead of currency
+
 ## 14/11/2020 - v1.3.0
 
 * (Add) Changelog description to the new version update dialog
@@ -16,7 +21,7 @@
 * (Change) Place .ctb extension show first than .cbddlp due more popular this days
 * (Change) Pixel dimming: Text "Borders" to "Walls"
 * (Change) Issues: Remove "Remove" text from button, keep only the icon to free up space
-* (Change) Ungroup extensions on "covert to" menu (#97)
+* (Change) Ungroup extensions on "convert to" menu (#97)
 * (Fix) Issues: Detect button has a incorrect "save" icon
 * (Fix) SL1: Increase NumSlow property limit
 * (Fix) UVJ: not decoding nor showing preview images

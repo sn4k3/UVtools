@@ -171,10 +171,10 @@ namespace UVtools.Core.FileFormats
 
             public void Validate(string mark, object obj = null)
             {
-                Validate(mark, 0u, obj);
+                Validate(mark, 0, obj);
             }
 
-            public void Validate(string mark, uint length, object obj = null)
+            public void Validate(string mark, int length, object obj = null)
             {
                 if (!Mark.Equals(mark))
                 {
@@ -183,7 +183,7 @@ namespace UVtools.Core.FileFormats
 
                 if (!ReferenceEquals(obj, null))
                 {
-                    length += (uint)Helpers.Serializer.SizeOf(obj);
+                    length += (int)Helpers.Serializer.SizeOf(obj);
                 }
 
                 if (length > 0 && Length != length)
@@ -345,7 +345,7 @@ namespace UVtools.Core.FileFormats
                 return $"{nameof(Section)}: {Section}, {nameof(Width)}: {Width}, {nameof(Resolution)}: {Resolution}, {nameof(Height)}: {Height}, {nameof(Data)}: {Data}";
             }
 
-            public void Validate(uint size)
+            public void Validate(int size)
             {
                 Section.Validate(SectionMark, size, this);
             }
@@ -357,17 +357,16 @@ namespace UVtools.Core.FileFormats
 
         public class LayerData
         {
+            public const byte ClassSize = 32;
             /// <summary>
             /// Gets the layer image offset to encoded layer data, and its length in bytes.
             /// </summary>
-            [FieldOrder(0)]
-            public uint DataAddress { get; set; }
+            [FieldOrder(0)] public uint DataAddress { get; set; }
 
             /// <summary>
             /// Gets the layer image length in bytes.
             /// </summary>
-            [FieldOrder(1)]
-            public uint DataLength { get; set; }
+            [FieldOrder(1)] public uint DataLength { get; set; }
 
             [FieldOrder(2)] public float LiftHeight { get; set; }
 
@@ -712,11 +711,11 @@ namespace UVtools.Core.FileFormats
         {
             public const string SectionMark = "LAYERDEF";
 
-            [Ignore] public Section Section { get; set; } = new Section(SectionMark);
+            [FieldOrder(0)] public Section Section { get; set; }
 
-            [FieldOrder(0)] public uint LayersCount { get; set; }
+            [FieldOrder(1)] public uint LayersCount { get; set; }
 
-            [Ignore] public LayerData[] Layers;
+            [Ignore] public LayerData[] Layers { get; set; }
 
             public LayerDefinition()
             {
@@ -745,7 +744,7 @@ namespace UVtools.Core.FileFormats
 
             public void Validate()
             {
-                Section.Validate(SectionMark, (uint)(LayersCount * Helpers.Serializer.SizeOf(new LayerData())), this);
+                Section.Validate(SectionMark, (int) (LayersCount * Helpers.Serializer.SizeOf(new LayerData()) - Helpers.Serializer.SizeOf(Section)), this);
             }
 
             public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(LayersCount)}: {LayersCount}";
@@ -762,7 +761,7 @@ namespace UVtools.Core.FileFormats
 
         public Preview PreviewSettings { get; protected internal set; } = new Preview();
 
-        public LayerDefinition LayersDefinition { get; private set; } = new LayerDefinition();
+        public LayerDefinition LayersDefinition { get; protected internal set; } = new LayerDefinition();
 
         public Dictionary<string, LayerData> LayersHash { get; } = new Dictionary<string, LayerData>();
 
@@ -955,7 +954,28 @@ namespace UVtools.Core.FileFormats
         
         public override object[] Configs => new object[] { FileMarkSettings, HeaderSettings, PreviewSettings, LayersDefinition };
 
-        public LayerRleFormat LayerFormat => FileFullPath.EndsWith(".pws") || FileFullPath.EndsWith($".pws{TemporaryFileAppend}") ? LayerRleFormat.PWS : LayerRleFormat.PW0;
+        public LayerRleFormat LayerFormat
+        {
+            get
+            {
+                if (FileFullPath.EndsWith(".pws") || FileFullPath.EndsWith($".pws{TemporaryFileAppend}"))
+                {
+                    return LayerRleFormat.PWS;
+                }
+
+                if (FileFullPath.EndsWith(".pw0") || FileFullPath.EndsWith($".pw0{TemporaryFileAppend}"))
+                {
+                    return LayerRleFormat.PW0;
+                }
+
+                if (FileFullPath.EndsWith(".pwmx") || FileFullPath.EndsWith($".pwmx{TemporaryFileAppend}"))
+                {
+                    return LayerRleFormat.PW0;
+                }
+
+                return LayerRleFormat.PWS;
+            }
+        } 
 
         #endregion
 
@@ -1013,9 +1033,9 @@ namespace UVtools.Core.FileFormats
                     }
                 });
 
-                LayersDefinition.Section.Length += (uint)Helpers.Serializer.SizeOf(LayersDefinition[0]) * LayerCount;
-                currentOffset += Helpers.SerializeWriteFileStream(outputFile, LayersDefinition.Section);
-                uint offsetLayerRle = FileMarkSettings.LayerImageAddress = currentOffset + LayersDefinition.Section.Length;
+                LayersDefinition.Section.Length += (uint)Helpers.Serializer.SizeOf(new LayerData()) * LayerCount;
+                //currentOffset += Helpers.SerializeWriteFileStream(outputFile, LayersDefinition.Section);
+                uint offsetLayerRle = FileMarkSettings.LayerImageAddress = (uint) (currentOffset + Helpers.Serializer.SizeOf(LayersDefinition.Section) + LayersDefinition.Section.Length);
 
                 currentOffset += Helpers.SerializeWriteFileStream(outputFile, LayersDefinition);
 
@@ -1119,9 +1139,9 @@ namespace UVtools.Core.FileFormats
 
                 inputFile.Seek(FileMarkSettings.LayerDefinitionAddress, SeekOrigin.Begin);
 
-                section = Helpers.Deserialize<Section>(inputFile);
+                //section = Helpers.Deserialize<Section>(inputFile);
                 LayersDefinition = Helpers.Deserialize<LayerDefinition>(inputFile);
-                LayersDefinition.Section = section;
+                //LayersDefinition.Section = section;
                 Debug.Write("LayersDefinition -> ");
                 Debug.WriteLine(LayersDefinition);
 
@@ -1142,6 +1162,7 @@ namespace UVtools.Core.FileFormats
                 for (int i = 0; i < LayerCount; i++)
                 {
                     var layer = LayersDefinition[i];
+                    //layer.Parent = this;
                     inputFile.Seek(layer.DataAddress, SeekOrigin.Begin);
                     layer.EncodedRle = new byte[layer.DataLength];
                     inputFile.ReadBytes(layer.EncodedRle);
@@ -1205,7 +1226,7 @@ namespace UVtools.Core.FileFormats
                 Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 
 
-                outputFile.Seek(FileMarkSettings.LayerDefinitionAddress + Helpers.Serializer.SizeOf(HeaderSettings.Section) + Helpers.Serializer.SizeOf(LayersDefinition), SeekOrigin.Begin);
+                outputFile.Seek(FileMarkSettings.LayerDefinitionAddress + Helpers.Serializer.SizeOf(LayersDefinition), SeekOrigin.Begin);
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
                     LayersDefinition[layerIndex].RefreshLayerData(layerIndex);

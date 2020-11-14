@@ -40,7 +40,7 @@ namespace UVtools.Core.Operations
         public enum InfillAlgorithm
         {
             //Rhombus,
-            CubicSimple,
+            Cubic,
             CubicCenterLink,
             CubicInterlinked,
         }

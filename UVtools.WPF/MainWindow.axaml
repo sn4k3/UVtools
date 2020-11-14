@@ -279,7 +279,7 @@
 
 
         <TextBlock IsVisible="{Binding SlicerFile.MaterialCost}" Text="  |  "/>
-        <TextBlock IsVisible="{Binding SlicerFile.MaterialCost}" Text="{Binding SlicerFile.MaterialCost, StringFormat=Material cost: \{0\}ml}"/>
+        <TextBlock IsVisible="{Binding SlicerFile.MaterialCost}" Text="{Binding SlicerFile.MaterialCost, StringFormat=Material cost: \{0\}€}"/>
 
 
         <TextBlock IsVisible="{Binding SlicerFile.MaterialName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"

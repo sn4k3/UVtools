@@ -34,3 +34,7 @@
 * Erwin Ried
 * Matthias Keila
 * Frank Henriquez 
+* Miguel Angel Martinez Monje
+* illest twitch
+* Khalil Nurullah
+* Nahin Mulla 

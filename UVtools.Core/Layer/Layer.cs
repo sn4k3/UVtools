@@ -929,7 +929,7 @@ namespace UVtools.Core
 
 
                 }
-                else*/ if (operation.InfillType == OperationInfill.InfillAlgorithm.CubicSimple ||
+                else*/ if (operation.InfillType == OperationInfill.InfillAlgorithm.Cubic ||
                            operation.InfillType == OperationInfill.InfillAlgorithm.CubicCenterLink ||
                            operation.InfillType == OperationInfill.InfillAlgorithm.CubicInterlinked)
                 {
