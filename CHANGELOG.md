@@ -1,7 +1,15 @@
 # Changelog
 
-## /11/2020 - v1.3.1
+## 16/11/2020 - v1.3.1
 
+* (Add) File format: PWX (AnyCubic Photon X) (#93)
+* (Add) File format: PWMO (AnyCubic Photon Mono) (#93)
+* (Add) File format: PWMS (AnyCubic Photon Mono SE) (#93)
+* (Add) PrusaSlicer printer: AnyCubic Photon X
+* (Add) PrusaSlicer printer: AnyCubic Photon Mono
+* (Add) PrusaSlicer printer: AnyCubic Photon Mono SE
+* (Add) PrusaSlicer printer: AnyCubic Photon Mono X
+* (Change) "Save as" file filter dialog with better file extension description
 * (Fix) Tool - Infill: Allow save profiles
 * (Fix) Material cost was showing as ml instead of currency
 

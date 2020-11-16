@@ -60,7 +60,10 @@ But also, i need victims for test subject. Proceed at your own risk!
 * PHZ (Chitubox)
 * PWS (Photon Workshop)
 * PW0 (Photon Workshop)
-* PWMX (Photon Workshop) [Not finished]
+* PWX (Photon Workshop) [Not confirmed]
+* PWMO (Photon Workshop) [Not confirmed]
+* PWMS (Photon Workshop) [Not confirmed]
+* PWMX (Photon Workshop) [Not confirmed]
 * ZCodex (Z-Suite)
 * CWS (NovaMaker)
 * LGS (Longer Orange 10)

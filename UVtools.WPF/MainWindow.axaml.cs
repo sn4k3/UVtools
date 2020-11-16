@@ -5,13 +5,6 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -22,6 +15,13 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using MessageBox.Avalonia.Enums;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -570,14 +570,20 @@ namespace UVtools.WPF
             if (!IsFileLoaded) return;
             var ext = Path.GetExtension(SlicerFile.FileFullPath);
             var extNoDot = ext.Remove(0, 1);
+            var extension = FileExtension.Find(extNoDot);
+            if (extension is null)
+            {
+                await this.MessageBoxError("Unable to find the target extension.", "Invalid extension");
+                return;
+            }
             SaveFileDialog dialog = new SaveFileDialog
             {
-                DefaultExtension = extNoDot,
+                DefaultExtension = extension.Extension,
                 Filters = new List<FileDialogFilter>
                 {
                     new FileDialogFilter
                     {
-                        Name = $"{ext} Files",
+                        Name = extension.Description,
                         Extensions = new List<string>
                         {
                             extNoDot

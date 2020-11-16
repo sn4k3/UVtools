@@ -20,7 +20,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats
 {
-    public class PWSFile : FileFormat
+    public class PhotonWorkshopFile : FileFormat
     {
         #region Constants
         public const byte MarkSize = 12;
@@ -80,18 +80,14 @@ namespace UVtools.Core.FileFormats
         {
             public const string SectionMarkFile = "ANYCUBIC";
 
-            private string _mark = SectionMarkFile;
             /// <summary>
             /// Gets the file mark placeholder
             /// Fixed to "ANYCUBIC"
             /// </summary>
             [FieldOrder(0)]
             [FieldLength(MarkSize)]
-            public string Mark
-            {
-                get => _mark;
-                set => _mark = value.TrimEnd('\0');
-            }
+            [SerializeAs(SerializedType.TerminatedString)]
+            public string Mark { get; set; } = SectionMarkFile;
 
             /// <summary>
             /// Gets the file format version
@@ -138,31 +134,30 @@ namespace UVtools.Core.FileFormats
 
         #region Section
 
-        public class Section
+        public class SectionHeader
         {
-            private string _mark;
-
             /// <summary>
             /// Gets the section mark placeholder
             /// </summary>
             [FieldOrder(0)]
             [FieldLength(MarkSize)]
-            public string Mark
-            {
-                get => _mark;
-                set => _mark = value.TrimEnd('\0');
-            }
+            [SerializeAs(SerializedType.TerminatedString)]
+            public string Mark { get; set; }
 
             /// <summary>
             /// Gets the length of this section
             /// </summary>
             [FieldOrder(1)] public uint Length { get; set; }
 
-            public Section() { }
+            public SectionHeader() { }
 
-            public Section(string mark, object obj) : this(mark, (uint)Helpers.Serializer.SizeOf(obj)) { }
+            public SectionHeader(string mark, object obj) : this(mark)
+            {
+                //Debug.WriteLine(Helpers.Serializer.SizeOf(obj));
+                Length = (uint)Helpers.Serializer.SizeOf(obj);
+            }
 
-            public Section(string mark, uint length = 0)
+            public SectionHeader(string mark, uint length = 0)
             {
                 Mark = mark;
                 Length = length;
@@ -192,7 +187,7 @@ namespace UVtools.Core.FileFormats
                 }
             }
 
-            public override string ToString() => $"{{{nameof(Mark)}: {Mark}, {nameof(Length)}: {Length}}}";
+            public override string ToString() => $"[{nameof(Mark)}: {Mark}, {nameof(Length)}: {Length}]";
         }
 
         #endregion
@@ -202,46 +197,45 @@ namespace UVtools.Core.FileFormats
         {
             public const string SectionMark = "HEADER";
 
-            [Ignore] public Section Section { get; set; }
-            [FieldOrder(0)] public float PixelSize { get; set; }
-            [FieldOrder(1)] public float LayerHeight { get; set; }
-            [FieldOrder(2)] public float LayerExposureTime { get; set; }
-            [FieldOrder(3)] public float LayerOffTime { get; set; } = 1;
-            [FieldOrder(4)] public float BottomExposureSeconds { get; set; } 
-            [FieldOrder(5)] public float BottomLayersCount { get; set; }
-            [FieldOrder(6)] public float LiftHeight { get; set; } = 6;
-
+            [FieldOrder(0)] public SectionHeader Section { get; set; }
+            [FieldOrder(1)] public float PixelSize { get; set; }
+            [FieldOrder(2)] public float LayerHeight { get; set; }
+            [FieldOrder(3)] public float LayerExposureTime { get; set; }
+            [FieldOrder(4)] public float LayerOffTime { get; set; } = 1;
+            [FieldOrder(5)] public float BottomExposureSeconds { get; set; } 
+            [FieldOrder(6)] public float BottomLayersCount { get; set; }
+            [FieldOrder(7)] public float LiftHeight { get; set; } = 6;
             /// <summary>
             /// Gets the lift speed in mm/s
             /// </summary>
-            [FieldOrder(7)] public float LiftSpeed { get; set; } = 3; // mm/s
+            [FieldOrder(8)] public float LiftSpeed { get; set; } = 3; // mm/s
 
             /// <summary>
             /// Gets the retract speed in mm/s
             /// </summary>
-            [FieldOrder(8)] public float RetractSpeed { get; set; } = 3; // mm/s
-            [FieldOrder(9)] public float Volume { get; set; }
-            [FieldOrder(10)] public uint AntiAliasing { get; set; } = 1;
-            [FieldOrder(11)] public uint ResolutionX { get; set; }
-            [FieldOrder(12)] public uint ResolutionY { get; set; }
-            [FieldOrder(13)] public float Weight { get; set; }
-            [FieldOrder(14)] public float Price { get; set; }
-            [FieldOrder(15)] public uint ResinType { get; set; } // 0x24 ?
-            [FieldOrder(16)] public uint PerLayerOverride { get; set; } // bool
-            [FieldOrder(17)] public uint Offset1 { get; set; }
-            [FieldOrder(18)] public uint Offset2 { get; set; }
-            [FieldOrder(19)] public uint Offset3 { get; set; }
+            [FieldOrder(9)] public float RetractSpeed { get; set; } = 3; // mm/s
+            [FieldOrder(10)] public float Volume { get; set; }
+            [FieldOrder(11)] public uint AntiAliasing { get; set; } = 1;
+            [FieldOrder(12)] public uint ResolutionX { get; set; }
+            [FieldOrder(13)] public uint ResolutionY { get; set; }
+            [FieldOrder(14)] public float Weight { get; set; }
+            [FieldOrder(15)] public float Price { get; set; }
+            [FieldOrder(16)] public uint ResinType { get; set; } // 0x24 ?
+            [FieldOrder(17)] public uint PerLayerOverride { get; set; } // bool
+            [FieldOrder(18)] public uint Offset1 { get; set; }
+            [FieldOrder(19)] public uint Offset2 { get; set; }
+            [FieldOrder(20)] public uint Offset3 { get; set; }
 
             public Header()
             {
-                Section = new Section(SectionMark, this);
+                Section = new SectionHeader(SectionMark, this);
             }
 
             public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(PixelSize)}: {PixelSize}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(LayerExposureTime)}: {LayerExposureTime}, {nameof(LayerOffTime)}: {LayerOffTime}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Volume)}: {Volume}, {nameof(AntiAliasing)}: {AntiAliasing}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(Weight)}: {Weight}, {nameof(Price)}: {Price}, {nameof(ResinType)}: {ResinType}, {nameof(PerLayerOverride)}: {PerLayerOverride}, {nameof(Offset1)}: {Offset1}, {nameof(Offset2)}: {Offset2}, {nameof(Offset3)}: {Offset3}";
 
             public void Validate()
             {
-                Section.Validate(SectionMark, this);
+                Section.Validate(SectionMark, (int)-Helpers.Serializer.SizeOf(Section), this);
             }
         }
 
@@ -256,7 +250,8 @@ namespace UVtools.Core.FileFormats
         public class Preview
         {
             public const string SectionMark = "PREVIEW";
-            [Ignore] public Section Section { get; set; }
+
+            [FieldOrder(0)] public SectionHeader Section { get; set; }
 
             /// <summary>
             /// Gets the image width, in pixels. 
@@ -273,15 +268,24 @@ namespace UVtools.Core.FileFormats
             /// </summary>
             [FieldOrder(3)] public uint Height { get; set; } = 168;
 
+            [Ignore] public uint DataSize => Width * Height * 2;
+
             // little-endian 16bit colors, RGB 565 encoded.
-            //[FieldOrder(4)]
-            //[FieldLength("Section.Length")]
-            [Ignore]
-            public byte[] Data { get; set; }
+            //[FieldOrder(4)] [FieldLength(nameof(Section)+"."+nameof(SectionHeader.Length))]
+            [Ignore] public byte[] Data { get; set; }
 
             public Preview()
             {
-                Section = new Section(SectionMark, this);
+                Section = new SectionHeader(SectionMark, this);
+            }
+
+            public Preview(uint width, uint height, uint resolution = 42) : this()
+            {
+                Width = width;
+                Height = height;
+                Resolution = resolution;
+                Data = new byte[DataSize];
+                Section.Length += (uint)Data.Length;
             }
 
             public unsafe Mat Decode(bool consumeData = true)
@@ -313,13 +317,7 @@ namespace UVtools.Core.FileFormats
                 var span = image.GetBytePointer();
                 var imageLength = image.GetLength();
 
-                Preview preview = new Preview
-                {
-                    Width = (uint) image.Width,
-                    Height = (uint) image.Height,
-                    Resolution = 42,
-                    Data = new byte[image.Width * image.Height * 2]
-                };
+                Preview preview = new Preview((uint) image.Width, (uint) image.Height);
 
                 int i = 0;
                 for (int pixel = 0; pixel < imageLength; pixel += image.NumberOfChannels)
@@ -336,7 +334,6 @@ namespace UVtools.Core.FileFormats
                     preview.Data[i++] = (byte) (color >> 8);
                 }
 
-                preview.Section.Length += (uint) preview.Data.Length;
                 return preview;
             }
 
@@ -347,7 +344,7 @@ namespace UVtools.Core.FileFormats
 
             public void Validate(int size)
             {
-                Section.Validate(SectionMark, size, this);
+                Section.Validate(SectionMark, (int) (size - Helpers.Serializer.SizeOf(Section)), this);
             }
         }
 
@@ -388,13 +385,13 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(7)] public float Offset2 { get; set; }
 
             [Ignore] public byte[] EncodedRle { get; set; }
-            [Ignore] public PWSFile Parent { get; set; }
+            [Ignore] public PhotonWorkshopFile Parent { get; set; }
 
             public LayerData()
             {
             }
 
-            public LayerData(PWSFile parent, uint layerIndex)
+            public LayerData(PhotonWorkshopFile parent, uint layerIndex)
             {
                 Parent = parent;
                 RefreshLayerData(layerIndex);
@@ -711,21 +708,22 @@ namespace UVtools.Core.FileFormats
         {
             public const string SectionMark = "LAYERDEF";
 
-            [FieldOrder(0)] public Section Section { get; set; }
+            [FieldOrder(0)] public SectionHeader Section { get; set; }
 
-            [FieldOrder(1)] public uint LayersCount { get; set; }
+            [FieldOrder(1)] public uint LayerCount { get; set; }
 
             [Ignore] public LayerData[] Layers { get; set; }
 
             public LayerDefinition()
             {
-                Section = new Section(SectionMark, this);
+                Section = new SectionHeader(SectionMark, this);
             }
 
-            public LayerDefinition(uint layersCount) : this()
+            public LayerDefinition(uint layerCount) : this()
             {
-                LayersCount = layersCount;
-                Layers = new LayerData[layersCount];
+                LayerCount = layerCount;
+                Layers = new LayerData[layerCount];
+                Section.Length += (uint) Helpers.Serializer.SizeOf(new LayerData()) * LayerCount;
             }
 
             [Ignore]
@@ -744,10 +742,10 @@ namespace UVtools.Core.FileFormats
 
             public void Validate()
             {
-                Section.Validate(SectionMark, (int) (LayersCount * Helpers.Serializer.SizeOf(new LayerData()) - Helpers.Serializer.SizeOf(Section)), this);
+                Section.Validate(SectionMark, (int) (LayerCount * Helpers.Serializer.SizeOf(new LayerData()) - Helpers.Serializer.SizeOf(Section)), this);
             }
 
-            public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(LayersCount)}: {LayersCount}";
+            public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(LayerCount)}: {LayerCount}";
         }
         #endregion
 
@@ -768,16 +766,21 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("pws", "Photon Workshop PWS"),
-            new FileExtension("pw0", "Photon Workshop PW0"),
-            new FileExtension("pwmx", "Photon Workshop PWMX")
+
+            new FileExtension("pwmx", "Photon Mono X (PWMX)"),
+            new FileExtension("pwms", "Photon Mono SE (PWMS)"),
+            new FileExtension("pwmo", "Photon Mono (PWMO)"),
+            new FileExtension("pwx", "Photon X (PWX)"),
+            new FileExtension("pws", "Photon / Photon S (PWS)"),
+            new FileExtension("pw0", "Photon Zero (PW0)"),
+            
         };
 
         public override Type[] ConvertToFormats { get; } =
         {
             //typeof(ChituboxZipFile)
             //typeof(PHZFile),
-            typeof(PWSFile),
+            typeof(PhotonWorkshopFile),
             typeof(CWSFile),
             typeof(UVJFile),
         };
@@ -854,7 +857,7 @@ namespace UVtools.Core.FileFormats
         {
             set
             {
-                LayersDefinition.LayersCount = LayerCount;
+                LayersDefinition.LayerCount = LayerCount;
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(NormalLayerCount));
             }
@@ -950,37 +953,55 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override string MachineName => LayerFormat == LayerRleFormat.PWS ? "AnyCubic Photon S" : "AnyCubic Photon Zero";
-        
-        public override object[] Configs => new object[] { FileMarkSettings, HeaderSettings, PreviewSettings, LayersDefinition };
-
-        public LayerRleFormat LayerFormat
+        public override string MachineName
         {
             get
             {
                 if (FileFullPath.EndsWith(".pws") || FileFullPath.EndsWith($".pws{TemporaryFileAppend}"))
                 {
-                    return LayerRleFormat.PWS;
+                    return "AnyCubic Photon S";
                 }
 
                 if (FileFullPath.EndsWith(".pw0") || FileFullPath.EndsWith($".pw0{TemporaryFileAppend}"))
                 {
-                    return LayerRleFormat.PW0;
+                    return "AnyCubic Photon Zero";
+                }
+
+                if (FileFullPath.EndsWith(".pwx") || FileFullPath.EndsWith($".pwx{TemporaryFileAppend}"))
+                {
+                    return "AnyCubic Photon X";
+                }
+
+                if (FileFullPath.EndsWith(".pwmo") || FileFullPath.EndsWith($".pwmo{TemporaryFileAppend}"))
+                {
+                    return "AnyCubic Photon Mono";
+                }
+
+                if (FileFullPath.EndsWith(".pwms") || FileFullPath.EndsWith($".pwms{TemporaryFileAppend}"))
+                {
+                    return "AnyCubic Photon Mono SE";
                 }
 
                 if (FileFullPath.EndsWith(".pwmx") || FileFullPath.EndsWith($".pwmx{TemporaryFileAppend}"))
                 {
-                    return LayerRleFormat.PW0;
+                    return "AnyCubic Photon Mono X";
                 }
 
-                return LayerRleFormat.PWS;
+                return base.MachineName;
             }
-        } 
+        }
+        
+        public override object[] Configs => new object[] { FileMarkSettings, HeaderSettings, PreviewSettings, LayersDefinition };
+
+        public LayerRleFormat LayerFormat =>
+            FileFullPath.EndsWith(".pws") || FileFullPath.EndsWith($".pws{TemporaryFileAppend}")
+                ? LayerRleFormat.PWS
+                : LayerRleFormat.PW0;
 
         #endregion
 
         #region Constructors
-        public PWSFile()
+        public PhotonWorkshopFile()
         {
         }
         #endregion
@@ -1004,14 +1025,12 @@ namespace UVtools.Core.FileFormats
             using (var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write))
             {
                 outputFile.Seek((int) currentOffset, SeekOrigin.Begin);
-                currentOffset += Helpers.SerializeWriteFileStream(outputFile, HeaderSettings.Section);
                 currentOffset += Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 
                 if (CreatedThumbnailsCount > 0)
                 {
                     FileMarkSettings.PreviewAddress = currentOffset;
                     Preview preview = Preview.Encode(Thumbnails[0]);
-                    currentOffset += Helpers.SerializeWriteFileStream(outputFile, preview.Section);
                     currentOffset += Helpers.SerializeWriteFileStream(outputFile, preview);
                     currentOffset += outputFile.WriteBytes(preview.Data);
                 }
@@ -1033,8 +1052,6 @@ namespace UVtools.Core.FileFormats
                     }
                 });
 
-                LayersDefinition.Section.Length += (uint)Helpers.Serializer.SizeOf(new LayerData()) * LayerCount;
-                //currentOffset += Helpers.SerializeWriteFileStream(outputFile, LayersDefinition.Section);
                 uint offsetLayerRle = FileMarkSettings.LayerImageAddress = (uint) (currentOffset + Helpers.Serializer.SizeOf(LayersDefinition.Section) + LayersDefinition.Section.Length);
 
                 currentOffset += Helpers.SerializeWriteFileStream(outputFile, LayersDefinition);
@@ -1081,9 +1098,6 @@ namespace UVtools.Core.FileFormats
 
             using (var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read))
             {
-
-                //HeaderSettings = Helpers.ByteToType<CbddlpFile.Header>(InputFile);
-                //HeaderSettings = Helpers.Serializer.Deserialize<Header>(InputFile.ReadBytes(Helpers.Serializer.SizeOf(typeof(Header))));
                 FileMarkSettings = Helpers.Deserialize<FileMark>(inputFile);
 
                 Debug.Write("FileMark -> ");
@@ -1104,14 +1118,7 @@ namespace UVtools.Core.FileFormats
                 FileFullPath = fileFullPath;
 
                 inputFile.Seek(FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
-                //Section sectionHeader = Helpers.Deserialize<Section>(inputFile);
-                //Debug.Write("SectionHeader -> ");
-                //Debug.WriteLine(sectionHeader);
-
-                var section = Helpers.Deserialize<Section>(inputFile);
                 HeaderSettings = Helpers.Deserialize<Header>(inputFile);
-                HeaderSettings.Section = section;
-
 
                 Debug.Write("Header -> ");
                 Debug.WriteLine(HeaderSettings);
@@ -1122,16 +1129,13 @@ namespace UVtools.Core.FileFormats
                 {
                     inputFile.Seek(FileMarkSettings.PreviewAddress, SeekOrigin.Begin);
 
-                    section = Helpers.Deserialize<Section>(inputFile);
                     PreviewSettings = Helpers.Deserialize<Preview>(inputFile);
-                    PreviewSettings.Section = section;
                     Debug.Write("Preview -> ");
                     Debug.WriteLine(PreviewSettings);
 
-                    uint datasize = PreviewSettings.Width * PreviewSettings.Height * 2;
-                    //PreviewSettings.Validate(datasize);
+                    //PreviewSettings.Validate((int) PreviewSettings.DataSize);
 
-                    PreviewSettings.Data = new byte[datasize];
+                    PreviewSettings.Data = new byte[PreviewSettings.DataSize];
                     inputFile.ReadBytes(PreviewSettings.Data);
 
                     Thumbnails[0] = PreviewSettings.Decode(true);
@@ -1139,13 +1143,11 @@ namespace UVtools.Core.FileFormats
 
                 inputFile.Seek(FileMarkSettings.LayerDefinitionAddress, SeekOrigin.Begin);
 
-                //section = Helpers.Deserialize<Section>(inputFile);
                 LayersDefinition = Helpers.Deserialize<LayerDefinition>(inputFile);
-                //LayersDefinition.Section = section;
                 Debug.Write("LayersDefinition -> ");
                 Debug.WriteLine(LayersDefinition);
 
-                LayerManager = new LayerManager(LayersDefinition.LayersCount, this);
+                LayerManager = new LayerManager(LayersDefinition.LayerCount, this);
                 LayersDefinition.Layers = new LayerData[LayerCount];
 
 
@@ -1222,7 +1224,7 @@ namespace UVtools.Core.FileFormats
 
             using (var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write))
             {
-                outputFile.Seek(FileMarkSettings.HeaderAddress+Helpers.Serializer.SizeOf(HeaderSettings.Section), SeekOrigin.Begin);
+                outputFile.Seek(FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
                 Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 
 
@@ -1237,13 +1239,13 @@ namespace UVtools.Core.FileFormats
 
         public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
         {
-            if (to == typeof(PWSFile))
+            if (to == typeof(PhotonWorkshopFile))
             {
                 if (Path.GetExtension(FileFullPath).Equals(Path.GetExtension(fileFullPath)))
                 {
                     return false;
                 }
-                PWSFile file = new PWSFile
+                PhotonWorkshopFile file = new PhotonWorkshopFile
                 {
                     LayerManager = LayerManager,
                     HeaderSettings =

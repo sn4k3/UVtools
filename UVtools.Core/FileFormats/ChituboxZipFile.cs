@@ -99,7 +99,7 @@ namespace UVtools.Core.FileFormats
         public override Type[] ConvertToFormats { get; } = {
             typeof(ChituboxFile),
             typeof(PHZFile),
-            typeof(PWSFile),
+            typeof(PhotonWorkshopFile),
             typeof(CWSFile),
             typeof(ZCodexFile),
             typeof(UVJFile)
@@ -831,9 +831,9 @@ namespace UVtools.Core.FileFormats
                 return true;
             }
 
-            if (to == typeof(PWSFile))
+            if (to == typeof(PhotonWorkshopFile))
             {
-                PWSFile file = new PWSFile
+                PhotonWorkshopFile file = new PhotonWorkshopFile
                 {
                     LayerManager = LayerManager,
                     HeaderSettings =

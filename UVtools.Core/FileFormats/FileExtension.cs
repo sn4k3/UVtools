@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Collections.Generic;
 
 namespace UVtools.Core.FileFormats
@@ -13,7 +14,7 @@ namespace UVtools.Core.FileFormats
     /// <summary>
     /// Represents a file extension for slicer file formats
     /// </summary>
-    public sealed class FileExtension
+    public sealed class FileExtension : IEquatable<FileExtension>, IEquatable<string>
     {
         #region Properties
         /// <summary>
@@ -57,12 +58,17 @@ namespace UVtools.Core.FileFormats
 
         public override string ToString()
         {
-            return $"{nameof(Extension)}: {Extension}, {nameof(Description)}: {Description}";
+            return $"{Description} ({Extension})";
         }
 
-        private bool Equals(FileExtension other)
+        public bool Equals(FileExtension other)
         {
             return Extension == other.Extension;
+        }
+
+        public bool Equals(string other)
+        {
+            return Extension == other;
         }
 
         public override bool Equals(object obj)
@@ -97,10 +103,11 @@ namespace UVtools.Core.FileFormats
 
         #region Methods
 
-        public FileFormat GetFileFormat()
-        {
-            return FileFormat.FindByExtension(Extension);
-        }
+        public FileFormat GetFileFormat() =>
+            FileFormat.FindByExtension(Extension);
+    
+        public static FileExtension Find(string extension)=>
+            FileFormat.FindExtension(extension);
         #endregion
     }
 }

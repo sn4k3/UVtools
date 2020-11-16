@@ -192,7 +192,7 @@ namespace UVtools.Core.FileFormats
             new ChituboxFile(), // cbddlp, cbt, photon
             new PHZFile(), // phz
             new PhotonSFile(), // photons
-            new PWSFile(),   // PSW
+            new PhotonWorkshopFile(),   // PSW
             new ZCodexFile(),   // zcodex
             new CWSFile(),   // CWS
             //new MakerbaseFile(),   // MKS
@@ -263,6 +263,11 @@ namespace UVtools.Core.FileFormats
         public static FileFormat FindByExtension(string extension, bool isFilePath = false, bool createNewInstance = false)
         {
             return (from fileFormat in AvaliableFormats where fileFormat.IsExtensionValid(extension, isFilePath) select createNewInstance ? (FileFormat) Activator.CreateInstance(fileFormat.GetType()) : fileFormat).FirstOrDefault();
+        }
+
+        public static FileExtension FindExtension(string extension, bool isFilePath = false, bool createNewInstance = false)
+        {
+            return AvaliableFormats.SelectMany(format => format.FileExtensions).FirstOrDefault(ext => ext.Equals(extension));
         }
 
         /// <summary>
@@ -603,7 +608,7 @@ namespace UVtools.Core.FileFormats
         public bool IsExtensionValid(string extension, bool isFilePath = false)
         {
             extension = isFilePath ? Path.GetExtension(extension)?.Remove(0, 1) : extension;
-            return FileExtensions.Any(fileExtension => fileExtension.Extension.Equals(extension, StringComparison.InvariantCultureIgnoreCase));
+            return FileExtensions.Any(fileExtension => fileExtension.Equals(extension));
         }
 
         public string GetFileExtensions(string prepend = ".", string separator = ", ")

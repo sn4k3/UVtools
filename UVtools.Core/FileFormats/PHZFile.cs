@@ -686,7 +686,7 @@ namespace UVtools.Core.FileFormats
         {
             typeof(ChituboxFile),
             typeof(ChituboxZipFile),
-            typeof(PWSFile),
+            typeof(PhotonWorkshopFile),
             typeof(ZCodexFile),
             typeof(CWSFile),
             typeof(UVJFile),
@@ -1358,9 +1358,9 @@ namespace UVtools.Core.FileFormats
                 return true;
             }
 
-            if (to == typeof(PWSFile))
+            if (to == typeof(PhotonWorkshopFile))
             {
-                PWSFile file = new PWSFile
+                PhotonWorkshopFile file = new PhotonWorkshopFile
                 {
                     LayerManager = LayerManager,
                     HeaderSettings =

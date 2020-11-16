@@ -297,7 +297,7 @@ namespace UVtools.Core.FileFormats
             typeof(ChituboxFile),
             typeof(ChituboxZipFile),
             typeof(PHZFile),
-            typeof(PWSFile),
+            typeof(PhotonWorkshopFile),
             typeof(ZCodexFile),
             typeof(CWSFile),
             typeof(LGSFile),
@@ -866,10 +866,10 @@ namespace UVtools.Core.FileFormats
                 return true;
             }
 
-            if (to == typeof(PWSFile))
+            if (to == typeof(PhotonWorkshopFile))
             {
-                PWSFile defaultFormat = (PWSFile)FindByType(typeof(PWSFile));
-                PWSFile file = new PWSFile
+                PhotonWorkshopFile defaultFormat = (PhotonWorkshopFile)FindByType(typeof(PhotonWorkshopFile));
+                PhotonWorkshopFile file = new PhotonWorkshopFile
                 {
                     LayerManager = LayerManager,
                     HeaderSettings =
