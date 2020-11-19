@@ -274,7 +274,26 @@ namespace UVtools.Core.Operations
             }
 
             public static uint CalculateMilliseconds(float liftHeight, float liftSpeed, float retract, float extraWaitTime = 0) =>
-                (uint) (CalculateSeconds(liftHeight, liftSpeed, retract, extraWaitTime) * 1000);
+                (uint)(CalculateSeconds(liftHeight, liftSpeed, retract, extraWaitTime) * 1000);
+
+
+            public static float CalculateSecondsLiftOnly(float liftHeight, float liftSpeed, float extraWaitTime = 0)
+            {
+                try
+                {
+                    return (float)Math.Round(liftHeight / (liftSpeed / 60f) + extraWaitTime, 2);
+                }
+                catch (Exception)
+                {
+                    return 0;
+                }
+
+            }
+
+            public static uint CalculateMillisecondsLiftOnly(float liftHeight, float liftSpeed, float extraWaitTime = 0) =>
+                (uint)(CalculateSecondsLiftOnly(liftHeight, liftSpeed, extraWaitTime) * 1000);
+
+
         }
     }
 }

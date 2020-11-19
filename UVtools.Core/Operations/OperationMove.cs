@@ -18,7 +18,8 @@ namespace UVtools.Core.Operations
     {
         public override string Title => "Move";
         public override string Description =>
-            "Change or copy the position of the model on the build plate.";
+            "Change or copy the position of the model on the build plate.\n" +
+            "Note: Before perform this operation, un-rotate the layer preview to see the real orientation.";
 
         public override string ConfirmationText =>
             (IsCutMove ? "move" : "copy") + $" model layers {LayerIndexStart} through {LayerIndexEnd} from " +

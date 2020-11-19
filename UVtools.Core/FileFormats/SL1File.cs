@@ -1054,8 +1054,8 @@ namespace UVtools.Core.FileFormats
 
                 file.SliceSettings.Xppm = file.OutputSettings.PixPermmX = (float) Math.Round(LookupCustomValue<float>("Xppm", defaultFormat.SliceSettings.Xppm), 3);
                 file.SliceSettings.Yppm = file.OutputSettings.PixPermmY = (float) Math.Round(LookupCustomValue<float>("Yppm", defaultFormat.SliceSettings.Xppm), 3);
-                file.SliceSettings.Xres = file.OutputSettings.XResolution = (ushort)ResolutionX;
-                file.SliceSettings.Yres = file.OutputSettings.YResolution = (ushort)ResolutionY;
+                file.ResolutionX = (ushort)ResolutionX;
+                file.ResolutionY = (ushort)ResolutionY;
                 file.OutputSettings.PlatformXSize = PrinterSettings.DisplayWidth;
                 file.OutputSettings.PlatformYSize = PrinterSettings.DisplayHeight;
                 file.OutputSettings.PlatformZSize = PrinterSettings.MaxPrintHeight;
@@ -1096,7 +1096,7 @@ namespace UVtools.Core.FileFormats
                 file.Printer = LookupCustomValue<bool>("NOVAMAKER_GRAY2RGB_ENCODE", false, true) ||
                                MachineName.Contains("Bene4 Mono") ||
                                FileFullPath.Contains("bene4_mono") 
-                    ? CWSFile.PrinterType.BeneMono : CWSFile.PrinterType.Elfin;
+                    ? CWSFile.PrinterType.BeneMono : CWSFile.PrinterType.Unknown;
                 
                 file.Encode(fileFullPath, progress);
 

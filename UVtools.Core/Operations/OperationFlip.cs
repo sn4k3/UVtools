@@ -19,7 +19,8 @@ namespace UVtools.Core.Operations
 
         public override string Title => "Flip";
         public override string Description =>
-            "Flip the layers of the model vertically and/or horizontally.";
+            "Flip the layers of the model vertically and/or horizontally.\n" +
+            "Note: Before perform this operation, un-rotate the layer preview to see the real orientation.";
 
         public override string ConfirmationText =>
             FlipDirection == Enumerations.FlipDirection.Both

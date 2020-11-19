@@ -24,7 +24,6 @@ using Avalonia.ThemeManager;
 using Emgu.CV;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
-using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 

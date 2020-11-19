@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -16,6 +17,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
@@ -24,18 +26,164 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats
 {
+    #region Wanhao
+
+    [Serializable]
+    [XmlRoot(ElementName = "manifest")]
+    public sealed class CWSManifest
+    {
+        public const string FileName = "manifest.xml";
+
+        [XmlAttribute]
+        public byte FileVersion { get; set; } = 1;
+
+        public sealed class Model
+        {
+            [XmlElement("name")]
+            public string Name { get; set; }
+
+            [XmlElement("tag")]
+            public string Tag { get; set; }
+        }
+
+        public sealed class Slice
+        {
+            [XmlElement("name")]
+            public string Name { get; set; }
+
+            public Slice()
+            {
+            }
+
+            public Slice(string name)
+            {
+                Name = name;
+            }
+        }
+
+        [XmlArrayItem("model")]
+        public Model[] Models { get; set; }
+        public Slice[] Slices { get; set; }
+
+        public Slice SliceProfile { get; set; } = new Slice();
+        public Slice GCode { get; set; } = new Slice();
+    }
+
+    [Serializable]
+    [XmlRoot(ElementName = "SliceBuildConfig")]
+    public sealed class CWSSliceBuildConfig
+    {
+        public const string GCODESTART =
+            ";********** Header Start ********\r\n" +
+            "G21 ; Set units to be mm\r\n" +
+            "G91 ; Relative Positioning\r\n" +
+            "M17 ; Enable motors\r\n" +
+            "; G28 Z ; Auto-home on print - commented by default";
+
+        public const string GCODEEND =
+            ";********** Footer ********\r\n" +
+            "@cmdCloseShutter ; UV off\r\n" +
+            "G4 P0            ; wait for last lift to complete\r\n" +
+            "G1 Z40.0 F150.0  ; lift model clear of resin\r\n" +
+            "G4 P0            ; sync\r\n" +
+            "M18              ; Disable Motors\r\n" +
+            ";&lt;Completed&gt;";
+
+        public const string GCODELIFT =
+            ";********** Lift Sequence %d$CURSLICE ********\r\n" +
+            "G1 Z($ZLiftDist * $ZDir) F{$CURSLICE &lt; $NumFirstLayers?$ZBottomLiftRate:$ZLiftRate}\r\n;" +
+            "&lt;Takes&gt; {$CURSLICE&lt;$NumFirstLayers?%d($ZLiftDist*1000*60/$ZBottomLiftRate):%d($ZLiftDist*1000*60/$ZLiftRate)}\r\n" +
+            "G4 P0            ; Wait for lift rise to complete\r\n;" +
+            "&lt;Delay&gt; %d$TopTime\r\n" +
+            "G1 Z(($LayerThickness-$ZLiftDist) * $ZDir) F$ZRetractRate\r\n" +
+            ";&lt;Takes&gt; %d(($ZLiftDist*1000-$LayerThickness*1000)*60/$ZRetractRate)";
+
+        public const string GCODELAYER =
+            ";********** Layer %d$CURSLICE ********\r\n" +
+            ";&lt;Slice&gt; %d$CURSLICE\r\n" +
+            "@cmdOpenShutter  ; UV on\r\n" +
+            ";{$CURSLICE&lt;$NumFirstLayers?&lt;Delay&gt; %d$FirstLayerTime:&lt;Delay&gt; %d$LayerTime}\r\n" +
+            "@cmdCloseShutter ; UV off\r\n" +
+            ";&lt;Slice&gt; Blank\r\n" +
+            ";&lt;Delay&gt; %d$BlankTime";
+
+        public sealed class InkConfig
+        {
+            public string Name { get; set; }
+            public float SliceHeight { get; set; }
+            public uint LayerTime { get; set; }
+            public uint FirstLayerTime { get; set; }
+            public ushort NumberofBottomLayers { get; set; }
+            public float ResinPriceL { get; set; }
+        }
+
+        [XmlAttribute]
+        public byte FileVersion { get; set; } = 2;
+
+        public float DotsPermmX { get; set; } = 21.164f;
+        public float DotsPermmY { get; set; } = 21.164f;
+
+        public ushort XResolution { get; set; }
+        public ushort YResolution { get; set; }
+        public uint BlankTime { get; set; }
+        public uint TopTime { get; set; }
+        public uint PlatformTemp { get; set; } = 75;
+        public byte ExportSVG { get; set; }
+        public string Export { get; set; } = "False";
+        public string ExportPNG { get; set; } = "False";
+        public string CalcSliceSize { get; set; } = "False";
+        public uint XOffset { get; set; }
+        public uint YOffset { get; set; }
+        public string Direction { get; set; } = "Bottom_Up";
+        public float LiftDistance { get; set; } = 6;
+        public float SlideTiltValue { get; set; }
+        public uint SettleTime { get; set; } = 1600;
+        public string AntiAliasing { get; set; } = "True";
+        public string UseMainLiftGCode { get; set; } = "False";
+        public uint AntiAliasingValue { get; set; } = 4;
+        public float LiftFeedRate { get; set; } = 40;
+        public float BottomLiftFeedRate { get; set; } = 25;
+        public float LiftRetractRate { get; set; } = 80;
+        public string ExportOption { get; set; } = "ZIP";
+        public string RenderOutlines { get; set; } = "False";
+        public uint OutlineWidth_Inset { get; set; } = 2;
+        public uint OutlineWidth_Outset { get; set; }
+        public string FlipX { get; set; } = "False";
+        public string FlipY { get; set; } = "False";
+
+        public string Notes { get; set; } =
+            "Use these as a place to start; tune them for your specific printer and resins.\r\nAlways run a calibration on your resin to dial in for your machine.\r\nProfiles created by Earl Miller for CW v1.0.0.75.";
+
+        public string GCodeHeader { get; set; } = GCODESTART;
+        public string GCodeFooter { get; set; } = GCODEEND;
+        public string GCodeLift { get; set; } = GCODELIFT;
+        public string GCodeLayer { get; set; } = GCODELAYER;
+
+        [XmlElement("InkConfig")]
+        public List<InkConfig> InkConfigs { get; set; }
+
+        public string SelectedInk { get; set; }
+        public uint MinTestExposure { get; set; } = 5000;
+        public uint TestExposureStep { get; set; } = 100;
+        public string ExportPreview { get; set; } = "None";
+        public string UseMask { get; set; } = "False";
+        public string MaskFilename { get; set; } = "False";
+    }
+
+    #endregion
+
     public class CWSFile : FileFormat
     {
         #region Constants
 
-        public const string GCodeStart =  "G28 ;Auto Home{0}" +
-                                          "G21 ;Set units to be mm{0}" +
-                                          "G91 ;Relative Positioning{0}" +
-                                          "M17 ;Enable motors{0}" +
-                                          "<Slice> Blank{0}" +
-                                          "M106 S0{0}{0}";
+        public const string GCodeStart = "G28 ;Auto Home{0}" +
+                                         "G21 ;Set units to be mm{0}" +
+                                         "G91 ;Relative Positioning{0}" +
+                                         "M17 ;Enable motors{0}" +
+                                         "<Slice> Blank{0}" +
+                                         "M106 S0{0}{0}";
 
-        public const string GCodeEnd = "M106 S0{0}" +
+        public const string GCodeEnd = "M106 S0{0} ; UV off" +
                                        "G1 Z{1}{0}" +
                                        "{0}M18 ;Disable Motors{0}" +
                                        ";<Completed>{0}";
@@ -43,6 +191,30 @@ namespace UVtools.Core.FileFormats
         public const string GCodeKeywordSlice = ";<Slice>";
         public const string GCodeKeywordSliceBlank = ";<Slice> Blank";
         public const string GCodeKeywordDelay = ";<Delay>";
+        public const string GCodeKeywordTakes = ";<Takes>";
+
+        public const string WanhaoStartGCode =
+            ";********** Header Start ********{0}" +
+            "G21 ; Set units to be mm{0}" +
+            "G91 ; Relative Positioning{0}" +
+            "M17 ; Enable motors{0}" +
+            "; G28 Z ; Auto-home on print - commented by default{0}";
+
+        public const string WanhaoPreSliceGCode =
+            ";********** Pre-Slice {1} ********{0}" +
+            "G4 P0; Make sure any previous relative moves are complete{0}" +
+            ";<Delay> {2}{0}" +
+            ";********** Layer {1} ********{0}";
+
+        public const string WanhaoGCodeEnd =
+            ";********** Footer ********{0}" +
+            "M106 S0        ; UV off{0}" +
+            "G4 P0            ; wait for last lift to complete{0}" +
+            "G1 Z40.0 F150.0  ; lift model clear of resin{0}" +
+            "G4 P0            ; sync{0}" +
+            "M18              ; Disable Motors{0}" +
+            ";<Completed>{0}";
+
         #endregion
 
         #region Sub Classes
@@ -66,6 +238,7 @@ namespace UVtools.Core.FileFormats
             [DisplayName("Lift Distance")] public float LiftDistance { get; set; } = 4;
             [DisplayName("Slide/Tilt Value")] public byte TiltValue { get; set; }
             [DisplayName("Use Mainlift GCode Tab")] public bool UseMainliftGCodeTab { get; set; }
+            [DisplayName("Settle Time")] public uint SettleTime { get; set; } = 1600;
             [DisplayName("Anti Aliasing")] public bool AntiAliasing { get; set; } = true;
             [DisplayName("Anti Aliasing Value")] public float AntiAliasingValue { get; set; } = 2;
             [DisplayName("Z Lift Feed Rate")] public float ZLiftFeedRate { get; set; } = 120;
@@ -107,11 +280,14 @@ namespace UVtools.Core.FileFormats
             [DisplayName("lift_when_finished")] public byte LiftWhenFinished { get; set; } = 80;
         }
 
+        
+
         #endregion
 
         #region Properties
         public Slice SliceSettings { get; } = new Slice();
         public Output OutputSettings { get; } = new Output();
+        public CWSSliceBuildConfig SliceBuildConfig { get; set; } = new CWSSliceBuildConfig();
 
 
         public override FileFormatType FileType => FileFormatType.Archive;
@@ -120,14 +296,16 @@ namespace UVtools.Core.FileFormats
         {
             Unknown,
             Elfin,
-            BeneMono
+            BeneMono,
+            Wanhao,
         }
 
         public PrinterType Printer { get; set; } = PrinterType.Unknown;
 
         public override FileExtension[] FileExtensions { get; } = {
             new FileExtension("cws", "NovaMaker CWS"),
-            //new FileExtension("cws", "NovaMaker Bene Mono CWS Files", "Bene")
+            new FileExtension("rgb.cws", "NovaMaker Bene4 Mono / Elfin2 Mono SE (CWS)"),
+            new FileExtension("xml.cws", "Creation Workshop X (CWS)"),
         };
 
         public override Type[] ConvertToFormats { get; } =
@@ -141,6 +319,7 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.ExposureSeconds,
 
 
+            PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.RetractSpeed,
             PrintParameterModifier.LiftSpeed,
@@ -164,20 +343,24 @@ namespace UVtools.Core.FileFormats
 
         public override uint ResolutionX
         {
-            get => SliceSettings.Xres;
+            get => SliceSettings.Xres > 0 ? SliceSettings.Xres : SliceBuildConfig.XResolution;
             set
             {
-                OutputSettings.XResolution = SliceSettings.Xres = (ushort) value;
+                SliceBuildConfig.XResolution = 
+                OutputSettings.XResolution = 
+                SliceSettings.Xres = (ushort) value;
                 RaisePropertyChanged();
             }
         }
 
         public override uint ResolutionY
         {
-            get => SliceSettings.Yres;
+            get => SliceSettings.Yres > 0 ? SliceSettings.Yres : SliceBuildConfig.YResolution;
             set
             {
-                OutputSettings.YResolution = SliceSettings.Yres = (ushort) value;
+                SliceBuildConfig.YResolution = 
+                OutputSettings.YResolution = 
+                SliceSettings.Yres = (ushort) value;
                 RaisePropertyChanged();
             }
         }
@@ -206,7 +389,7 @@ namespace UVtools.Core.FileFormats
 
         public override float LayerHeight
         {
-            get => SliceSettings.Thickness;
+            get => SliceSettings.Thickness > 0 ? SliceSettings.Thickness : OutputSettings.LayerThickness;
             set
             {
                 OutputSettings.LayerThickness = SliceSettings.Thickness = value;
@@ -240,6 +423,7 @@ namespace UVtools.Core.FileFormats
             get => (float) Math.Round(SliceSettings.HeadLayersExpoMs / 1000f, 2);
             set
             {
+                OutputSettings.BottomLayersTime =
                 SliceSettings.HeadLayersExpoMs = (uint) (value * 1000f);
                 RaisePropertyChanged();
             }
@@ -250,7 +434,18 @@ namespace UVtools.Core.FileFormats
             get => (float) Math.Round(SliceSettings.LayersExpoMs / 1000f, 2);
             set
             {
+                OutputSettings.LayerTime = 
                 SliceSettings.LayersExpoMs = (uint) (value * 1000f);
+                RaisePropertyChanged();
+            }
+        }
+
+        public override float BottomLiftSpeed
+        {
+            get => OutputSettings.ZBottomLiftFeedRate;
+            set
+            {
+                OutputSettings.ZBottomLiftFeedRate = value;
                 RaisePropertyChanged();
             }
         }
@@ -260,6 +455,7 @@ namespace UVtools.Core.FileFormats
             get => SliceSettings.LiftDistance;
             set
             {
+                OutputSettings.LiftDistance = 
                 SliceSettings.LiftDistance = value;
                 RaisePropertyChanged();
             }
@@ -270,6 +466,8 @@ namespace UVtools.Core.FileFormats
             get => SliceSettings.LiftDownSpeed;
             set
             {
+                OutputSettings.ZLiftFeedRate =
+                SliceSettings.LiftUpSpeed =
                 SliceSettings.LiftDownSpeed = value;
                 RaisePropertyChanged();
             }
@@ -316,7 +514,7 @@ namespace UVtools.Core.FileFormats
 
         public override string MachineName => "Unknown";*/
 
-        public override object[] Configs => new object[] { SliceSettings, OutputSettings};
+        public override object[] Configs => Printer == PrinterType.Wanhao ? new object[] { SliceBuildConfig, OutputSettings } : new object[] { SliceSettings, OutputSettings};
         #endregion
 
         #region Methods
@@ -330,45 +528,88 @@ namespace UVtools.Core.FileFormats
         public override void Encode(string fileFullPath, OperationProgress progress = null)
         {
             base.Encode(fileFullPath, progress);
-            if (Printer == PrinterType.Unknown) Printer = PrinterType.Elfin;
+
+            //var filename = fileFullPath.EndsWith(TemporaryFileAppend) ? Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(fileFullPath)) : Path.GetFileNameWithoutExtension(fileFullPath);
+
+            if (Printer == PrinterType.Unknown)
+            {
+                Printer = PrinterType.Elfin;
+                for (int i = 0; i < FileExtensions.Length; i++)
+                {
+                    if (!fileFullPath.EndsWith(FileExtensions[i].Extension) && !fileFullPath.EndsWith($"{FileExtensions[i].Extension}{TemporaryFileAppend}")) continue;
+                    Printer = (PrinterType) i+1;
+                }
+            }
+
+            var filename = Path.GetFileName(fileFullPath);
+            filename = filename.Substring(0, filename.IndexOf('.'));
+
             using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
             {
-                string arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
-                var entry = outputFile.CreateEntry("slice.conf");
-                var stream = entry.Open();
-
-                using (TextWriter tw = new StreamWriter(stream))
+                if (Printer == PrinterType.Wanhao)
                 {
-                    
-                    tw.WriteLine($"# {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.Now}");
-                    tw.WriteLine("# conf version 1.0");
-                    tw.WriteLine("");
-
-                    foreach (var propertyInfo in SliceSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                    var manifest = new CWSManifest
                     {
-                        var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
-                        if (ReferenceEquals(displayNameAttribute, null)) continue;
-                        tw.WriteLine($"{displayNameAttribute.DisplayName.PadRight(24)}= {propertyInfo.GetValue(SliceSettings)}");
+                        GCode = {Name = $"{filename}.gcode"},
+                        Slices = new CWSManifest.Slice[LayerCount],
+                        SliceProfile = {Name = $"{filename}.slicing"}
+                    };
+
+                    for (int layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                    {
+                        manifest.Slices[layerIndex] = new CWSManifest.Slice(this[layerIndex].FormatFileName(filename));
+                    }
+
+                    XmlSerializer serializer = new XmlSerializer(manifest.GetType());
+                    XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+                    ns.Add("", "");
+                    var entry = outputFile.CreateEntry(CWSManifest.FileName);
+                    using (var stream = entry.Open())
+                    {
+                        serializer.Serialize(stream, manifest, ns);
+                    }
+
+                    serializer = new XmlSerializer(SliceBuildConfig.GetType());
+                    entry = outputFile.CreateEntry($"{filename}.slicing");
+                    using (var stream = entry.Open())
+                    {
+                        serializer.Serialize(stream, SliceBuildConfig, ns);
                     }
                 }
+                else
+                {
+                    string arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
+                    var entry = outputFile.CreateEntry("slice.conf");
+
+                    using (TextWriter tw = new StreamWriter(entry.Open()))
+                    {
+
+                        tw.WriteLine($"# {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.Now}");
+                        tw.WriteLine("# conf version 1.0");
+                        tw.WriteLine("");
+
+                        foreach (var propertyInfo in SliceSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                        {
+                            var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
+                            if (ReferenceEquals(displayNameAttribute, null)) continue;
+                            tw.WriteLine($"{displayNameAttribute.DisplayName.PadRight(24)}= {propertyInfo.GetValue(SliceSettings)}");
+                        }
+                    }
+                }
+                
 
 
                 //for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 Parallel.For(0, LayerCount, 
-                    new ParallelOptions{MaxDegreeOfParallelism = Printer == PrinterType.Elfin ? 1 : Environment.ProcessorCount},
+                    new ParallelOptions{MaxDegreeOfParallelism = Printer == PrinterType.BeneMono ? 1 : 1 },
                     layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
 
                     Layer layer = this[layerIndex];
-                    var layerImagePath =
-                        $"{Path.GetFileNameWithoutExtension(fileFullPath)}{layerIndex.ToString().PadLeft(LayerCount.ToString().Length, '0')}.png";
+                    var layerImagePath = layer.FormatFileName(filename);
 
-                    if (Printer == PrinterType.Elfin)
-                    {
-                        outputFile.PutFileContent(layerImagePath, layer.CompressedBytes, ZipArchiveMode.Create);
-                    }
-                    else
+                    if (Printer == PrinterType.BeneMono)
                     {
                         using (var mat = layer.LayerMat)
                         using (var matEncode = new Mat(mat.Height, mat.Step / 3, DepthType.Cv8U, 3))
@@ -389,17 +630,20 @@ namespace UVtools.Core.FileFormats
                                 }
                             }
                         }
+                    }
+                    else
+                    {
+                        outputFile.PutFileContent(layerImagePath, layer.CompressedBytes, ZipArchiveMode.Create);
+                    }
 
-                        lock (progress.Mutex)
-                        {
-                            progress++;
-                        }
-
+                    lock (progress.Mutex)
+                    {
+                        progress++;
                     }
                 });
 
                 RebuildGCode();
-                outputFile.PutFileContent($"{Path.GetFileNameWithoutExtension(fileFullPath)}.gcode", GCode.ToString(), ZipArchiveMode.Create);
+                outputFile.PutFileContent($"{filename}.gcode", GCode.ToString(), ZipArchiveMode.Create);
             }
 
             AfterEncode();
@@ -413,48 +657,71 @@ namespace UVtools.Core.FileFormats
             FileFullPath = fileFullPath;
             using (var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read))
             {
-                var entry = inputFile.GetEntry("slice.conf");
-                if (ReferenceEquals(entry, null))
+                var entry = inputFile.GetEntry("manifest.xml");
+                if (!ReferenceEquals(entry, null)) // Wanhao
                 {
-                    Clear();
-                    throw new FileLoadException("slice.conf not found", fileFullPath);
-                }
+                    //DecodeXML(fileFullPath, inputFile, progress);
+                    Printer = PrinterType.Wanhao;
+                    entry = inputFile.Entries.FirstOrDefault(e => e.Name.EndsWith(".slicing"));
 
-                
-
-                using (TextReader tr = new StreamReader(entry.Open()))
-                {
-                    string line;
-                    while ((line = tr.ReadLine()) != null)
+                    if (!(entry is null))
                     {
-                        line = line.Replace("# ", string.Empty);
-                        if (string.IsNullOrEmpty(line)) continue;
-                        //if(line[0] == '#') continue;
-
-                        var splitLine = line.Split('=');
-                        if(splitLine.Length < 2) continue;
-
-                        foreach (var propertyInfo in SliceSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                        //Clear();
+                        //throw new FileLoadException(".slicing file not found, unable to proceed.", fileFullPath);
+                        try
                         {
-                            var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
-                            if(ReferenceEquals(displayNameAttribute, null)) continue;
-                            if(!splitLine[0].Trim().Equals(displayNameAttribute.DisplayName)) continue;
-                            Helpers.SetPropertyValue(propertyInfo, SliceSettings, splitLine[1].Trim());
+                            var serializer = new XmlSerializer(typeof(CWSSliceBuildConfig));
+                            using (var stream = entry.Open())
+                            {
+                                SliceBuildConfig = (CWSSliceBuildConfig)serializer.Deserialize(stream);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Clear();
+                            throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", fileFullPath);
                         }
                     }
-                    tr.Close();
                 }
-
-                entry = inputFile.GetEntry($"{Path.GetFileNameWithoutExtension(fileFullPath)}.gcode");
-                if (entry is null)
+                else // Novamaker
                 {
-                    entry = inputFile.GetEntry("slice.gcode");
-                    if (entry is null)
+                    entry = inputFile.GetEntry("slice.conf");
+                    if (ReferenceEquals(entry, null))
                     {
                         Clear();
-                        throw new FileLoadException($"{Path.GetFileNameWithoutExtension(fileFullPath)}.gcode nor slice.gcode was found",
-                            fileFullPath);
+                        throw new FileLoadException("slice.conf not found", fileFullPath);
                     }
+
+                    using (TextReader tr = new StreamReader(entry.Open()))
+                    {
+                        string line;
+                        while ((line = tr.ReadLine()) != null)
+                        {
+                            line = line.Replace("# ", string.Empty);
+                            if (string.IsNullOrEmpty(line)) continue;
+                            //if(line[0] == '#') continue;
+
+                            var splitLine = line.Split('=');
+                            if (splitLine.Length < 2) continue;
+
+                            foreach (var propertyInfo in SliceSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                            {
+                                var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
+                                if (ReferenceEquals(displayNameAttribute, null)) continue;
+                                if (!splitLine[0].Trim().Equals(displayNameAttribute.DisplayName)) continue;
+                                Helpers.SetPropertyValue(propertyInfo, SliceSettings, splitLine[1].Trim());
+                            }
+                        }
+                        tr.Close();
+                    }
+                }
+
+                entry = inputFile.Entries.FirstOrDefault(e => e.Name.EndsWith(".gcode"));
+                if (entry is null)
+                {
+                    Clear();
+                    throw new FileLoadException("Unable to find .gcode file",
+                        fileFullPath);
                 }
 
                 using (TextReader tr = new StreamReader(entry.Open()))
@@ -479,7 +746,7 @@ namespace UVtools.Core.FileFormats
                             var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
                             if (ReferenceEquals(displayNameAttribute, null)) continue;
                             if (!splitLine[0].Trim(' ', ';', '(').Equals(displayNameAttribute.DisplayName)) continue;
-                            Helpers.SetPropertyValue(propertyInfo, OutputSettings, splitLine[1].Trim(' ', ')', 'm', 'n', 's', '/'));
+                            Helpers.SetPropertyValue(propertyInfo, OutputSettings, splitLine[1].Trim(' ', ')', 'p', 'x', 'm', 'n', 's', '/'));
                             //Debug.WriteLine(splitLine[1].Trim(' ', ')', 'm', 'n', '/'));
                         }
                     }
@@ -518,8 +785,12 @@ namespace UVtools.Core.FileFormats
                     var stripGcode =
                         gcode.Substring(gcode.IndexOf(startStr, StringComparison.InvariantCultureIgnoreCase) +
                                         startStr.Length);
+
+                    var endStr = $"{GCodeKeywordSlice} {layerIndex + 1}";
+                    var endIndex = stripGcode.IndexOf(endStr, StringComparison.InvariantCulture);
+                    if (endIndex < 0) endIndex = stripGcode.Length;
                     stripGcode = stripGcode
-                        .Substring(0, stripGcode.IndexOf(GCodeKeywordDelay, stripGcode.IndexOf(GCodeKeywordSlice)))
+                        .Substring(0, endIndex)
                         .Trim(' ', '\n', '\r', '\t');
                     //var startCurrPos = stripGcode.Remove(0, ";currPos:".Length);
 
@@ -609,20 +880,7 @@ namespace UVtools.Core.FileFormats
                     }
 
 
-                    if (Printer == PrinterType.Elfin)
-                    {
-                        this[layerIndex] =
-                            new Layer(layerIndex, buffer, LayerManager)
-                            {
-                                ExposureTime = exposureTime,
-                                LiftHeight = liftHeight,
-                                LiftSpeed = liftSpeed,
-                                RetractSpeed = retractSpeed,
-                                LayerOffTime = lightOffDelay,
-                                LightPWM = pwm,
-                            };
-                    }
-                    else
+                    if (Printer == PrinterType.BeneMono)
                     {
                         using (Mat mat = new Mat())
                         {
@@ -648,7 +906,19 @@ namespace UVtools.Core.FileFormats
                                     };
                             }
                         }
-
+                    }
+                    else
+                    {
+                        this[layerIndex] =
+                            new Layer(layerIndex, buffer, LayerManager)
+                            {
+                                ExposureTime = exposureTime,
+                                LiftHeight = liftHeight,
+                                LiftSpeed = liftSpeed,
+                                RetractSpeed = retractSpeed,
+                                LayerOffTime = lightOffDelay,
+                                LightPWM = pwm,
+                            };
                     }
 
                     progress++;
@@ -680,52 +950,85 @@ namespace UVtools.Core.FileFormats
 
             }
             GCode.AppendLine();
-            GCode.AppendFormat(GCodeStart, Environment.NewLine);
+
+            GCode.AppendFormat(Printer == PrinterType.Wanhao ? WanhaoStartGCode : GCodeStart, Environment.NewLine);
 
             float lastZPosition = 0;
 
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
                 Layer layer = this[layerIndex];
+
+                if (Printer == PrinterType.Wanhao)
+                {
+                    GCode.AppendFormat(WanhaoPreSliceGCode, Environment.NewLine, layerIndex, OutputSettings.SettleTime);
+                }
+
                 GCode.AppendLine($"{GCodeKeywordSlice} {layerIndex}");
                 if (layer.ExposureTime > 0 && layer.LightPWM > 0)
                 {
-                    GCode.AppendLine($"M106 S{layer.LightPWM}");
+                    GCode.AppendLine($"M106 S{layer.LightPWM} ; UV on");
                     GCode.AppendLine($"{GCodeKeywordDelay} {layer.ExposureTime * 1000}");
-                    GCode.AppendLine("M106 S0");
+                    GCode.AppendLine("M106 S0 ; UV off");
                 }
                 GCode.AppendLine(GCodeKeywordSliceBlank);
+
+                if (Printer == PrinterType.Wanhao)
+                {
+                    GCode.AppendLine($"{GCodeKeywordDelay} 0");
+                }
 
                 if (lastZPosition != layer.PositionZ)
                 {
                     if (layer.LiftHeight > 0)
                     {
+                        float downPos = (float) Math.Round(layer.LiftHeight - layer.PositionZ + lastZPosition, 2);
+                        if (Printer == PrinterType.Wanhao)
+                        {
+                            GCode.AppendLine($";********** Lift Sequence {layerIndex} ********");
+                        }
                         GCode.AppendLine($"G1 Z{layer.LiftHeight} F{layer.LiftSpeed}");
-                        GCode.AppendLine($"G1 Z-{Math.Round(layer.LiftHeight - layer.PositionZ + lastZPosition, 2)} F{layer.RetractSpeed}");
+                        if (Printer == PrinterType.Wanhao)
+                        {
+                            GCode.AppendLine($"{GCodeKeywordTakes} {OperationCalculator.LightOffDelayC.CalculateMillisecondsLiftOnly(layer.LiftHeight, layer.LiftSpeed)}");
+                            GCode.AppendLine($"G4 P0 ; Wait for lift rise to complete");
+                            GCode.AppendLine($"{GCodeKeywordDelay} 0");
+                        }
+                        GCode.AppendLine($"G1 Z-{downPos} F{layer.RetractSpeed}");
+                        if (Printer == PrinterType.Wanhao)
+                        {
+                            GCode.AppendLine($"{GCodeKeywordTakes} {OperationCalculator.LightOffDelayC.CalculateMillisecondsLiftOnly(downPos, layer.RetractSpeed)}");
+                        }
                     }
                     else
                     {
                         GCode.AppendLine($"G1 Z{Math.Round(layer.PositionZ - lastZPosition, 2)} F{layer.LiftSpeed}");
                     }
                 }
-                // delay = max(extra['wait'], 500) + int(((int(lift)/(extra['lift_feed']/60)) + (int(lift)/(extra['lift_retract']/60)))*1000)
-                uint extraDelay = OperationCalculator.LightOffDelayC.CalculateMilliseconds(layer.LiftHeight, layer.LiftSpeed, layer.RetractSpeed);
-                if (layerIndex < BottomLayerCount)
-                {
-                    extraDelay = (uint)Math.Max(extraDelay + 10000, layer.ExposureTime * 1000);
-                }
-                else
-                {
-                    extraDelay += Math.Max(OutputSettings.BlankingLayerTime, 500);
-                }
 
-                GCode.AppendLine($"{GCodeKeywordDelay} {extraDelay}");
-                GCode.AppendLine();
+                if (Printer != PrinterType.Wanhao)
+                {
+                    // delay = max(extra['wait'], 500) + int(((int(lift)/(extra['lift_feed']/60)) + (int(lift)/(extra['lift_retract']/60)))*1000)
+                    uint extraDelay =
+                        OperationCalculator.LightOffDelayC.CalculateMilliseconds(layer.LiftHeight, layer.LiftSpeed,
+                            layer.RetractSpeed);
+                    if (layerIndex < BottomLayerCount)
+                    {
+                        extraDelay = (uint) Math.Max(extraDelay + 10000, layer.ExposureTime * 1000);
+                    }
+                    else
+                    {
+                        extraDelay += Math.Max(OutputSettings.BlankingLayerTime, 500);
+                    }
+
+                    GCode.AppendLine($"{GCodeKeywordDelay} {extraDelay}");
+                    GCode.AppendLine();
+                }
 
                 lastZPosition = layer.PositionZ;
             }
 
-            GCode.AppendFormat(GCodeEnd, Environment.NewLine, SliceSettings.LiftWhenFinished);
+            GCode.AppendFormat(Printer == PrinterType.Wanhao ? WanhaoGCodeEnd : GCodeEnd, Environment.NewLine, SliceSettings.LiftWhenFinished);
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)

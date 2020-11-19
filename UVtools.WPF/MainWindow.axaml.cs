@@ -720,7 +720,7 @@ namespace UVtools.WPF
         {
             var result =
                 await this.MessageBoxQuestion(
-                    $"Do you like to auto-update {About.Software} v{App.Version} to v{VersionChecker.Version}?\n" +
+                    $"Do you like to auto-update {About.Software} v{App.VersionStr} to v{VersionChecker.Version}?\n" +
                     "Yes: Auto update\n" +
                     "No:  Manual update\n" +
                     "Cancel: No action\n\n" +

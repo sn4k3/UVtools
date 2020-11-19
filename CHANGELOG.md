@@ -1,5 +1,15 @@
 # Changelog
 
+## 19/11/2020 - v1.3.2
+
+* (Add) Tools: Warn where layer preview is critical for use the tool, must disable layer rotation first (#100)
+* (Add) CWS: Bottom lift speed property
+* (Add) CWS: Support Wanhao Workshop CWX and Wanhao Creation Workshop file types (#98)
+* (Add) CWS: Split format into virtual extensions (.cws, .rgb.cws, .xml.cws) to support diferent file formats and diferent printers under same main .cws extensions. That will affect file converts only to let UVtools know what type of encoding to use. Load and save a xxx.cws file will always auto decode/encode the file for the correct target format no matter the extension.
+* (Improvement) CWS: It no longer search for a specific filename in the zip file, instead it look for extension to get the files to ensure it always found them no matter the file name system
+* (Fix) CWS: When "Save as" the file were generating sub files with .cws extension, eg: filename0001.cws.png
+* (Change) Allow read empty layers without error from Anycubic files (PWS, PW0, PWxx) due a bug on slicer software under macOS
+
 ## 16/11/2020 - v1.3.1
 
 * (Add) File format: PWX (AnyCubic Photon X) (#93)

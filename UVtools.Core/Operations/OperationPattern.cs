@@ -31,7 +31,8 @@ namespace UVtools.Core.Operations
 
         public override string Title => "Pattern";
         public override string Description =>
-            "Duplicates the model in a rectangular pattern around the build plate.";
+            "Duplicates the model in a rectangular pattern around the build plate.\n" +
+            "Note: Before perform this operation, un-rotate the layer preview to see the real orientation.";
         public override string ConfirmationText =>
             $"pattern the object across {Cols} columns and {Rows} rows?";
 

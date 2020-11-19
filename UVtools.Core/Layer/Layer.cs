@@ -162,7 +162,7 @@ namespace UVtools.Core
         /// <summary>
         /// Gets a computed layer filename, padding zeros are equal to layer count digits
         /// </summary>
-        public string Filename => $"layer{Index.ToString().PadLeft(ParentLayerManager.LayerDigits, '0')}.png";
+        public string Filename => FormatFileName("layer");
 
         /// <summary>
         /// Gets if layer has been modified
@@ -331,6 +331,11 @@ namespace UVtools.Core
         #endregion
 
         #region Methods
+
+        public string FormatFileName(string name)
+        {
+            return $"{name}{Index.ToString().PadLeft(ParentLayerManager.LayerDigits, '0')}.png";
+        }
 
         public Rectangle GetBoundingRectangle(Mat mat = null, bool reCalculate = false)
         {
@@ -1251,8 +1256,5 @@ namespace UVtools.Core
         }
 
         #endregion
-
-
-
     }
 }

@@ -555,7 +555,7 @@ namespace UVtools.Core.FileFormats
                 for (int index = 0; index < EncodedRle.Length; index++)
                 {
                     byte b = EncodedRle[index];
-                    int code = (b >> 4);
+                    int code = b >> 4;
                     uint reps = (uint) (b & 0xf);
                     byte color;
                     switch (code)
@@ -602,7 +602,7 @@ namespace UVtools.Core.FileFormats
                     }
                 }
 
-                if (n != imageLength)
+                if (n > 0 && n != imageLength)
                 {
                     image.Dispose();
                     throw new FileLoadException($"Error image ended short: {n} of {imageLength}");
@@ -1413,8 +1413,8 @@ namespace UVtools.Core.FileFormats
 
                 //file.SliceSettings.Xppm = file.OutputSettings.PixPermmX = defaultFormat.OutputSettings.
                 //file.SliceSettings.Yppm = file.OutputSettings.PixPermmY = (float)Math.Round(ResolutionY / HeaderSettings.BedSizeY, 3);
-                file.SliceSettings.Xres = file.OutputSettings.XResolution = (ushort)ResolutionX;
-                file.SliceSettings.Yres = file.OutputSettings.YResolution = (ushort)ResolutionY;
+                file.ResolutionX = (ushort)ResolutionX;
+                file.ResolutionY = (ushort)ResolutionY;
                 file.SliceSettings.Thickness = file.OutputSettings.LayerThickness = LayerHeight;
                 file.SliceSettings.LayersNum = file.OutputSettings.LayersNum = LayerCount;
                 file.SliceSettings.HeadLayersNum = file.OutputSettings.NumberBottomLayers = BottomLayerCount;
@@ -1440,9 +1440,9 @@ namespace UVtools.Core.FileFormats
                 file.OutputSettings.AntiAliasingValue = ValidateAntiAliasingLevel();
                 file.OutputSettings.AntiAliasing = file.OutputSettings.AntiAliasingValue > 1;
 
-                file.Printer = MachineName.Contains("Bene4 Mono") ||
+                /*file.Printer = MachineName.Contains("Bene4 Mono") ||
                                FileFullPath.Contains("bene4_mono")
-                    ? CWSFile.PrinterType.BeneMono : CWSFile.PrinterType.Elfin;
+                    ? CWSFile.PrinterType.BeneMono : CWSFile.PrinterType.Elfin;*/
 
                 file.Encode(fileFullPath, progress);
 
