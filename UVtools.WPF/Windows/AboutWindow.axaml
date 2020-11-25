@@ -12,7 +12,68 @@
 
   <StackPanel Orientation="Vertical">
     <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-      <Image Margin="20,0,0,0" Source="/Assets/Icons/UVtools_alt.ico" Width="256"/>
+      <Border Margin="20,20,0,20">
+      <StackPanel Spacing="5">
+        <Image Margin="0,0,0,15" HorizontalAlignment="Center" Source="/Assets/Icons/UVtools_alt.ico" Width="256"/>
+        <TextBox 
+          Text="{Binding OSDescription}"
+          IsReadOnly="True" 
+          BorderBrush="Transparent"
+          CaretBrush="Transparent"
+          Watermark="Operative System:"
+          UseFloatingWatermark="True"/>
+
+        <TextBox
+          Text="{Binding FrameworkDescription}"
+          IsReadOnly="True"
+          BorderBrush="Transparent"
+          CaretBrush="Transparent"
+          Watermark="Framework:"
+          UseFloatingWatermark="True"/>
+
+        <TextBox
+          Text="{Binding ProcessorCount}"
+          IsReadOnly="True"
+          BorderBrush="Transparent"
+          CaretBrush="Transparent"
+          Watermark="Processor Count:"
+          UseFloatingWatermark="True"/>
+
+        <TextBox
+          Text="{Binding ScreensDescription}"
+          IsReadOnly="True"
+          BorderBrush="Transparent"
+          CaretBrush="Transparent"
+          Watermark="Screens, resolution, working area, usable area:"
+          UseFloatingWatermark="True"/>
+
+        <!--
+        <TextBox
+          Text="{Binding ScreenResolution}"
+          IsReadOnly="True"
+          BorderBrush="Transparent"
+          CaretBrush="Transparent"
+          Watermark="Resolution:"
+          UseFloatingWatermark="True"/>
+
+        <TextBox
+          Text="{Binding WorkingArea}"
+          IsReadOnly="True"
+          BorderBrush="Transparent"
+          CaretBrush="Transparent"
+          Watermark="Working Area:"
+          UseFloatingWatermark="True"/>
+
+        <TextBox
+          Text="{Binding RealWorkingArea}"
+          IsReadOnly="True"
+          BorderBrush="Transparent"
+          CaretBrush="Transparent"
+          Watermark="Real Working Area:"
+          UseFloatingWatermark="True"/>
+          -->
+      </StackPanel>
+      </Border>
       <Grid 
         RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,*"
         Margin="20"

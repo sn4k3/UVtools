@@ -523,6 +523,7 @@ namespace UVtools.WPF
             return new IslandDetectionConfiguration
             {
                 Enabled = Settings.Issues.ComputeIslands,
+                EnhancedDetection = Settings.Issues.IslandEnhancedDetection,
                 AllowDiagonalBonds = Settings.Issues.IslandAllowDiagonalBonds,
                 BinaryThreshold = Settings.Issues.IslandBinaryThreshold,
                 RequiredAreaToProcessCheck = Settings.Issues.IslandRequiredAreaToProcessCheck,

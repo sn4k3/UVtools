@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -662,6 +663,23 @@ namespace UVtools.Core.FileFormats
                 {
                     //DecodeXML(fileFullPath, inputFile, progress);
                     Printer = PrinterType.Wanhao;
+
+                    try
+                    {
+                        var serializer = new XmlSerializer(typeof(CWSManifest));
+                        using (var stream = entry.Open())
+                        {
+                            var manifest = (CWSManifest)serializer.Deserialize(stream);
+                            OutputSettings.LayersNum = (uint) manifest.Slices.Length;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Clear();
+                        throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", fileFullPath);
+                    }
+                    
+
                     entry = inputFile.Entries.FirstOrDefault(e => e.Name.EndsWith(".slicing"));
 
                     if (!(entry is null))
@@ -746,13 +764,20 @@ namespace UVtools.Core.FileFormats
                             var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
                             if (ReferenceEquals(displayNameAttribute, null)) continue;
                             if (!splitLine[0].Trim(' ', ';', '(').Equals(displayNameAttribute.DisplayName)) continue;
-                            Helpers.SetPropertyValue(propertyInfo, OutputSettings, splitLine[1].Trim(' ', ')', 'p', 'x', 'm', 'n', 's', '/'));
+                            try
+                            {
+                                Helpers.SetPropertyValue(propertyInfo, OutputSettings, splitLine[1].Trim(' ', ')', 'p', 'x', 'm', 'n', 's', '/'));
+                            }
+                            catch
+                            {
+                                // ignored
+                            }
+                            
                             //Debug.WriteLine(splitLine[1].Trim(' ', ')', 'm', 'n', '/'));
                         }
                     }
                     tr.Close();
                 }
-
 
                 LayerManager = new LayerManager(OutputSettings.LayersNum, this);
 

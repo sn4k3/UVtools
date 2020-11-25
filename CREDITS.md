@@ -38,3 +38,5 @@
 * illest twitch
 * Khalil Nurullah
 * Nahin Mulla 
+* Jorge diego Robles Ayerbe
+* Timothy Gray

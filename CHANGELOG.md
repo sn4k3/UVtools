@@ -1,5 +1,15 @@
 # Changelog
 
+## 25/11/2020 - v1.3.3
+
+* (Add) Improved island detection: Combines the island and overhang detections for a better more realistic detection and to discard false-positives. (Slower)
+   If enabled, and when a island is found, it will check for overhangs on that same island, if no overhang found then the island will be discarded and considered safe, otherwise it will flag as an island issue.
+   Note: Overhangs settings will be used to configure the detection. Enabling Overhangs is not required for this procedure to work.
+   Enabled by default, 
+* (Add) More information on the About box: Operative system and architecture, framework, processor count and screens
+* (Fix) Overhangs: Include islands when detecting overhangs were not skip when found a island
+* (Fix) Decode CWS from Wanhao Workshop fails on number of slices (#102)
+
 ## 19/11/2020 - v1.3.2
 
 * (Add) Tools: Warn where layer preview is critical for use the tool, must disable layer rotation first (#100)

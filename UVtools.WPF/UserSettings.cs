@@ -48,67 +48,67 @@ namespace UVtools.WPF
             public bool StartMaximized
             {
                 get => _startMaximized;
-                set => this.RaiseAndSetIfChanged(ref _startMaximized, value);
+                set => RaiseAndSetIfChanged(ref _startMaximized, value);
             }
 
             public bool CheckForUpdatesOnStartup
             {
                 get => _checkForUpdatesOnStartup;
-                set => this.RaiseAndSetIfChanged(ref _checkForUpdatesOnStartup, value);
+                set => RaiseAndSetIfChanged(ref _checkForUpdatesOnStartup, value);
             }
 
             public bool LoadDemoFileOnStartup
             {
                 get => _loadDemoFileOnStartup;
-                set => this.RaiseAndSetIfChanged(ref _loadDemoFileOnStartup, value);
+                set => RaiseAndSetIfChanged(ref _loadDemoFileOnStartup, value);
             }
 
             public byte DefaultOpenFileExtensionIndex
             {
                 get => _defaultOpenFileExtensionIndex;
-                set => this.RaiseAndSetIfChanged(ref _defaultOpenFileExtensionIndex, value);
+                set => RaiseAndSetIfChanged(ref _defaultOpenFileExtensionIndex, value);
             }
 
             public string DefaultDirectoryOpenFile
             {
                 get => _defaultDirectoryOpenFile;
-                set => this.RaiseAndSetIfChanged(ref _defaultDirectoryOpenFile, value);
+                set => RaiseAndSetIfChanged(ref _defaultDirectoryOpenFile, value);
             }
 
             public string DefaultDirectorySaveFile
             {
                 get => _defaultDirectorySaveFile;
-                set => this.RaiseAndSetIfChanged(ref _defaultDirectorySaveFile, value);
+                set => RaiseAndSetIfChanged(ref _defaultDirectorySaveFile, value);
             }
 
             public string DefaultDirectoryExtractFile
             {
                 get => _defaultDirectoryExtractFile;
-                set => this.RaiseAndSetIfChanged(ref _defaultDirectoryExtractFile, value);
+                set => RaiseAndSetIfChanged(ref _defaultDirectoryExtractFile, value);
             }
 
             public string DefaultDirectoryConvertFile
             {
                 get => _defaultDirectoryConvertFile;
-                set => this.RaiseAndSetIfChanged(ref _defaultDirectoryConvertFile, value);
+                set => RaiseAndSetIfChanged(ref _defaultDirectoryConvertFile, value);
             }
 
             public bool PromptOverwriteFileSave
             {
                 get => _promptOverwriteFileSave;
-                set => this.RaiseAndSetIfChanged(ref _promptOverwriteFileSave, value);
+                set => RaiseAndSetIfChanged(ref _promptOverwriteFileSave, value);
             }
 
             public string FileSaveNamePrefix
             {
                 get => _fileSaveNamePrefix;
-                set => this.RaiseAndSetIfChanged(ref _fileSaveNamePrefix, value);
+                set => RaiseAndSetIfChanged(ref _fileSaveNamePrefix, value);
             }
 
             public string FileSaveNameSuffix
             {
                 get => _fileSaveNameSuffix;
-                set => this.RaiseAndSetIfChanged(ref _fileSaveNameSuffix, value);
+                set => RaiseAndSetIfChanged(ref _fileSaveNameSuffix, value);
             }
 
             /// <summary>
@@ -117,7 +117,7 @@ namespace UVtools.WPF
             public int MaxDegreeOfParallelism
             {
                 get => _maxDegreeOfParallelism;
-                set => this.RaiseAndSetIfChanged(ref _maxDegreeOfParallelism,  value);
+                set => RaiseAndSetIfChanged(ref _maxDegreeOfParallelism,  value);
             }
 
             public GeneralUserSettings()
@@ -175,8 +175,8 @@ namespace UVtools.WPF
                 get => _tooltipOverlayBackgroundColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _tooltipOverlayBackgroundColor, value);
-                    this.RaisePropertyChanged(nameof(TooltipOverlayBackgroundBrush));
+                    RaiseAndSetIfChanged(ref _tooltipOverlayBackgroundColor, value);
+                    RaisePropertyChanged(nameof(TooltipOverlayBackgroundBrush));
                 }
             }
 
@@ -190,7 +190,7 @@ namespace UVtools.WPF
             public bool TooltipOverlay
             {
                 get => _tooltipOverlay;
-                set => this.RaiseAndSetIfChanged(ref _tooltipOverlay, value);
+                set => RaiseAndSetIfChanged(ref _tooltipOverlay, value);
             }
 
             public Color VolumeBoundsOutlineColor
@@ -198,8 +198,8 @@ namespace UVtools.WPF
                 get => _volumeBoundsOutlineColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _volumeBoundsOutlineColor, value);
-                    this.RaisePropertyChanged(nameof(VolumeBoundsOutlineBrush));
+                    RaiseAndSetIfChanged(ref _volumeBoundsOutlineColor, value);
+                    RaisePropertyChanged(nameof(VolumeBoundsOutlineBrush));
                 }
             }
 
@@ -213,13 +213,13 @@ namespace UVtools.WPF
             public byte VolumeBoundsOutlineThickness
             {
                 get => _volumeBoundsOutlineThickness;
-                set => this.RaiseAndSetIfChanged(ref _volumeBoundsOutlineThickness, value);
+                set => RaiseAndSetIfChanged(ref _volumeBoundsOutlineThickness, value);
             }
 
             public bool VolumeBoundsOutline
             {
                 get => _volumeBoundsOutline;
-                set => this.RaiseAndSetIfChanged(ref _volumeBoundsOutline, value);
+                set => RaiseAndSetIfChanged(ref _volumeBoundsOutline, value);
             }
 
             public Color LayerBoundsOutlineColor
@@ -227,8 +227,8 @@ namespace UVtools.WPF
                 get => _layerBoundsOutlineColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _layerBoundsOutlineColor, value);
-                    this.RaisePropertyChanged(nameof(LayerBoundsOutlineBrush));
+                    RaiseAndSetIfChanged(ref _layerBoundsOutlineColor, value);
+                    RaisePropertyChanged(nameof(LayerBoundsOutlineBrush));
                 }
             }
 
@@ -242,13 +242,13 @@ namespace UVtools.WPF
             public byte LayerBoundsOutlineThickness
             {
                 get => _layerBoundsOutlineThickness;
-                set => this.RaiseAndSetIfChanged(ref _layerBoundsOutlineThickness, value);
+                set => RaiseAndSetIfChanged(ref _layerBoundsOutlineThickness, value);
             }
 
             public bool LayerBoundsOutline
             {
                 get => _layerBoundsOutline;
-                set => this.RaiseAndSetIfChanged(ref _layerBoundsOutline, value);
+                set => RaiseAndSetIfChanged(ref _layerBoundsOutline, value);
             }
 
             public Color HollowOutlineColor
@@ -256,8 +256,8 @@ namespace UVtools.WPF
                 get => _hollowOutlineColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _hollowOutlineColor, value);
-                    this.RaisePropertyChanged(nameof(HollowOutlineBrush));
+                    RaiseAndSetIfChanged(ref _hollowOutlineColor, value);
+                    RaisePropertyChanged(nameof(HollowOutlineBrush));
                 }
             }
 
@@ -271,13 +271,13 @@ namespace UVtools.WPF
             public byte HollowOutlineLineThickness
             {
                 get => _hollowOutlineLineThickness;
-                set => this.RaiseAndSetIfChanged(ref _hollowOutlineLineThickness, value);
+                set => RaiseAndSetIfChanged(ref _hollowOutlineLineThickness, value);
             }
 
             public bool HollowOutline
             {
                 get => _hollowOutline;
-                set => this.RaiseAndSetIfChanged(ref _hollowOutline, value);
+                set => RaiseAndSetIfChanged(ref _hollowOutline, value);
             }
 
             public Color PreviousLayerDifferenceColor
@@ -285,8 +285,8 @@ namespace UVtools.WPF
                 get => _previousLayerDifferenceColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _previousLayerDifferenceColor, value);
-                    this.RaisePropertyChanged(nameof(PreviousLayerDifferenceBrush));
+                    RaiseAndSetIfChanged(ref _previousLayerDifferenceColor, value);
+                    RaisePropertyChanged(nameof(PreviousLayerDifferenceBrush));
                 }
             }
 
@@ -302,8 +302,8 @@ namespace UVtools.WPF
                 get => _nextLayerDifferenceColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _nextLayerDifferenceColor, value);
-                    this.RaisePropertyChanged(nameof(NextLayerDifferenceBrush));
+                    RaiseAndSetIfChanged(ref _nextLayerDifferenceColor, value);
+                    RaisePropertyChanged(nameof(NextLayerDifferenceBrush));
                 }
             }
 
@@ -319,8 +319,8 @@ namespace UVtools.WPF
                 get => _bothLayerDifferenceColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _bothLayerDifferenceColor, value);
-                    this.RaisePropertyChanged(nameof(BothLayerDifferenceBrush));
+                    RaiseAndSetIfChanged(ref _bothLayerDifferenceColor, value);
+                    RaisePropertyChanged(nameof(BothLayerDifferenceBrush));
                 }
             }
 
@@ -334,7 +334,7 @@ namespace UVtools.WPF
             public bool ShowLayerDifference
             {
                 get => _showLayerDifference;
-                set => this.RaiseAndSetIfChanged(ref _showLayerDifference, value);
+                set => RaiseAndSetIfChanged(ref _showLayerDifference, value);
             }
 
             public Color IslandColor
@@ -342,8 +342,8 @@ namespace UVtools.WPF
                 get => _islandColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _islandColor, value);
-                    this.RaisePropertyChanged(nameof(IslandBrush));
+                    RaiseAndSetIfChanged(ref _islandColor, value);
+                    RaisePropertyChanged(nameof(IslandBrush));
                 }
             }
 
@@ -359,8 +359,8 @@ namespace UVtools.WPF
                 get => _islandHighlightColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _islandHighlightColor, value);
-                    this.RaisePropertyChanged(nameof(IslandHighlightBrush));
+                    RaiseAndSetIfChanged(ref _islandHighlightColor, value);
+                    RaisePropertyChanged(nameof(IslandHighlightBrush));
                 }
             }
 
@@ -376,8 +376,8 @@ namespace UVtools.WPF
                 get => _overhangColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _overhangColor, value);
-                    this.RaisePropertyChanged(nameof(OverhangBrush));
+                    RaiseAndSetIfChanged(ref _overhangColor, value);
+                    RaisePropertyChanged(nameof(OverhangBrush));
                 }
             }
 
@@ -393,8 +393,8 @@ namespace UVtools.WPF
                 get => _overhangHighlightColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _overhangHighlightColor, value);
-                    this.RaisePropertyChanged(nameof(OverhangHighlightBrush));
+                    RaiseAndSetIfChanged(ref _overhangHighlightColor, value);
+                    RaisePropertyChanged(nameof(OverhangHighlightBrush));
                 }
             }
 
@@ -410,8 +410,8 @@ namespace UVtools.WPF
                 get => _resinTrapColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _resinTrapColor, value);
-                    this.RaisePropertyChanged(nameof(ResinTrapBrush));
+                    RaiseAndSetIfChanged(ref _resinTrapColor, value);
+                    RaisePropertyChanged(nameof(ResinTrapBrush));
                 }
             }
 
@@ -427,8 +427,8 @@ namespace UVtools.WPF
                 get => _resinTrapHighlightColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _resinTrapHighlightColor, value);
-                    this.RaisePropertyChanged(nameof(ResinTrapHighlightBrush));
+                    RaiseAndSetIfChanged(ref _resinTrapHighlightColor, value);
+                    RaisePropertyChanged(nameof(ResinTrapHighlightBrush));
                 }
             }
 
@@ -443,8 +443,8 @@ namespace UVtools.WPF
                 get => _touchingBoundsColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _touchingBoundsColor, value);
-                    this.RaisePropertyChanged(nameof(TouchingBoundsBrush));
+                    RaiseAndSetIfChanged(ref _touchingBoundsColor, value);
+                    RaisePropertyChanged(nameof(TouchingBoundsBrush));
                 }
             }
 
@@ -460,8 +460,8 @@ namespace UVtools.WPF
                 get => _crosshairColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _crosshairColor, value);
-                    this.RaisePropertyChanged(nameof(CrosshairBrush));
+                    RaiseAndSetIfChanged(ref _crosshairColor, value);
+                    RaisePropertyChanged(nameof(CrosshairBrush));
                 }
             }
 
@@ -475,61 +475,61 @@ namespace UVtools.WPF
             public bool ZoomToFitPrintVolumeBounds
             {
                 get => _zoomToFitPrintVolumeBounds;
-                set => this.RaiseAndSetIfChanged(ref _zoomToFitPrintVolumeBounds, value);
+                set => RaiseAndSetIfChanged(ref _zoomToFitPrintVolumeBounds, value);
             }
 
             public byte ZoomLockLevelIndex
             {
                 get => _zoomLockLevelIndex;
-                set => this.RaiseAndSetIfChanged(ref _zoomLockLevelIndex, value);
+                set => RaiseAndSetIfChanged(ref _zoomLockLevelIndex, value);
             }
 
             public bool ZoomIssues
             {
                 get => _zoomIssues;
-                set => this.RaiseAndSetIfChanged(ref _zoomIssues, value);
+                set => RaiseAndSetIfChanged(ref _zoomIssues, value);
             }
 
             public bool CrosshairShowOnlyOnSelectedIssues
             {
                 get => _crosshairShowOnlyOnSelectedIssues;
-                set => this.RaiseAndSetIfChanged(ref _crosshairShowOnlyOnSelectedIssues, value);
+                set => RaiseAndSetIfChanged(ref _crosshairShowOnlyOnSelectedIssues, value);
             }
 
             public byte CrosshairFadeLevelIndex
             {
                 get => _crosshairFadeLevelIndex;
-                set => this.RaiseAndSetIfChanged(ref _crosshairFadeLevelIndex, value);
+                set => RaiseAndSetIfChanged(ref _crosshairFadeLevelIndex, value);
             }
 
             public uint CrosshairLength
             {
                 get => _crosshairLength;
-                set => this.RaiseAndSetIfChanged(ref _crosshairLength, value);
+                set => RaiseAndSetIfChanged(ref _crosshairLength, value);
             }
 
             public byte CrosshairMargin
             {
                 get => _crosshairMargin;
-                set => this.RaiseAndSetIfChanged(ref _crosshairMargin, value);
+                set => RaiseAndSetIfChanged(ref _crosshairMargin, value);
             }
 
             public bool AutoRotateLayerBestView
             {
                 get => _autoRotateLayerBestView;
-                set => this.RaiseAndSetIfChanged(ref _autoRotateLayerBestView, value);
+                set => RaiseAndSetIfChanged(ref _autoRotateLayerBestView, value);
             }
 
             public bool LayerZoomToFitOnLoad
             {
                 get => _layerZoomToFitOnLoad;
-                set => this.RaiseAndSetIfChanged(ref _layerZoomToFitOnLoad, value);
+                set => RaiseAndSetIfChanged(ref _layerZoomToFitOnLoad, value);
             }
 
             public bool ShowBackgroudGrid
             {
                 get => _showBackgroudGrid;
-                set => this.RaiseAndSetIfChanged(ref _showBackgroudGrid, value);
+                set => RaiseAndSetIfChanged(ref _showBackgroudGrid, value);
             }
 
             public LayerPreviewUserSettings Clone()
@@ -551,6 +551,7 @@ namespace UVtools.WPF
             private bool _computeResinTraps = true;
             private bool _computeTouchingBounds = true;
             private bool _computeEmptyLayers = true;
+            private bool _islandEnhancedDetection = true;
             private bool _islandAllowDiagonalBonds = false;
             private byte _islandBinaryThreshold = 0;
             private byte _islandRequiredAreaToProcessCheck = 1;
@@ -574,121 +575,127 @@ namespace UVtools.WPF
             public bool ComputeIssuesOnLoad
             {
                 get => _computeIssuesOnLoad;
-                set => this.RaiseAndSetIfChanged(ref _computeIssuesOnLoad, value);
+                set => RaiseAndSetIfChanged(ref _computeIssuesOnLoad, value);
             }
 
             public bool ComputeIssuesOnClickTab
             {
                 get => _computeIssuesOnClickTab;
-                set => this.RaiseAndSetIfChanged(ref _computeIssuesOnClickTab, value);
+                set => RaiseAndSetIfChanged(ref _computeIssuesOnClickTab, value);
             }
 
             public bool ComputeIslands
             {
                 get => _computeIslands;
-                set => this.RaiseAndSetIfChanged(ref _computeIslands, value);
+                set => RaiseAndSetIfChanged(ref _computeIslands, value);
             }
 
             public bool ComputeOverhangs
             {
                 get => _computeOverhangs;
-                set => this.RaiseAndSetIfChanged(ref _computeOverhangs, value);
+                set => RaiseAndSetIfChanged(ref _computeOverhangs, value);
             }
 
             public bool ComputeResinTraps
             {
                 get => _computeResinTraps;
-                set => this.RaiseAndSetIfChanged(ref _computeResinTraps, value);
+                set => RaiseAndSetIfChanged(ref _computeResinTraps, value);
             }
 
             public bool ComputeTouchingBounds
             {
                 get => _computeTouchingBounds;
-                set => this.RaiseAndSetIfChanged(ref _computeTouchingBounds, value);
+                set => RaiseAndSetIfChanged(ref _computeTouchingBounds, value);
             }
 
             public bool ComputeEmptyLayers
             {
                 get => _computeEmptyLayers;
-                set => this.RaiseAndSetIfChanged(ref _computeEmptyLayers, value);
+                set => RaiseAndSetIfChanged(ref _computeEmptyLayers, value);
+            }
+
+            public bool IslandEnhancedDetection
+            {
+                get => _islandEnhancedDetection;
+                set => RaiseAndSetIfChanged(ref _islandEnhancedDetection, value);
             }
 
             public bool IslandAllowDiagonalBonds
             {
                 get => _islandAllowDiagonalBonds;
-                set => this.RaiseAndSetIfChanged(ref _islandAllowDiagonalBonds, value);
+                set => RaiseAndSetIfChanged(ref _islandAllowDiagonalBonds, value);
             }
 
             public byte IslandBinaryThreshold
             {
                 get => _islandBinaryThreshold;
-                set => this.RaiseAndSetIfChanged(ref _islandBinaryThreshold, value);
+                set => RaiseAndSetIfChanged(ref _islandBinaryThreshold, value);
             }
 
             public byte IslandRequiredAreaToProcessCheck
             {
                 get => _islandRequiredAreaToProcessCheck;
-                set => this.RaiseAndSetIfChanged(ref _islandRequiredAreaToProcessCheck, value);
+                set => RaiseAndSetIfChanged(ref _islandRequiredAreaToProcessCheck, value);
             }
 
             public decimal IslandRequiredPixelsToSupportMultiplier
             {
                 get => _islandRequiredPixelsToSupportMultiplier;
-                set => this.RaiseAndSetIfChanged(ref _islandRequiredPixelsToSupportMultiplier, value);
+                set => RaiseAndSetIfChanged(ref _islandRequiredPixelsToSupportMultiplier, value);
             }
 
             public byte IslandRequiredPixelsToSupport
             {
                 get => _islandRequiredPixelsToSupport;
-                set => this.RaiseAndSetIfChanged(ref _islandRequiredPixelsToSupport, value);
+                set => RaiseAndSetIfChanged(ref _islandRequiredPixelsToSupport, value);
             }
             
             public byte IslandRequiredPixelBrightnessToProcessCheck
             {
                 get => _islandRequiredPixelBrightnessToProcessCheck;
-                set => this.RaiseAndSetIfChanged(ref _islandRequiredPixelBrightnessToProcessCheck, value);
+                set => RaiseAndSetIfChanged(ref _islandRequiredPixelBrightnessToProcessCheck, value);
             }
 
             public byte IslandRequiredPixelBrightnessToSupport
             {
                 get => _islandRequiredPixelBrightnessToSupport;
-                set => this.RaiseAndSetIfChanged(ref _islandRequiredPixelBrightnessToSupport, value);
+                set => RaiseAndSetIfChanged(ref _islandRequiredPixelBrightnessToSupport, value);
             }
 
             public bool OverhangIndependentFromIslands
             {
                 get => _overhangIndependentFromIslands;
-                set => this.RaiseAndSetIfChanged(ref _overhangIndependentFromIslands, value);
+                set => RaiseAndSetIfChanged(ref _overhangIndependentFromIslands, value);
             }
 
             public byte OverhangErodeIterations
             {
                 get => _overhangErodeIterations;
-                set => this.RaiseAndSetIfChanged(ref _overhangErodeIterations, value);
+                set => RaiseAndSetIfChanged(ref _overhangErodeIterations, value);
             }
             
             public byte ResinTrapBinaryThreshold
             {
                 get => _resinTrapBinaryThreshold;
-                set => this.RaiseAndSetIfChanged(ref _resinTrapBinaryThreshold, value);
+                set => RaiseAndSetIfChanged(ref _resinTrapBinaryThreshold, value);
             }
 
             public byte ResinTrapRequiredAreaToProcessCheck
             {
                 get => _resinTrapRequiredAreaToProcessCheck;
-                set => this.RaiseAndSetIfChanged(ref _resinTrapRequiredAreaToProcessCheck, value);
+                set => RaiseAndSetIfChanged(ref _resinTrapRequiredAreaToProcessCheck, value);
             }
 
             public byte ResinTrapRequiredBlackPixelsToDrain
             {
                 get => _resinTrapRequiredBlackPixelsToDrain;
-                set => this.RaiseAndSetIfChanged(ref _resinTrapRequiredBlackPixelsToDrain, value);
+                set => RaiseAndSetIfChanged(ref _resinTrapRequiredBlackPixelsToDrain, value);
             }
 
             public byte ResinTrapMaximumPixelBrightnessToDrain
             {
                 get => _resinTrapMaximumPixelBrightnessToDrain;
-                set => this.RaiseAndSetIfChanged(ref _resinTrapMaximumPixelBrightnessToDrain, value);
+                set => RaiseAndSetIfChanged(ref _resinTrapMaximumPixelBrightnessToDrain, value);
             }
 
             public byte TouchingBoundMinimumPixelBrightness
@@ -784,8 +791,8 @@ namespace UVtools.WPF
                 get => _addPixelColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _addPixelColor, value);
-                    this.RaisePropertyChanged(nameof(AddPixelBrush));
+                    RaiseAndSetIfChanged(ref _addPixelColor, value);
+                    RaisePropertyChanged(nameof(AddPixelBrush));
                 }
             }
 
@@ -801,8 +808,8 @@ namespace UVtools.WPF
                 get => _addPixelHighlightColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _addPixelHighlightColor, value);
-                    this.RaisePropertyChanged(nameof(AddPixelHighlightBrush));
+                    RaiseAndSetIfChanged(ref _addPixelHighlightColor, value);
+                    RaisePropertyChanged(nameof(AddPixelHighlightBrush));
                 }
             }
 
@@ -818,8 +825,8 @@ namespace UVtools.WPF
                 get => _removePixelColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _removePixelColor, value);
-                    this.RaisePropertyChanged(nameof(RemovePixelBrush));
+                    RaiseAndSetIfChanged(ref _removePixelColor, value);
+                    RaisePropertyChanged(nameof(RemovePixelBrush));
                 }
             }
 
@@ -835,8 +842,8 @@ namespace UVtools.WPF
                 get => _removePixelHighlightColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _removePixelHighlightColor, value);
-                    this.RaisePropertyChanged(nameof(RemovePixelHighlightBrush));
+                    RaiseAndSetIfChanged(ref _removePixelHighlightColor, value);
+                    RaisePropertyChanged(nameof(RemovePixelHighlightBrush));
                 }
             }
 
@@ -852,8 +859,8 @@ namespace UVtools.WPF
                 get => _supportsColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _supportsColor, value);
-                    this.RaisePropertyChanged(nameof(SupportsBrush));
+                    RaiseAndSetIfChanged(ref _supportsColor, value);
+                    RaisePropertyChanged(nameof(SupportsBrush));
                 }
             }
 
@@ -869,8 +876,8 @@ namespace UVtools.WPF
                 get => _supportsHighlightColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _supportsHighlightColor, value);
-                    this.RaisePropertyChanged(nameof(SupportsHighlightBrush));
+                    RaiseAndSetIfChanged(ref _supportsHighlightColor, value);
+                    RaisePropertyChanged(nameof(SupportsHighlightBrush));
                 }
             }
 
@@ -886,8 +893,8 @@ namespace UVtools.WPF
                 get => _drainHoleColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _drainHoleColor, value);
-                    this.RaisePropertyChanged(nameof(DrainHoleBrush));
+                    RaiseAndSetIfChanged(ref _drainHoleColor, value);
+                    RaisePropertyChanged(nameof(DrainHoleBrush));
                 }
             }
 
@@ -903,8 +910,8 @@ namespace UVtools.WPF
                 get => _drainHoleHighlightColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _drainHoleHighlightColor, value);
-                    this.RaisePropertyChanged(nameof(DrainHoleHighlightBrush));
+                    RaiseAndSetIfChanged(ref _drainHoleHighlightColor, value);
+                    RaisePropertyChanged(nameof(DrainHoleHighlightBrush));
                 }
             }
 
@@ -920,8 +927,8 @@ namespace UVtools.WPF
                 get => _cursorColor;
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _cursorColor, value);
-                    this.RaisePropertyChanged(nameof(CursorBrush));
+                    RaiseAndSetIfChanged(ref _cursorColor, value);
+                    RaisePropertyChanged(nameof(CursorBrush));
                 }
             }
 
@@ -935,13 +942,13 @@ namespace UVtools.WPF
             public bool PartialUpdateIslandsOnEditing
             {
                 get => _partialUpdateIslandsOnEditing;
-                set => this.RaiseAndSetIfChanged(ref _partialUpdateIslandsOnEditing, value);
+                set => RaiseAndSetIfChanged(ref _partialUpdateIslandsOnEditing, value);
             }
 
             public bool CloseEditorOnApply
             {
                 get => _closeEditorOnApply;
-                set => this.RaiseAndSetIfChanged(ref _closeEditorOnApply, value);
+                set => RaiseAndSetIfChanged(ref _closeEditorOnApply, value);
             }
 
             public PixelEditorUserSettings Clone()
@@ -966,43 +973,43 @@ namespace UVtools.WPF
             public bool RepairIslands
             {
                 get => _repairIslands;
-                set => this.RaiseAndSetIfChanged(ref _repairIslands, value);
+                set => RaiseAndSetIfChanged(ref _repairIslands, value);
             }
 
             public bool RepairResinTraps
             {
                 get => _repairResinTraps;
-                set => this.RaiseAndSetIfChanged(ref _repairResinTraps, value);
+                set => RaiseAndSetIfChanged(ref _repairResinTraps, value);
             }
 
             public bool RemoveEmptyLayers
             {
                 get => _removeEmptyLayers;
-                set => this.RaiseAndSetIfChanged(ref _removeEmptyLayers, value);
+                set => RaiseAndSetIfChanged(ref _removeEmptyLayers, value);
             }
 
             public byte RemoveIslandsBelowEqualPixels
             {
                 get => _removeIslandsBelowEqualPixels;
-                set => this.RaiseAndSetIfChanged(ref _removeIslandsBelowEqualPixels, value);
+                set => RaiseAndSetIfChanged(ref _removeIslandsBelowEqualPixels, value);
             }
 
             public ushort RemoveIslandsRecursiveIterations
             {
                 get => _removeIslandsRecursiveIterations;
-                set => this.RaiseAndSetIfChanged(ref _removeIslandsRecursiveIterations, value);
+                set => RaiseAndSetIfChanged(ref _removeIslandsRecursiveIterations, value);
             }
 
             public byte ClosingIterations
             {
                 get => _closingIterations;
-                set => this.RaiseAndSetIfChanged(ref _closingIterations, value);
+                set => RaiseAndSetIfChanged(ref _closingIterations, value);
             }
 
             public byte OpeningIterations
             {
                 get => _openingIterations;
-                set => this.RaiseAndSetIfChanged(ref _openingIterations, value);
+                set => RaiseAndSetIfChanged(ref _openingIterations, value);
             }
 
             public LayerRepairUserSettings Clone()
@@ -1109,7 +1116,7 @@ namespace UVtools.WPF
         public ushort SettingsVersion
         {
             get => _settingsVersion;
-            set => this.RaiseAndSetIfChanged(ref _settingsVersion,  value);
+            set => RaiseAndSetIfChanged(ref _settingsVersion,  value);
         }
 
         /// <summary>
@@ -1119,7 +1126,7 @@ namespace UVtools.WPF
         public string AppVersion
         {
             get => _appVersion ??= App.Version.ToString();
-            set => this.RaiseAndSetIfChanged(ref _appVersion, value);
+            set => RaiseAndSetIfChanged(ref _appVersion, value);
         }
 
         /// <summary>
@@ -1128,7 +1135,7 @@ namespace UVtools.WPF
         public uint SavesCount
         {
             get => _savesCount;
-            set => this.RaiseAndSetIfChanged(ref _savesCount, value);
+            set => RaiseAndSetIfChanged(ref _savesCount, value);
         }
 
         /// <summary>
@@ -1137,7 +1144,7 @@ namespace UVtools.WPF
         public DateTime ModifiedDateTime
         {
             get => _modifiedDateTime;
-            set => this.RaiseAndSetIfChanged(ref _modifiedDateTime, value);
+            set => RaiseAndSetIfChanged(ref _modifiedDateTime, value);
         }
 
         #endregion

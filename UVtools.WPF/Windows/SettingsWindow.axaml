@@ -659,7 +659,16 @@
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Islands"/>
+
                 <CheckBox Margin="15"
+                          Content="Enhance island detection with an combined overhang check"
+                          IsChecked="{Binding Settings.Issues.IslandEnhancedDetection}"
+                          ToolTip.Tip="Combines the island and overhang detections for a better and more realistic detection, also to discard false-positives. (Slower)
+&#x0a;If enabled, and when a island is found, it will check for overhangs on that same island, if no overhang found then the island will be discarded and considered safe, otherwise it will flag as an island issue.
+&#x0a;Note: Overhangs settings will be used to configure the detection. Enabling Overhangs is not required for this procedure to work."
+                        />
+                
+                <CheckBox Margin="15,0,15,15"
                           Content="Allow diagonal bonds during island detection"
                           IsChecked="{Binding Settings.Issues.IslandAllowDiagonalBonds}"
                           ToolTip.Tip="If enabled, components touching by even a single diagonal bond will be considered a single component for the purposes of island detection.

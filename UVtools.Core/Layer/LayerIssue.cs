@@ -48,6 +48,21 @@ namespace UVtools.Core
         public List<uint> WhiteListLayers { get; set; } = null;
 
         /// <summary>
+        /// Combines the island and overhang detections for a better more realistic detection and to discard false-positives. (Slower)
+        /// If enabled, and when a island is found, it will check for overhangs on that same island, if no overhang found then the island will be discarded and considered safe, otherwise it will flag as an island issue.
+        /// Note: Overhangs settings will be used to configure the detection.Enabling Overhangs is not required for this procedure to work.
+        /// </summary>
+        public bool EnhancedDetection { get; set; } = true;
+
+        /// <summary>
+        /// Gets the setting for whether or not diagonal bonds are considered when evaluation islands.
+        /// If true, all 8 neighbors of a pixel (including diagonals) will be considered when finding
+        /// individual components on the layer, if false only 4 neighbors (right, left, above, below)
+        /// will be considered..
+        /// </summary>
+        public bool AllowDiagonalBonds { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets the binary threshold, all pixels below this value will turn in black, otherwise white
         /// Set to 0 to disable this operation 
         /// </summary>
@@ -77,14 +92,6 @@ namespace UVtools.Core
         /// Gets the required brightness of supporting pixels to count as a valid support (0-255)
         /// </summary>
         public byte RequiredPixelBrightnessToSupport { get; set; } = 150;
-
-        /// <summary>
-        /// Gets the setting for whether or not diagonal bonds are considered when evaluation islands.
-        /// If true, all 8 neighbors of a pixel (including diagonals) will be considered when finding
-        /// individual components on the layer, if false only 4 neighbors (right, left, above, below)
-        /// will be considered..
-        /// </summary>
-        public bool AllowDiagonalBonds  { get; set; } = false;
 
         public IslandDetectionConfiguration(bool enabled = true)
         {

@@ -138,6 +138,15 @@
       
       
       <MenuItem Header="_Help">
+        <MenuItem
+          Header="_About"
+          InputGesture="F1" HotKey="F1"
+          Command="{Binding MenuHelpAboutClicked}">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\button-info-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+        
         <MenuItem 
           Header="_Website"
           InputGesture="Ctrl + F1" HotKey="Ctrl + F1"
@@ -156,28 +165,13 @@
           </MenuItem.Icon>
         </MenuItem>
 
-        <MenuItem
-          Header="_About"
-          InputGesture="F1" HotKey="F1"
-          Command="{Binding MenuHelpAboutClicked}">
-          <MenuItem.Icon>
-            <Image Source="\Assets\Icons\button-info-16x16.png"/>
-          </MenuItem.Icon>
-        </MenuItem>
+        <Separator/>
 
         <MenuItem
           Header="_Benchmark"
           Command="{Binding MenuHelpBenchmarkClicked}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\microchip-16x16.png"/>
-          </MenuItem.Icon>
-        </MenuItem>
-
-        <MenuItem
-          Header="_Open settings folder"
-          Command="{Binding MenuHelpOpenSettingsFolderClicked}">
-          <MenuItem.Icon>
-            <Image Source="\Assets\Icons\open-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
 
@@ -189,7 +183,16 @@
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\CNCMachine-16x16.png"/>
           </MenuItem.Icon>
-        </MenuItem>       
+        </MenuItem>
+        
+        <MenuItem
+          Header="_Open settings folder"
+          Command="{Binding MenuHelpOpenSettingsFolderClicked}">
+          <MenuItem.Icon>
+            <Image Source="\Assets\Icons\open-16x16.png"/>
+          </MenuItem.Icon>
+        </MenuItem>
+
       </MenuItem>
 
       <MenuItem 

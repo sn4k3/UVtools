@@ -1056,16 +1056,21 @@ namespace UVtools.Core
                                             pixelsSupportingIsland >= Math.Max(1, points.Count / 2))
                                             isIsland = false; // Not a island, but maybe weak bounding...*/
 
-
+                                        LayerIssue island = null;
                                         if (pixelsSupportingIsland < requiredSupportingPixels)
                                         {
-                                            AddIssue(new LayerIssue(layer, LayerIssue.IssueType.Island,
+                                            island = new LayerIssue(layer, LayerIssue.IssueType.Island,
                                                 points.ToArray(),
-                                                rect));
+                                                rect);
+                                            /*AddIssue(new LayerIssue(layer, LayerIssue.IssueType.Island,
+                                                points.ToArray(),
+                                                rect));*/
                                         }
 
                                         // Check for overhangs
-                                        if (overhangConfig.Enabled && !overhangConfig.IndependentFromIslands)
+                                        if (overhangConfig.Enabled && !overhangConfig.IndependentFromIslands && island is null
+                                        || !ReferenceEquals(island, null) && islandConfig.EnhancedDetection && pixelsSupportingIsland >= 10
+                                        )
                                         {
                                             points.Clear();
                                             using (var imageRoi = new Mat(image, rect))
@@ -1095,14 +1100,21 @@ namespace UVtools.Core
                                                     points.Add(new Point(labelX, labelY));
                                                 }
 
-                                                if (points.Count >= overhangConfig.RequiredPixelsToConsider)
+                                                if (points.Count >= overhangConfig.RequiredPixelsToConsider) // Overhang
                                                 {
                                                     AddIssue(new LayerIssue(
                                                         layer, LayerIssue.IssueType.Overhang, points.ToArray(), rect
                                                     ));
                                                 }
+                                                else if(islandConfig.EnhancedDetection) // No overhang
+                                                {
+                                                    island = null;
+                                                }
                                             }
                                         }
+
+                                        if(!ReferenceEquals(island, null))
+                                            AddIssue(island);
                                     }
 
 
