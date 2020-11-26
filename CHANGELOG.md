@@ -1,11 +1,19 @@
 # Changelog
 
+## 26/11/2020 - v1.3.4
+
+* (Add) Infill: CubicDynamicLink - Alternates centers with lateral links, consume same resin as center linked and make model/infill stronger.
+* (Add) Update estimate print time when modify dependent parameters (#103)
+* (Add) Tool - Calculator: Old and new print time estimation (#103)
+* (Fix) Print time calculation was using normal layers with bottom layer off time
+* (Fix) Calculate print time based on each layer setting instead of global settings
+
 ## 25/11/2020 - v1.3.3
 
 * (Add) Improved island detection: Combines the island and overhang detections for a better more realistic detection and to discard false-positives. (Slower)
    If enabled, and when a island is found, it will check for overhangs on that same island, if no overhang found then the island will be discarded and considered safe, otherwise it will flag as an island issue.
    Note: Overhangs settings will be used to configure the detection. Enabling Overhangs is not required for this procedure to work.
-   Enabled by default, 
+   Enabled by default.
 * (Add) More information on the About box: Operative system and architecture, framework, processor count and screens
 * (Fix) Overhangs: Include islands when detecting overhangs were not skip when found a island
 * (Fix) Decode CWS from Wanhao Workshop fails on number of slices (#102)

@@ -320,11 +320,7 @@ namespace UVtools.Core.FileFormats
         public override float PrintTime
         {
             get => HeaderSettings.EstimatedPrintTime;
-            set
-            {
-                HeaderSettings.EstimatedPrintTime = value;
-                RaisePropertyChanged();
-            }
+            set => base.PrintTime = HeaderSettings.EstimatedPrintTime = value;
         }
 
         public override float UsedMaterial

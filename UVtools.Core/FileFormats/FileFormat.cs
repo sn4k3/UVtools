@@ -10,6 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -29,6 +30,7 @@ namespace UVtools.Core.FileFormats
     public abstract class FileFormat : BindableBase, IFileFormat, IDisposable, IEquatable<FileFormat>, IEnumerable<Layer>
     {
         public const string TemporaryFileAppend = ".tmp";
+        public const ushort ExtraPrintTime = 300;
         #region Enums
 
         /// <summary>
@@ -374,6 +376,7 @@ namespace UVtools.Core.FileFormats
 
         private bool _haveModifiedLayers;
         private LayerManager _layerManager;
+        private float _printTime;
 
         /// <summary>
         /// Gets or sets if modifications require a full encode to save
@@ -412,6 +415,38 @@ namespace UVtools.Core.FileFormats
 
         public abstract float DisplayWidth { get; set; }
         public abstract float DisplayHeight { get; set; }
+
+        public float Xppmm
+        {
+            get => DisplayWidth > 0 ? ResolutionX / DisplayWidth : 0;
+            set
+            {
+                RaisePropertyChanged(nameof(Xppmm));
+                RaisePropertyChanged(nameof(Ppmm));
+            }
+        }
+
+        public float Yppmm
+        {
+            get => DisplayHeight > 0 ? ResolutionY / DisplayHeight : 0;
+            set
+            {
+                RaisePropertyChanged(nameof(Yppmm));
+                RaisePropertyChanged(nameof(Ppmm));
+            }
+        }
+
+        public SizeF Ppmm
+        {
+            get => new SizeF(Xppmm, Yppmm);
+            set
+            {
+                Xppmm = value.Width;
+                Yppmm = value.Height;
+            }
+        }
+
+
         public bool HaveAntiAliasing => AntiAliasing > 1;
         public abstract byte AntiAliasing { get; }
 
@@ -443,17 +478,39 @@ namespace UVtools.Core.FileFormats
         public virtual byte LightPWM { get; set; } = DefaultLightPWM;
 
 
-        public virtual float PrintTime { get; set; }
+        public virtual float PrintTime
+        {
+            get => _printTime;
+            set
+            {
+                _printTime = value;
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(PrintTimeOrComputed));
+                RaisePropertyChanged(nameof(PrintTimeComputed));
+                RaisePropertyChanged(nameof(PrintTimeHours));
+            }
+        }
+
         //(header.numberOfLayers - header.bottomLayers) * (double) header.exposureTimeSeconds + (double) header.bottomLayers * (double) header.exposureBottomTimeSeconds + (double) header.offTimeSeconds * (double) header.numberOfLayers);
-        public virtual float PrintTimeOrComputed
+        public float PrintTimeOrComputed => PrintTime > 0 ? PrintTime : PrintTimeComputed;
+
+        public float PrintTimeComputed
         {
             get
             {
-                if (PrintTime > 0) return PrintTime;
-                return NormalLayerCount * ExposureTime +
-                       NormalLayerCount * LayerOffTime +
-                       BottomLayerCount * BottomExposureTime +
-                       NormalLayerCount * BottomLayerOffTime;
+                float time = ExtraPrintTime;
+
+                foreach (var layer in this)
+                {
+                    var layerOff = OperationCalculator.LightOffDelayC.CalculateSeconds(layer.LiftHeight, layer.LiftSpeed, layer.RetractSpeed);
+                    time += layer.ExposureTime;
+                    if (layerOff >= layer.LayerOffTime)
+                        time += layerOff;
+                    else
+                        time += layer.LayerOffTime;
+                }
+
+                return (float) Math.Round(time, 2);
             }
         }
 
@@ -492,6 +549,7 @@ namespace UVtools.Core.FileFormats
                 if (this[LayerCount - 1] is null) return; // Not initialized
                 LayerManager.RebuildLayersProperties();
                 RebuildGCode();
+                PrintTime = PrintTimeComputed;
                 return;
             }
             if (
@@ -511,6 +569,8 @@ namespace UVtools.Core.FileFormats
             {
                 LayerManager.RebuildLayersProperties(false);
                 RebuildGCode();
+                if(e.PropertyName != nameof(BottomLightPWM) && e.PropertyName != nameof(LightPWM))
+                    PrintTime = PrintTimeComputed;
                 return;
             }
         }

@@ -287,7 +287,7 @@ namespace UVtools.Core.FileFormats
             set
             {
                 ResinMetadataSettings.PrintTime = (uint) value;
-                RaisePropertyChanged();
+                base.PrintTime = value;
             }
         }
 

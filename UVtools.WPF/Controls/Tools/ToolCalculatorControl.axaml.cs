@@ -1,4 +1,5 @@
-﻿using Avalonia.Markup.Xaml;
+﻿using System;
+using Avalonia.Markup.Xaml;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 
@@ -6,9 +7,16 @@ namespace UVtools.WPF.Controls.Tools
 {
     public class ToolCalculatorControl : ToolControl
     {
+        private decimal _lightOffDelayPrintTimeHours;
         public OperationCalculator Operation => BaseOperation as OperationCalculator;
 
         public FileFormat SlicerFile => App.SlicerFile;
+
+        public decimal LightOffDelayPrintTimeHours
+        {
+            get => _lightOffDelayPrintTimeHours;
+            set => RaiseAndSetIfChanged(ref _lightOffDelayPrintTimeHours, value);
+        }
 
         public ToolCalculatorControl()
         {
@@ -21,6 +29,19 @@ namespace UVtools.WPF.Controls.Tools
                     (decimal)SlicerFile.LiftSpeed, (decimal)SlicerFile.BottomLiftSpeed,
                     (decimal)SlicerFile.RetractSpeed, (decimal)SlicerFile.RetractSpeed)
             };
+
+            Operation.CalcLightOffDelay.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName != nameof(Operation.CalcLightOffDelay.LightOffDelay) &&
+                    e.PropertyName != nameof(Operation.CalcLightOffDelay.BottomLightOffDelay)) return;
+                LightOffDelayPrintTimeHours = Math.Round(
+                                                 (FileFormat.ExtraPrintTime +
+                                                 SlicerFile.BottomLayerCount * (Operation.CalcLightOffDelay.BottomLightOffDelay + (decimal) SlicerFile.BottomExposureTime) +
+                                                 SlicerFile.NormalLayerCount * (Operation.CalcLightOffDelay.LightOffDelay + (decimal)SlicerFile.ExposureTime))
+                                                 / 3600, 2);
+            };
+
+            _lightOffDelayPrintTimeHours = (decimal) SlicerFile.PrintTimeHours;
         }
 
         private void InitializeComponent()
@@ -44,6 +65,8 @@ namespace UVtools.WPF.Controls.Tools
                 SlicerFile.RetractSpeed = (float)Operation.CalcLightOffDelay.RetractSpeed;
                 SlicerFile.LayerOffTime = (float)Operation.CalcLightOffDelay.LightOffDelay;
             }
+
+            LightOffDelayPrintTimeHours = (decimal)SlicerFile.PrintTimeHours;
 
             App.MainWindow.CanSave = true;
         }

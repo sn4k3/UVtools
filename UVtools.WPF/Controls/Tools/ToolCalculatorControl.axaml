@@ -249,7 +249,7 @@
 
         <Grid
           Grid.Row="2"
-          RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+          RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
           ColumnDefinitions="Auto,10,100,5,Auto,30,Auto,10,100,5,Auto"
         >
 
@@ -373,6 +373,22 @@
             VerticalAlignment="Center"
             HorizontalAlignment="Center"
             Text="{Binding SlicerFile.LayerOffTime, StringFormat=Current value: \{0\}}"/>
+          
+          <TextBlock
+            Grid.Row="14"
+            Grid.Column="0"
+            Grid.ColumnSpan="11"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center"
+            Text="{Binding SlicerFile.PrintTimeHours, StringFormat=Old print time: \{0\}h}"/>
+
+          <TextBlock
+            Grid.Row="16"
+            Grid.Column="0"
+            Grid.ColumnSpan="11"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center"
+            Text="{Binding LightOffDelayPrintTimeHours, StringFormat=New print time: \{0\}h}"/>
 
 
           <!-- Bottom -->

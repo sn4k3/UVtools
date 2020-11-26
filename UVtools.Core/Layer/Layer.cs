@@ -936,6 +936,7 @@ namespace UVtools.Core
                 }
                 else*/ if (operation.InfillType == OperationInfill.InfillAlgorithm.Cubic ||
                            operation.InfillType == OperationInfill.InfillAlgorithm.CubicCenterLink ||
+                           operation.InfillType == OperationInfill.InfillAlgorithm.CubicDynamicLink ||
                            operation.InfillType == OperationInfill.InfillAlgorithm.CubicInterlinked)
                 {
                     using (var infillPattern = EmguExtensions.InitMat(new Size(operation.InfillSpacing, operation.InfillSpacing)))
@@ -944,8 +945,10 @@ namespace UVtools.Core
                         bool firstPattern = true;
                         uint accumulator = 0;
                         uint step = 0;
+                        bool dynamicCenter = false;
                         while (accumulator < layerIndex)
                         {
+                            dynamicCenter = !dynamicCenter;
                             firstPattern = true;
                             accumulator += operation.InfillSpacing;
 
@@ -978,65 +981,82 @@ namespace UVtools.Core
                                     thickness, thickness),
                                 infillColor, -1);
 
+                            // Center cross
+                            int margin = (int)(operation.InfillSpacing - accumulator + layerIndex) - thickness;
+                            int marginInv = (int)(accumulator - layerIndex) - thickness;
+
                             if (operation.InfillType == OperationInfill.InfillAlgorithm.CubicCenterLink ||
+                                (operation.InfillType == OperationInfill.InfillAlgorithm.CubicDynamicLink &&
+                                 dynamicCenter) ||
                                 operation.InfillType == OperationInfill.InfillAlgorithm.CubicInterlinked)
                             {
-                                // Center cross
-                                int margin = (int) (operation.InfillSpacing - accumulator + layerIndex) - thickness;
-                                int marginInv = (int) (accumulator - layerIndex) - thickness;
+                                
                                 CvInvoke.Rectangle(infillPattern,
                                     new Rectangle(margin, margin, operation.InfillThickness, operation.InfillThickness),
                                     infillColor, -1);
 
                                 CvInvoke.Rectangle(infillPattern,
-                                    new Rectangle(marginInv, marginInv, operation.InfillThickness, operation.InfillThickness),
+                                    new Rectangle(marginInv, marginInv, operation.InfillThickness,
+                                        operation.InfillThickness),
                                     infillColor, -1);
 
                                 CvInvoke.Rectangle(infillPattern,
-                                    new Rectangle(margin, marginInv, operation.InfillThickness, operation.InfillThickness),
+                                    new Rectangle(margin, marginInv, operation.InfillThickness,
+                                        operation.InfillThickness),
                                     infillColor, -1);
 
                                 CvInvoke.Rectangle(infillPattern,
-                                    new Rectangle(marginInv, margin, operation.InfillThickness, operation.InfillThickness),
+                                    new Rectangle(marginInv, margin, operation.InfillThickness,
+                                        operation.InfillThickness),
                                     infillColor, -1);
-
-                                if (operation.InfillType == OperationInfill.InfillAlgorithm.CubicInterlinked)
-                                {
-                                    CvInvoke.Rectangle(infillPattern,
-                                        new Rectangle(margin, -thickness, operation.InfillThickness, operation.InfillThickness),
-                                        infillColor, -1);
-
-                                    CvInvoke.Rectangle(infillPattern,
-                                        new Rectangle(marginInv, -thickness, operation.InfillThickness, operation.InfillThickness),
-                                        infillColor, -1);
-
-                                    CvInvoke.Rectangle(infillPattern,
-                                        new Rectangle(-thickness, margin, operation.InfillThickness, operation.InfillThickness),
-                                        infillColor, -1);
-
-                                    CvInvoke.Rectangle(infillPattern,
-                                        new Rectangle(-thickness, marginInv, operation.InfillThickness, operation.InfillThickness),
-                                        infillColor, -1);
-                                    
-                                    CvInvoke.Rectangle(infillPattern,
-                                        new Rectangle(operation.InfillSpacing - thickness, margin, operation.InfillThickness, operation.InfillThickness),
-                                        infillColor, -1);
-
-                                    CvInvoke.Rectangle(infillPattern,
-                                        new Rectangle(operation.InfillSpacing - thickness, marginInv, operation.InfillThickness, operation.InfillThickness),
-                                        infillColor, -1);
-
-                                    CvInvoke.Rectangle(infillPattern,
-                                        new Rectangle(margin, operation.InfillSpacing - thickness, operation.InfillThickness, operation.InfillThickness),
-                                        infillColor, -1);
-
-                                    CvInvoke.Rectangle(infillPattern,
-                                        new Rectangle(marginInv, operation.InfillSpacing - thickness, operation.InfillThickness, operation.InfillThickness),
-                                        infillColor, -1);
-                                }
                             }
 
-                            
+
+                            if (operation.InfillType == OperationInfill.InfillAlgorithm.CubicInterlinked ||
+                                (operation.InfillType == OperationInfill.InfillAlgorithm.CubicDynamicLink && !dynamicCenter))
+                            {
+                                CvInvoke.Rectangle(infillPattern,
+                                    new Rectangle(margin, -thickness, operation.InfillThickness,
+                                        operation.InfillThickness),
+                                    infillColor, -1);
+
+                                CvInvoke.Rectangle(infillPattern,
+                                    new Rectangle(marginInv, -thickness, operation.InfillThickness,
+                                        operation.InfillThickness),
+                                    infillColor, -1);
+
+                                CvInvoke.Rectangle(infillPattern,
+                                    new Rectangle(-thickness, margin, operation.InfillThickness,
+                                        operation.InfillThickness),
+                                    infillColor, -1);
+
+                                CvInvoke.Rectangle(infillPattern,
+                                    new Rectangle(-thickness, marginInv, operation.InfillThickness,
+                                        operation.InfillThickness),
+                                    infillColor, -1);
+
+                                CvInvoke.Rectangle(infillPattern,
+                                    new Rectangle(operation.InfillSpacing - thickness, margin,
+                                        operation.InfillThickness, operation.InfillThickness),
+                                    infillColor, -1);
+
+                                CvInvoke.Rectangle(infillPattern,
+                                    new Rectangle(operation.InfillSpacing - thickness, marginInv,
+                                        operation.InfillThickness, operation.InfillThickness),
+                                    infillColor, -1);
+
+                                CvInvoke.Rectangle(infillPattern,
+                                    new Rectangle(margin, operation.InfillSpacing - thickness,
+                                        operation.InfillThickness, operation.InfillThickness),
+                                    infillColor, -1);
+
+                                CvInvoke.Rectangle(infillPattern,
+                                    new Rectangle(marginInv, operation.InfillSpacing - thickness,
+                                        operation.InfillThickness, operation.InfillThickness),
+                                    infillColor, -1);
+                            }
+
+
                         }
                         else
                         {

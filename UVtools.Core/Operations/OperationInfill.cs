@@ -13,7 +13,7 @@ namespace UVtools.Core.Operations
     [Serializable]
     public sealed class OperationInfill : Operation
     {
-        private InfillAlgorithm _infillType = InfillAlgorithm.CubicCenterLink;
+        private InfillAlgorithm _infillType = InfillAlgorithm.CubicDynamicLink;
         private ushort _wallThickness = 64;
         private ushort _infillThickness = 45;
         private ushort _infillSpacing = 160;
@@ -42,6 +42,7 @@ namespace UVtools.Core.Operations
             //Rhombus,
             Cubic,
             CubicCenterLink,
+            CubicDynamicLink,
             CubicInterlinked,
         }
         #endregion

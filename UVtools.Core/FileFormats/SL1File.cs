@@ -410,11 +410,7 @@ namespace UVtools.Core.FileFormats
         public override float PrintTime
         {
             get => OutputConfigSettings.PrintTime;
-            set
-            {
-                OutputConfigSettings.PrintTime = value;
-                RaisePropertyChanged();
-            }
+            set => base.PrintTime = OutputConfigSettings.PrintTime = value;
         }
 
         public override float UsedMaterial

@@ -909,7 +909,7 @@ namespace UVtools.Core.FileFormats
             set
             {
                 HeaderSettings.PrintTime = (uint) value;
-                RaisePropertyChanged();
+                base.PrintTime = value;
             }
         }
 

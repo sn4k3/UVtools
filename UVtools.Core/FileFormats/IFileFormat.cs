@@ -118,6 +118,21 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         float DisplayHeight { get; set; }
 
+        /// <summary>
+        /// Gets or sets the pixels per mm on X direction
+        /// </summary>
+        float Xppmm { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pixels per mm on Y direction
+        /// </summary>
+        float Yppmm { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pixels per mm
+        /// </summary>
+        SizeF Ppmm { get; set; }
+
         bool HaveAntiAliasing { get; }
 
         /// <summary>
@@ -227,6 +242,11 @@ namespace UVtools.Core.FileFormats
         /// Gets the estimate print time in seconds, if print doesn't support it it will be calculated
         /// </summary>
         float PrintTimeOrComputed { get; }
+
+        /// <summary>
+        /// Gets the calculated estimate print time in seconds
+        /// </summary>
+        float PrintTimeComputed { get; }
 
         /// <summary>
         /// Gets the estimate print time in hours
