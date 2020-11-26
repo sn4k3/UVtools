@@ -167,19 +167,30 @@ After some tests without failure you can increase your confidence and ignore thi
 
 ### Linux
 
+1. 4GB RAM or higher
+2. 64 bit System
+
 **Ubuntu/Mint/Debian/Similars**
 
-1. CentOS, Debian, Fedora, Ubuntu, and derivatives
-1. 4GB RAM or higher
-
-```bash
+<!--- 
 wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
 sudo apt-get update
 sudo apt-get install -y apt-transport-https
+dotnet-runtime-3.1
+!-->
+
+```bash
 sudo apt-get update
-sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libdc1394-22 libavcodec-dev libavformat-dev libswscale-dev libopenexr24 libtbb-dev dotnet-runtime-3.1
+sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libdc1394-22 libavcodec-dev libavformat-dev libswscale-dev libopenexr24 libtbb-dev
+```
+
+
+**Arch/Manjaro/Similars**
+
+```bash
+sudo pacman -S openjpeg2 libjpeg-turbo libpng libgeotiff libdc1394 libdc1394 ffmpeg openexr tbb dotnet-runtime 
 ```
 
 To run UVtools open it folder on a terminal and call one of:
