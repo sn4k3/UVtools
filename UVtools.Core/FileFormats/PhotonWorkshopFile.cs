@@ -268,6 +268,11 @@ namespace UVtools.Core.FileFormats
             /// </summary>
             [FieldOrder(3)] public uint Height { get; set; } = 168;
 
+            [FieldOrder(4)] public uint Offset1 { get; set; }
+            [FieldOrder(5)] public uint Offset2 { get; set; }
+            [FieldOrder(6)] public uint Offset3 { get; set; }
+            [FieldOrder(7)] public uint Offset4 { get; set; }
+
             [Ignore] public uint DataSize => Width * Height * 2;
 
             // little-endian 16bit colors, RGB 565 encoded.
@@ -1133,7 +1138,7 @@ namespace UVtools.Core.FileFormats
                     Debug.Write("Preview -> ");
                     Debug.WriteLine(PreviewSettings);
 
-                    //PreviewSettings.Validate((int) PreviewSettings.DataSize);
+                    PreviewSettings.Validate((int) PreviewSettings.DataSize);
 
                     PreviewSettings.Data = new byte[PreviewSettings.DataSize];
                     inputFile.ReadBytes(PreviewSettings.Data);

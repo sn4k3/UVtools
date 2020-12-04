@@ -19,7 +19,7 @@ namespace UVtools.Core.Operations
         private MorphOp _morphOperation = MorphOp.Erode;
         private uint _iterationsStart = 1;
         private uint _iterationsEnd = 1;
-        private bool _fadeInOut;
+        private bool _chamfer;
 
         #region Overrides
 
@@ -80,10 +80,10 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _iterationsEnd, value);
         }
 
-        public bool FadeInOut
+        public bool Chamfer
         {
-            get => _fadeInOut;
-            set => RaiseAndSetIfChanged(ref _fadeInOut, value);
+            get => _chamfer;
+            set => RaiseAndSetIfChanged(ref _chamfer, value);
         }
 
         [XmlIgnore]
@@ -91,7 +91,7 @@ namespace UVtools.Core.Operations
 
         public override string ToString()
         {
-            var result = $"[{_morphOperation}] [Iterations: {_iterationsStart}/{_iterationsEnd}] [Fade: {_fadeInOut}]" + LayerRangeString;
+            var result = $"[{_morphOperation}] [Iterations: {_iterationsStart}/{_iterationsEnd}] [Chamfer: {_chamfer}]" + LayerRangeString;
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
         }
@@ -102,7 +102,7 @@ namespace UVtools.Core.Operations
 
         private bool Equals(OperationMorph other)
         {
-            return _morphOperation == other._morphOperation && _iterationsStart == other._iterationsStart && _iterationsEnd == other._iterationsEnd && _fadeInOut == other._fadeInOut;
+            return _morphOperation == other._morphOperation && _iterationsStart == other._iterationsStart && _iterationsEnd == other._iterationsEnd && _chamfer == other._chamfer;
         }
 
         public override bool Equals(object obj)
@@ -117,7 +117,7 @@ namespace UVtools.Core.Operations
                 var hashCode = (int) _morphOperation;
                 hashCode = (hashCode * 397) ^ (int) _iterationsStart;
                 hashCode = (hashCode * 397) ^ (int) _iterationsEnd;
-                hashCode = (hashCode * 397) ^ _fadeInOut.GetHashCode();
+                hashCode = (hashCode * 397) ^ _chamfer.GetHashCode();
                 return hashCode;
             }
         }

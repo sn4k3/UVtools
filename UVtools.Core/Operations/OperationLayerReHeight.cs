@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using UVtools.Core.Extensions;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -65,32 +66,24 @@ namespace UVtools.Core.Operations
 
         public static OperationLayerReHeightItem[] GetItems(uint layerCount, decimal layerHeight)
         {
-            List<OperationLayerReHeightItem> list = new List<OperationLayerReHeightItem>();
-            for (byte i = 2; i < 255; i++) // Lower
+            var list = new List<OperationLayerReHeightItem>();
+            for (byte i = 2; i < 255; i++) // Go lower heights
             {
                 if (layerHeight / i < 0.01m) break;
-                var countStr = (layerCount / (decimal)i).ToString(CultureInfo.InvariantCulture);
-                if (countStr.IndexOf(".", StringComparison.Ordinal) >= 0) continue; // Cant multiply layers
-                countStr = (layerHeight / i).ToString(CultureInfo.InvariantCulture);
-                int decimalCount = countStr.Substring(countStr.IndexOf(".", StringComparison.Ordinal)).Length - 1;
-                if (decimalCount > 2) continue; // Cant multiply height
+                if ((layerCount * (decimal)i).DecimalDigits() > 0) continue; // Cant multiply layers, no half layers!
+                if ((layerHeight / i).DecimalDigits() > 2) continue; // Cant divide height, more than 2 digits
 
-                var item = new OperationLayerReHeightItem(false, i, layerHeight / i, layerCount * i);
+                var item = new OperationLayerReHeightItem(false, i, Math.Round(layerHeight / i, 2), layerCount * i);
                 list.Add(item);
             }
 
-            for (byte i = 2; i < 255; i++) // Higher
+            for (byte i = 2; i < 255; i++) // Go higher heights
             {
                 if (layerHeight * i > 0.2m) break;
-                var countStr = (layerCount / (decimal)i).ToString(CultureInfo.InvariantCulture);
-                if (countStr.IndexOf(".", StringComparison.Ordinal) >= 0) continue; // Cant multiply layers
+                if ((layerCount / (decimal)i).DecimalDigits() > 0) continue; // Cant divide layers, no half layers!
+                if ((layerHeight * i).DecimalDigits() > 2) continue; // Cant multiply height, more than 2 digits
 
-
-                countStr = (layerHeight * i).ToString(CultureInfo.InvariantCulture);
-                int decimalCount = countStr.Substring(countStr.IndexOf(".", StringComparison.Ordinal)).Length - 1;
-                if (decimalCount > 2) continue; // Cant multiply height
-
-                var item = new OperationLayerReHeightItem(true, i, layerHeight * i, layerCount / i);
+                var item = new OperationLayerReHeightItem(true, i, Math.Round(layerHeight * i, 2), layerCount / i);
                 list.Add(item);
             }
 

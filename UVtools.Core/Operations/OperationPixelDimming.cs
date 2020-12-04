@@ -17,8 +17,10 @@ namespace UVtools.Core.Operations
     [Serializable]
     public class OperationPixelDimming : Operation
     {
-        private uint _wallThickness = 5;
+        private uint _wallThicknessStart = 5;
+        private uint _wallThicknessEnd = 5;
         private bool _wallsOnly;
+        private bool _chamfer;
         private Matrix<byte> _pattern;
         private Matrix<byte> _alternatePattern;
         private ushort _alternatePatternPerLayers = 1;
@@ -44,10 +46,10 @@ namespace UVtools.Core.Operations
         public override StringTag Validate(params object[] parameters)
         {
             var sb = new StringBuilder();
-            if (WallThickness == 0 && WallsOnly)
+            /*if (WallThicknessStart == 0 && WallsOnly)
             {
                 sb.AppendLine("Border size must be positive in order to use \"Dim only borders\" function.");
-            }
+            }*/
 
             if (Pattern is null && AlternatePattern is null)
             {
@@ -60,16 +62,28 @@ namespace UVtools.Core.Operations
 
         #region Properties
 
-        public uint WallThickness
+        public uint WallThicknessStart
         {
-            get => _wallThickness;
-            set => RaiseAndSetIfChanged(ref _wallThickness, value);
+            get => _wallThicknessStart;
+            set => RaiseAndSetIfChanged(ref _wallThicknessStart, value);
+        }
+
+        public uint WallThicknessEnd
+        {
+            get => _wallThicknessEnd;
+            set => RaiseAndSetIfChanged(ref _wallThicknessEnd, value);
         }
 
         public bool WallsOnly
         {
             get => _wallsOnly;
             set => RaiseAndSetIfChanged(ref _wallsOnly, value);
+        }
+
+        public bool Chamfer
+        {
+            get => _chamfer;
+            set => RaiseAndSetIfChanged(ref _chamfer, value);
         }
 
         /// <summary>
@@ -108,7 +122,7 @@ namespace UVtools.Core.Operations
 
         public override string ToString()
         {
-            var result = $"[Border: {_wallThickness}px] [Only borders: {_wallsOnly}] [Alternate every: {_alternatePatternPerLayers}]" + LayerRangeString;
+            var result = $"[Border: {_wallThicknessStart}px to {_wallThicknessEnd}px] [Chamfer: {_chamfer}] [Only borders: {_wallsOnly}] [Alternate every: {_alternatePatternPerLayers}]" + LayerRangeString;
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
         }
@@ -119,7 +133,7 @@ namespace UVtools.Core.Operations
 
         protected bool Equals(OperationPixelDimming other)
         {
-            return _wallThickness == other._wallThickness && _wallsOnly == other._wallsOnly;
+            return _wallThicknessStart == other._wallThicknessStart && _wallsOnly == other._wallsOnly;
         }
 
         public override bool Equals(object obj)
@@ -134,7 +148,7 @@ namespace UVtools.Core.Operations
         {
             unchecked
             {
-                return ((int) _wallThickness * 397) ^ _wallsOnly.GetHashCode();
+                return ((int) _wallThicknessStart * 397) ^ _wallsOnly.GetHashCode();
             }
         }
 

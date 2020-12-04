@@ -839,13 +839,24 @@ namespace UVtools.Core
                 alternatePatternMask = patternMask;
             }
 
+            int wallThickness = LayerManager.MutateGetIterationChamfer(
+                Index,
+                operation.LayerIndexStart,
+                operation.LayerIndexEnd,
+                (int)operation.WallThicknessStart,
+                (int)operation.WallThicknessEnd,
+                operation.Chamfer
+                );
+
+
             using (Mat dst = LayerMat)
             using (Mat erode = new Mat())
             using (Mat diff = new Mat())
             {
                 Mat target = operation.GetRoiOrDefault(dst);
 
-                CvInvoke.Erode(target, erode, kernel, anchor, (int) operation.WallThickness, BorderType.Reflect101, default);
+
+                CvInvoke.Erode(target, erode, kernel, anchor, wallThickness, BorderType.Reflect101, default);
                 CvInvoke.Subtract(target, erode, diff);
 
                 

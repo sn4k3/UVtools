@@ -8,7 +8,7 @@ namespace UVtools.WPF.Controls.Tools
     {
         public OperationLayerReHeight Operation => BaseOperation as OperationLayerReHeight;
 
-        public OperationLayerReHeight.OperationLayerReHeightItem[] Presets { get; } = OperationLayerReHeight.GetItems(
+        public OperationLayerReHeight.OperationLayerReHeightItem[] Presets => OperationLayerReHeight.GetItems(
             App.SlicerFile.LayerCount,
             (decimal)App.SlicerFile.LayerHeight);
 

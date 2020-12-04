@@ -10,7 +10,7 @@
     <Grid RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,10,*">
       <TextBlock
         ToolTip.Tip="Selects the number of iterations/passes to perform on each layer using this mutator.
-  &#x0a;Enable the 'Fade in/out' to fade the iteration over layers, you can use a start iteration higher than end to perform a inverse fade.
+  &#x0a;Enable the 'Chamfer' to chamfer the iteration over layers, you can use a start iteration higher than end to perform a inverse chamfer.
   &#x0a;WARNING: Using high iteration values can destroy your model depending on the mutator being used, please use low values or with caution!"
       VerticalAlignment="Center"
       Text="Iterations:"/>
@@ -30,19 +30,19 @@
         <TextBlock
           VerticalAlignment="Center"
           Text="To:"
-          IsEnabled="{Binding Operation.FadeInOut}"/>
+          IsEnabled="{Binding Operation.Chamfer}"/>
 
         <NumericUpDown
           Minimum="1"
           Width="70"
           Value="{Binding Operation.IterationsEnd}"
-          IsEnabled="{Binding Operation.FadeInOut}"
+          IsEnabled="{Binding Operation.Chamfer}"
           />
 
         <CheckBox
           ToolTip.Tip="Allow the number of iterations to be gradually varied as the operation progresses from the starting layer to the ending layer."
-          Content="Fade in/out"
-          IsChecked="{Binding Operation.FadeInOut}"
+          Content="Chamfer"
+          IsChecked="{Binding Operation.Chamfer}"
           />
       </StackPanel>
 

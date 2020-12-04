@@ -1,5 +1,17 @@
 # Changelog
 
+## 04/11/2020 - v1.3.5
+
+* (Add) Pixel Dimming: Chamfer - Allow the number of walls pixels to be gradually varied as the operation progresses from the starting layer to the ending layer (#106)
+* (Add) PrusaSlicer print profiles: 0.01, 0.02, 0.03, 0.04, 0.15, 0.2
+* (Change) Morph: "Fade" to "Chamfer" naming, created profiles need redo
+* (Change) Pixel Dimming: Allow start with 0px walls when using "Walls Only"
+* (Change) PrusaSlicer print profiles names, reduced bottom layers and raft height
+* (Remove) PrusaSlicer print profiles with 3 digit z precision (0.025 and 0.035)
+* (Fix) PW0, PWS, PWMX, PWMO, PWMS, PWX file formats, where 4 offsets (16 bytes) were missing on preview image, leading to wrong table size. Previous converted files with UVtools wont open from now on, you need to reconvert them. (ezrec/uv3dp#124)
+* (Fix) Unable to run Re-Height tool due a rounding problem on some cases (#101)
+* (Fix) Layer preview end with exception when no per layer settings are available (SL1 case)
+
 ## 26/11/2020 - v1.3.4
 
 * (Add) Infill: CubicDynamicLink - Alternates centers with lateral links, consume same resin as center linked and make model/infill stronger.

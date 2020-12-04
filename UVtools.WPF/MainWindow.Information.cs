@@ -342,13 +342,19 @@ namespace UVtools.WPF
             //CurrentLayerProperties.Add(new StringTag(nameof(layer.BoundingRectangle), layer.BoundingRectangle.ToString()));
             //CurrentLayerProperties.Add(new StringTag(nameof(layer.NonZeroPixelCount), layer.NonZeroPixelCount.ToString()));
             CurrentLayerProperties.Add(new StringTag(nameof(layer.ExposureTime), $"{layer.ExposureTime.ToString(CultureInfo.InvariantCulture)}s"));
-            if(SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LiftHeight))
-                CurrentLayerProperties.Add(new StringTag(nameof(layer.LiftHeight), $"{layer.LiftHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min"));
+
+            if (ReferenceEquals(SlicerFile.PrintParameterPerLayerModifiers, null)) return;
+
+            if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LiftHeight))
+                CurrentLayerProperties.Add(new StringTag(nameof(layer.LiftHeight),
+                    $"{layer.LiftHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min"));
             //CurrentLayerProperties.Adnew StringTagg>(nameof(layer.LiftSpeed), $"{layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min"));
             if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.RetractSpeed))
-                CurrentLayerProperties.Add(new StringTag(nameof(layer.RetractSpeed), $"{layer.RetractSpeed.ToString(CultureInfo.InvariantCulture)}mm/min"));
+                CurrentLayerProperties.Add(new StringTag(nameof(layer.RetractSpeed),
+                    $"{layer.RetractSpeed.ToString(CultureInfo.InvariantCulture)}mm/min"));
             if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LayerOffTime))
-                CurrentLayerProperties.Add(new StringTag(nameof(layer.LayerOffTime), $"{layer.LayerOffTime.ToString(CultureInfo.InvariantCulture)}s"));
+                CurrentLayerProperties.Add(new StringTag(nameof(layer.LayerOffTime),
+                    $"{layer.LayerOffTime.ToString(CultureInfo.InvariantCulture)}s"));
             if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LightPWM))
                 CurrentLayerProperties.Add(new StringTag(nameof(layer.LightPWM), layer.LightPWM.ToString()));
         }

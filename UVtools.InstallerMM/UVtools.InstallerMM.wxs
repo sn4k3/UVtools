@@ -1003,29 +1003,53 @@
               </Component>
             </Directory>
             <Directory Id="owd324203F33CD6B2D491618D3D363F997F" Name="sla_print">
-              <Component Id="owc41FE63F25880E5E4D3CEA71EBD852385" Guid="1ba12bdd-a46f-fc86-8cc3-7da5b8f14609">
-                <File Id="owf41FE63F25880E5E4D3CEA71EBD852385" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.025 UltraDetail - Heavy Supports.ini" KeyPath="yes" />
+              <Component Id="owc988205CB4C2FC6EA3D41704B657C5681" Guid="5dd3f394-0e58-76db-f891-78c219b5339e">
+                <File Id="owf988205CB4C2FC6EA3D41704B657C5681" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.01 - Heavy Supports.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcA0B8FBCBD1A4173B45BA94F0E1E1C67E" Guid="0128c1a1-a9c4-ee47-bf69-56e64bdbf266">
-                <File Id="owfA0B8FBCBD1A4173B45BA94F0E1E1C67E" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.025 UltraDetail - Medium Supports.ini" KeyPath="yes" />
+              <Component Id="owc4F3C7BA82787F7CE088482EF33C78BC7" Guid="93f4648f-2a87-6bb3-7307-e3b2fe27591f">
+                <File Id="owf4F3C7BA82787F7CE088482EF33C78BC7" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.01 - Medium Supports.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcF7480920216B5D545244DAD3B157F915" Guid="37497b06-511e-8000-454b-f6cc91ad8e3c">
-                <File Id="owfF7480920216B5D545244DAD3B157F915" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.035 Detail - Heavy Supports.ini" KeyPath="yes" />
+              <Component Id="owc32F3B55EC604E72AB3E2CBF3284ED826" Guid="064f01a1-52a6-8f88-a160-13fee848444c">
+                <File Id="owf32F3B55EC604E72AB3E2CBF3284ED826" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.02 - Heavy Supports.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc3EC82AA8BBA5F58285C6B572699C3EEA" Guid="51996820-0c91-375a-d43a-a71610706d06">
-                <File Id="owf3EC82AA8BBA5F58285C6B572699C3EEA" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.035 Detail - Medium Supports.ini" KeyPath="yes" />
+              <Component Id="owc43A40112BBFB048562D12C4E2E58C8B5" Guid="01e92245-916a-7b5a-e545-a7c6394041f5">
+                <File Id="owf43A40112BBFB048562D12C4E2E58C8B5" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.02 - Medium Supports.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcC4EC407B090C47EBE3ABDE911C434B63" Guid="4bcff130-af1a-1715-f04f-8b22e50680dd">
-                <File Id="owfC4EC407B090C47EBE3ABDE911C434B63" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.05 Normal - Heavy Supports.ini" KeyPath="yes" />
+              <Component Id="owcA27D4D8B15C011B3790643C4A1B00661" Guid="249c6c1e-5613-e22c-fd9f-36d549071815">
+                <File Id="owfA27D4D8B15C011B3790643C4A1B00661" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.03 - Heavy Supports.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc5C47C07A27D86292990E17E9F5C68987" Guid="57884306-5184-0776-b0be-5aaf576ff822">
-                <File Id="owf5C47C07A27D86292990E17E9F5C68987" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.05 Normal - Medium Supports.ini" KeyPath="yes" />
+              <Component Id="owc34F74C04D60157E217A40D1B948F4B62" Guid="1016acd9-7e5e-6764-1511-e4dba988d3f2">
+                <File Id="owf34F74C04D60157E217A40D1B948F4B62" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.03 - Medium Supports.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcB8B31F13E6BE0274BB89D48BB3C5DA65" Guid="3eaaf9a4-3327-7d66-a578-42c8a53214de">
-                <File Id="owfB8B31F13E6BE0274BB89D48BB3C5DA65" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.1 Fast - Heavy Supports.ini" KeyPath="yes" />
+              <Component Id="owc7904A21F5D16A27BDCBF240575031DE0" Guid="46bbf031-1607-56f4-3b51-f8f627a1f7f4">
+                <File Id="owf7904A21F5D16A27BDCBF240575031DE0" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.04 - Heavy Supports.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcD02936F8537D5E1A8838BA53E493CA0B" Guid="05d01723-d21f-c5de-e159-54d916c4865c">
-                <File Id="owfD02936F8537D5E1A8838BA53E493CA0B" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.1 Fast - Medium Supports.ini" KeyPath="yes" />
+              <Component Id="owc2B441689691FEC00B7B263EAD5C86002" Guid="36d4eee3-4ef4-135a-78b3-22e7daa37092">
+                <File Id="owf2B441689691FEC00B7B263EAD5C86002" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.04 - Medium Supports.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc815E6AD1B21376FEEF54113695A5C221" Guid="08a67749-8d90-9d25-d535-d5a0c8b2b7dd">
+                <File Id="owf815E6AD1B21376FEEF54113695A5C221" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.05 - Heavy Supports.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcB7DCBF9D6771C07DED7DFD3475A2B942" Guid="2b6a6b3b-cc19-fb01-850e-2b82c9959d05">
+                <File Id="owfB7DCBF9D6771C07DED7DFD3475A2B942" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.05 - Medium Supports.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc0D8987D85101CB001DC4DC10FA5289AD" Guid="8b33c25d-8466-ad61-abdd-485fdf1b686e">
+                <File Id="owf0D8987D85101CB001DC4DC10FA5289AD" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.10 - Heavy Supports.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc50D2BF90F467F36608822CBBEA7AAD24" Guid="7816893f-d916-c266-286e-c305755f4274">
+                <File Id="owf50D2BF90F467F36608822CBBEA7AAD24" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.10 - Medium Supports.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc4ED39C8A5521E8D8F652122F1391BEE7" Guid="f5d525d9-36a8-8f20-7132-a3837ac667c8">
+                <File Id="owf4ED39C8A5521E8D8F652122F1391BEE7" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.15 - Heavy Supports.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc67CE50B90C2334EE96FD81F894C657CE" Guid="91a69bac-800a-7280-0763-0a907778bbea">
+                <File Id="owf67CE50B90C2334EE96FD81F894C657CE" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.15 - Medium Supports.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc4EBB2288E3F6027567BCA149BD247731" Guid="c36f9208-8fe7-e520-313f-eac6f7487c10">
+                <File Id="owf4EBB2288E3F6027567BCA149BD247731" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.20 - Heavy Supports.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc33EDBA249FAD8C66CFD67EF0812F9D99" Guid="7b49a51b-8a43-11c8-de4c-4e82552700fc">
+                <File Id="owf33EDBA249FAD8C66CFD67EF0812F9D99" Source="$(var.SourceDir)\Assets\PrusaSlicer\sla_print\Universal 0.20 - Medium Supports.ini" KeyPath="yes" />
               </Component>
             </Directory>
           </Directory>

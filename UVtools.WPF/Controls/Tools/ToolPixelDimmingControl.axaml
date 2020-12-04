@@ -14,11 +14,33 @@
         Minimum="0"
         Maximum="1000"
         Width="80"
-        Value="{Binding Operation.WallThickness}"
+        Value="{Binding Operation.WallThicknessStart}"
+        />
+
+
+      <TextBlock
+        VerticalAlignment="Center"
+        Text="To:"
+        IsEnabled="{Binding Operation.Chamfer}"
+        />
+      <NumericUpDown
+        Minimum="0"
+        Maximum="1000"
+        Width="80"
+        Value="{Binding Operation.WallThicknessEnd}"
+        IsEnabled="{Binding Operation.Chamfer}"
         />
       <TextBlock
         VerticalAlignment="Center"
         Text="px"
+        IsEnabled="{Binding Operation.Chamfer}"
+        />
+
+      <CheckBox
+        Margin="20,0,0,0"
+        Content="Chamfer walls"
+        ToolTip.Tip="Allow the number of walls pixels to be gradually varied as the operation progresses from the starting layer to the ending layer."
+        IsChecked="{Binding Operation.Chamfer}"
         />
 
       <CheckBox

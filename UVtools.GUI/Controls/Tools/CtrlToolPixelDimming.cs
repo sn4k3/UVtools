@@ -43,7 +43,7 @@ namespace UVtools.GUI.Controls.Tools
         public override bool UpdateOperation()
         {
             base.UpdateOperation();
-            Operation.WallThickness = (uint) nmBorderSize.Value;
+            Operation.WallThicknessStart = (uint) nmBorderSize.Value;
             Operation.WallsOnly = cbDimsOnlyBorders.Checked;
 
 

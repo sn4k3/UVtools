@@ -494,7 +494,7 @@ namespace UVtools.Core
             });
         }
 
-        private void MutateGetVarsIterationFade(uint startLayerIndex, uint endLayerIndex, int iterationsStart, int iterationsEnd, ref bool isFade, out float iterationSteps, out int maxIteration)
+        public static void MutateGetVarsIterationChamfer(uint startLayerIndex, uint endLayerIndex, int iterationsStart, int iterationsEnd, ref bool isFade, out float iterationSteps, out int maxIteration)
         {
             iterationSteps = 0;
             maxIteration = 0;
@@ -504,7 +504,7 @@ namespace UVtools.Core
             maxIteration = Math.Max(iterationsStart, iterationsEnd);
         }
 
-        private int MutateGetIterationVar(bool isFade, int iterationsStart, int iterationsEnd, float iterationSteps, int maxIteration, uint startLayerIndex, uint layerIndex)
+        public static int MutateGetIterationVar(bool isFade, int iterationsStart, int iterationsEnd, float iterationSteps, int maxIteration, uint startLayerIndex, uint layerIndex)
         {
             if (!isFade) return iterationsStart;
             // calculate iterations based on range
@@ -513,7 +513,15 @@ namespace UVtools.Core
                 : iterationsStart - (layerIndex - startLayerIndex) * iterationSteps);
 
             // constrain
-            return Math.Min(Math.Max(1, iterations), maxIteration);
+            return Math.Min(Math.Max(0, iterations), maxIteration);
+        }
+
+        public static int MutateGetIterationChamfer(uint layerIndex, uint startLayerIndex, uint endLayerIndex, int iterationsStart,
+            int iterationsEnd, bool isFade)
+        {
+            MutateGetVarsIterationChamfer(startLayerIndex, endLayerIndex, iterationsStart, iterationsEnd, ref isFade,
+                out float iterationSteps, out int maxIteration);
+            return MutateGetIterationVar(isFade, iterationsStart, iterationsEnd, iterationSteps, maxIteration, startLayerIndex, layerIndex);
         }
 
         public void Morph(OperationMorph operation, BorderType borderType = BorderType.Default, MCvScalar borderValue = default, OperationProgress progress = null)
@@ -521,8 +529,8 @@ namespace UVtools.Core
             if (progress is null) progress = new OperationProgress();
             progress.Reset(operation.ProgressAction, operation.LayerRangeCount);
 
-            var isFade = operation.FadeInOut;
-            MutateGetVarsIterationFade(
+            var isFade = operation.Chamfer;
+            MutateGetVarsIterationChamfer(
                 operation.LayerIndexStart,
                 operation.LayerIndexEnd,
                 (int) operation.IterationsStart,

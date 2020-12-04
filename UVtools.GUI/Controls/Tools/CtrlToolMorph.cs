@@ -36,7 +36,7 @@ namespace UVtools.GUI.Controls.Tools
             base.UpdateOperation();
             Operation.IterationsStart = (uint) nmIterationsStart.Value;
             Operation.IterationsEnd = (uint) nmIterationsEnd.Value;
-            Operation.FadeInOut = cbIterationsFade.Checked;
+            Operation.Chamfer = cbIterationsFade.Checked;
             Operation.MorphOperation = (MorphOp)((StringTag) cbMorphOperation.SelectedItem).Tag;
             Operation.Kernel.Anchor = ctrlKernel.KernelAnchor;
             Operation.Kernel.Matrix = ctrlKernel.GetMatrix();

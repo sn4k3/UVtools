@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Globalization;
 
 namespace UVtools.Core.Extensions
 {
@@ -75,6 +76,39 @@ namespace UVtools.Core.Extensions
                 return max;
 
             return value;
+        }
+
+        public static uint DecimalDigits(this float val)
+        {
+            var valStr = val.ToString(CultureInfo.InvariantCulture).TrimEnd('0');
+            if (string.IsNullOrEmpty(valStr)) return 0;
+
+            var index = valStr.IndexOf('.');
+            if (index < 0) return 0;
+
+            return (uint) (valStr.Substring(index).Length - 1);
+        }
+
+        public static uint DecimalDigits(this double val)
+        {
+            var valStr = val.ToString(CultureInfo.InvariantCulture).TrimEnd('0');
+            if (string.IsNullOrEmpty(valStr)) return 0;
+
+            var index = valStr.IndexOf('.');
+            if (index < 0) return 0;
+
+            return (uint)(valStr.Substring(index).Length - 1);
+        }
+
+        public static uint DecimalDigits(this decimal val)
+        {
+            var valStr = val.ToString(CultureInfo.InvariantCulture).TrimEnd('0');
+            if (string.IsNullOrEmpty(valStr) || valStr[valStr.Length-1] == '.') return 0;
+
+            var index = valStr.IndexOf('.');
+            if (index < 0) return 0;
+
+            return (uint)(valStr.Substring(index).Length - 1);
         }
     }
 }
