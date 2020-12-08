@@ -1,0 +1,95 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Tools.ToolRaftReliefControl">
+
+
+  <Grid
+    ColumnDefinitions="Auto,10,Auto,5,Auto"
+    RowDefinitions="Auto,10,Auto,Auto,10,Auto,10,Auto"
+    >
+
+    <TextBlock Text="Relief type:" VerticalAlignment="Center"/>
+    <ComboBox 
+              Name="ReliefType"
+              Grid.Column="2"
+              Width="100"
+              SelectedItem="{Binding Operation.ReliefType}"
+              Items="{Binding Operation.RaftReliefItems}"/>
+
+    <TextBlock
+      Grid.Row="2"
+      ToolTip.Tip="Raft will be replaced by the present supports and then dilated by this value. 
+&#x0a;Use large numbers with tiny supports for best adhesion."
+      Text="Dilate supports by:" VerticalAlignment="Center"
+      IsVisible="{Binding #ReliefType.SelectedIndex}"
+      />
+
+    <NumericUpDown Grid.Row="2" Grid.Column="2"
+              Width="100"
+              Minimum="0"
+              Maximum="255"
+              Value="{Binding Operation.DilateIterations}"
+              IsVisible="{Binding #ReliefType.SelectedIndex}"/>
+    <TextBlock
+      Grid.Row="2" Grid.Column="4"
+      Text="px" VerticalAlignment="Center"
+      IsVisible="{Binding #ReliefType.SelectedIndex}"/>
+
+
+    <TextBlock
+      Grid.Row="3"
+      Text="Wall margin:" VerticalAlignment="Center"
+      IsVisible="{Binding !#ReliefType.SelectedIndex}"
+      />
+
+    <NumericUpDown Grid.Row="3" Grid.Column="2"
+              Width="100"
+              Minimum="1"
+              Maximum="255"
+              Value="{Binding Operation.WallMargin}"
+              IsVisible="{Binding !#ReliefType.SelectedIndex}"/>
+    <TextBlock
+      Grid.Row="3" Grid.Column="4"
+      Text="px" VerticalAlignment="Center"
+      IsVisible="{Binding !#ReliefType.SelectedIndex}"/>
+
+    <TextBlock
+      Grid.Row="5"
+      Text="Hole diameter:" VerticalAlignment="Center"
+      IsVisible="{Binding !#ReliefType.SelectedIndex}"
+      />
+
+    <NumericUpDown Grid.Row="5" Grid.Column="2"
+              Width="100"
+              Minimum="10"
+              Maximum="255"
+              Value="{Binding Operation.HoleDiameter}"
+              IsVisible="{Binding !#ReliefType.SelectedIndex}"/>
+    <TextBlock
+      Grid.Row="5" Grid.Column="4"
+      Text="px" VerticalAlignment="Center"
+      IsVisible="{Binding !#ReliefType.SelectedIndex}"/>
+
+    <TextBlock
+      Grid.Row="7"
+      Text="Hole spacing:" VerticalAlignment="Center"
+      IsVisible="{Binding !#ReliefType.SelectedIndex}"
+      />
+
+    <NumericUpDown Grid.Row="7" Grid.Column="2"
+              Width="100"
+              Minimum="10"
+              Maximum="255"
+              Value="{Binding Operation.HoleSpacing}"
+              IsVisible="{Binding !#ReliefType.SelectedIndex}"/>
+    <TextBlock
+      Grid.Row="7" Grid.Column="4"
+      Text="px" VerticalAlignment="Center"
+      IsVisible="{Binding !#ReliefType.SelectedIndex}"/>
+    
+  </Grid>
+
+</UserControl>

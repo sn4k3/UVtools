@@ -30,6 +30,7 @@ namespace UVtools.WPF.Structures
         //[XmlElement(typeof(OperationLayerRemove))]
         //[XmlElement(typeof(OperationMask))]
         [XmlElement(typeof(OperationMorph))]
+        [XmlElement(typeof(OperationRaftRelief))]
         //[XmlElement(typeof(OperationMove))]
         //[XmlElement(typeof(OperationPattern))]
         [XmlElement(typeof(OperationPixelDimming))]

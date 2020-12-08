@@ -120,6 +120,14 @@ namespace UVtools.WPF
             },
             new MenuItem
             {
+                Tag = new OperationRaftRelief(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/dot-circle-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
                 Tag = new OperationThreshold(),
                 Icon = new Avalonia.Controls.Image
                 {
@@ -1267,6 +1275,9 @@ namespace UVtools.WPF
                             break;
                         case OperationMorph operation:
                             SlicerFile.LayerManager.Morph(operation, BorderType.Default, new MCvScalar(), ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationRaftRelief operation:
+                            SlicerFile.LayerManager.RaftRelief(operation, ProgressWindow.RestartProgress(operation.CanCancel));
                             break;
                         case OperationThreshold operation:
                             SlicerFile.LayerManager.ThresholdPixels(operation, ProgressWindow.RestartProgress(operation.CanCancel));

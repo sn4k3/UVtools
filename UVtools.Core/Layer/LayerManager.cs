@@ -540,8 +540,6 @@ namespace UVtools.Core
                 out var maxIteration
             );
 
-            Debug.WriteLine($"Steps: {iterationSteps}, Max iteration: {maxIteration}");
-
             Parallel.For(operation.LayerIndexStart, operation.LayerIndexEnd + 1, 
                 //new ParallelOptions {MaxDegreeOfParallelism = 1},
                 layerIndex =>
@@ -708,6 +706,106 @@ namespace UVtools.Core
             });
             progress.Token.ThrowIfCancellationRequested();
         }*/
+
+        public void RaftRelief(OperationRaftRelief operation, OperationProgress progress)
+        {
+            const uint minLength = 5;
+            if (progress is null) progress = new OperationProgress();
+            //progress.Reset(operation.ProgressAction);
+
+            Mat supportsMat = null;
+
+            uint firstSupportLayerIndex = 0;
+            for (; firstSupportLayerIndex < Count; firstSupportLayerIndex++)
+            {
+                progress.Reset("Tracing raft", Count, firstSupportLayerIndex);
+                if (progress.Token.IsCancellationRequested) return;
+                supportsMat = operation.GetRoiOrDefault(this[firstSupportLayerIndex].LayerMat);
+                var circles = CvInvoke.HoughCircles(supportsMat, HoughModes.Gradient, 1, 20, 100, 30, 5, 200);
+                if (circles.Length >= minLength) break;
+
+                supportsMat.Dispose();
+                supportsMat = null;
+            }
+
+            if (supportsMat is null) return;
+            Mat patternMat = null;
+
+            switch (operation.ReliefType)
+            {
+                case OperationRaftRelief.RaftReliefTypes.Relief:
+                    patternMat = EmguExtensions.InitMat(supportsMat.Size);
+                    int shapeSize = operation.HoleDiameter + operation.HoleSpacing;
+                    using (var shape = EmguExtensions.InitMat(new Size(shapeSize, shapeSize)))
+                    {
+
+                        int center = operation.HoleDiameter / 2;
+                        int centerTwo = operation.HoleDiameter + operation.HoleSpacing + operation.HoleDiameter / 2;
+                        int radius = center;
+                        CvInvoke.Circle(shape, new Point(shapeSize / 2, shapeSize / 2), radius, EmguExtensions.WhiteByte, -1);
+                        CvInvoke.Circle(shape, new Point(0, 0), radius / 2, EmguExtensions.WhiteByte, -1);
+                        CvInvoke.Circle(shape, new Point(0, shapeSize), radius / 2, EmguExtensions.WhiteByte, -1);
+                        CvInvoke.Circle(shape, new Point(shapeSize, 0), radius / 2, EmguExtensions.WhiteByte, -1);
+                        CvInvoke.Circle(shape, new Point(shapeSize, shapeSize), radius / 2, EmguExtensions.WhiteByte, -1);
+                        
+                        //shape.Save("D:\\shape.png");
+
+                        CvInvoke.Repeat(shape, supportsMat.Height / shape.Height + 1, supportsMat.Width / shape.Width + 1, patternMat);
+
+
+                        patternMat = new Mat(patternMat, new Rectangle(0, 0, supportsMat.Width, supportsMat.Height));
+                    }
+                    
+                    break;
+                case OperationRaftRelief.RaftReliefTypes.Decimate:
+                    if (operation.DilateIterations <= 0) break;
+                    CvInvoke.Dilate(supportsMat, supportsMat, 
+                        CvInvoke.GetStructuringElement(ElementShape.Ellipse, new Size(3, 3), new Point(-1, -1)),
+                        new Point(-1, -1), operation.DilateIterations, BorderType.Reflect101, new MCvScalar());
+                    break;
+            }
+
+            progress.Reset(operation.ProgressAction, firstSupportLayerIndex);
+            Parallel.For(0, firstSupportLayerIndex, layerIndex =>
+            {
+                using (Mat dst = this[layerIndex].LayerMat)
+                {
+                    var target = operation.GetRoiOrDefault(dst);
+
+                    switch (operation.ReliefType)
+                    {
+                        case OperationRaftRelief.RaftReliefTypes.Relief:
+                            using (Mat mask = new Mat())
+                            {
+                                CvInvoke.Subtract(target, supportsMat, mask);
+                                //target.CopyTo(mask);
+                                CvInvoke.Erode(mask, mask,
+                                    CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3),
+                                        new Point(-1, -1)),
+                                    new Point(-1, -1), operation.WallMargin, BorderType.Reflect101, new MCvScalar());
+                                CvInvoke.Subtract(target, patternMat, target, mask);
+                            }
+
+                            break;
+                        case OperationRaftRelief.RaftReliefTypes.Decimate:
+                            supportsMat.CopyTo(target);
+                            break;
+                    }
+
+                    
+                    this[layerIndex].LayerMat = dst;
+                }
+
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+
+
+            supportsMat.Dispose();
+            patternMat?.Dispose();
+        }
 
         public void Arithmetic(OperationArithmetic operation, OperationProgress progress = null)
         {

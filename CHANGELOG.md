@@ -1,5 +1,9 @@
 # Changelog
 
+## 04/11/2020 - v1.4.0
+
+* (Add) Tool - Raft relief: Relief raft by adding holes in between to reduce FEP suction, save resin and easier to remove the prints.
+
 ## 04/11/2020 - v1.3.5
 
 * (Add) Pixel Dimming: Chamfer - Allow the number of walls pixels to be gradually varied as the operation progresses from the starting layer to the ending layer (#106)
