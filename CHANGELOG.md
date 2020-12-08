@@ -1,6 +1,6 @@
 # Changelog
 
-## 04/11/2020 - v1.4.0
+## 08/11/2020 - v1.4.0
 
 * (Add) Tool - Raft relief: Relief raft by adding holes in between to reduce FEP suction, save resin and easier to remove the prints.
 
