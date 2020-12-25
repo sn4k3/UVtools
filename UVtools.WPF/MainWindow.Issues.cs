@@ -270,14 +270,16 @@ namespace UVtools.WPF
 
 
             var issueList = Issues.ToList();
-            foreach (var layerIndex in islandConfig.WhiteListLayers)
+            issueList.RemoveAll(issue =>
+                islandConfig.WhiteListLayers.Contains(issue.LayerIndex) && (issue.Type == LayerIssue.IssueType.Island ||
+                                                                               issue.Type == LayerIssue.IssueType.Overhang));
+            /*foreach (var layerIndex in islandConfig.WhiteListLayers)
             {
-                foreach (var issue in Issues)
-                {
-                    if (issue.LayerIndex != layerIndex && (issue.Type == LayerIssue.IssueType.Island || issue.Type == LayerIssue.IssueType.Overhang)) continue;
-                    issueList.Remove(issue);
-                }
-            }
+                issueList.RemoveAll(issue =>
+                    issue.LayerIndex == layerIndex && (issue.Type == LayerIssue.IssueType.Island ||
+                                                       issue.Type == LayerIssue.IssueType.Overhang));
+                
+            }*/
 
             var resultIssues = await Task.Factory.StartNew(() =>
             {
@@ -307,15 +309,15 @@ namespace UVtools.WPF
 
             IsGUIEnabled = true;
 
-            if (resultIssues is null || resultIssues.Count == 0) return;
-            
-            issueList.AddRange(resultIssues);
+            if (resultIssues is not null && resultIssues.Count > 0) issueList.AddRange(resultIssues);
+
             issueList = issueList.OrderBy(issue => issue.Type)
                 .ThenBy(issue => issue.LayerIndex)
                 .ThenBy(issue => issue.PixelsCount).ToList();
 
             Issues.Clear();
             Issues.AddRange(issueList);
+            UpdateLayerTrackerHighlightIssues();
         }
 
         public int IssueSelectedIndex

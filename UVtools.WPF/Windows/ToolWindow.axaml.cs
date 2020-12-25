@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using DynamicData;
@@ -24,9 +25,11 @@ namespace UVtools.WPF.Windows
         {
             Init,
             ClearROI,
+            ProfileLoaded,
             Button1, // Reset to defaults
             Checkbox1, // Show Advanced
         }
+        private KeyModifiers _globalModifiers;
         public ToolControl ToolControl;
         private string _description;
         private double _descriptionMaxWidth;
@@ -285,19 +288,13 @@ namespace UVtools.WPF.Windows
             set
             {
                 if(!RaiseAndSetIfChanged(ref _selectedProfileItem, value) || value is null) return;
+                if (ToolControl is null) return;
                 var operation = _selectedProfileItem.Clone();
                 operation.ProfileName = null;
                 ToolControl.BaseOperation = operation;
                 SelectLayers(operation.LayerRangeSelection);
-                
-                if (operation is OperationMorph operationMorph && ToolControl is ToolMorphControl toolMorphControl)
-                {
-                    toolMorphControl.MorphSelectedIndex = operationMorph.MorphOperationIndex;
-                }
-                else if (operation is OperationBlur operationBlur && ToolControl is ToolBlurControl toolBlurControl)
-                {
-                    toolBlurControl.SelectedAlgorithmIndex = operationBlur.BlurTypeIndex;
-                }
+                ToolControl.Callback(Callbacks.ProfileLoaded);
+                ToolControl.ResetDataContext();
             }
         }
 
@@ -336,6 +333,7 @@ namespace UVtools.WPF.Windows
         public async void RemoveSelectedProfile()
         {
             if (_selectedProfileItem is null) return;
+            
             if (await this.MessageBoxQuestion(
                 $"Are you sure you want to remove the selected profile?\n{_selectedProfileItem}",
                 "Remove selected profile?") != ButtonResult.Yes) return;
@@ -343,6 +341,7 @@ namespace UVtools.WPF.Windows
             OperationProfiles.RemoveProfile(_selectedProfileItem);
             Profiles.Remove(_selectedProfileItem);
             SelectedProfileItem = null;
+            
         }
 
         public async void ClearProfiles()
@@ -354,6 +353,44 @@ namespace UVtools.WPF.Windows
 
             OperationProfiles.ClearProfiles(Profiles[0].GetType());
             Profiles.Clear();
+        }
+
+        public void DeselectProfile()
+        {
+            SelectedProfileItem = null;
+        }
+
+        public async void SetDefaultProfile()
+        {
+            if (_selectedProfileItem is null) return;
+
+            if ((_globalModifiers & KeyModifiers.Shift) != 0)
+            {
+                if (await this.MessageBoxQuestion(
+                    $"Are you sure you want to clear the selected profile as default settings for this dialog?",
+                    "Clear the default profile?") != ButtonResult.Yes) return;
+
+                foreach (var operation in Profiles)
+                {
+                    operation.ProfileIsDefault = false;
+                }
+            }
+            else
+            {
+                if (await this.MessageBoxQuestion(
+                    $"Are you sure you want to set the selected profile as default settings for this dialog?\n{_selectedProfileItem}",
+                    "Set as default profile?") != ButtonResult.Yes) return;
+
+                foreach (var operation in Profiles)
+                {
+                    operation.ProfileIsDefault = false;
+                }
+
+                _selectedProfileItem.ProfileIsDefault = true;
+            }
+            
+            OperationProfiles.Save();
+            
         }
 
         #endregion
@@ -427,10 +464,11 @@ namespace UVtools.WPF.Windows
             set => RaiseAndSetIfChanged(ref _buttonOkText, value);
         }
 
-        
+
 
         #endregion
 
+        #region Constructors
         public ToolWindow() 
         {
             InitializeComponent();
@@ -473,16 +511,25 @@ namespace UVtools.WPF.Windows
                 IsProfilesVisible = true;
             }
 
+            foreach (var operation in Profiles)
+            {
+                if (operation.ProfileIsDefault)
+                {
+                    SelectedProfileItem = operation;
+                    break;
+                }
+            }
+
             // Ensure the description don't stretch window
             DispatcherTimer.Run(() =>
             {
                 if (Bounds.Width == 0) return true;
-                ScrollViewerMaxHeight = Screens.Primary.WorkingArea.Height / Screens.Primary.PixelDensity - Bounds.Height + ToolControl.Bounds.Height - 250;
+                ScrollViewerMaxHeight = App.MaxWindowSize.Height - Bounds.Height + ToolControl.Bounds.Height - UserSettings.Instance.General.WindowsVerticalMargin;
                 DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl.Bounds.Width) - 40;
                 Description = toolControl.BaseOperation.Description;
                 return false;
             }, TimeSpan.FromMilliseconds(1));
-
+            
             toolControl.Callback(Callbacks.Init);
             toolControl.DataContext = toolControl;
             DataContext = this;
@@ -492,6 +539,7 @@ namespace UVtools.WPF.Windows
         {
             AvaloniaXamlLoader.Load(this);
         }
+        #endregion
 
         /*protected override void OnOpened(EventArgs e)
         {
@@ -503,6 +551,28 @@ namespace UVtools.WPF.Windows
             }            
             DataContext = this;
         }*/
+
+        #region Overrides
+
+        protected override void OnPointerMoved(PointerEventArgs e)
+        {
+            base.OnPointerMoved(e);
+            _globalModifiers = e.KeyModifiers;
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            _globalModifiers = e.KeyModifiers;
+        }
+
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            base.OnKeyUp(e);
+            _globalModifiers = e.KeyModifiers;
+        }
+
+        #endregion
 
         public async void Process()
         {
@@ -524,8 +594,10 @@ namespace UVtools.WPF.Windows
                 if (!await ToolControl.ValidateForm()) return;
                 if (!string.IsNullOrEmpty(ToolControl.BaseOperation.ConfirmationText))
                 {
-                    if (await this.MessageBoxQuestion($"Are you sure you want to {ToolControl.BaseOperation.ConfirmationText}") !=
-                        ButtonResult.Yes) return;
+                    var result =
+                        await this.MessageBoxQuestion(
+                            $"Are you sure you want to {ToolControl.BaseOperation.ConfirmationText}");
+                    if (result != ButtonResult.Yes) return;
                 }
             }
 
@@ -536,6 +608,15 @@ namespace UVtools.WPF.Windows
 
             DialogResult = DialogResults.OK;
             Close(DialogResult);
+        }
+
+        public void OpenContextMenu(string name)
+        {
+            var menu = this.FindControl<ContextMenu>($"{name}ContextMenu");
+            if (menu is null) return;
+            var parent = this.FindControl<Button>($"{name}Button");
+            if (parent is null) return;
+            menu.Open(parent);
         }
     }
 }

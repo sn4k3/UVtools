@@ -60,8 +60,7 @@ namespace UVtools.WPF.Windows
                 s => Convert.ToString(s / 100, CultureInfo.InvariantCulture) + "x").ToArray();
 
             
-            //MaxHeight = Screens.Primary.WorkingArea.Height - 50;
-            ScrollViewerMaxHeight = Screens.Primary.WorkingArea.Height / Screens.Primary.PixelDensity - 300;
+            ScrollViewerMaxHeight = App.MaxWindowSize.Height - Settings.General.WindowsVerticalMargin;
 
 
             DataContext = this;

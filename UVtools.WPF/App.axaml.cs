@@ -26,6 +26,7 @@ using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
+using Size = System.Drawing.Size;
 
 namespace UVtools.WPF
 {
@@ -36,6 +37,8 @@ namespace UVtools.WPF
         public static FileFormat SlicerFile = null;
 
         public static AppVersionChecker VersionChecker { get; } = new AppVersionChecker();
+
+        public static Size MaxWindowSize;
 
         public override void Initialize()
         {
@@ -65,7 +68,7 @@ namespace UVtools.WPF
                         break;
                     }
                 }
-
+                
                 MainWindow = new MainWindow();
 
                 try

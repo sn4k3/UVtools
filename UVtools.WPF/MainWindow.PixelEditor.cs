@@ -177,7 +177,7 @@ namespace UVtools.WPF
                 for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
                 {
                     var operationDrawing = new PixelDrawing(layerIndex, realLocation, DrawingPixelDrawing.LineType,
-                        DrawingPixelDrawing.BrushShape, DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.Thickness, isAdd);
+                        DrawingPixelDrawing.BrushShape, DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.Thickness, DrawingPixelDrawing.RemovePixelBrightness, DrawingPixelDrawing.PixelBrightness, isAdd);
 
                     //if (PixelHistory.Contains(operation)) continue;
                     Drawings.Add(operationDrawing);
@@ -260,7 +260,7 @@ namespace UVtools.WPF
                 {
                     var operationText = new PixelText(layerIndex, realLocation, DrawingPixelText.LineType,
                         DrawingPixelText.Font, DrawingPixelText.FontScale, DrawingPixelText.Thickness,
-                        DrawingPixelText.Text, DrawingPixelText.Mirror, isAdd);
+                        DrawingPixelText.Text, DrawingPixelText.Mirror, DrawingPixelText.RemovePixelBrightness, DrawingPixelText.PixelBrightness, isAdd);
 
                     //if (PixelHistory.Contains(operation)) continue;
                     //PixelHistory.Add(operation);
@@ -289,7 +289,7 @@ namespace UVtools.WPF
                     ActualLayer + DrawingPixelEraser.LayersAbove);
                 for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
                 {
-                    var operationEraser = new PixelEraser(layerIndex, realLocation);
+                    var operationEraser = new PixelEraser(layerIndex, realLocation, DrawingPixelEraser.PixelBrightness);
 
                     //if (PixelHistory.Contains(operation)) continue;
                     Drawings.Add(operationEraser);
@@ -317,7 +317,7 @@ namespace UVtools.WPF
                 if (_actualLayer == 0) return;
                 var operationSupport = new PixelSupport(ActualLayer, realLocation,
                     DrawingPixelSupport.TipDiameter, DrawingPixelSupport.PillarDiameter,
-                    DrawingPixelSupport.BaseDiameter);
+                    DrawingPixelSupport.BaseDiameter, DrawingPixelSupport.PixelBrightness);
 
                 //if (PixelHistory.Contains(operation)) return;
                 Drawings.Add(operationSupport);
@@ -420,12 +420,12 @@ namespace UVtools.WPF
                     List<uint> whiteListLayers = new List<uint>();
                     foreach (var item in Drawings)
                     {
-                        if (item.OperationType != PixelOperation.PixelOperationType.Drawing &&
+                        /*if (item.OperationType != PixelOperation.PixelOperationType.Drawing &&
                             item.OperationType != PixelOperation.PixelOperationType.Text &&
                             item.OperationType != PixelOperation.PixelOperationType.Eraser &&
-                            item.OperationType != PixelOperation.PixelOperationType.Supports) continue;
-                        if (whiteListLayers.Contains(item.LayerIndex)) continue;
-                        whiteListLayers.Add(item.LayerIndex);
+                            item.OperationType != PixelOperation.PixelOperationType.Supports) continue;*/
+                        if (!whiteListLayers.Contains(item.LayerIndex))
+                            whiteListLayers.Add(item.LayerIndex);
 
                         uint nextLayer = item.LayerIndex + 1;
                         if (nextLayer < SlicerFile.LayerCount &&

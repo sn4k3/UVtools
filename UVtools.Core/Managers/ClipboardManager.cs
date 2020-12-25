@@ -11,7 +11,7 @@ namespace UVtools.Core.Managers
     public sealed class ClipboardItem : IList<Layer>
     {
         #region Properties
-        private readonly List<Layer> _layers = new List<Layer>();
+        private readonly List<Layer> _layers = new();
 
         /// <summary>
         /// Gets the LayerCount for this clip
@@ -25,9 +25,20 @@ namespace UVtools.Core.Managers
         /// </summary>
         public string Description { get; set; }
 
+        
+        public Operations.Operation Operation { get; set; }
+
         #endregion
 
         #region Constructor
+        public ClipboardItem(FileFormat slicerFile, Operations.Operation operation) : this(slicerFile)
+        {
+            Operation = operation;
+            string description = operation.ToString();
+            if (!description.StartsWith(operation.Title)) description = $"{operation.Title}: {description}";
+            Description = description;
+        }
+        
         public ClipboardItem(FileFormat slicerFile, string description = null)
         {
             LayerCount = slicerFile.LayerCount;
@@ -154,6 +165,8 @@ namespace UVtools.Core.Managers
             get => _snapshotLayerManager;
             private set => RaiseAndSetIfChanged(ref _snapshotLayerManager, value);
         }
+        
+        public ClipboardItem CurrentClip => _currentIndex < 0 || _currentIndex >= Count ? null : this[_currentIndex];
 
         public bool CanUndo => CurrentIndex < Count - 1;
         public bool CanRedo => CurrentIndex > 0;
@@ -255,7 +268,7 @@ namespace UVtools.Core.Managers
         /// <summary>
         /// Collect differences and create a clip
         /// </summary>
-        public void Clip(string description = null, LayerManager layerManagerSnapshot = null)
+        public ClipboardItem Clip(string description = null, LayerManager layerManagerSnapshot = null)
         {
             if(!(layerManagerSnapshot is null)) Snapshot(layerManagerSnapshot);
             if (SnapshotLayerManager is null) throw new InvalidOperationException("A snapshot is required before perform a clip");
@@ -276,9 +289,7 @@ namespace UVtools.Core.Managers
             // Collect leftovers from snapshot
             // This happens when current layer manager has less layers then the snapshot/previous
             // So we need to preserve them
-            for (;
-                    layerIndex < SlicerFile.LayerCount;
-                layerIndex++)
+            for (; layerIndex < SlicerFile.LayerCount; layerIndex++)
             {
                 clip.Add(SlicerFile[layerIndex].Clone());
             }
@@ -288,7 +299,7 @@ namespace UVtools.Core.Managers
             if (clip.Count == 0)
             {
                 if(Count > 0 && this[0].LayerCount == clip.LayerCount)
-                    return;
+                    return null;
             }
 
             SuppressRestore = true;
@@ -306,6 +317,21 @@ namespace UVtools.Core.Managers
             
             CurrentIndex = 0;
             SuppressRestore = false;
+
+            return clip;
+        }
+
+        /// <summary>
+        /// Collect differences and create a clip
+        /// </summary>
+        public ClipboardItem Clip(Operations.Operation operation, LayerManager layerManagerSnapshot = null)
+        {
+            string description = operation.ToString();
+            if (!description.StartsWith(operation.Title)) description = $"{operation.Title}: {description}";
+            var clip = Clip(description, layerManagerSnapshot);
+            if (clip is null) return null;
+            clip.Operation = operation;
+            return clip;
         }
 
         public void Undo()

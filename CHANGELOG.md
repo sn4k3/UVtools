@@ -1,5 +1,47 @@
 # Changelog
 
+## 25/11/2020 - v2.0.0
+
+This release bump the major version due the introduction of .NET 5.0, the discontinuation old UVtools GUI project and the new calibration wizards.
+* (Upgrade) From .NET Core 3.1 to .NET 5.0
+* (Upgrade) From C# 8.0 to C# 9.0
+* (Upgrade) From Avalonia preview6 to rc1
+    * Bug: The per layer data gets hidden and not auto height on this rc1
+* (Add) Setting - General - Windows / dialogs: 
+  * **Take into account the screen scale factor to limit the dialogs windows maximum size**: Due wrong information UVtools can clamp the windows maximum size when you have plenty more avaliable or when use in a secondary monitor. If is the case disable this option
+  * **Horizontal limiting margin:** Limits windows and dialogs maximum width to the screen resolution less this margin
+  * **Vertical limiting margin:** Limits windows and dialogs maximum height to the screen resolution less this margin
+* (Add) Setting - General: Take into account the screen scale factor to limit the dialogs windows maximum size. Due wrong information UVtools can cap the windows maximum size when you have plenty more avaliable or when use in a secondary monitor. If is the case disable this option
+* (Add) Ctrl + Shift + Z to undo and edit the last operation (If contain a valid operation)
+* (Add) Allow to deselect the current selected profile
+* (Add) Allow to set a default profile to load in when open a tool
+* (Add) ENTER and ESC hotkeys to message box
+* (Add) Pixel dimming: Brightness percent equivalent value
+* (Add) Raft relief: Allow to define supports margin independent from wall margin for the "Relief" type
+* (Add) Pixel editor: Allow to adjust the remove and add pixel brightness values
+* (Add) Calibration Menu:
+    * **Elephant foot:** Generates test models with various strategies and increments to verify the best method/values to remove the elephant foot.
+    * **XYZ Accuracy:** Generates test models with various strategies and increments to verify the XYZ accuracy.
+    * **Tolerance:** Generates test models with various strategies and increments to verify the part tolerances.
+    * **Grayscale:** Generates test models with various strategies and increments to verify the LED power against the grayscale levels.
+* (Change) PW0, PWS, PWMX, PWMO, PWMS, PWX file formats to ignore preview validation and allow variations on the file format (#111)
+* (Change) Tool - Edit print parameters: Increments from 0.01 to 0.5
+* (Change) Tool - Resize: Increments from 0.01 to 0.1
+* (Change) Tool - Rotate: Increments from 0.01 to 1
+* (Change) Tool - Calculator: Increments from 0.01 to 0.5 and 1
+* (Fix) PW0, PWS, PWMX, PWMO, PWMS, PWX file formats to replicate missing bottom properties cloned from normal properties
+* (Fix) Drain holes to build plate were considered as traps, changed to be drains as when removing object resin will flow outwards
+* (Fix) When unable to save the file it will change extension and not delete the temporary file
+* (Fix) Pixel dimming wasn't saving all the fields on profiles
+* (Fix) Prevent a rare startup crash when using demo file
+* (Fix) Tool - Solifiy: Increase AA clean up threshold range, previous value wasn't solidifing when model has darker tones
+* (Fix) Sanitize per layer settings, due some slicers are setting 0 at some properties that can cause problems with UVtools calculations, those values are now sanitized and set to the general value if 0
+* (Fix) Update partial islands:
+    * Was leaving visible issues when the result returns an empty list of new issues
+    * Was jumping some modified sequential layers
+    * Was not updating the issue tracker map
+* (Fix) Edit print parameters was not updating the layer data table information
+
 ## 08/11/2020 - v1.4.0
 
 * (Add) Tool - Raft relief: Relief raft by adding holes in between to reduce FEP suction, save resin and easier to remove the prints.

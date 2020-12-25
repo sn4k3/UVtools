@@ -77,7 +77,7 @@
           Watermark="Pattern"
           UseFloatingWatermark="True"
            TextWrapping="NoWrap"
-          Text="{Binding PatternText}"
+          Text="{Binding Operation.PatternText}"
           />
       <TextBox
         Grid.Column="2"
@@ -85,7 +85,7 @@
           Watermark="Alternate pattern (Optional)"
           UseFloatingWatermark="True"
            TextWrapping="NoWrap"
-        Text="{Binding AlternatePatternText}"
+        Text="{Binding Operation.AlternatePatternText}"
           />
 
       <Border
@@ -106,8 +106,11 @@
               Minimum="0"
               Maximum="254"
               Width="80"
-              Value="{Binding DimGenBrightness}"
-            />
+              Value="{Binding Operation.Brightness}"/>
+
+            <TextBlock
+                VerticalAlignment="Center"
+                Text="{Binding Operation.BrightnessPercent, StringFormat=(\{0\}%)}"/>
           </StackPanel>
 
           <StackPanel Orientation="Horizontal" Spacing="10">
@@ -115,28 +118,28 @@
               Padding="10"
               Content="Chessboard"
               Width="100"
-              Command="{Binding GeneratePixelDimming}"
+              Command="{Binding Operation.GeneratePixelDimming}"
               CommandParameter="Chessboard"
             />
             <Button
               Padding="10"
               Content="Sparse"
               Width="100"
-              Command="{Binding GeneratePixelDimming}"
+              Command="{Binding Operation.GeneratePixelDimming}"
               CommandParameter="Sparse"
             />
             <Button
               Padding="10"
               Content="Crosses"
               Width="100"
-              Command="{Binding GeneratePixelDimming}"
+              Command="{Binding Operation.GeneratePixelDimming}"
               CommandParameter="Crosses"
             />
             <Button
               Padding="10"
               Content="Strips"
               Width="100"
-              Command="{Binding GeneratePixelDimming}"
+              Command="{Binding Operation.GeneratePixelDimming}"
               CommandParameter="Strips"
             />
           </StackPanel>
@@ -146,7 +149,7 @@
               Padding="10"
               Content="Pyramid"
               Width="100"
-              Command="{Binding GeneratePixelDimming}"
+              Command="{Binding Operation.GeneratePixelDimming}"
               CommandParameter="Pyramid"
             />
             
@@ -154,21 +157,21 @@
               Padding="10"
               Content="Rhombus"
               Width="100"
-              Command="{Binding GeneratePixelDimming}"
+              Command="{Binding Operation.GeneratePixelDimming}"
               CommandParameter="Rhombus"
             />
             <Button
               Padding="10"
               Content="Waves"
               Width="100"
-              Command="{Binding GeneratePixelDimming}"
+              Command="{Binding Operation.GeneratePixelDimming}"
               CommandParameter="Waves"
             />
             <Button
               Padding="10"
               Content="Slashes"
               Width="100"
-              Command="{Binding GeneratePixelDimming}"
+              Command="{Binding Operation.GeneratePixelDimming}"
               CommandParameter="Slashes"
             />
           </StackPanel>
@@ -178,14 +181,14 @@
               Padding="10"
               Content="Hearts"
               Width="100"
-              Command="{Binding GeneratePixelDimming}"
+              Command="{Binding Operation.GeneratePixelDimming}"
               CommandParameter="Hearts"
             />
             <Button
               Padding="10"
               Content="Solid"
               Width="100"
-              Command="{Binding GeneratePixelDimming}"
+              Command="{Binding Operation.GeneratePixelDimming}"
               CommandParameter="Solid"
             />
           </StackPanel>
@@ -194,8 +197,8 @@
       </Border>
 
       <Border
-        Grid.Row="3"
-        Grid.Column="3"
+        Grid.Row="2"
+        Grid.Column="2"
       BorderBrush="LightGray"
       BorderThickness="1"
       Padding="5"
@@ -217,7 +220,7 @@
               Minimum="5"
               Maximum="10000"
               Width="80"
-              Value="{Binding InfillGenThickness}"
+              Value="{Binding Operation.InfillGenThickness}"
             />
             <TextBlock
               VerticalAlignment="Center"
@@ -231,7 +234,7 @@
               Minimum="5"
               Maximum="10000"
               Width="80"
-              Value="{Binding InfillGenSpacing}"
+              Value="{Binding Operation.InfillGenSpacing}"
             />
             <TextBlock
               VerticalAlignment="Center"
@@ -243,28 +246,28 @@
               Padding="10"
               Content="Rectilinear"
               Width="100"
-              Command="{Binding GenerateInfill}"
+              Command="{Binding Operation.GenerateInfill}"
               CommandParameter="Rectilinear"
             />
             <Button
               Padding="10"
               Content="Square grid"
               Width="100"
-              Command="{Binding GenerateInfill}"
+              Command="{Binding Operation.GenerateInfill}"
               CommandParameter="Square grid"
             />
             <Button
               Padding="10"
               Content="Waves"
               Width="100"
-              Command="{Binding GenerateInfill}"
+              Command="{Binding Operation.GenerateInfill}"
               CommandParameter="Waves"
             />
             <Button
               Padding="10"
               Content="Lattice"
               Width="100"
-              Command="{Binding GenerateInfill}"
+              Command="{Binding Operation.GenerateInfill}"
               CommandParameter="Lattice"
             />
           </StackPanel>

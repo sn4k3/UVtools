@@ -498,16 +498,35 @@ namespace UVtools.Core.FileFormats
         {
             get
             {
+                if (LayerCount == 0) return 0;
                 float time = ExtraPrintTime;
-
-                foreach (var layer in this)
+                bool computeGeneral = LayerManager is null;
+                if (!computeGeneral)
                 {
-                    var layerOff = OperationCalculator.LightOffDelayC.CalculateSeconds(layer.LiftHeight, layer.LiftSpeed, layer.RetractSpeed);
-                    time += layer.ExposureTime;
-                    if (layerOff >= layer.LayerOffTime)
-                        time += layerOff;
-                    else
-                        time += layer.LayerOffTime;
+                    foreach (var layer in this)
+                    {
+                        if (layer is null)
+                        {
+                            computeGeneral = true;
+                            break;
+                        }
+
+                        var layerOff = OperationCalculator.LightOffDelayC.CalculateSeconds(layer.LiftHeight, layer.LiftSpeed, layer.RetractSpeed);
+                        time += layer.ExposureTime;
+                        if (layerOff >= layer.LayerOffTime)
+                            time += layerOff;
+                        else
+                            time += layer.LayerOffTime;
+                    }
+                }
+
+                if (computeGeneral)
+                {
+                    time = ExtraPrintTime + 
+                           BottomLayerOffTime * BottomLayerCount +
+                           LayerOffTime * NormalLayerCount +
+                           OperationCalculator.LightOffDelayC.CalculateSeconds(BottomLiftHeight, BottomLiftSpeed, RetractSpeed) * BottomLayerCount +
+                           OperationCalculator.LightOffDelayC.CalculateSeconds(LiftHeight, LiftSpeed, RetractSpeed) * NormalLayerCount;
                 }
 
                 return (float) Math.Round(time, 2);
@@ -723,6 +742,10 @@ namespace UVtools.Core.FileFormats
             for (var i = 0; i < ThumbnailsCount; i++)
             {
                 Thumbnails[i] = images[Math.Min(i, images.Length - 1)].Clone();
+                if (Thumbnails[i].Size != ThumbnailsOriginalSize[i])
+                {
+                    CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);
+                }
             }
         }
 
@@ -731,6 +754,10 @@ namespace UVtools.Core.FileFormats
             for (var i = 0; i < ThumbnailsCount; i++)
             {
                 Thumbnails[i] = image.Clone();
+                if (Thumbnails[i].Size != ThumbnailsOriginalSize[i])
+                {
+                    CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);
+                }
             }
         }
 
@@ -754,12 +781,12 @@ namespace UVtools.Core.FileFormats
 
             for (var i = 0; i < Thumbnails.Length; i++)
             {
-                if (ReferenceEquals(Thumbnails[i], null)) continue;
+                if (Thumbnails[i] is null) continue;
                 if(Thumbnails[i].Size == ThumbnailsOriginalSize[i]) continue;
                 CvInvoke.Resize(Thumbnails[i], Thumbnails[i], new Size(ThumbnailsOriginalSize[i].Width, ThumbnailsOriginalSize[i].Height));
             }
 
-            if(ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress ??= new OperationProgress();
             progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
         }
 
@@ -1128,6 +1155,11 @@ namespace UVtools.Core.FileFormats
                 for (uint layerIndex = operation.LayerIndexStart; layerIndex <= operation.LayerIndexEnd; layerIndex++)
                 {
                     this[layerIndex].SetValuesFromPrintParametersModifiers(operation.Modifiers);
+                }
+
+                foreach (var modifier in operation.Modifiers)
+                {
+                    modifier.OldValue = modifier.NewValue;
                 }
                 RebuildGCode();
             }

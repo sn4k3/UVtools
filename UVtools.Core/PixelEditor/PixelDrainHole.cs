@@ -20,7 +20,7 @@ namespace UVtools.Core.PixelEditor
             set => RaiseAndSetIfChanged(ref _diameter, value);
         }
 
-        public PixelDrainHole(){}
+        public PixelDrainHole(){ _pixelBrightness = 0; }
 
         public PixelDrainHole(uint layerIndex, Point location, byte diameter) : base(layerIndex, location)
         {

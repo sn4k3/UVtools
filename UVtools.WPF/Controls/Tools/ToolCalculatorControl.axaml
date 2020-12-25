@@ -83,7 +83,7 @@
             Minimum="0"
             Maximum="100000"
             Increment="0.01"
-            FormatString="{}{0:#,0.00}"
+            FormatString="{}{0:0.00}"
             Value="{Binding Operation.CalcMillimetersToPixels.DisplayWidth}"
           />
           <TextBlock
@@ -105,7 +105,7 @@
             Minimum="0"
             Maximum="100000"
             Increment="0.01"
-            FormatString="{}{0:#,0.00}"
+            FormatString="{}{0:0.00}"
             Value="{Binding Operation.CalcMillimetersToPixels.DisplayHeight}"
           />
           <TextBlock
@@ -133,8 +133,8 @@
             VerticalAlignment="Center"
             Minimum="0"
             Maximum="100000"
-            Increment="0.01"
-            FormatString="{}{0:#,0.00}"
+            Increment="0.5"
+            FormatString="{}{0:0.00}"
             Value="{Binding Operation.CalcMillimetersToPixels.Millimeters}"
           />
           <TextBlock
@@ -266,7 +266,8 @@
             VerticalAlignment="Center"
             Minimum="0"
             Maximum="1000"
-            Increment="0.01"
+            Increment="1.0"
+            FormatString="{}{0:0.00}"
             Value="{Binding Operation.CalcLightOffDelay.LiftHeight}"/>
           <TextBlock
             Grid.Row="0"
@@ -286,7 +287,8 @@
             VerticalAlignment="Center"
             Minimum="0"
             Maximum="1000"
-            Increment="0.01"
+            Increment="1.0"
+            FormatString="{}{0:0.00}"
             Value="{Binding Operation.CalcLightOffDelay.LiftSpeed}"/>
           <TextBlock
             Grid.Row="2"
@@ -306,7 +308,8 @@
             VerticalAlignment="Center"
             Minimum="0"
             Maximum="1000"
-            Increment="0.01"
+            Increment="1.0"
+            FormatString="{}{0:0.00}"
             Value="{Binding Operation.CalcLightOffDelay.RetractSpeed}"/>
           <TextBlock
             Grid.Row="4"
@@ -326,7 +329,8 @@
             VerticalAlignment="Center"
             Minimum="0"
             Maximum="1000"
-            Increment="0.01"
+            Increment="0.5"
+            FormatString="{}{0:0.00}"
             Value="{Binding Operation.CalcLightOffDelay.WaitTime}"/>
           <TextBlock
             Grid.Row="6"
@@ -404,7 +408,8 @@
             VerticalAlignment="Center"
             Minimum="0"
             Maximum="1000"
-            Increment="0.01"
+            Increment="1.0"
+            FormatString="{}{0:0.00}"
             Value="{Binding Operation.CalcLightOffDelay.BottomLiftHeight}"/>
           <TextBlock
             Grid.Row="0"
@@ -424,7 +429,8 @@
             VerticalAlignment="Center"
             Minimum="0"
             Maximum="1000"
-            Increment="0.01"
+            Increment="1.0"
+            FormatString="{}{0:0.00}"
             Value="{Binding Operation.CalcLightOffDelay.BottomLiftSpeed}"/>
           <TextBlock
             Grid.Row="2"
@@ -432,27 +438,6 @@
             VerticalAlignment="Center"
             Text="mm/min"/>
 
-          <!--
-          <TextBlock
-            Grid.Row="4"
-            Grid.Column="6"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="Retract speed:"/>
-          <NumericUpDown
-            Grid.Row="4"
-            Grid.Column="8"
-            VerticalAlignment="Center"
-            Minimum="0"
-            Maximum="1000"
-            Increment="0.01"
-            Value="{Binding Operation.CalcLightOffDelay.RetractSpeed}"/>
-          <TextBlock
-            Grid.Row="4"
-            Grid.Column="10"
-            VerticalAlignment="Center"
-            Text="mm/min"/>
-          -->
           <TextBlock
             Grid.Row="6"
             Grid.Column="6"
@@ -465,7 +450,8 @@
             VerticalAlignment="Center"
             Minimum="0"
             Maximum="1000"
-            Increment="0.01"
+            Increment="0.5"
+            FormatString="{}{0:0.00}"
             Value="{Binding Operation.CalcLightOffDelay.BottomWaitTime}"/>
           <TextBlock
             Grid.Row="6"

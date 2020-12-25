@@ -898,6 +898,12 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        public override float BottomLayerOffTime
+        {
+            get => LayerOffTime;
+            set => LayerOffTime = value;
+        }
+
         public override float LayerOffTime
         {
             get => HeaderSettings.LayerOffTime;
@@ -908,6 +914,12 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        public override float BottomLiftHeight
+        {
+            get => LiftHeight;
+            set => LiftHeight = value;
+        }
+
         public override float LiftHeight
         {
             get => HeaderSettings.LiftHeight;
@@ -916,6 +928,12 @@ namespace UVtools.Core.FileFormats
                 HeaderSettings.LiftHeight = value;
                 RaisePropertyChanged();
             }
+        }
+
+        public override float BottomLiftSpeed
+        {
+            get => LiftSpeed;
+            set => LiftSpeed = value;
         }
 
         public override float LiftSpeed
@@ -1138,7 +1156,7 @@ namespace UVtools.Core.FileFormats
                     Debug.Write("Preview -> ");
                     Debug.WriteLine(PreviewSettings);
 
-                    PreviewSettings.Validate((int) PreviewSettings.DataSize);
+                    //PreviewSettings.Validate((int) PreviewSettings.DataSize);
 
                     PreviewSettings.Data = new byte[PreviewSettings.DataSize];
                     inputFile.ReadBytes(PreviewSettings.Data);

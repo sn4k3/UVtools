@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
+using DynamicData;
 using UVtools.Core.Operations;
 
 namespace UVtools.WPF.Structures
@@ -39,6 +40,9 @@ namespace UVtools.WPF.Structures
         [XmlElement(typeof(OperationResize))]
         [XmlElement(typeof(OperationRotate))]
         [XmlElement(typeof(OperationThreshold))]
+        [XmlElement(typeof(OperationCalibrateElephantFoot))]
+        [XmlElement(typeof(OperationCalibrateXYZAccuracy))]
+        [XmlElement(typeof(OperationCalibrateGrayscale))]
         public List<Operation> Operations { get; internal set; } = new List<Operation>();
 
         [XmlIgnore]

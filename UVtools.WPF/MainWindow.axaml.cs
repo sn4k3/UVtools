@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,6 +29,7 @@ using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
 using UVtools.Core.Operations;
 using UVtools.WPF.Controls;
+using UVtools.WPF.Controls.Calibrators;
 using UVtools.WPF.Controls.Tools;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
@@ -35,6 +37,7 @@ using UVtools.WPF.Windows;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using Helpers = UVtools.WPF.Controls.Helpers;
 using Path = System.IO.Path;
+using Point = Avalonia.Point;
 
 namespace UVtools.WPF
 {
@@ -208,9 +211,45 @@ namespace UVtools.WPF
             },
         };
 
+        public static MenuItem[] MenuCalibration { get; } =
+        {
+            new()
+            {
+                Tag = new OperationCalibrateElephantFoot(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/elephant-foot-16x16.png"))
+                }
+            },
+            new()
+            {
+                Tag = new OperationCalibrateXYZAccuracy(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/cubes-16x16.png"))
+                }
+            },
+            new()
+            {
+                Tag = new OperationCalibrateTolerance(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/dot-circle-16x16.png"))
+                }
+            },
+            new()
+            {
+                Tag = new OperationCalibrateGrayscale(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/chart-pie-16x16.png"))
+                }
+            },
+        };
+
         public static MenuItem[] LayerActionsMenu { get; } =
         {
-            new MenuItem
+            new()
             {
                 Tag = new OperationLayerImport(),
                 Icon = new Avalonia.Controls.Image
@@ -218,7 +257,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/file-import-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationLayerClone(),
                 Icon = new Avalonia.Controls.Image
@@ -226,7 +265,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/copy-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationLayerRemove(),
                 Icon = new Avalonia.Controls.Image
@@ -255,7 +294,7 @@ namespace UVtools.WPF
 
         private PointerEventArgs _globalPointerEventArgs;
         private PointerPoint _globalPointerPoint;
-        private KeyModifiers _globalModifiers;
+        private KeyModifiers _globalModifiers = KeyModifiers.None;
         private TabItem _selectedTabItem;
         private TabItem _lastSelectedTab;
         private TabItem _lastSelectedTabItem;
@@ -361,6 +400,9 @@ namespace UVtools.WPF
 #if DEBUG
             //this.AttachDevTools();
 #endif
+
+            UpdateMaxWindowsSize();
+            
             App.ThemeSelector?.EnableThemes(this);
             InitInformation();
             InitIssues();
@@ -376,7 +418,7 @@ namespace UVtools.WPF
             TabLog = this.FindControl<TabItem>("TabLog");
 
 
-            foreach (var menuItem in new[] { MenuTools, LayerActionsMenu })
+            foreach (var menuItem in new[] { MenuTools, MenuCalibration, LayerActionsMenu })
             {
                 foreach (var menuTool in menuItem)
                 {
@@ -405,8 +447,8 @@ namespace UVtools.WPF
             UpdateTitle();
 
             if (Settings.General.StartMaximized 
-                || ClientSize.Width > Screens.Primary.Bounds.Width / Screens.Primary.PixelDensity
-                || ClientSize.Height > Screens.Primary.Bounds.Height / Screens.Primary.PixelDensity)
+                || ClientSize.Width > App.MaxWindowSize.Width
+                || ClientSize.Height > App.MaxWindowSize.Height)
             {
                 WindowState = WindowState.Maximized;
             }
@@ -417,6 +459,12 @@ namespace UVtools.WPF
             {
                 ProcessFiles(e.Data.GetFileNames().ToArray());
             });
+        }
+
+        public void UpdateMaxWindowsSize()
+        {
+            App.MaxWindowSize = new System.Drawing.Size(Settings.General.WindowsTakeIntoAccountScreenScaling ? (int)(Screens.Primary.WorkingArea.Width / Screens.Primary.PixelDensity) : Screens.Primary.WorkingArea.Width,
+                Settings.General.WindowsTakeIntoAccountScreenScaling ? (int)(Screens.Primary.WorkingArea.Height / Screens.Primary.PixelDensity) : Screens.Primary.WorkingArea.Height);
         }
 
         protected override void OnOpened(EventArgs e)
@@ -543,6 +591,17 @@ namespace UVtools.WPF
         {
             base.OnKeyUp(e);
             _globalModifiers = e.KeyModifiers;
+            if ((e.Key == Key.LeftShift ||
+                 e.Key == Key.RightShift ||
+                (e.KeyModifiers & KeyModifiers.Shift) != 0) &&
+                 (e.KeyModifiers & KeyModifiers.Control) != 0 &&
+                 e.Key == Key.Z)
+            {
+                e.Handled = true;
+                ClipboardUndo(true);
+                return;
+            }
+                
             if (e.Key == Key.LeftShift ||
                 e.Key == Key.RightShift ||
                 (e.KeyModifiers & KeyModifiers.Shift) == 0 ||
@@ -556,8 +615,17 @@ namespace UVtools.WPF
                 e.Handled = true;
             }
         }
-
         
+        public void OpenContextMenu(string name)
+        {
+            var menu = this.FindControl<ContextMenu>($"{name}ContextMenu");
+            if (menu is null) return;
+            var parent = this.FindControl<Button>($"{name}Button");
+            if (parent is null) return;
+            menu.Open(parent);
+        }
+
+
 
         #endregion
 
@@ -681,6 +749,7 @@ namespace UVtools.WPF
         {
             SettingsWindow settingsWindow = new SettingsWindow();
             await settingsWindow.ShowDialog(this);
+            UpdateMaxWindowsSize();
         }
 
         public void OpenWebsite()
@@ -945,8 +1014,16 @@ namespace UVtools.WPF
             {
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    ProgressWindow.SetTitle(title);
-                    await ProgressWindow.ShowDialog(this);
+                    try
+                    {
+                        ProgressWindow.SetTitle(title);
+                        await ProgressWindow.ShowDialog(this);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.WriteLine(e);
+                    }
+                    
                 });
             }
         }
@@ -1078,6 +1155,11 @@ namespace UVtools.WPF
                 }
                 catch (Exception ex)
                 {
+                    SlicerFile.FileFullPath = oldFile;
+                    if (File.Exists(tempFile))
+                    {
+                        File.Delete(tempFile);
+                    }
                     Dispatcher.UIThread.InvokeAsync(async () =>
                         await this.MessageBoxError(ex.ToString(), "Error while saving the file"));
                 }
@@ -1150,24 +1232,27 @@ namespace UVtools.WPF
         }
 
         #region Operations
-        public async Task<Operation> ShowRunOperation(Type type)
+        public async Task<Operation> ShowRunOperation(Type type, Operation loadOperation = null)
         {
-            var operation = await ShowOperation(type);
+            var operation = await ShowOperation(type, loadOperation);
             await RunOperation(operation);
             return operation;
         }
 
-        public async Task<Operation> ShowOperation(Type type)
+        public async Task<Operation> ShowOperation(Type type, Operation loadOperation = null)
         {
-            var typeBase = typeof(ToolControl);
-            var classname = $"{typeBase.Namespace}.Tool{type.Name.Remove(0, Operation.ClassNameLength)}Control";
+            var toolTypeBase = typeof(ToolControl);
+            var calibrateTypeBase = typeof(CalibrateElephantFootControl);
+            var classname = type.Name.StartsWith("OperationCalibrate") ?
+                $"{calibrateTypeBase.Namespace}.{type.Name.Remove(0, Operation.ClassNameLength)}Control" :
+                $"{toolTypeBase.Namespace}.Tool{type.Name.Remove(0, Operation.ClassNameLength)}Control"; ;
             var controlType = Type.GetType(classname);
             ToolControl control;
 
             bool removeContent = false;
             if (controlType is null)
             {
-                controlType = typeBase;
+                controlType = toolTypeBase;
                 removeContent = true;
                 control = new ToolControl(type.CreateInstance<Operation>());
             }
@@ -1176,6 +1261,9 @@ namespace UVtools.WPF
                 control = controlType.CreateInstance<ToolControl>();
                 if (control is null) return null;
             }
+
+            if(loadOperation is not null)
+                control.BaseOperation = loadOperation;
 
             if (!control.CanRun)
             {
@@ -1208,6 +1296,7 @@ namespace UVtools.WPF
                     }*/
                     SlicerFile.EditPrintParameters(operation);
                     RefreshProperties();
+                    RefreshCurrentLayerData();
                     ResetDataContext();
 
                     CanSave = true;
@@ -1318,6 +1407,20 @@ namespace UVtools.WPF
                             SlicerFile.LayerManager.RemoveLayers(operation, ProgressWindow.RestartProgress(operation.CanCancel));
                             break;
 
+                        // Calibrators
+                        case OperationCalibrateElephantFoot operation:
+                            SlicerFile.LayerManager.CalibrateElephantFoot(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationCalibrateXYZAccuracy operation:
+                            SlicerFile.LayerManager.CalibrateXYZAccuracy(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationCalibrateTolerance operation:
+                            SlicerFile.LayerManager.CalibrateTolerance(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+                        case OperationCalibrateGrayscale operation:
+                            SlicerFile.LayerManager.CalibrateGrayscale(operation, ProgressWindow.RestartProgress(operation.CanCancel));
+                            break;
+
                         default:
                             throw new NotImplementedException();
                     }
@@ -1347,9 +1450,7 @@ namespace UVtools.WPF
 
             if (result)
             {
-                string description = baseOperation.ToString();
-                if (!description.StartsWith(baseOperation.Title)) description = $"{baseOperation.Title}: {description}";
-                ClipboardManager.Instance.Clip(description, backup);
+                ClipboardManager.Instance.Clip(baseOperation, backup);
 
                 ShowLayer();
                 RefreshProperties();

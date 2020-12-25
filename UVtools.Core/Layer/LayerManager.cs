@@ -10,7 +10,6 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -31,12 +30,24 @@ namespace UVtools.Core
         #region Properties
         public FileFormat SlicerFile { get; private set; }
 
+        private Layer[] _layers;
+
         /// <summary>
         /// Layers List
         /// </summary>
-        public Layer[] Layers { get; private set; }
+        public Layer[] Layers
+        {
+            get => _layers;
+            private set
+            {
+                _layers = value;
+                if (value is null) return;
+                SlicerFile.PrintTime = SlicerFile.PrintTimeComputed;
+            }
+        }
 
         private Rectangle _boundingRectangle = Rectangle.Empty;
+
         public Rectangle BoundingRectangle
         {
             get => GetBoundingRectangle();
@@ -714,6 +725,9 @@ namespace UVtools.Core
             //progress.Reset(operation.ProgressAction);
 
             Mat supportsMat = null;
+            var anchor = new Point(-1, -1);
+            var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+            
 
             uint firstSupportLayerIndex = 0;
             for (; firstSupportLayerIndex < Count; firstSupportLayerIndex++)
@@ -731,6 +745,13 @@ namespace UVtools.Core
             if (supportsMat is null) return;
             Mat patternMat = null;
 
+            if (operation.DilateIterations > 0)
+            {
+                CvInvoke.Dilate(supportsMat, supportsMat,
+                    CvInvoke.GetStructuringElement(ElementShape.Ellipse, new Size(3, 3), new Point(-1, -1)),
+                    new Point(-1, -1), operation.DilateIterations, BorderType.Reflect101, new MCvScalar());
+            }
+
             switch (operation.ReliefType)
             {
                 case OperationRaftRelief.RaftReliefTypes.Relief:
@@ -740,7 +761,7 @@ namespace UVtools.Core
                     {
 
                         int center = operation.HoleDiameter / 2;
-                        int centerTwo = operation.HoleDiameter + operation.HoleSpacing + operation.HoleDiameter / 2;
+                        //int centerTwo = operation.HoleDiameter + operation.HoleSpacing + operation.HoleDiameter / 2;
                         int radius = center;
                         CvInvoke.Circle(shape, new Point(shapeSize / 2, shapeSize / 2), radius, EmguExtensions.WhiteByte, -1);
                         CvInvoke.Circle(shape, new Point(0, 0), radius / 2, EmguExtensions.WhiteByte, -1);
@@ -748,20 +769,11 @@ namespace UVtools.Core
                         CvInvoke.Circle(shape, new Point(shapeSize, 0), radius / 2, EmguExtensions.WhiteByte, -1);
                         CvInvoke.Circle(shape, new Point(shapeSize, shapeSize), radius / 2, EmguExtensions.WhiteByte, -1);
                         
-                        //shape.Save("D:\\shape.png");
-
                         CvInvoke.Repeat(shape, supportsMat.Height / shape.Height + 1, supportsMat.Width / shape.Width + 1, patternMat);
-
-
+                        
                         patternMat = new Mat(patternMat, new Rectangle(0, 0, supportsMat.Width, supportsMat.Height));
                     }
                     
-                    break;
-                case OperationRaftRelief.RaftReliefTypes.Decimate:
-                    if (operation.DilateIterations <= 0) break;
-                    CvInvoke.Dilate(supportsMat, supportsMat, 
-                        CvInvoke.GetStructuringElement(ElementShape.Ellipse, new Size(3, 3), new Point(-1, -1)),
-                        new Point(-1, -1), operation.DilateIterations, BorderType.Reflect101, new MCvScalar());
                     break;
             }
 
@@ -777,12 +789,12 @@ namespace UVtools.Core
                         case OperationRaftRelief.RaftReliefTypes.Relief:
                             using (Mat mask = new Mat())
                             {
-                                CvInvoke.Subtract(target, supportsMat, mask);
-                                //target.CopyTo(mask);
-                                CvInvoke.Erode(mask, mask,
-                                    CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3),
-                                        new Point(-1, -1)),
-                                    new Point(-1, -1), operation.WallMargin, BorderType.Reflect101, new MCvScalar());
+                                /*CvInvoke.Subtract(target, supportsMat, mask);
+                                CvInvoke.Erode(mask, mask, kernel, anchor, operation.WallMargin, BorderType.Reflect101, new MCvScalar());
+                                CvInvoke.Subtract(target, patternMat, target, mask);*/
+
+                                CvInvoke.Erode(target, mask, kernel, anchor, operation.WallMargin, BorderType.Reflect101, default);
+                                CvInvoke.Subtract(mask, supportsMat, mask);
                                 CvInvoke.Subtract(target, patternMat, target, mask);
                             }
 
@@ -906,11 +918,11 @@ namespace UVtools.Core
             OperationProgress progress = null)
         {
             
-            if (islandConfig is null) islandConfig = new IslandDetectionConfiguration();
-            if(overhangConfig is null) overhangConfig = new OverhangDetectionConfiguration();
-            if(resinTrapConfig is null) resinTrapConfig = new ResinTrapDetectionConfiguration();
-            if(touchBoundConfig is null) touchBoundConfig = new TouchingBoundDetectionConfiguration();
-            if(progress is null) progress = new OperationProgress();
+            islandConfig ??= new IslandDetectionConfiguration();
+            overhangConfig ??= new OverhangDetectionConfiguration();
+            resinTrapConfig ??= new ResinTrapDetectionConfiguration();
+            touchBoundConfig ??= new TouchingBoundDetectionConfiguration();
+            progress ??= new OperationProgress();
             
             var result = new ConcurrentBag<LayerIssue>();
             var layerHollowAreas = new ConcurrentDictionary<uint, List<LayerHollowArea>>();
@@ -1257,19 +1269,13 @@ namespace UVtools.Core
                                     CvInvoke.Subtract(image, previousImage, subtractedImage);
                                     CvInvoke.Threshold(subtractedImage, subtractedImage, 127, 255, ThresholdType.Binary);
 
-                                    //subtractedImage.Save($"D:\\subtracted_image\\subtracted{layer.Index}.png");
-
-
                                     CvInvoke.Erode(subtractedImage, subtractedImage, 
                                         CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3,3), anchor), 
                                         anchor, overhangConfig.ErodeIterations, BorderType.Default, new MCvScalar());
 
-                                    
-
                                     CvInvoke.FindNonZero(subtractedImage, vecPoints);
                                     if (vecPoints.Size >= overhangConfig.RequiredPixelsToConsider)
                                     {
-                                        //subtractedImage.Save("D:\\subtracted_image\\subtracted_erroded.png");
                                         AddIssue(new LayerIssue(
                                             layer, LayerIssue.IssueType.Overhang, vecPoints.ToArray(), layer.BoundingRectangle
                                             ));
@@ -1331,7 +1337,7 @@ namespace UVtools.Core
 
                                         listHollowArea.Add(new LayerHollowArea(contours[i].ToArray(),
                                             rect,
-                                            layer.Index == Count - 1
+                                            layer.Index == 0 || layer.Index == Count - 1 // First and Last layers, always drains
                                                 ? LayerHollowArea.AreaType.Drain
                                                 : LayerHollowArea.AreaType.Unknown));
 
@@ -1344,7 +1350,7 @@ namespace UVtools.Core
                     });
 
 
-                for (uint layerIndex = 0; layerIndex < Count - 1; layerIndex++) // Last layers, always drains
+                for (uint layerIndex = 1; layerIndex < Count - 1; layerIndex++) // First and Last layers, always drains
                 {
                     if (progress.Token.IsCancellationRequested) break;
                     if (!layerHollowAreas.TryGetValue(layerIndex, out var areas))
@@ -2058,18 +2064,18 @@ namespace UVtools.Core
 
                     if (operationDrawing.BrushSize == 1)
                     {
-                        mat.SetByte(operation.Location.X, operation.Location.Y, operationDrawing.Color);
+                        mat.SetByte(operation.Location.X, operation.Location.Y, operationDrawing.Brightness);
                         continue;
                     }
 
                     switch (operationDrawing.BrushShape)
                     {
                         case PixelDrawing.BrushShapeType.Rectangle:
-                            CvInvoke.Rectangle(mat, operationDrawing.Rectangle, new MCvScalar(operationDrawing.Color), operationDrawing.Thickness, operationDrawing.LineType);
+                            CvInvoke.Rectangle(mat, operationDrawing.Rectangle, new MCvScalar(operationDrawing.Brightness), operationDrawing.Thickness, operationDrawing.LineType);
                             break;
                         case PixelDrawing.BrushShapeType.Circle:
                             CvInvoke.Circle(mat, operation.Location, operationDrawing.BrushSize / 2,
-                                new MCvScalar(operationDrawing.Color), operationDrawing.Thickness, operationDrawing.LineType);
+                                new MCvScalar(operationDrawing.Brightness), operationDrawing.Thickness, operationDrawing.LineType);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
@@ -2080,7 +2086,7 @@ namespace UVtools.Core
                     var operationText = (PixelText)operation;
                     var mat = modifiedLayers.GetOrAdd(operation.LayerIndex, u => this[operation.LayerIndex].LayerMat);
 
-                    CvInvoke.PutText(mat, operationText.Text, operationText.Location, operationText.Font, operationText.FontScale, new MCvScalar(operationText.Color), operationText.Thickness, operationText.LineType, operationText.Mirror);
+                    CvInvoke.PutText(mat, operationText.Text, operationText.Location, operationText.Font, operationText.FontScale, new MCvScalar(operationText.Brightness), operationText.Thickness, operationText.LineType, operationText.Mirror);
                 }
                 else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
                 {
@@ -2101,7 +2107,7 @@ namespace UVtools.Core
                         {
                             if (!(CvInvoke.PointPolygonTest(layerContours[contourIdx], operation.Location, false) >= 0))
                                 continue;
-                            CvInvoke.DrawContours(mat, layerContours, contourIdx, new MCvScalar(0, 0, 0), -1);
+                            CvInvoke.DrawContours(mat, layerContours, contourIdx, new MCvScalar(operation.PixelBrightness), -1);
                             break;
                         }
                     }
@@ -2124,7 +2130,7 @@ namespace UVtools.Core
                             using (Mat matCircleMask = matCircleRoi.CloneBlank())
                             {
                                 CvInvoke.Circle(matCircleMask, new Point(operationSupport.TipDiameter / 2, operationSupport.TipDiameter / 2),
-                                    operationSupport.TipDiameter / 2, new MCvScalar(255), -1);
+                                    operationSupport.TipDiameter / 2, new MCvScalar(operation.PixelBrightness), -1);
                                 CvInvoke.BitwiseAnd(matCircleRoi, matCircleMask, matCircleMask);
                                 whitePixels = (uint) CvInvoke.CountNonZero(matCircleMask);
                             }
@@ -2137,7 +2143,7 @@ namespace UVtools.Core
                             break; // White area end supporting
                         }
 
-                        CvInvoke.Circle(mat, operation.Location, radius, new MCvScalar(255), -1, operationSupport.LineType);
+                        CvInvoke.Circle(mat, operation.Location, radius, new MCvScalar(operation.PixelBrightness), -1, operationSupport.LineType);
                         drawnLayers++;
                     }
                 }
@@ -2257,6 +2263,217 @@ namespace UVtools.Core
         #endregion
 
 
-        
+        public void CalibrateElephantFoot(OperationCalibrateElephantFoot operation, OperationProgress progress)
+        {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset(operation.ProgressAction, 3);
+            SlicerFile.SuppressRebuildProperties = true;
+
+            Layers = new Layer[operation.BottomLayers + operation.NormalLayers];
+
+            SlicerFile.LayerHeight = (float) operation.LayerHeight;
+            SlicerFile.BottomExposureTime = (float) operation.BottomExposure;
+            SlicerFile.ExposureTime = (float) operation.NormalExposure;
+            SlicerFile.BottomLayerCount = operation.BottomLayers;
+
+            var layers = operation.GetLayers();
+            progress++;
+
+
+            var bottomLayer = new Layer(0, layers[0], this)
+            {
+                IsModified = true
+            };
+            var layer = new Layer(0, layers[1], this)
+            {
+                IsModified = true
+            };
+            bottomLayer.Move(new OperationMove(bottomLayer.BoundingRectangle, layers[0].Size));
+            layer.Move(new OperationMove(layer.BoundingRectangle, layers[0].Size));
+            progress++;
+
+            for (uint layerIndex = 0;
+                layerIndex < operation.BottomLayers+operation.NormalLayers;
+                layerIndex++)
+            {
+                Layers[layerIndex] = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, bottomLayer.Clone(), layer.Clone());
+            }
+
+            foreach (var mat in layers)
+            {
+                mat.Dispose();
+            }
+            
+            SlicerFile.LayerCount = Count;
+            RebuildLayersProperties();
+
+            BoundingRectangle = Rectangle.Empty;
+
+            if(SlicerFile.ThumbnailsCount > 0)
+                SlicerFile.SetThumbnails(operation.GetThumbnail());
+
+            progress++;
+
+            SlicerFile.SuppressRebuildProperties = false;
+        }
+
+        public void CalibrateXYZAccuracy(OperationCalibrateXYZAccuracy operation, OperationProgress progress)
+        {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset(operation.ProgressAction, operation.LayerCount);
+
+            SlicerFile.SuppressRebuildProperties = true;
+
+            Layers = new Layer[operation.LayerCount];
+
+            SlicerFile.LayerHeight = (float)operation.LayerHeight;
+            SlicerFile.BottomExposureTime = (float)operation.BottomExposure;
+            SlicerFile.ExposureTime = (float)operation.NormalExposure;
+            SlicerFile.BottomLayerCount = operation.BottomLayers;
+
+            var layers = operation.GetLayers();
+
+            var bottomLayer = new Layer(0, layers[0], this)
+            {
+                IsModified = true
+            };
+            var layer = new Layer(0, layers[1], this)
+            {
+                IsModified = true
+            };
+
+            for (uint layerIndex = 0; layerIndex < operation.LayerCount; layerIndex++)
+            {
+                Layers[layerIndex] = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, bottomLayer.Clone(), layer.Clone());
+                progress++;
+            }
+
+            foreach (var mat in layers)
+            {
+                mat.Dispose();
+            }
+
+            SlicerFile.LayerCount = Count;
+            RebuildLayersProperties();
+
+            BoundingRectangle = Rectangle.Empty;
+
+            if (SlicerFile.ThumbnailsCount > 0)
+                SlicerFile.SetThumbnails(operation.GetThumbnail());
+
+            SlicerFile.SuppressRebuildProperties = false;
+        }
+
+        public void CalibrateGrayscale(OperationCalibrateGrayscale operation, OperationProgress progress)
+        {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset(operation.ProgressAction, operation.LayerCount);
+            SlicerFile.SuppressRebuildProperties = true;
+
+            Layers = new Layer[operation.LayerCount];
+
+            SlicerFile.LayerHeight = (float)operation.LayerHeight;
+            SlicerFile.BottomExposureTime = (float)operation.BottomExposure;
+            SlicerFile.ExposureTime = (float)operation.NormalExposure;
+            SlicerFile.BottomLayerCount = operation.BottomLayers;
+
+            var layers = operation.GetLayers();
+            progress++;
+
+
+            var bottomLayer = new Layer(0, layers[0], this)
+            {
+                IsModified = true
+            };
+            var interfaceLayer = operation.InterfaceLayers > 0 && layers[1] is not null ? new Layer(0, layers[1], this)
+            {
+                IsModified = true
+            } : null;
+            var layer = new Layer(0, layers[2], this)
+            {
+                IsModified = true
+            };
+
+            uint layerIndex = 0;
+            for (uint i = 0; i < operation.BottomLayers; i++)
+            {
+                Layers[layerIndex] = bottomLayer.Clone();
+                progress++;
+                layerIndex++;
+            }
+
+            for (uint i = 0; i < operation.InterfaceLayers; i++)
+            {
+                Layers[layerIndex] = interfaceLayer.Clone();
+                progress++;
+                layerIndex++;
+            }
+
+
+            for (uint i = 0; i < operation.NormalLayers; i++)
+            {
+                Layers[layerIndex] = layer.Clone();
+                progress++;
+                layerIndex++;
+            }
+
+            foreach (var mat in layers)
+            {
+                mat?.Dispose();
+            }
+
+            SlicerFile.LayerCount = Count;
+            RebuildLayersProperties();
+
+            BoundingRectangle = Rectangle.Empty;
+
+            if (SlicerFile.ThumbnailsCount > 0)
+                SlicerFile.SetThumbnails(operation.GetThumbnail());
+            
+            progress++;
+
+            SlicerFile.SuppressRebuildProperties = false;
+        }
+
+        public void CalibrateTolerance(OperationCalibrateTolerance operation, OperationProgress progress)
+        {
+            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress.Reset(operation.ProgressAction, operation.LayerCount);
+            SlicerFile.SuppressRebuildProperties = true;
+
+            Layers = new Layer[operation.LayerCount];
+
+            SlicerFile.LayerHeight = (float)operation.LayerHeight;
+            SlicerFile.BottomExposureTime = (float)operation.BottomExposure;
+            SlicerFile.ExposureTime = (float)operation.NormalExposure;
+            SlicerFile.BottomLayerCount = operation.BottomLayers;
+
+            var layers = operation.GetLayers();
+
+            Parallel.For(0, operation.LayerCount, layerIndex =>
+            {
+                Layers[layerIndex] = new Layer((uint) layerIndex, layers[layerIndex], this);
+                layers[layerIndex].Dispose();
+                lock (progress)
+                {
+                    progress++;
+                }
+            });
+
+            SlicerFile.LayerCount = Count;
+            RebuildLayersProperties();
+
+            BoundingRectangle = Rectangle.Empty;
+            Move(new OperationMove(BoundingRectangle, SlicerFile.Resolution)
+            {
+                IsCutMove = true,
+                LayerIndexEnd = Count-1
+            }, progress);
+
+            if (SlicerFile.ThumbnailsCount > 0)
+                SlicerFile.SetThumbnails(operation.GetThumbnail());
+
+            SlicerFile.SuppressRebuildProperties = false;
+        }
     }
 }

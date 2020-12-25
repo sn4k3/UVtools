@@ -330,7 +330,7 @@ namespace UVtools.WPF
 
         #region Current Layer
 
-        public void AddCurrentLayerData()
+        public void RefreshCurrentLayerData()
         {
             var layer = LayerCache.Layer;
             CurrentLayerProperties.Clear();

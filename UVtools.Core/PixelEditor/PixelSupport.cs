@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 using System.Drawing;
+using Emgu.CV.CvEnum;
 
 namespace UVtools.Core.PixelEditor
 {
@@ -36,7 +37,7 @@ namespace UVtools.Core.PixelEditor
 
         public PixelSupport(){}
 
-        public PixelSupport(uint layerIndex, Point location, byte tipDiameter, byte pillarDiameter, byte baseDiameter) : base(layerIndex, location)
+        public PixelSupport(uint layerIndex, Point location, byte tipDiameter, byte pillarDiameter, byte baseDiameter, byte pixelBrightness) : base(layerIndex, location, LineType.AntiAlias, pixelBrightness)
         {
             TipDiameter = tipDiameter;
             PillarDiameter = pillarDiameter;

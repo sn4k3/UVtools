@@ -94,17 +94,18 @@
             Value="{Binding LayerIndexEnd}"
             />
 
-          <Button
+          <Button Name="LayerSelectPresetButton"
             Grid.Row="0"
             Grid.Column="4"
             Margin="10,0,0,0"
             VerticalAlignment="Stretch"
             Padding="10,0,10,0"
             Content="Select ⮟"
-            Command="{Binding #LayerSelectPreset.Open}"
+            Command="{Binding OpenContextMenu}"
+            CommandParameter="LayerSelectPreset"
             >
             <Button.ContextMenu>
-              <ContextMenu Name="LayerSelectPreset" PlacementMode="Bottom">
+              <ContextMenu Name="LayerSelectPresetContextMenu" PlacementMode="Bottom">
                 <MenuItem
                   Header="_All layers"
                   HotKey="Ctrl + Shift + A" InputGesture="Ctrl + Shift + A"
@@ -240,7 +241,7 @@
 
         <Grid
           RowDefinitions="Auto,Auto"
-          ColumnDefinitions="*,5,Auto"
+          ColumnDefinitions="*,5,Auto,5,Auto,5,Auto"
           Margin="15"
           >
 
@@ -252,8 +253,34 @@
                   Items="{Binding Profiles}" />
 
           <Button
+              Grid.Row="0"
+              Grid.Column="2"
+              Margin="0,0,0,10"
+              VerticalAlignment="Center"
+              ToolTip.Tip="Deselect the current profile"
+              IsEnabled="{Binding SelectedProfileItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+              IsVisible="{Binding Profiles.Count}"
+              Command="{Binding DeselectProfile}">
+              <Image Source="/Assets/Icons/checkbox-unmarked-16x16.png" />
+            </Button>
+
+          <Button
+              Grid.Row="0"
+              Grid.Column="4"
+              Margin="0,0,0,10"
+              Width="24"
+              VerticalAlignment="Center"
+              FontWeight="Bold"
+              ToolTip.Tip="Set the selected profile as default to load in with this dialog.
+&#x0a;Shift + click to clear the default profile."
+              IsEnabled="{Binding SelectedProfileItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+              IsVisible="{Binding Profiles.Count}"
+              Command="{Binding SetDefaultProfile}"
+              Content="D"/>
+
+          <Button
             Grid.Row="0"
-            Grid.Column="2"
+            Grid.Column="6"
             Margin="0,0,0,10"
               VerticalAlignment="Center"
               ToolTip.Tip="Remove the selected profile"
@@ -269,8 +296,7 @@
             Grid.Column="0"
             IsEnabled="{Binding ButtonOkEnabled}"
             Text="{Binding ProfileText}"
-            Watermark="Profile name or leave empty for auto name"
-                   />
+            Watermark="Profile name or leave empty for auto name"/>
 
           <Button
             Grid.Row="1"

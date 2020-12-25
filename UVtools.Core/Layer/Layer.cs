@@ -74,7 +74,11 @@ namespace UVtools.Core
         public float ExposureTime
         {
             get => _exposureTime;
-            set => RaiseAndSetIfChanged(ref _exposureTime, value);
+            set
+            {
+                if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
+                RaiseAndSetIfChanged(ref _exposureTime, value);
+            }
         }
 
         /// <summary>
@@ -83,7 +87,11 @@ namespace UVtools.Core
         public float LayerOffTime
         {
             get => _layerOffTime;
-            set => RaiseAndSetIfChanged(ref _layerOffTime, value);
+            set
+            {
+                if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLayerOffTime, SlicerFile.LayerOffTime);
+                RaiseAndSetIfChanged(ref _layerOffTime, value);
+            }
         }
 
         /// <summary>
@@ -92,7 +100,11 @@ namespace UVtools.Core
         public float LiftHeight
         {
             get => _liftHeight;
-            set => RaiseAndSetIfChanged(ref _liftHeight, value);
+            set
+            {
+                if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
+                RaiseAndSetIfChanged(ref _liftHeight, value);
+            }
         }
 
         /// <summary>
@@ -101,7 +113,11 @@ namespace UVtools.Core
         public float LiftSpeed
         {
             get => _liftSpeed;
-            set => RaiseAndSetIfChanged(ref _liftSpeed, value);
+            set
+            {
+                if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
+                RaiseAndSetIfChanged(ref _liftSpeed, value);
+            }
         }
 
         /// <summary>
@@ -110,7 +126,11 @@ namespace UVtools.Core
         public float RetractSpeed
         {
             get => _retractSpeed;
-            set => RaiseAndSetIfChanged(ref _retractSpeed, value);
+            set
+            {
+                if (value <= 0) value = SlicerFile.RetractSpeed;
+                RaiseAndSetIfChanged(ref _retractSpeed, value);
+            }
         }
 
         /// <summary>
@@ -119,7 +139,11 @@ namespace UVtools.Core
         public byte LightPWM
         {
             get => _lightPwm;
-            set => RaiseAndSetIfChanged(ref _lightPwm, value);
+            set
+            {
+                if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
+                RaiseAndSetIfChanged(ref _lightPwm, value);
+            }
         }
 
         /// <summary>
@@ -427,7 +451,6 @@ namespace UVtools.Core
             foreach (var modifier in modifiers)
             {
                 if (!modifier.HasChanged) continue;
-                modifier.OldValue = modifier.NewValue;
                 SetValueFromPrintParameterModifier(modifier, modifier.NewValue);
                 changed++;
             }
@@ -688,29 +711,7 @@ namespace UVtools.Core
             using (var mat = LayerMat)
             {
                 Mat target = operation.GetRoiOrDefault(mat);
-
-                var halfWidth = target.Width / 2.0f;
-                var halfHeight = target.Height / 2.0f;
-                using (var translateTransform = new Matrix<double>(2, 3))
-                {
-                    CvInvoke.GetRotationMatrix2D(new PointF(halfWidth, halfHeight), (double) -operation.AngleDegrees, 1.0, translateTransform);
-                    /*var rect = new RotatedRect(PointF.Empty, mat.Size, (float) angle).MinAreaRect();
-                    translateTransform[0, 2] += rect.Width / 2.0 - mat.Cols / 2.0;
-                    translateTransform[0, 2] += rect.Height / 2.0 - mat.Rows / 2.0;*/
-
-                    /*   var abs_cos = Math.Abs(translateTransform[0, 0]);
-                       var abs_sin = Math.Abs(translateTransform[0, 1]);
-
-                       var bound_w = mat.Height * abs_sin + mat.Width * abs_cos;
-                       var bound_h = mat.Height * abs_cos + mat.Width * abs_sin;
-
-                       translateTransform[0, 2] += bound_w / 2 - halfWidth;
-                       translateTransform[1, 2] += bound_h / 2 - halfHeight;*/
-
-
-                    CvInvoke.WarpAffine(target, target, translateTransform, target.Size);
-                }
-
+                target.Rotate((double) operation.AngleDegrees);
                 LayerMat = mat;
             }
         }
@@ -724,7 +725,7 @@ namespace UVtools.Core
                     Mat target = operation.GetRoiOrDefault(mat);
 
 
-                    CvInvoke.Threshold(target, filteredMat, 254, 255, ThresholdType.Binary); // Clean AA
+                    CvInvoke.Threshold(target, filteredMat, 127, 255, ThresholdType.Binary); // Clean AA
 
                     using (VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint())
                     {
@@ -735,7 +736,7 @@ namespace UVtools.Core
                             for (int i = 0; i < contours.Size; i++)
                             {
                                 if ((int)arr.GetValue(0, i, 2) != -1 || (int)arr.GetValue(0, i, 3) == -1) continue;
-                                if (operation.MinimumArea > 1)
+                                if (operation.MinimumArea >= 1)
                                 {
                                     var rectangle = CvInvoke.BoundingRectangle(contours[i]);
                                     if (operation.AreaCheckType == OperationSolidify.AreaCheckTypes.More)

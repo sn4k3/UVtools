@@ -87,7 +87,7 @@ namespace UVtools.Core.Operations
         }
 
         [XmlIgnore]
-        public Kernel Kernel { get; set; } = new Kernel();
+        public Kernel Kernel { get; set; } = new();
 
         public override string ToString()
         {

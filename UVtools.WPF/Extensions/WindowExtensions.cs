@@ -28,9 +28,11 @@ namespace UVtools.WPF.Extensions
                     ContentMessage = message,
                     Icon = icon,
                     Style = style,
-                    //WindowIcon = new WindowIcon(App.GetAsset("/Assets/Icons/UVtools.ico")),
+                    WindowIcon = new WindowIcon(App.GetAsset("/Assets/Icons/UVtools.ico")),
                     WindowStartupLocation = location,
-                    CanResize = false
+                    CanResize = false,
+                    MaxWidth = App.MaxWindowSize.Width - UserSettings.Instance.General.WindowsHorizontalMargin,
+                    ShowInCenter = true
                 });
             
             return await messageBoxStandardWindow.ShowDialog(window);
@@ -74,5 +76,6 @@ namespace UVtools.WPF.Extensions
             window.DataContext = new object();
             window.DataContext = old;
         }
+       
     }
 }

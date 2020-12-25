@@ -29,6 +29,7 @@ class FixedEncoder : System.Text.UTF8Encoding {
 ####################################
 ###         Configuration        ###
 ####################################
+$enableMSI = $false
 # Profilling
 $stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
 $deployStopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
@@ -41,7 +42,8 @@ Set-Location $PSScriptRoot
 $software = "UVtools"
 $project = "UVtools.WPF"
 $buildWith = "Release"
-$releaseFolder = "$PSScriptRoot\$project\bin\$buildWith\netcoreapp3.1"
+$netFolder = "net5.0"
+$releaseFolder = "$PSScriptRoot\$project\bin\$buildWith\$netFolder"
 $publishFolder = "$PSScriptRoot\publish"
 
 #$version = (Get-Command "$releaseFolder\UVtools.dll").FileVersionInfo.ProductVersion
@@ -144,27 +146,29 @@ $stopWatch.Stop()
 
 
 # MSI Installer for Windows
-$deployStopWatch.Restart()
-$runtime = 'win-x64'
-$msiTargetFile = "$publishFolder\${software}_${runtime}_v$version.msi"
-Write-Output "################################
-Building: $runtime MSI Installer"
-
-foreach($installer in $installers)
+if($enableMSI)
 {
-    # Clean and build MSI
-    Remove-Item "$PSScriptRoot\$installer\obj" -Recurse -ErrorAction Ignore
-    Remove-Item "$PSScriptRoot\$installer\bin" -Recurse -ErrorAction Ignore
-    iex "& $msbuild $installer\$installer.wixproj"
+    $deployStopWatch.Restart()
+    $runtime = 'win-x64'
+    $msiTargetFile = "$publishFolder\${software}_${runtime}_v$version.msi"
+    Write-Output "################################
+    Building: $runtime MSI Installer"
+
+    foreach($installer in $installers)
+    {
+        # Clean and build MSI
+        Remove-Item "$PSScriptRoot\$installer\obj" -Recurse -ErrorAction Ignore
+        Remove-Item "$PSScriptRoot\$installer\bin" -Recurse -ErrorAction Ignore
+        iex "& $msbuild $installer\$installer.wixproj"
+    }
+
+    Write-Output "Coping $runtime MSI to: $msiTargetFile"
+    Copy-Item $msiSourceFile $msiTargetFile
+
+    Write-Output "Took: $($deployStopWatch.Elapsed)
+    ################################
+    "
 }
-
-Write-Output "Coping $runtime MSI to: $msiTargetFile"
-Copy-Item $msiSourceFile $msiTargetFile
-
-Write-Output "Took: $($deployStopWatch.Elapsed)
-################################
-"
-
 
 
 Write-Output "

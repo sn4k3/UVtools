@@ -217,6 +217,14 @@ namespace UVtools.Core.Operations
             Anchor = anchor;
         }
 
+        public OperationMove(Rectangle srcRoi, Size resolution, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter)
+        {
+            ROI = srcRoi;
+            ImageWidth = (uint) resolution.Width;
+            ImageHeight = (uint) resolution.Height;
+            Anchor = anchor;
+        }
+
         public void Reset()
         {
             MarginLeft = MarginTop = MarginRight = MarginBottom = 0;

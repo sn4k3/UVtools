@@ -5,7 +5,7 @@
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/sn4k3/UVtools?include_prereleases)](https://github.com/sn4k3/UVtools/releases)
 [![Downloads](https://img.shields.io/github/downloads/sn4k3/UVtools/total)](https://github.com/sn4k3/UVtools/releases)
 
-**MSLA/DLP, file analysis, repair, conversion and manipulation**
+**MSLA/DLP, file analysis, calibration, repair, conversion and manipulation**
 
 This simple tool can give you insight of supports and find some failures. Did you forget what resin or other settings you used on a project? This can also save you, check every setting that were used with or simply change them!
 
@@ -47,9 +47,10 @@ But also, i need victims for test subject. Proceed at your own risk!
 * Check islands and repair/remove them as other issues
 * Export file to a folder
 * Convert format to another format
+* Calibration tests
 * Portable (No installation needed)
 
-## Known Formats
+## Known File Formats
 
 * SL1 (PrusaSlicer)
 * Zip (Chitubox)
@@ -161,14 +162,16 @@ After some tests without failure you can increase your confidence and ignore thi
 
 1. Windows 7 or greater
    1. If on Windows 10 N or NK: [Media Feature Pack](https://www.microsoft.com/download/details.aspx?id=48231) must be installed
-1. .NET Framework 4.8 installed (Comes pre-installed on Windows 10 with last updates)
+1. [.NET 5.0](https://dotnet.microsoft.com/download/dotnet/5.0) installed (Comes pre-installed on Windows 10 with last updates)
 1. 4GB RAM or higher
+1. 1980 x 1080 @ 100% scale as minimum resolution
 
 
 ### Linux
 
 1. 4GB RAM or higher
 2. 64 bit System
+1. 1980 x 1080 @ 100% scale as minimum resolution
 
 **Ubuntu/Mint/Debian/Similars**
 
@@ -237,7 +240,7 @@ There are multiple ways to open your file:
 
 ## Library -> Developers
 
-Are you a developer? This project include a .NET Standard library (UVtools.Core) that can be referenced in your application to make use of my work. Easy to use calls that allow you work with the formats. For more information navigate main code.
+Are you a developer? This project include a .NET 5.0 library (UVtools.Core) that can be referenced in your application to make use of my work. Easy to use calls that allow you work with the formats. For more information navigate main code.
 
 
 ## TODO

@@ -1,0 +1,311 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
+             x:Class="UVtools.WPF.Controls.Calibrators.CalibrateGrayscaleControl">
+  <Grid ColumnDefinitions="Auto,10,350">
+    <StackPanel Spacing="10">
+      <Grid
+            RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+            ColumnDefinitions="Auto,10,100,5,Auto,20,Auto,10,100,5,Auto"
+      >
+
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Layer height:"/>
+        <NumericUpDown Grid.Row="0" Grid.Column="2"
+                       ClipValueToMinMax="True"
+                       Increment="0.01"
+                       Minimum="0.01"
+                       Maximum="0.30"
+                       FormatString="\{0:0.00\}"
+                       Value="{Binding Operation.LayerHeight}"
+                     />
+        <TextBlock Grid.Row="0" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="mm"/>
+
+        <StackPanel Grid.Row="0" Grid.Column="6"
+                    VerticalAlignment="Center"
+                    Spacing="0">
+            <TextBlock
+                FontWeight="Bold"
+                Text="Total layers:"/>
+            <TextBlock
+                FontWeight="Bold"
+                Text="Total height:"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="0" Grid.Column="8"
+                    VerticalAlignment="Center"
+                    Spacing="0">
+            <TextBlock
+                FontWeight="Bold"
+                Text="{Binding Operation.LayerCount}"/>
+
+          <TextBlock
+              FontWeight="Bold"
+              Text="{Binding Operation.TotalHeight, StringFormat=\{0:0.00\}mm}"/>
+
+
+        </StackPanel>
+
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Bottom layers:"/>
+        <NumericUpDown Grid.Row="2" Grid.Column="2"
+                       ClipValueToMinMax="True"
+                       Increment="1"
+                       Minimum="1"
+                       Maximum="1000"
+                       Value="{Binding Operation.BottomLayers}"
+      />
+        <TextBlock Grid.Row="2" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="{Binding Operation.BottomHeight, StringFormat=\{0:0.00\}mm}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Number of layers at normal exposure between bottom and normal layers"
+                   Text="Interface layers:"/>
+        <NumericUpDown Grid.Row="2" Grid.Column="8"
+                       ClipValueToMinMax="True"
+                       Increment="1"
+                       Minimum="0"
+                       Maximum="1000"
+                       Value="{Binding Operation.InterfaceLayers}"/>
+        <TextBlock Grid.Row="2" Grid.Column="10"
+                   VerticalAlignment="Center"
+                   Text="{Binding Operation.InterfaceHeight, StringFormat=\{0:0.00\}mm}"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Normal layers:"/>
+        <NumericUpDown Grid.Row="4" Grid.Column="2"
+                       ClipValueToMinMax="True"
+                       Increment="1"
+                       Minimum="1"
+                       Maximum="1000"
+                       Value="{Binding Operation.NormalLayers}"/>
+        <TextBlock Grid.Row="4" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="{Binding Operation.NormalHeight, StringFormat=\{0:0.00\}mm}"/>
+
+        <TextBlock Grid.Row="6" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Bottom exposure:"/>
+        <NumericUpDown Grid.Row="6" Grid.Column="2"
+                       ClipValueToMinMax="True"
+                       Increment="0.5"
+                       Minimum="0.1"
+                       Maximum="200"
+                       FormatString="\{0:0.00\}"
+                       Value="{Binding Operation.BottomExposure}"/>
+        <TextBlock Grid.Row="6" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="s"/>
+
+        <TextBlock Grid.Row="6" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   Text="Normal exposure:"/>
+        <NumericUpDown Grid.Row="6" Grid.Column="8"
+                       ClipValueToMinMax="True"
+                       Increment="0.5"
+                       Minimum="0.1"
+                       Maximum="200"
+                       FormatString="\{0:0.00\}"
+                       Value="{Binding Operation.NormalExposure}"/>
+        <TextBlock Grid.Row="6" Grid.Column="10"
+                   VerticalAlignment="Center"
+                   Text="s"/>
+
+
+        <TextBlock Grid.Row="8" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Outer margin:"/>
+        <NumericUpDown Grid.Row="8" Grid.Column="2"
+                       ClipValueToMinMax="True"
+                       Increment="1"
+                       Minimum="0"
+                       Maximum="10000"
+                       Value="{Binding Operation.OuterMargin}"/>
+        <TextBlock Grid.Row="8" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="px"/>
+
+        <TextBlock Grid.Row="8" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   Text="Inner margin:"/>
+        <NumericUpDown Grid.Row="8" Grid.Column="8"
+                       ClipValueToMinMax="True"
+                       Increment="1"
+                       Minimum="0"
+                       Maximum="10000"
+                       Value="{Binding Operation.InnerMargin}"
+        />
+        <TextBlock Grid.Row="8" Grid.Column="10"
+                   VerticalAlignment="Center"
+                   Text="px"/>
+      </Grid>
+
+
+      <Border BorderBrush="Black" BorderThickness="1" Padding="5">
+          <StackPanel>
+              <TextBlock FontWeight="Bold">
+                  <TextBlock.Text>
+                      <MultiBinding StringFormat="Pie settings    [{0} divisions with {1:0.00}º steps]">
+                          <Binding Path="Operation.Divisions"/>
+                          <Binding Path="Operation.AngleStep"/>
+                      </MultiBinding>
+                  </TextBlock.Text>
+              </TextBlock>
+
+          <Grid 
+              Margin="0,10,0,0"
+              RowDefinitions="Auto,0,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+              ColumnDefinitions="Auto,10,80,5,Auto,5,80,5,Auto,20,Auto,10,80"
+                    >
+
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                         VerticalAlignment="Center"
+                         Text="Brightness range:"/>
+
+            <NumericUpDown Grid.Row="0" Grid.Column="2"
+                           ClipValueToMinMax="True"
+                           Increment="1"
+                           Minimum="1"
+                           Maximum="254"
+                           Value="{Binding Operation.StartBrightness}"/>
+
+
+            <TextBlock Grid.Row="0" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       Text="-"/>
+
+            <NumericUpDown Grid.Row="0" Grid.Column="6"
+                           ClipValueToMinMax="True"
+                           Increment="1"
+                           Minimum="2"
+                           Maximum="255"
+                           Value="{Binding Operation.EndBrightness}"/>
+
+            <TextBlock Grid.Row="0" Grid.Column="10"
+                       VerticalAlignment="Center"
+                       Text="Step increment(s):"/>
+
+            <NumericUpDown Grid.Row="0" Grid.Column="12"
+                           ClipValueToMinMax="True"
+                           Increment="1"
+                           Minimum="2"
+                           Maximum="254"
+                           Value="{Binding Operation.BrightnessSteps}"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       Text="{Binding Operation.StartBrightnessPercent, StringFormat=(\{0\}%)}"/>
+            <TextBlock Grid.Row="2" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       Text="{Binding Operation.EndBrightnessPercent, StringFormat=(\{0\}%)}"/>
+
+
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding Operation.EnableCenterHoleRelief}"
+                       Text="Center hole diameter:"/>
+
+            <NumericUpDown Grid.Row="4" Grid.Column="2"
+                           ClipValueToMinMax="True"
+                           Increment="1"
+                           Minimum="2"
+                           Maximum="10000"
+                           IsEnabled="{Binding Operation.EnableCenterHoleRelief}"
+                           Value="{Binding Operation.CenterHoleDiameter}"/>
+
+            <CheckBox Grid.Row="4" Grid.Column="6" Grid.ColumnSpan="4"
+                      VerticalAlignment="Center"
+                      Content="Enable center hole relief"
+                      IsChecked="{Binding Operation.EnableCenterHoleRelief}"/>
+
+
+            <TextBlock Grid.Row="4" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="px"/>
+            
+            <CheckBox Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="4"
+                      VerticalAlignment="Center"
+                      Content="Enable division lines"
+                      IsChecked="{Binding Operation.EnableLineDivisions}"/>
+            
+            <TextBlock Grid.Row="8" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding Operation.EnableLineDivisions}"
+                       Text="Division thickness:"/>
+
+            <NumericUpDown Grid.Row="8" Grid.Column="2"
+                           ClipValueToMinMax="True"
+                           Increment="1"
+                           Minimum="0"
+                           Maximum="255"
+                           IsEnabled="{Binding Operation.EnableLineDivisions}"
+                           Value="{Binding Operation.LineDivisionThickness}"/>
+
+            <TextBlock Grid.Row="8" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding Operation.EnableLineDivisions}"
+                       Text="px"/>
+
+            <TextBlock Grid.Row="8" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       IsEnabled="{Binding Operation.EnableLineDivisions}"
+                       Text="Div. brightness:"/>
+
+            <NumericUpDown Grid.Row="8" Grid.Column="9"
+                           Grid.ColumnSpan="2"
+                           ClipValueToMinMax="True"
+                           Increment="1"
+                           Minimum="0"
+                           Maximum="255"
+                           IsEnabled="{Binding Operation.EnableLineDivisions}"
+                           Value="{Binding Operation.LineDivisionBrightness}"/>
+
+            <TextBlock Grid.Row="8" Grid.Column="12"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding Operation.EnableLineDivisions}"
+                       Text="{Binding Operation.LineDivisionBrightnessPercent, StringFormat=(\{0\}%)}"/>
+
+            <TextBlock Grid.Row="10" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding Operation.EnableLineDivisions}"
+                       Text="X text offset:"/>
+
+            <NumericUpDown Grid.Row="10" Grid.Column="2"
+                           ClipValueToMinMax="True"
+                           Increment="1"
+                           Minimum="-10000"
+                           Maximum="10000"
+                           Value="{Binding Operation.TextXOffset}"/>
+
+            <TextBlock Grid.Row="10" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="px"/>
+
+            <CheckBox Grid.Row="12" Grid.Column="2" Grid.ColumnSpan="11"
+                      VerticalAlignment="Center"
+                      Content="Enable Anti-Aliasing"
+                      IsChecked="{Binding Operation.EnableAntiAliasing}"/>
+          </Grid>
+          </StackPanel>
+      </Border>
+
+    </StackPanel>
+
+    <Image Grid.Column="2"
+           Stretch="Uniform"
+           Source="{Binding PreviewImage}"/>
+  </Grid>
+</UserControl>

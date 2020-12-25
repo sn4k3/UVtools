@@ -1,0 +1,335 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:UVtools.WPF.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
+             x:Class="UVtools.WPF.Controls.Calibrators.CalibrateElephantFootControl">
+
+    <Grid ColumnDefinitions="Auto,10,350">
+      <StackPanel Spacing="10">
+        <Grid
+              RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+              ColumnDefinitions="Auto,10,100,5,Auto,20,Auto,10,100,5,Auto"
+      >
+
+          <TextBlock Grid.Row="0" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Layer height:"/>
+          <NumericUpDown Grid.Row="0" Grid.Column="2"
+                         ClipValueToMinMax="True"
+                         Increment="0.01"
+                         Minimum="0.01"
+                         Maximum="0.30"
+                         FormatString="\{0:0.00\}"
+                         Value="{Binding Operation.LayerHeight}"
+                     />
+          <TextBlock Grid.Row="0" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     Text="mm"/>
+
+          <CheckBox Grid.Row="0" Grid.Column="8"
+                    Content="Sync layers"
+                    ToolTip.Tip="Set bottom and normal layers equally"
+                    IsChecked="{Binding Operation.SyncLayers}" />
+
+          <TextBlock Grid.Row="2" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Bottom layers:"/>
+          <NumericUpDown Grid.Row="2" Grid.Column="2"
+                         ClipValueToMinMax="True"
+                         Increment="1"
+                         Minimum="1"
+                         Maximum="1000"
+                         FormatString="\{0:0.00\}"
+                         Value="{Binding Operation.BottomLayers}"
+      />
+          <TextBlock Grid.Row="2" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     Text="{Binding Operation.BottomHeight, StringFormat=\{0:0.00\}mm}"/>
+
+
+
+          <TextBlock Grid.Row="2" Grid.Column="6"
+                     VerticalAlignment="Center"
+                     IsEnabled="{Binding !Operation.SyncLayers}"
+                     Text="Normal layers:"/>
+          <NumericUpDown Grid.Row="2" Grid.Column="8"
+                         ClipValueToMinMax="True"
+                         IsEnabled="{Binding !Operation.SyncLayers}"
+                         Increment="1"
+                         Minimum="1"
+                         Maximum="1000"
+                         FormatString="\{0:0.00\}"
+                         Value="{Binding Operation.NormalLayers}"
+      />
+          <TextBlock Grid.Row="2" Grid.Column="10"
+                     IsEnabled="{Binding !Operation.SyncLayers}"
+                     VerticalAlignment="Center"
+                     Text="{Binding Operation.NormalHeight, StringFormat=\{0:0.00\}mm}"/>
+
+          <TextBlock Grid.Row="4" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Bottom exposure:"/>
+          <NumericUpDown Grid.Row="4" Grid.Column="2"
+                         ClipValueToMinMax="True"
+                         Increment="0.5"
+                         Minimum="0.1"
+                         Maximum="200"
+                         Value="{Binding Operation.BottomExposure}"/>
+          <TextBlock Grid.Row="4" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     Text="s"/>
+
+          <TextBlock Grid.Row="4" Grid.Column="6"
+                     VerticalAlignment="Center"
+                     Text="Normal exposure:"/>
+          <NumericUpDown Grid.Row="4" Grid.Column="8"
+                         ClipValueToMinMax="True"
+                         Increment="0.5"
+                         Minimum="0.1"
+                         Maximum="200"
+                         Value="{Binding Operation.NormalExposure}"
+      />
+          <TextBlock Grid.Row="4" Grid.Column="10"
+                     VerticalAlignment="Center"
+                     Text="s"/>
+
+
+          <TextBlock Grid.Row="6" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Margin:"/>
+          <NumericUpDown Grid.Row="6" Grid.Column="2"
+                         ClipValueToMinMax="True"
+                         Increment="1"
+                         Minimum="0"
+                         Maximum="255"
+                         Value="{Binding Operation.Margin}"
+        />
+          <TextBlock Grid.Row="6" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     Text="px"/>
+
+          <StackPanel Grid.Row="6" Grid.Column="6" 
+                      VerticalAlignment="Center"
+                      Spacing="0">
+              <TextBlock
+                  FontWeight="Bold"
+                  Text="Total layers:"/>
+
+              <TextBlock
+                  FontWeight="Bold"
+                  Text="Total objects:"/>
+
+          </StackPanel>
+
+          <StackPanel Grid.Row="6" Grid.Column="8"
+                      VerticalAlignment="Center"
+                      Spacing="0">
+            <TextBlock FontWeight="Bold">
+                <TextBlock.Text>
+                    <MultiBinding StringFormat="{}{0} / {1:0.00}mm">
+                        <Binding Path="Operation.LayerCount"/>
+                        <Binding Path="Operation.TotalHeight"/>
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
+
+            <TextBlock
+                FontWeight="Bold"
+                Text="{Binding Operation.ObjectCount}"/>
+          </StackPanel>
+
+          <CheckBox Grid.Row="8" Grid.Column="0"
+                    Grid.ColumnSpan="6"
+                    IsChecked="{Binding Operation.OutputOriginalPart}"
+                    Content="Output an unmodified part (The original)" />
+
+          <CheckBox Grid.Row="8" Grid.Column="6"
+                    Grid.ColumnSpan="5"
+                    IsChecked="{Binding Operation.EnableAntiAliasing}"
+                    Content="Enable Anti-Aliasing" />
+        </Grid>
+
+
+        <Border BorderBrush="Black" BorderThickness="1" Padding="5">
+          <Expander IsExpanded="True">
+            <Expander.Header>
+              <TextBlock Text="{Binding Operation.ErodeObjects, StringFormat=Morph - Erode    [\{0\} objects]}"
+                         FontWeight="Bold"
+                         Cursor="Hand"/>
+            </Expander.Header>
+
+            <StackPanel>
+              <Grid
+                  Margin="0,10,0,0"
+                  RowDefinitions="Auto,10,Auto"
+                  ColumnDefinitions="Auto,10,80,5,Auto,5,80,5,Auto,40,Auto,10,80"
+                    >
+
+                <CheckBox Grid.Row="0" Grid.Column="2"
+                           VerticalAlignment="Center"
+                           IsChecked="{Binding Operation.IsErodeEnabled}"
+                           Content="Enable"/>
+
+
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                             VerticalAlignment="Center"
+                             Text="Iterations range:"/>
+
+                <NumericUpDown Grid.Row="2" Grid.Column="2"
+                               ClipValueToMinMax="True"
+                               IsEnabled="{Binding Operation.IsErodeEnabled}"
+                               Increment="1"
+                               Minimum="1"
+                               Maximum="30"
+                               Value="{Binding Operation.ErodeStartIteration}"/>
+
+
+                <TextBlock Grid.Row="2" Grid.Column="4"
+                           VerticalAlignment="Center"
+                           Text="-"/>
+
+                <NumericUpDown Grid.Row="2" Grid.Column="6"
+                               ClipValueToMinMax="True"
+                               IsEnabled="{Binding Operation.IsErodeEnabled}"
+                               Increment="1"
+                               Minimum="1"
+                               Maximum="30"
+                               Value="{Binding Operation.ErodeEndIteration}"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="8"
+                           VerticalAlignment="Center"
+                           Text="px"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="10"
+                           VerticalAlignment="Center"
+                           Text="Step increment(s):"/>
+
+                <NumericUpDown Grid.Row="2" Grid.Column="12"
+                               ClipValueToMinMax="True"
+                               IsEnabled="{Binding Operation.IsErodeEnabled}"
+                               Increment="1"
+                               Minimum="1"
+                               Maximum="20"
+                               Value="{Binding Operation.ErodeIterationSteps}"/>
+
+              </Grid>
+
+              <Border
+                  Margin="0,10,0,0">
+                <Expander>
+                  <Expander.Header>
+                    <TextBlock Text="Kernel - Advanced options (Click to expand)"
+                               FontWeight="Bold"
+                               Cursor="Hand"
+                              />
+                  </Expander.Header>
+                  <controls:KernelControl
+                      Name="KernelCtrl"
+                      Margin="0,10,0,0"
+                          />
+                </Expander>
+              </Border>
+
+            </StackPanel>
+
+          </Expander>
+        </Border>
+
+        <Border BorderBrush="Black" BorderThickness="1" Padding="5">
+          <Expander IsExpanded="True">
+            <Expander.Header>
+              <TextBlock Text="{Binding Operation.DimmingObjects, StringFormat=Wall dimming    [\{0\} objects]}"
+                         FontWeight="Bold"
+                         Cursor="Hand"/>
+            </Expander.Header>
+
+            <Grid
+                Margin="0,10,0,0"
+                RowDefinitions="Auto,10,Auto,10,Auto,5,Auto"
+                ColumnDefinitions="Auto,10,80,5,Auto,5,80,5,Auto,20,Auto,10,80"
+                    >
+
+              <CheckBox Grid.Row="0" Grid.Column="2"
+                        Grid.ColumnSpan="11"
+                         VerticalAlignment="Center"
+                         IsChecked="{Binding Operation.IsDimmingEnabled}"
+                         Content="Enable - Requires a compatible anti-aliased file format and printer"/>
+
+              <TextBlock Grid.Row="2" Grid.Column="0"
+                         VerticalAlignment="Center"
+                         Text="Wall thickness:"/>
+
+              <NumericUpDown Grid.Row="2" Grid.Column="2"
+                             ClipValueToMinMax="True"
+                             IsEnabled="{Binding Operation.IsDimmingEnabled}"
+                             Increment="1"
+                             Minimum="1"
+                             Maximum="255"
+                             Value="{Binding Operation.DimmingWallThickness}"/>
+
+              <TextBlock Grid.Row="2" Grid.Column="4"
+                         VerticalAlignment="Center"
+                         Text="px"/>
+
+
+              <TextBlock Grid.Row="4" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Brightness range:"/>
+
+              <NumericUpDown Grid.Row="4" Grid.Column="2"
+                             ClipValueToMinMax="True"
+                             IsEnabled="{Binding Operation.IsDimmingEnabled}"
+                             Increment="1"
+                             Minimum="1"
+                             Maximum="254"
+                             Value="{Binding Operation.DimmingStartBrightness}"/>
+
+
+              <TextBlock Grid.Row="4" Grid.Column="4"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Center"
+                         Text="-"/>
+
+              <NumericUpDown Grid.Row="4" Grid.Column="6"
+                             ClipValueToMinMax="True"
+                             IsEnabled="{Binding Operation.IsDimmingEnabled}"
+                             Increment="1"
+                             Minimum="2"
+                             Maximum="254"
+                             Value="{Binding Operation.DimmingEndBrightness}"/>
+
+              <TextBlock Grid.Row="4" Grid.Column="10"
+                         VerticalAlignment="Center"
+                         Text="Step increment(s):"/>
+
+              <NumericUpDown Grid.Row="4" Grid.Column="12"
+                             ClipValueToMinMax="True"
+                             IsEnabled="{Binding Operation.IsDimmingEnabled}"
+                             Increment="1"
+                             Minimum="2"
+                             Maximum="254"
+                             Value="{Binding Operation.DimmingBrightnessSteps}"/>
+
+              <TextBlock Grid.Row="6" Grid.Column="2"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Center"
+                         Text="{Binding Operation.DimmingStartBrightnessPercent, StringFormat=(\{0\}%)}"/>
+              <TextBlock Grid.Row="6" Grid.Column="6"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Center"
+                         Text="{Binding Operation.DimmingEndBrightnessPercent, StringFormat=(\{0\}%)}"/>
+            </Grid>
+
+          </Expander>
+        </Border>
+
+      </StackPanel>
+
+        <Image Grid.Column="2" 
+               Stretch="Uniform"
+               Source="{Binding PreviewImage}"/>
+    </Grid>
+  
+</UserControl>

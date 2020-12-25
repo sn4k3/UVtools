@@ -18,6 +18,7 @@ namespace UVtools.Core.Extensions
     public static class EmguExtensions
     {
         public static readonly MCvScalar WhiteByte = new MCvScalar(255);
+        public static readonly MCvScalar White3Byte = new MCvScalar(255, 255, 255);
         public static readonly MCvScalar BlackByte = new MCvScalar(0);
         public static readonly MCvScalar Black3Byte = new MCvScalar(0, 0, 0);
         public static readonly MCvScalar Transparent4Byte = new MCvScalar(0, 0, 0, 0);
@@ -73,6 +74,17 @@ namespace UVtools.Core.Extensions
             })
             {
                 CvInvoke.WarpAffine(src, src, translateTransform, dstSize.IsEmpty ? src.Size : dstSize, interpolation);
+            }
+        }
+
+        public static void Rotate(this Mat src, double angle)
+        {
+            var halfWidth = src.Width / 2.0f;
+            var halfHeight = src.Height / 2.0f;
+            using (var translateTransform = new Matrix<double>(2, 3))
+            {
+                CvInvoke.GetRotationMatrix2D(new PointF(halfWidth, halfHeight), -angle, 1.0, translateTransform);
+                CvInvoke.WarpAffine(src, src, translateTransform, src.Size);
             }
         }
 
@@ -188,7 +200,7 @@ namespace UVtools.Core.Extensions
         /// <returns>Blanked <see cref="Mat"/></returns>
         public static Mat CloneBlank(this Mat mat)
         {
-            return InitMat(mat.Size, mat.Depth, mat.NumberOfChannels);
+            return InitMat(mat.Size, mat.NumberOfChannels, mat.Depth);
         }
 
         public static byte GetByte(this Mat mat, int pos)
@@ -217,7 +229,7 @@ namespace UVtools.Core.Extensions
         public static void SetBytes(this Mat mat, byte[] value) =>
             Marshal.Copy(value, 0, mat.DataPointer, value.Length);
 
-        public static Mat InitMat(Size size, DepthType depthType = DepthType.Cv8U, int channels = 1)
+        public static Mat InitMat(Size size, int channels = 1, DepthType depthType = DepthType.Cv8U)
         {
             var mat = new Mat(size, depthType, channels);
             switch (channels)

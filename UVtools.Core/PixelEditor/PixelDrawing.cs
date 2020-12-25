@@ -16,6 +16,7 @@ namespace UVtools.Core.PixelEditor
         private BrushShapeType _brushShape = BrushShapeType.Rectangle;
         private ushort _brushSize = 1;
         private short _thickness = -1;
+        private byte _removePixelBrightness;
         public const byte MinRectangleBrush = 1;
         public const byte MinCircleBrush = 7;
         public enum BrushShapeType : byte
@@ -53,9 +54,21 @@ namespace UVtools.Core.PixelEditor
             set => RaiseAndSetIfChanged(ref _thickness, value);
         }
 
+        public byte RemovePixelBrightness
+        {
+            get => _removePixelBrightness;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _removePixelBrightness, value)) return;
+                RaisePropertyChanged(nameof(RemovePixelBrightnessPercent));
+            }
+        }
+
+        public decimal RemovePixelBrightnessPercent => Math.Round(_removePixelBrightness * 100M / 255M, 2);
+
         public bool IsAdd { get;  }
 
-        public byte Color { get; }
+        public byte Brightness => IsAdd ? _pixelBrightness : _removePixelBrightness;
 
         public Rectangle Rectangle { get; }
 
@@ -64,15 +77,13 @@ namespace UVtools.Core.PixelEditor
 
         }
 
-        public PixelDrawing(uint layerIndex, Point location, LineType lineType, BrushShapeType brushShape, ushort brushSize, short thickness,  bool isAdd) : base(layerIndex, location, lineType)
+        public PixelDrawing(uint layerIndex, Point location, LineType lineType, BrushShapeType brushShape, ushort brushSize, short thickness, byte removePixelBrightness, byte pixelBrightness, bool isAdd) : base(layerIndex, location, lineType, pixelBrightness)
         {
-            BrushShape = brushShape;
-            BrushSize = brushSize;
-            Thickness = thickness;
+            _brushShape = brushShape;
+            _brushSize = brushSize;
+            _thickness = thickness;
+            _removePixelBrightness = removePixelBrightness;
             IsAdd = isAdd;
-            
-
-            Color = (byte) (isAdd ? 255 : 0);
 
             int shiftPos = brushSize / 2;
             Rectangle = new Rectangle(Math.Max(0, location.X - shiftPos), Math.Max(0, location.Y - shiftPos), brushSize-1, brushSize-1);

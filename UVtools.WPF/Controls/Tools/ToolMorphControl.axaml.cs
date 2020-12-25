@@ -43,5 +43,15 @@ namespace UVtools.WPF.Controls.Tools
             Operation.Kernel.Anchor = _kernelCtrl.Anchor;
             return !(Operation.Kernel.Matrix is null);
         }
+
+        public override void Callback(ToolWindow.Callbacks callback)
+        {
+            switch (callback)
+            {
+                case ToolWindow.Callbacks.ProfileLoaded:
+                    MorphSelectedIndex = Operation.MorphOperationIndex;
+                    break;
+            }
+        }
     }
 }

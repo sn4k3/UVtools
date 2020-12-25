@@ -10,6 +10,7 @@
 using System;
 using System.ComponentModel;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Threading;
 using MessageBox.Avalonia.Enums;
 using UVtools.WPF.Extensions;
@@ -45,6 +46,32 @@ namespace UVtools.WPF
 
                 ShowLayer();
                 return;
+            }
+        }
+
+        public void ClipboardUndo()
+        {
+            if ((_globalModifiers & KeyModifiers.Shift) != 0)
+            {
+                ClipboardUndo(true);
+                return;
+            }
+            Clipboard.Undo();
+        } 
+
+        public async void ClipboardUndo(bool rerun)
+        {
+            var clip = Clipboard.CurrentClip;
+            Clipboard.Undo();
+            if (!rerun)
+            {
+                return;
+            }
+            if (clip?.Operation is null) return;
+            var operation = await ShowRunOperation(clip.Operation.GetType(), clip.Operation);
+            if (operation is null)
+            {
+                Clipboard.Redo();
             }
         }
 

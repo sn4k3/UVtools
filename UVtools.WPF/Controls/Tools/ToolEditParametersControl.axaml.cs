@@ -62,14 +62,14 @@ namespace UVtools.WPF.Controls.Tools
                     VerticalAlignment = VerticalAlignment.Center,
                     Minimum = (double) modifier.Minimum,
                     Maximum = (double) modifier.Maximum,
-                    Increment = modifier.DecimalPlates == 0 ? 1 : 0.01,
+                    Increment = modifier.DecimalPlates == 0 ? 1 : 0.5,
                     Value = (double)modifier.NewValue,
                     Tag = this,
                     Width = 100,
                 };
                 if (modifier.DecimalPlates > 0)
                 {
-                    NewValue.FormatString = "{0:#,0.00}";
+                    NewValue.FormatString = "{0:0.00}";
                 }
 
                 Unit = new TextBlock

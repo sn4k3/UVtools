@@ -35,6 +35,61 @@
               </StackPanel>
             </Border>
 
+              <Border
+                  Margin="5"
+                  BorderBrush="LightBlue"
+                  BorderThickness="4"
+              >
+
+                  <StackPanel Orientation="Vertical">
+                      <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Windows / dialogs"/>
+                      <StackPanel Margin="15" Orientation="Vertical" Spacing="15">
+                          <CheckBox IsChecked="{Binding Settings.General.WindowsTakeIntoAccountScreenScaling}"
+                                    Content="Take into account the screen scale factor to limit the dialogs windows maximum size"/>
+                          <Grid RowDefinitions="Auto,10,Auto"
+                                ColumnDefinitions="Auto,10,100,5,Auto">
+
+                              <TextBlock Grid.Row="0" Grid.Column="0" 
+                                         VerticalAlignment="Center"
+                                         ToolTip.Tip="Limits the windows and dialogs maximum width to the screen resolution less this margin"
+                                         Text="Horizontal limiting margin:"/>
+
+                            <NumericUpDown Grid.Row="0" Grid.Column="2"
+                                       VerticalAlignment="Center"
+                                       ToolTip.Tip="Limits the windows and dialogs maximum width to the screen resolution less this margin"
+                                       ClipValueToMinMax="True"
+                                       Minimum="0"
+                                       Maximum="1000"
+                                       Increment="1"
+                                       Value="{Binding Settings.General.WindowsHorizontalMargin}"/>
+                              <TextBlock Grid.Row="0" Grid.Column="4"
+                                         VerticalAlignment="Center"
+                                         Text="px"/>
+
+                              <TextBlock Grid.Row="2" Grid.Column="0"
+                                         VerticalAlignment="Center"
+                                         ToolTip.Tip="Limits windows and dialogs maximum height to the screen resolution less this margin"
+                                         Text="Vertical limiting margin:"/>
+
+                              <NumericUpDown Grid.Row="2" Grid.Column="2"
+                                             VerticalAlignment="Center"
+                                             ToolTip.Tip="Limits windows and dialogs maximum height to the screen resolution less this margin"
+                                             ClipValueToMinMax="True"
+                                             Minimum="0"
+                                             Maximum="1000"
+                                             Increment="1"
+                                             Value="{Binding Settings.General.WindowsVerticalMargin}"/>
+
+                              <TextBlock Grid.Row="2" Grid.Column="4"
+                                         VerticalAlignment="Center"
+                                         Text="px"/>
+
+                          </Grid>
+                      </StackPanel>
+
+                  </StackPanel>
+              </Border>
+
             <Border
               Margin="5"
             BorderBrush="LightBlue"

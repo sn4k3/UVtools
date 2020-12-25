@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 using System.Drawing;
+using Emgu.CV.CvEnum;
 
 namespace UVtools.Core.PixelEditor
 {
@@ -17,9 +18,10 @@ namespace UVtools.Core.PixelEditor
 
         public PixelEraser()
         {
+            _pixelBrightness = 0;
         }
 
-        public PixelEraser(uint layerIndex, Point location) : base(layerIndex, location)
+        public PixelEraser(uint layerIndex, Point location, byte pixelBrightness) : base(layerIndex, location, LineType.AntiAlias, pixelBrightness)
         {
             Size = new Size(Diameter, Diameter);
         }

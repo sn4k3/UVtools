@@ -13,8 +13,8 @@
           MaxWidth="150"
           Minimum="1"
           Maximum="10000"
-          Increment="0.01"
-          FormatString="{}{0:#,0.00} %"
+          Increment="0.1"
+          FormatString="{}{0:0.00} %"
           Value="{Binding Operation.X}"
           />
     
@@ -29,8 +29,8 @@
           MaxWidth="150"
           Minimum="1"
           Maximum="10000"
-          Increment="0.01"
-          FormatString="{}{0:#,0.00} %"
+          Increment="0.1"
+          FormatString="{}{0:0.00} %"
           Value="{Binding Operation.Y}"
           IsEnabled="{Binding !#ConstrainXY.IsChecked}"
           />

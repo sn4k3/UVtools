@@ -31,5 +31,7 @@ namespace UVtools.Core.Extensions
         {
             return (T)Activator.CreateInstance(type);
         }
+
+        public static byte ToByte(this bool value) => value ? 1 : 0;
     }
 }

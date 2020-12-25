@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,7 +18,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Platform;
 using Avalonia.Threading;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -27,7 +25,6 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core;
 using UVtools.Core.Extensions;
-using UVtools.Core.Objects;
 using UVtools.Core.PixelEditor;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
@@ -776,7 +773,7 @@ namespace UVtools.WPF
 
                 LayerImageBox.Image = LayerCache.Bitmap = LayerCache.ImageBgr.ToBitmap();
 
-                AddCurrentLayerData();
+                RefreshCurrentLayerData();
 
                 watch.Stop();
                 ShowLayerRenderMs = watch.ElapsedMilliseconds;
@@ -1313,7 +1310,7 @@ namespace UVtools.WPF
                     
                     if (DrawingPixelDrawing.BrushSize > 1)
                     {
-                        cursor = EmguExtensions.InitMat(new System.Drawing.Size(DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.BrushSize), DepthType.Cv8U, 4);
+                        cursor = EmguExtensions.InitMat(new System.Drawing.Size(DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.BrushSize), 4);
                         switch (DrawingPixelDrawing.BrushShape)
                         {
                             case PixelDrawing.BrushShapeType.Rectangle:
@@ -1351,7 +1348,7 @@ namespace UVtools.WPF
 
                     int baseLine = 0;
                     var size = CvInvoke.GetTextSize(text, DrawingPixelText.Font, DrawingPixelText.FontScale, DrawingPixelText.Thickness, ref baseLine);
-                    cursor = EmguExtensions.InitMat(size, DepthType.Cv8U, 4);
+                    cursor = EmguExtensions.InitMat(size,  4);
                     CvInvoke.PutText(cursor, text, new Point(0, 0), DrawingPixelText.Font, DrawingPixelText.FontScale, _pixelEditorCursorColor, DrawingPixelText.Thickness, DrawingPixelText.LineType, DrawingPixelText.Mirror);
                     break;
                 case PixelOperation.PixelOperationType.Supports:
@@ -1361,7 +1358,7 @@ namespace UVtools.WPF
 
                     if (diameter >= _pixelEditorCursorMinDiamater)
                     {
-                        cursor = EmguExtensions.InitMat(new System.Drawing.Size(diameter, diameter), DepthType.Cv8U, 4);
+                        cursor = EmguExtensions.InitMat(new System.Drawing.Size(diameter, diameter), 4);
                         var center = new Point(diameter / 2, diameter / 2);
                         CvInvoke.Circle(cursor,
                             center,

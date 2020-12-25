@@ -19,6 +19,7 @@ namespace UVtools.Core.PixelEditor
         private ushort _thickness = 1;
         private string _text;
         private bool _mirror;
+        private byte _removePixelBrightness;
         public override PixelOperationType OperationType => PixelOperationType.Text;
 
         public static FontFace[] FontFaces => (FontFace[]) Enum.GetValues(typeof(FontFace));
@@ -53,24 +54,36 @@ namespace UVtools.Core.PixelEditor
             set => RaiseAndSetIfChanged(ref _mirror, value);
         }
 
+        public byte RemovePixelBrightness
+        {
+            get => _removePixelBrightness;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _removePixelBrightness, value)) return;
+                RaisePropertyChanged(nameof(RemovePixelBrightnessPercent));
+            }
+        }
+
+        public decimal RemovePixelBrightnessPercent => Math.Round(_removePixelBrightness * 100M / 255M, 2);
+
         public bool IsAdd { get; }
 
-        public byte Color { get; }
+        public byte Brightness => IsAdd ? _pixelBrightness : _removePixelBrightness;
 
         public Rectangle Rectangle { get; }
 
         public PixelText(){}
 
-        public PixelText(uint layerIndex, Point location, LineType lineType, FontFace font, double fontScale, ushort thickness, string text, bool mirror, bool isAdd) : base(layerIndex, location, lineType)
+        public PixelText(uint layerIndex, Point location, LineType lineType, FontFace font, double fontScale, ushort thickness, string text, bool mirror, byte removePixelBrightness, byte pixelBrightness, bool isAdd) : base(layerIndex, location, lineType, pixelBrightness)
         {
-            Font = font;
-            FontScale = fontScale;
-            Thickness = thickness;
-            Text = text;
-            Mirror = mirror;
+            _font = font;
+            _fontScale = fontScale;
+            _thickness = thickness;
+            _text = text;
+            _mirror = mirror;
             IsAdd = isAdd;
+            _removePixelBrightness = removePixelBrightness;
 
-            Color = (byte) (isAdd ? 255 : 0);
             int baseLine = 0;
             Size = CvInvoke.GetTextSize(text, font, fontScale, thickness, ref baseLine);
             Rectangle = new Rectangle(location, Size);

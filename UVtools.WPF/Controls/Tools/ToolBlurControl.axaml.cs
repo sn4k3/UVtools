@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
+using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools
 {
@@ -54,6 +55,16 @@ namespace UVtools.WPF.Controls.Tools
             Operation.Kernel.Matrix = _kernelCtrl.GetMatrix();
             Operation.Kernel.Anchor = _kernelCtrl.Anchor;
             return !(Operation.Kernel.Matrix is null);
+        }
+
+        public override void Callback(ToolWindow.Callbacks callback)
+        {
+            switch (callback)
+            {
+                case ToolWindow.Callbacks.ProfileLoaded:
+                    SelectedAlgorithmIndex = Operation.BlurTypeIndex;
+                    break;
+            }
         }
     }
 }

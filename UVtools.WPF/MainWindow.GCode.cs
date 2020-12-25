@@ -42,7 +42,6 @@ namespace UVtools.WPF
                 Directory = Path.GetDirectoryName(SlicerFile.FileFullPath),
                 InitialFileName = $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_gcode.txt"
             };
-
             var file = await dialog.ShowAsync(this);
 
             if (string.IsNullOrEmpty(file)) return;

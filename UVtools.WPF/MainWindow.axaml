@@ -4,7 +4,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:manager="clr-namespace:Avalonia.ThemeManager;assembly=Avalonia.ThemeManager"
         xmlns:uc="clr-namespace:UVtools.WPF.Controls"
-        xmlns:idc="clr-namespace:Dock.Avalonia.Controls;assembly=Dock.Avalonia"
         mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="600"
         x:Class="UVtools.WPF.MainWindow"
         Title="UVtools"
@@ -135,6 +134,13 @@
         IsEnabled="{Binding IsFileLoaded}"
         Items="{Binding MenuTools}">
       </MenuItem>
+
+        <MenuItem
+            Header="_Calibration"
+            IsVisible="{Binding IsFileLoaded}"
+            IsEnabled="{Binding IsFileLoaded}"
+            Items="{Binding MenuCalibration}">
+        </MenuItem>
       
       
       <MenuItem Header="_Help">
@@ -375,6 +381,7 @@
             
           </StackPanel>
 
+          <!-- Preview image -->
           <Image
             IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
             Stretch="Uniform"
@@ -413,9 +420,12 @@
             VerticalAlignment="Center">
 
             <Button
-              IsEnabled="{Binding SlicerFile.CreatedThumbnailsCount}"
-              ToolTip.Tip="Save properties to a file or clipboard"
-              Command="{Binding #PropertiesSaveContextMenu.Open}">
+                Name="PropertiesSaveButton"
+                IsEnabled="{Binding SlicerFile.CreatedThumbnailsCount}"
+                ToolTip.Tip="Save properties to a file or clipboard"
+                Command="{Binding OpenContextMenu}"
+                CommandParameter="PropertiesSave"
+              >
               <Button.ContextMenu>
                 <ContextMenu Name="PropertiesSaveContextMenu" PlacementMode="Bottom">
                   <MenuItem
@@ -468,7 +478,8 @@
             </DataGrid.Columns>
             
             </DataGrid>
-        
+
+          <!-- Layer data -->
             <TextBlock Grid.Row="5"
                        Text="Layer data" 
                        ToolTip.Tip="Shows the properties for the current selected layer"
@@ -543,9 +554,10 @@
               <Image Source="/Assets/Icons/refresh-16x16.png"/>
             </Button>
 
-            <Button
+            <Button Name="GcodeSaveButton"
               ToolTip.Tip="Save gcode to a file or clipboard"
-              Command="{Binding #GcodeSaveContextMenu.Open}">
+              Command="{Binding OpenContextMenu}"
+              CommandParameter="GcodeSave">
               <Button.ContextMenu>
                 <ContextMenu Name="GcodeSaveContextMenu" PlacementMode="Bottom">
                   <MenuItem
@@ -780,8 +792,8 @@
 
                 <Grid
       
-                  RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,Auto"
-                      ColumnDefinitions="Auto,10,Auto,10,Auto,10,Auto">
+                  RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,Auto"
+                      ColumnDefinitions="Auto,10,Auto,10,Auto,5,Auto">
 
                   <TextBlock
                     Grid.Row="0"
@@ -847,33 +859,71 @@
                     Text="px" />
 
                   <TextBlock
-                    Grid.Row="8"
+                      Grid.Row="8"
+                      Grid.Column="0"
+                      VerticalAlignment="Center"
+                      Text="Remove pixel brightness:" />
+                  <NumericUpDown
+                      Grid.Row="8"
+                      Grid.Column="2"
+                      Grid.ColumnSpan="3"
+                      Minimum="0"
+                      Maximum="255"
+                      ClipValueToMinMax="True"
+                      Value="{Binding DrawingPixelDrawing.RemovePixelBrightness}"/>
+                  <TextBlock
+                      Grid.Row="8"
+                      Grid.Column="6"
+                      VerticalAlignment="Center"
+                      Text="{Binding DrawingPixelDrawing.RemovePixelBrightnessPercent, StringFormat=\{0:0.00\}%}" />
+
+                  <TextBlock
+                      Grid.Row="10"
+                      Grid.Column="0"
+                      VerticalAlignment="Center"
+                      Text="Add pixel brightness:" />
+                  <NumericUpDown
+                      Grid.Row="10"
+                      Grid.Column="2"
+                      Grid.ColumnSpan="3"
+                      Minimum="1"
+                      Maximum="255"
+                      ClipValueToMinMax="True"
+                      Value="{Binding DrawingPixelDrawing.PixelBrightness}"/>
+                  <TextBlock
+                      Grid.Row="10"
+                      Grid.Column="6"
+                      VerticalAlignment="Center"
+                      Text="{Binding DrawingPixelDrawing.PixelBrightnessPercent, StringFormat=\{0:0.00\}%}" />
+
+                  <TextBlock
+                    Grid.Row="12"
                     Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Layers depth:" />
                   <NumericUpDown
-                    Grid.Row="8"
+                    Grid.Row="12"
                     Grid.Column="2"
                     Minimum="0"
                     Width="80"
                     Value="{Binding DrawingPixelDrawing.LayersBelow}"
                     />
                   <TextBlock
-                    Grid.Row="9"
+                    Grid.Row="13"
                     Grid.Column="2"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"
                     Text="Below" />
 
                   <NumericUpDown
-                    Grid.Row="8"
+                    Grid.Row="12"
                     Grid.Column="4"
                     Minimum="0"
                     Width="80"
                     Value="{Binding DrawingPixelDrawing.LayersAbove}"
                     />
                   <TextBlock
-                    Grid.Row="9"
+                    Grid.Row="13"
                     Grid.Column="4"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"
@@ -906,8 +956,8 @@
                 </Border>
 
                 <Grid
-      RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,Auto"
-      ColumnDefinitions="Auto,10,Auto,10,Auto">
+      RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,Auto"
+      ColumnDefinitions="Auto,10,Auto,10,Auto,5,Auto">
 
                   <TextBlock
                     Grid.Row="0"
@@ -979,35 +1029,73 @@
                   Content="Flip text Vertically"
                   IsChecked="{Binding DrawingPixelText.Mirror}"/>
 
+                  <TextBlock
+                      Grid.Row="12"
+                      Grid.Column="0"
+                      VerticalAlignment="Center"
+                      Text="Remove pixel brightness:" />
+                  <NumericUpDown
+                      Grid.Row="12"
+                      Grid.Column="2"
+                      Grid.ColumnSpan="3"
+                      Minimum="0"
+                      Maximum="255"
+                      ClipValueToMinMax="True"
+                      Value="{Binding DrawingPixelText.RemovePixelBrightness}"/>
+                  <TextBlock
+                      Grid.Row="12"
+                      Grid.Column="6"
+                      VerticalAlignment="Center"
+                      Text="{Binding DrawingPixelText.RemovePixelBrightnessPercent, StringFormat=\{0:0.00\}%}" />
 
                   <TextBlock
-                    Grid.Row="12"
+                      Grid.Row="14"
+                      Grid.Column="0"
+                      VerticalAlignment="Center"
+                      Text="Add pixel brightness:" />
+                  <NumericUpDown
+                      Grid.Row="14"
+                      Grid.Column="2"
+                      Grid.ColumnSpan="3"
+                      Minimum="1"
+                      Maximum="255"
+                      ClipValueToMinMax="True"
+                      Value="{Binding DrawingPixelText.PixelBrightness}"/>
+                  <TextBlock
+                      Grid.Row="14"
+                      Grid.Column="6"
+                      VerticalAlignment="Center"
+                      Text="{Binding DrawingPixelText.PixelBrightnessPercent, StringFormat=\{0:0.00\}%}" />
+
+
+                  <TextBlock
+                    Grid.Row="16"
                     Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Layers depth:" />
                   <NumericUpDown
-                    Grid.Row="12"
+                    Grid.Row="16"
                     Grid.Column="2"
                     Minimum="0"
                     Width="80"
                     Value="{Binding DrawingPixelText.LayersBelow}"
                     />
                   <TextBlock
-                    Grid.Row="14"
+                    Grid.Row="17"
                     Grid.Column="2"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"
                     Text="Below" />
 
                   <NumericUpDown
-                    Grid.Row="12"
+                    Grid.Row="16"
                     Grid.Column="4"
                     Minimum="0"
                     Width="80"
                     Value="{Binding DrawingPixelText.LayersAbove}"
                     />
                   <TextBlock
-                    Grid.Row="14"
+                    Grid.Row="17"
                     Grid.Column="4"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"
@@ -1039,37 +1127,56 @@
                 </Border>
 
                 <Grid
-      RowDefinitions="Auto,Auto"
-      ColumnDefinitions="Auto,10,Auto,10,Auto">
+      RowDefinitions="Auto,10,Auto,Auto"
+      ColumnDefinitions="Auto,10,Auto,10,Auto,5,Auto">
 
-                  <TextBlock
-                    Grid.Row="0"
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Text="Pixel brightness:" />
+                    <NumericUpDown
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Grid.ColumnSpan="3"
+                        Minimum="0"
+                        Maximum="255"
+                        ClipValueToMinMax="True"
+                        Value="{Binding DrawingPixelEraser.PixelBrightness}"/>
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="6"
+                        VerticalAlignment="Center"
+                        Text="{Binding DrawingPixelEraser.PixelBrightnessPercent, StringFormat=\{0:0.00\}%}" />
+
+                    <TextBlock
+                    Grid.Row="2"
                     Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Layers depth:" />
                   <NumericUpDown
-                    Grid.Row="0"
+                    Grid.Row="2"
                     Grid.Column="2"
                     Minimum="0"
                     Width="80"
                     Value="{Binding DrawingPixelEraser.LayersBelow}"
                     />
                   <TextBlock
-                    Grid.Row="1"
+                    Grid.Row="3"
                     Grid.Column="2"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"
                     Text="Below" />
 
                   <NumericUpDown
-                    Grid.Row="0"
+                    Grid.Row="2"
                     Grid.Column="4"
                     Minimum="0"
                     Width="80"
                     Value="{Binding DrawingPixelEraser.LayersAbove}"
                     />
                   <TextBlock
-                    Grid.Row="1"
+                    Grid.Row="3"
                     Grid.Column="4"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"
@@ -1101,7 +1208,7 @@
 &#x0a;Note: this operation can't be previewed."/>
                 </Border>
                 <Grid
-                  RowDefinitions="Auto,10,Auto,10,Auto"
+                  RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
                   ColumnDefinitions="Auto,10,100,5,Auto">
                   <TextBlock
                     Grid.Row="0"
@@ -1153,6 +1260,24 @@
                     Grid.Column="4"
                     VerticalAlignment="Center"
                     Text="px" />
+
+                  <TextBlock
+                      Grid.Row="6"
+                      Grid.Column="0"
+                      VerticalAlignment="Center"
+                      Text="Pixel brightness:" />
+                  <NumericUpDown
+                      Grid.Row="6"
+                      Grid.Column="2"
+                      Minimum="0"
+                      Maximum="255"
+                      ClipValueToMinMax="True"
+                      Value="{Binding DrawingPixelSupport.PixelBrightness}"/>
+                  <TextBlock
+                      Grid.Row="6"
+                      Grid.Column="4"
+                      VerticalAlignment="Center"
+                      Text="{Binding DrawingPixelSupport.PixelBrightnessPercent, StringFormat=\{0:0.00\}%}" />
 
                 </Grid>
               </StackPanel>
@@ -1306,9 +1431,10 @@
             
             <Button
               IsEnabled="{Binding Clipboard.CanUndo}"
-              Command="{Binding Clipboard.Undo}"
+              Command="{Binding ClipboardUndo}"
               HotKey="Ctrl + Z"
-              ToolTip.Tip="Undo [Ctrl + Z]">
+              ToolTip.Tip="Undo [Ctrl + Z]
+&#x0a;Shift + Click to Undo and edit last operation [Ctrl + Shift + Z]">
               <Image Source="/Assets/Icons/undo-16x16.png" Width="16"/>
             </Button>
 
@@ -1618,9 +1744,10 @@
             </StackPanel>
           </ToggleButton>
 
-          <Button
+          <Button Name="LayerPreviewOutlineButton"
             ToolTip.Tip="Click to access the various outlines."
-            Command="{Binding #LayerPreviewOutlineContextMenu.Open}"
+            Command="{Binding OpenContextMenu}"
+            CommandParameter="LayerPreviewOutline"
             Margin="1,0,0,0"
           >
             <Button.ContextMenu>
@@ -1661,9 +1788,9 @@
 
 
         <WrapPanel HorizontalAlignment="Right" Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
-          <Button
-            Command="{Binding #LayerActionsContextMenu.Open}"
-          >
+          <Button Name="LayerActionsButton"
+              Command="{Binding OpenContextMenu}"
+              CommandParameter="LayerActions">
             <StackPanel Orientation="Horizontal">
               <Image Source="/Assets/Icons/layers-alt-16x16.png"/>
               <TextBlock Margin="5,0,5,0" Text="Actions ⮟"/>

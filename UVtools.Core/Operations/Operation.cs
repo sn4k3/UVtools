@@ -15,12 +15,13 @@ using UVtools.Core.Objects;
 namespace UVtools.Core.Operations
 {
     [Serializable]
-    public abstract class Operation : BindableBase
+    public abstract class Operation : BindableBase, IDisposable
     {
         private Rectangle _roi = Rectangle.Empty;
         private uint _layerIndexEnd;
         private uint _layerIndexStart;
         private string _profileName;
+        private bool _profileIsDefault;
         private Enumerations.LayerRangeSelection _layerRangeSelection = Enumerations.LayerRangeSelection.All;
         public const byte ClassNameLength = 9;
 
@@ -133,6 +134,12 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _profileName, value);
         }
 
+        public bool ProfileIsDefault
+        {
+            get => _profileIsDefault;
+            set => RaiseAndSetIfChanged(ref _profileIsDefault, value);
+        }
+
         /// <summary>
         /// Gets or sets an ROI to process this operation
         /// </summary>
@@ -175,5 +182,7 @@ namespace UVtools.Core.Operations
                 return $" [Layers: {LayerRangeSelection}]";
             }
         }
+
+        public virtual void Dispose() { }
     }
 }

@@ -1,18 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>UVtools</AssemblyName>
     <ApplicationIcon>UVtools.ico</ApplicationIcon>
     <Authors>Tiago Conceição</Authors>
     <Company>PTRTECH</Company>
-    <Description>MSLA/DLP, file analysis, repair, conversion and manipulation</Description>
+    <Description>MSLA/DLP, file analysis, calibration, repair, conversion and manipulation</Description>
     <Copyright>Copyright © 2020 PTRTECH</Copyright>
     <PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <Version>1.4.0</Version>
+    <Version>2.0.0</Version>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -24,15 +24,14 @@
     <NoWarn>1701;1702;</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.0-preview6" />
+    <PackageReference Include="Avalonia" Version="0.10.0-rc1" />
     <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.0-preview6" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.0-preview6" />
-    <PackageReference Include="Avalonia.ThemeManager" Version="0.10.0-preview6" />
-    <PackageReference Include="Emgu.CV.runtime.ubuntu" Version="4.4.0.4099" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.0-rc1" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.0-rc1" />
+    <PackageReference Include="Avalonia.ThemeManager" Version="0.10.0-rc1" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.4.0.4099" />
-    <PackageReference Include="MessageBox.Avalonia" Version="0.10.0-prev2" />
-    <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.0-preview6" />
+    <PackageReference Include="MessageBox.Avalonia" Version="0.10.7-rc1" />
+    <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.0-rc1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\UVtools.Core\UVtools.Core.csproj" />

@@ -22,7 +22,7 @@ namespace UVtools.WPF.Windows
         public int ScreenCount => Screens.ScreenCount;
         public string ScreenResolution => $"{Screens.Primary.Bounds.Width} x {Screens.Primary.Bounds.Height} @ {Screens.Primary.PixelDensity*100}%";
         public string WorkingArea => $"{Screens.Primary.WorkingArea.Width} x {Screens.Primary.WorkingArea.Height}";
-        public string RealWorkingArea => $"{Math.Round(Screens.Primary.WorkingArea.Width / Screens.Primary.PixelDensity)} x {Math.Round(Screens.Primary.WorkingArea.Height / Screens.Primary.PixelDensity)}";
+        public string RealWorkingArea => $"{App.MaxWindowSize.Width} x {App.MaxWindowSize.Height}";
 
         public string ScreensDescription
         {

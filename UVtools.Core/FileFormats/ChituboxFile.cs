@@ -1561,6 +1561,10 @@ namespace UVtools.Core.FileFormats
                         }
                         else
                         {
+                            if (layerIndex == 0)
+                            {
+                                Debug.WriteLine(layerData.DataAddress - 84);
+                            }
                             inputFile.Seek(layerData.DataAddress - 84, SeekOrigin.Begin);
                             LayerDefinitionsEx[layerIndex] = Helpers.Deserialize<LayerDataEx>(inputFile);
                             Debug.Write($"LAYER {layerIndex} -> ");
@@ -1596,8 +1600,12 @@ namespace UVtools.Core.FileFormats
                             LayerOffTime = LayerDefinitions[0, layerIndex].LayerOffSeconds,
                         };
 
-                        if (!(LayerDefinitionsEx is null))
+                        if (LayerDefinitionsEx is not null)
                         {
+                            if (layerIndex == 0)
+                            {
+
+                            }
                             layer.LiftHeight = LayerDefinitionsEx[layerIndex].LiftHeight;
                             layer.LiftSpeed = LayerDefinitionsEx[layerIndex].LiftSpeed;
                             layer.RetractSpeed = LayerDefinitionsEx[layerIndex].RetractSpeed;

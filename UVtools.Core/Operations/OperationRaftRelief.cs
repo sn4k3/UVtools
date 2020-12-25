@@ -15,7 +15,7 @@ namespace UVtools.Core.Operations
     {
         private RaftReliefTypes _reliefType = RaftReliefTypes.Relief;
         private byte _dilateIterations = 10;
-        private byte _wallMargin = 10;
+        private byte _wallMargin = 20;
         private byte _holeDiameter = 50;
         private byte _holeSpacing = 20;
         public override string Title => "Raft relief";
