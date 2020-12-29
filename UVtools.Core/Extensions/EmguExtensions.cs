@@ -248,5 +248,12 @@ namespace UVtools.Core.Extensions
             return mat;
         }
 
+        public static Mat InitMat(Size size, MCvScalar scalar, int channels = 1, DepthType depthType = DepthType.Cv8U)
+        {
+            var mat = new Mat(size, depthType, channels);
+            mat.SetTo(scalar);
+            return mat;
+        }
+
     }
 }

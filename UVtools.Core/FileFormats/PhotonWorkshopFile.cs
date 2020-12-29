@@ -772,12 +772,12 @@ namespace UVtools.Core.FileFormats
 
         public override FileExtension[] FileExtensions { get; } = {
 
-            new FileExtension("pwmx", "Photon Mono X (PWMX)"),
-            new FileExtension("pwms", "Photon Mono SE (PWMS)"),
-            new FileExtension("pwmo", "Photon Mono (PWMO)"),
-            new FileExtension("pwx", "Photon X (PWX)"),
-            new FileExtension("pws", "Photon / Photon S (PWS)"),
-            new FileExtension("pw0", "Photon Zero (PW0)"),
+            new("pwmx", "Photon Mono X (PWMX)"),
+            new("pwms", "Photon Mono SE (PWMS)"),
+            new("pwmo", "Photon Mono (PWMO)"),
+            new("pwx", "Photon X (PWX)"),
+            new("pws", "Photon / Photon S (PWS)"),
+            new("pw0", "Photon Zero (PW0)"),
             
         };
 

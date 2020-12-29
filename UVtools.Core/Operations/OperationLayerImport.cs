@@ -7,7 +7,6 @@
  */
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.IO;
@@ -16,6 +15,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -183,6 +183,74 @@ namespace UVtools.Core.Operations
             var result = $"[Files: {Count}]" + LayerRangeString;
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
+        }
+
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        {
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, (uint)Count);
+
+            var oldLayers = slicerFile.LayerManager.Layers;
+            uint newLayerCount = CalculateTotalLayers((uint)oldLayers.Length);
+            uint startIndex = LayerIndexStart;
+            var layers = new Layer[newLayerCount];
+
+            // Keep same layers up to InsertAfterLayerIndex
+            for (uint i = 0; i <= InsertAfterLayerIndex; i++)
+            {
+                layers[i] = oldLayers[i];
+            }
+
+            // Keep all old layers if not discarding them
+            if (ReplaceSubsequentLayers)
+            {
+                if (!DiscardRemainingLayers)
+                {
+                    for (uint i = InsertAfterLayerIndex + 1; i < oldLayers.Length; i++)
+                    {
+                        layers[i] = oldLayers[i];
+                    }
+                }
+            }
+            else // Push remaining layers to the end of imported layers
+            {
+                uint oldLayerIndex = InsertAfterLayerIndex;
+                for (uint i = LayerIndexEnd + 1; i < newLayerCount; i++)
+                {
+                    oldLayerIndex++;
+                    layers[i] = oldLayers[oldLayerIndex];
+                }
+            }
+
+
+            Parallel.For(0, Count,
+                //new ParallelOptions{MaxDegreeOfParallelism = 1},
+                i =>
+                {
+                    var mat = CvInvoke.Imread(Files[i].TagString, ImreadModes.Grayscale);
+                    uint layerIndex = (uint)(startIndex + i);
+                    if (MergeImages)
+                    {
+                        if (layers[layerIndex] is not null)
+                        {
+                            using var oldMat = layers[layerIndex].LayerMat;
+                            CvInvoke.Add(oldMat, mat, mat);
+                        }
+                    }
+                    layers[layerIndex] = new Layer(layerIndex, mat, slicerFile.LayerManager);
+
+                    lock (progress.Mutex)
+                    {
+                        progress++;
+                    }
+                });
+
+            slicerFile.LayerManager.Layers = layers;
+            slicerFile.RequireFullEncode = true;
+
+            progress.Token.ThrowIfCancellationRequested();
+
+            return true;
         }
 
         #endregion

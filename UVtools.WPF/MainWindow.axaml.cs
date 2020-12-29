@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using UVtools.Core;
 using UVtools.Core.Extensions;
@@ -127,6 +128,14 @@ namespace UVtools.WPF
                 Icon = new Avalonia.Controls.Image
                 {
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/dot-circle-16x16.png"))
+                }
+            },
+            new MenuItem
+            {
+                Tag = new OperationRedrawModel(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/sun-16x16.png"))
                 }
             },
             new MenuItem
@@ -401,8 +410,6 @@ namespace UVtools.WPF
             //this.AttachDevTools();
 #endif
 
-            UpdateMaxWindowsSize();
-            
             App.ThemeSelector?.EnableThemes(this);
             InitInformation();
             InitIssues();
@@ -422,7 +429,7 @@ namespace UVtools.WPF
             {
                 foreach (var menuTool in menuItem)
                 {
-                    if (!(menuTool.Tag is Operation operation)) continue;
+                    if (menuTool.Tag is not Operation operation) continue;
                     menuTool.Header = operation.Title;
                     menuTool.Click += async (sender, args) => await ShowRunOperation(operation.GetType());
                 }
@@ -439,19 +446,22 @@ namespace UVtools.WPF
                 }
             };*/
             //PropertyChanged += OnPropertyChanged;
-            var clientSizeObs = this.GetObservable(ClientSizeProperty);
-            clientSizeObs.Subscribe(size => UpdateLayerTrackerHighlightIssues());
-            var windowStateObs = this.GetObservable(WindowStateProperty);
-            windowStateObs.Subscribe(size => UpdateLayerTrackerHighlightIssues());
-            
-            UpdateTitle();
 
-            if (Settings.General.StartMaximized 
+            UpdateTitle();
+            UpdateMaxWindowsSize();
+
+            if (Settings.General.StartMaximized
                 || ClientSize.Width > App.MaxWindowSize.Width
                 || ClientSize.Height > App.MaxWindowSize.Height)
             {
                 WindowState = WindowState.Maximized;
             }
+
+            var clientSizeObs = this.GetObservable(ClientSizeProperty);
+            clientSizeObs.Subscribe(size => UpdateLayerTrackerHighlightIssues());
+            var windowStateObs = this.GetObservable(WindowStateProperty);
+            windowStateObs.Subscribe(size => UpdateLayerTrackerHighlightIssues());
+
 
             DataContext = this;
 
@@ -463,14 +473,22 @@ namespace UVtools.WPF
 
         public void UpdateMaxWindowsSize()
         {
-            App.MaxWindowSize = new System.Drawing.Size(Settings.General.WindowsTakeIntoAccountScreenScaling ? (int)(Screens.Primary.WorkingArea.Width / Screens.Primary.PixelDensity) : Screens.Primary.WorkingArea.Width,
-                Settings.General.WindowsTakeIntoAccountScreenScaling ? (int)(Screens.Primary.WorkingArea.Height / Screens.Primary.PixelDensity) : Screens.Primary.WorkingArea.Height);
+            /*Console.WriteLine($"Settings is null?: {Settings is null}");
+            Console.WriteLine($"Settings.General is null?: {Settings.General is null}");
+            Console.WriteLine($"Screens is null?: {Screens is null}");
+            Console.WriteLine($"ScreenCount: {Screens.ScreenCount}");
+            Console.WriteLine($"Screens.Primary is null?: {Screens.Primary is null}");*/
+            var screen = Screens.Primary ?? Screens.All[0];
+            App.MaxWindowSize = new System.Drawing.Size(
+                Settings.General.WindowsTakeIntoAccountScreenScaling ? (int)(screen.WorkingArea.Width / screen.PixelDensity) : screen.WorkingArea.Width,
+                Settings.General.WindowsTakeIntoAccountScreenScaling ? (int)(screen.WorkingArea.Height / screen.PixelDensity) : screen.WorkingArea.Height);
         }
 
         protected override void OnOpened(EventArgs e)
         {
             base.OnOpened(e);
-            Program.ProgramStartupTime.Stop();
+           
+            
             AddLog($"{About.Software} start", Program.ProgramStartupTime.Elapsed.TotalSeconds);
 
             if (Settings.General.CheckForUpdatesOnStartup)
@@ -489,6 +507,7 @@ namespace UVtools.WPF
                 UpdateTitle();
                 return true;
             }, TimeSpan.FromSeconds(1));
+            Program.ProgramStartupTime.Stop();
         }
 
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -804,6 +823,12 @@ namespace UVtools.WPF
                     "Changelog:\n" +
                     $"{VersionChecker.Changelog}", $"Update UVtools to v{VersionChecker.Version}?", ButtonEnum.YesNoCancel);
 
+
+            if (result == ButtonResult.No || OperatingSystem.IsMacOS())
+            {
+                App.OpenBrowser(VersionChecker.UrlLatestRelease);
+                return;
+            }
             if (result == ButtonResult.Yes)
             {
                 IsGUIEnabled = false;
@@ -832,11 +857,7 @@ namespace UVtools.WPF
                 
                 return;
             }
-            if (result == ButtonResult.No)
-            {
-                App.OpenBrowser(VersionChecker.UrlLatestRelease);
-                return;
-            }
+            
         } 
 
         #endregion
@@ -936,7 +957,7 @@ namespace UVtools.WPF
 
             ClipboardManager.Instance.Init(SlicerFile);
 
-            if (!(SlicerFile.ConvertToFormats is null))
+            if (SlicerFile.ConvertToFormats is not null)
             {
                 List<MenuItem> menuItems = new List<MenuItem>();
                 foreach (var fileFormatType in SlicerFile.ConvertToFormats)
@@ -1290,18 +1311,13 @@ namespace UVtools.WPF
             switch (baseOperation)
             {
                 case OperationEditParameters operation:
-                    /*foreach (var modifier in operation.Modifiers.Where(modifier => modifier.HasChanged))
-                    {
-                        SlicerFile.SetValueFromPrintParameterModifier(modifier, modifier.NewValue);
-                    }*/
-                    SlicerFile.EditPrintParameters(operation);
+                    operation.Execute(SlicerFile);
                     RefreshProperties();
                     RefreshCurrentLayerData();
                     ResetDataContext();
 
                     CanSave = true;
-
-                    return false;
+                    return true;
                 case OperationRepairLayers operation:
                     if (Issues is null)
                     {
@@ -1319,7 +1335,7 @@ namespace UVtools.WPF
                     }
 
                     operation.Issues = Issues.ToList();
-
+                    operation.IslandDetectionConfig = GetIslandDetectionConfiguration();
                     break;
             }
 
@@ -1331,110 +1347,13 @@ namespace UVtools.WPF
                 ShowProgressWindow(baseOperation.ProgressTitle);
                 backup = SlicerFile.LayerManager.Clone();
 
-                /*var backup = new Layer[baseOperation.LayerRangeCount];
-                uint i = 0;
-                for (uint layerIndex = baseOperation.LayerIndexStart; layerIndex <= baseOperation.LayerIndexEnd; layerIndex++)
-                {
-                    backup[i++] = SlicerFile[layerIndex].Clone();
-                }*/
-
                 try
                 {
-                    switch (baseOperation)
-                    {
-                        // Tools
-                        case OperationRepairLayers operation:
-                            operation.IslandDetectionConfig = GetIslandDetectionConfiguration();
-                            SlicerFile.LayerManager.RepairLayers(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationMove operation:
-                            SlicerFile.LayerManager.Move(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationResize operation:
-                            SlicerFile.LayerManager.Resize(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationFlip operation:
-                            SlicerFile.LayerManager.Flip(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationRotate operation:
-                            SlicerFile.LayerManager.Rotate(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationSolidify operation:
-                            SlicerFile.LayerManager.Solidify(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationMorph operation:
-                            SlicerFile.LayerManager.Morph(operation, BorderType.Default, new MCvScalar(), ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationRaftRelief operation:
-                            SlicerFile.LayerManager.RaftRelief(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationThreshold operation:
-                            SlicerFile.LayerManager.ThresholdPixels(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationArithmetic operation:
-                            SlicerFile.LayerManager.Arithmetic(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationMask operation:
-                            SlicerFile.LayerManager.Mask(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationPixelDimming operation:
-                            SlicerFile.LayerManager.PixelDimming(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationInfill operation:
-                            SlicerFile.LayerManager.Infill(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationBlur operation:
-                            SlicerFile.LayerManager.Blur(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-
-                        case OperationChangeResolution operation:
-                            SlicerFile.LayerManager.ChangeResolution(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationLayerReHeight operation:
-                            SlicerFile.LayerManager.ReHeight(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationPattern operation:
-                            SlicerFile.LayerManager.Pattern(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        // Actions
-                        case OperationLayerImport operation:
-                            SlicerFile.LayerManager.Import(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationLayerClone operation:
-                            SlicerFile.LayerManager.CloneLayer(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationLayerRemove operation:
-                            SlicerFile.LayerManager.RemoveLayers(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-
-                        // Calibrators
-                        case OperationCalibrateElephantFoot operation:
-                            SlicerFile.LayerManager.CalibrateElephantFoot(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationCalibrateXYZAccuracy operation:
-                            SlicerFile.LayerManager.CalibrateXYZAccuracy(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationCalibrateTolerance operation:
-                            SlicerFile.LayerManager.CalibrateTolerance(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-                        case OperationCalibrateGrayscale operation:
-                            SlicerFile.LayerManager.CalibrateGrayscale(operation, ProgressWindow.RestartProgress(operation.CanCancel));
-                            break;
-
-                        default:
-                            throw new NotImplementedException();
-                    }
-
-                    return true;
+                    return baseOperation.Execute(SlicerFile, ProgressWindow.RestartProgress(baseOperation.CanCancel));
                 }
                 catch (OperationCanceledException)
                 {
                     SlicerFile.LayerManager = backup;
-                    /*i = 0;
-                    for (uint layerIndex = baseOperation.LayerIndexStart; layerIndex <= baseOperation.LayerIndexEnd; layerIndex++)
-                    {
-                        SlicerFile[layerIndex] = backup[i++];
-                    }*/
                 }
                 catch (Exception ex)
                 {
@@ -1467,7 +1386,7 @@ namespace UVtools.WPF
                 }
             }
 
-            return true;
+            return result;
         }
 
         #endregion

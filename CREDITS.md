@@ -20,7 +20,7 @@
 
 ### Jason S. McMullan (ezrec)
 
-* For ideas and permission to use his project (uv3dp)
+* For ideas, file formats and permission to use his project (uv3dp)
 * https://github.com/ezrec/uv3dp
 
 # Supporters / Contributors
@@ -41,3 +41,4 @@
 * Jorge diego Robles Ayerbe
 * Timothy Gray
 * David Gordon
+* Claus Pfeilschifter

@@ -12,7 +12,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <Version>2.0.0</Version>
+    <Version>2.1.0</Version>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -48,9 +48,6 @@
     <None Remove="Assets\Icons\UVtools.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="libcvextern.dylib">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="libcvextern.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -87,6 +84,9 @@
     </Compile>
     <Compile Update="Controls\Tools\ToolLayerRemoveControl.axaml.cs">
       <DependentUpon>ToolLayerRemoveControl.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Controls\Tools\ToolRedrawModelControl.axaml.cs">
+      <DependentUpon>ToolRedrawModelControl.axaml</DependentUpon>
     </Compile>
     <Compile Update="Controls\Tools\ToolResizeControl.axaml.cs">
       <DependentUpon>ToolResizeControl.axaml</DependentUpon>

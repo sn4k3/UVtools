@@ -166,7 +166,7 @@ namespace UVtools.WPF
 
                     if (layersRemove.Count > 0)
                     {
-                        SlicerFile.LayerManager.RemoveLayers(layersRemove);
+                        OperationLayerRemove.RemoveLayers(SlicerFile, layersRemove);
                         result = true;
                     }
 

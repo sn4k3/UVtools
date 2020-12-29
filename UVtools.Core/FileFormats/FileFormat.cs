@@ -565,7 +565,7 @@ namespace UVtools.Core.FileFormats
             if (SuppressRebuildProperties) return;
             if (e.PropertyName == nameof(LayerCount))
             {
-                if (this[LayerCount - 1] is null) return; // Not initialized
+                if (LayerCount == 0 || this[LayerCount - 1] is null) return; // Not initialized
                 LayerManager.RebuildLayersProperties();
                 RebuildGCode();
                 PrintTime = PrintTimeComputed;

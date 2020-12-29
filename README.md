@@ -181,7 +181,7 @@ sudo dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
 sudo apt-get update
 sudo apt-get install -y apt-transport-https
-dotnet-runtime-3.1
+dotnet-runtime-5.0
 !-->
 
 ```bash
@@ -211,7 +211,7 @@ To run UVtools open it folder on a terminal and call one of:
 1. 4GB RAM or higher
 
 <!--- 
-* Donwload and install: https://dotnet.microsoft.com/download/dotnet-core/thank-you/sdk-3.1.402-macos-x64-installer
+* Donwload and install: https://dotnet.microsoft.com/download/dotnet/thank-you/sdk-5.0.101-macos-x64-installer
 brew install libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb
 -->
 

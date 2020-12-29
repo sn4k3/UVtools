@@ -7,8 +7,11 @@
  */
 
 using System;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
+using Emgu.CV;
 using Emgu.CV.CvEnum;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -16,11 +19,13 @@ namespace UVtools.Core.Operations
     [Serializable]
     public sealed class OperationMorph : Operation
     {
+        #region Members
         private MorphOp _morphOperation = MorphOp.Erode;
         private uint _iterationsStart = 1;
         private uint _iterationsEnd = 1;
         private bool _chamfer;
-
+        #endregion
+        
         #region Overrides
 
         public override string Title => "Morph";
@@ -120,6 +125,58 @@ namespace UVtools.Core.Operations
                 hashCode = (hashCode * 397) ^ _chamfer.GetHashCode();
                 return hashCode;
             }
+        }
+
+        #endregion
+
+        #region Methods
+
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        {
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, LayerRangeCount);
+
+            var isFade = Chamfer;
+            LayerManager.MutateGetVarsIterationChamfer(
+                LayerIndexStart,
+                LayerIndexEnd,
+                (int)IterationsStart,
+                (int)IterationsEnd,
+                ref isFade,
+                out var iterationSteps,
+                out var maxIteration
+            );
+
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1,
+                //new ParallelOptions {MaxDegreeOfParallelism = 1},
+                layerIndex =>
+                {
+                    if (progress.Token.IsCancellationRequested) return;
+                    int iterations = LayerManager.MutateGetIterationVar(isFade, (int)IterationsStart, (int)IterationsEnd, iterationSteps, maxIteration, LayerIndexStart, (uint)layerIndex);
+
+                    using var mat = slicerFile[layerIndex].LayerMat;
+                    Execute(mat, iterations);
+                    slicerFile[layerIndex].LayerMat = mat;
+                    
+                    lock (progress.Mutex)
+                    {
+                        progress++;
+                    }
+                });
+            progress.Token.ThrowIfCancellationRequested();
+            return true;
+        }
+
+        public override bool Execute(Mat mat, params object[] arguments)
+        {
+            int iterations = (int) _iterationsStart;
+            if (arguments is not null && arguments.Length >= 1)
+            {
+                iterations = (int) arguments[0];
+            }
+            var target = GetRoiOrDefault(mat);
+            CvInvoke.MorphologyEx(target, target, MorphOperation, Kernel.Matrix, Kernel.Anchor, iterations, BorderType.Reflect101, default);
+            return true;
         }
 
         #endregion

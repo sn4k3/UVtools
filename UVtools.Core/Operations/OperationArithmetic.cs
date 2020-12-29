@@ -9,8 +9,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -18,8 +20,11 @@ namespace UVtools.Core.Operations
     [Serializable]
     public class OperationArithmetic : Operation
     {
+        #region Members
         private string _sentence;
+        #endregion
 
+        #region Enums
         public enum ArithmeticOperators : byte
         {
             None,
@@ -31,7 +36,9 @@ namespace UVtools.Core.Operations
             BitwiseOr,
             BitwiseXor
         }
+        #endregion
 
+        #region SubClasses
         public sealed class ArithmeticOperation
         {
             public uint LayerIndex { get; }
@@ -43,7 +50,9 @@ namespace UVtools.Core.Operations
                 Operator = arithmeticOperator;
             }
         }
+        #endregion
 
+        #region Overrides
         public override string Title => "Arithmetic";
         public override string Description =>
             "Perform arithmetic operations over the layers pixels.\n\n" +
@@ -81,19 +90,30 @@ namespace UVtools.Core.Operations
             return new StringTag(sb.ToString());
         }
 
+        public override string ToString()
+        {
+            var result = $"{_sentence}" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
+        #endregion
+
+        #region Properties
         public string Sentence
         {
             get => _sentence;
             set => RaiseAndSetIfChanged(ref _sentence, value);
         }
-
         [XmlIgnore]
-        public List<ArithmeticOperation> Operations { get; } = new List<ArithmeticOperation>();
+        public List<ArithmeticOperation> Operations { get; } = new();
 
         [XmlIgnore]
         public List<uint> SetLayers { get; } = new List<uint>();
 
         public bool IsValid => SetLayers.Count > 0 & Operations.Count > 0;
+        #endregion
+
+        #region Methods
 
         public bool Parse()
         {
@@ -185,13 +205,63 @@ namespace UVtools.Core.Operations
             return true;
         }
 
-        public override string ToString()
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
         {
-            var result = $"{_sentence}" + LayerRangeString;
-            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
-            return result;
+            if (!IsValid) return false;
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, (uint)Operations.Count);
+
+            using Mat result = slicerFile[Operations[0].LayerIndex].LayerMat;
+            Mat resultRoi = GetRoiOrDefault(result);
+            for (int i = 1; i < Operations.Count; i++)
+            {
+                using var image = slicerFile[Operations[i].LayerIndex].LayerMat;
+                Mat imageRoi = GetRoiOrDefault(image);
+                switch (Operations[i - 1].Operator)
+                {
+                    case ArithmeticOperators.Add:
+                        CvInvoke.Add(resultRoi, imageRoi, resultRoi);
+                        break;
+                    case ArithmeticOperators.Subtract:
+                        CvInvoke.Subtract(resultRoi, imageRoi, resultRoi);
+                        break;
+                    case ArithmeticOperators.Multiply:
+                        CvInvoke.Multiply(resultRoi, imageRoi, resultRoi);
+                        break;
+                    case ArithmeticOperators.Divide:
+                        CvInvoke.Divide(resultRoi, imageRoi, resultRoi);
+                        break;
+                    case ArithmeticOperators.BitwiseAnd:
+                        CvInvoke.BitwiseAnd(resultRoi, imageRoi, resultRoi);
+                        break;
+                    case ArithmeticOperators.BitwiseOr:
+                        CvInvoke.BitwiseOr(resultRoi, imageRoi, resultRoi);
+                        break;
+                    case ArithmeticOperators.BitwiseXor:
+                        CvInvoke.BitwiseXor(resultRoi, imageRoi, resultRoi);
+                        break;
+                }
+            }
+
+            Parallel.ForEach(SetLayers, layerIndex =>
+            {
+                if (Operations.Count == 1 && HaveROI)
+                {
+                    var mat = slicerFile[layerIndex].LayerMat;
+                    var matRoi = GetRoiOrDefault(mat);
+                    resultRoi.CopyTo(matRoi);
+                    slicerFile[layerIndex].LayerMat = mat;
+                    return;
+                }
+                slicerFile[layerIndex].LayerMat = result;
+            });
+
+            return true;
         }
 
+        #endregion
+
+        #region Equality
         protected bool Equals(OperationArithmetic other)
         {
             return _sentence == other._sentence;
@@ -209,5 +279,6 @@ namespace UVtools.Core.Operations
         {
             return (_sentence != null ? _sentence.GetHashCode() : 0);
         }
+        #endregion
     }
 }

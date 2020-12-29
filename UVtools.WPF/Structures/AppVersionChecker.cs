@@ -159,85 +159,82 @@ namespace UVtools.WPF.Structures
             progress.ItemName = "Megabytes";
             try
             {
-                using (var client = new WebClient())
+                using var client = new WebClient();
+                var path = Path.GetTempPath();
+                DownloadedFile = Path.Combine(path, Filename);
+                Debug.WriteLine($"Downloading to: {DownloadedFile}");
+
+
+                client.DownloadProgressChanged += (sender, e) =>
                 {
-                    var path = Path.GetTempPath();
-                    DownloadedFile = Path.Combine(path, Filename);
-                    Debug.WriteLine($"Downloading to: {DownloadedFile}");
-
-
-                    client.DownloadProgressChanged += (sender, e) =>
+                    progress.Reset("Megabytes", (uint)e.TotalBytesToReceive / 1048576, (uint)e.BytesReceived / 1048576);
+                };
+                client.DownloadFileCompleted += (sender, e) =>
+                {
+                    progress.Reset("Extracting");
+                    if (OperatingSystem.IsWindows())
                     {
-                        progress.Reset("Megabytes", (uint)e.TotalBytesToReceive / 1048576, (uint)e.BytesReceived / 1048576);
-                    };
-                    client.DownloadFileCompleted += (sender, e) =>
+                        App.StartProcess(DownloadedFile);
+                        Environment.Exit(0);
+                    }
+                    else
                     {
-                        progress.Reset("Extracting");
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        string upgradeFolder = "UPDATED_VERSION";
+                        var targetDir = Path.Combine(App.ApplicationPath, upgradeFolder);
+                        using (var stream = File.Open(DownloadedFile, FileMode.Open))
                         {
-                            App.StartProcess(DownloadedFile);
-                            Environment.Exit(0);
+                            using (ZipArchive zip = new ZipArchive(stream, ZipArchiveMode.Read))
+                            {
+                                zip.ExtractToDirectory(targetDir, true);
+                            }
                         }
-                        else
+
+                        File.Delete(DownloadedFile);
+
+                        string upgradeFileName = $"{About.Software}_upgrade.sh";
+                        var upgradeFile = Path.Combine(App.ApplicationPath, upgradeFileName);
+                        using (var stream = File.CreateText(upgradeFile))
                         {
-                            string upgradeFolder = "UPDATED_VERSION";
-                            var targetDir = Path.Combine(App.ApplicationPath, upgradeFolder);
-                            using (var stream = File.Open(DownloadedFile, FileMode.Open))
-                            {
-                                using (ZipArchive zip = new ZipArchive(stream, ZipArchiveMode.Read))
-                                {
-                                    zip.ExtractToDirectory(targetDir, true);
-                                }
-                            }
+                            stream.WriteLine("#!/bin/bash");
+                            stream.WriteLine($"echo {About.Software} v{App.Version} updater script");
+                            stream.WriteLine($"cd '{App.ApplicationPath}'");
+                            stream.WriteLine($"killall {About.Software}");
+                            stream.WriteLine("sleep 0.5");
+                            stream.WriteLine($"cp -fR {upgradeFolder}/* .");
+                            stream.WriteLine($"rm -fr {upgradeFolder}");
+                            stream.WriteLine("sleep 0.5");
+                            //stream.WriteLine($"[ -f {About.Software} ] && {App.AppExecutableQuoted} & || dotnet {About.Software}.dll &");
+                            stream.WriteLine($"if [ -f '{About.Software}' ]; then");
+                            stream.WriteLine($"  ./{About.Software} &");
+                            stream.WriteLine("else");
+                            stream.WriteLine($"  dotnet {About.Software}.dll &");
+                            stream.WriteLine("fi");
+                            stream.WriteLine($"rm -f {upgradeFileName}");
+                            //stream.WriteLine("exit");
+                            stream.Close();
+                        }
 
-                            File.Delete(DownloadedFile);
-
-                            string upgradeFileName = $"{About.Software}_upgrade.sh";
-                            var upgradeFile = Path.Combine(App.ApplicationPath, upgradeFileName);
-                            using (var stream = File.CreateText(upgradeFile))
-                            {
-                                stream.WriteLine("#!/bin/bash");
-                                stream.WriteLine($"echo {About.Software} v{App.Version} updater script");
-                                stream.WriteLine($"cd '{App.ApplicationPath}'");
-                                stream.WriteLine($"killall {About.Software}");
-                                stream.WriteLine("sleep 0.5");
-                                stream.WriteLine($"cp -fR {upgradeFolder}/* .");
-                                stream.WriteLine($"rm -fr {upgradeFolder}");
-                                stream.WriteLine("sleep 0.5");
-                                //stream.WriteLine($"[ -f {About.Software} ] && {App.AppExecutableQuoted} & || dotnet {About.Software}.dll &");
-                                stream.WriteLine($"if [ -f '{About.Software}' ]; then");
-                                stream.WriteLine($"  ./{About.Software} &");
-                                stream.WriteLine("else");
-                                stream.WriteLine($"  dotnet {About.Software}.dll &");
-                                stream.WriteLine("fi");
-                                stream.WriteLine($"rm -f {upgradeFileName}");
-                                //stream.WriteLine("exit");
-                                stream.Close();
-                            }
-
-                            App.StartProcess("bash", $"\"{upgradeFile}\"");
+                        App.StartProcess("bash", $"\"{upgradeFile}\"");
                             
-                            //App.NewInstance(App.MainWindow.SlicerFile?.FileFullPath);
-                            Environment.Exit(0);
-                        }
-
-                        lock (e.UserState)
-                        {
-                            //releases blocked thread
-                            Monitor.Pulse(e.UserState);
-                        }
-                    };
-
-
-                    var syncObject = new object();
-
-                    lock (syncObject)
-                    {
-                        client.DownloadFileAsync(new Uri(DownloadLink), DownloadedFile, syncObject);
-                        //This would block the thread until download completes
-                        Monitor.Wait(syncObject);
+                        //App.NewInstance(App.MainWindow.SlicerFile?.FileFullPath);
+                        Environment.Exit(0);
                     }
 
+                    lock (e.UserState)
+                    {
+                        //releases blocked thread
+                        Monitor.Pulse(e.UserState);
+                    }
+                };
+
+
+                var syncObject = new object();
+
+                lock (syncObject)
+                {
+                    client.DownloadFileAsync(new Uri(DownloadLink), DownloadedFile, syncObject);
+                    //This would block the thread until download completes
+                    Monitor.Wait(syncObject);
                 }
             }
             catch (Exception e)

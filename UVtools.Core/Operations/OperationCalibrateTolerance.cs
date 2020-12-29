@@ -16,6 +16,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using UVtools.Core.Extensions;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -474,8 +475,6 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Methods
-
-
         public Mat[] GetLayers()
         {
             var layers = new Mat[LayerCount];
@@ -693,6 +692,49 @@ namespace UVtools.Core.Operations
                 
                 thumbnail.Save("D:\\Thumbnail.png");*/
             return thumbnail;
+        }
+
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        {
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, LayerCount);
+            slicerFile.SuppressRebuildProperties = true;
+
+            var newLayers = new Layer[LayerCount];
+
+            slicerFile.LayerHeight = (float)LayerHeight;
+            slicerFile.BottomExposureTime = (float)BottomExposure;
+            slicerFile.ExposureTime = (float)NormalExposure;
+            slicerFile.BottomLayerCount = BottomLayers;
+
+            var layers = GetLayers();
+
+            Parallel.For(0, LayerCount, layerIndex =>
+            {
+                newLayers[layerIndex] = new Layer((uint)layerIndex, layers[layerIndex], slicerFile.LayerManager);
+                layers[layerIndex].Dispose();
+                lock (progress)
+                {
+                    progress++;
+                }
+            });
+
+            slicerFile.LayerManager.Layers = newLayers;
+            slicerFile.LayerManager.RebuildLayersProperties();
+
+            var moveOp = new OperationMove(slicerFile.LayerManager.BoundingRectangle, slicerFile.Resolution)
+            {
+                IsCutMove = true,
+                LayerIndexEnd = slicerFile.LayerCount - 1
+            };
+            moveOp.Execute(slicerFile, progress);
+
+            if (slicerFile.ThumbnailsCount > 0)
+                slicerFile.SetThumbnails(GetThumbnail());
+
+            slicerFile.SuppressRebuildProperties = false;
+
+            return true;
         }
 
         #endregion

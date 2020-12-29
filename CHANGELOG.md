@@ -1,6 +1,24 @@
 # Changelog
 
-## 25/11/2020 - v2.0.0
+## 29/12/2020 - v2.1.0
+
+* (Add) Tool - Redraw model/supports: Redraw the model or supports with a set brightness. 
+               This requires an extra sliced file from same object but without any supports and raft, straight to the build plate.
+* (Add) Tool - Raft Relief:
+    * Allow ignore a number of layer(s) to start only after that number, detault is 0
+    * Allow set a pixel brightness for the operation, detault is 0
+    * New "dimming" type, works like relief but instead of drill raft it set to a brightness level
+* (Add) Arch-x64 package (#104)
+* (Fix) A OS dependent startup crash when there's no primary screen set (#115)
+* (Fix) Tool - Re height: Able to cancel the job
+* (Fix) Unable to save "Calibration - Tolerance" profiles
+* (Change) Core: Move all operations code from LayerManager and Layer to it own Operation* class within a Execute method (Abstraction)
+* (Change) sh UVtools.sh to run independent UVtools instance first, if not found it will fallback to dotnet UVtools.dll
+* (Change) Compile and zip project with WSL to keep the +x (execute) attribute for linux and unix systems
+* (Change) MacOS builds are now packed as an application bundle (Auto-updater disabled for now)
+* (Remove) Universal package from builds/releases
+
+## 25/12/2020 - v2.0.0
 
 This release bump the major version due the introduction of .NET 5.0, the discontinuation old UVtools GUI project and the new calibration wizards.
 * (Upgrade) From .NET Core 3.1 to .NET 5.0
@@ -11,7 +29,6 @@ This release bump the major version due the introduction of .NET 5.0, the discon
   * **Take into account the screen scale factor to limit the dialogs windows maximum size**: Due wrong information UVtools can clamp the windows maximum size when you have plenty more avaliable or when use in a secondary monitor. If is the case disable this option
   * **Horizontal limiting margin:** Limits windows and dialogs maximum width to the screen resolution less this margin
   * **Vertical limiting margin:** Limits windows and dialogs maximum height to the screen resolution less this margin
-* (Add) Setting - General: Take into account the screen scale factor to limit the dialogs windows maximum size. Due wrong information UVtools can cap the windows maximum size when you have plenty more avaliable or when use in a secondary monitor. If is the case disable this option
 * (Add) Ctrl + Shift + Z to undo and edit the last operation (If contain a valid operation)
 * (Add) Allow to deselect the current selected profile
 * (Add) Allow to set a default profile to load in when open a tool

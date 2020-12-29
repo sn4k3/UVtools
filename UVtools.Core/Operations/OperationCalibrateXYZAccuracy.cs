@@ -14,6 +14,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using UVtools.Core.Extensions;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -701,6 +702,51 @@ namespace UVtools.Core.Operations
                 
                 thumbnail.Save("D:\\Thumbnail.png");*/
             return thumbnail;
+        }
+
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        {
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, LayerCount);
+
+            slicerFile.SuppressRebuildProperties = true;
+
+            var newLayers = new Layer[LayerCount];
+
+            slicerFile.LayerHeight = (float)LayerHeight;
+            slicerFile.BottomExposureTime = (float)BottomExposure;
+            slicerFile.ExposureTime = (float)NormalExposure;
+            slicerFile.BottomLayerCount = BottomLayers;
+
+            var layers = GetLayers();
+
+            var bottomLayer = new Layer(0, layers[0], slicerFile.LayerManager)
+            {
+                IsModified = true
+            };
+            var layer = new Layer(0, layers[1], slicerFile.LayerManager)
+            {
+                IsModified = true
+            };
+
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                newLayers[layerIndex] = slicerFile.GetInitialLayerValueOrNormal(layerIndex, bottomLayer.Clone(), layer.Clone());
+                progress++;
+            }
+
+            foreach (var mat in layers)
+            {
+                mat.Dispose();
+            }
+
+            if (slicerFile.ThumbnailsCount > 0)
+                slicerFile.SetThumbnails(GetThumbnail());
+
+            slicerFile.LayerManager.Layers = newLayers;
+            slicerFile.LayerManager.RebuildLayersProperties();
+            slicerFile.SuppressRebuildProperties = false;
+            return true;
         }
 
         #endregion

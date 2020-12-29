@@ -7,10 +7,14 @@
  */
 
 using System;
+using System.Drawing;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV;
+using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -30,6 +34,8 @@ namespace UVtools.Core.Operations
             }
         }
         #endregion
+
+        #region Members
         private uint _wallThicknessStart = 5;
         private uint _wallThicknessEnd = 5;
         private bool _wallsOnly;
@@ -42,6 +48,7 @@ namespace UVtools.Core.Operations
         private byte _brightness = 127;
         private ushort _infillGenThickness = 10;
         private ushort _infillGenSpacing = 20;
+        #endregion
 
         #region Overrides
         public override string Title => "Pixel dimming";
@@ -526,6 +533,103 @@ namespace UVtools.Core.Operations
                 return;
             }
         }
+
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        {
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, LayerRangeCount);
+
+            if (Pattern is null)
+            {
+                Pattern = new Matrix<byte>(2, 2)
+                {
+                    [0, 0] = 127,
+                    [0, 1] = 255,
+                    [1, 0] = 255,
+                    [1, 1] = 127,
+                };
+
+                AlternatePattern ??= new Matrix<byte>(2, 2)
+                {
+                    [0, 0] = 255,
+                    [0, 1] = 127,
+                    [1, 0] = 127,
+                    [1, 1] = 255,
+                };
+            }
+
+            AlternatePattern ??= Pattern;
+
+            using var blankMat = EmguExtensions.InitMat(slicerFile.Resolution);
+            using var matPattern = blankMat.CloneBlank();
+            using var matAlternatePattern = blankMat.CloneBlank();
+            var target = GetRoiOrDefault(blankMat);
+
+            CvInvoke.Repeat(Pattern, target.Rows / Pattern.Rows + 1, target.Cols / Pattern.Cols + 1, matPattern);
+            CvInvoke.Repeat(AlternatePattern, target.Rows / AlternatePattern.Rows + 1, target.Cols / AlternatePattern.Cols + 1, matAlternatePattern);
+
+            using var patternMask = new Mat(matPattern, new Rectangle(0, 0, target.Width, target.Height));
+            using var alternatePatternMask = new Mat(matAlternatePattern, new Rectangle(0, 0, target.Width, target.Height));
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+                using var mat = slicerFile[layerIndex].LayerMat;
+                Execute(mat, layerIndex, patternMask, alternatePatternMask);
+                slicerFile[layerIndex].LayerMat = mat;
+                
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+
+            progress.Token.ThrowIfCancellationRequested();
+            return true;
+        }
+
+        public override bool Execute(Mat mat, params object[] arguments)
+        {
+            if (arguments is null || arguments.Length < 2) return false;
+            var anchor = new Point(-1, -1);
+            var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+
+            uint layerIndex = Convert.ToUInt32(arguments[0]);
+            Mat patternMask = (Mat)arguments[1];
+            Mat alternatePatternMask = arguments.Length >= 3 && arguments[2] is not null ? (Mat)arguments[2] : patternMask;
+
+            int wallThickness = LayerManager.MutateGetIterationChamfer(
+                layerIndex,
+                LayerIndexStart,
+                LayerIndexEnd,
+                (int)WallThicknessStart,
+                (int)WallThicknessEnd,
+                Chamfer
+            );
+
+
+            using Mat erode = new Mat();
+            using Mat diff = new Mat();
+            Mat target = GetRoiOrDefault(mat);
+
+
+            CvInvoke.Erode(target, erode, kernel, anchor, wallThickness, BorderType.Reflect101, default);
+            CvInvoke.Subtract(target, erode, diff);
+
+
+            if (WallsOnly)
+            {
+                CvInvoke.BitwiseAnd(diff, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target);
+                CvInvoke.Add(erode, target, target);
+            }
+            else
+            {
+                CvInvoke.BitwiseAnd(erode, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target);
+                CvInvoke.Add(target, diff, target);
+            }
+
+            return true;
+        }
+
         #endregion
     }
 }

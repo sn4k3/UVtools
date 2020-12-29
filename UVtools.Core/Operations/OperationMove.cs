@@ -6,9 +6,12 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.Text;
+using System.Threading.Tasks;
+using Emgu.CV;
+using Emgu.CV.Structure;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -16,6 +19,7 @@ namespace UVtools.Core.Operations
     [Serializable]
     public class OperationMove : Operation
     {
+        #region Overrides
         public override string Title => "Move";
         public override string Description =>
             "Change or copy the position of the model on the build plate.\n" +
@@ -45,6 +49,15 @@ namespace UVtools.Core.Operations
             return new StringTag(sb.ToString());
         }
 
+        public override string ToString()
+        {
+            var result = $"[{ROI} -> {DstRoi}] [Cut: {IsCutMove}]" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
+        #endregion
+
+        #region Members
         private Rectangle _dstRoi = Rectangle.Empty;
         private uint _imageWidth;
         private uint _imageHeight;
@@ -55,6 +68,9 @@ namespace UVtools.Core.Operations
         private int _marginBottom;
         private bool _isCutMove = true;
         private bool _isWithinBoundary;
+        #endregion
+
+        #region Properties
 
         public Rectangle DstRoi
         {
@@ -65,59 +81,6 @@ namespace UVtools.Core.Operations
                 return _dstRoi;
             }
         }
-
-        public void CalculateDstRoi()
-        {
-            _dstRoi.Size = ROI.Size;
-
-            switch (Anchor)
-            {
-                case Enumerations.Anchor.TopLeft:
-                    _dstRoi.Location = new Point(0, 0);
-                    break;
-                case Enumerations.Anchor.TopCenter:
-                    _dstRoi.Location = new Point((int)(ImageWidth / 2 - ROI.Width / 2), 0);
-                    break;
-                case Enumerations.Anchor.TopRight:
-                    _dstRoi.Location = new Point((int)(ImageWidth - ROI.Width), 0);
-                    break;
-                case Enumerations.Anchor.MiddleLeft:
-                    _dstRoi.Location = new Point(0, (int)(ImageHeight / 2 - ROI.Height / 2));
-                    break;
-                case Enumerations.Anchor.MiddleCenter:
-                //case Anchor.None:
-                    _dstRoi.Location = new Point((int)(ImageWidth / 2 - ROI.Width / 2), (int)(ImageHeight / 2 - ROI.Height / 2));
-                    break;
-                case Enumerations.Anchor.MiddleRight:
-                    _dstRoi.Location = new Point((int)(ImageWidth - ROI.Width), (int)(ImageHeight / 2 - ROI.Height / 2));
-                    break;
-                case Enumerations.Anchor.BottomLeft:
-                    _dstRoi.Location = new Point(0, (int)(ImageHeight - ROI.Height));
-                    break;
-                case Enumerations.Anchor.BottomCenter:
-                    _dstRoi.Location = new Point((int)(ImageWidth / 2 - ROI.Width / 2), (int)(ImageHeight - ROI.Height));
-                    break;
-                case Enumerations.Anchor.BottomRight:
-                    _dstRoi.Location = new Point((int)(ImageWidth - ROI.Width), (int)(ImageHeight - ROI.Height));
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            _dstRoi.X += MarginLeft;
-            _dstRoi.X -= MarginRight;
-            _dstRoi.Y += MarginTop;
-            _dstRoi.Y -= MarginBottom;
-
-            IsWithinBoundary = !(DstRoi.IsEmpty || DstRoi.X < 0 || DstRoi.Y < 0 ||
-                                 DstRoi.Width == 0 || DstRoi.Right > ImageWidth ||
-                                 DstRoi.Height == 0 || DstRoi.Bottom > ImageHeight);
-
-            RaisePropertyChanged(nameof(DstRoi));
-            RaisePropertyChanged(nameof(LocationXStr));
-            RaisePropertyChanged(nameof(LocationYStr));
-        }
-
 
         public uint ImageWidth
         {
@@ -205,6 +168,61 @@ namespace UVtools.Core.Operations
 
         public string IsWithinBoundaryStr => "Model within boundary: " + (_isWithinBoundary ? "Yes" : "No");
 
+        #endregion
+
+        #region Methods
+        public void CalculateDstRoi()
+        {
+            _dstRoi.Size = ROI.Size;
+
+            switch (Anchor)
+            {
+                case Enumerations.Anchor.TopLeft:
+                    _dstRoi.Location = new Point(0, 0);
+                    break;
+                case Enumerations.Anchor.TopCenter:
+                    _dstRoi.Location = new Point((int)(ImageWidth / 2 - ROI.Width / 2), 0);
+                    break;
+                case Enumerations.Anchor.TopRight:
+                    _dstRoi.Location = new Point((int)(ImageWidth - ROI.Width), 0);
+                    break;
+                case Enumerations.Anchor.MiddleLeft:
+                    _dstRoi.Location = new Point(0, (int)(ImageHeight / 2 - ROI.Height / 2));
+                    break;
+                case Enumerations.Anchor.MiddleCenter:
+                //case Anchor.None:
+                    _dstRoi.Location = new Point((int)(ImageWidth / 2 - ROI.Width / 2), (int)(ImageHeight / 2 - ROI.Height / 2));
+                    break;
+                case Enumerations.Anchor.MiddleRight:
+                    _dstRoi.Location = new Point((int)(ImageWidth - ROI.Width), (int)(ImageHeight / 2 - ROI.Height / 2));
+                    break;
+                case Enumerations.Anchor.BottomLeft:
+                    _dstRoi.Location = new Point(0, (int)(ImageHeight - ROI.Height));
+                    break;
+                case Enumerations.Anchor.BottomCenter:
+                    _dstRoi.Location = new Point((int)(ImageWidth / 2 - ROI.Width / 2), (int)(ImageHeight - ROI.Height));
+                    break;
+                case Enumerations.Anchor.BottomRight:
+                    _dstRoi.Location = new Point((int)(ImageWidth - ROI.Width), (int)(ImageHeight - ROI.Height));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            _dstRoi.X += MarginLeft;
+            _dstRoi.X -= MarginRight;
+            _dstRoi.Y += MarginTop;
+            _dstRoi.Y -= MarginBottom;
+
+            IsWithinBoundary = !(DstRoi.IsEmpty || DstRoi.X < 0 || DstRoi.Y < 0 ||
+                                 DstRoi.Width == 0 || DstRoi.Right > ImageWidth ||
+                                 DstRoi.Height == 0 || DstRoi.Bottom > ImageHeight);
+
+            RaisePropertyChanged(nameof(DstRoi));
+            RaisePropertyChanged(nameof(LocationXStr));
+            RaisePropertyChanged(nameof(LocationYStr));
+        }
+
         public OperationMove()
         {
         }
@@ -220,8 +238,8 @@ namespace UVtools.Core.Operations
         public OperationMove(Rectangle srcRoi, Size resolution, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter)
         {
             ROI = srcRoi;
-            ImageWidth = (uint) resolution.Width;
-            ImageHeight = (uint) resolution.Height;
+            ImageWidth = (uint)resolution.Width;
+            ImageHeight = (uint)resolution.Height;
             Anchor = anchor;
         }
 
@@ -239,18 +257,64 @@ namespace UVtools.Core.Operations
         }
 
 
-
         public bool ValidateBounds()
         {
             CalculateDstRoi();
             return IsWithinBoundary;
         }
 
-        public override string ToString()
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
         {
-            var result = $"[{ROI} -> {DstRoi}] [Cut: {IsCutMove}]" + LayerRangeString;
-            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
-            return result;
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, LayerRangeCount);
+
+            if (ROI == Rectangle.Empty) ROI = slicerFile.LayerManager.GetBoundingRectangle(progress);
+
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+
+                using (var mat = slicerFile[layerIndex].LayerMat)
+                {
+                    Execute(mat);
+                    slicerFile[layerIndex].LayerMat = mat;
+                }
+
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+
+            slicerFile.LayerManager.BoundingRectangle = Rectangle.Empty;
+
+            progress.Token.ThrowIfCancellationRequested();
+
+            return true;
         }
+
+        public override bool Execute(Mat mat, params object[] arguments)
+        {
+
+            if (ImageWidth == 0) ImageWidth = (uint) mat.Width;
+            if (ImageHeight == 0) ImageHeight = (uint) mat.Height;
+
+            using var srcRoi = new Mat(mat, ROI);
+            using var dstRoi = new Mat(mat, DstRoi);
+            if (IsCutMove)
+            {
+                using var targetRoi = srcRoi.Clone();
+                srcRoi.SetTo(new MCvScalar(0));
+                targetRoi.CopyTo(dstRoi);
+            }
+            else
+            {
+                srcRoi.CopyTo(dstRoi);
+            }
+
+            return true;
+        }
+
+        #endregion
     }
 }

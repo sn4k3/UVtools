@@ -17,8 +17,11 @@ namespace UVtools.Core.Operations
     [Serializable]
     public class OperationEditParameters : Operation
     {
+        #region Members
         private bool _perLayerOverride;
+        #endregion
 
+        #region Overrides
         public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
 
         public override bool CanROI => false;
@@ -75,6 +78,9 @@ namespace UVtools.Core.Operations
 
             return new StringTag(sb.ToString());
         }
+        #endregion
+
+        #region Propertiers
 
         public FileFormat.PrintParameterModifier[] Modifiers { get; set; }
 
@@ -86,6 +92,7 @@ namespace UVtools.Core.Operations
             get => _perLayerOverride;
             set => RaiseAndSetIfChanged(ref _perLayerOverride, value);
         }
+        #endregion
 
         public OperationEditParameters()
         {
@@ -95,5 +102,15 @@ namespace UVtools.Core.Operations
         {
             Modifiers = modifiers;
         }
+
+        #region Methods
+
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        {
+            slicerFile.EditPrintParameters(this);
+            return true;
+        }
+
+        #endregion
     }
 }

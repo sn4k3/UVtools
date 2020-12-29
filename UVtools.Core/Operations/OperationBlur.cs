@@ -7,8 +7,12 @@
  */
 
 using System;
+using System.Drawing;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
+using Emgu.CV;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -117,6 +121,66 @@ namespace UVtools.Core.Operations
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
         }
+
+        #endregion
+
+        #region Methods
+
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        {
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, LayerRangeCount);
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+                using (var mat = slicerFile[layerIndex].LayerMat)
+                {
+                    Execute(mat);
+                    slicerFile[layerIndex].LayerMat = mat;
+                }
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+            progress.Token.ThrowIfCancellationRequested();
+
+            return true;
+        }
+
+        public override bool Execute(Mat mat, params object[] arguments)
+        {
+            Size size = new Size((int)Size, (int)Size);
+            Point anchor = Kernel.Anchor;
+            if (anchor.IsEmpty) anchor = new Point(-1, -1);
+            //if (size.IsEmpty) size = new Size(3, 3);
+            //if (anchor.IsEmpty) anchor = new Point(-1, -1);
+            Mat target = GetRoiOrDefault(mat);
+            switch (BlurOperation)
+            {
+                case BlurAlgorithm.Blur:
+                    CvInvoke.Blur(target, target, size, Kernel.Anchor);
+                    break;
+                case BlurAlgorithm.Pyramid:
+                    CvInvoke.PyrDown(target, target);
+                    CvInvoke.PyrUp(target, target);
+                    break;
+                case BlurAlgorithm.MedianBlur:
+                    CvInvoke.MedianBlur(target, target, (int)Size);
+                    break;
+                case BlurAlgorithm.GaussianBlur:
+                    CvInvoke.GaussianBlur(target, target, size, 0);
+                    break;
+                case BlurAlgorithm.Filter2D:
+                    CvInvoke.Filter2D(target, target, Kernel.Matrix, anchor);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            return true;
+        }
+
 
         #endregion
 

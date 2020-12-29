@@ -7,7 +7,9 @@
  */
 
 using System;
+using System.Drawing;
 using System.Text;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -15,7 +17,9 @@ namespace UVtools.Core.Operations
     [Serializable]
     public sealed class OperationLayerClone : Operation
     {
+        #region Members
         private uint _clones = 1;
+        #endregion
 
         #region Overrides
 
@@ -50,6 +54,13 @@ namespace UVtools.Core.Operations
             return new StringTag(sb.ToString());
         }
 
+        public override string ToString()
+        {
+            var result = $"[Clones: {Clones}]" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
+
         #endregion
 
         #region Properties
@@ -65,11 +76,45 @@ namespace UVtools.Core.Operations
 
         #endregion
 
-        public override string ToString()
+        #region Methods
+
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
         {
-            var result = $"[Clones: {Clones}]" + LayerRangeString;
-            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
-            return result;
+            var oldLayers = slicerFile.LayerManager.Layers;
+
+            uint totalClones = (LayerIndexEnd - LayerIndexStart + 1) * Clones;
+            uint newLayerCount = (uint) (oldLayers.Length + totalClones);
+            var layers = new Layer[newLayerCount];
+
+            progress.Reset(ProgressAction, totalClones);
+
+            uint newLayerIndex = 0;
+            for (uint layerIndex = 0; layerIndex < oldLayers.Length; layerIndex++)
+            {
+                layers[newLayerIndex] = oldLayers[layerIndex];
+                if (layerIndex >= LayerIndexStart && layerIndex <= LayerIndexEnd)
+                {
+                    for (uint i = 0; i < Clones; i++)
+                    {
+                        newLayerIndex++;
+                        layers[newLayerIndex] = oldLayers[layerIndex].Clone();
+                        layers[newLayerIndex].IsModified = true;
+
+                        progress++;
+                    }
+                }
+
+                newLayerIndex++;
+            }
+
+            slicerFile.LayerManager.Layers = layers;
+            slicerFile.RequireFullEncode = true;
+
+            progress.Token.ThrowIfCancellationRequested();
+
+            return true;
         }
+
+        #endregion
     }
 }

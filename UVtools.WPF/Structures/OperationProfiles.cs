@@ -32,6 +32,7 @@ namespace UVtools.WPF.Structures
         //[XmlElement(typeof(OperationMask))]
         [XmlElement(typeof(OperationMorph))]
         [XmlElement(typeof(OperationRaftRelief))]
+        [XmlElement(typeof(OperationRedrawModel))]
         //[XmlElement(typeof(OperationMove))]
         //[XmlElement(typeof(OperationPattern))]
         [XmlElement(typeof(OperationPixelDimming))]
@@ -42,6 +43,7 @@ namespace UVtools.WPF.Structures
         [XmlElement(typeof(OperationThreshold))]
         [XmlElement(typeof(OperationCalibrateElephantFoot))]
         [XmlElement(typeof(OperationCalibrateXYZAccuracy))]
+        [XmlElement(typeof(OperationCalibrateTolerance))]
         [XmlElement(typeof(OperationCalibrateGrayscale))]
         public List<Operation> Operations { get; internal set; } = new List<Operation>();
 

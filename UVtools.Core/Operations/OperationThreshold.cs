@@ -7,17 +7,23 @@
  */
 
 using System;
+using System.Threading.Tasks;
+using Emgu.CV;
 using Emgu.CV.CvEnum;
+using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations
 {
     [Serializable]
     public class OperationThreshold : Operation
     {
+        #region Members
         private byte _threshold = 127;
         private byte _maximum = 255;
         private ThresholdType _type = ThresholdType.Binary;
+        #endregion
 
+        #region Overrides
         public override string Title => "Threshold pixels";
         public override string Description =>
             "Manipulate pixel values based on a threshold.\n\n" +
@@ -33,6 +39,15 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Thresholded layers";
 
+        public override string ToString()
+        {
+            var result = $"[{_type} = {_threshold} / {_maximum}]" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
+        #endregion
+
+        #region Properties
         public byte Threshold
         {
             get => _threshold;
@@ -52,13 +67,41 @@ namespace UVtools.Core.Operations
         }
 
         public static Array ThresholdTypes => Enum.GetValues(typeof(ThresholdType));
+        #endregion
 
-        public override string ToString()
+        #region Methods
+
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
         {
-            var result = $"[{_type} = {_threshold} / {_maximum}]" + LayerRangeString;
-            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
-            return result;
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, LayerRangeCount);
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+                using (var mat = slicerFile[layerIndex].LayerMat)
+                {
+                    Execute(mat);
+                    slicerFile[layerIndex].LayerMat = mat;
+                }
+
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+            progress.Token.ThrowIfCancellationRequested();
+
+            return true;
         }
+
+        public override bool Execute(Mat mat, params object[] arguments)
+        {
+            Mat target = GetRoiOrDefault(mat);
+            CvInvoke.Threshold(target, target, Threshold, Maximum, Type);
+            return true;
+        }
+
+        #endregion
 
         #region Equality
 

@@ -8,8 +8,10 @@
 
 using System;
 using System.Drawing;
+using System.Reflection.Metadata.Ecma335;
 using System.Xml.Serialization;
 using Emgu.CV;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -181,6 +183,16 @@ namespace UVtools.Core.Operations
 
                 return $" [Layers: {LayerRangeSelection}]";
             }
+        }
+
+        public virtual bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual bool Execute(Mat mat, params object[] arguments)
+        {
+            throw new NotImplementedException();
         }
 
         public virtual void Dispose() { }

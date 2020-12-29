@@ -7,17 +7,26 @@
  */
 
 using System;
+using System.Drawing;
+using System.Threading.Tasks;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
+using UVtools.Core.Extensions;
+using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations
 {
     [Serializable]
     public sealed class OperationInfill : Operation
     {
+        #region Members
         private InfillAlgorithm _infillType = InfillAlgorithm.CubicDynamicLink;
         private ushort _wallThickness = 64;
         private ushort _infillThickness = 45;
         private ushort _infillSpacing = 160;
         private ushort _infillBrightness = 255;
+        #endregion
 
         #region Overrides
 
@@ -89,7 +98,200 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Equality
-        
+
+        #endregion
+
+        #region Methods
+
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        {
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, LayerRangeCount);
+
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+
+                using var mat = slicerFile[layerIndex].LayerMat;
+                Execute(mat, layerIndex);
+                slicerFile[layerIndex].LayerMat = mat;
+                
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+
+            return true;
+        }
+
+        public override bool Execute(Mat mat, params object[] arguments)
+        {
+            if (arguments is null || arguments.Length < 1) return false;
+            var anchor = new Point(-1, -1);
+            var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+            uint index = Convert.ToUInt32(arguments[0]);
+            uint layerIndex = index - LayerIndexStart;
+            var infillColor = new MCvScalar(InfillBrightness);
+
+            Mat patternMask = null;
+            using Mat erode = new Mat();
+            using Mat diff = new Mat();
+            Mat target = GetRoiOrDefault(mat);
+
+             
+            if (InfillType == InfillAlgorithm.Cubic ||
+                InfillType == InfillAlgorithm.CubicCenterLink ||
+                InfillType == InfillAlgorithm.CubicDynamicLink ||
+                InfillType == InfillAlgorithm.CubicInterlinked)
+            {
+                using var infillPattern = EmguExtensions.InitMat(new Size(InfillSpacing, InfillSpacing));
+                using Mat matPattern = mat.CloneBlank();
+                bool firstPattern = true;
+                uint accumulator = 0;
+                uint step = 0;
+                bool dynamicCenter = false;
+                while (accumulator < layerIndex)
+                {
+                    dynamicCenter = !dynamicCenter;
+                    firstPattern = true;
+                    accumulator += InfillSpacing;
+
+                    if (accumulator >= layerIndex) break;
+                    firstPattern = false;
+                    accumulator += InfillThickness;
+                }
+
+                if (firstPattern)
+                {
+                    int thickness = InfillThickness / 2;
+                    // Top Left
+                    CvInvoke.Rectangle(infillPattern,
+                        new Rectangle(0, 0, thickness, thickness),
+                        infillColor, -1);
+
+                    // Top Right
+                    CvInvoke.Rectangle(infillPattern,
+                        new Rectangle(infillPattern.Width - thickness, 0, thickness, thickness),
+                        infillColor, -1);
+
+                    // Bottom Left
+                    CvInvoke.Rectangle(infillPattern,
+                        new Rectangle(0, infillPattern.Height - thickness, thickness, thickness),
+                        infillColor, -1);
+
+                    // Bottom Right
+                    CvInvoke.Rectangle(infillPattern,
+                        new Rectangle(infillPattern.Width - thickness, infillPattern.Height - thickness,
+                            thickness, thickness),
+                        infillColor, -1);
+
+                    // Center cross
+                    int margin = (int) (InfillSpacing - accumulator + layerIndex) - thickness;
+                    int marginInv = (int) (accumulator - layerIndex) - thickness;
+
+                    if (InfillType == InfillAlgorithm.CubicCenterLink ||
+                        (InfillType == InfillAlgorithm.CubicDynamicLink &&
+                         dynamicCenter) ||
+                        InfillType == InfillAlgorithm.CubicInterlinked)
+                    {
+
+                        CvInvoke.Rectangle(infillPattern,
+                            new Rectangle(margin, margin, InfillThickness, InfillThickness),
+                            infillColor, -1);
+
+                        CvInvoke.Rectangle(infillPattern,
+                            new Rectangle(marginInv, marginInv, InfillThickness,
+                                InfillThickness),
+                            infillColor, -1);
+
+                        CvInvoke.Rectangle(infillPattern,
+                            new Rectangle(margin, marginInv, InfillThickness,
+                                InfillThickness),
+                            infillColor, -1);
+
+                        CvInvoke.Rectangle(infillPattern,
+                            new Rectangle(marginInv, margin, InfillThickness,
+                                InfillThickness),
+                            infillColor, -1);
+                    }
+
+
+                    if (InfillType == InfillAlgorithm.CubicInterlinked ||
+                        (InfillType == InfillAlgorithm.CubicDynamicLink &&
+                         !dynamicCenter))
+                    {
+                        CvInvoke.Rectangle(infillPattern,
+                            new Rectangle(margin, -thickness, InfillThickness,
+                                InfillThickness),
+                            infillColor, -1);
+
+                        CvInvoke.Rectangle(infillPattern,
+                            new Rectangle(marginInv, -thickness, InfillThickness,
+                                InfillThickness),
+                            infillColor, -1);
+
+                        CvInvoke.Rectangle(infillPattern,
+                            new Rectangle(-thickness, margin, InfillThickness,
+                                InfillThickness),
+                            infillColor, -1);
+
+                        CvInvoke.Rectangle(infillPattern,
+                            new Rectangle(-thickness, marginInv, InfillThickness,
+                                InfillThickness),
+                            infillColor, -1);
+
+                        CvInvoke.Rectangle(infillPattern,
+                            new Rectangle(InfillSpacing - thickness, margin,
+                                InfillThickness, InfillThickness),
+                            infillColor, -1);
+
+                        CvInvoke.Rectangle(infillPattern,
+                            new Rectangle(InfillSpacing - thickness, marginInv,
+                                InfillThickness, InfillThickness),
+                            infillColor, -1);
+
+                        CvInvoke.Rectangle(infillPattern,
+                            new Rectangle(margin, InfillSpacing - thickness,
+                                InfillThickness, InfillThickness),
+                            infillColor, -1);
+
+                        CvInvoke.Rectangle(infillPattern,
+                            new Rectangle(marginInv, InfillSpacing - thickness,
+                                InfillThickness, InfillThickness),
+                            infillColor, -1);
+                    }
+
+
+                }
+                else
+                {
+                    CvInvoke.Rectangle(infillPattern,
+                        new Rectangle(0, 0, InfillSpacing, InfillSpacing),
+                        infillColor, InfillThickness);
+                }
+
+
+                {
+                    CvInvoke.Repeat(infillPattern, target.Rows / infillPattern.Rows + 1,
+                        target.Cols / infillPattern.Cols + 1, matPattern);
+                    patternMask = new Mat(matPattern, new Rectangle(0, 0, target.Width, target.Height));
+                }
+            }
+
+
+            CvInvoke.Erode(target, erode, kernel, anchor, WallThickness, BorderType.Reflect101,
+                default);
+            CvInvoke.Subtract(target, erode, diff);
+
+
+            CvInvoke.BitwiseAnd(erode, patternMask, target);
+            CvInvoke.Add(target, diff, target);
+            patternMask?.Dispose();
+
+            return true;
+        }
+
         #endregion
     }
 }

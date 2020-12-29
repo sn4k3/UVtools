@@ -7,6 +7,13 @@
  */
 
 using System;
+using System.Threading.Tasks;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
+using Emgu.CV.Util;
+using UVtools.Core.Extensions;
+using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations
 {
@@ -59,6 +66,62 @@ namespace UVtools.Core.Operations
             var result = $"[Area: ={_areaCheckType} than {_minimumArea}px²]" + LayerRangeString;
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
+        }
+
+        #endregion
+
+        #region Methods
+
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        {
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, LayerRangeCount);
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+                using var mat = slicerFile[layerIndex].LayerMat;
+                Execute(mat);
+                slicerFile[layerIndex].LayerMat = mat;
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+            progress.Token.ThrowIfCancellationRequested();
+            return true;
+        }
+
+        public override bool Execute(Mat mat, params object[] arguments)
+        {
+            using Mat filteredMat = new Mat();
+            using VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
+            using Mat hierarchy = new Mat();
+            Mat target = GetRoiOrDefault(mat);
+
+            CvInvoke.Threshold(target, filteredMat, 127, 255, ThresholdType.Binary); // Clean AA
+            CvInvoke.FindContours(filteredMat, contours, hierarchy, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
+            var arr = hierarchy.GetData();
+            for (int i = 0; i < contours.Size; i++)
+            {
+                if ((int)arr.GetValue(0, i, 2) != -1 || (int)arr.GetValue(0, i, 3) == -1) continue;
+                if (MinimumArea >= 1)
+                {
+                    var rectangle = CvInvoke.BoundingRectangle(contours[i]);
+                    if (AreaCheckType == AreaCheckTypes.More)
+                    {
+                        if (rectangle.GetArea() < MinimumArea) continue;
+                    }
+                    else
+                    {
+                        if (rectangle.GetArea() > MinimumArea) continue;
+                    }
+
+                }
+
+                CvInvoke.DrawContours(target, contours, i, new MCvScalar(255), -1);
+            }
+
+            return true;
         }
 
         #endregion

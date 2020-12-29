@@ -9,6 +9,9 @@
 using System;
 using System.Drawing;
 using System.Text;
+using System.Threading.Tasks;
+using Emgu.CV;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -16,8 +19,10 @@ namespace UVtools.Core.Operations
     [Serializable]
     public sealed class OperationChangeResolution : Operation
     {
+        #region Members
         private uint _newResolutionX;
         private uint _newResolutionY;
+        #endregion
 
         #region Subclasses
         public class Resolution
@@ -84,6 +89,13 @@ namespace UVtools.Core.Operations
             return new StringTag(sb.ToString());
         }
 
+        public override string ToString()
+        {
+            var result = $"{_newResolutionX} x {_newResolutionY}";
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
+
         #endregion
 
         #region Properties
@@ -146,12 +158,54 @@ namespace UVtools.Core.Operations
 
         public static Resolution[] Presets => GetResolutions();
 
-        public override string ToString()
+
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
         {
-            var result = $"{_newResolutionX} x {_newResolutionY}";
-            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
-            return result;
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, slicerFile.LayerCount);
+
+            Parallel.For(0, slicerFile.LayerCount, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+
+                using var mat = slicerFile[layerIndex].LayerMat;
+                using var matRoi = new Mat(mat, VolumeBonds);
+                using var matDst = new Mat(new Size((int)NewResolutionX, (int)NewResolutionY), mat.Depth, mat.NumberOfChannels);
+                using var matDstRoi = new Mat(matDst,
+                    new Rectangle((int)(NewResolutionX / 2 - VolumeBonds.Width / 2),
+                        (int)NewResolutionY / 2 - VolumeBonds.Height / 2,
+                        VolumeBonds.Width, VolumeBonds.Height));
+                matRoi.CopyTo(matDstRoi);
+                //Execute(mat);
+                slicerFile[layerIndex].LayerMat = matDst;
+
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+
+            progress.Token.ThrowIfCancellationRequested();
+
+            slicerFile.ResolutionX = NewResolutionX;
+            slicerFile.ResolutionY = NewResolutionY;
+
+            return true;
         }
+
+        /*public override bool Execute(Mat mat, params object[] arguments)
+        {
+            //mat.Transform(1, 1, newResolutionX-mat.Width+roi.Width, newResolutionY-mat.Height - roi.Height/2, new Size((int) newResolutionX, (int) newResolutionY));
+            using var matRoi = new Mat(mat, VolumeBonds);
+            using var matDst = new Mat(new Size((int)NewResolutionX, (int)NewResolutionY), mat.Depth, mat.NumberOfChannels);
+            using var matDstRoi = new Mat(matDst, 
+                    new Rectangle((int)(NewResolutionX / 2 - VolumeBonds.Width / 2),
+                    (int)NewResolutionY / 2 - VolumeBonds.Height / 2,
+                    VolumeBonds.Width, VolumeBonds.Height));
+            matRoi.CopyTo(matDstRoi);
+
+            return true;
+        }*/
 
         #endregion
 

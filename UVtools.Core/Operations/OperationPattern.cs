@@ -9,6 +9,10 @@
 using System;
 using System.Drawing;
 using System.Text;
+using System.Threading.Tasks;
+using Emgu.CV;
+using UVtools.Core.Extensions;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -16,6 +20,7 @@ namespace UVtools.Core.Operations
     [Serializable]
     public class OperationPattern : Operation
     {
+        #region Members
         private Enumerations.Anchor _anchor = Enumerations.Anchor.None;
         private ushort _colSpacing;
         private ushort _rowSpacing;
@@ -26,6 +31,7 @@ namespace UVtools.Core.Operations
         private ushort _maxCols;
         private ushort _maxRows;
         private bool _isWithinBoundary = true;
+        #endregion
 
         #region Overrides
 
@@ -62,6 +68,7 @@ namespace UVtools.Core.Operations
 
         #endregion
 
+        #region Properties
         public Enumerations.Anchor Anchor
         {
             get => _anchor;
@@ -176,7 +183,8 @@ namespace UVtools.Core.Operations
 
         public string InfoModelWithinBoundaryStr => "Model within boundary: " + (_isWithinBoundary ? "Yes" : "No");
 
-        public Size GetPatternVolume => new Size(Cols * ROI.Width + (Cols - 1) * ColSpacing, Rows * ROI.Height + (Rows - 1) * RowSpacing);
+        public Size GetPatternVolume => new(Cols * ROI.Width + (Cols - 1) * ColSpacing, Rows * ROI.Height + (Rows - 1) * RowSpacing);
+        #endregion
 
         public OperationPattern()
         {
@@ -191,6 +199,7 @@ namespace UVtools.Core.Operations
             Fill();
         }
 
+        #region Methods
         public void SetAnchor(byte value)
         {
             Anchor = (Enumerations.Anchor)value;
@@ -262,5 +271,64 @@ namespace UVtools.Core.Operations
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
         }
+
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        {
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, LayerRangeCount);
+
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+
+                using var mat = slicerFile[layerIndex].LayerMat;
+                using var layerRoi = new Mat(mat, ROI);
+                using var dstLayer = mat.CloneBlank();
+                for (ushort col = 0; col < Cols; col++)
+                for (ushort row = 0; row < Rows; row++)
+                {
+                    var roi = GetRoi(col, row);
+                    using var dstRoi = new Mat(dstLayer, roi);
+                    layerRoi.CopyTo(dstRoi);
+                }
+                //Execute(mat);
+                slicerFile[layerIndex].LayerMat = dstLayer;
+
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
+
+            slicerFile.LayerManager.BoundingRectangle = Rectangle.Empty;
+
+            progress.Token.ThrowIfCancellationRequested();
+
+            if (Anchor == Enumerations.Anchor.None) return true;
+            var operationMove = new OperationMove(slicerFile.LayerManager.BoundingRectangle, ImageWidth, ImageHeight, Anchor)
+            {
+                LayerIndexStart = LayerIndexStart,
+                LayerIndexEnd = LayerIndexEnd
+            };
+            operationMove.Execute(slicerFile, progress);
+
+            return true;
+        }
+
+        /*public override bool Execute(Mat mat, params object[] arguments)
+        {
+            using var layerRoi = new Mat(mat, ROI);
+            using var dstLayer = mat.CloneBlank();
+            for (ushort col = 0; col < Cols; col++)
+            for (ushort row = 0; row < Rows; row++)
+            {
+                var dstRoi = new Mat(dstLayer, GetRoi(col, row));
+                layerRoi.CopyTo(dstRoi);
+            }
+
+            return true;
+        }*/
+
+        #endregion
     }
 }

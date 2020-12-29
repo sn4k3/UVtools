@@ -8,9 +8,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
+using Emgu.CV;
 using UVtools.Core.Extensions;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -18,7 +19,9 @@ namespace UVtools.Core.Operations
     [Serializable]
     public sealed class OperationLayerReHeight : Operation
     {
+        #region Members
         private OperationLayerReHeightItem _item;
+        #endregion
 
         #region Overrides
 
@@ -38,8 +41,6 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Height adjusted layers";
 
-        public override bool CanCancel => false;
-
         public override bool CanHaveProfiles => false;
 
         public override StringTag Validate(params object[] parameters)
@@ -55,8 +56,15 @@ namespace UVtools.Core.Operations
             return new StringTag(sb.ToString());
         }
 
+        public override string ToString()
+        {
+            var result = $"[Layer Count: {Item.LayerCount}] [Layer Height: {Item.LayerHeight}]" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
+        }
         #endregion
 
+        #region Properties
         public OperationLayerReHeightItem Item
         {
             get => _item;
@@ -89,8 +97,9 @@ namespace UVtools.Core.Operations
 
             return list.ToArray();
         }
+        #endregion
 
-
+        #region Subclasses
         public class OperationLayerReHeightItem
         {
             public bool IsMultiply { get; }
@@ -112,12 +121,62 @@ namespace UVtools.Core.Operations
                 return (IsMultiply ? 'x' : '÷') + $" {Modifier} → {LayerCount} layers at {LayerHeight}mm";
             }
         }
+        #endregion
 
-        public override string ToString()
+        #region Methods
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
         {
-            var result = $"[Layer Count: {Item.LayerCount}] [Layer Height: {Item.LayerHeight}]" + LayerRangeString;
-            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
-            return result;
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, Item.LayerCount);
+
+            var oldLayers = slicerFile.LayerManager.Layers;
+
+            var layers = new Layer[Item.LayerCount];
+
+            uint newLayerIndex = 0;
+            for (uint layerIndex = 0; layerIndex < oldLayers.Length; layerIndex++)
+            {
+                progress.Token.ThrowIfCancellationRequested();
+                
+                var oldLayer = oldLayers[layerIndex];
+                if (Item.IsDivision)
+                {
+                    for (byte i = 0; i < Item.Modifier; i++)
+                    {
+                        var newLayer = oldLayer.Clone();
+                        newLayer.Index = newLayerIndex;
+                        newLayer.PositionZ = (float)(Item.LayerHeight * (newLayerIndex + 1));
+                        layers[newLayerIndex] = newLayer;
+                        newLayerIndex++;
+                        progress++;
+                    }
+                }
+                else
+                {
+                    using var mat = oldLayers[layerIndex++].LayerMat;
+                    for (byte i = 1; i < Item.Modifier; i++)
+                    {
+                        using var nextMat = oldLayers[layerIndex++].LayerMat;
+                        CvInvoke.Add(mat, nextMat, mat);
+                    }
+
+                    var newLayer = oldLayer.Clone();
+                    newLayer.Index = newLayerIndex;
+                    newLayer.PositionZ = (float)(Item.LayerHeight * (newLayerIndex + 1));
+                    newLayer.LayerMat = mat;
+                    layers[newLayerIndex] = newLayer;
+                    newLayerIndex++;
+                    layerIndex--;
+                    progress++;
+                }
+            }
+
+            slicerFile.LayerManager.Layers = layers;
+            slicerFile.LayerHeight = (float)Item.LayerHeight;
+            slicerFile.RequireFullEncode = true;
+
+            return true;
         }
+        #endregion
     }
 }

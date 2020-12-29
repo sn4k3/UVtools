@@ -8,6 +8,10 @@
 
 using System;
 using System.Text;
+using System.Threading.Tasks;
+using Emgu.CV;
+using UVtools.Core.Extensions;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -15,10 +19,14 @@ namespace UVtools.Core.Operations
     [Serializable]
     public class OperationResize : Operation
     {
+        #region Members
         private decimal _x = 100;
         private decimal _y = 100;
         private bool _constrainXy;
         private bool _isFade;
+        #endregion
+
+        #region Overrides
         public override string Title => "Resize";
         public override string Description =>
             "Resize the model by a percentage in the X/Y plane.\n\n" +
@@ -47,8 +55,9 @@ namespace UVtools.Core.Operations
 
             return new StringTag(sb.ToString());
         }
+        #endregion
 
-
+        #region Properties
         public decimal X
         {
             get => _x;
@@ -57,13 +66,21 @@ namespace UVtools.Core.Operations
                 RaiseAndSetIfChanged(ref _x, value);
                 if (_constrainXy)
                     Y = value;
+                RaisePropertyChanged(nameof(XScale));
             }
         }
+
+        public decimal XScale => _x / 100m;
+        public decimal YScale => _y / 100m;
 
         public decimal Y
         {
             get => _y;
-            set => RaiseAndSetIfChanged(ref _y, value);
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _y, value)) return;
+                RaisePropertyChanged(nameof(YScale));
+            }
         }
 
         public bool ConstrainXY
@@ -84,7 +101,7 @@ namespace UVtools.Core.Operations
             get => _isFade;
             set => RaiseAndSetIfChanged(ref _isFade, value);
         }
-
+        #endregion
 
         public OperationResize()
         {
@@ -122,6 +139,83 @@ namespace UVtools.Core.Operations
                 hashCode = (hashCode * 397) ^ _isFade.GetHashCode();
                 return hashCode;
             }
+        }
+
+        #endregion
+
+        #region Methods
+
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        {
+            if (X == 1m && Y == 1m) return false;
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, LayerRangeCount);
+
+            decimal xSteps = Math.Abs(X - 1) / (LayerIndexEnd - LayerIndexStart);
+            decimal ySteps = Math.Abs(Y - 1) / (LayerIndexEnd - LayerIndexStart);
+
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+                var newX = X;
+                var newY = Y;
+                if (IsFade)
+                {
+                    if (newX != 1m)
+                    {
+
+                        //maxIteration = Math.Max(iterationsStart, iterationsEnd);
+
+                        newX = newX < 1m
+                            ? newX + (layerIndex - LayerIndexStart) * xSteps
+                            : newX - (layerIndex - LayerIndexStart) * xSteps;
+
+                        // constrain
+                        //iterations = Math.Min(Math.Max(1, iterations), maxIteration);
+                    }
+
+                    if (newY != 1m)
+                    {
+
+                        //maxIteration = Math.Max(iterationsStart, iterationsEnd);
+
+                        newY = (newY < 1m
+                            ? newY + (layerIndex - LayerIndexStart) * ySteps
+                            : newY - (layerIndex - LayerIndexStart) * ySteps);
+
+                        // constrain
+                        //iterations = Math.Min(Math.Max(1, iterations), maxIteration);
+                    }
+                }
+
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+
+                if (newX == 1.0m && newY == 1.0m) return;
+
+                using var mat = slicerFile[layerIndex].LayerMat;
+                Execute(mat, newX  / 100m, newY / 100m);
+                slicerFile[layerIndex].LayerMat = mat;
+            });
+            progress.Token.ThrowIfCancellationRequested();
+            return true;
+        }
+
+        public override bool Execute(Mat mat, params object[] arguments)
+        {
+            var xScale = XScale;
+            var yScale = YScale;
+            if (arguments is not null && arguments.Length >= 2)
+            {
+                xScale = (decimal) arguments[0];
+                yScale = (decimal) arguments[1];
+            }
+
+            var target = GetRoiOrDefault(mat);
+            target.TransformFromCenter((double) xScale, (double) yScale);
+            return true;
         }
 
         #endregion

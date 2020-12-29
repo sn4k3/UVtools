@@ -38,7 +38,7 @@ namespace UVtools.WPF
 
         public static AppVersionChecker VersionChecker { get; } = new AppVersionChecker();
 
-        public static Size MaxWindowSize;
+        public static Size MaxWindowSize = Size.Empty;
 
         public override void Initialize()
         {
@@ -84,7 +84,6 @@ namespace UVtools.WPF
                                                      $"{e}", "UVtools can not run");
                     return;
                 }
-                
 
                 desktop.MainWindow = MainWindow;
                 desktop.Exit += (sender, e) 
@@ -189,17 +188,17 @@ namespace UVtools.WPF
 
         public static string GetPrusaSlicerDirectory()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 return $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}{Path.DirectorySeparatorChar}PrusaSlicer";
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (OperatingSystem.IsLinux())
             {
                 return $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}{Path.DirectorySeparatorChar}.PrusaSlicer";
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (OperatingSystem.IsMacOS())
             {
                 return string.Format("{0}{1}Library{1}Application Support{1}PrusaSlicer",
                     Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), Path.DirectorySeparatorChar);

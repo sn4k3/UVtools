@@ -8,90 +8,123 @@
 
   <Grid
     ColumnDefinitions="Auto,10,Auto,5,Auto"
-    RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+    RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
     >
 
     <TextBlock Text="Relief type:" VerticalAlignment="Center"/>
-    <ComboBox 
-              Name="ReliefType"
+    <ComboBox Grid.Row="0"
               Grid.Column="2"
               Width="100"
               SelectedItem="{Binding Operation.ReliefType}"
               Items="{Binding Operation.RaftReliefItems}"/>
 
+
     <TextBlock
         Grid.Row="2"
-        IsVisible="{Binding !#ReliefType.SelectedIndex}"
+        Grid.Column="0"
+        Text="Ignore first:" VerticalAlignment="Center"/>
+
+    <NumericUpDown Grid.Row="2" Grid.Column="2"
+                   Width="100"
+                   Minimum="0"
+                   Maximum="255"
+                   Value="{Binding Operation.IgnoreFirstLayers}"/>
+    <TextBlock
+        Grid.Row="2" Grid.Column="4"
+        Text="layer(s)" VerticalAlignment="Center"/>
+
+    <TextBlock
+        Grid.Row="4"
+        Grid.Column="0"
+        IsVisible="{Binding !Operation.IsDecimate}"
+        Text="Pixel brightness:" VerticalAlignment="Center"/>
+
+    <NumericUpDown Grid.Row="4" Grid.Column="2"
+                   Width="100"
+                   Minimum="0"
+                   Maximum="255"
+                   IsVisible="{Binding !Operation.IsDecimate}"
+                   Value="{Binding Operation.Brightness}"/>
+    <TextBlock
+        Grid.Row="4" Grid.Column="4"
+        IsVisible="{Binding !Operation.IsDecimate}"
+        Text="{Binding Operation.BrightnessPercent, StringFormat=\{0:0.00\}%}" VerticalAlignment="Center"/>
+
+
+
+    <TextBlock
+        Grid.Row="6"
+        IsVisible="{Binding !Operation.IsDecimate}"
         Text="Supports margin:" VerticalAlignment="Center"/>
 
     <TextBlock
-      Grid.Row="2"
-      IsVisible="{Binding #ReliefType.SelectedIndex}"
+      Grid.Row="6"
+      IsVisible="{Binding Operation.IsDecimate}"
       ToolTip.Tip="Raft will be replaced by the present supports and then dilated by this value to thicken the supports and increase the adhesion. 
 &#x0a;Use large numbers with tiny supports for best adhesion."
       Text="Dilate supports by:" VerticalAlignment="Center"/>
 
-    <NumericUpDown Grid.Row="2" Grid.Column="2"
+    <NumericUpDown Grid.Row="6" Grid.Column="2"
               Width="100"
               Minimum="0"
               Maximum="255"
               Value="{Binding Operation.DilateIterations}"/>
     <TextBlock
-      Grid.Row="2" Grid.Column="4"
+      Grid.Row="6" Grid.Column="4"
       Text="px" VerticalAlignment="Center"/>
 
 
     <TextBlock
-      Grid.Row="4"
-      Text="Wall margin:" VerticalAlignment="Center"
-      IsVisible="{Binding !#ReliefType.SelectedIndex}"
-      />
-
-    <NumericUpDown Grid.Row="4" Grid.Column="2"
-              Width="100"
-              Minimum="1"
-              Maximum="255"
-              Value="{Binding Operation.WallMargin}"
-              IsVisible="{Binding !#ReliefType.SelectedIndex}"/>
-    <TextBlock
-      Grid.Row="4" Grid.Column="4"
-      Text="px" VerticalAlignment="Center"
-      IsVisible="{Binding !#ReliefType.SelectedIndex}"/>
-
-    <TextBlock
-      Grid.Row="6"
-      Text="Hole diameter:" VerticalAlignment="Center"
-      IsVisible="{Binding !#ReliefType.SelectedIndex}"
-      />
-
-    <NumericUpDown Grid.Row="6" Grid.Column="2"
-              Width="100"
-              Minimum="10"
-              Maximum="255"
-              Value="{Binding Operation.HoleDiameter}"
-              IsVisible="{Binding !#ReliefType.SelectedIndex}"/>
-    <TextBlock
-      Grid.Row="6" Grid.Column="4"
-      Text="px" VerticalAlignment="Center"
-      IsVisible="{Binding !#ReliefType.SelectedIndex}"/>
-
-    <TextBlock
       Grid.Row="8"
-      Text="Hole spacing:" VerticalAlignment="Center"
-      IsVisible="{Binding !#ReliefType.SelectedIndex}"
+      Text="Wall margin:" VerticalAlignment="Center"
+      IsVisible="{Binding !Operation.IsDecimate}"
       />
 
     <NumericUpDown Grid.Row="8" Grid.Column="2"
               Width="100"
-              Minimum="10"
+              Minimum="1"
               Maximum="255"
-              Value="{Binding Operation.HoleSpacing}"
-              IsVisible="{Binding !#ReliefType.SelectedIndex}"/>
+              Value="{Binding Operation.WallMargin}"
+              IsVisible="{Binding !Operation.IsDecimate}"/>
     <TextBlock
       Grid.Row="8" Grid.Column="4"
       Text="px" VerticalAlignment="Center"
-      IsVisible="{Binding !#ReliefType.SelectedIndex}"/>
-    
+      IsVisible="{Binding !Operation.IsDecimate}"/>
+
+    <TextBlock
+      Grid.Row="10"
+      Text="Hole diameter:" VerticalAlignment="Center"
+      IsVisible="{Binding Operation.IsRelief}"
+      />
+
+    <NumericUpDown Grid.Row="10" Grid.Column="2"
+              Width="100"
+              Minimum="10"
+              Maximum="255"
+              Value="{Binding Operation.HoleDiameter}"
+              IsVisible="{Binding Operation.IsRelief}"/>
+    <TextBlock
+      Grid.Row="10" Grid.Column="4"
+      Text="px" VerticalAlignment="Center"
+      IsVisible="{Binding Operation.IsRelief}"/>
+
+    <TextBlock
+      Grid.Row="12"
+      Text="Hole spacing:" VerticalAlignment="Center"
+      IsVisible="{Binding Operation.IsRelief}"
+      />
+
+    <NumericUpDown Grid.Row="12" Grid.Column="2"
+              Width="100"
+              Minimum="10"
+              Maximum="255"
+              Value="{Binding Operation.HoleSpacing}"
+              IsVisible="{Binding Operation.IsRelief}"/>
+    <TextBlock
+      Grid.Row="12" Grid.Column="4"
+      Text="px" VerticalAlignment="Center"
+      IsVisible="{Binding Operation.IsRelief}"/>
+
   </Grid>
 
 </UserControl>

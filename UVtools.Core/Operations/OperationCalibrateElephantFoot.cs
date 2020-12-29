@@ -16,6 +16,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -523,8 +524,7 @@ namespace UVtools.Core.Operations
                         new Rectangle(new Point(currentX, currentY), shape.Size)))
                     using (var erode = new Mat())
                     {
-                        CvInvoke.Erode(shape, erode, ErodeKernel.Matrix, ErodeKernel.Anchor, iteration, BorderType.Reflect101,
-                            default);
+                        CvInvoke.Erode(shape, erode, ErodeKernel.Matrix, ErodeKernel.Anchor, iteration, BorderType.Reflect101, default);
                         erode.CopyTo(roi);
                         addText(roi, count, $"E: {iteration}i");
                     }
@@ -608,6 +608,65 @@ namespace UVtools.Core.Operations
                 
                 thumbnail.Save("D:\\Thumbnail.png");*/
             return thumbnail;
+        }
+
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        {
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, 3);
+            slicerFile.SuppressRebuildProperties = true;
+
+            var newLayers = new Layer[LayerCount];
+
+            slicerFile.LayerHeight = (float)LayerHeight;
+            slicerFile.BottomExposureTime = (float)BottomExposure;
+            slicerFile.ExposureTime = (float)NormalExposure;
+            slicerFile.BottomLayerCount = BottomLayers;
+
+            var layers = GetLayers();
+            progress++;
+
+
+            var bottomLayer = new Layer(0, layers[0], slicerFile.LayerManager)
+            {
+                IsModified = true
+            };
+            var layer = new Layer(0, layers[1], slicerFile.LayerManager)
+            {
+                IsModified = true
+            };
+            var moveOp = new OperationMove(bottomLayer.BoundingRectangle, layers[0].Size);
+            moveOp.Execute(layers[0]);
+            moveOp.Execute(layers[1]);
+
+            bottomLayer.LayerMat = layers[0];
+            layer.LayerMat = layers[1];
+
+            progress++;
+
+            for (uint layerIndex = 0;
+                layerIndex < LayerCount;
+                layerIndex++)
+            {
+                newLayers[layerIndex] = slicerFile.GetInitialLayerValueOrNormal(layerIndex, bottomLayer.Clone(), layer.Clone());
+            }
+
+            foreach (var mat in layers)
+            {
+                mat.Dispose();
+            }
+
+            
+            if (slicerFile.ThumbnailsCount > 0)
+                slicerFile.SetThumbnails(GetThumbnail());
+
+            progress++;
+
+            slicerFile.LayerManager.Layers = newLayers;
+            slicerFile.SuppressRebuildProperties = false;
+            slicerFile.LayerManager.RebuildLayersProperties();
+
+            return true;
         }
 
         #endregion

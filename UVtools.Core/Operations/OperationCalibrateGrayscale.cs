@@ -15,6 +15,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -435,6 +436,78 @@ namespace UVtools.Core.Operations
             CvInvoke.PutText(thumbnail, $"Divs:{Divisions} Angle:{AngleStep}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
 
             return thumbnail;
+        }
+
+        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        {
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, LayerCount);
+            slicerFile.SuppressRebuildProperties = true;
+
+            var newLayers = new Layer[LayerCount];
+
+            slicerFile.LayerHeight = (float)LayerHeight;
+            slicerFile.BottomExposureTime = (float)BottomExposure;
+            slicerFile.ExposureTime = (float)NormalExposure;
+            slicerFile.BottomLayerCount = BottomLayers;
+
+            var layers = GetLayers();
+            progress++;
+
+
+            var bottomLayer = new Layer(0, layers[0], slicerFile.LayerManager)
+            {
+                IsModified = true
+            };
+            var interfaceLayer = InterfaceLayers > 0 && layers[1] is not null ? new Layer(0, layers[1], slicerFile.LayerManager)
+            {
+                IsModified = true
+            } : null;
+            var layer = new Layer(0, layers[2], slicerFile.LayerManager)
+            {
+                IsModified = true
+            };
+
+            uint layerIndex = 0;
+            for (uint i = 0; i < BottomLayers; i++)
+            {
+                newLayers[layerIndex] = bottomLayer.Clone();
+                progress++;
+                layerIndex++;
+            }
+
+            for (uint i = 0; i < InterfaceLayers; i++)
+            {
+                newLayers[layerIndex] = interfaceLayer.Clone();
+                progress++;
+                layerIndex++;
+            }
+
+
+            for (uint i = 0; i < NormalLayers; i++)
+            {
+                newLayers[layerIndex] = layer.Clone();
+                progress++;
+                layerIndex++;
+            }
+
+            foreach (var mat in layers)
+            {
+                mat?.Dispose();
+            }
+
+
+            if (slicerFile.ThumbnailsCount > 0)
+                slicerFile.SetThumbnails(GetThumbnail());
+
+            progress++;
+
+
+            slicerFile.LayerManager.Layers = newLayers;
+            slicerFile.SuppressRebuildProperties = false;
+            slicerFile.LayerManager.RebuildLayersProperties();
+            
+            return true;
         }
 
         #endregion
