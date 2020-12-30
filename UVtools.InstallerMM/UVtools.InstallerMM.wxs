@@ -810,7 +810,11 @@
           <File Id="owfF7BAF7350DBF794C7897F55847D0B0A6" Source="$(var.SourceDir)\UVtools.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc21B8C8C0F69E3CD1398B9A0674DF07BD" Guid="1e472543-e636-904d-da5b-cddaac2d36b1">
-          <File Id="owf21B8C8C0F69E3CD1398B9A0674DF07BD" Source="$(var.SourceDir)\UVtools.exe" KeyPath="yes" />
+          <File Id="owf21B8C8C0F69E3CD1398B9A0674DF07BD" Source="$(var.SourceDir)\UVtools.exe" KeyPath="yes">
+            <Shortcut Id="sc218BF75801887335D1B30BAFB94BA631" Name="UVtools" Directory="scd220707349D4C8FA275285514283F3E2A" WorkingDirectory="MergeRedirectFolder" Description="MSLA/DLP, file analysis, calibration, repair, conversion and manipulation" />
+            <Shortcut Id="sc2F2092C02FDD8EB21E756F58C31B70A7" Name="UVtools" Directory="StartMenuFolder" WorkingDirectory="MergeRedirectFolder" Description="MSLA/DLP, file analysis, calibration, repair, conversion and manipulation" />
+            <Shortcut Id="sc6327849DA5C02D2396E91B8B1892E03C" Name="UVtools" Directory="DesktopFolder" Description="MSLA/DLP, file analysis, calibration, repair, conversion and manipulation" WorkingDirectory="MergeRedirectFolder" />
+          </File>
         </Component>
         <Component Id="owc0C1077539E2B54F2460D2C0993613EFB" Guid="fc6ae2db-2865-9eb4-5753-4f2f941fdf16">
           <File Id="owf0C1077539E2B54F2460D2C0993613EFB" Source="$(var.SourceDir)\UVtools.pdb" KeyPath="yes" />

@@ -122,7 +122,13 @@ foreach ($obj in $runtimes.GetEnumerator()) {
     # Deploy
     Write-Output "################################
 Building: $runtime"
-    wsl dotnet publish $project -o "$publishFolder/$runtime" -c $buildWith -r $runtime $extraCmd
+    dotnet publish $project -o "$publishFolder/$runtime" -c $buildWith -r $runtime $extraCmd
+    if(!$runtime.Equals('win-x64'))
+    {
+        # Fix permissions
+        wsl chmod +x "$publishFolder/$runtime/UVtools" `|`| :
+        wsl chmod +x "$publishFolder/$runtime/UVtools.sh" `|`| :
+    }
     
     # Cleanup
     Remove-Item "$releaseFolder\$runtime" -Recurse -ErrorAction Ignore
@@ -145,22 +151,24 @@ Building: $runtime"
     if($runtime.Equals('osx-x64')){
         $macAppFolder = "${software}.app"
         $macPublishFolder = "$publishFolder/${macAppFolder}"
+        $macInfoplist = "$platformsFolder/$runtime/Info.plist"
+        $macOutputInfoplist = "$macPublishFolder/Contents"
 
-        wsl mkdir "$macPublishFolder"
-        wsl mkdir "$macPublishFolder/Contents"
-        wsl mkdir "$macPublishFolder/Contents/MacOS"
-        wsl mkdir "$macPublishFolder/Contents/Resources"
+        New-Item -ItemType directory -Path "$macPublishFolder"
+        New-Item -ItemType directory -Path "$macPublishFolder/Contents"
+        New-Item -ItemType directory -Path "$macPublishFolder/Contents/MacOS"
+        New-Item -ItemType directory -Path "$macPublishFolder/Contents/Resources"
 
-        $outputInfoplist = "$macPublishFolder/Contents/Info.plist"
-        wsl cp "$platformsFolder/$runtime/Info.plist" "$outputInfoplist"
-        ((Get-Content -Path "$outputInfoplist") -replace '#VERSION',"$version") | Set-Content -Path "$outputInfoplist"
-        wsl cp "$macIcns" "$macPublishFolder/Contents/Resources/$software.icns"
+        
+        Copy-Item "$macIcns" -Destination "$macPublishFolder/Contents/Resources"
+        ((Get-Content -Path "$macInfoplist") -replace '#VERSION',"$version") | Set-Content -Path "$macOutputInfoplist/Info.plist"
         wsl cp -a "$publishFolder/$runtime/." "$macPublishFolder/Contents/MacOS"
 
         wsl cd "$publishFolder/" `&`& pwd `&`& zip -r "../$targetZip" "$macAppFolder/*"
+        
     }
     else {
-        wsl cd "$publishFolder/$runtime" `&`& pwd `&`& zip -r "../../$targetZip" "."
+        wsl cd "$publishFolder/$runtime" `&`& pwd `&`& zip -r "../../$targetZip" .
     }
 
     # Zip

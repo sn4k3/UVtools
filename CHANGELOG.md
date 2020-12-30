@@ -2,8 +2,7 @@
 
 ## 29/12/2020 - v2.1.0
 
-* (Add) Tool - Redraw model/supports: Redraw the model or supports with a set brightness. 
-               This requires an extra sliced file from same object but without any supports and raft, straight to the build plate.
+* (Add) Tool - Redraw model/supports: Redraw the model or supports with a set brightness. This requires an extra sliced file from same object but without any supports and raft, straight to the build plate.
 * (Add) Tool - Raft Relief:
     * Allow ignore a number of layer(s) to start only after that number, detault is 0
     * Allow set a pixel brightness for the operation, detault is 0
