@@ -32,6 +32,7 @@ namespace UVtools.Core.Operations
         private ushort _normalLayers = 70;
         private decimal _bottomExposure = 60;
         private decimal _normalExposure = 12;
+        private decimal _partScale = 1;
         private byte _margin = 30;
         private bool _isErodeEnabled = true;
         private byte _erodeStartIteration = 2;
@@ -193,6 +194,12 @@ namespace UVtools.Core.Operations
         {
             get => _normalExposure;
             set => RaiseAndSetIfChanged(ref _normalExposure, Math.Round(value, 2));
+        }
+
+        public decimal PartScale
+        {
+            get => _partScale;
+            set => RaiseAndSetIfChanged(ref _partScale, Math.Round(value, 2));
         }
 
         public byte Margin
@@ -384,8 +391,8 @@ namespace UVtools.Core.Operations
 
             layers[0] = EmguExtensions.InitMat(Resolution);
             LineType lineType = _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
-            const int length = 250;
-            const int triangleLength = 50;
+            int length = (int) (250 * _partScale);
+            int triangleLength = (int) (50 * _partScale);
             const byte startX = 2;
             const byte startY = 2;
             int x = startX;
@@ -410,7 +417,7 @@ namespace UVtools.Core.Operations
             y += triangleLength;
             addPoint();
 
-            y += 50;
+            y += triangleLength;
             addPoint();
 
             x += triangleLength;
@@ -439,16 +446,15 @@ namespace UVtools.Core.Operations
             addPoint();
 
 
-            const byte ellipseHeight = 50;
+            int ellipseHeight = (int) (50 * _partScale);
             
             maxY += ellipseHeight;
             using Mat shape = EmguExtensions.InitMat(new Size(maxX + startX, maxY + startY));
             CvInvoke.FillPoly(shape, new VectorOfPoint(pointList.ToArray()), EmguExtensions.WhiteByte, lineType);
-            CvInvoke.Circle(shape, new Point(0, 0), length / 4, EmguExtensions.BlackByte,
-                -1, lineType);
+            CvInvoke.Circle(shape, new Point(0, 0), length / 4, EmguExtensions.BlackByte, -1, lineType);
             CvInvoke.Ellipse(shape, new Point(maxX / 2, maxY - ellipseHeight), new Size(maxX / 3, ellipseHeight), 0, 0, 360,
                 EmguExtensions.WhiteByte, -1, lineType);
-            CvInvoke.Circle(shape, new Point(length / 2, maxY - 100), length / 5, EmguExtensions.BlackByte, -1, lineType);
+            CvInvoke.Circle(shape, new Point(length / 2, (int) (maxY - 100 * _partScale)), length / 5, EmguExtensions.BlackByte, -1, lineType);
 
             int currentX = 0;
             int currentY = 0;
@@ -456,16 +462,17 @@ namespace UVtools.Core.Operations
             maxX = 0;
 
             const FontFace font = FontFace.HersheyDuplex;
-            const byte fontStartX = 30;
-            const byte fontStartY = length / 4 + 42;
-            const double fontScale = 1.3;
-            const byte fontThickness = 3;
-            const byte fontMargin = 42;
+            int fontMargin = (int)(42 * _partScale);
+            int fontStartX = (int) (30 * _partScale);
+            int fontStartY = length / 4 + fontMargin;
+            double fontScale = 1.3 * (double) _partScale;
+            int fontThickness = (int) (3 * _partScale);
+            
 
             void addText(Mat mat, ushort number, params string[] text)
             {
-                CvInvoke.PutText(mat, number.ToString(), new Point(100, 55), font, 1.5, EmguExtensions.BlackByte, 4, lineType);
-                CvInvoke.PutText(mat, "UVtools EP", new Point(fontStartX, fontStartY), font, 0.8, EmguExtensions.BlackByte, 2, lineType);
+                CvInvoke.PutText(mat, number.ToString(), new Point((int) (100 * _partScale), (int) (55 * _partScale)), font, 1.5 * (double) _partScale, EmguExtensions.BlackByte, (int) (4 * _partScale), lineType);
+                CvInvoke.PutText(mat, "UVtools EP", new Point(fontStartX, fontStartY), font, 0.8 * (double) _partScale, EmguExtensions.BlackByte, (int) (2 * _partScale), lineType);
                 CvInvoke.PutText(mat, $"{Microns}um", new Point(fontStartX, fontStartY + fontMargin), font, fontScale, EmguExtensions.BlackByte, fontThickness, lineType);
                 CvInvoke.PutText(mat, $"{BottomExposure}|{NormalExposure}s", new Point(fontStartX, fontStartY + fontMargin * 2), font, fontScale, EmguExtensions.BlackByte, fontThickness, lineType);
                 if (text is null) return;

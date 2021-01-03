@@ -9,16 +9,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using Avalonia.Skia;
 using Avalonia.Threading;
 using DynamicData;
 using Emgu.CV;
@@ -192,12 +188,10 @@ namespace UVtools.WPF
                         {
                             unsafe
                             {
-                                using (var framebuffer = bitmap.Lock())
-                                {
-                                    var data = (uint*)framebuffer.Address.ToPointer();
-                                    data[bitmap.GetPixelPos(location)] =
-                                        color.ToUint32();
-                                }
+                                using var framebuffer = bitmap.Lock();
+                                var data = (uint*)framebuffer.Address.ToPointer();
+                                data[bitmap.GetPixelPos(location)] =
+                                    color.ToUint32();
                             }
                             
                             LayerImageBox.InvalidateArrange();

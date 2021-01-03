@@ -13,17 +13,25 @@
     
     <!-- Description -->
     <Border
-      Grid.Row="0"
       Background="WhiteSmoke"
-      Padding="20"
+      Padding="10"
       IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
       >
       <Panel>
-        <TextBlock
+        <TextBox
           HorizontalAlignment="Left"
           TextWrapping="Wrap"
           MaxWidth="{Binding DescriptionMaxWidth}"
           FontSize="16"
+          IsReadOnly="True"
+          AcceptsReturn="True"
+          Background="Transparent"
+          CaretBrush="Transparent"
+          BorderBrush="Transparent"
+          Watermark="Description:"
+          UseFloatingWatermark="True"
+          Padding="5"
+          Width="Infinity"
           Text="{Binding Description}"/>
       </Panel>
     </Border>

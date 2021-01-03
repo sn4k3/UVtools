@@ -1,6 +1,13 @@
 # Changelog
 
-## 03/12/2020 - v2.1.1
+## 03/01/2021 - v2.1.2
+
+* (Add) Pixel editor - Text: Preview of text operation (#120)
+* (Add) Calibration - Elephant Foot: 'Part scale' factor to scale up test parts
+* (Change) Allow tools text descriptions to be selectable and copied
+* (Fix) Pixel editor - Text: Round font scale to avoid precision error
+
+## 03/01/2021 - v2.1.1
 
 * (Add) About box: Primary screen identifier and open on screen identifier
 * (Add) Calibrator - External tests

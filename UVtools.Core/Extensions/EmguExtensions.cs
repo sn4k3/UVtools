@@ -81,11 +81,9 @@ namespace UVtools.Core.Extensions
         {
             var halfWidth = src.Width / 2.0f;
             var halfHeight = src.Height / 2.0f;
-            using (var translateTransform = new Matrix<double>(2, 3))
-            {
-                CvInvoke.GetRotationMatrix2D(new PointF(halfWidth, halfHeight), -angle, 1.0, translateTransform);
-                CvInvoke.WarpAffine(src, src, translateTransform, src.Size);
-            }
+            using var translateTransform = new Matrix<double>(2, 3);
+            CvInvoke.GetRotationMatrix2D(new PointF(halfWidth, halfHeight), -angle, 1.0, translateTransform);
+            CvInvoke.WarpAffine(src, src, translateTransform, src.Size);
         }
 
         /// <summary>

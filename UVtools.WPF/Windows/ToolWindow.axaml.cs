@@ -525,7 +525,7 @@ namespace UVtools.WPF.Windows
             {
                 if (Bounds.Width == 0) return true;
                 ScrollViewerMaxHeight = this.GetScreenWorkingArea().Height - Bounds.Height + ToolControl.Bounds.Height - UserSettings.Instance.General.WindowsVerticalMargin;
-                DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl.Bounds.Width) - 40;
+                DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl.Bounds.Width) - 10;
                 Description = toolControl.BaseOperation.Description;
                 return false;
             }, TimeSpan.FromMilliseconds(1));

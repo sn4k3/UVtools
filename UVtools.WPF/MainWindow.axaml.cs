@@ -672,7 +672,7 @@ namespace UVtools.WPF
                 DefaultExtension = extension.Extension,
                 Filters = new List<FileDialogFilter>
                 {
-                    new FileDialogFilter
+                    new()
                     {
                         Name = extension.Description,
                         Extensions = new List<string>

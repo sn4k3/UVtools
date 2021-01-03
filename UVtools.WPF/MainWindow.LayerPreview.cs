@@ -32,6 +32,7 @@ using UVtools.WPF.Structures;
 using Color = UVtools.WPF.Structures.Color;
 using Helpers = UVtools.WPF.Controls.Helpers;
 using Point = System.Drawing.Point;
+using Size = System.Drawing.Size;
 
 namespace UVtools.WPF
 {
@@ -460,11 +461,9 @@ namespace UVtools.WPF
 
                 if (_showLayerOutlineEdgeDetection)
                 {
-                    using (var canny = new Mat())
-                    {
-                        CvInvoke.Canny(LayerCache.Image, canny, 80, 40, 3, true);
-                        CvInvoke.CvtColor(canny, LayerCache.ImageBgr, ColorConversion.Gray2Bgra);
-                    }
+                    using var canny = new Mat();
+                    CvInvoke.Canny(LayerCache.Image, canny, 80, 40, 3, true);
+                    CvInvoke.CvtColor(canny, LayerCache.ImageBgr, ColorConversion.Gray2Bgra);
                 }
                 else if (_showLayerImageDifference)
                 {
@@ -1310,16 +1309,16 @@ namespace UVtools.WPF
                     
                     if (DrawingPixelDrawing.BrushSize > 1)
                     {
-                        cursor = EmguExtensions.InitMat(new System.Drawing.Size(DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.BrushSize), 4);
+                        cursor = EmguExtensions.InitMat(new Size(DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.BrushSize), 4);
                         switch (DrawingPixelDrawing.BrushShape)
                         {
                             case PixelDrawing.BrushShapeType.Rectangle:
                                 CvInvoke.Rectangle(cursor,
-                                    new Rectangle(Point.Empty, new System.Drawing.Size(DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.BrushSize)),
+                                    new Rectangle(Point.Empty, new Size(DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.BrushSize)),
                                     _pixelEditorCursorColor, DrawingPixelDrawing.Thickness, DrawingPixelDrawing.LineType);
                                 _pixelEditorCursorColor.V3 = 255;
                                 CvInvoke.Rectangle(cursor,
-                                    new Rectangle(Point.Empty, new System.Drawing.Size(DrawingPixelDrawing.BrushSize-1, DrawingPixelDrawing.BrushSize-1)),
+                                    new Rectangle(Point.Empty, new Size(DrawingPixelDrawing.BrushSize-1, DrawingPixelDrawing.BrushSize-1)),
                                     _pixelEditorCursorColor, 1, DrawingPixelDrawing.LineType);
                                 break;
                             case PixelDrawing.BrushShapeType.Circle:
@@ -1342,14 +1341,21 @@ namespace UVtools.WPF
                     }
                     break;
                 case PixelOperation.PixelOperationType.Text:
-                    break;
                     var text = DrawingPixelText.Text;
                     if (string.IsNullOrEmpty(text) || DrawingPixelText.FontScale < 0.2) return;
 
                     int baseLine = 0;
                     var size = CvInvoke.GetTextSize(text, DrawingPixelText.Font, DrawingPixelText.FontScale, DrawingPixelText.Thickness, ref baseLine);
-                    cursor = EmguExtensions.InitMat(size,  4);
-                    CvInvoke.PutText(cursor, text, new Point(0, 0), DrawingPixelText.Font, DrawingPixelText.FontScale, _pixelEditorCursorColor, DrawingPixelText.Thickness, DrawingPixelText.LineType, DrawingPixelText.Mirror);
+                    cursor = EmguExtensions.InitMat(new Size(size.Width * 2, size.Height * 2), 4);
+                    //CvInvoke.Rectangle(cursor, new Rectangle(Point.Empty, size), _pixelEditorCursorColor, -1, DrawingPixelText.LineType);
+                    //_pixelEditorCursorColor.V3 = 255;
+                    //CvInvoke.Rectangle(cursor, new Rectangle(new Point(size.Width, 0), size), _pixelEditorCursorColor, 1, DrawingPixelText.LineType);
+                    
+                    CvInvoke.PutText(cursor, text, new Point(size.Width, size.Height), DrawingPixelText.Font, DrawingPixelText.FontScale, _pixelEditorCursorColor, DrawingPixelText.Thickness, DrawingPixelText.LineType, DrawingPixelText.Mirror);
+                    if (_showLayerImageRotated)
+                    {
+                        CvInvoke.Rotate(cursor, cursor, RotateFlags.Rotate90Clockwise);
+                    }
                     break;
                 case PixelOperation.PixelOperationType.Supports:
                 case PixelOperation.PixelOperationType.DrainHole:

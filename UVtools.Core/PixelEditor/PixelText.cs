@@ -33,7 +33,7 @@ namespace UVtools.Core.PixelEditor
         public double FontScale
         {
             get => _fontScale;
-            set => RaiseAndSetIfChanged(ref _fontScale, value);
+            set => RaiseAndSetIfChanged(ref _fontScale, Math.Round(value, 2));
         }
 
         public ushort Thickness

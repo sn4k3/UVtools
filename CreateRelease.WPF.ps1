@@ -153,6 +153,7 @@ Building: $runtime"
         $macPublishFolder = "$publishFolder/${macAppFolder}"
         $macInfoplist = "$platformsFolder/$runtime/Info.plist"
         $macOutputInfoplist = "$macPublishFolder/Contents"
+        $macTargetZipLegacy = "$publishFolder/${software}_${runtime}-legacy_v$version.zip"
 
         New-Item -ItemType directory -Path "$macPublishFolder"
         New-Item -ItemType directory -Path "$macPublishFolder/Contents"
@@ -165,6 +166,7 @@ Building: $runtime"
         wsl cp -a "$publishFolder/$runtime/." "$macPublishFolder/Contents/MacOS"
 
         wsl cd "$publishFolder/" `&`& pwd `&`& zip -r "../$targetZip" "$macAppFolder/*"
+        wsl cd "$publishFolder/$runtime" `&`& pwd `&`& zip -r "../../$macTargetZipLegacy" .
         
     }
     else {

@@ -9,7 +9,7 @@
     <Grid ColumnDefinitions="Auto,10,350">
       <StackPanel Spacing="10">
         <Grid
-              RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+              RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
               ColumnDefinitions="Auto,10,100,5,Auto,20,Auto,10,100,5,Auto"
       >
 
@@ -89,28 +89,35 @@
                          Increment="0.5"
                          Minimum="0.1"
                          Maximum="200"
-                         Value="{Binding Operation.NormalExposure}"
-      />
+                         Value="{Binding Operation.NormalExposure}"/>
           <TextBlock Grid.Row="4" Grid.Column="10"
                      VerticalAlignment="Center"
                      Text="s"/>
 
-
           <TextBlock Grid.Row="6" Grid.Column="0"
                      VerticalAlignment="Center"
-                     Text="Margin:"/>
+                     Text="Part scale:"/>
           <NumericUpDown Grid.Row="6" Grid.Column="2"
+                         ClipValueToMinMax="True"
+                         Increment="0.1"
+                         Minimum="1"
+                         Maximum="10"
+                         Value="{Binding Operation.PartScale}"/>
+
+          <TextBlock Grid.Row="6" Grid.Column="6"
+                     VerticalAlignment="Center"
+                     Text="Margin:"/>
+          <NumericUpDown Grid.Row="6" Grid.Column="8"
                          ClipValueToMinMax="True"
                          Increment="1"
                          Minimum="0"
                          Maximum="255"
-                         Value="{Binding Operation.Margin}"
-        />
-          <TextBlock Grid.Row="6" Grid.Column="4"
+                         Value="{Binding Operation.Margin}"/>
+          <TextBlock Grid.Row="6" Grid.Column="10"
                      VerticalAlignment="Center"
                      Text="px"/>
 
-          <StackPanel Grid.Row="6" Grid.Column="6" 
+          <StackPanel Grid.Row="8" Grid.Column="0" 
                       VerticalAlignment="Center"
                       Spacing="0">
               <TextBlock
@@ -123,7 +130,7 @@
 
           </StackPanel>
 
-          <StackPanel Grid.Row="6" Grid.Column="8"
+          <StackPanel Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="9"
                       VerticalAlignment="Center"
                       Spacing="0">
             <TextBlock FontWeight="Bold">
@@ -140,12 +147,12 @@
                 Text="{Binding Operation.ObjectCount}"/>
           </StackPanel>
 
-          <CheckBox Grid.Row="8" Grid.Column="0"
+          <CheckBox Grid.Row="10" Grid.Column="0"
                     Grid.ColumnSpan="6"
                     IsChecked="{Binding Operation.OutputOriginalPart}"
                     Content="Output an unmodified part (The original)" />
 
-          <CheckBox Grid.Row="8" Grid.Column="6"
+          <CheckBox Grid.Row="10" Grid.Column="6"
                     Grid.ColumnSpan="5"
                     IsChecked="{Binding Operation.EnableAntiAliasing}"
                     Content="Enable Anti-Aliasing" />
