@@ -12,7 +12,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <Version>2.1.0</Version>
+    <Version>2.1.1</Version>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -81,6 +81,9 @@
   <ItemGroup>
     <Compile Update="Controls\AdvancedImageBox.axaml.cs">
       <DependentUpon>AdvancedImageBox.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Controls\Calibrators\CalibrateExternalTestsControl.axaml.cs">
+      <DependentUpon>CalibrateExternalTestsControl.axaml</DependentUpon>
     </Compile>
     <Compile Update="Controls\Tools\ToolLayerRemoveControl.axaml.cs">
       <DependentUpon>ToolLayerRemoveControl.axaml</DependentUpon>

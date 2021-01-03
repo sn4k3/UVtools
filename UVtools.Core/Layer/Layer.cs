@@ -204,7 +204,7 @@ namespace UVtools.Core
         {
             get
             {
-                Mat mat = new Mat();
+                Mat mat = new();
                 CvInvoke.Imdecode(CompressedBytes, ImreadModes.Grayscale, mat);
                 return mat;
             }
@@ -246,16 +246,17 @@ namespace UVtools.Core
                 GetBoundingRectangle();
             }*/
 
-            if (!(parentLayerManager is null))
-            {
-                _positionZ = SlicerFile.GetHeightFromLayer(index);
-                _exposureTime = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
-                _liftHeight = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
-                _liftSpeed = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
-                _retractSpeed = SlicerFile.RetractSpeed;
-                _lightPwm = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
-            }
+            if (parentLayerManager is null) return;
+            _positionZ = SlicerFile.GetHeightFromLayer(index);
+            _exposureTime = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
+            _liftHeight = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
+            _liftSpeed = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
+            _retractSpeed = SlicerFile.RetractSpeed;
+            _lightPwm = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
         }
+
+        public Layer(uint index, byte[] compressedBytes, FileFormat slicerFile) : this(index, compressedBytes, slicerFile.LayerManager)
+        {}
 
         public Layer(uint index, Mat layerMat, LayerManager parentLayerManager) : this(index, new byte[0], parentLayerManager)
         {
@@ -263,9 +264,10 @@ namespace UVtools.Core
             IsModified = false;
         }
 
+        public Layer(uint index, Mat layerMat, FileFormat slicerFile) : this(index, layerMat, slicerFile.LayerManager) { }
 
-        public Layer(uint index, Stream stream, LayerManager parentLayerManager) : this(index, stream.ToArray(), parentLayerManager)
-        { }
+        public Layer(uint index, Stream stream, LayerManager parentLayerManager) : this(index, stream.ToArray(), parentLayerManager) { }
+        public Layer(uint index, Stream stream, FileFormat slicerFile) : this(index, stream.ToArray(), slicerFile.LayerManager) { }
         #endregion
 
         #region Equatables
@@ -366,6 +368,7 @@ namespace UVtools.Core
             bool needDispose = false;
             if (mat is null)
             {
+                if (_compressedBytes is null || _compressedBytes.Length == 0) return Rectangle.Empty;
                 mat = LayerMat;
                 needDispose = true;
             }

@@ -122,7 +122,7 @@ namespace UVtools.Core.Managers
                         var clip = this[i];
                         if (layerManager.Count != clip.LayerCount) // Need resize layer manager
                         {
-                            layerManager = layerManager.Reallocate(clip.LayerCount);
+                            layerManager = layerManager.ReallocateNew(clip.LayerCount);
                             ReallocatedLayerCount = true;
                         }
 

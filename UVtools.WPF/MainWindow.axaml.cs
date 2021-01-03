@@ -127,7 +127,7 @@ namespace UVtools.WPF
                 Tag = new OperationRaftRelief(),
                 Icon = new Avalonia.Controls.Image
                 {
-                    Source = new Bitmap(App.GetAsset("/Assets/Icons/dot-circle-16x16.png"))
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/cookie-16x16.png"))
                 }
             },
             new MenuItem
@@ -252,6 +252,14 @@ namespace UVtools.WPF
                 Icon = new Avalonia.Controls.Image
                 {
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/chart-pie-16x16.png"))
+                }
+            },
+            new()
+            {
+                Tag = new OperationCalibrateExternalTests(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/bookmark-16x16.png"))
                 }
             },
         };
@@ -448,14 +456,6 @@ namespace UVtools.WPF
             //PropertyChanged += OnPropertyChanged;
 
             UpdateTitle();
-            UpdateMaxWindowsSize();
-
-            if (Settings.General.StartMaximized
-                || ClientSize.Width > App.MaxWindowSize.Width
-                || ClientSize.Height > App.MaxWindowSize.Height)
-            {
-                WindowState = WindowState.Maximized;
-            }
 
             var clientSizeObs = this.GetObservable(ClientSizeProperty);
             clientSizeObs.Subscribe(size => UpdateLayerTrackerHighlightIssues());
@@ -471,24 +471,20 @@ namespace UVtools.WPF
             });
         }
 
-        public void UpdateMaxWindowsSize()
-        {
-            /*Console.WriteLine($"Settings is null?: {Settings is null}");
-            Console.WriteLine($"Settings.General is null?: {Settings.General is null}");
-            Console.WriteLine($"Screens is null?: {Screens is null}");
-            Console.WriteLine($"ScreenCount: {Screens.ScreenCount}");
-            Console.WriteLine($"Screens.Primary is null?: {Screens.Primary is null}");*/
-            var screen = Screens.Primary ?? Screens.All[0];
-            App.MaxWindowSize = new System.Drawing.Size(
-                Settings.General.WindowsTakeIntoAccountScreenScaling ? (int)(screen.WorkingArea.Width / screen.PixelDensity) : screen.WorkingArea.Width,
-                Settings.General.WindowsTakeIntoAccountScreenScaling ? (int)(screen.WorkingArea.Height / screen.PixelDensity) : screen.WorkingArea.Height);
-        }
-
         protected override void OnOpened(EventArgs e)
         {
             base.OnOpened(e);
-           
-            
+
+            var windowSize = this.GetScreenWorkingArea();
+
+            if (Settings.General.StartMaximized
+                || ClientSize.Width > windowSize.Width
+                || ClientSize.Height > windowSize.Height)
+            {
+                WindowState = WindowState.Maximized;
+            }
+
+
             AddLog($"{About.Software} start", Program.ProgramStartupTime.Elapsed.TotalSeconds);
 
             if (Settings.General.CheckForUpdatesOnStartup)
@@ -768,7 +764,6 @@ namespace UVtools.WPF
         {
             SettingsWindow settingsWindow = new SettingsWindow();
             await settingsWindow.ShowDialog(this);
-            UpdateMaxWindowsSize();
         }
 
         public void OpenWebsite()

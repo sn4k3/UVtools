@@ -8,8 +8,10 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
 
@@ -31,7 +33,7 @@ namespace UVtools.WPF.Extensions
                     WindowIcon = new WindowIcon(App.GetAsset("/Assets/Icons/UVtools.ico")),
                     WindowStartupLocation = location,
                     CanResize = false,
-                    MaxWidth = App.MaxWindowSize.Width - UserSettings.Instance.General.WindowsHorizontalMargin,
+                    MaxWidth = window.GetScreenWorkingArea().Width - UserSettings.Instance.General.WindowsHorizontalMargin,
                     ShowInCenter = true
                 });
             
@@ -76,6 +78,18 @@ namespace UVtools.WPF.Extensions
             window.DataContext = new object();
             window.DataContext = old;
         }
+
+        public static System.Drawing.Size GetScreenWorkingArea(this Window window)
+        {
+            var screen = window.Screens.ScreenFromVisual(window) ??
+                         window.Screens.ScreenFromVisual(App.MainWindow) ??
+                         window.Screens.Primary ??
+                         window.Screens.All[0];
+            
+            return new System.Drawing.Size(
+                UserSettings.Instance.General.WindowsTakeIntoAccountScreenScaling ? (int)(screen.WorkingArea.Width / screen.PixelDensity) : screen.WorkingArea.Width,
+                UserSettings.Instance.General.WindowsTakeIntoAccountScreenScaling ? (int)(screen.WorkingArea.Height / screen.PixelDensity) : screen.WorkingArea.Height);
+        } 
        
     }
 }

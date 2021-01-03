@@ -1,4 +1,6 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -7,6 +9,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using DynamicData;
 using MessageBox.Avalonia.Enums;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
@@ -26,7 +29,7 @@ namespace UVtools.WPF.Controls.Tools
 
         public uint MaximumLayer => App.SlicerFile.LastLayerIndex;
 
-        public string InfoLayerHeightStr => $"({App.SlicerFile.GetHeightFromLayer(Operation.InsertAfterLayerIndex)}mm)";
+        public string InfoLayerHeightStr => $"({App.SlicerFile.GetHeightFromLayer(Operation.StartLayerIndex)}mm)";
 
         public bool IsAutoSortLayersByFileNameChecked
         {
@@ -39,7 +42,7 @@ namespace UVtools.WPF.Controls.Tools
             get
             {
                 if (Operation.Files.Count <= 0) return null;
-                uint modelTotalLayers = Operation.CalculateTotalLayers(App.SlicerFile.LayerCount);
+                /*uint modelTotalLayers = (uint) Operation.Files.Count;//Operation.CalculateTotalLayers(App.SlicerFile.LayerCount);
                 string textFactor = "grow";
                 if (modelTotalLayers < App.SlicerFile.LayerCount)
                 {
@@ -48,10 +51,11 @@ namespace UVtools.WPF.Controls.Tools
                 else if (modelTotalLayers == App.SlicerFile.LayerCount)
                 {
                     textFactor = "keep";
-                }
-                return 
-                    $"{Operation.Files.Count} layers will be imported into model starting from layer {Operation.InsertAfterLayerIndex} {InfoLayerHeightStr}.\n" +
-                    $"Model will {textFactor} from layers {App.SlicerFile.LayerCount} ({App.SlicerFile.TotalHeight}mm) to {modelTotalLayers} ({App.SlicerFile.GetHeightFromLayer(modelTotalLayers, false)}mm)";
+                }*/
+
+                return
+                    $"{Operation.Files.Count} files will be imported into model starting from layer {Operation.StartLayerIndex} {InfoLayerHeightStr}.";
+                    //$"Model will {textFactor} from layers {App.SlicerFile.LayerCount} ({App.SlicerFile.TotalHeight}mm) to {modelTotalLayers} ({App.SlicerFile.GetHeightFromLayer(modelTotalLayers, false)}mm)";
             }
             
         }
@@ -67,6 +71,11 @@ namespace UVtools.WPF.Controls.Tools
                     PreviewImage = null;
                     return;
                 }
+                if (!_selectedFile.TagString.EndsWith(".png", StringComparison.OrdinalIgnoreCase) &&
+                    !_selectedFile.TagString.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) &&
+                    !_selectedFile.TagString.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) &&
+                    !_selectedFile.TagString.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) &&
+                    !_selectedFile.TagString.EndsWith(".gif", StringComparison.OrdinalIgnoreCase)) return;
                 PreviewImage = new Bitmap(_selectedFile.TagString);
             }
         }
@@ -118,7 +127,7 @@ namespace UVtools.WPF.Controls.Tools
             AvaloniaXamlLoader.Load(this);
         }
 
-        public override async Task<bool> ValidateForm()
+        /*public override async Task<bool> ValidateForm()
         {
             UpdateOperation();
             var message = Operation.Validate();
@@ -136,14 +145,14 @@ namespace UVtools.WPF.Controls.Tools
             }
 
             return false;
-        }
+        }*/
 
         public override void Callback(ToolWindow.Callbacks callback)
         {
             switch (callback)
             {
                 case ToolWindow.Callbacks.Init:
-                    ParentWindow.ButtonOkEnabled = false;
+                    RefreshGUI();
                     break;
             }
         }
@@ -157,10 +166,19 @@ namespace UVtools.WPF.Controls.Tools
 
         public async void AddFiles()
         {
+            var filters = Helpers.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
+            var orderedFilters = new List<FileDialogFilter> { filters[UserSettings.Instance.General.DefaultOpenFileExtensionIndex] };
+            for (int i = 0; i < filters.Count; i++)
+            {
+                if (i == UserSettings.Instance.General.DefaultOpenFileExtensionIndex) continue;
+                orderedFilters.Add(filters[i]);
+            }
+
             var dialog = new OpenFileDialog
             {
                 AllowMultiple = true,
-                Filters = Helpers.ImagesFileFilter
+                Filters = orderedFilters,
+                Directory = UserSettings.Instance.General.DefaultDirectoryOpenFile
             };
 
             var files = await dialog.ShowAsync(ParentWindow);

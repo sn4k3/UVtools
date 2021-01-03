@@ -255,5 +255,16 @@ namespace UVtools.Core.Extensions
             return mat;
         }
 
+        public static Mat RoiFromCenter(this Mat mat, Size size)
+        {
+            if (size == mat.Size) return mat;
+            return new Mat(mat, new Rectangle(
+                 mat.Size.Width / 2 - size.Width / 2,
+                 mat.Size.Height / 2 - size.Height / 2,
+                 size.Width,
+                 size.Height
+                ));
+        }
+
     }
 }

@@ -1,0 +1,35 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Calibrators.CalibrateExternalTestsControl">
+  <Grid
+      RowDefinitions="Auto,Auto,Auto"
+      ColumnDefinitions="400">
+
+      <Button Grid.Row="0"
+              Padding="5"
+              Content="Photonsters Validation Matrix / Exposure finder"
+              Command="{Binding ButtonClicked}"
+              VerticalAlignment="Center"
+              CommandParameter="https://www.thingiverse.com/thing:4707289"/>
+
+      <Button Grid.Row="1"
+              Margin="0,5,0,0"
+              Padding="5"
+              Content="Support pull test"
+              Command="{Binding ButtonClicked}"
+              VerticalAlignment="Center"
+              CommandParameter="https://www.thingiverse.com/thing:4308175"/>
+
+      <Button Grid.Row="2"
+              Margin="0,5,0,0"
+              Padding="5"
+              Content="AmeraLabs town calibration part"
+              Command="{Binding ButtonClicked}"
+              VerticalAlignment="Center"
+              CommandParameter="https://www.thingiverse.com/thing:2810666"/>
+
+    </Grid>
+</UserControl>

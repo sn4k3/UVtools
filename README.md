@@ -193,15 +193,15 @@ sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libdc1394-22 libav
 **Arch/Manjaro/Similars**
 
 ```bash
-sudo pacman -S openjpeg2 libjpeg-turbo libpng libgeotiff libdc1394 libdc1394 ffmpeg openexr tbb dotnet-runtime 
+sudo pacman -S openjpeg2 libjpeg-turbo libpng libgeotiff libdc1394 libdc1394 ffmpeg openexr tbb
 ```
 
 To run UVtools open it folder on a terminal and call one of:
 
 * Double-click UVtools file
 * `./UVtools`
-* `dotnet UVtools.dll` [For universal package only]
-* `sh UVtools.sh` [For universal package only]
+* `sh UVtools.sh`
+* `dotnet UVtools.dll` [For universal package only, requires dotnet-runtime]
 * As a pratical alternative you can create a shortcut on Desktop
 
 ### Mac
@@ -213,20 +213,19 @@ To run UVtools open it folder on a terminal and call one of:
 <!--- 
 * Donwload and install: https://dotnet.microsoft.com/download/dotnet/thank-you/sdk-5.0.101-macos-x64-installer
 brew install libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb
--->
-
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 brew analytics off
 brew cask install dotnet
 ```
+-->
 
 To run UVtools open it folder on a terminal and call one of:
 
 * Double-click UVtools file
 * `./UVtools`
-* `dotnet UVtools.dll` [For universal package only]
-* `sh UVtools.sh` [For universal package only]
+* `sh UVtools.sh`
+* `dotnet UVtools.dll` [For universal package only, requires dotnet-runtime]
 * As a pratical alternative you can create a shortcut on Desktop
 
 ## How to use

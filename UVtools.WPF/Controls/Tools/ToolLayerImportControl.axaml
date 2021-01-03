@@ -6,42 +6,75 @@
              x:Class="UVtools.WPF.Controls.Tools.ToolLayerImportControl">
 
   <StackPanel Spacing="10">
-    <StackPanel Spacing="10" Orientation="Horizontal">
-      <TextBlock 
-        VerticalAlignment="Center"
-        Text="Insert after layer:"/>
-      <NumericUpDown 
-        Width="70"
-        Minimum="0"
-        Maximum="{Binding MaximumLayer}"
-        Value="{Binding Operation.InsertAfterLayerIndex}"
-        />
-      <TextBlock
-        VerticalAlignment="Center"
-        Text="{Binding InfoLayerHeightStr}"/>
-    </StackPanel>
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
+          ColumnDefinitions="Auto,10,100,5,Auto,20,Auto">
 
-    <StackPanel Spacing="10" Orientation="Horizontal">
-      <CheckBox
-        IsChecked="{Binding Operation.ReplaceStartLayer}"
-        Content="Replace this layer"/>
+      <TextBlock Grid.Row="0" Grid.Column="0"
+          VerticalAlignment="Center"
+          ToolTip.Tip="Insert: Insert layers. (Requires images with bounds equal or less than file resolution)
+&#x0a;Replace: Replace layers. (Requires images with bounds equal or less than file resolution)
+&#x0a;Stack: Stack layers content. (Requires images with bounds equal or less than file resolution)
+&#x0a;Merge: Merge/Sum layers content. (Requires images with same resolution)
+&#x0a;Subtract: Subtract layers content. (Requires images with same resolution)
+&#x0a;BitwiseAnd: Perform a 'bitwise and' operation over layer pixels. (Requires images with same resolution)
+&#x0a;BitwiseOr: Perform a 'bitwise or' operation over layer pixels. (Requires images with same resolution)
+&#x0a;BitwiseXOr: Perform a 'bitwise xor' operation over layer pixels. (Requires images with same resolution)"
+          Text="Import type:"/>
 
-      <CheckBox
-        IsChecked="{Binding Operation.ReplaceSubsequentLayers}"
-        Content="Replace subsequent layers"/>
+      <ComboBox Grid.Row="0" Grid.Column="2"
+                 VerticalAlignment="Center"
+                 SelectedItem="{Binding Operation.ImportType}"
+                 Items="{Binding Operation.ImportTypesItems}"/>
 
-      <CheckBox
-        IsChecked="{Binding Operation.DiscardRemainingLayers}"
-        Content="Discard remaining layers"/>
+      <TextBlock Grid.Row="0" Grid.Column="4"
+                 VerticalAlignment="Center"
+                 Text="layers"/>
 
-      <CheckBox
-        IsChecked="{Binding Operation.MergeImages}"
-        Content="Merge images"/>
-    </StackPanel>
-    
+      <CheckBox Grid.Row="0" Grid.Column="6"
+                IsChecked="{Binding Operation.ExtendBeyondLayerCount}"
+                IsVisible="{Binding Operation.IsExtendBeyondLayerCountVisible}"
+                ToolTip.Tip="If enabled, imported images that go beyond last layer are appended. The file will grow in layer count if necessary to fit all imported layers.
+&#x0a;If disabled, all imported images that go beyond last layer are discarded. The file will maintain same layer count."
+                Content="Extend beyond layer count"/>
+
+      <TextBlock Grid.Row="2" Grid.Column="0"
+                             VerticalAlignment="Center"
+                             Text="Start at layer:"/>
+      <NumericUpDown Grid.Row="2" Grid.Column="2"
+                     ClipValueToMinMax="True"
+                     Minimum="0"
+                     Maximum="{Binding MaximumLayer}"
+                     Value="{Binding Operation.StartLayerIndex}"/>
+      <TextBlock Grid.Row="2" Grid.Column="4"
+                 VerticalAlignment="Center"
+                 Text="{Binding InfoLayerHeightStr}"/>
+
+      <CheckBox Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="5"
+                IsChecked="{Binding Operation.DiscardUnmodifiedLayers}"
+                ToolTip.Tip="If enabled, all unmodified layers forward the last inserted layer are discarded.
+&#x0a;If disabled, the unmodified layers are kept."
+                Content="Discard unmodified layers"/>
+
+      <TextBlock Grid.Row="6" Grid.Column="0"
+                 VerticalAlignment="Center"
+                 IsVisible="{Binding Operation.IsImportStackType}"
+                 Text="Stack margin:"/>
+      <NumericUpDown Grid.Row="6" Grid.Column="2"
+                     ClipValueToMinMax="True"
+                     IsVisible="{Binding Operation.IsImportStackType}"
+                     Minimum="0"
+                     Maximum="65535"
+                     Value="{Binding Operation.StackMargin}"/>
+      <TextBlock Grid.Row="6" Grid.Column="4"
+                 VerticalAlignment="Center"
+                 IsVisible="{Binding Operation.IsImportStackType}"
+                 Text="px"/>
+    </Grid>
+
+
     <CheckBox
       IsChecked="{Binding IsAutoSortLayersByFileNameChecked}"
-      Content="Auto sort layers by file name"/>
+      Content="Auto sort files by filename"/>
 
 
     <TextBlock Text="{Binding InfoImportResult}" />
@@ -90,7 +123,7 @@
 
           <TextBlock
             VerticalAlignment="Center"
-            Text="{Binding Operation.Files.Count, StringFormat=Layers: \{0\}}"/>
+            Text="{Binding Operation.Files.Count, StringFormat=Files: \{0\}}"/>
         </StackPanel>
       </Grid>
     </Border>

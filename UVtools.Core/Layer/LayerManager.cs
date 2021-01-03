@@ -203,17 +203,15 @@ namespace UVtools.Core
 
         public Rectangle GetBoundingRectangle(OperationProgress progress = null)
         {
+            progress ??= new OperationProgress(OperationProgress.StatusOptimizingBounds, Count-1);
             if (!_boundingRectangle.IsEmpty || Count == 0 || this[0] is null) return _boundingRectangle;
             _boundingRectangle = this[0].BoundingRectangle;
             if (_boundingRectangle.IsEmpty) // Safe checking
             {
-                progress?.Reset(OperationProgress.StatusOptimizingBounds, Count);
+                progress.Reset(OperationProgress.StatusOptimizingBounds, Count-1);
                 Parallel.For(0, Count, layerIndex =>
                 {
-                    if (!ReferenceEquals(progress, null) && progress.Token.IsCancellationRequested)
-                    {
-                        return;
-                    }
+                    if (progress.Token.IsCancellationRequested) return;
                     
                     this[layerIndex].GetBoundingRectangle();
 
@@ -233,12 +231,11 @@ namespace UVtools.Core
                 
             }
 
-            progress?.Reset(OperationProgress.StatusCalculatingBounds, Count);
+            progress.Reset(OperationProgress.StatusCalculatingBounds, Count-1);
             for (int i = 1; i < Count; i++)
             {
                 if(this[i].BoundingRectangle.IsEmpty) continue;
                 _boundingRectangle = Rectangle.Union(_boundingRectangle, this[i].BoundingRectangle);
-                if (ReferenceEquals(progress, null)) continue;
                 progress++;
             }
 
@@ -1149,7 +1146,7 @@ namespace UVtools.Core
         /// Reallocate with new size
         /// </summary>
         /// <returns></returns>
-        public LayerManager Reallocate(uint newLayerCount, bool makeClone = false)
+        public LayerManager ReallocateNew(uint newLayerCount, bool makeClone = false)
         {
             LayerManager layerManager = new LayerManager(newLayerCount, SlicerFile);
             foreach (var layer in this)
@@ -1162,6 +1159,69 @@ namespace UVtools.Core
 
             return layerManager;
         }
+
+        /// <summary>
+        /// Reallocate with add size
+        /// </summary>
+        /// <returns></returns>
+        public void Reallocate(uint insertAtLayerIndex, uint layerCount, bool initBlack = false)
+        {
+            var layers = Layers;
+            Layers = new Layer[Count + layerCount];
+
+            // Rearrange
+            for (uint layerIndex = 0; layerIndex < insertAtLayerIndex; layerIndex++)
+            {
+                Layers[layerIndex] = layers[layerIndex];
+            }
+
+            // Rearrange
+            for (uint layerIndex = insertAtLayerIndex; layerIndex < layers.Length; layerIndex++)
+            {
+                Layers[layerCount + layerIndex] = layers[layerIndex];
+                Layers[layerCount + layerIndex].Index = layerCount + layerIndex;
+            }
+
+            // Allocate new layers
+            if (initBlack)
+            {
+                Parallel.For(insertAtLayerIndex, insertAtLayerIndex + layerCount, layerIndex =>
+                {
+                    Layers[layerIndex] = new Layer((uint) layerIndex, EmguExtensions.InitMat(SlicerFile.Resolution), this);
+                });
+            }
+            /*for (uint layerIndex = insertAtLayerIndex; layerIndex < insertAtLayerIndex + layerCount; layerIndex++)
+            {
+                Layers[layerIndex] = initBlack ? new Layer(layerIndex, EmguExtensions.InitMat(SlicerFile.Resolution), this) : null;
+            }*/
+        }
+
+        public void ReallocateRange(uint startLayerIndex, uint endLayerIndex)
+        {
+            var layers = Layers;
+            if ((int)(endLayerIndex - startLayerIndex) < 0) return;
+            Layers = new Layer[1 + endLayerIndex - startLayerIndex];
+
+            uint currentLayerIndex = 0;
+            for (uint layerIndex = startLayerIndex; layerIndex <= endLayerIndex; layerIndex++)
+            {
+                Layers[currentLayerIndex++] = layers[layerIndex];
+            }
+            
+            BoundingRectangle = Rectangle.Empty;
+        }
+
+        /// <summary>
+        /// Reallocate at start
+        /// </summary>
+        /// <returns></returns>
+        public void ReallocateStart(uint layerCount, bool initBlack = false) => Reallocate(0, layerCount, initBlack);
+
+        /// <summary>
+        /// Reallocate at end
+        /// </summary>
+        /// <returns></returns>
+        public void ReallocateEnd(uint layerCount, bool initBlack = false) => Reallocate(Count, layerCount, initBlack);
 
         /// <summary>
         /// Clone this object

@@ -13,7 +13,7 @@ namespace UVtools.WPF.Controls
 {
     public static class Helpers
     {
-        public static readonly List<FileDialogFilter> ImagesFileFilter = new List<FileDialogFilter>
+        public static readonly List<FileDialogFilter> ImagesFileFilter = new()
         {
             new FileDialogFilter
             {

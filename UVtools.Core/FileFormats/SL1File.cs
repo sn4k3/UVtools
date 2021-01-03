@@ -275,15 +275,15 @@ namespace UVtools.Core.FileFormats
         #endregion
 
         #region Properties
-        public Printer PrinterSettings { get; private set; }
+        public Printer PrinterSettings { get; private set; } = new();
 
-        public Material MaterialSettings { get; private set; }
+        public Material MaterialSettings { get; private set; } = new();
 
-        public Print PrintSettings { get; private set; }
+        public Print PrintSettings { get; private set; } = new();
 
-        public OutputConfig OutputConfigSettings { get; private set; }
+        public OutputConfig OutputConfigSettings { get; private set; } = new();
 
-        public Statistics Statistics { get; } = new Statistics();
+        public Statistics Statistics { get; } = new ();
 
 
         public override FileFormatType FileType => FileFormatType.Archive;

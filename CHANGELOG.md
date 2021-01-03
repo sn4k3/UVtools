@@ -1,5 +1,21 @@
 # Changelog
 
+## 03/12/2020 - v2.1.1
+
+* (Add) About box: Primary screen identifier and open on screen identifier
+* (Add) Calibrator - External tests
+* (Change) Rewrite 'Action - Import Layer(s)' to support file formats and add the followig importation types:
+  * **Insert:** Insert layers. (Requires images with bounds equal or less than file resolution)
+  * **Replace:** Replace layers. (Requires images with bounds equal or less than file resolution)
+  * **Stack:** Stack layers content. (Requires images with bounds equal or less than file resolution)
+  * **Merge:** Merge/Sum layers content. (Requires images with same resolution)
+  * **Subtract:** Subtract layers content. (Requires images with same resolution)
+  * **BitwiseAnd:** Perform a 'bitwise and' operation over layer pixels. (Requires images with same resolution)
+  * **BitwiseOr:** Perform a 'bitwise or' operation over layer pixels. (Requires images with same resolution)
+  * **BitwiseXOr:** Perform a 'bitwise xor' operation over layer pixels. (Requires images with same resolution)
+* (Change) Icon for Tool - Raft Relief
+* (Change) Windows and dialogs max size are now calculated to where window is opened instead of use the primary or first screen all the time
+
 ## 29/12/2020 - v2.1.0
 
 * (Add) Tool - Redraw model/supports: Redraw the model or supports with a set brightness. This requires an extra sliced file from same object but without any supports and raft, straight to the build plate.

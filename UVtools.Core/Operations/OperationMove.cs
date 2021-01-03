@@ -227,6 +227,14 @@ namespace UVtools.Core.Operations
         {
         }
 
+        public OperationMove(FileFormat slicerFile, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter)
+        {
+            ROI = slicerFile.LayerManager.BoundingRectangle;
+            ImageWidth = slicerFile.ResolutionX;
+            ImageHeight = slicerFile.ResolutionY;
+            Anchor = anchor;
+        }
+
         public OperationMove(Rectangle srcRoi, uint imageWidth, uint imageHeight, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter)
         {
             ROI = srcRoi;

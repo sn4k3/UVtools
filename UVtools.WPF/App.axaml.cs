@@ -13,9 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
@@ -37,8 +35,6 @@ namespace UVtools.WPF
         public static FileFormat SlicerFile = null;
 
         public static AppVersionChecker VersionChecker { get; } = new AppVersionChecker();
-
-        public static Size MaxWindowSize = Size.Empty;
 
         public override void Initialize()
         {
@@ -124,15 +120,15 @@ namespace UVtools.WPF
         {
             try
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (OperatingSystem.IsWindows())
                 {
                     Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }).Dispose();
                 }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                else if (OperatingSystem.IsLinux())
                 {
                     Process.Start("xdg-open", url).Dispose();
                 }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                else if (OperatingSystem.IsMacOS())
                 {
                     Process.Start("open", url).Dispose();
                 }
