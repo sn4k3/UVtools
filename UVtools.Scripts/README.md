@@ -52,7 +52,7 @@ Take **Erode-Bottom.ps1** as bootstrap and minimal script, read each line and st
     # Find a file format given a file path, $true = is file path, $true = Create a new instance
     # Returns null if file is invalid
     $slicerFile = [UVtools.Core.FileFormats.FileFormat]::FindByExtension($inputFile, $true, $true)
-    if($slicerFile){ return } # Invalid file, exit
+    if(!$slicerFile){ return } # Invalid file, exit
     $slicerFile.Decode($inputFile)
     ```
 * [Layer.cs - Layer representation and hold it's own data](https://github.com/sn4k3/UVtools/blob/master/UVtools.Core/Layer/Layer.cs)
