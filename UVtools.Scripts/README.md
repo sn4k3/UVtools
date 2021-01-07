@@ -29,7 +29,7 @@ allow you to run scripts without have to modify each script to put the UVtools p
    * Note: You only need to repeat this step if you change install directory
    * If your system is unable to register a environment you need to manuall set the path on each script
 2. Download and open a script with Visual Studio Code
-   * After open a .ps1 file first time, visual code will ask if you want to install the PowerShell extension, say 'yes' and wait for instalation
+   * After open a .ps1 file for the first time, visual code will ask if you want to install the PowerShell extension, say 'yes' and wait for instalation
 3. Click on the play arrow (Run) or F5
 4. Script will run and prompt for inputs
    * The easier way to input a file is drag and drop the file on the terminal
