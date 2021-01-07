@@ -26,7 +26,7 @@ allow you to run scripts without have to modify each script to put the UVtools p
    * Run command
    * Run: `$Env:UVTOOLS_PATH` to confirm if path is registed
    * Quit terminal
-   * Note: You only need to repeat this step if you change install directory
+   * Note: You need to repeat this step if you change install directory
    * If your system is unable to register a environment you need to manuall set the path on each script
 2. Download and open a script with Visual Studio Code
    * After open a .ps1 file for the first time, visual code will ask if you want to install the PowerShell extension, say 'yes' and wait for instalation
