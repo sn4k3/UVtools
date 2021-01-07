@@ -78,10 +78,17 @@ Take **Erode-Bottom.ps1** as bootstrap and minimal script, read each line and st
 * [Operations - Applies operation over layers, the tools menu on the GUI](https://github.com/sn4k3/UVtools/tree/master/UVtools.Core/Operations)
   * Example:
     ```Powershell
+    # Erode bottom layers
     $morph = New-Object UVtools.Core.Operations.OperationMorph
     $morph.MorphOperation = [Emgu.CV.CvEnum.MorphOp]::Erode
     $morph.IterationsStart = $iterations
     $morph.LayerIndexEnd = $slicerFile.BottomLayerCount - 1
+    if(!$morph.Execute($slicerFile, $progress)){ return; }
+
+    # Reuse object and erode normal layers with 1 less iteration
+    $morph.IterationsStart = $iterations - 1
+    $morph.LayerIndexStart = $slicerFile.BottomLayerCount
+    $morph.LayerIndexEnd = $slicerFile.LayerCount - 1
     if(!$morph.Execute($slicerFile, $progress)){ return; }
     ```
 
