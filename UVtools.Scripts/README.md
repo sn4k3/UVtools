@@ -18,7 +18,7 @@ You will get same performance as native calling, plus you can stack all your act
 Never run scripts from untrusted sources! Always inspect the script content before run something new from others. 
 
 1. First you need to register the UVtools install directory under a environment variable. This will
-allow you to run scripts without have to modify them to put the full path to run them.
+allow you to run scripts without have to modify each script to put the UVtools path in order to run them.
    * Open a PowerShell instance as admin
    * Enter: `[System.Environment]::SetEnvironmentVariable('UVTOOLS_PATH','FOLDER/PATH/TO/UVTOOLS', [System.EnvironmentVariableTarget]::User)`
    * Replace 'FOLDER/PATH/TO/UVTOOLS' with your UVtools instalation folder
