@@ -42,7 +42,7 @@ have a good readable name that make sense what it does, you can only run public 
 On Visual Code, after you have an valid variable on your script, type it name with a ended dot (.) will show you a list of avaliable methods and variables that you can call. 
 eg: `$slicerFile.`, if the list don't show up, press CTRL+Space, that should force show the list.
 
-Take **Erode-Bottom.ps1** as bootstrap and minimal script, read each line and start exploring!
+Take **[Erode-Bottom.ps1](https://github.com/sn4k3/UVtools/blob/master/UVtools.Scripts/Erode-Bottom.ps1)** as bootstrap and minimal script, read each line and start exploring!
 
 
 * [Core - Source code](https://github.com/sn4k3/UVtools/tree/master/UVtools.Core)
