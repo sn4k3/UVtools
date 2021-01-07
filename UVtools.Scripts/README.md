@@ -105,5 +105,5 @@ Take **Erode-Bottom.ps1** as bootstrap and minimal script, read each line and st
 
 ## Contribute with your scripts
 
-If you make a usefull script and want to contribute you can share and publish your script under [github - issues](https://github.com/sn4k3/UVtools/issues/new/choose).
+If you make a usefull script and want to contribute you can share and publish your script under [github - issues](https://github.com/sn4k3/UVtools/issues/new?assignees=sn4k3&labels=script&template=script.md&title=%5BSCRIPT%5D+).
 After analyzation it will be published on the repository
