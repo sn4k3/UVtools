@@ -72,6 +72,12 @@ namespace UVtools.Core.Operations
             get => _morphOperation;
             set => RaiseAndSetIfChanged(ref _morphOperation, value);
         }
+        
+        public uint Iterations
+        {
+            get => IterationsStart;
+            set => IterationsStart = IterationsEnd = value;
+        }
 
         public uint IterationsStart
         {

@@ -1,5 +1,24 @@
 # Changelog
 
+## 07/01/2021 - v2.1.3
+
+* (Add) PrusaSlicer printers:
+   * Peopoly Phenom XXL
+   * QIDI 3D ibox mono
+   * Wanhao CGR Mini Mono
+   * Wanhao CGR Mono
+* (Add) PrusaSlicer light supports profiles
+* (Add) Calibration - Elephant Foot: Mirror output
+* (Add) Calibration - XYZ Accuracy: Mirror output
+* (Add) Calibration - Tolerance: Mirror output
+* (Add) Calibration - Grayscale: Mirror output
+* (Add) Scripts on github
+* (Change) Save 'Display Width' and 'Height' to calibration profiles and load them back only if file format aware from these properties
+* (Fix) Tool - Morph: Set a rectangular 3x3 kernel by default
+* (Fix) Tool - Blur: Set a rectangular 3x3 kernel by default
+* (Fix) Calibration - Elephant Foot: Include part scale on profile text
+* (Fix) MSI dont store instalation path (#121)
+
 ## 03/01/2021 - v2.1.2
 
 * (Add) Pixel editor - Text: Preview of text operation (#120)

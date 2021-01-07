@@ -37,12 +37,17 @@ namespace UVtools.Core.Extensions
         /// <returns>A <see cref="Span{T}"/> containing all pixels in data memory</returns>
         public static unsafe Span<T> GetPixelSpan<T>(this Mat mat)
         {
-            return new Span<T>(mat.DataPointer.ToPointer(), mat.GetLength());
+            return new(mat.DataPointer.ToPointer(), mat.GetLength());
+        }
+
+        public static unsafe Span<byte> GetPixelSpanByte(this Mat mat)
+        {
+            return new(mat.DataPointer.ToPointer(), mat.GetLength());
         }
 
         public static unsafe Span<T> GetPixelSpan<T>(this Mat mat, int length, int offset = 0)
         {
-            return new Span<T>(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length);
+            return new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length);
         }
 
         public static Span<T> GetSinglePixelSpan<T>(this Mat mat, int x, int y)

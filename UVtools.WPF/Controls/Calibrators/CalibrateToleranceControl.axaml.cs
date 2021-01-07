@@ -69,8 +69,10 @@ namespace UVtools.WPF.Controls.Calibrators
                 case ToolWindow.Callbacks.Init:
                 case ToolWindow.Callbacks.ProfileLoaded:
                     Operation.Resolution = App.SlicerFile.Resolution;
-                    Operation.DisplayWidth = (decimal)App.SlicerFile.DisplayWidth;
-                    Operation.DisplayHeight = (decimal)App.SlicerFile.DisplayHeight;
+                    if (App.SlicerFile.DisplayWidth > 0)
+                        Operation.DisplayWidth = (decimal)App.SlicerFile.DisplayWidth;
+                    if (App.SlicerFile.DisplayHeight > 0)
+                        Operation.DisplayHeight = (decimal)App.SlicerFile.DisplayHeight;
                     Operation.PropertyChanged += (sender, e) =>
                     {
                         _timer.Stop();

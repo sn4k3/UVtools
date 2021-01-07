@@ -94,10 +94,12 @@ But also, i need victims for test subject. Proceed at your own risk!
 * Elegoo Saturn
 * Peopoly Phenom
 * Peopoly Phenom L
+* Peopoly Phenom XXL
 * Peopoly Phenom Noir
 * QIDI Shadow5.5
 * QIDI Shadow6.0 Pro
 * QIDI S-Box
+* QIDI 3D ibox mono
 * Phrozen Shuffle
 * Phrozen Shuffle Lite
 * Phrozen Shuffle XL
@@ -113,6 +115,8 @@ But also, i need victims for test subject. Proceed at your own risk!
 * Kelant S400
 * Wanhao D7
 * Wanhao D8
+* Wanhao CGR Mini Mono
+* Wanhao CGR Mono
 * Creality LD-002R
 * Creality LD-002H
 * Creality LD-006
@@ -124,14 +128,8 @@ But also, i need victims for test subject. Proceed at your own risk!
 
 ## Available profiles for PrusaSlicer
 
-* Universal 0.1 Fast - Heavy Supports
-* Universal 0.1 Fast - Medium Supports
-* Universal 0.05 Normal - Heavy Supports
-* Universal 0.05 Normal - Medium Supports
-* Universal 0.035 Detail - Heavy Supports
-* Universal 0.035 Detail - Medium Supports
-* Universal 0.025 UltraDetail - Heavy Supports
-* Universal 0.025 UltraDetail - Medium Supports
+* From 0.01mm to 0.20mm
+* Light, Medium and Heavy Supports
 
 ## Install and configure profiles under PrusaSlicer
 

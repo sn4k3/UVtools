@@ -178,8 +178,7 @@ namespace UVtools.WPF.Controls
         public Kernel GetKernel()
         {
             var matrix = GetMatrix();
-            if (matrix is null) return null;
-            return new Kernel(matrix, Anchor);
+            return matrix is null ? null : new Kernel(matrix, Anchor);
         }
     }
 }

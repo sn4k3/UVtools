@@ -221,10 +221,16 @@
                      IsEnabled="{Binding Operation.HollowModel}"
                      Text="mm"/>
 
-          <CheckBox Grid.Row="14" Grid.Column="2" Grid.ColumnSpan="9"
+          <CheckBox Grid.Row="14" Grid.Column="2" Grid.ColumnSpan="4"
                     VerticalAlignment="Center"
                     IsChecked="{Binding Operation.CenterHoleRelief}"
                     Content="Relief with a center hole"/>
+
+          <CheckBox Grid.Row="14" Grid.Column="8"
+                    Grid.ColumnSpan="3"
+                    ToolTip.Tip="Most of the printers requires a mirror output to print with the correct orientation"
+                    IsChecked="{Binding Operation.MirrorOutput}"
+                    Content="Mirror output" />
 
           <TextBlock Grid.Row="16" Grid.Column="0"
                      VerticalAlignment="Center"

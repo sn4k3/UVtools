@@ -21,13 +21,29 @@
       Schedule="afterInstallInitialize" />
     <!--Common Launch Condition-->
     <!-- Examples at http://wixtoolset.org/documentation/manual/v3/customactions/wixnetfxextension.html -->
+    <!--
     <PropertyRef Id="NETFRAMEWORK45" />
     <Condition Message="[ProductName] requires .NET Framework 4.8.">Installed OR NETFRAMEWORK45</Condition>
+    -->
     <!-- Include User Interface Experience -->
-    <Icon Id="Icon.ico" SourceFile="..\UVtools.WPF\UVtools.ico" />
+    <Icon Id="Icon.ico" SourceFile="..\UVtools.CAD\UVtools.ico" />
     <Property Id="ARPPRODUCTICON" Value="Icon.ico"></Property>
     <UIRef Id="UI" />
     <!-- Include Features and Directories Fragment -->
-    <DirectoryRef Id="INSTALLLOCATION" />
+    <DirectoryRef Id="INSTALLLOCATION">
+      <Component Id="RegistryEntries" Guid="C3603223-A8C1-4393-8C06-36B48DED2652">
+        <RegistryKey
+          Root="HKCU"
+          Key="Software\UVtools"
+          ForceCreateOnInstall="yes"
+          ForceDeleteOnUninstall="yes" />
+        <RegistryValue
+          Root="HKCU"
+          Key="Software\UVtools"
+          Name="InstallDir"
+          Type="string"
+          Value="[INSTALLLOCATION]" />
+      </Component>
+    </DirectoryRef>
   </Product>
 </Wix>

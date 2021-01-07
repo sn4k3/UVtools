@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -34,6 +35,8 @@ namespace UVtools.Core.Operations
         private decimal _normalExposure = 12;
         private decimal _partScale = 1;
         private byte _margin = 30;
+        private bool _enableAntiAliasing = true;
+        private bool _mirrorOutput;
         private bool _isErodeEnabled = true;
         private byte _erodeStartIteration = 2;
         private byte _erodeEndIteration = 6;
@@ -44,7 +47,6 @@ namespace UVtools.Core.Operations
         private byte _dimmingEndBrightness = 200;
         private byte _dimmingBrightnessSteps = 20;
         private bool _outputOriginalPart = true;
-        private bool _enableAntiAliasing = true;
 
         #endregion
 
@@ -98,10 +100,10 @@ namespace UVtools.Core.Operations
             var result = $"[Layer Height: {_layerHeight}] " +
                          $"[Layers: {_bottomLayers}/{_normalLayers}] " +
                          $"[Exposure: {_bottomExposure}/{_normalExposure}] " +
-                         $"[Margin: {_margin}] [ORI: {_outputOriginalPart}]" +
+                         $"[Scale: {_partScale}] [Margin: {_margin}] [ORI: {_outputOriginalPart}]" +
                          $"[E: {_erodeStartIteration}-{_erodeEndIteration} S{_erodeIterationSteps}] " +
                          $"[D: W{_dimmingWallThickness} B{_dimmingStartBrightness}-{_dimmingEndBrightness} S{_dimmingBrightnessSteps}] " +
-                         $"[AA: {_enableAntiAliasing}]";
+                         $"[AA: {_enableAntiAliasing}] [Mirror: {_mirrorOutput}]";
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
         }
@@ -224,6 +226,12 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _enableAntiAliasing, value);
         }
 
+        public bool MirrorOutput
+        {
+            get => _mirrorOutput;
+            set => RaiseAndSetIfChanged(ref _mirrorOutput, value);
+        }
+
         public bool IsErodeEnabled
         {
             get => _isErodeEnabled;
@@ -343,7 +351,7 @@ namespace UVtools.Core.Operations
 
         private bool Equals(OperationCalibrateElephantFoot other)
         {
-            return _layerHeight == other._layerHeight && _syncLayers == other._syncLayers && _bottomLayers == other._bottomLayers && _normalLayers == other._normalLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _margin == other._margin && _isErodeEnabled == other._isErodeEnabled && _erodeStartIteration == other._erodeStartIteration && _erodeEndIteration == other._erodeEndIteration && _erodeIterationSteps == other._erodeIterationSteps && _isDimmingEnabled == other._isDimmingEnabled && _dimmingWallThickness == other._dimmingWallThickness && _dimmingStartBrightness == other._dimmingStartBrightness && _dimmingEndBrightness == other._dimmingEndBrightness && _dimmingBrightnessSteps == other._dimmingBrightnessSteps && _outputOriginalPart == other._outputOriginalPart && _enableAntiAliasing == other._enableAntiAliasing;
+            return _layerHeight == other._layerHeight && _syncLayers == other._syncLayers && _bottomLayers == other._bottomLayers && _normalLayers == other._normalLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _partScale == other._partScale && _margin == other._margin && _isErodeEnabled == other._isErodeEnabled && _erodeStartIteration == other._erodeStartIteration && _erodeEndIteration == other._erodeEndIteration && _erodeIterationSteps == other._erodeIterationSteps && _isDimmingEnabled == other._isDimmingEnabled && _dimmingWallThickness == other._dimmingWallThickness && _dimmingStartBrightness == other._dimmingStartBrightness && _dimmingEndBrightness == other._dimmingEndBrightness && _dimmingBrightnessSteps == other._dimmingBrightnessSteps && _outputOriginalPart == other._outputOriginalPart && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput;
         }
 
         public override bool Equals(object obj)
@@ -360,7 +368,11 @@ namespace UVtools.Core.Operations
             hashCode.Add(_normalLayers);
             hashCode.Add(_bottomExposure);
             hashCode.Add(_normalExposure);
+            hashCode.Add(_partScale);
             hashCode.Add(_margin);
+            hashCode.Add(_enableAntiAliasing);
+            hashCode.Add(_outputOriginalPart);
+            hashCode.Add(_mirrorOutput);
             hashCode.Add(_isErodeEnabled);
             hashCode.Add(_erodeStartIteration);
             hashCode.Add(_erodeEndIteration);
@@ -370,8 +382,7 @@ namespace UVtools.Core.Operations
             hashCode.Add(_dimmingStartBrightness);
             hashCode.Add(_dimmingEndBrightness);
             hashCode.Add(_dimmingBrightnessSteps);
-            hashCode.Add(_outputOriginalPart);
-            hashCode.Add(_enableAntiAliasing);
+            
             return hashCode.ToHashCode();
         }
 
@@ -581,6 +592,11 @@ namespace UVtools.Core.Operations
                         addText(roi, count, $"W: {DimmingWallThickness}", $"B: {brightness}");
                     }
                 }
+            }
+
+            if (_mirrorOutput)
+            {
+                Parallel.ForEach(layers, mat => CvInvoke.Flip(mat, mat, FlipType.Horizontal));
             }
 
             // Preview

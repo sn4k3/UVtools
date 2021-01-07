@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Fragment>
+
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">
         <Directory Id="INSTALLLOCATION" Name="UVtools">
@@ -8,7 +9,16 @@
       </Directory>
       </Directory>
     </Directory>
+
+    <Property Id="INSTALLDIR">
+      <RegistrySearch Id="INSTALLDIRRegistry" Type="raw" Root="HKCU" Key="Software\UVtools" Name="InstallDir" />
+    </Property>
+
+    <SetDirectory Id="INSTALLLOCATION" Value="[INSTALLDIR]">INSTALLDIR</SetDirectory>
+    
+    
     <Feature Id="UVtools" Title="UVtools" Description="Installs all the files needed for UVtools" Level="1" AllowAdvertise="no" ConfigurableDirectory="INSTALLLOCATION">
+      <ComponentRef Id="RegistryEntries" />
       <MergeRef Id="UVtools" />
       <!-- Uncomment the below line to pull in IIS Metadata.  Otherwise delete if not needed -->
       <!--<ComponentGroupRef Id="webSite" />-->

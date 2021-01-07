@@ -41,6 +41,7 @@ namespace UVtools.Core.Operations
         private bool _outputSameDiameterPart = true;
         private bool _fuseParts;
         private bool _enableAntiAliasing = true;
+        private bool _mirrorOutput;
 
         private decimal _femaleDiameter = 16;
         private decimal _femaleHoleDiameter = 10;
@@ -115,7 +116,7 @@ namespace UVtools.Core.Operations
                          $"[Z: {_zSize}] " +
                          $"[TB:{_topBottomMargin} LR:{_leftRightMargin} PM:{_partMargin}] " +
                          $"[Chamfer: {_chamferLayers}] [Erode: {_erodeBottomIterations}] " +
-                         $"[OSHD: {_outputSameDiameterPart}] [Fuse: {_fuseParts}] [AA: {_enableAntiAliasing}] " +
+                         $"[OSHD: {_outputSameDiameterPart}] [Fuse: {_fuseParts}] [AA: {_enableAntiAliasing}] [Mirror: {_mirrorOutput}]" +
                          $"[{_shape}, {_femaleDiameter}/{_femaleHoleDiameter}] " +
                          $"[tM: {_maleThinnerModels} O:{_maleThinnerOffset} S:{_maleThinnerStep}] " +
                          $"[TM: {_maleThickerModels} O:{_maleThickerOffset} S:{_maleThickerStep}] ";
@@ -130,7 +131,6 @@ namespace UVtools.Core.Operations
         [XmlIgnore]
         public Size Resolution { get; set; } = Size.Empty;
 
-        [XmlIgnore]
         public decimal DisplayWidth
         {
             get => _displayWidth;
@@ -141,7 +141,6 @@ namespace UVtools.Core.Operations
             }
         }
 
-        [XmlIgnore]
         public decimal DisplayHeight
         {
             get => _displayHeight;
@@ -270,6 +269,12 @@ namespace UVtools.Core.Operations
         {
             get => _enableAntiAliasing;
             set => RaiseAndSetIfChanged(ref _enableAntiAliasing, value);
+        }
+
+        public bool MirrorOutput
+        {
+            get => _mirrorOutput;
+            set => RaiseAndSetIfChanged(ref _mirrorOutput, value);
         }
 
         public decimal FemaleDiameter
@@ -431,12 +436,11 @@ namespace UVtools.Core.Operations
         public static Array ShapesItems => Enum.GetValues(typeof(Shapes));
         #endregion
 
-
         #region Equality
 
         private bool Equals(OperationCalibrateTolerance other)
         {
-            return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _zSize == other._zSize && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _shape == other._shape && _partMargin == other._partMargin && _outputSameDiameterPart == other._outputSameDiameterPart && _fuseParts == other._fuseParts && _enableAntiAliasing == other._enableAntiAliasing && _femaleDiameter == other._femaleDiameter && _femaleHoleDiameter == other._femaleHoleDiameter && _maleThinnerModels == other._maleThinnerModels && _maleThinnerOffset == other._maleThinnerOffset && _maleThinnerStep == other._maleThinnerStep && _maleThickerModels == other._maleThickerModels && _maleThickerOffset == other._maleThickerOffset && _maleThickerStep == other._maleThickerStep;
+            return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _zSize == other._zSize && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _shape == other._shape && _partMargin == other._partMargin && _outputSameDiameterPart == other._outputSameDiameterPart && _fuseParts == other._fuseParts && _enableAntiAliasing == other._enableAntiAliasing && _femaleDiameter == other._femaleDiameter && _femaleHoleDiameter == other._femaleHoleDiameter && _maleThinnerModels == other._maleThinnerModels && _maleThinnerOffset == other._maleThinnerOffset && _maleThinnerStep == other._maleThinnerStep && _maleThickerModels == other._maleThickerModels && _maleThickerOffset == other._maleThickerOffset && _maleThickerStep == other._maleThickerStep && _mirrorOutput == other._mirrorOutput;
         }
 
         public override bool Equals(object obj)
@@ -461,6 +465,7 @@ namespace UVtools.Core.Operations
             hashCode.Add(_outputSameDiameterPart);
             hashCode.Add(_fuseParts);
             hashCode.Add(_enableAntiAliasing);
+            hashCode.Add(_mirrorOutput);
             hashCode.Add(_femaleDiameter);
             hashCode.Add(_femaleHoleDiameter);
             hashCode.Add(_maleThinnerModels);
@@ -662,6 +667,11 @@ namespace UVtools.Core.Operations
                     CvInvoke.PutText(layers[layerIndex], keyValuePair.Value, keyValuePair.Key, fontFace, fontScale, EmguExtensions.BlackByte, fontThickness, lineType);
                 }
             });
+
+            if (_mirrorOutput)
+            {
+                Parallel.ForEach(layers, mat => CvInvoke.Flip(mat, mat, FlipType.Horizontal));
+            }
 
             return layers;
         }

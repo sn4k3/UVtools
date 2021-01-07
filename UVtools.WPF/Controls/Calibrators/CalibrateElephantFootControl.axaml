@@ -103,6 +103,9 @@
                          Minimum="1"
                          Maximum="10"
                          Value="{Binding Operation.PartScale}"/>
+          <TextBlock Grid.Row="6" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     Text="x"/>
 
           <TextBlock Grid.Row="6" Grid.Column="6"
                      VerticalAlignment="Center"
@@ -147,6 +150,11 @@
                 Text="{Binding Operation.ObjectCount}"/>
           </StackPanel>
 
+          <CheckBox Grid.Row="8" Grid.Column="6"
+                    Grid.ColumnSpan="5"
+                    IsChecked="{Binding Operation.EnableAntiAliasing}"
+                    Content="Enable Anti-Aliasing" />
+          
           <CheckBox Grid.Row="10" Grid.Column="0"
                     Grid.ColumnSpan="6"
                     IsChecked="{Binding Operation.OutputOriginalPart}"
@@ -154,8 +162,10 @@
 
           <CheckBox Grid.Row="10" Grid.Column="6"
                     Grid.ColumnSpan="5"
-                    IsChecked="{Binding Operation.EnableAntiAliasing}"
-                    Content="Enable Anti-Aliasing" />
+                    ToolTip.Tip="Most of the printers requires a mirror output to print with the correct orientation"
+                    IsChecked="{Binding Operation.MirrorOutput}"
+                    Content="Mirror output" />
+          
         </Grid>
 
 

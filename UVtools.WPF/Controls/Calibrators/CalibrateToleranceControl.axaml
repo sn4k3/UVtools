@@ -234,6 +234,12 @@
                       IsChecked="{Binding Operation.EnableAntiAliasing}"
                       Content="Enable Anti-Aliasing"/>
 
+            <CheckBox Grid.Row="16" Grid.Column="8"
+                      Grid.ColumnSpan="3"
+                      ToolTip.Tip="Most of the printers requires a mirror output to print with the correct orientation"
+                      IsChecked="{Binding Operation.MirrorOutput}"
+                      Content="Mirror output" />
+
           </Grid>
         </Expander>
       </Border>
