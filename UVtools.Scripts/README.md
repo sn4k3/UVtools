@@ -89,7 +89,18 @@ Take **Erode-Bottom.ps1** as bootstrap and minimal script, read each line and st
     $morph.IterationsStart = $iterations - 1
     $morph.LayerIndexStart = $slicerFile.BottomLayerCount
     $morph.LayerIndexEnd = $slicerFile.LayerCount - 1
-    if(!$morph.Execute($slicerFile, $progress)){ return; }
+    if(!$morph.Execute($slicerFile, $progress)){ return }
+
+    # Rotate layer 0, 45º
+    $rotate = New-Object UVtools.Core.Operations.OperationRotate
+    $rotate.AngleDegrees = 45;
+    if(!$rotate.Execute($slicerFile, $progress)){ return }
+
+    # Rotate layer 1, 90º
+    $rotate.LayerIndexStart = 1
+    $rotate.LayerIndexEnd = 1
+    $rotate.AngleDegrees = 90
+    if(!$rotate.Execute($slicerFile, $progress)){ return }
     ```
 
 ## Contribute with your scripts
