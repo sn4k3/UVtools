@@ -16,6 +16,7 @@ You will get same performance as native calling, plus you can stack all your act
 
 **WARNING:** Running PowerShell scripts as administrator are very powerfull and with wide access on your system.
 Never run scripts from untrusted sources! Always inspect the script content before run something new from others. 
+Always try to run scripts with non-adminstration privileges.
 
 1. First you need to register the UVtools install directory under a environment variable. This will
 allow you to run scripts without have to modify each script to put the UVtools path in order to run them.
