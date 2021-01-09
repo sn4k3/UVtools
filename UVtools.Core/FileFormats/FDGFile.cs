@@ -24,10 +24,10 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats
 {
-    public class PHZFile : FileFormat
+    public class FDGFile : FileFormat
     {
         #region Constants
-        private const uint MAGIC_PHZ = 0x9FDA83AE;
+        private const uint MAGIC = 0xBD3C7AC8; // 3174857416
         private const ushort REPEATRGB15MASK = 0x20;
 
         private const ushort RLE16EncodingLimit = 0x1000;
@@ -40,11 +40,9 @@ namespace UVtools.Core.FileFormats
 
             /// <summary>
             /// Gets a magic number identifying the file type.
-            /// 0x12fd_0019 for cbddlp
-            /// 0x12fd_0086 for ctb
-            /// 0x9FDA83AE for phz
+            /// 0xBD3C7AC8 for fdg
             /// </summary>
-            [FieldOrder(0)] public uint Magic { get; set; } = MAGIC_PHZ;
+            [FieldOrder(0)] public uint Magic { get; set; } = MAGIC;
 
             /// <summary>
             /// Gets the software version
@@ -52,24 +50,21 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(1)] public uint Version { get; set; } = 2;
 
             /// <summary>
-            /// Gets the layer height setting used at slicing, in millimeters. Actual height used by the machine is in the layer table.
+            /// Gets the number of records in the layer table
             /// </summary>
-            [FieldOrder(2)] public float LayerHeightMilimeter { get; set; }
-
-            /// <summary>
-            /// Gets the exposure time setting used at slicing, in seconds, for normal (non-bottom) layers, respectively. Actual time used by the machine is in the layer table.
-            /// </summary>
-            [FieldOrder(3)] public float LayerExposureSeconds { get; set; }
-
-            /// <summary>
-            /// Gets the exposure time setting used at slicing, in seconds, for bottom layers. Actual time used by the machine is in the layer table.
-            /// </summary>
-            [FieldOrder(4)] public float BottomExposureSeconds { get; set; }
+            [FieldOrder(2)] public uint LayerCount { get; set; }
 
             /// <summary>
             /// Gets number of layers configured as "bottom." Note that this field appears in both the file header and ExtConfig..
             /// </summary>
-            [FieldOrder(5)] public uint BottomLayersCount { get; set; } = 10;
+            [FieldOrder(3)] public uint BottomLayersCount { get; set; } = 10;
+
+            /// <summary>
+            /// Gets the records whether this file was generated assuming normal (0) or mirrored (1) image projection. LCD printers are "mirrored" for this purpose.
+            /// </summary>
+            [FieldOrder(4)] public uint ProjectorType { get; set; }
+
+            [FieldOrder(5)] public uint BottomLayersCount2 { get; set; } = 10; // ???
 
             /// <summary>
             /// Gets the printer resolution along X axis, in pixels. This information is critical to correctly decoding layer images.
@@ -82,151 +77,112 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(7)] public uint ResolutionY { get; set; }
 
             /// <summary>
+            /// Gets the layer height setting used at slicing, in millimeters. Actual height used by the machine is in the layer table.
+            /// </summary>
+            [FieldOrder(8)] public float LayerHeightMilimeter { get; set; }
+
+            /// <summary>
+            /// Gets the exposure time setting used at slicing, in seconds, for normal (non-bottom) layers, respectively. Actual time used by the machine is in the layer table.
+            /// </summary>
+            [FieldOrder(9)] public float LayerExposureSeconds { get; set; }
+
+            /// <summary>
+            /// Gets the exposure time setting used at slicing, in seconds, for bottom layers. Actual time used by the machine is in the layer table.
+            /// </summary>
+            [FieldOrder(10)] public float BottomExposureSeconds { get; set; }
+
+            /// <summary>
             /// Gets the file offsets of ImageHeader records describing the larger preview images.
             /// </summary>
-            [FieldOrder(8)] public uint PreviewLargeOffsetAddress { get; set; }
-
-            /// <summary>
-            /// Gets the file offset of a table of LayerHeader records giving parameters for each printed layer.
-            /// </summary>
-            [FieldOrder(9)] public uint LayersDefinitionOffsetAddress { get; set; }
-
-            /// <summary>
-            /// Gets the number of records in the layer table for the first level set. In ctb files, that’s equivalent to the total number of records, but records may be multiplied in antialiased cbddlp files.
-            /// </summary>
-            [FieldOrder(10)] public uint LayerCount { get; set; }
+            [FieldOrder(11)] public uint PreviewLargeOffsetAddress { get; set; }
 
             /// <summary>
             /// Gets the file offsets of ImageHeader records describing the smaller preview images.
             /// </summary>
-            [FieldOrder(11)] public uint PreviewSmallOffsetAddress { get; set; }
+            [FieldOrder(12)] public uint PreviewSmallOffsetAddress { get; set; }
+
+            /// <summary>
+            /// Gets the file offset of a table of LayerHeader records giving parameters for each printed layer.
+            /// </summary>
+            [FieldOrder(13)] public uint LayersDefinitionOffsetAddress { get; set; }
 
             /// <summary>
             /// Gets the estimated duration of print, in seconds.
             /// </summary>
-            [FieldOrder(12)] public uint PrintTime { get; set; }
+            [FieldOrder(14)] public uint PrintTime { get; set; }
 
             /// <summary>
-            /// Gets the records whether this file was generated assuming normal (0) or mirrored (1) image projection. LCD printers are "mirrored" for this purpose.
+            /// ?
             /// </summary>
-            [FieldOrder(13)] public uint ProjectorType { get; set; }
-
-            /// <summary>
-            /// Gets the number of times each layer image is repeated in the file.
-            /// This is used to implement antialiasing in cbddlp files. When greater than 1,
-            /// the layer table will actually contain layer_table_count * level_set_count entries.
-            /// See the section on antialiasing for details.
-            /// </summary>
-            [FieldOrder(14)] public uint AntiAliasLevel { get; set; } = 1;
+            [FieldOrder(15)] public uint AntiAliasLevel { get; set; } = 1;
 
             /// <summary>
             /// Gets the PWM duty cycle for the UV illumination source on normal levels, respectively.
             /// This appears to be an 8-bit quantity where 0xFF is fully on and 0x00 is fully off.
             /// </summary>
-            [FieldOrder(15)] public ushort LightPWM { get; set; } = 255;
+            [FieldOrder(16)] public ushort LightPWM { get; set; } = 255;
 
             /// <summary>
             /// Gets the PWM duty cycle for the UV illumination source on bottom levels, respectively.
             /// This appears to be an 8-bit quantity where 0xFF is fully on and 0x00 is fully off.
             /// </summary>
-            [FieldOrder(16)] public ushort BottomLightPWM { get; set; } = 255;
+            [FieldOrder(17)] public ushort BottomLightPWM { get; set; } = 255;
 
-            [FieldOrder(17)] public uint Padding1 { get; set; }
-            [FieldOrder(18)] public uint Padding2 { get; set; }
+            [FieldOrder(18)] public uint Padding1 { get; set; }
+            [FieldOrder(19)] public uint Padding2 { get; set; }
 
             /// <summary>
             /// Gets the height of the model described by this file, in millimeters.
             /// </summary>
-            [FieldOrder(19)] public float OverallHeightMilimeter { get; set; }
+            [FieldOrder(20)] public float OverallHeightMilimeter { get; set; }
 
             /// <summary>
             /// Gets dimensions of the printer’s X output volume, in millimeters.
             /// </summary>
-            [FieldOrder(20)]  public float BedSizeX { get; set; }
+            [FieldOrder(21)]  public float BedSizeX { get; set; }
 
             /// <summary>
             /// Gets dimensions of the printer’s Y output volume, in millimeters.
             /// </summary>
-            [FieldOrder(21)]  public float BedSizeY { get; set; }
+            [FieldOrder(22)]  public float BedSizeY { get; set; }
 
             /// <summary>
             /// Gets dimensions of the printer’s Z output volume, in millimeters.
             /// </summary>
-            [FieldOrder(22)]  public float BedSizeZ { get; set; }
+            [FieldOrder(23)]  public float BedSizeZ { get; set; }
 
             /// <summary>
             /// Gets the key used to encrypt layer data, or 0 if encryption is not used.
             /// </summary>
-            [FieldOrder(23)] public uint EncryptionKey { get; set; }
+            [FieldOrder(24)] public uint EncryptionKey { get; set; }
 
-            /// <summary>
-            /// Gets the light off time setting used at slicing, for bottom layers, in seconds. Actual time used by the machine is in the layer table. Note that light_off_time_s appears in both the file header and ExtConfig.
-            /// </summary>
-            [FieldOrder(24)] public float BottomLightOffDelay { get; set; } = 1;
-
-            /// <summary>
-            /// Gets the light off time setting used at slicing, for normal layers, in seconds. Actual time used by the machine is in the layer table. Note that light_off_time_s appears in both the file header and ExtConfig.
-            /// </summary>
-            [FieldOrder(25)] public float LayerOffTime     { get; set; } = 1;
-
-            /// <summary>
-            /// Gets number of layers configured as "bottom." Note that this field appears in both the file header and ExtConfig.
-            /// </summary>
-            [FieldOrder(26)] public uint BottomLayersCount2 { get; set; } = 10;
-
-            [FieldOrder(27)] public uint Padding3 { get; set; }
-
-            /// <summary>
-            /// Gets the distance to lift the build platform away from the vat after bottom layers, in millimeters.
-            /// </summary>
-            [FieldOrder(28)] public float BottomLiftHeight { get; set; } = 5;
-
-            /// <summary>
-            /// Gets the speed at which to lift the build platform away from the vat after bottom layers, in millimeters per minute.
-            /// </summary>
-            [FieldOrder(29)] public float BottomLiftSpeed { get; set; } = 300;
-
-            /// <summary>
-            /// Gets the distance to lift the build platform away from the vat after normal layers, in millimeters.
-            /// </summary>
-            [FieldOrder(30)] public float LiftHeight { get; set; } = 5;
-
-            /// <summary>
-            /// Gets the speed at which to lift the build platform away from the vat after normal layers, in millimeters per minute.
-            /// </summary>
-            [FieldOrder(31)] public float LiftSpeed { get; set; } = 300;
-
-            /// <summary>
-            /// Gets the speed to use when the build platform re-approaches the vat after lift, in millimeters per minute.
-            /// </summary>
-            [FieldOrder(32)] public float RetractSpeed { get; set; } = 300;
+            [FieldOrder(25)] public uint AntiAliasLevelInfo { get; set; }
+            [FieldOrder(26)] public uint Padding3 { get; set; }
 
             /// <summary>
             /// Gets the estimated required resin, measured in milliliters. The volume number is derived from the model.
             /// </summary>
-            [FieldOrder(33)] public float VolumeMl { get; set; }
+            [FieldOrder(27)] public float VolumeMl { get; set; }
 
             /// <summary>
             /// Gets the estimated grams, derived from volume using configured factors for density.
             /// </summary>
-            [FieldOrder(34)] public float WeightG { get; set; }
+            [FieldOrder(28)] public float WeightG { get; set; }
 
             /// <summary>
             /// Gets the estimated cost based on currency unit the user had configured. Derived from volume using configured factors for density and cost.
             /// </summary>
-            [FieldOrder(35)] public float CostDollars { get; set; }
-
-            [FieldOrder(36)] public uint Padding4 { get; set; }
+            [FieldOrder(29)] public float CostDollars { get; set; }
 
             /// <summary>
             /// Gets the machine name offset to a string naming the machine type, and its length in bytes.
             /// </summary>
-            [FieldOrder(37)] public uint MachineNameAddress { get; set; }
+            [FieldOrder(30)] public uint MachineNameAddress { get; set; }
 
             /// <summary>
             /// Gets the machine size in bytes
             /// </summary>
-            [FieldOrder(38)] public uint MachineNameSize { get; set; }
+            [FieldOrder(31)] public uint MachineNameSize { get; set; }
 
             /// <summary>
             /// Gets the machine name. string is not nul-terminated.
@@ -235,41 +191,68 @@ namespace UVtools.Core.FileFormats
             /// </summary>
             [Ignore] public string MachineName { get; set; }
 
-            [FieldOrder(39)] public uint Padding5 { get; set; }
-            [FieldOrder(40)] public uint Padding6 { get; set; }
-            [FieldOrder(41)] public uint Padding7 { get; set; }
-            [FieldOrder(42)] public uint Padding8 { get; set; }
-            [FieldOrder(43)] public uint Padding9 { get; set; }
-            [FieldOrder(44)] public uint Padding10 { get; set; }
+            /// <summary>
+            /// Gets the light off time setting used at slicing, for bottom layers, in seconds. Actual time used by the machine is in the layer table. Note that light_off_time_s appears in both the file header and ExtConfig.
+            /// </summary>
+            [FieldOrder(32)] public float BottomLightOffDelay { get; set; } = 1;
 
             /// <summary>
-            /// Gets the parameter used to control encryption.
-            /// Not totally understood. 0 for cbddlp files, 0xF for ctb files, 0x1c for phz
+            /// Gets the light off time setting used at slicing, for normal layers, in seconds. Actual time used by the machine is in the layer table. Note that light_off_time_s appears in both the file header and ExtConfig.
             /// </summary>
-            [FieldOrder(45)] public uint EncryptionMode { get; set; } = 28;
+            [FieldOrder(33)] public float LayerOffTime     { get; set; } = 1;
+
+            [FieldOrder(34)] public uint Padding4 { get; set; }
 
             /// <summary>
-            /// Gets a number that increments with time or number of models sliced, or both. Zeroing it in output seems to have no effect. Possibly a user tracking bug.
+            /// Gets the distance to lift the build platform away from the vat after bottom layers, in millimeters.
             /// </summary>
-            [FieldOrder(46)] public uint MysteriousId { get; set; }
+            [FieldOrder(35)] public float BottomLiftHeight { get; set; } = 5;
 
             /// <summary>
-            /// Gets a number that increments with time or number of models sliced, or both. Zeroing it in output seems to have no effect. Possibly a user tracking bug.
+            /// Gets the speed at which to lift the build platform away from the vat after bottom layers, in millimeters per minute.
             /// </summary>
-            [FieldOrder(47)] public uint AntiAliasLevelInfo { get; set; }
+            [FieldOrder(36)] public float BottomLiftSpeed { get; set; } = 300;
+
+            /// <summary>
+            /// Gets the distance to lift the build platform away from the vat after normal layers, in millimeters.
+            /// </summary>
+            [FieldOrder(37)] public float LiftHeight { get; set; } = 5;
+
+            /// <summary>
+            /// Gets the speed at which to lift the build platform away from the vat after normal layers, in millimeters per minute.
+            /// </summary>
+            [FieldOrder(38)] public float LiftSpeed { get; set; } = 300;
+
+            /// <summary>
+            /// Gets the speed to use when the build platform re-approaches the vat after lift, in millimeters per minute.
+            /// </summary>
+            [FieldOrder(39)] public float RetractSpeed { get; set; } = 300;
+
+            [FieldOrder(40)] public uint Padding5 { get; set; }
+            [FieldOrder(41)] public uint Padding6 { get; set; }
+            [FieldOrder(42)] public uint Padding7 { get; set; }
+            [FieldOrder(43)] public uint Padding8 { get; set; }
+            [FieldOrder(44)] public uint Padding9 { get; set; }
+            [FieldOrder(45)] public uint Padding10 { get; set; }
+            [FieldOrder(46)] public uint Padding11 { get; set; }
+
+            /// <summary>
+            /// Gets the minutes since Jan 1, 1970 UTC
+            /// </summary>
+            [FieldOrder(47)] public uint Timestamp { get; set; }
 
             [FieldOrder(48)] public uint SoftwareVersion { get; set; } = 0x01060300;
 
-            [FieldOrder(49)] public uint Padding11 { get; set; }
-            [FieldOrder(50)] public uint Padding12 { get; set; }
-            [FieldOrder(51)] public uint Padding13 { get; set; }
-            [FieldOrder(52)] public uint Padding14 { get; set; }
-            [FieldOrder(53)] public uint Padding15 { get; set; }
-            [FieldOrder(54)] public uint Padding16{ get; set; }
+            [FieldOrder(49)] public uint Padding12 { get; set; }
+            [FieldOrder(50)] public uint Padding13 { get; set; }
+            [FieldOrder(51)] public uint Padding14 { get; set; }
+            [FieldOrder(52)] public uint Padding15 { get; set; }
+            [FieldOrder(53)] public uint Padding16 { get; set; }
+            [FieldOrder(54)] public uint Padding17 { get; set; }
 
             public override string ToString()
             {
-                return $"{nameof(Magic)}: {Magic}, {nameof(Version)}: {Version}, {nameof(LayerHeightMilimeter)}: {LayerHeightMilimeter}, {nameof(LayerExposureSeconds)}: {LayerExposureSeconds}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(PreviewLargeOffsetAddress)}: {PreviewLargeOffsetAddress}, {nameof(LayersDefinitionOffsetAddress)}: {LayersDefinitionOffsetAddress}, {nameof(LayerCount)}: {LayerCount}, {nameof(PreviewSmallOffsetAddress)}: {PreviewSmallOffsetAddress}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(OverallHeightMilimeter)}: {OverallHeightMilimeter}, {nameof(BedSizeX)}: {BedSizeX}, {nameof(BedSizeY)}: {BedSizeY}, {nameof(BedSizeZ)}: {BedSizeZ}, {nameof(EncryptionKey)}: {EncryptionKey}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(LayerOffTime)}: {LayerOffTime}, {nameof(BottomLayersCount2)}: {BottomLayersCount2}, {nameof(Padding3)}: {Padding3}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(WeightG)}: {WeightG}, {nameof(CostDollars)}: {CostDollars}, {nameof(Padding4)}: {Padding4}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(MachineName)}: {MachineName}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(EncryptionMode)}: {EncryptionMode}, {nameof(MysteriousId)}: {MysteriousId}, {nameof(AntiAliasLevelInfo)}: {AntiAliasLevelInfo}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(Padding11)}: {Padding11}, {nameof(Padding12)}: {Padding12}, {nameof(Padding13)}: {Padding13}, {nameof(Padding14)}: {Padding14}, {nameof(Padding15)}: {Padding15}, {nameof(Padding16)}: {Padding16}";
+                return $"{nameof(Magic)}: {Magic}, {nameof(Version)}: {Version}, {nameof(LayerCount)}: {LayerCount}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(BottomLayersCount2)}: {BottomLayersCount2}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(LayerHeightMilimeter)}: {LayerHeightMilimeter}, {nameof(LayerExposureSeconds)}: {LayerExposureSeconds}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(PreviewLargeOffsetAddress)}: {PreviewLargeOffsetAddress}, {nameof(PreviewSmallOffsetAddress)}: {PreviewSmallOffsetAddress}, {nameof(LayersDefinitionOffsetAddress)}: {LayersDefinitionOffsetAddress}, {nameof(PrintTime)}: {PrintTime}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(OverallHeightMilimeter)}: {OverallHeightMilimeter}, {nameof(BedSizeX)}: {BedSizeX}, {nameof(BedSizeY)}: {BedSizeY}, {nameof(BedSizeZ)}: {BedSizeZ}, {nameof(EncryptionKey)}: {EncryptionKey}, {nameof(AntiAliasLevelInfo)}: {AntiAliasLevelInfo}, {nameof(Padding3)}: {Padding3}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(WeightG)}: {WeightG}, {nameof(CostDollars)}: {CostDollars}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(MachineName)}: {MachineName}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(LayerOffTime)}: {LayerOffTime}, {nameof(Padding4)}: {Padding4}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(Padding11)}: {Padding11}, {nameof(Timestamp)}: {Timestamp}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(Padding12)}: {Padding12}, {nameof(Padding13)}: {Padding13}, {nameof(Padding14)}: {Padding14}, {nameof(Padding15)}: {Padding15}, {nameof(Padding16)}: {Padding16}, {nameof(Padding17)}: {Padding17}";
             }
         }
         #endregion
@@ -439,19 +422,19 @@ namespace UVtools.Core.FileFormats
             /// </summary>
             [FieldOrder(4)] public uint DataSize             { get; set; }
             [FieldOrder(5)] public uint Unknown1             { get; set; }
-            [FieldOrder(6)] public uint Unknown2             { get; set; }
+            [FieldOrder(6)] public uint Unknown2             { get; set; } = 84;
             [FieldOrder(7)] public uint Unknown3             { get; set; }
             [FieldOrder(8)] public uint Unknown4             { get; set; }
 
             [Ignore] public byte[] EncodedRle { get; set; }
 
-            [Ignore] public PHZFile Parent { get; set; }
+            [Ignore] public FDGFile Parent { get; set; }
 
             public LayerData()
             {
             }
 
-            public LayerData(PHZFile parent, uint layerIndex)
+            public LayerData(FDGFile parent, uint layerIndex)
             {
                 Parent = parent;
                 RefreshLayerData(layerIndex);
@@ -624,9 +607,8 @@ namespace UVtools.Core.FileFormats
 
             public KeyRing(uint seed, uint layerIndex)
             {
-                seed %= 0x4324;
-                Init = seed * 0x34a32231;
-                Key = (layerIndex ^ 0x3fad2212) * seed * 0x4910913d;
+                Init = (seed - 0x1dcb76c3) ^ 0x257e2431;
+                Key  = Init * 0x82391efd * (layerIndex ^ 0x110bdacd);
             }
 
             public byte Next()
@@ -679,14 +661,14 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("phz", "Chitubox PHZ"),
+            new("fdg", "Chitubox FDG"),
         };
 
         public override Type[] ConvertToFormats { get; } =
         {
             typeof(ChituboxFile),
             typeof(ChituboxZipFile),
-            typeof(FDGFile),
+            typeof(PHZFile),
             typeof(PhotonWorkshopFile),
             typeof(ZCodexFile),
             typeof(CWSFile),
@@ -951,7 +933,7 @@ namespace UVtools.Core.FileFormats
         #endregion
 
         #region Constructors
-        public PHZFile()
+        public FDGFile()
         {
             Previews = new Preview[ThumbnailsCount];
         }
@@ -1111,9 +1093,9 @@ namespace UVtools.Core.FileFormats
                 //HeaderSettings = Helpers.ByteToType<CbddlpFile.Header>(InputFile);
                 //HeaderSettings = Helpers.Serializer.Deserialize<Header>(InputFile.ReadBytes(Helpers.Serializer.SizeOf(typeof(Header))));
                 HeaderSettings = Helpers.Deserialize<Header>(inputFile);
-                if (HeaderSettings.Magic != MAGIC_PHZ)
+                if (HeaderSettings.Magic != MAGIC)
                 {
-                    throw new FileLoadException("Not a valid PHZ file!", fileFullPath);
+                    throw new FileLoadException("Not a valid FDG file!", fileFullPath);
                 }
 
                 HeaderSettings.AntiAliasLevel = 1;
@@ -1359,9 +1341,9 @@ namespace UVtools.Core.FileFormats
                 return true;
             }
 
-            if (to == typeof(FDGFile))
+            if (to == typeof(PHZFile))
             {
-                FDGFile file = new FDGFile
+                PHZFile file = new PHZFile
                 {
                     LayerManager = LayerManager,
                     HeaderSettings =

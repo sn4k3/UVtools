@@ -138,6 +138,7 @@ namespace UVtools.Core.FileFormats
             typeof(ChituboxFile),
             typeof(ChituboxZipFile),
             typeof(PHZFile),
+            typeof(FDGFile),
             typeof(PhotonWorkshopFile),
             typeof(ZCodexFile),
             typeof(CWSFile),
@@ -653,7 +654,53 @@ namespace UVtools.Core.FileFormats
                         ProjectorType = 0,
                         ResolutionX = ResolutionX,
                         ResolutionY = ResolutionY,
-                        BottomLayerCount = BottomLayerCount,
+                        BottomLayersCount2 = BottomLayerCount,
+                        BottomLiftHeight = BottomLiftHeight,
+                        BottomLiftSpeed = BottomLiftSpeed,
+                        BottomLightOffDelay = BottomLayerOffTime,
+                        CostDollars = MaterialCost,
+                        LiftHeight = LiftHeight,
+                        LiftSpeed = LiftSpeed,
+                        RetractSpeed = RetractSpeed,
+                        VolumeMl = UsedMaterial,
+                        AntiAliasLevelInfo = ValidateAntiAliasingLevel(),
+                        WeightG = 0,
+                        MachineName = MachineName,
+                        MachineNameSize = (uint)MachineName.Length
+                    }
+                };
+
+                file.SetThumbnails(Thumbnails);
+                file.Encode(fileFullPath, progress);
+
+                return true;
+            }
+
+            if (to == typeof(FDGFile))
+            {
+                FDGFile file = new FDGFile
+                {
+                    LayerManager = LayerManager,
+                    HeaderSettings =
+                    {
+                        Version = 2,
+                        BedSizeX = DisplayWidth,
+                        BedSizeY = DisplayHeight,
+                        BedSizeZ = TotalHeight,
+                        OverallHeightMilimeter = TotalHeight,
+                        BottomExposureSeconds = BottomExposureTime,
+                        BottomLayersCount = BottomLayerCount,
+                        BottomLightPWM = BottomLightPWM,
+                        LayerCount = LayerCount,
+                        LayerExposureSeconds = ExposureTime,
+                        LayerHeightMilimeter = LayerHeight,
+                        LayerOffTime = LayerOffTime,
+                        LightPWM = LightPWM,
+                        PrintTime = (uint) PrintTimeOrComputed,
+                        ProjectorType = 0,
+                        ResolutionX = ResolutionX,
+                        ResolutionY = ResolutionY,
+                        BottomLayersCount2 = BottomLayerCount,
                         BottomLiftHeight = BottomLiftHeight,
                         BottomLiftSpeed = BottomLiftSpeed,
                         BottomLightOffDelay = BottomLayerOffTime,

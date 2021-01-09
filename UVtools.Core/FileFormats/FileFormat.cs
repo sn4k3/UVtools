@@ -193,6 +193,7 @@ namespace UVtools.Core.FileFormats
             new ChituboxZipFile(),      // Zip
             new ChituboxFile(), // cbddlp, cbt, photon
             new PHZFile(), // phz
+            new FDGFile(), // fdg
             new PhotonSFile(), // photons
             new PhotonWorkshopFile(),   // PSW
             new ZCodexFile(),   // zcodex

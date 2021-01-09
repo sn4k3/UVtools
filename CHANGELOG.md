@@ -1,5 +1,9 @@
 # Changelog
 
+## 07/01/2021 - v2.2.0
+
+* (Add) FDG file format for Voxelab Printers
+
 ## 07/01/2021 - v2.1.3
 
 * (Add) PrusaSlicer printers:

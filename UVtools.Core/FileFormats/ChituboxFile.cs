@@ -957,9 +957,9 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("ctb", "Chitubox CTB"),
-            new FileExtension("cbddlp", "Chitubox CBDDLP"),
-            new FileExtension("photon", "Chitubox Photon"),
+            new("ctb", "Chitubox CTB"),
+            new("cbddlp", "Chitubox CBDDLP"),
+            new("photon", "Chitubox Photon"),
         };
 
         public override Type[] ConvertToFormats { get; } =
@@ -967,6 +967,7 @@ namespace UVtools.Core.FileFormats
             typeof(ChituboxFile),
             typeof(ChituboxZipFile),
             typeof(PHZFile),
+            typeof(FDGFile),
             typeof(PhotonWorkshopFile),
             typeof(ZCodexFile),
             typeof(CWSFile),
@@ -1849,7 +1850,7 @@ namespace UVtools.Core.FileFormats
                         ProjectorType = HeaderSettings.ProjectorType,
                         ResolutionX = ResolutionX,
                         ResolutionY = ResolutionY,
-                        BottomLayerCount = BottomLayerCount,
+                        BottomLayersCount2 = BottomLayerCount,
                         BottomLiftHeight = PrintParametersSettings.BottomLiftHeight,
                         BottomLiftSpeed = PrintParametersSettings.BottomLiftSpeed,
                         BottomLightOffDelay = PrintParametersSettings.BottomLightOffDelay,
@@ -1866,6 +1867,53 @@ namespace UVtools.Core.FileFormats
                 };
 
                 
+
+                file.SetThumbnails(Thumbnails);
+                file.Encode(fileFullPath, progress);
+
+                return true;
+            }
+
+            if (to == typeof(FDGFile))
+            {
+                FDGFile file = new FDGFile
+                {
+                    LayerManager = LayerManager,
+                    HeaderSettings =
+                    {
+                        BedSizeX = HeaderSettings.BedSizeX,
+                        BedSizeY = HeaderSettings.BedSizeY,
+                        BedSizeZ = HeaderSettings.BedSizeZ,
+                        OverallHeightMilimeter = TotalHeight,
+                        BottomExposureSeconds = BottomExposureTime,
+                        BottomLayersCount = BottomLayerCount,
+                        BottomLightPWM = HeaderSettings.BottomLightPWM,
+                        LayerCount = LayerCount,
+                        LayerExposureSeconds = ExposureTime,
+                        LayerHeightMilimeter = LayerHeight,
+                        LayerOffTime = HeaderSettings.LayerOffTime,
+                        LightPWM = HeaderSettings.LightPWM,
+                        PrintTime = HeaderSettings.PrintTime,
+                        ProjectorType = HeaderSettings.ProjectorType,
+                        ResolutionX = ResolutionX,
+                        ResolutionY = ResolutionY,
+                        BottomLayersCount2 = BottomLayerCount,
+                        BottomLiftHeight = PrintParametersSettings.BottomLiftHeight,
+                        BottomLiftSpeed = PrintParametersSettings.BottomLiftSpeed,
+                        BottomLightOffDelay = PrintParametersSettings.BottomLightOffDelay,
+                        CostDollars = MaterialCost,
+                        LiftHeight = PrintParametersSettings.LiftHeight,
+                        LiftSpeed = PrintParametersSettings.LiftSpeed,
+                        RetractSpeed = PrintParametersSettings.RetractSpeed,
+                        VolumeMl = UsedMaterial,
+                        AntiAliasLevelInfo = ValidateAntiAliasingLevel(),
+                        WeightG = PrintParametersSettings.WeightG,
+                        MachineName = MachineName,
+                        MachineNameSize = (uint)MachineName.Length
+                    }
+                };
+
+
 
                 file.SetThumbnails(Thumbnails);
                 file.Encode(fileFullPath, progress);

@@ -99,6 +99,7 @@ namespace UVtools.Core.FileFormats
         public override Type[] ConvertToFormats { get; } = {
             typeof(ChituboxFile),
             typeof(PHZFile),
+            typeof(FDGFile),
             typeof(PhotonWorkshopFile),
             typeof(CWSFile),
             typeof(ZCodexFile),
@@ -805,7 +806,52 @@ namespace UVtools.Core.FileFormats
                         ProjectorType = HeaderSettings.Mirror,
                         ResolutionX = ResolutionX,
                         ResolutionY = ResolutionY,
-                        BottomLayerCount = BottomLayerCount,
+                        BottomLayersCount2 = BottomLayerCount,
+                        BottomLiftHeight = HeaderSettings.BottomLiftHeight,
+                        BottomLiftSpeed = HeaderSettings.BottomLiftSpeed,
+                        BottomLightOffDelay = HeaderSettings.BottomLightOffTime,
+                        CostDollars = MaterialCost,
+                        LiftHeight = HeaderSettings.LiftHeight,
+                        LiftSpeed = HeaderSettings.LiftSpeed,
+                        RetractSpeed = HeaderSettings.RetractSpeed,
+                        VolumeMl = UsedMaterial,
+                        AntiAliasLevelInfo = ValidateAntiAliasingLevel(),
+                        WeightG = HeaderSettings.Weight,
+                        MachineName = MachineName,
+                        MachineNameSize = (uint)MachineName.Length
+                    }
+                };
+
+                file.SetThumbnails(Thumbnails);
+                file.Encode(fileFullPath, progress);
+
+                return true;
+            }
+
+            if (to == typeof(FDGFile))
+            {
+                FDGFile file = new FDGFile
+                {
+                    LayerManager = LayerManager,
+                    HeaderSettings =
+                    {
+                        BedSizeX = HeaderSettings.MachineX,
+                        BedSizeY = HeaderSettings.MachineY,
+                        BedSizeZ = HeaderSettings.MachineZ,
+                        OverallHeightMilimeter = TotalHeight,
+                        BottomExposureSeconds = BottomExposureTime,
+                        BottomLayersCount = BottomLayerCount,
+                        BottomLightPWM = HeaderSettings.BottomLightPWM,
+                        LayerCount = LayerCount,
+                        LayerExposureSeconds = ExposureTime,
+                        LayerHeightMilimeter = LayerHeight,
+                        LayerOffTime = HeaderSettings.LightOffTime,
+                        LightPWM = HeaderSettings.LightPWM,
+                        PrintTime = (uint) HeaderSettings.EstimatedPrintTime,
+                        ProjectorType = HeaderSettings.Mirror,
+                        ResolutionX = ResolutionX,
+                        ResolutionY = ResolutionY,
+                        BottomLayersCount2 = BottomLayerCount,
                         BottomLiftHeight = HeaderSettings.BottomLiftHeight,
                         BottomLiftSpeed = HeaderSettings.BottomLiftSpeed,
                         BottomLightOffDelay = HeaderSettings.BottomLightOffTime,

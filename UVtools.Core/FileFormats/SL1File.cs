@@ -297,6 +297,7 @@ namespace UVtools.Core.FileFormats
             typeof(ChituboxFile),
             typeof(ChituboxZipFile),
             typeof(PHZFile),
+            typeof(FDGFile),
             typeof(PhotonWorkshopFile),
             typeof(ZCodexFile),
             typeof(CWSFile),
@@ -925,7 +926,63 @@ namespace UVtools.Core.FileFormats
                         ProjectorType = PrinterSettings.DisplayMirrorX || PrinterSettings.DisplayMirrorY ? 1u : 0u,
                         ResolutionX = PrinterSettings.DisplayPixelsX,
                         ResolutionY = PrinterSettings.DisplayPixelsY,
-                        BottomLayerCount = PrintSettings.FadedLayers,
+                        BottomLayersCount2 = PrintSettings.FadedLayers,
+                        BottomLiftHeight = LookupCustomValue<float>(Keyword_BottomLiftHeight, defaultFormat.HeaderSettings.BottomLiftHeight),
+                        BottomLiftSpeed = LookupCustomValue<float>(Keyword_BottomLiftSpeed, defaultFormat.HeaderSettings.BottomLiftSpeed),
+                        BottomLightOffDelay = LookupCustomValue<float>(Keyword_BottomLightOffDelay, defaultFormat.HeaderSettings.BottomLightOffDelay),
+                        CostDollars = MaterialCost,
+                        LiftHeight = LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.HeaderSettings.LiftHeight),
+                        LiftSpeed = LookupCustomValue<float>(Keyword_LiftSpeed, defaultFormat.HeaderSettings.LiftSpeed),
+                        RetractSpeed = LookupCustomValue<float>(Keyword_RetractSpeed, defaultFormat.HeaderSettings.RetractSpeed),
+                        VolumeMl = OutputConfigSettings.UsedMaterial,
+                        WeightG = (float)Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.MaterialDensity, 2),
+                        MachineName = MachineName,
+                        MachineNameSize = (uint)MachineName.Length,
+                        AntiAliasLevelInfo = ValidateAntiAliasingLevel()
+                    }
+                };
+
+                if (LookupCustomValue<bool>("FLIP_XY", false, true))
+                {
+                    file.HeaderSettings.ResolutionX = ResolutionY;
+                    file.HeaderSettings.ResolutionY = ResolutionX;
+
+                    file.HeaderSettings.BedSizeX = PrinterSettings.DisplayHeight;
+                    file.HeaderSettings.BedSizeY = PrinterSettings.DisplayWidth;
+                }
+
+                file.SetThumbnails(Thumbnails);
+                file.Encode(fileFullPath, progress);
+
+                return true;
+            }
+
+            if (to == typeof(FDGFile))
+            {
+                FDGFile defaultFormat = (FDGFile)FindByType(typeof(FDGFile));
+                FDGFile file = new FDGFile
+                {
+                    LayerManager = LayerManager,
+                    HeaderSettings =
+                    {
+                        Version = 2,
+                        BedSizeX = PrinterSettings.DisplayWidth,
+                        BedSizeY = PrinterSettings.DisplayHeight,
+                        BedSizeZ = PrinterSettings.MaxPrintHeight,
+                        OverallHeightMilimeter = TotalHeight,
+                        BottomExposureSeconds = MaterialSettings.InitialExposureTime,
+                        BottomLayersCount = PrintSettings.FadedLayers,
+                        BottomLightPWM = LookupCustomValue<ushort>(Keyword_BottomLightPWM, defaultFormat.HeaderSettings.BottomLightPWM),
+                        LayerCount = LayerCount,
+                        LayerExposureSeconds = MaterialSettings.ExposureTime,
+                        LayerHeightMilimeter = PrintSettings.LayerHeight,
+                        LayerOffTime = LookupCustomValue<float>(Keyword_LayerOffTime, defaultFormat.HeaderSettings.LayerOffTime),
+                        LightPWM = LookupCustomValue<ushort>(Keyword_LightPWM, defaultFormat.HeaderSettings.LightPWM),
+                        PrintTime = (uint) OutputConfigSettings.PrintTime,
+                        ProjectorType = PrinterSettings.DisplayMirrorX || PrinterSettings.DisplayMirrorY ? 1u : 0u,
+                        ResolutionX = PrinterSettings.DisplayPixelsX,
+                        ResolutionY = PrinterSettings.DisplayPixelsY,
+                        BottomLayersCount2 = PrintSettings.FadedLayers,
                         BottomLiftHeight = LookupCustomValue<float>(Keyword_BottomLiftHeight, defaultFormat.HeaderSettings.BottomLiftHeight),
                         BottomLiftSpeed = LookupCustomValue<float>(Keyword_BottomLiftSpeed, defaultFormat.HeaderSettings.BottomLiftSpeed),
                         BottomLightOffDelay = LookupCustomValue<float>(Keyword_BottomLightOffDelay, defaultFormat.HeaderSettings.BottomLightOffDelay),
