@@ -489,6 +489,7 @@ namespace UVtools.Core.FileFormats
                 RaisePropertyChanged(nameof(PrintTimeOrComputed));
                 RaisePropertyChanged(nameof(PrintTimeComputed));
                 RaisePropertyChanged(nameof(PrintTimeHours));
+                RaisePropertyChanged(nameof(PrintTimeString));
             }
         }
 
@@ -535,6 +536,8 @@ namespace UVtools.Core.FileFormats
         }
 
         public float PrintTimeHours => (float) Math.Round(PrintTimeOrComputed / 3600, 2);
+
+        public string PrintTimeString => TimeSpan.FromSeconds(PrintTimeOrComputed).ToString("hh\\hmm\\m");
 
         public virtual float UsedMaterial { get; set; }
 

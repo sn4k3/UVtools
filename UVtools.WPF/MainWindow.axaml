@@ -279,7 +279,7 @@
 
         <TextBlock IsVisible="{Binding SlicerFile.PrintTimeHours}" Text="  |  "/>
         <TextBlock IsVisible="{Binding SlicerFile.PrintTimeHours}"
-          Text="{Binding SlicerFile.PrintTimeHours, StringFormat=Print time: \{0\}h}"/>
+          Text="{Binding SlicerFile.PrintTimeString, StringFormat=Print time: \{0\}}"/>
 
 
         <TextBlock IsVisible="{Binding SlicerFile.UsedMaterial}" Text="  |  "/>

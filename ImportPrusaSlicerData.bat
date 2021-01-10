@@ -56,11 +56,12 @@ SET files[46]=Wanhao CGR Mono.ini
 SET files[47]=Creality LD-002R.ini
 SET files[48]=Creality LD-002H.ini
 SET files[49]=Creality LD-006.ini
-SET files[50]=Voxelab Polaris.ini
-SET files[51]=Voxelab Proxima.ini
-SET files[52]=Longer Orange 10.ini
-SET files[53]=Longer Orange 30.ini
-SET files[54]=Longer Orange4K.ini
+SET files[50]=Voxelab Polaris 5.5.ini
+SET files[51]=Voxelab Proxima 6.ini
+SET files[52]=Voxelab Ceres 8.9.ini
+SET files[53]=Longer Orange 10.ini
+SET files[54]=Longer Orange 30.ini
+SET files[55]=Longer Orange4K.ini
 
 echo PrusaSlicer Printers Instalation
 echo This will replace printers, all changes will be discarded

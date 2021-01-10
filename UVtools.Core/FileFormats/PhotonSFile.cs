@@ -24,7 +24,7 @@ namespace UVtools.Core.FileFormats
 {
     public class PhotonSFile : FileFormat
     {
-        public const byte RLEEncodingLimit = 128; // 128;
+        public const byte RLEEncodingLimit = 0x7f - 2; // 128;
 
         #region Sub Classes
 
@@ -101,13 +101,52 @@ namespace UVtools.Core.FileFormats
             public unsafe byte[] Encode(Mat mat)
             {
                 List<byte> rawData = new List<byte>();
-                List<byte> chunk = new List<byte>();
                 var spanMat = mat.GetBytePointer();
                 var imageLength = mat.GetLength();
 
-                
+                int rep = 0;
+                byte color = 0;
+
+                void AddRep()
+                {
+                    if (rep <= 0) return;
+                    rep--;
+                    byte rle = 
+                        (byte) (((rep & 1) > 0 ? 128 : 0) |
+                                ((rep & 2) > 0 ? 64 : 0) |
+                                ((rep & 4) > 0 ? 32 : 0) |
+                                ((rep & 8) > 0 ? 16 : 0) |
+                                ((rep & 16) > 0 ? 8 : 0) |
+                                ((rep & 32) > 0 ? 4 : 0) |
+                                ((rep & 64) > 0 ? 2 : 0) | color);
+
+                    rawData.Add(rle);
+                }
+
+                for (int i = 0; i < imageLength; i++)
+                {
+                    color = color <= 127 ? 0 : 255; // Sanitize no AA
+                    if (spanMat[i] != color)
+                    {
+                        AddRep();
+                        color = spanMat[i];
+                        rep = 1;
+                    }
+                    else
+                    {
+                        rep++;
+                        if (rep == RLEEncodingLimit)
+                        {
+                            AddRep();
+                            rep = 0;
+                        }
+                    }
+                }
+
+                AddRep();
+
                 EncodedRle = rawData.ToArray();
-                DataSize = (uint)(EncodedRle.Length * 8 + 32);
+                DataSize = (uint)(EncodedRle.Length * 8 + 4);
                 return EncodedRle;
             }
 
@@ -400,6 +439,7 @@ namespace UVtools.Core.FileFormats
             {
                 outputFile.WriteSerialize(HeaderSettings);
                 outputFile.WriteBytes(PreviewEncode(Thumbnails[0]));
+                LayerSettings.LayerCount = LayerCount;
                 outputFile.WriteSerialize(LayerSettings);
 
                 LayerData[] layerData = new LayerData[LayerCount];

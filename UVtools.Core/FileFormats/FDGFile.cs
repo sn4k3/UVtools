@@ -661,7 +661,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new("fdg", "Chitubox FDG"),
+            new("fdg", "Voxelab FDG"),
         };
 
         public override Type[] ConvertToFormats { get; } =
@@ -985,9 +985,7 @@ namespace UVtools.Core.FileFormats
                     {
                         HeaderSettings.PreviewLargeOffsetAddress = currentOffset;
                     }
-
-
-
+                    
                     Preview preview = new Preview
                     {
                         ResolutionX = (uint) image.Width,

@@ -298,6 +298,7 @@ namespace UVtools.Core.FileFormats
             typeof(ChituboxZipFile),
             typeof(PHZFile),
             typeof(FDGFile),
+            typeof(PhotonSFile),
             typeof(PhotonWorkshopFile),
             typeof(ZCodexFile),
             typeof(CWSFile),
@@ -1006,6 +1007,32 @@ namespace UVtools.Core.FileFormats
                     file.HeaderSettings.BedSizeX = PrinterSettings.DisplayHeight;
                     file.HeaderSettings.BedSizeY = PrinterSettings.DisplayWidth;
                 }
+
+                file.SetThumbnails(Thumbnails);
+                file.Encode(fileFullPath, progress);
+
+                return true;
+            }
+
+            if (to == typeof(PhotonSFile))
+            {
+                PhotonSFile defaultFormat = (PhotonSFile)FindByType(typeof(PhotonSFile));
+                PhotonSFile file = new PhotonSFile
+                {
+                    LayerManager = LayerManager,
+                    HeaderSettings =
+                    {
+                        BottomExposureSeconds = MaterialSettings.InitialExposureTime,
+                        BottomLayerCount = PrintSettings.FadedLayers,
+                        ExposureSeconds = MaterialSettings.ExposureTime,
+                        LayerHeight = PrintSettings.LayerHeight,
+                        LayerOffSeconds = LookupCustomValue<double>(Keyword_LayerOffTime, DefaultLightOffDelay),
+                        LiftHeight = LookupCustomValue<double>(Keyword_LiftHeight, DefaultLiftHeight),
+                        LiftSpeed = LookupCustomValue<double>(Keyword_LiftSpeed, DefaultLiftSpeed),
+                        RetractSpeed = LookupCustomValue<float>(Keyword_RetractSpeed, DefaultRetractSpeed),
+                        Volume = OutputConfigSettings.UsedMaterial,
+                    }
+                };
 
                 file.SetThumbnails(Thumbnails);
                 file.Encode(fileFullPath, progress);

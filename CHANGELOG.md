@@ -1,8 +1,10 @@
 # Changelog
 
-## 07/01/2021 - v2.2.0
+## 10/01/2021 - v2.2.0
 
-* (Add) FDG file format for Voxelab Printers
+* (Add) FDG file format for Voxelab Printers (ezrec/uv3dp#129)
+* (Add) PrusaSlicer printer: Voxelab Ceres 8.9
+* (Change) Print time display to hours and minutes: 00h00m
 
 ## 07/01/2021 - v2.1.3
 

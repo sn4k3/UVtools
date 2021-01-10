@@ -59,12 +59,13 @@ But also, i need victims for test subject. Proceed at your own risk!
 * CBDDLP (Chitubox)
 * CBT (Chitubox)
 * PHZ (Chitubox)
+* FDG (Voxelab)
 * PWS (Photon Workshop)
 * PW0 (Photon Workshop)
-* PWX (Photon Workshop) [Not confirmed]
-* PWMO (Photon Workshop) [Not confirmed]
-* PWMS (Photon Workshop) [Not confirmed]
-* PWMX (Photon Workshop) [Not confirmed]
+* PWX (Photon Workshop)
+* PWMO (Photon Workshop)
+* PWMS (Photon Workshop)
+* PWMX (Photon Workshop)
 * ZCodex (Z-Suite)
 * CWS (NovaMaker)
 * LGS (Longer Orange 10)
@@ -120,8 +121,9 @@ But also, i need victims for test subject. Proceed at your own risk!
 * Creality LD-002R
 * Creality LD-002H
 * Creality LD-006
-* Voxelab Polaris
-* Voxelab Proxima
+* Voxelab Polaris 5.5
+* Voxelab Proxima 6
+* Voxelab Ceres 8.9
 * Longer Orange 10
 * Longer Orange 30
 * Longer Orange4K

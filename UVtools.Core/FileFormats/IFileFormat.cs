@@ -254,6 +254,11 @@ namespace UVtools.Core.FileFormats
         float PrintTimeHours { get; }
 
         /// <summary>
+        /// Gets the estimate print time in hours and minutes formatted
+        /// </summary>
+        string PrintTimeString { get; }
+
+        /// <summary>
         /// Gets the estimate used material in ml
         /// </summary>
         float UsedMaterial { get; set; }

@@ -975,11 +975,14 @@
               <Component Id="owc696F0AF8084A6AA7624CA0947E245A47" Guid="6aa7d092-d68b-a44d-f2c7-0a590404b19f">
                 <File Id="owf696F0AF8084A6AA7624CA0947E245A47" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\QIDI Shadow6.0 Pro.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcF90F5AD6941B0C5CF8C0CB134ED5C5D5" Guid="186b397e-cd3b-855a-524e-cd48a48d5758">
-                <File Id="owfF90F5AD6941B0C5CF8C0CB134ED5C5D5" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Voxelab Polaris.ini" KeyPath="yes" />
+              <Component Id="owc2D767EDC65A9490BE5587F5807220F67" Guid="1b34ea21-cadd-c887-3f4e-8655903ef11a">
+                <File Id="owf2D767EDC65A9490BE5587F5807220F67" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Voxelab Ceres 8.9.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc7F9A29B71850B673CBE3B2BE64A68AAA" Guid="08fa14b5-632c-7453-8805-078ce4e7ef9d">
-                <File Id="owf7F9A29B71850B673CBE3B2BE64A68AAA" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Voxelab Proxima.ini" KeyPath="yes" />
+              <Component Id="owc90539A9197EF7BEC5C7BE8507C05CAB3" Guid="9dc6bfc4-de9d-312e-d562-bf3574c4f527">
+                <File Id="owf90539A9197EF7BEC5C7BE8507C05CAB3" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Voxelab Polaris 5.5.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc1F3FB53972C06D8DF37D9F829AC83D16" Guid="d245e99b-d664-d9f6-351f-d8cf26532427">
+                <File Id="owf1F3FB53972C06D8DF37D9F829AC83D16" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Voxelab Proxima 6.ini" KeyPath="yes" />
               </Component>
               <Component Id="owc7C7E45D1C452D2676768409E4CA9CC60" Guid="860c70fe-c0a8-cd0a-e957-f1a6a9430509">
                 <File Id="owf7C7E45D1C452D2676768409E4CA9CC60" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Wanhao CGR Mini Mono.ini" KeyPath="yes" />
