@@ -31,7 +31,7 @@ namespace UVtools.Core.Operations
         private bool _repairIslands = true;
         private bool _repairResinTraps = true;
         private bool _removeEmptyLayers = true;
-        private byte _removeIslandsBelowEqualPixelCount = 5;
+        private ushort _removeIslandsBelowEqualPixelCount = 5;
         private ushort _removeIslandsRecursiveIterations = 4;
         private uint _gapClosingIterations = 1;
         private uint _noiseRemovalIterations;
@@ -83,7 +83,7 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _removeEmptyLayers, value);
         }
 
-        public byte RemoveIslandsBelowEqualPixelCount
+        public ushort RemoveIslandsBelowEqualPixelCount
         {
             get => _removeIslandsBelowEqualPixelCount;
             set => RaiseAndSetIfChanged(ref _removeIslandsBelowEqualPixelCount, value);
@@ -120,8 +120,6 @@ namespace UVtools.Core.Operations
         {
             progress ??= new OperationProgress();
 
-
-
             // Remove islands
             if (!ReferenceEquals(Issues, null)
                 && !ReferenceEquals(IslandDetectionConfig, null)
@@ -144,7 +142,7 @@ namespace UVtools.Core.Operations
                 var emptyLayersConfig = false;
 
                 islandConfig.Enabled = true;
-                islandConfig.RequiredAreaToProcessCheck = (byte)Math.Ceiling(RemoveIslandsBelowEqualPixelCount / 2m);
+                islandConfig.RequiredAreaToProcessCheck = (ushort) Math.Floor(RemoveIslandsBelowEqualPixelCount / 2m);
 
                 for (uint i = 0; i < limit; i++)
                 {

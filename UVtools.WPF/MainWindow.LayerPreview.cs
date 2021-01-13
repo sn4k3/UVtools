@@ -275,7 +275,7 @@ namespace UVtools.WPF
         }
 
         public string MinimumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.LayerHeight}mm\n0";
-        public string MaximumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.TotalHeight}mm\n{SlicerFile.LayerCount - 1}";
+        public string MaximumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.PrintHeight}mm\n{SlicerFile.LayerCount - 1}";
         public string ActualLayerTooltip => SlicerFile is null ? "???" : $"{LayerCache.Layer?.PositionZ:0.00}mm\n{ActualLayer}\n{(ActualLayer + 1) * 100 / (SlicerFile.LayerCount)}%";
 
         public uint SliderMaximumValue => SlicerFile?.LastLayerIndex ?? 0;

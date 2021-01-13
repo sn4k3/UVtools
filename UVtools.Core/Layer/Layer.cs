@@ -84,13 +84,13 @@ namespace UVtools.Core
         /// <summary>
         /// Gets or sets the layer off time in seconds
         /// </summary>
-        public float LayerOffTime
+        public float LightOffDelay
         {
-            get => _layerOffTime;
+            get => _lightOffDelay;
             set
             {
-                if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLayerOffTime, SlicerFile.LayerOffTime);
-                RaiseAndSetIfChanged(ref _layerOffTime, value);
+                if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
+                RaiseAndSetIfChanged(ref _lightOffDelay, value);
             }
         }
 
@@ -162,7 +162,7 @@ namespace UVtools.Core
         private uint _index;
         private float _positionZ;
         private float _exposureTime;
-        private float _layerOffTime = FileFormat.DefaultLightOffDelay;
+        private float _lightOffDelay = FileFormat.DefaultLightOffDelay;
         private float _liftHeight = FileFormat.DefaultLiftHeight;
         private float _liftSpeed = FileFormat.DefaultLiftSpeed;
         private float _retractSpeed = FileFormat.DefaultRetractSpeed;
@@ -348,7 +348,7 @@ namespace UVtools.Core
 
         public override string ToString()
         {
-            return $"{nameof(Index)}: {Index}, {nameof(Filename)}: {Filename}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(BoundingRectangle)}: {BoundingRectangle}, {nameof(IsBottomLayer)}: {IsBottomLayer}, {nameof(IsNormalLayer)}: {IsNormalLayer}, {nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LayerOffTime)}: {LayerOffTime}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(LightPWM)}: {LightPWM}, {nameof(IsModified)}: {IsModified}";
+            return $"{nameof(Index)}: {Index}, {nameof(Filename)}: {Filename}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(BoundingRectangle)}: {BoundingRectangle}, {nameof(IsBottomLayer)}: {IsBottomLayer}, {nameof(IsNormalLayer)}: {IsNormalLayer}, {nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(LightPWM)}: {LightPWM}, {nameof(IsModified)}: {IsModified}";
         }
         #endregion
 
@@ -410,9 +410,9 @@ namespace UVtools.Core
                 return true;
             }
 
-            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.LayerOffTime))
+            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.LightOffDelay))
             {
-                LayerOffTime = (float)value;
+                LightOffDelay = (float)value;
                 return true;
             }
 
@@ -641,7 +641,7 @@ namespace UVtools.Core
                 LiftHeight = _liftHeight,
                 LiftSpeed = _liftSpeed,
                 RetractSpeed = _retractSpeed,
-                LayerOffTime = _layerOffTime,
+                LightOffDelay = _lightOffDelay,
                 LightPWM = _lightPwm,
                 BoundingRectangle = _boundingRectangle,
                 NonZeroPixelCount = _nonZeroPixelCount,

@@ -31,6 +31,7 @@ namespace UVtools.Core.Operations
 
         public MillimetersToPixels CalcMillimetersToPixels { get; set; }
         public LightOffDelayC CalcLightOffDelay { get; set; }
+        public OptimalModelTilt CalcOptimalModelTilt { get; set; }
 
         public OperationCalculator()
         {
@@ -140,7 +141,7 @@ namespace UVtools.Core.Operations
             private decimal _bottomWaitTime = 3m;
 
             public override string Description =>
-                "Calculates the required light-off delay (Moving time from the build plate + additional time for resin to stabilize) given The lifting height, speed and retract to wait x seconds before cure a new layer.\n" +
+                "Calculates the required light-off delay (Moving time from the build plate + additional time for resin to stabilize) given the lifting height, speed and retract to wait x seconds before cure a new layer.\n" +
                 "Light-off delay is crucial for gaining higher-resolution and sharper prints.\n" +
                 "When the build plate retracts, it is important to allow enough time for the resin to stabilize before the UV lights turn on. This would ideally be around 2-3s.";
 
@@ -292,6 +293,105 @@ namespace UVtools.Core.Operations
 
             public static uint CalculateMillisecondsLiftOnly(float liftHeight, float liftSpeed, float extraWaitTime = 0) =>
                 (uint)(CalculateSecondsLiftOnly(liftHeight, liftSpeed, extraWaitTime) * 1000);
+
+
+        }
+
+        public sealed class OptimalModelTilt : Calculation
+        {
+            private uint _resolutionX;
+            private uint _resolutionY;
+            private decimal _displayWidth;
+            private decimal _displayHeight;
+            private decimal _layerHeight = 0.05m;
+
+            public override string Description => "Calculates the optimal model tilt angle for printing and to minimize the visual layer effect.";
+            public override string Formula => "Angleº = tanh(Layer height / XYResolution) * (180 / PI)";
+
+            public OptimalModelTilt(Size resolution, SizeF display, decimal layerHeight = 0.05m)
+            {
+                _resolutionX = (uint)resolution.Width;
+                _resolutionY = (uint)resolution.Height;
+
+                _displayWidth = (decimal)display.Width;
+                _displayHeight = (decimal)display.Height;
+
+                _layerHeight = layerHeight;
+            }
+
+            public uint ResolutionX
+            {
+                get => _resolutionX;
+                set
+                {
+                    if (!RaiseAndSetIfChanged(ref _resolutionX, value)) return;
+                    RaisePropertyChanged(nameof(XYResolution));
+                    RaisePropertyChanged(nameof(XYResolutionUm));
+                    RaisePropertyChanged(nameof(TiltAngleDegrees));
+                }
+            }
+
+            public uint ResolutionY
+            {
+                get => _resolutionY;
+                set
+                {
+                    if (!RaiseAndSetIfChanged(ref _resolutionY, value)) return;
+                    RaisePropertyChanged(nameof(XYResolution));
+                    RaisePropertyChanged(nameof(XYResolutionUm));
+                    RaisePropertyChanged(nameof(TiltAngleDegrees));
+                }
+            }
+
+            public decimal DisplayWidth
+            {
+                get => _displayWidth;
+                set
+                {
+                    if (!RaiseAndSetIfChanged(ref _displayWidth, value)) return;
+                    RaisePropertyChanged(nameof(XYResolution));
+                    RaisePropertyChanged(nameof(XYResolutionUm));
+                    RaisePropertyChanged(nameof(TiltAngleDegrees));
+                }
+            }
+
+            public decimal DisplayHeight
+            {
+                get => _displayHeight;
+                set
+                {
+                    if (!RaiseAndSetIfChanged(ref _displayHeight, value)) return;
+                    RaisePropertyChanged(nameof(XYResolution));
+                    RaisePropertyChanged(nameof(XYResolutionUm));
+                    RaisePropertyChanged(nameof(TiltAngleDegrees));
+                }
+            }
+
+            public decimal LayerHeight
+            {
+                get => _layerHeight;
+                set
+                {
+                    if (!RaiseAndSetIfChanged(ref _layerHeight, value)) return;
+                    RaisePropertyChanged(nameof(XYResolution));
+                    RaisePropertyChanged(nameof(XYResolutionUm));
+                    RaisePropertyChanged(nameof(TiltAngleDegrees));
+                }
+            }
+
+            public decimal XYResolution => DisplayWidth > 0 || DisplayHeight > 0 ?
+                Math.Max(
+                    DisplayWidth / ResolutionX,
+                    DisplayHeight / ResolutionY
+                )
+                : 0;
+
+            public decimal XYResolutionUm => Math.Round(XYResolution * 1000, 2);
+
+            public decimal TiltAngleDegrees =>
+                XYResolution > 0 ? (decimal) Math.Round(Math.Tanh((double) (_layerHeight / XYResolution)) * (180 / Math.PI), 3) : 0;
+
+
 
 
         }

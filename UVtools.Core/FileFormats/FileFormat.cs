@@ -10,7 +10,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -29,8 +28,24 @@ namespace UVtools.Core.FileFormats
     /// </summary>
     public abstract class FileFormat : BindableBase, IFileFormat, IDisposable, IEquatable<FileFormat>, IEnumerable<Layer>
     {
+        #region Constants
         public const string TemporaryFileAppend = ".tmp";
         public const ushort ExtraPrintTime = 300;
+
+        private const string ExtractConfigFileName = "Configuration";
+        private const string ExtractConfigFileExtension = "ini";
+
+        public const float DefaultBottomLiftHeight = 5;
+        public const float DefaultLiftHeight = 5;
+        public const float DefaultBottomLiftSpeed = 100;
+        public const float DefaultLiftSpeed = 100;
+        public const float DefaultRetractSpeed = 100;
+        public const float DefaultBottomLightOffDelay = 0;
+        public const float DefaultLightOffDelay = 0;
+        public const byte DefaultBottomLightPWM = 255;
+        public const byte DefaultLightPWM = 255;
+        #endregion 
+
         #region Enums
 
         /// <summary>
@@ -64,8 +79,8 @@ namespace UVtools.Core.FileFormats
             public static PrintParameterModifier BottomExposureSeconds { get; } = new PrintParameterModifier("Bottom exposure time", null, "s", 0.1M, 1000, 2);
             public static PrintParameterModifier ExposureSeconds { get; } = new PrintParameterModifier("Exposure time", null, "s", 0.1M, 1000, 2);
             
-            public static PrintParameterModifier BottomLayerOffTime { get; } = new PrintParameterModifier("Bottom layer off seconds", null, "s");
-            public static PrintParameterModifier LayerOffTime { get; } = new PrintParameterModifier("Layer off seconds", null, "s");
+            public static PrintParameterModifier BottomLightOffDelay { get; } = new PrintParameterModifier("Bottom light-off seconds", null, "s");
+            public static PrintParameterModifier LightOffDelay { get; } = new PrintParameterModifier("Light-off seconds", null, "s");
             public static PrintParameterModifier BottomLiftHeight { get; } = new PrintParameterModifier("Bottom lift height", @"Modify 'Bottom lift height' millimeters between bottom layers", "mm", 1);
             public static PrintParameterModifier LiftHeight { get; } = new PrintParameterModifier("Lift height", @"Modify 'Lift height' millimeters between layers", "mm", 1);
             public static PrintParameterModifier BottomLiftSpeed { get; } = new PrintParameterModifier("Bottom lift Speed", @"Modify 'Bottom lift Speed' mm/min between bottom layers", "mm/min", 10);
@@ -80,8 +95,8 @@ namespace UVtools.Core.FileFormats
                 BottomExposureSeconds,
                 ExposureSeconds,
 
-                BottomLayerOffTime,
-                LayerOffTime,
+                BottomLightOffDelay,
+                LightOffDelay,
                 BottomLiftHeight,
                 BottomLiftSpeed,
                 LiftHeight,
@@ -168,26 +183,11 @@ namespace UVtools.Core.FileFormats
         }
         #endregion
 
-        #region Constants
-        private const string ExtractConfigFileName = "Configuration";
-        private const string ExtractConfigFileExtension = "ini";
-
-        public const float DefaultBottomLiftHeight = 5;
-        public const float DefaultLiftHeight = 5;
-        public const float DefaultBottomLiftSpeed = 100;
-        public const float DefaultLiftSpeed = 100;
-        public const float DefaultRetractSpeed = 100;
-        public const float DefaultBottomLightOffDelay = 0;
-        public const float DefaultLightOffDelay = 0;
-        public const byte DefaultBottomLightPWM = 255;
-        public const byte DefaultLightPWM = 255;
-        #endregion
-
         #region Static Methods
         /// <summary>
         /// Gets the available formats to process
         /// </summary>
-        public static FileFormat[] AvaliableFormats { get; } =
+        public static FileFormat[] AvailableFormats { get; } =
         {
             new SL1File(),      // Prusa SL1
             new ChituboxZipFile(),      // Zip
@@ -204,7 +204,7 @@ namespace UVtools.Core.FileFormats
             new ImageFile(),   // images
         };
 
-        public static string AllSlicerFiles => AvaliableFormats.Aggregate("All slicer files|",
+        public static string AllSlicerFiles => AvailableFormats.Aggregate("All slicer files|",
             (current, fileFormat) => current.EndsWith("|")
                 ? $"{current}{fileFormat.FileFilterExtensionsOnly}"
                 : $"{current}; {fileFormat.FileFilterExtensionsOnly}");
@@ -215,7 +215,7 @@ namespace UVtools.Core.FileFormats
         public static string AllFileFilters =>
             AllSlicerFiles
             +
-            AvaliableFormats.Aggregate(string.Empty,
+            AvailableFormats.Aggregate(string.Empty,
                 (current, fileFormat) => $"{current}|" + fileFormat.FileFilter);
 
         public static List<KeyValuePair<string, List<string>>> AllFileFiltersAvalonia
@@ -227,9 +227,9 @@ namespace UVtools.Core.FileFormats
                     new KeyValuePair<string, List<string>>("All slicer files", new List<string>())
                 };
                 
-                for (int i = 0; i < AvaliableFormats.Length; i++)
+                for (int i = 0; i < AvailableFormats.Length; i++)
                 {
-                    foreach (var fileExtension in AvaliableFormats[i].FileExtensions)
+                    foreach (var fileExtension in AvailableFormats[i].FileExtensions)
                     {
                         result[0].Value.Add(fileExtension.Extension);
                         result.Add(new KeyValuePair<string, List<string>>(fileExtension.Description, new List<string>
@@ -252,7 +252,7 @@ namespace UVtools.Core.FileFormats
         {
             get
             {
-                return AvaliableFormats.Aggregate<FileFormat, byte>(0, (current, fileFormat) => (byte) (current + fileFormat.FileExtensions.Length));
+                return AvailableFormats.Aggregate<FileFormat, byte>(0, (current, fileFormat) => (byte) (current + fileFormat.FileExtensions.Length));
             }
         }
 
@@ -265,12 +265,12 @@ namespace UVtools.Core.FileFormats
         /// <returns><see cref="FileFormat"/> object or null if not found</returns>
         public static FileFormat FindByExtension(string extension, bool isFilePath = false, bool createNewInstance = false)
         {
-            return (from fileFormat in AvaliableFormats where fileFormat.IsExtensionValid(extension, isFilePath) select createNewInstance ? (FileFormat) Activator.CreateInstance(fileFormat.GetType()) : fileFormat).FirstOrDefault();
+            return (from fileFormat in AvailableFormats where fileFormat.IsExtensionValid(extension, isFilePath) select createNewInstance ? (FileFormat) Activator.CreateInstance(fileFormat.GetType()) : fileFormat).FirstOrDefault();
         }
 
         public static FileExtension FindExtension(string extension, bool isFilePath = false, bool createNewInstance = false)
         {
-            return AvaliableFormats.SelectMany(format => format.FileExtensions).FirstOrDefault(ext => ext.Equals(extension));
+            return AvailableFormats.SelectMany(format => format.FileExtensions).FirstOrDefault(ext => ext.Equals(extension));
         }
 
         /// <summary>
@@ -281,7 +281,7 @@ namespace UVtools.Core.FileFormats
         /// <returns><see cref="FileFormat"/> object or null if not found</returns>
         public static FileFormat FindByType(Type type, bool createNewInstance = false)
         {
-            return (from t in AvaliableFormats where type == t.GetType() select createNewInstance ? (FileFormat) Activator.CreateInstance(type) : t).FirstOrDefault();
+            return (from t in AvailableFormats where type == t.GetType() select createNewInstance ? (FileFormat) Activator.CreateInstance(type) : t).FirstOrDefault();
         }
         #endregion
 
@@ -290,8 +290,6 @@ namespace UVtools.Core.FileFormats
         public abstract FileFormatType FileType { get; }
 
         public abstract FileExtension[] FileExtensions { get; }
-        public abstract Type[] ConvertToFormats { get; }
-
         public abstract PrintParameterModifier[] PrintParameterModifiers { get; }
         public virtual PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = null;
 
@@ -378,6 +376,7 @@ namespace UVtools.Core.FileFormats
         private bool _haveModifiedLayers;
         private LayerManager _layerManager;
         private float _printTime;
+        private float _maxPrintHeight;
 
         /// <summary>
         /// Gets or sets if modifications require a full encode to save
@@ -390,7 +389,7 @@ namespace UVtools.Core.FileFormats
 
         public Size Resolution
         {
-            get => new Size((int)ResolutionX, (int)ResolutionY);
+            get => new((int)ResolutionX, (int)ResolutionY);
             set
             {
                 ResolutionX = (uint) value.Width;
@@ -405,7 +404,7 @@ namespace UVtools.Core.FileFormats
 
         public SizeF Display
         {
-            get => new SizeF(DisplayWidth, DisplayHeight);
+            get => new(DisplayWidth, DisplayHeight);
             set
             {
                 DisplayWidth = value.Width;
@@ -416,8 +415,15 @@ namespace UVtools.Core.FileFormats
 
         public abstract float DisplayWidth { get; set; }
         public abstract float DisplayHeight { get; set; }
+        public abstract bool MirrorDisplay { get; set; }
 
-        public float Xppmm
+        public virtual float MaxPrintHeight
+        {
+            get => _maxPrintHeight > 0 ? _maxPrintHeight : PrintHeight;
+            set => RaiseAndSetIfChanged(ref _maxPrintHeight, value);
+        }
+
+        public virtual float Xppmm
         {
             get => DisplayWidth > 0 ? ResolutionX / DisplayWidth : 0;
             set
@@ -427,7 +433,7 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public float Yppmm
+        public virtual float Yppmm
         {
             get => DisplayHeight > 0 ? ResolutionY / DisplayHeight : 0;
             set
@@ -439,7 +445,7 @@ namespace UVtools.Core.FileFormats
 
         public SizeF Ppmm
         {
-            get => new SizeF(Xppmm, Yppmm);
+            get => new(Xppmm, Yppmm);
             set
             {
                 Xppmm = value.Width;
@@ -448,12 +454,33 @@ namespace UVtools.Core.FileFormats
         }
 
 
+        public decimal XYResolution => DisplayWidth > 0 || DisplayHeight > 0 ?
+            (decimal) Math.Round(Math.Max(
+                DisplayWidth / ResolutionX,
+                DisplayHeight / ResolutionY
+            ), 3)
+            : 0;
+
+        public decimal XYResolutionUm => DisplayWidth > 0 || DisplayHeight > 0 ?
+            (decimal)Math.Round(Math.Max(
+                DisplayWidth / ResolutionX,
+                DisplayHeight / ResolutionY
+            ), 3) * 1000
+            : 0;
+
         public bool HaveAntiAliasing => AntiAliasing > 1;
-        public abstract byte AntiAliasing { get; }
+        public abstract byte AntiAliasing { get; set; }
 
         public abstract float LayerHeight { get; set; }
 
-        public float TotalHeight => LayerCount == 0 ? 0 : this[LayerCount - 1].PositionZ; //(float)Math.Round(LayerCount * LayerHeight, 2);
+        public virtual float PrintHeight
+        {
+            get => LayerCount == 0 ? 0 : this[LayerCount - 1]?.PositionZ ?? 0;
+            set
+            {
+                RaisePropertyChanged();
+            }
+        }
 
         public uint LastLayerIndex => LayerCount - 1;
         public virtual bool SupportPerLayerSettings => !(PrintParameterPerLayerModifiers is null || PrintParameterPerLayerModifiers.Length == 0);
@@ -468,8 +495,8 @@ namespace UVtools.Core.FileFormats
         public uint NormalLayerCount => LayerCount - BottomLayerCount;
         public virtual float BottomExposureTime { get; set; }
         public virtual float ExposureTime { get; set; }
-        public virtual float BottomLayerOffTime { get; set; } = DefaultBottomLightOffDelay;
-        public virtual float LayerOffTime { get; set; } = DefaultLightOffDelay;
+        public virtual float BottomLightOffDelay { get; set; } = DefaultBottomLightOffDelay;
+        public virtual float LightOffDelay { get; set; } = DefaultLightOffDelay;
         public virtual float BottomLiftHeight { get; set; } = DefaultBottomLiftHeight;
         public virtual float LiftHeight { get; set; } = DefaultLiftHeight;
         public virtual float BottomLiftSpeed { get; set; } = DefaultBottomLiftSpeed;
@@ -513,20 +540,20 @@ namespace UVtools.Core.FileFormats
                             break;
                         }
 
-                        var layerOff = OperationCalculator.LightOffDelayC.CalculateSeconds(layer.LiftHeight, layer.LiftSpeed, layer.RetractSpeed);
+                        var lightOffDelay = OperationCalculator.LightOffDelayC.CalculateSeconds(layer.LiftHeight, layer.LiftSpeed, layer.RetractSpeed);
                         time += layer.ExposureTime;
-                        if (layerOff >= layer.LayerOffTime)
-                            time += layerOff;
+                        if (lightOffDelay >= layer.LightOffDelay)
+                            time += lightOffDelay;
                         else
-                            time += layer.LayerOffTime;
+                            time += layer.LightOffDelay;
                     }
                 }
 
                 if (computeGeneral)
                 {
                     time = ExtraPrintTime + 
-                           BottomLayerOffTime * BottomLayerCount +
-                           LayerOffTime * NormalLayerCount +
+                           BottomLightOffDelay * BottomLayerCount +
+                           LightOffDelay * NormalLayerCount +
                            OperationCalculator.LightOffDelayC.CalculateSeconds(BottomLiftHeight, BottomLiftSpeed, RetractSpeed) * BottomLayerCount +
                            OperationCalculator.LightOffDelayC.CalculateSeconds(LiftHeight, LiftSpeed, RetractSpeed) * NormalLayerCount;
                 }
@@ -539,7 +566,8 @@ namespace UVtools.Core.FileFormats
 
         public string PrintTimeString => TimeSpan.FromSeconds(PrintTimeOrComputed).ToString("hh\\hmm\\m");
 
-        public virtual float UsedMaterial { get; set; }
+        public virtual float MaterialMilliliters { get; set; }
+        public virtual float MaterialGrams { get; set; }
 
         public virtual float MaterialCost { get; set; }
 
@@ -566,6 +594,11 @@ namespace UVtools.Core.FileFormats
 
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            if (e.PropertyName == nameof(LayerCount))
+            {
+                PrintHeight = PrintHeight;
+            }
+
             if (SuppressRebuildProperties) return;
             if (e.PropertyName == nameof(LayerCount))
             {
@@ -579,8 +612,8 @@ namespace UVtools.Core.FileFormats
                 e.PropertyName == nameof(BottomLayerCount) ||
                 e.PropertyName == nameof(BottomExposureTime) ||
                 e.PropertyName == nameof(ExposureTime) ||
-                e.PropertyName == nameof(BottomLayerOffTime) ||
-                e.PropertyName == nameof(LayerOffTime) ||
+                e.PropertyName == nameof(BottomLightOffDelay) ||
+                e.PropertyName == nameof(LightOffDelay) ||
                 e.PropertyName == nameof(BottomLiftHeight) ||
                 e.PropertyName == nameof(LiftHeight) ||
                 e.PropertyName == nameof(BottomLiftSpeed) ||
@@ -789,9 +822,6 @@ namespace UVtools.Core.FileFormats
                 if(Thumbnails[i].Size == ThumbnailsOriginalSize[i]) continue;
                 CvInvoke.Resize(Thumbnails[i], Thumbnails[i], new Size(ThumbnailsOriginalSize[i].Width, ThumbnailsOriginalSize[i].Height));
             }
-
-            progress ??= new OperationProgress();
-            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
         }
 
         public void AfterEncode()
@@ -953,14 +983,14 @@ namespace UVtools.Core.FileFormats
                 PrintParameterModifier.ExposureSeconds.OldValue = (decimal)ExposureTime;
             }
 
-            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLayerOffTime))
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLightOffDelay))
             {
-                PrintParameterModifier.BottomLayerOffTime.OldValue = (decimal)BottomLayerOffTime;
+                PrintParameterModifier.BottomLightOffDelay.OldValue = (decimal)BottomLightOffDelay;
             }
 
-            if (PrintParameterModifiers.Contains(PrintParameterModifier.LayerOffTime))
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.LightOffDelay))
             {
-                PrintParameterModifier.LayerOffTime.OldValue = (decimal)LayerOffTime;
+                PrintParameterModifier.LightOffDelay.OldValue = (decimal)LightOffDelay;
             }
 
             if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLiftHeight))
@@ -1009,9 +1039,9 @@ namespace UVtools.Core.FileFormats
                 PrintParameterModifier.ExposureSeconds.OldValue = (decimal)layer.ExposureTime;
             }
 
-            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LayerOffTime))
+            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LightOffDelay))
             {
-                PrintParameterModifier.LayerOffTime.OldValue = (decimal)layer.LayerOffTime;
+                PrintParameterModifier.LightOffDelay.OldValue = (decimal)layer.LightOffDelay;
             }
 
             if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LiftHeight))
@@ -1044,10 +1074,10 @@ namespace UVtools.Core.FileFormats
             if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
                 return ExposureTime;
 
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerOffTime))
-                return BottomLayerOffTime;
-            if (ReferenceEquals(modifier, PrintParameterModifier.LayerOffTime))
-                return LayerOffTime;
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightOffDelay))
+                return BottomLightOffDelay;
+            if (ReferenceEquals(modifier, PrintParameterModifier.LightOffDelay))
+                return LightOffDelay;
 
             if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftHeight))
                 return BottomLiftHeight;
@@ -1086,14 +1116,14 @@ namespace UVtools.Core.FileFormats
                 return true;
             }
 
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerOffTime))
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightOffDelay))
             {
-                BottomLayerOffTime = (float) value;
+                BottomLightOffDelay = (float) value;
                 return true;
             }
-            if (ReferenceEquals(modifier, PrintParameterModifier.LayerOffTime))
+            if (ReferenceEquals(modifier, PrintParameterModifier.LightOffDelay))
             {
-                LayerOffTime = (float) value;
+                LightOffDelay = (float) value;
                 return true;
             }
 
@@ -1182,8 +1212,65 @@ namespace UVtools.Core.FileFormats
 
         public abstract void SaveAs(string filePath = null, OperationProgress progress = null);
 
-        public abstract bool Convert(Type to, string fileFullPath, OperationProgress progress = null);
-        public bool Convert(FileFormat to, string fileFullPath, OperationProgress progress = null)
+        public virtual FileFormat Convert(Type to, string fileFullPath, OperationProgress progress = null)
+        {
+            if (!IsValid) return null;
+            var found = AvailableFormats.Any(format => to == format.GetType());
+            if (!found) return null;
+
+            progress ??= new OperationProgress("Converting");
+            
+            var slicerFile = (FileFormat)Activator.CreateInstance(to);
+            if (slicerFile is null) return null;
+
+            slicerFile.SuppressRebuildProperties = true;
+
+            slicerFile.LayerManager = LayerManager;
+            slicerFile.AntiAliasing = ValidateAntiAliasingLevel();
+            slicerFile.LayerCount = LayerManager.Count;
+            slicerFile.BottomLayerCount = BottomLayerCount;
+            slicerFile.LayerHeight = LayerHeight;
+            slicerFile.ResolutionX = ResolutionX;
+            slicerFile.ResolutionY = ResolutionY;
+            slicerFile.DisplayWidth = DisplayWidth;
+            slicerFile.DisplayHeight = DisplayHeight;
+            slicerFile.MaxPrintHeight = MaxPrintHeight;
+            slicerFile.MirrorDisplay = MirrorDisplay;
+            slicerFile.BottomExposureTime = BottomExposureTime;
+            slicerFile.ExposureTime = ExposureTime;
+            
+            slicerFile.BottomLiftHeight = BottomLiftHeight;
+            slicerFile.LiftHeight = LiftHeight;
+
+            slicerFile.BottomLiftSpeed = BottomLiftSpeed;
+            slicerFile.LiftSpeed = LiftSpeed;
+            slicerFile.RetractSpeed = RetractSpeed;
+
+            slicerFile.BottomLightOffDelay = BottomLightOffDelay;
+            slicerFile.LightOffDelay = LightOffDelay;
+
+            slicerFile.BottomLightPWM = BottomLightPWM;
+            slicerFile.LightPWM = LightPWM;
+
+            slicerFile.MachineName = MachineName;
+            slicerFile.MaterialName = MaterialName;
+            slicerFile.MaterialMilliliters = MaterialMilliliters;
+            slicerFile.MaterialGrams = MaterialGrams;
+            slicerFile.MaterialCost = MaterialCost;
+            slicerFile.Xppmm = Xppmm;
+            slicerFile.Yppmm = Yppmm;
+            slicerFile.PrintTime = PrintTimeOrComputed;
+            slicerFile.PrintHeight = PrintHeight;
+            
+
+
+            slicerFile.SuppressRebuildProperties = false;
+            slicerFile.SetThumbnails(Thumbnails);
+            slicerFile.Encode(fileFullPath, progress);
+
+            return slicerFile;
+        }
+        public FileFormat Convert(FileFormat to, string fileFullPath, OperationProgress progress = null)
             => Convert(to.GetType(), fileFullPath, progress);
 
         public byte ValidateAntiAliasingLevel()

@@ -15,6 +15,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Stitching;
 using Emgu.CV.Util;
 using Newtonsoft.Json;
 using UVtools.Core.Extensions;
@@ -62,7 +63,7 @@ namespace UVtools.Core.FileFormats
             public uint TotalLayersCount { get; set; }
             public bool DisableSettingsChanges { get; set; }
 
-            public List<LayerData> Layers { get; set; } = new List<LayerData>();
+            public List<LayerData> Layers { get; set; } = new();
         }
 
         public class UserSettingsdata
@@ -85,7 +86,7 @@ namespace UVtools.Core.FileFormats
             //public uint LayerThicknessesDisplayTime { get; set; } arr
             public uint ExposureOffTime { get; set; } = 5;
             public uint BottomLayerExposureTime { get; set; }
-            public uint BottomLayersCount { get; set; }
+            public ushort BottomLayersCount { get; set; }
             public byte SupportAdditionalExposureEnabled { get; set; }
             public uint SupportAdditionalExposureTime { get; set; }
             public float ZLiftDistance { get; set; } = 5;
@@ -115,7 +116,18 @@ namespace UVtools.Core.FileFormats
             public string MinFirmwareVersion { get; set; } = "20013";
             public uint PrinterModelEnumId { get; set; } = 40;
             public string PrinterName { get; set; } = "Inkspire";
-            public List<MaterialsData> Materials { get; set; }
+
+            public List<MaterialsData> Materials { get; set; } = new()
+            {
+                new MaterialsData
+                {
+                    Name = "",
+                    ExtruderType = "MAIN",
+                    Id = 0,
+                    Usage = 0,
+                    Temperature = 0
+                }
+            };
             public byte HeatbedTemperature { get; set; }
             public byte ChamberTemperature { get; set; }
             public uint CommandCount { get; set; }
@@ -139,19 +151,17 @@ namespace UVtools.Core.FileFormats
         #endregion
 
         #region Properties
-        public ResinMetadata ResinMetadataSettings { get; set; } = new ResinMetadata();
-        public UserSettingsdata UserSettings { get; set; } = new UserSettingsdata();
-        public ZCodeMetadata ZCodeMetadataSettings { get; set; } = new ZCodeMetadata();
+        public ResinMetadata ResinMetadataSettings { get; set; } = new();
+        public UserSettingsdata UserSettings { get; set; } = new();
+        public ZCodeMetadata ZCodeMetadataSettings { get; set; } = new();
 
-        public List<LayerData> LayersSettings { get; } = new List<LayerData>();
+        public List<LayerData> LayersSettings { get; } = new();
 
         public override FileFormatType FileType => FileFormatType.Archive;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("zcodex", "Z-Suite ZCodex")
+            new("zcodex", "Z-Suite ZCodex")
         };
-
-        public override Type[] ConvertToFormats { get; } = null;
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
             PrintParameterModifier.BottomLayerCount,
@@ -160,8 +170,9 @@ namespace UVtools.Core.FileFormats
 
 
             PrintParameterModifier.LiftHeight,
-            PrintParameterModifier.RetractSpeed,
             PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.RetractSpeed,
+            PrintParameterModifier.LightOffDelay
         };
 
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
@@ -173,18 +184,18 @@ namespace UVtools.Core.FileFormats
 
         public override byte ThumbnailsCount { get; } = 1;
 
-        public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = {new System.Drawing.Size(320, 180)};
+        public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = {new(320, 180)};
 
         public override uint ResolutionX
         {
             get => 1440;
-            set => throw new NotImplementedException();
+            set { }
         }
 
         public override uint ResolutionY
         {
             get => 2560;
-            set => throw new NotImplementedException();
+            set { }
         }
 
         public override float DisplayWidth
@@ -198,14 +209,30 @@ namespace UVtools.Core.FileFormats
             set { }
         }
 
-        public override byte AntiAliasing => UserSettings.AntiAliasing;
+        public override bool MirrorDisplay
+        {
+            get => true;
+            set { }
+        }
+
+        public override byte AntiAliasing
+        {
+            get => UserSettings.AntiAliasing;
+            set
+            {
+                UserSettings.AntiAliasing = value.Clamp(1, 16);
+                RaisePropertyChanged();
+            }
+
+        }
 
         public override float LayerHeight
         {
             get => ResinMetadataSettings.LayerThickness;
             set
             {
-                ResinMetadataSettings.LayerThickness = value;
+                ResinMetadataSettings.LayerThickness = (float)Math.Round(value, 2);
+                UserSettings.LayerThickness = $"{ResinMetadataSettings.LayerThickness} mm";
                 RaisePropertyChanged();
             }
         }
@@ -214,8 +241,8 @@ namespace UVtools.Core.FileFormats
         {
             set
             {
-                UserSettings.MaxLayer = LastLayerIndex;
                 ResinMetadataSettings.TotalLayersCount = LayerCount;
+                UserSettings.MaxLayer = LastLayerIndex;
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(NormalLayerCount));
             }
@@ -226,7 +253,7 @@ namespace UVtools.Core.FileFormats
             get => ResinMetadataSettings.BottomLayersNumber;
             set
             {
-                ResinMetadataSettings.BottomLayersNumber = value;
+                ResinMetadataSettings.BottomLayersNumber = UserSettings.BottomLayersCount = value;
                 RaisePropertyChanged();
             }
         }
@@ -236,7 +263,7 @@ namespace UVtools.Core.FileFormats
             get => (float) Math.Round(UserSettings.BottomLayerExposureTime / 1000f, 2);
             set
             {
-                UserSettings.BottomLayerExposureTime = (uint) (value * 1000f);
+                ResinMetadataSettings.BottomLayersTime = UserSettings.BottomLayerExposureTime = (uint) (value * 1000f);
                 RaisePropertyChanged();
             }
         }
@@ -246,7 +273,7 @@ namespace UVtools.Core.FileFormats
             get => (float) Math.Round(UserSettings.LayerExposureTime / 1000f, 2);
             set
             {
-                UserSettings.LayerExposureTime = (uint) (value * 1000f);
+                ResinMetadataSettings.LayerTime = UserSettings.LayerExposureTime = (uint) (value * 1000f);
                 RaisePropertyChanged();
             }
         }
@@ -256,7 +283,7 @@ namespace UVtools.Core.FileFormats
             get => UserSettings.ZLiftDistance;
             set
             {
-                UserSettings.ZLiftDistance = value;
+                UserSettings.ZLiftDistance = (float)Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
@@ -266,7 +293,7 @@ namespace UVtools.Core.FileFormats
             get => UserSettings.ZLiftFeedRate;
             set
             {
-                UserSettings.ZLiftFeedRate = value;
+                UserSettings.ZLiftFeedRate = (float)Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
@@ -276,27 +303,50 @@ namespace UVtools.Core.FileFormats
             get => UserSettings.ZLiftRetractRate;
             set
             {
-                UserSettings.ZLiftRetractRate = value;
+                UserSettings.ZLiftRetractRate = (float)Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
+
+        public override float LightOffDelay
+        {
+            get => (float) Math.Round(ResinMetadataSettings.BlankingLayerTime / 1000f, 2);
+            set
+            {
+                UserSettings.ExposureOffTime = ResinMetadataSettings.BlankingLayerTime = (uint)(value * 1000);
+                RaisePropertyChanged();
+            }
+        }
+
 
         public override float PrintTime
         {
             get => ResinMetadataSettings.PrintTime;
             set
             {
+                TimeSpan ts = new TimeSpan(0, 0, (int)value);
                 ResinMetadataSettings.PrintTime = (uint) value;
+                UserSettings.PrintTime = $"{ts.Hours}h {ts.Minutes}m";
                 base.PrintTime = value;
             }
         }
 
-        public override float UsedMaterial
+        public override float MaterialMilliliters
         {
             get => ResinMetadataSettings.TotalMaterialVolumeUsed;
             set
             {
-                ResinMetadataSettings.TotalMaterialVolumeUsed = (float) Math.Round(value, 2);
+                UserSettings.MaterialVolume = ResinMetadataSettings.TotalMaterialVolumeUsed = (float) Math.Round(value, 2);
+                RaisePropertyChanged();
+            }
+        }
+
+        public override float MaterialGrams
+        {
+            get => ResinMetadataSettings.TotalMaterialWeightUsed;
+            set
+            {
+                ResinMetadataSettings.TotalMaterialWeightUsed = (float) Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
@@ -334,7 +384,21 @@ namespace UVtools.Core.FileFormats
 
         public override void Encode(string fileFullPath, OperationProgress progress = null)
         {
+            progress ??= new OperationProgress();
+            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
             base.Encode(fileFullPath, progress);
+
+            float usedMaterial = MaterialMilliliters / LayerCount;
+            ResinMetadataSettings.Layers.Clear();
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                ResinMetadataSettings.Layers.Add(new ResinMetadata.LayerData
+                {
+                    Layer = layerIndex,
+                    UsedMaterialVolume = usedMaterial
+                });
+            }
+
             using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
             {
                 outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings), ZipArchiveMode.Create);
@@ -606,10 +670,6 @@ M106 S0
             //Decode(FileFullPath, progress);
         }
 
-        public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
-        {
-            throw new NotImplementedException();
-        }
         #endregion
     }
 }

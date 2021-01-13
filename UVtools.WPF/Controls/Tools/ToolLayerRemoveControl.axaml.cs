@@ -24,7 +24,7 @@ namespace UVtools.WPF.Controls.Tools
             get
             {
                 float extraHeight = (float)Math.Round(ExtraLayers * App.SlicerFile.LayerHeight, 2);
-                return $"Height: {App.SlicerFile.TotalHeight}mm → {Math.Round(App.SlicerFile.TotalHeight - extraHeight, 2)}mm (- {extraHeight}mm)";
+                return $"Height: {App.SlicerFile.PrintHeight}mm → {Math.Round(App.SlicerFile.PrintHeight - extraHeight, 2)}mm (- {extraHeight}mm)";
             }
         }
 

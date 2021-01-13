@@ -48,7 +48,7 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(2)] [FieldEndianness(Endianness.Big)] public double XYPixelSize { get; set; } = 0.04725; // 0.04725
             [FieldOrder(3)] [FieldEndianness(Endianness.Big)] public double LayerHeight { get; set; }
             [FieldOrder(4)] [FieldEndianness(Endianness.Big)] public double ExposureSeconds { get; set; }
-            [FieldOrder(5)] [FieldEndianness(Endianness.Big)] public double LayerOffSeconds { get; set; }
+            [FieldOrder(5)] [FieldEndianness(Endianness.Big)] public double LightOffDelay { get; set; }
             [FieldOrder(6)] [FieldEndianness(Endianness.Big)] public double BottomExposureSeconds { get; set; }
             [FieldOrder(7)] [FieldEndianness(Endianness.Big)] public uint BottomLayerCount { get; set; }
             [FieldOrder(8)] [FieldEndianness(Endianness.Big)] public double LiftHeight { get; set; } // mm
@@ -62,7 +62,7 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(Tag1)}: {Tag1}, {nameof(Tag2)}: {Tag2}, {nameof(XYPixelSize)}: {XYPixelSize}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureSeconds)}: {ExposureSeconds}, {nameof(LayerOffSeconds)}: {LayerOffSeconds}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Volume)}: {Volume}, {nameof(PreviewResolutionX)}: {PreviewResolutionX}, {nameof(Unknown2)}: {Unknown2}, {nameof(PreviewResolutionY)}: {PreviewResolutionY}, {nameof(Unknown4)}: {Unknown4}";
+                return $"{nameof(Tag1)}: {Tag1}, {nameof(Tag2)}: {Tag2}, {nameof(XYPixelSize)}: {XYPixelSize}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureSeconds)}: {ExposureSeconds}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Volume)}: {Volume}, {nameof(PreviewResolutionX)}: {PreviewResolutionX}, {nameof(Unknown2)}: {Unknown2}, {nameof(PreviewResolutionY)}: {PreviewResolutionY}, {nameof(Unknown4)}: {Unknown4}";
             }
         }
 
@@ -201,12 +201,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("photons", "Chitubox PhotonS"),
-        };
-
-        public override Type[] ConvertToFormats { get; } =
-        {
-            //typeof(UVJFile),
+            new("photons", "Chitubox PhotonS"),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
@@ -215,8 +210,8 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.BottomExposureSeconds,
             PrintParameterModifier.ExposureSeconds,
 
-            //PrintParameterModifier.BottomLayerOffTime,
-            PrintParameterModifier.LayerOffTime,
+            //PrintParameterModifier.BottomLightOffDelay,
+            PrintParameterModifier.LightOffDelay,
             //PrintParameterModifier.BottomLiftHeight,
             //PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
@@ -231,18 +226,13 @@ namespace UVtools.Core.FileFormats
         public override uint ResolutionX
         {
             get => Header.ResolutionX;
-            set
-            {
-                
-            }
+            set { }
         }
 
         public override uint ResolutionY
         {
             get => Header.ResolutionY;
-            set
-            {
-            }
+            set { }
         }
 
         public override float DisplayWidth
@@ -257,14 +247,24 @@ namespace UVtools.Core.FileFormats
             set { }
         }
 
-        public override byte AntiAliasing => 1;
+        public override bool MirrorDisplay
+        {
+            get => true;
+            set { }
+        }
+
+        public override byte AntiAliasing
+        {
+            get => 1;
+            set { }
+        }
 
         public override float LayerHeight
         {
             get => (float) Math.Round(HeaderSettings.LayerHeight);
             set
             {
-                HeaderSettings.LayerHeight = value;
+                HeaderSettings.LayerHeight = (float)Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
@@ -304,27 +304,17 @@ namespace UVtools.Core.FileFormats
             get => (float)HeaderSettings.ExposureSeconds;
             set
             {
-                HeaderSettings.ExposureSeconds = value;
+                HeaderSettings.ExposureSeconds = (float)Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
 
-        /*public override float BottomLayerOffTime
+        public override float LightOffDelay
         {
-            get => HeaderSettings.BottomLightOffDelayMs;
+            get => (float) HeaderSettings.LightOffDelay;
             set
             {
-                HeaderSettings.BottomLightOffDelayMs = value;
-                RaisePropertyChanged();
-            }
-        }*/
-
-        public override float LayerOffTime
-        {
-            get => (float) HeaderSettings.LayerOffSeconds;
-            set
-            {
-                HeaderSettings.LayerOffSeconds = value;
+                HeaderSettings.LightOffDelay = (float)Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
@@ -344,7 +334,7 @@ namespace UVtools.Core.FileFormats
             get => (float) HeaderSettings.LiftHeight;
             set
             {
-                HeaderSettings.LiftHeight = value;
+                HeaderSettings.LiftHeight = (float)Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
@@ -361,26 +351,26 @@ namespace UVtools.Core.FileFormats
 
         public override float LiftSpeed
         {
-            get => (float) Math.Round(HeaderSettings.LiftSpeed * 60.0);
+            get => (float) Math.Round(HeaderSettings.LiftSpeed * 60.0, 2);
             set
             {
-                HeaderSettings.LiftSpeed = Math.Round(value / 60.0);
+                HeaderSettings.LiftSpeed = Math.Round(value / 60.0, 2);
                 RaisePropertyChanged();
             }
         }
 
         public override float RetractSpeed
         {
-            get => (float)Math.Round(HeaderSettings.RetractSpeed * 60.0);
+            get => (float)Math.Round(HeaderSettings.RetractSpeed * 60.0, 2);
             set
             {
-                HeaderSettings.RetractSpeed = Math.Round(value / 60.0);
+                HeaderSettings.RetractSpeed = Math.Round(value / 60.0, 2);
                 RaisePropertyChanged();
             }
         }
 
 
-        public override float UsedMaterial
+        public override float MaterialMilliliters
         {
             get => (float) HeaderSettings.Volume;
             set
@@ -432,6 +422,8 @@ namespace UVtools.Core.FileFormats
         }
         public override void Encode(string fileFullPath, OperationProgress progress = null)
         {
+            progress ??= new OperationProgress();
+            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
             base.Encode(fileFullPath, progress);
 
             //uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
@@ -601,10 +593,6 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
-        {
-            return false;
-        }
         #endregion
     }
 }

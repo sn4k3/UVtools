@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             MaxWidth="720"
              x:Class="UVtools.WPF.Controls.Tools.ToolCalculatorControl">
   <TabControl>
     <TabItem Header="Millimeters to pixels">
@@ -10,7 +11,8 @@
         <Border 
           Background="White"
           BorderBrush="Black" BorderThickness="1" Padding="10">
-          <TextBlock VerticalAlignment="Center">
+          <TextBlock VerticalAlignment="Center"
+                     TextWrapping="Wrap">
             <TextBlock.Text>
               <MultiBinding StringFormat="\{0\}&#x0a;&#x0a;Formula: \{1\}">
                 <Binding Path="Operation.CalcMillimetersToPixels.Description"/>
@@ -236,7 +238,8 @@
         <Border
           Background="White"
           BorderBrush="Black" BorderThickness="1" Padding="10">
-          <TextBlock VerticalAlignment="Center">
+          <TextBlock VerticalAlignment="Center"
+                     TextWrapping="Wrap">
             <TextBlock.Text>
               <MultiBinding StringFormat="\{0\}&#x0a;&#x0a;Formula: \{1\}">
                 <Binding Path="Operation.CalcLightOffDelay.Description"/>
@@ -376,7 +379,7 @@
             Grid.ColumnSpan="5"
             VerticalAlignment="Center"
             HorizontalAlignment="Center"
-            Text="{Binding SlicerFile.LayerOffTime, StringFormat=Current value: \{0\}}"/>
+            Text="{Binding SlicerFile.LightOffDelay, StringFormat=Current value: \{0\}}"/>
           
           <TextBlock
             Grid.Row="14"
@@ -497,8 +500,193 @@
             Grid.ColumnSpan="5"
             VerticalAlignment="Center"
             HorizontalAlignment="Center"
-            Text="{Binding SlicerFile.BottomLayerOffTime, StringFormat=Current value: \{0\}}"/>
+            Text="{Binding SlicerFile.BottomLightOffDelay, StringFormat=Current value: \{0\}}"/>
 
+        </Grid>
+
+      </Grid>
+
+    </TabItem>
+
+    <TabItem Header="Optimal model tilt">
+      <Grid RowDefinitions="Auto,10,Auto,30,Auto">
+        <Border
+          Background="White"
+          BorderBrush="Black" BorderThickness="1" Padding="10">
+          <TextBlock VerticalAlignment="Center" TextWrapping="Wrap">
+            <TextBlock.Text>
+              <MultiBinding StringFormat="\{0\}&#x0a;&#x0a;Formula: \{1\}">
+                <Binding Path="Operation.CalcOptimalModelTilt.Description"/>
+                <Binding Path="Operation.CalcOptimalModelTilt.Formula"/>
+              </MultiBinding>
+            </TextBlock.Text>
+          </TextBlock>
+        </Border>
+
+
+        <Grid
+          Grid.Row="2"
+          RowDefinitions="Auto,10,Auto"
+          ColumnDefinitions="Auto,10,100,5,Auto,30,Auto,10,100,5,Auto"
+        >
+
+          <!-- Resolution -->
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Resolution X:"/>
+          <NumericUpDown
+            Grid.Row="0"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="100000"
+            Value="{Binding Operation.CalcOptimalModelTilt.ResolutionX}"
+          />
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="4"
+            VerticalAlignment="Center"
+            Text="px"/>
+
+          <TextBlock
+            Grid.Row="2"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Resolution Y:"/>
+          <NumericUpDown
+            Grid.Row="2"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="100000"
+            Value="{Binding Operation.CalcOptimalModelTilt.ResolutionY}"
+          />
+          <TextBlock
+            Grid.Row="2"
+            Grid.Column="4"
+            VerticalAlignment="Center"
+            Text="px"/>
+
+
+          <!-- Display -->
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="6"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Display width:"/>
+          <NumericUpDown
+            Grid.Row="0"
+            Grid.Column="8"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="100000"
+            Increment="0.01"
+            FormatString="{}{0:0.00}"
+            Value="{Binding Operation.CalcOptimalModelTilt.DisplayWidth}"
+          />
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="10"
+            VerticalAlignment="Center"
+            Text="mm"/>
+
+          <TextBlock
+            Grid.Row="2"
+            Grid.Column="6"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Display height:"/>
+          <NumericUpDown
+            Grid.Row="2"
+            Grid.Column="8"
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="100000"
+            Increment="0.01"
+            FormatString="{}{0:0.00}"
+            Value="{Binding Operation.CalcOptimalModelTilt.DisplayHeight}"
+          />
+          <TextBlock
+            Grid.Row="2"
+            Grid.Column="10"
+            VerticalAlignment="Center"
+            Text="mm"/>
+
+        </Grid>
+
+        <Grid
+          Grid.Row="4"
+          RowDefinitions="Auto,10,Auto,10,Auto"
+          ColumnDefinitions="Auto,10,100,5,Auto"
+        >
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Layer height:"/>
+          <NumericUpDown
+            Grid.Row="0"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            Minimum="0.01"
+            Maximum="0.20"
+            Increment="0.01"
+            FormatString="{}{0:0.00}"
+            ClipValueToMinMax="True"
+            Value="{Binding Operation.CalcOptimalModelTilt.LayerHeight}"
+          />
+          <TextBlock
+            Grid.Row="0"
+            Grid.Column="4"
+            VerticalAlignment="Center"
+            Text="mm"/>
+
+          <TextBlock
+            Grid.Row="2"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="XY resolution:"/>
+          <TextBox
+            Grid.Row="2"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            IsReadOnly="True"
+            Text="{Binding Operation.CalcOptimalModelTilt.XYResolutionUm}"
+          />
+          <TextBlock
+            Grid.Row="2"
+            Grid.Column="4"
+            VerticalAlignment="Center"
+            Text="µm"/>
+
+          <TextBlock
+            Grid.Row="4"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            FontWeight="Bold"
+            Text="Optimal tilt angle:"/>
+          <TextBox
+            Grid.Row="4"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            IsReadOnly="True"
+            FontWeight="Bold"
+            Text="{Binding Operation.CalcOptimalModelTilt.TiltAngleDegrees}"
+          />
+          <TextBlock
+            Grid.Row="4"
+            Grid.Column="4"
+            VerticalAlignment="Center"
+            FontWeight="Bold"
+            Text="º"/>
         </Grid>
 
       </Grid>

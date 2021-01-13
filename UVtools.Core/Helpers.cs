@@ -71,7 +71,7 @@ namespace UVtools.Core
                     return true;
                 case "boolean":
                     if(char.IsDigit(value[0]))
-                        attribute.SetValue(obj, !value.Equals(0));
+                        attribute.SetValue(obj, !value.Equals("0"));
                     else
                         attribute.SetValue(obj, value.Equals("True", StringComparison.InvariantCultureIgnoreCase));
                     return true;

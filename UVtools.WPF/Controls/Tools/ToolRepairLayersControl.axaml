@@ -72,7 +72,7 @@
           Grid.Column="2"
           Increment="1"
           Minimum="0"
-          Maximum="255"
+          Maximum="65535"
           Width="70"
           Value="{Binding Operation.RemoveIslandsBelowEqualPixelCount}"
           >

@@ -214,9 +214,11 @@
     <Border Padding="5" DockPanel.Dock="Bottom" Background="WhiteSmoke" IsVisible="{Binding IsFileLoaded}">
       <WrapPanel
         Orientation="Horizontal"
-        VerticalAlignment="Center"
-            >
+        VerticalAlignment="Center">
         <TextBlock Text="{Binding SlicerFile.LayerHeight, StringFormat=Layer height: \{0\}mm}"/>
+
+        <TextBlock Text="  |  Bottom layers: "/>
+        <TextBlock Text="{Binding SlicerFile.BottomLayerCount}"/>
 
         <TextBlock Text="  |  Exposures: "/>
 
@@ -267,12 +269,12 @@
         <TextBlock IsVisible="{Binding SlicerFile.RetractSpeed}"
           Text="{Binding SlicerFile.RetractSpeed, StringFormat=Retract Speed: \{0\}mm/min}"/>
 
-        <TextBlock IsVisible="{Binding SlicerFile.LayerOffTime}" Text="  |  Light-off: "/>
-        <TextBlock IsVisible="{Binding SlicerFile.LayerOffTime}">
+        <TextBlock IsVisible="{Binding SlicerFile.LightOffDelay}" Text="  |  Light-off: "/>
+        <TextBlock IsVisible="{Binding SlicerFile.LightOffDelay}">
           <TextBlock.Text>
             <MultiBinding StringFormat="\{0\}s/\{1\}s">
-              <Binding Path="SlicerFile.BottomLayerOffTime"/>
-              <Binding Path="SlicerFile.LayerOffTime"/>
+              <Binding Path="SlicerFile.BottomLightOffDelay"/>
+              <Binding Path="SlicerFile.LightOffDelay"/>
             </MultiBinding>
           </TextBlock.Text>
         </TextBlock>
@@ -282,9 +284,9 @@
           Text="{Binding SlicerFile.PrintTimeString, StringFormat=Print time: \{0\}}"/>
 
 
-        <TextBlock IsVisible="{Binding SlicerFile.UsedMaterial}" Text="  |  "/>
-        <TextBlock IsVisible="{Binding SlicerFile.UsedMaterial}"
-                    Text="{Binding SlicerFile.UsedMaterial, StringFormat=Used material: \{0\}ml}"/>
+        <TextBlock IsVisible="{Binding SlicerFile.MaterialMilliliters}" Text="  |  "/>
+        <TextBlock IsVisible="{Binding SlicerFile.MaterialMilliliters}"
+                    Text="{Binding SlicerFile.MaterialMilliliters, StringFormat=Used material: \{0\}ml}"/>
 
 
         <TextBlock IsVisible="{Binding SlicerFile.MaterialCost}" Text="  |  "/>

@@ -69,9 +69,9 @@ namespace UVtools.Core
         public byte BinaryThreshold { get; set; } = 1;
 
         /// <summary>
-        /// Gets the required area size (x*y) to consider process a island (0-255)
+        /// Gets the required area size (x*y) to consider process a island (0-65535)
         /// </summary>
-        public byte RequiredAreaToProcessCheck { get; set; } = 1;
+        public ushort RequiredAreaToProcessCheck { get; set; } = 1;
 
         /// <summary>
         /// Gets the required brightness for check a pixel under a island (0-255)

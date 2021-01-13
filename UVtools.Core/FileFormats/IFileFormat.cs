@@ -31,11 +31,6 @@ namespace UVtools.Core.FileFormats
         FileExtension[] FileExtensions { get; }
 
         /// <summary>
-        /// Gets the implemented file formats able to convert to
-        /// </summary>
-        Type[] ConvertToFormats { get; }
-
-        /// <summary>
         /// Gets the available <see cref="FileFormat.PrintParameterModifier"/>
         /// </summary>
         FileFormat.PrintParameterModifier[] PrintParameterModifiers { get; }
@@ -91,7 +86,7 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         LayerManager LayerManager { get; set; }
 
-        Size Resolution { get; }
+        Size Resolution { get; set; }
 
         /// <summary>
         /// Gets the image width resolution
@@ -117,6 +112,16 @@ namespace UVtools.Core.FileFormats
         /// Gets or sets the display height in millimeters
         /// </summary>
         float DisplayHeight { get; set; }
+        
+        /// <summary>
+        /// Gets or sets if images need to be mirrored on lcd to print on the correct orientation
+        /// </summary>
+        bool MirrorDisplay { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the maximum printer build Z volume
+        /// </summary>
+        float MaxPrintHeight { get; set; }
 
         /// <summary>
         /// Gets or sets the pixels per mm on X direction
@@ -133,12 +138,22 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         SizeF Ppmm { get; set; }
 
+        /// <summary>
+        /// Gets the printer XY pixel resolution
+        /// </summary>
+        decimal XYResolution { get; }
+
+        /// <summary>
+        /// Gets the printer XY pixel resolution in microns
+        /// </summary>
+        decimal XYResolutionUm { get; }
+
         bool HaveAntiAliasing { get; }
 
         /// <summary>
-        /// Gets the AntiAliasing level
+        /// Gets or sets the AntiAliasing level
         /// </summary>
-        byte AntiAliasing { get; }
+        byte AntiAliasing { get; set; }
 
         /// <summary>
         /// Gets Layer Height in mm
@@ -146,9 +161,9 @@ namespace UVtools.Core.FileFormats
         float LayerHeight { get; set; }
 
         /// <summary>
-        /// Gets Total Height in mm
+        /// Gets or sets the print height in mm
         /// </summary>
-        float TotalHeight { get; }
+        float PrintHeight { get; set; }
 
         /// <summary>
         /// Gets the last layer index
@@ -190,12 +205,12 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets or sets the bottom layer off time in seconds
         /// </summary>
-        float BottomLayerOffTime { get; set; }
+        float BottomLightOffDelay { get; set; }
 
         /// <summary>
         /// Gets or sets the layer off time in seconds
         /// </summary>
-        float LayerOffTime { get; set; }
+        float LightOffDelay { get; set; }
 
         /// <summary>
         /// Gets or sets the bottom lift height in mm
@@ -261,7 +276,12 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the estimate used material in ml
         /// </summary>
-        float UsedMaterial { get; set; }
+        float MaterialMilliliters { get; set; }
+
+        /// <summary>
+        /// Gets the estimate material in grams
+        /// </summary>
+        float MaterialGrams { get; set; }
 
         /// <summary>
         /// Gets the estimate material cost
@@ -468,8 +488,8 @@ namespace UVtools.Core.FileFormats
         /// <param name="to">Target file format</param>
         /// <param name="fileFullPath">Output path file</param>
         /// <param name="progress"></param>
-        /// <returns>True if convert succeed, otherwise false</returns>
-        bool Convert(Type to, string fileFullPath, OperationProgress progress = null);
+        /// <returns>The converted file if successful, otherwise null</returns>
+        FileFormat Convert(Type to, string fileFullPath, OperationProgress progress = null);
 
         /// <summary>
         /// Converts this file type to another file type
@@ -477,8 +497,8 @@ namespace UVtools.Core.FileFormats
         /// <param name="to">Target file format</param>
         /// <param name="fileFullPath">Output path file</param>
         /// <param name="progress"></param>
-        /// <returns>True if convert succeed, otherwise false</returns>
-        bool Convert(FileFormat to, string fileFullPath, OperationProgress progress = null);
+        /// <returns>TThe converted file if successful, otherwise null</returns>
+        FileFormat Convert(FileFormat to, string fileFullPath, OperationProgress progress = null);
 
         /// <summary>
         /// Validate AntiAlias Level

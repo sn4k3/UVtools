@@ -119,7 +119,7 @@ namespace UVtools.Cmd
                     sw.Stop();
                     Console.WriteLine($", in {sw.ElapsedMilliseconds}ms");
                     Console.WriteLine("----------------------");
-                    Console.WriteLine($"Layers: {fileFormat.LayerCount} x {fileFormat.LayerHeight}mm = {fileFormat.TotalHeight}mm");
+                    Console.WriteLine($"Layers: {fileFormat.LayerCount} x {fileFormat.LayerHeight}mm = {fileFormat.PrintHeight}mm");
                     Console.WriteLine($"Resolution: {new Size((int) fileFormat.ResolutionX, (int) fileFormat.ResolutionY)}");
                     Console.WriteLine($"AntiAlias: {fileFormat.ValidateAntiAliasingLevel()}");
                     

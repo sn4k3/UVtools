@@ -12,15 +12,13 @@ namespace UVtools.Core.FileFormats
 
         public override FileExtension[] FileExtensions { get; } =
         {
-            new FileExtension("jpg", "JPG"),
-            new FileExtension("jpeg", "JPEG"),
-            new FileExtension("png", "PNG"),
-            new FileExtension("bmp", "BMP"),
-            new FileExtension("gif", "GIF"),
-            new FileExtension("tga", "TGA"),
+            new ("jpg", "JPG"),
+            new ("jpeg", "JPEG"),
+            new ("png", "PNG"),
+            new ("bmp", "BMP"),
+            new ("gif", "GIF"),
+            new ("tga", "TGA"),
         };
-
-        public override Type[] ConvertToFormats { get; } = null;
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = null;
         public override byte ThumbnailsCount { get; } = 4;
         public override Size[] ThumbnailsOriginalSize { get; } = null;
@@ -56,7 +54,18 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override byte AntiAliasing { get; } = 1;
+        public override bool MirrorDisplay
+        {
+            get => false;
+            set { }
+        }
+
+        public override byte AntiAliasing
+        {
+            get => 1;
+            set { }
+        }
+
         public override float LayerHeight { get; set; } = 0;
         /*public override float PrintTime { get; } = 0;
         public override float UsedMaterial { get; } = 0;
@@ -95,7 +104,7 @@ namespace UVtools.Core.FileFormats
             this[0].LayerMat.Save(filePath ?? FileFullPath);
         }
 
-        public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
+        public override FileFormat Convert(Type to, string fileFullPath, OperationProgress progress = null)
         {
             throw new NotImplementedException();
         }

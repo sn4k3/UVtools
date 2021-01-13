@@ -352,9 +352,9 @@ namespace UVtools.WPF
             if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.RetractSpeed))
                 CurrentLayerProperties.Add(new StringTag(nameof(layer.RetractSpeed),
                     $"{layer.RetractSpeed.ToString(CultureInfo.InvariantCulture)}mm/min"));
-            if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LayerOffTime))
-                CurrentLayerProperties.Add(new StringTag(nameof(layer.LayerOffTime),
-                    $"{layer.LayerOffTime.ToString(CultureInfo.InvariantCulture)}s"));
+            if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LightOffDelay))
+                CurrentLayerProperties.Add(new StringTag(nameof(layer.LightOffDelay),
+                    $"{layer.LightOffDelay.ToString(CultureInfo.InvariantCulture)}s"));
             if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LightPWM))
                 CurrentLayerProperties.Add(new StringTag(nameof(layer.LightPWM), layer.LightPWM.ToString()));
         }

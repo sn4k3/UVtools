@@ -198,10 +198,10 @@ namespace UVtools.Core.FileFormats
             public const string SectionMark = "HEADER";
 
             [FieldOrder(0)] public SectionHeader Section { get; set; }
-            [FieldOrder(1)] public float PixelSize { get; set; }
+            [FieldOrder(1)] public float PixelSize { get; set; } = 0.04725f;
             [FieldOrder(2)] public float LayerHeight { get; set; }
             [FieldOrder(3)] public float LayerExposureTime { get; set; }
-            [FieldOrder(4)] public float LayerOffTime { get; set; } = 1;
+            [FieldOrder(4)] public float LightOffDelay { get; set; } = 1;
             [FieldOrder(5)] public float BottomExposureSeconds { get; set; } 
             [FieldOrder(6)] public float BottomLayersCount { get; set; }
             [FieldOrder(7)] public float LiftHeight { get; set; } = 6;
@@ -218,10 +218,10 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(11)] public uint AntiAliasing { get; set; } = 1;
             [FieldOrder(12)] public uint ResolutionX { get; set; }
             [FieldOrder(13)] public uint ResolutionY { get; set; }
-            [FieldOrder(14)] public float Weight { get; set; }
+            [FieldOrder(14)] public float WeightG { get; set; }
             [FieldOrder(15)] public float Price { get; set; }
             [FieldOrder(16)] public uint ResinType { get; set; } // 0x24 ?
-            [FieldOrder(17)] public uint PerLayerOverride { get; set; } // bool
+            [FieldOrder(17)] public uint PerLayerOverride { get; set; } = 1; // bool
             [FieldOrder(18)] public uint Offset1 { get; set; }
             [FieldOrder(19)] public uint Offset2 { get; set; }
             [FieldOrder(20)] public uint Offset3 { get; set; }
@@ -231,7 +231,7 @@ namespace UVtools.Core.FileFormats
                 Section = new SectionHeader(SectionMark, this);
             }
 
-            public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(PixelSize)}: {PixelSize}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(LayerExposureTime)}: {LayerExposureTime}, {nameof(LayerOffTime)}: {LayerOffTime}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Volume)}: {Volume}, {nameof(AntiAliasing)}: {AntiAliasing}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(Weight)}: {Weight}, {nameof(Price)}: {Price}, {nameof(ResinType)}: {ResinType}, {nameof(PerLayerOverride)}: {PerLayerOverride}, {nameof(Offset1)}: {Offset1}, {nameof(Offset2)}: {Offset2}, {nameof(Offset3)}: {Offset3}";
+            public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(PixelSize)}: {PixelSize}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(LayerExposureTime)}: {LayerExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Volume)}: {Volume}, {nameof(AntiAliasing)}: {AntiAliasing}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(WeightG)}: {WeightG}, {nameof(Price)}: {Price}, {nameof(ResinType)}: {ResinType}, {nameof(PerLayerOverride)}: {PerLayerOverride}, {nameof(Offset1)}: {Offset1}, {nameof(Offset2)}: {Offset2}, {nameof(Offset3)}: {Offset3}";
 
             public void Validate()
             {
@@ -781,23 +781,14 @@ namespace UVtools.Core.FileFormats
             
         };
 
-        public override Type[] ConvertToFormats { get; } =
-        {
-            //typeof(ChituboxZipFile)
-            //typeof(PHZFile),
-            typeof(PhotonWorkshopFile),
-            typeof(CWSFile),
-            typeof(UVJFile),
-        };
-
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
         {
             PrintParameterModifier.BottomLayerCount,
             PrintParameterModifier.BottomExposureSeconds,
             PrintParameterModifier.ExposureSeconds,
 
-            //PrintParameterModifier.BottomLayerOffTime,
-            PrintParameterModifier.LayerOffTime,
+            //PrintParameterModifier.BottomLightOffDelay,
+            PrintParameterModifier.LightOffDelay,
             //PrintParameterModifier.BottomLiftHeight,
             //PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
@@ -846,14 +837,24 @@ namespace UVtools.Core.FileFormats
             set { }
         }
 
-        public override byte AntiAliasing => (byte) HeaderSettings.AntiAliasing;
+        public override bool MirrorDisplay
+        {
+            get => true;
+            set {}
+        }
+
+        public override byte AntiAliasing
+        {
+            get => 4;
+            set { }
+        }
 
         public override float LayerHeight
         {
             get => HeaderSettings.LayerHeight;
             set
             {
-                HeaderSettings.LayerHeight = value;
+                HeaderSettings.LayerHeight = (float)Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
@@ -883,7 +884,7 @@ namespace UVtools.Core.FileFormats
             get => HeaderSettings.BottomExposureSeconds;
             set
             {
-                HeaderSettings.BottomExposureSeconds = value;
+                HeaderSettings.BottomExposureSeconds = (float) Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
@@ -893,23 +894,23 @@ namespace UVtools.Core.FileFormats
             get => HeaderSettings.LayerExposureTime;
             set
             {
-                HeaderSettings.LayerExposureTime = value;
+                HeaderSettings.LayerExposureTime = (float) Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
 
-        public override float BottomLayerOffTime
+        public override float BottomLightOffDelay
         {
-            get => LayerOffTime;
-            set => LayerOffTime = value;
+            get => LightOffDelay;
+            set => LightOffDelay = value;
         }
 
-        public override float LayerOffTime
+        public override float LightOffDelay
         {
-            get => HeaderSettings.LayerOffTime;
+            get => HeaderSettings.LightOffDelay;
             set
             {
-                HeaderSettings.LayerOffTime = value;
+                HeaderSettings.LightOffDelay = (float) Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
@@ -925,7 +926,7 @@ namespace UVtools.Core.FileFormats
             get => HeaderSettings.LiftHeight;
             set
             {
-                HeaderSettings.LiftHeight = value;
+                HeaderSettings.LiftHeight = (float) Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
@@ -956,12 +957,22 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float UsedMaterial
+        public override float MaterialMilliliters
         {
             get => (float) Math.Round(HeaderSettings.Volume, 2);
             set
             {
                 HeaderSettings.Volume = (float)Math.Round(value, 2);
+                RaisePropertyChanged();
+            }
+        }
+
+        public override float MaterialGrams
+        {
+            get => HeaderSettings.WeightG;
+            set
+            {
+                HeaderSettings.WeightG = (float) Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
@@ -1039,6 +1050,8 @@ namespace UVtools.Core.FileFormats
 
         public override void Encode(string fileFullPath, OperationProgress progress = null)
         {
+            progress ??= new OperationProgress();
+            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
             base.Encode(fileFullPath, progress);
             LayersHash.Clear();
 
@@ -1258,273 +1271,6 @@ namespace UVtools.Core.FileFormats
                     Helpers.SerializeWriteFileStream(outputFile, LayersDefinition[layerIndex]);
                 }
             }
-        }
-
-        public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
-        {
-            if (to == typeof(PhotonWorkshopFile))
-            {
-                if (Path.GetExtension(FileFullPath).Equals(Path.GetExtension(fileFullPath)))
-                {
-                    return false;
-                }
-                PhotonWorkshopFile file = new PhotonWorkshopFile
-                {
-                    LayerManager = LayerManager,
-                    HeaderSettings =
-                    {
-                        ResolutionX = ResolutionX,
-                        ResolutionY = ResolutionY,
-                        LayerHeight = LayerHeight,
-                        LayerExposureTime = ExposureTime,
-                        LiftHeight = LiftHeight,
-                        LiftSpeed = LiftSpeed,
-                        RetractSpeed = RetractSpeed,
-                        LayerOffTime = HeaderSettings.LayerOffTime,
-                        BottomLayersCount = BottomLayerCount,
-                        BottomExposureSeconds = BottomExposureTime,
-                        Price = MaterialCost,
-                        Volume = UsedMaterial,
-                        Weight = HeaderSettings.Weight,
-                        AntiAliasing = ValidateAntiAliasingLevel()
-                    }
-                };
-
-                file.SetThumbnails(Thumbnails);
-                file.Encode(fileFullPath, progress);
-
-                return true;
-            }
-            /*if (to == typeof(PHZFile))
-            {
-                PHZFile file = new PHZFile
-                {
-                    LayerManager = LayerManager
-                };
-
-
-                file.HeaderSettings.Version = 2;
-                file.HeaderSettings.BedSizeX = HeaderSettings.BedSizeX;
-                file.HeaderSettings.BedSizeY = HeaderSettings.BedSizeY;
-                file.HeaderSettings.BedSizeZ = HeaderSettings.BedSizeZ;
-                file.HeaderSettings.OverallHeightMilimeter = TotalHeight;
-                file.HeaderSettings.BottomExposureSeconds = InitialExposureTime;
-                file.HeaderSettings.BottomLayersCount = InitialLayerCount;
-                file.HeaderSettings.BottomLightPWM = HeaderSettings.BottomLightPWM;
-                file.HeaderSettings.LayerCount = LayerCount;
-                file.HeaderSettings.LayerExposureSeconds = LayerExposureTime;
-                file.HeaderSettings.LayerHeightMilimeter = LayerHeight;
-                file.HeaderSettings.LayerOffTime = HeaderSettings.LayerOffTime;
-                file.HeaderSettings.LightPWM = HeaderSettings.LightPWM;
-                file.HeaderSettings.PrintTime = HeaderSettings.PrintTime;
-                file.HeaderSettings.ProjectorType = HeaderSettings.ProjectorType;
-                file.HeaderSettings.ResolutionX = ResolutionX;
-                file.HeaderSettings.ResolutionY = ResolutionY;
-
-                file.HeaderSettings.BottomLayerCount = InitialLayerCount;
-                file.HeaderSettings.BottomLiftHeight = PrintParametersSettings.BottomLiftHeight;
-                file.HeaderSettings.BottomLiftSpeed = PrintParametersSettings.BottomLiftSpeed;
-                file.HeaderSettings.BottomLightOffDelay = PrintParametersSettings.BottomLightOffDelay;
-                file.HeaderSettings.CostDollars = MaterialCost;
-                file.HeaderSettings.LiftHeight = PrintParametersSettings.LiftHeight;
-                file.HeaderSettings.LiftingSpeed = PrintParametersSettings.LiftingSpeed;
-                file.HeaderSettings.LayerOffTime = HeaderSettings.LayerOffTime;
-                file.HeaderSettings.RetractSpeed = PrintParametersSettings.RetractSpeed;
-                file.HeaderSettings.VolumeMl = UsedMaterial;
-                file.HeaderSettings.WeightG = PrintParametersSettings.WeightG;
-
-                file.HeaderSettings.MachineName = MachineName;
-                file.HeaderSettings.MachineNameSize = (uint) MachineName.Length;
-
-                file.SetThumbnails(Thumbnails);
-                file.Encode(fileFullPath, progress);
-
-                return true;
-            }
-
-            if (to == typeof(ZCodexFile))
-            {
-                TimeSpan ts = new TimeSpan(0, 0, (int)PrintTime);
-                ZCodexFile file = new ZCodexFile
-                {
-                    ResinMetadataSettings = new ZCodexFile.ResinMetadata
-                    {
-                        MaterialId = 2,
-                        Material = MaterialName,
-                        AdditionalSupportLayerTime = 0,
-                        BottomLayersNumber = InitialLayerCount,
-                        BottomLayersTime = (uint)(InitialExposureTime * 1000),
-                        LayerTime = (uint)(LayerExposureTime * 1000),
-                        DisableSettingsChanges = false,
-                        LayerThickness = LayerHeight,
-                        PrintTime = (uint)PrintTime,
-                        TotalLayersCount = LayerCount,
-                        TotalMaterialVolumeUsed = UsedMaterial,
-                        TotalMaterialWeightUsed = UsedMaterial,
-                    },
-                    UserSettings = new ZCodexFile.UserSettingsdata
-                    {
-                        Printer = MachineName,
-                        BottomLayersCount = InitialLayerCount,
-                        PrintTime = $"{ts.Hours}h {ts.Minutes}m",
-                        LayerExposureTime = (uint)(LayerExposureTime * 1000),
-                        BottomLayerExposureTime = (uint)(InitialExposureTime * 1000),
-                        MaterialId = 2,
-                        LayerThickness = $"{LayerHeight} mm",
-                        AntiAliasing = 0,
-                        CrossSupportEnabled = 1,
-                        ExposureOffTime = (uint) HeaderSettings.LayerOffTime,
-                        HollowEnabled = 0,
-                        HollowThickness = 0,
-                        InfillDensity = 0,
-                        IsAdvanced = 0,
-                        MaterialType = MaterialName,
-                        MaterialVolume = UsedMaterial,
-                        MaxLayer = LayerCount - 1,
-                        ModelLiftEnabled = 0,
-                        ModelLiftHeight = 0,
-                        RaftEnabled = 0,
-                        RaftHeight = 0,
-                        RaftOffset = 0,
-                        SupportAdditionalExposureEnabled = 0,
-                        SupportAdditionalExposureTime = 0,
-                        XCorrection = 0,
-                        YCorrection = 0,
-                        ZLiftDistance = PrintParametersSettings.LiftHeight,
-                        ZLiftFeedRate = PrintParametersSettings.LiftingSpeed,
-                        ZLiftRetractRate = PrintParametersSettings.RetractSpeed,
-                    },
-                    ZCodeMetadataSettings = new ZCodexFile.ZCodeMetadata
-                    {
-                        PrintTime = (uint)PrintTime,
-                        PrinterName = MachineName,
-                        Materials = new List<ZCodexFile.ZCodeMetadata.MaterialsData>
-                        {
-                            new ZCodexFile.ZCodeMetadata.MaterialsData
-                            {
-                                Name = MaterialName,
-                                ExtruderType = "MAIN",
-                                Id = 0,
-                                Usage = 0,
-                                Temperature = 0
-                            }
-                        },
-                    },
-                    LayerManager = LayerManager
-                };
-
-                float usedMaterial = UsedMaterial / LayerCount;
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    file.ResinMetadataSettings.Layers.Add(new ZCodexFile.ResinMetadata.LayerData
-                    {
-                        Layer = layerIndex,
-                        UsedMaterialVolume = usedMaterial
-                    });
-                }
-
-                file.SetThumbnails(Thumbnails);
-                file.Encode(fileFullPath, progress);
-                return true;
-            }
-            */
-
-            if (to == typeof(CWSFile))
-            {
-                CWSFile defaultFormat = (CWSFile)FindByType(typeof(CWSFile));
-                CWSFile file = new CWSFile { LayerManager = LayerManager };
-
-                //file.SliceSettings.Xppm = file.OutputSettings.PixPermmX = defaultFormat.OutputSettings.
-                //file.SliceSettings.Yppm = file.OutputSettings.PixPermmY = (float)Math.Round(ResolutionY / HeaderSettings.BedSizeY, 3);
-                file.ResolutionX = (ushort)ResolutionX;
-                file.ResolutionY = (ushort)ResolutionY;
-                file.SliceSettings.Thickness = file.OutputSettings.LayerThickness = LayerHeight;
-                file.SliceSettings.LayersNum = file.OutputSettings.LayersNum = LayerCount;
-                file.SliceSettings.HeadLayersNum = file.OutputSettings.NumberBottomLayers = BottomLayerCount;
-                file.SliceSettings.LayersExpoMs = file.OutputSettings.LayerTime = (uint)ExposureTime * 1000;
-                file.SliceSettings.HeadLayersExpoMs = file.OutputSettings.BottomLayersTime = (uint)BottomExposureTime * 1000;
-                file.SliceSettings.WaitBeforeExpoMs = (uint)(HeaderSettings.LayerOffTime * 1000);
-                file.SliceSettings.LiftDistance = file.OutputSettings.LiftDistance = LiftHeight;
-                file.SliceSettings.LiftUpSpeed = file.OutputSettings.ZLiftFeedRate = LiftSpeed;
-                file.SliceSettings.LiftDownSpeed = file.OutputSettings.ZLiftRetractRate = RetractSpeed;
-                file.SliceSettings.LiftWhenFinished = defaultFormat.SliceSettings.LiftWhenFinished;
-
-                file.OutputSettings.BlankingLayerTime = (uint)(HeaderSettings.LayerOffTime * 1000);
-                //file.OutputSettings.RenderOutlines = false;
-                //file.OutputSettings.OutlineWidthInset = 0;
-                //file.OutputSettings.OutlineWidthOutset = 0;
-                file.OutputSettings.RenderOutlines = false;
-                //file.OutputSettings.TiltValue = 0;
-                //file.OutputSettings.UseMainliftGCodeTab = false;
-                //file.OutputSettings.AntiAliasing = 0;
-                //file.OutputSettings.AntiAliasingValue = 0;
-                //file.OutputSettings.FlipX = HeaderSettings. != 0;
-                //file.OutputSettings.FlipY = file.OutputSettings.FlipX;
-                file.OutputSettings.AntiAliasingValue = ValidateAntiAliasingLevel();
-                file.OutputSettings.AntiAliasing = file.OutputSettings.AntiAliasingValue > 1;
-
-                /*file.Printer = MachineName.Contains("Bene4 Mono") ||
-                               FileFullPath.Contains("bene4_mono")
-                    ? CWSFile.PrinterType.BeneMono : CWSFile.PrinterType.Elfin;*/
-
-                file.Encode(fileFullPath, progress);
-
-                return true;
-            }
-
-            if (to == typeof(UVJFile))
-            {
-                UVJFile file = new UVJFile
-                {
-                    LayerManager = LayerManager,
-                    JsonSettings = new UVJFile.Settings
-                    {
-                        Properties = new UVJFile.Properties
-                        {
-                            Size = new UVJFile.Size
-                            {
-                                X = (ushort)ResolutionX,
-                                Y = (ushort)ResolutionY,
-                                Millimeter = new UVJFile.Millimeter
-                                {
-                                    //X = HeaderSettings.BedSizeX,
-                                    //Y = HeaderSettings.BedSizeY,
-                                },
-                                LayerHeight = LayerHeight,
-                                Layers = LayerCount
-                            },
-                            Bottom = new UVJFile.Bottom
-                            {
-                                LiftHeight = HeaderSettings.LiftHeight,
-                                LiftSpeed = HeaderSettings.LiftSpeed,
-                                LightOnTime = BottomExposureTime,
-                                LightOffTime = HeaderSettings.LayerOffTime,
-                                //LightPWM = (byte)HeaderSettings.LightPWM,
-                                RetractSpeed = HeaderSettings.RetractSpeed,
-                                Count = BottomLayerCount
-                                //RetractHeight = LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.JsonSettings.Properties.Bottom.RetractHeight),
-                            },
-                            Exposure = new UVJFile.Exposure
-                            {
-                                LiftHeight = HeaderSettings.LiftHeight,
-                                LiftSpeed = HeaderSettings.LiftSpeed,
-                                LightOnTime = ExposureTime,
-                                LightOffTime = HeaderSettings.LayerOffTime,
-                                //LightPWM = (byte)HeaderSettings.LightPWM,
-                                RetractSpeed = HeaderSettings.RetractSpeed,
-                            },
-                            AntiAliasLevel = ValidateAntiAliasingLevel()
-                        }
-                    }
-                };
-
-                file.SetThumbnails(Thumbnails);
-                file.Encode(fileFullPath, progress);
-
-                return true;
-            }
-
-            return false;
         }
 
         #endregion

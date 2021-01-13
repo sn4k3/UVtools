@@ -192,7 +192,7 @@ namespace UVtools.Core
                 layer.LiftSpeed     = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
                 layer.RetractSpeed  = SlicerFile.RetractSpeed;
                 layer.LightPWM      = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
-                layer.LayerOffTime  = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLayerOffTime, SlicerFile.LayerOffTime);
+                layer.LightOffDelay  = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
 
                 if (recalculateZPos)
                 {

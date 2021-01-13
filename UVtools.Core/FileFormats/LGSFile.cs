@@ -42,8 +42,8 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(3)] public uint Uint_10 { get; set; } = 30; // 0x10: 30 ?
             [FieldOrder(4)] public uint Uint_14 { get; set; } = 0; // 0x14: 0 ?
             [FieldOrder(5)] public uint Uint_18 { get; set; } = 34; // 0x18: 34 ?
-            [FieldOrder(6)] public float PixelPerMmX { get; set; }
-            [FieldOrder(7)] public float PixelPerMmY { get; set; }
+            [FieldOrder(6)] public float PixelPerMmX { get; set; } = 15.404f;
+            [FieldOrder(7)] public float PixelPerMmY { get; set; } = 4.866f;
             [FieldOrder(8)] public float ResolutionX { get; set; }
             [FieldOrder(9)] public float ResolutionY { get; set; }
             [FieldOrder(10)] public float LayerHeight { get; set; }
@@ -211,19 +211,14 @@ namespace UVtools.Core.FileFormats
             new FileExtension("lgs30", "Longer Orange 30"),
         };
 
-        public override Type[] ConvertToFormats { get; } =
-        {
-            //typeof(UVJFile),
-        };
-
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
         {
             PrintParameterModifier.BottomLayerCount,
             PrintParameterModifier.BottomExposureSeconds,
             PrintParameterModifier.ExposureSeconds,
 
-            PrintParameterModifier.BottomLayerOffTime,
-            PrintParameterModifier.LayerOffTime,
+            PrintParameterModifier.BottomLightOffDelay,
+            PrintParameterModifier.LightOffDelay,
             PrintParameterModifier.BottomLiftHeight,
             PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
@@ -254,6 +249,26 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        public override float Xppmm
+        {
+            get => HeaderSettings.PixelPerMmX > 0 ? HeaderSettings.PixelPerMmX : base.Xppmm;
+            set
+            {
+                HeaderSettings.PixelPerMmX = value;
+                base.Xppmm = value;
+            }
+        }
+
+        public override float Yppmm
+        {
+            get => HeaderSettings.PixelPerMmY > 0 ? HeaderSettings.PixelPerMmY : base.Yppmm;
+            set
+            {
+                HeaderSettings.PixelPerMmY = value;
+                base.Yppmm = value;
+            }
+        }
+
         public override float DisplayWidth
         {
             get => ResolutionX / HeaderSettings.PixelPerMmX;
@@ -266,7 +281,17 @@ namespace UVtools.Core.FileFormats
             set { }
         }
 
-        public override byte AntiAliasing => 4;
+        public override bool MirrorDisplay
+        {
+            get => true;
+            set { }
+        }      
+
+        public override byte AntiAliasing
+        {
+            get => 4;
+            set { }
+        }
 
         public override float LayerHeight
         {
@@ -318,7 +343,7 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float BottomLayerOffTime
+        public override float BottomLightOffDelay
         {
             get => HeaderSettings.BottomLightOffDelayMs;
             set
@@ -328,7 +353,7 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float LayerOffTime
+        public override float LightOffDelay
         {
             get => HeaderSettings.LightOffDelayMs;
             set
@@ -427,6 +452,8 @@ namespace UVtools.Core.FileFormats
         }
         public override void Encode(string fileFullPath, OperationProgress progress = null)
         {
+            progress ??= new OperationProgress();
+            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
             base.Encode(fileFullPath, progress);
 
             if (ResolutionY >= 2560) // Longer Orange 30
@@ -590,11 +617,7 @@ namespace UVtools.Core.FileFormats
                 Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
             }
         }
-
-        public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
-        {
-            return false;
-        }
+        
         #endregion
     }
 }

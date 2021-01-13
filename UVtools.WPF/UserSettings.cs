@@ -12,7 +12,6 @@ using System.IO;
 using System.Xml.Serialization;
 using Avalonia.Media;
 using JetBrains.Annotations;
-using ReactiveUI;
 using UVtools.Core;
 using UVtools.Core.Objects;
 using Color=UVtools.WPF.Structures.Color;
@@ -23,7 +22,7 @@ namespace UVtools.WPF
     public sealed class UserSettings : BindableBase
     {
         #region Constants
-        public const ushort SETTINGS_VERSION = 1;
+        public const ushort SETTINGS_VERSION = 2;
         #endregion
 
         #region Sub classes
@@ -987,7 +986,7 @@ namespace UVtools.WPF
             private bool _repairIslands = true;
             private bool _repairResinTraps = true;
             private bool _removeEmptyLayers = true;
-            private byte _removeIslandsBelowEqualPixels = 5;
+            private ushort _removeIslandsBelowEqualPixels = 5;
             private ushort _removeIslandsRecursiveIterations = 4;
             private byte _closingIterations = 2;
             private byte _openingIterations = 0;
@@ -1010,7 +1009,7 @@ namespace UVtools.WPF
                 set => RaiseAndSetIfChanged(ref _removeEmptyLayers, value);
             }
 
-            public byte RemoveIslandsBelowEqualPixels
+            public ushort RemoveIslandsBelowEqualPixels
             {
                 get => _removeIslandsBelowEqualPixels;
                 set => RaiseAndSetIfChanged(ref _removeIslandsBelowEqualPixels, value);
@@ -1039,6 +1038,44 @@ namespace UVtools.WPF
                 return MemberwiseClone() as LayerRepairUserSettings;
             }
         }
+        #endregion
+
+        #region Automations
+
+        [Serializable]
+        public sealed class AutomationsUserSettings : BindableBase
+        {
+            private bool _saveFileAfterModifications = true;
+            private bool _autoConvertSl1Files = true;
+            private decimal _lightOffDelay = 2.5m;
+            private decimal _bottomLightOffDelay = 3m;
+
+            public bool SaveFileAfterModifications
+            {
+                get => _saveFileAfterModifications;
+                set => RaiseAndSetIfChanged(ref _saveFileAfterModifications, value);
+            }
+
+            public bool AutoConvertSL1Files
+            {
+                get => _autoConvertSl1Files;
+                set => RaiseAndSetIfChanged(ref _autoConvertSl1Files, value);
+            }
+
+
+            public decimal LightOffDelay
+            {
+                get => _lightOffDelay;
+                set => RaiseAndSetIfChanged(ref _lightOffDelay, value);
+            }
+
+            public decimal BottomLightOffDelay
+            {
+                get => _bottomLightOffDelay;
+                set => RaiseAndSetIfChanged(ref _bottomLightOffDelay, value);
+            }
+        }
+
         #endregion
 
         #endregion
@@ -1088,6 +1125,7 @@ namespace UVtools.WPF
         private IssuesUserSettings _issues;
         private PixelEditorUserSettings _pixelEditor;
         private LayerRepairUserSettings _layerRepair;
+        private AutomationsUserSettings _automations;
         private ushort _settingsVersion = SETTINGS_VERSION;
         private string _appVersion;
         private uint _savesCount;
@@ -1126,6 +1164,12 @@ namespace UVtools.WPF
         {
             get => _layerRepair ??= new LayerRepairUserSettings();
             set => _layerRepair = value;
+        }
+
+        public AutomationsUserSettings Automations
+        {
+            get => _automations ??= new AutomationsUserSettings();
+            set => _automations = value;
         }
 
         /*

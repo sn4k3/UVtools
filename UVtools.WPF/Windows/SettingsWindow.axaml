@@ -1287,6 +1287,101 @@
         </ScrollViewer>
       </TabItem>
 
+      <TabItem Header="Automations" VerticalContentAlignment="Center">
+        <ScrollViewer MaxHeight="{Binding ScrollViewerMaxHeight}">
+          <StackPanel Orientation="Vertical" Spacing="5">
+            <Border
+              Margin="5"
+            BorderBrush="LightBlue"
+            BorderThickness="4"
+          >
+
+              <StackPanel Orientation="Vertical">
+                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Common"/>
+                <StackPanel Margin="15" Orientation="Vertical" Spacing="15">
+                  <CheckBox IsChecked="{Binding Settings.Automations.SaveFileAfterModifications}" Content="Auto save the file after apply any automation(s)"/>
+                </StackPanel>
+
+              </StackPanel>
+            </Border>
+
+            <Border
+                Margin="5"
+                BorderBrush="LightBlue"
+                BorderThickness="4"
+              >
+
+              <StackPanel Orientation="Vertical">
+                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="PrusaSlicer SL1 files"/>
+                <StackPanel Margin="15" Orientation="Vertical" Spacing="15">
+                  <CheckBox IsChecked="{Binding Settings.Automations.AutoConvertSL1Files}"
+                            ToolTip.Tip="Converts SL1 files to the format specified on 'PrusaSlicer - Printer - Notes' on 'FILEFORMAT_XXX' variable.
+&#x0a;A new file with same name but a new extension will be created and overwrite any previous file.
+&#x0a;After a successful conversion the new file will automatically load in instead of the loaded SL1 file."
+                            Content="Auto convert SL1 files to the target format when possible and load it back"/>
+                </StackPanel>
+
+              </StackPanel>
+            </Border>
+
+
+              <Border
+                  Margin="5"
+                  BorderBrush="LightBlue"
+                  BorderThickness="4">
+
+                  <StackPanel Orientation="Vertical">
+                      <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Light-off delay"/>
+                      <Grid Margin="15"
+                            RowDefinitions="Auto"
+                            ColumnDefinitions="Auto,10,100,5,Auto,30,Auto,10,100,5,Auto">
+                            
+                            <TextBlock Grid.Row="0" Grid.Column="0" 
+                                       VerticalAlignment="Center"
+                                       ToolTip.Tip="Auto set the extra 'light-off delay' based on lift height and speed.
+&#x0a;Use '0' to ignore this automation."
+                                       Text="Light-off delay:" />
+
+                            <NumericUpDown Grid.Row="0" Grid.Column="2"
+                                           ClipValueToMinMax="True"
+                                           Minimum="0"
+                                           Maximum="255"
+                                           Increment="0.5"
+                                           FormatString="{}{0:0.00}"
+                                           Value="{Binding Settings.Automations.LightOffDelay}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="4"
+                                       VerticalAlignment="Center"
+                                       Text="s" />
+
+
+                            <TextBlock Grid.Row="0" Grid.Column="6"
+                                       VerticalAlignment="Center"
+                                       ToolTip.Tip="Auto set the extra 'bottom light-off delay' based on bottom lift height and speed.
+&#x0a;Use '0' to ignore this automation."
+                                       Text="Bottom light-off delay:" />
+                            <NumericUpDown Grid.Row="0" Grid.Column="8"
+                                           ClipValueToMinMax="True"
+                                           Minimum="0"
+                                           Maximum="255"
+                                           Increment="0.5"
+                                           FormatString="{}{0:0.00}"
+                                           Value="{Binding Settings.Automations.BottomLightOffDelay}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="10"
+                                       VerticalAlignment="Center"
+                                       Text="s" />
+
+                      </Grid>
+
+                  </StackPanel>
+              </Border>
+
+
+
+
+            </StackPanel>
+            </ScrollViewer>
+          </TabItem>
+
     </TabControl>
 
     <Grid ColumnDefinitions="*,*" Background="LightGray">

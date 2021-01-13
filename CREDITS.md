@@ -42,3 +42,4 @@
 * Timothy Gray
 * David Gordon
 * Claus Pfeilschifter
+* Chris Taatgen

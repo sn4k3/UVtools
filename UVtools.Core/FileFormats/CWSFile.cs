@@ -304,14 +304,9 @@ namespace UVtools.Core.FileFormats
         public PrinterType Printer { get; set; } = PrinterType.Unknown;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("cws", "NovaMaker CWS"),
-            new FileExtension("rgb.cws", "NovaMaker Bene4 Mono / Elfin2 Mono SE (CWS)"),
-            new FileExtension("xml.cws", "Creation Workshop X (CWS)"),
-        };
-
-        public override Type[] ConvertToFormats { get; } =
-        {
-            typeof(UVJFile)
+            new ("cws", "NovaMaker CWS"),
+            new ("rgb.cws", "NovaMaker Bene4 Mono / Elfin2 Mono SE (CWS)"),
+            new ("xml.cws", "Creation Workshop X (CWS)"),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
@@ -331,7 +326,6 @@ namespace UVtools.Core.FileFormats
 
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
             PrintParameterModifier.ExposureSeconds,
-            //PrintParameterModifier.LayerOffTime,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
             PrintParameterModifier.RetractSpeed,
@@ -371,7 +365,7 @@ namespace UVtools.Core.FileFormats
             get => OutputSettings.PlatformXSize;
             set
             {
-                OutputSettings.PlatformXSize = value;
+                OutputSettings.PlatformXSize = (float)Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
@@ -381,19 +375,49 @@ namespace UVtools.Core.FileFormats
             get => OutputSettings.PlatformYSize;
             set
             {
-                OutputSettings.PlatformYSize = value;
+                OutputSettings.PlatformYSize = (float)Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
 
-        public override byte AntiAliasing => (byte) OutputSettings.AntiAliasingValue;
+        public override float MaxPrintHeight
+        {
+            get => OutputSettings.PlatformZSize;
+            set
+            {
+                OutputSettings.PlatformZSize = (float) Math.Round(value, 2);
+                RaisePropertyChanged();
+            }
+        }
+
+        public override bool MirrorDisplay
+        {
+            get => OutputSettings.FlipX;
+            set
+            {
+                OutputSettings.FlipX = value;
+                OutputSettings.FlipY = false;
+                RaisePropertyChanged();
+            }
+        }
+
+        public override byte AntiAliasing
+        {
+            get => (byte) OutputSettings.AntiAliasingValue;
+            set
+            {
+                OutputSettings.AntiAliasingValue = value.Clamp(1, 16);
+                OutputSettings.AntiAliasing = OutputSettings.AntiAliasingValue > 1;
+                RaisePropertyChanged();
+            }
+        }
 
         public override float LayerHeight
         {
             get => SliceSettings.Thickness > 0 ? SliceSettings.Thickness : OutputSettings.LayerThickness;
             set
             {
-                OutputSettings.LayerThickness = SliceSettings.Thickness = value;
+                OutputSettings.LayerThickness = SliceSettings.Thickness = (float)Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
@@ -446,7 +470,7 @@ namespace UVtools.Core.FileFormats
             get => OutputSettings.ZBottomLiftFeedRate;
             set
             {
-                OutputSettings.ZBottomLiftFeedRate = value;
+                OutputSettings.ZBottomLiftFeedRate = (float)Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
@@ -457,7 +481,7 @@ namespace UVtools.Core.FileFormats
             set
             {
                 OutputSettings.LiftDistance = 
-                SliceSettings.LiftDistance = value;
+                SliceSettings.LiftDistance = (float)Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
@@ -469,7 +493,7 @@ namespace UVtools.Core.FileFormats
             {
                 OutputSettings.ZLiftFeedRate =
                 SliceSettings.LiftUpSpeed =
-                SliceSettings.LiftDownSpeed = value;
+                SliceSettings.LiftDownSpeed = (float)Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
@@ -479,7 +503,7 @@ namespace UVtools.Core.FileFormats
             get => OutputSettings.ZLiftRetractRate;
             set
             {
-                OutputSettings.ZLiftRetractRate = value;
+                OutputSettings.ZLiftRetractRate = (float)Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
@@ -505,16 +529,6 @@ namespace UVtools.Core.FileFormats
         }
 
 
-        /*public override float PrintTime => 0;
-
-        public override float UsedMaterial => 0;
-
-        public override float MaterialCost => 0;
-
-        public override string MaterialName => string.Empty;
-
-        public override string MachineName => "Unknown";*/
-
         public override object[] Configs => Printer == PrinterType.Wanhao ? new object[] { SliceBuildConfig, OutputSettings } : new object[] { SliceSettings, OutputSettings};
         #endregion
 
@@ -528,6 +542,8 @@ namespace UVtools.Core.FileFormats
 
         public override void Encode(string fileFullPath, OperationProgress progress = null)
         {
+            progress ??= new OperationProgress();
+            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
             base.Encode(fileFullPath, progress);
 
             //var filename = fileFullPath.EndsWith(TemporaryFileAppend) ? Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(fileFullPath)) : Path.GetFileNameWithoutExtension(fileFullPath);
@@ -822,7 +838,7 @@ namespace UVtools.Core.FileFormats
                     float liftHeight = 0;
                     float liftSpeed = GetInitialLayerValueOrNormal(layerIndex, BottomLiftSpeed, LiftSpeed);
                     float retractSpeed = RetractSpeed;
-                    float lightOffDelay = GetInitialLayerValueOrNormal(layerIndex, BottomLayerOffTime, LayerOffTime);
+                    float lightOffDelay = GetInitialLayerValueOrNormal(layerIndex, BottomLightOffDelay, LightOffDelay);
                     byte pwm = GetInitialLayerValueOrNormal(layerIndex, BottomLightPWM, LightPWM); ;
                     float exposureTime = GetInitialLayerValueOrNormal(layerIndex, BottomExposureTime, ExposureTime);
 
@@ -926,7 +942,7 @@ namespace UVtools.Core.FileFormats
                                         LiftHeight = liftHeight,
                                         LiftSpeed = liftSpeed,
                                         RetractSpeed = retractSpeed,
-                                        LayerOffTime = lightOffDelay,
+                                        LightOffDelay = lightOffDelay,
                                         LightPWM = pwm,
                                     };
                             }
@@ -941,7 +957,7 @@ namespace UVtools.Core.FileFormats
                                 LiftHeight = liftHeight,
                                 LiftSpeed = liftSpeed,
                                 RetractSpeed = retractSpeed,
-                                LayerOffTime = lightOffDelay,
+                                LightOffDelay = lightOffDelay,
                                 LightPWM = pwm,
                             };
                     }
@@ -1116,64 +1132,6 @@ namespace UVtools.Core.FileFormats
             }
 
             //Decode(FileFullPath, progress);
-        }
-
-        public override bool Convert(Type to, string fileFullPath, OperationProgress progress = null)
-        {
-            if (to == typeof(UVJFile))
-            {
-                UVJFile defaultFormat = (UVJFile)FindByType(typeof(UVJFile));
-                UVJFile file = new UVJFile
-                {
-                    LayerManager = LayerManager,
-                    JsonSettings = new UVJFile.Settings
-                    {
-                        Properties = new UVJFile.Properties
-                        {
-                            Size = new UVJFile.Size
-                            {
-                                X = (ushort)ResolutionX,
-                                Y = (ushort)ResolutionY,
-                                Millimeter = new UVJFile.Millimeter
-                                {
-                                    X = OutputSettings.PlatformXSize,
-                                    Y = OutputSettings.PlatformYSize,
-                                },
-                                LayerHeight = LayerHeight,
-                                Layers = LayerCount
-                            },
-                            Bottom = new UVJFile.Bottom
-                            {
-                                LiftHeight = SliceSettings.LiftDistance,
-                                LiftSpeed = SliceSettings.LiftUpSpeed,
-                                LightOnTime = BottomExposureTime,
-                                //LightOffTime = SliceSettings.BottomLightOffDelay,
-                                LightPWM = OutputSettings.BottomLightPWM,
-                                RetractSpeed = OutputSettings.ZBottomLiftFeedRate,
-                                Count = BottomLayerCount
-                                //RetractHeight = LookupCustomValue<float>(Keyword_LiftHeight, defaultFormat.JsonSettings.Properties.Bottom.RetractHeight),
-                            },
-                            Exposure = new UVJFile.Exposure
-                            {
-                                LiftHeight = SliceSettings.LiftDistance,
-                                LiftSpeed = SliceSettings.LiftUpSpeed,
-                                LightOnTime = BottomExposureTime,
-                                //LightOffTime = SliceSettings.BottomLightOffDelay,
-                                LightPWM = OutputSettings.BottomLightPWM,
-                                RetractSpeed = SliceSettings.LiftDownSpeed,
-                            },
-                            AntiAliasLevel = ValidateAntiAliasingLevel()
-                        }
-                    }
-                };
-
-                file.SetThumbnails(Thumbnails);
-                file.Encode(fileFullPath, progress);
-
-                return true;
-            }
-
-            return false;
         }
 
         #endregion

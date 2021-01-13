@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -950,15 +951,91 @@ namespace UVtools.WPF
                 return;
             }
 
+            if (SlicerFile is SL1File sl1File && Settings.Automations.AutoConvertSL1Files)
+            {
+                string fileExtension = sl1File.LookupCustomValue<string>(SL1File.Keyword_FileFormat, null);
+                if (!string.IsNullOrWhiteSpace(fileExtension))
+                {
+                    fileExtension = fileExtension.ToLower(CultureInfo.InvariantCulture);
+                    var convertToFormat = FileFormat.FindByExtension(fileExtension);
+                    if (convertToFormat is not null)
+                    {
+                        var directory = Path.GetDirectoryName(sl1File.FileFullPath);
+                        var filename = PathExtensions.GetFileNameStripAllExtensions(sl1File.FileFullPath);
+                        FileFormat convertedFile = null;
+
+                        IsGUIEnabled = false;
+
+                        task = await Task.Factory.StartNew(() =>
+                        {
+                            ShowProgressWindow($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {fileExtension}");
+                            try
+                            {
+                                convertedFile = sl1File.Convert(convertToFormat, Path.Combine(directory, $"{filename}.{fileExtension}"), ProgressWindow.RestartProgress());
+                                return true;
+                            }
+                            catch (OperationCanceledException)
+                            {
+                            }
+                            catch (Exception exception)
+                            {
+                                Dispatcher.UIThread.InvokeAsync(async () =>
+                                    await this.MessageBoxError(exception.ToString(), "Error while converting the file"));
+                            }
+
+                            return false;
+                        });
+
+                        IsGUIEnabled = true;
+
+                        if (task && convertedFile is not null)
+                        {
+                            App.SlicerFile = convertedFile;
+                        }
+                    }
+                }
+            }
+
+            bool modified = false;
+            if (Settings.Automations.BottomLightOffDelay > 0 &&
+                SlicerFile.PrintParameterModifiers is not null &&
+                SlicerFile.PrintParameterModifiers.Contains(FileFormat.PrintParameterModifier.BottomLightOffDelay))
+            {
+                var lightOff = OperationCalculator.LightOffDelayC.CalculateSeconds(SlicerFile.BottomLiftHeight,
+                    SlicerFile.BottomLiftSpeed, SlicerFile.RetractSpeed, (float)Settings.Automations.BottomLightOffDelay);
+                if (lightOff != SlicerFile.BottomLightOffDelay)
+                {
+                    modified = true;
+                    SlicerFile.BottomLightOffDelay = lightOff;
+                }
+            }
+
+            if (Settings.Automations.LightOffDelay > 0 &&
+                SlicerFile.PrintParameterModifiers is not null &&
+                SlicerFile.PrintParameterModifiers.Contains(FileFormat.PrintParameterModifier.LightOffDelay))
+            {
+                var lightOff = OperationCalculator.LightOffDelayC.CalculateSeconds(SlicerFile.LiftHeight,
+                    SlicerFile.LiftSpeed, SlicerFile.RetractSpeed, (float)Settings.Automations.LightOffDelay);
+                if (lightOff != SlicerFile.LightOffDelay)
+                {
+                    modified = true;
+                    SlicerFile.LightOffDelay = lightOff;
+                }
+            }
+
+            if (modified)
+            {
+                await SaveFile(null, true);
+            }
+
             ClipboardManager.Instance.Init(SlicerFile);
 
-            if (SlicerFile.ConvertToFormats is not null)
+            if (SlicerFile is not ImageFile)
             {
-                List<MenuItem> menuItems = new List<MenuItem>();
-                foreach (var fileFormatType in SlicerFile.ConvertToFormats)
+                List<MenuItem> menuItems = new();
+                foreach (var fileFormat in FileFormat.AvailableFormats)
                 {
-                    FileFormat fileFormat = FileFormat.FindByType(fileFormatType);
-                    if(fileFormat.FileExtensions is null) continue;
+                    if(fileFormat is ImageFile) continue;
                     foreach (var fileExtension in fileFormat.FileExtensions)
                     {
                         var menuItem = new MenuItem
@@ -1074,7 +1151,7 @@ namespace UVtools.WPF
                 ShowProgressWindow($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {Path.GetExtension(result)}");
                 try
                 {
-                    return SlicerFile.Convert(fileExtension.GetFileFormat(), result, ProgressWindow.RestartProgress());
+                    return SlicerFile.Convert(fileExtension.GetFileFormat(), result, ProgressWindow.RestartProgress()) is not null;
                 }
                 catch (OperationCanceledException)
                 {
@@ -1124,13 +1201,13 @@ namespace UVtools.WPF
         }
 
 
-        
 
-        public async Task<bool> SaveFile(string filepath = null)
+
+        public async Task<bool> SaveFile(string filepath = null, bool ignoreOverwriteWarning = false)
         {
             if (filepath is null)
             {
-                if (SavesCount == 0 && Settings.General.PromptOverwriteFileSave)
+                if (!ignoreOverwriteWarning && SavesCount == 0 && Settings.General.PromptOverwriteFileSave)
                 {
                     var result = await this.MessageBoxQuestion(
                         "Original input file will be overwritten.  Do you wish to proceed?", "Overwrite file?");

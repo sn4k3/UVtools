@@ -27,7 +27,8 @@ namespace UVtools.WPF.Controls.Tools
                 CalcLightOffDelay = new OperationCalculator.LightOffDelayC(
                     (decimal)SlicerFile.LiftHeight, (decimal)SlicerFile.BottomLiftHeight,
                     (decimal)SlicerFile.LiftSpeed, (decimal)SlicerFile.BottomLiftSpeed,
-                    (decimal)SlicerFile.RetractSpeed, (decimal)SlicerFile.RetractSpeed)
+                    (decimal)SlicerFile.RetractSpeed, (decimal)SlicerFile.RetractSpeed),
+                CalcOptimalModelTilt = new OperationCalculator.OptimalModelTilt(SlicerFile.Resolution, SlicerFile.Display)
             };
 
             Operation.CalcLightOffDelay.PropertyChanged += (sender, e) =>
@@ -56,14 +57,14 @@ namespace UVtools.WPF.Controls.Tools
                 SlicerFile.BottomLiftHeight = (float)Operation.CalcLightOffDelay.BottomLiftHeight;
                 SlicerFile.BottomLiftSpeed = (float)Operation.CalcLightOffDelay.BottomLiftSpeed;
                 SlicerFile.RetractSpeed = (float)Operation.CalcLightOffDelay.RetractSpeed;
-                SlicerFile.BottomLayerOffTime = (float)Operation.CalcLightOffDelay.BottomLightOffDelay;
+                SlicerFile.BottomLightOffDelay = (float)Operation.CalcLightOffDelay.BottomLightOffDelay;
             }
             else // Normal layers
             {
                 SlicerFile.LiftHeight = (float)Operation.CalcLightOffDelay.LiftHeight;
                 SlicerFile.LiftSpeed = (float)Operation.CalcLightOffDelay.LiftSpeed;
                 SlicerFile.RetractSpeed = (float)Operation.CalcLightOffDelay.RetractSpeed;
-                SlicerFile.LayerOffTime = (float)Operation.CalcLightOffDelay.LightOffDelay;
+                SlicerFile.LightOffDelay = (float)Operation.CalcLightOffDelay.LightOffDelay;
             }
 
             LightOffDelayPrintTimeHours = (decimal)SlicerFile.PrintTimeHours;
