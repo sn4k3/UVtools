@@ -29,7 +29,7 @@
 * **(Fix) SL1:**
     * Prevent error when bottle volume is 0
     * bool values were incorrectly parsed
-* (Fix) **ZIP:**
+* **(Fix) ZIP:**
     * Material volume was set to grams
     * Bed Y was not being set
 

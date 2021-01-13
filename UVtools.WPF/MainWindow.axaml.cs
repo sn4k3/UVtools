@@ -12,18 +12,14 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Emgu.CV;
-using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
 using MessageBox.Avalonia.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using UVtools.Core;
 using UVtools.Core.Extensions;
@@ -1025,7 +1021,11 @@ namespace UVtools.WPF
 
             if (modified)
             {
-                await SaveFile(null, true);
+                CanSave = true;
+                if (Settings.Automations.SaveFileAfterModifications)
+                {
+                    await SaveFile(null, true);
+                }
             }
 
             ClipboardManager.Instance.Init(SlicerFile);
