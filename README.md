@@ -198,7 +198,7 @@ that may due system version and included libraries version, they must match the 
 To know what is missing you can open a terminal on UVtools folder and run the following command: `ldd libcvextern.so |grep not` 
 That will return the missing dependencies from libcvextern, you can try install them by other means if you can, 
 but most of the time you will need compile the EmguCV to compile the dependencies and correct link them, 
-this process is very slow but only need once, open a terminal on a folder of your preference and run the following commands:
+this process is very slow but only need to run once. Open a terminal on any folder of your preference and run the following commands:
 
 ```bash
 sudo apt-get install -y git build-essential cmake
