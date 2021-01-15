@@ -13,22 +13,22 @@
    * Auto save the file after apply any automation(s)
    * Auto convert SL1 files to the target format when possible and load it back
    * Auto set the extra 'light-off delay' based on lift height and speed.
-* (Add) Allow all and future formats to convert between them without knowing each other (Abstraction)
-* (Add) XYResolution and XYResolutionUm property to file formats
+* **FileFormats:**
+    * (Add) Allow all and future formats to convert between them without knowing each other (Abstraction)
+    * (Add) MirrorDisplay property: If images need to be mirrored on lcd to print on the correct orientation (If available)
+    * (Add) MaxPrintHeight property: The maximum Z build volume of the printer (If available)
+    * (Add) XYResolution and XYResolutionUm property
+    * (Change) Round all setters floats to 2 decimals
+    * (Change) LightOffTime variables to LayerOffDelay
+    * (Fix) Files with upper case extensions doesn't load in
 * (Add) Calculator - Optimal model tilt: Calculates the optimal model tilt angle for printing and to minimize the visual layer effect
 * (Add) Bottom layer count to the status bar
-* **(Add) FileFormat propertiers:**
-    * MirrorDisplay: If images need to be mirrored on lcd to print on the correct orientation (If available)
-    * MaxPrintHeight: The maximum Z build volume of the printer (If available)
 * (Add) ZCodex: Print paramenter light-off delay"
-* (Add) SL1: Implement missing keys: host_type, physical_printer_settings_id and support_small_pillar_diameter_percent
-* (Change) File formats: Round all setters floats to 2 decimals
 * (Change) Island Repair: "Remove Islands Below Equal Pixels" limit from 255 to 65535 (#124)
-* (Change) LightOffTime variables to LayerOffDelay
-* (Fix) Files with upper case extensions doesn't load in
 * **(Fix) SL1:**
     * Prevent error when bottle volume is 0
     * bool values were incorrectly parsed
+    * Implement missing keys: host_type, physical_printer_settings_id and support_small_pillar_diameter_percent
 * **(Fix) ZIP:**
     * Material volume was set to grams
     * Bed Y was not being set

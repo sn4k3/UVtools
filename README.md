@@ -15,7 +15,7 @@ This simple tool can give you insight of supports and find some failures. Did yo
 ![GUI Screenshot Islands](https://raw.githubusercontent.com/sn4k3/UVtools/master/UVtools.GUI/Images/Screenshots/UVtools_GUI_Islands.png)
 ![Convertion Screenshot](https://raw.githubusercontent.com/sn4k3/UVtools/master/UVtools.GUI/Images/Screenshots/SL1ToCbddlp.png)
 
-## Why this project?
+# Why this project?
 I don't own a Prusa SL1 or any other resin printer, for now I’m only a FDM user with 
 Prusa MK3 and a Ender3.
 PrusaSlicer is my only choose, why? Because I think it's the best and feature more, 
@@ -37,7 +37,7 @@ Please note i don't have any resin printer! All my work is virtual and calculate
 so, use experimental functions with care! Once things got confirmed a list will show. 
 But also, i need victims for test subject. Proceed at your own risk!
 
-## Features
+# Features
 
 * View image layer by layer
 * View and extract thumbnails
@@ -50,7 +50,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 * Calibration tests
 * Portable (No installation needed)
 
-## Known File Formats
+# Known File Formats
 
 * SL1 (PrusaSlicer)
 * Zip (Chitubox)
@@ -73,7 +73,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 * UVJ (Zip file for manual manipulation format)
 * Image files (png, jpg, jpeg, gif, bmp)
 
-## Available printers for PrusaSlicer
+# Available printers for PrusaSlicer
 
 * EPAX E6 Mono
 * EPAX E10 Mono
@@ -128,12 +128,12 @@ But also, i need victims for test subject. Proceed at your own risk!
 * Longer Orange 30
 * Longer Orange4K
 
-## Available profiles for PrusaSlicer
+# Available profiles for PrusaSlicer
 
 * From 0.01mm to 0.20mm
 * Light, Medium and Heavy Supports
 
-## Install and configure profiles under PrusaSlicer
+# Install and configure profiles under PrusaSlicer
 
 1. Download and install PrusaSlicer from: https://www.prusa3d.com/prusaslicer/
 1. Start and configure PrusaSlicer (Wizard)
@@ -151,14 +151,14 @@ But also, i need victims for test subject. Proceed at your own risk!
 
 * **FLIP_XY** Flip X with Y resolution, this is required in some cases, it will not affect Prusa output, only used for convertions to another format, use this if you have to use inverted XY under printer settings (Epax for example).
 
-## File Convertion
+# File Convertion
 
 I highly recommend open the converted file into original slicer and check if it's okay to print, on this beta stage never blind trust the program.
 After some tests without failure you can increase your confidence and ignore this stage, or maybe not ;) 
 
-## Requirements
+# Requirements
 
-### Windows
+## Windows
 
 1. Windows 7 or greater
    1. If on Windows 10 N or NK: [Media Feature Pack](https://www.microsoft.com/download/details.aspx?id=48231) must be installed
@@ -167,13 +167,13 @@ After some tests without failure you can increase your confidence and ignore thi
 1. 1980 x 1080 @ 100% scale as minimum resolution
 
 
-### Linux
+## Linux
 
 1. 4GB RAM or higher
 2. 64 bit System
 1. 1980 x 1080 @ 100% scale as minimum resolution
 
-**Ubuntu/Mint/Debian/Similars**
+### Ubuntu/Mint/Debian/Similars
 
 <!--- 
 wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
@@ -189,8 +189,43 @@ sudo apt-get update
 sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libdc1394-22 libavcodec-dev libavformat-dev libswscale-dev libopenexr24 libtbb-dev
 ```
 
+**After this if you run UVtools and got a error like:**
+> System.DllNotFoundException: unable to load shared library 'cvextern' or one of its dependencies
 
-**Arch/Manjaro/Similars**
+This means you haven't the required dependencies to run the cvextern library, 
+that may due system version and included libraries version, they must match the compiled version of libcvextern.
+
+To know what is missing you can open a terminal on UVtools folder and run the following command: `ldd libcvextern.so |grep not` 
+That will return the missing dependencies from libcvextern, you can try install them by other means if you can, 
+but most of the time you will need compile the EmguCV to compile the dependencies and correct link them, 
+this process is very slow but only need once, open a terminal on a folder of your preference and run the following commands:
+
+```bash
+sudo apt-get install -y git build-essential cmake
+git clone https://github.com/emgucv/emgucv emgucv 
+cd emgucv
+git submodule update --init --recursive
+cd platforms/ubuntu/20.04
+./apt_install_dependency
+./cmake_configure
+cmake build
+cd build; make; cd ..
+```
+
+Make sure all commands run with success.
+After run these commands you can try run UVtools again,
+if it runs then nothing more is needed and you can remove the emgucv folder, 
+this means you only need the dependencies on your system.
+ 
+Otherwise you need to copy the output libcvextern.so created by this compilation to the UVtools folder and replace the original. 
+Keep a copy of file somewhere safe, you will need to replace it everytime you update UVtools.
+Additionally you can share your libcvextern.so on UVtools GitHub with your system information (Name Version) to help others with same problem, 
+anyone with same system version can make use of it without the need of the compilation process.
+
+**Note:** You need to repeat this process everytime UVtools upgrades OpenCV version, keep a eye on changelog.
+
+
+### Arch/Manjaro/Similars
 
 ```bash
 sudo pacman -S openjpeg2 libjpeg-turbo libpng libgeotiff libdc1394 libdc1394 ffmpeg openexr tbb
@@ -204,7 +239,7 @@ To run UVtools open it folder on a terminal and call one of:
 * `dotnet UVtools.dll` [For universal package only, requires dotnet-runtime]
 * As a pratical alternative you can create a shortcut on Desktop
 
-### Mac
+## Mac
 
 1. macOS 10.12 Sierra
    1. If on a previous macOS version, use the universal UVtools package 
@@ -228,7 +263,7 @@ To run UVtools open it folder on a terminal and call one of:
 * `dotnet UVtools.dll` [For universal package only, requires dotnet-runtime]
 * As a pratical alternative you can create a shortcut on Desktop
 
-## How to use
+# How to use
 
 There are multiple ways to open your file:
 
@@ -237,17 +272,17 @@ There are multiple ways to open your file:
 3. Drag and drop file into UVtools.exe
 4. Set UVtools the default program to open your files
 
-## Library -> Developers
+# Library -> Developers
 
 Are you a developer? This project include a .NET 5.0 library (UVtools.Core) that can be referenced in your application to make use of my work. Easy to use calls that allow you work with the formats. For more information navigate main code.
 
 
-## TODO
+# TODO
 * More file formats
 * Clean up (always)
 * See features request under Github
 
-## Support my work / Donate
+# Support my work / Donate
 
 All my work here is given for free (OpenSource), it took some hours to build, test and polish the program.
 If you're happy to contribute for a better program and for my work i will appreciate the tip.
