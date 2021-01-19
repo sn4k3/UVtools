@@ -253,6 +253,14 @@ namespace UVtools.WPF
             },
             new()
             {
+                Tag = new OperationCalibrateStressTower(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/chess-rook-16x16.png"))
+                }
+            },
+            new()
+            {
                 Tag = new OperationCalibrateExternalTests(),
                 Icon = new Avalonia.Controls.Image
                 {

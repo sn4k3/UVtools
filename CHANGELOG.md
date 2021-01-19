@@ -1,5 +1,15 @@
 # Changelog
 
+## 19/01/2021 - v2.3.1
+
+* (Add) Calibrator - Stress Tower: Generates a stress tower to test the printer capabilities
+* (Add) PrusaSlicer printer: UVtools Prusa SL1, for SL1 owners must use this profile to be UVtools compatible when using advanced tools
+* (Fix) Tool - Calculator - Optimal model tilt: Layer height wasn't get pulled from loaded file and fixed to 0.05mm
+* **(Fix) FileFormats:**
+  * When change a global print paramenter, it will only set this same parameter on every layer, keeping other parameters intact, it was reseting every parameter per layer to globals
+  * SL1: Verify if files are malformed and if there's missing configuration files (#126)
+  * CTBv3: Set EncryptionMode to 0x2000000F, this allow the use of per layer settings
+
 ## 13/01/2021 - v2.3.0
 
 * **PrusaSlicer:**

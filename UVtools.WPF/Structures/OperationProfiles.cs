@@ -45,6 +45,7 @@ namespace UVtools.WPF.Structures
         [XmlElement(typeof(OperationCalibrateXYZAccuracy))]
         [XmlElement(typeof(OperationCalibrateTolerance))]
         [XmlElement(typeof(OperationCalibrateGrayscale))]
+        [XmlElement(typeof(OperationCalibrateStressTower))]
         public List<Operation> Operations { get; internal set; } = new List<Operation>();
 
         [XmlIgnore]

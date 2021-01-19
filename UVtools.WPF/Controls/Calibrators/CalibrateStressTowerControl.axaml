@@ -1,0 +1,286 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
+             x:Class="UVtools.WPF.Controls.Calibrators.CalibrateStressTowerControl">
+
+    <StackPanel Spacing="10">
+
+      <Border BorderBrush="Black" BorderThickness="1" Padding="5">
+        <Expander IsExpanded="True">
+          <Expander.Header>
+            <TextBlock Text="Step 1 - Commun properties"
+                       FontWeight="Bold"
+                       Cursor="Hand"/>
+          </Expander.Header>
+
+          <Grid
+              RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+              ColumnDefinitions="Auto,10,100,5,Auto,20,Auto,10,100,5,Auto">
+
+            <TextBlock
+                      Grid.Row="0" Grid.Column="0"
+                       VerticalAlignment="Center"
+                      ToolTip.Tip="The printer display width. Required to calculate the pixels per mm."
+                       Text="Display width:"/>
+            <NumericUpDown Grid.Row="0" Grid.Column="2"
+                           ClipValueToMinMax="True"
+                           Increment="0.1"
+                           Minimum="0"
+                           Maximum="10000"
+                           FormatString="\{0:0.00\}"
+                           Value="{Binding Operation.DisplayWidth}"/>
+            <TextBlock Grid.Row="0" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+
+            <TextBlock Grid.Row="0" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       ToolTip.Tip="The printer display height. Required to calculate the pixels per mm."
+                       Text="Display height:"/>
+            <NumericUpDown Grid.Row="0" Grid.Column="8"
+                           ClipValueToMinMax="True"
+                           Increment="0.1"
+                           Minimum="0"
+                           Maximum="10000"
+                           FormatString="\{0:0.00\}"
+                           Value="{Binding Operation.DisplayHeight}"/>
+            <TextBlock Grid.Row="0" Grid.Column="10"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Layer height:"/>
+            <NumericUpDown Grid.Row="2" Grid.Column="2"
+                           ClipValueToMinMax="True"
+                           Increment="0.01"
+                           Minimum="0.01"
+                           Maximum="0.30"
+                           FormatString="\{0:0.00\}"
+                           Value="{Binding Operation.LayerHeight}"
+                     />
+            <TextBlock Grid.Row="2" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       Text="Bottom layers:"/>
+            <NumericUpDown Grid.Row="2" Grid.Column="8"
+                           ClipValueToMinMax="True"
+                           Increment="1"
+                           Minimum="1"
+                           Maximum="1000"
+                           Value="{Binding Operation.BottomLayers}"/>
+            <TextBlock Grid.Row="2" Grid.Column="8"
+                       VerticalAlignment="Center"
+                       Text="{Binding Operation.BottomHeight, StringFormat=\{0:0.00\}mm}"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Bottom exposure:"/>
+            <NumericUpDown Grid.Row="4" Grid.Column="2"
+                           ClipValueToMinMax="True"
+                           Increment="0.5"
+                           Minimum="0.1"
+                           Maximum="200"
+                           FormatString="\{0:0.00\}"
+                           Value="{Binding Operation.BottomExposure}"/>
+            <TextBlock Grid.Row="4" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="s"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       Text="Normal exposure:"/>
+            <NumericUpDown Grid.Row="4" Grid.Column="8"
+                           ClipValueToMinMax="True"
+                           Increment="0.5"
+                           Minimum="0.1"
+                           Maximum="200"
+                           FormatString="\{0:0.00\}"
+                           Value="{Binding Operation.NormalExposure}"/>
+            <TextBlock Grid.Row="4" Grid.Column="10"
+                       VerticalAlignment="Center"
+                       Text="s"/>
+
+            <TextBlock Grid.Row="6" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Base height:"/>
+            <NumericUpDown Grid.Row="6" Grid.Column="2"
+                           ClipValueToMinMax="True"
+                           Increment="1"
+                           Minimum="0"
+                           Maximum="100"
+                           FormatString="\{0:0.00\}"
+                           Value="{Binding Operation.BaseHeight}"/>
+            <TextBlock Grid.Row="6" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+
+            <TextBlock Grid.Row="6" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       Text="Base diameter:"/>
+            <NumericUpDown Grid.Row="6" Grid.Column="8"
+                           ClipValueToMinMax="True"
+                           Increment="1"
+                           Minimum="1"
+                           Maximum="10000"
+                           FormatString="\{0:0.00\}"
+                           Value="{Binding Operation.BaseDiameter}"/>
+            <TextBlock Grid.Row="6" Grid.Column="10"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+
+            <TextBlock Grid.Row="8" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Ceil height:"/>
+            <NumericUpDown Grid.Row="8" Grid.Column="2"
+                           ClipValueToMinMax="True"
+                           Increment="1"
+                           Minimum="0"
+                           Maximum="100"
+                           FormatString="\{0:0.00\}"
+                           Value="{Binding Operation.CeilHeight}"/>
+            <TextBlock Grid.Row="8" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+            
+            
+            <TextBlock Grid.Row="8" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       Text="Body height:"/>
+            <NumericUpDown Grid.Row="8" Grid.Column="8"
+                           ClipValueToMinMax="True"
+                           Increment="1"
+                           Minimum="0"
+                           Maximum="10000"
+                           FormatString="\{0:0.00\}"
+                           Value="{Binding Operation.BodyHeight}"/>
+            <TextBlock Grid.Row="8" Grid.Column="10"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+
+            <StackPanel Grid.Row="10" Grid.Column="6"
+                        VerticalAlignment="Center"
+                        Spacing="0">
+                <TextBlock
+                    FontWeight="Bold"
+                    Text="Total layers:"/>
+                <TextBlock
+                    FontWeight="Bold"
+                    Text="Total height:"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="10" Grid.Column="8"
+                        VerticalAlignment="Center"
+                        Spacing="0">
+                <TextBlock
+                    FontWeight="Bold"
+                    Text="{Binding Operation.LayerCount}"/>
+
+                <TextBlock
+                    FontWeight="Bold"
+                    Text="{Binding Operation.TotalHeight, StringFormat=\{0:0.00\}mm}"/>
+
+
+            </StackPanel>
+
+            
+
+            <TextBlock Grid.Row="10" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       ToolTip.Tip="Chamfer the bottom layers"
+                       Text="Chamfer layers:"/>
+            <NumericUpDown Grid.Row="10" Grid.Column="2"
+                           ClipValueToMinMax="True"
+                           Increment="1"
+                           Minimum="0"
+                           Maximum="255"
+                           IsEnabled="{Binding Operation.ChamferModel}"
+                           Value="{Binding Operation.ChamferLayers}"/>
+
+            <CheckBox Grid.Row="12" Grid.Column="2" Grid.ColumnSpan="5"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding Operation.EnableAntiAliasing}"
+                      Content="Enable Anti-Aliasing"/>
+
+            <CheckBox Grid.Row="12" Grid.Column="8"
+                      Grid.ColumnSpan="3"
+                      ToolTip.Tip="Most of the printers requires a mirror output to print with the correct orientation"
+                      IsChecked="{Binding Operation.MirrorOutput}"
+                      Content="Mirror output" />
+
+          </Grid>
+        </Expander>
+      </Border>
+
+        <Border BorderBrush="Black" BorderThickness="1" Padding="5">
+            <Expander IsExpanded="True">
+                <Expander.Header>
+                    <TextBlock Text="Outer Spirals"
+                               FontWeight="Bold"
+                               Cursor="Hand"/>
+
+                </Expander.Header>
+
+              <Grid RowDefinitions="Auto,5,Auto"
+                    ColumnDefinitions="Auto,10,100,5,Auto,20,Auto,10,100,5,Auto">
+
+
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           Text="Number of spirals:"
+                           VerticalAlignment="Center"/>
+                <NumericUpDown Grid.Row="0" Grid.Column="2"
+                                 ClipValueToMinMax="True"
+                                 Increment="1"
+                                 Minimum="1"
+                                 Maximum="10"
+                                 Value="{Binding Operation.Spirals}"/>
+
+                <TextBlock Grid.Row="0" Grid.Column="6"
+                           VerticalAlignment="Center"
+                           ToolTip.Tip="Clockwise: All spirals turn clockwise.
+&#x0a;Alternate: Each spiral turn into opposite direction.
+&#x0a;Both: Each spiral will turn in both directions, clockwise and counter-clockwise."
+                           Text="Spiral direction:"/>
+                <ComboBox Grid.Row="0" Grid.Column="8"
+                          Items="{Binding Operation.SpiralDirectionsItems}"
+                          SelectedItem="{Binding Operation.SpiralDirection}"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                           Text="Spiral diameter:"
+                           VerticalAlignment="Center"/>
+                <NumericUpDown Grid.Row="2" Grid.Column="2"
+                               ClipValueToMinMax="True"
+                               Increment="1"
+                               Minimum="0.1"
+                               Maximum="10000"
+                               FormatString="\{0:0.00\}"
+                               Value="{Binding Operation.SpiralDiameter}"/>
+                <TextBlock Grid.Row="2" Grid.Column="4"
+                           Text="mm"
+                           VerticalAlignment="Center"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="6"
+                           Text="Step angle:"
+                           ToolTip.Tip="Spirals will turn this angle per layer."
+                           VerticalAlignment="Center"/>
+                <NumericUpDown Grid.Row="2" Grid.Column="8"
+                               ClipValueToMinMax="True"
+                               Increment="1"
+                               Minimum="0.01"
+                               Maximum="359.99"
+                               FormatString="\{0:0.00\}"
+                               Value="{Binding Operation.SpiralAngleStepPerLayer}"/>
+                <TextBlock Grid.Row="2" Grid.Column="10"
+                           Text="º/layer"
+                           VerticalAlignment="Center"/>
+
+              </Grid>
+            </Expander>
+        </Border>
+    </StackPanel>
+</UserControl>

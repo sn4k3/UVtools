@@ -254,7 +254,7 @@ namespace UVtools.Core.FileFormats
 
             /// <summary>
             /// Gets the parameter used to control encryption.
-            /// Not totally understood. 0 for cbddlp files, 0xF for ctb files, 0x1c for phz
+            /// Not totally understood. 0 for cbddlp files, 0xF for ctb files, 0x1c (28) for phz
             /// </summary>
             [FieldOrder(45)] public uint EncryptionMode { get; set; } = 28;
 

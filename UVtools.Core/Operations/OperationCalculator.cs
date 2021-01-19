@@ -391,9 +391,6 @@ namespace UVtools.Core.Operations
             public decimal TiltAngleDegrees =>
                 XYResolution > 0 ? (decimal) Math.Round(Math.Tanh((double) (_layerHeight / XYResolution)) * (180 / Math.PI), 3) : 0;
 
-
-
-
         }
     }
 }

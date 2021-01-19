@@ -975,6 +975,9 @@
               <Component Id="owc696F0AF8084A6AA7624CA0947E245A47" Guid="6aa7d092-d68b-a44d-f2c7-0a590404b19f">
                 <File Id="owf696F0AF8084A6AA7624CA0947E245A47" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\QIDI Shadow6.0 Pro.ini" KeyPath="yes" />
               </Component>
+              <Component Id="owcD0FD9259BE924EB58AE9F7A85AE0A9E8" Guid="360b089c-8765-92db-0c8f-367d80202d8f">
+                <File Id="owfD0FD9259BE924EB58AE9F7A85AE0A9E8" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\UVtools Prusa SL1.ini" KeyPath="yes" />
+              </Component>
               <Component Id="owc2D767EDC65A9490BE5587F5807220F67" Guid="1b34ea21-cadd-c887-3f4e-8655903ef11a">
                 <File Id="owf2D767EDC65A9490BE5587F5807220F67" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Voxelab Ceres 8.9.ini" KeyPath="yes" />
               </Component>

@@ -623,7 +623,7 @@ namespace UVtools.Core.FileFormats
                 e.PropertyName == nameof(LightPWM)
             )
             {
-                LayerManager.RebuildLayersProperties(false);
+                LayerManager.RebuildLayersProperties(false, e.PropertyName);
                 RebuildGCode();
                 if(e.PropertyName != nameof(BottomLightPWM) && e.PropertyName != nameof(LightPWM))
                     PrintTime = PrintTimeComputed;

@@ -25,6 +25,9 @@ namespace UVtools.Core.FileFormats
     {
         #region Constants
 
+        public const string IniConfig = "config.ini";
+        public const string IniPrusaslicer = "prusaslicer.ini";
+
         public const string Keyword_FileFormat = "FILEFORMAT";
 
         public const string Keyword_BottomLightOffDelay = "BottomLightOffDelay";
@@ -537,7 +540,7 @@ namespace UVtools.Core.FileFormats
                     tw.Close();
                 }
 
-                entry = outputFile.CreateEntry("prusaslicer.ini");
+                entry = outputFile.CreateEntry(IniPrusaslicer);
                 using (TextWriter tw = new StreamWriter(entry.Open()))
                 {
                     foreach (var config in Configs)
@@ -587,8 +590,8 @@ namespace UVtools.Core.FileFormats
         {
             base.Decode(fileFullPath, progress);
 
-            if (progress is null) progress = new OperationProgress();
-            progress.ItemName = OperationProgress.StatusGatherLayers;
+            progress ??= new OperationProgress();
+            progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
 
             FileFullPath = fileFullPath;
 
@@ -601,43 +604,49 @@ namespace UVtools.Core.FileFormats
 
             using (var inputFile = ZipFile.OpenRead(FileFullPath))
             {
-
+                List<string> iniFiles = new();
                 foreach (ZipArchiveEntry entity in inputFile.Entries)
                 {
                     if (!entity.Name.EndsWith(".ini")) continue;
-                    using (StreamReader streamReader = new StreamReader(entity.Open()))
+                    iniFiles.Add(entity.Name);
+                    using StreamReader streamReader = new StreamReader(entity.Open());
+                    string line;
+                    while ((line = streamReader.ReadLine()) != null)
                     {
-                        string line = null;
-                        while ((line = streamReader.ReadLine()) != null)
+                        string[] keyValue = line.Split(new[] {'='}, 2);
+                        if (keyValue.Length < 2) continue;
+                        keyValue[0] = keyValue[0].Trim();
+                        keyValue[1] = keyValue[1].Trim();
+
+                        var fieldName = IniKeyToMemberName(keyValue[0]);
+                        bool foundMember = false;
+
+                            
+                        foreach (var obj in Configs)
                         {
-                            string[] keyValue = line.Split(new[] {'='}, 2);
-                            if (keyValue.Length < 2) continue;
-                            keyValue[0] = keyValue[0].Trim();
-                            keyValue[1] = keyValue[1].Trim();
+                            var attribute = obj.GetType().GetProperty(fieldName);
+                            if (ReferenceEquals(attribute, null)) continue;
+                            //Debug.WriteLine(attribute.Name);
+                            Helpers.SetPropertyValue(attribute, obj, keyValue[1]);
 
-                            var fieldName = IniKeyToMemberName(keyValue[0]);
-                            bool foundMember = false;
-
-                            
-                            foreach (var obj in Configs)
-                            {
-                                var attribute = obj.GetType().GetProperty(fieldName);
-                                if (ReferenceEquals(attribute, null)) continue;
-                                //Debug.WriteLine(attribute.Name);
-                                Helpers.SetPropertyValue(attribute, obj, keyValue[1]);
-
-                                Statistics.ImplementedKeys.Add(keyValue[0]);
-                                foundMember = true;
-                            }
+                            Statistics.ImplementedKeys.Add(keyValue[0]);
+                            foundMember = true;
+                        }
                            
-                            
-
-                            if (!foundMember)
-                            {
-                                Statistics.MissingKeys.Add(keyValue[0]);
-                            }
+                        if (!foundMember)
+                        {
+                            Statistics.MissingKeys.Add(keyValue[0]);
                         }
                     }
+                }
+
+                if (!iniFiles.Contains(IniConfig))
+                {
+                    throw new FileLoadException($"Malformed file: {IniConfig} is missing.");
+                }
+                if (!iniFiles.Contains(IniPrusaslicer))
+                {
+                    throw new FileLoadException($"Malformed file: {IniPrusaslicer} is missing.");
                 }
 
                 BottomLiftHeight = LookupCustomValue(Keyword_BottomLiftHeight, DefaultBottomLiftHeight);
@@ -659,18 +668,16 @@ namespace UVtools.Core.FileFormats
                     if (!entity.Name.EndsWith(".png")) continue;
                     if (entity.Name.StartsWith("thumbnail"))
                     {
-                        using (Stream stream = entity.Open())
-                        {
-                            Mat image = new Mat();
-                            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
-                            byte thumbnailIndex =
-                                (byte) (image.Width == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Width &&
-                                        image.Height == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Height
-                                    ? FileThumbnailSize.Small
-                                    : FileThumbnailSize.Large);
-                            Thumbnails[thumbnailIndex] = image;
-                            stream.Close();
-                        }
+                        using Stream stream = entity.Open();
+                        Mat image = new Mat();
+                        CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
+                        byte thumbnailIndex =
+                            (byte) (image.Width == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Width &&
+                                    image.Height == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Height
+                                ? FileThumbnailSize.Small
+                                : FileThumbnailSize.Large);
+                        Thumbnails[thumbnailIndex] = image;
+                        stream.Close();
 
                         //thumbnailIndex++;
 

@@ -33,6 +33,10 @@ namespace UVtools.Core.FileFormats
 
         private const byte RLE8EncodingLimit = 0x7d; // 125;
         private const ushort RLE16EncodingLimit = 0xFFF;
+
+        private const uint ENCRYPTYION_MODE_CBDDLP = 0x8;  // 0 or 8
+        private const uint ENCRYPTYION_MODE_CTBv2 = 0xF; // 15 for ctb v2 files
+        private const uint ENCRYPTYION_MODE_CTBv3 = 0x2000000F; // 536870927 for ctb v3 files (This allow per layer settings, while 0xF don't)
         #endregion
 
         #region Sub Classes
@@ -286,9 +290,9 @@ namespace UVtools.Core.FileFormats
 
             /// <summary>
             /// Gets the parameter used to control encryption.
-            /// Not totally understood. 0/8 for cbddlp files, 0xF (15) for ctb files.
+            /// Not totally understood. 0/8 for cbddlp files, 0xF (15) for ctb files, 0x2000000F (536870927) for v3 ctb files allow per layer parameters
             /// </summary>
-            [FieldOrder(9)] public uint EncryptionMode     { get; set; } = 8;
+            [FieldOrder(9)] public uint EncryptionMode     { get; set; } = ENCRYPTYION_MODE_CTBv3;
 
             /// <summary>
             /// Gets a number that increments with time or number of models sliced, or both. Zeroing it in output seems to have no effect. Possibly a user tracking bug.
@@ -1352,15 +1356,21 @@ namespace UVtools.Core.FileFormats
 
                 HeaderSettings.AntiAliasLevel = 1;
 
-                PrintParametersSettings.Padding4 = 0x1234;
+                if (HeaderSettings.Version <= 2)
+                {
+                    if (SlicerInfoSettings.Unknown1 == 0)
+                        SlicerInfoSettings.Unknown1 = 0x200; // 512 for v2 | 0 for v3
+                    SlicerInfoSettings.EncryptionMode = ENCRYPTYION_MODE_CTBv2;
+                    PrintParametersSettings.Padding4 = 0x1234; // 4660
+                }
+                else
+                {
+                    SlicerInfoSettings.EncryptionMode = ENCRYPTYION_MODE_CTBv3;
+                }
 
-                SlicerInfoSettings.EncryptionMode = 15;
-
+                
                 if(SlicerInfoSettings.MysteriousId == 0)
                     SlicerInfoSettings.MysteriousId = 0x12345678;
-
-                if(SlicerInfoSettings.Unknown1 == 0)
-                    SlicerInfoSettings.Unknown1 = HeaderSettings.Version == 3 ? 0u : 0x200;
 
                 if (HeaderSettings.EncryptionKey == 0)
                 {
@@ -1372,6 +1382,7 @@ namespace UVtools.Core.FileFormats
             {
                 HeaderSettings.Version = 2;
                 HeaderSettings.EncryptionKey = 0;
+                SlicerInfoSettings.EncryptionMode = ENCRYPTYION_MODE_CBDDLP;
             }
 
             uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);

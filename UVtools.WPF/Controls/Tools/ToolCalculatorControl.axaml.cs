@@ -28,7 +28,7 @@ namespace UVtools.WPF.Controls.Tools
                     (decimal)SlicerFile.LiftHeight, (decimal)SlicerFile.BottomLiftHeight,
                     (decimal)SlicerFile.LiftSpeed, (decimal)SlicerFile.BottomLiftSpeed,
                     (decimal)SlicerFile.RetractSpeed, (decimal)SlicerFile.RetractSpeed),
-                CalcOptimalModelTilt = new OperationCalculator.OptimalModelTilt(SlicerFile.Resolution, SlicerFile.Display)
+                CalcOptimalModelTilt = new OperationCalculator.OptimalModelTilt(SlicerFile.Resolution, SlicerFile.Display, (decimal) SlicerFile.LayerHeight)
             };
 
             Operation.CalcLightOffDelay.PropertyChanged += (sender, e) =>
