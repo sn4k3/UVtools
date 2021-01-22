@@ -1,5 +1,11 @@
 # Changelog
 
+## 22/01/2021 - v2.3.2
+
+* (Add) Settings - Automations: Change only light-off delay if value is zero (Enabled by default)
+* (Fix) Calibrators: Some file formats will crash when calibration test output more layers than the dummy file
+* (Fix) Undo/redo don't unlock the save function
+
 ## 19/01/2021 - v2.3.1
 
 * (Add) Calibrator - Stress Tower: Generates a stress tower to test the printer capabilities

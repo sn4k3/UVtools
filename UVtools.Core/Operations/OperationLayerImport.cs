@@ -495,7 +495,6 @@ namespace UVtools.Core.Operations
 
             slicerFile.LayerManager.RebuildLayersProperties();
             slicerFile.SuppressRebuildProperties = false;
-            slicerFile.RequireFullEncode = true;
 
             return true;
         }

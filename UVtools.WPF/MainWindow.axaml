@@ -1451,7 +1451,7 @@
 
             <Button
               IsEnabled="{Binding Clipboard.CanRedo}"
-              Command="{Binding Clipboard.Redo}"
+              Command="{Binding ClipboardRedo}"
               HotKey="Ctrl + Y"
               ToolTip.Tip="Redo [Ctrl + Y]"
                     >

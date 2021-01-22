@@ -1047,6 +1047,7 @@ namespace UVtools.WPF
         {
             private bool _saveFileAfterModifications = true;
             private bool _autoConvertSl1Files = true;
+            private bool _changeOnlyLightOffDelayIfZero = true;
             private decimal _lightOffDelay = 2.5m;
             private decimal _bottomLightOffDelay = 3m;
 
@@ -1060,6 +1061,12 @@ namespace UVtools.WPF
             {
                 get => _autoConvertSl1Files;
                 set => RaiseAndSetIfChanged(ref _autoConvertSl1Files, value);
+            }
+
+            public bool ChangeOnlyLightOffDelayIfZero
+            {
+                get => _changeOnlyLightOffDelayIfZero;
+                set => RaiseAndSetIfChanged(ref _changeOnlyLightOffDelayIfZero, value);
             }
 
 

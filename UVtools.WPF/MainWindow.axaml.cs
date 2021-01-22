@@ -1001,9 +1001,12 @@ namespace UVtools.WPF
             }
 
             bool modified = false;
-            if (Settings.Automations.BottomLightOffDelay > 0 &&
+            if (
+                Settings.Automations.BottomLightOffDelay > 0 &&
                 SlicerFile.PrintParameterModifiers is not null &&
-                SlicerFile.PrintParameterModifiers.Contains(FileFormat.PrintParameterModifier.BottomLightOffDelay))
+                SlicerFile.PrintParameterModifiers.Contains(FileFormat.PrintParameterModifier.BottomLightOffDelay) &&
+                (!Settings.Automations.ChangeOnlyLightOffDelayIfZero || Settings.Automations.ChangeOnlyLightOffDelayIfZero && SlicerFile.BottomLightOffDelay <= 0)
+                )
             {
                 var lightOff = OperationCalculator.LightOffDelayC.CalculateSeconds(SlicerFile.BottomLiftHeight,
                     SlicerFile.BottomLiftSpeed, SlicerFile.RetractSpeed, (float)Settings.Automations.BottomLightOffDelay);
@@ -1016,7 +1019,8 @@ namespace UVtools.WPF
 
             if (Settings.Automations.LightOffDelay > 0 &&
                 SlicerFile.PrintParameterModifiers is not null &&
-                SlicerFile.PrintParameterModifiers.Contains(FileFormat.PrintParameterModifier.LightOffDelay))
+                SlicerFile.PrintParameterModifiers.Contains(FileFormat.PrintParameterModifier.LightOffDelay) &&
+                (!Settings.Automations.ChangeOnlyLightOffDelayIfZero || Settings.Automations.ChangeOnlyLightOffDelayIfZero && SlicerFile.LightOffDelay <= 0))
             {
                 var lightOff = OperationCalculator.LightOffDelayC.CalculateSeconds(SlicerFile.LiftHeight,
                     SlicerFile.LiftSpeed, SlicerFile.RetractSpeed, (float)Settings.Automations.LightOffDelay);

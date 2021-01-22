@@ -11,8 +11,7 @@
         SizeToContent="Height"
         CanResize="False"
         Title="UVtools - Settings"
-        Icon="/Assets/Icons/UVtools.ico"
-        >
+        Icon="/Assets/Icons/UVtools.ico">
   <StackPanel Orientation="Vertical" Spacing="10">
     <TabControl SelectedIndex="{Binding SelectedTabIndex}">
       <TabItem Header="General" VerticalContentAlignment="Center">
@@ -21,8 +20,7 @@
             <Border
               Margin="5"
             BorderBrush="LightBlue"
-            BorderThickness="4"
-          >
+            BorderThickness="4">
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Startup"/>
@@ -1332,6 +1330,13 @@
 
                   <StackPanel Orientation="Vertical">
                       <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Light-off delay"/>
+
+                      <CheckBox Margin="15,15,15,0"
+                                Content="Change only light-off delay if value is zero"
+                                ToolTip.Tip="If enabled, it will only change light-off delay to the defined values if the original value is zero.
+&#x0a;If disabled, it will always change the light-off delay to the defined values."
+                                IsChecked="{Binding Settings.Automations.ChangeOnlyLightOffDelayIfZero}"/>
+
                       <Grid Margin="15"
                             RowDefinitions="Auto"
                             ColumnDefinitions="Auto,10,100,5,Auto,30,Auto,10,100,5,Auto">

@@ -51,6 +51,7 @@ namespace UVtools.WPF
 
         public void ClipboardUndo()
         {
+            CanSave = true;
             if ((_globalModifiers & KeyModifiers.Shift) != 0)
             {
                 ClipboardUndo(true);
@@ -61,6 +62,7 @@ namespace UVtools.WPF
 
         public async void ClipboardUndo(bool rerun)
         {
+            CanSave = true;
             var clip = Clipboard.CurrentClip;
             Clipboard.Undo();
             if (!rerun)
@@ -72,7 +74,14 @@ namespace UVtools.WPF
             if (operation is null)
             {
                 Clipboard.Redo();
+                CanSave = false;
             }
+        }
+
+        public void ClipboardRedo()
+        {
+            CanSave = true;
+            Clipboard.Redo();
         }
 
         public async void ClipboardClear()

@@ -104,7 +104,6 @@ namespace UVtools.Core.Operations
             }
 
             slicerFile.LayerManager.Layers = layers;
-            slicerFile.RequireFullEncode = true;
 
             return true;
         }

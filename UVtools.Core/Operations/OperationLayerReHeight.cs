@@ -173,7 +173,6 @@ namespace UVtools.Core.Operations
 
             slicerFile.LayerManager.Layers = layers;
             slicerFile.LayerHeight = (float)Item.LayerHeight;
-            slicerFile.RequireFullEncode = true;
 
             return true;
         }

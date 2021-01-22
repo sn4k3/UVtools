@@ -43,6 +43,7 @@ namespace UVtools.Core
                 _layers = value;
                 BoundingRectangle = Rectangle.Empty;
                 SlicerFile.LayerCount = Count;
+                SlicerFile.RequireFullEncode = true;
                 if (value is null) return;
                 SlicerFile.PrintTime = SlicerFile.PrintTimeComputed;
             }
@@ -187,19 +188,64 @@ namespace UVtools.Core
             {
                 var layer = this[layerIndex];
                 layer.Index = layerIndex;
-                
-                if(property is null || property == nameof(SlicerFile.BottomExposureTime) || property == nameof(SlicerFile.ExposureTime))
-                    layer.ExposureTime  = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
-                if (property is null || property == nameof(SlicerFile.BottomLiftHeight) || property == nameof(SlicerFile.LiftHeight))
-                    layer.LiftHeight    = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
-                if (property is null || property == nameof(SlicerFile.BottomLiftSpeed) || property == nameof(SlicerFile.LiftSpeed))
-                    layer.LiftSpeed     = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
-                if (property is null || property == nameof(SlicerFile.RetractSpeed))
-                    layer.RetractSpeed  = SlicerFile.RetractSpeed;
-                if (property is null || property == nameof(SlicerFile.BottomLightPWM) || property == nameof(SlicerFile.LightPWM))
-                    layer.LightPWM      = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
-                if (property is null || property == nameof(SlicerFile.BottomLightOffDelay) || property == nameof(SlicerFile.LightOffDelay))
+
+                if (property is null)
+                {
+                    layer.ExposureTime = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
+                    layer.LiftHeight = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
+                    layer.LiftSpeed = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
+                    layer.RetractSpeed = SlicerFile.RetractSpeed;
+                    layer.LightPWM = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
                     layer.LightOffDelay = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
+                }
+                else
+                {
+                    if (layer.IsNormalLayer)
+                    {
+                        switch (property)
+                        {
+                            case nameof(SlicerFile.ExposureTime):
+                                layer.ExposureTime = SlicerFile.ExposureTime;
+                                break;
+                            case nameof(SlicerFile.LiftHeight):
+                                layer.LiftHeight = SlicerFile.LiftHeight;
+                                break;
+                            case nameof(SlicerFile.LiftSpeed):
+                                layer.LiftSpeed = SlicerFile.LiftSpeed;
+                                break;
+                            case nameof(SlicerFile.LightOffDelay):
+                                layer.LightOffDelay = SlicerFile.LightOffDelay;
+                                break;
+                            case nameof(SlicerFile.LightPWM):
+                                layer.LightPWM = SlicerFile.LightPWM;
+                                break;
+                        }
+                    }
+                    else // Bottom layers
+                    {
+                        switch (property)
+                        {
+                            case nameof(SlicerFile.BottomExposureTime):
+                                layer.ExposureTime = SlicerFile.BottomExposureTime;
+                                break;
+                            case nameof(SlicerFile.BottomLiftHeight):
+                                layer.LiftHeight = SlicerFile.BottomLiftHeight;
+                                break;
+                            case nameof(SlicerFile.BottomLiftSpeed):
+                                layer.LiftSpeed = SlicerFile.BottomLiftSpeed;
+                                break;
+                            case nameof(SlicerFile.RetractSpeed):
+                                layer.RetractSpeed = SlicerFile.RetractSpeed;
+                                break;
+                            case nameof(SlicerFile.BottomLightOffDelay):
+                                layer.LightOffDelay = SlicerFile.BottomLightOffDelay;
+                                break;
+                            case nameof(SlicerFile.BottomLightPWM):
+                                layer.LightPWM = SlicerFile.BottomLightPWM;
+                                break;
+                        }
+                    }
+                }
 
                 if (recalculateZPos)
                 {
