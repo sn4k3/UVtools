@@ -239,6 +239,40 @@ To run UVtools open it folder on a terminal and call one of:
 * `dotnet UVtools.dll` [For universal package only, requires dotnet-runtime]
 * As a pratical alternative you can create a shortcut on Desktop
 
+**After this if you run UVtools and got a error like:**
+> System.DllNotFoundException: unable to load shared library 'cvextern' or one of its dependencies
+
+This means you haven't the required dependencies to run the cvextern library, 
+that may due system version and included libraries version, they must match the compiled version of libcvextern.
+
+To know what is missing you can open a terminal on UVtools folder and run the following command: `ldd libcvextern.so |grep not` 
+That will return the missing dependencies from libcvextern, you can try install them by other means if you can, 
+but most of the time you will need compile the EmguCV to compile the dependencies and correct link them, 
+this process is very slow but only need to run once. Open a terminal on any folder of your preference and run the following commands:
+
+```bash
+sudo pacman -S base-devel git cmake
+git clone https://github.com/emgucv/emgucv emgucv 
+cd emgucv
+git submodule update --init --recursive
+cd platforms/ubuntu/20.04
+./cmake_configure
+cmake build
+cd build; make; cd ..
+```
+
+Make sure all commands run with success.
+After run these commands you can try run UVtools again,
+if it runs then nothing more is needed and you can remove the emgucv folder, 
+this means you only need the dependencies on your system.
+ 
+Otherwise you need to copy the output libcvextern.so created by this compilation to the UVtools folder and replace the original. 
+Keep a copy of file somewhere safe, you will need to replace it everytime you update UVtools.
+Additionally you can share your libcvextern.so on UVtools GitHub with your system information (Name Version) to help others with same problem, 
+anyone with same system version can make use of it without the need of the compilation process.
+
+**Note:** You need to repeat this process everytime UVtools upgrades OpenCV version, keep a eye on changelog.
+
 ## Mac
 
 1. macOS 10.12 Sierra
