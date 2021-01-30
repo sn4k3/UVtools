@@ -147,9 +147,21 @@ But also, i need victims for test subject. Proceed at your own risk!
 1. Look up under "Printer -> Notes" and configure parameters to the target slicer
 1. Change only the value after the "_" (underscore)
 
-## Custom "Printer Notes" keywords
+## Custom "Printer Notes" keywords for PrusaSlicer
 
-* **FLIP_XY** Flip X with Y resolution, this is required in some cases, it will not affect Prusa output, only used for convertions to another format, use this if you have to use inverted XY under printer settings (Epax for example).
+Note that variables will only work if the target format supports them, otherwise they will be skip and not used.
+Replace the "_xxx" by your desired value
+
+* **BottomLightOffDelay_xxx:** Sets the bottom light off delay time in seconds
+* **LightOffDelay_xxx:** Sets the light off delay time in seconds
+* **BottomLiftHeight_xxx:** Sets the bottom lift height in millimeters
+* **BottomLiftSpeed_xxx:** Sets the bottom lift speed in millimeters/second
+* **LiftHeight_xxx:** Sets the lift height in millimeters
+* **LiftSpeed_xxx:** Sets the lift speed in millimeters/second
+* **RetractSpeed_xxx:** Sets the retract speed in millimeters/second
+* **BottomLightPWM_xxx:** Sets the bottom LED light power (0-255)
+* **LightPWM_xxx:** Sets the LED light power (0-255)
+* **FILEFORMAT_xxx:** Sets the output file format extension to be auto converted once open on UVtools
 
 # File Convertion
 
@@ -189,6 +201,9 @@ sudo apt-get update
 sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libdc1394-22 libavcodec-dev libavformat-dev libswscale-dev libopenexr24 libtbb-dev
 ```
 
+
+### Compile libcvextern.so:
+
 **After this if you run UVtools and got a error like:**
 > System.DllNotFoundException: unable to load shared library 'cvextern' or one of its dependencies
 
@@ -209,7 +224,6 @@ cd platforms/ubuntu/20.04
 ./apt_install_dependency.sh
 ./cmake_configure.sh
 cmake build
-cd build; make; cd ..
 ```
 
 Make sure all commands run with success.
@@ -217,7 +231,7 @@ After run these commands you can try run UVtools again,
 if it runs then nothing more is needed and you can remove the emgucv folder, 
 this means you only need the dependencies on your system.
  
-Otherwise you need to copy the output libcvextern.so created by this compilation to the UVtools folder and replace the original. 
+Otherwise you need to copy the output 'emgucv/libs/x64/libcvextern.so' file created by this compilation to the UVtools folder and replace the original. 
 Keep a copy of file somewhere safe, you will need to replace it everytime you update UVtools.
 Additionally you can share your libcvextern.so on UVtools GitHub with your system information (Name Version) to help others with same problem, 
 anyone with same system version can make use of it without the need of the compilation process.
@@ -239,6 +253,8 @@ To run UVtools open it folder on a terminal and call one of:
 * `dotnet UVtools.dll` [For universal package only, requires dotnet-runtime]
 * As a pratical alternative you can create a shortcut on Desktop
 
+### Compile libcvextern.so:
+
 **After this if you run UVtools and got a error like:**
 > System.DllNotFoundException: unable to load shared library 'cvextern' or one of its dependencies
 
@@ -251,14 +267,14 @@ but most of the time you will need compile the EmguCV to compile the dependencie
 this process is very slow but only need to run once. Open a terminal on any folder of your preference and run the following commands:
 
 ```bash
-sudo pacman -S base-devel git cmake
+sudo pacman -Syu
+sudo pacman -S base-devel git cmake msbuild
 git clone https://github.com/emgucv/emgucv emgucv 
 cd emgucv
 git submodule update --init --recursive
 cd platforms/ubuntu/20.04
-./cmake_configure
+./cmake_configure.sh
 cmake build
-cd build; make; cd ..
 ```
 
 Make sure all commands run with success.
@@ -266,7 +282,7 @@ After run these commands you can try run UVtools again,
 if it runs then nothing more is needed and you can remove the emgucv folder, 
 this means you only need the dependencies on your system.
  
-Otherwise you need to copy the output libcvextern.so created by this compilation to the UVtools folder and replace the original. 
+Otherwise you need to copy the output 'emgucv/libs/x64/libcvextern.so' file created by this compilation to the UVtools folder and replace the original. 
 Keep a copy of file somewhere safe, you will need to replace it everytime you update UVtools.
 Additionally you can share your libcvextern.so on UVtools GitHub with your system information (Name Version) to help others with same problem, 
 anyone with same system version can make use of it without the need of the compilation process.
@@ -296,6 +312,21 @@ To run UVtools open it folder on a terminal and call one of:
 * `sh UVtools.sh`
 * `dotnet UVtools.dll` [For universal package only, requires dotnet-runtime]
 * As a pratical alternative you can create a shortcut on Desktop
+
+
+### Compile libcvextern.dylib: 
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+brew analytics off
+brew install git cmake libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb
+brew install --cask dotnet-sdk
+git clone https://github.com/emgucv/emgucv emgucv 
+cd emgucv
+git submodule update --init --recursive
+cd platforms/macos
+./configure
+```
 
 # How to use
 
