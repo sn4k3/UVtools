@@ -75,58 +75,69 @@ But also, i need victims for test subject. Proceed at your own risk!
 
 # Available printers for PrusaSlicer
 
-* EPAX E6 Mono
-* EPAX E10 Mono
-* EPAX X1
-* EPAX X10
-* EPAX X10 4K Mono
-* EPAX X133 4K Mono
-* EPAX X156 4K Color
-* EPAX X1K 2K Mono
-* Zortrax Inkspire
-* Nova3D Elfin
-* Nova3D Bene4 Mono
-* AnyCubic Photon
-* AnyCubic Photon S
-* AnyCubic Photon Zero
-* Elegoo Mars
-* Elegoo Mars 2 Pro
-* Elegoo Mars C
-* Elegoo Saturn
-* Peopoly Phenom
-* Peopoly Phenom L
-* Peopoly Phenom XXL
-* Peopoly Phenom Noir
-* QIDI Shadow5.5
-* QIDI Shadow6.0 Pro
-* QIDI S-Box
-* QIDI 3D ibox mono
-* Phrozen Shuffle
-* Phrozen Shuffle Lite
-* Phrozen Shuffle XL
-* Phrozen Shuffle XL Lite
-* Phrozen Shuffle 16
-* Phrozen Shuffle 4K
-* Phrozen Sonic
-* Phrozen Sonic 4K
-* Phrozen Sonic Mighty 4K
-* Phrozen Sonic Mini
-* Phrozen Sonic Mini 4K
-* Phrozen Transform
-* Kelant S400
-* Wanhao D7
-* Wanhao D8
-* Wanhao CGR Mini Mono
-* Wanhao CGR Mono
-* Creality LD-002R
-* Creality LD-002H
-* Creality LD-006
-* Voxelab Polaris 5.5
-* Voxelab Proxima 6
-* Voxelab Ceres 8.9
-* Longer Orange 10
-* Longer Orange 30
-* Longer Orange4K
+* **EPAX**
+  * E6 Mono
+  * E10 Mono
+  * X1
+  * X10
+  * X10 4K Mono
+  * X133 4K Mono
+  * X156 4K Color
+  * X1K 2K Mono
+* **Zortrax Inkspire**
+* **Nova3D**
+  * Elfin
+  * Bene4 Mono
+* **AnyCubic**
+  * Photon
+  * Photon S
+  * Photon Zero
+* **Elegoo**
+  * Mars
+  * Mars 2 Pro
+  * Mars C
+  * Saturn
+* **Peopoly**
+  * Phenom
+  * Phenom L
+  * Phenom XXL
+  * Phenom Noir
+* **QIDI**
+  * Shadow5.5
+  * Shadow6.0 Pro
+  * S-Box
+  * 3D ibox mono
+* **Phrozen**
+  * Shuffle
+  * Shuffle Lite
+  * Shuffle XL
+  * Shuffle XL Lite
+  * Shuffle 16
+  * Shuffle 4K
+  * Sonic
+  * Sonic 4K
+  * Sonic Mighty 4K
+  * Sonic Mini
+  * Sonic Mini 4K
+  * Transform
+* **Kelant S400**
+* **Wanhao**
+  * D7
+  * D8
+  * CGR Mini Mono
+  * CGR Mono
+* **Creality**
+  * LD-002R
+  * LD-002H
+  * LD-006
+* **Voxelab**
+  * Polaris 5.5
+  * Proxima 6
+  * Ceres 8.9
+* **Longer**
+  * Orange 10
+  * Orange 30
+  * Orange4K
 
 # Available profiles for PrusaSlicer
 
