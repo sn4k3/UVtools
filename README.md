@@ -135,6 +135,8 @@ But also, i need victims for test subject. Proceed at your own risk!
 
 # Install and configure profiles under PrusaSlicer
 
+Complete guide: https://github.com/sn4k3/UVtools/wiki/Setup-PrusaSlicer
+
 1. Download and install PrusaSlicer from: https://www.prusa3d.com/prusaslicer/
 1. Start and configure PrusaSlicer (Wizard)
     * Choose SL1 printer
@@ -165,8 +167,7 @@ Replace the "_xxx" by your desired value
 
 # File Convertion
 
-I highly recommend open the converted file into original slicer and check if it's okay to print, on this beta stage never blind trust the program.
-After some tests without failure you can increase your confidence and ignore this stage, or maybe not ;) 
+https://github.com/sn4k3/UVtools/wiki/Sliced-File-Conversion
 
 # Requirements
 
