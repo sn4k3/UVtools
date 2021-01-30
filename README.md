@@ -44,7 +44,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 * View all used settings
 * Edit print properties and save file
 * Mutate and filter layers
-* Check islands and repair/remove them as other issues
+* Check islands, overhangs, resin traps and repair/remove them as other issues
 * Export file to a folder
 * Convert format to another format
 * Calibration tests
