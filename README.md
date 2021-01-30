@@ -68,6 +68,8 @@ But also, i need victims for test subject. Proceed at your own risk!
 * PWMX (Photon Workshop)
 * ZCodex (Z-Suite)
 * CWS (NovaMaker)
+* RGB.CWS (Nova Bene4 Mono / Elfin2 Mono SE)
+* XML.CWS (Wanhao Workshop)
 * LGS (Longer Orange 10)
 * LGS30 (Longer Orange 30)
 * UVJ (Zip file for manual manipulation format)
