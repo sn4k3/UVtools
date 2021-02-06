@@ -1,0 +1,20 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Design.PreviewWith>
+        <Border Padding="20"></Border>
+    </Design.PreviewWith>
+
+    <Style Selector="Border.GroupBox">
+        <Setter Property="BorderBrush" Value="LightBlue" />
+    </Style>
+
+    <Style Selector="TextBlock.GroupBoxHeader">
+        <Setter Property="Background" Value="LightBlue" />
+    </Style>
+
+  <Style Selector="Border.FooterActions">
+      <Setter Property="Background" Value="LightGray" />
+  </Style>
+    
+</Styles>

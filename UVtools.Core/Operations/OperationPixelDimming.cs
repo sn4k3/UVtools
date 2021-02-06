@@ -138,6 +138,14 @@ namespace UVtools.Core.Operations
         }
         #endregion
 
+        #region Constructor
+
+        public OperationPixelDimming() { }
+
+        public OperationPixelDimming(FileFormat slicerFile) : base(slicerFile) { }
+
+        #endregion
+
         #region Properties
 
         public uint WallThicknessStart
@@ -534,11 +542,8 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        protected override bool ExecuteInternally(OperationProgress progress)
         {
-            progress ??= new OperationProgress();
-            progress.Reset(ProgressAction, LayerRangeCount);
-
             if (Pattern is null)
             {
                 Pattern = new Matrix<byte>(2, 2)
@@ -560,7 +565,7 @@ namespace UVtools.Core.Operations
 
             AlternatePattern ??= Pattern;
 
-            using var blankMat = EmguExtensions.InitMat(slicerFile.Resolution);
+            using var blankMat = EmguExtensions.InitMat(SlicerFile.Resolution);
             using var matPattern = blankMat.CloneBlank();
             using var matAlternatePattern = blankMat.CloneBlank();
             var target = GetRoiOrDefault(blankMat);
@@ -573,9 +578,9 @@ namespace UVtools.Core.Operations
             Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
-                using var mat = slicerFile[layerIndex].LayerMat;
+                using var mat = SlicerFile[layerIndex].LayerMat;
                 Execute(mat, layerIndex, patternMask, alternatePatternMask);
-                slicerFile[layerIndex].LayerMat = mat;
+                SlicerFile[layerIndex].LayerMat = mat;
                 
                 lock (progress.Mutex)
                 {
@@ -583,8 +588,7 @@ namespace UVtools.Core.Operations
                 }
             });
 
-            progress.Token.ThrowIfCancellationRequested();
-            return true;
+            return !progress.Token.IsCancellationRequested;
         }
 
         public override bool Execute(Mat mat, params object[] arguments)

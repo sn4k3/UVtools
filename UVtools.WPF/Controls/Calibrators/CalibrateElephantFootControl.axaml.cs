@@ -29,16 +29,10 @@ namespace UVtools.WPF.Controls.Calibrators
 
         public CalibrateElephantFootControl()
         {
-            this.InitializeComponent();
-            BaseOperation = new OperationCalibrateElephantFoot();
+            InitializeComponent();
             
-            if(App.SlicerFile is not null)
-            {
-                Operation.LayerHeight = (decimal) App.SlicerFile.LayerHeight;
-                Operation.BottomExposure = (decimal) App.SlicerFile.BottomExposureTime;
-                Operation.NormalExposure = (decimal) App.SlicerFile.ExposureTime;
-            }
-
+            BaseOperation = new OperationCalibrateElephantFoot(SlicerFile);
+            
             _kernelCtrl = this.Find<KernelControl>("KernelCtrl");
 
             _timer = new Timer(20)
@@ -60,7 +54,6 @@ namespace UVtools.WPF.Controls.Calibrators
             {
                 case ToolWindow.Callbacks.Init:
                 case ToolWindow.Callbacks.ProfileLoaded:
-                    Operation.Resolution = App.SlicerFile.Resolution;
                     Operation.PropertyChanged += (sender, e) =>
                     {
                         _timer.Stop();

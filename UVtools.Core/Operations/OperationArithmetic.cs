@@ -113,6 +113,14 @@ namespace UVtools.Core.Operations
         public bool IsValid => SetLayers.Count > 0 & Operations.Count > 0;
         #endregion
 
+        #region Constructor
+
+        public OperationArithmetic() { }
+
+        public OperationArithmetic(FileFormat slicerFile) : base(slicerFile) { }
+
+        #endregion
+
         #region Methods
 
         public bool Parse()
@@ -205,17 +213,16 @@ namespace UVtools.Core.Operations
             return true;
         }
 
-        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        protected override bool ExecuteInternally(OperationProgress progress)
         {
             if (!IsValid) return false;
-            progress ??= new OperationProgress();
-            progress.Reset(ProgressAction, (uint)Operations.Count);
 
-            using Mat result = slicerFile[Operations[0].LayerIndex].LayerMat;
+            using Mat result = SlicerFile[Operations[0].LayerIndex].LayerMat;
             Mat resultRoi = GetRoiOrDefault(result);
             for (int i = 1; i < Operations.Count; i++)
             {
-                using var image = slicerFile[Operations[i].LayerIndex].LayerMat;
+                progress.Token.ThrowIfCancellationRequested();
+                using var image = SlicerFile[Operations[i].LayerIndex].LayerMat;
                 Mat imageRoi = GetRoiOrDefault(image);
                 switch (Operations[i - 1].Operator)
                 {
@@ -245,18 +252,19 @@ namespace UVtools.Core.Operations
 
             Parallel.ForEach(SetLayers, layerIndex =>
             {
+                if (progress.Token.IsCancellationRequested) return;
                 if (Operations.Count == 1 && HaveROI)
                 {
-                    var mat = slicerFile[layerIndex].LayerMat;
+                    var mat = SlicerFile[layerIndex].LayerMat;
                     var matRoi = GetRoiOrDefault(mat);
                     resultRoi.CopyTo(matRoi);
-                    slicerFile[layerIndex].LayerMat = mat;
+                    SlicerFile[layerIndex].LayerMat = mat;
                     return;
                 }
-                slicerFile[layerIndex].LayerMat = result;
+                SlicerFile[layerIndex].LayerMat = result;
             });
 
-            return true;
+            return !progress.Token.IsCancellationRequested;
         }
 
         #endregion

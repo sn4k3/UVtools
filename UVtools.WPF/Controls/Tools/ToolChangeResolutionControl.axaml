@@ -4,8 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolChangeResolutionControl">
-  <StackPanel Orientation="Vertical" Spacing="15">
-    <TextBlock Text="{Binding Operation.OldResolution, StringFormat=Current resolution (X/Y): \{0\}}"/>
+  <StackPanel Orientation="Vertical" Spacing="10">
+    <TextBlock Text="{Binding Operation.SlicerFile.Resolution, StringFormat=Current resolution (X/Y): \{0\}}"/>
     <TextBlock Text="{Binding Operation.VolumeBondsSize, StringFormat=Object volume (X/Y): \{0\}}"/>
 
     <StackPanel Orientation="Horizontal" Spacing="10">
@@ -14,8 +14,8 @@
         MinWidth="100"
         Minimum="1"
         Maximum="50000"
-        Value="{Binding Operation.NewResolutionX}"
-        />
+        Width="150"
+        Value="{Binding Operation.NewResolutionX}"/>
 
       <TextBlock VerticalAlignment="Center" Text="x"/>
 
@@ -23,6 +23,7 @@
         MinWidth="100"
         Minimum="1"
         Maximum="50000"
+        Width="150"
         Value="{Binding Operation.NewResolutionY}"
         />
 

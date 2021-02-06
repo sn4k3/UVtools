@@ -24,13 +24,12 @@ using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
-using Size = System.Drawing.Size;
 
 namespace UVtools.WPF
 {
     public class App : Application
     {
-        public static IThemeSelector? ThemeSelector { get; set; }
+        public static ThemeSelector ThemeSelector { get; set; }
         public static MainWindow MainWindow;
         public static FileFormat SlicerFile = null;
 
@@ -53,7 +52,7 @@ namespace UVtools.WPF
 
                 OperationProfiles.Load();
 
-                ThemeSelector = Avalonia.ThemeManager.ThemeSelector.Create(Path.Combine(ApplicationPath, "Assets", "Themes"));
+                /*ThemeSelector = ThemeSelector.Create(Path.Combine(ApplicationPath, "Assets", "Themes"));
                 ThemeSelector.LoadSelectedTheme(Path.Combine(UserSettings.SettingsFolder, "selected.theme"));
                 if (ThemeSelector.SelectedTheme.Name == "UVtoolsDark" || ThemeSelector.SelectedTheme.Name == "Light")
                 {
@@ -63,13 +62,16 @@ namespace UVtools.WPF
                         theme.ApplyTheme();
                         break;
                     }
-                }
-                
-                MainWindow = new MainWindow();
+                }*/
 
+                MainWindow = new MainWindow();
                 try
                 {
-                    CvInvoke.CheckLibraryLoaded();
+                    if(!CvInvoke.Init())
+                        await MainWindow.MessageBoxError("UVtools can not init OpenCV library\n" +
+                                                     "Please build or install this dependencies in order to run UVtools\n" +
+                                                     "Check manual or page at 'Requirements' section for help", 
+                        "UVtools can not run");
                 }
                 catch (Exception e)
                 {
@@ -82,8 +84,7 @@ namespace UVtools.WPF
                 }
 
                 desktop.MainWindow = MainWindow;
-                desktop.Exit += (sender, e) 
-                    => ThemeSelector.SaveSelectedTheme(Path.Combine(UserSettings.SettingsFolder, "selected.theme"));
+                //desktop.Exit += (sender, e) => ThemeSelector.SaveSelectedTheme(Path.Combine(UserSettings.SettingsFolder, "selected.theme"));
             }
 
             base.OnFrameworkInitializationCompleted();
@@ -191,6 +192,8 @@ namespace UVtools.WPF
 
             if (OperatingSystem.IsLinux())
             {
+                var folder1 = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}{Path.DirectorySeparatorChar}.config{Path.DirectorySeparatorChar}PrusaSlicer";
+                if (Directory.Exists(folder1)) return folder1;
                 return $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}{Path.DirectorySeparatorChar}.PrusaSlicer";
             }
 

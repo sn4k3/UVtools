@@ -21,16 +21,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolCalculatorControl()
         {
             InitializeComponent();
-            BaseOperation = new OperationCalculator
-            {
-                CalcMillimetersToPixels = new OperationCalculator.MillimetersToPixels(SlicerFile.Resolution, SlicerFile.Display),
-                CalcLightOffDelay = new OperationCalculator.LightOffDelayC(
-                    (decimal)SlicerFile.LiftHeight, (decimal)SlicerFile.BottomLiftHeight,
-                    (decimal)SlicerFile.LiftSpeed, (decimal)SlicerFile.BottomLiftSpeed,
-                    (decimal)SlicerFile.RetractSpeed, (decimal)SlicerFile.RetractSpeed),
-                CalcOptimalModelTilt = new OperationCalculator.OptimalModelTilt(SlicerFile.Resolution, SlicerFile.Display, (decimal) SlicerFile.LayerHeight)
-            };
-
+            BaseOperation = new OperationCalculator(SlicerFile);
             Operation.CalcLightOffDelay.PropertyChanged += (sender, e) =>
             {
                 if (e.PropertyName != nameof(Operation.CalcLightOffDelay.LightOffDelay) &&

@@ -8,7 +8,6 @@
 
 using System;
 using System.Drawing;
-using System.Reflection.Metadata.Ecma335;
 using System.Xml.Serialization;
 using Emgu.CV;
 using UVtools.Core.FileFormats;
@@ -19,13 +18,31 @@ namespace UVtools.Core.Operations
     [Serializable]
     public abstract class Operation : BindableBase, IDisposable
     {
+        #region Members
         private Rectangle _roi = Rectangle.Empty;
         private uint _layerIndexEnd;
         private uint _layerIndexStart;
         private string _profileName;
         private bool _profileIsDefault;
         private Enumerations.LayerRangeSelection _layerRangeSelection = Enumerations.LayerRangeSelection.All;
+        private FileFormat _slicerFile;
         public const byte ClassNameLength = 9;
+        #endregion
+
+        #region Properties
+        [XmlIgnore]
+        public FileFormat SlicerFile
+        {
+            get => _slicerFile;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _slicerFile, value)) return;
+                InitWithSlicerFile();
+            }
+        }
+
+        [XmlIgnore]
+        public object Tag { get; set; }
 
         /// <summary>
         /// Gets the ID name of this operation, this comes from class name with "Operation" removed
@@ -41,6 +58,19 @@ namespace UVtools.Core.Operations
         {
             get => _layerRangeSelection;
             set => RaiseAndSetIfChanged(ref _layerRangeSelection, value);
+        }
+
+        public virtual string LayerRangeString
+        {
+            get
+            {
+                if (LayerRangeSelection == Enumerations.LayerRangeSelection.None)
+                {
+                    return $" [Layers: {LayerIndexStart}-{LayerIndexEnd}]";
+                }
+
+                return $" [Layers: {LayerRangeSelection}]";
+            }
         }
 
         /// <summary>
@@ -96,18 +126,6 @@ namespace UVtools.Core.Operations
         public bool HaveAction => !string.IsNullOrEmpty(ProgressAction);
 
         /// <summary>
-        /// Validates the operation
-        /// </summary>
-        /// <returns>null or empty if validates, or else, return a string with error message</returns>
-        public virtual StringTag Validate(params object[] parameters) => null;
-
-        public bool CanValidate(params object[] parameters)
-        {
-            var result = Validate(parameters);
-            return result is null || string.IsNullOrEmpty(result.Content);
-        }
-
-        /// <summary>
         /// Gets the start layer index where operation will starts in
         /// </summary>
         public virtual uint LayerIndexStart
@@ -153,6 +171,105 @@ namespace UVtools.Core.Operations
         }
 
         public bool HaveROI => !ROI.IsEmpty;
+        #endregion
+
+        #region Constructor
+        protected Operation() { }
+
+        protected Operation(FileFormat slicerFile)
+        {
+            _slicerFile = slicerFile;
+            SelectAllLayers();
+            InitWithSlicerFile();
+        }
+        #endregion
+
+        #region Methods
+        /// <summary>
+        /// Validates the operation
+        /// </summary>
+        /// <returns>null or empty if validates, or else, return a string with error message</returns>
+        public virtual StringTag Validate(params object[] parameters) => null;
+
+        public bool CanValidate(params object[] parameters)
+        {
+            var result = Validate(parameters);
+            return result is null || string.IsNullOrEmpty(result.Content);
+        }
+
+        public void SelectAllLayers()
+        {
+            LayerIndexStart = 0;
+            LayerIndexEnd = SlicerFile.LastLayerIndex;
+            LayerRangeSelection = Enumerations.LayerRangeSelection.All;
+        }
+
+        public void SelectCurrentLayer(uint layerIndex)
+        {
+            LayerIndexStart = LayerIndexEnd = layerIndex;
+            LayerRangeSelection = Enumerations.LayerRangeSelection.Current;
+        }
+
+        public void SelectBottomLayers()
+        {
+            LayerIndexStart = 0;
+            LayerIndexEnd = SlicerFile.BottomLayerCount - 1u;
+            LayerRangeSelection = Enumerations.LayerRangeSelection.Bottom;
+        }
+
+        public void SelectNormalLayers()
+        {
+            LayerIndexStart = SlicerFile.BottomLayerCount;
+            LayerIndexEnd = SlicerFile.LastLayerIndex;
+            LayerRangeSelection = Enumerations.LayerRangeSelection.Normal;
+        }
+
+        public void SelectFirstLayer()
+        {
+            LayerIndexStart = LayerIndexEnd = 0;
+            LayerRangeSelection = Enumerations.LayerRangeSelection.First;
+        }
+
+        public void SelectLastLayer()
+        {
+            LayerIndexStart = LayerIndexEnd = SlicerFile.LastLayerIndex; 
+            LayerRangeSelection = Enumerations.LayerRangeSelection.Last;
+        }
+
+        public void SelectLayers(Enumerations.LayerRangeSelection range)
+        {
+            switch (range)
+            {
+                case Enumerations.LayerRangeSelection.None:
+                    break;
+                case Enumerations.LayerRangeSelection.All:
+                    SelectAllLayers();
+                    break;
+                case Enumerations.LayerRangeSelection.Current:
+                    //SelectCurrentLayer();
+                    break;
+                case Enumerations.LayerRangeSelection.Bottom:
+                    SelectBottomLayers();
+                    break;
+                case Enumerations.LayerRangeSelection.Normal:
+                    SelectNormalLayers();
+                    break;
+                case Enumerations.LayerRangeSelection.First:
+                    SelectFirstLayer();
+                    break;
+                case Enumerations.LayerRangeSelection.Last:
+                    SelectLastLayer();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        
+
+        /// <summary>
+        /// Called to init the object when <see cref="SlicerFile"/> changes
+        /// </summary>
+        public virtual void InitWithSlicerFile() { }
 
         public Mat GetRoiOrDefault(Mat defaultMat)
         {
@@ -161,7 +278,9 @@ namespace UVtools.Core.Operations
 
         public virtual Operation Clone()
         {
-            return MemberwiseClone() as Operation;
+            var operation = MemberwiseClone() as Operation;
+            operation.SlicerFile = _slicerFile;
+            return operation;
         }
 
         public override string ToString()
@@ -171,23 +290,23 @@ namespace UVtools.Core.Operations
             var result = $"{Title}: {LayerRangeString}";
             return result;
         }
+        
 
-        public virtual string LayerRangeString 
-        {
-            get
-            {
-                if (LayerRangeSelection == Enumerations.LayerRangeSelection.None)
-                {
-                    return $" [Layers: {LayerIndexStart}-{LayerIndexEnd}]";
-                }
-
-                return $" [Layers: {LayerRangeSelection}]";
-            }
-        }
-
-        public virtual bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        protected virtual bool ExecuteInternally(OperationProgress progress)
         {
             throw new NotImplementedException();
+        }
+
+        public bool Execute(OperationProgress progress = null)
+        {
+            if (_slicerFile is null) throw new InvalidOperationException($"{Title} can't execute due the lacking of file parent.");
+            progress ??= new OperationProgress();
+            progress.Reset(ProgressAction, LayerRangeCount);
+
+            var result = ExecuteInternally(progress);
+
+            progress.Token.ThrowIfCancellationRequested();
+            return result;
         }
 
         public virtual bool Execute(Mat mat, params object[] arguments)
@@ -196,5 +315,6 @@ namespace UVtools.Core.Operations
         }
 
         public virtual void Dispose() { }
+        #endregion
     }
 }

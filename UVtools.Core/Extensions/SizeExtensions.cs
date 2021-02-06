@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 
 namespace UVtools.Core.Extensions
@@ -34,5 +35,8 @@ namespace UVtools.Core.Extensions
                 adjustedSize,
                 SizeSuffixes[mag]);
         }
+
+        public static Size Inflate(this Size size, int pixels) => new (size.Width + pixels, size.Height + pixels);
+        public static Size Inflate(this Size size, int width, int height) => new (size.Width + width, size.Height + height);
     }
 }

@@ -128,9 +128,6 @@ namespace UVtools.Core.Operations
 
         #region Properties
 
-        [XmlIgnore]
-        public Size Resolution { get; set; } = Size.Empty;
-
         public decimal DisplayWidth
         {
             get => _displayWidth;
@@ -151,8 +148,8 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public decimal Xppmm => DisplayWidth > 0 ? Math.Round(Resolution.Width / DisplayWidth, 2) : 0;
-        public decimal Yppmm => DisplayHeight > 0 ? Math.Round(Resolution.Height / DisplayHeight, 2) : 0;
+        public decimal Xppmm => DisplayWidth > 0 ? Math.Round(SlicerFile.Resolution.Width / DisplayWidth, 2) : 0;
+        public decimal Yppmm => DisplayHeight > 0 ? Math.Round(SlicerFile.Resolution.Height / DisplayHeight, 2) : 0;
 
         public decimal LayerHeight
         {
@@ -425,8 +422,32 @@ namespace UVtools.Core.Operations
         */
         #endregion
 
+        #region Constructor
+
+        public OperationCalibrateTolerance() { }
+
+        public OperationCalibrateTolerance(FileFormat slicerFile) : base(slicerFile)
+        {
+            _layerHeight    = (decimal)slicerFile.LayerHeight;
+            _bottomLayers   = slicerFile.BottomLayerCount;
+            _bottomExposure = (decimal)slicerFile.BottomExposureTime;
+            _normalExposure = (decimal)slicerFile.ExposureTime;
+            _mirrorOutput   = slicerFile.MirrorDisplay;
+        }
+
+        public override void InitWithSlicerFile()
+        {
+            base.InitWithSlicerFile();
+            if (SlicerFile.DisplayWidth > 0)
+                DisplayWidth = (decimal)SlicerFile.DisplayWidth;
+            if (SlicerFile.DisplayHeight > 0)
+                DisplayHeight = (decimal)SlicerFile.DisplayHeight;
+        }
+
+        #endregion
+
         #region Enums
-        
+
         public enum Shapes : byte
         {
             Circle,
@@ -483,7 +504,7 @@ namespace UVtools.Core.Operations
         public Mat[] GetLayers()
         {
             var layers = new Mat[LayerCount];
-            var layer = EmguExtensions.InitMat(Resolution);
+            var layer = EmguExtensions.InitMat(SlicerFile.Resolution);
 
             ushort startX = Math.Max((ushort)2, _leftRightMargin);
             ushort startY = Math.Max((ushort)2, _topBottomMargin);
@@ -534,13 +555,13 @@ namespace UVtools.Core.Operations
                 if (_fuseParts)
                 {
                     if (xPixels >= FemaleHoleDiameterXPixels || yPixels >= FemaleHoleDiameterYPixels) return false;
-                    if (currentX + FemaleDiameterXPixels + _leftRightMargin >= Resolution.Width)
+                    if (currentX + FemaleDiameterXPixels + _leftRightMargin >= SlicerFile.Resolution.Width)
                     {
                         currentX = startX;
                         currentY += (int)FemaleDiameterYPixels + PartMargin;
                     }
 
-                    if (currentY + FemaleDiameterYPixels + _topBottomMargin >= Resolution.Height)
+                    if (currentY + FemaleDiameterYPixels + _topBottomMargin >= SlicerFile.Resolution.Height)
                     {
                         return false; // Insufficient size
                     }
@@ -571,13 +592,13 @@ namespace UVtools.Core.Operations
                 }
                 else
                 {
-                    if (currentX + xPixels + _leftRightMargin >= Resolution.Width)
+                    if (currentX + xPixels + _leftRightMargin >= SlicerFile.Resolution.Width)
                     {
                         currentX = startX;
                         currentY += yPixels + PartMargin;
                     }
 
-                    if (currentY + yPixels + _topBottomMargin >= Resolution.Height)
+                    if (currentY + yPixels + _topBottomMargin >= SlicerFile.Resolution.Height)
                     {
                         return false; // Insufficient size
                     }
@@ -704,24 +725,17 @@ namespace UVtools.Core.Operations
             return thumbnail;
         }
 
-        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        protected override bool ExecuteInternally(OperationProgress progress)
         {
-            progress ??= new OperationProgress();
-            progress.Reset(ProgressAction, LayerCount);
-            slicerFile.SuppressRebuildProperties = true;
+            progress.ItemCount = LayerCount;
 
             var newLayers = new Layer[LayerCount];
-
-            slicerFile.LayerHeight = (float)LayerHeight;
-            slicerFile.BottomExposureTime = (float)BottomExposure;
-            slicerFile.ExposureTime = (float)NormalExposure;
-            slicerFile.BottomLayerCount = BottomLayers;
 
             var layers = GetLayers();
 
             Parallel.For(0, LayerCount, layerIndex =>
             {
-                newLayers[layerIndex] = new Layer((uint)layerIndex, layers[layerIndex], slicerFile.LayerManager);
+                newLayers[layerIndex] = new Layer((uint)layerIndex, layers[layerIndex], SlicerFile.LayerManager);
                 layers[layerIndex].Dispose();
                 lock (progress)
                 {
@@ -729,22 +743,23 @@ namespace UVtools.Core.Operations
                 }
             });
 
-            slicerFile.LayerManager.Layers = newLayers;
-            slicerFile.LayerManager.RebuildLayersProperties();
+            if (SlicerFile.ThumbnailsCount > 0)
+                SlicerFile.SetThumbnails(GetThumbnail());
 
-            var moveOp = new OperationMove(slicerFile.LayerManager.BoundingRectangle, slicerFile.Resolution)
-            {
-                IsCutMove = true,
-                LayerIndexEnd = slicerFile.LayerCount - 1
-            };
-            moveOp.Execute(slicerFile, progress);
+            SlicerFile.SuppressRebuildProperties = true;
+            SlicerFile.LayerHeight = (float)LayerHeight;
+            SlicerFile.BottomExposureTime = (float)BottomExposure;
+            SlicerFile.ExposureTime = (float)NormalExposure;
+            SlicerFile.BottomLayerCount = BottomLayers;
+            SlicerFile.LayerManager.Layers = newLayers;
+            SlicerFile.LayerManager.RebuildLayersProperties();
+            SlicerFile.SuppressRebuildProperties = false;
 
-            if (slicerFile.ThumbnailsCount > 0)
-                slicerFile.SetThumbnails(GetThumbnail());
+            var moveOp = new OperationMove(SlicerFile);
+            moveOp.Execute(progress);
 
-            slicerFile.SuppressRebuildProperties = false;
 
-            return true;
+            return !progress.Token.IsCancellationRequested;
         }
 
         #endregion

@@ -170,6 +170,31 @@ namespace UVtools.Core.Operations
 
         #endregion
 
+        #region Constructor
+
+        public OperationMove() { }
+
+        public OperationMove(FileFormat slicerFile, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter) : base(slicerFile)
+        {
+            ROI = slicerFile.LayerManager.BoundingRectangle;
+            _imageWidth = slicerFile.ResolutionX;
+            _imageHeight = slicerFile.ResolutionY;
+            _anchor = anchor;
+        }
+
+        public OperationMove(FileFormat slicerFile, Rectangle srcRoi, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter) : this(slicerFile, anchor)
+        {
+            if(!srcRoi.IsEmpty) ROI = srcRoi;
+        }
+
+        /*public OperationMove(FileFormat slicerFile, Rectangle srcRoi, Mat mat, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter) : this(slicerFile, srcRoi, anchor)
+        {
+            ImageWidth = (uint) mat.Width;
+            ImageHeight = (uint) mat.Height;
+        }*/
+
+        #endregion
+
         #region Methods
         public void CalculateDstRoi()
         {
@@ -214,42 +239,15 @@ namespace UVtools.Core.Operations
             _dstRoi.Y += MarginTop;
             _dstRoi.Y -= MarginBottom;
 
-            IsWithinBoundary = !(DstRoi.IsEmpty || DstRoi.X < 0 || DstRoi.Y < 0 ||
-                                 DstRoi.Width == 0 || DstRoi.Right > ImageWidth ||
-                                 DstRoi.Height == 0 || DstRoi.Bottom > ImageHeight);
+            IsWithinBoundary = !(_dstRoi.IsEmpty || _dstRoi.X < 0 || _dstRoi.Y < 0 ||
+                                 _dstRoi.Width == 0 || _dstRoi.Right > ImageWidth ||
+                                 _dstRoi.Height == 0 || _dstRoi.Bottom > ImageHeight);
 
             RaisePropertyChanged(nameof(DstRoi));
             RaisePropertyChanged(nameof(LocationXStr));
             RaisePropertyChanged(nameof(LocationYStr));
         }
 
-        public OperationMove()
-        {
-        }
-
-        public OperationMove(FileFormat slicerFile, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter)
-        {
-            ROI = slicerFile.LayerManager.BoundingRectangle;
-            ImageWidth = slicerFile.ResolutionX;
-            ImageHeight = slicerFile.ResolutionY;
-            Anchor = anchor;
-        }
-
-        public OperationMove(Rectangle srcRoi, uint imageWidth, uint imageHeight, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter)
-        {
-            ROI = srcRoi;
-            ImageWidth = imageWidth;
-            ImageHeight = imageHeight;
-            Anchor = anchor;
-        }
-
-        public OperationMove(Rectangle srcRoi, Size resolution, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter)
-        {
-            ROI = srcRoi;
-            ImageWidth = (uint)resolution.Width;
-            ImageHeight = (uint)resolution.Height;
-            Anchor = anchor;
-        }
 
         public void Reset()
         {
@@ -271,21 +269,19 @@ namespace UVtools.Core.Operations
             return IsWithinBoundary;
         }
 
-        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        protected override bool ExecuteInternally(OperationProgress progress)
         {
-            progress ??= new OperationProgress();
-            progress.Reset(ProgressAction, LayerRangeCount);
-
-            if (ROI == Rectangle.Empty) ROI = slicerFile.LayerManager.GetBoundingRectangle(progress);
+            if (ROI.IsEmpty) ROI = SlicerFile.LayerManager.GetBoundingRectangle(progress);
+            CalculateDstRoi();
 
             Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 
-                using (var mat = slicerFile[layerIndex].LayerMat)
+                using (var mat = SlicerFile[layerIndex].LayerMat)
                 {
                     Execute(mat);
-                    slicerFile[layerIndex].LayerMat = mat;
+                    SlicerFile[layerIndex].LayerMat = mat;
                 }
 
                 lock (progress.Mutex)
@@ -294,18 +290,15 @@ namespace UVtools.Core.Operations
                 }
             });
 
-            slicerFile.LayerManager.BoundingRectangle = Rectangle.Empty;
+            SlicerFile.LayerManager.BoundingRectangle = Rectangle.Empty;
 
-            progress.Token.ThrowIfCancellationRequested();
-
-            return true;
+            return !progress.Token.IsCancellationRequested;
         }
 
         public override bool Execute(Mat mat, params object[] arguments)
         {
-
-            if (ImageWidth == 0) ImageWidth = (uint) mat.Width;
-            if (ImageHeight == 0) ImageHeight = (uint) mat.Height;
+            if (_imageWidth == 0) _imageWidth = (uint) mat.Width;
+            if (_imageHeight == 0) _imageHeight = (uint) mat.Height;
 
             using var srcRoi = new Mat(mat, ROI);
             using var dstRoi = new Mat(mat, DstRoi);

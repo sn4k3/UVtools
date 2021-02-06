@@ -5,7 +5,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
              x:Class="UVtools.WPF.Controls.Tools.ToolMaskControl">
   <StackPanel Spacing="10">
-    <StackPanel Orientation="Horizontal" Spacing="15">
+    <StackPanel Orientation="Horizontal" Spacing="10">
       <Button 
         Padding="10"
         Content="Import grayscale mask image from file"
@@ -43,7 +43,6 @@
             Grid.Column="2"
             Minimum="0"
             Maximum="255"
-            Width="70"
             Value="{Binding GenMinimumBrightness}"
             />
           <TextBlock
@@ -63,7 +62,6 @@
             Grid.Column="8"
             Minimum="0"
             Maximum="255"
-            Width="70"
             Value="{Binding GenMaximumBrightness}"
             />
 
@@ -76,7 +74,6 @@
             Grid.Column="2"
             Minimum="0"
             Maximum="10000"
-            Width="70"
             Value="{Binding GenDiameter}"
             />
           <Button
@@ -85,6 +82,7 @@
             Grid.ColumnSpan="5"
             Content="Generate"
             Padding="5"
+            VerticalAlignment="Stretch"
             Command="{Binding GenerateMask}"
             />
           

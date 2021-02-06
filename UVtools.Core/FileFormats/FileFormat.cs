@@ -26,7 +26,7 @@ namespace UVtools.Core.FileFormats
     /// <summary>
     /// Slicer <see cref="FileFormat"/> representation
     /// </summary>
-    public abstract class FileFormat : BindableBase, IFileFormat, IDisposable, IEquatable<FileFormat>, IEnumerable<Layer>
+    public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFormat>, IEnumerable<Layer>
     {
         #region Constants
         public const string TemporaryFileAppend = ".tmp";
@@ -44,6 +44,9 @@ namespace UVtools.Core.FileFormats
         public const float DefaultLightOffDelay = 0;
         public const byte DefaultBottomLightPWM = 255;
         public const byte DefaultLightPWM = 255;
+
+        public const float MinimumLayerHeight = 0.01f;
+        public const float MaximumLayerHeight = 0.20f;
         #endregion 
 
         #region Enums
@@ -190,11 +193,11 @@ namespace UVtools.Core.FileFormats
         public static FileFormat[] AvailableFormats { get; } =
         {
             new SL1File(),      // Prusa SL1
-            new ChituboxZipFile(),      // Zip
+            new ChituboxZipFile(), // Zip
             new ChituboxFile(), // cbddlp, cbt, photon
+            new PhotonSFile(), // photons
             new PHZFile(), // phz
             new FDGFile(), // fdg
-            new PhotonSFile(), // photons
             new PhotonWorkshopFile(),   // PSW
             new ZCodexFile(),   // zcodex
             new CWSFile(),   // CWS
@@ -243,18 +246,27 @@ namespace UVtools.Core.FileFormats
             }
             
         }
-           
+
+        public static List<FileExtension> AllFileExtensions
+        {
+            get
+            {
+                List<FileExtension> extensions = new();
+                foreach (var slicerFile in AvailableFormats)
+                {
+                    extensions.AddRange(slicerFile.FileExtensions);
+                }
+                return extensions;
+            }
+        }
+
+        public static List<string> AllFileExtensionsString => (from slicerFile in AvailableFormats from extension in slicerFile.FileExtensions select extension.Extension).ToList();
+
 
         /// <summary>
         /// Gets the count of available file extensions
         /// </summary>
-        public static byte FileExtensionsCount
-        {
-            get
-            {
-                return AvailableFormats.Aggregate<FileFormat, byte>(0, (current, fileFormat) => (byte) (current + fileFormat.FileExtensions.Length));
-            }
-        }
+        public static byte FileExtensionsCount => AvailableFormats.Aggregate<FileFormat, byte>(0, (current, fileFormat) => (byte) (current + fileFormat.FileExtensions.Length));
 
         /// <summary>
         /// Find <see cref="FileFormat"/> by an extension
@@ -285,14 +297,54 @@ namespace UVtools.Core.FileFormats
         }
         #endregion
 
+        #region Members
+        private bool _haveModifiedLayers;
+        private LayerManager _layerManager;
+        private float _printTime;
+        private float _maxPrintHeight;
+        #endregion
+
         #region Properties
 
+        /// <summary>
+        /// Gets the file format type
+        /// </summary>
         public abstract FileFormatType FileType { get; }
 
+        /// <summary>
+        /// Gets the valid file extensions for this <see cref="FileFormat"/>
+        /// </summary>
         public abstract FileExtension[] FileExtensions { get; }
+
+        /// <summary>
+        /// Gets the available <see cref="FileFormat.PrintParameterModifier"/>
+        /// </summary>
         public abstract PrintParameterModifier[] PrintParameterModifiers { get; }
+
+        /// <summary>
+        /// Gets the available <see cref="FileFormat.PrintParameterModifier"/> per layer
+        /// </summary>
         public virtual PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = null;
 
+        /// <summary>
+        /// Checks if a <see cref="PrintParameterModifier"/> exists on print parameters
+        /// </summary>
+        /// <param name="modifier"></param>
+        /// <returns>True if exists, otherwise false</returns>
+        public bool HavePrintParameterModifier(PrintParameterModifier modifier) =>
+            PrintParameterModifiers is not null && PrintParameterModifiers.Contains(modifier);
+
+        /// <summary>
+        /// Checks if a <see cref="PrintParameterModifier"/> exists on print parameters
+        /// </summary>
+        /// <param name="modifier"></param>
+        /// <returns>True if exists, otherwise false</returns>
+        public bool HavePrintParameterPerLayerModifier(PrintParameterModifier modifier) =>
+            PrintParameterPerLayerModifiers is not null && PrintParameterPerLayerModifiers.Contains(modifier);
+
+        /// <summary>
+        /// Gets the file filter for open and save dialogs
+        /// </summary>
         public string FileFilter {
             get
             {
@@ -311,9 +363,15 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Gets all valid file extensions for Avalonia file dialog
+        /// </summary>
         public List<KeyValuePair<string, List<string>>> FileFilterAvalonia 
             => FileExtensions.Select(fileExt => new KeyValuePair<string, List<string>>(fileExt.Description, new List<string> {fileExt.Extension})).ToList();
 
+        /// <summary>
+        /// Gets all valid file extensions in "*.extension1;*.extension2" format
+        /// </summary>
         public string FileFilterExtensionsOnly
         {
             get
@@ -333,12 +391,24 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Gets or sets if change a global property should rebuild every layer data based on them
+        /// </summary>
         public bool SuppressRebuildProperties { get; set; }
 
+        /// <summary>
+        /// Gets the input file path loaded into this <see cref="FileFormat"/>
+        /// </summary>
         public string FileFullPath { get; set; }
 
+        /// <summary>
+        /// Gets the thumbnails count present in this file format
+        /// </summary>
         public abstract byte ThumbnailsCount { get; }
 
+        /// <summary>
+        /// Gets the number of created thumbnails
+        /// </summary>
         public byte CreatedThumbnailsCount {
             get
             {
@@ -355,10 +425,19 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Gets the original thumbnail sizes
+        /// </summary>
         public abstract Size[] ThumbnailsOriginalSize { get; }
 
+        /// <summary>
+        /// Gets the thumbnails for this <see cref="FileFormat"/>
+        /// </summary>
         public Mat[] Thumbnails { get; set; }
 
+        /// <summary>
+        /// Gets the cached layers into compressed bytes
+        /// </summary>
         public LayerManager LayerManager
         {
             get => _layerManager;
@@ -373,10 +452,10 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        private bool _haveModifiedLayers;
-        private LayerManager _layerManager;
-        private float _printTime;
-        private float _maxPrintHeight;
+        /// <summary>
+        /// Gets the bounding rectangle of the object
+        /// </summary>
+        public Rectangle BoundingRectangle => _layerManager?.BoundingRectangle ?? Rectangle.Empty;
 
         /// <summary>
         /// Gets or sets if modifications require a full encode to save
@@ -387,6 +466,9 @@ namespace UVtools.Core.FileFormats
             set => _haveModifiedLayers = value;
         } // => LayerManager.IsModified;
 
+        /// <summary>
+        /// Gets the image width resolution
+        /// </summary>
         public Size Resolution
         {
             get => new((int)ResolutionX, (int)ResolutionY);
@@ -396,12 +478,21 @@ namespace UVtools.Core.FileFormats
                 ResolutionY = (uint) value.Height;
                 RaisePropertyChanged();
             }
-        } 
-        
+        }
+
+        /// <summary>
+        /// Gets the image width resolution
+        /// </summary>
         public abstract uint ResolutionX { get; set; }
 
+        /// <summary>
+        /// Gets the image height resolution
+        /// </summary>
         public abstract uint ResolutionY { get; set; }
 
+        /// <summary>
+        /// Gets the size of display in millimeters
+        /// </summary>
         public SizeF Display
         {
             get => new(DisplayWidth, DisplayHeight);
@@ -413,16 +504,33 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Gets or sets the display width in millimeters
+        /// </summary>
         public abstract float DisplayWidth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the display height in millimeters
+        /// </summary>
         public abstract float DisplayHeight { get; set; }
+
+        /// <summary>
+        /// Gets or sets if images need to be mirrored on lcd to print on the correct orientation
+        /// </summary>
         public abstract bool MirrorDisplay { get; set; }
 
+        /// <summary>
+        /// Gets or sets the maximum printer build Z volume
+        /// </summary>
         public virtual float MaxPrintHeight
         {
             get => _maxPrintHeight > 0 ? _maxPrintHeight : PrintHeight;
             set => RaiseAndSetIfChanged(ref _maxPrintHeight, value);
         }
 
+        /// <summary>
+        /// Gets or sets the pixels per mm on X direction
+        /// </summary>
         public virtual float Xppmm
         {
             get => DisplayWidth > 0 ? ResolutionX / DisplayWidth : 0;
@@ -433,6 +541,9 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Gets or sets the pixels per mm on Y direction
+        /// </summary>
         public virtual float Yppmm
         {
             get => DisplayHeight > 0 ? ResolutionY / DisplayHeight : 0;
@@ -443,6 +554,9 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Gets or sets the pixels per mm
+        /// </summary>
         public SizeF Ppmm
         {
             get => new(Xppmm, Yppmm);
@@ -454,6 +568,9 @@ namespace UVtools.Core.FileFormats
         }
 
 
+        /// <summary>
+        /// Gets the printer XY pixel resolution
+        /// </summary>
         public decimal XYResolution => DisplayWidth > 0 || DisplayHeight > 0 ?
             (decimal) Math.Round(Math.Max(
                 DisplayWidth / ResolutionX,
@@ -461,6 +578,9 @@ namespace UVtools.Core.FileFormats
             ), 3)
             : 0;
 
+        /// <summary>
+        /// Gets the printer XY pixel resolution in microns
+        /// </summary>
         public decimal XYResolutionUm => DisplayWidth > 0 || DisplayHeight > 0 ?
             (decimal)Math.Round(Math.Max(
                 DisplayWidth / ResolutionX,
@@ -468,11 +588,30 @@ namespace UVtools.Core.FileFormats
             ), 3) * 1000
             : 0;
 
+        /// <summary>
+        /// Checks if this file have AntiAliasing
+        /// </summary>
         public bool HaveAntiAliasing => AntiAliasing > 1;
+
+        /// <summary>
+        /// Gets or sets the AntiAliasing level
+        /// </summary>
         public abstract byte AntiAliasing { get; set; }
 
+        /// <summary>
+        /// Gets Layer Height in mm
+        /// </summary>
         public abstract float LayerHeight { get; set; }
 
+        /// <summary>
+        /// Gets Layer Height in um
+        /// </summary>
+        public ushort LayerHeightUm => (ushort) (LayerHeight * 1000);
+
+
+        /// <summary>
+        /// Gets or sets the print height in mm
+        /// </summary>
         public virtual float PrintHeight
         {
             get => LayerCount == 0 ? 0 : this[LayerCount - 1]?.PositionZ ?? 0;
@@ -482,30 +621,97 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Gets the last layer index
+        /// </summary>
         public uint LastLayerIndex => LayerCount - 1;
+
+        /// <summary>
+        /// Checks if this file format supports per layer settings
+        /// </summary>
         public virtual bool SupportPerLayerSettings => !(PrintParameterPerLayerModifiers is null || PrintParameterPerLayerModifiers.Length == 0);
 
+        /// <summary>
+        /// Gets or sets the layer count
+        /// </summary>
         public virtual uint LayerCount
         {
             get => LayerManager?.Count ?? 0;
             set { }
         }
 
+        #region Universal Properties
+
+        /// <summary>
+        /// Gets or sets the number of initial layer count
+        /// </summary>
         public virtual ushort BottomLayerCount { get; set; }
+
+        /// <summary>
+        /// Gets the number of normal layer count
+        /// </summary>
         public uint NormalLayerCount => LayerCount - BottomLayerCount;
+
+        /// <summary>
+        /// Gets or sets the initial exposure time for <see cref="BottomLayerCount"/> in seconds
+        /// </summary>
         public virtual float BottomExposureTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the normal layer exposure time in seconds
+        /// </summary>
         public virtual float ExposureTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the bottom layer off time in seconds
+        /// </summary>
         public virtual float BottomLightOffDelay { get; set; } = DefaultBottomLightOffDelay;
+
+        /// <summary>
+        /// Gets or sets the layer off time in seconds
+        /// </summary>
         public virtual float LightOffDelay { get; set; } = DefaultLightOffDelay;
+
+        /// <summary>
+        /// Gets or sets the bottom lift height in mm
+        /// </summary>
         public virtual float BottomLiftHeight { get; set; } = DefaultBottomLiftHeight;
+
+        /// <summary>
+        /// Gets or sets the lift height in mm
+        /// </summary>
         public virtual float LiftHeight { get; set; } = DefaultLiftHeight;
+
+        /// <summary>
+        /// Gets or sets the bottom lift speed in mm/min
+        /// </summary>
         public virtual float BottomLiftSpeed { get; set; } = DefaultBottomLiftSpeed;
+
+        /// <summary>
+        /// Gets or sets the speed in mm/min
+        /// </summary>
         public virtual float LiftSpeed { get; set; } = DefaultLiftSpeed;
+
+        /// <summary>
+        /// Gets the speed in mm/min for the retracts
+        /// </summary>
         public virtual float RetractSpeed { get; set; } = DefaultRetractSpeed;
+
+        /// <summary>
+        /// Gets or sets the bottom pwm value from 0 to 255
+        /// </summary>
         public virtual byte BottomLightPWM { get; set; } = DefaultBottomLightPWM;
+
+        /// <summary>
+        /// Gets or sets the pwm value from 0 to 255
+        /// </summary>
         public virtual byte LightPWM { get; set; } = DefaultLightPWM;
 
+        #endregion
 
+        /// <summary>
+        /// Gets the estimate print time in seconds
+        /// </summary>
         public virtual float PrintTime
         {
             get => _printTime;
@@ -520,9 +726,14 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        //(header.numberOfLayers - header.bottomLayers) * (double) header.exposureTimeSeconds + (double) header.bottomLayers * (double) header.exposureBottomTimeSeconds + (double) header.offTimeSeconds * (double) header.numberOfLayers);
+        /// <summary>
+        /// Gets the estimate print time in seconds, if print doesn't support it it will be calculated
+        /// </summary>
         public float PrintTimeOrComputed => PrintTime > 0 ? PrintTime : PrintTimeComputed;
 
+        /// <summary>
+        /// Gets the calculated estimate print time in seconds
+        /// </summary>
         public float PrintTimeComputed
         {
             get
@@ -562,27 +773,65 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Gets the estimate print time in hours
+        /// </summary>
         public float PrintTimeHours => (float) Math.Round(PrintTimeOrComputed / 3600, 2);
 
+        /// <summary>
+        /// Gets the estimate print time in hours and minutes formatted
+        /// </summary>
         public string PrintTimeString => TimeSpan.FromSeconds(PrintTimeOrComputed).ToString("hh\\hmm\\m");
 
+        /// <summary>
+        /// Gets the estimate used material in ml
+        /// </summary>
         public virtual float MaterialMilliliters { get; set; }
+
+        /// <summary>
+        /// Gets the estimate material in grams
+        /// </summary>
         public virtual float MaterialGrams { get; set; }
 
+        /// <summary>
+        /// Gets the estimate material cost
+        /// </summary>
         public virtual float MaterialCost { get; set; }
 
+        /// <summary>
+        /// Gets the material name
+        /// </summary>
         public virtual string MaterialName { get; set; }
 
+        /// <summary>
+        /// Gets the machine name
+        /// </summary>
         public virtual string MachineName { get; set; } = "Unknown";
 
+        /// <summary>
+        /// Gets the GCode, returns null if not supported
+        /// </summary>
         public StringBuilder GCode { get; set; }
 
+        /// <summary>
+        /// Gets the GCode, returns null if not supported
+        /// </summary>
         public string GCodeStr => GCode?.ToString();
 
-        public bool HaveGCode => !(GCode is null);
+        /// <summary>
+        /// Gets if this file have available gcode
+        /// </summary>
+        public bool HaveGCode => GCode is not null;
+
+        /// <summary>
+        /// Get all configuration objects with properties and values
+        /// </summary>
         public abstract object[] Configs { get; }
 
-        public bool IsValid => !ReferenceEquals(FileFullPath, null);
+        /// <summary>
+        /// Gets if this file is valid to read
+        /// </summary>
+        public bool IsValid => FileFullPath is not null;
         #endregion
 
         #region Constructor
@@ -675,7 +924,7 @@ namespace UVtools.Core.FileFormats
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return FileFullPath.Equals(other.FileFullPath);
+            return FileFullPath == other.FileFullPath;
         }
 
         public override int GetHashCode()
@@ -691,26 +940,31 @@ namespace UVtools.Core.FileFormats
         #endregion
 
         #region Methods
+        /// <summary>
+        /// Clears all definitions and properties, it also dispose valid candidates 
+        /// </summary>
         public virtual void Clear()
         {
             FileFullPath = null;
             LayerManager = null;
             GCode = null;
 
-            if (!ReferenceEquals(Thumbnails, null))
+            if (Thumbnails is not null)
             {
                 for (int i = 0; i < ThumbnailsCount; i++)
                 {
                     Thumbnails[i]?.Dispose();
                 }
             }
-
-            
         }
 
+        /// <summary>
+        /// Validate if a file is a valid <see cref="FileFormat"/>
+        /// </summary>
+        /// <param name="fileFullPath">Full file path</param>
         public void FileValidation(string fileFullPath)
         {
-            if (ReferenceEquals(fileFullPath, null)) throw new ArgumentNullException(nameof(FileFullPath), "fullFilePath can't be null.");
+            if (fileFullPath is null) throw new ArgumentNullException(nameof(FileFullPath), "fullFilePath can't be null.");
             if (!File.Exists(fileFullPath)) throw new FileNotFoundException("The specified file does not exists.", fileFullPath);
 
             if (IsExtensionValid(fileFullPath, true))
@@ -721,12 +975,21 @@ namespace UVtools.Core.FileFormats
             throw new FileLoadException($"The specified file is not valid.", fileFullPath);
         }
 
+        /// <summary>
+        /// Checks if a extension is valid under the <see cref="FileFormat"/>
+        /// </summary>
+        /// <param name="extension">Extension to check</param>
+        /// <param name="isFilePath">True if <see cref="extension"/> is a full file path, otherwise false for extension only</param>
+        /// <returns>True if valid, otherwise false</returns>
         public bool IsExtensionValid(string extension, bool isFilePath = false)
         {
             extension = isFilePath ? Path.GetExtension(extension)?.Remove(0, 1) : extension;
             return FileExtensions.Any(fileExtension => fileExtension.Equals(extension));
         }
 
+        /// <summary>
+        /// Gets all valid file extensions in a specified format
+        /// </summary>
         public string GetFileExtensions(string prepend = ".", string separator = ", ")
         {
             var result = string.Empty;
@@ -743,6 +1006,11 @@ namespace UVtools.Core.FileFormats
             return result;
         }
 
+        /// <summary>
+        /// Gets a thumbnail by it height or lower
+        /// </summary>
+        /// <param name="maxHeight">Max height allowed</param>
+        /// <returns></returns>
         public Mat GetThumbnail(uint maxHeight = 400)
         {
             for (int i = 0; i < ThumbnailsCount; i++)
@@ -754,6 +1022,11 @@ namespace UVtools.Core.FileFormats
             return null;
         }
 
+        /// <summary>
+        /// Gets a thumbnail by the largest or smallest
+        /// </summary>
+        /// <param name="largest">True to get the largest, otherwise false</param>
+        /// <returns></returns>
         public Mat GetThumbnail(bool largest)
         {
             switch (CreatedThumbnailsCount)
@@ -774,6 +1047,10 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Sets thumbnails from a list of thumbnails and clone them
+        /// </summary>
+        /// <param name="images"></param>
         public void SetThumbnails(Mat[] images)
         {
             for (var i = 0; i < ThumbnailsCount; i++)
@@ -786,6 +1063,10 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Sets all thumbnails the same image
+        /// </summary>
+        /// <param name="images">Image to set</param>
         public void SetThumbnails(Mat image)
         {
             for (var i = 0; i < ThumbnailsCount; i++)
@@ -798,6 +1079,11 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Sets a thumbnail from a disk file
+        /// </summary>
+        /// <param name="index">Thumbnail index</param>
+        /// <param name="filePath"></param>
         public void SetThumbnail(int index, string filePath)
         {
             Thumbnails[index] = CvInvoke.Imread(filePath, ImreadModes.AnyColor);
@@ -807,8 +1093,23 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public virtual void Encode(string fileFullPath, OperationProgress progress = null)
+        /// <summary>
+        /// Encode to an output file
+        /// </summary>
+        /// <param name="fileFullPath">Output file</param>
+        /// <param name="progress"></param>
+        protected abstract void EncodeInternally(string fileFullPath, OperationProgress progress);
+
+        /// <summary>
+        /// Encode to an output file
+        /// </summary>
+        /// <param name="fileFullPath">Output file</param>
+        /// <param name="progress"></param>
+        public void Encode(string fileFullPath, OperationProgress progress = null)
         {
+            progress ??= new OperationProgress();
+            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
+
             FileFullPath = fileFullPath;
 
             if (File.Exists(fileFullPath))
@@ -822,25 +1123,69 @@ namespace UVtools.Core.FileFormats
                 if(Thumbnails[i].Size == ThumbnailsOriginalSize[i]) continue;
                 CvInvoke.Resize(Thumbnails[i], Thumbnails[i], new Size(ThumbnailsOriginalSize[i].Width, ThumbnailsOriginalSize[i].Height));
             }
-        }
 
-        public void AfterEncode()
-        {
+            EncodeInternally(fileFullPath, progress);
+
             LayerManager.Desmodify();
             RequireFullEncode = false;
         }
 
-        public virtual void Decode(string fileFullPath, OperationProgress progress = null)
+        /// <summary>
+        /// Decode a slicer file
+        /// </summary>
+        /// <param name="fileFullPath"></param>
+        /// <param name="progress"></param>
+        protected abstract void DecodeInternally(string fileFullPath, OperationProgress progress);
+
+        /// <summary>
+        /// Decode a slicer file
+        /// </summary>
+        /// <param name="fileFullPath"></param>
+        /// <param name="progress"></param>
+        public void Decode(string fileFullPath, OperationProgress progress = null)
         {
             Clear();
             FileValidation(fileFullPath);
             FileFullPath = fileFullPath;
+            progress ??= new OperationProgress();
+            progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
+
+            DecodeInternally(fileFullPath, progress);
+
+            progress.Token.ThrowIfCancellationRequested();
+
+            // Sanitize
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                // Check for null layers
+                if(this[layerIndex] is null) throw new FileLoadException($"Layer {layerIndex} was defined but doesn't contain a valid image.", fileFullPath);
+                if(layerIndex <= 0) continue;
+                // Check for bigger position z than it successor
+                if(this[layerIndex-1].PositionZ > this[layerIndex].PositionZ) throw new FileLoadException($"Layer {layerIndex-1} ({this[layerIndex - 1].PositionZ}mm) have a higher Z position than the successor layer {layerIndex} ({this[layerIndex].PositionZ}mm).\n", fileFullPath);
+            }
+
+            // Fix 0mm positions at layer 0
+            if(this[0].PositionZ == 0)
+            {
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                {
+                    this[layerIndex].PositionZ += LayerHeight;
+                }
+                Save(progress);
+            }
         }
 
+        /// <summary>
+        /// Extract contents to a folder
+        /// </summary>
+        /// <param name="path">Path to folder where content will be extracted</param>
+        /// <param name="genericConfigExtract"></param>
+        /// <param name="genericLayersExtract"></param>
+        /// <param name="progress"></param>
         public virtual void Extract(string path, bool genericConfigExtract = true, bool genericLayersExtract = true,
             OperationProgress progress = null)
         {
-            if (ReferenceEquals(progress, null)) progress = new OperationProgress();
+            progress ??= new OperationProgress();
             progress.ItemName = OperationProgress.StatusExtracting;
                 /*if (emptyFirst)
                 {
@@ -955,16 +1300,33 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Get height in mm from layer height
+        /// </summary>
+        /// <param name="layerIndex"></param>
+        /// <param name="realHeight"></param>
+        /// <returns>The height in mm</returns>
         public float GetHeightFromLayer(uint layerIndex, bool realHeight = true)
         {
             return (float)Math.Round((layerIndex+(realHeight ? 1 : 0)) * LayerHeight, 2);
         }
 
+        /// <summary>
+        /// Gets the value for initial layer or normal layers based on layer index
+        /// </summary>
+        /// <typeparam name="T">Type of value</typeparam>
+        /// <param name="layerIndex">Layer index</param>
+        /// <param name="initialLayerValue">Initial value</param>
+        /// <param name="normalLayerValue">Normal value</param>
+        /// <returns></returns>
         public T GetInitialLayerValueOrNormal<T>(uint layerIndex, T initialLayerValue, T normalLayerValue)
         {
             return layerIndex < BottomLayerCount ? initialLayerValue : normalLayerValue;
         }
 
+        /// <summary>
+        /// Refresh print parameters globals with this file settings
+        /// </summary>
         public void RefreshPrintParametersModifiersValues()
         {
             if (PrintParameterModifiers is null) return;
@@ -1029,6 +1391,9 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Refresh print parameters per layer globals with this file settings
+        /// </summary>
         public void RefreshPrintParametersPerLayerModifiersValues(uint layerIndex)
         {
             if (PrintParameterPerLayerModifiers is null) return;
@@ -1065,6 +1430,11 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Gets the value attributed to <see cref="FileFormat.PrintParameterModifier"/>
+        /// </summary>
+        /// <param name="modifier">Modifier to use</param>
+        /// <returns>A value</returns>
         public object GetValueFromPrintParameterModifier(PrintParameterModifier modifier)
         {
             if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerCount))
@@ -1098,6 +1468,12 @@ namespace UVtools.Core.FileFormats
             return null;
         }
 
+        /// <summary>
+        /// Sets a property value attributed to <see cref="modifier"/>
+        /// </summary>
+        /// <param name="modifier">Modifier to use</param>
+        /// <param name="value">Value to set</param>
+        /// <returns>True if set, otherwise false = <see cref="modifier"/> not found</returns>
         public bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, decimal value)
         {
             if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerCount))
@@ -1167,6 +1543,10 @@ namespace UVtools.Core.FileFormats
             return false;
         }
 
+        /// <summary>
+        /// Sets properties from print parameters
+        /// </summary>
+        /// <returns>Number of affected parameters</returns>
         public byte SetValuesFromPrintParametersModifiers()
         {
             if (PrintParameterModifiers is null) return 0;
@@ -1182,36 +1562,34 @@ namespace UVtools.Core.FileFormats
             return changed;
         }
 
-        public void EditPrintParameters(OperationEditParameters operation)
-        {
-            if (operation.PerLayerOverride)
-            {
-                for (uint layerIndex = operation.LayerIndexStart; layerIndex <= operation.LayerIndexEnd; layerIndex++)
-                {
-                    this[layerIndex].SetValuesFromPrintParametersModifiers(operation.Modifiers);
-                }
-
-                foreach (var modifier in operation.Modifiers)
-                {
-                    modifier.OldValue = modifier.NewValue;
-                }
-                RebuildGCode();
-            }
-            else
-            {
-                SetValuesFromPrintParametersModifiers();
-            }
-        }
-
+        /// <summary>
+        /// Rebuilds GCode based on current settings
+        /// </summary>
         public virtual void RebuildGCode() { }
 
+        /// <summary>
+        /// Saves current configuration on input file
+        /// </summary>
+        /// <param name="progress"></param>
         public void Save(OperationProgress progress = null)
         {
             SaveAs(null, progress);
         }
 
+        /// <summary>
+        /// Saves current configuration on a copy
+        /// </summary>
+        /// <param name="filePath">File path to save copy as, use null to overwrite active file (Same as <see cref="Save"/>)</param>
+        /// <param name="progress"></param>
         public abstract void SaveAs(string filePath = null, OperationProgress progress = null);
 
+        /// <summary>
+        /// Converts this file type to another file type
+        /// </summary>
+        /// <param name="to">Target file format</param>
+        /// <param name="fileFullPath">Output path file</param>
+        /// <param name="progress"></param>
+        /// <returns>The converted file if successful, otherwise null</returns>
         public virtual FileFormat Convert(Type to, string fileFullPath, OperationProgress progress = null)
         {
             if (!IsValid) return null;
@@ -1270,9 +1648,20 @@ namespace UVtools.Core.FileFormats
 
             return slicerFile;
         }
+
+        /// <summary>
+        /// Converts this file type to another file type
+        /// </summary>
+        /// <param name="to">Target file format</param>
+        /// <param name="fileFullPath">Output path file</param>
+        /// <param name="progress"></param>
+        /// <returns>TThe converted file if successful, otherwise null</returns>
         public FileFormat Convert(FileFormat to, string fileFullPath, OperationProgress progress = null)
             => Convert(to.GetType(), fileFullPath, progress);
 
+        /// <summary>
+        /// Validate AntiAlias Level
+        /// </summary>
         public byte ValidateAntiAliasingLevel()
         {
             if (AntiAliasing < 2) return 1;

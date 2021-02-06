@@ -124,28 +124,33 @@ namespace UVtools.Core.Operations
 
         #endregion
 
+        #region Constructor
+
+        public OperationBlur() { }
+
+        public OperationBlur(FileFormat slicerFile) : base(slicerFile) { }
+
+        #endregion
+
         #region Methods
 
-        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
-        {
-            progress ??= new OperationProgress();
-            progress.Reset(ProgressAction, LayerRangeCount);
+        protected override bool ExecuteInternally(OperationProgress progress)
+        { 
             Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
-                using (var mat = slicerFile[layerIndex].LayerMat)
+                using (var mat = SlicerFile[layerIndex].LayerMat)
                 {
                     Execute(mat);
-                    slicerFile[layerIndex].LayerMat = mat;
+                    SlicerFile[layerIndex].LayerMat = mat;
                 }
                 lock (progress.Mutex)
                 {
                     progress++;
                 }
             });
-            progress.Token.ThrowIfCancellationRequested();
 
-            return true;
+            return !progress.Token.IsCancellationRequested;
         }
 
         public override bool Execute(Mat mat, params object[] arguments)

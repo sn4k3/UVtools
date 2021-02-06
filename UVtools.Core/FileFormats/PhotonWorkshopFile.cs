@@ -1048,11 +1048,8 @@ namespace UVtools.Core.FileFormats
             LayersDefinition = null;
         }
 
-        public override void Encode(string fileFullPath, OperationProgress progress = null)
+        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
-            progress ??= new OperationProgress();
-            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-            base.Encode(fileFullPath, progress);
             LayersHash.Clear();
 
             LayersDefinition = new LayerDefinition(LayerCount);
@@ -1124,14 +1121,10 @@ namespace UVtools.Core.FileFormats
                 outputFile.Seek(0, SeekOrigin.Begin);
                 Helpers.SerializeWriteFileStream(outputFile, FileMarkSettings);
             }
-
-            AfterEncode();
         }
 
-        public override void Decode(string fileFullPath, OperationProgress progress = null)
+        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
         {
-            base.Decode(fileFullPath, progress);
-
             using (var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read))
             {
                 FileMarkSettings = Helpers.Deserialize<FileMark>(inputFile);
@@ -1235,8 +1228,6 @@ namespace UVtools.Core.FileFormats
                     }
                 });
             }
-
-            progress.Token.ThrowIfCancellationRequested();
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)

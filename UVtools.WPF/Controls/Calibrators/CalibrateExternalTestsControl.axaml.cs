@@ -12,9 +12,8 @@ namespace UVtools.WPF.Controls.Calibrators
         public OperationCalibrateExternalTests Operation => BaseOperation as OperationCalibrateExternalTests;
         public CalibrateExternalTestsControl()
         {
-            this.InitializeComponent();
-            BaseOperation = new OperationCalibrateExternalTests();
-            Debug.WriteLine("asdasdasdasd");
+            InitializeComponent();
+            BaseOperation = new OperationCalibrateExternalTests(SlicerFile);
         }
 
         private void InitializeComponent()

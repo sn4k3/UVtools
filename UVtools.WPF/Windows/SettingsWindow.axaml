@@ -1,13 +1,13 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+﻿<controls:WindowEx xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:cp="clr-namespace:ThemeEditor.Controls.ColorPicker;assembly=ThemeEditor.Controls.ColorPicker"
+        xmlns:controls="clr-namespace:UVtools.WPF.Controls"
         mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="450"
         x:Class="UVtools.WPF.Windows.SettingsWindow"
         WindowStartupLocation="CenterOwner"
         MinWidth="600"
-        Width="700"
+        Width="740"
         SizeToContent="Height"
         CanResize="False"
         Title="UVtools - Settings"
@@ -18,13 +18,12 @@
         <ScrollViewer MaxHeight="{Binding ScrollViewerMaxHeight}">
           <StackPanel Orientation="Vertical" Spacing="5">
             <Border
-              Margin="5"
-            BorderBrush="LightBlue"
-            BorderThickness="4">
+                Classes="GroupBox"
+              Margin="5">
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Startup"/>
-                <StackPanel Margin="15" Orientation="Vertical" Spacing="15">
+                <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
                   <CheckBox IsChecked="{Binding Settings.General.StartMaximized}" Content="Start maximized"/>
                   <CheckBox IsChecked="{Binding Settings.General.CheckForUpdatesOnStartup}" Content="Check for updates on startup"/>
                   <CheckBox IsChecked="{Binding Settings.General.LoadDemoFileOnStartup}" Content="Loads a demo file on startup if no file was specified"/>
@@ -33,19 +32,17 @@
               </StackPanel>
             </Border>
 
-              <Border
-                  Margin="5"
-                  BorderBrush="LightBlue"
-                  BorderThickness="4"
-              >
+            <Border
+                Classes="GroupBox"
+                  Margin="5">
 
                   <StackPanel Orientation="Vertical">
                       <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Windows / dialogs"/>
-                      <StackPanel Margin="15" Orientation="Vertical" Spacing="15">
+                      <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
                           <CheckBox IsChecked="{Binding Settings.General.WindowsTakeIntoAccountScreenScaling}"
                                     Content="Take into account the screen scale factor to limit the dialogs windows maximum size"/>
                           <Grid RowDefinitions="Auto,10,Auto"
-                                ColumnDefinitions="Auto,10,100,5,Auto">
+                                ColumnDefinitions="Auto,10,150,5,Auto">
 
                               <TextBlock Grid.Row="0" Grid.Column="0" 
                                          VerticalAlignment="Center"
@@ -89,14 +86,12 @@
               </Border>
 
             <Border
-              Margin="5"
-            BorderBrush="LightBlue"
-            BorderThickness="4"
-          >
+                Classes="GroupBox"
+              Margin="5">
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="File dialog"/>
-                <Grid Margin="15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,*,Auto,Auto">
+                <Grid Margin="10" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,*,Auto,Auto">
                   <TextBlock
                     VerticalAlignment="Center"
                     Grid.Row="0" Grid.Column="0"
@@ -104,8 +99,8 @@
                   <ComboBox Items="{Binding FileOpenDialogFilters}"
                             SelectedIndex="{Binding Settings.General.DefaultOpenFileExtensionIndex}"
                             HorizontalAlignment="Left"
-                            Width="435"
-                            MaxDropDownHeight="300"
+                            Width="473"
+                            MaxDropDownHeight="350"
                             Grid.ColumnSpan="3" Grid.Row="0" Grid.Column="2"/>
 
                   <TextBlock VerticalAlignment="Center"
@@ -116,11 +111,15 @@
                     Text="{Binding Settings.General.DefaultDirectoryOpenFile}"
                     Grid.Row="2" Grid.Column="2" IsReadOnly="True"/>
                   <Button Grid.Row="2" Grid.Column="3"
+                          VerticalAlignment="Stretch"
+                          HorizontalAlignment="Stretch"
                           Command="{Binding GeneralOpenFolderField}"
                           CommandParameter="DefaultDirectoryOpenFile">
                     <Image Source="/Assets/Icons/open-16x16.png"/>
                   </Button>
                   <Button Grid.Row="2" Grid.Column="4"
+                          VerticalAlignment="Stretch"
+                          HorizontalAlignment="Stretch"
                           Command="{Binding GeneralClearField}"
                           CommandParameter="DefaultDirectoryOpenFile">
                     <Image Source="/Assets/Icons/delete-16x16.png"/>
@@ -134,11 +133,15 @@
                     Text="{Binding Settings.General.DefaultDirectorySaveFile}"
                     Grid.Row="4" Grid.Column="2" IsReadOnly="True"/>
                   <Button Grid.Row="4" Grid.Column="3"
+                          VerticalAlignment="Stretch"
+                          HorizontalAlignment="Stretch"
                           Command="{Binding GeneralOpenFolderField}"
                           CommandParameter="DefaultDirectorySaveFile">
                     <Image Source="/Assets/Icons/open-16x16.png"/>
                   </Button>
                   <Button Grid.Row="4" Grid.Column="4"
+                          VerticalAlignment="Stretch"
+                          HorizontalAlignment="Stretch"
                           Command="{Binding GeneralClearField}"
                           CommandParameter="DefaultDirectorySaveFile">
                     <Image Source="/Assets/Icons/delete-16x16.png"/>
@@ -152,11 +155,15 @@
                     Text="{Binding Settings.General.DefaultDirectoryExtractFile}"
                     Grid.Row="6" Grid.Column="2" IsReadOnly="True"/>
                   <Button Grid.Row="6" Grid.Column="3"
+                          VerticalAlignment="Stretch"
+                          HorizontalAlignment="Stretch"
                           Command="{Binding GeneralOpenFolderField}"
                           CommandParameter="DefaultDirectoryExtractFile">
                     <Image Source="/Assets/Icons/open-16x16.png"/>
                   </Button>
                   <Button Grid.Row="6" Grid.Column="4"
+                          VerticalAlignment="Stretch"
+                          HorizontalAlignment="Stretch"
                           Command="{Binding GeneralClearField}"
                           CommandParameter="DefaultDirectoryExtractFile">
                     <Image Source="/Assets/Icons/delete-16x16.png"/>
@@ -170,6 +177,8 @@
                     Text="{Binding Settings.General.DefaultDirectoryConvertFile}"
                     Grid.Row="8" Grid.Column="2" IsReadOnly="True"/>
                   <Button Grid.Row="8" Grid.Column="3"
+                          VerticalAlignment="Stretch"
+                          HorizontalAlignment="Stretch"
                           Command="{Binding GeneralOpenFolderField}"
                           CommandParameter="DefaultDirectoryConvertFile">
                     <Image Source="/Assets/Icons/open-16x16.png"/>
@@ -177,14 +186,16 @@
                   <Button
                     Command="{Binding GeneralClearField}"
                     CommandParameter="DefaultDirectoryConvertFile"
+                    VerticalAlignment="Stretch"
+                    HorizontalAlignment="Stretch"
                     Grid.Row="8" Grid.Column="4">
                     <Image Source="/Assets/Icons/delete-16x16.png"/>
                   </Button>
 
                 </Grid>
-                <CheckBox IsChecked="{Binding Settings.General.PromptOverwriteFileSave}" Margin="15,0" Content="On file 'Save' prompt for file overwrite for the first time" />
+                <CheckBox IsChecked="{Binding Settings.General.PromptOverwriteFileSave}" Margin="10,0" Content="On file 'Save' prompt for file overwrite for the first time" />
 
-                <Grid Margin="15" ColumnDefinitions="Auto,*,Auto,*">
+                <Grid Margin="10" ColumnDefinitions="Auto,*,Auto,*">
                   <TextBlock VerticalAlignment="Center" Grid.Column="0" Text="File 'Save as' prefix:"/>
                   <TextBox Text="{Binding Settings.General.FileSaveNamePrefix}"
                            Grid.Column="1" Margin="10,0,10,0"/>
@@ -205,14 +216,13 @@
         <ScrollViewer MaxHeight="{Binding ScrollViewerMaxHeight}">
           <StackPanel Orientation="Vertical" Spacing="5">
             <Border
-              Margin="5"
-            BorderBrush="LightBlue"
-            BorderThickness="4">
+                Classes="GroupBox"
+                Margin="5">
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Layer colors"/>
 
-                <Grid Margin="15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,70,Auto,*">
+                <Grid Margin="10" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,Auto,Auto,*">
 
                   <!--Tooltip overlay-->
                   <TextBlock Grid.Row="0" Grid.Column="0"
@@ -343,7 +353,7 @@
 
                 </Grid>
 
-                <Grid Margin="15,0,15,15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+                <Grid Margin="10,0,10,10" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,*,Auto,Auto">
 
                   <!--Previous layer difference  & Island-->
                   <TextBlock Grid.Row="0" Grid.Column="0"
@@ -515,13 +525,12 @@
 
             <!--Zoom-->
             <Border
-              Margin="5"
-            BorderBrush="LightBlue"
-            BorderThickness="4">
+                Classes="GroupBox"
+                Margin="5">
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Zoom"/>
-                <Grid Margin="15" RowDefinitions="Auto" ColumnDefinitions="Auto,200,*,70">
+                <Grid Margin="10" RowDefinitions="Auto" ColumnDefinitions="Auto,250,*,100">
                   <TextBlock Grid.Row="0" Grid.Column="0"
                              VerticalAlignment="Center"
                              Text="Zoom out to fit:"/>
@@ -530,7 +539,7 @@
                             Margin="10,0,0,0"
                             VerticalAlignment="Center"
                             SelectedIndex="{Binding Settings.LayerPreview.ZoomToFitPrintVolumeBounds}"
-                          >
+                            HorizontalAlignment="Stretch">
                     <ComboBox.Items>
                       <ComboBoxItem Content="Print Volume Boundary" />
                       <ComboBoxItem Content="Layer Boundary" />
@@ -549,12 +558,13 @@
                             VerticalAlignment="Center"
                             Items="{Binding ZoomRanges}"
                             SelectedIndex="{Binding Settings.LayerPreview.ZoomLockLevelIndex}"
+                            HorizontalAlignment="Stretch"
                           />
 
                 </Grid>
 
                 <CheckBox
-                  Margin="15,0,15,15"
+                  Margin="10,0,10,10"
                   Content="Auto zoom &amp; center issues on selection"
                   IsChecked="{Binding Settings.LayerPreview.ZoomIssues}"
                 />
@@ -564,13 +574,12 @@
 
             <!--Crosshairs-->
             <Border
-              Margin="5"
-            BorderBrush="LightBlue"
-            BorderThickness="4">
+                Classes="GroupBox"
+              Margin="5">
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Crosshairs"/>
-                <Grid Margin="15" RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,100,*,Auto,Auto">
+                <Grid Margin="10" RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,150,*,Auto,Auto">
                   <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
                              VerticalAlignment="Center"
                              Content="Show crosshairs for selected issues only"
@@ -634,16 +643,15 @@
             </Border>
 
             <Border
-              Margin="5"
-              BorderBrush="LightBlue"
-              BorderThickness="4">
+                Classes="GroupBox"
+              Margin="5">
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Miscellaneous"/>
 
                 <StackPanel Orientation="Horizontal">
                   <CheckBox
-                    Margin="15"
+                    Margin="10,10"
                     Content="Auto rotate on load"
                     IsChecked="{Binding Settings.LayerPreview.AutoRotateLayerBestView}"
                 />
@@ -656,7 +664,7 @@
                 </StackPanel>
 
                 <CheckBox
-                  Margin="15,0,15,15"
+                  Margin="10,0,10,10"
                   Content="Show square grid as background "
                   IsChecked="{Binding Settings.LayerPreview.ShowBackgroudGrid}"
                 />
@@ -672,24 +680,23 @@
         <ScrollViewer MaxHeight="{Binding ScrollViewerMaxHeight}">
           <StackPanel Orientation="Vertical">
             <Border
-                Margin="5"
-                BorderBrush="LightBlue"
-                BorderThickness="4">
+                Classes="GroupBox"
+                Margin="5">
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Common"/>
 
 
-                <CheckBox Margin="15" Content="Compute issues on file load"
+                <CheckBox Margin="10,10" Content="Compute issues on file load"
                           IsChecked="{Binding Settings.Issues.ComputeIssuesOnLoad}"
                           />
 
-                <CheckBox Margin="15,0,15,0" Content="Auto compute issues when the Issues tab is opened for the first time"
+                <CheckBox Margin="10,0,10,0" Content="Auto compute issues when the Issues tab is opened for the first time"
                           IsChecked="{Binding Settings.Issues.ComputeIssuesOnClickTab}"
                           />
 
-                <StackPanel Orientation="Horizontal" Margin="15" Spacing="15">
-                  <TextBlock Text="Compute:"/>
+                <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
+                  <TextBlock Text="Compute:" VerticalAlignment="Center"/>
                   <CheckBox Content="Islands"
                             IsChecked="{Binding Settings.Issues.ComputeIslands}"/>
                   <CheckBox Content="Overhangs"
@@ -706,14 +713,13 @@
             </Border>
 
             <Border
-                Margin="5"
-                BorderBrush="LightBlue"
-                BorderThickness="4">
+                Classes="GroupBox"
+                Margin="5">
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Islands"/>
 
-                <CheckBox Margin="15"
+                <CheckBox Margin="10,10"
                           Content="Enhance island detection with an combined overhang check"
                           IsChecked="{Binding Settings.Issues.IslandEnhancedDetection}"
                           ToolTip.Tip="Combines the island and overhang detections for a better and more realistic detection, also to discard false-positives. (Slower)
@@ -721,7 +727,7 @@
 &#x0a;Note: Overhangs settings will be used to configure the detection. Enabling Overhangs is not required for this procedure to work."
                         />
                 
-                <CheckBox Margin="15,0,15,15"
+                <CheckBox Margin="10,0,10,10"
                           Content="Allow diagonal bonds during island detection"
                           IsChecked="{Binding Settings.Issues.IslandAllowDiagonalBonds}"
                           ToolTip.Tip="If enabled, components touching by even a single diagonal bond will be considered a single component for the purposes of island detection.
@@ -729,7 +735,7 @@
                         />
 
 
-                <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
                                  ClipValueToMinMax="True"
                                   Minimum="0"
@@ -745,7 +751,7 @@
                   />
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
                                  ClipValueToMinMax="True"
                                   Minimum="1"
@@ -759,7 +765,7 @@
                   />
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
                                  ClipValueToMinMax="True"
                                   Minimum="1"
@@ -773,7 +779,7 @@
                   />
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
                                  ClipValueToMinMax="True"
                                   Minimum="0.05"
@@ -790,7 +796,7 @@
                 </StackPanel>
 
 
-                <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
                                  ClipValueToMinMax="True"
                                   Minimum="50"
@@ -805,7 +811,7 @@
                 </StackPanel>
 
                 <!--
-              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+              <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                 <NumericUpDown Width="60"
                 ClipValueToMinMax="True"
                                 Minimum="1"
@@ -821,7 +827,7 @@
               </StackPanel>
 
 
-              <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+              <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                 <NumericUpDown Width="60"
                 ClipValueToMinMax="True"
                                 Minimum="50"
@@ -839,22 +845,21 @@
             </Border>
 
             <Border
-                Margin="5"
-                BorderBrush="LightBlue"
-                BorderThickness="4">
+                Classes="GroupBox"
+                Margin="5">
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Overhangs"/>
 
                 <CheckBox
-                  Margin="15"
+                  Margin="10,10"
                   Content="Include islands when detecting overhangs"
                   ToolTip.Tip="If enabled, overhangs will be computed everywhere, including on islands. An overhang on an island will always be detected and reported. (Faster)
 &#x0a;If disabled, islands are disregarded when computing overhangs. An overhang that is on an island will never be detected or reported.  (Slower)
 &#x0a;When island detection is disabled and overhang detection is enabled, overhangs will always be computed everywhere."
                   IsChecked="{Binding Settings.Issues.OverhangIndependentFromIslands}"/>
 
-                <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
                                  ClipValueToMinMax="True"
                                   Minimum="2"
@@ -872,14 +877,13 @@
             </Border>
 
             <Border
-                Margin="5"
-                BorderBrush="LightBlue"
-                BorderThickness="4">
+                Classes="GroupBox"
+                Margin="5">
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Resin traps"/>
 
-                <StackPanel Orientation="Horizontal" Margin="15" Spacing="10">
+                <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
                   <NumericUpDown Width="60"
                                  ClipValueToMinMax="True"
                                   Minimum="1"
@@ -896,7 +900,7 @@
 
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
                                  ClipValueToMinMax="True"
                                   Minimum="1"
@@ -910,7 +914,7 @@
                   />
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
                                  ClipValueToMinMax="True"
                                   Minimum="1"
@@ -924,7 +928,7 @@
                   />
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
                                  ClipValueToMinMax="True"
                                   Minimum="1"
@@ -941,14 +945,13 @@
             </Border>
 
             <Border
-                Margin="5"
-                BorderBrush="LightBlue"
-                BorderThickness="4">
+                Classes="GroupBox"
+                Margin="5">
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Touching boundary"/>
 
-                <StackPanel Orientation="Horizontal" Margin="15" Spacing="10">
+                <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
                   <NumericUpDown Width="60"
                                  ClipValueToMinMax="True"
                                   Minimum="1"
@@ -967,7 +970,7 @@
                 <Grid
                   ColumnDefinitions="Auto,Auto,Auto,Auto,Auto"
                   RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-                  Margin="15,0,15,15"
+                  Margin="10,0,10,10"
                   >
                   <TextBlock
                     VerticalAlignment="Center"
@@ -1087,14 +1090,13 @@
         <ScrollViewer MaxHeight="{Binding ScrollViewerMaxHeight}">
           <StackPanel Orientation="Vertical">
             <Border
-                  Margin="5"
-                  BorderBrush="LightBlue"
-                  BorderThickness="4">
+                Classes="GroupBox"
+                  Margin="5">
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Colors &amp; highlights"/>
 
-                <Grid Margin="15" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,Auto">
+                <Grid Margin="10" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,Auto">
                   <TextBlock Grid.Row="0" Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Pixel add operation / (Selected):"/>
@@ -1198,20 +1200,19 @@
             </Border>
 
             <Border
-                  Margin="5"
-                  BorderBrush="LightBlue"
-                  BorderThickness="4">
+                Classes="GroupBox"
+                  Margin="5">
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Actions"/>
 
                 <CheckBox
                   IsChecked="{Binding Settings.PixelEditor.PartialUpdateIslandsOnEditing}"
-                  Margin="15"
+                  Margin="10"
                   Content="Refresh issues for modified layers"/>
                 <CheckBox
                   IsChecked="{Binding Settings.PixelEditor.CloseEditorOnApply}"
-                  Margin="15,0,15,15"
+                  Margin="10,0,10,10"
                   Content="Close pixel editor after operations are applied"/>
               </StackPanel>
             </Border>
@@ -1224,21 +1225,20 @@
         <ScrollViewer MaxHeight="{Binding ScrollViewerMaxHeight}">
           <StackPanel Orientation="Vertical">
             <Border
-                  Margin="5"
-                  BorderBrush="LightBlue"
-                  BorderThickness="4">
+                Classes="GroupBox"
+                  Margin="5">
 
-              <StackPanel Orientation="Vertical" Spacing="15">
+              <StackPanel Orientation="Vertical" Spacing="10">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Default values"/>
 
                 <CheckBox IsChecked="{Binding Settings.LayerRepair.RepairIslands}"
-                  Margin="15,0" Content="Attempt to repair islands by default"/>
+                  Margin="10,0" Content="Attempt to repair islands by default"/>
                 <CheckBox IsChecked="{Binding Settings.LayerRepair.RepairResinTraps}"
-                  Margin="15,0" Content="Attempt to repair resin traps by default"/>
+                  Margin="10,0" Content="Attempt to repair resin traps by default"/>
                 <CheckBox IsChecked="{Binding Settings.LayerRepair.RemoveEmptyLayers}"
-                  Margin="15,0" Content="Remove empty layers by default"/>
+                  Margin="10,0" Content="Remove empty layers by default"/>
 
-                <StackPanel Orientation="Horizontal" Margin="15,0" Spacing="10">
+                <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
                   <NumericUpDown
                     Value="{Binding Settings.LayerRepair.RemoveIslandsBelowEqualPixels}"
                     Width="70"
@@ -1248,7 +1248,7 @@
                   <TextBlock VerticalAlignment="Center" Text="Default maximum pixel area for Island removal (0 = disable)"/>
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Margin="15,0" Spacing="10">
+                <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
                   <NumericUpDown
                     Value="{Binding Settings.LayerRepair.RemoveIslandsRecursiveIterations}"
                     Width="70"
@@ -1258,7 +1258,7 @@
                   <TextBlock VerticalAlignment="Center" Text="Default maximum layers for recursive island removal (0 = All)"/>
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Margin="15,0" Spacing="10">
+                <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
                   <NumericUpDown
                     Value="{Binding Settings.LayerRepair.ClosingIterations}"
                     Width="70"
@@ -1268,7 +1268,7 @@
                   <TextBlock VerticalAlignment="Center" Text="Default 'Gap Closing' iterations"/>
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Margin="15,0,15,15" Spacing="10">
+                <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown
                     Value="{Binding Settings.LayerRepair.OpeningIterations}"
                     Width="70"
@@ -1289,14 +1289,12 @@
         <ScrollViewer MaxHeight="{Binding ScrollViewerMaxHeight}">
           <StackPanel Orientation="Vertical" Spacing="5">
             <Border
-              Margin="5"
-            BorderBrush="LightBlue"
-            BorderThickness="4"
-          >
+                Classes="GroupBox"
+              Margin="5">
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Common"/>
-                <StackPanel Margin="15" Orientation="Vertical" Spacing="15">
+                <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
                   <CheckBox IsChecked="{Binding Settings.Automations.SaveFileAfterModifications}" Content="Auto save the file after apply any automation(s)"/>
                 </StackPanel>
 
@@ -1311,7 +1309,7 @@
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="PrusaSlicer SL1 files"/>
-                <StackPanel Margin="15" Orientation="Vertical" Spacing="15">
+                <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
                   <CheckBox IsChecked="{Binding Settings.Automations.AutoConvertSL1Files}"
                             ToolTip.Tip="Converts SL1 files to the format specified on 'PrusaSlicer - Printer - Notes' on 'FILEFORMAT_XXX' variable.
 &#x0a;A new file with same name but a new extension will be created and overwrite any previous file.
@@ -1323,23 +1321,22 @@
             </Border>
 
 
-              <Border
-                  Margin="5"
-                  BorderBrush="LightBlue"
-                  BorderThickness="4">
+            <Border
+                Classes="GroupBox"
+                  Margin="5">
 
                   <StackPanel Orientation="Vertical">
                       <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Light-off delay"/>
 
-                      <CheckBox Margin="15,15,15,0"
+                      <CheckBox Margin="10,10,10,0"
                                 Content="Change only light-off delay if value is zero"
                                 ToolTip.Tip="If enabled, it will only change light-off delay to the defined values if the original value is zero.
 &#x0a;If disabled, it will always change the light-off delay to the defined values."
                                 IsChecked="{Binding Settings.Automations.ChangeOnlyLightOffDelayIfZero}"/>
 
-                      <Grid Margin="15"
+                      <Grid Margin="10"
                             RowDefinitions="Auto"
-                            ColumnDefinitions="Auto,10,100,5,Auto,30,Auto,10,100,5,Auto">
+                            ColumnDefinitions="Auto,10,150,5,Auto,30,Auto,10,150,5,Auto">
                             
                             <TextBlock Grid.Row="0" Grid.Column="0" 
                                        VerticalAlignment="Center"
@@ -1352,7 +1349,7 @@
                                            Minimum="0"
                                            Maximum="255"
                                            Increment="0.5"
-                                           FormatString="{}{0:0.00}"
+                                           FormatString="F02"
                                            Value="{Binding Settings.Automations.LightOffDelay}"/>
                             <TextBlock Grid.Row="0" Grid.Column="4"
                                        VerticalAlignment="Center"
@@ -1369,7 +1366,7 @@
                                            Minimum="0"
                                            Maximum="255"
                                            Increment="0.5"
-                                           FormatString="{}{0:0.00}"
+                                           FormatString="F02"
                                            Value="{Binding Settings.Automations.BottomLightOffDelay}"/>
                             <TextBlock Grid.Row="0" Grid.Column="10"
                                        VerticalAlignment="Center"
@@ -1389,41 +1386,42 @@
 
     </TabControl>
 
-    <Grid ColumnDefinitions="*,*" Background="LightGray">
+      <Border Classes="FooterActions">
+          <Grid ColumnDefinitions="*,*">
 
-      <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="10">
-        <Button Name="Actions.ResetAllSettings" Padding="10"
-                Command="{Binding OnClickResetAllDefaults}">
-          <StackPanel Orientation="Horizontal">
-            <Image Source="/Assets/Icons/undo-alt-16x16.png"/>
-            <TextBlock Margin="10,0,0,0">Reset all settings</TextBlock>
-          </StackPanel>
-          </Button>
-      </StackPanel>
+              <StackPanel Grid.Column="0" Orientation="Horizontal">
+                  <Button Name="Actions.ResetAllSettings" Padding="10"
+                          Command="{Binding OnClickResetAllDefaults}">
+                      <StackPanel Orientation="Horizontal">
+                          <Image Source="/Assets/Icons/undo-alt-16x16.png"/>
+                          <TextBlock Margin="10,0,0,0">Reset all settings</TextBlock>
+                      </StackPanel>
+                  </Button>
+              </StackPanel>
 
-      <StackPanel Grid.Column="1"
-                  HorizontalAlignment="Right"
-                  VerticalAlignment="Center"
-                  Orientation="Horizontal"
-                  Margin="10"
-                  >
-          <Button Name="Actions.Save" Margin="0,0,10,0" Padding="10" IsDefault="True"
-                  Command="{Binding OnClickSave}">
-            <StackPanel Orientation="Horizontal">
-              <Image Source="/Assets/Icons/save-16x16.png"/>
-              <TextBlock Margin="10,0,0,0">Save</TextBlock>
-            </StackPanel>
-          </Button>
+              <StackPanel Grid.Column="1"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Center"
+                          Orientation="Horizontal">
+                  <Button Name="Actions.Save" Margin="0,0,10,0" Padding="10" IsDefault="True"
+                          Command="{Binding OnClickSave}">
+                      <StackPanel Orientation="Horizontal">
+                          <Image Source="/Assets/Icons/save-16x16.png"/>
+                          <TextBlock Margin="10,0,0,0">Save</TextBlock>
+                      </StackPanel>
+                  </Button>
 
-        <Button Name="Actions.Cancel" Padding="10" IsCancel="True"
-                Command="{Binding Close}">
-          <StackPanel Orientation="Horizontal">
-            <Image Source="/Assets/Icons/exit-16x16.png"/>
-            <TextBlock Margin="10,0,0,0">Cancel</TextBlock>
-          </StackPanel>
-        </Button>
-      </StackPanel>
-    </Grid>
-  </StackPanel>
+                  <Button Name="Actions.Cancel" Padding="10" IsCancel="True"
+                          Command="{Binding Close}">
+                      <StackPanel Orientation="Horizontal">
+                          <Image Source="/Assets/Icons/exit-16x16.png"/>
+                          <TextBlock Margin="10,0,0,0">Cancel</TextBlock>
+                      </StackPanel>
+                  </Button>
+              </StackPanel>
+          </Grid>
+      </Border>
 
-  </Window>
+    </StackPanel>
+
+  </controls:WindowEx>

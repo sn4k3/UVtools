@@ -1,0 +1,199 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Tools.ToolDynamicLayerHeightControl">
+
+    <StackPanel Spacing="10">
+
+      <Grid RowDefinitions="Auto,0,Auto,10,Auto,10,Auto,10,Auto"
+            ColumnDefinitions="Auto,10,150,5,Auto,20,Auto,10,150,5,Auto">
+
+          <!--
+          <TextBlock
+              Grid.Row="0" Grid.Column="0"
+              VerticalAlignment="Center"
+              ToolTip.Tip="The printer display width.  Required to calculate the XY pixel resolution."
+              Text="Display width:"/>
+          <NumericUpDown Grid.Row="0" Grid.Column="2"
+                         ClipValueToMinMax="True"
+                         Increment="0.1"
+                         Minimum="0"
+                         Maximum="10000"
+                         FormatString="F02"
+                         Value="{Binding Operation.DisplayWidth}"/>
+          <TextBlock Grid.Row="0" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     Text="mm"/>
+
+          <TextBlock Grid.Row="0" Grid.Column="6"
+                     VerticalAlignment="Center"
+                     ToolTip.Tip="The printer display height. Required to calculate the XY pixel resolution."
+                     Text="Display height:"/>
+          <NumericUpDown Grid.Row="0" Grid.Column="8"
+                         ClipValueToMinMax="True"
+                         Increment="0.1"
+                         Minimum="0"
+                         Maximum="10000"
+                         FormatString="F02"
+                         Value="{Binding Operation.DisplayHeight}"/>
+          <TextBlock Grid.Row="0" Grid.Column="10"
+                     VerticalAlignment="Center"
+                     Text="mm"/>
+                     !-->
+
+          <TextBlock Grid.Row="2" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     ToolTip.Tip="Never use less than this minimum layer height, layers will always stack at least to this height."
+                     Text="Minimum layer height:"/>
+
+          <NumericUpDown Grid.Row="2" Grid.Column="2"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Stretch"
+                         Minimum="{Binding SlicerFile.LayerHeight}"
+                         Maximum="{Binding Operation.MaximumLayerHeight}"
+                         Increment="0.01"
+                         FormatString="F2"
+                         Value="{Binding Operation.MinimumLayerHeight}"/>
+          <TextBlock Grid.Row="2" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     Text="mm"/>
+
+          <TextBlock Grid.Row="2" Grid.Column="6"
+                     VerticalAlignment="Center"
+                     ToolTip.Tip="Allow to stack layers up to a maximum of this height"
+                     Text="Maximum layer height:"/>
+
+            <NumericUpDown Grid.Row="2" Grid.Column="8"
+                           Name="MaximumLayerHeight"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Stretch"
+                         Minimum="{Binding MinimumLayerHeight}"
+                         Maximum="{Binding MaximumLayerHeight}"
+                         Increment="0.01"
+                         FormatString="F2"
+                         Value="{Binding Operation.MaximumLayerHeight}"/>
+          <TextBlock Grid.Row="2" Grid.Column="10"
+                     VerticalAlignment="Center"
+                     Text="mm"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       ToolTip.Tip="This operation needs to run sequentially, to boost speed up, a group of layers will be cached (decoded and transformed in parallel to latter use).
+&#x0a;The more layers you can cache the faster it will run but more RAM is used.
+&#x0a;As a rule of thumb, never use less layers than CPU core count x 2 and allow some free margin or SWAP will be used and slow down the operation.
+&#x0a;When allocate more layers than the required, that memory will not be used and kept free."
+                       Text="Cache RAM:"/>
+
+            <NumericUpDown Grid.Row="4" Grid.Column="2"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Stretch"
+                           Minimum="0.5"
+                           Maximum="128"
+                           Increment="0.5"
+                           FormatString="F2"
+                           Value="{Binding Operation.CacheRAMSize}"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="GB"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="6"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"
+                       Text="Cache layers:"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="8"
+                       VerticalAlignment="Center"
+                       Text="{Binding Operation.CacheObjectCount, StringFormat=±\{0\}}"/>
+
+
+            <TextBlock Grid.Row="6" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       ToolTip.Tip="Linear: Current exposure + number of stacked layers * step.&#x0a;
+Multiplier: Current exposure * layer height * number of stacked layers * step.&#x0a;
+Manual: User defined exposure per layer height"
+                       Text="Exposure set type:"/>
+
+            <ComboBox Grid.Row="6" Grid.Column="2"
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Stretch"
+                      Items="{Binding Operation.ExposureSetTypeItems}"
+                      SelectedItem="{Binding Operation.ExposureSetType}"/>
+
+            <TextBlock Grid.Row="8" Grid.Column="0"
+                       IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
+                       VerticalAlignment="Center"
+                       ToolTip.Tip="Bottom exposure increment per layer height"
+                       Text="Bottom exposure step:"/>
+
+            <NumericUpDown Grid.Row="8" Grid.Column="2"
+                           IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Stretch"
+                           Minimum="0.01"
+                           Maximum="100"
+                           Increment="0.01"
+                           FormatString="F2"
+                           Value="{Binding Operation.BottomExposureStep}"/>
+            <TextBlock Grid.Row="8" Grid.Column="4"
+                       IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
+                       VerticalAlignment="Center"
+                       Text="s"/>
+
+            <TextBlock Grid.Row="8" Grid.Column="6"
+                       IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"
+                       ToolTip.Tip="Exposure increment per layer height"
+                       Text="Exposure step:"/>
+
+            <NumericUpDown Grid.Row="8" Grid.Column="8"
+                           IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Stretch"
+                           Minimum="0.01"
+                           Maximum="100"
+                           Increment="0.01"
+                           FormatString="F2"
+                           Value="{Binding Operation.ExposureStep}"/>
+
+            <TextBlock Grid.Row="8" Grid.Column="10"
+                       IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
+                       VerticalAlignment="Center"
+                       Text="s"/>
+
+      </Grid>
+
+        <TextBlock Text="Exposure Table:" 
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold" />
+
+      <DataGrid
+          Name="ExposureTable"
+          CanUserReorderColumns="True"
+          CanUserResizeColumns="True"
+          CanUserSortColumns="True"
+          GridLinesVisibility="Horizontal"
+          IsReadOnly="False"
+          ClipboardCopyMode="IncludeHeader"
+          MinHeight="200"
+          Items="{Binding Operation.ExposureTable}">
+          <DataGrid.Columns>
+              <DataGridTextColumn Header="Layer height (mm)"
+                                  Binding="{Binding LayerHeight}"
+                                  IsReadOnly="True"
+                                  Width="Auto" />
+              <DataGridTextColumn Header="Bottom exposure (s)"
+                                  Binding="{Binding BottomExposure}"
+                                  Width="Auto" />
+              <DataGridTextColumn Header="Exposure (s)"
+                                  Binding="{Binding Exposure}"
+                                  Width="Auto" />
+          </DataGrid.Columns>
+
+      </DataGrid>
+
+    </StackPanel>
+</UserControl>

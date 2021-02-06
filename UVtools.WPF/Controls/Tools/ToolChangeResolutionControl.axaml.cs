@@ -34,7 +34,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolChangeResolutionControl()
         {
             InitializeComponent();
-            BaseOperation = new OperationChangeResolution(App.SlicerFile.Resolution, App.SlicerFile.LayerManager.BoundingRectangle);
+            BaseOperation = new OperationChangeResolution(SlicerFile);
         }
 
         private void InitializeComponent()

@@ -79,31 +79,30 @@ Take **[Erode-Bottom.ps1](https://github.com/sn4k3/UVtools/blob/master/UVtools.S
   * Example:
     ```Powershell
     # Erode bottom layers
-    $morph = New-Object UVtools.Core.Operations.OperationMorph
+    $morph = [UVtools.Core.Operations.OperationMorph]::new($slicerFile)
     $morph.MorphOperation = [Emgu.CV.CvEnum.MorphOp]::Erode
     $morph.IterationsStart = $iterations
-    $morph.LayerIndexEnd = $slicerFile.BottomLayerCount - 1
-    if(!$morph.Execute($slicerFile, $progress)){ return; }
+    $morph.SelectBottomLayers()
+    if(!$morph.Execute($progress)){ return }
 
     # Reuse object and erode normal layers with 1 less iteration
     $morph.IterationsStart = $iterations - 1
-    $morph.LayerIndexStart = $slicerFile.BottomLayerCount
-    $morph.LayerIndexEnd = $slicerFile.LayerCount - 1
-    if(!$morph.Execute($slicerFile, $progress)){ return }
+    $morph.SelectNormalLayers()
+    if(!$morph.Execute($progress)){ return }
 
-    # Rotate layer 0, 45º
-    $rotate = New-Object UVtools.Core.Operations.OperationRotate
+    # Rotate all layers, 45º
+    $rotate = [UVtools.Core.Operations.OperationRotate]::new($slicerFile)
     $rotate.AngleDegrees = 45;
-    if(!$rotate.Execute($slicerFile, $progress)){ return }
+    if(!$rotate.Execute($progress)){ return }
 
     # Rotate layer 1, 90º
     $rotate.LayerIndexStart = 1
     $rotate.LayerIndexEnd = 1
     $rotate.AngleDegrees = 90
-    if(!$rotate.Execute($slicerFile, $progress)){ return }
+    if(!$rotate.Execute($progress)){ return }
     ```
 
 ## Contribute with your scripts
 
-If you make a usefull script and want to contribute you can share and publish your script under [github - issues](https://github.com/sn4k3/UVtools/issues/new?assignees=sn4k3&labels=script&template=script.md&title=%5BSCRIPT%5D+).
+If you make a usefull script and want to contribute you can share and publish your script under [github - discussions - scripts](https://github.com/sn4k3/UVtools/discussions/categories/scripts).
 After analyzation it will be published on the repository

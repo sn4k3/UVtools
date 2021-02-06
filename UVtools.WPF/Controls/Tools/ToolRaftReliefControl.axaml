@@ -7,14 +7,14 @@
 
 
   <Grid
-    ColumnDefinitions="Auto,10,Auto,5,Auto"
+    ColumnDefinitions="Auto,10,150,5,Auto"
     RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
     >
 
     <TextBlock Text="Relief type:" VerticalAlignment="Center"/>
     <ComboBox Grid.Row="0"
               Grid.Column="2"
-              Width="100"
+              HorizontalAlignment="Stretch"
               SelectedItem="{Binding Operation.ReliefType}"
               Items="{Binding Operation.RaftReliefItems}"/>
 
@@ -25,7 +25,6 @@
         Text="Ignore first:" VerticalAlignment="Center"/>
 
     <NumericUpDown Grid.Row="2" Grid.Column="2"
-                   Width="100"
                    Minimum="0"
                    Maximum="255"
                    Value="{Binding Operation.IgnoreFirstLayers}"/>
@@ -40,7 +39,6 @@
         Text="Pixel brightness:" VerticalAlignment="Center"/>
 
     <NumericUpDown Grid.Row="4" Grid.Column="2"
-                   Width="100"
                    Minimum="0"
                    Maximum="255"
                    IsVisible="{Binding !Operation.IsDecimate}"
@@ -65,7 +63,6 @@
       Text="Dilate supports by:" VerticalAlignment="Center"/>
 
     <NumericUpDown Grid.Row="6" Grid.Column="2"
-              Width="100"
               Minimum="0"
               Maximum="255"
               Value="{Binding Operation.DilateIterations}"/>
@@ -81,7 +78,6 @@
       />
 
     <NumericUpDown Grid.Row="8" Grid.Column="2"
-              Width="100"
               Minimum="1"
               Maximum="255"
               Value="{Binding Operation.WallMargin}"
@@ -98,7 +94,6 @@
       />
 
     <NumericUpDown Grid.Row="10" Grid.Column="2"
-              Width="100"
               Minimum="10"
               Maximum="255"
               Value="{Binding Operation.HoleDiameter}"
@@ -115,7 +110,6 @@
       />
 
     <NumericUpDown Grid.Row="12" Grid.Column="2"
-              Width="100"
               Minimum="10"
               Maximum="255"
               Value="{Binding Operation.HoleSpacing}"

@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="950" d:DesignHeight="500"
+             mc:Ignorable="d" d:DesignWidth="950" d:DesignHeight="600"
              x:Class="UVtools.WPF.Controls.Tools.ToolPixelDimmingControl">
   <StackPanel Spacing="10">
     <StackPanel Spacing="10" Orientation="Horizontal">
@@ -46,27 +46,26 @@
       <CheckBox
         Margin="20,0,0,0"
         Content="Dim only walls"
-        IsChecked="{Binding Operation.WallsOnly}"
-        />
-
-      <TextBlock
-        Margin="20,0,0,0"
-        VerticalAlignment="Center"
-        Text="Alternate the pattern every:"
-        />
-      <NumericUpDown
-        Minimum="1"
-        Maximum="{Binding ushort.MaxValue}"
-        Width="80"
-        Value="{Binding Operation.AlternatePatternPerLayers}"
-        />
-      <TextBlock
-        VerticalAlignment="Center"
-        Text="layers"
-        />
-
-           
+        IsChecked="{Binding Operation.WallsOnly}"/>
+          
     </StackPanel>
+
+      <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBlock
+              VerticalAlignment="Center"
+              Text="Alternate the pattern every:"
+          />
+          <NumericUpDown
+              Minimum="1"
+              Maximum="{Binding ushort.MaxValue}"
+              Width="150"
+              Value="{Binding Operation.AlternatePatternPerLayers}"
+          />
+          <TextBlock
+              VerticalAlignment="Center"
+              Text="layers"
+          />
+      </StackPanel>
     
     <Grid 
       RowDefinitions="200,10,Auto"
@@ -105,7 +104,6 @@
             <NumericUpDown
               Minimum="0"
               Maximum="254"
-              Width="80"
               Value="{Binding Operation.Brightness}"/>
 
             <TextBlock
@@ -211,36 +209,33 @@
             TextWrapping="Wrap"
             Text="Warning: This function can generate a large number of resin traps. (Use with caution)"/>
 
+          <Grid RowDefinitions="Auto,10,Auto"
+                ColumnDefinitions="Auto,10,150,5,Auto">
+              <TextBlock
+                  VerticalAlignment="Center"
+                  Text="Thickness:"/>
+              <NumericUpDown
+                  Grid.Row="0" Grid.Column="2" 
+                  Minimum="5"
+                  Maximum="10000"
+                  Value="{Binding Operation.InfillGenThickness}"/>
+              <TextBlock Grid.Row="0" Grid.Column="4"
+                         VerticalAlignment="Center"
+                         Text="px"/>
 
-          <StackPanel Orientation="Horizontal" Spacing="10">
-            <TextBlock
-              VerticalAlignment="Center"
-              Text="Thickness:"/>
-            <NumericUpDown
-              Minimum="5"
-              Maximum="10000"
-              Width="80"
-              Value="{Binding Operation.InfillGenThickness}"
-            />
-            <TextBlock
-              VerticalAlignment="Center"
-              Text="px"/>
+              <TextBlock Grid.Row="2" Grid.Column="0"
+                         VerticalAlignment="Center"
+                         Text="Spacing:"/>
+              <NumericUpDown Grid.Row="2" Grid.Column="2"
+                             Minimum="5"
+                             Maximum="10000"
+                             Value="{Binding Operation.InfillGenSpacing}"/>
+              <TextBlock Grid.Row="2" Grid.Column="4"
+                         VerticalAlignment="Center"
+                         Text="px"/>
 
-            <TextBlock
-              Margin="20,0,0,0"
-              VerticalAlignment="Center"
-              Text="Spacing:"/>
-            <NumericUpDown
-              Minimum="5"
-              Maximum="10000"
-              Width="80"
-              Value="{Binding Operation.InfillGenSpacing}"
-            />
-            <TextBlock
-              VerticalAlignment="Center"
-              Text="px"/>
-          </StackPanel>
-
+          </Grid>
+          
           <StackPanel Orientation="Horizontal" Spacing="10">
             <Button
               Padding="10"

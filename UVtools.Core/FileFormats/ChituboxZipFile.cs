@@ -400,11 +400,8 @@ namespace UVtools.Core.FileFormats
 
         #region Methods
 
-        public override void Encode(string fileFullPath, OperationProgress progress = null)
+        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
-            progress ??= new OperationProgress();
-            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-            base.Encode(fileFullPath, progress);
             using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
             {
                 if (Thumbnails.Length > 0 && !ReferenceEquals(Thumbnails[0], null))
@@ -448,21 +445,14 @@ namespace UVtools.Core.FileFormats
                     progress++;
                 }
             }
-
-            AfterEncode();
         }
 
-        public override void Decode(string fileFullPath, OperationProgress progress = null)
+        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
         {
-            base.Decode(fileFullPath, progress);
-            if(progress is null) progress = new OperationProgress();
-            progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
-
-            FileFullPath = fileFullPath;
             using (var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read))
             {
                 var entry = inputFile.GetEntry("run.gcode");
-                if (!ReferenceEquals(entry, null))
+                if (entry is not null)
                 {
                     //Clear();
                     //throw new FileLoadException("run.gcode not found", fileFullPath);

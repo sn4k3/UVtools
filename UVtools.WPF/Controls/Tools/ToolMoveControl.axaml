@@ -27,155 +27,160 @@
 
     </StackPanel>
 
-    <StackPanel Grid.Row="0" Grid.Column="2"
+      <Grid Grid.Row="0" Grid.Column="2"
+            RowDefinitions="Auto,Auto,Auto"
+            ColumnDefinitions="Auto,Auto,Auto"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center">
+
+          <StackPanel Grid.Row="1" Grid.Column="0"
+                      VerticalAlignment="Center"
+                      Orientation="Horizontal"
+                      Spacing="5">
+              <TextBlock
+                  VerticalAlignment="Center"
+                  FontWeight="Bold"
+                  Text="Left"/>
+              <NumericUpDown
+                  VerticalAlignment="Center"
+                  ButtonSpinnerLocation="Left"
+                  Width="150"
+                  Minimum="-100000"
+                  Maximum="100000"
+                  Value="{Binding Operation.MarginLeft}"/>
+          </StackPanel>
+
+          <StackPanel Grid.Row="0" Grid.Column="1">
+              <TextBlock
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Center"
+                  FontWeight="Bold"
+                  Margin="0,0,0,5"
+                  Text="Top"/>
+              <NumericUpDown
+                  VerticalAlignment="Center"
+                  Width="150"
+                  Minimum="-100000"
+                  Maximum="100000"
+                  Value="{Binding Operation.MarginTop}"/>
+          </StackPanel>
+
+          <StackPanel Grid.Row="1" Grid.Column="2" 
+                      Orientation="Horizontal" 
+                      VerticalAlignment="Center"
+                      Spacing="5">
+            <NumericUpDown
                 VerticalAlignment="Center"
-                  Orientation="Horizontal"
-                  Spacing="5">
-      <TextBlock 
-        VerticalAlignment="Center" 
-        FontWeight="Bold"
-        Text="Left"/>
-      <NumericUpDown 
-            VerticalAlignment="Center"
-            ButtonSpinnerLocation="Left"
-            Width="80"
-            Value="{Binding Operation.MarginLeft}"
-          />
+                  Width="150"
+                    Minimum="-100000"
+                    Maximum="100000"
+                  Value="{Binding Operation.MarginRight}"/>
+              <TextBlock
+                  VerticalAlignment="Center"
+                  FontWeight="Bold"
+                  Text="Right"/>
+          </StackPanel>
 
-      <StackPanel>
-        <TextBlock 
-          VerticalAlignment="Center" 
-          HorizontalAlignment="Center"
-          FontWeight="Bold"
-          Margin="0,0,0,5"
-          Text="Top"/>
-        <NumericUpDown
-            VerticalAlignment="Center"
-            Width="80"
-            Value="{Binding Operation.MarginTop}"
-          />
+          <StackPanel Grid.Row="2" Grid.Column="1">
+              <NumericUpDown
+                  VerticalAlignment="Center"
+                  Width="150"
+                  Minimum="-100000"
+                  Maximum="100000"
+                  Value="{Binding Operation.MarginBottom}"/>
+              <TextBlock
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Center"
+                  FontWeight="Bold"
+                  Margin="0,5,0,0"
+                  Text="Bottom"/>
+          </StackPanel>
 
-        <Grid RowDefinitions="Auto,Auto,Auto" 
-              ColumnDefinitions="Auto,Auto,Auto"
-              Margin="10"
-              >
+          <Grid Grid.Row="1" Grid.Column="1"
+                RowDefinitions="30,30,30"
+                ColumnDefinitions="30,30,30"
+                Width="90"
+                Height="90"
+                Margin="10">
 
-          <RadioButton
-            Grid.Row="0" Grid.Column="0"
-            ToolTip.Tip="Top Left"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
-            GroupName="Anchor"
-            Command="{Binding Operation.SetAnchor}"
-            CommandParameter="0"
-            />
-          <RadioButton
-            Grid.Row="0" Grid.Column="1"
-            ToolTip.Tip="Top Center"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
-            GroupName="Anchor"
-            Command="{Binding Operation.SetAnchor}"
-            CommandParameter="1"
-            />
-          <RadioButton
-            Grid.Row="0" Grid.Column="2"
-            ToolTip.Tip="Top Right"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
-            GroupName="Anchor"
-            Command="{Binding Operation.SetAnchor}"
-            CommandParameter="2"
-            />
-          
-          <RadioButton
-            Grid.Row="1" Grid.Column="0"
-            ToolTip.Tip="Middle Left"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
-            GroupName="Anchor"
-            Command="{Binding Operation.SetAnchor}"
-            CommandParameter="3"
-            />
-          <RadioButton
-            Grid.Row="1" Grid.Column="1"
-            ToolTip.Tip="Middle Center"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
-            Margin="5"
-            IsChecked="{Binding IsMiddleCenterChecked}"
-            GroupName="Anchor"
-            Command="{Binding Operation.SetAnchor}"
-            CommandParameter="4"
-            />
-          <RadioButton
-            Grid.Row="1" Grid.Column="2"
-            ToolTip.Tip="Middle Right"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
-            GroupName="Anchor"
-            Command="{Binding Operation.SetAnchor}"
-            CommandParameter="5"
-            />
-          
-          <RadioButton
-            Grid.Row="2" Grid.Column="0"
-            ToolTip.Tip="Bottom Left"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
-            GroupName="Anchor"
-            Command="{Binding Operation.SetAnchor}"
-            CommandParameter="6"
-            />
-          <RadioButton
-            Grid.Row="2" Grid.Column="1"
-            ToolTip.Tip="Bottom Center"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
-            GroupName="Anchor"
-            Command="{Binding Operation.SetAnchor}"
-            CommandParameter="7"
-            />
-          <RadioButton
-            Grid.Row="2" Grid.Column="2"
-            ToolTip.Tip="Bottom Right"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
-            GroupName="Anchor"
-            Command="{Binding Operation.SetAnchor}"
-            CommandParameter="8"
-            />
-          
-          
-        </Grid>
+            <RadioButton
+                Grid.Row="0" Grid.Column="0"
+                ToolTip.Tip="Top Left"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                GroupName="Anchor"
+                Command="{Binding Operation.SetAnchor}"
+                CommandParameter="0"/>
+            <RadioButton
+              Grid.Row="0" Grid.Column="1"
+              ToolTip.Tip="Top Center"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              GroupName="Anchor"
+              Command="{Binding Operation.SetAnchor}"
+              CommandParameter="1"/>
+            <RadioButton
+              Grid.Row="0" Grid.Column="2"
+              ToolTip.Tip="Top Right"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              GroupName="Anchor"
+              Command="{Binding Operation.SetAnchor}"
+              CommandParameter="2"/>
 
-        <NumericUpDown
-            VerticalAlignment="Center"
-            Width="80"
-            Value="{Binding Operation.MarginBottom}"
-          />
-        <TextBlock
-          VerticalAlignment="Center"
-          HorizontalAlignment="Center"
-          FontWeight="Bold"
-          Margin="0,5,0,0"
-          Text="Bottom"/>
-        
-      </StackPanel>
+            <RadioButton
+              Grid.Row="1" Grid.Column="0"
+              ToolTip.Tip="Middle Left"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              GroupName="Anchor"
+              Command="{Binding Operation.SetAnchor}"
+              CommandParameter="3"/>
+            <RadioButton
+              Grid.Row="1" Grid.Column="1"
+              ToolTip.Tip="Middle Center"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              IsChecked="{Binding IsMiddleCenterChecked}"
+              GroupName="Anchor"
+              Command="{Binding Operation.SetAnchor}"
+              CommandParameter="4"/>
+            <RadioButton
+              Grid.Row="1" Grid.Column="2"
+              ToolTip.Tip="Middle Right"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              GroupName="Anchor"
+              Command="{Binding Operation.SetAnchor}"
+              CommandParameter="5"/>
 
-      <NumericUpDown
-           VerticalAlignment="Center"
-           Width="80"
-           Value="{Binding Operation.MarginRight}"
-          />
-      <TextBlock
-        VerticalAlignment="Center"
-        HorizontalAlignment="Center"
-        FontWeight="Bold"
-        Text="Right"
-        />
-      
-    </StackPanel>
-    
+            <RadioButton
+              Grid.Row="2" Grid.Column="0"
+              ToolTip.Tip="Bottom Left"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              GroupName="Anchor"
+              Command="{Binding Operation.SetAnchor}"
+              CommandParameter="6"/>
+            <RadioButton
+              Grid.Row="2" Grid.Column="1"
+              ToolTip.Tip="Bottom Center"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              GroupName="Anchor"
+              Command="{Binding Operation.SetAnchor}"
+              CommandParameter="7"/>
+            <RadioButton
+              Grid.Row="2" Grid.Column="2"
+              ToolTip.Tip="Bottom Right"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              GroupName="Anchor"
+              Command="{Binding Operation.SetAnchor}"
+              CommandParameter="8"/>
+
+          </Grid>
+
+      </Grid>
   </Grid>
 </UserControl>

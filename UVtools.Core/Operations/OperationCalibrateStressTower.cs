@@ -10,7 +10,6 @@ using System;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -98,10 +97,31 @@ namespace UVtools.Core.Operations
 
         #endregion
 
-        #region Properties
+        #region Constructor
 
-        [XmlIgnore]
-        public Size Resolution { get; set; } = Size.Empty;
+        public OperationCalibrateStressTower() { }
+
+        public OperationCalibrateStressTower(FileFormat slicerFile) : base(slicerFile)
+        {
+            _layerHeight = (decimal)slicerFile.LayerHeight;
+            _bottomLayers = slicerFile.BottomLayerCount;
+            _bottomExposure = (decimal)slicerFile.BottomExposureTime;
+            _normalExposure = (decimal)slicerFile.ExposureTime;
+            _mirrorOutput = slicerFile.MirrorDisplay;
+        }
+
+        public override void InitWithSlicerFile()
+        {
+            base.InitWithSlicerFile();
+            if (SlicerFile.DisplayWidth > 0)
+                DisplayWidth = (decimal)SlicerFile.DisplayWidth;
+            if (SlicerFile.DisplayHeight > 0)
+                DisplayHeight = (decimal)SlicerFile.DisplayHeight;
+        }
+
+        #endregion
+
+        #region Properties
 
         public decimal DisplayWidth
         {
@@ -294,8 +314,8 @@ namespace UVtools.Core.Operations
         {
             var layers = new Mat[LayerCount];
             
-            Slicer slicer = new(Resolution, new SizeF((float) DisplayWidth, (float) DisplayHeight));
-            Point center = new Point(Resolution.Width / 2, Resolution.Height / 2);
+            Slicer slicer = new(SlicerFile.Resolution, new SizeF((float) DisplayWidth, (float) DisplayHeight));
+            Point center = new Point(SlicerFile.Resolution.Width / 2, SlicerFile.Resolution.Height / 2);
             uint baseRadius = slicer.PixelsFromMillimeters(_baseDiameter) / 2;
             uint baseLayers = (ushort) Math.Floor(_baseHeight / _layerHeight);
             uint bodyLayers = (ushort) Math.Floor(_bodyHeight / _layerHeight);
@@ -315,7 +335,7 @@ namespace UVtools.Core.Operations
             var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);*/
             Parallel.For(0, LayerCount, layerIndex =>
             {
-                layers[layerIndex] = EmguExtensions.InitMat(Resolution);
+                layers[layerIndex] = EmguExtensions.InitMat(SlicerFile.Resolution);
             });
             
             Parallel.For(0, baseLayers, layerIndex =>
@@ -389,24 +409,16 @@ namespace UVtools.Core.Operations
             return thumbnail;
         }
 
-        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        protected override bool ExecuteInternally(OperationProgress progress)
         {
-            progress ??= new OperationProgress();
-            progress.Reset(ProgressAction, LayerCount);
-            slicerFile.SuppressRebuildProperties = true;
-
+            progress.ItemCount = LayerCount;
             var newLayers = new Layer[LayerCount];
-
-            slicerFile.LayerHeight = (float)LayerHeight;
-            slicerFile.BottomExposureTime = (float)BottomExposure;
-            slicerFile.ExposureTime = (float)NormalExposure;
-            slicerFile.BottomLayerCount = BottomLayers;
 
             var layers = GetLayers();
 
             Parallel.For(0, LayerCount, layerIndex =>
             {
-                newLayers[layerIndex] = new Layer((uint)layerIndex, layers[layerIndex], slicerFile.LayerManager);
+                newLayers[layerIndex] = new Layer((uint)layerIndex, layers[layerIndex], SlicerFile.LayerManager);
                 layers[layerIndex].Dispose();
                 lock (progress)
                 {
@@ -414,22 +426,21 @@ namespace UVtools.Core.Operations
                 }
             });
 
-            slicerFile.LayerManager.Layers = newLayers;
-            slicerFile.LayerManager.RebuildLayersProperties();
+            
+            if (SlicerFile.ThumbnailsCount > 0)
+                SlicerFile.SetThumbnails(GetThumbnail());
 
-            /*var moveOp = new OperationMove(slicerFile.LayerManager.BoundingRectangle, slicerFile.Resolution)
-            {
-                IsCutMove = true,
-                LayerIndexEnd = slicerFile.LayerCount - 1
-            };
-            moveOp.Execute(slicerFile, progress);*/
+            SlicerFile.SuppressRebuildProperties = true;
+            SlicerFile.LayerHeight = (float)LayerHeight;
+            SlicerFile.BottomExposureTime = (float)BottomExposure;
+            SlicerFile.ExposureTime = (float)NormalExposure;
+            SlicerFile.BottomLayerCount = BottomLayers;
+            SlicerFile.LayerManager.Layers = newLayers;
+            SlicerFile.LayerManager.RebuildLayersProperties();
+            SlicerFile.SuppressRebuildProperties = false;
 
-            if (slicerFile.ThumbnailsCount > 0)
-                slicerFile.SetThumbnails(GetThumbnail());
 
-            slicerFile.SuppressRebuildProperties = false;
-
-            return true;
+            return !progress.Token.IsCancellationRequested;
         }
 
         #endregion

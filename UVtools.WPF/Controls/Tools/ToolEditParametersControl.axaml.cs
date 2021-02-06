@@ -60,16 +60,18 @@ namespace UVtools.WPF.Controls.Tools
                 {
                     //DecimalPlaces = modifier.DecimalPlates,
                     VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
                     Minimum = (double) modifier.Minimum,
                     Maximum = (double) modifier.Maximum,
                     Increment = modifier.DecimalPlates == 0 ? 1 : 0.5,
                     Value = (double)modifier.NewValue,
                     Tag = this,
-                    Width = 100,
+                    //Width = 100,
+                    ClipValueToMinMax = true
                 };
                 if (modifier.DecimalPlates > 0)
                 {
-                    NewValue.FormatString = "{0:0.00}";
+                    NewValue.FormatString = "F02";
                 }
 
                 Unit = new TextBlock
@@ -87,7 +89,8 @@ namespace UVtools.WPF.Controls.Tools
                     VerticalAlignment = VerticalAlignment.Center,
                     Tag = this,
                     Padding = new Thickness(5),
-                    Content = new Image {Source = App.GetBitmapFromAsset("/Assets/Icons/undo-16x16.png")}
+                    Content = new Image {Source = App.GetBitmapFromAsset("/Assets/Icons/undo-16x16.png")},
+                    HorizontalAlignment = HorizontalAlignment.Stretch
                 };
                 ResetButton.Click += ResetButtonOnClick;
                 NewValue.ValueChanged += NewValueOnValueChanged;
@@ -110,8 +113,7 @@ namespace UVtools.WPF.Controls.Tools
         {
             InitializeComponent();
 
-            App.SlicerFile.RefreshPrintParametersModifiersValues();
-            BaseOperation = new OperationEditParameters(App.SlicerFile.PrintParameterModifiers);
+            BaseOperation = new OperationEditParameters(SlicerFile);
 
             if (Operation.Modifiers is null || Operation.Modifiers.Length == 0)
             {

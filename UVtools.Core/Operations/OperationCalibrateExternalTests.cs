@@ -7,6 +7,8 @@
  */
 
 
+using UVtools.Core.FileFormats;
+
 namespace UVtools.Core.Operations
 {
     public class OperationCalibrateExternalTests : Operation
@@ -29,7 +31,15 @@ namespace UVtools.Core.Operations
         public override string ProgressTitle => null;
 
         public override string ProgressAction => null;
-        
+
+        #endregion
+
+        #region Constructor
+
+        public OperationCalibrateExternalTests() { }
+
+        public OperationCalibrateExternalTests(FileFormat slicerFile) : base(slicerFile) { }
+
         #endregion
 
         #region Properties
@@ -37,7 +47,7 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Equality
-        
+
         #endregion
 
         #region Methods

@@ -81,6 +81,14 @@ namespace UVtools.Core.Operations
         }
         #endregion
 
+        #region Constructor
+
+        public OperationRedrawModel() { }
+
+        public OperationRedrawModel(FileFormat slicerFile) : base(slicerFile) { }
+
+        #endregion
+
         #region Properties
 
         [XmlIgnore]
@@ -151,21 +159,20 @@ namespace UVtools.Core.Operations
         public FileFormat IsFileValid(bool returnNewInstance = false) =>
             FileFormat.FindByExtension(_filePath, true, returnNewInstance);
 
-        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        protected override bool ExecuteInternally(OperationProgress progress)
         {
-            progress ??= new OperationProgress();
-
             var otherFile = IsFileValid(true);
             otherFile.Decode(_filePath, progress);
 
             progress.Reset(ProgressAction, otherFile.LayerCount);
 
-            int startLayerIndex = (int)(slicerFile.LayerCount - otherFile.LayerCount);
+            int startLayerIndex = (int)(SlicerFile.LayerCount - otherFile.LayerCount);
             if (startLayerIndex < 0) return false;
             Parallel.For(0, otherFile.LayerCount, layerIndex =>
             {
+                if (progress.Token.IsCancellationRequested) return;
                 var fullMatLayerIndex = startLayerIndex + layerIndex;
-                using var fullMat = slicerFile[fullMatLayerIndex].LayerMat;
+                using var fullMat = SlicerFile[fullMatLayerIndex].LayerMat;
                 using var bodyMat = otherFile[layerIndex].LayerMat;
                 using var fullMatRoi = GetRoiOrDefault(fullMat);
                 using var bodyMatRoi = GetRoiOrDefault(bodyMat);
@@ -232,7 +239,7 @@ namespace UVtools.Core.Operations
 
                 if (modified)
                 {
-                    slicerFile[fullMatLayerIndex].LayerMat = fullMat;
+                    SlicerFile[fullMatLayerIndex].LayerMat = fullMat;
                 }
 
                 lock (progress.Mutex)
@@ -241,7 +248,7 @@ namespace UVtools.Core.Operations
                 }
             });
 
-            return true;
+            return !progress.Token.IsCancellationRequested;
         }
 
         #endregion

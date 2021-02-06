@@ -540,12 +540,8 @@ namespace UVtools.Core.FileFormats
             GCode = null;
         }
 
-        public override void Encode(string fileFullPath, OperationProgress progress = null)
+        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
-            progress ??= new OperationProgress();
-            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-            base.Encode(fileFullPath, progress);
-
             //var filename = fileFullPath.EndsWith(TemporaryFileAppend) ? Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(fileFullPath)) : Path.GetFileNameWithoutExtension(fileFullPath);
 
             if (Printer == PrinterType.Unknown)
@@ -662,20 +658,14 @@ namespace UVtools.Core.FileFormats
                 RebuildGCode();
                 outputFile.PutFileContent($"{filename}.gcode", GCode.ToString(), ZipArchiveMode.Create);
             }
-
-            AfterEncode();
         }
 
-        public override void Decode(string fileFullPath, OperationProgress progress = null)
+        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
         {
-            base.Decode(fileFullPath, progress);
-            if(progress is null) progress = new OperationProgress(OperationProgress.StatusGatherLayers, LayerCount);
-
-            FileFullPath = fileFullPath;
-            using (var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read))
+            using (var inputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Read))
             {
                 var entry = inputFile.GetEntry("manifest.xml");
-                if (!ReferenceEquals(entry, null)) // Wanhao
+                if (entry is not null) // Wanhao
                 {
                     //DecodeXML(fileFullPath, inputFile, progress);
                     Printer = PrinterType.Wanhao;

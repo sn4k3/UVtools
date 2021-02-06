@@ -335,13 +335,14 @@ namespace UVtools.WPF
             var layer = LayerCache.Layer;
             CurrentLayerProperties.Clear();
             CurrentLayerProperties.Add(new StringTag(nameof(layer.Index), $"{layer.Index}"));
+            CurrentLayerProperties.Add(new StringTag(nameof(layer.LayerHeight), $"{layer.LayerHeight:F2}mm"));
             //CurrentLayerProperties.Add(new KeyValuePair<string, string>(nameof(layer.Filename), layer.Filename));
-            CurrentLayerProperties.Add(new StringTag(nameof(layer.PositionZ), $"{layer.PositionZ.ToString(CultureInfo.InvariantCulture)}mm"));
+            CurrentLayerProperties.Add(new StringTag(nameof(layer.PositionZ), $"{layer.PositionZ:F2}mm"));
             CurrentLayerProperties.Add(new StringTag(nameof(layer.IsBottomLayer), layer.IsBottomLayer.ToString()));
             CurrentLayerProperties.Add(new StringTag(nameof(layer.IsModified), layer.IsModified.ToString()));
             //CurrentLayerProperties.Add(new StringTag(nameof(layer.BoundingRectangle), layer.BoundingRectangle.ToString()));
             //CurrentLayerProperties.Add(new StringTag(nameof(layer.NonZeroPixelCount), layer.NonZeroPixelCount.ToString()));
-            CurrentLayerProperties.Add(new StringTag(nameof(layer.ExposureTime), $"{layer.ExposureTime.ToString(CultureInfo.InvariantCulture)}s"));
+            CurrentLayerProperties.Add(new StringTag(nameof(layer.ExposureTime), $"{layer.ExposureTime:F2}s"));
 
             if (ReferenceEquals(SlicerFile.PrintParameterPerLayerModifiers, null)) return;
 

@@ -150,10 +150,8 @@ namespace UVtools.Core.FileFormats
         #endregion
 
         #region Methods
-        public override void Encode(string fileFullPath, OperationProgress progress = null)
+        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
-            base.Encode(fileFullPath, progress);
-            
             uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
             using (var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write))
             {
@@ -164,19 +162,15 @@ namespace UVtools.Core.FileFormats
                 
             }
 
-            AfterEncode();
-
             Debug.WriteLine("Encode Results:");
             Debug.WriteLine(HeaderSettings);
             Debug.WriteLine("-End-");
         }
 
-        
 
-        public override void Decode(string fileFullPath, OperationProgress progress = null)
+
+        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
         {
-            base.Decode(fileFullPath, progress);
-
             using (var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read))
             {
                 //HeaderSettings = Helpers.ByteToType<CbddlpFile.Header>(InputFile);
@@ -186,13 +180,7 @@ namespace UVtools.Core.FileFormats
                 {
                     throw new FileLoadException("Not a valid Makerfile file!", fileFullPath);
                 }
-
-
-                FileFullPath = fileFullPath;
-
             }
-
-            progress.Token.ThrowIfCancellationRequested();
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)

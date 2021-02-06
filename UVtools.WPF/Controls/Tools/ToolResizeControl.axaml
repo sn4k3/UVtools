@@ -2,31 +2,27 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="200"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="200"
              x:Class="UVtools.WPF.Controls.Tools.ToolResizeControl">
   
     <StackPanel Orientation="Vertical" Spacing="10">
       <StackPanel Orientation="Horizontal" Spacing="10">
         <TextBlock VerticalAlignment="Center" Text="X:"/>
-        <NumericUpDown 
-          MinWidth="100" 
-          MaxWidth="150"
+        <NumericUpDown
+            Width="150"
           Minimum="1"
           Maximum="10000"
           Increment="0.1"
           FormatString="{}{0:0.00} %"
-          Value="{Binding Operation.X}"
-          />
+          Value="{Binding Operation.X}"/>
     
         <TextBlock 
           Margin="10,0,0,0" 
           VerticalAlignment="Center" 
           Text="Y:"
-          IsEnabled="{Binding !#ConstrainXY.IsChecked}"
-        />
+          IsEnabled="{Binding !#ConstrainXY.IsChecked}"/>
         <NumericUpDown 
-          MinWidth="100"
-          MaxWidth="150"
+          Width="150"
           Minimum="1"
           Maximum="10000"
           Increment="0.1"

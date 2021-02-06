@@ -110,19 +110,19 @@ $slicerFile.Decode($inputFile, $progress);
 ###################################################
 # Morph bottom erode
 Write-Output "Eroding bottoms with ${iterations} iterations, please wait..."
-$morph = New-Object UVtools.Core.Operations.OperationMorph
+$morph = [UVtools.Core.Operations.OperationMorph]::new($slicerFile)
 $morph.MorphOperation = [Emgu.CV.CvEnum.MorphOp]::Erode
 $morph.IterationsStart = $iterations
-$morph.LayerIndexEnd = $slicerFile.BottomLayerCount - 1
-if(!$morph.Execute($slicerFile, $progress)){ return; }
+$morph.SelectBottomLayers()
+if(!$morph.Execute($progress)){ return; }
 
 
 ##############
 # Dont touch #
 ##############
 # Save file with _modified name appended
-$filePath = [System.IO.Path]::GetDirectoryName($inputFile);
-$fileExt = [System.IO.Path]::GetExtension($inputFile);
+$filePath = [System.IO.Path]::GetDirectoryName($inputFile)
+$fileExt = [System.IO.Path]::GetExtension($inputFile)
 $fileNoExt = [System.IO.Path]::GetFileNameWithoutExtension($inputFile)
 $fileOutput = "${filePath}${dirSeparator}${fileNoExt}_modified${fileExt}"
 Write-Output "Saving as ${fileNoExt}_modified${fileExt}, please wait..."

@@ -382,12 +382,8 @@ namespace UVtools.Core.FileFormats
             LayersSettings.Clear();
         }
 
-        public override void Encode(string fileFullPath, OperationProgress progress = null)
-        {
-            progress ??= new OperationProgress();
-            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-            base.Encode(fileFullPath, progress);
-
+        protected override void EncodeInternally(string fileFullPath, OperationProgress progress) 
+        { 
             float usedMaterial = MaterialMilliliters / LayerCount;
             ResinMetadataSettings.Layers.Clear();
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
@@ -471,18 +467,14 @@ namespace UVtools.Core.FileFormats
 
                 outputFile.PutFileContent("ResinGCodeData", GCode.ToString(), ZipArchiveMode.Create);
             }
-            AfterEncode();
         }
 
-        public override void Decode(string fileFullPath, OperationProgress progress = null)
+        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
         {
-            base.Decode(fileFullPath, progress);
-
-            FileFullPath = fileFullPath;
-            using (var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read))
+            using (var inputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Read))
             {
                 var entry = inputFile.GetEntry("ResinMetadata");
-                if (ReferenceEquals(entry, null))
+                if (entry is null)
                 {
                     Clear();
                     throw new FileLoadException("ResinMetadata not found", fileFullPath);
@@ -491,7 +483,7 @@ namespace UVtools.Core.FileFormats
                 ResinMetadataSettings = Helpers.JsonDeserializeObject<ResinMetadata>(entry.Open());
 
                 entry = inputFile.GetEntry("UserSettingsData");
-                if (ReferenceEquals(entry, null))
+                if (entry is null)
                 {
                     Clear();
                     throw new FileLoadException("UserSettingsData not found", fileFullPath);
@@ -500,7 +492,7 @@ namespace UVtools.Core.FileFormats
                 UserSettings = Helpers.JsonDeserializeObject<UserSettingsdata>(entry.Open());
 
                 entry = inputFile.GetEntry("ZCodeMetadata");
-                if (ReferenceEquals(entry, null))
+                if (entry is null)
                 {
                     Clear();
                     throw new FileLoadException("ZCodeMetadata not found", fileFullPath);
@@ -509,7 +501,7 @@ namespace UVtools.Core.FileFormats
                 ZCodeMetadataSettings = Helpers.JsonDeserializeObject<ZCodeMetadata>(entry.Open());
 
                 entry = inputFile.GetEntry("ResinGCodeData");
-                if (ReferenceEquals(entry, null))
+                if (entry is null)
                 {
                     Clear();
                     throw new FileLoadException("ResinGCodeData not found", fileFullPath);
@@ -615,12 +607,9 @@ M106 S0
                 entry = inputFile.GetEntry("Preview.png");
                 if (!ReferenceEquals(entry, null))
                 {
-                    using (Stream stream = entry.Open())
-                    {
-                        
-                        CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, Thumbnails[0]);
-                        stream.Close();
-                    }
+                    using Stream stream = entry.Open();
+                    CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, Thumbnails[0]);
+                    stream.Close();
                 }
             }
 

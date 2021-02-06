@@ -109,6 +109,14 @@ namespace UVtools.Core.Operations
 
         #endregion
 
+        #region Constructor
+
+        public OperationMorph() { }
+
+        public OperationMorph(FileFormat slicerFile) : base(slicerFile) { }
+
+        #endregion
+
         #region Equality
 
         private bool Equals(OperationMorph other)
@@ -137,11 +145,8 @@ namespace UVtools.Core.Operations
 
         #region Methods
 
-        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        protected override bool ExecuteInternally(OperationProgress progress)
         {
-            progress ??= new OperationProgress();
-            progress.Reset(ProgressAction, LayerRangeCount);
-
             var isFade = Chamfer;
             LayerManager.MutateGetVarsIterationChamfer(
                 LayerIndexStart,
@@ -160,17 +165,17 @@ namespace UVtools.Core.Operations
                     if (progress.Token.IsCancellationRequested) return;
                     int iterations = LayerManager.MutateGetIterationVar(isFade, (int)IterationsStart, (int)IterationsEnd, iterationSteps, maxIteration, LayerIndexStart, (uint)layerIndex);
 
-                    using var mat = slicerFile[layerIndex].LayerMat;
+                    using var mat = SlicerFile[layerIndex].LayerMat;
                     Execute(mat, iterations);
-                    slicerFile[layerIndex].LayerMat = mat;
+                    SlicerFile[layerIndex].LayerMat = mat;
                     
                     lock (progress.Mutex)
                     {
                         progress++;
                     }
                 });
-            progress.Token.ThrowIfCancellationRequested();
-            return true;
+
+            return !progress.Token.IsCancellationRequested;
         }
 
         public override bool Execute(Mat mat, params object[] arguments)

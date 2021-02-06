@@ -30,7 +30,7 @@ namespace UVtools.Core.Objects
 
         public string TagString
         {
-            get => Tag.ToString();
+            get => Tag?.ToString();
             set => Tag = value;
         } 
 

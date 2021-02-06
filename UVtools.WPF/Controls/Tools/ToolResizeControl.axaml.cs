@@ -10,7 +10,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolResizeControl()
         {
             InitializeComponent();
-            BaseOperation = new OperationResize();
+            BaseOperation = new OperationResize(SlicerFile);
         }
 
         private void InitializeComponent()

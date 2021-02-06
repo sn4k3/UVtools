@@ -360,13 +360,8 @@ namespace UVtools.Core.FileFormats
             JsonSettings.Layers = new List<LayerData>();
         }
 
-        public override void Encode(string fileFullPath, OperationProgress progress = null)
+        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
-            progress ??= new OperationProgress();
-            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-
-            base.Encode(fileFullPath, progress);
-
             // Redo layer data
             JsonSettings.Layers.Clear();
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
@@ -430,17 +425,11 @@ namespace UVtools.Core.FileFormats
                     progress++;
                 }
             }
-            AfterEncode();
         }
 
-        public override void Decode(string fileFullPath, OperationProgress progress = null)
+        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
         {
-            base.Decode(fileFullPath, progress);
-            if(progress is null) progress = new OperationProgress();
-            progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
-
-            FileFullPath = fileFullPath;
-            using (var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read))
+            using (var inputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Read))
             {
                 var entry = inputFile.GetEntry(FileConfigName);
                 if (ReferenceEquals(entry, null))
@@ -466,21 +455,19 @@ namespace UVtools.Core.FileFormats
                 }
 
                 entry = inputFile.GetEntry(FilePreviewHugeName);
-                if (!ReferenceEquals(entry, null))
+                if (entry is not null)
                 {
-                    using (Stream stream = entry.Open())
-                    {
-                        Mat image = new Mat();
-                        CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
-                        Thumbnails[1] = image;
-                        stream.Close();
-                    }
+                    using Stream stream = entry.Open();
+                    Mat image = new Mat();
+                    CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
+                    Thumbnails[1] = image;
+                    stream.Close();
                 }
 
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
                     entry = inputFile.GetEntry($"{FolderImageName}/{layerIndex:D8}.png");
-                    if (ReferenceEquals(entry, null)) continue;
+                    if (entry is null) continue;
 
                     this[layerIndex] = new Layer(layerIndex, entry.Open(), LayerManager)
                     {

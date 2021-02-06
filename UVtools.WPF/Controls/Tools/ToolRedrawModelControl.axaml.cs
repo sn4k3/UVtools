@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
+using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools
 {
@@ -12,12 +13,30 @@ namespace UVtools.WPF.Controls.Tools
         public ToolRedrawModelControl()
         {
             InitializeComponent();
-            BaseOperation = new OperationRedrawModel();
+            BaseOperation = new OperationRedrawModel(SlicerFile);
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        public override void Callback(ToolWindow.Callbacks callback)
+        {
+            switch (callback)
+            {
+                case ToolWindow.Callbacks.Init:
+                case ToolWindow.Callbacks.ProfileLoaded:
+                    ParentWindow.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.FilePath);
+                    Operation.PropertyChanged += (sender, e) =>
+                    {
+                        if (e.PropertyName == nameof(Operation.FilePath))
+                        {
+                            ParentWindow.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.FilePath);
+                        }
+                    };
+                    break;
+            }
         }
 
         public async void ImportFile()

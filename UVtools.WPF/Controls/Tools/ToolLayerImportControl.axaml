@@ -7,7 +7,7 @@
 
   <StackPanel Spacing="10">
     <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
-          ColumnDefinitions="Auto,10,100,5,Auto,20,Auto">
+          ColumnDefinitions="Auto,10,150,5,Auto,20,Auto">
 
       <TextBlock Grid.Row="0" Grid.Column="0"
           VerticalAlignment="Center"
@@ -23,6 +23,7 @@
 
       <ComboBox Grid.Row="0" Grid.Column="2"
                  VerticalAlignment="Center"
+                 HorizontalAlignment="Stretch"
                  SelectedItem="{Binding Operation.ImportType}"
                  Items="{Binding Operation.ImportTypesItems}"/>
 

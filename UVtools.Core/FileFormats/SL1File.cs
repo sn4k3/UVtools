@@ -252,22 +252,30 @@ namespace UVtools.Core.FileFormats
 
         public class OutputConfig
         {
-            public string Action { get; set; }
+            public string Action { get; set; } = "print";
             public string JobDir { get; set; }
             public float ExpTime { get; set; }
             public float ExpTimeFirst { get; set; }
-            public string FileCreationTimestamp { get; set; }
+            //public string FileCreationTimestamp { get; set; }
+            public string FileCreationTimestamp { 
+                get
+                {
+                    //2021-01-23 at 04:07:36 UTC
+                    var now = DateTime.Now;
+                    return $"{now.Year}-{now.Month:D2}-{now.Day:D2} at {now.Hour:D2}:{now.Minute:D2}:{now.Second:D2} {now.Kind}";
+                }
+            }
             public float LayerHeight { get; set; }
-            public string MaterialName { get; set; }
+            public string MaterialName { get; set; } = About.Software;
             public ushort NumFade { get; set; }
             public ushort NumFast { get; set; }
             public ushort NumSlow { get; set; }
-            public string PrintProfile { get; set; }
+            public string PrintProfile { get; set; } = About.Software;
             public float PrintTime { get; set; }
-            public string PrinterModel { get; set; }
-            public string PrinterProfile { get; set; }
-            public string PrinterVariant { get; set; }
-            public string PrusaSlicerVersion { get; set; }
+            public string PrinterModel { get; set; } = "SL1";
+            public string PrinterProfile { get; set; } = About.Software;
+            public string PrinterVariant { get; set; } = "default";
+            public string PrusaSlicerVersion { get; set; } = "PrusaSlicer-2.3.0+win64-202101111315";
             public float UsedMaterial { get; set; }
 
             public override string ToString()
@@ -519,10 +527,12 @@ namespace UVtools.Core.FileFormats
             Statistics.Clear();
         }
 
-        public override void Encode(string fileFullPath, OperationProgress progress = null)
+        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
-            base.Encode(fileFullPath, progress);
-
+            var filename = fileFullPath;
+            if (filename.EndsWith(TemporaryFileAppend)) filename = Path.GetFileNameWithoutExtension(filename); // tmp
+            filename = Path.GetFileNameWithoutExtension(filename); // sl1
+            OutputConfigSettings.JobDir = filename;
             using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
             {
                 var entry = outputFile.CreateEntry("config.ini");
@@ -562,39 +572,28 @@ namespace UVtools.Core.FileFormats
                 foreach (var thumbnail in Thumbnails)
                 {
                     if (ReferenceEquals(thumbnail, null)) continue;
-                    using (var stream = outputFile.CreateEntry($"thumbnail/thumbnail{thumbnail.Width}x{thumbnail.Height}.png").Open())
-                    {
-                        var vec = new VectorOfByte();
-                        CvInvoke.Imencode(".png", thumbnail, vec);
-                        stream.WriteBytes(vec.ToArray());
-                        stream.Close();
-                    }
+                    using var stream = outputFile.CreateEntry($"thumbnail/thumbnail{thumbnail.Width}x{thumbnail.Height}.png").Open();
+                    var vec = new VectorOfByte();
+                    CvInvoke.Imencode(".png", thumbnail, vec);
+                    stream.WriteBytes(vec.ToArray());
+                    stream.Close();
                 }
 
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
                     progress.Token.ThrowIfCancellationRequested();
                     Layer layer = this[layerIndex];
-                    var layerImagePath = $"{Path.GetFileNameWithoutExtension(fileFullPath)}{layerIndex:D5}.png";
+                    var layerImagePath = $"{filename}{layerIndex:D5}.png";
                     //layer.Filename = layerImagePath;
                     outputFile.PutFileContent(layerImagePath, layer.CompressedBytes, ZipArchiveMode.Create);
                     progress++;
                 }
             }
-
-            AfterEncode();
         }
 
-        
-        public override void Decode(string fileFullPath, OperationProgress progress = null)
+
+        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
         {
-            base.Decode(fileFullPath, progress);
-
-            progress ??= new OperationProgress();
-            progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
-
-            FileFullPath = fileFullPath;
-
             PrinterSettings = new Printer();
             MaterialSettings = new Material();
             PrintSettings = new Print();
@@ -602,7 +601,7 @@ namespace UVtools.Core.FileFormats
 
             Statistics.ExecutionTime.Restart();
 
-            using (var inputFile = ZipFile.OpenRead(FileFullPath))
+            using (var inputFile = ZipFile.OpenRead(fileFullPath))
             {
                 List<string> iniFiles = new();
                 foreach (ZipArchiveEntry entity in inputFile.Entries)
@@ -625,7 +624,7 @@ namespace UVtools.Core.FileFormats
                         foreach (var obj in Configs)
                         {
                             var attribute = obj.GetType().GetProperty(fieldName);
-                            if (ReferenceEquals(attribute, null)) continue;
+                            if (attribute is null || !attribute.CanWrite) continue;
                             //Debug.WriteLine(attribute.Name);
                             Helpers.SetPropertyValue(attribute, obj, keyValue[1]);
 

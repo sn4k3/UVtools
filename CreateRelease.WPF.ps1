@@ -30,6 +30,8 @@ class FixedEncoder : System.Text.UTF8Encoding {
 ###         Configuration        ###
 ####################################
 $enableMSI = $true
+$buildOnly = $null
+#$buildOnly = ""#"win-x64"
 # Profilling
 $stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
 $deployStopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
@@ -83,22 +85,22 @@ $runtimes =
 @{
     "win-x64" = @{
         "extraCmd" = "-p:PublishReadyToRun=true"
-        "exclude" = @("libcvextern.so", "libcvextern.dylib", "UVtools.sh")
+        "exclude" = @("UVtools.sh")
         "include" = @()
     }
     "linux-x64" = @{
         "extraCmd" = "-p:PublishReadyToRun=true"
-        "exclude" = @("x86", "x64", "libcvextern.dylib")
+        "exclude" = @()
         "include" = @("libcvextern.so")
     }
     "arch-x64" = @{
         "extraCmd" = "-p:PublishReadyToRun=true"
-        "exclude" = @("x86", "x64", "libcvextern.dylib", "libcvextern.so")
+        "exclude" = @()
         "include" = @("libcvextern.so")
     }
     "rhel-x64" = @{
         "extraCmd" = "-p:PublishReadyToRun=true"
-        "exclude" = @("x86", "x64", "libcvextern.dylib")
+        "exclude" = @()
         "include" = @("libcvextern.so")
     }
     #"unix-x64" = @{
@@ -107,12 +109,13 @@ $runtimes =
     #}
     "osx-x64" = @{
         "extraCmd" = "-p:PublishReadyToRun=true"
-        "exclude" = @("x86", "x64", "libcvextern.so")
+        "exclude" = @()
         "include" = @("libcvextern.dylib")
     }
 }
 
 foreach ($obj in $runtimes.GetEnumerator()) {
+    if(![string]::IsNullOrWhiteSpace($buildOnly) -and !$buildOnly.Equals($obj.Name)) {continue}
     # Configuration
     $deployStopWatch.Restart()
     $runtime = $obj.Name;       # runtime name

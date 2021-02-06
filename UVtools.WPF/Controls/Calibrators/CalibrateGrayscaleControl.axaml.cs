@@ -24,17 +24,9 @@ namespace UVtools.WPF.Controls.Calibrators
         
         public CalibrateGrayscaleControl()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
-            BaseOperation = new OperationCalibrateGrayscale();
-
-            if (App.SlicerFile is not null)
-            {
-                Operation.LayerHeight = (decimal)App.SlicerFile.LayerHeight;
-                Operation.BottomLayers = App.SlicerFile.BottomLayerCount;
-                Operation.BottomExposure = (decimal)App.SlicerFile.BottomExposureTime;
-                Operation.NormalExposure = (decimal)App.SlicerFile.ExposureTime;
-            }
+            BaseOperation = new OperationCalibrateGrayscale(SlicerFile);
 
             _timer = new Timer(20)
             {
@@ -55,7 +47,6 @@ namespace UVtools.WPF.Controls.Calibrators
             {
                 case ToolWindow.Callbacks.Init:
                 case ToolWindow.Callbacks.ProfileLoaded:
-                    Operation.Resolution = App.SlicerFile.Resolution;
                     Operation.PropertyChanged += (sender, e) =>
                     {
                         _timer.Stop();

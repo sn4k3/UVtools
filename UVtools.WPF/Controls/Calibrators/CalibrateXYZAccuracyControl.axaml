@@ -17,7 +17,7 @@
        
         <Grid
             RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-            ColumnDefinitions="Auto,10,100,5,Auto,20,Auto,10,100,5,Auto"
+            ColumnDefinitions="Auto,10,150,5,Auto,20,Auto,10,150,5,Auto"
       >
 
           <TextBlock
@@ -30,7 +30,7 @@
                          Increment="0.1"
                          Minimum="0"
                          Maximum="10000"
-                         FormatString="\{0:0.00\}"
+                         FormatString="F02"
                          Value="{Binding Operation.DisplayWidth}"/>
           <TextBlock Grid.Row="0" Grid.Column="4"
                      VerticalAlignment="Center"
@@ -45,7 +45,7 @@
                          Increment="0.1"
                          Minimum="0"
                          Maximum="10000"
-                         FormatString="\{0:0.00\}"
+                         FormatString="F02"
                          Value="{Binding Operation.DisplayHeight}"/>
           <TextBlock Grid.Row="0" Grid.Column="10"
                      VerticalAlignment="Center"
@@ -59,7 +59,7 @@
                        Increment="0.01"
                        Minimum="0.01"
                        Maximum="0.30"
-                       FormatString="\{0:0.00\}"
+                       FormatString="F02"
                        Value="{Binding Operation.LayerHeight}"
                      />
         <TextBlock Grid.Row="2" Grid.Column="4"
@@ -87,7 +87,7 @@
                        Increment="0.5"
                        Minimum="0.1"
                        Maximum="200"
-                       FormatString="\{0:0.00\}"
+                       FormatString="F02"
                        Value="{Binding Operation.BottomExposure}"/>
         <TextBlock Grid.Row="4" Grid.Column="4"
                    VerticalAlignment="Center"
@@ -101,7 +101,7 @@
                        Increment="0.5"
                        Minimum="0.1"
                        Maximum="200"
-                       FormatString="\{0:0.00\}"
+                       FormatString="F02"
                        Value="{Binding Operation.NormalExposure}"/>
         <TextBlock Grid.Row="4" Grid.Column="10"
                    VerticalAlignment="Center"
@@ -115,7 +115,7 @@
                          Increment="1"
                          Minimum="5"
                          Maximum="100"
-                         FormatString="\{0:0.00\}"
+                         FormatString="F02"
                          Value="{Binding Operation.XSize}"/>
         <TextBlock Grid.Row="6" Grid.Column="4"
                    VerticalAlignment="Center"
@@ -129,7 +129,7 @@
                          Increment="1"
                          Minimum="5"
                          Maximum="100"
-                         FormatString="\{0:0.00\}"
+                         FormatString="F02"
                          Value="{Binding Operation.YSize}"/>
           <TextBlock Grid.Row="6" Grid.Column="10"
                      VerticalAlignment="Center"
@@ -143,7 +143,7 @@
                          Increment="1"
                          Minimum="5"
                          Maximum="100"
-                         FormatString="\{0:0.00\}"
+                         FormatString="F02"
                          Value="{Binding Operation.ZSize}"/>
           <TextBlock Grid.Row="8" Grid.Column="4"
                      VerticalAlignment="Center"
@@ -213,7 +213,7 @@
                          Increment="0.5"
                          Minimum="0"
                          Maximum="100"
-                         FormatString="\{0:0.00\}"
+                         FormatString="F02"
                          IsEnabled="{Binding Operation.HollowModel}"
                          Value="{Binding Operation.WallThickness}"/>
           <TextBlock Grid.Row="12" Grid.Column="10"
@@ -275,7 +275,6 @@
               ToolTip.Tip="Middle Center"
               VerticalAlignment="Center"
               HorizontalAlignment="Center"
-              Margin="5"
               IsChecked="{Binding Operation.OutputMCObject}"
             />
             <CheckBox
@@ -316,9 +315,13 @@
                       Spacing="5">
             <Button 
                   Command="{Binding Operation.SelectNoneObjects}"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
                   Content="Select none"/>
             <Button
                 Command="{Binding Operation.SelectAllObjects}"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
                 Content="Select all"/>
           </StackPanel>
 
@@ -327,9 +330,13 @@
                       Spacing="5">
               <Button
                   Command="{Binding Operation.SelectCrossedObjects}"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
                   Content="Select crossed"/>
               <Button
                   Command="{Binding Operation.SelectCenterObject}"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
                   Content="Select center"/>
           </StackPanel>
 
@@ -354,8 +361,8 @@
                            Increment="1"
                            Minimum="0"
                            Maximum="100"
-                           Width="100"
-                           FormatString="\{0:0.00\}"
+                           Width="150"
+                           FormatString="F02"
                            Value="{Binding Operation.ObservedXSize}"/>
             <TextBlock VerticalAlignment="Center" Text="mm"/>
 
@@ -366,8 +373,8 @@
                 Increment="1"
                 Minimum="0"
                 Maximum="100"
-                Width="100"
-                FormatString="\{0:0.00\}"
+                Width="150"
+                FormatString="F02"
                 Value="{Binding Operation.ObservedYSize}"/>
             <TextBlock VerticalAlignment="Center" Text="mm"/>
 
@@ -378,8 +385,8 @@
                 Increment="1"
                 Minimum="0"
                 Maximum="100"
-                Width="100"
-                FormatString="\{0:0.00\}"
+                Width="150"
+                FormatString="F02"
                 Value="{Binding Operation.ObservedZSize}"/>
             <TextBlock VerticalAlignment="Center" Text="mm"/>
         </StackPanel>

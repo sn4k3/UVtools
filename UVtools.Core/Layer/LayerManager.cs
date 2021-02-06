@@ -49,8 +49,14 @@ namespace UVtools.Core
             }
         }
 
+        /// <summary>
+        /// Gets the bounding rectangle of the object
+        /// </summary>
         private Rectangle _boundingRectangle = Rectangle.Empty;
 
+        /// <summary>
+        /// Gets the bounding rectangle of the object
+        /// </summary>
         public Rectangle BoundingRectangle
         {
             get => GetBoundingRectangle();
@@ -79,7 +85,7 @@ namespace UVtools.Core
             }
         }
 
-        public float LayerHeight => Layers[0].PositionZ;
+        //public float LayerHeight => Layers[0].PositionZ;
 
 
         #endregion
@@ -1292,6 +1298,15 @@ namespace UVtools.Core
             return layerManager;
         }
 
+
+        #endregion
+
+        #region Formater
+
+        public override string ToString()
+        {
+            return $"{nameof(BoundingRectangle)}: {BoundingRectangle}, {nameof(Count)}: {Count}, {nameof(IsModified)}: {IsModified}";
+        }
 
         #endregion
     }

@@ -125,11 +125,12 @@ namespace UVtools.Core.FileFormats
 
                 for (int i = 0; i < imageLength; i++)
                 {
-                    color = color <= 127 ? 0 : 255; // Sanitize no AA
-                    if (spanMat[i] != color)
+                    //color = color <= 127 ? 0 : 255; // Sanitize no AA
+                    byte thisColor = spanMat[i] <= 127 ? 0 : 255; // Sanitize no AA
+                    if (thisColor != color)
                     {
                         AddRep();
-                        color = spanMat[i];
+                        color = thisColor; // Sanitize no AA
                         rep = 1;
                     }
                     else
@@ -420,12 +421,10 @@ namespace UVtools.Core.FileFormats
 
             return bytes;
         }
-        public override void Encode(string fileFullPath, OperationProgress progress = null)
-        {
-            progress ??= new OperationProgress();
-            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-            base.Encode(fileFullPath, progress);
 
+        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        {
+            throw new NotSupportedException("PhotonS is read-only format, please use pws instead!");
             //uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
             using (var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write))
             {
@@ -463,8 +462,6 @@ namespace UVtools.Core.FileFormats
                 }
             }
 
-            AfterEncode();
-
             Debug.WriteLine("Encode Results:");
             Debug.WriteLine(HeaderSettings);
             Debug.WriteLine("-End-");
@@ -495,10 +492,8 @@ namespace UVtools.Core.FileFormats
             return mat;
         }
 
-        public override void Decode(string fileFullPath, OperationProgress progress = null)
+        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
         {
-            base.Decode(fileFullPath, progress);
-
             using (var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read))
             {
                 HeaderSettings = Helpers.Deserialize<Header>(inputFile);
@@ -546,24 +541,16 @@ namespace UVtools.Core.FileFormats
                 {
                     if (progress.Token.IsCancellationRequested) return;
 
-                    using (var image = layerData[layerIndex].Decode())
+                    using var image = layerData[layerIndex].Decode();
+                    this[layerIndex] = new Layer((uint) layerIndex, image, LayerManager);
+                    lock (progress.Mutex)
                     {
-                        this[layerIndex] = new Layer((uint) layerIndex, image, LayerManager);
-                        lock (progress.Mutex)
-                        {
-                            progress++;
-                        }
+                        progress++;
                     }
                 });
 
                 LayerManager.RebuildLayersProperties();
-                
-
-                FileFullPath = fileFullPath;
-
             }
-
-            progress.Token.ThrowIfCancellationRequested();
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)

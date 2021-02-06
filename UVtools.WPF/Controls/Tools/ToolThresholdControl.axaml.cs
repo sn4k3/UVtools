@@ -74,7 +74,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolThresholdControl()
         {
             InitializeComponent();
-            BaseOperation = new OperationThreshold();
+            BaseOperation = new OperationThreshold(SlicerFile);
         }
 
         private void InitializeComponent()

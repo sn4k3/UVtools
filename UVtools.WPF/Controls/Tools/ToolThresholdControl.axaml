@@ -31,7 +31,7 @@
       <NumericUpDown
         Minimum="0"
         Maximum="255"
-        MinWidth="80"
+        Width="150"
         IsEnabled="{Binding IsThresholdEnabled}"
         Value="{Binding Operation.Threshold}"
         />
@@ -45,13 +45,13 @@
       <NumericUpDown
         Minimum="0"
         Maximum="255"
-        MinWidth="80"
+        Width="150"
         IsEnabled="{Binding IsMaximumEnabled}"
         Value="{Binding Operation.Maximum}"
         />
 
       <ComboBox
-        MinWidth="120"
+        MinWidth="150"
         IsEnabled="{Binding IsTypeEnabled}"
         Items="{Binding Operation.ThresholdTypes}"
         SelectedItem="{Binding Operation.Type}"/>

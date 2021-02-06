@@ -90,9 +90,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolLayerImportControl()
         {
             InitializeComponent();
-            BaseOperation = new OperationLayerImport(App.SlicerFile.Resolution);
-            Operation.Files.CollectionChanged += (sender, args) => RefreshGUI();
-            Operation.PropertyChanged += (sender, args) => RefreshGUI();
+            BaseOperation = new OperationLayerImport(SlicerFile);
             FilesListBox = this.Find<ListBox>("FilesListBox");
             FilesListBox.DoubleTapped += (sender, args) =>
             {
@@ -152,7 +150,10 @@ namespace UVtools.WPF.Controls.Tools
             switch (callback)
             {
                 case ToolWindow.Callbacks.Init:
+                case ToolWindow.Callbacks.ProfileLoaded:
                     RefreshGUI();
+                    Operation.Files.CollectionChanged += (sender, args) => RefreshGUI();
+                    Operation.PropertyChanged += (sender, args) => RefreshGUI();
                     break;
             }
         }

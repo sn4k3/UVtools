@@ -6,6 +6,8 @@ labels: enhancement
 assignees: sn4k3
 ---
 
+Also look at: https://github.com/sn4k3/UVtools/discussions/categories/ideas
+
 <span style="color:red">**! Before continue, please look/search on closed topics if your case was already been discussed, if yes and related, comment there instead.**</span>
 
 ## Is your feature request related to a problem? Please describe

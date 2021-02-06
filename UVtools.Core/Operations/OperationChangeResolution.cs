@@ -64,25 +64,25 @@ namespace UVtools.Core.Operations
 
         public override string ConfirmationText => 
             "change print resolution " +
-            $"from {OldResolution.Width}x{OldResolution.Height} " +
+            $"from {SlicerFile.ResolutionX}x{SlicerFile.ResolutionY} " +
             $"to {NewResolutionX}x{NewResolutionY}?";
 
         public override string ProgressTitle =>
-            $"Changing print resolution from ({OldResolution.Width}x{OldResolution.Height}) to ({NewResolutionX}x{NewResolutionY})";
+            $"Changing print resolution from ({SlicerFile.ResolutionX}x{SlicerFile.ResolutionY}) to ({NewResolutionX}x{NewResolutionY})";
 
         public override string ProgressAction => "Changed layers";
 
         public override StringTag Validate(params object[] parameters)
         {
             var sb = new StringBuilder();
-            if (OldResolution.Width == NewResolutionX && OldResolution.Height == NewResolutionY)
+            if (SlicerFile.ResolutionX == NewResolutionX && SlicerFile.ResolutionY == NewResolutionY)
             {
-                sb.AppendLine($"The new resolution must be different from current resolution ({OldResolution.Width} x {OldResolution.Height}).");
+                sb.AppendLine($"The new resolution must be different from current resolution ({SlicerFile.ResolutionX} x {SlicerFile.ResolutionY}).");
             }
 
-            if (NewResolutionX < VolumeBonds.Width || NewResolutionY < VolumeBonds.Height)
+            if (NewResolutionX < SlicerFile.BoundingRectangle.Width || NewResolutionY < SlicerFile.BoundingRectangle.Height)
             {
-                sb.AppendLine($"The new resolution ({NewResolutionX} x {NewResolutionY}) is not large enough to hold the model volume ({VolumeBonds.Width} x {VolumeBonds.Height}), continuing operation would clip the model");
+                sb.AppendLine($"The new resolution ({NewResolutionX} x {NewResolutionY}) is not large enough to hold the model volume ({SlicerFile.BoundingRectangle.Width} x {SlicerFile.BoundingRectangle.Height}), continuing operation would clip the model");
                 sb.AppendLine("To fix this, try to rotate the object and/or resize to fit on this new resolution.");
             }
 
@@ -99,8 +99,6 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Properties
-        public Size OldResolution { get; }
-
         public uint NewResolutionX
         {
             get => _newResolutionX;
@@ -113,25 +111,20 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _newResolutionY, value);
         }
 
-        public Rectangle VolumeBonds { get; }
-
-        public Size VolumeBondsSize => VolumeBonds.Size;
+        public Size VolumeBondsSize => SlicerFile.BoundingRectangle.Size;
 
         #endregion
 
         #region Constructor
 
-        public OperationChangeResolution()
+        public OperationChangeResolution() { }
+
+        public OperationChangeResolution(FileFormat slicerFile) : base(slicerFile)
         {
+            NewResolutionX = SlicerFile.ResolutionX;
+            NewResolutionY = SlicerFile.ResolutionY;
         }
 
-        public OperationChangeResolution(Size oldResolution, Rectangle volumeBonds)
-        {
-            OldResolution = oldResolution;
-            VolumeBonds = volumeBonds;
-            NewResolutionX = (uint) oldResolution.Width;
-            NewResolutionY = (uint) oldResolution.Height;
-        }
         #endregion
 
         #region Methods
@@ -159,25 +152,24 @@ namespace UVtools.Core.Operations
         public static Resolution[] Presets => GetResolutions();
 
 
-        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        protected override bool ExecuteInternally(OperationProgress progress)
         {
-            progress ??= new OperationProgress();
-            progress.Reset(ProgressAction, slicerFile.LayerCount);
+            progress.ItemCount = SlicerFile.LayerCount;
 
-            Parallel.For(0, slicerFile.LayerCount, layerIndex =>
+            Parallel.For(0, SlicerFile.LayerCount, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 
-                using var mat = slicerFile[layerIndex].LayerMat;
-                using var matRoi = new Mat(mat, VolumeBonds);
+                using var mat = SlicerFile[layerIndex].LayerMat;
+                using var matRoi = new Mat(mat, SlicerFile.BoundingRectangle);
                 using var matDst = new Mat(new Size((int)NewResolutionX, (int)NewResolutionY), mat.Depth, mat.NumberOfChannels);
                 using var matDstRoi = new Mat(matDst,
-                    new Rectangle((int)(NewResolutionX / 2 - VolumeBonds.Width / 2),
-                        (int)NewResolutionY / 2 - VolumeBonds.Height / 2,
-                        VolumeBonds.Width, VolumeBonds.Height));
+                    new Rectangle((int)(NewResolutionX / 2 - SlicerFile.BoundingRectangle.Width / 2),
+                        (int)NewResolutionY / 2 - SlicerFile.BoundingRectangle.Height / 2,
+                        SlicerFile.BoundingRectangle.Width, SlicerFile.BoundingRectangle.Height));
                 matRoi.CopyTo(matDstRoi);
                 //Execute(mat);
-                slicerFile[layerIndex].LayerMat = matDst;
+                SlicerFile[layerIndex].LayerMat = matDst;
 
                 lock (progress.Mutex)
                 {
@@ -187,10 +179,10 @@ namespace UVtools.Core.Operations
 
             progress.Token.ThrowIfCancellationRequested();
 
-            slicerFile.ResolutionX = NewResolutionX;
-            slicerFile.ResolutionY = NewResolutionY;
+            SlicerFile.ResolutionX = NewResolutionX;
+            SlicerFile.ResolutionY = NewResolutionY;
 
-            return true;
+            return !progress.Token.IsCancellationRequested;
         }
 
         /*public override bool Execute(Mat mat, params object[] arguments)

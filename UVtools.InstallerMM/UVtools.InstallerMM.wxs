@@ -152,6 +152,9 @@
         <Component Id="owc27A5D1506739847D9D7688256879A937" Guid="30f2e89f-1e95-77b9-1c3b-90bd4d875160">
           <File Id="owf27A5D1506739847D9D7688256879A937" Source="$(var.SourceDir)\Avalonia.DesktopRuntime.dll" KeyPath="yes" />
         </Component>
+        <Component Id="owcAA73F8E2C0EE78F802BAA8B361043211" Guid="536d2de0-51e7-19c8-3a8e-466146777c64">
+          <File Id="owfAA73F8E2C0EE78F802BAA8B361043211" Source="$(var.SourceDir)\Avalonia.Diagnostics.dll" KeyPath="yes" />
+        </Component>
         <Component Id="owc6C15ADD7A5EE7A0CBEFD35B0027BBEB7" Guid="9c4a8ab3-598c-8e7c-0295-5c068334ab67">
           <File Id="owf6C15ADD7A5EE7A0CBEFD35B0027BBEB7" Source="$(var.SourceDir)\Avalonia.Dialogs.dll" KeyPath="yes" />
         </Component>
@@ -227,11 +230,17 @@
         <Component Id="owc80EC8AEA1BFB8077812CDD06F9128A53" Guid="afbd2d79-629c-90a1-57a9-d68edc2d1437">
           <File Id="owf80EC8AEA1BFB8077812CDD06F9128A53" Source="$(var.SourceDir)\clrjit.dll" KeyPath="yes" />
         </Component>
+        <Component Id="owcD89DA7DE2D69AFC05DD5D46B6072C05C" Guid="ff72b568-c40c-3d50-c5af-049f64b476ea">
+          <File Id="owfD89DA7DE2D69AFC05DD5D46B6072C05C" Source="$(var.SourceDir)\concrt140.dll" KeyPath="yes" />
+        </Component>
         <Component Id="owc6135A13B8E29883ED57BF3FE20578EED" Guid="cd1aae2e-a4de-1bd1-9680-014bccf80e32">
           <File Id="owf6135A13B8E29883ED57BF3FE20578EED" Source="$(var.SourceDir)\coreclr.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc5E8FBF42F9BCF40914849582C19906B8" Guid="f7a08052-6afc-fe5e-291c-07137533ab79">
           <File Id="owf5E8FBF42F9BCF40914849582C19906B8" Source="$(var.SourceDir)\createdump.exe" KeyPath="yes" />
+        </Component>
+        <Component Id="owcF9E82F0BAE95DEABBEA8012A0994676C" Guid="edd1fddd-c05b-dc01-33b2-52e715b79615">
+          <File Id="owfF9E82F0BAE95DEABBEA8012A0994676C" Source="$(var.SourceDir)\cvextern.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc3883419A2BFFE7013C2194A99728AB11" Guid="dd137337-4b74-c76b-c87e-6b5f42697dd4">
           <File Id="owf3883419A2BFFE7013C2194A99728AB11" Source="$(var.SourceDir)\dbgshim.dll" KeyPath="yes" />
@@ -262,6 +271,18 @@
         </Component>
         <Component Id="owc6262D65DF7B3DF80C034B72467CAE882" Guid="4941cd5b-5666-87fe-5a6a-5ebdd5ee2524">
           <File Id="owf6262D65DF7B3DF80C034B72467CAE882" Source="$(var.SourceDir)\MessageBox.Avalonia.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcBED5500FCECB7551175681E93EC9B191" Guid="e84e4591-8227-e9c2-b052-dc4583553c9a">
+          <File Id="owfBED5500FCECB7551175681E93EC9B191" Source="$(var.SourceDir)\Microsoft.CodeAnalysis.CSharp.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcD48DD5DDA2BA4C83F4A98D4BE87BA462" Guid="effc6a72-2186-a73f-ee7f-c05c95de6c6e">
+          <File Id="owfD48DD5DDA2BA4C83F4A98D4BE87BA462" Source="$(var.SourceDir)\Microsoft.CodeAnalysis.CSharp.Scripting.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcDC0782CCA5E596145FD1FDFB67EDC2AF" Guid="8bfcc8b6-6693-60fe-2af9-d0e34ab6f421">
+          <File Id="owfDC0782CCA5E596145FD1FDFB67EDC2AF" Source="$(var.SourceDir)\Microsoft.CodeAnalysis.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcB9CA98C685BDD7D3E9DD3EBD5C5A3B84" Guid="434ec6c6-a47b-5321-63d1-6d30a2f8a9bf">
+          <File Id="owfB9CA98C685BDD7D3E9DD3EBD5C5A3B84" Source="$(var.SourceDir)\Microsoft.CodeAnalysis.Scripting.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc27AE8A53D94DD8A3E4AEAF6F7C27FB60" Guid="80e5ef0e-84a5-2bce-9923-0fd54d243e45">
           <File Id="owf27AE8A53D94DD8A3E4AEAF6F7C27FB60" Source="$(var.SourceDir)\Microsoft.CSharp.dll" KeyPath="yes" />
@@ -299,11 +320,29 @@
         <Component Id="owcE382B0CF482F0E7C3AF33E6EEEBD26B0" Guid="7433845c-c763-9b7e-e2c9-7b06986570bf">
           <File Id="owfE382B0CF482F0E7C3AF33E6EEEBD26B0" Source="$(var.SourceDir)\mscorrc.dll" KeyPath="yes" />
         </Component>
+        <Component Id="owc4EDD870826B23A7EFC3FACD1E199E883" Guid="587324f3-ed59-f000-c241-8dc6a66501de">
+          <File Id="owf4EDD870826B23A7EFC3FACD1E199E883" Source="$(var.SourceDir)\msvcp140.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc57B8051D45DF8A094B6F6F64CD58D9E6" Guid="b19c1e08-c2ee-ae27-0014-d5180ae56935">
+          <File Id="owf57B8051D45DF8A094B6F6F64CD58D9E6" Source="$(var.SourceDir)\msvcp140_1.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcE2F8C74ADC2AF2357936D93D9E417BB4" Guid="01e22654-976b-0b52-7f65-17a93b4d19ab">
+          <File Id="owfE2F8C74ADC2AF2357936D93D9E417BB4" Source="$(var.SourceDir)\msvcp140_2.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcD748ECCC1ECBC6ACAF796527AC8E18D3" Guid="53347251-3752-30e8-051d-71050378624d">
+          <File Id="owfD748ECCC1ECBC6ACAF796527AC8E18D3" Source="$(var.SourceDir)\msvcp140_atomic_wait.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc3FDD5303B44770B8890DCDE0685AF1EB" Guid="50c83bf3-3054-7dd7-6eda-a39108edb2c2">
+          <File Id="owf3FDD5303B44770B8890DCDE0685AF1EB" Source="$(var.SourceDir)\msvcp140_codecvt_ids.dll" KeyPath="yes" />
+        </Component>
         <Component Id="owc79156F385239CEA4DEA3C87C1DA3E1D8" Guid="68380c80-6708-5eb6-415d-10e278417679">
           <File Id="owf79156F385239CEA4DEA3C87C1DA3E1D8" Source="$(var.SourceDir)\netstandard.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc3FC8434C1A84605AEEBC6A100CA2F3E1" Guid="47d7e276-db6d-424e-d797-1a69e1e24b3b">
           <File Id="owf3FC8434C1A84605AEEBC6A100CA2F3E1" Source="$(var.SourceDir)\Newtonsoft.Json.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc29161E83FC02784120326979FF285358" Guid="a8d30e75-1063-4d27-60b6-13d4bd4f52eb">
+          <File Id="owf29161E83FC02784120326979FF285358" Source="$(var.SourceDir)\opencv_videoio_ffmpeg451_64.dll" KeyPath="yes" />
         </Component>
         <Component Id="owcBFCA0BB8CBE4A68414FA088B4F7F3D22" Guid="babeb74f-9861-b222-a49a-ec268c3cd3ca">
           <File Id="owfBFCA0BB8CBE4A68414FA088B4F7F3D22" Source="$(var.SourceDir)\ReactiveUI.dll" KeyPath="yes" />
@@ -811,9 +850,9 @@
         </Component>
         <Component Id="owc21B8C8C0F69E3CD1398B9A0674DF07BD" Guid="1e472543-e636-904d-da5b-cddaac2d36b1">
           <File Id="owf21B8C8C0F69E3CD1398B9A0674DF07BD" Source="$(var.SourceDir)\UVtools.exe" KeyPath="yes">
-            <Shortcut Id="sc218BF75801887335D1B30BAFB94BA631" Name="UVtools" Directory="scd220707349D4C8FA275285514283F3E2A" WorkingDirectory="MergeRedirectFolder" Description="MSLA/DLP, file analysis, calibration, repair, conversion and manipulation" />
             <Shortcut Id="sc2F2092C02FDD8EB21E756F58C31B70A7" Name="UVtools" Directory="StartMenuFolder" WorkingDirectory="MergeRedirectFolder" Description="MSLA/DLP, file analysis, calibration, repair, conversion and manipulation" />
-            <Shortcut Id="sc6327849DA5C02D2396E91B8B1892E03C" Name="UVtools" Directory="DesktopFolder" Description="MSLA/DLP, file analysis, calibration, repair, conversion and manipulation" WorkingDirectory="MergeRedirectFolder" />
+            <Shortcut Id="sc218BF75801887335D1B30BAFB94BA631" Name="UVtools" Directory="scd220707349D4C8FA275285514283F3E2A" WorkingDirectory="MergeRedirectFolder" Description="MSLA/DLP, file analysis, calibration, repair, conversion and manipulation" />
+            <Shortcut Id="sc6327849DA5C02D2396E91B8B1892E03C" Name="UVtools" Directory="DesktopFolder" WorkingDirectory="MergeRedirectFolder" Description="MSLA/DLP, file analysis, calibration, repair, conversion and manipulation" />
           </File>
         </Component>
         <Component Id="owc0C1077539E2B54F2460D2C0993613EFB" Guid="fc6ae2db-2865-9eb4-5753-4f2f941fdf16">
@@ -824,6 +863,15 @@
         </Component>
         <Component Id="owc1FE1E0B70F7D880A2FB9AFA8E0E36EF5" Guid="545300b7-5398-2ce2-788f-02287a83e8a7">
           <File Id="owf1FE1E0B70F7D880A2FB9AFA8E0E36EF5" Source="$(var.SourceDir)\UVtools_demo_file.sl1" KeyPath="yes" />
+        </Component>
+        <Component Id="owc507468650B23000B702AAAE48E658343" Guid="dba8edf4-02a3-c04a-50fc-896025548077">
+          <File Id="owf507468650B23000B702AAAE48E658343" Source="$(var.SourceDir)\vccorlib140.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcEB2D9343E9BF3366381E9864468EFB9A" Guid="c4f85169-dfa6-1369-3b95-34e28199fa0f">
+          <File Id="owfEB2D9343E9BF3366381E9864468EFB9A" Source="$(var.SourceDir)\vcruntime140.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc41A749EF7C055C135F6C13882684CE39" Guid="d0346e8a-b7e9-6a98-fefd-48957d30e340">
+          <File Id="owf41A749EF7C055C135F6C13882684CE39" Source="$(var.SourceDir)\vcruntime140_1.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc9AF7D2C52438BF24F3FA3132D7C0E6A9" Guid="892f88e7-cf94-fad1-08d3-b26c1b5913d3">
           <File Id="owf9AF7D2C52438BF24F3FA3132D7C0E6A9" Source="$(var.SourceDir)\WindowsBase.dll" KeyPath="yes" />
@@ -1090,59 +1138,186 @@
             </Component>
           </Directory>
         </Directory>
-        <Directory Id="owd37EA32A018DF9B31395A1FCE42233062" Name="x64">
-          <Component Id="owcCD1854F2CC6C7F17F61397E23B6C598A" Guid="0a98d274-6f18-ee97-f14c-410e8fd2060d">
-            <File Id="owfCD1854F2CC6C7F17F61397E23B6C598A" Source="$(var.SourceDir)\x64\concrt140.dll" KeyPath="yes" />
+        <Directory Id="owd799F60633DE3314CD962556CD118A45D" Name="cs">
+          <Component Id="owc99CE72FDB30C8FD0902CE01843ED4D88" Guid="c4c2d2ce-4eae-325d-f83e-f5d17907fa7d">
+            <File Id="owf99CE72FDB30C8FD0902CE01843ED4D88" Source="$(var.SourceDir)\cs\Microsoft.CodeAnalysis.CSharp.resources.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owcE1790624963D540C427806C2B2809EBA" Guid="00de945a-e306-4840-1dd3-b8e968184b74">
-            <File Id="owfE1790624963D540C427806C2B2809EBA" Source="$(var.SourceDir)\x64\cvextern.dll" KeyPath="yes" />
+          <Component Id="owc5A8A23B0047B0D17D2E388C7647E2495" Guid="0bc611bd-4c59-08df-c64a-8fa2236aa7a5">
+            <File Id="owf5A8A23B0047B0D17D2E388C7647E2495" Source="$(var.SourceDir)\cs\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owc5F1F538D5D53D69031C503A5A647FA86" Guid="4e9e9fdc-8d0c-3ba0-a240-9e6ef5842194">
-            <File Id="owf5F1F538D5D53D69031C503A5A647FA86" Source="$(var.SourceDir)\x64\msvcp140.dll" KeyPath="yes" />
+          <Component Id="owc86B8E7B458701723CB9EC03C1690DC6E" Guid="cdd72de0-864d-fb89-212f-4bd06f0dcd10">
+            <File Id="owf86B8E7B458701723CB9EC03C1690DC6E" Source="$(var.SourceDir)\cs\Microsoft.CodeAnalysis.resources.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owc8F40E3E29777D025A9F18E5B6042F30D" Guid="e05981f2-643b-ca90-e066-2434e056751a">
-            <File Id="owf8F40E3E29777D025A9F18E5B6042F30D" Source="$(var.SourceDir)\x64\msvcp140_1.dll" KeyPath="yes" />
-          </Component>
-          <Component Id="owc0881D1B926887713CEA1FB8CE1244020" Guid="3baf74a4-81ca-d0a7-70ea-912a08d3dc3c">
-            <File Id="owf0881D1B926887713CEA1FB8CE1244020" Source="$(var.SourceDir)\x64\msvcp140_2.dll" KeyPath="yes" />
-          </Component>
-          <Component Id="owc2FF8EDA65751914E3C80D405856A37CE" Guid="283d40b2-5948-d5e0-9173-53dbd88d6e13">
-            <File Id="owf2FF8EDA65751914E3C80D405856A37CE" Source="$(var.SourceDir)\x64\msvcp140_codecvt_ids.dll" KeyPath="yes" />
-          </Component>
-          <Component Id="owcA66BA6B6AE2CB062F1DEE173EBAC6013" Guid="2c9e44cd-17bb-ac7b-b524-b8d94f9cf180">
-            <File Id="owfA66BA6B6AE2CB062F1DEE173EBAC6013" Source="$(var.SourceDir)\x64\opencv_videoio_ffmpeg440_64.dll" KeyPath="yes" />
-          </Component>
-          <Component Id="owc8C50C7464818ADC2267594B33B7B1EE6" Guid="049c0f0d-c410-daa8-b6ec-1c515fdfce03">
-            <File Id="owf8C50C7464818ADC2267594B33B7B1EE6" Source="$(var.SourceDir)\x64\vcruntime140.dll" KeyPath="yes" />
-          </Component>
-          <Component Id="owcBF69387AE1C9C06910622B5629DAAA62" Guid="051ca95f-4aa8-18b1-56da-7788687d06e0">
-            <File Id="owfBF69387AE1C9C06910622B5629DAAA62" Source="$(var.SourceDir)\x64\vcruntime140_1.dll" KeyPath="yes" />
+          <Component Id="owc8370BED3D17A58E88E193350B14A5450" Guid="cc521992-26e9-bf12-e777-68f8e2102405">
+            <File Id="owf8370BED3D17A58E88E193350B14A5450" Source="$(var.SourceDir)\cs\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
           </Component>
         </Directory>
-        <Directory Id="owd3BCA71FC1DDF940F5FD535BAC750E17B" Name="x86">
-          <Component Id="owcFBC3B4CD533BC131080BCB572CEE8474" Guid="8b12ad7e-4019-3cca-c71d-82e5f3e6a080">
-            <File Id="owfFBC3B4CD533BC131080BCB572CEE8474" Source="$(var.SourceDir)\x86\concrt140.dll" KeyPath="yes" />
+        <Directory Id="owd17C6A2D314297F8FF3C608803909F7BE" Name="de">
+          <Component Id="owc6A8D7823467C066EA1EC2F740C66084D" Guid="82c152c6-97bf-f75d-44fc-294474d9a7cb">
+            <File Id="owf6A8D7823467C066EA1EC2F740C66084D" Source="$(var.SourceDir)\de\Microsoft.CodeAnalysis.CSharp.resources.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owc326B123F4EAB21E3B400B7357CCFCB69" Guid="7acba6ad-3e71-b056-9a79-7e53f7d4585b">
-            <File Id="owf326B123F4EAB21E3B400B7357CCFCB69" Source="$(var.SourceDir)\x86\cvextern.dll" KeyPath="yes" />
+          <Component Id="owc9116F5B9D0D06FDD8B9116F3E0951A24" Guid="05d40bda-9c56-78d7-90ac-dd3c0b6e32c8">
+            <File Id="owf9116F5B9D0D06FDD8B9116F3E0951A24" Source="$(var.SourceDir)\de\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owcEBF7D14133500BEDB79449CCE2A5B412" Guid="3cfe7baa-8f60-50d4-0c7c-41e7f7409b69">
-            <File Id="owfEBF7D14133500BEDB79449CCE2A5B412" Source="$(var.SourceDir)\x86\msvcp140.dll" KeyPath="yes" />
+          <Component Id="owc201B77F8A5FFED898E7D6ABA98A1C719" Guid="db330e27-4a94-1662-79dc-50425953f203">
+            <File Id="owf201B77F8A5FFED898E7D6ABA98A1C719" Source="$(var.SourceDir)\de\Microsoft.CodeAnalysis.resources.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owcA62A9E2DCF3C1092572B9BA8A90AF2CC" Guid="a5901167-af03-d482-e4a2-55e2fd2dab37">
-            <File Id="owfA62A9E2DCF3C1092572B9BA8A90AF2CC" Source="$(var.SourceDir)\x86\msvcp140_1.dll" KeyPath="yes" />
+          <Component Id="owcF790A17350C2437C0E1E354B9D980161" Guid="627f2dc4-5b88-d3f7-3acf-7630111e30e8">
+            <File Id="owfF790A17350C2437C0E1E354B9D980161" Source="$(var.SourceDir)\de\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owc4E55EDBDDABF300437BC351C60EA1BBB" Guid="253ff45b-49b3-cf8c-4b98-7ac426bdb997">
-            <File Id="owf4E55EDBDDABF300437BC351C60EA1BBB" Source="$(var.SourceDir)\x86\msvcp140_2.dll" KeyPath="yes" />
+        </Directory>
+        <Directory Id="owdF542F1E9B1CF46F5EC5BF0998941ED93" Name="es">
+          <Component Id="owcDD2F3A9E1BC6C55110A95C76B075BB2A" Guid="1082627f-113d-241a-abee-cb25d4b696fe">
+            <File Id="owfDD2F3A9E1BC6C55110A95C76B075BB2A" Source="$(var.SourceDir)\es\Microsoft.CodeAnalysis.CSharp.resources.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owcDE8398D0FE76287635F64D20414A83A9" Guid="b3a19e5c-5f5b-984b-06fc-91ec029138fe">
-            <File Id="owfDE8398D0FE76287635F64D20414A83A9" Source="$(var.SourceDir)\x86\msvcp140_codecvt_ids.dll" KeyPath="yes" />
+          <Component Id="owcAF0B9E9C8764DB03240C3233FA91FC3F" Guid="61f4d403-eb00-dd15-8880-b8ae920ff3b3">
+            <File Id="owfAF0B9E9C8764DB03240C3233FA91FC3F" Source="$(var.SourceDir)\es\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owcB3105100F274DC6C121EB91815CE430E" Guid="17155558-2ffd-5452-640e-b77c2e2b86e5">
-            <File Id="owfB3105100F274DC6C121EB91815CE430E" Source="$(var.SourceDir)\x86\opencv_videoio_ffmpeg440.dll" KeyPath="yes" />
+          <Component Id="owcA9E6FC4859E34CE57D4623D60AB82100" Guid="6e39d6b9-6efc-9ed5-3392-971358498061">
+            <File Id="owfA9E6FC4859E34CE57D4623D60AB82100" Source="$(var.SourceDir)\es\Microsoft.CodeAnalysis.resources.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owcFE2AD2B6C739ABAFD86DE40F4D5B83C9" Guid="30610dbe-339b-b1be-a4a6-626e8fc07490">
-            <File Id="owfFE2AD2B6C739ABAFD86DE40F4D5B83C9" Source="$(var.SourceDir)\x86\vcruntime140.dll" KeyPath="yes" />
+          <Component Id="owcB59CB618361B113CFA57D75E883608EA" Guid="ddc56db3-e6a2-c7aa-dc21-3b247964758c">
+            <File Id="owfB59CB618361B113CFA57D75E883608EA" Source="$(var.SourceDir)\es\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+        </Directory>
+        <Directory Id="owdA426C3729D5D59516430C8F667ED8DE8" Name="fr">
+          <Component Id="owcFECC4FDE99CBE3816D982D1FF8E5E196" Guid="703ebe68-adaa-3f9c-606b-b42fec5159e8">
+            <File Id="owfFECC4FDE99CBE3816D982D1FF8E5E196" Source="$(var.SourceDir)\fr\Microsoft.CodeAnalysis.CSharp.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owcDDEF75A5FE4B5C43A5794EC0494F1E2C" Guid="56a9d29d-436d-4319-1a0d-cf5306a85f60">
+            <File Id="owfDDEF75A5FE4B5C43A5794EC0494F1E2C" Source="$(var.SourceDir)\fr\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owcF108244D2CA24AF9CCC6DA95FF283CA3" Guid="8a5a7aca-1013-145f-3a57-49946c024af2">
+            <File Id="owfF108244D2CA24AF9CCC6DA95FF283CA3" Source="$(var.SourceDir)\fr\Microsoft.CodeAnalysis.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owcE8E57F27B5A0C2D7A27A164639AA95F9" Guid="caac4561-da90-4c7b-02cd-bdfca5be1694">
+            <File Id="owfE8E57F27B5A0C2D7A27A164639AA95F9" Source="$(var.SourceDir)\fr\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+        </Directory>
+        <Directory Id="owd74DAE01CDA8C981B3918AC92ED360AA1" Name="it">
+          <Component Id="owc4DD3418A4620DABCBBB6CCAA8ECA2707" Guid="421c92b6-85d7-3733-b9a5-ed10229c89a5">
+            <File Id="owf4DD3418A4620DABCBBB6CCAA8ECA2707" Source="$(var.SourceDir)\it\Microsoft.CodeAnalysis.CSharp.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc70A38979F7888C6B171A3C37DBD35061" Guid="d19c3295-b474-4fab-9af6-93c9257dfd18">
+            <File Id="owf70A38979F7888C6B171A3C37DBD35061" Source="$(var.SourceDir)\it\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owcE089DC47E89BFE9044FEC67CE8379D17" Guid="15a0d64c-a68c-9780-ddd0-e40920cd6a68">
+            <File Id="owfE089DC47E89BFE9044FEC67CE8379D17" Source="$(var.SourceDir)\it\Microsoft.CodeAnalysis.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc8B74032559230C1C0C2B5082475A5CD4" Guid="39eabb54-8dd8-65e8-fe00-359ad09cae2a">
+            <File Id="owf8B74032559230C1C0C2B5082475A5CD4" Source="$(var.SourceDir)\it\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+        </Directory>
+        <Directory Id="owd939A7C952EF97FFE1E5F44BC8281E343" Name="ja">
+          <Component Id="owc51FE3ECF820BD499CDE7DBB22A69167D" Guid="3201321c-b8c7-5cbb-2ad8-f8bf5b451b3d">
+            <File Id="owf51FE3ECF820BD499CDE7DBB22A69167D" Source="$(var.SourceDir)\ja\Microsoft.CodeAnalysis.CSharp.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc8549DE5E566B16C0AD0E61BE120D8555" Guid="8b4fc791-bf38-333f-a84f-d78fedc6efe3">
+            <File Id="owf8549DE5E566B16C0AD0E61BE120D8555" Source="$(var.SourceDir)\ja\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owcD50AC7A96B0FC09970B32B3681AF3FF4" Guid="1f8ff321-6287-1fbe-4f8d-86eb390bf641">
+            <File Id="owfD50AC7A96B0FC09970B32B3681AF3FF4" Source="$(var.SourceDir)\ja\Microsoft.CodeAnalysis.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc0A9733AEBD37AD14413D6F786BB5FA8A" Guid="f57405c2-169e-0504-01db-e115d156226b">
+            <File Id="owf0A9733AEBD37AD14413D6F786BB5FA8A" Source="$(var.SourceDir)\ja\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+        </Directory>
+        <Directory Id="owd26824DD7BA688994CEC324C96033C66B" Name="ko">
+          <Component Id="owc82B969E8D4D535732FCF01718B7E606D" Guid="993f9efe-f89f-7b95-8443-2341e293e7a6">
+            <File Id="owf82B969E8D4D535732FCF01718B7E606D" Source="$(var.SourceDir)\ko\Microsoft.CodeAnalysis.CSharp.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owcABF888E5C49C7DDDF2FB5AA8071F21D9" Guid="13a4540c-353f-31db-f76e-3017c15fe9df">
+            <File Id="owfABF888E5C49C7DDDF2FB5AA8071F21D9" Source="$(var.SourceDir)\ko\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc1F4AA2DE2CA82FAFEC017FB9E5159A16" Guid="b96179dd-f81f-6158-e087-b01eeb552325">
+            <File Id="owf1F4AA2DE2CA82FAFEC017FB9E5159A16" Source="$(var.SourceDir)\ko\Microsoft.CodeAnalysis.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc49136EC48B42F29310D5FAB96EB39C77" Guid="7d59fb12-e36d-3b98-1b54-8182dc102913">
+            <File Id="owf49136EC48B42F29310D5FAB96EB39C77" Source="$(var.SourceDir)\ko\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+        </Directory>
+        <Directory Id="owdC3B37D0EB36BEDA1B06A324A062DC94D" Name="pl">
+          <Component Id="owc4D2D720AD4B25046F5C3A8337C58558F" Guid="f9f595eb-39b5-e326-d983-3aca9a6bb500">
+            <File Id="owf4D2D720AD4B25046F5C3A8337C58558F" Source="$(var.SourceDir)\pl\Microsoft.CodeAnalysis.CSharp.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc247996509C92190D211D51C687663973" Guid="d3d661d6-e99e-91e3-9512-9a35c05b5d78">
+            <File Id="owf247996509C92190D211D51C687663973" Source="$(var.SourceDir)\pl\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc75290668850934E95D9C36037C6CA10D" Guid="8be98fcf-1714-97ea-9e3f-6337e8a79c4a">
+            <File Id="owf75290668850934E95D9C36037C6CA10D" Source="$(var.SourceDir)\pl\Microsoft.CodeAnalysis.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc01C7CE26E845E06F3A50D520FB278BCF" Guid="d1ddafed-c698-3973-d2a4-4c4d00620030">
+            <File Id="owf01C7CE26E845E06F3A50D520FB278BCF" Source="$(var.SourceDir)\pl\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+        </Directory>
+        <Directory Id="owdE3101CE52C8B10FCC8A2CC81C4C96F39" Name="pt-BR">
+          <Component Id="owc66101D80AE2357408A5C5CDB0D87BEB0" Guid="9fa0b68e-9b5f-699d-79d5-b93a4344d2eb">
+            <File Id="owf66101D80AE2357408A5C5CDB0D87BEB0" Source="$(var.SourceDir)\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owcFF7C74C94543248FAB00F923E96F0218" Guid="4dbc0468-33ed-1ad7-80c8-e7589d99ef83">
+            <File Id="owfFF7C74C94543248FAB00F923E96F0218" Source="$(var.SourceDir)\pt-BR\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc537BEF6F05522283FE8F47F86399668A" Guid="960db198-afc4-40f9-f20e-a5d537c5702a">
+            <File Id="owf537BEF6F05522283FE8F47F86399668A" Source="$(var.SourceDir)\pt-BR\Microsoft.CodeAnalysis.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc233F59943A3FA33488E78259D09163C6" Guid="e99cb644-a268-a6af-face-e2e7834333cb">
+            <File Id="owf233F59943A3FA33488E78259D09163C6" Source="$(var.SourceDir)\pt-BR\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+        </Directory>
+        <Directory Id="owdEAE4E7B6D44EEB507A9E5B7539B1C34A" Name="ru">
+          <Component Id="owcB065F45686216D7224FE9E57071535B1" Guid="e96c2dc1-7b2a-91cf-dfb2-add81e62ac2b">
+            <File Id="owfB065F45686216D7224FE9E57071535B1" Source="$(var.SourceDir)\ru\Microsoft.CodeAnalysis.CSharp.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc1810998919C2A9C80EFE093BE92CBEF2" Guid="88c73b6a-b6a5-87f8-ffed-c028f0b6c0e4">
+            <File Id="owf1810998919C2A9C80EFE093BE92CBEF2" Source="$(var.SourceDir)\ru\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc56892873DDC66705A32DD13C1A40B9F3" Guid="b92e9a16-6e47-a12b-354b-4624ba27ebfd">
+            <File Id="owf56892873DDC66705A32DD13C1A40B9F3" Source="$(var.SourceDir)\ru\Microsoft.CodeAnalysis.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc53575A00E0697BB0E07983D26C103FEA" Guid="64e7fa95-8227-2c96-6a82-e914b6ce047c">
+            <File Id="owf53575A00E0697BB0E07983D26C103FEA" Source="$(var.SourceDir)\ru\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+        </Directory>
+        <Directory Id="owdFCC3FD9F99A4D5BEDEAC61F3322D2D93" Name="tr">
+          <Component Id="owcEC06D7EB1988F1B550C8B3569B0261D3" Guid="07379a43-cb0f-ea5f-0cfe-d71fddfe14e6">
+            <File Id="owfEC06D7EB1988F1B550C8B3569B0261D3" Source="$(var.SourceDir)\tr\Microsoft.CodeAnalysis.CSharp.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owcBA8A623686D1AEABEB47E9B2FB674C3A" Guid="14f5bbbe-61a0-2e13-aa01-612beea284ea">
+            <File Id="owfBA8A623686D1AEABEB47E9B2FB674C3A" Source="$(var.SourceDir)\tr\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc618B2DBE7EB4D4F7E675C5D04CD64E7E" Guid="197802f2-556a-5b71-650c-faf644c38863">
+            <File Id="owf618B2DBE7EB4D4F7E675C5D04CD64E7E" Source="$(var.SourceDir)\tr\Microsoft.CodeAnalysis.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc91567B2B4E8154089395D1A78358BE89" Guid="1c327c0f-a510-b334-7130-5c9e6609dc7b">
+            <File Id="owf91567B2B4E8154089395D1A78358BE89" Source="$(var.SourceDir)\tr\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+        </Directory>
+        <Directory Id="owd7142663FADDFFB05CCE01DC370DE4995" Name="zh-Hans">
+          <Component Id="owc28B8853BEB28067D4AB79B73216A3AC8" Guid="f6b6af15-bb3a-3eda-972d-47cb28af6c03">
+            <File Id="owf28B8853BEB28067D4AB79B73216A3AC8" Source="$(var.SourceDir)\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owcDA343DBA19E680B537006D75B50A616D" Guid="898f5dc8-48bd-913f-968d-10e37f8347f7">
+            <File Id="owfDA343DBA19E680B537006D75B50A616D" Source="$(var.SourceDir)\zh-Hans\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc074201B7ECF4E55183EF1FC13FC03B70" Guid="ef2d2267-19a2-0443-6ae4-16cfed6b8091">
+            <File Id="owf074201B7ECF4E55183EF1FC13FC03B70" Source="$(var.SourceDir)\zh-Hans\Microsoft.CodeAnalysis.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc5371E4C6A9B06D411E8EAC3E5A48E7EA" Guid="a7649dfb-52b9-08d3-6f03-f7aed4d2cce3">
+            <File Id="owf5371E4C6A9B06D411E8EAC3E5A48E7EA" Source="$(var.SourceDir)\zh-Hans\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+        </Directory>
+        <Directory Id="owdA86DB5E08AB73906A10F69BC4AA81DE2" Name="zh-Hant">
+          <Component Id="owc18EA70FFACC7303C11A678723F8E1919" Guid="71c1ee6c-af04-89be-a2f7-20205b5f371e">
+            <File Id="owf18EA70FFACC7303C11A678723F8E1919" Source="$(var.SourceDir)\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc7B45E327235A25974959071E8D015643" Guid="ebc62531-8adf-6e26-4b07-8c8ae1b1645c">
+            <File Id="owf7B45E327235A25974959071E8D015643" Source="$(var.SourceDir)\zh-Hant\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc35485D602BBBDC5C5F40469EC390B90C" Guid="48279d95-5026-06e5-350f-7fb5d19fe1c1">
+            <File Id="owf35485D602BBBDC5C5F40469EC390B90C" Source="$(var.SourceDir)\zh-Hant\Microsoft.CodeAnalysis.resources.dll" KeyPath="yes" />
+          </Component>
+          <Component Id="owc505D5854210A555AEF782935C164E813" Guid="778f403b-5deb-df93-7dc7-44b5fa099c25">
+            <File Id="owf505D5854210A555AEF782935C164E813" Source="$(var.SourceDir)\zh-Hant\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
           </Component>
         </Directory>
       </Directory>

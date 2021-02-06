@@ -9,7 +9,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolSolidifyControl()
         {
             InitializeComponent();
-            BaseOperation = new OperationSolidify();
+            BaseOperation = new OperationSolidify(SlicerFile);
         }
 
         private void InitializeComponent()

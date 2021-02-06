@@ -17,8 +17,7 @@
 
           <Grid
               RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-              ColumnDefinitions="Auto,10,100,5,Auto,20,Auto,10,100,5,Auto"
-      >
+              ColumnDefinitions="Auto,10,170,5,Auto,20,Auto,10,170,5,Auto">
 
             <TextBlock
                       Grid.Row="0" Grid.Column="0"
@@ -30,7 +29,7 @@
                            Increment="0.1"
                            Minimum="0"
                            Maximum="10000"
-                           FormatString="\{0:0.00\}"
+                           FormatString="F02"
                            Value="{Binding Operation.DisplayWidth}"/>
             <TextBlock Grid.Row="0" Grid.Column="4"
                        VerticalAlignment="Center"
@@ -45,7 +44,7 @@
                            Increment="0.1"
                            Minimum="0"
                            Maximum="10000"
-                           FormatString="\{0:0.00\}"
+                           FormatString="F02"
                            Value="{Binding Operation.DisplayHeight}"/>
             <TextBlock Grid.Row="0" Grid.Column="10"
                        VerticalAlignment="Center"
@@ -59,7 +58,7 @@
                            Increment="0.01"
                            Minimum="0.01"
                            Maximum="0.30"
-                           FormatString="\{0:0.00\}"
+                           FormatString="F02"
                            Value="{Binding Operation.LayerHeight}"
                      />
             <TextBlock Grid.Row="2" Grid.Column="4"
@@ -87,7 +86,7 @@
                            Increment="0.5"
                            Minimum="0.1"
                            Maximum="200"
-                           FormatString="\{0:0.00\}"
+                           FormatString="F02"
                            Value="{Binding Operation.BottomExposure}"/>
             <TextBlock Grid.Row="4" Grid.Column="4"
                        VerticalAlignment="Center"
@@ -101,7 +100,7 @@
                            Increment="0.5"
                            Minimum="0.1"
                            Maximum="200"
-                           FormatString="\{0:0.00\}"
+                           FormatString="F02"
                            Value="{Binding Operation.NormalExposure}"/>
             <TextBlock Grid.Row="4" Grid.Column="10"
                        VerticalAlignment="Center"
@@ -115,7 +114,7 @@
                            Increment="1"
                            Minimum="5"
                            Maximum="100"
-                           FormatString="\{0:0.00\}"
+                           FormatString="F02"
                            Value="{Binding Operation.ZSize}"/>
             <TextBlock Grid.Row="6" Grid.Column="4"
                        VerticalAlignment="Center"
@@ -254,7 +253,7 @@
                 </Expander.Header>
 
               <Grid RowDefinitions="Auto,5,Auto"
-                    ColumnDefinitions="Auto,10,100,5,Auto,20,Auto,10,100,5,Auto">
+                    ColumnDefinitions="Auto,10,170,5,Auto,20,Auto,10,170,5,Auto">
 
 
                 <TextBlock Grid.Row="0" Grid.Column="0"
@@ -265,7 +264,7 @@
                                  Increment="1.0"
                                  Minimum="2"
                                  Maximum="1000"
-                                 FormatString="\{0:0.00\}"
+                                 FormatString="F02"
                                  Value="{Binding Operation.FemaleDiameter}"/>
                 <TextBlock Grid.Row="0" Grid.Column="4"
                              VerticalAlignment="Center"
@@ -279,7 +278,7 @@
                                Increment="1.0"
                                Minimum="2"
                                Maximum="1000"
-                               FormatString="\{0:0.00\}"
+                               FormatString="F02"
                                Value="{Binding Operation.FemaleHoleDiameter}"/>
                 <TextBlock Grid.Row="0" Grid.Column="10"
                            VerticalAlignment="Center"
@@ -316,7 +315,7 @@
                 </Expander.Header>
 
                 <Grid RowDefinitions="Auto,10,Auto"
-                      ColumnDefinitions="Auto,10,80,5,Auto,20,Auto,10,80,5,Auto,20,Auto,10,80,5,Auto">
+                      ColumnDefinitions="Auto,10,Auto,5,Auto,20,Auto,10,150,5,Auto,20,Auto,10,150,5,Auto">
 
 
                     <TextBlock Grid.Row="0" Grid.Column="0"
@@ -336,7 +335,7 @@
                                    Increment="0.01"
                                    Minimum="-1000"
                                    Maximum="0"
-                                   FormatString="\{0:0.00\}"
+                                   FormatString="F02"
                                    Value="{Binding Operation.MaleThinnerOffset}"/>
                     <TextBlock Grid.Row="0" Grid.Column="10"
                                VerticalAlignment="Center"
@@ -350,7 +349,7 @@
                                    Increment="0.01"
                                    Minimum="-1000"
                                    Maximum="-0.01"
-                                   FormatString="\{0:0.00\}"
+                                   FormatString="F02"
                                    Value="{Binding Operation.MaleThinnerStep}"/>
                     <TextBlock Grid.Row="0" Grid.Column="16"
                                VerticalAlignment="Center"
@@ -377,7 +376,7 @@
                                  Increment="0.01"
                                  Minimum="0"
                                  Maximum="1000"
-                                 FormatString="\{0:0.00\}"
+                                 FormatString="F02"
                                  IsEnabled="{Binding !Operation.FuseParts}"
                                  Value="{Binding Operation.MaleThickerOffset}"/>
                   <TextBlock Grid.Row="2" Grid.Column="10"
@@ -395,7 +394,7 @@
                                  Minimum="0.01"
                                  Maximum="1000"
                                  IsEnabled="{Binding !Operation.FuseParts}"
-                                 FormatString="\{0:0.00\}"
+                                 FormatString="F02"
                                  Value="{Binding Operation.MaleThickerStep}"/>
                   <TextBlock Grid.Row="2" Grid.Column="16"
                              VerticalAlignment="Center"
@@ -429,7 +428,7 @@
                              Minimum="0"
                              Maximum="100"
                              Width="100"
-                             FormatString="\{0:0.00\}"
+                             FormatString="F02"
                              Value="{Binding Operation.ObservedXSize}"/>
               <TextBlock VerticalAlignment="Center" Text="mm"/>
 
@@ -441,7 +440,7 @@
                   Minimum="0"
                   Maximum="100"
                   Width="100"
-                  FormatString="\{0:0.00\}"
+                  FormatString="F02"
                   Value="{Binding Operation.ObservedYSize}"/>
               <TextBlock VerticalAlignment="Center" Text="mm"/>
 
@@ -453,7 +452,7 @@
                   Minimum="0"
                   Maximum="100"
                   Width="100"
-                  FormatString="\{0:0.00\}"
+                  FormatString="F02"
                   Value="{Binding Operation.ObservedZSize}"/>
               <TextBlock VerticalAlignment="Center" Text="mm"/>
             </StackPanel>

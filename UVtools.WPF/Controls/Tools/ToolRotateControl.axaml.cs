@@ -10,7 +10,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolRotateControl()
         {
             InitializeComponent();
-            BaseOperation = new OperationRotate();
+            BaseOperation = new OperationRotate(SlicerFile);
         }
 
         private void InitializeComponent()

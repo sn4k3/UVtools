@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Drawing;
 using Avalonia;
 using Avalonia.Controls;
@@ -42,7 +41,7 @@ namespace UVtools.WPF.Windows
         private bool _clearRoiAfterOperation;
 
         private bool _isProfilesVisible;
-        private ObservableCollection<Operation> _profiles = new ObservableCollection<Operation>();
+        private ObservableCollection<Operation> _profiles = new();
         private Operation _selectedProfileItem;
         private string _profileText;
 
@@ -155,7 +154,7 @@ namespace UVtools.WPF.Windows
             get
             {
                 uint layerCount = (uint) Math.Max(0, (int)LayerIndexEnd - LayerIndexStart + 1);
-                return $"({layerCount} layers / {(decimal)App.SlicerFile.LayerHeight * layerCount}mm)";
+                return $"({layerCount} layers / {Math.Round(App.SlicerFile.LayerHeight * layerCount, 2)}mm)";
             }
             
         }
@@ -291,6 +290,7 @@ namespace UVtools.WPF.Windows
                 if (ToolControl is null) return;
                 var operation = _selectedProfileItem.Clone();
                 operation.ProfileName = null;
+                operation.SlicerFile = App.SlicerFile;
                 ToolControl.BaseOperation = operation;
                 SelectLayers(operation.LayerRangeSelection);
                 ToolControl.Callback(Callbacks.ProfileLoaded);
@@ -499,7 +499,15 @@ namespace UVtools.WPF.Windows
             ButtonOkText = toolControl.BaseOperation.ButtonOkText;
             ButtonOkVisible = ButtonOkEnabled = toolControl.BaseOperation.HaveAction;
 
-            SelectLayers(toolControl.BaseOperation.StartLayerRangeSelection);
+            if (toolControl.BaseOperation.LayerIndexStart == 0 && toolControl.BaseOperation.LayerIndexEnd == 0)
+            {
+                SelectLayers(toolControl.BaseOperation.StartLayerRangeSelection);
+            }
+            else
+            {
+                LayerIndexStart = toolControl.BaseOperation.LayerIndexStart;
+                LayerIndexEnd = toolControl.BaseOperation.LayerIndexEnd;
+            }
 
             //RaisePropertyChanged(nameof(IsContentVisible));
             //RaisePropertyChanged(nameof(IsROIVisible));
@@ -509,16 +517,18 @@ namespace UVtools.WPF.Windows
                 var profiles = OperationProfiles.GetOperations(ToolControl.BaseOperation.GetType());
                 Profiles.AddRange(profiles);
                 IsProfilesVisible = true;
-            }
 
-            foreach (var operation in Profiles)
-            {
-                if (operation.ProfileIsDefault)
+                foreach (var operation in Profiles)
                 {
-                    SelectedProfileItem = operation;
-                    break;
+                    if (operation.ProfileIsDefault)
+                    {
+                        SelectedProfileItem = operation;
+                        break;
+                    }
                 }
             }
+
+            
 
             // Ensure the description don't stretch window
             DispatcherTimer.Run(() =>

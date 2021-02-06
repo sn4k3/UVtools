@@ -8,6 +8,7 @@
 
 using System;
 using System.Drawing;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -15,6 +16,7 @@ namespace UVtools.Core.Operations
     [Serializable]
     public class OperationCalculator : Operation
     {
+        #region Overrides
         public override string Title => "Calculator";
         public override string Description => null;
 
@@ -28,14 +30,30 @@ namespace UVtools.Core.Operations
         public override bool CanROI => false;
 
         public override bool CanHaveProfiles => false;
+        #endregion
 
+        #region Properties
         public MillimetersToPixels CalcMillimetersToPixels { get; set; }
         public LightOffDelayC CalcLightOffDelay { get; set; }
         public OptimalModelTilt CalcOptimalModelTilt { get; set; }
+        #endregion
 
-        public OperationCalculator()
+        #region Constructor
+
+        public OperationCalculator() { }
+
+        public OperationCalculator(FileFormat slicerFile) : base(slicerFile)
         {
+            CalcMillimetersToPixels = new MillimetersToPixels(slicerFile.Resolution, slicerFile.Display);
+            CalcLightOffDelay = new LightOffDelayC(
+                (decimal) SlicerFile.LiftHeight, (decimal) slicerFile.BottomLiftHeight,
+                (decimal) SlicerFile.LiftSpeed, (decimal) slicerFile.BottomLiftSpeed,
+                (decimal) SlicerFile.RetractSpeed, (decimal) slicerFile.RetractSpeed);
+            CalcOptimalModelTilt = new OptimalModelTilt(slicerFile.Resolution, slicerFile.Display,
+                (decimal) slicerFile.LayerHeight);
         }
+
+        #endregion
 
         public abstract class Calculation : BindableBase
         {

@@ -1336,17 +1336,13 @@ namespace UVtools.Core.FileFormats
             LayerDefinitions = null;
         }
 
-        public override void Encode(string fileFullPath, OperationProgress progress = null)
+        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
-            progress ??= new OperationProgress();
-            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-            base.Encode(fileFullPath, progress);
             LayersHash.Clear();
 
             HeaderSettings.Magic = fileFullPath.EndsWith(".ctb") || fileFullPath.EndsWith($".ctb{TemporaryFileAppend}") ? MAGIC_CBT : MAGIC_CBDDLP;
             HeaderSettings.PrintParametersSize = (uint)Helpers.Serializer.SizeOf(PrintParametersSettings);
 
-            
             if (IsCbtFile)
             {
                 if (SlicerInfoSettings.AntiAliasLevel <= 1)
@@ -1380,8 +1376,8 @@ namespace UVtools.Core.FileFormats
             }
             else
             {
-                HeaderSettings.Version = 2;
-                HeaderSettings.EncryptionKey = 0;
+                //HeaderSettings.Version = 2;
+                HeaderSettings.EncryptionKey = 0; // Force disable encryption
                 SlicerInfoSettings.EncryptionMode = ENCRYPTYION_MODE_CBDDLP;
             }
 
@@ -1511,8 +1507,6 @@ namespace UVtools.Core.FileFormats
                 outputFile.Seek(0, SeekOrigin.Begin);
                 Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 
-                AfterEncode();
-
                 Debug.WriteLine("Encode Results:");
                 Debug.WriteLine(HeaderSettings);
                 Debug.WriteLine(Previews[0]);
@@ -1523,14 +1517,9 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        
 
-        public override void Decode(string fileFullPath, OperationProgress progress = null)
+        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
         {
-            base.Decode(fileFullPath, progress);
-            if(progress is null) progress = new OperationProgress();
-            progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
-
             using (var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read))
             {
                 //HeaderSettings = Helpers.ByteToType<CbddlpFile.Header>(InputFile);
@@ -1659,38 +1648,34 @@ namespace UVtools.Core.FileFormats
                         return;
                     }
 
-                    using (var image = LayerDefinitions[0, layerIndex].Decode((uint) layerIndex))
+                    using var image = LayerDefinitions[0, layerIndex].Decode((uint) layerIndex);
+                    var layer = new Layer((uint) layerIndex, image, LayerManager)
                     {
-                        var layer = new Layer((uint) layerIndex, image, LayerManager)
-                        {
-                            PositionZ = LayerDefinitions[0, layerIndex].LayerPositionZ,
-                            ExposureTime = LayerDefinitions[0, layerIndex].LayerExposure,
-                            LightOffDelay = LayerDefinitions[0, layerIndex].LightOffSeconds,
-                        };
+                        PositionZ = LayerDefinitions[0, layerIndex].LayerPositionZ,
+                        ExposureTime = LayerDefinitions[0, layerIndex].LayerExposure,
+                        LightOffDelay = LayerDefinitions[0, layerIndex].LightOffSeconds,
+                    };
 
-                        if (LayerDefinitionsEx is not null)
+                    if (LayerDefinitionsEx is not null)
+                    {
+                        if (layerIndex == 0)
                         {
-                            if (layerIndex == 0)
-                            {
 
-                            }
-                            layer.LiftHeight = LayerDefinitionsEx[layerIndex].LiftHeight;
-                            layer.LiftSpeed = LayerDefinitionsEx[layerIndex].LiftSpeed;
-                            layer.RetractSpeed = LayerDefinitionsEx[layerIndex].RetractSpeed;
-                            layer.LightPWM = (byte) LayerDefinitionsEx[layerIndex].LightPWM;
                         }
+                        layer.LiftHeight = LayerDefinitionsEx[layerIndex].LiftHeight;
+                        layer.LiftSpeed = LayerDefinitionsEx[layerIndex].LiftSpeed;
+                        layer.RetractSpeed = LayerDefinitionsEx[layerIndex].RetractSpeed;
+                        layer.LightPWM = (byte) LayerDefinitionsEx[layerIndex].LightPWM;
+                    }
 
-                        this[layerIndex] = layer;
+                    this[layerIndex] = layer;
 
-                        lock (progress.Mutex)
-                        {
-                            progress++;
-                        }
+                    lock (progress.Mutex)
+                    {
+                        progress++;
                     }
                 });
             }
-
-            progress.Token.ThrowIfCancellationRequested();
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)

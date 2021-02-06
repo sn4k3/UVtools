@@ -6,15 +6,18 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Styling;
 
 namespace UVtools.WPF.Controls
 {
-    public class WindowEx : Window, INotifyPropertyChanged
+    public class WindowEx : Window, INotifyPropertyChanged, IStyleable
     {
         #region BindableBase
         /// <summary>
@@ -58,12 +61,22 @@ namespace UVtools.WPF.Controls
         }
         #endregion
 
+        Type IStyleable.StyleKey => typeof(Window);
+
         public DialogResults DialogResult { get; set; } = DialogResults.Unknown;
         public enum DialogResults
         {
             Unknown,
             OK,
             Cancel
+        }
+
+        public WindowEx()
+        {
+#if DEBUG
+            this.AttachDevTools(new KeyGesture(Key.F12, KeyModifiers.Control));
+#endif
+            //TransparencyLevelHint = WindowTransparencyLevel.AcrylicBlur;
         }
 
         public void CloseWithResult()

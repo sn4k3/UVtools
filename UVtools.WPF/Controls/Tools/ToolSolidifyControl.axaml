@@ -12,7 +12,7 @@
     <ComboBox
       Items="{Binding Operation.AreaCheckTypeItems}"
       SelectedItem="{Binding Operation.AreaCheckType}"
-      Width="70"
+      Width="100"
       VerticalAlignment="Center" />
 
     <TextBlock
@@ -20,7 +20,7 @@
       VerticalAlignment="Center" />
 
     <NumericUpDown
-      Width="100"
+      Width="200"
       Minimum="1"
       Maximum="4294967295"
       Value="{Binding Operation.MinimumArea}"

@@ -7,17 +7,15 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
-using System.IO.Compression;
 using System.Linq;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
-using UVtools.Core.Operations;
 using Stream = System.IO.Stream;
 
 namespace UVtools.Core
@@ -27,9 +25,24 @@ namespace UVtools.Core
     /// </summary>
     public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     {
+        #region Members
+        private byte[] _compressedBytes;
+        private uint _nonZeroPixelCount;
+        private Rectangle _boundingRectangle = Rectangle.Empty;
+        private bool _isModified;
+        private uint _index;
+        private float _positionZ;
+        private float _exposureTime;
+        private float _lightOffDelay = FileFormat.DefaultLightOffDelay;
+        private float _liftHeight = FileFormat.DefaultLiftHeight;
+        private float _liftSpeed = FileFormat.DefaultLiftSpeed;
+        private float _retractSpeed = FileFormat.DefaultRetractSpeed;
+        private byte _lightPwm = FileFormat.DefaultLightPWM;
+        #endregion
+
         #region Properties
 
-        public object Mutex = new object();
+        public object Mutex = new();
 
         /// <summary>
         /// Gets the parent layer manager
@@ -152,21 +165,35 @@ namespace UVtools.Core
         public float PositionZ
         {
             get => _positionZ;
-            set => RaiseAndSetIfChanged(ref _positionZ, value);
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _positionZ, value)) return;
+                RaisePropertyChanged(nameof(LayerHeight));
+            }
         }
 
-        private byte[] _compressedBytes;
-        private uint _nonZeroPixelCount;
-        private Rectangle _boundingRectangle = Rectangle.Empty;
-        private bool _isModified;
-        private uint _index;
-        private float _positionZ;
-        private float _exposureTime;
-        private float _lightOffDelay = FileFormat.DefaultLightOffDelay;
-        private float _liftHeight = FileFormat.DefaultLiftHeight;
-        private float _liftSpeed = FileFormat.DefaultLiftSpeed;
-        private float _retractSpeed = FileFormat.DefaultRetractSpeed;
-        private byte _lightPwm = FileFormat.DefaultLightPWM;
+        /// <summary>
+        /// Gets the layer height in millimeters of this layer
+        /// </summary>
+        public float LayerHeight
+        {
+            get
+            {
+                if (_index == 0) return _positionZ;
+                Layer previousLayer = this;
+
+                while ((previousLayer = previousLayer.PreviousLayer()) is not null) // This cycle returns the correct layer height if two or more layers have the same position z
+                {
+                    var layerHeight = (float)Math.Round(_positionZ - previousLayer.PositionZ, 2);
+                    //Debug.WriteLine($"Layer {_index}-{previousLayer.Index}: {_positionZ} - {previousLayer.PositionZ}: {layerHeight}");
+                    if (layerHeight == 0f) continue;
+                    if (layerHeight < 0f) break;
+                    return layerHeight;
+                }
+
+                return ParentLayerManager.SlicerFile.LayerHeight;
+            }
+        }
 
         /// <summary>
         /// Gets or sets layer image compressed data
@@ -348,7 +375,7 @@ namespace UVtools.Core
 
         public override string ToString()
         {
-            return $"{nameof(Index)}: {Index}, {nameof(Filename)}: {Filename}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(BoundingRectangle)}: {BoundingRectangle}, {nameof(IsBottomLayer)}: {IsBottomLayer}, {nameof(IsNormalLayer)}: {IsNormalLayer}, {nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(LightPWM)}: {LightPWM}, {nameof(IsModified)}: {IsModified}";
+            return $"{nameof(Index)}: {Index}, {nameof(Filename)}: {Filename}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(BoundingRectangle)}: {BoundingRectangle}, {nameof(IsBottomLayer)}: {IsBottomLayer}, {nameof(IsNormalLayer)}: {IsNormalLayer}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(LightPWM)}: {LightPWM}, {nameof(IsModified)}: {IsModified}";
         }
         #endregion
 
@@ -388,18 +415,18 @@ namespace UVtools.Core
 
         public Layer PreviousLayer()
         {
-            if (ReferenceEquals(ParentLayerManager, null) || Index == 0)
+            if (ParentLayerManager is null || _index == 0)
                 return null;
 
-            return ParentLayerManager[Index - 1];
+            return ParentLayerManager[_index - 1];
         }
 
         public Layer NextLayer()
         {
-            if (ReferenceEquals(ParentLayerManager, null) || Index >= ParentLayerManager.Count - 1)
+            if (ParentLayerManager is null || _index >= ParentLayerManager.Count - 1)
                 return null;
 
-            return ParentLayerManager[Index + 1];
+            return ParentLayerManager[_index + 1];
         }
 
         public bool SetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier, decimal value)

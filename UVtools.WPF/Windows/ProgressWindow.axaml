@@ -1,14 +1,15 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+﻿<controls:WindowEx xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:UVtools.WPF.Controls"
         mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
         x:Class="UVtools.WPF.Windows.ProgressWindow"
         Title="ProgressWindow"
         CanResize="False"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
-        MinWidth="400"
+        MinWidth="450"
         SizeToContent="WidthAndHeight"
         SystemDecorations="BorderOnly"
         Icon="/Assets/Icons/UVtools.ico"
@@ -34,22 +35,26 @@
 
       <Grid
         Grid.Row="3"
-        RowDefinitions="30" ColumnDefinitions="*,Auto">
+        RowDefinitions="30" ColumnDefinitions="*,100">
         <ProgressBar
           Grid.Column="0"
           Minimum="0"
           Maximum="100"
+          VerticalAlignment="Stretch"
           IsIndeterminate="{Binding Progress.IsIndeterminate}"
           Value="{Binding Progress.ProgressPercent}"  ShowProgressText="True"/>
         <Button
           IsEnabled="{Binding CanCancel}"
           Command="{Binding OnClickCancel}"
           Grid.Column="1"
-          Padding="30,0"
           IsCancel="True"
+          VerticalAlignment="Stretch"
+          HorizontalAlignment="Stretch"
+          VerticalContentAlignment="Center"
+          HorizontalContentAlignment="Center"
           Content="Cancel"
           />
       </Grid>
     </Grid>
   </Border>
-</Window>
+</controls:WindowEx>

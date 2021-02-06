@@ -19,6 +19,7 @@
       Grid.Column="2"
       Items="{Binding Operation.InfillAlgorithmTypes}"
       SelectedItem="{Binding Operation.InfillType}"
+      HorizontalAlignment="Stretch"
       />
 
     <!--Wall thickness-->

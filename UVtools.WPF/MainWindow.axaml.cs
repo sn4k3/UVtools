@@ -21,6 +21,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls.Primitives;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -51,11 +52,11 @@ namespace UVtools.WPF
 
         #region Controls
 
-        public ProgressWindow ProgressWindow = new ProgressWindow();
+        public ProgressWindow ProgressWindow = new ();
 
         public static MenuItem[] MenuTools { get; } =
         {
-            new MenuItem
+            new()
             {
                 Tag = new OperationEditParameters(),
                 Icon = new Avalonia.Controls.Image
@@ -63,7 +64,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/wrench-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationRepairLayers(),
                 Icon = new Avalonia.Controls.Image
@@ -71,7 +72,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/toolbox-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationMove(),
                 Icon = new Avalonia.Controls.Image
@@ -79,7 +80,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/move-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationResize(),
                 Icon = new Avalonia.Controls.Image
@@ -87,7 +88,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/crop-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationFlip(),
                 Icon = new Avalonia.Controls.Image
@@ -95,7 +96,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/flip-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationRotate(),
                 Icon = new Avalonia.Controls.Image
@@ -103,7 +104,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/sync-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationSolidify(),
                 Icon = new Avalonia.Controls.Image
@@ -111,7 +112,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/square-solid-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationMorph(),
                 Icon = new Avalonia.Controls.Image
@@ -119,7 +120,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/geometry-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationRaftRelief(),
                 Icon = new Avalonia.Controls.Image
@@ -127,15 +128,15 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/cookie-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationRedrawModel(),
                 Icon = new Avalonia.Controls.Image
                 {
-                    Source = new Bitmap(App.GetAsset("/Assets/Icons/sun-16x16.png"))
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/code-branch-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationThreshold(),
                 Icon = new Avalonia.Controls.Image
@@ -143,7 +144,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/th-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationArithmetic(),
                 Icon = new Avalonia.Controls.Image
@@ -151,7 +152,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/square-root-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationMask(),
                 Icon = new Avalonia.Controls.Image
@@ -159,7 +160,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/mask-16x16.png"))
                     }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationPixelDimming(),
                 Icon = new Avalonia.Controls.Image
@@ -167,7 +168,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/pixel-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationInfill(),
                 Icon = new Avalonia.Controls.Image
@@ -175,7 +176,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/stroopwafel-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationBlur(),
                 Icon = new Avalonia.Controls.Image
@@ -183,7 +184,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/blur-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationPattern(),
                 Icon = new Avalonia.Controls.Image
@@ -191,7 +192,15 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/pattern-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
+            {
+                Tag = new OperationDynamicLayerHeight(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/dynamic-layers-16x16.png"))
+                }
+            },
+            new()
             {
                 Tag = new OperationLayerReHeight(),
                 Icon = new Avalonia.Controls.Image
@@ -199,7 +208,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/ladder-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationChangeResolution(),
                 Icon = new Avalonia.Controls.Image
@@ -207,7 +216,7 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/resize-16x16.png"))
                 }
             },
-            new MenuItem
+            new()
             {
                 Tag = new OperationCalculator(),
                 Icon = new Avalonia.Controls.Image
@@ -219,6 +228,14 @@ namespace UVtools.WPF
 
         public static MenuItem[] MenuCalibration { get; } =
         {
+            new()
+            {
+                Tag = new OperationCalibrateExposureFinder(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/sun-16x16.png"))
+                }
+            },
             new()
             {
                 Tag = new OperationCalibrateElephantFoot(),
@@ -358,7 +375,7 @@ namespace UVtools.WPF
 
         public bool IsFileLoaded
         {
-            get => !(SlicerFile is null);
+            get => SlicerFile is not null;
             set => RaisePropertyChanged();
         }
 
@@ -419,9 +436,6 @@ namespace UVtools.WPF
         public MainWindow()
         {
             InitializeComponent();
-#if DEBUG
-            //this.AttachDevTools();
-#endif
 
             App.ThemeSelector?.EnableThemes(this);
             InitInformation();
@@ -488,7 +502,6 @@ namespace UVtools.WPF
             {
                 WindowState = WindowState.Maximized;
             }
-
 
             AddLog($"{About.Software} start", Program.ProgramStartupTime.Elapsed.TotalSeconds);
 
@@ -965,7 +978,8 @@ namespace UVtools.WPF
                     if (convertToFormat is not null)
                     {
                         var directory = Path.GetDirectoryName(sl1File.FileFullPath);
-                        var filename = PathExtensions.GetFileNameStripAllExtensions(sl1File.FileFullPath);
+                        var extensions = FileFormat.AllFileExtensionsString.OrderByDescending(s => s.Length).ToList();
+                        var filename = PathExtensions.GetFileNameStripExtensions(sl1File.FileFullPath, extensions);
                         FileFormat convertedFile = null;
 
                         IsGUIEnabled = false;
@@ -1036,7 +1050,9 @@ namespace UVtools.WPF
                 CanSave = true;
                 if (Settings.Automations.SaveFileAfterModifications)
                 {
+                    var saveCount = _savesCount;
                     await SaveFile(null, true);
+                    _savesCount = saveCount;
                 }
             }
 
@@ -1087,7 +1103,7 @@ namespace UVtools.WPF
             UpdateTitle();
 
 
-            if (!(mat is null) && Settings.LayerPreview.AutoRotateLayerBestView)
+            if (mat is not null && Settings.LayerPreview.AutoRotateLayerBestView)
             {
                 _showLayerImageRotated = mat.Height > mat.Width;
             }
@@ -1105,7 +1121,6 @@ namespace UVtools.WPF
             {
                 OnClickDetectIssues();
             }
-
         }
 
         private async void ShowProgressWindow(string title)
@@ -1395,7 +1410,7 @@ namespace UVtools.WPF
             switch (baseOperation)
             {
                 case OperationEditParameters operation:
-                    operation.Execute(SlicerFile);
+                    operation.Execute();
                     RefreshProperties();
                     RefreshCurrentLayerData();
                     ResetDataContext();
@@ -1433,7 +1448,7 @@ namespace UVtools.WPF
 
                 try
                 {
-                    return baseOperation.Execute(SlicerFile, ProgressWindow.RestartProgress(baseOperation.CanCancel));
+                    return baseOperation.Execute(ProgressWindow.RestartProgress(baseOperation.CanCancel));
                 }
                 catch (OperationCanceledException)
                 {
@@ -1467,6 +1482,17 @@ namespace UVtools.WPF
                     case OperationRepairLayers operation:
                         OnClickDetectIssues();
                         break;
+                }
+            }
+
+            if (baseOperation.Tag is not null)
+            {
+                var message = baseOperation.Tag.ToString();
+                if (!string.IsNullOrWhiteSpace(message))
+                {
+                    //message += $"\nExecution time: ";
+                    
+                    await this.MessageBoxInfo(message, $"{baseOperation.Title} report ({LastStopWatch.Elapsed.Hours}h{LastStopWatch.Elapsed.Minutes}m{LastStopWatch.Elapsed.Seconds}s)");
                 }
             }
 

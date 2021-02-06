@@ -5,20 +5,47 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolEditParametersControl">
 
-  <StackPanel Spacing="15">
+  <StackPanel Spacing="10">
 
     <CheckBox
       IsChecked="{Binding Operation.PerLayerOverride}"
       IsVisible="{Binding SupportPerLayerSettings}"
       Content="Change settings per a layer range"/>
 
+    <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding Operation.PerLayerOverride}">
+        <TextBlock
+            VerticalAlignment="Center"
+            Text="Sequentially set each"/>
+
+        <NumericUpDown
+            VerticalAlignment="Center"
+            Minimum="1"
+            Maximum="100000"
+            Increment="1"
+            Value="{Binding Operation.SetNumberOfLayer}"/>
+
+        <TextBlock
+            VerticalAlignment="Center"
+            Text="layers, and skip the next"/>
+
+        <NumericUpDown
+            VerticalAlignment="Center"
+            Minimum="0"
+            Maximum="100000"
+            Increment="1"
+            Value="{Binding Operation.SkipNumberOfLayer}"/>
+
+        <TextBlock
+            VerticalAlignment="Center"
+            Text="layers"/>
+    </StackPanel>
+
     <Grid
       Name="grid"
       RowDefinitions="Auto"
-      ColumnDefinitions="Auto,Auto,Auto,Auto,*"
+      ColumnDefinitions="Auto,Auto,*,Auto,Auto"
       VerticalAlignment="Center"
-      ShowGridLines="True"
-    >
+      ShowGridLines="True">
 
       <TextBlock
         Grid.Column="0"

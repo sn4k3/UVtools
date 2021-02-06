@@ -103,12 +103,16 @@ namespace UVtools.Core.Extensions
         public static uint DecimalDigits(this decimal val)
         {
             var valStr = val.ToString(CultureInfo.InvariantCulture).TrimEnd('0');
-            if (string.IsNullOrEmpty(valStr) || valStr[valStr.Length-1] == '.') return 0;
+            if (string.IsNullOrEmpty(valStr) || valStr[^1] == '.') return 0;
 
             var index = valStr.IndexOf('.');
             if (index < 0) return 0;
 
             return (uint)(valStr.Substring(index).Length - 1);
         }
+
+        public static bool IsInteger(this float val, float tolerance = 0.0001f) => Math.Abs(val - Math.Floor(val)) < tolerance;
+        public static bool IsInteger(this double val, double tolerance = 0.0001) => Math.Abs(val - Math.Floor(val)) < tolerance;
+        public static bool IsInteger(this decimal val) => val == Math.Floor(val);
     }
 }

@@ -9,8 +9,10 @@ using System;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -19,6 +21,7 @@ using Avalonia.Utilities;
 
 namespace UVtools.WPF.Controls
 {
+    [PseudoClasses(":vertical", ":horizontal", ":pressed")]
     public class SliderEx : RangeBase, IStyleable
     {
         Type IStyleable.StyleKey => typeof(Slider);
@@ -27,31 +30,31 @@ namespace UVtools.WPF.Controls
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
-            ScrollBar.OrientationProperty.AddOwner<Slider>();
+            ScrollBar.OrientationProperty.AddOwner<SliderEx>();
 
         /// <summary>
         /// Defines the <see cref="IsSnapToTickEnabled"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSnapToTickEnabledProperty =
-            AvaloniaProperty.Register<Slider, bool>(nameof(IsSnapToTickEnabled), false);
+            AvaloniaProperty.Register<SliderEx, bool>(nameof(IsSnapToTickEnabled), false);
 
         /// <summary>
         /// Defines the <see cref="TickFrequency"/> property.
         /// </summary>
         public static readonly StyledProperty<double> TickFrequencyProperty =
-            AvaloniaProperty.Register<Slider, double>(nameof(TickFrequency), 0.0);
+            AvaloniaProperty.Register<SliderEx, double>(nameof(TickFrequency), 0.0);
 
         /// <summary>
         /// Defines the <see cref="TickPlacement"/> property.
         /// </summary>
         public static readonly StyledProperty<TickPlacement> TickPlacementProperty =
-            AvaloniaProperty.Register<TickBar, TickPlacement>(nameof(TickPlacement), 0d);
+            AvaloniaProperty.Register<SliderEx, TickPlacement>(nameof(TickPlacement), 0d);
 
         /// <summary>
         /// Defines the <see cref="TicksProperty"/> property.
         /// </summary>
         public static readonly StyledProperty<AvaloniaList<double>> TicksProperty =
-            TickBar.TicksProperty.AddOwner<Slider>();
+            TickBar.TicksProperty.AddOwner<SliderEx>();
 
         // Slider required parts
         private bool _isDragging = false;
@@ -71,11 +74,13 @@ namespace UVtools.WPF.Controls
         /// </summary>
         static SliderEx()
         {
-            PressedMixin.Attach<Slider>();
-            OrientationProperty.OverrideDefaultValue(typeof(Slider), Orientation.Horizontal);
+            PressedMixin.Attach<SliderEx>();
+            OrientationProperty.OverrideDefaultValue(typeof(SliderEx), Orientation.Horizontal);
             Thumb.DragStartedEvent.AddClassHandler<SliderEx>((x, e) => x.OnThumbDragStarted(e), RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<SliderEx>((x, e) => x.OnThumbDragCompleted(e),
                 RoutingStrategies.Bubble);
+
+            ValueProperty.OverrideMetadata<SliderEx>(new DirectPropertyMetadata<double>(enableDataValidation: true));
         }
 
         /// <summary>
@@ -100,8 +105,8 @@ namespace UVtools.WPF.Controls
         /// </summary>
         public Orientation Orientation
         {
-            get => GetValue(OrientationProperty);
-            set => SetValue(OrientationProperty, value);
+            get { return GetValue(OrientationProperty); }
+            set { SetValue(OrientationProperty, value); }
         }
 
         /// <summary>
@@ -109,8 +114,8 @@ namespace UVtools.WPF.Controls
         /// </summary>
         public bool IsSnapToTickEnabled
         {
-            get => GetValue(IsSnapToTickEnabledProperty);
-            set => SetValue(IsSnapToTickEnabledProperty, value);
+            get { return GetValue(IsSnapToTickEnabledProperty); }
+            set { SetValue(IsSnapToTickEnabledProperty, value); }
         }
 
         /// <summary>
@@ -118,8 +123,8 @@ namespace UVtools.WPF.Controls
         /// </summary>
         public double TickFrequency
         {
-            get => GetValue(TickFrequencyProperty);
-            set => SetValue(TickFrequencyProperty, value);
+            get { return GetValue(TickFrequencyProperty); }
+            set { SetValue(TickFrequencyProperty, value); }
         }
 
         /// <summary>
@@ -128,8 +133,8 @@ namespace UVtools.WPF.Controls
         /// </summary>
         public TickPlacement TickPlacement
         {
-            get => GetValue(TickPlacementProperty);
-            set => SetValue(TickPlacementProperty, value);
+            get { return GetValue(TickPlacementProperty); }
+            set { SetValue(TickPlacementProperty, value); }
         }
 
         /// <inheritdoc/>
@@ -182,9 +187,11 @@ namespace UVtools.WPF.Controls
 
         private void TrackPressed(object sender, PointerPressedEventArgs e)
         {
-            if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
-            MoveToPoint(e.GetCurrentPoint(_track));
-            _isDragging = true;
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            {
+                MoveToPoint(e.GetCurrentPoint(_track));
+                _isDragging = true;
+            }
         }
 
         private void MoveToPoint(PointerPoint x)
@@ -203,6 +210,14 @@ namespace UVtools.WPF.Controls
             var finalValue = calcVal * range + Minimum;
 
             Value = IsSnapToTickEnabled ? SnapToTick(finalValue) : finalValue;
+        }
+
+        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        {
+            if (property == ValueProperty)
+            {
+                DataValidationErrors.SetError(this, value.Error);
+            }
         }
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
@@ -233,49 +248,51 @@ namespace UVtools.WPF.Controls
             _isDragging = false;
         }
 
-
         /// <summary>
         /// Snap the input 'value' to the closest tick.
         /// </summary>
         /// <param name="value">Value that want to snap to closest Tick.</param>
         private double SnapToTick(double value)
         {
-            if (!IsSnapToTickEnabled) return value;
-            double previous = Minimum;
-            double next = Maximum;
-
-            // This property is rarely set so let's try to avoid the GetValue
-            var ticks = Ticks;
-
-            // If ticks collection is available, use it.
-            // Note that ticks may be unsorted.
-            if ((ticks != null) && (ticks.Count > 0))
+            if (IsSnapToTickEnabled)
             {
-                foreach (var tick in ticks)
-                {
-                    if (MathUtilities.AreClose(tick, value))
-                    {
-                        return value;
-                    }
+                double previous = Minimum;
+                double next = Maximum;
 
-                    if (MathUtilities.LessThan(tick, value) && MathUtilities.GreaterThan(tick, previous))
+                // This property is rarely set so let's try to avoid the GetValue
+                var ticks = Ticks;
+
+                // If ticks collection is available, use it.
+                // Note that ticks may be unsorted.
+                if ((ticks != null) && (ticks.Count > 0))
+                {
+                    for (int i = 0; i < ticks.Count; i++)
                     {
-                        previous = tick;
-                    }
-                    else if (MathUtilities.GreaterThan(tick, value) && MathUtilities.LessThan(tick, next))
-                    {
-                        next = tick;
+                        double tick = ticks[i];
+                        if (MathUtilities.AreClose(tick, value))
+                        {
+                            return value;
+                        }
+
+                        if (MathUtilities.LessThan(tick, value) && MathUtilities.GreaterThan(tick, previous))
+                        {
+                            previous = tick;
+                        }
+                        else if (MathUtilities.GreaterThan(tick, value) && MathUtilities.LessThan(tick, next))
+                        {
+                            next = tick;
+                        }
                     }
                 }
-            }
-            else if (MathUtilities.GreaterThan(TickFrequency, 0.0))
-            {
-                previous = Minimum + (Math.Round(((value - Minimum) / TickFrequency)) * TickFrequency);
-                next = Math.Min(Maximum, previous + TickFrequency);
-            }
+                else if (MathUtilities.GreaterThan(TickFrequency, 0.0))
+                {
+                    previous = Minimum + (Math.Round(((value - Minimum) / TickFrequency)) * TickFrequency);
+                    next = Math.Min(Maximum, previous + TickFrequency);
+                }
 
-            // Choose the closest value between previous and next. If tie, snap to 'next'.
-            value = MathUtilities.GreaterThanOrClose(value, (previous + next) * 0.5) ? next : previous;
+                // Choose the closest value between previous and next. If tie, snap to 'next'.
+                value = MathUtilities.GreaterThanOrClose(value, (previous + next) * 0.5) ? next : previous;
+            }
 
             return value;
         }

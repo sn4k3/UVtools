@@ -21,7 +21,7 @@ namespace UVtools.WPF.Controls.Tools
         {
             InitializeComponent();
             var roi = App.MainWindow.ROI;
-            BaseOperation = new OperationPattern(roi.IsEmpty ? App.SlicerFile.LayerManager.BoundingRectangle : roi, App.SlicerFile.Resolution);
+            BaseOperation = new OperationPattern(SlicerFile, roi);
 
             if (Operation.MaxRows < 2 && Operation.MaxCols < 2)
             {

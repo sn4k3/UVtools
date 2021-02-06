@@ -11,14 +11,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolArithmeticControl()
         {
             InitializeComponent();
-            BaseOperation = new OperationArithmetic();
-            Operation.PropertyChanged += (sender, e) =>
-            {
-                if (e.PropertyName == nameof(Operation.Sentence))
-                {
-                    ParentWindow.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.Sentence);
-                }
-            };
+            BaseOperation = new OperationArithmetic(SlicerFile);
         }
 
         private void InitializeComponent()
@@ -31,7 +24,15 @@ namespace UVtools.WPF.Controls.Tools
             switch (callback)
             {
                 case ToolWindow.Callbacks.Init:
-                    ParentWindow.ButtonOkEnabled = false;
+                case ToolWindow.Callbacks.ProfileLoaded:
+                    ParentWindow.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.Sentence);
+                    Operation.PropertyChanged += (sender, e) =>
+                    {
+                        if (e.PropertyName == nameof(Operation.Sentence))
+                        {
+                            ParentWindow.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.Sentence);
+                        }
+                    };
                     break;
             }
         }

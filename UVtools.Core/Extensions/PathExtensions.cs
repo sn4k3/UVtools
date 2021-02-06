@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace UVtools.Core.Extensions
@@ -18,6 +19,19 @@ namespace UVtools.Core.Extensions
             if(string.IsNullOrEmpty(path)) return string.Empty;
             var splitPath = path.Split('.', 2, StringSplitOptions.TrimEntries);
             return splitPath.Length == 0 ? string.Empty : splitPath[0];
+        }
+
+        public static string GetFileNameStripExtensions(string path, List<string> extensions)
+        {
+            path = Path.GetFileName(path);
+            if (string.IsNullOrEmpty(path)) return string.Empty;
+            foreach (var extension in extensions)
+            {
+                var dotExtension = $".{extension}";
+                if (path.EndsWith(dotExtension)) return path.Remove(path.Length - dotExtension.Length);
+            }
+
+            return path;
         }
     }
 }

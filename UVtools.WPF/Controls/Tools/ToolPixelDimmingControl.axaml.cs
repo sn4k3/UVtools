@@ -15,7 +15,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolPixelDimmingControl()
         {
             InitializeComponent();
-            BaseOperation = new OperationPixelDimming();
+            BaseOperation = new OperationPixelDimming(SlicerFile);
             Operation.GeneratePixelDimming("Chessboard");
         }
 

@@ -31,7 +31,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolLayerCloneControl()
         {
             InitializeComponent();
-            BaseOperation = new OperationLayerClone();
+            BaseOperation = new OperationLayerClone(SlicerFile);
             Operation.PropertyChanged += (sender, args) =>
             {
                 RaisePropertyChanged(nameof(InfoLayersStr));

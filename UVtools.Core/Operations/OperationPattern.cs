@@ -186,18 +186,20 @@ namespace UVtools.Core.Operations
         public Size GetPatternVolume => new(Cols * ROI.Width + (Cols - 1) * ColSpacing, Rows * ROI.Height + (Rows - 1) * RowSpacing);
         #endregion
 
-        public OperationPattern()
-        {
-        }
+        #region Constructor
 
-        public OperationPattern(Rectangle srcRoi, Size resolution)
-        {
-            ImageWidth = (uint) resolution.Width;
-            ImageHeight = (uint) resolution.Height;
+        public OperationPattern() { }
 
-            SetRoi(srcRoi);
+        public OperationPattern(FileFormat slicerFile, Rectangle srcRoi = default) : base(slicerFile)
+        {
+            ImageWidth = slicerFile.ResolutionX;
+            ImageHeight = slicerFile.ResolutionY;
+
+            SetRoi(srcRoi.IsEmpty ? slicerFile.BoundingRectangle : srcRoi);
             Fill();
         }
+
+        #endregion
 
         #region Methods
         public void SetAnchor(byte value)
@@ -272,16 +274,13 @@ namespace UVtools.Core.Operations
             return result;
         }
 
-        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        protected override bool ExecuteInternally(OperationProgress progress)
         {
-            progress ??= new OperationProgress();
-            progress.Reset(ProgressAction, LayerRangeCount);
-
             Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 
-                using var mat = slicerFile[layerIndex].LayerMat;
+                using var mat = SlicerFile[layerIndex].LayerMat;
                 using var layerRoi = new Mat(mat, ROI);
                 using var dstLayer = mat.CloneBlank();
                 for (ushort col = 0; col < Cols; col++)
@@ -292,7 +291,7 @@ namespace UVtools.Core.Operations
                     layerRoi.CopyTo(dstRoi);
                 }
                 //Execute(mat);
-                slicerFile[layerIndex].LayerMat = dstLayer;
+                SlicerFile[layerIndex].LayerMat = dstLayer;
 
                 lock (progress.Mutex)
                 {
@@ -300,19 +299,19 @@ namespace UVtools.Core.Operations
                 }
             });
 
-            slicerFile.LayerManager.BoundingRectangle = Rectangle.Empty;
+            SlicerFile.LayerManager.BoundingRectangle = Rectangle.Empty;
 
             progress.Token.ThrowIfCancellationRequested();
 
             if (Anchor == Enumerations.Anchor.None) return true;
-            var operationMove = new OperationMove(slicerFile.LayerManager.BoundingRectangle, ImageWidth, ImageHeight, Anchor)
+            var operationMove = new OperationMove(SlicerFile, Anchor)
             {
                 LayerIndexStart = LayerIndexStart,
                 LayerIndexEnd = LayerIndexEnd
             };
-            operationMove.Execute(slicerFile, progress);
+            operationMove.Execute(progress);
 
-            return true;
+            return !progress.Token.IsCancellationRequested;
         }
 
         /*public override bool Execute(Mat mat, params object[] arguments)

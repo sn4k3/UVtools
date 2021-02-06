@@ -99,6 +99,14 @@ namespace UVtools.Core.Operations
         }
         #endregion
 
+        #region Constructor
+
+        public OperationLayerReHeight() { }
+
+        public OperationLayerReHeight(FileFormat slicerFile) : base(slicerFile) { }
+
+        #endregion
+
         #region Subclasses
         public class OperationLayerReHeightItem
         {
@@ -124,12 +132,11 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Methods
-        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        protected override bool ExecuteInternally(OperationProgress progress)
         {
-            progress ??= new OperationProgress();
-            progress.Reset(ProgressAction, Item.LayerCount);
+            progress.ItemCount = Item.LayerCount;
 
-            var oldLayers = slicerFile.LayerManager.Layers;
+            var oldLayers = SlicerFile.LayerManager.Layers;
 
             var layers = new Layer[Item.LayerCount];
 
@@ -171,10 +178,10 @@ namespace UVtools.Core.Operations
                 }
             }
 
-            slicerFile.LayerManager.Layers = layers;
-            slicerFile.LayerHeight = (float)Item.LayerHeight;
+            SlicerFile.LayerManager.Layers = layers;
+            SlicerFile.LayerHeight = (float)Item.LayerHeight;
 
-            return true;
+            return !progress.Token.IsCancellationRequested;
         }
         #endregion
     }

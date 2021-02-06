@@ -103,9 +103,13 @@ namespace UVtools.Core.Operations
         }
         #endregion
 
-        public OperationResize()
-        {
-        }
+        #region Constructor
+
+        public OperationResize() { }
+
+        public OperationResize(FileFormat slicerFile) : base(slicerFile) { }
+
+        #endregion
 
         public override string ToString()
         {
@@ -145,11 +149,9 @@ namespace UVtools.Core.Operations
 
         #region Methods
 
-        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        protected override bool ExecuteInternally(OperationProgress progress)
         {
             if (X == 1m && Y == 1m) return false;
-            progress ??= new OperationProgress();
-            progress.Reset(ProgressAction, LayerRangeCount);
 
             decimal xSteps = Math.Abs(X - 1) / (LayerIndexEnd - LayerIndexStart);
             decimal ySteps = Math.Abs(Y - 1) / (LayerIndexEnd - LayerIndexStart);
@@ -195,12 +197,12 @@ namespace UVtools.Core.Operations
 
                 if (newX == 1.0m && newY == 1.0m) return;
 
-                using var mat = slicerFile[layerIndex].LayerMat;
+                using var mat = SlicerFile[layerIndex].LayerMat;
                 Execute(mat, newX  / 100m, newY / 100m);
-                slicerFile[layerIndex].LayerMat = mat;
+                SlicerFile[layerIndex].LayerMat = mat;
             });
-            progress.Token.ThrowIfCancellationRequested();
-            return true;
+
+            return !progress.Token.IsCancellationRequested;
         }
 
         public override bool Execute(Mat mat, params object[] arguments)

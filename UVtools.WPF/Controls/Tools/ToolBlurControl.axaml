@@ -19,6 +19,7 @@
         HorizontalAlignment="Left"
         SelectedIndex="{Binding SelectedAlgorithmIndex}"
         Width="450"
+        HorizontalContentAlignment="Stretch"
         Items="{Binding Operation.BlurTypes}"
         />
 
@@ -31,7 +32,7 @@
         Grid.Row="2"
         Grid.Column="2"
         HorizontalAlignment="Left"
-        Width="80"
+        Width="150"
         Minimum="1"
         IsEnabled="{Binding IsSizeEnabled}"
         Value="{Binding Operation.Size}"

@@ -6,10 +6,7 @@ labels: script
 assignees: sn4k3
 ---
 
-## Describe what your script does
-A clear and concise description of your script, and all it steps.
-
-
-```Powershell
-#Paste your code here or attach the .ps1 file
-```
+## READ THIS
+Do not use issues to post scripts! Use discussions instead!:
+https://github.com/sn4k3/UVtools/discussions/categories/scripts
+## READ THIS

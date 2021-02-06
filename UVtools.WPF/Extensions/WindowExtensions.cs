@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
 
@@ -36,7 +35,6 @@ namespace UVtools.WPF.Extensions
                     MaxWidth = window.GetScreenWorkingArea().Width - UserSettings.Instance.General.WindowsHorizontalMargin,
                     ShowInCenter = true
                 });
-            
             return await messageBoxStandardWindow.ShowDialog(window);
         }
 
@@ -48,6 +46,9 @@ namespace UVtools.WPF.Extensions
 
         public static async Task<ButtonResult> MessageBoxQuestion(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.YesNo, Style style = Style.None)
             => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", buttons, Icon.Setting, WindowStartupLocation.CenterOwner, style);
+
+        public static async Task<ButtonResult> MessageBoxWaring(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, Style style = Style.None)
+            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", buttons, Icon.Warning, WindowStartupLocation.CenterOwner, style);
 
 
         public static void ShowDialogSync(this Window window, Window parent = null)

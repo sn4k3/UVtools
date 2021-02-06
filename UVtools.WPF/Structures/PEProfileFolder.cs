@@ -120,6 +120,10 @@ namespace UVtools.WPF.Structures
                             Items[i].IsEnabled = false;
                         }
                     }
+                    else
+                    {
+                        Updates++;
+                    }
                 }
             }
         }

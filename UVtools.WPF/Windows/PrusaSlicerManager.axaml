@@ -1,7 +1,8 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+﻿<controls:WindowEx xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:UVtools.WPF.Controls"
         mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
         x:Class="UVtools.WPF.Windows.PrusaSlicerManager"
         Title="Install profiles into PrusaSlicer"
@@ -16,21 +17,18 @@
           RowDefinitions="Auto"
           ColumnDefinitions="Auto,*">
 
-      <Border
-          Margin="5,5,0,5"
-          BorderBrush="LightBlue"
-          BorderThickness="4"
-          >
+      <Border Classes="GroupBox"
+          Margin="5,5,0,5">
 
         <StackPanel Orientation="Vertical">
-          <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Legend"/>
-          <StackPanel Margin="15" Orientation="Vertical" Spacing="15">
+          <TextBlock Classes="GroupBoxHeader" Text="Legend"/>
+          <StackPanel Margin="15" Orientation="Vertical" Spacing="10">
             <StackPanel Orientation="Horizontal" Spacing="5">
               <Border
                 Width="18" Height="18"
                 BorderBrush="Black"
                 BorderThickness="2"
-                Background="Green"/>
+                Background="LightGray"/>
 
               <TextBlock
                 VerticalAlignment="Center"
@@ -71,13 +69,12 @@
 
       <Border
         Grid.Column="1"
+        Classes="GroupBox"
           Margin="5"
-          BorderBrush="LightBlue"
-          BorderThickness="4"
           >
 
         <StackPanel Orientation="Vertical">
-          <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Information"/>
+          <TextBlock Classes="GroupBoxHeader" Text="Information"/>
           <TextBlock
             TextWrapping="Wrap"
             Margin="15"
@@ -90,10 +87,7 @@
     </Grid>
 
     <Border DockPanel.Dock="Bottom"
-            Background="LightGray"
-            Height="80"
-            Padding="5,20,0,5"
-            >
+            Classes="FooterActions">
 
       <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto">
         <Button
@@ -143,18 +137,27 @@
 
       <Border
           Grid.Column="0"
+          Classes="GroupBox"
           Margin="5"
-          BorderBrush="LightBlue"
-          BorderThickness="4"
           >
 
         <Grid RowDefinitions="Auto,Auto,*">
 
-          <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Print profiles"/>
+          <TextBlock Classes="GroupBoxHeader" Text="Print profiles"/>
+          <TextBlock HorizontalAlignment="Right" 
+                     Padding="10">
+              <TextBlock.Text>
+                  <MultiBinding StringFormat="\{0\} Update(s) | {1} Installed | {2} Profiles">
+                      <Binding Path="Profiles[0].Updates"/>
+                      <Binding Path="Profiles[0].Installed"/>
+                      <Binding Path="Profiles[0].Items.Count"/>
+                  </MultiBinding>
+              </TextBlock.Text>
+          </TextBlock>
 
           <StackPanel
             Grid.Row="1"
-            Orientation="Horizontal" Spacing="5">
+            Orientation="Horizontal" Spacing="1">
             <Button Padding="10"
                     IsEnabled="{Binding Profiles[0].Updates}"
                     Command="{Binding Profiles[0].SelectNone}"
@@ -177,39 +180,6 @@
 
           </StackPanel>
 
-          <StackPanel
-                      Grid.Row="1"
-                      HorizontalAlignment="Right"
-                      Orientation="Horizontal"
-                      Spacing="5">
-
-            <TextBlock
-                      VerticalAlignment="Center"
-                      Text="{Binding Profiles[0].Updates,
-                                StringFormat=\{0\} Update(s)}"/>
-
-            <TextBlock
-              VerticalAlignment="Center"
-              Text="|"/>
-
-            <TextBlock
-                      VerticalAlignment="Center"
-                      Text="{Binding Profiles[0].Installed,
-                                StringFormat=\{0\} Installed}"/>
-
-            <TextBlock
-              VerticalAlignment="Center"
-              Text="|"/>
-
-            <TextBlock
-              Margin="0,0,5,0"
-              VerticalAlignment="Center"
-              Text="{Binding Profiles[0].Items.Count,
-                  StringFormat=\{0\} Profiles}"/>
-
-
-          </StackPanel>
-
           <ListBox
             Grid.Row="2"
             SelectionMode="Toggle"
@@ -220,18 +190,27 @@
 
       <Border
           Grid.Column="1"
-          Margin="5"
-          BorderBrush="LightBlue"
-          BorderThickness="4"
+          Classes="GroupBox"
+          Margin="0,5,5,5"
           >
         
           <Grid RowDefinitions="Auto,Auto,*">
 
-            <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Printer profiles"/>
+            <TextBlock Classes="GroupBoxHeader" Text="Printer profiles"/>
+            <TextBlock HorizontalAlignment="Right"
+                       Padding="10">
+                <TextBlock.Text>
+                    <MultiBinding StringFormat="\{0\} Update(s) | {1} Installed | {2} Profiles">
+                        <Binding Path="Profiles[1].Updates"/>
+                        <Binding Path="Profiles[1].Installed"/>
+                        <Binding Path="Profiles[1].Items.Count"/>
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
 
             <StackPanel 
               Grid.Row="1"
-              Orientation="Horizontal" Spacing="5">
+              Orientation="Horizontal" Spacing="1">
               <Button Padding="10"
                       IsEnabled="{Binding Profiles[1].Updates}"
                       Command="{Binding Profiles[1].SelectNone}"
@@ -254,39 +233,6 @@
 
             </StackPanel>
 
-            <StackPanel
-                        Grid.Row="1"
-                        HorizontalAlignment="Right"
-                        Orientation="Horizontal"
-                        Spacing="5">
-
-              <TextBlock
-                        VerticalAlignment="Center"
-                        Text="{Binding Profiles[1].Updates,
-                                StringFormat=\{0\} Update(s)}"/>
-
-              <TextBlock
-                VerticalAlignment="Center"
-                Text="|"/>
-
-              <TextBlock
-                        VerticalAlignment="Center"
-                        Text="{Binding Profiles[1].Installed,
-                                StringFormat=\{0\} Installed}"/>
-
-              <TextBlock
-                VerticalAlignment="Center"
-                Text="|"/>
-
-              <TextBlock
-                Margin="0,0,5,0"
-                VerticalAlignment="Center"
-                Text="{Binding Profiles[1].Items.Count,
-                  StringFormat=\{0\} Profiles}"/>
-
-
-            </StackPanel>
-
             <ListBox
               Grid.Row="2"
             SelectionMode="Toggle"
@@ -296,4 +242,4 @@
       </Border>
     </Grid>
   </DockPanel>
-</Window>
+</controls:WindowEx>

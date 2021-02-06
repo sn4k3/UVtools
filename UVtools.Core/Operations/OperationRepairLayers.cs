@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -62,6 +61,14 @@ namespace UVtools.Core.Operations
 
             return new StringTag(sb.ToString());
         }
+        #endregion
+
+        #region Constructor
+
+        public OperationRepairLayers() { }
+
+        public OperationRepairLayers(FileFormat slicerFile) : base(slicerFile) { }
+
         #endregion
 
         #region Properties
@@ -116,10 +123,8 @@ namespace UVtools.Core.Operations
 
         #region Methods
 
-        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        protected override bool ExecuteInternally(OperationProgress progress)
         {
-            progress ??= new OperationProgress();
-
             // Remove islands
             if (!ReferenceEquals(Issues, null)
                 && !ReferenceEquals(IslandDetectionConfig, null)
@@ -127,7 +132,7 @@ namespace UVtools.Core.Operations
                 && RemoveIslandsBelowEqualPixelCount > 0
                 && RemoveIslandsRecursiveIterations != 1)
             {
-                progress.Reset("Removed recursive islands", 0);
+                progress.Reset("Removed recursive islands");
                 ushort limit = RemoveIslandsRecursiveIterations == 0
                     ? ushort.MaxValue
                     : RemoveIslandsRecursiveIterations;
@@ -152,7 +157,7 @@ namespace UVtools.Core.Operations
                             .Select(grp => grp.First())
                             .ToList();*/
                         islandConfig.WhiteListLayers = islandsToRecompute.ToList();
-                        recursiveIssues = slicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapsConfig, touchingBoundsConfig, emptyLayersConfig);
+                        recursiveIssues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapsConfig, touchingBoundsConfig, emptyLayersConfig);
                         //Debug.WriteLine(i);
                     }
 
@@ -167,7 +172,7 @@ namespace UVtools.Core.Operations
                     Parallel.ForEach(issuesGroup, group =>
                     {
                         if (progress.Token.IsCancellationRequested) return;
-                        Layer layer = slicerFile[group.Key];
+                        Layer layer = SlicerFile[group.Key];
                         Mat image = layer.LayerMat;
                         Span<byte> bytes = image.GetPixelSpan<byte>();
                         foreach (var issue in group)
@@ -184,7 +189,7 @@ namespace UVtools.Core.Operations
                         }
 
                         var nextLayerIndex = group.Key + 1;
-                        if (nextLayerIndex < slicerFile.LayerCount)
+                        if (nextLayerIndex < SlicerFile.LayerCount)
                             islandsToRecompute.Add(nextLayerIndex);
 
                         layer.LayerMat = image;
@@ -200,7 +205,7 @@ namespace UVtools.Core.Operations
                 Parallel.For(LayerIndexStart, LayerIndexEnd, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
-                    Layer layer = slicerFile[layerIndex];
+                    Layer layer = SlicerFile[layerIndex];
                     Mat image = null;
 
                     void initImage()
@@ -294,7 +299,7 @@ namespace UVtools.Core.Operations
                 List<uint> removeLayers = new List<uint>();
                 for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
                 {
-                    if (slicerFile[layerIndex].NonZeroPixelCount == 0)
+                    if (SlicerFile[layerIndex].NonZeroPixelCount == 0)
                     {
                         removeLayers.Add(layerIndex);
                     }
@@ -302,13 +307,11 @@ namespace UVtools.Core.Operations
 
                 if (removeLayers.Count > 0)
                 {
-                    OperationLayerRemove.RemoveLayers(slicerFile, removeLayers, progress);
+                    OperationLayerRemove.RemoveLayers(SlicerFile, removeLayers, progress);
                 }
             }
 
-            progress.Token.ThrowIfCancellationRequested();
-
-            return true;
+            return !progress.Token.IsCancellationRequested;
         }
 
         #endregion

@@ -11,7 +11,7 @@
         Text="Clones:"/>
       <NumericUpDown 
         Minimum="1"
-        Width="80"
+        Width="150"
         Value="{Binding Operation.Clones}"
         />
       <TextBlock

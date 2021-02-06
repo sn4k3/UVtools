@@ -76,11 +76,19 @@ namespace UVtools.Core.Operations
 
         #endregion
 
+        #region Constructor
+
+        public OperationLayerClone() { }
+
+        public OperationLayerClone(FileFormat slicerFile) : base(slicerFile) { }
+
+        #endregion
+
         #region Methods
 
-        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        protected override bool ExecuteInternally(OperationProgress progress)
         {
-            var oldLayers = slicerFile.LayerManager.Layers;
+            var oldLayers = SlicerFile.LayerManager.Layers;
 
             uint totalClones = (LayerIndexEnd - LayerIndexStart + 1) * Clones;
             uint newLayerCount = (uint) (oldLayers.Length + totalClones);
@@ -107,11 +115,9 @@ namespace UVtools.Core.Operations
                 newLayerIndex++;
             }
 
-            slicerFile.LayerManager.Layers = layers;
+            SlicerFile.LayerManager.Layers = layers;
 
-            progress.Token.ThrowIfCancellationRequested();
-
-            return true;
+            return !progress.Token.IsCancellationRequested;
         }
 
         #endregion

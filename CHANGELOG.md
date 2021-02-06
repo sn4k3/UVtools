@@ -1,5 +1,42 @@
 # Changelog
 
+## 06/02/2021 - v2.4.0
+
+* (Upgrade) EmguCV/OpenCV to v4.5.1
+* (Upgrade) AvaloniaUI to 1.0
+* (Improvement) GUI re-touched
+* (Improvement) Make pixel editor tab to disappear when pixel editor is disabled
+* (Improvement) Simplify the output filename from PrusaSlicer profiles
+* (Improvement) All operations require a slicer file at constructor rather than on execute, this allow exposure the open file to the operation before run it
+* (Improvement) Calibrations: Auto set "Mirror Output" if open file have MirrorDisplay set
+* (Change) Tool - Redraw model/supports icon
+* (Change) photon and cbddlp to use version 3 by default
+* (Add) Tool - Dynamic layer height: Analyze and optimize the model with dynamic layer heights, larger angles will slice at lower layer height
+        while more straight angles will slice larger layer height. (#131)
+* (Add) Calibration - Exposure time finder: Generates test models with various strategies and increments to verify the best exposure time for a given layer height
+* (Add) File load checks, trigger error when a file have critical errors and attempt to fix non-critical errors
+  * Layers must have an valid image, otherwise trigger an error
+  * Layers must have a incremental or equal position Z than it previous, otherwise trigger an error
+  * If layer 0 starts at 0mm it will auto fix all layers, it will add Layer Height to the current z at every layer
+* (Add) Tool - Edit print parameters: Allow set parameters to each x layers and skip n layers inside the given range.
+        This allow the use of optimizations in a layer pattern, for example, to set 3s for a layer but 2.5s for the next.
+* (Add) Layer height property to "Layer Data" table: Shows layer height for the slice
+* (Fix) When automations applied and file is saved, it will not warn user about file overwrite for the first time save
+* (Fix) Tool - Redraw model/supports: Disable apply button when no file selected
+* (Fix) Tool - Infill: Lack of equality member to test if same infill profile already exists
+* (Fix) Auto converted files from SL1 where clipping filename at first dot (.), now it only strips known extensions
+* (Fix) SL1 encoded files wasn't generating the right information and lead to printer crash
+* (Fix) PrusaSlicer printer "Anycubic Photon S" LiftSpeed was missing and contains a typo (#135)
+* (Fix) PrusaSlicer profile manager wasnt marking missing profiles to be installed (#135)
+* (Fix) PrusaSlicer folder search on linux to also look at %HOME%/.config/PrusaSlicer (#135, #136)
+* (Fix) Operations were revised and some bug fixed, most about can't cancel the progress
+* (Fix) Some typos on tooltips
+* (Fix) Prevent PhotonS from enconding, it will trigger error now as this format is read-only
+* **(Fix) Ctrl + Shift + Z to redo the last operation:**
+  * The layer range is reseted instead of pull the used values
+  * Tool - Arithmetic always disabled
+  * Action - Layer import didn't generate info and always disabled
+
 ## 22/01/2021 - v2.3.2
 
 * (Add) Settings - Automations: Change only light-off delay if value is zero (Enabled by default)

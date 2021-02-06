@@ -31,7 +31,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolLayerRemoveControl()
         {
             InitializeComponent();
-            BaseOperation = new OperationLayerRemove();
+            BaseOperation = new OperationLayerRemove(SlicerFile);
             Operation.PropertyChanged += (sender, args) =>
             {
                 RaisePropertyChanged(nameof(InfoLayersStr));

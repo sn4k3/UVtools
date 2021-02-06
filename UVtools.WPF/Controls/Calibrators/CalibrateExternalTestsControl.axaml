@@ -13,6 +13,8 @@
               Content="Photonsters Validation Matrix / Exposure finder"
               Command="{Binding ButtonClicked}"
               VerticalAlignment="Center"
+              HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Center"
               CommandParameter="https://www.thingiverse.com/thing:4707289"/>
 
       <Button Grid.Row="1"
@@ -21,6 +23,8 @@
               Content="Support pull test"
               Command="{Binding ButtonClicked}"
               VerticalAlignment="Center"
+              HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Center"
               CommandParameter="https://www.thingiverse.com/thing:4308175"/>
 
       <Button Grid.Row="2"
@@ -29,6 +33,8 @@
               Content="AmeraLabs town calibration part"
               Command="{Binding ButtonClicked}"
               VerticalAlignment="Center"
+              HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Center"
               CommandParameter="https://www.thingiverse.com/thing:2810666"/>
 
     </Grid>

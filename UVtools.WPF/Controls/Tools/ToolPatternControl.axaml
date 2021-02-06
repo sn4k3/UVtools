@@ -9,19 +9,17 @@
     <Grid
       Margin="0,0,0,15"
       RowDefinitions="Auto,10,Auto"
-      ColumnDefinitions="Auto,10,Auto,20,Auto,10,Auto,5,Auto,10,Auto"
+      ColumnDefinitions="Auto,10,150,20,Auto,10,150,5,Auto,10,Auto"
     >
 
       <!-- Cols -->
       <TextBlock Text="Columns:"
                  VerticalAlignment="Center"
                  HorizontalAlignment="Right"
-                 ToolTip.Tip="Number of copies in X direction."
-               />
+                 ToolTip.Tip="Number of copies in X direction."/>
       <NumericUpDown
         Grid.Column="2"
         Grid.Row="0"
-        Width="80"
         Minimum="1"
         Maximum="{Binding Operation.MaxCols}"
         Value="{Binding Operation.Cols}"
@@ -37,7 +35,6 @@
       <NumericUpDown
           Grid.Column="6"
           Grid.Row="0"
-          Width="80"
           Minimum="1"
           Maximum="65535"
           Value="{Binding Operation.ColSpacing}"
@@ -68,7 +65,6 @@
       <NumericUpDown
         Grid.Column="2"
         Grid.Row="2"
-        Width="80"
         Minimum="1"
         Maximum="{Binding Operation.MaxRows}"
         Value="{Binding Operation.Rows}"
@@ -84,7 +80,6 @@
       <NumericUpDown
           Grid.Column="6"
           Grid.Row="2"
-          Width="80"
           Minimum="1"
           Maximum="65535"
           Value="{Binding Operation.RowSpacing}"

@@ -39,12 +39,14 @@ namespace UVtools.Core.Operations
         }
         #endregion
 
+        #region Members
         private ImportTypes _importType = ImportTypes.Stack;
         private uint _startLayerIndex;
         private bool _extendBeyondLayerCount = true;
         private bool _discardUnmodifiedLayers;
         private ushort _stackMargin = 50;
         private ObservableCollection<StringTag> _files = new();
+        #endregion
 
         #region Overrides
 
@@ -115,9 +117,6 @@ namespace UVtools.Core.Operations
 
         #region Properties
 
-        [XmlIgnore]
-        public Size FileResolution { get; }
-
         public ImportTypes ImportType
         {
             get => _importType;
@@ -172,14 +171,11 @@ namespace UVtools.Core.Operations
 
         #region Constructor
 
-        public OperationLayerImport()
-        {
-        }
+        public OperationLayerImport() { }
 
-        public OperationLayerImport(Size fileResolution)
-        {
-            FileResolution = fileResolution;
-        }
+        public OperationLayerImport(FileFormat slicerFile) : base(slicerFile) { }
+
+
         #endregion
 
         #region Methods
@@ -224,10 +220,10 @@ namespace UVtools.Core.Operations
             return result;
         }
 
-        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        protected override bool ExecuteInternally(OperationProgress progress)
         {
-            progress ??= new OperationProgress();
-            slicerFile.SuppressRebuildProperties = true;
+            progress.ItemCount = 0;
+            SlicerFile.SuppressRebuildProperties = true;
             
             List<FileFormat> fileFormats = new();
             List<KeyValuePair<uint, string>> keyImage = new();
@@ -289,7 +285,7 @@ namespace UVtools.Core.Operations
 
             if (_importType == ImportTypes.Stack)
             {
-                new OperationMove(slicerFile, Enumerations.Anchor.TopLeft){LayerIndexEnd = slicerFile.LastLayerIndex}.Execute(slicerFile, progress);
+                new OperationMove(SlicerFile, Enumerations.Anchor.TopLeft).Execute(progress);
             }
 
             foreach (var fileFormat in fileFormats)
@@ -299,7 +295,7 @@ namespace UVtools.Core.Operations
                     fileFormat.Decode(fileFormat.FileFullPath, progress);
                 }
 
-                var boundingRectangle = slicerFile.LayerManager.GetBoundingRectangle(progress);
+                var boundingRectangle = SlicerFile.LayerManager.GetBoundingRectangle(progress);
                 var fileFormatBoundingRectangle = fileFormat.LayerManager.GetBoundingRectangle(progress);
                 var roiRectangle = Rectangle.Empty;
 
@@ -307,26 +303,26 @@ namespace UVtools.Core.Operations
                 switch (_importType)
                 {
                     case ImportTypes.Insert:
-                        if (slicerFile.Resolution != fileFormat.Resolution &&
-                            (slicerFile.Resolution.Width < fileFormat.LayerManager.BoundingRectangle.Width ||
-                             slicerFile.Resolution.Height < fileFormat.LayerManager.BoundingRectangle.Height)) continue;
-                        slicerFile.LayerManager.Reallocate(_startLayerIndex, fileFormat.LayerCount);
+                        if (SlicerFile.Resolution != fileFormat.Resolution &&
+                            (SlicerFile.Resolution.Width < fileFormat.LayerManager.BoundingRectangle.Width ||
+                             SlicerFile.Resolution.Height < fileFormat.LayerManager.BoundingRectangle.Height)) continue;
+                        SlicerFile.LayerManager.Reallocate(_startLayerIndex, fileFormat.LayerCount);
                         break;
                     case ImportTypes.Replace:
                     case ImportTypes.Stack:
-                        if (slicerFile.Resolution != fileFormat.Resolution && 
-                            (slicerFile.Resolution.Width < fileFormat.LayerManager.BoundingRectangle.Width ||
-                             slicerFile.Resolution.Height < fileFormat.LayerManager.BoundingRectangle.Height)) continue;
+                        if (SlicerFile.Resolution != fileFormat.Resolution && 
+                            (SlicerFile.Resolution.Width < fileFormat.LayerManager.BoundingRectangle.Width ||
+                             SlicerFile.Resolution.Height < fileFormat.LayerManager.BoundingRectangle.Height)) continue;
 
                         
-                        if(fileFormatBoundingRectangle.Width >= slicerFile.ResolutionX || fileFormatBoundingRectangle.Height >= slicerFile.ResolutionY) 
+                        if(fileFormatBoundingRectangle.Width >= SlicerFile.ResolutionX || fileFormatBoundingRectangle.Height >= SlicerFile.ResolutionY) 
                             continue;
 
                         int x = 0;
                         int y = 0;
                         
                         if (boundingRectangle.Right + _stackMargin + fileFormatBoundingRectangle.Width <
-                            slicerFile.ResolutionX)
+                            SlicerFile.ResolutionX)
                         {
                             x = boundingRectangle.Right + _stackMargin;
                         }
@@ -335,29 +331,29 @@ namespace UVtools.Core.Operations
                             y = boundingRectangle.Bottom + _stackMargin;
                         }
 
-                        if (y >= slicerFile.ResolutionY)
+                        if (y >= SlicerFile.ResolutionY)
                             continue;
 
                         roiRectangle = new Rectangle(x, y, fileFormatBoundingRectangle.Width, fileFormatBoundingRectangle.Height);
 
                         if (_extendBeyondLayerCount)
                         {
-                            int layerCountDifference = (int) (_startLayerIndex + fileFormat.LayerCount - slicerFile.LayerCount);
+                            int layerCountDifference = (int) (_startLayerIndex + fileFormat.LayerCount - SlicerFile.LayerCount);
                             if (layerCountDifference > 0)
                             {
-                                slicerFile.LayerManager.ReallocateEnd((uint) layerCountDifference, _importType == ImportTypes.Stack);
+                                SlicerFile.LayerManager.ReallocateEnd((uint) layerCountDifference, _importType == ImportTypes.Stack);
                             }
                         }
 
                         break;
                     case ImportTypes.Merge:
-                        if (slicerFile.Resolution != fileFormat.Resolution) continue;
+                        if (SlicerFile.Resolution != fileFormat.Resolution) continue;
                         if (_extendBeyondLayerCount)
                         {
-                            int layerCountDifference = (int)(_startLayerIndex + fileFormat.LayerCount - slicerFile.LayerCount);
+                            int layerCountDifference = (int)(_startLayerIndex + fileFormat.LayerCount - SlicerFile.LayerCount);
                             if (layerCountDifference > 0)
                             {
-                                slicerFile.LayerManager.ReallocateEnd((uint)layerCountDifference, true);
+                                SlicerFile.LayerManager.ReallocateEnd((uint)layerCountDifference, true);
                             }
                         }
                         break;
@@ -365,7 +361,7 @@ namespace UVtools.Core.Operations
                     case ImportTypes.BitwiseAnd:
                     case ImportTypes.BitwiseOr:
                     case ImportTypes.BitwiseXOr:
-                        if (slicerFile.Resolution != fileFormat.Resolution) continue;
+                        if (SlicerFile.Resolution != fileFormat.Resolution) continue;
                         break;
                 }
 
@@ -381,88 +377,88 @@ namespace UVtools.Core.Operations
                         {
                             case ImportTypes.Insert:
                             {
-                                if (layerIndex >= slicerFile.LayerCount) return;
-                                if (slicerFile.Resolution == fileFormat.Resolution)
+                                if (layerIndex >= SlicerFile.LayerCount) return;
+                                if (SlicerFile.Resolution == fileFormat.Resolution)
                                 {
-                                    slicerFile[layerIndex] = fileFormat[i];
+                                    SlicerFile[layerIndex] = fileFormat[i];
                                     break;
                                 }
 
                                 using var layer = fileFormat[i].LayerMat;
-                                using var layerRoi = layer.RoiFromCenter(slicerFile.Resolution);
-                                slicerFile[layerIndex] = new Layer(layerIndex, layerRoi, slicerFile);
+                                using var layerRoi = layer.RoiFromCenter(SlicerFile.Resolution);
+                                SlicerFile[layerIndex] = new Layer(layerIndex, layerRoi, SlicerFile);
 
                                 break;
                             }
                             case ImportTypes.Replace:
                             {
-                                if (layerIndex >= slicerFile.LayerCount) return;
-                                if (slicerFile.Resolution == fileFormat.Resolution)
+                                if (layerIndex >= SlicerFile.LayerCount) return;
+                                if (SlicerFile.Resolution == fileFormat.Resolution)
                                 {
-                                    slicerFile[layerIndex] = fileFormat[i];
+                                    SlicerFile[layerIndex] = fileFormat[i];
                                     break;
                                 }
 
                                 using var layer = fileFormat[i].LayerMat;
-                                using var layerRoi = layer.RoiFromCenter(slicerFile.Resolution);
-                                slicerFile[layerIndex] = new Layer(layerIndex, layerRoi, slicerFile);
+                                using var layerRoi = layer.RoiFromCenter(SlicerFile.Resolution);
+                                SlicerFile[layerIndex] = new Layer(layerIndex, layerRoi, SlicerFile);
                                 break;
                             }
                             case ImportTypes.Stack:
                             {
-                                if (layerIndex >= slicerFile.LayerCount) return;
-                                using var mat = slicerFile[layerIndex].LayerMat;
+                                if (layerIndex >= SlicerFile.LayerCount) return;
+                                using var mat = SlicerFile[layerIndex].LayerMat;
                                 using var importMat = fileFormat[i].LayerMat;
                                 var matRoi = new Mat(mat, roiRectangle);
                                 var importMatRoi = new Mat(importMat, fileFormatBoundingRectangle);
                                 importMatRoi.CopyTo(matRoi);
-                                slicerFile[layerIndex].LayerMat = mat;
+                                SlicerFile[layerIndex].LayerMat = mat;
 
                                 break;
                             }
                             case ImportTypes.Merge:
                             {
-                                if (layerIndex >= slicerFile.LayerCount) return;
-                                using var originalMat = slicerFile[layerIndex].LayerMat;
+                                if (layerIndex >= SlicerFile.LayerCount) return;
+                                using var originalMat = SlicerFile[layerIndex].LayerMat;
                                 using var newMat = fileFormat[i].LayerMat;
                                 CvInvoke.Add(originalMat, newMat, newMat);
-                                slicerFile[layerIndex].LayerMat = newMat;
+                                SlicerFile[layerIndex].LayerMat = newMat;
                                 break;
                             }
                             case ImportTypes.Subtract:
                             {
-                                if (layerIndex >= slicerFile.LayerCount) return;
-                                using var originalMat = slicerFile[layerIndex].LayerMat;
+                                if (layerIndex >= SlicerFile.LayerCount) return;
+                                using var originalMat = SlicerFile[layerIndex].LayerMat;
                                 using var newMat = fileFormat[i].LayerMat;
                                 CvInvoke.Subtract(originalMat, newMat, newMat);
-                                slicerFile[layerIndex].LayerMat = newMat;
+                                SlicerFile[layerIndex].LayerMat = newMat;
                                 break;
                             }
                             case ImportTypes.BitwiseAnd:
                             {
-                                if (layerIndex >= slicerFile.LayerCount) return;
-                                using var originalMat = slicerFile[layerIndex].LayerMat;
+                                if (layerIndex >= SlicerFile.LayerCount) return;
+                                using var originalMat = SlicerFile[layerIndex].LayerMat;
                                 using var newMat = fileFormat[i].LayerMat;
                                 CvInvoke.BitwiseAnd(originalMat, newMat, newMat);
-                                slicerFile[layerIndex].LayerMat = newMat;
+                                SlicerFile[layerIndex].LayerMat = newMat;
                                 break;
                             }
                             case ImportTypes.BitwiseOr:
                             {
-                                if (layerIndex >= slicerFile.LayerCount) return;
-                                using var originalMat = slicerFile[layerIndex].LayerMat;
+                                if (layerIndex >= SlicerFile.LayerCount) return;
+                                using var originalMat = SlicerFile[layerIndex].LayerMat;
                                 using var newMat = fileFormat[i].LayerMat;
                                 CvInvoke.BitwiseOr(originalMat, newMat, newMat);
-                                slicerFile[layerIndex].LayerMat = newMat;
+                                SlicerFile[layerIndex].LayerMat = newMat;
                                     break;
                             }
                             case ImportTypes.BitwiseXOr:
                             {
-                                if (layerIndex >= slicerFile.LayerCount) return;
-                                using var originalMat = slicerFile[layerIndex].LayerMat;
+                                if (layerIndex >= SlicerFile.LayerCount) return;
+                                using var originalMat = SlicerFile[layerIndex].LayerMat;
                                 using var newMat = fileFormat[i].LayerMat;
                                 CvInvoke.BitwiseXor(originalMat, newMat, newMat);
-                                slicerFile[layerIndex].LayerMat = newMat;
+                                SlicerFile[layerIndex].LayerMat = newMat;
                                 break;
                             }
                             default:
@@ -483,20 +479,20 @@ namespace UVtools.Core.Operations
 
             if (_importType == ImportTypes.Stack)
             {
-                new OperationMove(slicerFile) { LayerIndexEnd = slicerFile.LastLayerIndex }.Execute(slicerFile, progress);
+                new OperationMove(SlicerFile).Execute(progress);
             }
 
             if (lastProcessedLayerIndex <= -1) return false;
 
-            if (lastProcessedLayerIndex + 1 < slicerFile.LayerCount && _discardUnmodifiedLayers)
+            if (lastProcessedLayerIndex + 1 < SlicerFile.LayerCount && _discardUnmodifiedLayers)
             {
-                slicerFile.LayerManager.ReallocateRange(0, (uint) lastProcessedLayerIndex);
+                SlicerFile.LayerManager.ReallocateRange(0, (uint) lastProcessedLayerIndex);
             }
 
-            slicerFile.LayerManager.RebuildLayersProperties();
-            slicerFile.SuppressRebuildProperties = false;
+            SlicerFile.LayerManager.RebuildLayersProperties();
+            SlicerFile.SuppressRebuildProperties = false;
 
-            return true;
+            return !progress.Token.IsCancellationRequested;
         }
 
         #endregion

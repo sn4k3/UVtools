@@ -11,7 +11,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolRepairLayersControl()
         {
             InitializeComponent();
-            BaseOperation = new OperationRepairLayers
+            BaseOperation = new OperationRepairLayers(SlicerFile)
             {
                 RepairIslands = UserSettings.Instance.LayerRepair.RepairIslands,
                 RepairResinTraps = UserSettings.Instance.LayerRepair.RepairResinTraps,

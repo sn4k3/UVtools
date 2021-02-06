@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using Avalonia;
-using Avalonia.Threading;
 using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF

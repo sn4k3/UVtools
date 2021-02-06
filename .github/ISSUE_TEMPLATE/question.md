@@ -6,7 +6,7 @@ labels: question
 assignees: sn4k3
 ---
 
-<span style="color:red">**! Before continue, please look/search on closed topics if your case was already been discussed, if yes and related, comment there instead.**</span>
-
-## Describe the question
-A clear and concise description of your question.
+## READ THIS
+Do not use issues to post questions! Use discussions instead!:
+https://github.com/sn4k3/UVtools/discussions/categories/q-a
+## READ THIS

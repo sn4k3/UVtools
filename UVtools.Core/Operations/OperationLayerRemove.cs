@@ -47,18 +47,26 @@ namespace UVtools.Core.Operations
 
         #endregion
 
+        #region Constructor
+
+        public OperationLayerRemove() { }
+
+        public OperationLayerRemove(FileFormat slicerFile) : base(slicerFile) { }
+
+        #endregion
+
         #region Methods
 
-        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        protected override bool ExecuteInternally(OperationProgress progress)
         {
-            progress ??= new OperationProgress(false);
+            progress.CanCancel = false;
             var layersRemove = new List<uint>();
             for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
             {
                 layersRemove.Add(layerIndex);
             }
 
-            return RemoveLayers(slicerFile, layersRemove, progress);
+            return RemoveLayers(SlicerFile, layersRemove, progress);
         }
 
         public static bool RemoveLayers(FileFormat slicerFile, List<uint> layersRemove, OperationProgress progress = null)
@@ -70,7 +78,7 @@ namespace UVtools.Core.Operations
             progress.Reset("removed layers", (uint)layersRemove.Count);
 
             var oldLayers = slicerFile.LayerManager.Layers;
-            float layerHeight = slicerFile.LayerHeight;
+            var layerHeight = slicerFile.LayerHeight;
 
             var layers = new Layer[oldLayers.Length - layersRemove.Count];
 
@@ -92,7 +100,7 @@ namespace UVtools.Core.Operations
                     }
                     else
                     {
-                        posZ = (float)Math.Round(layers[newLayerIndex - 1].PositionZ + layerHeight, 2);
+                        posZ = layers[newLayerIndex - 1].PositionZ + layerHeight;
                     }
                 }
 

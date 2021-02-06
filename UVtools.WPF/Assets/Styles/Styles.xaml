@@ -1,0 +1,53 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Design.PreviewWith>
+        <Border Padding="20"></Border>
+    </Design.PreviewWith>
+
+    <Style Selector="Expander[IsExpanded=true] /template/ ToggleButton#PART_toggle /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="TextBlock.Foreground" Value="{DynamicResource ToggleButtonForeground}"/>
+    </Style>
+
+    <Style Selector="Border.GroupBox">
+        <Setter Property="BorderThickness" Value="4" />
+    </Style>
+
+    <Style Selector="TextBlock.GroupBoxHeader">
+        <Setter Property="Padding" Value="10" />
+        <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+
+  <Style Selector="Border.FooterActions">
+      <Setter Property="Padding" Value="5,20" />
+      <Setter Property="Margin" Value="0,10,0, 0" />
+  </Style>
+
+    <Style Selector="TextBox.TransparentReadOnly">
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="CaretBrush" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="AcceptsReturn" Value="True" />
+        <Setter Property="AcceptsTab" Value="True" />
+    </Style>
+
+    <Style Selector="RadioButton">
+        <Setter Property="MinWidth" Value="30"></Setter>
+    </Style>
+
+    <Style Selector="CheckBox">
+        <Setter Property="MinWidth" Value="30"></Setter>
+    </Style>
+
+    <Style Selector="NumericUpDown">
+        <Setter Property="MinWidth" Value="130"></Setter>
+        <Setter Property="ClipValueToMinMax" Value="True"></Setter>
+    </Style>
+
+    <Style Selector="TabControl">
+        <Setter Property="Padding" Value="0"></Setter>
+    </Style>
+    
+</Styles>

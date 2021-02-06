@@ -10,7 +10,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolFlipControl()
         {
             InitializeComponent();
-            BaseOperation = new OperationFlip();
+            BaseOperation = new OperationFlip(SlicerFile);
         }
 
         private void InitializeComponent()

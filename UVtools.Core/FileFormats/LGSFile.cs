@@ -450,12 +450,9 @@ namespace UVtools.Core.FileFormats
 
             return bytes;
         }
-        public override void Encode(string fileFullPath, OperationProgress progress = null)
-        {
-            progress ??= new OperationProgress();
-            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-            base.Encode(fileFullPath, progress);
 
+        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        {
             if (ResolutionY >= 2560) // Longer Orange 30
             {
                 HeaderSettings.Float_94 = 170;
@@ -495,8 +492,6 @@ namespace UVtools.Core.FileFormats
                 }
             }
 
-            AfterEncode();
-
             Debug.WriteLine("Encode Results:");
             Debug.WriteLine(HeaderSettings);
             Debug.WriteLine("-End-");
@@ -522,10 +517,8 @@ namespace UVtools.Core.FileFormats
             return mat;
         }
 
-        public override void Decode(string fileFullPath, OperationProgress progress = null)
+        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
         {
-            base.Decode(fileFullPath, progress);
-
             using (var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read))
             {
                 HeaderSettings = Helpers.Deserialize<Header>(inputFile);
@@ -570,25 +563,17 @@ namespace UVtools.Core.FileFormats
                 {
                     if (progress.Token.IsCancellationRequested) return;
 
-                    using (var image = layerData[layerIndex].Decode())
-                    {
-                        this[layerIndex] = new Layer((uint) layerIndex, image, LayerManager);
+                    using var image = layerData[layerIndex].Decode();
+                    this[layerIndex] = new Layer((uint) layerIndex, image, LayerManager);
 
-                        lock (progress.Mutex)
-                        {
-                            progress++;
-                        }
+                    lock (progress.Mutex)
+                    {
+                        progress++;
                     }
                 });
 
                 LayerManager.RebuildLayersProperties();
-                
-
-                FileFullPath = fileFullPath;
-
             }
-
-            progress.Token.ThrowIfCancellationRequested();
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)

@@ -63,6 +63,14 @@ namespace UVtools.Core.Operations
         }
         #endregion
 
+        #region Constructor
+
+        public OperationRaftRelief() { }
+
+        public OperationRaftRelief(FileFormat slicerFile) : base(slicerFile) { }
+
+        #endregion
+
         #region Properties
         public static Array RaftReliefItems => Enum.GetValues(typeof(RaftReliefTypes));
 
@@ -149,11 +157,10 @@ namespace UVtools.Core.Operations
 
         #region Methods
 
-        public override bool Execute(FileFormat slicerFile, OperationProgress progress = null)
+        protected override bool ExecuteInternally(OperationProgress progress)
         {
+            progress.ItemCount = 0;
             const uint minLength = 5;
-            progress ??= new OperationProgress();
-            //progress.Reset(operation.ProgressAction);
 
             Mat supportsMat = null;
             var anchor = new Point(-1, -1);
@@ -161,11 +168,11 @@ namespace UVtools.Core.Operations
 
 
             uint firstSupportLayerIndex = 0;
-            for (; firstSupportLayerIndex < slicerFile.LayerCount; firstSupportLayerIndex++)
+            for (; firstSupportLayerIndex < SlicerFile.LayerCount; firstSupportLayerIndex++)
             {
-                progress.Reset("Tracing raft", slicerFile.LayerCount, firstSupportLayerIndex);
+                progress.Reset("Tracing raft", SlicerFile.LayerCount, firstSupportLayerIndex);
                 if (progress.Token.IsCancellationRequested) return false;
-                supportsMat = GetRoiOrDefault(slicerFile[firstSupportLayerIndex].LayerMat);
+                supportsMat = GetRoiOrDefault(SlicerFile[firstSupportLayerIndex].LayerMat);
                 var circles = CvInvoke.HoughCircles(supportsMat, HoughModes.Gradient, 1, 20, 100, 30, 5, 200);
                 if (circles.Length >= minLength) break;
 
@@ -187,7 +194,7 @@ namespace UVtools.Core.Operations
 
             switch (ReliefType)
             {
-                case OperationRaftRelief.RaftReliefTypes.Relief:
+                case RaftReliefTypes.Relief:
                     patternMat = EmguExtensions.InitMat(supportsMat.Size);
                     int shapeSize = HoleDiameter + HoleSpacing;
                     using (var shape = EmguExtensions.InitMat(new Size(shapeSize, shapeSize)))
@@ -208,7 +215,7 @@ namespace UVtools.Core.Operations
                     }
 
                     break;
-                case OperationRaftRelief.RaftReliefTypes.Dimming:
+                case RaftReliefTypes.Dimming:
                     patternMat = EmguExtensions.InitMat(supportsMat.Size, color);
                     break;
             }
@@ -216,7 +223,8 @@ namespace UVtools.Core.Operations
             progress.Reset(ProgressAction, firstSupportLayerIndex);
             Parallel.For(IgnoreFirstLayers, firstSupportLayerIndex, layerIndex =>
             {
-                using (Mat dst = slicerFile[layerIndex].LayerMat)
+                if (progress.Token.IsCancellationRequested) return;
+                using (Mat dst = SlicerFile[layerIndex].LayerMat)
                 {
                     var target = GetRoiOrDefault(dst);
 
@@ -242,7 +250,7 @@ namespace UVtools.Core.Operations
                     }
 
 
-                    slicerFile[layerIndex].LayerMat = dst;
+                    SlicerFile[layerIndex].LayerMat = dst;
                 }
 
                 lock (progress.Mutex)
@@ -255,7 +263,7 @@ namespace UVtools.Core.Operations
             supportsMat.Dispose();
             patternMat?.Dispose();
 
-            return true;
+            return !progress.Token.IsCancellationRequested;
         }
 
         #endregion

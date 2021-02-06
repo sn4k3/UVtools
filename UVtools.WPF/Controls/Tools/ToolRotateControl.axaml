@@ -7,12 +7,11 @@
   <StackPanel Orientation="Horizontal" Spacing="10">
     <TextBlock VerticalAlignment="Center" Text="Rotation angle:"/>
     <NumericUpDown
-          MinWidth="100"
-          MaxWidth="150"
+          Width="150"
           Minimum="-359.99"
           Maximum="359.99"
           Increment="1.0"
-          FormatString="{}{0:0.00}"
+          FormatString="F02"
           Value="{Binding Operation.AngleDegrees}"
           />
     <TextBlock VerticalAlignment="Center" Text="degrees"/>

@@ -21,11 +21,13 @@ namespace UVtools.WPF.Windows
     public class ProgressWindow : WindowEx, IDisposable
     {
         public Stopwatch StopWatch => Progress.StopWatch;
-        public OperationProgress Progress { get; } = new OperationProgress();
+        public OperationProgress Progress { get; } = new ();
 
-        private LogItem _logItem = new LogItem();
+        private LogItem _logItem = new ();
 
-        private Timer _timer = new Timer(100) { AutoReset = true };
+        private Timer _timer = new (200) { AutoReset = true };
+
+        private long _lastTotalSeconds = 0;
 
         public bool CanCancel
         {
@@ -45,7 +47,16 @@ namespace UVtools.WPF.Windows
             
             _timer.Elapsed += (sender, args) =>
             {
-                Progress.TriggerRefresh();
+                var elapsedSeconds = StopWatch.ElapsedMilliseconds / 1000;
+                if (_lastTotalSeconds == elapsedSeconds) return;
+                /*Debug.WriteLine(StopWatch.ElapsedMilliseconds);
+                Debug.WriteLine(elapsedSeconds);
+                Debug.WriteLine(_lastTotalSeconds);*/
+                _lastTotalSeconds = elapsedSeconds;
+
+
+                Dispatcher.UIThread.InvokeAsync(() => Progress.TriggerRefresh(), DispatcherPriority.Render);
+
             };
 
             DataContext = this;
@@ -88,6 +99,7 @@ namespace UVtools.WPF.Windows
         {
             CanCancel = canCancel;
             Progress.StopWatch.Restart();
+            _lastTotalSeconds = 0;
 
             if (!_timer.Enabled)
             {

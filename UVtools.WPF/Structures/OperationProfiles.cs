@@ -1,11 +1,16 @@
-﻿using System;
-using System.Collections;
+﻿/*
+ *                     GNU AFFERO GENERAL PUBLIC LICENSE
+ *                       Version 3, 19 November 2007
+ *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ *  Everyone is permitted to copy and distribute verbatim copies
+ *  of this license document, but changing it is not allowed.
+ */
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
-using DynamicData;
 using UVtools.Core.Operations;
 
 namespace UVtools.WPF.Structures
@@ -27,6 +32,7 @@ namespace UVtools.WPF.Structures
         [XmlElement(typeof(OperationFlip))]
         //[XmlElement(typeof(OperationLayerClone))]
         //[XmlElement(typeof(OperationLayerImport))]
+        [XmlElement(typeof(OperationDynamicLayerHeight))]
         //[XmlElement(typeof(OperationLayerReHeight))]
         //[XmlElement(typeof(OperationLayerRemove))]
         //[XmlElement(typeof(OperationMask))]
@@ -46,7 +52,7 @@ namespace UVtools.WPF.Structures
         [XmlElement(typeof(OperationCalibrateTolerance))]
         [XmlElement(typeof(OperationCalibrateGrayscale))]
         [XmlElement(typeof(OperationCalibrateStressTower))]
-        public List<Operation> Operations { get; internal set; } = new List<Operation>();
+        public List<Operation> Operations { get; internal set; } = new();
 
         [XmlIgnore]
         public static List<Operation> Profiles

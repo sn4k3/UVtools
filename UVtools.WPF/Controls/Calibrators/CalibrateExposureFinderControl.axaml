@@ -1,0 +1,592 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Calibrators.CalibrateExposureFinderControl">
+  <Grid ColumnDefinitions="Auto,10,380">
+    <StackPanel Spacing="10">
+
+      <Border BorderBrush="Black" BorderThickness="1" Padding="5">
+        <Expander IsExpanded="True">
+          <Expander.Header>
+            <TextBlock Text="Commun properties"
+                       FontWeight="Bold"
+                       Cursor="Hand"/>
+          </Expander.Header>
+
+          <Grid
+              RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+              ColumnDefinitions="Auto,10,170,5,Auto,20,Auto,10,170,5,Auto">
+
+            <TextBlock
+                      Grid.Row="0" Grid.Column="0"
+                       VerticalAlignment="Center"
+                      ToolTip.Tip="The printer display width. Required to calculate the pixels per mm."
+                       Text="Display width:"/>
+            <NumericUpDown Grid.Row="0" Grid.Column="2"
+                           ClipValueToMinMax="True"
+                           Increment="0.1"
+                           Minimum="0"
+                           Maximum="10000"
+                           FormatString="F02"
+                           Value="{Binding Operation.DisplayWidth}"/>
+            <TextBlock Grid.Row="0" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+
+            <TextBlock Grid.Row="0" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       ToolTip.Tip="The printer display height. Required to calculate the pixels per mm."
+                       Text="Display height:"/>
+            <NumericUpDown Grid.Row="0" Grid.Column="8"
+                           ClipValueToMinMax="True"
+                           Increment="0.1"
+                           Minimum="0"
+                           Maximum="10000"
+                           FormatString="F02"
+                           Value="{Binding Operation.DisplayHeight}"/>
+            <TextBlock Grid.Row="0" Grid.Column="10"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Layer height:"/>
+            <NumericUpDown Grid.Row="2" Grid.Column="2"
+                           Increment="0.01"
+                           Minimum="0.01"
+                           Maximum="0.30"
+                           FormatString="F02"
+                           Value="{Binding Operation.LayerHeight}"
+                     />
+            <TextBlock Grid.Row="2" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       Text="Bottom layers:"/>
+            <NumericUpDown Grid.Row="2" Grid.Column="8"
+                           ClipValueToMinMax="True"
+                           Increment="1"
+                           Minimum="1"
+                           Maximum="1000"
+                           Value="{Binding Operation.BottomLayers}"/>
+            <TextBlock Grid.Row="2" Grid.Column="8"
+                       VerticalAlignment="Center"
+                       Text="{Binding Operation.BottomHeight, StringFormat=\{0:0.00\}mm}"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Bottom exposure:"/>
+            <NumericUpDown Grid.Row="4" Grid.Column="2"
+                           ClipValueToMinMax="True"
+                           Increment="0.5"
+                           Minimum="0.1"
+                           Maximum="200"
+                           FormatString="F02"
+                           Value="{Binding Operation.BottomExposure}"/>
+            <TextBlock Grid.Row="4" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="s"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       Text="Normal exposure:"/>
+            <NumericUpDown Grid.Row="4" Grid.Column="8"
+                           ClipValueToMinMax="True"
+                           Increment="0.5"
+                           Minimum="0.1"
+                           Maximum="200"
+                           FormatString="F02"
+                           Value="{Binding Operation.NormalExposure}"/>
+            <TextBlock Grid.Row="4" Grid.Column="10"
+                       VerticalAlignment="Center"
+                       Text="s"/>
+
+            <TextBlock Grid.Row="6" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Top/bottom margin:"/>
+            <NumericUpDown Grid.Row="6" Grid.Column="2"
+                           ClipValueToMinMax="True"
+                           Increment="0.5"
+                           Minimum="0"
+                           Maximum="1000"
+                           Value="{Binding Operation.TopBottomMargin}"/>
+            <TextBlock Grid.Row="6" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+
+            <TextBlock Grid.Row="6" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       Text="Left/right margin:"/>
+            <NumericUpDown Grid.Row="6" Grid.Column="8"
+                           ClipValueToMinMax="True"
+                           Increment="0.5"
+                           Minimum="0"
+                           Maximum="1000"
+                           Value="{Binding Operation.LeftRightMargin}"/>
+            <TextBlock Grid.Row="6" Grid.Column="10"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+
+            <TextBlock Grid.Row="8" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Part margin:"/>
+            <NumericUpDown Grid.Row="8" Grid.Column="2"
+                           ClipValueToMinMax="True"
+                           Increment="1"
+                           Minimum="0"
+                           Maximum="10000"
+                           Value="{Binding Operation.PartMargin}"/>
+            <TextBlock Grid.Row="8" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+
+            <TextBlock Grid.Row="10" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       ToolTip.Tip="Chamfer the bottom and top layers"
+                       Text="Chamfer layers:"/>
+            <NumericUpDown Grid.Row="10" Grid.Column="2"
+                           ClipValueToMinMax="True"
+                           Increment="1"
+                           Minimum="0"
+                           Maximum="255"
+                           IsEnabled="{Binding Operation.ChamferModel}"
+                           Value="{Binding Operation.ChamferLayers}"/>
+
+            <TextBlock Grid.Row="10" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       ToolTip.Tip="Erode bottom iterations to counter the elephant foot"
+                       Text="Erode bottom iter.:"/>
+            <NumericUpDown Grid.Row="10" Grid.Column="8"
+                           ClipValueToMinMax="True"
+                           Increment="1"
+                           Minimum="0"
+                           Maximum="255"
+                           Value="{Binding Operation.ErodeBottomIterations}"/>
+
+            <CheckBox Grid.Row="12" Grid.Column="2" Grid.ColumnSpan="5"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding Operation.EnableAntiAliasing}"
+                      Content="Enable Anti-Aliasing"/>
+
+            <CheckBox Grid.Row="12" Grid.Column="8"
+                      Grid.ColumnSpan="3"
+                      ToolTip.Tip="Most of the printers requires a mirror output to print with the correct orientation"
+                      IsChecked="{Binding Operation.MirrorOutput}"
+                      Content="Mirror output" />
+
+          </Grid>
+        </Expander>
+      </Border>
+
+      <Border BorderBrush="Black" BorderThickness="1" Padding="5">
+        <Expander IsExpanded="True">
+          <Expander.Header>
+            <TextBlock Text="Object configuration"
+                       FontWeight="Bold"
+                       Cursor="Hand"/>
+
+          </Expander.Header>
+
+          <Grid RowDefinitions="Auto,10,Auto,10,Auto"
+                ColumnDefinitions="Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Base height:"
+                       VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Row="0" Grid.Column="2"
+                             ClipValueToMinMax="True"
+                             Increment="0.5"
+                             Minimum="0.3"
+                             Maximum="100"
+                             FormatString="F02"
+                             Value="{Binding Operation.BaseHeight}"/>
+            <TextBlock Grid.Row="0" Grid.Column="4"
+                         VerticalAlignment="Center"
+                         Text="mm"/>
+
+            <TextBlock Grid.Row="0" Grid.Column="6"
+                       Text="Cylinder height:"
+                       VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Row="0" Grid.Column="8"
+                           ClipValueToMinMax="True"
+                           Increment="0.5"
+                           Minimum="1"
+                           Maximum="100"
+                           FormatString="F02"
+                           Value="{Binding Operation.CylinderHeight}"/>
+            <TextBlock Grid.Row="0" Grid.Column="10"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+
+            <TextBlock Grid.Row="0" Grid.Column="12"
+                       Text="Cylinder margin:"
+                       VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Row="0" Grid.Column="14"
+                           ClipValueToMinMax="True"
+                           Increment="0.5"
+                           Minimum="1"
+                           Maximum="100"
+                           FormatString="F02"
+                           Value="{Binding Operation.CylinderMargin}"/>
+            <TextBlock Grid.Row="0" Grid.Column="16"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+            
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Shape:"
+                       VerticalAlignment="Center"/>
+
+            <ComboBox Grid.Row="2" Grid.Column="2"
+                      HorizontalAlignment="Stretch"
+                      Items="{Binding Operation.ShapesItems}"
+                      SelectedItem="{Binding Operation.Shape}"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="6"
+                       Text="Unit of measure:"
+                       VerticalAlignment="Center"/>
+
+            <ComboBox Grid.Row="2" Grid.Column="8"
+                      HorizontalAlignment="Stretch"
+                      Items="{Binding Operation.MeasuresItems}"
+                      SelectedItem="{Binding Operation.UnitOfMeasure}"/>
+           
+
+
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       Text="Diameters:"
+                       ToolTip.Tip="Diameters separated by a comma (,). Order doesn't matter."
+                       VerticalAlignment="Center"/>
+
+            <TextBox Grid.Row="4" Grid.Column="2"
+                     Grid.ColumnSpan="13"
+                     IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
+                     Text="{Binding Operation.CylinderDiametersMm}"/>
+
+            <TextBox Grid.Row="4" Grid.Column="2"
+                     Grid.ColumnSpan="13"
+                     IsVisible="{Binding !Operation.IsUnitOfMeasureMm}"
+                     Text="{Binding Operation.CylinderDiametersPx}"/>
+            
+            <TextBlock Grid.Row="4" Grid.Column="16"
+                       IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="16"
+                       IsVisible="{Binding !Operation.IsUnitOfMeasureMm}"
+                       VerticalAlignment="Center"
+                       Text="px"/>
+          </Grid>
+
+        </Expander>
+      </Border>
+
+      <Border BorderBrush="Black" 
+              BorderThickness="1"
+              Padding="5"
+              IsVisible="{Binding CanSupportPerLayerSettings}">
+        <Expander IsExpanded="True">
+          <Expander.Header>
+            <TextBlock Text="Multiple layer height"
+                       FontWeight="Bold"
+                       Cursor="Hand"/>
+
+          </Expander.Header>
+
+            <StackPanel Spacing="10">
+
+                <TextBlock Text="Only few printers support this, make sure your is supported or else it will print a malformed model.
+&#x0a;After this, do not apply any modification which reconstruct the z positions of the layers."/>
+
+                <CheckBox
+                    Content="Enable - For advanced users only!"
+                    IsChecked="{Binding Operation.MultipleLayerHeight}"/>
+
+                <Grid RowDefinitions="Auto"
+                      ColumnDefinitions="Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto"
+                      IsEnabled="{Binding Operation.MultipleLayerHeight}">
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Start layer height:"
+                       VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Row="0" Grid.Column="2"
+                           Increment="0.01"
+                           Minimum="0.01"
+                           Maximum="0.30"
+                           FormatString="F02"
+                           Value="{Binding Operation.LayerHeight}"/>
+            <TextBlock Grid.Row="0" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+
+            <TextBlock Grid.Row="0" Grid.Column="6"
+                       Text="Increment step:"
+                       VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Row="0" Grid.Column="8"
+                           Increment="0.01"
+                           Minimum="0.01"
+                           Maximum="0.1"
+                           FormatString="F02"
+                           Value="{Binding Operation.MultipleLayerHeightStep}"/>
+            <TextBlock Grid.Row="0" Grid.Column="10"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+
+            <TextBlock Grid.Row="0" Grid.Column="12"
+                       Text="Maximum layer height:"
+                       VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Row="0" Grid.Column="14"
+                           Increment="0.01"
+                           Minimum="{Binding Operation.LayerHeight}"
+                           Maximum="0.3"
+                           FormatString="F02"
+                           Value="{Binding Operation.MultipleLayerHeightMaximum}"/>
+            <TextBlock Grid.Row="0" Grid.Column="16"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+          </Grid>
+                </StackPanel>
+
+        </Expander>
+      </Border>
+
+      <Border BorderBrush="Black" 
+              BorderThickness="1" 
+              Padding="5"
+              IsVisible="{Binding CanSupportPerLayerSettings}">
+        <Expander IsExpanded="True">
+          <Expander.Header>
+            <TextBlock Text="Multiple exposures"
+                       FontWeight="Bold"
+                       Cursor="Hand"/>
+
+          </Expander.Header>
+
+            <StackPanel Spacing="10">
+
+                <TextBlock Text="Only few printers support this, make sure your is supported or else it will print a malformed model.
+&#x0a;After this, do not apply any modification which reconstruct the z positions of the layers."/>
+
+                <CheckBox
+                    Content="Enable - For advanced users only!"
+                    IsChecked="{Binding Operation.MultipleExposures}"/>
+
+                <TextBlock Text="Automatic exposure generation:"
+                           IsEnabled="{Binding Operation.MultipleExposures}"
+                           FontWeight="Bold"/>
+
+              <Grid RowDefinitions="Auto,10,Auto"
+                    ColumnDefinitions="Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto"
+                    IsEnabled="{Binding Operation.MultipleExposures}">
+
+
+                  <TextBlock Grid.Row="0" Grid.Column="0"
+                             ToolTip.Tip="Linear: Current exposure + step * test number.&#x0a;
+Multiplier: Current exposure * layer height * step * test number."
+                             Text="Generation type:"
+                             VerticalAlignment="Center"/>
+                  <ComboBox Grid.Row="0" Grid.Column="2"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Stretch"
+                            Items="{Binding Operation.ExposureGenTypeItems}"
+                            SelectedItem="{Binding Operation.ExposureGenType}"/>
+
+                  <CheckBox Grid.Row="0" Grid.Column="6" Grid.ColumnSpan="5"
+                            VerticalAlignment="Center"
+                            Content="Ignore global exposures"
+                            IsChecked="{Binding Operation.ExposureGenIgnoreBaseExposure}"/>
+
+                  <Button Grid.Row="0" Grid.Column="12" Grid.ColumnSpan="5"
+                             Content="Generate exposure table"
+                             VerticalContentAlignment="Center"
+                             HorizontalContentAlignment="Center"
+                             HorizontalAlignment="Stretch"
+                             VerticalAlignment="Stretch"
+                             Command="{Binding GenerateExposureTable}"/>
+
+                  <TextBlock Grid.Row="2" Grid.Column="0"
+                             ToolTip.Tip="Bottom exposure step"
+                             Text="Bottom step:"
+                             VerticalAlignment="Center"/>
+                <NumericUpDown Grid.Row="2" Grid.Column="2"
+                               Increment="0.01"
+                               Minimum="0"
+                               Maximum="1000"
+                               FormatString="F02"
+                               Value="{Binding Operation.ExposureGenBottomStep}"/>
+                <TextBlock Grid.Row="2" Grid.Column="4"
+                           VerticalAlignment="Center"
+                           Text="s"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="6"
+                           ToolTip.Tip="Normal exposure step"
+                           Text="Normal step:"
+                           VerticalAlignment="Center"/>
+                <NumericUpDown Grid.Row="2" Grid.Column="8"
+                               Increment="0.01"
+                               Minimum="0.01"
+                               Maximum="1000"
+                               FormatString="F02"
+                               Value="{Binding Operation.ExposureGenNormalStep}"/>
+                <TextBlock Grid.Row="2" Grid.Column="10"
+                           VerticalAlignment="Center"
+                           Text="s"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="12"
+                           ToolTip.Tip="Maximum of generations per layer height"
+                           Text="Maximum generations:"
+                           VerticalAlignment="Center"/>
+                <NumericUpDown Grid.Row="2" Grid.Column="14"
+                               Increment="1"
+                               Minimum="1"
+                               Maximum="255"
+                               Value="{Binding Operation.ExposureGenTests}"/>
+                <TextBlock Grid.Row="2" Grid.Column="16"
+                           VerticalAlignment="Center"
+                           Text="tests"/>
+              </Grid>
+
+                <TextBlock Text="Manual exposure entry:"
+                           IsEnabled="{Binding Operation.MultipleExposures}"
+                           FontWeight="Bold"/>
+
+                <Grid RowDefinitions="Auto,10,Auto"
+                      ColumnDefinitions="Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto,10,Auto"
+                      IsEnabled="{Binding Operation.MultipleExposures}">
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               Text="Layer height:"
+                               VerticalAlignment="Center"/>
+                    <ComboBox Grid.Row="0" Grid.Column="2"
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Stretch"
+                              MinWidth="100"
+                              Items="{Binding Operation.AvailableLayerHeights}"
+                              SelectedItem="{Binding Operation.ExposureGenManualLayerHeight}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="4"
+                               Text="mm"
+                               VerticalAlignment="Center"/>
+
+                    <TextBlock Grid.Row="0" Grid.Column="6"
+                               Text="Bottom exposure:"
+                               VerticalAlignment="Center"/>
+                    <NumericUpDown Grid.Row="0" Grid.Column="8"
+                                   Increment="0.1"
+                                   Minimum="0.5"
+                                   Maximum="1000"
+                                   FormatString="F02"
+                                   Value="{Binding Operation.ExposureGenManualBottom}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="10"
+                               VerticalAlignment="Center"
+                               Text="s"/>
+
+                    <TextBlock Grid.Row="0" Grid.Column="12"
+                               Text="Normal exposure:"
+                               VerticalAlignment="Center"/>
+                  <NumericUpDown Grid.Row="0" Grid.Column="14"
+                                 Increment="0.1"
+                                 Minimum="0.1"
+                                 Maximum="1000"
+                                 FormatString="F02"
+                                 Value="{Binding Operation.ExposureGenManualNormal}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="16"
+                               VerticalAlignment="Center"
+                               Text="s"/>
+
+                    <Button
+                        Grid.Row="0" Grid.Column="18" VerticalContentAlignment="Center"
+                        HorizontalContentAlignment="Center"
+                        VerticalAlignment="Stretch"
+                        IsEnabled="{Binding Operation.ExposureGenManualLayerHeight}"
+                        Command="{Binding ExposureTableAddManual}">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Image Source="/Assets/Icons/plus-16x16.png"/>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Text="Add"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                
+
+                <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,*,Auto"
+                      IsEnabled="{Binding Operation.MultipleExposures}"
+                      Margin="0,10,0,0">
+                    <TextBlock Text="{Binding Operation.ExposureTable.Count, StringFormat=Exposure table: {0} entries}" FontWeight="Bold"/>
+
+                    <Button
+                        Grid.Column="1" VerticalContentAlignment="Center"
+                        HorizontalContentAlignment="Center"
+                        HorizontalAlignment="Right"
+                        IsEnabled="{Binding #ExposureTable.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        Command="{Binding ExposureTableRemoveSelectedEntries}">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Image Source="/Assets/Icons/trash-16x16.png"/>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Text="Remove selected entries"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button
+                        Grid.Column="2" VerticalContentAlignment="Center"
+                        Margin="10,0,0,0"
+                        HorizontalContentAlignment="Center"
+                        HorizontalAlignment="Right"
+                        IsEnabled="{Binding Operation.ExposureTable.Count}"
+                        Command="{Binding ExposureTableClearEntries}">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Image Source="/Assets/Icons/delete-16x16.png"/>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Text="{Binding Operation.ExposureTable.Count, StringFormat=Clear {0} entries}"/>
+                        </StackPanel>
+                    </Button>
+
+                </Grid>
+
+              
+                <DataGrid
+                    Name="ExposureTable"
+                    CanUserReorderColumns="True"
+                    CanUserResizeColumns="True"
+                    CanUserSortColumns="True"
+                    GridLinesVisibility="Horizontal"
+                    IsReadOnly="False"
+                    ClipboardCopyMode="IncludeHeader"
+                    VerticalAlignment="Stretch"
+                    MinHeight="100"
+                    Margin="0,-10,0,0"
+                    IsEnabled="{Binding Operation.MultipleExposures}"
+                    Items="{Binding Operation.ExposureTable}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Layer height (mm)"
+                                            Binding="{Binding LayerHeight}"
+                                            Width="Auto" />
+                        <DataGridTextColumn Header="Bottom exposure (s)"
+                                            Binding="{Binding BottomExposure}"
+                                            Width="Auto" />
+                        <DataGridTextColumn Header="Exposure (s)"
+                                            Binding="{Binding Exposure}"
+                                            Width="Auto" />
+                    </DataGrid.Columns>
+
+                </DataGrid>
+
+            </StackPanel>
+
+        </Expander>
+      </Border>
+
+    </StackPanel>
+
+    <Image Grid.Column="2"
+           HorizontalAlignment="Center"
+           VerticalAlignment="Top"
+           MaxHeight="800"
+           Stretch="Uniform"
+           Source="{Binding PreviewImage}"/>
+  </Grid>
+</UserControl>

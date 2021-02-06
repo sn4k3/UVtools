@@ -41,7 +41,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolBlurControl()
         {
             InitializeComponent();
-            BaseOperation = new OperationBlur();
+            BaseOperation = new OperationBlur(SlicerFile);
             _kernelCtrl = this.Find<KernelControl>("KernelCtrl");
         }
 

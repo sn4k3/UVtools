@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Avalonia.Markup.Xaml;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
@@ -21,6 +22,8 @@ namespace UVtools.WPF.Controls.Tools
                 ResetDataContext();
             }
         }
+
+        public FileFormat SlicerFile => App.SlicerFile;
 
         public ToolWindow ParentWindow { get; set; } = null;
 

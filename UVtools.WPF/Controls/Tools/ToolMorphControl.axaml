@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:uc="clr-namespace:UVtools.WPF.Controls"
-             mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="400"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
              x:Class="UVtools.WPF.Controls.Tools.ToolMorphControl">
 
   <StackPanel>
@@ -23,7 +23,7 @@
 
         <NumericUpDown
           Minimum="1"
-          Width="70"
+          Width="140"
           Value="{Binding Operation.IterationsStart}"
           />
 
@@ -34,7 +34,7 @@
 
         <NumericUpDown
           Minimum="1"
-          Width="70"
+          Width="140"
           Value="{Binding Operation.IterationsEnd}"
           IsEnabled="{Binding Operation.Chamfer}"
           />
@@ -55,6 +55,7 @@
       <ComboBox
         Grid.Row="2"
         Grid.Column="2"
+        HorizontalAlignment="Stretch"
         SelectedIndex="{Binding MorphSelectedIndex}"
         Items="{Binding Operation.MorphOperations}"
         />
@@ -62,14 +63,12 @@
     </Grid>
 
     <Border 
-      Margin="0,10,0,0" 
-      >
+      Margin="0,10,0,0" >
       <Expander>
         <Expander.Header>
           <TextBlock Text="Kernel - Advanced options (Click to expand)"
                      FontWeight="Bold"
-                     Cursor="Hand"
-                     />
+                     Cursor="Hand"/>
         </Expander.Header>
         <uc:KernelControl
           Name="KernelCtrl"
