@@ -208,7 +208,7 @@
                          Text="mm"/>
 
             <TextBlock Grid.Row="0" Grid.Column="6"
-                       Text="Cylinder height:"
+                       Text="Hole height:"
                        VerticalAlignment="Center"/>
             <NumericUpDown Grid.Row="0" Grid.Column="8"
                            ClipValueToMinMax="True"
@@ -216,13 +216,13 @@
                            Minimum="1"
                            Maximum="100"
                            FormatString="F02"
-                           Value="{Binding Operation.CylinderHeight}"/>
+                           Value="{Binding Operation.HoleHeight}"/>
             <TextBlock Grid.Row="0" Grid.Column="10"
                        VerticalAlignment="Center"
                        Text="mm"/>
 
             <TextBlock Grid.Row="0" Grid.Column="12"
-                       Text="Cylinder margin:"
+                       Text="Hole margin:"
                        VerticalAlignment="Center"/>
             <NumericUpDown Grid.Row="0" Grid.Column="14"
                            ClipValueToMinMax="True"
@@ -230,25 +230,16 @@
                            Minimum="1"
                            Maximum="100"
                            FormatString="F02"
-                           Value="{Binding Operation.CylinderMargin}"/>
+                           Value="{Binding Operation.HoleMargin}"/>
             <TextBlock Grid.Row="0" Grid.Column="16"
                        VerticalAlignment="Center"
                        Text="mm"/>
             
             <TextBlock Grid.Row="2" Grid.Column="0"
-                       Text="Shape:"
-                       VerticalAlignment="Center"/>
-
-            <ComboBox Grid.Row="2" Grid.Column="2"
-                      HorizontalAlignment="Stretch"
-                      Items="{Binding Operation.ShapesItems}"
-                      SelectedItem="{Binding Operation.Shape}"/>
-
-            <TextBlock Grid.Row="2" Grid.Column="6"
                        Text="Unit of measure:"
                        VerticalAlignment="Center"/>
 
-            <ComboBox Grid.Row="2" Grid.Column="8"
+            <ComboBox Grid.Row="2" Grid.Column="2"
                       HorizontalAlignment="Stretch"
                       Items="{Binding Operation.MeasuresItems}"
                       SelectedItem="{Binding Operation.UnitOfMeasure}"/>
@@ -263,12 +254,12 @@
             <TextBox Grid.Row="4" Grid.Column="2"
                      Grid.ColumnSpan="13"
                      IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
-                     Text="{Binding Operation.CylinderDiametersMm}"/>
+                     Text="{Binding Operation.HoleDiametersMm}"/>
 
             <TextBox Grid.Row="4" Grid.Column="2"
                      Grid.ColumnSpan="13"
                      IsVisible="{Binding !Operation.IsUnitOfMeasureMm}"
-                     Text="{Binding Operation.CylinderDiametersPx}"/>
+                     Text="{Binding Operation.HoleDiametersPx}"/>
             
             <TextBlock Grid.Row="4" Grid.Column="16"
                        IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
@@ -585,7 +576,7 @@ Multiplier: Current exposure * layer height * step * test number."
     <Image Grid.Column="2"
            HorizontalAlignment="Center"
            VerticalAlignment="Top"
-           MaxHeight="800"
+           MaxHeight="600"
            Stretch="Uniform"
            Source="{Binding PreviewImage}"/>
   </Grid>

@@ -53,56 +53,6 @@ namespace UVtools.Core.Operations
             }
         }
 
-        [Serializable]
-        public sealed class ExposureItem : BindableBase
-        {
-            private decimal _layerHeight;
-            private decimal _bottomExposure;
-            private decimal _exposure;
-
-
-            /// <summary>
-            /// Gets or sets the layer height in millimeters
-            /// </summary>
-            public decimal LayerHeight
-            {
-                get => _layerHeight;
-                set => RaiseAndSetIfChanged(ref _layerHeight, Math.Round(value, 2));
-            }
-
-
-            /// <summary>
-            /// Gets or sets the bottom exposure in seconds
-            /// </summary>
-            public decimal BottomExposure
-            {
-                get => _bottomExposure;
-                set => RaiseAndSetIfChanged(ref _bottomExposure, Math.Round(value, 2));
-            }
-
-            /// <summary>
-            /// Gets or sets the bottom exposure in seconds
-            /// </summary>
-            public decimal Exposure
-            {
-                get => _exposure;
-                set => RaiseAndSetIfChanged(ref _exposure, Math.Round(value, 2));
-            }
-
-            public ExposureItem() { }
-
-            public ExposureItem(decimal layerHeight, decimal bottomExposure = 0, decimal exposure = 0)
-            {
-                _layerHeight = Math.Round(layerHeight, 2);
-                _bottomExposure = Math.Round(bottomExposure, 2);
-                _exposure = Math.Round(exposure, 2);
-            }
-
-            public override string ToString()
-            {
-                return $"{nameof(LayerHeight)}: {LayerHeight}mm, {nameof(BottomExposure)}: {BottomExposure}s, {nameof(Exposure)}: {Exposure}s";
-            }
-        }
         #endregion
 
         #region Constants

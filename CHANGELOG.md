@@ -1,5 +1,16 @@
 # Changelog
 
+## 07/02/2021 - v2.4.1
+
+* **(Fix) Exposure time finder:**
+    * Use a spiral square instead of configurable shapes to match the exact precise set pixels
+    * Set pixels as default values
+    * Optimized the pixel values to always produce a closed shape
+    * Rename cylinder to hole
+    * Crash when diameters are empty
+    * Profiles was not saving
+
+
 ## 06/02/2021 - v2.4.0
 
 * (Upgrade) EmguCV/OpenCV to v4.5.1

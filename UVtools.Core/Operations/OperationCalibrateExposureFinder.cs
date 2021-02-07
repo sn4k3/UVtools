@@ -13,7 +13,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -26,89 +25,6 @@ namespace UVtools.Core.Operations
     [Serializable]
     public sealed class OperationCalibrateExposureFinder : Operation
     {
-        #region Sub classes
-
-        [Serializable]
-        public sealed class ExposureItem : BindableBase, IComparable<ExposureItem>
-        {
-            private decimal _layerHeight;
-            private decimal _bottomExposure;
-            private decimal _exposure;
-
-
-            /// <summary>
-            /// Gets or sets the layer height in millimeters
-            /// </summary>
-            public decimal LayerHeight
-            {
-                get => _layerHeight;
-                set => RaiseAndSetIfChanged(ref _layerHeight, Math.Round(value, 2));
-            }
-
-
-            /// <summary>
-            /// Gets or sets the bottom exposure in seconds
-            /// </summary>
-            public decimal BottomExposure
-            {
-                get => _bottomExposure;
-                set => RaiseAndSetIfChanged(ref _bottomExposure, Math.Round(value, 2));
-            }
-
-            /// <summary>
-            /// Gets or sets the bottom exposure in seconds
-            /// </summary>
-            public decimal Exposure
-            {
-                get => _exposure;
-                set => RaiseAndSetIfChanged(ref _exposure, Math.Round(value, 2));
-            }
-
-            public bool IsValid => _layerHeight > 0 && _bottomExposure > 0 && _exposure > 0;
-
-            public ExposureItem() { }
-
-            public ExposureItem(decimal layerHeight, decimal bottomExposure = 0, decimal exposure = 0)
-            {
-                _layerHeight = Math.Round(layerHeight, 2);
-                _bottomExposure = Math.Round(bottomExposure, 2);
-                _exposure = Math.Round(exposure, 2);
-            }
-
-            public override string ToString()
-            {
-                return $"{nameof(LayerHeight)}: {LayerHeight}mm, {nameof(BottomExposure)}: {BottomExposure}s, {nameof(Exposure)}: {Exposure}s";
-            }
-
-            private bool Equals(ExposureItem other)
-            {
-                return _layerHeight == other._layerHeight && _bottomExposure == other._bottomExposure && _exposure == other._exposure;
-            }
-
-            public override bool Equals(object obj)
-            {
-                return ReferenceEquals(this, obj) || obj is ExposureItem other && Equals(other);
-            }
-
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(_layerHeight, _bottomExposure, _exposure);
-            }
-
-            public int CompareTo(ExposureItem other)
-            {
-                if (ReferenceEquals(this, other)) return 0;
-                if (ReferenceEquals(null, other)) return 1;
-                var layerHeightComparison = _layerHeight.CompareTo(other._layerHeight);
-                if (layerHeightComparison != 0) return layerHeightComparison;
-                var bottomExposureComparison = _bottomExposure.CompareTo(other._bottomExposure);
-                if (bottomExposureComparison != 0) return bottomExposureComparison;
-                return _exposure.CompareTo(other._exposure);
-            }
-        }
-
-        #endregion
-
         #region Constants
 
         const byte TextSpacing = 60;
@@ -136,16 +52,15 @@ namespace UVtools.Core.Operations
         private bool _enableAntiAliasing = true;
         private bool _mirrorOutput;
         private decimal _baseHeight = 1;
-        private decimal _cylinderHeight = 1;
-        private decimal _cylinderMargin = 1.5m;
-        private Measures _unitOfMeasure = Measures.Millimeters;
-        private string _cylinderDiametersMm = "0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0";
-        private string _cylinderDiametersPx = "1, 2, 3, 4, 5, 7, 10 ,15, 20";
+        private decimal _holeHeight = 1;
+        private decimal _holeMargin = 1.5m;
+        private Measures _unitOfMeasure = Measures.Pixels;
+        private string _holeDiametersMm = "0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0";
+        private string _holeDiametersPx = "1, 2, 4, 6, 9, 12, 16, 20, 25, 30, 36";
         private bool _multipleLayerHeight;
         private decimal _multipleLayerHeightMaximum = 0.1m;
         private decimal _multipleLayerHeightStep = 0.01m;
         private bool _multipleExposures;
-        private Shapes _shape = Shapes.Circle;
         private ExposureGenTypes _exposureGenType = ExposureGenTypes.Linear;
         private bool _exposureGenIgnoreBaseExposure;
         private decimal _exposureGenBottomStep = 0.5m;
@@ -194,7 +109,7 @@ namespace UVtools.Core.Operations
                 sb.AppendLine("Display height must be a positive value.");
             }
 
-            if (Cylinders.Length <= 0)
+            if (Holes.Length <= 0)
             {
                 sb.AppendLine("No objects to output.");
             }
@@ -228,10 +143,10 @@ namespace UVtools.Core.Operations
             var result = $"[Layer Height: {_layerHeight}] " +
                          $"[Bottom layers: {_bottomLayers}] " +
                          $"[Exposure: {_bottomExposure}/{_normalExposure}] " +
-                         $"[TB:{_topBottomMargin} LR:{_leftRightMargin} PM:{_partMargin} CM:{_cylinderMargin}]  " +
+                         $"[TB:{_topBottomMargin} LR:{_leftRightMargin} PM:{_partMargin} CM:{_holeMargin}]  " +
                          $"[Chamfer: {_chamferLayers}] [Erode: {_erodeBottomIterations}] " +
-                         $"[Obj height: {_cylinderHeight}] " +
-                         $"[Cylinders: {Cylinders.Length}] " +
+                         $"[Obj height: {_holeHeight}] " +
+                         $"[Holes: {Holes.Length}] " +
                          $"[AA: {_enableAntiAliasing}] [Mirror: {_mirrorOutput}]";
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
@@ -350,19 +265,19 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _baseHeight, Math.Round(value, 2));
         }
 
-        public decimal CylinderHeight
+        public decimal HoleHeight
         {
-            get => _cylinderHeight;
-            set => RaiseAndSetIfChanged(ref _cylinderHeight, Math.Round(value, 2));
+            get => _holeHeight;
+            set => RaiseAndSetIfChanged(ref _holeHeight, Math.Round(value, 2));
         }
 
-        public decimal CylinderMargin
+        public decimal HoleMargin
         {
-            get => _cylinderMargin;
-            set => RaiseAndSetIfChanged(ref _cylinderMargin, Math.Round(value, 2));
+            get => _holeMargin;
+            set => RaiseAndSetIfChanged(ref _holeMargin, Math.Round(value, 2));
         }
 
-        public decimal TotalHeight => BaseHeight + CylinderHeight;
+        public decimal TotalHeight => BaseHeight + HoleHeight;
 
         public Measures UnitOfMeasure
         {
@@ -376,66 +291,60 @@ namespace UVtools.Core.Operations
 
         public bool IsUnitOfMeasureMm => _unitOfMeasure == Measures.Millimeters;
 
-        public string CylinderDiametersMm
+        public string HoleDiametersMm
         {
-            get => _cylinderDiametersMm;
-            set => RaiseAndSetIfChanged(ref _cylinderDiametersMm, value);
+            get => _holeDiametersMm;
+            set => RaiseAndSetIfChanged(ref _holeDiametersMm, value);
         }
 
-        public string CylinderDiametersPx
+        public string HoleDiametersPx
         {
-            get => _cylinderDiametersPx;
-            set => RaiseAndSetIfChanged(ref _cylinderDiametersPx, value);
+            get => _holeDiametersPx;
+            set => RaiseAndSetIfChanged(ref _holeDiametersPx, value);
         }
 
         /// <summary>
-        /// Gets all cylinders in pixels and ordered
+        /// Gets all holes in pixels and ordered
         /// </summary>
-        public int[] Cylinders
+        public int[] Holes
         {
             get
             {
-                List<int> cylinders = new();
+                List<int> holes = new();
 
                 if (_unitOfMeasure == Measures.Millimeters)
                 {
-                    var split = _cylinderDiametersMm.Split(',', StringSplitOptions.TrimEntries);
+                    var split = _holeDiametersMm.Split(',', StringSplitOptions.TrimEntries);
                     foreach (var mmStr in split)
                     {
                         if (string.IsNullOrWhiteSpace(mmStr)) continue;
                         if (!decimal.TryParse(mmStr, out var mm)) continue;
                         if(mm <= 0) continue;
                         var mmPx = (int) Math.Floor(mm * Ppmm);
-                        if(cylinders.Contains(mmPx)) continue;
-                        cylinders.Add((int)Math.Floor(mm * Ppmm));
+                        if(holes.Contains(mmPx) || mmPx > 500) continue;
+                        holes.Add((int)Math.Floor(mm * Ppmm));
                     }
                 }
                 else
                 {
-                    var split = _cylinderDiametersPx.Split(',', StringSplitOptions.TrimEntries);
+                    var split = _holeDiametersPx.Split(',', StringSplitOptions.TrimEntries);
                     foreach (var pxStr in split)
                     {
                         if (string.IsNullOrWhiteSpace(pxStr)) continue;
                         if (!int.TryParse(pxStr, out var px)) continue;
                         if (px <= 0) continue;
-                        if (cylinders.Contains(px)) continue;
-                        cylinders.Add(px);
+                        if (holes.Contains(px) || px > 500) continue;
+                        holes.Add(px);
                     }
                 }
 
-                return cylinders.OrderBy(pixels => pixels).ToArray();
+                return holes.OrderBy(pixels => pixels).ToArray();
             }
         }
 
-        public Shapes Shape
+        public int GetHolesLength(int[] holes)
         {
-            get => _shape;
-            set => RaiseAndSetIfChanged(ref _shape, value);
-        }
-
-        public int GetCylindersLength(int[] cylinders)
-        {
-            return (int) (cylinders.Sum() + (cylinders.Length-1) * _cylinderMargin * Yppmm);
+            return (int) (holes.Sum(i => Math.Sqrt(i)) + (double) ((holes.Length-1) * _holeMargin * Yppmm));
         }
 
         public bool MultipleLayerHeight
@@ -588,19 +497,11 @@ namespace UVtools.Core.Operations
 
         public enum Measures : byte
         {
-            Millimeters,
             Pixels,
+            Millimeters,
         }
 
         public static Array MeasuresItems => Enum.GetValues(typeof(Measures));
-
-        public enum Shapes : byte
-        {
-            Circle,
-            Square
-        }
-
-        public static Array ShapesItems => Enum.GetValues(typeof(Shapes));
 
         public enum ExposureGenTypes : byte
         {
@@ -615,7 +516,7 @@ namespace UVtools.Core.Operations
 
         private bool Equals(OperationCalibrateExposureFinder other)
         {
-            return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _partMargin == other._partMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _baseHeight == other._baseHeight && _cylinderHeight == other._cylinderHeight && _cylinderMargin == other._cylinderMargin && _unitOfMeasure == other._unitOfMeasure && _cylinderDiametersMm == other._cylinderDiametersMm && _cylinderDiametersPx == other._cylinderDiametersPx && _multipleLayerHeight == other._multipleLayerHeight && _multipleLayerHeightMaximum == other._multipleLayerHeightMaximum && _multipleLayerHeightStep == other._multipleLayerHeightStep && _multipleExposures == other._multipleExposures && _shape == other._shape && _exposureGenType == other._exposureGenType && _exposureGenIgnoreBaseExposure == other._exposureGenIgnoreBaseExposure && _exposureGenBottomStep == other._exposureGenBottomStep && _exposureGenNormalStep == other._exposureGenNormalStep && _exposureGenTests == other._exposureGenTests && Equals(_exposureTable, other._exposureTable);
+            return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _partMargin == other._partMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _baseHeight == other._baseHeight && _holeHeight == other._holeHeight && _holeMargin == other._holeMargin && _unitOfMeasure == other._unitOfMeasure && _holeDiametersMm == other._holeDiametersMm && _holeDiametersPx == other._holeDiametersPx && _multipleLayerHeight == other._multipleLayerHeight && _multipleLayerHeightMaximum == other._multipleLayerHeightMaximum && _multipleLayerHeightStep == other._multipleLayerHeightStep && _multipleExposures == other._multipleExposures && _exposureGenType == other._exposureGenType && _exposureGenIgnoreBaseExposure == other._exposureGenIgnoreBaseExposure && _exposureGenBottomStep == other._exposureGenBottomStep && _exposureGenNormalStep == other._exposureGenNormalStep && _exposureGenTests == other._exposureGenTests && Equals(_exposureTable, other._exposureTable);
         }
 
         public override bool Equals(object obj)
@@ -638,16 +539,15 @@ namespace UVtools.Core.Operations
             hashCode.Add(_enableAntiAliasing);
             hashCode.Add(_mirrorOutput);
             hashCode.Add(_baseHeight);
-            hashCode.Add(_cylinderHeight);
-            hashCode.Add(_cylinderMargin);
+            hashCode.Add(_holeHeight);
+            hashCode.Add(_holeMargin);
             hashCode.Add((int) _unitOfMeasure);
-            hashCode.Add(_cylinderDiametersMm);
-            hashCode.Add(_cylinderDiametersPx);
+            hashCode.Add(_holeDiametersMm);
+            hashCode.Add(_holeDiametersPx);
             hashCode.Add(_multipleLayerHeight);
             hashCode.Add(_multipleLayerHeightMaximum);
             hashCode.Add(_multipleLayerHeightStep);
             hashCode.Add(_multipleExposures);
-            hashCode.Add((int) _shape);
             hashCode.Add((int) _exposureGenType);
             hashCode.Add(_exposureGenIgnoreBaseExposure);
             hashCode.Add(_exposureGenBottomStep);
@@ -711,14 +611,16 @@ namespace UVtools.Core.Operations
             ExposureTable = new(list);
         }
 
-        public Mat[] GetLayers()
+        public unsafe Mat[] GetLayers()
         {
-            var cylinders = Cylinders;
-            int cylinderMarginX = (int) (Xppmm * _cylinderMargin);
-            int cylinderMarginY = (int) (Yppmm * _cylinderMargin);
+            var holes = Holes;
+            if (holes.Length <= 0) return null;
+            int holeMarginX = (int) (Xppmm * _holeMargin);
+            int holeMarginY = (int) (Yppmm * _holeMargin);
+            int maxArea = (int) Math.Sqrt(holes[^1]);
             Rectangle rect = new Rectangle(new Point(1, 1), 
-                new Size(cylinderMarginX * 4 + cylinders[^1] * 2,
-                    cylinderMarginY * 3 + GetCylindersLength(cylinders) + TextSpacing));
+                new Size(holeMarginX * 4 + maxArea * 2,
+                    holeMarginY * 4 + GetHolesLength(holes) + TextSpacing));
             var layers = new Mat[2];
             layers[0] = EmguExtensions.InitMat(rect.Size.Inflate(2));
 
@@ -726,109 +628,103 @@ namespace UVtools.Core.Operations
             layers[1] = layers[0].Clone();
             CvInvoke.Rectangle(layers[1], new Rectangle(0, 0, rect.Size.Width / 2, layers[0].Height), EmguExtensions.BlackByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
 
-            //int holeXPos = (int) Math.Round(Xppmm * (CylinderMargin + maxCylinder / 2));
+            var span1 = layers[0].GetBytePointer();
+            var span2 = layers[1].GetBytePointer();
+
+            void DrawSpiralHole(int x, int y, int pixels, byte color)
+            {
+                // 0 = Down, 1 = Left, 2 = Up, 3 = Right
+                byte stepState = 3;
+                int xStep = 1;
+                int yStep = 0;
+                int xCheck = 0;
+                int yCheck = 1;
+
+                int pixelPos = layers[0].GetPixelPos(x, y);
+
+                span1[pixelPos] = color;
+                span2[pixelPos] = color;
+
+                Debug.WriteLine($"START: {x}/{x+xCheck}, {y}/{y+yCheck}");
+
+                for (int i = 1; i < pixels; i++)
+                {
+                    x += xStep;
+                    y += yStep;
+
+                    if (x < 0 || y < 0 || x >= layers[0].Width || y >= layers[0].Height) break;
+
+                    Debug.WriteLine($"{x}/{x + xCheck}, {y}/{y + yCheck}");
+                    pixelPos = layers[1].GetPixelPos(x, y);
+                    span1[pixelPos] = color;
+                    span2[pixelPos] = color;
+
+                    xCheck = x + xCheck;
+                    yCheck = y + yCheck;
+                    if (xCheck < 0 || yCheck < 0 || xCheck >= layers[0].Width || yCheck >= layers[0].Height) break;
+                    pixelPos = layers[1].GetPixelPos(xCheck, yCheck);
+
+                    if (color > 0 && span2[pixelPos] == 0)
+                    {
+                        stepState++;
+                    }
+                    else if (color == 0 && span2[pixelPos] > 0)
+                    {
+                        stepState++;
+                    }
+
+                    if (stepState > 3) stepState = 0;
+
+                    switch (stepState)
+                    {
+                        case 0: // Down
+                            xStep = 0;
+                            yStep = 1;
+                            xCheck = -1;
+                            yCheck = 0;
+                            break;
+                        case 1: // Left
+                            xStep = -1;
+                            yStep = 0;
+                            xCheck = 0;
+                            yCheck = -1;
+                            break;
+                        case 2: // Up
+                            xStep = 0;
+                            yStep = -1;
+                            xCheck = 1;
+                            yCheck = 0;
+                            break;
+                        case 3: // Right
+                            xStep = 1;
+                            yStep = 0;
+                            xCheck = 0;
+                            yCheck = 1;
+                            break;
+                    }
+                }
+            }
+
+            //int holeXPos = (int) Math.Round(Xppmm * (HoleMargin + maxCylinder / 2));
             // Print holes
             int holeXPos = 0;
-            int holeYPos = 0;
-            for (var layerIndex = 0; layerIndex < layers.Length; layerIndex++)
+            int holeYPos = holeMarginY;
+            for (int i = 0; i < holes.Length; i++)
             {
-                var layer = layers[layerIndex];
-                holeYPos = cylinderMarginY;
-                for (int i = 0; i < cylinders.Length; i++)
-                {
-                    var diameter = cylinders[i];
-                    var radius = diameter / 2;
+                int diameter = holes[i];
+                int radius = (int) Math.Sqrt(diameter);
+                //holeXPos = rect.X + holeMarginX + maxArea - radius;
+                holeXPos = rect.X + holeMarginX + maxArea / 2;
+                holeYPos += radius;
 
-                    switch (_shape)
-                    {
-                        case Shapes.Circle:
-                            holeXPos = rect.X + cylinderMarginX + cylinders[^1] - radius;
-                            holeYPos += radius;
-                            break;
-                        case Shapes.Square:
-                            holeXPos = rect.X + cylinderMarginX + cylinders[^1] - diameter;
-                            break;
-                    }
-                    
+                // Left Side, positive
+                DrawSpiralHole(holeXPos, holeYPos, diameter, 255);
+                //holeXPos = layers[0].Width - rect.X - holeMarginX - maxArea + radius;
+                holeXPos = layers[0].Width - holeXPos;
+                // Right side, negative
+                DrawSpiralHole(holeXPos, holeYPos, diameter, 0);
 
-                    // Left side
-                    if (layerIndex == 1)
-                    {
-                        if (diameter == 1)
-                        {
-                            layer.SetByte(holeXPos, holeYPos, 255);
-                        }
-                        else
-                        {
-                            switch (_shape)
-                            {
-                                case Shapes.Circle:
-                                    CvInvoke.Circle(layers[layerIndex],
-                                        new Point(holeXPos, holeYPos),
-                                        radius, EmguExtensions.WhiteByte, -1,
-                                        _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                                    break;
-                                case Shapes.Square:
-                                    CvInvoke.Rectangle(layers[layerIndex],
-                                        new Rectangle(new Point(holeXPos, holeYPos), new Size(diameter, diameter)),
-                                        EmguExtensions.WhiteByte, -1,
-                                        _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                                    break;
-                            }
-                            
-                        }
-                    }
-
-                    //holeXPos = layers[0].Width - holeXPos;
-                    switch (_shape)
-                    {
-                        case Shapes.Circle:
-                            holeXPos = layers[0].Width - rect.X - cylinderMarginX - cylinders[^1] + radius;
-                            break;
-                        case Shapes.Square:
-                            holeXPos = layers[0].Width - rect.X - cylinderMarginX - cylinders[^1];
-                            break;
-                    }
-
-                    // Right side
-                    if (diameter == 1)
-                    {
-                        layer.SetByte(holeXPos, holeYPos, 0);
-                    }
-                    else
-                    {
-                        switch (_shape)
-                        {
-                            case Shapes.Circle:
-                                CvInvoke.Circle(layers[layerIndex],
-                                    new Point(holeXPos, holeYPos),
-                                    radius, EmguExtensions.BlackByte, -1,
-                                    _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                                break;
-                            case Shapes.Square:
-                                CvInvoke.Rectangle(layers[layerIndex],
-                                    new Rectangle(new Point(holeXPos, holeYPos), new Size(diameter, diameter)),
-                                    EmguExtensions.BlackByte, -1,
-                                    _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                                break;
-                        }
-                    }
-
-
-                    holeYPos += cylinderMarginY;
-
-                    switch (_shape)
-                    {
-                        case Shapes.Circle:
-                            holeYPos += radius;
-                            break;
-                        case Shapes.Square:
-                            holeYPos += diameter;
-                            break;
-                    }
-
-                    
-                }
+                holeYPos += holeMarginY + radius;
             }
 
 
@@ -836,9 +732,6 @@ namespace UVtools.Core.Operations
             {
                 Parallel.ForEach(layers, mat => CvInvoke.Flip(mat, mat, FlipType.Horizontal));
             }*/
-
-            //layers[^1].Save("E:\\layer.png");
-
             return layers;
         }
 
@@ -856,7 +749,7 @@ namespace UVtools.Core.Operations
             CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.PutText(thumbnail, "Exposure Time Cal.", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
             CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
-            CvInvoke.PutText(thumbnail, $"Objects: {Cylinders.Length}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
+            CvInvoke.PutText(thumbnail, $"Objects: {Holes.Length}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
 
             return thumbnail;
         }
@@ -881,7 +774,7 @@ namespace UVtools.Core.Operations
             uint layerIndex = 0;
             int currentX = sideMarginPx;
             int currentY = topBottomMarginPx;
-            int cylinderMarginY = (int)(Yppmm * _cylinderMargin);
+            int holeMarginY = (int)(Yppmm * _holeMargin);
 
             var anchor = new Point(-1, -1);
             using var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
@@ -939,7 +832,7 @@ namespace UVtools.Core.Operations
                     CvInvoke.Erode(matRoi, matRoi, kernel, anchor, _chamferLayers - layerCountOnHeight, BorderType.Reflect101, default);
                 }
 
-                var textHeightStart = matRoi.Height - cylinderMarginY - TextSpacing;
+                var textHeightStart = matRoi.Height - holeMarginY - TextSpacing;
                 CvInvoke.PutText(matRoi, $"{microns}u", new Point(TextStartX, textHeightStart), FontFace, TextScale, EmguExtensions.WhiteByte, TextThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                 CvInvoke.PutText(matRoi, $"{bottomExposure}s", new Point(TextStartX, textHeightStart + TextLineBreak), FontFace, TextScale, EmguExtensions.WhiteByte, TextThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                 CvInvoke.PutText(matRoi, $"{normalExposure}s", new Point(TextStartX, textHeightStart + TextLineBreak * 2), FontFace, TextScale, EmguExtensions.WhiteByte, TextThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);

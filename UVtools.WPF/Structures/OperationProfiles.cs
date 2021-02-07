@@ -47,6 +47,7 @@ namespace UVtools.WPF.Structures
         [XmlElement(typeof(OperationResize))]
         [XmlElement(typeof(OperationRotate))]
         [XmlElement(typeof(OperationThreshold))]
+        [XmlElement(typeof(OperationCalibrateExposureFinder))]
         [XmlElement(typeof(OperationCalibrateElephantFoot))]
         [XmlElement(typeof(OperationCalibrateXYZAccuracy))]
         [XmlElement(typeof(OperationCalibrateTolerance))]

@@ -8,6 +8,7 @@ using Avalonia.Threading;
 using DynamicData;
 using MessageBox.Avalonia.Enums;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.WPF.Controls.Tools;
 using UVtools.WPF.Extensions;
@@ -72,10 +73,13 @@ namespace UVtools.WPF.Controls.Calibrators
         {
             var layers = Operation.GetLayers();
             _previewImage?.Dispose();
-            PreviewImage = layers[^1].ToBitmap();
-            foreach (var layer in layers)
+            if (layers is not null)
             {
-                layer.Dispose();
+                PreviewImage = layers[^1].ToBitmap();
+                foreach (var layer in layers)
+                {
+                    layer.Dispose();
+                }
             }
         }
 
@@ -130,7 +134,7 @@ namespace UVtools.WPF.Controls.Calibrators
                 $"Are you sure you want to remove the {_exposureTable.SelectedItems.Count} selected entries?"
             ) != ButtonResult.Yes) return;
 
-            Operation.ExposureTable.RemoveMany(_exposureTable.SelectedItems.Cast<OperationCalibrateExposureFinder.ExposureItem>());
+            Operation.ExposureTable.RemoveMany(_exposureTable.SelectedItems.Cast<ExposureItem>());
         }
     }
 }
