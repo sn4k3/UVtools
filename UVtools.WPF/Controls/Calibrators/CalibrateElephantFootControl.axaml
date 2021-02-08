@@ -36,7 +36,7 @@
                      VerticalAlignment="Center"
                      Text="Bottom layers:"/>
           <NumericUpDown Grid.Row="2" Grid.Column="2"
-                         ClipValueToMinMax="True"
+                         
                          Increment="1"
                          Minimum="1"
                          Maximum="1000"
@@ -54,7 +54,7 @@
                      IsEnabled="{Binding !Operation.SyncLayers}"
                      Text="Normal layers:"/>
           <NumericUpDown Grid.Row="2" Grid.Column="8"
-                         ClipValueToMinMax="True"
+                         
                          IsEnabled="{Binding !Operation.SyncLayers}"
                          Increment="1"
                          Minimum="1"
@@ -71,7 +71,7 @@
                      VerticalAlignment="Center"
                      Text="Bottom exposure:"/>
           <NumericUpDown Grid.Row="4" Grid.Column="2"
-                         ClipValueToMinMax="True"
+                         
                          Increment="0.5"
                          Minimum="0.1"
                          Maximum="200"
@@ -84,7 +84,7 @@
                      VerticalAlignment="Center"
                      Text="Normal exposure:"/>
           <NumericUpDown Grid.Row="4" Grid.Column="8"
-                         ClipValueToMinMax="True"
+                         
                          Increment="0.5"
                          Minimum="0.1"
                          Maximum="200"
@@ -97,7 +97,7 @@
                      VerticalAlignment="Center"
                      Text="Part scale:"/>
           <NumericUpDown Grid.Row="6" Grid.Column="2"
-                         ClipValueToMinMax="True"
+                         
                          Increment="0.1"
                          Minimum="1"
                          Maximum="10"
@@ -110,7 +110,7 @@
                      VerticalAlignment="Center"
                      Text="Margin:"/>
           <NumericUpDown Grid.Row="6" Grid.Column="8"
-                         ClipValueToMinMax="True"
+                         
                          Increment="1"
                          Minimum="0"
                          Maximum="255"
@@ -194,7 +194,7 @@
                              Text="Iterations range:"/>
 
                 <NumericUpDown Grid.Row="2" Grid.Column="2"
-                               ClipValueToMinMax="True"
+                               
                                IsEnabled="{Binding Operation.IsErodeEnabled}"
                                Increment="1"
                                Minimum="1"
@@ -207,7 +207,7 @@
                            Text="-"/>
 
                 <NumericUpDown Grid.Row="2" Grid.Column="6"
-                               ClipValueToMinMax="True"
+                               
                                IsEnabled="{Binding Operation.IsErodeEnabled}"
                                Increment="1"
                                Minimum="1"
@@ -223,7 +223,7 @@
                            Text="Step increment(s):"/>
 
                 <NumericUpDown Grid.Row="2" Grid.Column="12"
-                               ClipValueToMinMax="True"
+                               
                                IsEnabled="{Binding Operation.IsErodeEnabled}"
                                Increment="1"
                                Minimum="1"
@@ -278,7 +278,7 @@
                          Text="Wall thickness:"/>
 
               <NumericUpDown Grid.Row="2" Grid.Column="2"
-                             ClipValueToMinMax="True"
+                             
                              IsEnabled="{Binding Operation.IsDimmingEnabled}"
                              Increment="1"
                              Minimum="1"
@@ -295,7 +295,7 @@
                            Text="Brightness range:"/>
 
               <NumericUpDown Grid.Row="4" Grid.Column="2"
-                             ClipValueToMinMax="True"
+                             
                              IsEnabled="{Binding Operation.IsDimmingEnabled}"
                              Increment="1"
                              Minimum="1"
@@ -309,7 +309,7 @@
                          Text="-"/>
 
               <NumericUpDown Grid.Row="4" Grid.Column="6"
-                             ClipValueToMinMax="True"
+                             
                              IsEnabled="{Binding Operation.IsDimmingEnabled}"
                              Increment="1"
                              Minimum="2"
@@ -321,7 +321,7 @@
                          Text="Step increment(s):"/>
 
               <NumericUpDown Grid.Row="4" Grid.Column="12"
-                             ClipValueToMinMax="True"
+                             
                              IsEnabled="{Binding Operation.IsDimmingEnabled}"
                              Increment="1"
                              Minimum="2"

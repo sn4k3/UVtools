@@ -528,7 +528,6 @@ namespace UVtools.WPF.Windows
                 }
             }
 
-            
 
             // Ensure the description don't stretch window
             DispatcherTimer.Run(() =>

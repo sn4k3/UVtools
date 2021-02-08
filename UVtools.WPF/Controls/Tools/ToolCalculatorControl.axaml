@@ -639,7 +639,7 @@
             Maximum="0.20"
             Increment="0.01"
             FormatString="F02"
-            ClipValueToMinMax="True"
+            
             Value="{Binding Operation.CalcOptimalModelTilt.LayerHeight}"
           />
           <TextBlock

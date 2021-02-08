@@ -25,7 +25,7 @@
                       ToolTip.Tip="The printer display width. Required to calculate the pixels per mm."
                        Text="Display width:"/>
             <NumericUpDown Grid.Row="0" Grid.Column="2"
-                           ClipValueToMinMax="True"
+                           
                            Increment="0.1"
                            Minimum="0"
                            Maximum="10000"
@@ -40,7 +40,7 @@
                        ToolTip.Tip="The printer display height. Required to calculate the pixels per mm."
                        Text="Display height:"/>
             <NumericUpDown Grid.Row="0" Grid.Column="8"
-                           ClipValueToMinMax="True"
+                           
                            Increment="0.1"
                            Minimum="0"
                            Maximum="10000"
@@ -54,7 +54,7 @@
                        VerticalAlignment="Center"
                        Text="Layer height:"/>
             <NumericUpDown Grid.Row="2" Grid.Column="2"
-                           ClipValueToMinMax="True"
+                           
                            Increment="0.01"
                            Minimum="0.01"
                            Maximum="0.30"
@@ -69,7 +69,7 @@
                        VerticalAlignment="Center"
                        Text="Bottom layers:"/>
             <NumericUpDown Grid.Row="2" Grid.Column="8"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="1"
                            Maximum="1000"
@@ -82,7 +82,7 @@
                        VerticalAlignment="Center"
                        Text="Bottom exposure:"/>
             <NumericUpDown Grid.Row="4" Grid.Column="2"
-                           ClipValueToMinMax="True"
+                           
                            Increment="0.5"
                            Minimum="0.1"
                            Maximum="200"
@@ -96,7 +96,7 @@
                        VerticalAlignment="Center"
                        Text="Normal exposure:"/>
             <NumericUpDown Grid.Row="4" Grid.Column="8"
-                           ClipValueToMinMax="True"
+                           
                            Increment="0.5"
                            Minimum="0.1"
                            Maximum="200"
@@ -110,7 +110,7 @@
                        VerticalAlignment="Center"
                        Text="Base height:"/>
             <NumericUpDown Grid.Row="6" Grid.Column="2"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="0"
                            Maximum="100"
@@ -124,7 +124,7 @@
                        VerticalAlignment="Center"
                        Text="Base diameter:"/>
             <NumericUpDown Grid.Row="6" Grid.Column="8"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="1"
                            Maximum="10000"
@@ -138,7 +138,7 @@
                        VerticalAlignment="Center"
                        Text="Ceil height:"/>
             <NumericUpDown Grid.Row="8" Grid.Column="2"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="0"
                            Maximum="100"
@@ -153,7 +153,7 @@
                        VerticalAlignment="Center"
                        Text="Body height:"/>
             <NumericUpDown Grid.Row="8" Grid.Column="8"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="0"
                            Maximum="10000"
@@ -195,7 +195,7 @@
                        ToolTip.Tip="Chamfer the bottom layers"
                        Text="Chamfer layers:"/>
             <NumericUpDown Grid.Row="10" Grid.Column="2"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="0"
                            Maximum="255"
@@ -234,7 +234,7 @@
                            Text="Number of spirals:"
                            VerticalAlignment="Center"/>
                 <NumericUpDown Grid.Row="0" Grid.Column="2"
-                                 ClipValueToMinMax="True"
+                                 
                                  Increment="1"
                                  Minimum="1"
                                  Maximum="10"
@@ -255,7 +255,7 @@
                            Text="Spiral diameter:"
                            VerticalAlignment="Center"/>
                 <NumericUpDown Grid.Row="2" Grid.Column="2"
-                               ClipValueToMinMax="True"
+                               
                                Increment="1"
                                Minimum="0.1"
                                Maximum="10000"
@@ -270,7 +270,7 @@
                            ToolTip.Tip="Spirals will turn this angle per layer."
                            VerticalAlignment="Center"/>
                 <NumericUpDown Grid.Row="2" Grid.Column="8"
-                               ClipValueToMinMax="True"
+                               
                                Increment="1"
                                Minimum="0.01"
                                Maximum="359.99"

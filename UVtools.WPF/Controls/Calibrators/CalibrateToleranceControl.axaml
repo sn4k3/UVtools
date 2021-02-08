@@ -25,7 +25,7 @@
                       ToolTip.Tip="The printer display width. Required to calculate the pixels per mm."
                        Text="Display width:"/>
             <NumericUpDown Grid.Row="0" Grid.Column="2"
-                           ClipValueToMinMax="True"
+                           
                            Increment="0.1"
                            Minimum="0"
                            Maximum="10000"
@@ -40,7 +40,7 @@
                        ToolTip.Tip="The printer display height. Required to calculate the pixels per mm."
                        Text="Display height:"/>
             <NumericUpDown Grid.Row="0" Grid.Column="8"
-                           ClipValueToMinMax="True"
+                           
                            Increment="0.1"
                            Minimum="0"
                            Maximum="10000"
@@ -54,7 +54,7 @@
                        VerticalAlignment="Center"
                        Text="Layer height:"/>
             <NumericUpDown Grid.Row="2" Grid.Column="2"
-                           ClipValueToMinMax="True"
+                           
                            Increment="0.01"
                            Minimum="0.01"
                            Maximum="0.30"
@@ -69,7 +69,7 @@
                        VerticalAlignment="Center"
                        Text="Bottom layers:"/>
             <NumericUpDown Grid.Row="2" Grid.Column="8"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="1"
                            Maximum="1000"
@@ -82,7 +82,7 @@
                        VerticalAlignment="Center"
                        Text="Bottom exposure:"/>
             <NumericUpDown Grid.Row="4" Grid.Column="2"
-                           ClipValueToMinMax="True"
+                           
                            Increment="0.5"
                            Minimum="0.1"
                            Maximum="200"
@@ -96,7 +96,7 @@
                        VerticalAlignment="Center"
                        Text="Normal exposure:"/>
             <NumericUpDown Grid.Row="4" Grid.Column="8"
-                           ClipValueToMinMax="True"
+                           
                            Increment="0.5"
                            Minimum="0.1"
                            Maximum="200"
@@ -110,7 +110,7 @@
                        VerticalAlignment="Center"
                        Text="Z height:"/>
             <NumericUpDown Grid.Row="6" Grid.Column="2"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="5"
                            Maximum="100"
@@ -150,7 +150,7 @@
                        VerticalAlignment="Center"
                        Text="Top/bottom margin:"/>
             <NumericUpDown Grid.Row="8" Grid.Column="2"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="0"
                            Maximum="10000"
@@ -163,7 +163,7 @@
                        VerticalAlignment="Center"
                        Text="Left/right margin:"/>
             <NumericUpDown Grid.Row="8" Grid.Column="8"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="0"
                            Maximum="10000"
@@ -177,7 +177,7 @@
                        ToolTip.Tip="Chamfer the bottom and top layers"
                        Text="Chamfer layers:"/>
             <NumericUpDown Grid.Row="10" Grid.Column="2"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="0"
                            Maximum="255"
@@ -189,7 +189,7 @@
                        ToolTip.Tip="Erode bottom iterations to counter the elephant foot"
                        Text="Erode bottom iter.:"/>
             <NumericUpDown Grid.Row="10" Grid.Column="8"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="0"
                            Maximum="255"
@@ -206,7 +206,7 @@
                        VerticalAlignment="Center"
                        Text="Part margin:"/>
             <NumericUpDown Grid.Row="12" Grid.Column="8"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="0"
                            Maximum="10000"
@@ -260,7 +260,7 @@
                            Text="Diameter:"
                            VerticalAlignment="Center"/>
                 <NumericUpDown Grid.Row="0" Grid.Column="2"
-                                 ClipValueToMinMax="True"
+                                 
                                  Increment="1.0"
                                  Minimum="2"
                                  Maximum="1000"
@@ -274,7 +274,7 @@
                            Text="Hole diameter:"
                            VerticalAlignment="Center"/>
                 <NumericUpDown Grid.Row="0" Grid.Column="8"
-                               ClipValueToMinMax="True"
+                               
                                Increment="1.0"
                                Minimum="2"
                                Maximum="1000"
@@ -322,7 +322,7 @@
                                Text="Thinner models:"
                                VerticalAlignment="Center"/>
                     <NumericUpDown Grid.Row="0" Grid.Column="2"
-                                   ClipValueToMinMax="True"
+                                   
                                    Increment="1"
                                    Minimum="0"
                                    Maximum="1000"
@@ -331,7 +331,7 @@
                                Text="-Offset:"
                                VerticalAlignment="Center"/>
                     <NumericUpDown Grid.Row="0" Grid.Column="8"
-                                   ClipValueToMinMax="True"
+                                   
                                    Increment="0.01"
                                    Minimum="-1000"
                                    Maximum="0"
@@ -345,7 +345,7 @@
                                Text="-Step:"
                                VerticalAlignment="Center"/>
                     <NumericUpDown Grid.Row="0" Grid.Column="14"
-                                   ClipValueToMinMax="True"
+                                   
                                    Increment="0.01"
                                    Minimum="-1000"
                                    Maximum="-0.01"
@@ -361,7 +361,7 @@
                              IsEnabled="{Binding !Operation.FuseParts}"
                              VerticalAlignment="Center"/>
                   <NumericUpDown Grid.Row="2" Grid.Column="2"
-                                 ClipValueToMinMax="True"
+                                 
                                  Increment="1"
                                  Minimum="0"
                                  Maximum="1000"
@@ -372,7 +372,7 @@
                              IsEnabled="{Binding !Operation.FuseParts}"
                              VerticalAlignment="Center"/>
                   <NumericUpDown Grid.Row="2" Grid.Column="8"
-                                 ClipValueToMinMax="True"
+                                 
                                  Increment="0.01"
                                  Minimum="0"
                                  Maximum="1000"
@@ -389,7 +389,7 @@
                              IsEnabled="{Binding !Operation.FuseParts}"
                              VerticalAlignment="Center"/>
                   <NumericUpDown Grid.Row="2" Grid.Column="14"
-                                 ClipValueToMinMax="True"
+                                 
                                  Increment="0.01"
                                  Minimum="0.01"
                                  Maximum="1000"
@@ -423,7 +423,7 @@
             <StackPanel Orientation="Horizontal" Spacing="5">
               <TextBlock VerticalAlignment="Center" Text="X:"/>
               <NumericUpDown
-                             ClipValueToMinMax="True"
+                             
                              Increment="1"
                              Minimum="0"
                              Maximum="100"
@@ -435,7 +435,7 @@
               <TextBlock VerticalAlignment="Center" Text="Y:"
                          Margin="20,0,0,0"/>
               <NumericUpDown
-                  ClipValueToMinMax="True"
+                  
                   Increment="1"
                   Minimum="0"
                   Maximum="100"
@@ -447,7 +447,7 @@
               <TextBlock VerticalAlignment="Center" Text="Z:"
                          Margin="20,0,0,0"/>
               <NumericUpDown
-                  ClipValueToMinMax="True"
+                  
                   Increment="1"
                   Minimum="0"
                   Maximum="100"

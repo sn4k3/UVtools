@@ -36,7 +36,7 @@ namespace UVtools.WPF
             private bool _loadDemoFileOnStartup = true;
             private bool _windowsTakeIntoAccountScreenScaling = true;
             private ushort _windowsHorizontalMargin = 200;
-            private ushort _windowsVerticalMargin = 250;
+            private ushort _windowsVerticalMargin = 400;
             private byte _defaultOpenFileExtensionIndex;
             private string _defaultDirectoryOpenFile;
             private string _defaultDirectorySaveFile;

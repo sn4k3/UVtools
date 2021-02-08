@@ -1,5 +1,15 @@
 # Changelog
 
+## 08/02/2021 - v2.4.3
+
+* **(Add) Exposure time finder:**
+  * Configurable zebra bars
+  * Configurable text
+  * Tune defaults values to fill the space
+  * Add incremental loop circles to fill space on exposure text space
+* (Change) Default vertical windows margin from 250 to 400px
+
+
 ## 08/02/2021 - v2.4.2
 
 * **(Improvement) Exposure time finder:**

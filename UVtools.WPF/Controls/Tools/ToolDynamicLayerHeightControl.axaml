@@ -17,7 +17,7 @@
               ToolTip.Tip="The printer display width.  Required to calculate the XY pixel resolution."
               Text="Display width:"/>
           <NumericUpDown Grid.Row="0" Grid.Column="2"
-                         ClipValueToMinMax="True"
+                         
                          Increment="0.1"
                          Minimum="0"
                          Maximum="10000"
@@ -32,7 +32,7 @@
                      ToolTip.Tip="The printer display height. Required to calculate the XY pixel resolution."
                      Text="Display height:"/>
           <NumericUpDown Grid.Row="0" Grid.Column="8"
-                         ClipValueToMinMax="True"
+                         
                          Increment="0.1"
                          Minimum="0"
                          Maximum="10000"

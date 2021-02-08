@@ -27,13 +27,13 @@ namespace UVtools.Core.Operations
     {
         #region Constants
 
-        const byte TextSpacing = 60;
-        const byte TextLineBreak = 30;
-        const FontFace FontFace = Emgu.CV.CvEnum.FontFace.HersheyDuplex;
-        const byte TextStartX = 10;
+        const byte TextMarkingSpacing = 60;
+        const byte TextMarkingLineBreak = 30;
+        const FontFace TextMarkingFontFace = Emgu.CV.CvEnum.FontFace.HersheyDuplex;
+        const byte TextMarkingStartX = 10;
         //const byte TextStartY = 50;
-        const double TextScale = 0.8;
-        const byte TextThickness = 2;
+        const double TextMarkingScale = 0.8;
+        const byte TextMarkingThickness = 2;
 
         #endregion
 
@@ -52,11 +52,21 @@ namespace UVtools.Core.Operations
         private bool _enableAntiAliasing = true;
         private bool _mirrorOutput;
         private decimal _baseHeight = 1;
-        private decimal _holeHeight = 1;
-        private decimal _holeMargin = 1.5m;
+        private decimal _featuresHeight = 1;
+        private decimal _featuresMargin = 1.5m;
         private Measures _unitOfMeasure = Measures.Pixels;
-        private string _holeDiametersMm = "0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0";
-        private string _holeDiametersPx = "2, 3, 4, 5, 6, 7, 8, 9, 10";
+        private string _holeDiametersMm = "0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6";
+        private string _holeDiametersPx = "2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16";
+        private decimal _barSpacing = 1.5m;
+        private decimal _barLength = 5;
+        private byte _barVerticalSplitter = 1;
+        private string _barThicknessesPx = "2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 23";
+        private string _barThicknessesMm = "0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.2, 1.4";
+        private FontFace _textFont = TextMarkingFontFace;
+        private double _textScale = 1;
+        private byte _textThickness = 2;
+        private string _text = "ABCDEFGHIJKLMNOPQRSTUVWXYZ/1";
+
         private bool _multipleLayerHeight;
         private decimal _multipleLayerHeightMaximum = 0.1m;
         private decimal _multipleLayerHeightStep = 0.01m;
@@ -71,6 +81,7 @@ namespace UVtools.Core.Operations
         private decimal _exposureGenManualNormal;
         private ObservableCollection<ExposureItem> _exposureTable = new();
         private CalibrateExposureFinderShapes _holeShape = CalibrateExposureFinderShapes.Square;
+
 
         #endregion
 
@@ -144,10 +155,10 @@ namespace UVtools.Core.Operations
             var result = $"[Layer Height: {_layerHeight}] " +
                          $"[Bottom layers: {_bottomLayers}] " +
                          $"[Exposure: {_bottomExposure}/{_normalExposure}] " +
-                         $"[TB:{_topBottomMargin} LR:{_leftRightMargin} PM:{_partMargin} CM:{_holeMargin}]  " +
+                         $"[TB:{_topBottomMargin} LR:{_leftRightMargin} PM:{_partMargin} FM:{_featuresMargin}]  " +
                          $"[Chamfer: {_chamferLayers}] [Erode: {_erodeBottomIterations}] " +
-                         $"[Obj height: {_holeHeight}] " +
-                         $"[Holes: {Holes.Length}] " +
+                         $"[Obj height: {_featuresHeight}] " +
+                         $"[Holes: {Holes.Length}] [Bars: {Bars.Length}] [Text: {!string.IsNullOrWhiteSpace(_text)}]" +
                          $"[AA: {_enableAntiAliasing}] [Mirror: {_mirrorOutput}]";
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
@@ -266,19 +277,19 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _baseHeight, Math.Round(value, 2));
         }
 
-        public decimal HoleHeight
+        public decimal FeaturesHeight
         {
-            get => _holeHeight;
-            set => RaiseAndSetIfChanged(ref _holeHeight, Math.Round(value, 2));
+            get => _featuresHeight;
+            set => RaiseAndSetIfChanged(ref _featuresHeight, Math.Round(value, 2));
         }
 
-        public decimal HoleMargin
+        public decimal TotalHeight => _baseHeight + _featuresHeight;
+        
+        public decimal FeaturesMargin
         {
-            get => _holeMargin;
-            set => RaiseAndSetIfChanged(ref _holeMargin, Math.Round(value, 2));
+            get => _featuresMargin;
+            set => RaiseAndSetIfChanged(ref _featuresMargin, Math.Round(value, 2));
         }
-
-        public decimal TotalHeight => BaseHeight + HoleHeight;
 
         public CalibrateExposureFinderShapes HoleShape
         {
@@ -351,7 +362,117 @@ namespace UVtools.Core.Operations
 
         public int GetHolesLength(int[] holes)
         {
-            return (int) (holes.Sum() + (holes.Length-1) * _holeMargin * Yppmm);
+            return (int) (holes.Sum() + (holes.Length-1) * _featuresMargin * Yppmm);
+        }
+
+        public decimal BarSpacing
+        {
+            get => _barSpacing;
+            set => RaiseAndSetIfChanged(ref _barSpacing, value);
+        }
+
+        public decimal BarLength
+        {
+            get => _barLength;
+            set => RaiseAndSetIfChanged(ref _barLength, value);
+        }
+
+        public byte BarVerticalSplitter
+        {
+            get => _barVerticalSplitter;
+            set => RaiseAndSetIfChanged(ref _barVerticalSplitter, value);
+        }
+
+        public string BarThicknessesPx
+        {
+            get => _barThicknessesPx;
+            set => RaiseAndSetIfChanged(ref _barThicknessesPx, value);
+        }
+
+        public string BarThicknessesMm
+        {
+            get => _barThicknessesMm;
+            set => RaiseAndSetIfChanged(ref _barThicknessesMm, value);
+        }
+
+        /// <summary>
+        /// Gets all holes in pixels and ordered
+        /// </summary>
+        public int[] Bars
+        {
+            get
+            {
+                List<int> bars = new();
+
+                if (_unitOfMeasure == Measures.Millimeters)
+                {
+                    var split = _barThicknessesMm.Split(',', StringSplitOptions.TrimEntries);
+                    foreach (var mmStr in split)
+                    {
+                        if (string.IsNullOrWhiteSpace(mmStr)) continue;
+                        if (!decimal.TryParse(mmStr, out var mm)) continue;
+                        if (mm <= 0) continue;
+                        var mmPx = (int)Math.Floor(mm * Xppmm);
+                        if (bars.Contains(mmPx) || mmPx > 500) continue;
+                        bars.Add((int)Math.Floor(mm * Xppmm));
+                    }
+                }
+                else
+                {
+                    var split = _barThicknessesPx.Split(',', StringSplitOptions.TrimEntries);
+                    foreach (var pxStr in split)
+                    {
+                        if (string.IsNullOrWhiteSpace(pxStr)) continue;
+                        if (!int.TryParse(pxStr, out var px)) continue;
+                        if (px <= 0) continue;
+                        if (bars.Contains(px) || px > 500) continue;
+                        bars.Add(px);
+                    }
+                }
+
+                return bars.OrderBy(pixels => pixels).ToArray();
+            }
+        }
+
+        public int GetBarsWidth(int[] bars)
+        {
+            return (int)(bars.Sum() + (bars.Length + 1) * _barSpacing * Yppmm);
+        }
+
+        public static Array TextFonts => Enum.GetValues(typeof(FontFace));
+
+        public FontFace TextFont
+        {
+            get => _textFont;
+            set => RaiseAndSetIfChanged(ref _textFont, value);
+        }
+
+        public double TextScale
+        {
+            get => _textScale;
+            set => RaiseAndSetIfChanged(ref _textScale, Math.Round(value, 2));
+        }
+
+        public byte TextThickness
+        {
+            get => _textThickness;
+            set => RaiseAndSetIfChanged(ref _textThickness, value);
+        }
+
+        public string Text
+        {
+            get => _text;
+            set => RaiseAndSetIfChanged(ref _text, value);
+        }
+
+        public Size TextSize
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(_text)) return Size.Empty;
+                int baseline = 0;
+                return CvInvoke.GetTextSize(_text, _textFont, _textScale, _textThickness, ref baseline);
+            }
         }
 
         public bool MultipleLayerHeight
@@ -528,9 +649,11 @@ namespace UVtools.Core.Operations
 
         #region Equality
 
+
+
         private bool Equals(OperationCalibrateExposureFinder other)
         {
-            return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _partMargin == other._partMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _baseHeight == other._baseHeight && _holeHeight == other._holeHeight && _holeMargin == other._holeMargin && _holeShape == other._holeShape && _unitOfMeasure == other._unitOfMeasure && _holeDiametersMm == other._holeDiametersMm && _holeDiametersPx == other._holeDiametersPx && _multipleLayerHeight == other._multipleLayerHeight && _multipleLayerHeightMaximum == other._multipleLayerHeightMaximum && _multipleLayerHeightStep == other._multipleLayerHeightStep && _multipleExposures == other._multipleExposures && _exposureGenType == other._exposureGenType && _exposureGenIgnoreBaseExposure == other._exposureGenIgnoreBaseExposure && _exposureGenBottomStep == other._exposureGenBottomStep && _exposureGenNormalStep == other._exposureGenNormalStep && _exposureGenTests == other._exposureGenTests && Equals(_exposureTable, other._exposureTable);
+            return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _partMargin == other._partMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _baseHeight == other._baseHeight && _featuresHeight == other._featuresHeight && _featuresMargin == other._featuresMargin && _unitOfMeasure == other._unitOfMeasure && _holeDiametersMm == other._holeDiametersMm && _holeDiametersPx == other._holeDiametersPx && _barSpacing == other._barSpacing && _barLength == other._barLength && _barVerticalSplitter == other._barVerticalSplitter && _barThicknessesPx == other._barThicknessesPx && _barThicknessesMm == other._barThicknessesMm && _textFont == other._textFont && _textScale.Equals(other._textScale) && _textThickness == other._textThickness && _text == other._text && _multipleLayerHeight == other._multipleLayerHeight && _multipleLayerHeightMaximum == other._multipleLayerHeightMaximum && _multipleLayerHeightStep == other._multipleLayerHeightStep && _multipleExposures == other._multipleExposures && _exposureGenType == other._exposureGenType && _exposureGenIgnoreBaseExposure == other._exposureGenIgnoreBaseExposure && _exposureGenBottomStep == other._exposureGenBottomStep && _exposureGenNormalStep == other._exposureGenNormalStep && _exposureGenTests == other._exposureGenTests && _exposureGenManualLayerHeight == other._exposureGenManualLayerHeight && _exposureGenManualBottom == other._exposureGenManualBottom && _exposureGenManualNormal == other._exposureGenManualNormal && Equals(_exposureTable, other._exposureTable) && _holeShape == other._holeShape;
         }
 
         public override bool Equals(object obj)
@@ -553,12 +676,20 @@ namespace UVtools.Core.Operations
             hashCode.Add(_enableAntiAliasing);
             hashCode.Add(_mirrorOutput);
             hashCode.Add(_baseHeight);
-            hashCode.Add(_holeHeight);
-            hashCode.Add(_holeMargin);
-            hashCode.Add((int) _holeShape);
+            hashCode.Add(_featuresHeight);
+            hashCode.Add(_featuresMargin);
             hashCode.Add((int) _unitOfMeasure);
             hashCode.Add(_holeDiametersMm);
             hashCode.Add(_holeDiametersPx);
+            hashCode.Add(_barSpacing);
+            hashCode.Add(_barLength);
+            hashCode.Add(_barVerticalSplitter);
+            hashCode.Add(_barThicknessesPx);
+            hashCode.Add(_barThicknessesMm);
+            hashCode.Add((int) _textFont);
+            hashCode.Add(_textScale);
+            hashCode.Add(_textThickness);
+            hashCode.Add(_text);
             hashCode.Add(_multipleLayerHeight);
             hashCode.Add(_multipleLayerHeightMaximum);
             hashCode.Add(_multipleLayerHeightStep);
@@ -568,7 +699,11 @@ namespace UVtools.Core.Operations
             hashCode.Add(_exposureGenBottomStep);
             hashCode.Add(_exposureGenNormalStep);
             hashCode.Add(_exposureGenTests);
+            hashCode.Add(_exposureGenManualLayerHeight);
+            hashCode.Add(_exposureGenManualBottom);
+            hashCode.Add(_exposureGenManualNormal);
             hashCode.Add(_exposureTable);
+            hashCode.Add((int) _holeShape);
             return hashCode.ToHashCode();
         }
 
@@ -629,31 +764,60 @@ namespace UVtools.Core.Operations
         public Mat[] GetLayers()
         {
             var holes = Holes;
-            int holeMarginX = (int)(Xppmm * _holeMargin);
-            int holeMarginY = (int)(Yppmm * _holeMargin);
-            Rectangle rect = new Rectangle(new Point(1, 1),
-                new Size(holeMarginX * 4 + holes[^1] * 2,
-                    holeMarginY * 3 + GetHolesLength(holes) + TextSpacing));
+            if (holes.Length == 0) return null;
+            var bars = Bars;
+            var textSize = TextSize;
+
+            int featuresMarginX = (int)(Xppmm * _featuresMargin);
+            int featuresMarginY = (int)(Yppmm * _featuresMargin);
+
+            int holePanelWidth = featuresMarginX * 2 + holes[^1];
+            
+
+            int yMaxSize = Math.Max(Math.Max(GetHolesLength(holes), GetBarsWidth(bars)), textSize.Width);
+
+            int xSize = holePanelWidth * 2;
+            int ySize = featuresMarginX * 3 + yMaxSize + TextMarkingSpacing;
+
+            int barLengthPx = (int) (_barLength * Xppmm);
+            int barSpacingPx = (int) (_barSpacing * Yppmm);
+            int barsPanelWidth = 0;
+            if (bars.Length > 0)
+            {
+                barsPanelWidth = barLengthPx * 2 + _barVerticalSplitter;
+                xSize += barsPanelWidth + featuresMarginX;
+                
+            }
+
+            
+
+            if (!textSize.IsEmpty)
+            {
+                xSize += textSize.Height + featuresMarginX;
+            }
+
+            int positiveSideWidth = xSize - holePanelWidth;
+
+            Rectangle rect = new Rectangle(new Point(1, 1), new Size(xSize, ySize));
             var layers = new Mat[2];
             layers[0] = EmguExtensions.InitMat(rect.Size.Inflate(2));
 
             CvInvoke.Rectangle(layers[0], rect, EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-            layers[1] = layers[0].Clone();
-            CvInvoke.Rectangle(layers[1], new Rectangle(0, 0, rect.Size.Width / 2, layers[0].Height), EmguExtensions.BlackByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+            layers[1] = layers[0].CloneBlank();
+            CvInvoke.Rectangle(layers[1], new Rectangle(rect.Size.Width - holePanelWidth, 0, rect.Size.Width, layers[0].Height), EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
 
-            //int holeXPos = (int) Math.Round(Xppmm * (CylinderMargin + maxCylinder / 2));
             // Print holes
-            int holeXPos = 0;
-            int holeYPos = 0;
+            int xPos = 0;
+            int yPos = 0;
             for (var layerIndex = 0; layerIndex < layers.Length; layerIndex++)
             {
                 var layer = layers[layerIndex];
-                holeYPos = holeMarginY;
+                yPos = featuresMarginY;
                 for (int i = 0; i < holes.Length; i++)
                 {
                     var diameter = holes[i];
                     var radius = diameter / 2;
-                    holeXPos = rect.X + holeMarginX + holes[^1] - diameter;
+                    xPos = layers[0].Width - holePanelWidth - featuresMarginX;
 
                     CalibrateExposureFinderShapes effectiveShape = _holeShape == CalibrateExposureFinderShapes.Square || diameter < 6 ?
                         CalibrateExposureFinderShapes.Square : CalibrateExposureFinderShapes.Circle;
@@ -661,11 +825,11 @@ namespace UVtools.Core.Operations
                     switch (effectiveShape)
                     {
                         case CalibrateExposureFinderShapes.Square:
-                            holeXPos = rect.X + holeMarginX + holes[^1] - diameter;
+                            xPos -= diameter;
                             break;
                         case CalibrateExposureFinderShapes.Circle:
-                            holeXPos = rect.X + holeMarginX + holes[^1] - radius;
-                            holeYPos += radius;
+                            xPos -= radius;
+                            yPos += radius;
                             break;
                     }
 
@@ -675,7 +839,7 @@ namespace UVtools.Core.Operations
                     {
                         if (diameter == 1)
                         {
-                            layer.SetByte(holeXPos, holeYPos, 255);
+                            layer.SetByte(xPos, yPos, 255);
                         }
                         else
                         {
@@ -683,13 +847,13 @@ namespace UVtools.Core.Operations
                             {
                                 case CalibrateExposureFinderShapes.Square:
                                     CvInvoke.Rectangle(layers[layerIndex],
-                                        new Rectangle(new Point(holeXPos, holeYPos), new Size(diameter-1, diameter-1)),
+                                        new Rectangle(new Point(xPos, yPos), new Size(diameter-1, diameter-1)),
                                         EmguExtensions.WhiteByte, -1,
                                         _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                                     break;
                                 case CalibrateExposureFinderShapes.Circle:
                                     CvInvoke.Circle(layers[layerIndex],
-                                        new Point(holeXPos, holeYPos),
+                                        new Point(xPos, yPos),
                                         radius, EmguExtensions.WhiteByte, -1,
                                         _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                                     break;
@@ -702,17 +866,17 @@ namespace UVtools.Core.Operations
                     switch (effectiveShape)
                     {
                         case CalibrateExposureFinderShapes.Square:
-                            holeXPos = layers[0].Width - rect.X - holeMarginX - holes[^1];
+                            xPos = layers[0].Width - rect.X - featuresMarginX - holes[^1];
                             break;
                         case CalibrateExposureFinderShapes.Circle:
-                            holeXPos = layers[0].Width - rect.X - holeMarginX - holes[^1] + radius;
+                            xPos = layers[0].Width - rect.X - featuresMarginX - holes[^1] + radius;
                             break;
                     }
 
                     // Right side
                     if (diameter == 1)
                     {
-                        layer.SetByte(holeXPos, holeYPos, 0);
+                        layer.SetByte(xPos, yPos, 0);
                     }
                     else
                     {
@@ -720,13 +884,13 @@ namespace UVtools.Core.Operations
                         {
                             case CalibrateExposureFinderShapes.Square:
                                 CvInvoke.Rectangle(layers[layerIndex],
-                                    new Rectangle(new Point(holeXPos, holeYPos), new Size(diameter-1, diameter-1)),
+                                    new Rectangle(new Point(xPos, yPos), new Size(diameter-1, diameter-1)),
                                     EmguExtensions.BlackByte, -1,
                                     _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                                 break;
                             case CalibrateExposureFinderShapes.Circle:
                                 CvInvoke.Circle(layers[layerIndex],
-                                    new Point(holeXPos, holeYPos),
+                                    new Point(xPos, yPos),
                                     radius, EmguExtensions.BlackByte, -1,
                                     _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                                 break;
@@ -734,25 +898,67 @@ namespace UVtools.Core.Operations
                     }
 
 
-                    holeYPos += holeMarginY;
+                    yPos += featuresMarginY;
 
                     switch (effectiveShape)
                     {
                         case CalibrateExposureFinderShapes.Square:
-                            holeYPos += diameter;
+                            yPos += diameter;
                             break;
                         case CalibrateExposureFinderShapes.Circle:
-                            holeYPos += radius;
+                            yPos += radius;
                             break;
                     }
                 }
             }
 
-
-            /*if (_mirrorOutput)
+            xPos = featuresMarginX;
+            
+            // Print Zebra bars
+            if (bars.Length > 0)
             {
-                Parallel.ForEach(layers, mat => CvInvoke.Flip(mat, mat, FlipType.Horizontal));
-            }*/
+                yPos = featuresMarginY;
+                for (int i = 0; i < bars.Length; i++)
+                {
+                    // Print positive bottom
+                    CvInvoke.Rectangle(layers[1], new Rectangle(xPos, yPos, barLengthPx - 1, barSpacingPx - 1),
+                        EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    // Print positive top
+                    yPos += barSpacingPx;
+                    CvInvoke.Rectangle(layers[1], new Rectangle(xPos + barLengthPx + _barVerticalSplitter, yPos, barLengthPx - 1, bars[i] - 1),
+                        EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    yPos += bars[i];
+                }
+
+                // Left over
+                CvInvoke.Rectangle(layers[1], new Rectangle(xPos, yPos, barLengthPx - 1, barSpacingPx - 1),
+                    EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+
+                xPos += featuresMarginX;
+            }
+
+            if (!textSize.IsEmpty)
+            {
+                CvInvoke.Rotate(layers[1], layers[1], RotateFlags.Rotate90CounterClockwise);
+                CvInvoke.PutText(layers[1], _text, new Point(featuresMarginX, layers[1].Height - barsPanelWidth - xPos), _textFont, _textScale, EmguExtensions.WhiteByte, _textThickness, _enableAntiAliasing ? LineType.AntiAlias :  LineType.EightConnected);
+                CvInvoke.Rotate(layers[1], layers[1], RotateFlags.Rotate90Clockwise);
+            }
+
+            // Print a hardcoded spiral if have space
+            if (positiveSideWidth >= 250)
+            {
+                xPos = (int) ((layers[0].Width - holePanelWidth) / 1.8);
+                yPos = layers[0].Height - featuresMarginY - TextMarkingSpacing / 2;
+                byte circleThickness = 5;
+                byte radiusStep = 13;
+                int count = -1;
+                for (int radius = radiusStep; radius <= 100; radius += (radiusStep + count))
+                {
+                    count++;
+                    CvInvoke.Circle(layers[1], new Point(xPos, yPos), radius, EmguExtensions.WhiteByte, circleThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                }
+                CvInvoke.Circle(layers[1], new Point(xPos, yPos), 5, EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+            }
 
             return layers;
         }
@@ -771,16 +977,17 @@ namespace UVtools.Core.Operations
             CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.PutText(thumbnail, "Exposure Time Cal.", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
             CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
-            CvInvoke.PutText(thumbnail, $"Holes: {Holes.Length}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
+            CvInvoke.PutText(thumbnail, $"Features: {Holes.Length+Bars.Length}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
 
             return thumbnail;
         }
 
         protected override bool ExecuteInternally(OperationProgress progress)
         {
+            var layers = GetLayers();
+            if (layers is null) return false;
             progress.ItemCount = 0;
             SanitizeExposureTable();
-            var layers = GetLayers();
             if (layers[0].Width > SlicerFile.ResolutionX || layers[0].Height > SlicerFile.ResolutionY)
             {
                 return false;
@@ -796,7 +1003,10 @@ namespace UVtools.Core.Operations
             uint layerIndex = 0;
             int currentX = sideMarginPx;
             int currentY = topBottomMarginPx;
-            int holeMarginY = (int)(Yppmm * _holeMargin);
+            int featuresMarginX = (int)(Xppmm * _featuresMargin);
+            int featuresMarginY = (int)(Yppmm * _featuresMargin);
+
+            var holes = Holes;
 
             var anchor = new Point(-1, -1);
             using var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
@@ -854,13 +1064,13 @@ namespace UVtools.Core.Operations
                     CvInvoke.Erode(matRoi, matRoi, kernel, anchor, _chamferLayers - layerCountOnHeight, BorderType.Reflect101, default);
                 }
 
-                var textHeightStart = matRoi.Height - holeMarginY - TextSpacing;
-                CvInvoke.PutText(matRoi, $"{microns}u", new Point(TextStartX, textHeightStart), FontFace, TextScale, EmguExtensions.WhiteByte, TextThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                CvInvoke.PutText(matRoi, $"{bottomExposure}s", new Point(TextStartX, textHeightStart + TextLineBreak), FontFace, TextScale, EmguExtensions.WhiteByte, TextThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                CvInvoke.PutText(matRoi, $"{normalExposure}s", new Point(TextStartX, textHeightStart + TextLineBreak * 2), FontFace, TextScale, EmguExtensions.WhiteByte, TextThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                CvInvoke.PutText(matRoi, $"{microns}u", new Point(matRoi.Width / 2 + TextStartX, textHeightStart), FontFace, TextScale, EmguExtensions.BlackByte, TextThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                CvInvoke.PutText(matRoi, $"{bottomExposure}s", new Point(matRoi.Width / 2 + TextStartX, textHeightStart + TextLineBreak), FontFace, TextScale, EmguExtensions.BlackByte, TextThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                CvInvoke.PutText(matRoi, $"{normalExposure}s", new Point(matRoi.Width / 2 + TextStartX, textHeightStart + TextLineBreak * 2), FontFace, TextScale, EmguExtensions.BlackByte, TextThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                var textHeightStart = matRoi.Height - featuresMarginY - TextMarkingSpacing;
+                CvInvoke.PutText(matRoi, $"{microns}u", new Point(TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                CvInvoke.PutText(matRoi, $"{bottomExposure}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                CvInvoke.PutText(matRoi, $"{normalExposure}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                CvInvoke.PutText(matRoi, $"{microns}u", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                CvInvoke.PutText(matRoi, $"{bottomExposure}s", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                CvInvoke.PutText(matRoi, $"{normalExposure}s", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
 
                 Layer layer = new(layerIndex++, mat, SlicerFile)
                 {

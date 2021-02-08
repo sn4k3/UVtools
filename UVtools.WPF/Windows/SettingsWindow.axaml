@@ -52,7 +52,7 @@
                             <NumericUpDown Grid.Row="0" Grid.Column="2"
                                        VerticalAlignment="Center"
                                        ToolTip.Tip="Limits the windows and dialogs maximum width to the screen resolution less this margin"
-                                       ClipValueToMinMax="True"
+                                       
                                        Minimum="0"
                                        Maximum="1000"
                                        Increment="1"
@@ -69,7 +69,7 @@
                               <NumericUpDown Grid.Row="2" Grid.Column="2"
                                              VerticalAlignment="Center"
                                              ToolTip.Tip="Limits windows and dialogs maximum height to the screen resolution less this margin"
-                                             ClipValueToMinMax="True"
+                                             
                                              Minimum="0"
                                              Maximum="1000"
                                              Increment="1"
@@ -265,7 +265,7 @@
                   <NumericUpDown Grid.Row="2" Grid.Column="2"
                                  Margin="10,0,0,0"
                                  VerticalAlignment="Center"
-                                 ClipValueToMinMax="True"
+                                 
                                  Minimum="1"
                                  Maximum="50"
                                  Value="{Binding Settings.LayerPreview.VolumeBoundsOutlineThickness}"
@@ -299,7 +299,7 @@
                   <NumericUpDown Grid.Row="4" Grid.Column="2"
                                  Margin="10,0,0,0"
                                  VerticalAlignment="Center"
-                                 ClipValueToMinMax="True"
+                                 
                                  Minimum="1"
                                  Maximum="50"
                                  Value="{Binding Settings.LayerPreview.LayerBoundsOutlineThickness}"
@@ -334,7 +334,7 @@
                   <NumericUpDown Grid.Row="6" Grid.Column="2"
                                  Margin="10,0,0,0"
                                  VerticalAlignment="Center"
-                                 ClipValueToMinMax="True"
+                                 
                                  Minimum="1"
                                  Maximum="50"
                                  Value="{Binding Settings.LayerPreview.HollowOutlineLineThickness}"
@@ -593,7 +593,7 @@
                   <NumericUpDown Grid.Row="0" Grid.Column="3"
                                  Margin="10,0,0,0"
                                  VerticalAlignment="Center"
-                                 ClipValueToMinMax="True"
+                                 
                                  Minimum="1"
                                  Maximum="1000000"
                                  Width="70"
@@ -624,7 +624,7 @@
                   <NumericUpDown Grid.Row="2" Grid.Column="3"
                                  Margin="10,0,0,0"
                                  VerticalAlignment="Center"
-                                 ClipValueToMinMax="True"
+                                 
                                  Minimum="1"
                                  Maximum="255"
                                  Width="70"
@@ -737,7 +737,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
-                                 ClipValueToMinMax="True"
+                                 
                                   Minimum="0"
                                   Maximum="254"
                                  Value="{Binding Settings.Issues.IslandBinaryThreshold}"
@@ -753,7 +753,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
-                                 ClipValueToMinMax="True"
+                                 
                                   Minimum="1"
                                   Maximum="255"
                                  Value="{Binding Settings.Issues.IslandRequiredAreaToProcessCheck}"
@@ -767,7 +767,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
-                                 ClipValueToMinMax="True"
+                                 
                                   Minimum="1"
                                   Maximum="255"
                                  Value="{Binding Settings.Issues.IslandRequiredPixelBrightnessToProcessCheck}"
@@ -781,7 +781,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
-                                 ClipValueToMinMax="True"
+                                 
                                   Minimum="0.05"
                                   Maximum="0.95"
                                   Increment="0.05"
@@ -798,7 +798,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
-                                 ClipValueToMinMax="True"
+                                 
                                   Minimum="50"
                                   Maximum="255"
                                  Value="{Binding Settings.Issues.IslandRequiredPixelBrightnessToSupport}"
@@ -813,7 +813,7 @@
                 <!--
               <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                 <NumericUpDown Width="60"
-                ClipValueToMinMax="True"
+                
                                 Minimum="1"
                                 Maximum="255"
                                 Value="{Binding Settings.Issues.IslandRequiredPixelsToSupport}"
@@ -829,7 +829,7 @@
 
               <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                 <NumericUpDown Width="60"
-                ClipValueToMinMax="True"
+                
                                 Minimum="50"
                                 Maximum="255"
                                Value="{Binding Settings.Issues.IslandRequiredPixelBrightnessToSupport}"
@@ -861,7 +861,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
-                                 ClipValueToMinMax="True"
+                                 
                                   Minimum="2"
                                   Maximum="255"
                                   Value="{Binding Settings.Issues.OverhangErodeIterations}"
@@ -885,7 +885,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
                   <NumericUpDown Width="60"
-                                 ClipValueToMinMax="True"
+                                 
                                   Minimum="1"
                                   Maximum="254"
                                  Value="{Binding Settings.Issues.ResinTrapBinaryThreshold}"
@@ -902,7 +902,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
-                                 ClipValueToMinMax="True"
+                                 
                                   Minimum="1"
                                   Maximum="255"
                                  Value="{Binding Settings.Issues.ResinTrapRequiredAreaToProcessCheck}"
@@ -916,7 +916,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
-                                 ClipValueToMinMax="True"
+                                 
                                   Minimum="1"
                                   Maximum="255"
                                  Value="{Binding Settings.Issues.ResinTrapRequiredBlackPixelsToDrain}"
@@ -930,7 +930,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown Width="60"
-                                 ClipValueToMinMax="True"
+                                 
                                   Minimum="1"
                                   Maximum="150"
                                  Value="{Binding Settings.Issues.ResinTrapMaximumPixelBrightnessToDrain}"
@@ -953,7 +953,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
                   <NumericUpDown Width="60"
-                                 ClipValueToMinMax="True"
+                                 
                                   Minimum="1"
                                   Maximum="255"
                                   Value="{Binding Settings.Issues.TouchingBoundMinimumPixelBrightness}"
@@ -1016,7 +1016,7 @@
                     Minimum="1"
                     Maximum="255"
                     Margin="0,0,5,0"
-                    ClipValueToMinMax="True"
+                    
                     Value="{Binding Settings.Issues.TouchingBoundMarginLeft}" />
 
                  
@@ -1034,7 +1034,7 @@
                     Minimum="1"
                     Maximum="255"
                     Margin="0,0,0,5"
-                    ClipValueToMinMax="True"
+                    
                     Value="{Binding Settings.Issues.TouchingBoundMarginTop}" />
 
                   <TextBlock
@@ -1050,7 +1050,7 @@
                     Minimum="1"
                     Maximum="255"
                     Margin="5,0,0,0"
-                    ClipValueToMinMax="True"
+                    
                     Value="{Binding Settings.Issues.TouchingBoundMarginRight}" />
 
                   <TextBlock
@@ -1067,7 +1067,7 @@
                     Minimum="1"
                     Maximum="255"
                     Margin="0,5,0,0"
-                    ClipValueToMinMax="True"
+                    
                     Value="{Binding Settings.Issues.TouchingBoundMarginBottom}" />
 
                   <CheckBox
@@ -1242,7 +1242,7 @@
                   <NumericUpDown
                     Value="{Binding Settings.LayerRepair.RemoveIslandsBelowEqualPixels}"
                     Width="70"
-                    ClipValueToMinMax="True"
+                    
                     Minimum="0"
                     Maximum="255"/>
                   <TextBlock VerticalAlignment="Center" Text="Default maximum pixel area for Island removal (0 = disable)"/>
@@ -1252,7 +1252,7 @@
                   <NumericUpDown
                     Value="{Binding Settings.LayerRepair.RemoveIslandsRecursiveIterations}"
                     Width="70"
-                    ClipValueToMinMax="True"
+                    
                     Minimum="0"
                     Maximum="65535"/>
                   <TextBlock VerticalAlignment="Center" Text="Default maximum layers for recursive island removal (0 = All)"/>
@@ -1262,7 +1262,7 @@
                   <NumericUpDown
                     Value="{Binding Settings.LayerRepair.ClosingIterations}"
                     Width="70"
-                    ClipValueToMinMax="True"
+                    
                     Minimum="0"
                     Maximum="255"/>
                   <TextBlock VerticalAlignment="Center" Text="Default 'Gap Closing' iterations"/>
@@ -1272,7 +1272,7 @@
                   <NumericUpDown
                     Value="{Binding Settings.LayerRepair.OpeningIterations}"
                     Width="70"
-                    ClipValueToMinMax="True"
+                    
                     Minimum="0"
                     Maximum="255"/>
                   <TextBlock VerticalAlignment="Center" Text="Default 'Noise Removal' iterations"/>
@@ -1345,7 +1345,7 @@
                                        Text="Light-off delay:" />
 
                             <NumericUpDown Grid.Row="0" Grid.Column="2"
-                                           ClipValueToMinMax="True"
+                                           
                                            Minimum="0"
                                            Maximum="255"
                                            Increment="0.5"
@@ -1362,7 +1362,7 @@
 &#x0a;Use '0' to ignore this automation."
                                        Text="Bottom light-off delay:" />
                             <NumericUpDown Grid.Row="0" Grid.Column="8"
-                                           ClipValueToMinMax="True"
+                                           
                                            Minimum="0"
                                            Maximum="255"
                                            Increment="0.5"

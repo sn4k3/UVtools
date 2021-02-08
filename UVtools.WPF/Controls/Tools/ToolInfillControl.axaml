@@ -36,7 +36,7 @@
       Minimum="0"
       Maximum="65535"
       Increment="1"
-      ClipValueToMinMax="True"
+      
       Value="{Binding Operation.WallThickness}"
       />
 
@@ -61,7 +61,7 @@
       Minimum="0"
       Maximum="255"
       Increment="1"
-      ClipValueToMinMax="True"
+      
       Value="{Binding Operation.InfillBrightness}"
       />
 
@@ -80,7 +80,7 @@
       Minimum="0"
       Maximum="65535"
       Increment="1"
-      ClipValueToMinMax="True"
+      
       Value="{Binding Operation.InfillThickness}"
       />
 
@@ -105,7 +105,7 @@
       Minimum="{Binding #InfillThickness.Value}"
       Maximum="65535"
       Increment="1"
-      ClipValueToMinMax="True"
+      
       Value="{Binding Operation.InfillSpacing}"
       />
 

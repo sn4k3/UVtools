@@ -51,7 +51,7 @@
           Increment="1"
           Minimum="0"
           Maximum="65535"
-          ClipValueToMinMax="True"
+          
           ToolTip.Tip="The pixel area threshold above which islands will not be removed by this repair.
 &#x0a;Islands remaining after repair will require supports to be added manually."
           Value="{Binding Operation.RemoveIslandsBelowEqualPixelCount}"
@@ -82,7 +82,7 @@
         Increment="1"
         Minimum="0"
         Maximum="65535"
-        ClipValueToMinMax="True"
+        
         ToolTip.Tip="If the removal of an island in the current layer results in a new island being introduce in the layer above, the island in the layer above will also be automatically removed.
 &#x0a;This process will repeat for up to the number of layers specified. Set to 0 to repeat until there are no more valid islands to remove.
 &#x0a;
@@ -124,7 +124,7 @@
         Increment="1"
         Minimum="0"
         Maximum="255"
-        ClipValueToMinMax="True"
+        
         ToolTip.Tip="Attempt to repair islands by attaching them to other nearby islands in safe increments.
 &#x0a;If enabled, gap closing is attempted before island removal is attempted.
 &#x0a;Set iterations to 0 to disable.
@@ -151,7 +151,7 @@
         Increment="1"
         Minimum="0"
         Maximum="255"
-        ClipValueToMinMax="True"
+        
         ToolTip.Tip="Remove individual or small clusters of pixels in iterations.
 &#x0a;This settings can remove noise from a layer, but will also remove fine details.
 &#x0a;Set iterations to 0 to disable.

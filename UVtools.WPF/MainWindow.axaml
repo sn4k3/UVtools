@@ -831,7 +831,7 @@
                     Grid.Column="2"
                     Minimum="1"
                     Maximum="255"
-                    ClipValueToMinMax="True"
+                    
                     HorizontalAlignment="Stretch"
                     Value="{Binding DrawingPixelDrawing.BrushSize}"/>
                   <TextBlock
@@ -850,7 +850,7 @@
                     Grid.Column="2"
                     Minimum="-1"
                     Maximum="255"
-                    ClipValueToMinMax="True"
+                    
                     HorizontalAlignment="Stretch"
                     Value="{Binding DrawingPixelDrawing.Thickness}"/>
                   <TextBlock
@@ -869,7 +869,7 @@
                       Grid.Column="2"
                       Minimum="0"
                       Maximum="255"
-                      ClipValueToMinMax="True"
+                      
                       HorizontalAlignment="Stretch"
                       Value="{Binding DrawingPixelDrawing.RemovePixelBrightness}"/>
                   <TextBlock
@@ -888,7 +888,7 @@
                       Grid.Column="2"
                       Minimum="1"
                       Maximum="255"
-                      ClipValueToMinMax="True"
+                      
                       HorizontalAlignment="Stretch"
                       Value="{Binding DrawingPixelDrawing.PixelBrightness}"/>
                   <TextBlock
@@ -907,7 +907,7 @@
                     Grid.Column="2"
                     Grid.ColumnSpan="3"
                     Minimum="0"
-                    ClipValueToMinMax="True"
+                    
                     HorizontalAlignment="Stretch"
                     Value="{Binding DrawingPixelDrawing.LayersBelow}"/>
 
@@ -922,7 +922,7 @@
                     Grid.Column="2"
                     Grid.ColumnSpan="3"
                     Minimum="0"
-                    ClipValueToMinMax="True"
+                    
                     HorizontalAlignment="Stretch"
                     Value="{Binding DrawingPixelDrawing.LayersAbove}"/>
 
@@ -992,7 +992,7 @@
                     Minimum="0.1"
                     Maximum="255"
                     Increment="0.1"
-                    ClipValueToMinMax="True"
+                    
                     Value="{Binding DrawingPixelText.FontScale}"/>
 
 
@@ -1007,7 +1007,7 @@
                     Grid.ColumnSpan="3"
                     Minimum="1"
                     Maximum="255"
-                    ClipValueToMinMax="True"
+                    
                     Value="{Binding DrawingPixelText.Thickness}"/>
 
                   <TextBlock
@@ -1038,7 +1038,7 @@
                       Grid.Column="2"
                       Minimum="0"
                       Maximum="255"
-                      ClipValueToMinMax="True"
+                      
                       Value="{Binding DrawingPixelText.RemovePixelBrightness}"/>
                   <TextBlock
                       Grid.Row="12"
@@ -1056,7 +1056,7 @@
                       Grid.Column="2"
                       Minimum="1"
                       Maximum="255"
-                      ClipValueToMinMax="True"
+                      
                       Value="{Binding DrawingPixelText.PixelBrightness}"/>
                   <TextBlock
                       Grid.Row="14"
@@ -1075,7 +1075,7 @@
                     Grid.Column="2"
                     Grid.ColumnSpan="3"
                     Minimum="0"
-                    ClipValueToMinMax="True"
+                    
                     Value="{Binding DrawingPixelText.LayersBelow}"/>
 
 
@@ -1089,7 +1089,7 @@
                     Grid.Column="2"
                     Grid.ColumnSpan="3"
                     Minimum="0"
-                    ClipValueToMinMax="True"
+                    
                     Value="{Binding DrawingPixelText.LayersAbove}"/>
 
                 </Grid>
@@ -1130,7 +1130,7 @@
                         Grid.Column="2"
                         Minimum="0"
                         Maximum="255"
-                        ClipValueToMinMax="True"
+                        
                         Value="{Binding DrawingPixelEraser.PixelBrightness}"/>
                     <TextBlock
                         Grid.Row="0"
@@ -1148,7 +1148,7 @@
                     Grid.Column="2"
                     Grid.ColumnSpan="3"
                     Minimum="0"
-                    ClipValueToMinMax="True"
+                    
                     Value="{Binding DrawingPixelEraser.LayersBelow}"/>
 
                 <TextBlock
@@ -1161,7 +1161,7 @@
                     Grid.Column="2"
                     Grid.ColumnSpan="3"
                     Minimum="0"
-                    ClipValueToMinMax="True"
+                    
                     Value="{Binding DrawingPixelEraser.LayersAbove}"/>
 
 
@@ -1254,7 +1254,7 @@
                       Grid.Column="2"
                       Minimum="0"
                       Maximum="255"
-                      ClipValueToMinMax="True"
+                      
                       Value="{Binding DrawingPixelSupport.PixelBrightness}"/>
                   <TextBlock
                       Grid.Row="6"

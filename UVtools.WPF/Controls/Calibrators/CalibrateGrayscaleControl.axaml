@@ -15,7 +15,7 @@
                    VerticalAlignment="Center"
                    Text="Layer height:"/>
         <NumericUpDown Grid.Row="0" Grid.Column="2"
-                       ClipValueToMinMax="True"
+                       
                        Increment="0.01"
                        Minimum="0.01"
                        Maximum="0.30"
@@ -55,7 +55,7 @@
                    VerticalAlignment="Center"
                    Text="Bottom layers:"/>
         <NumericUpDown Grid.Row="2" Grid.Column="2"
-                       ClipValueToMinMax="True"
+                       
                        Increment="1"
                        Minimum="1"
                        Maximum="1000"
@@ -70,7 +70,7 @@
                    ToolTip.Tip="Number of layers at normal exposure between bottom and normal layers"
                    Text="Interface layers:"/>
         <NumericUpDown Grid.Row="2" Grid.Column="8"
-                       ClipValueToMinMax="True"
+                       
                        Increment="1"
                        Minimum="0"
                        Maximum="1000"
@@ -83,7 +83,7 @@
                    VerticalAlignment="Center"
                    Text="Normal layers:"/>
         <NumericUpDown Grid.Row="4" Grid.Column="2"
-                       ClipValueToMinMax="True"
+                       
                        Increment="1"
                        Minimum="1"
                        Maximum="1000"
@@ -96,7 +96,7 @@
                    VerticalAlignment="Center"
                    Text="Bottom exposure:"/>
         <NumericUpDown Grid.Row="6" Grid.Column="2"
-                       ClipValueToMinMax="True"
+                       
                        Increment="0.5"
                        Minimum="0.1"
                        Maximum="200"
@@ -110,7 +110,7 @@
                    VerticalAlignment="Center"
                    Text="Normal exposure:"/>
         <NumericUpDown Grid.Row="6" Grid.Column="8"
-                       ClipValueToMinMax="True"
+                       
                        Increment="0.5"
                        Minimum="0.1"
                        Maximum="200"
@@ -125,7 +125,7 @@
                    VerticalAlignment="Center"
                    Text="Outer margin:"/>
         <NumericUpDown Grid.Row="8" Grid.Column="2"
-                       ClipValueToMinMax="True"
+                       
                        Increment="1"
                        Minimum="0"
                        Maximum="10000"
@@ -138,7 +138,7 @@
                    VerticalAlignment="Center"
                    Text="Inner margin:"/>
         <NumericUpDown Grid.Row="8" Grid.Column="8"
-                       ClipValueToMinMax="True"
+                       
                        Increment="1"
                        Minimum="0"
                        Maximum="10000"
@@ -181,7 +181,7 @@
                          Text="Brightness range:"/>
 
             <NumericUpDown Grid.Row="0" Grid.Column="2"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="1"
                            Maximum="254"
@@ -194,7 +194,7 @@
                        Text="-"/>
 
             <NumericUpDown Grid.Row="0" Grid.Column="6"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="2"
                            Maximum="255"
@@ -205,7 +205,7 @@
                        Text="Step increment(s):"/>
 
             <NumericUpDown Grid.Row="0" Grid.Column="12"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="2"
                            Maximum="254"
@@ -227,7 +227,7 @@
                        Text="Center hole diameter:"/>
 
             <NumericUpDown Grid.Row="4" Grid.Column="2"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="2"
                            Maximum="10000"
@@ -255,7 +255,7 @@
                        Text="Division thickness:"/>
 
             <NumericUpDown Grid.Row="8" Grid.Column="2"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="0"
                            Maximum="255"
@@ -275,7 +275,7 @@
 
             <NumericUpDown Grid.Row="8" Grid.Column="9"
                            Grid.ColumnSpan="2"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="0"
                            Maximum="255"
@@ -293,7 +293,7 @@
                        Text="X text offset:"/>
 
             <NumericUpDown Grid.Row="10" Grid.Column="2"
-                           ClipValueToMinMax="True"
+                           
                            Increment="1"
                            Minimum="-10000"
                            Maximum="10000"
