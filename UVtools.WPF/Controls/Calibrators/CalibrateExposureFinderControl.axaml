@@ -234,12 +234,21 @@
             <TextBlock Grid.Row="0" Grid.Column="16"
                        VerticalAlignment="Center"
                        Text="mm"/>
-            
+
             <TextBlock Grid.Row="2" Grid.Column="0"
-                       Text="Unit of measure:"
+                       Text="Shape:"
                        VerticalAlignment="Center"/>
 
             <ComboBox Grid.Row="2" Grid.Column="2"
+                      HorizontalAlignment="Stretch"
+                      Items="{Binding Operation.ShapesItems}"
+                      SelectedItem="{Binding Operation.HoleShape}"/>
+            
+            <TextBlock Grid.Row="2" Grid.Column="6"
+                       Text="Unit of measure:"
+                       VerticalAlignment="Center"/>
+
+            <ComboBox Grid.Row="2" Grid.Column="8"
                       HorizontalAlignment="Stretch"
                       Items="{Binding Operation.MeasuresItems}"
                       SelectedItem="{Binding Operation.UnitOfMeasure}"/>
@@ -248,7 +257,9 @@
 
             <TextBlock Grid.Row="4" Grid.Column="0"
                        Text="Diameters:"
-                       ToolTip.Tip="Diameters separated by a comma (,). Order doesn't matter."
+                       ToolTip.Tip="Diameters separated by a comma (,).
+&#x0a;Order doesn't matter.
+&#x0a;Values are pixel square, eg: 3 = 3x3 = 9 pixel hole"
                        VerticalAlignment="Center"/>
 
             <TextBox Grid.Row="4" Grid.Column="2"

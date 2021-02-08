@@ -1,14 +1,21 @@
 # Changelog
 
+## 08/02/2021 - v2.4.2
+
+* **(Improvement) Exposure time finder:**
+  * Bring back shapes
+  * Diameters now represent square pixels, eg: 3 = 3x3 pixels = 9 pixels total
+  * Optimized default diameters
+
 ## 07/02/2021 - v2.4.1
 
 * **(Fix) Exposure time finder:**
-    * Use a spiral square instead of configurable shapes to match the exact precise set pixels
-    * Set pixels as default values
-    * Optimized the pixel values to always produce a closed shape
-    * Rename cylinder to hole
-    * Crash when diameters are empty
-    * Profiles was not saving
+  * Use a spiral square instead of configurable shapes to match the exact precise set pixels
+  * Set pixels as default values
+  * Optimized the pixel values to always produce a closed shape
+  * Rename cylinder to hole
+  * Crash when diameters are empty
+  * Profiles was not saving
 
 
 ## 06/02/2021 - v2.4.0
