@@ -947,17 +947,45 @@ namespace UVtools.Core.Operations
             // Print a hardcoded spiral if have space
             if (positiveSideWidth >= 250)
             {
+                var mat = layers[0].CloneBlank();
+                var matMask = layers[0].CloneBlank();
                 xPos = (int) ((layers[0].Width - holePanelWidth) / 1.8);
                 yPos = layers[0].Height - featuresMarginY - TextMarkingSpacing / 2;
                 byte circleThickness = 5;
                 byte radiusStep = 13;
                 int count = -1;
-                for (int radius = radiusStep; radius <= 100; radius += (radiusStep + count))
+                int maxRadius = 0;
+                //bool white = true;
+
+                for (int radius = radiusStep;radius <= 100; radius += (radiusStep + count))
                 {
                     count++;
-                    CvInvoke.Circle(layers[1], new Point(xPos, yPos), radius, EmguExtensions.WhiteByte, circleThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    CvInvoke.Circle(mat, new Point(xPos, yPos), radius, EmguExtensions.WhiteByte, circleThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    maxRadius = radius;
+                    /*for (int i = 0; i < 360; i+=90)
+                    {
+                        CvInvoke.Ellipse(layers[1], new Point(xPos, yPos), new Size(radius, radius), 0, i, i+90, white ? EmguExtensions.WhiteByte : EmguExtensions.BlackByte, 5, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                        white = !white;
+                    }
+                    white = !white;*/
                 }
-                CvInvoke.Circle(layers[1], new Point(xPos, yPos), 5, EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+
+                CvInvoke.Circle(mat, new Point(xPos, yPos), 5, EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                CvInvoke.Circle(matMask, new Point(xPos, yPos), maxRadius+2, EmguExtensions.WhiteByte, -1);
+
+                var matRoi1 = new Mat(mat, new Rectangle(xPos, yPos - maxRadius-1, maxRadius+2, maxRadius+1));
+                var matRoi2 = new Mat(mat, new Rectangle(xPos-maxRadius-1, yPos, maxRadius+1, Math.Min(mat.Height- yPos, maxRadius)));
+
+                CvInvoke.BitwiseNot(matRoi1, matRoi1);
+                CvInvoke.BitwiseNot(matRoi2, matRoi2);
+
+                CvInvoke.BitwiseAnd(layers[0], mat, layers[1], matMask);
+
+                Point anchor = new Point(-1, -1);
+                //CvInvoke.MorphologyEx(layers[1], layers[1], MorphOp.Open, CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3,3), anchor), anchor, 1, BorderType.Reflect101, default);
+                
+                mat.Dispose();
+                matMask.Dispose();
             }
 
             return layers;

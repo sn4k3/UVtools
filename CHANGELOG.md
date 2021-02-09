@@ -1,5 +1,9 @@
 # Changelog
 
+## 09/02/2021 - v2.4.4
+
+* (Improvement) Exposure time finder: Invert circles loop into quadrants
+
 ## 08/02/2021 - v2.4.3
 
 * **(Add) Exposure time finder:**
