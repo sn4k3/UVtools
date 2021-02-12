@@ -6,31 +6,39 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="UVtools.WPF.Windows.ToolWindow"
         CanResize="False"
-        SizeToContent="WidthAndHeight"
+        SizeToContent="Width"
         WindowStartupLocation="CenterOwner"
         Title="Tool"
         Icon="/Assets/Icons/UVtools.ico">
 
-    <StackPanel Orientation="Vertical">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
     
     <!-- Description -->
-    <Border
+    <Border Grid.Row="0"
       Background="WhiteSmoke"
       Padding="10"
       IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+        <Expander IsExpanded="{Binding Settings.General.ExpandDescriptions}">
+            <Expander.Header>
+                <TextBlock Text="Description (Click to toggle)"
+                           Width="{Binding ExpanderHeaderMaxWidth}"
+                           FontWeight="Bold"
+                           Cursor="Hand"/>
+            </Expander.Header>
         <TextBox Classes="TransparentReadOnly"
-          HorizontalAlignment="Left"
-          MaxWidth="{Binding DescriptionMaxWidth}"
-          FontSize="16"
-          Watermark="Description:"
-          UseFloatingWatermark="True"
-          Padding="5"
-          Width="Infinity"
-          Text="{Binding Description}"/>
+                 HorizontalAlignment="Left"
+                 Width="Infinity"
+                 MaxWidth="{Binding DescriptionMaxWidth}"
+                 FontSize="16"
+                 Watermark="Description:"
+                 Padding="5"
+                 Text="{Binding Description}"/>
+        </Expander>
     </Border>
 
     <!-- Layer Range -->
-    <Border
+    <Border Grid.Row="1"
       Background="WhiteSmoke"
       Classes="GroupBox"
       Margin="5"
@@ -54,7 +62,6 @@
             Content="Synchronize"/>
         </Grid>
         
-
         <Grid
           RowDefinitions="Auto,5,Auto"
           ColumnDefinitions="Auto,150,Auto,150,Auto"
@@ -174,7 +181,7 @@
 
     <!-- ROI -->
     <Border
-        Classes="GroupBox"
+        Grid.Row="2" Classes="GroupBox"
       Background="WhiteSmoke"
       Margin="5"
       IsVisible="{Binding IsROIVisible}">
@@ -204,7 +211,7 @@
     
     <!-- Profiles -->
     <Border
-        Classes="GroupBox"
+        Grid.Row="3" Classes="GroupBox"
       Background="WhiteSmoke"
       Margin="5"
       IsVisible="{Binding IsProfilesVisible}"
@@ -231,7 +238,6 @@
                 <Image Width="16" Height="16" Source="/Assets/Icons/delete-16x16.png" />
             </Button>
 
-            
           </StackPanel>
 
         </Grid>
@@ -313,27 +319,26 @@
     </Border>
 
     <!-- Content -->
-    <Border
-        Classes="GroupBox"
+    <Border Grid.Row="4"
+      Classes="GroupBox"
       IsVisible="{Binding IsContentVisible}"
       Background="WhiteSmoke"
       Margin="5">
 
-      <StackPanel Orientation="Vertical">
-        <TextBlock Classes="GroupBoxHeader"
-          Text="{Binding Title}"/>
+        <Grid RowDefinitions="Auto,*">
+            <TextBlock Classes="GroupBoxHeader"
+                       Text="{Binding Title}"/>
 
-        <ScrollViewer 
-                      MaxHeight="{Binding ScrollViewerMaxHeight}"
-                      Content="{Binding ContentControl}"/>
-        <!--<Border Margin="15" Child="{Binding ContentControl}"/>!-->
-      </StackPanel>
-
+            <ScrollViewer Grid.Row="1"
+                          Name="ContentScrollViewer"
+                Content="{Binding ContentControl}"/>
+        </Grid>
     </Border>
 
     <!-- Actions -->
-    <Border Classes="FooterActions">
-      <Grid ColumnDefinitions="*">
+    <Border Grid.Row="5" Classes="FooterActions">
+      <Grid RowDefinitions="Auto"
+          ColumnDefinitions="*">
         <StackPanel Spacing="10" Orientation="Horizontal">
           <Button
               Padding="10"
@@ -389,5 +394,5 @@
       </Grid>
     </Border>
 
-  </StackPanel>
+  </Grid>
 </controls:WindowEx>

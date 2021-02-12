@@ -47,7 +47,7 @@ namespace UVtools.WPF.Controls
         ///     Multicast event for property change notifications.
         /// </summary>
         private PropertyChangedEventHandler _propertyChanged;
-        private List<string> events = new List<string>();
+        private readonly List<string> events = new ();
 
         public event PropertyChangedEventHandler PropertyChanged
         {
@@ -862,26 +862,14 @@ namespace UVtools.WPF.Controls
         /// <exception cref="System.ArgumentOutOfRangeException">Thrown if an unsupported action is specified.</exception>
         private int GetZoomLevel(ZoomActions action)
         {
-            int result;
-
-            switch (action)
+            var result = action switch
             {
-                case ZoomActions.None:
-                    result = Zoom;
-                    break;
-                case ZoomActions.ZoomIn:
-                    result = ZoomLevels.NextZoom(Zoom);
-                    break;
-                case ZoomActions.ZoomOut:
-                    result = ZoomLevels.PreviousZoom(Zoom);
-                    break;
-                case ZoomActions.ActualSize:
-                    result = 100;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(action));
-            }
-
+                ZoomActions.None => Zoom,
+                ZoomActions.ZoomIn => ZoomLevels.NextZoom(Zoom),
+                ZoomActions.ZoomOut => ZoomLevels.PreviousZoom(Zoom),
+                ZoomActions.ActualSize => 100,
+                _ => throw new ArgumentOutOfRangeException(nameof(action)),
+            };
             return result;
         }
 

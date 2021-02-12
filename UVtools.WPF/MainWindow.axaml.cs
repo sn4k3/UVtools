@@ -45,9 +45,7 @@ namespace UVtools.WPF
         #region Redirects
 
         public AppVersionChecker VersionChecker => App.VersionChecker;
-        public UserSettings Settings => UserSettings.Instance;
-        public FileFormat SlicerFile => App.SlicerFile;
-        public ClipboardManager Clipboard => ClipboardManager.Instance;
+        public static ClipboardManager Clipboard => ClipboardManager.Instance;
         #endregion
 
         #region Controls
@@ -335,7 +333,6 @@ namespace UVtools.WPF
         private PointerPoint _globalPointerPoint;
         private KeyModifiers _globalModifiers = KeyModifiers.None;
         private TabItem _selectedTabItem;
-        private TabItem _lastSelectedTab;
         private TabItem _lastSelectedTabItem;
 
         #endregion
@@ -897,7 +894,7 @@ namespace UVtools.WPF
 
             for (int i = 0; i < files.Length; i++)
             {
-                if (i == 0 && !openNewWindow)
+                if (i == 0 && !openNewWindow && (_globalModifiers & KeyModifiers.Shift) == 0)
                 {
                     ProcessFile(files[i]);
                     continue;
@@ -1155,8 +1152,8 @@ namespace UVtools.WPF
 
         private async void ConvertToOnTapped(object? sender, RoutedEventArgs e)
         {
-            if (!(sender is MenuItem item)) return;
-            if (!(item.Tag is FileExtension fileExtension)) return;
+            if (sender is not MenuItem item) return;
+            if (item.Tag is not FileExtension fileExtension) return;
 
             SaveFileDialog dialog = new SaveFileDialog
             {
@@ -1372,7 +1369,7 @@ namespace UVtools.WPF
             bool removeContent = false;
             if (controlType is null)
             {
-                controlType = toolTypeBase;
+                //controlType = toolTypeBase;
                 removeContent = true;
                 control = new ToolControl(type.CreateInstance<Operation>());
             }

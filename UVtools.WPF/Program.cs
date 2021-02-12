@@ -36,7 +36,7 @@ namespace UVtools.WPF
 
                 await App.MainWindow.MessageBoxError(errorMsg, "Fatal Non-UI Error");
             }
-            catch (Exception exc)
+            catch (Exception)
             {
             }
         }
@@ -50,6 +50,6 @@ namespace UVtools.WPF
                 .With(new MacOSPlatformOptions { ShowInDock = true })
                 .With(new AvaloniaNativePlatformOptions { UseGpu = true })
                 .UseSkia()
-                .LogToDebug();
+                .LogToTrace();
     }
 }

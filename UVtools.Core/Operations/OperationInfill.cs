@@ -169,7 +169,6 @@ namespace UVtools.Core.Operations
                 using Mat matPattern = mat.CloneBlank();
                 bool firstPattern = true;
                 uint accumulator = 0;
-                uint step = 0;
                 bool dynamicCenter = false;
                 while (accumulator < layerIndex)
                 {

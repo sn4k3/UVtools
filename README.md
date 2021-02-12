@@ -162,10 +162,10 @@ Complete guide: https://github.com/sn4k3/UVtools/wiki/Setup-PrusaSlicer
 1. Look up under "Printer -> Notes" and configure parameters to the target slicer
 1. Change only the value after the "_" (underscore)
 
-## Custom "Printer Notes" keywords for PrusaSlicer
+## Custom "Material Notes" and "Printer Notes" keywords for PrusaSlicer
 
-Note that variables will only work if the target format supports them, otherwise they will be skip and not used.
-Replace the "_xxx" by your desired value
+Note that some variables will only work if the target format supports them, otherwise they will be ignored.
+Replace the "xxx" by your desired value in the correct units
 
 * **BottomLightOffDelay_xxx:** Sets the bottom light off delay time in seconds
 * **LightOffDelay_xxx:** Sets the light off delay time in seconds

@@ -5,17 +5,17 @@
         xmlns:controls="clr-namespace:UVtools.WPF.Controls"
         mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="450"
         x:Class="UVtools.WPF.Windows.SettingsWindow"
-        WindowStartupLocation="CenterOwner"
+        WindowStartupLocation="Manual"
         MinWidth="600"
         Width="740"
         SizeToContent="Height"
         CanResize="False"
         Title="UVtools - Settings"
         Icon="/Assets/Icons/UVtools.ico">
-  <StackPanel Orientation="Vertical" Spacing="10">
+  <Grid RowDefinitions="*,84">
     <TabControl SelectedIndex="{Binding SelectedTabIndex}">
       <TabItem Header="General" VerticalContentAlignment="Center">
-        <ScrollViewer MaxHeight="{Binding ScrollViewerMaxHeight}">
+        <ScrollViewer Name="ScrollViewer0">
           <StackPanel Orientation="Vertical" Spacing="5">
             <Border
                 Classes="GroupBox"
@@ -80,6 +80,10 @@
                                          Text="px"/>
 
                           </Grid>
+
+                          <CheckBox IsChecked="{Binding Settings.General.ExpandDescriptions}"
+                                    ToolTip.Tip="Disable this if you want to gain some vertical space for windows, you can still toggle the descriptions and read them if required."
+                                    Content="Expand and show tool descriptions by default"/>
                       </StackPanel>
 
                   </StackPanel>
@@ -213,7 +217,7 @@
 
       </TabItem>
       <TabItem Header="Layer preview" VerticalContentAlignment="Center">
-        <ScrollViewer MaxHeight="{Binding ScrollViewerMaxHeight}">
+        <ScrollViewer Name="ScrollViewer1">
           <StackPanel Orientation="Vertical" Spacing="5">
             <Border
                 Classes="GroupBox"
@@ -677,7 +681,8 @@
         </ScrollViewer>
       </TabItem>
       <TabItem Header="Issues" VerticalContentAlignment="Center">
-        <ScrollViewer MaxHeight="{Binding ScrollViewerMaxHeight}">
+          <Grid RowDefinitions="*">
+          <ScrollViewer Name="ScrollViewer2">
           <StackPanel Orientation="Vertical">
             <Border
                 Classes="GroupBox"
@@ -1084,10 +1089,11 @@
 
           </StackPanel>
         </ScrollViewer>
+              </Grid>
       </TabItem>
 
       <TabItem Header="Pixel editor" VerticalContentAlignment="Center">
-        <ScrollViewer MaxHeight="{Binding ScrollViewerMaxHeight}">
+        <ScrollViewer Name="ScrollViewer3">
           <StackPanel Orientation="Vertical">
             <Border
                 Classes="GroupBox"
@@ -1222,7 +1228,7 @@
       </TabItem>
 
       <TabItem Header="Layer repair" VerticalContentAlignment="Center">
-        <ScrollViewer MaxHeight="{Binding ScrollViewerMaxHeight}">
+        <ScrollViewer Name="ScrollViewer4">
           <StackPanel Orientation="Vertical">
             <Border
                 Classes="GroupBox"
@@ -1286,7 +1292,7 @@
       </TabItem>
 
       <TabItem Header="Automations" VerticalContentAlignment="Center">
-        <ScrollViewer MaxHeight="{Binding ScrollViewerMaxHeight}">
+        <ScrollViewer Name="ScrollViewer5">
           <StackPanel Orientation="Vertical" Spacing="5">
             <Border
                 Classes="GroupBox"
@@ -1386,8 +1392,9 @@
 
     </TabControl>
 
-      <Border Classes="FooterActions">
-          <Grid ColumnDefinitions="*,*">
+      <Border Grid.Row="1" Classes="FooterActions">
+          <Grid RowDefinitions="Auto"
+              ColumnDefinitions="*,*">
 
               <StackPanel Grid.Column="0" Orientation="Horizontal">
                   <Button Name="Actions.ResetAllSettings" Padding="10"
@@ -1422,6 +1429,6 @@
           </Grid>
       </Border>
 
-    </StackPanel>
+    </Grid>
 
   </controls:WindowEx>

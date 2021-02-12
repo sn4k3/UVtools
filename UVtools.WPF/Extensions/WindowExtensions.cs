@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
@@ -53,24 +54,20 @@ namespace UVtools.WPF.Extensions
 
         public static void ShowDialogSync(this Window window, Window parent = null)
         {
-            if (parent is null) parent = window;
-            using (var source = new CancellationTokenSource())
-            {
-                window.ShowDialog(parent).ContinueWith(t => source.Cancel(), TaskScheduler.FromCurrentSynchronizationContext());
-                Dispatcher.UIThread.MainLoop(source.Token);
-            }
+            parent ??= window;
+            using var source = new CancellationTokenSource();
+            window.ShowDialog(parent).ContinueWith(t => source.Cancel(), TaskScheduler.FromCurrentSynchronizationContext());
+            Dispatcher.UIThread.MainLoop(source.Token);
         }
 
         public static T ShowDialogSync<T>(this Window window, Window parent = null)
         {
             parent ??= window;
-            using (var source = new CancellationTokenSource())
-            {
-                var task = window.ShowDialog<T>(parent);
-                task.ContinueWith(t => source.Cancel(), TaskScheduler.FromCurrentSynchronizationContext());
-                Dispatcher.UIThread.MainLoop(source.Token);
-                return task.Result;
-            }
+            using var source = new CancellationTokenSource();
+            var task = window.ShowDialog<T>(parent);
+            task.ContinueWith(t => source.Cancel(), TaskScheduler.FromCurrentSynchronizationContext());
+            Dispatcher.UIThread.MainLoop(source.Token);
+            return task.Result;
         }
 
         public static void ResetDataContext(this Window window)
@@ -80,12 +77,17 @@ namespace UVtools.WPF.Extensions
             window.DataContext = old;
         }
 
+        public static Screen GetCurrentScreen(this Window window)
+        {
+            return //window.Screens.ScreenFromVisual(window) ??
+                window.Screens.ScreenFromVisual(App.MainWindow) ??
+                window.Screens.Primary ??
+                window.Screens.All[0];
+        }
+
         public static System.Drawing.Size GetScreenWorkingArea(this Window window)
         {
-            var screen = window.Screens.ScreenFromVisual(window) ??
-                         window.Screens.ScreenFromVisual(App.MainWindow) ??
-                         window.Screens.Primary ??
-                         window.Screens.All[0];
+            var screen = window.GetCurrentScreen();
             
             return new System.Drawing.Size(
                 UserSettings.Instance.General.WindowsTakeIntoAccountScreenScaling ? (int)(screen.WorkingArea.Width / screen.PixelDensity) : screen.WorkingArea.Width,

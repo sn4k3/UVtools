@@ -25,7 +25,6 @@ namespace UVtools.WPF.Structures
     {
         public const string GitHubReleaseApi = "https://api.github.com/repos/sn4k3/UVtools/releases/latest";
         private string _version;
-        private string _url;
         private string _changelog;
 
         public string Filename
@@ -101,35 +100,34 @@ namespace UVtools.WPF.Structures
         {
             try
             {
-                using (WebClient client = new WebClient
+                using WebClient client = new WebClient
                 {
                     Headers = new WebHeaderCollection
                     {
                         {HttpRequestHeader.Accept, "application/json"},
                         {HttpRequestHeader.UserAgent, "Request"}
                     }
-                })
+                };
+                var response = client.DownloadString(GitHubReleaseApi);
+                dynamic json = JsonConvert.DeserializeObject(response);
+                string tag_name = json.tag_name;
+                if (string.IsNullOrEmpty(tag_name)) return false;
+                tag_name = tag_name.Trim(' ', 'v', 'V');
+                Debug.WriteLine($"Version checker: v{App.VersionStr} <=> v{tag_name}");
+
+                Changelog = json.body;
+
+                if (string.Compare(tag_name, App.VersionStr, StringComparison.OrdinalIgnoreCase) > 0)
                 {
-                    var response = client.DownloadString(GitHubReleaseApi);
-                    dynamic json = JsonConvert.DeserializeObject(response);
-                    string tag_name = json.tag_name;
-                    if (string.IsNullOrEmpty(tag_name)) return false;
-                    tag_name = tag_name.Trim(' ', 'v', 'V');
-                    Debug.WriteLine($"Version checker: v{App.VersionStr} <=> v{tag_name}");
-
-                    Changelog = json.body;
-
-                    if (string.Compare(tag_name, App.VersionStr, StringComparison.OrdinalIgnoreCase) > 0)
+                    Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        Dispatcher.UIThread.InvokeAsync(() =>
-                        {
-                            Version = tag_name;
-                            Debug.WriteLine($"New version detected: {DownloadLink}\n" + 
-                                                  $"{_changelog}");
-                        });
-                        return true;
-                    }
-                    /*string htmlCode = client.DownloadString($"{About.Website}/releases");
+                        Version = tag_name;
+                        Debug.WriteLine($"New version detected: {DownloadLink}\n" + 
+                                        $"{_changelog}");
+                    });
+                    return true;
+                }
+                /*string htmlCode = client.DownloadString($"{About.Website}/releases");
                     const string searchFor = "/releases/tag/";
                     var startIndex = htmlCode.IndexOf(searchFor, StringComparison.InvariantCultureIgnoreCase) +
                                      searchFor.Length;
@@ -143,7 +141,6 @@ namespace UVtools.WPF.Structures
                         });
                         return true;
                     }*/
-                }
             }
             catch (Exception e)
             {
@@ -183,10 +180,8 @@ namespace UVtools.WPF.Structures
                         var targetDir = Path.Combine(App.ApplicationPath, upgradeFolder);
                         using (var stream = File.Open(DownloadedFile, FileMode.Open))
                         {
-                            using (ZipArchive zip = new ZipArchive(stream, ZipArchiveMode.Read))
-                            {
-                                zip.ExtractToDirectory(targetDir, true);
-                            }
+                            using ZipArchive zip = new ZipArchive(stream, ZipArchiveMode.Read);
+                            zip.ExtractToDirectory(targetDir, true);
                         }
 
                         File.Delete(DownloadedFile);

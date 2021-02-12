@@ -10,8 +10,6 @@ namespace UVtools.WPF.Controls.Tools
         private decimal _lightOffDelayPrintTimeHours;
         public OperationCalculator Operation => BaseOperation as OperationCalculator;
 
-        public FileFormat SlicerFile => App.SlicerFile;
-
         public decimal LightOffDelayPrintTimeHours
         {
             get => _lightOffDelayPrintTimeHours;

@@ -4,8 +4,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using MessageBox.Avalonia.Enums;
 using UVtools.Core.FileFormats;
 using UVtools.WPF.Controls;
@@ -19,7 +21,6 @@ namespace UVtools.WPF.Windows
         private double _scrollViewerMaxHeight;
         private int _selectedTabIndex;
         public UserSettings SettingsBackup { get; }
-        public UserSettings Settings => UserSettings.Instance;
 
         public string[] FileOpenDialogFilters { get; }
         public string[] ZoomRanges { get; }
@@ -30,8 +31,20 @@ namespace UVtools.WPF.Windows
             set
             {
                 if(!RaiseAndSetIfChanged(ref _selectedTabIndex, value)) return;
+
+                ScrollViewer scrollViewer = this.FindControl<ScrollViewer>($"ScrollViewer{_selectedTabIndex}");
                 SizeToContent = SizeToContent.Manual;
-                SizeToContent = SizeToContent.Height;
+                Height = MaxHeight;
+
+                DispatcherTimer.RunOnce(() =>
+                {
+                    if (Math.Max((int)scrollViewer.Extent.Height - (int)scrollViewer.Viewport.Height, 0) == 0)
+                    {
+                        Height = 10;
+                        SizeToContent = SizeToContent.Height;
+                    }
+                }, TimeSpan.FromMilliseconds(2));
+                
             }
         }
 
@@ -59,19 +72,26 @@ namespace UVtools.WPF.Windows
             ZoomRanges = AppSettings.ZoomLevels.Skip(AppSettings.ZoomLevelSkipCount).Select(
                 s => Convert.ToString(s / 100, CultureInfo.InvariantCulture) + "x").ToArray();
 
-            
             ScrollViewerMaxHeight = this.GetScreenWorkingArea().Height - Settings.General.WindowsVerticalMargin;
-
 
             DataContext = this;
             InitializeComponent();
         }
 
-
-
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        protected override void OnOpened(EventArgs e)
+        {
+            base.OnOpened(e);
+            SizeToContent = SizeToContent.Manual;
+            
+            Position = new PixelPoint(
+                (int)(App.MainWindow.Position.X + App.MainWindow.Width / 2 - Width / 2),
+                App.MainWindow.Position.Y + 20
+            );
         }
 
         protected override void OnClosed(EventArgs e)

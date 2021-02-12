@@ -52,11 +52,6 @@ namespace UVtools.Core.Operations
         private ushort _maleThickerModels;
         private decimal _maleThickerOffset;
         private decimal _maleThickerStep = 0.1M;
-
-        private decimal _observedXSize;
-        private decimal _observedYSize;
-        private decimal _observedZSize;
-
         #endregion
 
         #region Overrides

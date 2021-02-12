@@ -10,9 +10,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
@@ -1225,22 +1227,21 @@ namespace UVtools.Core.FileFormats
             {
                 if (!ReferenceEquals(Configs, null))
                 {
-                    using (TextWriter tw = new StreamWriter(Path.Combine(path, $"{ExtractConfigFileName}.{ExtractConfigFileExtension}"), false))
+                    using TextWriter tw = new StreamWriter(Path.Combine(path, $"{ExtractConfigFileName}.{ExtractConfigFileExtension}"), false);
+                    foreach (var config in Configs)
                     {
-                        foreach (var config in Configs)
+                        var type = config.GetType();
+                        tw.WriteLine($"[{type.Name}]");
+                        foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
                         {
-                            var type = config.GetType();
-                            tw.WriteLine($"[{type.Name}]");
-                            foreach (var property in type.GetProperties())
-                            {
-                                tw.WriteLine($"{property.Name} = {property.GetValue(config)}");
-                            }
-
-                            tw.WriteLine();
+                            if (property.Name.Equals("Item")) continue;
+                            tw.WriteLine($"{property.Name} = {property.GetValue(config)}");
                         }
 
-                        tw.Close();
+                        tw.WriteLine();
                     }
+
+                    tw.Close();
                 }
             }
 

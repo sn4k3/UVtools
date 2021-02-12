@@ -23,8 +23,6 @@ namespace UVtools.WPF.Controls.Tools
             }
         }
 
-        public FileFormat SlicerFile => App.SlicerFile;
-
         public ToolWindow ParentWindow { get; set; } = null;
 
         public bool CanRun { get; set; } = true;

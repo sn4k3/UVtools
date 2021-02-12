@@ -213,7 +213,7 @@
             <NumericUpDown Grid.Row="0" Grid.Column="8"
                            
                            Increment="0.5"
-                           Minimum="1"
+                           Minimum="0.5"
                            Maximum="100"
                            FormatString="F02"
                            Value="{Binding Operation.FeaturesHeight}"/>
@@ -330,9 +330,8 @@
             <NumericUpDown Grid.Row="10" Grid.Column="14"
                            
                            Increment="1"
-                           Minimum="0"
-                           Maximum="255"
-                           FormatString="F02"
+                           Minimum="-128"
+                           Maximum="127"
                            Value="{Binding Operation.BarVerticalSplitter}"/>
             <TextBlock Grid.Row="10" Grid.Column="16"
                        VerticalAlignment="Center"
@@ -370,12 +369,11 @@
                        Text="Font:"
                        VerticalAlignment="Center"/>
             <ComboBox Grid.Row="16" Grid.Column="2"
-                      Grid.ColumnSpan="2"
+                      Grid.ColumnSpan="3"
                       VerticalAlignment="Center"
                       HorizontalAlignment="Stretch"
                       Items="{Binding Operation.TextFonts}"
-                      SelectedItem="{Binding Operation.TextFont}"
-                      />
+                      SelectedItem="{Binding Operation.TextFont}"/>
 
             <TextBlock Grid.Row="16" Grid.Column="6"
                        Text="Text scale:"
@@ -405,7 +403,7 @@
                        Text="px"/>
 
             <TextBlock Grid.Row="18" Grid.Column="0"
-                       Text="Thicknesses:"
+                       Text="Text:"
                        VerticalAlignment="Center"/>
 
             <TextBox Grid.Row="18" Grid.Column="2"

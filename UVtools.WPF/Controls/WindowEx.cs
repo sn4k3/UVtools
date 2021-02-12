@@ -9,11 +9,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Styling;
+using UVtools.Core.FileFormats;
+using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF.Controls
 {
@@ -24,7 +27,7 @@ namespace UVtools.WPF.Controls
         ///     Multicast event for property change notifications.
         /// </summary>
         private PropertyChangedEventHandler _propertyChanged;
-        private List<string> events = new List<string>();
+        private readonly List<string> events = new();
 
         public event PropertyChangedEventHandler PropertyChanged
         {
@@ -60,7 +63,7 @@ namespace UVtools.WPF.Controls
             _propertyChanged?.Invoke(this, e);
         }
         #endregion
-
+        
         Type IStyleable.StyleKey => typeof(Window);
 
         public DialogResults DialogResult { get; set; } = DialogResults.Unknown;
@@ -71,12 +74,34 @@ namespace UVtools.WPF.Controls
             Cancel
         }
 
+        public double WindowMaxWidth => this.GetScreenWorkingArea().Width - UserSettings.Instance.General.WindowsHorizontalMargin;
+
+        public double WindowMaxHeight => this.GetScreenWorkingArea().Height - UserSettings.Instance.General.WindowsVerticalMargin;
+
+        public UserSettings Settings => UserSettings.Instance;
+
+        public FileFormat SlicerFile
+        {
+            get => App.SlicerFile;
+            set => App.SlicerFile = value;
+        }
+
         public WindowEx()
         {
 #if DEBUG
             this.AttachDevTools(new KeyGesture(Key.F12, KeyModifiers.Control));
 #endif
             //TransparencyLevelHint = WindowTransparencyLevel.AcrylicBlur;
+        }
+        
+        protected override void OnOpened(EventArgs e)
+        {
+            base.OnOpened(e);
+            if (!CanResize && WindowState == WindowState.Normal)
+            {
+                MaxWidth = WindowMaxWidth;
+                MaxHeight = WindowMaxHeight;
+            }
         }
 
         public void CloseWithResult()

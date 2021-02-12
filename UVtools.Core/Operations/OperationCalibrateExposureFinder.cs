@@ -46,7 +46,7 @@ namespace UVtools.Core.Operations
         private decimal _normalExposure = 12;
         private decimal _topBottomMargin = 5;
         private decimal _leftRightMargin = 5;
-        private byte _chamferLayers = 0;
+        private byte _chamferLayers = 5;
         private byte _erodeBottomIterations = 0;
         private decimal _partMargin = 0;
         private bool _enableAntiAliasing = true;
@@ -55,17 +55,17 @@ namespace UVtools.Core.Operations
         private decimal _featuresHeight = 1;
         private decimal _featuresMargin = 1.5m;
         private Measures _unitOfMeasure = Measures.Pixels;
-        private string _holeDiametersMm = "0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6";
-        private string _holeDiametersPx = "2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16";
+        private string _holeDiametersPx = "2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13";
+        private string _holeDiametersMm = "0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4";
         private decimal _barSpacing = 1.5m;
-        private decimal _barLength = 5;
-        private byte _barVerticalSplitter = 1;
-        private string _barThicknessesPx = "2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 23";
-        private string _barThicknessesMm = "0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.2, 1.4";
+        private decimal _barLength = 4;
+        private sbyte _barVerticalSplitter = 0;
+        private string _barThicknessesPx = "4, 6, 8, 10, 12, 14, 16, 18, 20";
+        private string _barThicknessesMm = "0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.2";
         private FontFace _textFont = TextMarkingFontFace;
         private double _textScale = 1;
         private byte _textThickness = 2;
-        private string _text = "ABCDEFGHIJKLMNOPQRSTUVWXYZ/1";
+        private string _text = "ABGHJKLMQRSTUVWXZ%&#";
 
         private bool _multipleLayerHeight;
         private decimal _multipleLayerHeightMaximum = 0.1m;
@@ -377,7 +377,7 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _barLength, value);
         }
 
-        public byte BarVerticalSplitter
+        public sbyte BarVerticalSplitter
         {
             get => _barVerticalSplitter;
             set => RaiseAndSetIfChanged(ref _barVerticalSplitter, value);

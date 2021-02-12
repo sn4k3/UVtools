@@ -533,61 +533,61 @@ namespace UVtools.Core.FileFormats
             if (filename.EndsWith(TemporaryFileAppend)) filename = Path.GetFileNameWithoutExtension(filename); // tmp
             filename = Path.GetFileNameWithoutExtension(filename); // sl1
             OutputConfigSettings.JobDir = filename;
-            using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
+            using ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create);
+            var entry = outputFile.CreateEntry("config.ini");
+            using (TextWriter tw = new StreamWriter(entry.Open()))
             {
-                var entry = outputFile.CreateEntry("config.ini");
-                using (TextWriter tw = new StreamWriter(entry.Open()))
+                var properties = OutputConfigSettings.GetType()
+                    .GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+                foreach (var property in properties)
                 {
-                    var properties = OutputConfigSettings.GetType()
-                        .GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                    if (property.Name.Equals("Item")) continue;
+                    var name = char.ToLowerInvariant(property.Name[0]) + property.Name[1..];
+                    tw.WriteLine($"{name} = {property.GetValue(OutputConfigSettings)}");
+                }
+
+                tw.Close();
+            }
+
+            entry = outputFile.CreateEntry(IniPrusaslicer);
+            using (TextWriter tw = new StreamWriter(entry.Open()))
+            {
+                foreach (var config in Configs)
+                {
+                    if (ReferenceEquals(config, OutputConfigSettings))
+                        continue;
+
+                    var properties = config.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
                     foreach (var property in properties)
                     {
-                        var name = char.ToLowerInvariant(property.Name[0]) + property.Name.Substring(1);
-                        tw.WriteLine($"{name} = {property.GetValue(OutputConfigSettings)}");
+                        if (property.Name.Equals("Item")) continue;
+                        tw.WriteLine($"{MemberNameToIniKey(property.Name)} = {property.GetValue(config)}");
                     }
-
-                    tw.Close();
                 }
 
-                entry = outputFile.CreateEntry(IniPrusaslicer);
-                using (TextWriter tw = new StreamWriter(entry.Open()))
-                {
-                    foreach (var config in Configs)
-                    {
-                        if (ReferenceEquals(config, OutputConfigSettings))
-                            continue;
+                tw.Close();
+            }
 
-                        var properties = config.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var thumbnail in Thumbnails)
+            {
+                if (thumbnail is null) continue;
+                using var stream = outputFile.CreateEntry($"thumbnail/thumbnail{thumbnail.Width}x{thumbnail.Height}.png").Open();
+                var vec = new VectorOfByte();
+                CvInvoke.Imencode(".png", thumbnail, vec);
+                stream.WriteBytes(vec.ToArray());
+                stream.Close();
+            }
 
-                        foreach (var property in properties)
-                        {
-                            tw.WriteLine($"{MemberNameToIniKey(property.Name)} = {property.GetValue(config)}");
-                        }
-                    }
-
-                    tw.Close();
-                }
-
-                foreach (var thumbnail in Thumbnails)
-                {
-                    if (ReferenceEquals(thumbnail, null)) continue;
-                    using var stream = outputFile.CreateEntry($"thumbnail/thumbnail{thumbnail.Width}x{thumbnail.Height}.png").Open();
-                    var vec = new VectorOfByte();
-                    CvInvoke.Imencode(".png", thumbnail, vec);
-                    stream.WriteBytes(vec.ToArray());
-                    stream.Close();
-                }
-
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    progress.Token.ThrowIfCancellationRequested();
-                    Layer layer = this[layerIndex];
-                    var layerImagePath = $"{filename}{layerIndex:D5}.png";
-                    //layer.Filename = layerImagePath;
-                    outputFile.PutFileContent(layerImagePath, layer.CompressedBytes, ZipArchiveMode.Create);
-                    progress++;
-                }
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                progress.Token.ThrowIfCancellationRequested();
+                Layer layer = this[layerIndex];
+                var layerImagePath = $"{filename}{layerIndex:D5}.png";
+                //layer.Filename = layerImagePath;
+                outputFile.PutFileContent(layerImagePath, layer.CompressedBytes, ZipArchiveMode.Create);
+                progress++;
             }
         }
 
@@ -718,41 +718,40 @@ namespace UVtools.Core.FileFormats
 
             }
 
-            using (var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update))
+            using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update);
+            //InputFile.CreateEntry("Modified");
+            using (TextWriter tw = new StreamWriter(outputFile.PutFileContent("config.ini", string.Empty, ZipArchiveMode.Update).Open()))
             {
+                var properties = OutputConfigSettings.GetType()
+                    .GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-                //InputFile.CreateEntry("Modified");
-                using (TextWriter tw = new StreamWriter(outputFile.PutFileContent("config.ini", string.Empty, ZipArchiveMode.Update).Open()))
+                foreach (var property in properties)
                 {
-                    var properties = OutputConfigSettings.GetType()
-                        .GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                    if (property.Name.Equals("Item")) continue;
+                    var name = char.ToLowerInvariant(property.Name[0]) + property.Name[1..];
+                    tw.WriteLine($"{name} = {property.GetValue(OutputConfigSettings)}");
+                }
+
+                tw.Close();
+            }
+
+            using (TextWriter tw = new StreamWriter(outputFile.PutFileContent("prusaslicer.ini", string.Empty, ZipArchiveMode.Update).Open()))
+            {
+                foreach (var config in Configs)
+                {
+                    if (ReferenceEquals(config, OutputConfigSettings))
+                        continue;
+
+                    var properties = config.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
                     foreach (var property in properties)
                     {
-                        var name = char.ToLowerInvariant(property.Name[0]) + property.Name.Substring(1);
-                        tw.WriteLine($"{name} = {property.GetValue(OutputConfigSettings)}");
+                        if (property.Name.Equals("Item")) continue;
+                        tw.WriteLine($"{MemberNameToIniKey(property.Name)} = {property.GetValue(config)}");
                     }
-
-                    tw.Close();
                 }
 
-                using (TextWriter tw = new StreamWriter(outputFile.PutFileContent("prusaslicer.ini", string.Empty, ZipArchiveMode.Update).Open()))
-                {
-                    foreach (var config in Configs)
-                    {
-                        if (ReferenceEquals(config, OutputConfigSettings))
-                            continue;
-
-                        var properties = config.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-                        foreach (var property in properties)
-                        {
-                            tw.WriteLine($"{MemberNameToIniKey(property.Name)} = {property.GetValue(config)}");
-                        }
-                    }
-
-                    tw.Close();
-                }
+                tw.Close();
             }
 
             //Decode(FileFullPath, progress);
@@ -761,38 +760,41 @@ namespace UVtools.Core.FileFormats
 
         public T LookupCustomValue<T>(string name, T defaultValue, bool existsOnly = false)
         {
-            if (string.IsNullOrEmpty(PrinterSettings.PrinterNotes)) return defaultValue;
-            string result = string.Empty;
-            if(!existsOnly)
-                name += '_';
+            //if (string.IsNullOrEmpty(PrinterSettings.PrinterNotes)) return defaultValue;
+            var result = string.Empty;
+            if(!existsOnly) name += '_';
 
-            var lines = PrinterSettings.PrinterNotes.Split(new[] { "\\r\\n", "\\r", "\\n" },
-                StringSplitOptions.RemoveEmptyEntries);
-
-            for (var i = 0; i < lines.Length; i++)
+            foreach (var notes in new [] {MaterialSettings.MaterialNotes, PrinterSettings.PrinterNotes})
             {
-                var line = lines[i].Trim();
-                if (!line.StartsWith(name)) continue;
-                if (existsOnly || line == name) return "true".Convert<T>();
-                var value = line.Remove(0, name.Length);
-                for (int x = 0; x < value.Length; x++)
-                {
-                    char c = value[x];
-                    if (typeof(T) == typeof(string))
-                    {
-                        if (char.IsWhiteSpace(c)) break;
-                    }
-                    else
-                    {
-                        if (!char.IsLetterOrDigit(c) && c != '.')
-                        {
-                            break;
-                        }
-                    }
-                    
+                if(string.IsNullOrWhiteSpace(notes)) continue;
 
-                    result += c;
+                var lines = notes.Split(new[] { "\\r\\n", "\\r", "\\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                foreach (var line in lines)
+                {
+                    if (!line.StartsWith(name)) continue;
+                    if (existsOnly || line == name) return "true".Convert<T>();
+                    var value = line.Remove(0, name.Length);
+                    foreach (var c in value)
+                    {
+                        if (typeof(T) == typeof(string))
+                        {
+                            if (char.IsWhiteSpace(c)) break;
+                        }
+                        else
+                        {
+                            if (!char.IsLetterOrDigit(c) && c != '.')
+                            {
+                                break;
+                            }
+                        }
+
+
+                        result += c;
+                    }
                 }
+
+                if (!string.IsNullOrEmpty(result)) break; // Found a candidate
             }
 
             return string.IsNullOrWhiteSpace(result) ? defaultValue : result.Convert<T>();

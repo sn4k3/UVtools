@@ -11,7 +11,8 @@
     <TextBlock Text="Sentence:"/>
 
     <TextBox 
-      Text="{Binding Operation.Sentence}"
+        HorizontalAlignment="Stretch"
+             Text="{Binding Operation.Sentence}"
       Watermark="Type your sentence here."
       Height="150"
       TextWrapping="Wrap"

@@ -15,7 +15,7 @@ namespace UVtools.WPF.Controls.Calibrators
     {
         public OperationCalibrateXYZAccuracy Operation => BaseOperation as OperationCalibrateXYZAccuracy;
 
-        private Timer _timer;
+        private readonly Timer _timer;
 
         public string ProfileName
         {
@@ -27,15 +27,12 @@ namespace UVtools.WPF.Controls.Calibrators
 
         private Bitmap _previewImage;
         private string _profileName;
-        private bool _isProfileNameEnabled;
 
         public Bitmap PreviewImage
         {
             get => _previewImage;
             set => RaiseAndSetIfChanged(ref _previewImage, value);
         }
-
-        public bool IsDisplaySizeVisible => App.SlicerFile.DisplayWidth <= 0 && App.SlicerFile.DisplayHeight <= 0;
 
         public CalibrateXYZAccuracyControl()
         {

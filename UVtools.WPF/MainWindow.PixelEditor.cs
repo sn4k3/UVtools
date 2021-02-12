@@ -57,7 +57,7 @@ namespace UVtools.WPF
 
         private void DrawingsGridOnSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            if (!(DrawingsGrid.SelectedItem is PixelOperation operation))
+            if (DrawingsGrid.SelectedItem is not PixelOperation operation)
             {
                 ShowLayer();
                 return;
@@ -81,7 +81,7 @@ namespace UVtools.WPF
         private void DrawingsGridOnCellPointerPressed(object? sender, DataGridCellPointerPressedEventArgs e)
         {
             if (e.PointerPressedEventArgs.ClickCount == 2) return;
-            if (!(DrawingsGrid.SelectedItem is LayerIssue issue)) return;
+            if (DrawingsGrid.SelectedItem is not LayerIssue) return;
             // Double clicking an issue will center and zoom into the 
             // selected issue. Left click on an issue will zoom to fit.
 

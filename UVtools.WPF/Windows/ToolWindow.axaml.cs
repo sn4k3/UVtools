@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Drawing;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -46,6 +48,8 @@ namespace UVtools.WPF.Windows
         private string _profileText;
 
         private IControl _contentControl;
+        private readonly ScrollViewer _contentScrollViewer;
+
         private bool _isButton1Visible;
         private string _button1Text = "Reset to defaults";
         private string _checkBox1Text = "Show advanced options";
@@ -55,15 +59,7 @@ namespace UVtools.WPF.Windows
         private bool _buttonOkEnabled = true;
         private string _buttonOkText = "Ok";
         private bool _buttonOkVisible = true;
-        private double _scrollViewerMaxHeight=double.PositiveInfinity;
-        
-
-
-        public double ScrollViewerMaxHeight
-        {
-            get => _scrollViewerMaxHeight;
-            set => RaiseAndSetIfChanged(ref _scrollViewerMaxHeight, value);
-        }
+        private double _expanderHeaderMaxWidth;
 
         #region Description
 
@@ -77,6 +73,12 @@ namespace UVtools.WPF.Windows
         {
             get => _descriptionMaxWidth;
             set => RaiseAndSetIfChanged(ref _descriptionMaxWidth, value);
+        }
+
+        public double ExpanderHeaderMaxWidth
+        {
+            get => _expanderHeaderMaxWidth;
+            set => RaiseAndSetIfChanged(ref _expanderHeaderMaxWidth, value);
         }
 
         #endregion
@@ -405,6 +407,8 @@ namespace UVtools.WPF.Windows
             set => RaiseAndSetIfChanged(ref _contentControl, value);
         }
 
+        public ScrollViewer ContentScrollViewer => _contentScrollViewer;
+
         #endregion
 
         #region Actions
@@ -472,6 +476,7 @@ namespace UVtools.WPF.Windows
         public ToolWindow() 
         {
             InitializeComponent();
+            _contentScrollViewer = this.FindControl<ScrollViewer>("ContentScrollViewer");
             SelectAllLayers();
 
             if (ROI != Rectangle.Empty)
@@ -482,22 +487,22 @@ namespace UVtools.WPF.Windows
 
         public ToolWindow(string description = null, bool layerRangeVisible = true) : this()
         {
-            Description = description;
-            LayerRangeVisible = layerRangeVisible;
+            _description = description;
+            _layerRangeVisible = layerRangeVisible;
         }
 
-        public ToolWindow(ToolControl toolControl) : this()
+        public ToolWindow(ToolControl toolControl) : this(toolControl.BaseOperation.Description, toolControl.BaseOperation.StartLayerRangeSelection != Enumerations.LayerRangeSelection.None)
         {
             ToolControl = toolControl;
             toolControl.ParentWindow = this;
             toolControl.Margin = new Thickness(15);
 
             Title = toolControl.BaseOperation.Title;
-            LayerRangeVisible = toolControl.BaseOperation.StartLayerRangeSelection != Enumerations.LayerRangeSelection.None;
+            //LayerRangeVisible = toolControl.BaseOperation.StartLayerRangeSelection != Enumerations.LayerRangeSelection.None;
             //IsROIVisible = toolControl.BaseOperation.CanROI;
-            ContentControl = toolControl;
-            ButtonOkText = toolControl.BaseOperation.ButtonOkText;
-            ButtonOkVisible = ButtonOkEnabled = toolControl.BaseOperation.HaveAction;
+            _contentControl = toolControl;
+            _buttonOkText = toolControl.BaseOperation.ButtonOkText;
+            _buttonOkVisible = ButtonOkEnabled = toolControl.BaseOperation.HaveAction;
 
             if (toolControl.BaseOperation.LayerIndexStart == 0 && toolControl.BaseOperation.LayerIndexEnd == 0)
             {
@@ -522,23 +527,41 @@ namespace UVtools.WPF.Windows
                 {
                     if (operation.ProfileIsDefault)
                     {
-                        SelectedProfileItem = operation;
+                        _selectedProfileItem = operation;
                         break;
                     }
                 }
             }
 
-
             // Ensure the description don't stretch window
             DispatcherTimer.Run(() =>
             {
                 if (Bounds.Width == 0) return true;
-                ScrollViewerMaxHeight = this.GetScreenWorkingArea().Height - Bounds.Height + ToolControl.Bounds.Height - UserSettings.Instance.General.WindowsVerticalMargin;
-                DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl.Bounds.Width) - 10;
-                Description = toolControl.BaseOperation.Description;
+                //ScrollViewerMaxHeight = this.GetScreenWorkingArea().Height - Bounds.Height + ToolControl.Bounds.Height - UserSettings.Instance.General.WindowsVerticalMargin;
+                DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl.Bounds.Width) - 20;
+                ExpanderHeaderMaxWidth = DescriptionMaxWidth - 40;
+                Height = MaxHeight;
+
+                
+
+                Position = new PixelPoint(
+                    (int)(App.MainWindow.Position.X + App.MainWindow.Width / 2 - Width / 2),
+                    App.MainWindow.Position.Y + 20
+                );
+
+                DispatcherTimer.Run(() =>
+                {
+                    if (Math.Max((int)_contentScrollViewer.Extent.Height - (int)_contentScrollViewer.Viewport.Height, 0) == 0)
+                    {
+                        Height = 10;
+                        SizeToContent = SizeToContent.WidthAndHeight;
+                    }
+                    return false;
+                }, TimeSpan.FromMilliseconds(2));
+
                 return false;
             }, TimeSpan.FromMilliseconds(1));
-            
+
             toolControl.Callback(Callbacks.Init);
             toolControl.DataContext = toolControl;
             DataContext = this;
@@ -553,6 +576,7 @@ namespace UVtools.WPF.Windows
         /*protected override void OnOpened(EventArgs e)
         {
             base.OnOpened(e);
+            
             if (!(ToolControl is null))
             {
                 DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl?.Bounds.Width ?? 0) - 40;
@@ -591,7 +615,7 @@ namespace UVtools.WPF.Windows
                 return;
             }
 
-            if (!ReferenceEquals(ToolControl, null))
+            if (ToolControl is not null)
             {
                 ToolControl.BaseOperation.LayerIndexStart = LayerIndexStart;
                 ToolControl.BaseOperation.LayerIndexEnd = LayerIndexEnd;

@@ -102,7 +102,7 @@
   Padding="5"
       >
 
-      <StackPanel>
+      <StackPanel Height="400">
         <TextBlock FontWeight="Bold" Text="Mask image:"/>
         <Image
           Height="300"

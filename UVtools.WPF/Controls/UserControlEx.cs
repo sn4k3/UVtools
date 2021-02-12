@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
+using UVtools.Core.FileFormats;
 
 namespace UVtools.WPF.Controls
 {
@@ -12,7 +13,7 @@ namespace UVtools.WPF.Controls
         ///     Multicast event for property change notifications.
         /// </summary>
         private PropertyChangedEventHandler _propertyChanged;
-        private List<string> events = new List<string>();
+        private readonly List<string> events = new();
 
         public event PropertyChangedEventHandler PropertyChanged
         {
@@ -47,6 +48,9 @@ namespace UVtools.WPF.Controls
             _propertyChanged?.Invoke(this, e);
         }
         #endregion
+
+        public FileFormat SlicerFile => App.SlicerFile;
+
         public void ResetDataContext()
         {
             var old = DataContext;

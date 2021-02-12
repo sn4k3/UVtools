@@ -35,8 +35,9 @@ namespace UVtools.WPF
             private bool _checkForUpdatesOnStartup = true;
             private bool _loadDemoFileOnStartup = true;
             private bool _windowsTakeIntoAccountScreenScaling = true;
-            private ushort _windowsHorizontalMargin = 200;
-            private ushort _windowsVerticalMargin = 400;
+            private ushort _windowsHorizontalMargin = 100;
+            private ushort _windowsVerticalMargin = 60;
+            private bool _expandDescriptions = true;
             private byte _defaultOpenFileExtensionIndex;
             private string _defaultDirectoryOpenFile;
             private string _defaultDirectorySaveFile;
@@ -46,7 +47,7 @@ namespace UVtools.WPF
             private string _fileSaveNamePrefix;
             private string _fileSaveNameSuffix = "_copy";
             private int _maxDegreeOfParallelism;
-            
+
 
             public bool StartMaximized
             {
@@ -82,6 +83,12 @@ namespace UVtools.WPF
             {
                 get => _windowsVerticalMargin;
                 set => RaiseAndSetIfChanged(ref _windowsVerticalMargin, value);
+            }
+
+            public bool ExpandDescriptions
+            {
+                get => _expandDescriptions;
+                set => RaiseAndSetIfChanged(ref _expandDescriptions, value);
             }
 
             public byte DefaultOpenFileExtensionIndex

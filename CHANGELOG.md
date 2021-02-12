@@ -1,5 +1,26 @@
 # Changelog
 
+## 12/02/2021 - v2.4.5
+
+* (Add) Setting: Expand and show tool descriptions by default
+* (Improvement) Drag and drop a file on Main Window while hold SHIFT key will open the file under a new instance
+* (Improvement) PrusaSlicer & SL1 files: Allow to set custom variables on "Material - Notes" per resin to override the "Printer - Notes" variables
+    This will allow custom settings per resin, for example, if you want a higher 'lift height, lift speed, etc' on more viscous resins. (#141)
+* (Change) Setting: Windows vertical margin to 60px
+* (Fix) Export file was getting a "Parameter count mismatch" on some file formats (#140)
+* (Fix) photon and cbddlp file formats with version 3 to never hash images
+* (Fix) Windows was not geting the screen bounds from the active monitor
+* (Fix) Tool windows height, vertical margin and position
+* **(Fix) Exposure time finder:**
+  * Text label
+  * Set vertical splitter to not show decimals, int value 
+  * Set vertical splitter default to 0
+  * Allow vertical splitter to accept negative values
+  * Optimized the default values
+  * Removed similar letters from text
+  * Add some symbols to text to validate overexposure
+  * Decrease Features height minimum value to 0.5mm
+
 ## 09/02/2021 - v2.4.4
 
 * (Improvement) Exposure time finder: Invert circles loop into quadrants
@@ -12,7 +33,6 @@
   * Tune defaults values to fill the space
   * Add incremental loop circles to fill space on exposure text space
 * (Change) Default vertical windows margin from 250 to 400px
-
 
 ## 08/02/2021 - v2.4.2
 

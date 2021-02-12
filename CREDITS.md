@@ -23,6 +23,10 @@
 * For ideas, file formats and permission to use his project (uv3dp)
 * https://github.com/ezrec/uv3dp
 
+### Khalil Nurullah
+
+* For beta testing new features
+
 # Supporters / Contributors
 
 * Ingo Strohmenger
@@ -35,8 +39,6 @@
 * Matthias Keila
 * Frank Henriquez 
 * Miguel Angel Martinez Monje
-* illest twitch
-* Khalil Nurullah
 * Nahin Mulla 
 * Jorge diego Robles Ayerbe
 * Timothy Gray

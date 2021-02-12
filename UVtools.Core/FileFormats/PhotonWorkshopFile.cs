@@ -176,7 +176,7 @@ namespace UVtools.Core.FileFormats
                     throw new FileLoadException($"'{Mark}' section expected, but got '{mark}'");
                 }
 
-                if (!ReferenceEquals(obj, null))
+                if (obj is not null)
                 {
                     length += (int)Helpers.Serializer.SizeOf(obj);
                 }
@@ -1055,179 +1055,175 @@ namespace UVtools.Core.FileFormats
             LayersDefinition = new LayerDefinition(LayerCount);
 
             uint currentOffset = FileMarkSettings.HeaderAddress = (uint) Helpers.Serializer.SizeOf(FileMarkSettings);
-            using (var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write))
+            using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
+            outputFile.Seek((int) currentOffset, SeekOrigin.Begin);
+            currentOffset += Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+
+            if (CreatedThumbnailsCount > 0)
             {
-                outputFile.Seek((int) currentOffset, SeekOrigin.Begin);
-                currentOffset += Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+                FileMarkSettings.PreviewAddress = currentOffset;
+                Preview preview = Preview.Encode(Thumbnails[0]);
+                currentOffset += Helpers.SerializeWriteFileStream(outputFile, preview);
+                currentOffset += outputFile.WriteBytes(preview.Data);
+            }
 
-                if (CreatedThumbnailsCount > 0)
+            FileMarkSettings.LayerDefinitionAddress = currentOffset;
+
+            Parallel.For(0, LayerCount, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+                LayerData layer = new LayerData(this, (uint) layerIndex);
+                using (var image = this[layerIndex].LayerMat)
                 {
-                    FileMarkSettings.PreviewAddress = currentOffset;
-                    Preview preview = Preview.Encode(Thumbnails[0]);
-                    currentOffset += Helpers.SerializeWriteFileStream(outputFile, preview);
-                    currentOffset += outputFile.WriteBytes(preview.Data);
+                    layer.Encode(image);
+                    LayersDefinition.Layers[layerIndex] = layer;
                 }
-
-                FileMarkSettings.LayerDefinitionAddress = currentOffset;
-
-                Parallel.For(0, LayerCount, layerIndex =>
+                lock (progress.Mutex)
                 {
-                    if (progress.Token.IsCancellationRequested) return;
-                    LayerData layer = new LayerData(this, (uint) layerIndex);
-                    using (var image = this[layerIndex].LayerMat)
-                    {
-                        layer.Encode(image);
-                        LayersDefinition.Layers[layerIndex] = layer;
-                    }
-                    lock (progress.Mutex)
-                    {
-                        progress++;
-                    }
-                });
-
-                uint offsetLayerRle = FileMarkSettings.LayerImageAddress = (uint) (currentOffset + Helpers.Serializer.SizeOf(LayersDefinition.Section) + LayersDefinition.Section.Length);
-
-                currentOffset += Helpers.SerializeWriteFileStream(outputFile, LayersDefinition);
-
-                progress.Reset(OperationProgress.StatusWritingFile, LayerCount);
-
-                foreach (var layer in LayersDefinition.Layers)
-                {
-                    progress.Token.ThrowIfCancellationRequested();
-                    string hash = Helpers.ComputeSHA1Hash(layer.EncodedRle);
-
-                    if (LayersHash.TryGetValue(hash, out var layerDataHash))
-                    {
-                        layer.DataAddress = layerDataHash.DataAddress;
-                        layer.DataLength = (uint)layerDataHash.EncodedRle.Length;
-                    }
-                    else
-                    {
-                        LayersHash.Add(hash, layer);
-
-                        layer.DataAddress = offsetLayerRle;
-
-                        outputFile.Seek(offsetLayerRle, SeekOrigin.Begin);
-                        offsetLayerRle += Helpers.SerializeWriteFileStream(outputFile, layer.EncodedRle);
-                    }
-
-                    outputFile.Seek(currentOffset, SeekOrigin.Begin);
-                    currentOffset += Helpers.SerializeWriteFileStream(outputFile, layer);
-
                     progress++;
                 }
+            });
 
-                // Rewind
-                outputFile.Seek(0, SeekOrigin.Begin);
-                Helpers.SerializeWriteFileStream(outputFile, FileMarkSettings);
+            uint offsetLayerRle = FileMarkSettings.LayerImageAddress = (uint) (currentOffset + Helpers.Serializer.SizeOf(LayersDefinition.Section) + LayersDefinition.Section.Length);
+
+            currentOffset += Helpers.SerializeWriteFileStream(outputFile, LayersDefinition);
+
+            progress.Reset(OperationProgress.StatusWritingFile, LayerCount);
+
+            foreach (var layer in LayersDefinition.Layers)
+            {
+                progress.Token.ThrowIfCancellationRequested();
+                string hash = Helpers.ComputeSHA1Hash(layer.EncodedRle);
+
+                if (LayersHash.TryGetValue(hash, out var layerDataHash))
+                {
+                    layer.DataAddress = layerDataHash.DataAddress;
+                    layer.DataLength = (uint)layerDataHash.EncodedRle.Length;
+                }
+                else
+                {
+                    LayersHash.Add(hash, layer);
+
+                    layer.DataAddress = offsetLayerRle;
+
+                    outputFile.Seek(offsetLayerRle, SeekOrigin.Begin);
+                    offsetLayerRle += Helpers.SerializeWriteFileStream(outputFile, layer.EncodedRle);
+                }
+
+                outputFile.Seek(currentOffset, SeekOrigin.Begin);
+                currentOffset += Helpers.SerializeWriteFileStream(outputFile, layer);
+
+                progress++;
             }
+
+            // Rewind
+            outputFile.Seek(0, SeekOrigin.Begin);
+            Helpers.SerializeWriteFileStream(outputFile, FileMarkSettings);
         }
 
         protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
         {
-            using (var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read))
+            using var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            FileMarkSettings = Helpers.Deserialize<FileMark>(inputFile);
+
+            Debug.Write("FileMark -> ");
+            Debug.WriteLine(FileMarkSettings);
+
+            if (!FileMarkSettings.Mark.Equals(FileMark.SectionMarkFile))
             {
-                FileMarkSettings = Helpers.Deserialize<FileMark>(inputFile);
-
-                Debug.Write("FileMark -> ");
-                Debug.WriteLine(FileMarkSettings);
-
-                if (!FileMarkSettings.Mark.Equals(FileMark.SectionMarkFile))
-                {
-                    throw new FileLoadException(
-                        $"Invalid Filemark {FileMarkSettings.Mark}, expected {FileMark.SectionMarkFile}", fileFullPath);
-                }
-
-                if (FileMarkSettings.Version != 1)
-                {
-                    throw new FileLoadException($"Invalid Version {FileMarkSettings.Version}, expected 1",
-                        fileFullPath);
-                }
-
-                FileFullPath = fileFullPath;
-
-                inputFile.Seek(FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
-                HeaderSettings = Helpers.Deserialize<Header>(inputFile);
-
-                Debug.Write("Header -> ");
-                Debug.WriteLine(HeaderSettings);
-
-                HeaderSettings.Validate();
-
-                if (FileMarkSettings.PreviewAddress > 0)
-                {
-                    inputFile.Seek(FileMarkSettings.PreviewAddress, SeekOrigin.Begin);
-
-                    PreviewSettings = Helpers.Deserialize<Preview>(inputFile);
-                    Debug.Write("Preview -> ");
-                    Debug.WriteLine(PreviewSettings);
-
-                    //PreviewSettings.Validate((int) PreviewSettings.DataSize);
-
-                    PreviewSettings.Data = new byte[PreviewSettings.DataSize];
-                    inputFile.ReadBytes(PreviewSettings.Data);
-
-                    Thumbnails[0] = PreviewSettings.Decode(true);
-                }
-
-                inputFile.Seek(FileMarkSettings.LayerDefinitionAddress, SeekOrigin.Begin);
-
-                LayersDefinition = Helpers.Deserialize<LayerDefinition>(inputFile);
-                Debug.Write("LayersDefinition -> ");
-                Debug.WriteLine(LayersDefinition);
-
-                LayerManager = new LayerManager(LayersDefinition.LayerCount, this);
-                LayersDefinition.Layers = new LayerData[LayerCount];
-
-
-                LayersDefinition.Validate();
-
-                for (int i = 0; i < LayerCount; i++)
-                {
-                    LayersDefinition[i] = Helpers.Deserialize<LayerData>(inputFile);
-                    LayersDefinition[i].Parent = this;
-                }
-
-                progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
-
-                for (int i = 0; i < LayerCount; i++)
-                {
-                    var layer = LayersDefinition[i];
-                    //layer.Parent = this;
-                    inputFile.Seek(layer.DataAddress, SeekOrigin.Begin);
-                    layer.EncodedRle = new byte[layer.DataLength];
-                    inputFile.ReadBytes(layer.EncodedRle);
-
-                    progress++;
-                    progress.Token.ThrowIfCancellationRequested();
-                }
-
-                progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
-
-                Parallel.For(0, LayerCount, layerIndex =>
-                {
-                    if (progress.Token.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    using (var image = LayersDefinition[(uint) layerIndex].Decode())
-                    {
-                        this[layerIndex] = new Layer((uint) layerIndex, image, LayerManager)
-                        {
-                            PositionZ = LayersDefinition[(uint)layerIndex].LayerPositionZ,
-                            ExposureTime = LayersDefinition[(uint)layerIndex].LayerExposure,
-                            LiftHeight = LayersDefinition[(uint)layerIndex].LiftHeight,
-                            LiftSpeed = (float)Math.Round(LayersDefinition[(uint)layerIndex].LiftSpeed * 60, 2),
-                        };
-                    }
-
-                    lock (progress.Mutex)
-                    {
-                        progress++;
-                    }
-                });
+                throw new FileLoadException(
+                    $"Invalid Filemark {FileMarkSettings.Mark}, expected {FileMark.SectionMarkFile}", fileFullPath);
             }
+
+            if (FileMarkSettings.Version != 1)
+            {
+                throw new FileLoadException($"Invalid Version {FileMarkSettings.Version}, expected 1",
+                    fileFullPath);
+            }
+
+            FileFullPath = fileFullPath;
+
+            inputFile.Seek(FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
+            HeaderSettings = Helpers.Deserialize<Header>(inputFile);
+
+            Debug.Write("Header -> ");
+            Debug.WriteLine(HeaderSettings);
+
+            HeaderSettings.Validate();
+
+            if (FileMarkSettings.PreviewAddress > 0)
+            {
+                inputFile.Seek(FileMarkSettings.PreviewAddress, SeekOrigin.Begin);
+
+                PreviewSettings = Helpers.Deserialize<Preview>(inputFile);
+                Debug.Write("Preview -> ");
+                Debug.WriteLine(PreviewSettings);
+
+                //PreviewSettings.Validate((int) PreviewSettings.DataSize);
+
+                PreviewSettings.Data = new byte[PreviewSettings.DataSize];
+                inputFile.ReadBytes(PreviewSettings.Data);
+
+                Thumbnails[0] = PreviewSettings.Decode(true);
+            }
+
+            inputFile.Seek(FileMarkSettings.LayerDefinitionAddress, SeekOrigin.Begin);
+
+            LayersDefinition = Helpers.Deserialize<LayerDefinition>(inputFile);
+            Debug.Write("LayersDefinition -> ");
+            Debug.WriteLine(LayersDefinition);
+
+            LayerManager = new LayerManager(LayersDefinition.LayerCount, this);
+            LayersDefinition.Layers = new LayerData[LayerCount];
+
+
+            LayersDefinition.Validate();
+
+            for (int i = 0; i < LayerCount; i++)
+            {
+                LayersDefinition[i] = Helpers.Deserialize<LayerData>(inputFile);
+                LayersDefinition[i].Parent = this;
+            }
+
+            progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
+
+            for (int i = 0; i < LayerCount; i++)
+            {
+                var layer = LayersDefinition[i];
+                //layer.Parent = this;
+                inputFile.Seek(layer.DataAddress, SeekOrigin.Begin);
+                layer.EncodedRle = new byte[layer.DataLength];
+                inputFile.ReadBytes(layer.EncodedRle);
+
+                progress++;
+                progress.Token.ThrowIfCancellationRequested();
+            }
+
+            progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
+
+            Parallel.For(0, LayerCount, layerIndex =>
+            {
+                if (progress.Token.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                using (var image = LayersDefinition[(uint) layerIndex].Decode())
+                {
+                    this[layerIndex] = new Layer((uint) layerIndex, image, LayerManager)
+                    {
+                        PositionZ = LayersDefinition[(uint)layerIndex].LayerPositionZ,
+                        ExposureTime = LayersDefinition[(uint)layerIndex].LayerExposure,
+                        LiftHeight = LayersDefinition[(uint)layerIndex].LiftHeight,
+                        LiftSpeed = (float)Math.Round(LayersDefinition[(uint)layerIndex].LiftSpeed * 60, 2),
+                    };
+                }
+
+                lock (progress.Mutex)
+                {
+                    progress++;
+                }
+            });
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)
@@ -1249,18 +1245,16 @@ namespace UVtools.Core.FileFormats
                 FileFullPath = filePath;
             }
 
-            using (var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write))
+            using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);
+            outputFile.Seek(FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
+            Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+
+
+            outputFile.Seek(FileMarkSettings.LayerDefinitionAddress + Helpers.Serializer.SizeOf(LayersDefinition), SeekOrigin.Begin);
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                outputFile.Seek(FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
-                Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
-
-
-                outputFile.Seek(FileMarkSettings.LayerDefinitionAddress + Helpers.Serializer.SizeOf(LayersDefinition), SeekOrigin.Begin);
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    LayersDefinition[layerIndex].RefreshLayerData(layerIndex);
-                    Helpers.SerializeWriteFileStream(outputFile, LayersDefinition[layerIndex]);
-                }
+                LayersDefinition[layerIndex].RefreshLayerData(layerIndex);
+                Helpers.SerializeWriteFileStream(outputFile, LayersDefinition[layerIndex]);
             }
         }
 
