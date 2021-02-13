@@ -542,13 +542,6 @@ namespace UVtools.WPF.Windows
                 ExpanderHeaderMaxWidth = DescriptionMaxWidth - 40;
                 Height = MaxHeight;
 
-                
-
-                Position = new PixelPoint(
-                    (int)(App.MainWindow.Position.X + App.MainWindow.Width / 2 - Width / 2),
-                    App.MainWindow.Position.Y + 20
-                );
-
                 DispatcherTimer.Run(() =>
                 {
                     if (Math.Max((int)_contentScrollViewer.Extent.Height - (int)_contentScrollViewer.Viewport.Height, 0) == 0)
@@ -556,6 +549,10 @@ namespace UVtools.WPF.Windows
                         Height = 10;
                         SizeToContent = SizeToContent.WidthAndHeight;
                     }
+                    Position = new PixelPoint(
+                        (int)(App.MainWindow.Position.X + App.MainWindow.Width / 2 - Width / 2),
+                        App.MainWindow.Position.Y + 20
+                    );
                     return false;
                 }, TimeSpan.FromMilliseconds(2));
 
