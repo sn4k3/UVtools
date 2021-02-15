@@ -37,9 +37,14 @@ namespace UVtools.Core.FileFormats
         private const string ExtractConfigFileName = "Configuration";
         private const string ExtractConfigFileExtension = "ini";
 
+        public const ushort DefaultBottomLayerCount = 4;
+
+        public const float DefaultBottomExposureTime = 30;
         public const float DefaultBottomLiftHeight = 5;
         public const float DefaultLiftHeight = 5;
         public const float DefaultBottomLiftSpeed = 100;
+
+        public const float DefaultExposureTime = 3;
         public const float DefaultLiftSpeed = 100;
         public const float DefaultRetractSpeed = 100;
         public const float DefaultBottomLightOffDelay = 0;
@@ -639,7 +644,10 @@ namespace UVtools.Core.FileFormats
         public virtual uint LayerCount
         {
             get => LayerManager?.Count ?? 0;
-            set { }
+            set {
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(NormalLayerCount));
+            }
         }
 
         #region Universal Properties
@@ -647,7 +655,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets or sets the number of initial layer count
         /// </summary>
-        public virtual ushort BottomLayerCount { get; set; }
+        public virtual ushort BottomLayerCount { get; set; } = DefaultBottomLayerCount;
 
         /// <summary>
         /// Gets the number of normal layer count
@@ -657,12 +665,12 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets or sets the initial exposure time for <see cref="BottomLayerCount"/> in seconds
         /// </summary>
-        public virtual float BottomExposureTime { get; set; }
+        public virtual float BottomExposureTime { get; set; } = DefaultBottomExposureTime;
 
         /// <summary>
         /// Gets or sets the normal layer exposure time in seconds
         /// </summary>
-        public virtual float ExposureTime { get; set; }
+        public virtual float ExposureTime { get; set; } = DefaultExposureTime;
 
         /// <summary>
         /// Gets or sets the bottom layer off time in seconds
@@ -1074,6 +1082,7 @@ namespace UVtools.Core.FileFormats
             for (var i = 0; i < ThumbnailsCount; i++)
             {
                 Thumbnails[i] = image.Clone();
+                if (ThumbnailsOriginalSize is null || i >= ThumbnailsOriginalSize.Length) continue;
                 if (Thumbnails[i].Size != ThumbnailsOriginalSize[i])
                 {
                     CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);

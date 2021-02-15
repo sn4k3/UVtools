@@ -29,9 +29,9 @@ class FixedEncoder : System.Text.UTF8Encoding {
 ####################################
 ###         Configuration        ###
 ####################################
-$enableMSI = $true
+$enableMSI = $false
 $buildOnly = $null
-#$buildOnly = ""#"win-x64"
+#$buildOnly = "osx-x64"#"win-x64"
 # Profilling
 $stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
 $deployStopWatch = New-Object -TypeName System.Diagnostics.Stopwatch

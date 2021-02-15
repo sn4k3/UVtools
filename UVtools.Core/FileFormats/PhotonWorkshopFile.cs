@@ -505,7 +505,7 @@ namespace UVtools.Core.FileFormats
                     rawData.Add(by);
                 }
 
-                for (byte aalevel = 0; aalevel < Parent.AntiAliasing; aalevel++)
+                for (byte aalevel = 1; aalevel <= Parent.AntiAliasing; aalevel++)
                 {
                     obit = false;
                     rep = 0;
@@ -516,7 +516,9 @@ namespace UVtools.Core.FileFormats
                     // aa 2:  255 127
                     // aa 4:  255 191 127 63
                     // aa 8:  255 223 191 159 127 95 63 31
-                    byte threshold = (byte)(256 / Parent.AntiAliasing * aalevel - 1);
+                    //byte threshold = (byte)(256 / Parent.AntiAliasing * aalevel - 1);
+                    // threshold := byte(int(255 * (level + 1) / (levels + 1))) + 1
+                    byte threshold = (byte) (255 * aalevel / (Parent.AntiAliasing + 1) + 1);
 
 
                     for (int pixel = 0; pixel < imageLength; pixel++)
@@ -845,8 +847,13 @@ namespace UVtools.Core.FileFormats
 
         public override byte AntiAliasing
         {
-            get => 4;
-            set { }
+            get => (byte) HeaderSettings.AntiAliasing;
+            set
+            {
+                HeaderSettings.AntiAliasing = value.Clamp(1, 16);
+                ValidateAntiAliasingLevel();
+                RaisePropertyChanged();
+            }
         }
 
         public override float LayerHeight

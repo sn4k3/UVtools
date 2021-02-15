@@ -9,7 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -45,7 +44,7 @@ namespace UVtools.Core.Operations
         private decimal _bottomExposure = 60;
         private decimal _normalExposure = 12;
         private decimal _topBottomMargin = 5;
-        private decimal _leftRightMargin = 5;
+        private decimal _leftRightMargin = 10;
         private byte _chamferLayers = 5;
         private byte _erodeBottomIterations = 0;
         private decimal _partMargin = 0;
@@ -67,9 +66,16 @@ namespace UVtools.Core.Operations
         private byte _textThickness = 2;
         private string _text = "ABGHJKLMQRSTUVWXZ%&#";
 
+        private bool _multipleBrightness;
+        private CalibrateExposureFinderMultipleBrightnessExcludeFrom _multipleBrightnessExcludeFrom = CalibrateExposureFinderMultipleBrightnessExcludeFrom.BottomAndBase;
+        private string _multipleBrightnessValues = "255, 242, 230, 217, 204, 191";
+        private decimal _multipleBrightnessGenExposureTime;
+
+
         private bool _multipleLayerHeight;
         private decimal _multipleLayerHeightMaximum = 0.1m;
         private decimal _multipleLayerHeightStep = 0.01m;
+
         private bool _multipleExposures;
         private ExposureGenTypes _exposureGenType = ExposureGenTypes.Linear;
         private bool _exposureGenIgnoreBaseExposure;
@@ -81,7 +87,6 @@ namespace UVtools.Core.Operations
         private decimal _exposureGenManualNormal;
         private ObservableCollection<ExposureItem> _exposureTable = new();
         private CalibrateExposureFinderShapes _holeShape = CalibrateExposureFinderShapes.Square;
-
 
         #endregion
 
@@ -144,6 +149,14 @@ namespace UVtools.Core.Operations
                     }
                     if(!found)
                         sb.AppendLine($"[ME]: {layerHeight:F2}mm layer height have no exposure(s).");
+                }
+            }
+
+            if (_multipleBrightness)
+            {
+                if (MultipleBrightnessValuesArray.Length == 0)
+                {
+                    sb.AppendLine($"[MB]: Multiple brightness tests are enabled but no valid values are set, use from 1 to 255.");
                 }
             }
 
@@ -220,13 +233,21 @@ namespace UVtools.Core.Operations
         public decimal BottomExposure
         {
             get => _bottomExposure;
-            set => RaiseAndSetIfChanged(ref _bottomExposure, Math.Round(value, 2));
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _bottomExposure, Math.Round(value, 2))) return;
+                RaisePropertyChanged(nameof(MultipleBrightnessTable));
+            }
         }
 
         public decimal NormalExposure
         {
             get => _normalExposure;
-            set => RaiseAndSetIfChanged(ref _normalExposure, Math.Round(value, 2));
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _normalExposure, Math.Round(value, 2))) return;
+                RaisePropertyChanged(nameof(MultipleBrightnessTable));
+            }
         }
 
         public decimal TopBottomMargin
@@ -337,9 +358,9 @@ namespace UVtools.Core.Operations
                     {
                         if (string.IsNullOrWhiteSpace(mmStr)) continue;
                         if (!decimal.TryParse(mmStr, out var mm)) continue;
-                        if(mm <= 0) continue;
-                        var mmPx = (int) Math.Floor(mm * Ppmm);
-                        if(holes.Contains(mmPx) || mmPx > 500) continue;
+                        var mmPx = (int)Math.Floor(mm * Ppmm);
+                        if (mmPx <= 0 || mmPx > 500) continue;
+                        if(holes.Contains(mmPx)) continue;
                         holes.Add((int)Math.Floor(mm * Ppmm));
                     }
                 }
@@ -350,8 +371,8 @@ namespace UVtools.Core.Operations
                     {
                         if (string.IsNullOrWhiteSpace(pxStr)) continue;
                         if (!int.TryParse(pxStr, out var px)) continue;
-                        if (px <= 0) continue;
-                        if (holes.Contains(px) || px > 500) continue;
+                        if (px <= 0 || px > 500) continue;
+                        if (holes.Contains(px)) continue;
                         holes.Add(px);
                     }
                 }
@@ -411,9 +432,9 @@ namespace UVtools.Core.Operations
                     {
                         if (string.IsNullOrWhiteSpace(mmStr)) continue;
                         if (!decimal.TryParse(mmStr, out var mm)) continue;
-                        if (mm <= 0) continue;
                         var mmPx = (int)Math.Floor(mm * Xppmm);
-                        if (bars.Contains(mmPx) || mmPx > 500) continue;
+                        if (mmPx <= 0 || mmPx > 500) continue;
+                        if (bars.Contains(mmPx)) continue;
                         bars.Add((int)Math.Floor(mm * Xppmm));
                     }
                 }
@@ -424,8 +445,8 @@ namespace UVtools.Core.Operations
                     {
                         if (string.IsNullOrWhiteSpace(pxStr)) continue;
                         if (!int.TryParse(pxStr, out var px)) continue;
-                        if (px <= 0) continue;
-                        if (bars.Contains(px) || px > 500) continue;
+                        if (px <= 0 || px > 500) continue;
+                        if (bars.Contains(px)) continue;
                         bars.Add(px);
                     }
                 }
@@ -474,6 +495,72 @@ namespace UVtools.Core.Operations
                 return CvInvoke.GetTextSize(_text, _textFont, _textScale, _textThickness, ref baseline);
             }
         }
+
+        public bool MultipleBrightness
+        {
+            get => _multipleBrightness;
+            set => RaiseAndSetIfChanged(ref _multipleBrightness, value);
+        }
+
+        public CalibrateExposureFinderMultipleBrightnessExcludeFrom MultipleBrightnessExcludeFrom
+        {
+            get => _multipleBrightnessExcludeFrom;
+            set => RaiseAndSetIfChanged(ref _multipleBrightnessExcludeFrom, value);
+        }
+
+        public string MultipleBrightnessValues
+        {
+            get => _multipleBrightnessValues;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _multipleBrightnessValues, value)) return;
+                RaisePropertyChanged(nameof(MultipleBrightnessTable));
+            }
+        }
+
+        public List<ExposureItem> MultipleBrightnessTable
+        {
+            get
+            {
+                var brightnesses = MultipleBrightnessValuesArray;
+                return brightnesses.Select(brightness => (ExposureItem) 
+                    new(
+                        _layerHeight,
+                        Math.Round(brightness * _bottomExposure / byte.MaxValue, 2),
+                        Math.Round(brightness * _normalExposure / byte.MaxValue, 2),
+                        brightness)).ToList();
+            }
+        }
+
+        public decimal MultipleBrightnessGenExposureTime
+        {
+            get => _multipleBrightnessGenExposureTime;
+            set => RaiseAndSetIfChanged(ref _multipleBrightnessGenExposureTime, value);
+        }
+
+        /// <summary>
+        /// Gets all holes in pixels and ordered
+        /// </summary>
+        public byte[] MultipleBrightnessValuesArray
+        {
+            get
+            {
+                List<byte> values = new();
+
+                var split = _multipleBrightnessValues.Split(',', StringSplitOptions.TrimEntries);
+                foreach (var brightnessStr in split)
+                {
+                    if (string.IsNullOrWhiteSpace(brightnessStr)) continue;
+                    if (!byte.TryParse(brightnessStr, out var brightness)) continue;
+                    if (brightness <= 0 || brightness > 255) continue;
+                    if (values.Contains(brightness)) continue;
+                    values.Add(brightness);
+                }
+
+                return values.OrderByDescending(brightness => brightness).ToArray();
+            }
+        }
+
 
         public bool MultipleLayerHeight
         {
@@ -611,6 +698,10 @@ namespace UVtools.Core.Operations
                 _exposureGenManualBottom = (decimal) SlicerFile.BottomExposureTime;
             if (_exposureGenManualNormal == 0)
                 _exposureGenManualNormal = (decimal)SlicerFile.ExposureTime;
+            if (_multipleBrightnessGenExposureTime == 0)
+            {
+                _multipleBrightnessGenExposureTime = (decimal)SlicerFile.ExposureTime;
+            }
 
             if (!SlicerFile.HavePrintParameterPerLayerModifier(FileFormat.PrintParameterModifier.ExposureSeconds))
             {
@@ -638,6 +729,14 @@ namespace UVtools.Core.Operations
 
         public static Array MeasuresItems => Enum.GetValues(typeof(Measures));
 
+        public enum CalibrateExposureFinderMultipleBrightnessExcludeFrom : byte
+        {
+            None,
+            Bottom,
+            BottomAndBase
+        }
+        public static Array MultipleBrightnessExcludeFromItems => Enum.GetValues(typeof(CalibrateExposureFinderMultipleBrightnessExcludeFrom));
+
         public enum ExposureGenTypes : byte
         {
             Linear,
@@ -649,11 +748,9 @@ namespace UVtools.Core.Operations
 
         #region Equality
 
-
-
         private bool Equals(OperationCalibrateExposureFinder other)
         {
-            return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _partMargin == other._partMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _baseHeight == other._baseHeight && _featuresHeight == other._featuresHeight && _featuresMargin == other._featuresMargin && _unitOfMeasure == other._unitOfMeasure && _holeDiametersMm == other._holeDiametersMm && _holeDiametersPx == other._holeDiametersPx && _barSpacing == other._barSpacing && _barLength == other._barLength && _barVerticalSplitter == other._barVerticalSplitter && _barThicknessesPx == other._barThicknessesPx && _barThicknessesMm == other._barThicknessesMm && _textFont == other._textFont && _textScale.Equals(other._textScale) && _textThickness == other._textThickness && _text == other._text && _multipleLayerHeight == other._multipleLayerHeight && _multipleLayerHeightMaximum == other._multipleLayerHeightMaximum && _multipleLayerHeightStep == other._multipleLayerHeightStep && _multipleExposures == other._multipleExposures && _exposureGenType == other._exposureGenType && _exposureGenIgnoreBaseExposure == other._exposureGenIgnoreBaseExposure && _exposureGenBottomStep == other._exposureGenBottomStep && _exposureGenNormalStep == other._exposureGenNormalStep && _exposureGenTests == other._exposureGenTests && _exposureGenManualLayerHeight == other._exposureGenManualLayerHeight && _exposureGenManualBottom == other._exposureGenManualBottom && _exposureGenManualNormal == other._exposureGenManualNormal && Equals(_exposureTable, other._exposureTable) && _holeShape == other._holeShape;
+            return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _partMargin == other._partMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _baseHeight == other._baseHeight && _featuresHeight == other._featuresHeight && _featuresMargin == other._featuresMargin && _unitOfMeasure == other._unitOfMeasure && _holeDiametersPx == other._holeDiametersPx && _holeDiametersMm == other._holeDiametersMm && _barSpacing == other._barSpacing && _barLength == other._barLength && _barVerticalSplitter == other._barVerticalSplitter && _barThicknessesPx == other._barThicknessesPx && _barThicknessesMm == other._barThicknessesMm && _textFont == other._textFont && _textScale.Equals(other._textScale) && _textThickness == other._textThickness && _text == other._text && _multipleBrightness == other._multipleBrightness && _multipleBrightnessExcludeFrom == other._multipleBrightnessExcludeFrom && _multipleBrightnessValues == other._multipleBrightnessValues && _multipleLayerHeight == other._multipleLayerHeight && _multipleLayerHeightMaximum == other._multipleLayerHeightMaximum && _multipleLayerHeightStep == other._multipleLayerHeightStep && _multipleExposures == other._multipleExposures && _exposureGenType == other._exposureGenType && _exposureGenIgnoreBaseExposure == other._exposureGenIgnoreBaseExposure && _exposureGenBottomStep == other._exposureGenBottomStep && _exposureGenNormalStep == other._exposureGenNormalStep && _exposureGenTests == other._exposureGenTests && Equals(_exposureTable, other._exposureTable) && _holeShape == other._holeShape;
         }
 
         public override bool Equals(object obj)
@@ -679,8 +776,8 @@ namespace UVtools.Core.Operations
             hashCode.Add(_featuresHeight);
             hashCode.Add(_featuresMargin);
             hashCode.Add((int) _unitOfMeasure);
-            hashCode.Add(_holeDiametersMm);
             hashCode.Add(_holeDiametersPx);
+            hashCode.Add(_holeDiametersMm);
             hashCode.Add(_barSpacing);
             hashCode.Add(_barLength);
             hashCode.Add(_barVerticalSplitter);
@@ -690,6 +787,9 @@ namespace UVtools.Core.Operations
             hashCode.Add(_textScale);
             hashCode.Add(_textThickness);
             hashCode.Add(_text);
+            hashCode.Add(_multipleBrightness);
+            hashCode.Add((int) _multipleBrightnessExcludeFrom);
+            hashCode.Add(_multipleBrightnessValues);
             hashCode.Add(_multipleLayerHeight);
             hashCode.Add(_multipleLayerHeightMaximum);
             hashCode.Add(_multipleLayerHeightStep);
@@ -699,9 +799,6 @@ namespace UVtools.Core.Operations
             hashCode.Add(_exposureGenBottomStep);
             hashCode.Add(_exposureGenNormalStep);
             hashCode.Add(_exposureGenTests);
-            hashCode.Add(_exposureGenManualLayerHeight);
-            hashCode.Add(_exposureGenManualBottom);
-            hashCode.Add(_exposureGenManualNormal);
             hashCode.Add(_exposureTable);
             hashCode.Add((int) _holeShape);
             return hashCode.ToHashCode();
@@ -1039,6 +1136,10 @@ namespace UVtools.Core.Operations
             var anchor = new Point(-1, -1);
             using var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
 
+            var brightnesses = MultipleBrightnessValuesArray;
+
+            if (brightnesses.Length == 0 || !_multipleBrightness) brightnesses = new[] {byte.MaxValue};
+
             void AddLayer(decimal currentHeight, decimal layerHeight, decimal bottomExposure, decimal normalExposure)
             {
                 var layerDifference = currentHeight / layerHeight;
@@ -1046,59 +1147,96 @@ namespace UVtools.Core.Operations
                 if (!layerDifference.IsInteger()) return; // Not at right height to process with layer height
                                                             //Debug.WriteLine($"{currentHeight} / {layerHeight} = {layerDifference}, Floor={Math.Floor(layerDifference)}");
 
-                Point position;
-                ExposureItem key = new(layerHeight, bottomExposure, normalExposure);
-
-                if (table.TryGetValue(key, out var pos))
-                {
-                    position = pos;
-                }
-                else
-                {
-                    if (currentX + layers[0].Width + sideMarginPx > SlicerFile.ResolutionX)
-                    {
-                        currentX = sideMarginPx;
-                        currentY += layers[0].Height + (int)Math.Floor(_partMargin * Yppmm);
-                    }
-
-                    if (currentY + layers[0].Height + topBottomMarginPx > SlicerFile.ResolutionY)
-                    {
-                        return; // Reach the end
-                    }
-
-                    position = new Point(currentX, currentY);
-                    table.Add(key, new Point(currentX, currentY));
-
-                    currentX += layers[0].Width + (int)Math.Floor(_partMargin * Xppmm);
-                }
-
-                ushort microns = (ushort)Math.Floor(layerHeight * 1000);
-
-                Mat mat = EmguExtensions.InitMat(SlicerFile.Resolution);
-                Mat matRoi = new(mat, new Rectangle(position, layers[0].Size));
-
+                using Mat mat = EmguExtensions.InitMat(SlicerFile.Resolution);
                 int layerCountOnHeight = (int)Math.Floor(currentHeight / layerHeight);
                 bool isBottomLayer = layerCountOnHeight <= _bottomLayers;
                 bool isBaseLayer = currentHeight <= _baseHeight;
-                layers[isBaseLayer ? 0 : 1].CopyTo(matRoi);
+                ushort microns = (ushort)Math.Floor(layerHeight * 1000);
+                Point position;
+                bool addSomething = false;
 
-                if (isBottomLayer && _erodeBottomIterations > 0)
+                foreach(var brightness in brightnesses)
                 {
-                    CvInvoke.Erode(matRoi, matRoi, kernel, anchor, _erodeBottomIterations, BorderType.Reflect101, default);
+                    var bottomExposureTemp = bottomExposure;
+                    var normalExposureTemp = normalExposure;
+                    ExposureItem key = new(layerHeight, bottomExposure, normalExposure, brightness);
+
+                    if (table.TryGetValue(key, out var pos))
+                    {
+                        position = pos;
+                    }
+                    else
+                    {
+                        if (currentX + layers[0].Width + sideMarginPx > SlicerFile.ResolutionX)
+                        {
+                            currentX = sideMarginPx;
+                            currentY += layers[0].Height + (int)Math.Floor(_partMargin * Yppmm);
+                        }
+
+                        if (currentY + layers[0].Height + topBottomMarginPx > SlicerFile.ResolutionY)
+                        {
+                            break; // Reach the end
+                        }
+
+                        position = new Point(currentX, currentY);
+                        table.Add(key, new Point(currentX, currentY));
+
+                        currentX += layers[0].Width + (int)Math.Floor(_partMargin * Xppmm);
+                    }
+
+                    
+                    Mat matRoi = new(mat, new Rectangle(position, layers[0].Size));
+
+                    layers[isBaseLayer ? 0 : 1].CopyTo(matRoi);
+
+                    if (isBottomLayer && _erodeBottomIterations > 0)
+                    {
+                        CvInvoke.Erode(matRoi, matRoi, kernel, anchor, _erodeBottomIterations, BorderType.Reflect101, default);
+                    }
+
+                    if (layerCountOnHeight < _chamferLayers)
+                    {
+                        CvInvoke.Erode(matRoi, matRoi, kernel, anchor, _chamferLayers - layerCountOnHeight, BorderType.Reflect101, default);
+                    }
+
+                    if (_multipleBrightness && brightness < 255)
+                    {
+                        // normalExposure - 255
+                        //       x        - brightness
+                        normalExposureTemp = Math.Round(normalExposure * brightness / byte.MaxValue, 2);
+                        if (_multipleBrightnessExcludeFrom == CalibrateExposureFinderMultipleBrightnessExcludeFrom.None)
+                        {
+                            bottomExposureTemp = Math.Round(bottomExposure * brightness / byte.MaxValue, 2);
+                        }
+                    }
+
+                    var textHeightStart = matRoi.Height - featuresMarginY - TextMarkingSpacing;
+                    CvInvoke.PutText(matRoi, $"{microns}u", new Point(TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    CvInvoke.PutText(matRoi, $"{bottomExposureTemp}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    CvInvoke.PutText(matRoi, $"{normalExposureTemp}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    CvInvoke.PutText(matRoi, $"{microns}u", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    CvInvoke.PutText(matRoi, $"{bottomExposureTemp}s", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    CvInvoke.PutText(matRoi, $"{normalExposureTemp}s", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+
+                    if(_multipleBrightness)
+                    {
+                        CvInvoke.PutText(matRoi, brightness.ToString(), new Point(matRoi.Width / 3, 35), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                        if (brightness < 255 &&
+                            (_multipleBrightnessExcludeFrom == CalibrateExposureFinderMultipleBrightnessExcludeFrom.None ||
+                             _multipleBrightnessExcludeFrom == CalibrateExposureFinderMultipleBrightnessExcludeFrom.Bottom && !isBottomLayer ||
+                             _multipleBrightnessExcludeFrom == CalibrateExposureFinderMultipleBrightnessExcludeFrom.BottomAndBase && !isBottomLayer && !isBaseLayer)
+                        )
+                        {
+                            using var pattern = matRoi.CloneBlank();
+                            pattern.SetTo(new MCvScalar(brightness));
+                            CvInvoke.BitwiseAnd(matRoi, pattern, matRoi, matRoi);
+                        }
+                    }
+
+                    addSomething = true;
                 }
 
-                if (layerCountOnHeight < _chamferLayers)
-                {
-                    CvInvoke.Erode(matRoi, matRoi, kernel, anchor, _chamferLayers - layerCountOnHeight, BorderType.Reflect101, default);
-                }
-
-                var textHeightStart = matRoi.Height - featuresMarginY - TextMarkingSpacing;
-                CvInvoke.PutText(matRoi, $"{microns}u", new Point(TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                CvInvoke.PutText(matRoi, $"{bottomExposure}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                CvInvoke.PutText(matRoi, $"{normalExposure}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                CvInvoke.PutText(matRoi, $"{microns}u", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                CvInvoke.PutText(matRoi, $"{bottomExposure}s", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                CvInvoke.PutText(matRoi, $"{normalExposure}s", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                if (!addSomething) return;
 
                 Layer layer = new(layerIndex++, mat, SlicerFile)
                 {
@@ -1112,7 +1250,6 @@ namespace UVtools.Core.Operations
                     IsModified = true
                 };
                 newLayers.Add(layer);
-                mat.Dispose();
 
                 progress++;
             }

@@ -86,12 +86,15 @@ namespace UVtools.WPF.Windows
         protected override void OnOpened(EventArgs e)
         {
             base.OnOpened(e);
-            SizeToContent = SizeToContent.Manual;
+            //SizeToContent = SizeToContent.Manual;
             
             Position = new PixelPoint(
                 (int)(App.MainWindow.Position.X + App.MainWindow.Width / 2 - Width / 2),
                 App.MainWindow.Position.Y + 20
             );
+
+            SelectedTabIndex = 1;
+            SelectedTabIndex = 0;
         }
 
         protected override void OnClosed(EventArgs e)

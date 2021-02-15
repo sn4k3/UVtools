@@ -66,7 +66,7 @@ namespace UVtools.Core.FileFormats
             set { }
         }
 
-        public override float LayerHeight { get; set; } = 0;
+        public override float LayerHeight { get; set; } = 0.01f;
         /*public override float PrintTime { get; } = 0;
         public override float UsedMaterial { get; } = 0;
         public override float MaterialCost { get; } = 0;

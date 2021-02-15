@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UVtools.Core.Objects
 {
@@ -12,7 +8,7 @@ namespace UVtools.Core.Objects
         private decimal _layerHeight;
         private decimal _bottomExposure;
         private decimal _exposure;
-
+        private byte _brightness = byte.MaxValue;
 
         /// <summary>
         /// Gets or sets the layer height in millimeters
@@ -42,25 +38,41 @@ namespace UVtools.Core.Objects
             set => RaiseAndSetIfChanged(ref _exposure, Math.Round(value, 2));
         }
 
-        public bool IsValid => _layerHeight > 0 && _bottomExposure > 0 && _exposure > 0;
+        /// <summary>
+        /// Gets or sets the brightness level
+        /// </summary>
+        public byte Brightness
+        {
+            get => _brightness;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _brightness, value)) return;
+                RaisePropertyChanged(nameof(BrightnessPercent));
+            }
+        }
+
+        public decimal BrightnessPercent => Math.Round(_brightness * 100m / byte.MaxValue, 2);
+
+        public bool IsValid => _layerHeight > 0 && _bottomExposure > 0 && _exposure > 0 && _brightness > 0;
 
         public ExposureItem() { }
 
-        public ExposureItem(decimal layerHeight, decimal bottomExposure = 0, decimal exposure = 0)
+        public ExposureItem(decimal layerHeight, decimal bottomExposure = 0, decimal exposure = 0, byte brightness = 255)
         {
             _layerHeight = Math.Round(layerHeight, 2);
             _bottomExposure = Math.Round(bottomExposure, 2);
             _exposure = Math.Round(exposure, 2);
+            _brightness = brightness;
         }
 
         public override string ToString()
         {
-            return $"{nameof(LayerHeight)}: {LayerHeight}mm, {nameof(BottomExposure)}: {BottomExposure}s, {nameof(Exposure)}: {Exposure}s";
+            return $"{nameof(LayerHeight)}: {_layerHeight}mm, {nameof(BottomExposure)}: {_bottomExposure}s, {nameof(Exposure)}: {_exposure}s, {nameof(Brightness)}: {_brightness} ({BrightnessPercent} %)";
         }
 
         private bool Equals(ExposureItem other)
         {
-            return _layerHeight == other._layerHeight && _bottomExposure == other._bottomExposure && _exposure == other._exposure;
+            return _layerHeight == other._layerHeight && _bottomExposure == other._bottomExposure && _exposure == other._exposure && _brightness == other._brightness;
         }
 
         public override bool Equals(object obj)
@@ -70,7 +82,7 @@ namespace UVtools.Core.Objects
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(_layerHeight, _bottomExposure, _exposure);
+            return HashCode.Combine(_layerHeight, _bottomExposure, _exposure, _brightness);
         }
 
         public int CompareTo(ExposureItem other)
@@ -81,7 +93,9 @@ namespace UVtools.Core.Objects
             if (layerHeightComparison != 0) return layerHeightComparison;
             var bottomExposureComparison = _bottomExposure.CompareTo(other._bottomExposure);
             if (bottomExposureComparison != 0) return bottomExposureComparison;
-            return _exposure.CompareTo(other._exposure);
+            var exposureComparison = _exposure.CompareTo(other._exposure);
+            if (exposureComparison != 0) return exposureComparison;
+            return _brightness.CompareTo(other._brightness);
         }
     }
 }

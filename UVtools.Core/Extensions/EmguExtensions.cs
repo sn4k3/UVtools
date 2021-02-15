@@ -8,6 +8,7 @@
 
 using System;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -275,15 +276,25 @@ namespace UVtools.Core.Extensions
             return mat;
         }
 
-        public static Mat RoiFromCenter(this Mat mat, Size size)
+        public static Mat RoiFromCenter(this Mat mat, Size targetSize, Rectangle roi)
         {
-            if (size == mat.Size) return mat;
-            return new Mat(mat, new Rectangle(
-                 mat.Size.Width / 2 - size.Width / 2,
-                 mat.Size.Height / 2 - size.Height / 2,
-                 size.Width,
-                 size.Height
-                ));
+            if (targetSize == mat.Size) return mat;
+            var newMat = InitMat(targetSize);
+
+            var roiMat = new Mat(mat, roi);
+
+
+            //int xStart = mat.Width / 2 - targetSize.Width / 2;
+            //int yStart = mat.Height / 2 - targetSize.Height / 2;
+
+            var newMatRoi = new Mat(newMat, new Rectangle(
+                targetSize.Width / 2 - roi.Width / 2,
+                targetSize.Height / 2 - roi.Height / 2,
+                roi.Width,
+                roi.Height
+            ));
+            roiMat.CopyTo(newMatRoi);
+            return newMat;
         }
 
     }

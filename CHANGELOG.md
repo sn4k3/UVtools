@@ -1,5 +1,27 @@
 # Changelog
 
+## 15/02/2021 - v2.4.6
+
+* **(Improvement) Calibration - Elephant Foot:** (#145)
+   * Remove text from bottom layers to prevent islands from not adhering to plate 
+   * Add a option to extrude text up to a height
+* **(Improvement) Calibration - Exposure time finder:** (#144)
+   * Increase the left and right margin to 10mm
+   * Allow to iterate over pixel brightness and generate dimmed objects to test multiple times at once
+* **(Fix) File format PWS:**
+   * Some files would produce black layers if pixels are not full whites, Antialiasing level was not inherit from source
+   * Antialiasing level was forced 1 and not read the value from file properties
+   * Antialiasing threshold pixel math was producing the wrong pixel value
+* **(Fix) Raw images (jpg, png, etc):** (#146)
+   * Set layer height to be 0.01mm by default to allow the use of some tools
+   * When add layers by clone or other tool it don't update layers height, positions, indexes, leading to crashes
+* **(Fix) Actions - Import Layers:** (#146, #147)
+   * ROI calculation error leading to not process images that can potential fit inside the volumes
+   * Out-of-bounds calculation for Stack type
+   * Replace type was calculating out-of-bounds calculation like Stack type when is not required to and can lead to skip images
+   * Better image ROI colection for Insert and Replace types instead of capture the center most 
+* (Fix) Settings window: Force a redraw on open to fix auto sizes
+
 ## 12/02/2021 - v2.4.5
 
 * (Add) Setting: Expand and show tool descriptions by default

@@ -415,6 +415,119 @@
         </Expander>
       </Border>
 
+        <Border BorderBrush="Black"
+                BorderThickness="1"
+                Padding="5">
+            <Expander IsExpanded="True">
+                <Expander.Header>
+                    <TextBlock Text="Multiple brightness"
+                               FontWeight="Bold"
+                               Cursor="Hand"/>
+
+                </Expander.Header>
+
+                <StackPanel Spacing="10">
+
+                    <TextBlock Text="Only printers able to do Anti-Aliasing and enabled on file can support this, make sure your is supported or else it can print a full white or full black model.
+&#x0a;Also take into consideration some printers/formats have fixed usable AA levels and all in between will be threshold, study this first.
+&#x0a;If your printer is able to do 'Multiple exposures times per layer', please use that method instead of this (More accurate and AA threshold free)."/>
+
+                    <CheckBox
+                        Content="Enable - For advanced users only!"
+                        IsChecked="{Binding Operation.MultipleBrightness}"/>
+
+                    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
+                          ColumnDefinitions="Auto,10,200,5,Auto,20,Auto,10,Auto,5,Auto,5,Auto"
+                          IsEnabled="{Binding Operation.MultipleBrightness}">
+
+                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                   ToolTip.Tip="Do not change brightness from the selected layers. Full brightness of 255 is applied to the skip layers."
+                                   Text="Exclude from:"
+                                   VerticalAlignment="Center"/>
+                        <ComboBox Grid.Row="0" Grid.Column="2"
+                                  VerticalAlignment="Center"
+                                  HorizontalAlignment="Stretch"
+                                  Items="{Binding Operation.MultipleBrightnessExcludeFromItems}"
+                                  SelectedItem="{Binding Operation.MultipleBrightnessExcludeFrom}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="4"
+                                   Text="layers"
+                                   VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="0" Grid.Column="6"
+                                   ToolTip.Tip="Append a brightness level to the list by giving a desired exposure time. Supplied time must be lower than the commun exposure time or you need to increase it on the commun 'Normal Exposure'."
+                                   Text="Generate by exposure time:"
+                                   VerticalAlignment="Center"/>
+
+                        <NumericUpDown Grid.Row="0" Grid.Column="8"
+                                       Increment="0.10"
+                                       Minimum="0.10"
+                                       Maximum="{Binding Operation.NormalExposure}"
+                                       FormatString="F02"
+                                       Value="{Binding Operation.MultipleBrightnessGenExposureTime}"/>
+
+                        <TextBlock Grid.Row="0" Grid.Column="10"
+                                   Text="s"
+                                   VerticalAlignment="Center"/>
+
+                        <Button
+                            Grid.Row="0" Grid.Column="12" VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            VerticalAlignment="Stretch"
+                            Command="{Binding BrightnessExposureGenAdd}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Image Source="/Assets/Icons/plus-16x16.png"/>
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="Add"/>
+                            </StackPanel>
+                        </Button>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0"
+                                   Text="Brightnesses:"
+                                   ToolTip.Tip="From 1-255, where 1 is almost black and 255 is full white. No half numbers are allowed."
+                                   VerticalAlignment="Center"/>
+
+                        <TextBox Grid.Row="2" Grid.Column="2"
+                                 Grid.ColumnSpan="11"
+                                 Text="{Binding Operation.MultipleBrightnessValues}"/>
+                    </Grid>
+
+                    
+                    <DataGrid
+                        Name="BrightnessTable"
+                        CanUserReorderColumns="True"
+                        CanUserResizeColumns="True"
+                        CanUserSortColumns="True"
+                        GridLinesVisibility="Horizontal"
+                        IsReadOnly="True"
+                        ClipboardCopyMode="IncludeHeader"
+                        VerticalAlignment="Stretch"
+                        Margin="0,-10,0,0"
+                        IsEnabled="{Binding Operation.MultipleBrightness}"
+                        Items="{Binding Operation.MultipleBrightnessTable}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Brightness"
+                                                Binding="{Binding Brightness}"
+                                                Width="Auto" />
+                            <DataGridTextColumn Header="Percent (%)"
+                                                Binding="{Binding BrightnessPercent}"
+                                                Width="Auto" />
+                            <DataGridTextColumn Header="Bottom exposure (s)"
+                                                Binding="{Binding BottomExposure}"
+                                                Width="Auto" />
+                            <DataGridTextColumn Header="Exposure (s)"
+                                                Binding="{Binding Exposure}"
+                                                Width="Auto" />
+                        </DataGrid.Columns>
+
+                    </DataGrid>
+
+
+
+                    </StackPanel>
+                </Expander>
+            </Border>
+
       <Border BorderBrush="Black" 
               BorderThickness="1"
               Padding="5"

@@ -22,8 +22,7 @@ namespace UVtools.WPF
             // Add the event handler for handling non-UI thread exceptions to the event.
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
 
-            BuildAvaloniaApp()
-                .StartWithClassicDesktopLifetime(args);
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
 
         private static async void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -45,8 +44,8 @@ namespace UVtools.WPF
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
-                .With(new Win32PlatformOptions { AllowEglInitialization = true})
-                .With(new X11PlatformOptions { UseGpu = true, UseEGL = true })
+                .With(new Win32PlatformOptions { AllowEglInitialization = true/*, UseWgl = true*/})
+                .With(new X11PlatformOptions { UseGpu = true/*, UseEGL = true*/ })
                 .With(new MacOSPlatformOptions { ShowInDock = true })
                 .With(new AvaloniaNativePlatformOptions { UseGpu = true })
                 .UseSkia()

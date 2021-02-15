@@ -9,7 +9,7 @@
     <Grid ColumnDefinitions="Auto,10,350">
       <StackPanel Spacing="10">
         <Grid
-              RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+              RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
               ColumnDefinitions="Auto,10,150,5,Auto,20,Auto,10,150,5,Auto"
       >
 
@@ -21,8 +21,7 @@
                          Minimum="0.01"
                          Maximum="0.30"
                          FormatString="F02"
-                         Value="{Binding Operation.LayerHeight}"
-                     />
+                         Value="{Binding Operation.LayerHeight}"/>
           <TextBlock Grid.Row="0" Grid.Column="4"
                      VerticalAlignment="Center"
                      Text="mm"/>
@@ -110,7 +109,6 @@
                      VerticalAlignment="Center"
                      Text="Margin:"/>
           <NumericUpDown Grid.Row="6" Grid.Column="8"
-                         
                          Increment="1"
                          Minimum="0"
                          Maximum="255"
@@ -119,7 +117,35 @@
                      VerticalAlignment="Center"
                      Text="px"/>
 
-          <StackPanel Grid.Row="8" Grid.Column="0" 
+          <TextBlock Grid.Row="8" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Markings:"/>
+
+          <ToggleSwitch Grid.Row="8" Grid.Column="2"
+                        Grid.ColumnSpan="2"
+                        OffContent="Intrude text" OnContent="Extrude text"
+                        IsChecked="{Binding Operation.ExtrudeText}"/>
+
+          <TextBlock Grid.Row="8" Grid.Column="6"
+                     VerticalAlignment="Center"
+                     IsEnabled="{Binding Operation.ExtrudeText}"
+                     Text="Text height:"/>
+
+          <NumericUpDown Grid.Row="8" Grid.Column="8"
+                         Increment="0.5"
+                         Minimum="0.5"
+                         Maximum="10"
+                         FormatString="F2"
+                         IsEnabled="{Binding Operation.ExtrudeText}"
+                         Value="{Binding Operation.TextHeight}"/>
+          
+          <TextBlock Grid.Row="8" Grid.Column="10"
+                     VerticalAlignment="Center"
+                     IsEnabled="{Binding Operation.ExtrudeText}"
+                     Text="mm"/>
+
+
+          <StackPanel Grid.Row="10" Grid.Column="0" 
                       VerticalAlignment="Center"
                       Spacing="0">
               <TextBlock
@@ -132,7 +158,7 @@
 
           </StackPanel>
 
-          <StackPanel Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="9"
+          <StackPanel Grid.Row="10" Grid.Column="2" Grid.ColumnSpan="9"
                       VerticalAlignment="Center"
                       Spacing="0">
             <TextBlock FontWeight="Bold">
@@ -149,17 +175,17 @@
                 Text="{Binding Operation.ObjectCount}"/>
           </StackPanel>
 
-          <CheckBox Grid.Row="8" Grid.Column="6"
+          <CheckBox Grid.Row="10" Grid.Column="6"
                     Grid.ColumnSpan="5"
                     IsChecked="{Binding Operation.EnableAntiAliasing}"
                     Content="Enable Anti-Aliasing" />
-          
-          <CheckBox Grid.Row="10" Grid.Column="0"
+
+          <CheckBox Grid.Row="12" Grid.Column="0"
                     Grid.ColumnSpan="6"
                     IsChecked="{Binding Operation.OutputOriginalPart}"
                     Content="Output an unmodified part (The original)" />
 
-          <CheckBox Grid.Row="10" Grid.Column="6"
+          <CheckBox Grid.Row="12" Grid.Column="6"
                     Grid.ColumnSpan="5"
                     ToolTip.Tip="Most of the printers requires a mirror output to print with the correct orientation"
                     IsChecked="{Binding Operation.MirrorOutput}"

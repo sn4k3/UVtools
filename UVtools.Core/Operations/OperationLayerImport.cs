@@ -11,6 +11,7 @@ using System.Collections.ObjectModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -304,37 +305,43 @@ namespace UVtools.Core.Operations
                 {
                     case ImportTypes.Insert:
                         if (SlicerFile.Resolution != fileFormat.Resolution &&
-                            (SlicerFile.Resolution.Width < fileFormat.LayerManager.BoundingRectangle.Width ||
-                             SlicerFile.Resolution.Height < fileFormat.LayerManager.BoundingRectangle.Height)) continue;
+                            (SlicerFile.Resolution.Width < fileFormatBoundingRectangle.Width ||
+                             SlicerFile.Resolution.Height < fileFormatBoundingRectangle.Height)) continue;
                         SlicerFile.LayerManager.Reallocate(_startLayerIndex, fileFormat.LayerCount);
                         break;
                     case ImportTypes.Replace:
                     case ImportTypes.Stack:
                         if (SlicerFile.Resolution != fileFormat.Resolution && 
-                            (SlicerFile.Resolution.Width < fileFormat.LayerManager.BoundingRectangle.Width ||
-                             SlicerFile.Resolution.Height < fileFormat.LayerManager.BoundingRectangle.Height)) continue;
+                            (SlicerFile.Resolution.Width < fileFormatBoundingRectangle.Width ||
+                             SlicerFile.Resolution.Height < fileFormatBoundingRectangle.Height)) continue;
 
                         
-                        if(fileFormatBoundingRectangle.Width >= SlicerFile.ResolutionX || fileFormatBoundingRectangle.Height >= SlicerFile.ResolutionY) 
-                            continue;
+                        //if(fileFormatBoundingRectangle.Width >= SlicerFile.ResolutionX || fileFormatBoundingRectangle.Height >= SlicerFile.ResolutionY) 
+                        //    continue;
 
-                        int x = 0;
-                        int y = 0;
-                        
-                        if (boundingRectangle.Right + _stackMargin + fileFormatBoundingRectangle.Width <
-                            SlicerFile.ResolutionX)
+                        if (_importType == ImportTypes.Stack)
                         {
-                            x = boundingRectangle.Right + _stackMargin;
-                        }
-                        else
-                        {
-                            y = boundingRectangle.Bottom + _stackMargin;
-                        }
+                            int x = 0;
+                            int y = 0;
 
-                        if (y >= SlicerFile.ResolutionY)
-                            continue;
+                            if (boundingRectangle.Right + _stackMargin + fileFormatBoundingRectangle.Width <
+                                SlicerFile.ResolutionX)
+                            {
+                                x = boundingRectangle.Right + _stackMargin;
+                            }
+                            else
+                            {
+                                y = boundingRectangle.Bottom + _stackMargin;
+                            }
 
-                        roiRectangle = new Rectangle(x, y, fileFormatBoundingRectangle.Width, fileFormatBoundingRectangle.Height);
+                            if (x + fileFormatBoundingRectangle.Width >= SlicerFile.ResolutionX)
+                                continue;
+                            if (y + fileFormatBoundingRectangle.Height >= SlicerFile.ResolutionY)
+                                continue;
+
+                            roiRectangle = new Rectangle(x, y, fileFormatBoundingRectangle.Width,
+                                fileFormatBoundingRectangle.Height);
+                        }
 
                         if (_extendBeyondLayerCount)
                         {
@@ -385,7 +392,7 @@ namespace UVtools.Core.Operations
                                 }
 
                                 using var layer = fileFormat[i].LayerMat;
-                                using var layerRoi = layer.RoiFromCenter(SlicerFile.Resolution);
+                                using var layerRoi = layer.RoiFromCenter(SlicerFile.Resolution, fileFormatBoundingRectangle);
                                 SlicerFile[layerIndex] = new Layer(layerIndex, layerRoi, SlicerFile);
 
                                 break;
@@ -400,7 +407,7 @@ namespace UVtools.Core.Operations
                                 }
 
                                 using var layer = fileFormat[i].LayerMat;
-                                using var layerRoi = layer.RoiFromCenter(SlicerFile.Resolution);
+                                using var layerRoi = layer.RoiFromCenter(SlicerFile.Resolution, fileFormatBoundingRectangle);
                                 SlicerFile[layerIndex] = new Layer(layerIndex, layerRoi, SlicerFile);
                                 break;
                             }

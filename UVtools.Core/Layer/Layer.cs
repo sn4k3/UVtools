@@ -205,23 +205,10 @@ namespace UVtools.Core
             {
                 _compressedBytes = value;
                 IsModified = true;
-                if (!ReferenceEquals(ParentLayerManager, null))
+                if (ParentLayerManager is not null)
                     ParentLayerManager.BoundingRectangle = Rectangle.Empty;
+                RaisePropertyChanged();
             }
-        }
-
-        /// <summary>
-        /// Gets a computed layer filename, padding zeros are equal to layer count digits
-        /// </summary>
-        public string Filename => FormatFileName("layer");
-
-        /// <summary>
-        /// Gets if layer has been modified
-        /// </summary>
-        public bool IsModified
-        {
-            get => _isModified;
-            set => RaiseAndSetIfChanged(ref _isModified, value);
         }
 
         /// <summary>
@@ -232,7 +219,7 @@ namespace UVtools.Core
             get
             {
                 Mat mat = new();
-                CvInvoke.Imdecode(CompressedBytes, ImreadModes.Grayscale, mat);
+                CvInvoke.Imdecode(_compressedBytes, ImreadModes.Grayscale, mat);
                 return mat;
             }
             set
@@ -252,26 +239,34 @@ namespace UVtools.Core
         {
             get
             {
-                Mat mat = LayerMat;
+                var mat = LayerMat;
                 CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgr);
                 return mat;
             }
         }
 
+        /// <summary>
+        /// Gets a computed layer filename, padding zeros are equal to layer count digits
+        /// </summary>
+        public string Filename => FormatFileName("layer");
+
+        /// <summary>
+        /// Gets if layer has been modified
+        /// </summary>
+        public bool IsModified
+        {
+            get => _isModified;
+            set => RaiseAndSetIfChanged(ref _isModified, value);
+        }
+
         #endregion
 
         #region Constructor
-        public Layer(uint index, byte[] compressedBytes, LayerManager parentLayerManager)
+
+        public Layer(uint index, LayerManager parentLayerManager)
         {
             ParentLayerManager = parentLayerManager;
-            Index = index;
-            //Filename = filename ?? $"Layer{index}.png";
-            CompressedBytes = compressedBytes;
-            IsModified = false;
-            /*if (compressedBytes.Length > 0)
-            {
-                GetBoundingRectangle();
-            }*/
+            _index = index;
 
             if (parentLayerManager is null) return;
             _positionZ = SlicerFile.GetHeightFromLayer(index);
@@ -282,13 +277,23 @@ namespace UVtools.Core
             _lightPwm = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
         }
 
+        public Layer(uint index, byte[] compressedBytes, LayerManager parentLayerManager) : this(index, parentLayerManager)
+        {
+            CompressedBytes = compressedBytes;
+            _isModified = false;
+            /*if (compressedBytes.Length > 0)
+            {
+                GetBoundingRectangle();
+            }*/
+        }
+
         public Layer(uint index, byte[] compressedBytes, FileFormat slicerFile) : this(index, compressedBytes, slicerFile.LayerManager)
         {}
 
-        public Layer(uint index, Mat layerMat, LayerManager parentLayerManager) : this(index, new byte[0], parentLayerManager)
+        public Layer(uint index, Mat layerMat, LayerManager parentLayerManager) : this(index, parentLayerManager)
         {
             LayerMat = layerMat;
-            IsModified = false;
+            _isModified = false;
         }
 
         public Layer(uint index, Mat layerMat, FileFormat slicerFile) : this(index, layerMat, slicerFile.LayerManager) { }
