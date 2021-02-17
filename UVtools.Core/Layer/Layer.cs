@@ -57,7 +57,13 @@ namespace UVtools.Core
         public uint NonZeroPixelCount
         {
             get => _nonZeroPixelCount;
-            internal set => RaiseAndSetIfChanged(ref _nonZeroPixelCount, value);
+            internal set
+            {
+                if(!RaiseAndSetIfChanged(ref _nonZeroPixelCount, value)) return;
+                RaisePropertyChanged(nameof(MaterialMilliliters));
+                if (SlicerFile is null) return;
+                SlicerFile.MaterialMilliliters = 0;
+            }
         }
 
         /// <summary>
@@ -192,6 +198,18 @@ namespace UVtools.Core
                 }
 
                 return ParentLayerManager.SlicerFile.LayerHeight;
+            }
+        }
+
+        /// <summary>
+        /// Gets the computed material milliliters spent on this layer
+        /// </summary>
+        public float MaterialMilliliters
+        {
+            get
+            {
+                if (ParentLayerManager?.SlicerFile is null) return 0;
+                return  (float) Math.Round(ParentLayerManager.SlicerFile.PixelArea * LayerHeight * NonZeroPixelCount / 1000, 4);
             }
         }
 
@@ -393,7 +411,7 @@ namespace UVtools.Core
 
         public Rectangle GetBoundingRectangle(Mat mat = null, bool reCalculate = false)
         {
-            if (NonZeroPixelCount > 0 && !reCalculate)
+            if (_nonZeroPixelCount > 0 && !reCalculate)
             {
                 return BoundingRectangle;
             }

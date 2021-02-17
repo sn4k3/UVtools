@@ -54,7 +54,7 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(8)] [FieldEndianness(Endianness.Big)] public double LiftHeight { get; set; } // mm
             [FieldOrder(9)] [FieldEndianness(Endianness.Big)] public double LiftSpeed { get; set; } // mm/s
             [FieldOrder(10)] [FieldEndianness(Endianness.Big)] public double RetractSpeed { get; set; } // mm/s
-            [FieldOrder(11)] [FieldEndianness(Endianness.Big)] public double Volume { get; set; } // ml
+            [FieldOrder(11)] [FieldEndianness(Endianness.Big)] public double VolumeMl { get; set; } // ml
             [FieldOrder(12)] [FieldEndianness(Endianness.Big)] public uint PreviewResolutionX { get; set; } = 225;
             [FieldOrder(13)] [FieldEndianness(Endianness.Big)] public uint Unknown2 { get; set; } = 42;
             [FieldOrder(14)] [FieldEndianness(Endianness.Big)] public uint PreviewResolutionY { get; set; } = 168;
@@ -62,7 +62,7 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(Tag1)}: {Tag1}, {nameof(Tag2)}: {Tag2}, {nameof(XYPixelSize)}: {XYPixelSize}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureSeconds)}: {ExposureSeconds}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Volume)}: {Volume}, {nameof(PreviewResolutionX)}: {PreviewResolutionX}, {nameof(Unknown2)}: {Unknown2}, {nameof(PreviewResolutionY)}: {PreviewResolutionY}, {nameof(Unknown4)}: {Unknown4}";
+                return $"{nameof(Tag1)}: {Tag1}, {nameof(Tag2)}: {Tag2}, {nameof(XYPixelSize)}: {XYPixelSize}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureSeconds)}: {ExposureSeconds}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(PreviewResolutionX)}: {PreviewResolutionX}, {nameof(Unknown2)}: {Unknown2}, {nameof(PreviewResolutionY)}: {PreviewResolutionY}, {nameof(Unknown4)}: {Unknown4}";
             }
         }
 
@@ -373,11 +373,16 @@ namespace UVtools.Core.FileFormats
 
         public override float MaterialMilliliters
         {
-            get => (float) HeaderSettings.Volume;
+            get
+            {
+                var materialMl = base.MaterialMilliliters;
+                return materialMl > 0 ? materialMl : (float) HeaderSettings.VolumeMl;
+            }
             set
             {
-                HeaderSettings.Volume = Math.Round(value, 2);
-                RaisePropertyChanged();
+                if (value <= 0) value = base.MaterialMilliliters;
+                HeaderSettings.VolumeMl = (float)Math.Round(value, 3);
+                base.MaterialMilliliters = (float) HeaderSettings.VolumeMl;
             }
         }
 
@@ -503,7 +508,7 @@ namespace UVtools.Core.FileFormats
                 }
 
                 HeaderSettings.LayerHeight = Math.Round(HeaderSettings.LayerHeight, 2);
-                HeaderSettings.Volume = Math.Round(HeaderSettings.Volume, 2);
+                HeaderSettings.VolumeMl = Math.Round(HeaderSettings.VolumeMl, 2);
 
                 int previewSize = (int) (HeaderSettings.PreviewResolutionX * HeaderSettings.PreviewResolutionY * 2);
                 byte[] previewData = new byte[previewSize];

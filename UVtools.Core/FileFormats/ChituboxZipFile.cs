@@ -53,7 +53,7 @@ namespace UVtools.Core.FileFormats
             [DisplayName("fileName")] public string Filename { get; set; } = string.Empty;
             [DisplayName("machineType")] public string MachineType { get; set; } = "Default";
             [DisplayName("estimatedPrintTime")] public float EstimatedPrintTime { get; set; }
-            [DisplayName("volume")] public float Volume { get; set; }
+            [DisplayName("volume")] public float VolumeMl { get; set; }
             [DisplayName("resin")] public string Resin { get; set; } = "Normal";
             [DisplayName("weight")] public float WeightG { get; set; }
             [DisplayName("price")] public float Price { get; set; }
@@ -344,30 +344,35 @@ namespace UVtools.Core.FileFormats
 
         public override float MaterialMilliliters
         {
-            get => HeaderSettings.Volume;
+            get
+            {
+                var materialMl = base.MaterialMilliliters;
+                return materialMl > 0 ? materialMl : HeaderSettings.VolumeMl;
+            }
             set
             {
-                HeaderSettings.Volume = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
+                if (value <= 0) value = base.MaterialMilliliters;
+                HeaderSettings.VolumeMl = (float)Math.Round(value, 3);
+                base.MaterialMilliliters = HeaderSettings.VolumeMl;
             }
         }
 
         public override float MaterialGrams
         {
-            get => HeaderSettings.WeightG;
+            get => (float) Math.Round(HeaderSettings.WeightG, 3);
             set
             {
-                HeaderSettings.WeightG = (float)Math.Round(value, 2);
+                HeaderSettings.WeightG = (float)Math.Round(value, 3);
                 RaisePropertyChanged();
             }
         }
 
         public override float MaterialCost
         {
-            get => HeaderSettings.Price;
+            get => (float) Math.Round(HeaderSettings.Price, 3);
             set
             {
-                HeaderSettings.Price = (float)Math.Round(value, 2);
+                HeaderSettings.Price = (float)Math.Round(value, 3);
                 RaisePropertyChanged();
             }
         }

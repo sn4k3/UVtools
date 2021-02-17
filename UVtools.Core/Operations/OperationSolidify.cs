@@ -120,11 +120,11 @@ namespace UVtools.Core.Operations
                     var rectangle = CvInvoke.BoundingRectangle(contours[i]);
                     if (AreaCheckType == AreaCheckTypes.More)
                     {
-                        if (rectangle.GetArea() < MinimumArea) continue;
+                        if (rectangle.Area() < MinimumArea) continue;
                     }
                     else
                     {
-                        if (rectangle.GetArea() > MinimumArea) continue;
+                        if (rectangle.Area() > MinimumArea) continue;
                     }
 
                 }

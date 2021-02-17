@@ -1,5 +1,22 @@
 # Changelog
 
+## 17/02/2021 - v2.4.7
+
+* (Add) Computed used material milliliters for each layer, it will dynamic change if pixels are added or subtracted
+* (Add) Computed used material milliliters for whole model, it will dynamic change if pixels are added or subtracted
+* (Improvement) Round cost, material ml and grams from 2 to 3 decimals
+* (Improvement) Operation profiles: Allow to save and get a custom layer range instead of pre-defined ranges
+* **(Improvement)** PhotonWorkshop files: (#149)
+   * Fill in the display width, height and MaxZ values for the printers
+   * Fill in the xy pixel size values for the printers
+   * Change ResinType to PriceCurrencyDec and Add PriceCurrencySymbol
+   * Change Offset1 on header to PrintTime
+   * Change Offset1 on layer table as NonZeroPixelCount, the number of white pixels on the layer 
+   * Fix LayerPositionZ to calculate the correct value based on each layer height and fix internal layer layer height which was been set to position z
+   * Force PerLayerOverride to be always 1 after save the file
+* (Fix) Actions - Remove and clone layers was selecting all layer range instead of the current layer
+* (Fix) Redo last action was not getting back the layer range on some cases
+
 ## 15/02/2021 - v2.4.6
 
 * **(Improvement) Calibration - Elephant Foot:** (#145)

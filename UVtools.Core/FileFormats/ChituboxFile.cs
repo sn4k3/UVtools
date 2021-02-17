@@ -1270,11 +1270,16 @@ namespace UVtools.Core.FileFormats
 
         public override float MaterialMilliliters
         {
-            get => (float) Math.Round(PrintParametersSettings.VolumeMl, 2);
+            get
+            {
+                var materialMl = base.MaterialMilliliters;
+                return materialMl > 0 ? materialMl : PrintParametersSettings.VolumeMl;
+            } 
             set
             {
-                PrintParametersSettings.VolumeMl = (float) Math.Round(value, 2);
-                RaisePropertyChanged();
+                if (value <= 0) value = base.MaterialMilliliters;
+                PrintParametersSettings.VolumeMl = (float) Math.Round(value, 3);
+                base.MaterialMilliliters = PrintParametersSettings.VolumeMl;
             }
         }
 
@@ -1283,17 +1288,17 @@ namespace UVtools.Core.FileFormats
             get => PrintParametersSettings.WeightG;
             set
             {
-                PrintParametersSettings.WeightG = (float)Math.Round(value, 2);
+                PrintParametersSettings.WeightG = (float)Math.Round(value, 3);
                 RaisePropertyChanged();
             }
         }
 
         public override float MaterialCost
         {
-            get => (float) Math.Round(PrintParametersSettings.CostDollars, 2);
+            get => (float) Math.Round(PrintParametersSettings.CostDollars, 3);
             set
             {
-                PrintParametersSettings.CostDollars = (float) Math.Round(value, 2);
+                PrintParametersSettings.CostDollars = (float) Math.Round(value, 3);
                 RaisePropertyChanged();
             }
         }

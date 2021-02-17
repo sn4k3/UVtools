@@ -219,7 +219,7 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public uint CacheObjectCount => (uint) (_cacheRamSize * 1000000000L / SlicerFile.Resolution.GetArea() / ObjectsPerCache);
+        public uint CacheObjectCount => (uint) (_cacheRamSize * 1000000000L / SlicerFile.Resolution.Area() / ObjectsPerCache);
 
         public decimal CacheRAMSize
         {

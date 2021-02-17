@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Drawing;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -109,7 +107,7 @@ namespace UVtools.WPF.Windows
             get => _layerIndexStart;
             set
             {
-                if (!(ToolControl?.BaseOperation is null))
+                if (ToolControl?.BaseOperation is not null)
                 {
                     ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.None;
                     ToolControl.BaseOperation.LayerIndexStart = value;
@@ -294,7 +292,17 @@ namespace UVtools.WPF.Windows
                 operation.ProfileName = null;
                 operation.SlicerFile = App.SlicerFile;
                 ToolControl.BaseOperation = operation;
-                SelectLayers(operation.LayerRangeSelection);
+                switch (operation.LayerRangeSelection)
+                {
+                    case Enumerations.LayerRangeSelection.None:
+                        LayerIndexStart = operation.LayerIndexStart;
+                        LayerIndexEnd = operation.LayerIndexEnd;
+                        break;
+                    default:
+                        SelectLayers(operation.LayerRangeSelection);
+                        break;
+                }
+
                 ToolControl.Callback(Callbacks.ProfileLoaded);
                 ToolControl.ResetDataContext();
             }
@@ -504,14 +512,14 @@ namespace UVtools.WPF.Windows
             _buttonOkText = toolControl.BaseOperation.ButtonOkText;
             _buttonOkVisible = ButtonOkEnabled = toolControl.BaseOperation.HaveAction;
 
-            if (toolControl.BaseOperation.LayerIndexStart == 0 && toolControl.BaseOperation.LayerIndexEnd == 0)
-            {
-                SelectLayers(toolControl.BaseOperation.StartLayerRangeSelection);
-            }
-            else
+            if (toolControl.BaseOperation.HaveExecuted) // Come from a redo or something
             {
                 LayerIndexStart = toolControl.BaseOperation.LayerIndexStart;
                 LayerIndexEnd = toolControl.BaseOperation.LayerIndexEnd;
+            }
+            else
+            {
+                SelectLayers(toolControl.BaseOperation.StartLayerRangeSelection);
             }
 
             //RaisePropertyChanged(nameof(IsContentVisible));

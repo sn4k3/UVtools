@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Avalonia.Markup.Xaml;
-using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
@@ -17,7 +16,8 @@ namespace UVtools.WPF.Controls.Tools
             get => _baseOperation;
             set
             {
-                if(!RaiseAndSetIfChanged(ref _baseOperation, value)) return;
+                _baseOperation = value;
+                RaisePropertyChanged();
                 if (DataContext is null) return;
                 ResetDataContext();
             }

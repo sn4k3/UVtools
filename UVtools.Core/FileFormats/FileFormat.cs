@@ -456,6 +456,16 @@ namespace UVtools.Core.FileFormats
                 {
                     LayerCount = _layerManager.Count;
                 }
+
+                // Recalculate changes
+                PrintHeight = PrintHeight;
+                PrintTime = PrintTimeComputed;
+                MaterialMilliliters = 0;
+
+                if (SuppressRebuildProperties) return;
+                if (LayerCount == 0 || this[LayerCount - 1] is null) return; // Not initialized
+                LayerManager.RebuildLayersProperties();
+                RebuildGCode();
             }
         }
 
@@ -574,26 +584,55 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Gets the pixel width in millimeters
+        /// </summary>
+        public float PixelWidth => DisplayWidth > 0 ? (float) Math.Round(DisplayWidth / ResolutionX, 3) : 0;
 
         /// <summary>
-        /// Gets the printer XY pixel resolution
+        /// Gets the pixel height in millimeters
         /// </summary>
-        public decimal XYResolution => DisplayWidth > 0 || DisplayHeight > 0 ?
-            (decimal) Math.Round(Math.Max(
-                DisplayWidth / ResolutionX,
-                DisplayHeight / ResolutionY
-            ), 3)
-            : 0;
+        public float PixelHeight => DisplayHeight > 0 ? (float) Math.Round(DisplayHeight / ResolutionY, 3) : 0;
 
         /// <summary>
-        /// Gets the printer XY pixel resolution in microns
+        /// Gets the pixel size in millimeters
         /// </summary>
-        public decimal XYResolutionUm => DisplayWidth > 0 || DisplayHeight > 0 ?
-            (decimal)Math.Round(Math.Max(
-                DisplayWidth / ResolutionX,
-                DisplayHeight / ResolutionY
-            ), 3) * 1000
-            : 0;
+        public SizeF PixelSize => new(PixelWidth, PixelHeight);
+
+        /// <summary>
+        /// Gets the maximum pixel between width and height in millimeters
+        /// </summary>
+        public float PixelSizeMax => PixelSize.Max();
+
+        /// <summary>
+        /// Gets the pixel area in millimeters
+        /// </summary>
+        public float PixelArea => PixelSize.Area();
+
+        /// <summary>
+        /// Gets the pixel width in microns
+        /// </summary>
+        public float PixelWidthMicrons => DisplayWidth > 0 ? (float)Math.Round(DisplayWidth / ResolutionX * 1000, 3) : 0;
+
+        /// <summary>
+        /// Gets the pixel height in microns
+        /// </summary>
+        public float PixelHeightMicrons => DisplayHeight > 0 ? (float)Math.Round(DisplayHeight / ResolutionY * 1000, 3) : 0;
+
+        /// <summary>
+        /// Gets the pixel size in microns
+        /// </summary>
+        public SizeF PixelSizeMicrons => new(PixelWidthMicrons, PixelHeightMicrons);
+
+        /// <summary>
+        /// Gets the maximum pixel between width and height in microns
+        /// </summary>
+        public float PixelSizeMicronsMax => PixelSizeMicrons.Max();
+
+        /// <summary>
+        /// Gets the pixel area in millimeters
+        /// </summary>
+        public float PixelAreaMicrons => PixelSizeMicrons.Area();
 
         /// <summary>
         /// Checks if this file have AntiAliasing
@@ -796,7 +835,19 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the estimate used material in ml
         /// </summary>
-        public virtual float MaterialMilliliters { get; set; }
+        public virtual float MaterialMilliliters {
+            get
+            {
+                float pixelArea = PixelArea;
+                float materialMl = 0;
+                if (pixelArea <= 0) return materialMl;
+
+                materialMl = this.Where(layer => layer is not null).Sum(layer => pixelArea * LayerHeight * layer.NonZeroPixelCount);
+
+                return (float) Math.Round(materialMl / 1000, 3);
+            }
+            set => RaisePropertyChanged();
+        }
 
         /// <summary>
         /// Gets the estimate material in grams
@@ -853,20 +904,7 @@ namespace UVtools.Core.FileFormats
 
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(LayerCount))
-            {
-                PrintHeight = PrintHeight;
-            }
-
             if (SuppressRebuildProperties) return;
-            if (e.PropertyName == nameof(LayerCount))
-            {
-                if (LayerCount == 0 || this[LayerCount - 1] is null) return; // Not initialized
-                LayerManager.RebuildLayersProperties();
-                RebuildGCode();
-                PrintTime = PrintTimeComputed;
-                return;
-            }
             if (
                 e.PropertyName == nameof(BottomLayerCount) ||
                 e.PropertyName == nameof(BottomExposureTime) ||
@@ -1048,11 +1086,11 @@ namespace UVtools.Core.FileFormats
                 default:
                     if (largest)
                     {
-                        return Thumbnails[0].Size.GetArea() >= Thumbnails[1].Size.GetArea() ? Thumbnails[0] : Thumbnails[1];
+                        return Thumbnails[0].Size.Area() >= Thumbnails[1].Size.Area() ? Thumbnails[0] : Thumbnails[1];
                     }
                     else
                     {
-                        return Thumbnails[0].Size.GetArea() <= Thumbnails[1].Size.GetArea() ? Thumbnails[0] : Thumbnails[1];
+                        return Thumbnails[0].Size.Area() <= Thumbnails[1].Size.Area() ? Thumbnails[0] : Thumbnails[1];
                     }
             }
         }

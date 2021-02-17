@@ -307,13 +307,13 @@ namespace UVtools.WPF
             }
         }
 
-        public string LayerBoundsStr => LayerCache.Layer is null ? "NS" : $"{LayerCache.Layer.BoundingRectangle} ({LayerCache.Layer.BoundingRectangle.GetArea()}px²)";
+        public string LayerBoundsStr => LayerCache.Layer is null ? "NS" : $"{LayerCache.Layer.BoundingRectangle} ({LayerCache.Layer.BoundingRectangle.Area()}px²)";
         public string LayerROIStr
         {
             get
             {
                 var roi = ROI;
-                return roi.IsEmpty ? "NS" : $"{roi} ({roi.GetArea()}px²)";
+                return roi.IsEmpty ? "NS" : $"{roi} ({roi.Area()}px²)";
             }
         }
 

@@ -591,7 +591,7 @@ namespace UVtools.Core
                                             (int) ccStats.GetValue(i, (int) ConnectedComponentsTypes.Width),
                                             (int) ccStats.GetValue(i, (int) ConnectedComponentsTypes.Height));
 
-                                        if (rect.GetArea() < islandConfig.RequiredAreaToProcessCheck)
+                                        if (rect.Area() < islandConfig.RequiredAreaToProcessCheck)
                                             continue;
 
                                         if (previousImage is null)
@@ -794,7 +794,7 @@ namespace UVtools.Core
                                             continue;
 
                                         var rect = CvInvoke.BoundingRectangle(contours[i]);
-                                        if(rect.GetArea() < resinTrapConfig.RequiredAreaToProcessCheck) continue;
+                                        if(rect.Area() < resinTrapConfig.RequiredAreaToProcessCheck) continue;
 
                                         listHollowArea.Add(new LayerHollowArea(contours[i].ToArray(),
                                             rect,

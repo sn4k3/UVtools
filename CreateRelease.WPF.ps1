@@ -29,7 +29,7 @@ class FixedEncoder : System.Text.UTF8Encoding {
 ####################################
 ###         Configuration        ###
 ####################################
-$enableMSI = $false
+$enableMSI = $true
 $buildOnly = $null
 #$buildOnly = "osx-x64"#"win-x64"
 # Profilling

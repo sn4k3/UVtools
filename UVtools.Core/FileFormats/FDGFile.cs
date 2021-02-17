@@ -935,30 +935,35 @@ namespace UVtools.Core.FileFormats
 
         public override float MaterialMilliliters
         {
-            get => (float) Math.Round(HeaderSettings.VolumeMl, 2);
+            get
+            {
+                var materialMl = base.MaterialMilliliters;
+                return materialMl > 0 ? materialMl : HeaderSettings.VolumeMl;
+            }
             set
             {
-                HeaderSettings.VolumeMl = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
+                if (value <= 0) value = base.MaterialMilliliters;
+                HeaderSettings.VolumeMl = (float)Math.Round(value, 3);
+                base.MaterialMilliliters = HeaderSettings.VolumeMl;
             }
         }
 
         public override float MaterialGrams
         {
-            get => HeaderSettings.WeightG;
+            get => (float)Math.Round(HeaderSettings.WeightG, 3);
             set
             {
-                HeaderSettings.WeightG = (float)Math.Round(value, 2);
+                HeaderSettings.WeightG = (float)Math.Round(value, 3);
                 RaisePropertyChanged();
             }
         }
 
         public override float MaterialCost
         {
-            get => (float) Math.Round(HeaderSettings.CostDollars, 2);
+            get => (float) Math.Round(HeaderSettings.CostDollars, 3);
             set
             {
-                HeaderSettings.CostDollars = (float)Math.Round(value, 2);
+                HeaderSettings.CostDollars = (float)Math.Round(value, 3);
                 RaisePropertyChanged();
             }
         }

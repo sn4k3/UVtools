@@ -123,6 +123,9 @@ namespace UVtools.Core.Operations
         /// </summary>
         public virtual string ProgressAction => Id;
 
+        /// <summary>
+        /// Gets if this operation have a action text
+        /// </summary>
         public bool HaveAction => !string.IsNullOrEmpty(ProgressAction);
 
         /// <summary>
@@ -171,6 +174,12 @@ namespace UVtools.Core.Operations
         }
 
         public bool HaveROI => !ROI.IsEmpty;
+
+        /// <summary>
+        /// Gets if this operation have been executed once
+        /// </summary>
+        [XmlIgnore]
+        public bool HaveExecuted { get; private set; }
         #endregion
 
         #region Constructor
@@ -302,6 +311,7 @@ namespace UVtools.Core.Operations
             if (_slicerFile is null) throw new InvalidOperationException($"{Title} can't execute due the lacking of file parent.");
             progress ??= new OperationProgress();
             progress.Reset(ProgressAction, LayerRangeCount);
+            HaveExecuted = true;
 
             var result = ExecuteInternally(progress);
 

@@ -20,20 +20,5 @@ namespace UVtools.Core.Extensions
                 Math.Min(Math.Max(min, color.B * factor), max));
             return Color.FromArgb(r, g, b);
         }
-
-        public static int GetArea(this Rectangle rect)
-        {
-            return rect.Width * rect.Height;
-        }
-
-        public static int GetArea(this Size size)
-        {
-            return size.Width * size.Height;
-        }
-
-        public static int GetMaximum(this Size size)
-        {
-            return Math.Max(size.Width, size.Height);
-        }
     }
 }

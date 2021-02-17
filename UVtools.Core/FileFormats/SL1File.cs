@@ -441,21 +441,26 @@ namespace UVtools.Core.FileFormats
 
         public override float MaterialMilliliters
         {
-            get => OutputConfigSettings.UsedMaterial;
+            get
+            {
+                var materialMl = base.MaterialMilliliters;
+                return materialMl > 0 ? materialMl : OutputConfigSettings.UsedMaterial;
+            }
             set
             {
-                OutputConfigSettings.UsedMaterial = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
+                if (value <= 0) value = base.MaterialMilliliters;
+                OutputConfigSettings.UsedMaterial = (float)Math.Round(value, 3);
+                base.MaterialMilliliters = OutputConfigSettings.UsedMaterial;
             }
         }
 
-        public override float MaterialGrams
+       public override float MaterialGrams
         {
-            get => (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.MaterialDensity, 2);
+            get => (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.MaterialDensity, 3);
             set { }
         }
 
-        public override float MaterialCost => MaterialSettings.BottleVolume > 0 ? (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.BottleCost / MaterialSettings.BottleVolume, 2) : 0;
+        public override float MaterialCost => MaterialSettings.BottleVolume > 0 ? (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.BottleCost / MaterialSettings.BottleVolume, 3) : 0;
 
         public override string MaterialName
         {

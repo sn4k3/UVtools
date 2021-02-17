@@ -333,20 +333,25 @@ namespace UVtools.Core.FileFormats
 
         public override float MaterialMilliliters
         {
-            get => ResinMetadataSettings.TotalMaterialVolumeUsed;
+            get
+            {
+                var materialMl = base.MaterialMilliliters;
+                return materialMl > 0 ? materialMl : ResinMetadataSettings.TotalMaterialVolumeUsed;
+            }
             set
             {
-                UserSettings.MaterialVolume = ResinMetadataSettings.TotalMaterialVolumeUsed = (float) Math.Round(value, 2);
-                RaisePropertyChanged();
+                if (value <= 0) value = base.MaterialMilliliters;
+                ResinMetadataSettings.TotalMaterialVolumeUsed = (float)Math.Round(value, 3);
+                base.MaterialMilliliters = ResinMetadataSettings.TotalMaterialVolumeUsed;
             }
         }
 
         public override float MaterialGrams
         {
-            get => ResinMetadataSettings.TotalMaterialWeightUsed;
+            get => (float) Math.Round(ResinMetadataSettings.TotalMaterialWeightUsed, 3);
             set
             {
-                ResinMetadataSettings.TotalMaterialWeightUsed = (float) Math.Round(value, 2);
+                ResinMetadataSettings.TotalMaterialWeightUsed = (float) Math.Round(value, 3);
                 RaisePropertyChanged();
             }
         }

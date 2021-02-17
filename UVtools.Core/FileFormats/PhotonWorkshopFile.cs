@@ -71,6 +71,16 @@ namespace UVtools.Core.FileFormats
             PWS,
             PW0
         }
+        
+        public enum AnyCubicMachine : byte
+        {
+            AnyCubicPhotonS,
+            AnyCubicPhotonZero,
+            AnyCubicPhotonX,
+            AnyCubicPhotonMono,
+            AnyCubicPhotonMonoSE,
+            AnyCubicPhotonMonoX,
+        }
         #endregion
 
         #region Sub Classes
@@ -198,7 +208,7 @@ namespace UVtools.Core.FileFormats
             public const string SectionMark = "HEADER";
 
             [FieldOrder(0)] public SectionHeader Section { get; set; }
-            [FieldOrder(1)] public float PixelSize { get; set; } = 0.04725f;
+            [FieldOrder(1)] public float PixelSizeUm { get; set; } = 47.25f;
             [FieldOrder(2)] public float LayerHeight { get; set; }
             [FieldOrder(3)] public float LayerExposureTime { get; set; }
             [FieldOrder(4)] public float LightOffDelay { get; set; } = 1;
@@ -214,24 +224,25 @@ namespace UVtools.Core.FileFormats
             /// Gets the retract speed in mm/s
             /// </summary>
             [FieldOrder(9)] public float RetractSpeed { get; set; } = 3; // mm/s
-            [FieldOrder(10)] public float Volume { get; set; }
+            [FieldOrder(10)] public float VolumeMl { get; set; }
             [FieldOrder(11)] public uint AntiAliasing { get; set; } = 1;
             [FieldOrder(12)] public uint ResolutionX { get; set; }
             [FieldOrder(13)] public uint ResolutionY { get; set; }
             [FieldOrder(14)] public float WeightG { get; set; }
             [FieldOrder(15)] public float Price { get; set; }
-            [FieldOrder(16)] public uint ResinType { get; set; } // 0x24 ?
+            [FieldOrder(16)] public uint PriceCurrencyDec { get; set; } // 0x24 $ or ¥ 0xC2A5
+            [Ignore] public string PriceCurrencySymbol => char.ConvertFromUtf32((int) PriceCurrencyDec);
             [FieldOrder(17)] public uint PerLayerOverride { get; set; } = 1; // bool
-            [FieldOrder(18)] public uint Offset1 { get; set; }
-            [FieldOrder(19)] public uint Offset2 { get; set; }
-            [FieldOrder(20)] public uint Offset3 { get; set; }
+            [FieldOrder(18)] public uint PrintTime { get; set; }
+            [FieldOrder(19)] public uint Offset1 { get; set; }
+            [FieldOrder(20)] public uint Offset2 { get; set; }
 
             public Header()
             {
                 Section = new SectionHeader(SectionMark, this);
             }
 
-            public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(PixelSize)}: {PixelSize}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(LayerExposureTime)}: {LayerExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Volume)}: {Volume}, {nameof(AntiAliasing)}: {AntiAliasing}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(WeightG)}: {WeightG}, {nameof(Price)}: {Price}, {nameof(ResinType)}: {ResinType}, {nameof(PerLayerOverride)}: {PerLayerOverride}, {nameof(Offset1)}: {Offset1}, {nameof(Offset2)}: {Offset2}, {nameof(Offset3)}: {Offset3}";
+            public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(PixelSizeUm)}: {PixelSizeUm}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(LayerExposureTime)}: {LayerExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(AntiAliasing)}: {AntiAliasing}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(WeightG)}: {WeightG}, {nameof(Price)}: {Price}, {nameof(PriceCurrencyDec)}: {PriceCurrencyDec}, {nameof(PerLayerOverride)}: {PerLayerOverride}, {nameof(PrintTime)}: {PrintTime}, {nameof(Offset1)}: {Offset1}, {nameof(Offset2)}: {Offset2}";
 
             public void Validate()
             {
@@ -344,7 +355,7 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(Section)}: {Section}, {nameof(Width)}: {Width}, {nameof(Resolution)}: {Resolution}, {nameof(Height)}: {Height}, {nameof(Data)}: {Data}";
+                return $"{nameof(Section)}: {Section}, {nameof(Width)}: {Width}, {nameof(Resolution)}: {Resolution}, {nameof(Height)}: {Height}, {nameof(Data)}: {Data?.Length ?? 0}";
             }
 
             public void Validate(int size)
@@ -378,16 +389,16 @@ namespace UVtools.Core.FileFormats
             /// Gets the exposure time for this layer, in seconds.
             /// </summary>
             [FieldOrder(4)]
-            public float LayerExposure { get; set; }
+            public float ExposureTime { get; set; }
 
             /// <summary>
-            /// Gets the build platform Z position for this layer, measured in millimeters.
+            /// Gets the layer height for this layer, measured in millimeters.
             /// </summary>
             [FieldOrder(5)]
-            public float LayerPositionZ { get; set; }
+            public float LayerHeight { get; set; }
 
-            [FieldOrder(6)] public float Offset1 { get; set; }
-            [FieldOrder(7)] public float Offset2 { get; set; }
+            [FieldOrder(6)] public uint NonZeroPixelCount { get; set; }
+            [FieldOrder(7)] public uint Offset1 { get; set; }
 
             [Ignore] public byte[] EncodedRle { get; set; }
             [Ignore] public PhotonWorkshopFile Parent { get; set; }
@@ -404,10 +415,11 @@ namespace UVtools.Core.FileFormats
 
             public void RefreshLayerData(uint layerIndex)
             {
-                LayerPositionZ = Parent[layerIndex].PositionZ;
-                LayerExposure = Parent[layerIndex].ExposureTime;
+                LayerHeight = Parent[layerIndex].LayerHeight;
+                ExposureTime = Parent[layerIndex].ExposureTime;
                 LiftHeight = Parent[layerIndex].LiftHeight;
                 LiftSpeed = (float) Math.Round(Parent[layerIndex].LiftSpeed / 60, 2);
+                NonZeroPixelCount = Parent[layerIndex].NonZeroPixelCount;
             }
 
             public Mat Decode(bool consumeData = true)
@@ -706,6 +718,11 @@ namespace UVtools.Core.FileFormats
             {
                 return CRCRle4(EncodedRle);
             }
+
+            public override string ToString()
+            {
+                return $"{nameof(DataAddress)}: {DataAddress}, {nameof(DataLength)}: {DataLength}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(Offset1)}: {Offset1}, {nameof(EncodedRle)}: {EncodedRle?.Length ?? 0}";
+            }
         }
 
         #endregion
@@ -760,15 +777,15 @@ namespace UVtools.Core.FileFormats
 
         #region Properties
 
-        public FileMark FileMarkSettings { get; protected internal set; } = new FileMark();
+        public FileMark FileMarkSettings { get; protected internal set; } = new();
 
-        public Header HeaderSettings { get; protected internal set; } = new Header();
+        public Header HeaderSettings { get; protected internal set; } = new();
 
-        public Preview PreviewSettings { get; protected internal set; } = new Preview();
+        public Preview PreviewSettings { get; protected internal set; } = new();
 
-        public LayerDefinition LayersDefinition { get; protected internal set; } = new LayerDefinition();
+        public LayerDefinition LayersDefinition { get; protected internal set; } = new();
 
-        public Dictionary<string, LayerData> LayersHash { get; } = new Dictionary<string, LayerData>();
+        public Dictionary<string, LayerData> LayersHash { get; } = new();
 
         public override FileFormatType FileType => FileFormatType.Binary;
 
@@ -830,12 +847,75 @@ namespace UVtools.Core.FileFormats
 
         public override float DisplayWidth
         {
-            get => 0;
+            get
+            {
+                switch (PrinterModel)
+                {
+                    case AnyCubicMachine.AnyCubicPhotonS:
+                        return 68.04f;
+                    case AnyCubicMachine.AnyCubicPhotonZero:
+                        return 55.44f;
+                    case AnyCubicMachine.AnyCubicPhotonX:
+                        return 192;
+                    case AnyCubicMachine.AnyCubicPhotonMono:
+                        return 82.62f;
+                    case AnyCubicMachine.AnyCubicPhotonMonoSE:
+                        return 82.62f;
+                    case AnyCubicMachine.AnyCubicPhotonMonoX:
+                        return 192;
+                    default:
+                        return 0;
+                }
+            }
             set { }
         }
         public override float DisplayHeight
         {
-            get => 0;
+            get
+            {
+                switch (PrinterModel)
+                {
+                    case AnyCubicMachine.AnyCubicPhotonS:
+                        return 120.96f;
+                    case AnyCubicMachine.AnyCubicPhotonZero:
+                        return 98.637f;
+                    case AnyCubicMachine.AnyCubicPhotonX:
+                        return 120;
+                    case AnyCubicMachine.AnyCubicPhotonMono:
+                        return 130.56f;
+                    case AnyCubicMachine.AnyCubicPhotonMonoSE:
+                        return 130.56f;
+                    case AnyCubicMachine.AnyCubicPhotonMonoX:
+                        return 120;
+                    default:
+                        return 0;
+                }
+            }
+            set { }
+        }
+
+        public override float MaxPrintHeight
+        {
+            get
+            {
+                switch (PrinterModel)
+                {
+                    case AnyCubicMachine.AnyCubicPhotonS:
+                        return 165;
+                    case AnyCubicMachine.AnyCubicPhotonZero:
+                        return 150;
+                    case AnyCubicMachine.AnyCubicPhotonX:
+                        return 245;
+                    case AnyCubicMachine.AnyCubicPhotonMono:
+                        return 165;
+                    case AnyCubicMachine.AnyCubicPhotonMonoSE:
+                        return 160;
+                    case AnyCubicMachine.AnyCubicPhotonMonoX:
+                        return 245;
+                    default:
+                        return 0;
+                }
+            }
             set { }
         }
 
@@ -964,29 +1044,44 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float MaterialMilliliters
+        public override float PrintTime
         {
-            get => (float) Math.Round(HeaderSettings.Volume, 2);
+            get => HeaderSettings.PrintTime;
             set
             {
-                HeaderSettings.Volume = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
+                HeaderSettings.PrintTime = (uint)value;
+                base.PrintTime = value;
+            }
+        }
+
+        public override float MaterialMilliliters
+        {
+            get
+            {
+                var materialMl = base.MaterialMilliliters;
+                return materialMl > 0 ? materialMl : HeaderSettings.VolumeMl;
+            }
+            set
+            {
+                if (value <= 0) value = base.MaterialMilliliters;
+                HeaderSettings.VolumeMl = (float)Math.Round(value, 3);
+                base.MaterialMilliliters = HeaderSettings.VolumeMl;
             }
         }
 
         public override float MaterialGrams
         {
-            get => HeaderSettings.WeightG;
+            get => (float) Math.Round(HeaderSettings.WeightG, 3);
             set
             {
-                HeaderSettings.WeightG = (float) Math.Round(value, 2);
+                HeaderSettings.WeightG = (float) Math.Round(value, 3);
                 RaisePropertyChanged();
             }
         }
 
         public override float MaterialCost
         {
-            get => (float) Math.Round(HeaderSettings.Price, 2);
+            get => (float) Math.Round(HeaderSettings.Price, 3);
             set
             {
                 HeaderSettings.Price = (float)Math.Round(value, 2);
@@ -998,37 +1093,23 @@ namespace UVtools.Core.FileFormats
         {
             get
             {
-                if (FileFullPath.EndsWith(".pws") || FileFullPath.EndsWith($".pws{TemporaryFileAppend}"))
+                switch (PrinterModel)
                 {
-                    return "AnyCubic Photon S";
+                    case AnyCubicMachine.AnyCubicPhotonS:
+                        return "AnyCubic Photon S";
+                    case AnyCubicMachine.AnyCubicPhotonZero:
+                        return "AnyCubic Photon Zero";
+                    case AnyCubicMachine.AnyCubicPhotonX:
+                        return "AnyCubic Photon X";
+                    case AnyCubicMachine.AnyCubicPhotonMono:
+                        return "AnyCubic Photon Mono";
+                    case AnyCubicMachine.AnyCubicPhotonMonoSE:
+                        return "AnyCubic Photon Mono SE";
+                    case AnyCubicMachine.AnyCubicPhotonMonoX:
+                        return "AnyCubic Photon Mono X";
+                    default:
+                        return base.MachineName;
                 }
-
-                if (FileFullPath.EndsWith(".pw0") || FileFullPath.EndsWith($".pw0{TemporaryFileAppend}"))
-                {
-                    return "AnyCubic Photon Zero";
-                }
-
-                if (FileFullPath.EndsWith(".pwx") || FileFullPath.EndsWith($".pwx{TemporaryFileAppend}"))
-                {
-                    return "AnyCubic Photon X";
-                }
-
-                if (FileFullPath.EndsWith(".pwmo") || FileFullPath.EndsWith($".pwmo{TemporaryFileAppend}"))
-                {
-                    return "AnyCubic Photon Mono";
-                }
-
-                if (FileFullPath.EndsWith(".pwms") || FileFullPath.EndsWith($".pwms{TemporaryFileAppend}"))
-                {
-                    return "AnyCubic Photon Mono SE";
-                }
-
-                if (FileFullPath.EndsWith(".pwmx") || FileFullPath.EndsWith($".pwmx{TemporaryFileAppend}"))
-                {
-                    return "AnyCubic Photon Mono X";
-                }
-
-                return base.MachineName;
             }
         }
         
@@ -1039,6 +1120,43 @@ namespace UVtools.Core.FileFormats
                 ? LayerRleFormat.PWS
                 : LayerRleFormat.PW0;
 
+        public AnyCubicMachine PrinterModel
+        {
+            get
+            {
+                if (FileFullPath.EndsWith(".pws") || FileFullPath.EndsWith($".pws{TemporaryFileAppend}"))
+                {
+                    return AnyCubicMachine.AnyCubicPhotonS;
+                }
+
+                if (FileFullPath.EndsWith(".pw0") || FileFullPath.EndsWith($".pw0{TemporaryFileAppend}"))
+                {
+                    return AnyCubicMachine.AnyCubicPhotonZero;
+                }
+
+                if (FileFullPath.EndsWith(".pwx") || FileFullPath.EndsWith($".pwx{TemporaryFileAppend}"))
+                {
+                    return AnyCubicMachine.AnyCubicPhotonX;
+                }
+
+                if (FileFullPath.EndsWith(".pwmo") || FileFullPath.EndsWith($".pwmo{TemporaryFileAppend}"))
+                {
+                    return AnyCubicMachine.AnyCubicPhotonMono;
+                }
+
+                if (FileFullPath.EndsWith(".pwms") || FileFullPath.EndsWith($".pwms{TemporaryFileAppend}"))
+                {
+                    return AnyCubicMachine.AnyCubicPhotonMonoSE;
+                }
+
+                if (FileFullPath.EndsWith(".pwmx") || FileFullPath.EndsWith($".pwmx{TemporaryFileAppend}"))
+                {
+                    return AnyCubicMachine.AnyCubicPhotonMonoX;
+                }
+
+                return AnyCubicMachine.AnyCubicPhotonS;
+            }
+        } 
         #endregion
 
         #region Constructors
@@ -1058,8 +1176,35 @@ namespace UVtools.Core.FileFormats
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
             LayersHash.Clear();
-
             LayersDefinition = new LayerDefinition(LayerCount);
+
+            switch (PrinterModel)
+            {
+                case AnyCubicMachine.AnyCubicPhotonS:
+                    HeaderSettings.PixelSizeUm = 47.25f;
+                    break;
+                case AnyCubicMachine.AnyCubicPhotonZero:
+                    HeaderSettings.PixelSizeUm = 115.5f;
+                    break;
+                case AnyCubicMachine.AnyCubicPhotonX:
+                    HeaderSettings.PixelSizeUm = 75;
+                    break;
+                case AnyCubicMachine.AnyCubicPhotonMono:
+                    HeaderSettings.PixelSizeUm = 51;
+                    break;
+                case AnyCubicMachine.AnyCubicPhotonMonoSE:
+                    HeaderSettings.PixelSizeUm = 51;
+                    break;
+                case AnyCubicMachine.AnyCubicPhotonMonoX:
+                    HeaderSettings.PixelSizeUm = 50;
+                    break;
+                default:
+                    HeaderSettings.PixelSizeUm = 47.25f;
+                    break;
+            }
+
+            HeaderSettings.PerLayerOverride = 1;
+
 
             uint currentOffset = FileMarkSettings.HeaderAddress = (uint) Helpers.Serializer.SizeOf(FileMarkSettings);
             using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
@@ -1190,6 +1335,7 @@ namespace UVtools.Core.FileFormats
             {
                 LayersDefinition[i] = Helpers.Deserialize<LayerData>(inputFile);
                 LayersDefinition[i].Parent = this;
+                Debug.WriteLine($"Layer {i}: {LayersDefinition[i]}");
             }
 
             progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
@@ -1219,8 +1365,8 @@ namespace UVtools.Core.FileFormats
                 {
                     this[layerIndex] = new Layer((uint) layerIndex, image, LayerManager)
                     {
-                        PositionZ = LayersDefinition[(uint)layerIndex].LayerPositionZ,
-                        ExposureTime = LayersDefinition[(uint)layerIndex].LayerExposure,
+                        PositionZ = (float) Math.Round(LayersDefinition[(uint)layerIndex].LayerHeight, 2),
+                        ExposureTime = LayersDefinition[(uint)layerIndex].ExposureTime,
                         LiftHeight = LayersDefinition[(uint)layerIndex].LiftHeight,
                         LiftSpeed = (float)Math.Round(LayersDefinition[(uint)layerIndex].LiftSpeed * 60, 2),
                     };
@@ -1231,6 +1377,15 @@ namespace UVtools.Core.FileFormats
                     progress++;
                 }
             });
+
+            // Fix position z height values
+            if (LayerCount > 0)
+            {
+                for (uint layerIndex = 1; layerIndex < LayerCount; layerIndex++)
+                {
+                    this[layerIndex].PositionZ = (float)Math.Round(this[layerIndex-1].PositionZ + this[layerIndex].PositionZ, 2);
+                }
+            }
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)
@@ -1251,6 +1406,8 @@ namespace UVtools.Core.FileFormats
                 File.Copy(FileFullPath, filePath, true);
                 FileFullPath = filePath;
             }
+
+            HeaderSettings.PerLayerOverride = 1;
 
             using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);
             outputFile.Seek(FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
