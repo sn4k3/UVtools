@@ -20,15 +20,16 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
 
 namespace UVtools.Core
 {
-    public class LayerManager : IEnumerable<Layer>
+    public class LayerManager : BindableBase, IEnumerable<Layer>, IDisposable
     {
         #region Properties
-        public FileFormat SlicerFile { get; }
+        public FileFormat SlicerFile { get; set; }
 
         private Layer[] _layers;
 
@@ -60,8 +61,30 @@ namespace UVtools.Core
         public Rectangle BoundingRectangle
         {
             get => GetBoundingRectangle();
-            set => _boundingRectangle = value;
+            set
+            {
+                RaiseAndSetIfChanged(ref _boundingRectangle, value);
+                RaisePropertyChanged(nameof(BoundingRectangleMillimeters));
+            }
         }
+
+        /// <summary>
+        /// Gets the bounding rectangle of the object in millimeters
+        /// </summary>
+        public RectangleF BoundingRectangleMillimeters
+        {
+            get
+            {
+                if (SlicerFile is null) return RectangleF.Empty;
+                var pixelSize = SlicerFile.PixelSize;
+                return new RectangleF(
+                    (float)Math.Round(_boundingRectangle.X * pixelSize.Width, 2),
+                    (float)Math.Round(_boundingRectangle.Y * pixelSize.Height, 2),
+                    (float)Math.Round(_boundingRectangle.Width * pixelSize.Width, 2),
+                    (float)Math.Round(_boundingRectangle.Height * pixelSize.Height, 2));
+            }
+        }
+            
 
         /// <summary>
         /// Gets the layers count
@@ -86,7 +109,6 @@ namespace UVtools.Core
         }
 
         //public float LayerHeight => Layers[0].PositionZ;
-
 
         #endregion
 
@@ -282,12 +304,11 @@ namespace UVtools.Core
                 });
                 _boundingRectangle = this[0].BoundingRectangle;
 
-                if (!ReferenceEquals(progress, null) && progress.Token.IsCancellationRequested)
+                if (progress is not null && progress.Token.IsCancellationRequested)
                 {
                     _boundingRectangle = Rectangle.Empty;
                     progress.Token.ThrowIfCancellationRequested();
                 }
-                
             }
 
             progress.Reset(OperationProgress.StatusCalculatingBounds, Count-1);
@@ -297,7 +318,7 @@ namespace UVtools.Core
                 _boundingRectangle = Rectangle.Union(_boundingRectangle, this[i].BoundingRectangle);
                 progress++;
             }
-
+            RaisePropertyChanged(nameof(BoundingRectangle));
             return _boundingRectangle;
         }
 
@@ -1298,6 +1319,7 @@ namespace UVtools.Core
             return layerManager;
         }
 
+        public void Dispose() { }
 
         #endregion
 
@@ -1309,5 +1331,7 @@ namespace UVtools.Core
         }
 
         #endregion
+
+        
     }
 }

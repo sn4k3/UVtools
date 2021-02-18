@@ -285,9 +285,9 @@ namespace UVtools.Core.FileFormats
         #endregion
 
         #region Properties
-        public Slice SliceSettings { get; } = new Slice();
-        public Output OutputSettings { get; } = new Output();
-        public CWSSliceBuildConfig SliceBuildConfig { get; set; } = new CWSSliceBuildConfig();
+        public Slice SliceSettings { get; } = new();
+        public Output OutputSettings { get; } = new();
+        public CWSSliceBuildConfig SliceBuildConfig { get; set; } = new();
 
 
         public override FileFormatType FileType => FileFormatType.Archive;

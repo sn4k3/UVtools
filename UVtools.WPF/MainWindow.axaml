@@ -659,7 +659,7 @@
               ToolTip.Tip="Remove selected issue when possible.
 &#x0a;Islands: All pixels are removed (turn black).
 &#x0a;ResinTrap: All trap areas are filled with white pixels.
-&#x0a;TouchingBounds: No action, need reslice."
+&#x0a;TouchingBounds: No action, need re-slice."
               IsEnabled="{Binding #IssuesGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
               Command="{Binding OnClickIssueRemove}">
               <StackPanel Orientation="Horizontal" Spacing="5">
@@ -1766,8 +1766,7 @@
             IsChecked="{Binding IsPixelEditorActive}"
             ToolTip.Tip="Edit layer image: Draw pixels, add supports and/or drain holes."
             VerticalAlignment="Stretch"
-            Margin="1,0,0,0"
-          >
+            Margin="0,0,0,0">
             <StackPanel Orientation="Horizontal">
               <Image Source="/Assets/Icons/pixel-16x16.png"/>
               <TextBlock Margin="5,0,5,0" Text="Pixel editor"/>
@@ -1777,14 +1776,14 @@
         </WrapPanel>
 
 
-        <WrapPanel HorizontalAlignment="Right" Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+        <StackPanel HorizontalAlignment="Right" Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
           <Button Name="LayerActionsButton"
               Command="{Binding OpenContextMenu}"
               VerticalAlignment="Stretch"
               CommandParameter="LayerActions">
             <StackPanel Orientation="Horizontal">
               <Image Source="/Assets/Icons/layers-alt-16x16.png"/>
-              <TextBlock Margin="5,0,5,0" Text="Actions ⮟"/>
+              <TextBlock VerticalAlignment="Center" Margin="5,0,5,0" Text="Actions ⮟"/>
             </StackPanel>
             <Button.ContextMenu>
               <ContextMenu Name="LayerActionsContextMenu" PlacementMode="Bottom" Items="{Binding LayerActionsMenu}"/>
@@ -1813,7 +1812,7 @@
           </Button>
 
 
-        </WrapPanel>
+        </StackPanel>
       </Grid>
 
       <Border
@@ -1851,21 +1850,20 @@
         ColumnDefinitions="4*,2*" RowDefinitions="Auto" Margin="5">
         <WrapPanel Orientation="Horizontal">
           <StackPanel
-            ToolTip.Tip="Number of pixels to cure on this layer image and the percentage of them against total lcd pixels"
+            ToolTip.Tip="Number of pixels to cure on this layer image and the percentage of them against total lcd pixels and the total cured millimeters."
             VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
             <Image Source="/Assets/Icons/pixel-16x16.png"/>
-            <TextBlock Text="{Binding LayerPixelCountStr, StringFormat=Pixels: \{0\}}"/>
+            <TextBlock Text="{Binding LayerPixelCountStr}"/>
           </StackPanel>
 
           <Button
-            ToolTip.Tip="Object volume bounds for current layer, position and size.
+            ToolTip.Tip="Object volume bounds for current layer, position and size in pixels and millimeters.
 &#x0a;Click: go to region"
             Command="{Binding ZoomToFitPrintVolume}"
-            Margin="5,0,0,0"
-          >
+            Margin="5,0,0,0">
             <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
               <Image Source="/Assets/Icons/expand-16x16.png"/>
-              <TextBlock Text="{Binding LayerBoundsStr, StringFormat=Bounds: \{0\}}"/>
+              <TextBlock Text="{Binding LayerBoundsStr}"/>
             </StackPanel>
           </Button>
 
@@ -1879,13 +1877,13 @@
           >
             <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
               <Image Source="/Assets/Icons/object-group-16x16.png"/>
-              <TextBlock Text="{Binding LayerROIStr, StringFormat=ROI: \{0\}}"/>
+              <TextBlock Text="{Binding LayerROIStr}"/>
             </StackPanel>
           </Button>
 
         </WrapPanel>
 
-        <WrapPanel Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal">
+        <WrapPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal">
           <Button
             IsEnabled="{Binding LayerPixelPicker.IsSet}"
             Command="{Binding OnLayerPixelPickerClicked}"
@@ -1911,7 +1909,7 @@
           </Button>
 
           <Button
-            ToolTip.Tip="Layer Resolution.
+            ToolTip.Tip="Layer Resolution and display size.
 &#x0a;Click: Zoom to fit"
             Command="{Binding ZoomToFitSimple}"
             Margin="2,0,0,0"

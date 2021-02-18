@@ -54,14 +54,14 @@ namespace UVtools.Core.Extensions
             return Math.Max(size.Width, size.Height);
         }
 
-        public static float Area(this RectangleF rect)
+        public static float Area(this RectangleF rect, int round = -1)
         {
-            return rect.Width * rect.Height;
+            return round >= 0 ? (float) Math.Round(rect.Width * rect.Height, round) : rect.Width * rect.Height;
         }
 
-        public static float Area(this SizeF size)
+        public static float Area(this SizeF size, int round = -1)
         {
-            return size.Width * size.Height;
+            return round >= 0 ? (float)Math.Round(size.Width * size.Height, round) : size.Width * size.Height;
         }
 
         public static float Max(this SizeF size)

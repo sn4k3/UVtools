@@ -7,9 +7,9 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Timers;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
@@ -38,6 +38,7 @@ namespace UVtools.Core
         private float _liftSpeed = FileFormat.DefaultLiftSpeed;
         private float _retractSpeed = FileFormat.DefaultRetractSpeed;
         private byte _lightPwm = FileFormat.DefaultLightPWM;
+        private float _materialMilliliters;
         #endregion
 
         #region Properties
@@ -60,9 +61,17 @@ namespace UVtools.Core
             internal set
             {
                 if(!RaiseAndSetIfChanged(ref _nonZeroPixelCount, value)) return;
-                RaisePropertyChanged(nameof(MaterialMilliliters));
-                if (SlicerFile is null) return;
-                SlicerFile.MaterialMilliliters = 0;
+                RaisePropertyChanged(nameof(ExposureMillimeters));
+                MaterialMilliliters = 0; // Recalculate
+            }
+        }
+
+        public float ExposureMillimeters
+        {
+            get
+            {
+                if (SlicerFile is null) return 0;
+                return (float) Math.Round(SlicerFile.PixelSizeMax * _nonZeroPixelCount, 2);
             }
         }
 
@@ -72,7 +81,28 @@ namespace UVtools.Core
         public Rectangle BoundingRectangle
         {
             get => _boundingRectangle;
-            internal set => RaiseAndSetIfChanged(ref _boundingRectangle, value);
+            internal set
+            {
+                RaiseAndSetIfChanged(ref _boundingRectangle, value);
+                RaisePropertyChanged(nameof(BoundingRectangleMillimeters));
+            }
+        }
+
+        /// <summary>
+        /// Gets the bounding rectangle for the image area in millimeters
+        /// </summary>
+        public RectangleF BoundingRectangleMillimeters
+        {
+            get
+            {
+                if (SlicerFile is null) return RectangleF.Empty;
+                var pixelSize = SlicerFile.PixelSize;
+                return new RectangleF(
+                    (float) Math.Round(_boundingRectangle.X * pixelSize.Width, 2),
+                    (float)Math.Round(_boundingRectangle.Y * pixelSize.Height, 2),
+                    (float)Math.Round(_boundingRectangle.Width * pixelSize.Width, 2),
+                    (float)Math.Round(_boundingRectangle.Height * pixelSize.Height, 2));
+            }
         }
 
         public bool IsBottomLayer => Index < ParentLayerManager.SlicerFile.BottomLayerCount;
@@ -206,12 +236,28 @@ namespace UVtools.Core
         /// </summary>
         public float MaterialMilliliters
         {
-            get
+            get => _materialMilliliters;
+            private set
             {
-                if (ParentLayerManager?.SlicerFile is null) return 0;
-                return  (float) Math.Round(ParentLayerManager.SlicerFile.PixelArea * LayerHeight * NonZeroPixelCount / 1000, 4);
+                if (ParentLayerManager?.SlicerFile is null) return;
+                if (value <= 0)
+                {
+                    value = (float) Math.Round(ParentLayerManager.SlicerFile.PixelArea * ParentLayerManager.SlicerFile.LayerHeight * NonZeroPixelCount / 1000, 4);
+                }
+
+                if(!RaiseAndSetIfChanged(ref _materialMilliliters, value)) return;
+                SlicerFile.MaterialMilliliters = 0; // Recalculate global
+                RaisePropertyChanged(nameof(MaterialMillilitersPercent));
+                //ParentLayerManager.MaterialMillilitersTimer.Stop();
+                //if(!ParentLayerManager.MaterialMillilitersTimer.Enabled)
+                //    ParentLayerManager.MaterialMillilitersTimer.Start();
             }
         }
+
+        /// <summary>
+        /// Gets the computed material milliliters percentage compared to the rest of the model
+        /// </summary>
+        public float MaterialMillilitersPercent => _materialMilliliters * 100 / SlicerFile.MaterialMilliliters;
 
         /// <summary>
         /// Gets or sets layer image compressed data
@@ -696,8 +742,10 @@ namespace UVtools.Core
                 BoundingRectangle = _boundingRectangle,
                 NonZeroPixelCount = _nonZeroPixelCount,
                 IsModified = _isModified,
+                MaterialMilliliters = _materialMilliliters
             };
         }
+
 
         #endregion
     }

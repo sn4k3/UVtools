@@ -446,7 +446,7 @@ namespace UVtools.Core.Operations
             Report report = new()
             {
                 OldLayerCount = SlicerFile.LayerCount,
-                OldPrintTime = SlicerFile.PrintTimeOrComputed
+                OldPrintTime = SlicerFile.PrintTime
             };
 
             var anchor = new Point(-1, -1);
@@ -699,7 +699,7 @@ namespace UVtools.Core.Operations
             SlicerFile.SuppressRebuildProperties = false;
             
             report.NewLayerCount = SlicerFile.LayerCount;
-            report.NewPrintTime = SlicerFile.PrintTimeOrComputed;
+            report.NewPrintTime = SlicerFile.PrintTime;
             Tag = report;
 
             return true;

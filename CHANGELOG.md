@@ -1,5 +1,22 @@
 # Changelog
 
+## 18/02/2021 - v2.4.8
+
+* (Improvement) Cache per layer and global used material for faster calculations
+* (Improvement) Better internal PrintTime management
+* **(Improvement) GUI:**
+   * Show per layer used material percentage compared to the rest model
+   * Show total of millimeters cured per layer if available
+   * Show bounds and ROI in millimeters if available
+   * Show display width and height below resolution if available
+   * Don't split (Actions / Refresh / Save) region when resize window and keep those fixed
+* **(Improvement) Calibrate - Grayscale:**
+   * Add a option to convert brightness to exposure time on divisions text
+   * Adjust text position to be better centered and near from the center within divisions
+* (Fix) Calculate the used material with global layer height instead of calculate height from layer difference which lead to wrong values in parallel computation
+* (Fix) Converting files were not setting the new file as parent for the layer manager, this affected auto convertions from SL1 and lead to crashes and bad calculations if file were not reloaded from the disk (#150, #151)
+* (Fix) PositionZ rounding error when removing layers
+
 ## 17/02/2021 - v2.4.7
 
 * (Add) Computed used material milliliters for each layer, it will dynamic change if pixels are added or subtracted

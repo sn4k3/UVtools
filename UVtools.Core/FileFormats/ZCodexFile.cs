@@ -324,25 +324,20 @@ namespace UVtools.Core.FileFormats
             get => ResinMetadataSettings.PrintTime;
             set
             {
-                TimeSpan ts = new TimeSpan(0, 0, (int)value);
-                ResinMetadataSettings.PrintTime = (uint) value;
-                UserSettings.PrintTime = $"{ts.Hours}h {ts.Minutes}m";
                 base.PrintTime = value;
+                ResinMetadataSettings.PrintTime = (uint)base.PrintTime;
+                TimeSpan ts = new(0, 0, (int)base.PrintTime);
+                UserSettings.PrintTime = $"{ts.Hours}h {ts.Minutes}m";
             }
         }
 
         public override float MaterialMilliliters
         {
-            get
-            {
-                var materialMl = base.MaterialMilliliters;
-                return materialMl > 0 ? materialMl : ResinMetadataSettings.TotalMaterialVolumeUsed;
-            }
+            get => base.MaterialMilliliters;
             set
             {
-                if (value <= 0) value = base.MaterialMilliliters;
-                ResinMetadataSettings.TotalMaterialVolumeUsed = (float)Math.Round(value, 3);
-                base.MaterialMilliliters = ResinMetadataSettings.TotalMaterialVolumeUsed;
+                base.MaterialMilliliters = value;
+                ResinMetadataSettings.TotalMaterialVolumeUsed = base.MaterialMilliliters;
             }
         }
 

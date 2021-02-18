@@ -362,7 +362,7 @@ namespace UVtools.WPF
                     CurrentLayerProperties.Add(new StringTag(nameof(layer.LightPWM), layer.LightPWM.ToString()));
             }
 
-            CurrentLayerProperties.Add(new StringTag(nameof(layer.MaterialMilliliters), $"{layer.MaterialMilliliters:F4}ml"));
+            CurrentLayerProperties.Add(new StringTag(nameof(layer.MaterialMilliliters), $"{layer.MaterialMilliliters}ml ({layer.MaterialMillilitersPercent:F2}%)"));
         }
         #endregion
     }

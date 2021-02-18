@@ -308,6 +308,7 @@ namespace UVtools.Core.FileFormats
         private bool _haveModifiedLayers;
         private LayerManager _layerManager;
         private float _printTime;
+        private float _materialMilliliters;
         private float _maxPrintHeight;
         #endregion
 
@@ -451,16 +452,24 @@ namespace UVtools.Core.FileFormats
             set
             {
                 var oldLayerManager = _layerManager;
-                if (!RaiseAndSetIfChanged(ref _layerManager, value) || oldLayerManager is null || value is null) return;
-                if (oldLayerManager.Count != LayerCount)
+                if (!RaiseAndSetIfChanged(ref _layerManager, value) || value is null) return;
+
+                if(!ReferenceEquals(this, _layerManager.SlicerFile)) // Auto fix parent slicer file
                 {
-                    LayerCount = _layerManager.Count;
+                    _layerManager.SlicerFile = this;
                 }
 
                 // Recalculate changes
                 PrintHeight = PrintHeight;
                 PrintTime = PrintTimeComputed;
                 MaterialMilliliters = 0;
+
+                if (oldLayerManager is null) return; // Init
+
+                if (oldLayerManager.Count != LayerCount)
+                {
+                    LayerCount = _layerManager.Count;
+                }
 
                 if (SuppressRebuildProperties) return;
                 if (LayerCount == 0 || this[LayerCount - 1] is null) return; // Not initialized
@@ -473,6 +482,11 @@ namespace UVtools.Core.FileFormats
         /// Gets the bounding rectangle of the object
         /// </summary>
         public Rectangle BoundingRectangle => _layerManager?.BoundingRectangle ?? Rectangle.Empty;
+
+        /// <summary>
+        /// Gets the bounding rectangle of the object in millimeters
+        /// </summary>
+        public RectangleF BoundingRectangleMillimeters => _layerManager?.BoundingRectangleMillimeters ?? Rectangle.Empty;
 
         /// <summary>
         /// Gets or sets if modifications require a full encode to save
@@ -763,22 +777,25 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public virtual float PrintTime
         {
-            get => _printTime;
+            get
+            {
+                if (_printTime <= 0)
+                {
+                    _printTime = PrintTimeComputed;
+                }
+                return _printTime;
+            } 
             set
             {
-                _printTime = value;
-                RaisePropertyChanged();
-                RaisePropertyChanged(nameof(PrintTimeOrComputed));
-                RaisePropertyChanged(nameof(PrintTimeComputed));
+                if (value <= 0)
+                {
+                    value = PrintTimeComputed;
+                }
+                if(!RaiseAndSetIfChanged(ref _printTime, value)) return;
                 RaisePropertyChanged(nameof(PrintTimeHours));
                 RaisePropertyChanged(nameof(PrintTimeString));
             }
         }
-
-        /// <summary>
-        /// Gets the estimate print time in seconds, if print doesn't support it it will be calculated
-        /// </summary>
-        public float PrintTimeOrComputed => PrintTime > 0 ? PrintTime : PrintTimeComputed;
 
         /// <summary>
         /// Gets the calculated estimate print time in seconds
@@ -825,29 +842,30 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the estimate print time in hours
         /// </summary>
-        public float PrintTimeHours => (float) Math.Round(PrintTimeOrComputed / 3600, 2);
+        public float PrintTimeHours => (float) Math.Round(PrintTime / 3600, 2);
 
         /// <summary>
         /// Gets the estimate print time in hours and minutes formatted
         /// </summary>
-        public string PrintTimeString => TimeSpan.FromSeconds(PrintTimeOrComputed).ToString("hh\\hmm\\m");
+        public string PrintTimeString => TimeSpan.FromSeconds(PrintTime).ToString("hh\\hmm\\m");
 
         /// <summary>
         /// Gets the estimate used material in ml
         /// </summary>
         public virtual float MaterialMilliliters {
-            get
+            get => _materialMilliliters;
+            set
             {
-                float pixelArea = PixelArea;
-                float materialMl = 0;
-                if (pixelArea <= 0) return materialMl;
-
-                materialMl = this.Where(layer => layer is not null).Sum(layer => pixelArea * LayerHeight * layer.NonZeroPixelCount);
-
-                return (float) Math.Round(materialMl / 1000, 3);
+                if (value <= 0)
+                {
+                    value = (float)Math.Round(this.Where(layer => layer is not null).Sum(layer => layer.MaterialMilliliters), 3); ;
+                }
+                RaiseAndSetIfChanged(ref _materialMilliliters, value);
             }
-            set => RaisePropertyChanged();
         }
+
+        //public float MaterialMillilitersComputed =>
+            
 
         /// <summary>
         /// Gets the estimate material in grams
@@ -1651,9 +1669,9 @@ namespace UVtools.Core.FileFormats
 
             slicerFile.SuppressRebuildProperties = true;
 
-            slicerFile.LayerManager = LayerManager;
+            slicerFile.LayerManager = _layerManager.Clone();
             slicerFile.AntiAliasing = ValidateAntiAliasingLevel();
-            slicerFile.LayerCount = LayerManager.Count;
+            slicerFile.LayerCount = _layerManager.Count;
             slicerFile.BottomLayerCount = BottomLayerCount;
             slicerFile.LayerHeight = LayerHeight;
             slicerFile.ResolutionX = ResolutionX;
@@ -1685,7 +1703,7 @@ namespace UVtools.Core.FileFormats
             slicerFile.MaterialCost = MaterialCost;
             slicerFile.Xppmm = Xppmm;
             slicerFile.Yppmm = Yppmm;
-            slicerFile.PrintTime = PrintTimeOrComputed;
+            slicerFile.PrintTime = PrintTime;
             slicerFile.PrintHeight = PrintHeight;
             
 

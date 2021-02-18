@@ -243,8 +243,14 @@
             <TextBlock Grid.Row="4" Grid.Column="4"
                        VerticalAlignment="Center"
                        Text="px"/>
+
+            <CheckBox Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="6"
+                      VerticalAlignment="Center"
+                      ToolTip.Tip="Convert the raw brightness text value to exposure time in seconds and intrude on divisions"
+                      Content="Convert brightness to exposure time"
+                      IsChecked="{Binding Operation.ConvertBrightnessToExposureTime}"/>
             
-            <CheckBox Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="4"
+            <CheckBox Grid.Row="6" Grid.Column="10" Grid.ColumnSpan="3"
                       VerticalAlignment="Center"
                       Content="Enable division lines"
                       IsChecked="{Binding Operation.EnableLineDivisions}"/>

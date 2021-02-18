@@ -21,7 +21,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Avalonia.Controls.Primitives;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -918,7 +917,7 @@ namespace UVtools.WPF
             if (!File.Exists(fileName)) return;
             CloseFile();
             var fileNameOnly = Path.GetFileName(fileName);
-            App.SlicerFile = FileFormat.FindByExtension(fileName, true, true);
+            SlicerFile = FileFormat.FindByExtension(fileName, true, true);
             if (SlicerFile is null) return;
 
             IsGUIEnabled = false;
@@ -948,7 +947,7 @@ namespace UVtools.WPF
             if (!task)
             {
                 SlicerFile.Dispose();
-                App.SlicerFile = null;
+                SlicerFile = null;
                 return;
             }
 
@@ -961,7 +960,7 @@ namespace UVtools.WPF
                                 "- An internal programing error\n\n" +
                                 "Please check your file and retry", "Error reading file");
                 SlicerFile.Dispose();
-                App.SlicerFile = null;
+                SlicerFile = null;
                 return;
             }
 
@@ -1005,7 +1004,7 @@ namespace UVtools.WPF
 
                         if (task && convertedFile is not null)
                         {
-                            App.SlicerFile = convertedFile;
+                            SlicerFile = convertedFile;
                         }
                     }
                 }

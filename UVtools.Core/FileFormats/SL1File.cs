@@ -435,22 +435,21 @@ namespace UVtools.Core.FileFormats
 
         public override float PrintTime
         {
-            get => OutputConfigSettings.PrintTime;
-            set => base.PrintTime = OutputConfigSettings.PrintTime = (float)Math.Round(value, 2);
+            get => base.PrintTime;
+            set
+            {
+                base.PrintTime = value;
+                OutputConfigSettings.PrintTime = base.PrintTime;
+            } 
         }
 
         public override float MaterialMilliliters
         {
-            get
-            {
-                var materialMl = base.MaterialMilliliters;
-                return materialMl > 0 ? materialMl : OutputConfigSettings.UsedMaterial;
-            }
+            get => base.MaterialMilliliters;
             set
             {
-                if (value <= 0) value = base.MaterialMilliliters;
-                OutputConfigSettings.UsedMaterial = (float)Math.Round(value, 3);
-                base.MaterialMilliliters = OutputConfigSettings.UsedMaterial;
+                base.MaterialMilliliters = value;
+                OutputConfigSettings.UsedMaterial = base.MaterialMilliliters;
             }
         }
 

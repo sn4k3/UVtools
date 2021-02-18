@@ -373,16 +373,11 @@ namespace UVtools.Core.FileFormats
 
         public override float MaterialMilliliters
         {
-            get
-            {
-                var materialMl = base.MaterialMilliliters;
-                return materialMl > 0 ? materialMl : (float) HeaderSettings.VolumeMl;
-            }
+            get => base.MaterialMilliliters;
             set
             {
-                if (value <= 0) value = base.MaterialMilliliters;
-                HeaderSettings.VolumeMl = (float)Math.Round(value, 3);
-                base.MaterialMilliliters = (float) HeaderSettings.VolumeMl;
+                base.MaterialMilliliters = value;
+                HeaderSettings.VolumeMl = base.MaterialMilliliters;
             }
         }
 

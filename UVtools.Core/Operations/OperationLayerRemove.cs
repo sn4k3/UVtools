@@ -100,7 +100,7 @@ namespace UVtools.Core.Operations
                     }
                     else
                     {
-                        posZ = layers[newLayerIndex - 1].PositionZ + layerHeight;
+                        posZ = (float) Math.Round(layers[newLayerIndex - 1].PositionZ + layerHeight, 2);
                     }
                 }
 

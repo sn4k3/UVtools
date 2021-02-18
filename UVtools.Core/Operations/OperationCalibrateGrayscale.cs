@@ -8,6 +8,7 @@
 
 using System;
 using System.Drawing;
+using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
@@ -39,6 +40,7 @@ namespace UVtools.Core.Operations
         private byte _brightnessSteps = 10;
         private bool _enableCenterHoleRelief = true;
         private ushort _centerHoleDiameter = 200;
+        private bool _convertBrightnessToExposureTime;
         private bool _enableLineDivisions = true;
         private byte _lineDivisionThickness = 30;
         private byte _lineDivisionBrightness = 255;
@@ -263,6 +265,12 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _centerHoleDiameter, value);
         }
 
+        public bool ConvertBrightnessToExposureTime
+        {
+            get => _convertBrightnessToExposureTime;
+            set => RaiseAndSetIfChanged(ref _convertBrightnessToExposureTime, value);
+        }
+
         public bool EnableLineDivisions
         {
             get => _enableLineDivisions;
@@ -389,7 +397,7 @@ namespace UVtools.Core.Operations
             FontFace fontFace = FontFace.HersheyDuplex;
             double fontScale = 2;
             int fontThickness = 5;
-            Point fontPoint = new Point(center.X + radius / 2 + _textXOffset, (int)(center.Y + AngleStep / 1.1));
+            Point fontPoint = new Point((int) (center.X + radius / 2.5f + _textXOffset), (int)(center.Y + AngleStep / 1.5));
 
             var halfAngleStep = AngleStep / 2;
             var rotatedAngle = halfAngleStep;
@@ -398,7 +406,12 @@ namespace UVtools.Core.Operations
             layers[2].Rotate(halfAngleStep);
             for (ushort brightness = _startBrightness; brightness <= _endBrightness; brightness += _brightnessSteps)
             {
-                CvInvoke.PutText(layers[2], brightness.ToString(), fontPoint, fontFace, fontScale, EmguExtensions.BlackByte, fontThickness, lineType);
+                var text = brightness.ToString();
+                if (_convertBrightnessToExposureTime)
+                {
+                    text = $"{Math.Round(brightness * _normalExposure / byte.MaxValue, 2)}s";
+                }
+                CvInvoke.PutText(layers[2], text, fontPoint, fontFace, fontScale, EmguExtensions.BlackByte, fontThickness, lineType);
                 rotatedAngle += AngleStep;
                 layers[2].Rotate(AngleStep);
             }

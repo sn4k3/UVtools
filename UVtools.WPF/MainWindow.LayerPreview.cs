@@ -299,21 +299,47 @@ namespace UVtools.WPF
         {
             get
             {
-                if (!LayerCache.IsCached) return "0";
-                var pixelPercent =
-                    Math.Round(
-                        LayerCache.Layer.NonZeroPixelCount * 100.0 / (SlicerFile.ResolutionX * SlicerFile.ResolutionY), 2);
-                return $"{LayerCache.Layer.NonZeroPixelCount} ({pixelPercent}%)";
+                if (!LayerCache.IsCached) return "Pixels: 0";
+                var pixelPercent = Math.Round(LayerCache.Layer.NonZeroPixelCount * 100.0 / (SlicerFile.ResolutionX * SlicerFile.ResolutionY), 2);
+                string text = $"Pixels: {LayerCache.Layer.NonZeroPixelCount} ({pixelPercent}%)";
+                var exposedMillimeters = LayerCache.Layer.ExposureMillimeters;
+                if (exposedMillimeters > 0)
+                {
+                    text += $"\nMillimeters: {exposedMillimeters}";
+                }
+                return text;
             }
         }
 
-        public string LayerBoundsStr => LayerCache.Layer is null ? "NS" : $"{LayerCache.Layer.BoundingRectangle} ({LayerCache.Layer.BoundingRectangle.Area()}px²)";
+        public string LayerBoundsStr
+        {
+            get
+            {
+                if (LayerCache.Layer is null) return "Bounds: NS";
+                var text = $"Bounds: {LayerCache.Layer.BoundingRectangle} ({LayerCache.Layer.BoundingRectangle.Area()}px²)";
+                var rectMillimeters = LayerCache.Layer.BoundingRectangleMillimeters;
+                if (!rectMillimeters.IsEmpty)
+                {
+                    text += $"\nBounds: {rectMillimeters} ({rectMillimeters.Area(2)}mm²)";
+                }
+
+                return text;
+            }
+        } 
+                                                                          
         public string LayerROIStr
         {
             get
             {
                 var roi = ROI;
-                return roi.IsEmpty ? "NS" : $"{roi} ({roi.Area()}px²)";
+                if(roi.IsEmpty) return "ROI: NS";
+                var text = $"ROI: {roi} ({roi.Area()}px²)";
+                var roiMillimeters = ROIMillimeters;
+                if (!roiMillimeters.IsEmpty)
+                {
+                    text += $"\nROI: {roiMillimeters} ({roiMillimeters.Area(2)}mm²)";
+                }
+                return text;
             }
         }
 
@@ -323,11 +349,26 @@ namespace UVtools.WPF
             set => RaiseAndSetIfChanged(ref _showLayerRenderMs, value);
         }
 
-        public PixelPicker LayerPixelPicker { get; } = new PixelPicker();
+        public PixelPicker LayerPixelPicker { get; } = new ();
 
         public string LayerZoomStr => $"{LayerImageBox.Zoom / 100m}x" +
                                       (AppSettings.LockedZoomLevel == LayerImageBox.Zoom ? " 🔒" : string.Empty);
-        public string LayerResolutionStr => SlicerFile?.Resolution.ToString() ?? "Unloaded";
+
+        public string LayerResolutionStr
+        {
+            get
+            {
+                if (SlicerFile is null) return "Unloaded";
+                var text = $"{SlicerFile.Resolution} px";
+                var display = SlicerFile.Display;
+                if (!display.IsEmpty)
+                {
+                    text += $"\n{SlicerFile.Display} mm";
+                }
+
+                return text;
+            }
+        }
 
         public uint ActualLayer
         {
@@ -393,6 +434,21 @@ namespace UVtools.WPF
                 return rect.IsEmpty ? Rectangle.Empty : GetTransposedRectangle(rect.ToDotNet(), false);
             }
             set => LayerImageBox.SelectionRegion = value.ToAvalonia();
+        }
+
+        public RectangleF ROIMillimeters
+        {
+            get
+            {
+                var roi = ROI;
+                var pixelSize = SlicerFile.PixelSize;
+                if(roi.IsEmpty || pixelSize.IsEmpty) return RectangleF.Empty;
+                return new RectangleF(
+                    (float)Math.Round(roi.X * pixelSize.Width, 2),
+                    (float)Math.Round(roi.Y * pixelSize.Height, 2),
+                    (float)Math.Round(roi.Width * pixelSize.Width, 2),
+                    (float)Math.Round(roi.Height * pixelSize.Height, 2));
+            }
         }
 
         public void OnROIClick()
