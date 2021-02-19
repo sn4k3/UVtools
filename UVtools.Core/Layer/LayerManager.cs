@@ -108,6 +108,11 @@ namespace UVtools.Core
             }
         }
 
+        /// <summary>
+        /// Gets if all layers have same value parameters as global settings
+        /// </summary>
+        public bool AllLayersHaveGlobalParameters => Layers.Where(layer => layer is not null).All(layer => layer.HaveGlobalParameters);
+
         //public float LayerHeight => Layers[0].PositionZ;
 
         #endregion
@@ -280,6 +285,8 @@ namespace UVtools.Core
                     layer.PositionZ = SlicerFile.GetHeightFromLayer(layerIndex);
                 }
             }
+
+            SlicerFile?.RebuildGCode();
         }
 
         public Rectangle GetBoundingRectangle(OperationProgress progress = null)
@@ -296,7 +303,7 @@ namespace UVtools.Core
                     
                     this[layerIndex].GetBoundingRectangle();
 
-                    if (ReferenceEquals(progress, null)) return;
+                    if (progress is null) return;
                     lock (progress.Mutex)
                     {
                         progress++;
@@ -456,8 +463,8 @@ namespace UVtools.Core
                             !overhangConfig.Enabled &&
                             (layer.Index == 0 || 
                              (
-                                 (!ReferenceEquals(overhangConfig.WhiteListLayers, null) && !overhangConfig.WhiteListLayers.Contains(layer.Index)) &&
-                                 (!ReferenceEquals(islandConfig.WhiteListLayers, null) && !islandConfig.WhiteListLayers.Contains(layer.Index))
+                                 (overhangConfig.WhiteListLayers is not null && !overhangConfig.WhiteListLayers.Contains(layer.Index)) &&
+                                 (islandConfig.WhiteListLayers is not null && !islandConfig.WhiteListLayers.Contains(layer.Index))
                              )
                             )
                         )
@@ -565,7 +572,7 @@ namespace UVtools.Core
 
                             if (islandConfig.Enabled)
                             {
-                                if (!ReferenceEquals(islandConfig.WhiteListLayers, null)) // Check white list
+                                if (islandConfig.WhiteListLayers is not null) // Check white list
                                 {
                                     if (!islandConfig.WhiteListLayers.Contains(layer.Index))
                                     {
@@ -669,7 +676,7 @@ namespace UVtools.Core
 
                                         // Check for overhangs
                                         if (overhangConfig.Enabled && !overhangConfig.IndependentFromIslands && island is null
-                                            || !ReferenceEquals(island, null) && islandConfig.EnhancedDetection && pixelsSupportingIsland >= 10
+                                            || island is not null && islandConfig.EnhancedDetection && pixelsSupportingIsland >= 10
                                         )
                                         {
                                             points.Clear();
@@ -713,7 +720,7 @@ namespace UVtools.Core
                                             }
                                         }
 
-                                        if(!ReferenceEquals(island, null))
+                                        if(island is not null)
                                             AddIssue(island);
                                     }
 
@@ -724,7 +731,7 @@ namespace UVtools.Core
                             if (!islandConfig.Enabled && overhangConfig.Enabled || 
                                 (islandConfig.Enabled && overhangConfig.Enabled && overhangConfig.IndependentFromIslands))
                             {
-                                if (!ReferenceEquals(overhangConfig.WhiteListLayers, null)) // Check white list
+                                if (overhangConfig.WhiteListLayers is not null) // Check white list
                                 {
                                     if (!overhangConfig.WhiteListLayers.Contains(layer.Index))
                                     {
@@ -1089,7 +1096,7 @@ namespace UVtools.Core
                 {
                     var mat = modifiedLayers.GetOrAdd(operation.LayerIndex, u => this[operation.LayerIndex].LayerMat);
 
-                    if (ReferenceEquals(layerContours, null))
+                    if (layerContours is null)
                     {
                         layerContours = new VectorOfVectorOfPoint();
                         layerHierarchy = new Mat();

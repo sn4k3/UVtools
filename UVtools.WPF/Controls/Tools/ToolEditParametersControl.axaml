@@ -9,7 +9,7 @@
 
     <CheckBox
       IsChecked="{Binding Operation.PerLayerOverride}"
-      IsVisible="{Binding SupportPerLayerSettings}"
+      IsVisible="{Binding SlicerFile.SupportPerLayerSettings}"
       Content="Change settings per a layer range"/>
 
     <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding Operation.PerLayerOverride}">

@@ -93,6 +93,7 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// Gets the file mark placeholder
             /// Fixed to "ANYCUBIC"
+            /// 00
             /// </summary>
             [FieldOrder(0)]
             [FieldLength(MarkSize)]
@@ -101,37 +102,52 @@ namespace UVtools.Core.FileFormats
 
             /// <summary>
             /// Gets the file format version
+            /// 0C
             /// </summary>
             [FieldOrder(1)] public uint Version { get; set; } = 1;
 
             /// <summary>
             /// Gets the area num
+            /// 10
             /// </summary>
             [FieldOrder(2)] public uint AreaNum { get; set; } = 4;
 
             /// <summary>
             /// Gets the header start address
+            /// 14
             /// </summary>
             [FieldOrder(3)]  public uint HeaderAddress { get; set; }
 
+            /// <summary>
+            /// 18
+            /// </summary>
             [FieldOrder(4)]  public uint Offset1 { get; set; }
 
             /// <summary>
             /// Gets the preview start offset
+            /// 1C
             /// </summary>
             [FieldOrder(5)]  public uint PreviewAddress { get; set; }
 
+            /// <summary>
+            /// 20
+            /// </summary>
             [FieldOrder(6)]  public uint Offset2  { get; set; }
 
             /// <summary>
             /// Gets the layer definition start address
+            /// 24
             /// </summary>
             [FieldOrder(7)]  public uint LayerDefinitionAddress { get; set; }
 
+            /// <summary>
+            /// 28
+            /// </summary>
             [FieldOrder(8)]  public uint Offset3  { get; set; }
 
             /// <summary>
             /// Gets layer image start address
+            /// 2C
             /// </summary>
             [FieldOrder(9)]  public uint LayerImageAddress { get; set; }
 
@@ -207,34 +223,129 @@ namespace UVtools.Core.FileFormats
         {
             public const string SectionMark = "HEADER";
 
+            /// <summary>
+            /// 30
+            /// </summary>
             [FieldOrder(0)] public SectionHeader Section { get; set; }
+
+            /// <summary>
+            /// 40
+            /// </summary>
             [FieldOrder(1)] public float PixelSizeUm { get; set; } = 47.25f;
+
+            /// <summary>
+            /// Layer height in mm
+            /// 44
+            /// </summary>
             [FieldOrder(2)] public float LayerHeight { get; set; }
+
+            /// <summary>
+            /// 48
+            /// </summary>
             [FieldOrder(3)] public float LayerExposureTime { get; set; }
+
+            /// <summary>
+            /// 4C
+            /// </summary>
             [FieldOrder(4)] public float LightOffDelay { get; set; } = 1;
+
+            /// <summary>
+            /// 50
+            /// </summary>
             [FieldOrder(5)] public float BottomExposureSeconds { get; set; } 
+
+            /// <summary>
+            /// 54
+            /// </summary>
             [FieldOrder(6)] public float BottomLayersCount { get; set; }
+
+            /// <summary>
+            /// 58
+            /// </summary>
             [FieldOrder(7)] public float LiftHeight { get; set; } = 6;
             /// <summary>
             /// Gets the lift speed in mm/s
+            /// 5C
             /// </summary>
             [FieldOrder(8)] public float LiftSpeed { get; set; } = 3; // mm/s
 
             /// <summary>
             /// Gets the retract speed in mm/s
+            /// 60
             /// </summary>
             [FieldOrder(9)] public float RetractSpeed { get; set; } = 3; // mm/s
+
+            /// <summary>
+            /// 64
+            /// </summary>
             [FieldOrder(10)] public float VolumeMl { get; set; }
+
+            /// <summary>
+            /// 68
+            /// </summary>
             [FieldOrder(11)] public uint AntiAliasing { get; set; } = 1;
+
+            /// <summary>
+            /// 6C
+            /// </summary>
             [FieldOrder(12)] public uint ResolutionX { get; set; }
+
+            /// <summary>
+            /// 70
+            /// </summary>
             [FieldOrder(13)] public uint ResolutionY { get; set; }
+
+            /// <summary>
+            /// 74
+            /// </summary>
             [FieldOrder(14)] public float WeightG { get; set; }
+
+            /// <summary>
+            /// 78
+            /// </summary>
             [FieldOrder(15)] public float Price { get; set; }
-            [FieldOrder(16)] public uint PriceCurrencyDec { get; set; } // 0x24 $ or ¥ 0xC2A5
-            [Ignore] public string PriceCurrencySymbol => char.ConvertFromUtf32((int) PriceCurrencyDec);
-            [FieldOrder(17)] public uint PerLayerOverride { get; set; } = 1; // bool
+
+            /// <summary>
+            /// 24 00 00 00 $ or ¥ C2 A5 00 or € = E2 82 AC 00
+            /// 7C
+            /// </summary>
+            [FieldOrder(16)] public uint PriceCurrencyDec { get; set; } = 0x24;
+            [Ignore] public char PriceCurrencySymbol
+            {
+                get
+                {
+                    switch (PriceCurrencyDec)
+                    {
+                        case 0x24:
+                            return '$';
+                        case 0xA5C2:
+                            return '¥';
+                        case 0x000020AC:
+                            return '€';
+                        default:
+                            return '$';
+                    }
+                }
+            }
+
+            /// <summary>
+            /// 80
+            /// </summary>
+            [FieldOrder(17)] public uint PerLayerOverride { get; set; } // bool
+
+            /// <summary>
+            /// 84
+            /// </summary>
             [FieldOrder(18)] public uint PrintTime { get; set; }
+
+            /// <summary>
+            /// 88
+            /// </summary>
             [FieldOrder(19)] public uint Offset1 { get; set; }
+
+            /// <summary>
+            /// 8C
+            /// </summary>
             [FieldOrder(20)] public uint Offset2 { get; set; }
 
             public Header()
@@ -262,20 +373,26 @@ namespace UVtools.Core.FileFormats
         {
             public const string SectionMark = "PREVIEW";
 
+            /// <summary>
+            /// 90
+            /// </summary>
             [FieldOrder(0)] public SectionHeader Section { get; set; }
 
             /// <summary>
-            /// Gets the image width, in pixels. 
+            /// Gets the image width, in pixels.
+            /// A0
             /// </summary>
             [FieldOrder(1)] public uint Width { get; set; } = 224;
 
             /// <summary>
-            /// Gets the resolution of the image, in dpi. 
+            /// Gets the resolution of the image, in dpi.
+            /// A4
             /// </summary>
             [FieldOrder(2)] public uint Resolution { get; set; } = 42;
 
             /// <summary>
-            /// Gets the image height, in pixels. 
+            /// Gets the image height, in pixels.
+            /// A8
             /// </summary>
             [FieldOrder(3)] public uint Height { get; set; } = 168;
 
@@ -732,6 +849,9 @@ namespace UVtools.Core.FileFormats
         {
             public const string SectionMark = "LAYERDEF";
 
+            /// <summary>
+            /// 1269C
+            /// </summary>
             [FieldOrder(0)] public SectionHeader Section { get; set; }
 
             [FieldOrder(1)] public uint LayerCount { get; set; }
@@ -1198,7 +1318,7 @@ namespace UVtools.Core.FileFormats
                     break;
             }
 
-            HeaderSettings.PerLayerOverride = 1;
+            HeaderSettings.PerLayerOverride = LayerManager.AllLayersHaveGlobalParameters ? 0 : 1;
 
 
             uint currentOffset = FileMarkSettings.HeaderAddress = (uint) Helpers.Serializer.SizeOf(FileMarkSettings);
@@ -1402,7 +1522,7 @@ namespace UVtools.Core.FileFormats
                 FileFullPath = filePath;
             }
 
-            HeaderSettings.PerLayerOverride = 1;
+            HeaderSettings.PerLayerOverride = LayerManager.AllLayersHaveGlobalParameters ? 0 : 1;
 
             using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);
             outputFile.Seek(FileMarkSettings.HeaderAddress, SeekOrigin.Begin);

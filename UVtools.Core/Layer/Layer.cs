@@ -315,12 +315,45 @@ namespace UVtools.Core
         public string Filename => FormatFileName("layer");
 
         /// <summary>
-        /// Gets if layer has been modified
+        /// Gets if layer image has been modified
         /// </summary>
         public bool IsModified
         {
             get => _isModified;
             set => RaiseAndSetIfChanged(ref _isModified, value);
+        }
+
+        /// <summary>
+        /// Gets if this layer have same value parameters as global settings
+        /// </summary>
+        public bool HaveGlobalParameters
+        {
+            get
+            {
+                if (SlicerFile is null) return false; // Cant verify
+                if (IsBottomLayer)
+                {
+                    if (ExposureTime != SlicerFile.BottomExposureTime ||
+                        LiftHeight != SlicerFile.BottomLiftHeight ||
+                        LiftSpeed != SlicerFile.BottomLiftSpeed ||
+                        LightOffDelay != SlicerFile.BottomLightOffDelay ||
+                        LightPWM != SlicerFile.BottomLightPWM 
+                        ) return false;
+                }
+                else
+                {
+                    if (ExposureTime != SlicerFile.ExposureTime ||
+                        LiftHeight != SlicerFile.LiftHeight ||
+                        LiftSpeed != SlicerFile.LiftSpeed ||
+                        LightOffDelay != SlicerFile.LightOffDelay ||
+                        LightPWM != SlicerFile.LightPWM
+                    ) return false;
+                }
+
+                if (RetractSpeed != SlicerFile.RetractSpeed) return false;
+
+                return true;
+            }
         }
 
         #endregion
@@ -444,7 +477,7 @@ namespace UVtools.Core
 
         public override string ToString()
         {
-            return $"{nameof(Index)}: {Index}, {nameof(Filename)}: {Filename}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(BoundingRectangle)}: {BoundingRectangle}, {nameof(IsBottomLayer)}: {IsBottomLayer}, {nameof(IsNormalLayer)}: {IsNormalLayer}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(LightPWM)}: {LightPWM}, {nameof(IsModified)}: {IsModified}";
+            return $"{nameof(Index)}: {Index}, {nameof(Filename)}: {Filename}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(BoundingRectangle)}: {BoundingRectangle}, {nameof(IsBottomLayer)}: {IsBottomLayer}, {nameof(IsNormalLayer)}: {IsNormalLayer}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(LightPWM)}: {LightPWM}, {nameof(IsModified)}: {IsModified}, {nameof(HaveGlobalParameters)}: {HaveGlobalParameters}";
         }
         #endregion
 

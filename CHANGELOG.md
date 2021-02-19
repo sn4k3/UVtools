@@ -1,5 +1,15 @@
 # Changelog
 
+## 19/02/2021 - v2.4.9
+
+* **(Fix) PhotonWorkshop files: (#149)**
+   * CurrencySymbol to show the correct symbol and don't convert unknown values to prevent hacking
+   * Set PerLayerOverride to 1 only if any layer contains modified parameters that are not shared with the globals
+* **(Fix) Clipboard:**
+   * Initing the clipboard for the first time was calling Undo and reseting parameters from layers with base settings
+   * Undo and redo make layer parameters to reset and recalculate position z, making invalid files when using with advanced tools
+* (Fix) Tool - Edit print parameters: When editing per a layer range and reopen the tool it will show the previous set values
+
 ## 18/02/2021 - v2.4.8
 
 * (Improvement) Cache per layer and global used material for faster calculations

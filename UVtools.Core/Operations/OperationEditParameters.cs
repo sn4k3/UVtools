@@ -9,6 +9,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
@@ -85,6 +86,7 @@ namespace UVtools.Core.Operations
 
         #region Propertiers
 
+        [XmlIgnore]
         public FileFormat.PrintParameterModifier[] Modifiers { get; set; }
 
         /// <summary>
@@ -160,6 +162,8 @@ namespace UVtools.Core.Operations
             {
                 SlicerFile.SetValuesFromPrintParametersModifiers();
             }
+
+            SlicerFile.RefreshPrintParametersModifiersValues();
 
             return !progress.Token.IsCancellationRequested;
         }

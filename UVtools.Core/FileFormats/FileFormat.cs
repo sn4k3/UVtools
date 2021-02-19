@@ -469,12 +469,10 @@ namespace UVtools.Core.FileFormats
                 if (oldLayerManager.Count != LayerCount)
                 {
                     LayerCount = _layerManager.Count;
+                    if (SuppressRebuildProperties) return;
+                    if (LayerCount == 0 || this[LayerCount - 1] is null) return; // Not initialized
+                    LayerManager.RebuildLayersProperties();
                 }
-
-                if (SuppressRebuildProperties) return;
-                if (LayerCount == 0 || this[LayerCount - 1] is null) return; // Not initialized
-                LayerManager.RebuildLayersProperties();
-                RebuildGCode();
             }
         }
 
@@ -939,7 +937,6 @@ namespace UVtools.Core.FileFormats
             )
             {
                 LayerManager.RebuildLayersProperties(false, e.PropertyName);
-                RebuildGCode();
                 if(e.PropertyName != nameof(BottomLightPWM) && e.PropertyName != nameof(LightPWM))
                     PrintTime = PrintTimeComputed;
                 return;
@@ -1398,62 +1395,62 @@ namespace UVtools.Core.FileFormats
             if (PrintParameterModifiers is null) return;
             if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLayerCount))
             {
-                PrintParameterModifier.BottomLayerCount.OldValue = BottomLayerCount;
+                PrintParameterModifier.BottomLayerCount.Value = BottomLayerCount;
             }
 
             if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomExposureSeconds))
             {
-                PrintParameterModifier.BottomExposureSeconds.OldValue = (decimal) BottomExposureTime;
+                PrintParameterModifier.BottomExposureSeconds.Value = (decimal) BottomExposureTime;
             }
 
             if (PrintParameterModifiers.Contains(PrintParameterModifier.ExposureSeconds))
             {
-                PrintParameterModifier.ExposureSeconds.OldValue = (decimal)ExposureTime;
+                PrintParameterModifier.ExposureSeconds.Value = (decimal)ExposureTime;
             }
 
             if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLightOffDelay))
             {
-                PrintParameterModifier.BottomLightOffDelay.OldValue = (decimal)BottomLightOffDelay;
+                PrintParameterModifier.BottomLightOffDelay.Value = (decimal)BottomLightOffDelay;
             }
 
             if (PrintParameterModifiers.Contains(PrintParameterModifier.LightOffDelay))
             {
-                PrintParameterModifier.LightOffDelay.OldValue = (decimal)LightOffDelay;
+                PrintParameterModifier.LightOffDelay.Value = (decimal)LightOffDelay;
             }
 
             if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLiftHeight))
             {
-                PrintParameterModifier.BottomLiftHeight.OldValue = (decimal)BottomLiftHeight;
+                PrintParameterModifier.BottomLiftHeight.Value = (decimal)BottomLiftHeight;
             }
 
             if (PrintParameterModifiers.Contains(PrintParameterModifier.LiftHeight))
             {
-                PrintParameterModifier.LiftHeight.OldValue = (decimal)LiftHeight;
+                PrintParameterModifier.LiftHeight.Value = (decimal)LiftHeight;
             }
 
             if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLiftSpeed))
             {
-                PrintParameterModifier.BottomLiftSpeed.OldValue = (decimal)BottomLiftSpeed;
+                PrintParameterModifier.BottomLiftSpeed.Value = (decimal)BottomLiftSpeed;
             }
 
             if (PrintParameterModifiers.Contains(PrintParameterModifier.LiftSpeed))
             {
-                PrintParameterModifier.LiftSpeed.OldValue = (decimal)LiftSpeed;
+                PrintParameterModifier.LiftSpeed.Value = (decimal)LiftSpeed;
             }
 
             if (PrintParameterModifiers.Contains(PrintParameterModifier.RetractSpeed))
             {
-                PrintParameterModifier.RetractSpeed.OldValue = (decimal)RetractSpeed;
+                PrintParameterModifier.RetractSpeed.Value = (decimal)RetractSpeed;
             }
 
             if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLightPWM))
             {
-                PrintParameterModifier.BottomLightPWM.OldValue = BottomLightPWM;
+                PrintParameterModifier.BottomLightPWM.Value = BottomLightPWM;
             }
 
             if (PrintParameterModifiers.Contains(PrintParameterModifier.LightPWM))
             {
-                PrintParameterModifier.LightPWM.OldValue = LightPWM;
+                PrintParameterModifier.LightPWM.Value = LightPWM;
             }
         }
 
@@ -1467,32 +1464,32 @@ namespace UVtools.Core.FileFormats
 
             if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.ExposureSeconds))
             {
-                PrintParameterModifier.ExposureSeconds.OldValue = (decimal)layer.ExposureTime;
+                PrintParameterModifier.ExposureSeconds.Value = (decimal)layer.ExposureTime;
             }
 
             if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LightOffDelay))
             {
-                PrintParameterModifier.LightOffDelay.OldValue = (decimal)layer.LightOffDelay;
+                PrintParameterModifier.LightOffDelay.Value = (decimal)layer.LightOffDelay;
             }
 
             if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LiftHeight))
             {
-                PrintParameterModifier.LiftHeight.OldValue = (decimal)layer.LiftHeight;
+                PrintParameterModifier.LiftHeight.Value = (decimal)layer.LiftHeight;
             }
 
             if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LiftSpeed))
             {
-                PrintParameterModifier.LiftSpeed.OldValue = (decimal)layer.LiftSpeed;
+                PrintParameterModifier.LiftSpeed.Value = (decimal)layer.LiftSpeed;
             }
 
             if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.RetractSpeed))
             {
-                PrintParameterModifier.RetractSpeed.OldValue = (decimal)layer.RetractSpeed;
+                PrintParameterModifier.RetractSpeed.Value = (decimal)layer.RetractSpeed;
             }
 
             if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LightPWM))
             {
-                PrintParameterModifier.LightPWM.OldValue = layer.LightPWM;
+                PrintParameterModifier.LightPWM.Value = layer.LightPWM;
             }
         }
 

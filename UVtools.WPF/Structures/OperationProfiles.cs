@@ -67,7 +67,7 @@ namespace UVtools.WPF.Structures
         #region Singleton
 
         private static Lazy<OperationProfiles> _instanceHolder =
-            new Lazy<OperationProfiles>(() => new OperationProfiles());
+            new(() => new OperationProfiles());
 
         /// <summary>
         /// Instance of <see cref="UserSettings"/> (singleton)
