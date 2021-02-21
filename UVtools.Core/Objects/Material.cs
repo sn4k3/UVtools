@@ -13,17 +13,17 @@ namespace UVtools.Core.Objects
     /// <summary>
     /// Represents a material to feed in the printer
     /// </summary>
-    public class Material : BindableBase
+    public class Material : BindableBase, ICloneable
     {
         #region Members
         private string _name;
-        private decimal _bottleVolume = 1000;
+        private uint _bottleVolume = 1000;
         private decimal _density = 1;
         private decimal _bottleCost = 30;
         private int _bottlesInStock = 1;
         private decimal _bottleRemainingVolume = 1000;
-        private decimal _totalConsumedVolume;
-        private double _totalPrintTime;
+        private decimal _consumedVolume;
+        private double _printTime;
 
         #endregion
 
@@ -37,14 +37,16 @@ namespace UVtools.Core.Objects
         /// <summary>
         /// Gets or sets the bottle volume in milliliters
         /// </summary>
-        public decimal BottleVolume
+        public uint BottleVolume
         {
             get => _bottleVolume;
             set
             {
                 if(!RaiseAndSetIfChanged(ref _bottleVolume, value)) return;
                 RaisePropertyChanged(nameof(BottleWeight));
-                RaisePropertyChanged(nameof(TotalConsumedBottles));
+                RaisePropertyChanged(nameof(ConsumedBottles));
+                RaisePropertyChanged(nameof(TotalCost));
+                RaisePropertyChanged(nameof(VolumeInStock));
             }
         }
 
@@ -72,8 +74,14 @@ namespace UVtools.Core.Objects
         public decimal BottleCost
         {
             get => _bottleCost;
-            set => RaiseAndSetIfChanged(ref _bottleCost, value);
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _bottleCost, value)) return;
+                RaisePropertyChanged(nameof(TotalCost));
+            }
         }
+
+        public decimal TotalCost => OwnedBottles * _bottleCost;
 
         /// <summary>
         /// Gets or sets the number of bottles in stock
@@ -81,7 +89,13 @@ namespace UVtools.Core.Objects
         public int BottlesInStock
         {
             get => _bottlesInStock;
-            set => RaiseAndSetIfChanged(ref _bottlesInStock, value);
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _bottlesInStock, value)) return;
+                RaisePropertyChanged(nameof(OwnedBottles));
+                RaisePropertyChanged(nameof(TotalCost));
+                RaisePropertyChanged(nameof(VolumeInStock));
+            }
         }
 
         /// <summary>
@@ -89,47 +103,75 @@ namespace UVtools.Core.Objects
         /// </summary>
         public decimal BottleRemainingVolume
         {
-            get => _bottleRemainingVolume;
-            set => RaiseAndSetIfChanged(ref _bottleRemainingVolume, value);
+            get => Math.Round(_bottleRemainingVolume, 2);
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _bottleRemainingVolume, value)) return;
+                RaisePropertyChanged(nameof(VolumeInStock));
+            }
         }
+
+        /// <summary>
+        /// Gets the total available volume in stock in milliliters
+        /// </summary>
+        public decimal VolumeInStock => _bottlesInStock * _bottleVolume - (_bottleVolume - _bottleRemainingVolume);
 
         /// <summary>
         /// Gets the number of consumed bottles 
         /// </summary>
-        public uint TotalConsumedBottles => (uint) Math.Floor(_totalConsumedVolume / _bottleVolume);
+        public uint ConsumedBottles => (uint) Math.Floor(_consumedVolume / _bottleVolume);
+
+        /// <summary>
+        /// Gets the total number of owned bottles
+        /// </summary>
+        public int OwnedBottles => (int) (_bottlesInStock + ConsumedBottles);
 
         /// <summary>
         /// Gets or sets the total number of consumed volume in milliliters
         /// </summary>
-        public decimal TotalConsumedVolume
+        public decimal ConsumedVolume
         {
-            get => _totalConsumedVolume;
-            set => RaiseAndSetIfChanged(ref _totalConsumedVolume, value);
+            get => _consumedVolume;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _consumedVolume, value)) return;
+                RaisePropertyChanged(nameof(ConsumedVolumeLiters));
+            }
         }
+
+        /// <summary>
+        /// Gets total number of consumed volume in liters
+        /// </summary>
+        public decimal ConsumedVolumeLiters => ConsumedVolume / 1000;
 
         /// <summary>
         /// Gets or sets the total print time using with material in hours
         /// </summary>
-        public double TotalPrintTime
+        public double PrintTime
         {
-            get => _totalPrintTime;
-            set => RaiseAndSetIfChanged(ref _totalPrintTime, value);
+            get => _printTime;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _printTime, value)) return;
+                RaisePropertyChanged(nameof(PrintTimeSpan));
+            }
         }
 
-        public TimeSpan TotalPrintTimeSpan => TimeSpan.FromHours(_totalPrintTime);
+        public TimeSpan PrintTimeSpan => TimeSpan.FromHours(_printTime);
 
         #endregion
 
         #region Constructors
         public Material() { }
 
-        public Material(string name, decimal bottleVolume = 1000, decimal density = 1, decimal bottleCost = 30, int bottlesInStock = 1)
+        public Material(string name, uint bottleVolume = 1000, decimal density = 1, decimal bottleCost = 30, int bottlesInStock = 1)
         {
             _name = name;
             _bottleVolume = bottleVolume;
             _density = density;
             _bottleCost = bottleCost;
             _bottlesInStock = bottlesInStock;
+            _bottleRemainingVolume = bottleVolume;
         }
         #endregion
 
@@ -155,7 +197,17 @@ namespace UVtools.Core.Objects
 
         public override string ToString()
         {
-            return $"{nameof(Name)}: {Name}, {nameof(BottleVolume)}: {BottleVolume}ml, {nameof(BottleWeight)}: {BottleWeight}g, {nameof(Density)}: {Density}g/ml, {nameof(BottleCost)}: {BottleCost}, {nameof(BottlesInStock)}: {BottlesInStock}, {nameof(BottleRemainingVolume)}: {BottleRemainingVolume}ml, {nameof(TotalConsumedBottles)}: {TotalConsumedBottles}, {nameof(TotalConsumedVolume)}: {TotalConsumedVolume}ml, {nameof(TotalPrintTime)}: {TotalPrintTime:F4}h";
+            return $"{_name} ({_bottleRemainingVolume}/{VolumeInStock}ml)";
+        }
+
+        public object Clone()
+        {
+            return MemberwiseClone();
+        }
+
+        public Material CloneMaterial()
+        {
+            return (Material)Clone();
         }
 
         #endregion
@@ -200,8 +252,9 @@ namespace UVtools.Core.Objects
             }
 
             BottlesInStock -= consumedBottles;
+            ConsumedVolume += volume;
 
-            AddPrintTime(printSeconds);
+            AddPrintTimeSeconds(printSeconds);
 
             return _bottlesInStock > 0;
         }
@@ -210,10 +263,10 @@ namespace UVtools.Core.Objects
         /// Add print time with this material
         /// </summary>
         /// <param name="seconds">Seconds to add</param>
-        public void AddPrintTime(double seconds)
+        public void AddPrintTimeSeconds(double seconds)
         {
             if (seconds <= 0) return;
-            TotalPrintTime += seconds / 60 / 60;
+            PrintTime += seconds / 60 / 60;
         }
         #endregion
     }

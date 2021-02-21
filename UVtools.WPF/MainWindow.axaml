@@ -72,6 +72,15 @@
         </MenuItem>
         
           <Separator/>
+
+          <MenuItem
+              Header="I _printed this file" HotKey="Ctrl+P" InputGesture="Ctrl+P"
+              IsEnabled="{Binding IsFileLoaded}"
+              Command="{Binding IPrintedThisFile}">
+              <MenuItem.Icon>
+                  <Image Source="\Assets\Icons\flask-16x16.png"/>
+              </MenuItem.Icon>
+          </MenuItem>
         
         <MenuItem 
           Name="MainMenu.File.Extract" 
@@ -183,12 +192,24 @@
         <Separator/>
 
         <MenuItem
+            Header="_Material manager"
+            HotKey="F10"
+            InputGesture="F10"
+            Command="{Binding MenuHelpMaterialManagerClicked}">
+            <MenuItem.Icon>
+                <Image Source="\Assets\Icons\flask-16x16.png"/>
+            </MenuItem.Icon>
+        </MenuItem>
+
+        <MenuItem
           Header="_Install profiles into PrusaSlicer"
           Command="{Binding MenuHelpInstallProfilesClicked}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\CNCMachine-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
+
+        <Separator/>
         
         <MenuItem
           Header="_Open settings folder"

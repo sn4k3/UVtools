@@ -22,6 +22,7 @@ using Avalonia.ThemeManager;
 using Emgu.CV;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Managers;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 
@@ -51,6 +52,9 @@ namespace UVtools.WPF
                 UserSettings.SetVersion();
 
                 OperationProfiles.Load();
+
+                MaterialManager.FilePath = Path.Combine(UserSettings.SettingsFolder, "materials.xml");
+                MaterialManager.Load();
 
                 /*ThemeSelector = ThemeSelector.Create(Path.Combine(ApplicationPath, "Assets", "Themes"));
                 ThemeSelector.LoadSelectedTheme(Path.Combine(UserSettings.SettingsFolder, "selected.theme"));

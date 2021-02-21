@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Tools.ToolIPrintedThisFileControl">
+  
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto" 
+          ColumnDefinitions="Auto,10,Auto">
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="The material you want to consume from (remaining in current bottle / total in stock)"
+                   Text="Material:"/>
+        <ComboBox Grid.Row="0" Grid.Column="2"
+                  HorizontalAlignment="Stretch"
+                  MinWidth="600"
+                  Items="{Binding Operation.Manager}"
+                  SelectedItem="{Binding Operation.MaterialItem}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Volume:"/>
+
+        <StackPanel Grid.Row="2" Grid.Column="2"
+                    Orientation="Horizontal" Spacing="5">
+            <NumericUpDown Minimum="1"
+                           Maximum="1000000"
+                           Increment="1"
+                           MinWidth="200"
+                           Value="{Binding Operation.Volume}"/>
+            <TextBlock VerticalAlignment="Center" Text="ml"/>
+
+        </StackPanel>
+        
+
+        <TextBlock Grid.Row="4" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Print time:"/>
+
+        <StackPanel Grid.Row="4" Grid.Column="2"
+                    Orientation="Horizontal" Spacing="5">
+        <NumericUpDown Minimum="1"
+                       Maximum="100000000"
+                       Increment="1"
+                       MinWidth="200"
+                       FormatString="F2"
+                       Value="{Binding Operation.PrintTime}"/>
+        <TextBlock VerticalAlignment="Center"
+                   Text="{Binding Operation.PrintTimeHours, StringFormat=s / {0:N4}h}"/>
+        </StackPanel>
+    </Grid>
+
+</UserControl>

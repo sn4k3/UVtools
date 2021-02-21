@@ -805,6 +805,11 @@ namespace UVtools.WPF
             App.StartProcess(UserSettings.SettingsFolder);
         }
 
+        private async void MenuHelpMaterialManagerClicked()
+        {
+            await new MaterialManagerWindow().ShowDialog(this);
+        }
+
         public async void MenuHelpInstallProfilesClicked()
         {
             var PEFolder = App.GetPrusaSlicerDirectory();
@@ -818,7 +823,7 @@ namespace UVtools.WPF
                     "Unable to detect PrusaSlicer") == ButtonResult.Yes) App.OpenBrowser("https://www.prusa3d.com/prusaslicer/");
                 return;
             }
-            await new PrusaSlicerManager().ShowDialog(this);
+            await new PrusaSlicerManagerWindow().ShowDialog(this);
         }
 
         public async void MenuNewVersionClicked()
@@ -1149,6 +1154,8 @@ namespace UVtools.WPF
             ProgressWindow = new ProgressWindow(title);
         }
 
+        
+
         private async void ConvertToOnTapped(object? sender, RoutedEventArgs e)
         {
             if (sender is not MenuItem item) return;
@@ -1295,6 +1302,11 @@ namespace UVtools.WPF
             return task;
         }
 
+        public async void IPrintedThisFile()
+        {
+            await ShowRunOperation(typeof(OperationIPrintedThisFile));
+        }
+
         public async void ExtractFile()
         {
             if (!IsFileLoaded) return;
@@ -1412,6 +1424,9 @@ namespace UVtools.WPF
                     ResetDataContext();
 
                     CanSave = true;
+                    return true;
+                case OperationIPrintedThisFile operation:
+                    operation.Execute();
                     return true;
                 case OperationRepairLayers operation:
                     if (Issues is null)

@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:UVtools.WPF.Controls"
         mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
-        x:Class="UVtools.WPF.Windows.PrusaSlicerManager"
+        x:Class="UVtools.WPF.Windows.PrusaSlicerManagerWindow"
         Title="Install profiles into PrusaSlicer"
         Width="900"
         MinWidth="900"

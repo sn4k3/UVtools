@@ -10,11 +10,11 @@ using UVtools.WPF.Structures;
 
 namespace UVtools.WPF.Windows
 {
-    public class PrusaSlicerManager : WindowEx
+    public class PrusaSlicerManagerWindow : WindowEx
     {
         public PEProfileFolder[] Profiles { get;}
 
-        public PrusaSlicerManager()
+        public PrusaSlicerManagerWindow()
         {
             InitializeComponent();
             Profiles = new[]

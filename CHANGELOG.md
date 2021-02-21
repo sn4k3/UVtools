@@ -1,5 +1,10 @@
 # Changelog
 
+## 21/02/2021 - v2.5.0
+
+* (Add) Help - Material manager (F10): Allow to manage material stock and costs with statistic over time
+* (Add) File - I printed this file (CTRL + P): Allow to select a material and consume resin from stock and print time from the loaded file
+
 ## 19/02/2021 - v2.4.9
 
 * **(Fix) PhotonWorkshop files: (#149)**

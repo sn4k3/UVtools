@@ -12,7 +12,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <Version>2.4.9</Version>
+    <Version>2.5.0</Version>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -74,5 +74,10 @@
       <SubType>Designer</SubType>
     </AvaloniaResource>
     <AvaloniaResource Include="Assets\Icons\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Windows\PrusaSlicerManagerWindow.axaml.cs">
+      <DependentUpon>PrusaSlicerManagerWindow.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>
