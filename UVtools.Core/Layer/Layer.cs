@@ -138,7 +138,7 @@ namespace UVtools.Core
             get => _lightOffDelay;
             set
             {
-                if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
+                if (value < 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
                 RaiseAndSetIfChanged(ref _lightOffDelay, value);
             }
         }
@@ -151,7 +151,7 @@ namespace UVtools.Core
             get => _liftHeight;
             set
             {
-                if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
+                if (value < 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
                 RaiseAndSetIfChanged(ref _liftHeight, value);
             }
         }

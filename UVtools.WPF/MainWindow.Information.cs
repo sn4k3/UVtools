@@ -361,8 +361,12 @@ namespace UVtools.WPF
                 if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LightPWM))
                     CurrentLayerProperties.Add(new StringTag(nameof(layer.LightPWM), layer.LightPWM.ToString()));
             }
+            var materialMillilitersPercent = layer.MaterialMillilitersPercent;
+            if (!float.IsNaN(materialMillilitersPercent))
+            {
+                CurrentLayerProperties.Add(new StringTag(nameof(layer.MaterialMilliliters), $"{layer.MaterialMilliliters}ml ({materialMillilitersPercent:F2}%)"));
+            }
 
-            CurrentLayerProperties.Add(new StringTag(nameof(layer.MaterialMilliliters), $"{layer.MaterialMilliliters}ml ({layer.MaterialMillilitersPercent:F2}%)"));
         }
         #endregion
     }

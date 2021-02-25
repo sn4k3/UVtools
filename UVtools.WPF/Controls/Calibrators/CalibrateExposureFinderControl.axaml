@@ -431,12 +431,13 @@
                     <TextBlock Text="Only printers able to do Anti-Aliasing and enabled on file can support this, make sure your is supported or else it can print a full white or full black model.
 &#x0a;Also take into consideration some printers/formats have fixed usable AA levels and all in between will be threshold, study this first.
 &#x0a;If your printer is able to do 'Multiple exposures times per layer', please use that method instead of this (More accurate and AA threshold free)."/>
-
-                    <CheckBox
+                <CheckBox
                         Content="Enable - For advanced users only!"
                         IsChecked="{Binding Operation.MultipleBrightness}"/>
 
-                    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
+
+
+                  <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
                           ColumnDefinitions="Auto,10,200,5,Auto,20,Auto,10,Auto,5,Auto,5,Auto"
                           IsEnabled="{Binding Operation.MultipleBrightness}">
 
@@ -613,9 +614,18 @@
                 <TextBlock Text="Only few printers support this, make sure your is supported or else it will print a malformed model.
 &#x0a;After this, do not apply any modification which reconstruct the z positions of the layers."/>
 
+                <StackPanel Orientation="Horizontal" Spacing="20">
                 <CheckBox
                     Content="Enable - For advanced users only!"
                     IsChecked="{Binding Operation.MultipleExposures}"/>
+
+                <CheckBox
+                    ToolTip.Tip="The lift height will be set to 0 for sequential layers that share same z position.
+&#x0a;Some printers may not support this and always require a lift after each layer."
+                    Content="Do not perform the lifting sequence for layers with same Z positioning"
+                    IsEnabled="{Binding Operation.MultipleExposures}"
+                    IsChecked="{Binding Operation.DontLiftSamePositionedLayers}"/>
+                </StackPanel>
 
                 <TextBlock Text="Automatic exposure generation:"
                            IsEnabled="{Binding Operation.MultipleExposures}"

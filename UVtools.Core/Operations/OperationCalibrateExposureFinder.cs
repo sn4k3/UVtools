@@ -76,6 +76,7 @@ namespace UVtools.Core.Operations
         private decimal _multipleLayerHeightMaximum = 0.1m;
         private decimal _multipleLayerHeightStep = 0.01m;
 
+        private bool _dontLiftSamePositionedLayers;
         private bool _multipleExposures;
         private ExposureGenTypes _exposureGenType = ExposureGenTypes.Linear;
         private bool _exposureGenIgnoreBaseExposure;
@@ -592,6 +593,12 @@ namespace UVtools.Core.Operations
             }
         }
 
+        public bool DontLiftSamePositionedLayers
+        {
+            get => _dontLiftSamePositionedLayers;
+            set => RaiseAndSetIfChanged(ref _dontLiftSamePositionedLayers, value);
+        }
+
         public bool MultipleExposures
         {
             get => _multipleExposures;
@@ -750,7 +757,7 @@ namespace UVtools.Core.Operations
 
         private bool Equals(OperationCalibrateExposureFinder other)
         {
-            return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _partMargin == other._partMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _baseHeight == other._baseHeight && _featuresHeight == other._featuresHeight && _featuresMargin == other._featuresMargin && _unitOfMeasure == other._unitOfMeasure && _holeDiametersPx == other._holeDiametersPx && _holeDiametersMm == other._holeDiametersMm && _barSpacing == other._barSpacing && _barLength == other._barLength && _barVerticalSplitter == other._barVerticalSplitter && _barThicknessesPx == other._barThicknessesPx && _barThicknessesMm == other._barThicknessesMm && _textFont == other._textFont && _textScale.Equals(other._textScale) && _textThickness == other._textThickness && _text == other._text && _multipleBrightness == other._multipleBrightness && _multipleBrightnessExcludeFrom == other._multipleBrightnessExcludeFrom && _multipleBrightnessValues == other._multipleBrightnessValues && _multipleLayerHeight == other._multipleLayerHeight && _multipleLayerHeightMaximum == other._multipleLayerHeightMaximum && _multipleLayerHeightStep == other._multipleLayerHeightStep && _multipleExposures == other._multipleExposures && _exposureGenType == other._exposureGenType && _exposureGenIgnoreBaseExposure == other._exposureGenIgnoreBaseExposure && _exposureGenBottomStep == other._exposureGenBottomStep && _exposureGenNormalStep == other._exposureGenNormalStep && _exposureGenTests == other._exposureGenTests && Equals(_exposureTable, other._exposureTable) && _holeShape == other._holeShape;
+            return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _partMargin == other._partMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _baseHeight == other._baseHeight && _featuresHeight == other._featuresHeight && _featuresMargin == other._featuresMargin && _unitOfMeasure == other._unitOfMeasure && _holeDiametersPx == other._holeDiametersPx && _holeDiametersMm == other._holeDiametersMm && _barSpacing == other._barSpacing && _barLength == other._barLength && _barVerticalSplitter == other._barVerticalSplitter && _barThicknessesPx == other._barThicknessesPx && _barThicknessesMm == other._barThicknessesMm && _textFont == other._textFont && _textScale.Equals(other._textScale) && _textThickness == other._textThickness && _text == other._text && _multipleBrightness == other._multipleBrightness && _multipleBrightnessExcludeFrom == other._multipleBrightnessExcludeFrom && _multipleBrightnessValues == other._multipleBrightnessValues && _dontLiftSamePositionedLayers == other._dontLiftSamePositionedLayers && _multipleLayerHeight == other._multipleLayerHeight && _multipleLayerHeightMaximum == other._multipleLayerHeightMaximum && _multipleLayerHeightStep == other._multipleLayerHeightStep && _multipleExposures == other._multipleExposures && _exposureGenType == other._exposureGenType && _exposureGenIgnoreBaseExposure == other._exposureGenIgnoreBaseExposure && _exposureGenBottomStep == other._exposureGenBottomStep && _exposureGenNormalStep == other._exposureGenNormalStep && _exposureGenTests == other._exposureGenTests && Equals(_exposureTable, other._exposureTable) && _holeShape == other._holeShape;
         }
 
         public override bool Equals(object obj)
@@ -793,6 +800,7 @@ namespace UVtools.Core.Operations
             hashCode.Add(_multipleLayerHeight);
             hashCode.Add(_multipleLayerHeightMaximum);
             hashCode.Add(_multipleLayerHeightStep);
+            hashCode.Add(_dontLiftSamePositionedLayers);
             hashCode.Add(_multipleExposures);
             hashCode.Add((int) _exposureGenType);
             hashCode.Add(_exposureGenIgnoreBaseExposure);
@@ -1288,6 +1296,12 @@ namespace UVtools.Core.Operations
             SlicerFile.ExposureTime = (float)NormalExposure;
             SlicerFile.BottomLayerCount = BottomLayers;
             SlicerFile.LayerManager.Layers = newLayers.ToArray();
+
+            if (_dontLiftSamePositionedLayers)
+            {
+                SlicerFile.LayerManager.SetNoLiftForSamePositionedLayers();
+            }
+
             SlicerFile.SuppressRebuildProperties = false;
 
             if (_mirrorOutput)

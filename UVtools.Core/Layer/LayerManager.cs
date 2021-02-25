@@ -289,6 +289,19 @@ namespace UVtools.Core
             SlicerFile?.RebuildGCode();
         }
 
+        /// <summary>
+        /// Set LiftHeight to 0 if previous and current have same PositionZ
+        /// </summary>
+        public void SetNoLiftForSamePositionedLayers()
+        {
+            for (int layerIndex = 1; layerIndex < Count; layerIndex++)
+            {
+                if (this[layerIndex - 1].PositionZ != this[layerIndex].PositionZ) continue;
+                this[layerIndex].LiftHeight = 0;
+            }
+            SlicerFile?.RebuildGCode();
+        }
+
         public Rectangle GetBoundingRectangle(OperationProgress progress = null)
         {
             progress ??= new OperationProgress(OperationProgress.StatusOptimizingBounds, Count-1);

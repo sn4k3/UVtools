@@ -183,7 +183,7 @@ namespace UVtools.Core.FileFormats
                                          "<Slice> Blank{0}" +
                                          "M106 S0{0}{0}";
 
-        public const string GCodeEnd = "M106 S0{0} ; UV off" +
+        public const string GCodeEnd = "M106 S0 ;UV off{0}" +
                                        "G1 Z{1}{0}" +
                                        "{0}M18 ;Disable Motors{0}" +
                                        ";<Completed>{0}";

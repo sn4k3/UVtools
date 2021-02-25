@@ -1,5 +1,14 @@
 # Changelog
 
+## 25/02/2021 - v2.5.1
+
+* (Add) Calibration - Exposure time finder: Option to "Do not perform the lifting sequence for layers with same Z positioning" 
+   The lift height will be set to 0 for sequential layers that share same z position.
+   Some printers may not support this and always require a lift after each layer.
+* (Fix) Hide MaterialMilliliters from layer data if unable to calculate the value (NaN)
+* (Fix) CWS: A missing line break wasn't lifting printer on finish
+* (Fix) Layers: Allow to set LiftHeight and LightOffDelay to 0 per layer
+
 ## 21/02/2021 - v2.5.0
 
 * (Add) Help - Material manager (F10): Allow to manage material stock and costs with statistic over time
