@@ -188,20 +188,20 @@ https://github.com/sn4k3/UVtools/wiki/Sliced-File-Conversion
 
 1. Windows 7 or greater
    1. If on Windows 10 N or NK: [Media Feature Pack](https://www.microsoft.com/download/details.aspx?id=48231) must be installed
-1. [.NET 5.0](https://dotnet.microsoft.com/download/dotnet/5.0) installed (Comes pre-installed on Windows 10 with last updates)
+<!-- 1. [.NET 5.0](https://dotnet.microsoft.com/download/dotnet/5.0) installed (Comes pre-installed on Windows 10 with last updates)!-->
 1. 4GB RAM or higher
-1. 1980 x 1080 @ 100% scale as minimum resolution
+1. 1920 x 1080 @ 100% scale as minimum resolution
 
 
 ## Linux
 
 1. 4GB RAM or higher
 2. 64 bit System
-1. 1980 x 1080 @ 100% scale as minimum resolution
+1. 1920 x 1080 @ 100% scale as minimum resolution
 
 ### Ubuntu/Mint/Debian/Similars
 
-<!--- 
+<!--
 wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
