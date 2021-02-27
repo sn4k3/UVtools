@@ -25,7 +25,7 @@ namespace UVtools.Core
         /// <summary>
         /// Gets the <see cref="BinarySerializer"/> instance
         /// </summary>
-        public static BinarySerializer Serializer { get; } = new BinarySerializer {Endianness = Endianness.Little };
+        public static BinarySerializer Serializer { get; } = new() {Endianness = Endianness.Little };
 
         public static MemoryStream Serialize(object value)
         {
