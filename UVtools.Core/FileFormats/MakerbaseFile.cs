@@ -39,10 +39,15 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// Gets the file tag = MKSDLP
             /// </summary>
+            //[SerializeAs(SerializedType.TerminatedString)]
             [FieldOrder(0)] [FieldOffset(4)] [FieldLength(6)] public string Tag { get; set; } = TagValue;
-            [FieldOrder(1)] [FieldOffset(1)] public ushort MaxSize { get; set; }
-            [FieldOrder(2)] public ushort ResolutionX { get; set; }
-            [FieldOrder(3)] public ushort ResolutionY { get; set; }
+
+            // 290 * 290 * 2 + 116 * 116 * 2 + 4 + 1
+            [FieldOrder(1)] [FieldLength(195116)] public byte[] PreviewData { get; set; }
+
+            [FieldOrder(2)] public ushort MaxSize { get; set; }
+            [FieldOrder(3)] public ushort ResolutionX { get; set; }
+            [FieldOrder(4)] public ushort ResolutionY { get; set; }
 
             
         }
@@ -53,12 +58,11 @@ namespace UVtools.Core.FileFormats
         #region Properties
 
         public Header HeaderSettings { get; protected internal set; } = new Header();
-        private int temp = 0;
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("mdlp", "Makerbase MDLP Files"),
-            new FileExtension("gr1", "GR1 Workshop GR1 Files"),
+            new ("mdlp", "Makerbase MDLP Files"),
+            new ("gr1", "Workshop GR1 Files"),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
@@ -81,18 +85,20 @@ namespace UVtools.Core.FileFormats
 
         public override byte ThumbnailsCount { get; } = 0;
 
-        public override Size[] ThumbnailsOriginalSize { get; } = {new Size(400, 300), new Size(200, 125)};
+        public override Size[] ThumbnailsOriginalSize { get; } = {new (290, 290), new (116, 116) };
 
         public override uint ResolutionX
         {
             get => 0;
-            set => temp = 0;
+            set
+            {
+            }
         }
 
         public override uint ResolutionY
         {
             get => 0;
-            set => temp = 0;
+            set { }
         }
 
         public override float DisplayWidth { get; set; }
@@ -108,14 +114,14 @@ namespace UVtools.Core.FileFormats
         public override float LayerHeight
         {
             get => 0;
-            set => temp = 0;
+            set { }
         }
 
         public override uint LayerCount
         {
             set
             {
-                temp = 0;
+                
                 /*HeaderSettings.LayerCount = LayerCount;
                 HeaderSettings.OverallHeightMilimeter = TotalHeight;*/
             }
@@ -144,9 +150,7 @@ namespace UVtools.Core.FileFormats
         #endregion
 
         #region Constructors
-        public MakerbaseFile()
-        {
-        }
+
         #endregion
 
         #region Methods
@@ -171,16 +175,18 @@ namespace UVtools.Core.FileFormats
 
         protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
         {
-            using (var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read))
+            using var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            //HeaderSettings = Helpers.ByteToType<CbddlpFile.Header>(InputFile);
+            //HeaderSettings = Helpers.Serializer.Deserialize<Header>(InputFile.ReadBytes(Helpers.Serializer.SizeOf(typeof(Header))));
+            HeaderSettings = Helpers.Deserialize<Header>(inputFile);
+            if (HeaderSettings.Tag != Header.TagValue)
             {
-                //HeaderSettings = Helpers.ByteToType<CbddlpFile.Header>(InputFile);
-                //HeaderSettings = Helpers.Serializer.Deserialize<Header>(InputFile.ReadBytes(Helpers.Serializer.SizeOf(typeof(Header))));
-                HeaderSettings = Helpers.Deserialize<Header>(inputFile);
-                if (HeaderSettings.Tag != Header.TagValue)
-                {
-                    throw new FileLoadException("Not a valid Makerfile file!", fileFullPath);
-                }
+                throw new FileLoadException("Not a valid Makerbase file!", fileFullPath);
             }
+
+            /*var rng = 290 * 290 * 2 + 116 * 116 * 2 + 4;
+            byte[] buffer = new byte[rng];
+            inputFile.Read(buffer, 0, rng);*/
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)
