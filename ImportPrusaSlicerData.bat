@@ -63,6 +63,7 @@ SET files[53]=Voxelab Ceres 8.9.ini
 SET files[54]=Longer Orange 10.ini
 SET files[55]=Longer Orange 30.ini
 SET files[56]=Longer Orange4K.ini
+SET files[57]=Uniz IBEE.ini
 
 echo PrusaSlicer Printers Instalation
 echo This will replace printers, all changes will be discarded

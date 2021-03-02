@@ -1,5 +1,14 @@
 # Changelog
 
+## 25/02/2021 - v2.6.0
+
+* (Add) File format: Zcode (Uniz IBEE)
+* (Add) PrusaSlicer Printer: Uniz IBEE
+* (Add) Extract: Output an "Layer.ini" file containing per layer data and include the Configuration.ini for Zip file formats
+* (Improvement) Zip: Increase the GCode parsing performance
+* (Fix) File formats: Wasn't set bottom / light off delay per individual layer on generic formats, defaulting every layer to 0
+* (Fix) Edit print paramenters: When changing bottom layer count, layers didnt update thier properties
+
 ## 25/02/2021 - v2.5.1
 
 * (Add) Calibration - Exposure time finder: Option to "Do not perform the lifting sequence for layers with same Z positioning" 

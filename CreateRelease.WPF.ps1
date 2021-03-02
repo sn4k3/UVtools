@@ -31,7 +31,7 @@ class FixedEncoder : System.Text.UTF8Encoding {
 ####################################
 $enableMSI = $true
 $buildOnly = $null
-#$buildOnly = "osx-x64"#"win-x64"
+#$buildOnly = "win-x64"
 # Profilling
 $stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
 $deployStopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
@@ -99,6 +99,11 @@ $runtimes =
         "include" = @("libcvextern.so")
     }
     "rhel-x64" = @{
+        "extraCmd" = "-p:PublishReadyToRun=true"
+        "exclude" = @()
+        "include" = @("libcvextern.so")
+    }
+    "linux-arm64" = @{
         "extraCmd" = "-p:PublishReadyToRun=true"
         "exclude" = @()
         "include" = @("libcvextern.so")

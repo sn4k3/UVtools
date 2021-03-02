@@ -531,8 +531,8 @@ namespace UVtools.Core.FileFormats
 
 
                     var startStr = $";LAYER_START:{layerIndex}";
-                    var stripGcode = gcode.Substring(gcode.IndexOf(startStr, StringComparison.InvariantCultureIgnoreCase) + startStr.Length);
-                    stripGcode = stripGcode.Substring(0, stripGcode.IndexOf(";LAYER_END")).Trim(' ', '\n', '\r', '\t');
+                    gcode = gcode.Substring(gcode.IndexOf(startStr, StringComparison.InvariantCultureIgnoreCase) + startStr.Length);
+                    var stripGcode = gcode.Substring(0, gcode.IndexOf(";LAYER_END")).Trim(' ', '\n', '\r', '\t');
                     //var startCurrPos = stripGcode.Remove(0, ";currPos:".Length);
 
                     float posZ = lastPostZ;

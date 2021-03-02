@@ -370,6 +370,7 @@ namespace UVtools.Core
             _exposureTime = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
             _liftHeight = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
             _liftSpeed = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
+            _lightOffDelay = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
             _retractSpeed = SlicerFile.RetractSpeed;
             _lightPwm = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
         }

@@ -222,7 +222,7 @@ namespace UVtools.Core
                 var layer = this[layerIndex];
                 layer.Index = layerIndex;
 
-                if (property is null)
+                if (property is null || property == nameof(SlicerFile.BottomLayerCount))
                 {
                     layer.ExposureTime = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
                     layer.LiftHeight = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);

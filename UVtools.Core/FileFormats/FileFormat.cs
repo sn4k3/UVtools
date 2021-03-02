@@ -10,7 +10,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -37,6 +36,8 @@ namespace UVtools.Core.FileFormats
         private const string ExtractConfigFileName = "Configuration";
         private const string ExtractConfigFileExtension = "ini";
 
+
+        public const float DefaultLayerHeight = 0.5f;
         public const ushort DefaultBottomLayerCount = 4;
 
         public const float DefaultBottomExposureTime = 30;
@@ -206,8 +207,9 @@ namespace UVtools.Core.FileFormats
             new PHZFile(), // phz
             new FDGFile(), // fdg
             new PhotonWorkshopFile(),   // PSW
-            new ZCodexFile(),   // zcodex
             new CWSFile(),   // CWS
+            new ZCodeFile(),   // zcode
+            new ZCodexFile(),   // zcodex
             //new MakerbaseFile(),   // MKS
             new LGSFile(),   // LGS, LGS30
             new UVJFile(),   // UVJ
@@ -546,7 +548,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets or sets if images need to be mirrored on lcd to print on the correct orientation
         /// </summary>
-        public abstract bool MirrorDisplay { get; set; }
+        public virtual bool MirrorDisplay { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum printer build Z volume
@@ -1272,22 +1274,10 @@ namespace UVtools.Core.FileFormats
             //{
             Directory.CreateDirectory(path);
             //}
-            
-
-            if (FileType == FileFormatType.Archive)
-            {
-                
-                progress.CanCancel = false;
-                //ZipFile.ExtractToDirectory(FileFullPath, path);
-                ZipArchiveExtensions.ImprovedExtractToDirectory(FileFullPath, path, ZipArchiveExtensions.Overwrite.Always);
-                return;
-            }
-
-            progress.ItemCount = LayerCount;
 
             if (genericConfigExtract)
             {
-                if (!ReferenceEquals(Configs, null))
+                if (Configs is not null)
                 {
                     using TextWriter tw = new StreamWriter(Path.Combine(path, $"{ExtractConfigFileName}.{ExtractConfigFileExtension}"), false);
                     foreach (var config in Configs)
@@ -1309,12 +1299,64 @@ namespace UVtools.Core.FileFormats
 
             if (genericLayersExtract)
             {
+                if (LayerCount > 0)
+                {
+                    using (TextWriter tw = new StreamWriter(Path.Combine(path, "Layers.ini")))
+                    {
+                        for (int layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                        {
+                            var layer = this[layerIndex];
+                            tw.WriteLine($"[{layerIndex}]");
+                            tw.WriteLine($"{nameof(layer.NonZeroPixelCount)}: {layer.NonZeroPixelCount}");
+                            tw.WriteLine($"{nameof(layer.BoundingRectangle)}: {layer.BoundingRectangle}");
+                            tw.WriteLine($"{nameof(layer.IsBottomLayer)}: {layer.IsBottomLayer}");
+                            tw.WriteLine($"{nameof(layer.LayerHeight)}: {layer.LayerHeight}");
+                            tw.WriteLine($"{nameof(layer.PositionZ)}: {layer.PositionZ}");
+                            tw.WriteLine($"{nameof(layer.ExposureTime)}: {layer.ExposureTime}");
+
+                            if (HavePrintParameterPerLayerModifier(PrintParameterModifier.LightOffDelay))
+                                tw.WriteLine($"{nameof(layer.LightOffDelay)}: {layer.LightOffDelay}");
+                            if (HavePrintParameterPerLayerModifier(PrintParameterModifier.LiftHeight))
+                                tw.WriteLine($"{nameof(layer.LiftHeight)}: {layer.LiftHeight}");
+                            if (HavePrintParameterPerLayerModifier(PrintParameterModifier.LiftSpeed))
+                                tw.WriteLine($"{nameof(layer.LiftSpeed)}: {layer.LiftSpeed}");
+                            if (HavePrintParameterPerLayerModifier(PrintParameterModifier.RetractSpeed))
+                                tw.WriteLine($"{nameof(layer.RetractSpeed)}: {layer.RetractSpeed}");
+                            if (HavePrintParameterPerLayerModifier(PrintParameterModifier.LightPWM))
+                                tw.WriteLine($"{nameof(layer.LightPWM)}: {layer.LightPWM}");
+
+                            var materialMillilitersPercent = layer.MaterialMillilitersPercent;
+                            if (!float.IsNaN(materialMillilitersPercent))
+                            {
+                                tw.WriteLine($"{nameof(layer.MaterialMilliliters)}: {layer.MaterialMilliliters}ml ({materialMillilitersPercent:F2}%)");
+                            }
+
+                            tw.WriteLine();
+                        }
+                        tw.Close();
+                    }
+                }
+            }
+
+
+            if (FileType == FileFormatType.Archive)
+            {
+                
+                progress.CanCancel = false;
+                ZipArchiveExtensions.ImprovedExtractToDirectory(FileFullPath, path, ZipArchiveExtensions.Overwrite.Always);
+                return;
+            }
+
+            progress.ItemCount = LayerCount;
+
+            if (genericLayersExtract)
+            {
                 uint i = 0;
-                if (!ReferenceEquals(Thumbnails, null))
+                if (Thumbnails is not null)
                 {
                     foreach (var thumbnail in Thumbnails)
                     {
-                        if (ReferenceEquals(thumbnail, null))
+                        if (thumbnail is null)
                         {
                             continue;
                         }
@@ -1342,24 +1384,6 @@ namespace UVtools.Core.FileFormats
                         }
                     });
                 }
-
-                /* Parallel.For(0, LayerCount, layerIndex => {
-                         var byteArr = this[layerIndex].RawData;
-                         using (FileStream stream = File.Create(Path.Combine(path, $"Layer{layerIndex}.png"), byteArr.Length))
-                         {
-                             stream.Write(byteArr, 0, byteArr.Length);
-                             stream.Close();
-                         }
-                     });*/
-                /*for (i = 0; i < LayerCount; i++)
-                {
-                    var byteArr = GetLayer(i);
-                    using (FileStream stream = File.Create(Path.Combine(path, $"Layer{i}.png"), byteArr.Length))
-                    {
-                        stream.Write(byteArr, 0, byteArr.Length);
-                        stream.Close();
-                    }
-                }*/
             }
         }
 

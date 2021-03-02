@@ -221,6 +221,9 @@
         <Component Id="owc0F7CC7ACEA840EC81FADDEE08D4B54C3" Guid="8de4454d-fc84-51cf-d44c-612dcea01607">
           <File Id="owf0F7CC7ACEA840EC81FADDEE08D4B54C3" Source="$(var.SourceDir)\BinarySerializer.dll" KeyPath="yes" />
         </Component>
+        <Component Id="owc0D5E901B0EDC9AC66EDED7744C9C0EC4" Guid="bf900338-6ac3-e652-0358-b6c5a433ead1">
+          <File Id="owf0D5E901B0EDC9AC66EDED7744C9C0EC4" Source="$(var.SourceDir)\BouncyCastle.Crypto.dll" KeyPath="yes" />
+        </Component>
         <Component Id="owc3D4C6D44ECDB03E5FE1F04B44BCF854F" Guid="7357d916-7bf8-aecc-ec52-30bed411500d">
           <File Id="owf3D4C6D44ECDB03E5FE1F04B44BCF854F" Source="$(var.SourceDir)\clrcompression.dll" KeyPath="yes" />
         </Component>
@@ -1022,6 +1025,9 @@
               </Component>
               <Component Id="owc696F0AF8084A6AA7624CA0947E245A47" Guid="6aa7d092-d68b-a44d-f2c7-0a590404b19f">
                 <File Id="owf696F0AF8084A6AA7624CA0947E245A47" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\QIDI Shadow6.0 Pro.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc58F08D198616611A088F5E8CA9BAB684" Guid="f0f9d4c3-c4d4-ab8b-ff79-f93dc13fbbbb">
+                <File Id="owf58F08D198616611A088F5E8CA9BAB684" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Uniz IBEE.ini" KeyPath="yes" />
               </Component>
               <Component Id="owcD0FD9259BE924EB58AE9F7A85AE0A9E8" Guid="360b089c-8765-92db-0c8f-367d80202d8f">
                 <File Id="owfD0FD9259BE924EB58AE9F7A85AE0A9E8" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\UVtools Prusa SL1.ini" KeyPath="yes" />

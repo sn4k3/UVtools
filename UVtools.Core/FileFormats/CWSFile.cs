@@ -533,12 +533,6 @@ namespace UVtools.Core.FileFormats
 
         #region Methods
 
-        public override void Clear()
-        {
-            base.Clear();
-            GCode = null;
-        }
-
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
             //var filename = fileFullPath.EndsWith(TemporaryFileAppend) ? Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(fileFullPath)) : Path.GetFileNameWithoutExtension(fileFullPath);

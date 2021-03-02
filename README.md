@@ -66,6 +66,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 * PWMO (Photon Workshop)
 * PWMS (Photon Workshop)
 * PWMX (Photon Workshop)
+* ZCode (UnizMaker)
 * ZCodex (Z-Suite)
 * CWS (NovaMaker)
 * RGB.CWS (Nova Bene4 Mono / Elfin2 Mono SE)
@@ -86,7 +87,6 @@ But also, i need victims for test subject. Proceed at your own risk!
   * X133 4K Mono
   * X156 4K Color
   * X1K 2K Mono
-* **Zortrax Inkspire**
 * **Nova3D**
   * Elfin
   * Bene4 Mono
@@ -140,6 +140,8 @@ But also, i need victims for test subject. Proceed at your own risk!
   * Orange 10
   * Orange 30
   * Orange4K
+* **Uniz IBEE**
+* **Zortrax Inkspire**
 
 # Available profiles for PrusaSlicer
 
