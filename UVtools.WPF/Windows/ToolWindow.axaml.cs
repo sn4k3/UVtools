@@ -535,7 +535,7 @@ namespace UVtools.WPF.Windows
                 {
                     if (operation.ProfileIsDefault)
                     {
-                        _selectedProfileItem = operation;
+                        SelectedProfileItem = operation;
                         break;
                     }
                 }

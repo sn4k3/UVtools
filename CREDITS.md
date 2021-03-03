@@ -49,3 +49,4 @@
 * Abhinav Sinha
 * Randy Savell
 * Steve Clynes
+* Nicholas Taylor

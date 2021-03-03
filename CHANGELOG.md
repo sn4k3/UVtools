@@ -1,13 +1,29 @@
 # Changelog
 
-## 25/02/2021 - v2.6.0
+## 03/03/2021 - v2.6.1
+
+* (Add) Setting: Auto repair layers and issues on file load
+* (Improvement) When ComputeIssuesOnLoad is enabled and issues are detected it will switch the view to the Issues tab
+* **(Improvement) Raft Relief:**
+   * Add parameter "Mask layer index": Defines the mask layer to use and ignore the white blobs on the raft
+   * Increase the automatic support detection allowance on more odd shapes
+   * Prevent layer 0 to be used as a mask, if so it will quit
+   * If the ignored layer number are set and equal or larger than mask layer index it will quit
+   * Fix progress count when using ignored layers
+   * Change supports dilate kernel from Elipse to Rectangle for a better coverage of the pad
+   * Change the default values for a more conservative values
+* (Fix) When both ComputeIssuesOnLoad and ComputeIssuesOnClickTab are enabled, clicking the issues tab will rescan for issues
+* (Fix) Tools: Set a default profile insn't working
+* (Fix) Redoing the last operation was not recovering the custom ROI on the operation
+
+## 02/03/2021 - v2.6.0
 
 * (Add) File format: Zcode (Uniz IBEE)
 * (Add) PrusaSlicer Printer: Uniz IBEE
 * (Add) Extract: Output an "Layer.ini" file containing per layer data and include the Configuration.ini for Zip file formats
 * (Improvement) Zip: Increase the GCode parsing performance
 * (Fix) File formats: Wasn't set bottom / light off delay per individual layer on generic formats, defaulting every layer to 0
-* (Fix) Edit print paramenters: When changing bottom layer count, layers didnt update thier properties
+* (Fix) Edit print parameters: When changing bottom layer count, layers didnt update thier properties
 
 ## 25/02/2021 - v2.5.1
 

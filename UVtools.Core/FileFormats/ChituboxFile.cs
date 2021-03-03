@@ -1085,7 +1085,7 @@ namespace UVtools.Core.FileFormats
             get => HeaderSettings.ProjectorType > 0;
             set
             {
-                HeaderSettings.ProjectorType = value ? 1 : 0;
+                HeaderSettings.ProjectorType = value ? 1u : 0;
                 RaisePropertyChanged();
             }
         }

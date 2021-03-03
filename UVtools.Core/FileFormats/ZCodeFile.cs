@@ -771,7 +771,7 @@ namespace UVtools.Core.FileFormats
                 byte[] data = Encoding.UTF8.GetBytes(line);
                 List<byte> padData = new(64) {0, 1, 0};
                 padData.AddRange(data);
-
+                
                 if (padData.Count > 64)
                 {
                     throw new ArgumentOutOfRangeException($"Too long gcode line to encrypt, got: {padData.Count} bytes while expecting less than 64 bytes");

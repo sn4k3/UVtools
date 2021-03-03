@@ -1318,7 +1318,7 @@ namespace UVtools.Core.FileFormats
                     break;
             }
 
-            HeaderSettings.PerLayerOverride = LayerManager.AllLayersHaveGlobalParameters ? 0 : 1;
+            HeaderSettings.PerLayerOverride = (byte)(LayerManager.AllLayersHaveGlobalParameters ? 0 : 1);
 
 
             uint currentOffset = FileMarkSettings.HeaderAddress = (uint) Helpers.Serializer.SizeOf(FileMarkSettings);
@@ -1522,7 +1522,7 @@ namespace UVtools.Core.FileFormats
                 FileFullPath = filePath;
             }
 
-            HeaderSettings.PerLayerOverride = LayerManager.AllLayersHaveGlobalParameters ? 0 : 1;
+            HeaderSettings.PerLayerOverride = LayerManager.AllLayersHaveGlobalParameters ? 0 : 1u;
 
             using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);
             outputFile.Seek(FileMarkSettings.HeaderAddress, SeekOrigin.Begin);

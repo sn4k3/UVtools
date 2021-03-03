@@ -31,12 +31,14 @@ namespace UVtools.Core.Operations
         
         #region Members
         private RaftReliefTypes _reliefType = RaftReliefTypes.Relief;
+        private uint _maskLayerIndex;
         private byte _ignoreFirstLayers;
         private byte _brightness;
-        private byte _dilateIterations = 10;
-        private byte _wallMargin = 20;
-        private byte _holeDiameter = 50;
-        private byte _holeSpacing = 20;
+        private byte _dilateIterations = 15;// +/- 1.5mm radius
+        private byte _wallMargin = 40;      // +/- 2mm
+        private byte _holeDiameter = 80;    // +/- 4mm
+        private byte _holeSpacing = 40;     // +/- 2mm
+
         #endregion
 
         #region Overrides
@@ -57,7 +59,7 @@ namespace UVtools.Core.Operations
         
         public override string ToString()
         {
-            var result = $"[{_reliefType}] [Ignore: {_ignoreFirstLayers}] [B: {_brightness}] [Dilate: {_dilateIterations}] [Wall margin: {_wallMargin}] [Hole diameter: {_holeDiameter}] [Hole spacing: {_holeSpacing}]";
+            var result = $"[{_reliefType}] [Mask layer: {_maskLayerIndex}] [Ignore: {_ignoreFirstLayers}] [B: {_brightness}] [Dilate: {_dilateIterations}] [Wall margin: {_wallMargin}] [Hole diameter: {_holeDiameter}] [Hole spacing: {_holeSpacing}]";
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
         }
@@ -89,6 +91,12 @@ namespace UVtools.Core.Operations
         public bool IsRelief => _reliefType == RaftReliefTypes.Relief;
         public bool IsDimming => _reliefType == RaftReliefTypes.Dimming;
         public bool IsDecimate => _reliefType == RaftReliefTypes.Decimate;
+
+        public uint MaskLayerIndex
+        {
+            get => _maskLayerIndex;
+            set => RaiseAndSetIfChanged(ref _maskLayerIndex, value);
+        }
 
         public byte IgnoreFirstLayers
         {
@@ -137,7 +145,7 @@ namespace UVtools.Core.Operations
 
         protected bool Equals(OperationRaftRelief other)
         {
-            return _reliefType == other._reliefType && _ignoreFirstLayers == other._ignoreFirstLayers && _brightness == other._brightness && _dilateIterations == other._dilateIterations && _wallMargin == other._wallMargin && _holeDiameter == other._holeDiameter && _holeSpacing == other._holeSpacing;
+            return _reliefType == other._reliefType && _maskLayerIndex == other._maskLayerIndex && _ignoreFirstLayers == other._ignoreFirstLayers && _brightness == other._brightness && _dilateIterations == other._dilateIterations && _wallMargin == other._wallMargin && _holeDiameter == other._holeDiameter && _holeSpacing == other._holeSpacing;
         }
 
         public override bool Equals(object obj)
@@ -150,7 +158,7 @@ namespace UVtools.Core.Operations
 
         public override int GetHashCode()
         {
-            return HashCode.Combine((int) _reliefType, _ignoreFirstLayers, _brightness, _dilateIterations, _wallMargin, _holeDiameter, _holeSpacing);
+            return HashCode.Combine((int) _reliefType, _maskLayerIndex, _ignoreFirstLayers, _brightness, _dilateIterations, _wallMargin, _holeDiameter, _holeSpacing);
         }
 
         #endregion
@@ -160,33 +168,43 @@ namespace UVtools.Core.Operations
         protected override bool ExecuteInternally(OperationProgress progress)
         {
             progress.ItemCount = 0;
-            const uint minLength = 5;
+            const uint minSupportsRequired = 5;
+            const uint maxLayerCount = 1000;
 
             Mat supportsMat = null;
             var anchor = new Point(-1, -1);
             var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
 
 
-            uint firstSupportLayerIndex = 0;
-            for (; firstSupportLayerIndex < SlicerFile.LayerCount; firstSupportLayerIndex++)
+            uint firstSupportLayerIndex = _maskLayerIndex;
+            if (firstSupportLayerIndex <= 0)
             {
-                progress.Reset("Tracing raft", SlicerFile.LayerCount, firstSupportLayerIndex);
-                if (progress.Token.IsCancellationRequested) return false;
+                uint layerCount = Math.Min(SlicerFile.LayerCount, maxLayerCount);
+                progress.Reset("Tracing raft", layerCount, firstSupportLayerIndex);
+                for (; firstSupportLayerIndex < layerCount; firstSupportLayerIndex++)
+                {
+                    if (progress.Token.IsCancellationRequested) return false;
+                    progress++;
+                    supportsMat = GetRoiOrDefault(SlicerFile[firstSupportLayerIndex].LayerMat);
+                    var circles = CvInvoke.HoughCircles(supportsMat, HoughModes.Gradient, 1, 5, 80, 35, 5, 200);
+                    if (circles.Length >= minSupportsRequired) break;
+                    
+                    supportsMat.Dispose();
+                    supportsMat = null;
+                }
+            }
+            else
+            {
                 supportsMat = GetRoiOrDefault(SlicerFile[firstSupportLayerIndex].LayerMat);
-                var circles = CvInvoke.HoughCircles(supportsMat, HoughModes.Gradient, 1, 20, 100, 30, 5, 200);
-                if (circles.Length >= minLength) break;
-
-                supportsMat.Dispose();
-                supportsMat = null;
             }
 
-            if (supportsMat is null) return false;
+            if (supportsMat is null || /*firstSupportLayerIndex == 0 ||*/ _ignoreFirstLayers >= firstSupportLayerIndex) return false;
             Mat patternMat = null;
 
             if (DilateIterations > 0)
             {
                 CvInvoke.Dilate(supportsMat, supportsMat,
-                    CvInvoke.GetStructuringElement(ElementShape.Ellipse, new Size(3, 3), new Point(-1, -1)),
+                    CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), new Point(-1, -1)),
                     new Point(-1, -1), DilateIterations, BorderType.Reflect101, new MCvScalar());
             }
 
@@ -220,8 +238,8 @@ namespace UVtools.Core.Operations
                     break;
             }
 
-            progress.Reset(ProgressAction, firstSupportLayerIndex);
-            Parallel.For(IgnoreFirstLayers, firstSupportLayerIndex, layerIndex =>
+            progress.Reset(ProgressAction, firstSupportLayerIndex - _ignoreFirstLayers);
+            Parallel.For(_ignoreFirstLayers, firstSupportLayerIndex, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
                 using (Mat dst = SlicerFile[layerIndex].LayerMat)
@@ -238,7 +256,8 @@ namespace UVtools.Core.Operations
                                 CvInvoke.Erode(mask, mask, kernel, anchor, operation.WallMargin, BorderType.Reflect101, new MCvScalar());
                                 CvInvoke.Subtract(target, patternMat, target, mask);*/
 
-                                CvInvoke.Erode(target, mask, kernel, anchor, WallMargin, BorderType.Reflect101, default);
+                                CvInvoke.Erode(target, mask, kernel, anchor, WallMargin, BorderType.Reflect101,
+                                    default);
                                 CvInvoke.Subtract(mask, supportsMat, mask);
                                 CvInvoke.Subtract(target, patternMat, target, mask);
                             }

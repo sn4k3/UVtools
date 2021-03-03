@@ -420,10 +420,10 @@ namespace UVtools.WPF
             await ShowRunOperation(typeof(OperationRepairLayers));
         }
 
-        public void OnClickDetectIssues()
+        public async Task OnClickDetectIssues()
         {
             if (!IsFileLoaded) return;
-            ComputeIssues(
+            await ComputeIssues(
                 GetIslandDetectionConfiguration(),
                 GetOverhangDetectionConfiguration(),
                 GetResinTrapDetectionConfiguration(),
@@ -431,7 +431,7 @@ namespace UVtools.WPF
                 Settings.Issues.ComputeEmptyLayers);
         }
 
-        private async void ComputeIssues(IslandDetectionConfiguration islandConfig = null,
+        private async Task ComputeIssues(IslandDetectionConfiguration islandConfig = null,
             OverhangDetectionConfiguration overhangConfig = null,
             ResinTrapDetectionConfiguration resinTrapConfig = null,
             TouchingBoundDetectionConfiguration touchingBoundConfig = null, bool emptyLayersConfig = true)

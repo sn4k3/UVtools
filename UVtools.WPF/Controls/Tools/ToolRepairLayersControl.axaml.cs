@@ -11,22 +11,24 @@ namespace UVtools.WPF.Controls.Tools
         public ToolRepairLayersControl()
         {
             InitializeComponent();
-            BaseOperation = new OperationRepairLayers(SlicerFile)
-            {
-                RepairIslands = UserSettings.Instance.LayerRepair.RepairIslands,
-                RepairResinTraps = UserSettings.Instance.LayerRepair.RepairResinTraps,
-                RemoveEmptyLayers = UserSettings.Instance.LayerRepair.RemoveEmptyLayers,
-                RemoveIslandsBelowEqualPixelCount = UserSettings.Instance.LayerRepair.RemoveIslandsBelowEqualPixels,
-                RemoveIslandsRecursiveIterations = UserSettings.Instance.LayerRepair.RemoveIslandsRecursiveIterations,
-                GapClosingIterations = UserSettings.Instance.LayerRepair.ClosingIterations,
-                NoiseRemovalIterations = UserSettings.Instance.LayerRepair.OpeningIterations,
-            };
+            BaseOperation = GetOperationRepairLayers();
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
         }
+
+        public static OperationRepairLayers GetOperationRepairLayers() => new (App.SlicerFile)
+        {
+            RepairIslands = UserSettings.Instance.LayerRepair.RepairIslands,
+            RepairResinTraps = UserSettings.Instance.LayerRepair.RepairResinTraps,
+            RemoveEmptyLayers = UserSettings.Instance.LayerRepair.RemoveEmptyLayers,
+            RemoveIslandsBelowEqualPixelCount = UserSettings.Instance.LayerRepair.RemoveIslandsBelowEqualPixels,
+            RemoveIslandsRecursiveIterations = UserSettings.Instance.LayerRepair.RemoveIslandsRecursiveIterations,
+            GapClosingIterations = UserSettings.Instance.LayerRepair.ClosingIterations,
+            NoiseRemovalIterations = UserSettings.Instance.LayerRepair.OpeningIterations,
+        };
 
         public override void Callback(ToolWindow.Callbacks callback)
         {

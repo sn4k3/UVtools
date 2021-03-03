@@ -572,7 +572,8 @@ namespace UVtools.WPF
         [Serializable]
         public sealed class IssuesUserSettings : BindableBase
         {
-            private bool _computeIssuesOnLoad = false;
+            private bool _computeIssuesOnLoad;
+            private bool _autoRepairIssuesOnLoad;
             private bool _computeIssuesOnClickTab = true;
             private bool _computeIslands = true;
             private bool _computeOverhangs = true;
@@ -580,8 +581,8 @@ namespace UVtools.WPF
             private bool _computeTouchingBounds = true;
             private bool _computeEmptyLayers = true;
             private bool _islandEnhancedDetection = true;
-            private bool _islandAllowDiagonalBonds = false;
-            private byte _islandBinaryThreshold = 0;
+            private bool _islandAllowDiagonalBonds;
+            private byte _islandBinaryThreshold;
             private byte _islandRequiredAreaToProcessCheck = 1;
             private byte _islandRequiredPixelBrightnessToProcessCheck = 1;
             private byte _islandRequiredPixelsToSupport = 10;
@@ -604,6 +605,12 @@ namespace UVtools.WPF
             {
                 get => _computeIssuesOnLoad;
                 set => RaiseAndSetIfChanged(ref _computeIssuesOnLoad, value);
+            }
+
+            public bool AutoRepairIssuesOnLoad
+            {
+                get => _autoRepairIssuesOnLoad;
+                set => RaiseAndSetIfChanged(ref _autoRepairIssuesOnLoad, value);
             }
 
             public bool ComputeIssuesOnClickTab

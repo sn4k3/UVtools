@@ -181,7 +181,7 @@ namespace UVtools.Core.FileFormats
             set
             {
                 HeaderSettings.ProjectType = value ? "LCD_mirror" : "Normal";
-                HeaderSettings.Mirror = value ? 1 : 0;
+                HeaderSettings.Mirror = (byte)(value ? 1 : 0);
                 RaisePropertyChanged();
             }
         }

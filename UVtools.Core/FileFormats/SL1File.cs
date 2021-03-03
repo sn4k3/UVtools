@@ -379,7 +379,7 @@ namespace UVtools.Core.FileFormats
 
         public override byte AntiAliasing
         {
-            get => (byte)PrinterSettings.GammaCorrection > 0 ? 4 : 1;
+            get => (byte)(PrinterSettings.GammaCorrection > 0 ? 4 : 1);
             set => PrinterSettings.GammaCorrection = value > 0 ? 1 : 0;
         }
 

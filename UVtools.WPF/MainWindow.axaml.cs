@@ -1120,7 +1120,14 @@ namespace UVtools.WPF
 
             if (Settings.Issues.ComputeIssuesOnLoad)
             {
-                OnClickDetectIssues();
+                _firstTimeOnIssues = false;
+                await OnClickDetectIssues();
+                if (Issues.Count > 0)
+                {
+                    SelectedTabItem = TabIssues;
+                    if(Settings.Issues.AutoRepairIssuesOnLoad)
+                        await RunOperation(ToolRepairLayersControl.GetOperationRepairLayers());
+                }
             }
         }
 

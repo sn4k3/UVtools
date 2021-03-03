@@ -70,6 +70,10 @@ namespace UVtools.WPF
                 return;
             }
             if (clip?.Operation is null) return;
+            if (clip.Operation.HaveROI)
+            {
+                ROI = GetTransposedRectangle(clip.Operation.ROI);
+            }
             var operation = await ShowRunOperation(clip.Operation.GetType(), clip.Operation);
             if (operation is null)
             {

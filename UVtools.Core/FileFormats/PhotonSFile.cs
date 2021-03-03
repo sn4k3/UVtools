@@ -126,7 +126,7 @@ namespace UVtools.Core.FileFormats
                 for (int i = 0; i < imageLength; i++)
                 {
                     //color = color <= 127 ? 0 : 255; // Sanitize no AA
-                    byte thisColor = spanMat[i] <= 127 ? 0 : 255; // Sanitize no AA
+                    byte thisColor = spanMat[i] <= 127 ? byte.MinValue : byte.MaxValue; // Sanitize no AA
                     if (thisColor != color)
                     {
                         AddRep();

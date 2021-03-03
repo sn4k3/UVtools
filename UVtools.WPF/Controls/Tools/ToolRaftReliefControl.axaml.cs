@@ -17,5 +17,10 @@ namespace UVtools.WPF.Controls.Tools
         {
             AvaloniaXamlLoader.Load(this);
         }
+
+        public void UseCurrentLayerAsMask()
+        {
+            Operation.MaskLayerIndex = App.MainWindow.ActualLayer;
+        }
     }
 }
