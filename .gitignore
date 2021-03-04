@@ -354,4 +354,3 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 UVtools.Platforms/linux-x64/libcvextern.so
-UVtools.Platforms/rhel-x64/libcvextern.so
