@@ -839,7 +839,7 @@ namespace UVtools.Core.Operations
                 layerHeight += _multipleLayerHeightStep)
             {
                 if(!_exposureGenIgnoreBaseExposure)
-                    list.Add(new ExposureItem(layerHeight, (decimal) SlicerFile.BottomExposureTime, (decimal) SlicerFile.ExposureTime));
+                    list.Add(new ExposureItem(layerHeight, _bottomExposure, _normalExposure));
                 for (ushort testN = 1; testN <= _exposureGenTests; testN++)
                 {
                     decimal bottomExposureTime = 0;
@@ -848,12 +848,12 @@ namespace UVtools.Core.Operations
                     switch (_exposureGenType)
                     {
                         case ExposureGenTypes.Linear:
-                            bottomExposureTime = (decimal) SlicerFile.BottomExposureTime + _exposureGenBottomStep * testN; 
-                            exposureTime = (decimal) SlicerFile.ExposureTime + _exposureGenNormalStep * testN; 
+                            bottomExposureTime = _bottomExposure + _exposureGenBottomStep * testN; 
+                            exposureTime = _normalExposure + _exposureGenNormalStep * testN; 
                             break;
                         case ExposureGenTypes.Multiplier:
-                            bottomExposureTime = (decimal)SlicerFile.BottomExposureTime + (decimal)SlicerFile.BottomExposureTime * layerHeight * _exposureGenBottomStep * testN;
-                            exposureTime = (decimal)SlicerFile.ExposureTime + (decimal)SlicerFile.ExposureTime * layerHeight * _exposureGenNormalStep * testN;
+                            bottomExposureTime = _bottomExposure + _bottomExposure * layerHeight * _exposureGenBottomStep * testN;
+                            exposureTime = _normalExposure + _normalExposure * layerHeight * _exposureGenNormalStep * testN;
                             break;
                     }
 

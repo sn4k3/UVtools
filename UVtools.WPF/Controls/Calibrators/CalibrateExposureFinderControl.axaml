@@ -637,8 +637,8 @@
 
 
                   <TextBlock Grid.Row="0" Grid.Column="0"
-                             ToolTip.Tip="Linear: Current exposure + step * test number.&#x0a;
-Multiplier: Current exposure * layer height * step * test number."
+                             ToolTip.Tip="Linear: Current exposure + step * test number.
+&#x0a;Multiplier: Current exposure * layer height * step * test number."
                              Text="Generation type:"
                              VerticalAlignment="Center"/>
                   <ComboBox Grid.Row="0" Grid.Column="2"

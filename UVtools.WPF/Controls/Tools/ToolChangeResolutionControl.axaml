@@ -5,13 +5,14 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolChangeResolutionControl">
   <StackPanel Orientation="Vertical" Spacing="10">
-    <TextBlock Text="{Binding Operation.SlicerFile.Resolution, StringFormat=Current resolution (X/Y): \{0\}}"/>
-    <TextBlock Text="{Binding Operation.VolumeBondsSize, StringFormat=Object volume (X/Y): \{0\}}"/>
+    <TextBlock Text="{Binding Operation.SlicerFile.Resolution, StringFormat=Current resolution (X/Y): {0}}"/>
+    <TextBlock Text="{Binding Operation.SlicerFile.PixelSizeMicrons, StringFormat=Current pixel pitch (X/Y): {0}µm}"/>
+    <TextBlock Text="{Binding Operation.VolumeBondsSize, StringFormat=Object volume (X/Y): {0}}"/>
 
     <StackPanel Orientation="Horizontal" Spacing="10">
       <TextBlock VerticalAlignment="Center" Text="New X/Y:"/>
       <NumericUpDown
-        MinWidth="100"
+        MinWidth="120"
         Minimum="1"
         Maximum="50000"
         Width="150"
@@ -20,7 +21,7 @@
       <TextBlock VerticalAlignment="Center" Text="x"/>
 
       <NumericUpDown
-        MinWidth="100"
+        MinWidth="120"
         Minimum="1"
         Maximum="50000"
         Width="150"
@@ -28,7 +29,7 @@
         />
 
       <ComboBox 
-        MinWidth="200"
+        MinWidth="250"
         SelectedItem="{Binding SelectedPresetItem}"
         Items="{Binding Operation.Presets}"
         PlaceholderText="Resolution presets"/>

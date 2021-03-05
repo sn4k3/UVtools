@@ -1,5 +1,14 @@
 # Changelog
 
+## 05/03/2021 - v2.6.2
+
+* (Add) Edit print paramenters: Option to enable or disable the 'Propagate modifications to layers' when working with global parameters
+* **(Fix) Change resolution:**
+   * It was placing the object on random layers on the wrong position, shifting the object
+   * Add informaton on the too description to warn about diferent pixel pitch for target printer
+   * Add current pixel pitch in microns if available
+* (Fix) Exposure time finder: Multiple exposures was getting bottom and normal time from base file instead of commum properties fields
+
 ## 03/03/2021 - v2.6.1
 
 * (Add) Setting: Auto repair layers and issues on file load

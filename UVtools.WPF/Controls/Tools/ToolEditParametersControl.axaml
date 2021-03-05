@@ -7,6 +7,13 @@
 
   <StackPanel Spacing="10">
 
+      <CheckBox
+          IsChecked="{Binding Operation.PropagateModificationsToLayers}"
+          IsVisible="{Binding !Operation.PerLayerOverride}"
+          ToolTip.Tip="If enabled it will propagate and update all layers based on the new values.
+&#x0a;If disabled it will only set the modifications to the global settings / file header."
+          Content="Propagate modifications to layers"/>
+
     <CheckBox
       IsChecked="{Binding Operation.PerLayerOverride}"
       IsVisible="{Binding SlicerFile.SupportPerLayerSettings}"

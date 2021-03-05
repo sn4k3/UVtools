@@ -58,9 +58,11 @@ namespace UVtools.Core.Operations
         public override bool CanROI => false;
         public override string Title => "Change print resolution";
         public override string Description =>
-            "Crops or resizes all layer images to fit an alternate print area\n\n" +
+            "Crops or resizes all layer images to fit an alternate print resolution\n" +
             "Useful to make files printable on a different printer than they were originally sliced for without the need to re-slice.\n\n" +
-            "NOTE: Please ensure that the actual model will fit within the new print resolution. The operation will be aborted if it will result in any of the actual model being clipped.";
+            "NOTE: Please ensure that the actual model will fit within the new print resolution. The operation will be aborted if it will result in any of the actual model being clipped.\n" +
+            "Only use this tool if both source and target printer have the same pixel pitch spec, otherwise the model size will be invalidated and result in a different size than the originally sliced for. " +
+            "As alternative is possible to resize the model to match the new pixel pitch.";
 
         public override string ConfirmationText => 
             "change print resolution " +
@@ -155,18 +157,18 @@ namespace UVtools.Core.Operations
         protected override bool ExecuteInternally(OperationProgress progress)
         {
             progress.ItemCount = SlicerFile.LayerCount;
-
+            var boundingRectangle = SlicerFile.BoundingRectangle;
             Parallel.For(0, SlicerFile.LayerCount, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 
                 using var mat = SlicerFile[layerIndex].LayerMat;
-                using var matRoi = new Mat(mat, SlicerFile.BoundingRectangle);
+                using var matRoi = new Mat(mat, boundingRectangle);
                 using var matDst = new Mat(new Size((int)NewResolutionX, (int)NewResolutionY), mat.Depth, mat.NumberOfChannels);
                 using var matDstRoi = new Mat(matDst,
-                    new Rectangle((int)(NewResolutionX / 2 - SlicerFile.BoundingRectangle.Width / 2),
-                        (int)NewResolutionY / 2 - SlicerFile.BoundingRectangle.Height / 2,
-                        SlicerFile.BoundingRectangle.Width, SlicerFile.BoundingRectangle.Height));
+                    new Rectangle((int)(NewResolutionX / 2 - boundingRectangle.Width / 2),
+                        (int)NewResolutionY / 2 - boundingRectangle.Height / 2,
+                        boundingRectangle.Width, boundingRectangle.Height));
                 matRoi.CopyTo(matDstRoi);
                 //Execute(mat);
                 SlicerFile[layerIndex].LayerMat = matDst;

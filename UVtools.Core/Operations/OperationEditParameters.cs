@@ -19,6 +19,8 @@ namespace UVtools.Core.Operations
     public class OperationEditParameters : Operation
     {
         #region Members
+
+        private bool _propagateModificationsToLayers = true;
         private bool _perLayerOverride;
         private uint _setNumberOfLayer = 1;
         private uint _skipNumberOfLayer = 0;
@@ -88,6 +90,12 @@ namespace UVtools.Core.Operations
 
         [XmlIgnore]
         public FileFormat.PrintParameterModifier[] Modifiers { get; set; }
+
+        public bool PropagateModificationsToLayers
+        {
+            get => _propagateModificationsToLayers;
+            set => RaiseAndSetIfChanged(ref _propagateModificationsToLayers, value);
+        }
 
         /// <summary>
         /// Gets or sets if parameters are global or per layer inside a layer range
@@ -160,7 +168,16 @@ namespace UVtools.Core.Operations
             }
             else
             {
+                if (!_propagateModificationsToLayers)
+                {
+                    SlicerFile.SuppressRebuildProperties = true;
+                }
                 SlicerFile.SetValuesFromPrintParametersModifiers();
+                if (!_propagateModificationsToLayers)
+                {
+                    SlicerFile.SuppressRebuildProperties = false;
+                    SlicerFile.RebuildGCode();
+                }
             }
 
             SlicerFile.RefreshPrintParametersModifiersValues();
