@@ -3,6 +3,7 @@
 ## 05/03/2021 - v2.6.2
 
 * (Add) Edit print paramenters: Option to enable or disable the 'Propagate modifications to layers' when working with global parameters
+* (Change) PrusaSlicer printer: Auto convert format from ctb to photon for Anycubic Photon
 * **(Fix) Change resolution:**
    * It was placing the object on random layers on the wrong position, shifting the object
    * Add informaton on the too description to warn about diferent pixel pitch for target printer
