@@ -50,3 +50,4 @@
 * Randy Savell
 * Steve Clynes
 * Nicholas Taylor
+* Nadine Maillard
