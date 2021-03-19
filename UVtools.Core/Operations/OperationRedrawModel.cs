@@ -173,6 +173,7 @@ namespace UVtools.Core.Operations
                 if (progress.Token.IsCancellationRequested) return;
                 var fullMatLayerIndex = startLayerIndex + layerIndex;
                 using var fullMat = SlicerFile[fullMatLayerIndex].LayerMat;
+                using var original = fullMat.Clone();
                 using var bodyMat = otherFile[layerIndex].LayerMat;
                 using var fullMatRoi = GetRoiOrDefault(fullMat);
                 using var bodyMatRoi = GetRoiOrDefault(bodyMat);
@@ -239,6 +240,7 @@ namespace UVtools.Core.Operations
 
                 if (modified)
                 {
+                    ApplyMask(original, fullMat);
                     SlicerFile[fullMatLayerIndex].LayerMat = fullMat;
                 }
 

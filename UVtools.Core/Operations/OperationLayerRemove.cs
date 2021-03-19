@@ -8,8 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Emgu.CV;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations
@@ -100,7 +98,7 @@ namespace UVtools.Core.Operations
                     }
                     else
                     {
-                        posZ = (float) Math.Round(layers[newLayerIndex - 1].PositionZ + layerHeight, 2);
+                        posZ = Layer.RoundHeight(layers[newLayerIndex - 1].PositionZ + layerHeight);
                     }
                 }
 

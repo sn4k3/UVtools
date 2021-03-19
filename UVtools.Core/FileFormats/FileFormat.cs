@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
+using UVtools.Core.GCode;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 
@@ -304,6 +305,18 @@ namespace UVtools.Core.FileFormats
         {
             return (from t in AvailableFormats where type == t.GetType() select createNewInstance ? (FileFormat) Activator.CreateInstance(type) : t).FirstOrDefault();
         }
+
+        public static string GetFileNameStripExtensions(string filepath)
+        {
+            //if (file.EndsWith(TemporaryFileAppend)) file = Path.GetFileNameWithoutExtension(file);
+            return PathExtensions.GetFileNameStripExtensions(filepath, AllFileExtensionsString.OrderByDescending(s => s.Length).ToList(), out _);
+        }
+
+        public static string GetFileNameStripExtensions(string filepath, out string strippedExtension)
+        {
+            //if (file.EndsWith(TemporaryFileAppend)) file = Path.GetFileNameWithoutExtension(file);
+            return PathExtensions.GetFileNameStripExtensions(filepath, AllFileExtensionsString.OrderByDescending(s => s.Length).ToList(), out strippedExtension);
+        }
         #endregion
 
         #region Members
@@ -312,6 +325,23 @@ namespace UVtools.Core.FileFormats
         private float _printTime;
         private float _materialMilliliters;
         private float _maxPrintHeight;
+        private ushort _bottomLayerCount = DefaultBottomLayerCount;
+        private float _bottomExposureTime = DefaultBottomExposureTime;
+        private float _exposureTime = DefaultExposureTime;
+        private float _bottomLiftHeight = DefaultBottomLiftHeight;
+        private float _liftHeight = DefaultLiftHeight;
+        private float _bottomLiftSpeed = DefaultBottomLiftSpeed;
+        private float _liftSpeed = DefaultLiftSpeed;
+        private float _retractSpeed = DefaultRetractSpeed;
+        private float _bottomLightOffDelay = DefaultBottomLightOffDelay;
+        private float _lightOffDelay = DefaultLightOffDelay;
+        private byte _bottomLightPwm = DefaultBottomLightPWM;
+        private byte _lightPwm = DefaultLightPWM;
+        private string _machineName = "Unknown";
+        private string _materialName;
+        private float _materialGrams;
+        private float _materialCost;
+
         #endregion
 
         #region Properties
@@ -479,6 +509,16 @@ namespace UVtools.Core.FileFormats
         }
 
         /// <summary>
+        /// Gets the first layer
+        /// </summary>
+        public Layer FirstLayer => _layerManager?.FirstLayer;
+
+        /// <summary>
+        /// Gets the last layer
+        /// </summary>
+        public Layer LastLayer => _layerManager?.LastLayer;
+
+        /// <summary>
         /// Gets the bounding rectangle of the object
         /// </summary>
         public Rectangle BoundingRectangle => _layerManager?.BoundingRectangle ?? Rectangle.Empty;
@@ -494,7 +534,7 @@ namespace UVtools.Core.FileFormats
         public bool RequireFullEncode
         {
             get => _haveModifiedLayers || LayerManager.IsModified;
-            set => _haveModifiedLayers = value;
+            set => RaiseAndSetIfChanged(ref _haveModifiedLayers, value);
         } // => LayerManager.IsModified;
 
         /// <summary>
@@ -675,10 +715,7 @@ namespace UVtools.Core.FileFormats
         public virtual float PrintHeight
         {
             get => LayerCount == 0 ? 0 : this[LayerCount - 1]?.PositionZ ?? 0;
-            set
-            {
-                RaisePropertyChanged();
-            }
+            set => RaisePropertyChanged();
         }
 
         /// <summary>
@@ -689,7 +726,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Checks if this file format supports per layer settings
         /// </summary>
-        public virtual bool SupportPerLayerSettings => !(PrintParameterPerLayerModifiers is null || PrintParameterPerLayerModifiers.Length == 0);
+        public virtual bool SupportPerLayerSettings => PrintParameterPerLayerModifiers is not null && PrintParameterPerLayerModifiers.Length > 0;
 
         /// <summary>
         /// Gets or sets the layer count
@@ -708,7 +745,15 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets or sets the number of initial layer count
         /// </summary>
-        public virtual ushort BottomLayerCount { get; set; } = DefaultBottomLayerCount;
+        public virtual ushort BottomLayerCount
+        {
+            get => _bottomLayerCount;
+            set
+            {
+                RaiseAndSet(ref _bottomLayerCount, value);
+                RaisePropertyChanged(nameof(NormalLayerCount));
+            }
+        }
 
         /// <summary>
         /// Gets the number of normal layer count
@@ -718,57 +763,101 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets or sets the initial exposure time for <see cref="BottomLayerCount"/> in seconds
         /// </summary>
-        public virtual float BottomExposureTime { get; set; } = DefaultBottomExposureTime;
+        public virtual float BottomExposureTime
+        {
+            get => _bottomExposureTime;
+            set => RaiseAndSet(ref _bottomExposureTime, value);
+        }
 
         /// <summary>
         /// Gets or sets the normal layer exposure time in seconds
         /// </summary>
-        public virtual float ExposureTime { get; set; } = DefaultExposureTime;
-
-        /// <summary>
-        /// Gets or sets the bottom layer off time in seconds
-        /// </summary>
-        public virtual float BottomLightOffDelay { get; set; } = DefaultBottomLightOffDelay;
-
-        /// <summary>
-        /// Gets or sets the layer off time in seconds
-        /// </summary>
-        public virtual float LightOffDelay { get; set; } = DefaultLightOffDelay;
+        public virtual float ExposureTime
+        {
+            get => _exposureTime;
+            set => RaiseAndSet(ref _exposureTime, value);
+        }
 
         /// <summary>
         /// Gets or sets the bottom lift height in mm
         /// </summary>
-        public virtual float BottomLiftHeight { get; set; } = DefaultBottomLiftHeight;
+        public virtual float BottomLiftHeight
+        {
+            get => _bottomLiftHeight;
+            set => RaiseAndSet(ref _bottomLiftHeight, value);
+        }
 
         /// <summary>
         /// Gets or sets the lift height in mm
         /// </summary>
-        public virtual float LiftHeight { get; set; } = DefaultLiftHeight;
+        public virtual float LiftHeight
+        {
+            get => _liftHeight;
+            set => RaiseAndSet(ref _liftHeight, value);
+        }
 
         /// <summary>
         /// Gets or sets the bottom lift speed in mm/min
         /// </summary>
-        public virtual float BottomLiftSpeed { get; set; } = DefaultBottomLiftSpeed;
+        public virtual float BottomLiftSpeed
+        {
+            get => _bottomLiftSpeed;
+            set => RaiseAndSet(ref _bottomLiftSpeed, value);
+        }
 
         /// <summary>
         /// Gets or sets the speed in mm/min
         /// </summary>
-        public virtual float LiftSpeed { get; set; } = DefaultLiftSpeed;
+        public virtual float LiftSpeed
+        {
+            get => _liftSpeed;
+            set => RaiseAndSet(ref _liftSpeed, value);
+        }
 
         /// <summary>
         /// Gets the speed in mm/min for the retracts
         /// </summary>
-        public virtual float RetractSpeed { get; set; } = DefaultRetractSpeed;
+        public virtual float RetractSpeed
+        {
+            get => _retractSpeed;
+            set => RaiseAndSet(ref _retractSpeed, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the bottom layer off time in seconds
+        /// </summary>
+        public virtual float BottomLightOffDelay
+        {
+            get => _bottomLightOffDelay;
+            set => RaiseAndSet(ref _bottomLightOffDelay, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the layer off time in seconds
+        /// </summary>
+        public virtual float LightOffDelay
+        {
+            get => _lightOffDelay;
+            set => RaiseAndSet(ref _lightOffDelay, value);
+        }
 
         /// <summary>
         /// Gets or sets the bottom pwm value from 0 to 255
         /// </summary>
-        public virtual byte BottomLightPWM { get; set; } = DefaultBottomLightPWM;
+        public virtual byte BottomLightPWM
+        {
+            get => _bottomLightPwm;
+            set => RaiseAndSet(ref _bottomLightPwm, value);
+        }
 
         /// <summary>
         /// Gets or sets the pwm value from 0 to 255
         /// </summary>
-        public virtual byte LightPWM { get; set; } = DefaultLightPWM;
+        public virtual byte LightPWM
+        {
+            get => _lightPwm;
+            set => RaiseAndSet(ref _lightPwm, value);
+        }
 
         #endregion
 
@@ -865,32 +954,53 @@ namespace UVtools.Core.FileFormats
         }
 
         //public float MaterialMillilitersComputed =>
-            
+
 
         /// <summary>
         /// Gets the estimate material in grams
         /// </summary>
-        public virtual float MaterialGrams { get; set; }
+        public virtual float MaterialGrams
+        {
+            get => _materialGrams;
+            set => RaiseAndSetIfChanged(ref _materialGrams, value);
+        }
 
         /// <summary>
         /// Gets the estimate material cost
         /// </summary>
-        public virtual float MaterialCost { get; set; }
+        public virtual float MaterialCost
+        {
+            get => _materialCost;
+            set => RaiseAndSetIfChanged(ref _materialCost, value);
+        }
 
         /// <summary>
         /// Gets the material name
         /// </summary>
-        public virtual string MaterialName { get; set; }
+        public virtual string MaterialName
+        {
+            get => _materialName;
+            set => RaiseAndSetIfChanged(ref _materialName, value);
+        }
 
         /// <summary>
         /// Gets the machine name
         /// </summary>
-        public virtual string MachineName { get; set; } = "Unknown";
+        public virtual string MachineName
+        {
+            get => _machineName;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _machineName, value)) return;
+                if(FileType == FileFormatType.Binary) RequireFullEncode = true;
+            }
+
+        }
 
         /// <summary>
         /// Gets the GCode, returns null if not supported
         /// </summary>
-        public StringBuilder GCode { get; set; }
+        public GCodeBuilder GCode { get; set; } = new();
 
         /// <summary>
         /// Gets the GCode, returns null if not supported
@@ -900,7 +1010,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets if this file have available gcode
         /// </summary>
-        public bool HaveGCode => GCode is not null;
+        public bool HaveGCode => !GCode?.IsEmpty ?? false;
 
         /// <summary>
         /// Get all configuration objects with properties and values
@@ -938,7 +1048,11 @@ namespace UVtools.Core.FileFormats
                 e.PropertyName == nameof(LightPWM)
             )
             {
-                LayerManager.RebuildLayersProperties(false, e.PropertyName);
+                if (LayerManager is not null)
+                {
+                    LayerManager.RebuildLayersProperties(false, e.PropertyName);
+                }
+
                 if(e.PropertyName != nameof(BottomLightPWM) && e.PropertyName != nameof(LightPWM))
                     PrintTime = PrintTimeComputed;
                 return;
@@ -1012,7 +1126,7 @@ namespace UVtools.Core.FileFormats
         {
             FileFullPath = null;
             LayerManager = null;
-            GCode = null;
+            GCode.Clear();
 
             if (Thumbnails is not null)
             {
@@ -1395,7 +1509,7 @@ namespace UVtools.Core.FileFormats
         /// <returns>The height in mm</returns>
         public float GetHeightFromLayer(uint layerIndex, bool realHeight = true)
         {
-            return (float)Math.Round((layerIndex+(realHeight ? 1 : 0)) * LayerHeight, 2);
+            return Layer.RoundHeight((layerIndex + (realHeight ? 1 : 0)) * LayerHeight);
         }
 
         /// <summary>
@@ -1652,7 +1766,11 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Rebuilds GCode based on current settings
         /// </summary>
-        public virtual void RebuildGCode() { }
+        public virtual void RebuildGCode()
+        {
+            if (GCode.IsEmpty) return;
+            GCode.RebuildGCode(this);
+        }
 
         /// <summary>
         /// Saves current configuration on input file

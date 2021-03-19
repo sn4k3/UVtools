@@ -146,7 +146,6 @@ namespace UVtools.WPF
                                         new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
                                     {
                                         CvInvoke.DrawContours(image, contours, -1, new MCvScalar(255), -1);
-                                        //CvInvoke.DrawContours(image, contours, -1, new MCvScalar(255), 2);
                                     }
 
                                     edited = true;

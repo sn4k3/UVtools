@@ -9,7 +9,6 @@
 * https://github.com/byancey
 
 ### Photonsters (Photon Owners Group)
-
 * For information about cbddlp file format
 * https://github.com/Photonsters
 
@@ -19,12 +18,10 @@
 * https://github.com/cbiffle/catibo
 
 ### Jason S. McMullan (ezrec)
-
 * For ideas, file formats and permission to use his project (uv3dp)
 * https://github.com/ezrec/uv3dp
 
 ### Khalil Nurullah
-
 * For beta testing new features
 
 # Supporters / Contributors
@@ -51,3 +48,5 @@
 * Steve Clynes
 * Nicholas Taylor
 * Nadine Maillard
+* Sidney Cheng
+* Ben Ford

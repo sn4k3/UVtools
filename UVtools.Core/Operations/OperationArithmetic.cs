@@ -217,20 +217,21 @@ namespace UVtools.Core.Operations
         {
             if (!IsValid) return false;
 
-            using Mat result = SlicerFile[Operations[0].LayerIndex].LayerMat;
-            Mat resultRoi = GetRoiOrDefault(result);
+            using var result = SlicerFile[Operations[0].LayerIndex].LayerMat;
+            using var resultRoi = GetRoiOrDefault(result);
             for (int i = 1; i < Operations.Count; i++)
             {
                 progress.Token.ThrowIfCancellationRequested();
                 using var image = SlicerFile[Operations[i].LayerIndex].LayerMat;
-                Mat imageRoi = GetRoiOrDefault(image);
+                var imageRoi = GetRoiOrDefault(image);
+                using var imageMask = GetMask(image);
                 switch (Operations[i - 1].Operator)
                 {
                     case ArithmeticOperators.Add:
-                        CvInvoke.Add(resultRoi, imageRoi, resultRoi);
+                        CvInvoke.Add(resultRoi, imageRoi, resultRoi, imageMask);
                         break;
                     case ArithmeticOperators.Subtract:
-                        CvInvoke.Subtract(resultRoi, imageRoi, resultRoi);
+                        CvInvoke.Subtract(resultRoi, imageRoi, resultRoi, imageMask);
                         break;
                     case ArithmeticOperators.Multiply:
                         CvInvoke.Multiply(resultRoi, imageRoi, resultRoi);
@@ -239,13 +240,13 @@ namespace UVtools.Core.Operations
                         CvInvoke.Divide(resultRoi, imageRoi, resultRoi);
                         break;
                     case ArithmeticOperators.BitwiseAnd:
-                        CvInvoke.BitwiseAnd(resultRoi, imageRoi, resultRoi);
+                        CvInvoke.BitwiseAnd(resultRoi, imageRoi, resultRoi, imageMask);
                         break;
                     case ArithmeticOperators.BitwiseOr:
-                        CvInvoke.BitwiseOr(resultRoi, imageRoi, resultRoi);
+                        CvInvoke.BitwiseOr(resultRoi, imageRoi, resultRoi, imageMask);
                         break;
                     case ArithmeticOperators.BitwiseXor:
-                        CvInvoke.BitwiseXor(resultRoi, imageRoi, resultRoi);
+                        CvInvoke.BitwiseXor(resultRoi, imageRoi, resultRoi, imageMask);
                         break;
                 }
             }
@@ -257,7 +258,8 @@ namespace UVtools.Core.Operations
                 {
                     var mat = SlicerFile[layerIndex].LayerMat;
                     var matRoi = GetRoiOrDefault(mat);
-                    resultRoi.CopyTo(matRoi);
+                    using var imageMask = GetMask(mat);
+                    resultRoi.CopyTo(matRoi, imageMask);
                     SlicerFile[layerIndex].LayerMat = mat;
                     return;
                 }

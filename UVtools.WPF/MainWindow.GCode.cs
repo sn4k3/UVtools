@@ -20,7 +20,7 @@ namespace UVtools.WPF
         public bool HaveGCode => IsFileLoaded && SlicerFile.HaveGCode;
 
         public string GCodeStr => SlicerFile?.GCodeStr;
-        public int GCodeLines => !HaveGCode ? 0 : SlicerFile.GCodeStr.Split('\n').Length;
+        public uint GCodeLines => !HaveGCode ? 0 : SlicerFile.GCode.LineCount;
 
         public void OnClickRebuildGcode()
         {

@@ -93,8 +93,9 @@ namespace UVtools.Core.Operations
         public override bool Execute(Mat mat, params object[] arguments)
         {
             var target = GetRoiOrDefault(mat);
+            using var mask = GetMask(mat);
             if (Mask.Size != target.Size) return false;
-            CvInvoke.BitwiseAnd(target, Mask, target);
+            CvInvoke.BitwiseAnd(target, Mask, target, mask);
             return true;
         }
 

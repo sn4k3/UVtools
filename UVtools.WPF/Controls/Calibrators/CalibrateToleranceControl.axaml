@@ -76,7 +76,7 @@
                            Value="{Binding Operation.BottomLayers}"/>
             <TextBlock Grid.Row="2" Grid.Column="8"
                        VerticalAlignment="Center"
-                       Text="{Binding Operation.BottomHeight, StringFormat=\{0:0.00\}mm}"/>
+                       Text="{Binding Operation.BottomHeight, StringFormat=\{0:F3\}mm}"/>
 
             <TextBlock Grid.Row="4" Grid.Column="0"
                        VerticalAlignment="Center"
@@ -140,7 +140,7 @@
 
                 <TextBlock
                     FontWeight="Bold"
-                    Text="{Binding Operation.RealZSize, StringFormat=\{0:0.00\}mm}"/>
+                    Text="{Binding Operation.RealZSize, StringFormat=\{0:F3\}mm}"/>
 
 
             </StackPanel>
@@ -290,13 +290,13 @@
                            VerticalAlignment="Center"/>
 
                 <TextBlock Grid.Row="2" Grid.Column="2"
-                           Text="{Binding Operation.FemaleDiameterRealXSize, StringFormat=\{0:0.00\}mm}"
+                           Text="{Binding Operation.FemaleDiameterRealXSize, StringFormat=\{0:F2\}mm}"
                            FontWeight="Bold"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"/>
 
                 <TextBlock Grid.Row="2" Grid.Column="8"
-                           Text="{Binding Operation.FemaleHoleDiameterRealXSize, StringFormat=\{0:0.00\}mm}"
+                           Text="{Binding Operation.FemaleHoleDiameterRealXSize, StringFormat=\{0:F2\}mm}"
                            FontWeight="Bold"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"/>

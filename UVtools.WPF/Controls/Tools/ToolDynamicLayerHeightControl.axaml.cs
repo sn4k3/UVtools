@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
@@ -13,7 +14,7 @@ namespace UVtools.WPF.Controls.Tools
         public OperationDynamicLayerHeight Operation => BaseOperation as OperationDynamicLayerHeight;
 
         public double LayerHeight => SlicerFile.LayerHeight;
-        public double MinimumLayerHeight => Math.Round(SlicerFile.LayerHeight*2, 2);
+        public double MinimumLayerHeight => Layer.RoundHeight(SlicerFile.LayerHeight * 2);
         public double MaximumLayerHeight => FileFormat.MaximumLayerHeight;
 
         private DataGrid ExposureTable;
@@ -33,7 +34,7 @@ namespace UVtools.WPF.Controls.Tools
 
             for (uint layerIndex = 1; layerIndex < SlicerFile.LayerCount; layerIndex++)
             {
-                if ((decimal)Math.Round(SlicerFile[layerIndex].PositionZ - SlicerFile[layerIndex - 1].PositionZ, 2) ==
+                if ((decimal)Math.Round(SlicerFile[layerIndex].PositionZ - SlicerFile[layerIndex - 1].PositionZ, Layer.HeightPrecision) ==
                     (decimal)SlicerFile.LayerHeight) continue;
                 App.MainWindow.MessageBoxError($"This file contain layer(s) with modified positions, starting at layer {layerIndex}.\n" +
                                                      $"This tool requires sequential layers with equal height.\n" +

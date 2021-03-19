@@ -63,7 +63,7 @@ namespace UVtools.WPF
                 return;
             }
 
-            Point location = GetTransposedPoint(operation.Location, false);
+            Point location = GetTransposedPoint(operation.Location, true);
 
             if (Settings.LayerPreview.ZoomIssues ^ (_globalModifiers & KeyModifiers.Alt) != 0)
             {
@@ -168,8 +168,8 @@ namespace UVtools.WPF
             //Bitmap bmp = pbLayer.Image as Bitmap;
             if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Drawing)
             {
-                uint minLayer = Math.Max(0, _actualLayer - DrawingPixelDrawing.LayersBelow);
-                uint maxLayer = Math.Min(SlicerFile.LayerCount - 1, _actualLayer + DrawingPixelDrawing.LayersAbove);
+                uint minLayer = (uint) Math.Max(0, (int)_actualLayer - DrawingPixelDrawing.LayersBelow);
+                uint maxLayer = Math.Min(SlicerFile.LastLayerIndex, _actualLayer + DrawingPixelDrawing.LayersAbove);
                 for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
                 {
                     var operationDrawing = new PixelDrawing(layerIndex, realLocation, DrawingPixelDrawing.LineType,
@@ -247,9 +247,8 @@ namespace UVtools.WPF
             {
                 if (string.IsNullOrEmpty(DrawingPixelText.Text) || DrawingPixelText.FontScale < 0.2) return;
 
-                uint minLayer = Math.Max(0, ActualLayer - DrawingPixelText.LayersBelow);
-                uint maxLayer = Math.Min(SlicerFile.LayerCount - 1,
-                    ActualLayer + DrawingPixelText.LayersAbove);
+                uint minLayer = (uint) Math.Max(0, (int)ActualLayer - DrawingPixelText.LayersBelow);
+                uint maxLayer = Math.Min(SlicerFile.LastLayerIndex, ActualLayer + DrawingPixelText.LayersAbove);
                 for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
                 {
                     var operationText = new PixelText(layerIndex, realLocation, DrawingPixelText.LineType,
@@ -278,9 +277,8 @@ namespace UVtools.WPF
             else if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Eraser)
             {
                 if (LayerCache.Image.GetByte(realLocation) < 10) return;
-                uint minLayer = Math.Max(0, ActualLayer - DrawingPixelEraser.LayersBelow);
-                uint maxLayer = Math.Min(SlicerFile.LayerCount - 1,
-                    ActualLayer + DrawingPixelEraser.LayersAbove);
+                uint minLayer = (uint) Math.Max(0, (int)ActualLayer - DrawingPixelEraser.LayersBelow);
+                uint maxLayer = Math.Min(SlicerFile.LastLayerIndex, ActualLayer + DrawingPixelEraser.LayersAbove);
                 for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
                 {
                     var operationEraser = new PixelEraser(layerIndex, realLocation, DrawingPixelEraser.PixelBrightness);

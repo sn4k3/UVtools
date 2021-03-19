@@ -19,6 +19,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using MessageBox.Avalonia.Enums;
+using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 using UVtools.WPF.Extensions;
@@ -332,12 +333,13 @@ namespace UVtools.WPF
 
         public void RefreshCurrentLayerData()
         {
+            
             var layer = LayerCache.Layer;
             CurrentLayerProperties.Clear();
             CurrentLayerProperties.Add(new StringTag(nameof(layer.Index), $"{layer.Index}"));
-            CurrentLayerProperties.Add(new StringTag(nameof(layer.LayerHeight), $"{layer.LayerHeight:F2}mm"));
+            CurrentLayerProperties.Add(new StringTag(nameof(layer.LayerHeight), $"{Layer.ShowHeight(layer.LayerHeight)}mm"));
             //CurrentLayerProperties.Add(new KeyValuePair<string, string>(nameof(layer.Filename), layer.Filename));
-            CurrentLayerProperties.Add(new StringTag(nameof(layer.PositionZ), $"{layer.PositionZ:F2}mm"));
+            CurrentLayerProperties.Add(new StringTag(nameof(layer.PositionZ), $"{Layer.ShowHeight(layer.PositionZ)}mm"));
             CurrentLayerProperties.Add(new StringTag(nameof(layer.IsBottomLayer), layer.IsBottomLayer.ToString()));
             CurrentLayerProperties.Add(new StringTag(nameof(layer.IsModified), layer.IsModified.ToString()));
             //CurrentLayerProperties.Add(new StringTag(nameof(layer.BoundingRectangle), layer.BoundingRectangle.ToString()));
@@ -354,10 +356,11 @@ namespace UVtools.WPF
                 if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.RetractSpeed))
                     CurrentLayerProperties.Add(new StringTag(nameof(layer.RetractSpeed),
                         $"{layer.RetractSpeed}mm/min"));
-                if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LightOffDelay)
-                )
+
+                if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LightOffDelay))
                     CurrentLayerProperties.Add(new StringTag(nameof(layer.LightOffDelay),
                         $"{layer.LightOffDelay}s"));
+                
                 if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LightPWM))
                     CurrentLayerProperties.Add(new StringTag(nameof(layer.LightPWM), layer.LightPWM.ToString()));
             }

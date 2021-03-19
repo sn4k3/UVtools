@@ -160,7 +160,8 @@ namespace UVtools.Core.Operations
             if (anchor.IsEmpty) anchor = new Point(-1, -1);
             //if (size.IsEmpty) size = new Size(3, 3);
             //if (anchor.IsEmpty) anchor = new Point(-1, -1);
-            Mat target = GetRoiOrDefault(mat);
+            var target = GetRoiOrDefault(mat);
+            using var original = mat.Clone();
             switch (BlurOperation)
             {
                 case BlurAlgorithm.Blur:
@@ -182,6 +183,8 @@ namespace UVtools.Core.Operations
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
+            ApplyMask(original, mat);
 
             return true;
         }

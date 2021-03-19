@@ -231,7 +231,7 @@ namespace UVtools.Core.FileFormats
             get => ResinMetadataSettings.LayerThickness;
             set
             {
-                ResinMetadataSettings.LayerThickness = (float)Math.Round(value, 2);
+                ResinMetadataSettings.LayerThickness = Layer.RoundHeight(value);
                 UserSettings.LayerThickness = $"{ResinMetadataSettings.LayerThickness} mm";
                 RaisePropertyChanged();
             }
@@ -239,82 +239,72 @@ namespace UVtools.Core.FileFormats
 
         public override uint LayerCount
         {
+            get => base.LayerCount;
             set
             {
-                ResinMetadataSettings.TotalLayersCount = LayerCount;
+                base.LayerCount = ResinMetadataSettings.TotalLayersCount = base.LayerCount;
                 UserSettings.MaxLayer = LastLayerIndex;
-                RaisePropertyChanged();
-                RaisePropertyChanged(nameof(NormalLayerCount));
+                 
             }
         }
 
         public override ushort BottomLayerCount
         {
             get => ResinMetadataSettings.BottomLayersNumber;
-            set
-            {
-                ResinMetadataSettings.BottomLayersNumber = UserSettings.BottomLayersCount = value;
-                RaisePropertyChanged();
-            }
+            set => base.BottomLayerCount = ResinMetadataSettings.BottomLayersNumber = UserSettings.BottomLayersCount = value;
         }
 
         public override float BottomExposureTime
         {
-            get => (float) Math.Round(UserSettings.BottomLayerExposureTime / 1000f, 2);
+            get => TimeExtensions.MillisecondsToSeconds(UserSettings.BottomLayerExposureTime);
             set
             {
-                ResinMetadataSettings.BottomLayersTime = UserSettings.BottomLayerExposureTime = (uint) (value * 1000f);
-                RaisePropertyChanged();
+                ResinMetadataSettings.BottomLayersTime = UserSettings.BottomLayerExposureTime = TimeExtensions.SecondsToMillisecondsUint(value);
+                base.BottomExposureTime = value;
             }
         }
 
         public override float ExposureTime
         {
-            get => (float) Math.Round(UserSettings.LayerExposureTime / 1000f, 2);
+            get => TimeExtensions.MillisecondsToSeconds(UserSettings.LayerExposureTime);
             set
             {
-                ResinMetadataSettings.LayerTime = UserSettings.LayerExposureTime = (uint) (value * 1000f);
-                RaisePropertyChanged();
+                ResinMetadataSettings.LayerTime = UserSettings.LayerExposureTime = TimeExtensions.SecondsToMillisecondsUint(value);
+                base.ExposureTime = value;
             }
         }
+
+        public override float BottomLiftHeight => LiftHeight;
 
         public override float LiftHeight
         {
             get => UserSettings.ZLiftDistance;
-            set
-            {
-                UserSettings.ZLiftDistance = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.LiftHeight = UserSettings.ZLiftDistance = (float)Math.Round(value, 2);
         }
+
+        public override float BottomLiftSpeed => LiftSpeed;
 
         public override float LiftSpeed
         {
             get => UserSettings.ZLiftFeedRate;
-            set
-            {
-                UserSettings.ZLiftFeedRate = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.LiftSpeed = UserSettings.ZLiftFeedRate = (float)Math.Round(value, 2);
         }
 
         public override float RetractSpeed
         {
             get => UserSettings.ZLiftRetractRate;
-            set
-            {
-                UserSettings.ZLiftRetractRate = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.RetractSpeed = UserSettings.ZLiftRetractRate = (float)Math.Round(value, 2);
         }
+
+        public override float BottomLightOffDelay => LightOffDelay;
 
         public override float LightOffDelay
         {
-            get => (float) Math.Round(ResinMetadataSettings.BlankingLayerTime / 1000f, 2);
+            get => TimeExtensions.MillisecondsToSeconds(ResinMetadataSettings.BlankingLayerTime);
             set
             {
-                UserSettings.ExposureOffTime = ResinMetadataSettings.BlankingLayerTime = (uint)(value * 1000);
-                RaisePropertyChanged();
+                UserSettings.ExposureOffTime = ResinMetadataSettings.BlankingLayerTime = TimeExtensions.SecondsToMillisecondsUint(value);
+                base.LightOffDelay = value;
             }
         }
 
@@ -344,31 +334,19 @@ namespace UVtools.Core.FileFormats
         public override float MaterialGrams
         {
             get => (float) Math.Round(ResinMetadataSettings.TotalMaterialWeightUsed, 3);
-            set
-            {
-                ResinMetadataSettings.TotalMaterialWeightUsed = (float) Math.Round(value, 3);
-                RaisePropertyChanged();
-            }
+            set => base.MaterialGrams = ResinMetadataSettings.TotalMaterialWeightUsed = (float) Math.Round(value, 3);
         }
 
         public override string MaterialName
         {
             get => ResinMetadataSettings.Material;
-            set
-            {
-                ResinMetadataSettings.Material = value;
-                RaisePropertyChanged();
-            }
+            set => base.MaterialName = ResinMetadataSettings.Material = value;
         }
 
         public override string MachineName
         {
             get => ZCodeMetadataSettings.PrinterName;
-            set
-            {
-                ZCodeMetadataSettings.PrinterName = value;
-                RaisePropertyChanged();
-            }
+            set => base.MachineName = ZCodeMetadataSettings.PrinterName = value;
         }
 
         public override object[] Configs => new[] {(object) ResinMetadataSettings, UserSettings, ZCodeMetadataSettings};
@@ -412,7 +390,7 @@ namespace UVtools.Core.FileFormats
                     }
                 }
 
-                GCode = new StringBuilder(GCodeStart);
+                GCode.Clear();
 
                 float lastZPosition = 0;
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
@@ -427,11 +405,11 @@ namespace UVtools.Core.FileFormats
                         if (layer.LiftHeight > 0)
                         {
                             GCode.AppendLine($"G1 Z{layer.LiftHeight} F{layer.LiftSpeed}");
-                            GCode.AppendLine($"G1 Z-{Math.Round(layer.LiftHeight - layer.PositionZ + lastZPosition, 2)} F{layer.RetractSpeed}");
+                            GCode.AppendLine($"G1 Z-{Layer.RoundHeight(layer.LiftHeight - layer.PositionZ + lastZPosition)} F{layer.RetractSpeed}");
                         }
                         else
                         {
-                            GCode.AppendLine($"G1 Z{Math.Round(layer.PositionZ- lastZPosition, 2)} F{layer.LiftSpeed}");
+                            GCode.AppendLine($"G1 Z{Layer.RoundHeight(layer.PositionZ- lastZPosition)} F{layer.LiftSpeed}");
                         }
                     }
                     /*else
@@ -508,7 +486,7 @@ namespace UVtools.Core.FileFormats
                 }
 
                 LayerManager = new LayerManager(ResinMetadataSettings.TotalLayersCount, this);
-                GCode = new StringBuilder();
+                GCode.Clear();
                 using (TextReader tr = new StreamReader(entry.Open()))
                 {
                     string line;
@@ -516,7 +494,7 @@ namespace UVtools.Core.FileFormats
                     int layerFileIndex = 0;
                     string layerimagePath = null;
                     float currentHeight = 0;
-                    while (!ReferenceEquals(line = tr.ReadLine(), null))
+                    while ((line = tr.ReadLine()) is not null)
                     {
                         GCode.AppendLine(line);
                         if (line.StartsWith(GCodeKeywordSlice))
@@ -572,11 +550,11 @@ M106 S0
                                     liftSpeed = liftSpeedTemp;
                                     var retractHeight = float.Parse(moveG1Regex.Groups[1].Value, CultureInfo.InvariantCulture);
                                     retractSpeed = float.Parse(moveG1Regex.Groups[3].Value, CultureInfo.InvariantCulture);
-                                    currentHeight = (float)Math.Round(currentHeight + liftHeightTemp + retractHeight, 2);
+                                    currentHeight = Layer.RoundHeight(currentHeight + liftHeightTemp + retractHeight);
                                 }
                                 else
                                 {
-                                    currentHeight = (float) Math.Round(currentHeight + liftHeightTemp);
+                                    currentHeight = Layer.RoundHeight(currentHeight + liftHeightTemp);
                                 }
                             }
 

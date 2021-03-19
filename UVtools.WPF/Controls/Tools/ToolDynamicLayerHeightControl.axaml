@@ -54,7 +54,7 @@
                          Minimum="{Binding SlicerFile.LayerHeight}"
                          Maximum="{Binding Operation.MaximumLayerHeight}"
                          Increment="0.01"
-                         FormatString="F2"
+                         FormatString="F3"
                          Value="{Binding Operation.MinimumLayerHeight}"/>
           <TextBlock Grid.Row="2" Grid.Column="4"
                      VerticalAlignment="Center"
@@ -72,7 +72,7 @@
                          Minimum="{Binding MinimumLayerHeight}"
                          Maximum="{Binding MaximumLayerHeight}"
                          Increment="0.01"
-                         FormatString="F2"
+                         FormatString="F3"
                          Value="{Binding Operation.MaximumLayerHeight}"/>
           <TextBlock Grid.Row="2" Grid.Column="10"
                      VerticalAlignment="Center"

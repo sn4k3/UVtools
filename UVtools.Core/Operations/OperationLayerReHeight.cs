@@ -79,19 +79,19 @@ namespace UVtools.Core.Operations
             {
                 if (layerHeight / i < 0.01m) break;
                 if ((layerCount * (decimal)i).DecimalDigits() > 0) continue; // Cant multiply layers, no half layers!
-                if ((layerHeight / i).DecimalDigits() > 2) continue; // Cant divide height, more than 2 digits
+                if ((layerHeight / i).DecimalDigits() > 3) continue; // Cant divide height, more than 3 digits
 
-                var item = new OperationLayerReHeightItem(false, i, Math.Round(layerHeight / i, 2), layerCount * i);
+                var item = new OperationLayerReHeightItem(false, i, Layer.RoundHeight(layerHeight / i), layerCount * i);
                 list.Add(item);
             }
 
             for (byte i = 2; i < 255; i++) // Go higher heights
             {
-                if (layerHeight * i > 0.2m) break;
+                if (layerHeight * i > 0.20m) break;
                 if ((layerCount / (decimal)i).DecimalDigits() > 0) continue; // Cant divide layers, no half layers!
-                if ((layerHeight * i).DecimalDigits() > 2) continue; // Cant multiply height, more than 2 digits
+                if ((layerHeight * i).DecimalDigits() > 3) continue; // Cant multiply height, more than 3 digits
 
-                var item = new OperationLayerReHeightItem(true, i, Math.Round(layerHeight * i, 2), layerCount / i);
+                var item = new OperationLayerReHeightItem(true, i, Layer.RoundHeight(layerHeight * i), layerCount / i);
                 list.Add(item);
             }
 

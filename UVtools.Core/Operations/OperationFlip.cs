@@ -141,6 +141,7 @@ namespace UVtools.Core.Operations
 
         public override bool Execute(Mat mat, params object[] arguments)
         {
+            using var original = mat.Clone();
             var target = GetRoiOrDefault(mat);
 
             if (MakeCopy)
@@ -153,6 +154,8 @@ namespace UVtools.Core.Operations
             {
                 CvInvoke.Flip(target, target, FlipTypeOpenCV);
             }
+
+            ApplyMask(original, mat);
 
             return true;
         }

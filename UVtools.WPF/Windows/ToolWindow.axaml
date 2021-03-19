@@ -117,28 +117,36 @@
                 <MenuItem
                   Header="_All layers"
                   HotKey="Ctrl + Shift + A" InputGesture="Ctrl + Shift + A"
-                  Command="{Binding SelectAllLayers}"
-                  />
+                  Command="{Binding SelectAllLayers}"/>
 
                 <MenuItem
-                  Header="_Current layer"
-                  HotKey="Ctrl + Shift + C" InputGesture="Ctrl + Shift + C"
-                  Command="{Binding SelectCurrentLayer}"
-                  />
+                    Header="_Current layer"
+                    HotKey="Ctrl + Shift + C" InputGesture="Ctrl + Shift + C"
+                    Command="{Binding SelectCurrentLayer}"/>
+
+                <Separator />
+
+                <MenuItem
+                    Header="From first to current layer"
+                    HotKey="Ctrl + Alt + F" InputGesture="Ctrl + Alt + F"
+                    Command="{Binding SelectFirstToCurrentLayer}"/>
+
+                <MenuItem
+                    Header="From current to last layer"
+                    HotKey="Ctrl + Alt + L" InputGesture="Ctrl + Alt + L"
+                    Command="{Binding SelectCurrentToLastLayer}"/>
 
                 <Separator />
 
                 <MenuItem
                   Header="_Bottom layers"
                   HotKey="Ctrl + Shift + B" InputGesture="Ctrl + Shift + B"
-                  Command="{Binding SelectBottomLayers}"
-                  />
+                  Command="{Binding SelectBottomLayers}"/>
 
                 <MenuItem
                   Header="_Normal layers"
                   HotKey="Ctrl + Shift + N" InputGesture="Ctrl + Shift + N"
-                  Command="{Binding SelectNormalLayers}"
-                  />
+                  Command="{Binding SelectNormalLayers}"/>
 
                 <Separator />
 
@@ -161,12 +169,12 @@
           <TextBlock
             Grid.Row="2" Grid.Column="1"
             HorizontalAlignment="Center"
-            Text="{Binding LayerStartMM, StringFormat=(\{0:F2\}mm)}" />
+            Text="{Binding LayerStartMM, StringFormat=(\{0:F3\}mm)}" />
 
           <TextBlock
             Grid.Row="2" Grid.Column="3"
             HorizontalAlignment="Center"
-            Text="{Binding LayerEndMM, StringFormat=(\{0:F2\}mm)}" />
+            Text="{Binding LayerEndMM, StringFormat=(\{0:F3\}mm)}" />
 
           <TextBlock
             Grid.Row="2" Grid.Column="4"
@@ -180,32 +188,49 @@
     </Border>
 
     <!-- ROI -->
-    <Border
-        Grid.Row="2" Classes="GroupBox"
-      Background="WhiteSmoke"
-      Margin="5"
-      IsVisible="{Binding IsROIVisible}">
+      <Border
+          Grid.Row="2" Classes="GroupBox"
+        Background="WhiteSmoke"
+        Margin="5"
+          IsVisible="{Binding IsROIOrMasksVisible}">
 
-      <StackPanel Orientation="Vertical">
+          <StackPanel Orientation="Vertical">
         <TextBlock
           Classes="GroupBoxHeader"
-          Text="ROI - Region of interest"/>
+          Text="Region of interest (ROI) and Masks"/>
 
-        <TextBlock Margin="15"
-                   Text="{Binding ROI, StringFormat=Region: \{0\}}" />
+        <StackPanel Margin="15" Spacing="10">
+        <StackPanel Spacing="10" 
+                    Orientation="Horizontal"
+                    IsVisible="{Binding IsROIVisible}">
+            <TextBlock VerticalAlignment="Center"
+                Text="{Binding ROI, StringFormat=Region: \{0\}}" />
 
-        <StackPanel Spacing="20" Margin="15,0,15,15" Orientation="Horizontal">
-          <CheckBox 
-            Content="Clear ROI after perform the operation"
-            IsChecked="{Binding ClearROIAfterOperation}"
-            />
-          <Button 
-            Padding="5" 
-            Content="Clear ROI"
-            Command="{Binding ClearROI}"/>
+            <Button
+                Padding="5"
+                Content="Clear ROI"
+                Command="{Binding ClearROI}"/>
         </StackPanel>
-        
+
+        <StackPanel Spacing="10"
+                    Orientation="Horizontal"
+                    IsVisible="{Binding IsMasksVisible}">
+            <TextBlock VerticalAlignment="Center"
+                       Text="{Binding Masks.Length, StringFormat=Masks: \{0\}}" />
+
+            <Button
+                Padding="5"
+                Content="Clear Masks"
+                Command="{Binding ClearMasks}"/>
+        </StackPanel>
+
+        <CheckBox
+            Content="Clear ROI and Masks after perform the operation"
+            IsChecked="{Binding ClearROIAndMaskAfterOperation}"/>
+
       </StackPanel>
+        </StackPanel>
+
 
     </Border>
     

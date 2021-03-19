@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Markup.Xaml;
+using UVtools.Core;
 using UVtools.Core.Operations;
 
 namespace UVtools.WPF.Controls.Tools
@@ -15,7 +16,7 @@ namespace UVtools.WPF.Controls.Tools
             get
             {
                 uint extraLayers = ExtraLayers;
-                return $"Layers: {App.SlicerFile.LayerCount} → {App.SlicerFile.LayerCount - extraLayers} (- {extraLayers})";
+                return $"Layers: {SlicerFile.LayerCount} → {SlicerFile.LayerCount - extraLayers} (- {extraLayers})";
             }
         }
 
@@ -23,8 +24,8 @@ namespace UVtools.WPF.Controls.Tools
         {
             get
             {
-                float extraHeight = (float)Math.Round(ExtraLayers * App.SlicerFile.LayerHeight, 2);
-                return $"Height: {App.SlicerFile.PrintHeight}mm → {Math.Round(App.SlicerFile.PrintHeight - extraHeight, 2)}mm (- {extraHeight}mm)";
+                float extraHeight = Layer.RoundHeight(ExtraLayers * SlicerFile.LayerHeight);
+                return $"Height: {SlicerFile.PrintHeight}mm → {Layer.RoundHeight(App.SlicerFile.PrintHeight - extraHeight)}mm (- {extraHeight}mm)";
             }
         }
 

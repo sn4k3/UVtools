@@ -268,7 +268,7 @@ namespace UVtools.Core.FileFormats
             public float LayerHeight { get; set; }
             public string MaterialName { get; set; } = About.Software;
             public ushort NumFade { get; set; }
-            public ushort NumFast { get; set; }
+            public uint NumFast { get; set; }
             public ushort NumSlow { get; set; }
             public string PrintProfile { get; set; } = About.Software;
             public float PrintTime { get; set; }
@@ -388,49 +388,37 @@ namespace UVtools.Core.FileFormats
             get => OutputConfigSettings.LayerHeight;
             set
             {
-                OutputConfigSettings.LayerHeight = (float)Math.Round(value, 2);
+                OutputConfigSettings.LayerHeight = Layer.RoundHeight(value);
                 RaisePropertyChanged();
             }
         }
 
         public override uint LayerCount
         {
+            get => base.LayerCount;
             set
             {
                 OutputConfigSettings.NumSlow = 0;
-                OutputConfigSettings.NumFast = (ushort) LayerCount;
-                RaisePropertyChanged();
+                base.LayerCount = OutputConfigSettings.NumFast = base.LayerCount;
             }
         }
 
         public override ushort BottomLayerCount
         {
             get => OutputConfigSettings.NumFade;
-            set
-            {
-                OutputConfigSettings.NumFade = value;
-                RaisePropertyChanged();
-            }
+            set => base.BottomLayerCount = OutputConfigSettings.NumFade = value;
         }
 
         public override float BottomExposureTime
         {
             get => OutputConfigSettings.ExpTimeFirst;
-            set
-            {
-                OutputConfigSettings.ExpTimeFirst = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.BottomExposureTime = OutputConfigSettings.ExpTimeFirst = (float)Math.Round(value, 2);
         }
 
         public override float ExposureTime
         {
             get => OutputConfigSettings.ExpTime;
-            set
-            {
-                OutputConfigSettings.ExpTime = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.ExposureTime = OutputConfigSettings.ExpTime = (float)Math.Round(value, 2);
         }
 
         public override float PrintTime
@@ -453,32 +441,20 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-       public override float MaterialGrams
-        {
-            get => (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.MaterialDensity, 3);
-            set { }
-        }
+       public override float MaterialGrams => (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.MaterialDensity, 3);
 
-        public override float MaterialCost => MaterialSettings.BottleVolume > 0 ? (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.BottleCost / MaterialSettings.BottleVolume, 3) : 0;
+       public override float MaterialCost => MaterialSettings.BottleVolume > 0 ? (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.BottleCost / MaterialSettings.BottleVolume, 3) : 0;
 
         public override string MaterialName
         {
             get => OutputConfigSettings.MaterialName;
-            set
-            {
-                OutputConfigSettings.MaterialName = value;
-                RaisePropertyChanged();
-            }
+            set => base.MaterialName = OutputConfigSettings.MaterialName = value;
         }
 
         public override string MachineName
         {
             get => PrinterSettings.PrinterSettingsId;
-            set
-            {
-                PrinterSettings.PrinterSettingsId = value;
-                RaisePropertyChanged();
-            }
+            set => base.MachineName = PrinterSettings.PrinterSettingsId = value;
         }
 
         public override object[] Configs => new object[] { PrinterSettings, MaterialSettings, PrintSettings, OutputConfigSettings };
@@ -652,6 +628,7 @@ namespace UVtools.Core.FileFormats
                     throw new FileLoadException($"Malformed file: {IniPrusaslicer} is missing.");
                 }
 
+                SuppressRebuildProperties = true;
                 BottomLiftHeight = LookupCustomValue(Keyword_BottomLiftHeight, DefaultBottomLiftHeight);
                 BottomLiftSpeed = LookupCustomValue(Keyword_BottomLiftSpeed, DefaultBottomLiftSpeed);
                 LiftHeight = LookupCustomValue(Keyword_LiftHeight, DefaultLiftHeight);
@@ -661,6 +638,7 @@ namespace UVtools.Core.FileFormats
                 LightOffDelay = LookupCustomValue(Keyword_LightOffDelay, DefaultLightOffDelay);
                 BottomLightPWM = LookupCustomValue(Keyword_BottomLightPWM, DefaultLightPWM);
                 LightPWM = LookupCustomValue(Keyword_LightPWM, DefaultBottomLightPWM);
+                SuppressRebuildProperties = false;
 
                 LayerManager = new LayerManager((uint) (OutputConfigSettings.NumSlow + OutputConfigSettings.NumFast), this);
 

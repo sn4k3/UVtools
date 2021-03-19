@@ -18,9 +18,10 @@ namespace UVtools.Core.Operations
     public class OperationIPrintedThisFile : Operation
     {
         #region Members
+        private Material _materialItem;
         private decimal _volume;
         private float _printTime;
-        private Material _materialItem;
+        private decimal _multiplier = 1;
 
         #endregion
 
@@ -36,7 +37,7 @@ namespace UVtools.Core.Operations
         public override string Description => "Select a material and consume resin from stock and print time.";
 
         public override string ConfirmationText =>
-            $"consume {_volume}ml and {PrintTimeHours}h on:\n{_materialItem} ?";
+            $"consume {FinalVolume}ml and {FinalPrintTimeHours:F4}h on:\n{_materialItem} ?";
 
         public override string ProgressTitle =>
             $"Consuming";
@@ -65,7 +66,7 @@ namespace UVtools.Core.Operations
 
         public override string ToString()
         {
-            var result = $"{_volume}ml {PrintTimeHours}h";
+            var result = $"{FinalVolume}ml {FinalPrintTimeHours:F4}h on {_materialItem.Name}";
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
         }
@@ -82,8 +83,14 @@ namespace UVtools.Core.Operations
         public decimal Volume
         {
             get => _volume;
-            set => RaiseAndSetIfChanged(ref _volume, value);
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _volume, value)) return;
+                RaisePropertyChanged(nameof(FinalVolume));
+            }
         }
+
+        public decimal FinalVolume => _volume * _multiplier;
 
         public float PrintTime
         {
@@ -92,10 +99,28 @@ namespace UVtools.Core.Operations
             {
                 if(!RaiseAndSetIfChanged(ref _printTime, value)) return;
                 RaisePropertyChanged(nameof(PrintTimeHours));
+                RaisePropertyChanged(nameof(FinalPrintTime));
+                RaisePropertyChanged(nameof(FinalPrintTimeHours));
             }
         }
 
         public float PrintTimeHours => _printTime / 60 / 60;
+        public float FinalPrintTime => _printTime * (float)_multiplier;
+        public float FinalPrintTimeHours => FinalPrintTime / 60 / 60;
+
+        /// <summary>
+        /// Number of times this file has been printed
+        /// </summary>
+        public decimal Multiplier
+        {
+            get => _multiplier;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _multiplier, value)) return;
+                RaisePropertyChanged(nameof(FinalVolume));
+                RaisePropertyChanged(nameof(FinalPrintTime));
+            }
+        }
 
         public MaterialManager Manager => MaterialManager.Instance;
 
@@ -123,7 +148,7 @@ namespace UVtools.Core.Operations
         {
             if (MaterialItem is null) return !progress.Token.IsCancellationRequested;
 
-            MaterialItem.Consume(_volume, _printTime);
+            MaterialItem.Consume(FinalVolume, FinalPrintTime);
 
             MaterialManager.Save();
             return !progress.Token.IsCancellationRequested;
@@ -132,6 +157,24 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Equality
+
+        protected bool Equals(OperationIPrintedThisFile other)
+        {
+            return _volume == other._volume && _printTime.Equals(other._printTime) && Equals(_materialItem, other._materialItem) && _multiplier == other._multiplier;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((OperationIPrintedThisFile) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(_volume, _printTime, _materialItem, _multiplier);
+        }
 
         #endregion
     }

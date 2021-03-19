@@ -983,13 +983,13 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.BottomExposureSeconds,
             PrintParameterModifier.ExposureSeconds,
 
-            PrintParameterModifier.BottomLightOffDelay,
-            PrintParameterModifier.LightOffDelay,
             PrintParameterModifier.BottomLiftHeight,
             PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
             PrintParameterModifier.RetractSpeed,
+            PrintParameterModifier.BottomLightOffDelay,
+            PrintParameterModifier.LightOffDelay,
 
             PrintParameterModifier.BottomLightPWM,
             PrintParameterModifier.LightPWM,
@@ -1011,7 +1011,7 @@ namespace UVtools.Core.FileFormats
                     };
                 }
                 
-                if (HeaderSettings.Version >= 2)
+                if (HeaderSettings.Version <= 2)
                 {
                     return new[]
                     {
@@ -1073,11 +1073,7 @@ namespace UVtools.Core.FileFormats
         public override float MaxPrintHeight
         {
             get => HeaderSettings.BedSizeZ > 0 ? HeaderSettings.BedSizeZ : base.MaxPrintHeight;
-            set
-            {
-                HeaderSettings.BedSizeZ = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.MaxPrintHeight = HeaderSettings.BedSizeZ = (float)Math.Round(value, 2);
         }
 
         public override bool MirrorDisplay
@@ -1113,7 +1109,7 @@ namespace UVtools.Core.FileFormats
             get => HeaderSettings.LayerHeightMilimeter;
             set
             {
-                HeaderSettings.LayerHeightMilimeter = (float)Math.Round(value, 2);
+                HeaderSettings.LayerHeightMilimeter = Layer.RoundHeight(value);
                 RaisePropertyChanged();
             }
         }
@@ -1121,141 +1117,85 @@ namespace UVtools.Core.FileFormats
         public override float PrintHeight
         {
             get => base.PrintHeight;
-            set
-            {
-                HeaderSettings.TotalHeightMilimeter = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.PrintHeight = HeaderSettings.TotalHeightMilimeter = base.PrintHeight;
         }
 
         public override uint LayerCount
         {
-            set
-            {
-                HeaderSettings.LayerCount = LayerCount;
-                RaisePropertyChanged();
-                RaisePropertyChanged(nameof(NormalLayerCount));
-            }
+            get => base.LayerCount;
+            set => base.LayerCount = HeaderSettings.LayerCount = base.LayerCount;
         }
 
         public override ushort BottomLayerCount
         {
             get => (ushort) HeaderSettings.BottomLayersCount;
-            set
-            {
-                HeaderSettings.BottomLayersCount = value;
-                RaisePropertyChanged();
-            }
+            set => base.BottomLayerCount = (ushort) (HeaderSettings.BottomLayersCount = value);
         }
 
         public override float BottomExposureTime
         {
             get => HeaderSettings.BottomExposureSeconds;
-            set
-            {
-                HeaderSettings.BottomExposureSeconds = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.BottomExposureTime = HeaderSettings.BottomExposureSeconds = (float) Math.Round(value, 2);
         }
 
         public override float ExposureTime
         {
             get => HeaderSettings.LayerExposureSeconds;
-            set
-            {
-                HeaderSettings.LayerExposureSeconds = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.ExposureTime = HeaderSettings.LayerExposureSeconds = (float)Math.Round(value, 2);
         }
 
         public override float BottomLightOffDelay
         {
             get => PrintParametersSettings.BottomLightOffDelay;
-            set
-            {
-                PrintParametersSettings.BottomLightOffDelay = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.BottomLightOffDelay = PrintParametersSettings.BottomLightOffDelay = (float)Math.Round(value, 2);
         }
 
         public override float LightOffDelay
         {
             get => PrintParametersSettings.LightOffDelay;
-            set
-            {
-                HeaderSettings.LightOffDelay = PrintParametersSettings.LightOffDelay = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.LightOffDelay = HeaderSettings.LightOffDelay = PrintParametersSettings.LightOffDelay = (float)Math.Round(value, 2);
         }
 
         public override float BottomLiftHeight
         {
             get => PrintParametersSettings.BottomLiftHeight;
-            set
-            {
-                PrintParametersSettings.BottomLiftHeight = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.BottomLiftHeight = PrintParametersSettings.BottomLiftHeight = (float)Math.Round(value, 2);
         }
 
         public override float LiftHeight
         {
             get => PrintParametersSettings.LiftHeight;
-            set
-            {
-                PrintParametersSettings.LiftHeight = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.LiftHeight = PrintParametersSettings.LiftHeight = (float)Math.Round(value, 2);
         }
 
         public override float BottomLiftSpeed
         {
             get => PrintParametersSettings.BottomLiftSpeed;
-            set
-            {
-                PrintParametersSettings.BottomLiftSpeed = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.BottomLiftSpeed = PrintParametersSettings.BottomLiftSpeed = (float)Math.Round(value, 2);
         }
 
         public override float LiftSpeed
         {
             get => PrintParametersSettings.LiftSpeed;
-            set
-            {
-                PrintParametersSettings.LiftSpeed = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.LiftSpeed = PrintParametersSettings.LiftSpeed = (float)Math.Round(value, 2);
         }
 
         public override float RetractSpeed
         {
             get => PrintParametersSettings.RetractSpeed;
-            set
-            {
-                PrintParametersSettings.RetractSpeed = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.RetractSpeed = PrintParametersSettings.RetractSpeed = (float)Math.Round(value, 2);
         }
 
         public override byte BottomLightPWM
         {
-            get => (byte) HeaderSettings.BottomLightPWM;
-            set
-            {
-                HeaderSettings.BottomLightPWM = value;
-                RaisePropertyChanged();
-            }
+            get => (byte)HeaderSettings.BottomLightPWM;
+            set => base.BottomLightPWM = (byte) (HeaderSettings.BottomLightPWM = value);
         }
 
         public override byte LightPWM
         {
-            get => (byte) HeaderSettings.BottomLightPWM;
-            set
-            {
-                HeaderSettings.BottomLightPWM = value;
-                RaisePropertyChanged();
-            }
+            get => (byte)HeaderSettings.LightPWM;
+            set => base.LightPWM = (byte) (HeaderSettings.LightPWM = value);
         }
 
         public override float PrintTime
@@ -1281,21 +1221,13 @@ namespace UVtools.Core.FileFormats
         public override float MaterialGrams
         {
             get => PrintParametersSettings.WeightG;
-            set
-            {
-                PrintParametersSettings.WeightG = (float)Math.Round(value, 3);
-                RaisePropertyChanged();
-            }
+            set => base.MaterialGrams = PrintParametersSettings.WeightG = (float)Math.Round(value, 3);
         }
 
         public override float MaterialCost
         {
             get => (float) Math.Round(PrintParametersSettings.CostDollars, 3);
-            set
-            {
-                PrintParametersSettings.CostDollars = (float) Math.Round(value, 3);
-                RaisePropertyChanged();
-            }
+            set => base.MaterialCost = PrintParametersSettings.CostDollars = (float) Math.Round(value, 3);
         }
 
         public override string MachineName
@@ -1303,10 +1235,8 @@ namespace UVtools.Core.FileFormats
             get => SlicerInfoSettings.MachineName;
             set
             {
-                SlicerInfoSettings.MachineName = value;
+                base.MachineName = SlicerInfoSettings.MachineName = value;
                 SlicerInfoSettings.MachineNameSize = (uint) SlicerInfoSettings.MachineName.Length;
-                RequireFullEncode = true;
-                RaisePropertyChanged();
             }
         }
 

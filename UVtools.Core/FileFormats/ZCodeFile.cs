@@ -9,12 +9,10 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -23,6 +21,8 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.OpenSsl;
 using UVtools.Core.Extensions;
+using UVtools.Core.GCode;
+using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats
@@ -100,7 +100,7 @@ namespace UVtools.Core.FileFormats
                 public byte AntiAliasingGrey { get; set; }
 
                 [XmlAttribute("led_power")]
-                public ushort LedPower { get; set; } = 300;
+                public ushort LedPower { get; set; } = ZCodeFile.MaxLEDPower;
             }
 
             public ZcodePrintProfileSlice Slice { get; set; } = new();
@@ -149,6 +149,7 @@ namespace UVtools.Core.FileFormats
         public const string GCodeFilename = "lcd.gcode";
         public const string ManifestFilename = "task.xml";
         public const string PreviewFilename = "preview.png";
+        public const ushort MaxLEDPower = 300;
 
         public const string GCodeStart = "G21;{0}" +        // Set units to be mm
                                          "G90;{0}" +        // Absolute Positioning
@@ -197,16 +198,16 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.BottomExposureSeconds,
             PrintParameterModifier.ExposureSeconds,
 
-            PrintParameterModifier.BottomLightOffDelay,
-            PrintParameterModifier.LightOffDelay,
             PrintParameterModifier.BottomLiftHeight,
             PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
             PrintParameterModifier.RetractSpeed,
+            PrintParameterModifier.BottomLightOffDelay,
+            PrintParameterModifier.LightOffDelay,
 
-            //PrintParameterModifier.BottomLightPWM,
-            //PrintParameterModifier.LightPWM,
+            PrintParameterModifier.BottomLightPWM,
+            PrintParameterModifier.LightPWM,
         };
 
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
@@ -215,7 +216,7 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
             PrintParameterModifier.RetractSpeed,
-            //PrintParameterModifier.LightPWM,
+            PrintParameterModifier.LightPWM,
         };
 
         public override byte ThumbnailsCount { get; } = 1;
@@ -281,58 +282,74 @@ namespace UVtools.Core.FileFormats
             get => ManifestFile.Job.LayerHeight;
             set
             {
-                ManifestFile.Job.LayerHeight = ManifestFile.Profile.Slice.LayerHeight = (float)Math.Round(value, 2);
+                ManifestFile.Job.LayerHeight = ManifestFile.Profile.Slice.LayerHeight = Layer.RoundHeight(value);
                 RaisePropertyChanged();
             }
         }
 
         public override uint LayerCount
         {
-            set
-            {
-                ManifestFile.Job.LayerCount = LayerCount;
-                RaisePropertyChanged();
-                RaisePropertyChanged(nameof(NormalLayerCount));
-            }
+            get => base.LayerCount;
+            set => base.LayerCount = ManifestFile.Job.LayerCount = base.LayerCount;
         }
 
         public override ushort BottomLayerCount
         {
             get => ManifestFile.Profile.Slice.BottomLayerCount;
-            set
-            {
-                ManifestFile.Profile.Slice.BottomLayerCount = value;
-                RaisePropertyChanged();
-            }
+            set => base.BottomLayerCount = ManifestFile.Profile.Slice.BottomLayerCount = value;
         }
 
         public override float BottomExposureTime
         {
-            get => (float)Math.Round(ManifestFile.Profile.Slice.BottomExposureTime / 1000f, 2);
+            get => TimeExtensions.MillisecondsToSeconds(ManifestFile.Profile.Slice.BottomExposureTime);
             set
             {
-                ManifestFile.Profile.Slice.BottomExposureTime = (uint) (value * 1000);
-                RaisePropertyChanged();
+                ManifestFile.Profile.Slice.BottomExposureTime = TimeExtensions.SecondsToMillisecondsUint(value);
+                base.BottomExposureTime = value;
             }
         }
 
         public override float ExposureTime
         {
-            get => (float)Math.Round(ManifestFile.Profile.Slice.ExposureTime / 1000f, 2);
+            get => TimeExtensions.MillisecondsToSeconds(ManifestFile.Profile.Slice.ExposureTime);
             set
             {
-                ManifestFile.Profile.Slice.ExposureTime = (uint)(value * 1000);
-                RaisePropertyChanged();
+                ManifestFile.Profile.Slice.ExposureTime = TimeExtensions.SecondsToMillisecondsUint(value);
+                base.ExposureTime = value;
             }
+        }
+
+        public override float BottomLiftHeight
+        {
+            get => ManifestFile.Profile.Slice.BottomLiftHeight;
+            set => base.BottomLiftHeight = ManifestFile.Profile.Slice.BottomLiftHeight = (float)Math.Round(value, 2);
+        }
+
+        public override float LiftHeight
+        {
+            get => ManifestFile.Profile.Slice.LiftHeight;
+            set => base.LiftHeight = ManifestFile.Profile.Slice.LiftHeight = (float)Math.Round(value, 2);
+        }
+
+        public override float BottomLiftSpeed
+        {
+            get => ManifestFile.Profile.Slice.BottomLiftSpeed;
+            set => base.BottomLiftSpeed = ManifestFile.Profile.Slice.BottomLiftSpeed = (float)Math.Round(value, 2);
+        }
+
+        public override float LiftSpeed
+        {
+            get => ManifestFile.Profile.Slice.LiftSpeed;
+            set => base.LiftSpeed = ManifestFile.Profile.Slice.LiftSpeed = (float)Math.Round(value, 2);
         }
 
         public override float BottomLightOffDelay
         {
-            get => (float)Math.Round(ManifestFile.Profile.Slice.BottomLightOffDelay / 1000f, 2);
+            get => TimeExtensions.MillisecondsToSeconds(ManifestFile.Profile.Slice.BottomLightOffDelay);
             set
             {
-                ManifestFile.Profile.Slice.BottomLightOffDelay = (uint)(value * 1000);
-                RaisePropertyChanged();
+                ManifestFile.Profile.Slice.BottomLightOffDelay = TimeExtensions.SecondsToMillisecondsUint(value);
+                base.BottomLightOffDelay = value;
             }
         }
 
@@ -342,59 +359,20 @@ namespace UVtools.Core.FileFormats
             set
             {
                 ManifestFile.Profile.Slice.LightOffDelay = (uint)(value * 1000);
-                RaisePropertyChanged();
+                base.LightOffDelay = value;
             }
         }
 
-        public override float BottomLiftHeight
+        public override byte LightPWM
         {
-            get => ManifestFile.Profile.Slice.BottomLiftHeight;
+            get => (byte)(byte.MaxValue * ManifestFile.Profile.Slice.LedPower / MaxLEDPower);
             set
             {
-                ManifestFile.Profile.Slice.BottomLiftHeight = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
+                ManifestFile.Profile.Slice.LedPower = (ushort)(MaxLEDPower * value / byte.MaxValue);
+                base.LightPWM = value;
+                RaisePropertyChanged(nameof(BottomLightPWM));
             }
         }
-
-        public override float LiftHeight
-        {
-            get => ManifestFile.Profile.Slice.LiftHeight;
-            set
-            {
-                ManifestFile.Profile.Slice.LiftHeight = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
-        }
-
-        public override float BottomLiftSpeed
-        {
-            get => ManifestFile.Profile.Slice.BottomLiftSpeed;
-            set
-            {
-                ManifestFile.Profile.Slice.BottomLiftSpeed = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
-        }
-
-        public override float LiftSpeed
-        {
-            get => ManifestFile.Profile.Slice.LiftSpeed;
-            set
-            {
-                ManifestFile.Profile.Slice.LiftSpeed = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
-        }
-
-        /*public override float RetractSpeed
-        {
-            get => HeaderSettings.RetractSpeed;
-            set
-            {
-                HeaderSettings.RetractSpeed = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
-        }*/
 
         public override float PrintTime
         {
@@ -419,21 +397,13 @@ namespace UVtools.Core.FileFormats
         public override float MaterialGrams
         {
             get => ManifestFile.Job.WeightG;
-            set
-            {
-                ManifestFile.Job.WeightG = (float)Math.Round(value, 3);
-                RaisePropertyChanged();
-            }
+            set => base.MaterialGrams = ManifestFile.Job.WeightG = (float)Math.Round(value, 3);
         }
 
         public override float MaterialCost
         {
             get => ManifestFile.Job.Price;
-            set
-            {
-                ManifestFile.Job.Price = (float)Math.Round(value, 3);
-                RaisePropertyChanged();
-            }
+            set => base.MaterialCost = ManifestFile.Job.Price = (float)Math.Round(value, 3);
         }
 
         /*public override string MaterialName
@@ -449,17 +419,23 @@ namespace UVtools.Core.FileFormats
         public override string MachineName
         {
             get => ManifestFile.Device.MachineModel;
-            set
-            {
-                ManifestFile.Device.MachineModel = value;
-                RequireFullEncode = true;
-                RaisePropertyChanged();
-            }
+            set => base.MachineName = ManifestFile.Device.MachineModel = value;
         }
 
         public override object[] Configs => new object[] { ManifestFile.Device, ManifestFile.Job, ManifestFile.Profile.Slice };
 
         #endregion
+
+        public ZCodeFile()
+        {
+            GCode.UseTailComma = true;
+            GCode.UseComments = false;
+            GCode.GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Absolute;
+            GCode.GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.CentimetersPerMinute;
+            GCode.GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds;
+            GCode.GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.FilenameNonZeroPNG;
+            GCode.MaxLEDPower = MaxLEDPower;
+        }
 
         #region Methods
 
@@ -527,14 +503,10 @@ namespace UVtools.Core.FileFormats
                     throw new FileLoadException($"{GCodeFilename} not found", fileFullPath);
                 }
 
-                GCode = new();
-
                 var encryptEngine = new RsaEngine();
                 using var txtreader = new StringReader(GCodeRSAPublicKey);
                 var keyParameter = (AsymmetricKeyParameter)new PemReader(txtreader).ReadObject();
                 encryptEngine.Init(true, keyParameter);
-
-                
 
                 using (TextReader tr = new StreamReader(entry.Open()))
                 {
@@ -543,10 +515,7 @@ namespace UVtools.Core.FileFormats
                     while ((line = tr.ReadLine()) != null)
                     {
                         if (string.IsNullOrEmpty(line)) continue;
-                        if (!line.EndsWith("=="))
-                        {
-                            continue;
-                        }
+                        if (!line.EndsWith("==")) continue;
                         
                         byte[] data = System.Convert.FromBase64String(line);
                         var decodedBytes = encryptEngine.ProcessBlock(data, 0, data.Length);
@@ -562,8 +531,8 @@ namespace UVtools.Core.FileFormats
                 LayerManager = new LayerManager(ManifestFile.Job.LayerCount, this);
                 progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
-                var gcode = GCode.ToString();
-                float lastPostZ = LayerHeight;
+                //var gcode = GCode.ToString();
+                //float lastPostZ = LayerHeight;
 
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
@@ -575,76 +544,14 @@ namespace UVtools.Core.FileFormats
                         throw new FileLoadException($"Layer {layerIndex+1} not found", fileFullPath);
                     }
 
-                    var startStr = $"M6054 \"{layerIndex+1}.png\"";
-                    gcode = gcode.Substring(gcode.IndexOf(startStr, StringComparison.InvariantCultureIgnoreCase) + startStr.Length + 1);
-                    var stripGcode = gcode.Substring(0, gcode.IndexOf("M106 S0")).Trim(' ', '\n', '\r', '\t');
-                    //var startCurrPos = stripGcode.Remove(0, ";currPos:".Length);
+                    using var stream = entry.Open();
+                    this[layerIndex] = new Layer(layerIndex, stream, LayerManager);
 
-                    float posZ = lastPostZ;
-                    float liftHeight = GetInitialLayerValueOrNormal(layerIndex, BottomLiftHeight, LiftHeight);
-                    float liftSpeed = GetInitialLayerValueOrNormal(layerIndex, BottomLiftSpeed, LiftSpeed);
-                    float retractSpeed = RetractSpeed;
-                    float lightOffDelay = 0;
-                    byte pwm = GetInitialLayerValueOrNormal(layerIndex, BottomLightPWM, LightPWM); ;
-                    float exposureTime = GetInitialLayerValueOrNormal(layerIndex, BottomExposureTime, ExposureTime);
-
-                    //var currPosRegex = Regex.Match(stripGcode, @";currPos:([+-]?([0-9]*[.])?[0-9]+)", RegexOptions.IgnoreCase);
-                    var moveG0Regex = Regex.Match(stripGcode, @"G0 Z([+-]?([0-9]*[.])?[0-9]+) F(\d+)", RegexOptions.IgnoreCase);
-                    var waitG4Regex = Regex.Match(stripGcode, @"G4 P(\d+)", RegexOptions.IgnoreCase);
-                    var pwmM106Regex = Regex.Match(stripGcode, @"M106 S(\d+)", RegexOptions.IgnoreCase);
-
-                    if (moveG0Regex.Success)
-                    {
-                        float liftHeightTemp = float.Parse(moveG0Regex.Groups[1].Value, CultureInfo.InvariantCulture);
-                        float liftSpeedTemp = float.Parse(moveG0Regex.Groups[3].Value, CultureInfo.InvariantCulture);
-                        moveG0Regex = moveG0Regex.NextMatch();
-                        if (moveG0Regex.Success)
-                        {
-                            float retractHeight = float.Parse(moveG0Regex.Groups[1].Value, CultureInfo.InvariantCulture);
-                            retractSpeed = float.Parse(moveG0Regex.Groups[3].Value, CultureInfo.InvariantCulture) * 10;
-                            liftHeight = (float) Math.Round(liftHeightTemp - retractHeight, 2);
-                            liftSpeed = liftSpeedTemp * 10;
-                            lastPostZ = posZ = retractHeight;
-                        }
-                        else
-                        {
-                            lastPostZ = posZ = liftHeightTemp;
-                        }
-                    }
-
-                    if (pwmM106Regex.Success)
-                    {
-                        //pwm = byte.Parse(pwmM106Regex.Groups[1].Value);
-                    }
-
-                    if (waitG4Regex.Success)
-                    {
-                        lightOffDelay = (float) Math.Round(float.Parse(waitG4Regex.Groups[1].Value, CultureInfo.InvariantCulture) / 1000f, 2);
-                        waitG4Regex = waitG4Regex.NextMatch();
-                        if (waitG4Regex.Success)
-                        {
-                            exposureTime = (float) Math.Round(float.Parse(waitG4Regex.Groups[1].Value, CultureInfo.InvariantCulture) / 1000f, 2);
-                        }
-                        else // Only one match, meaning light off delay is not present
-                        {
-                            lightOffDelay = GetInitialLayerValueOrNormal(layerIndex, BottomLightOffDelay, LightOffDelay);
-                        }
-                    }
-
-                    this[layerIndex] = new Layer(layerIndex, entry.Open(), LayerManager)
-                    {
-                        PositionZ = posZ,
-                        ExposureTime = exposureTime,
-                        LiftHeight = liftHeight,
-                        LiftSpeed = liftSpeed,
-                        RetractSpeed = retractSpeed,
-                        LightOffDelay = lightOffDelay,
-                        LightPWM = pwm,
-                    };
                     progress++;
                 }
 
-               
+                GCode.ParseLayersFromGCode(this);
+
                 entry = inputFile.GetEntry(PreviewFilename);
                 if (entry is not null)
                 {
@@ -654,56 +561,6 @@ namespace UVtools.Core.FileFormats
             }
 
             LayerManager.GetBoundingRectangle(progress);
-        }
-
-        public override void RebuildGCode()
-        {
-            GCode = new();
-
-            GCode.AppendFormat(GCodeStart, Environment.NewLine);
-
-            float lastZPosition = 0;
-
-            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-            {
-                var layer = this[layerIndex];
-                var exposureTime = layer.ExposureTime * 1000;
-                var liftHeight = layer.LiftHeight;
-                var liftZHeight = Math.Round(liftHeight + layer.PositionZ, 2);
-                var liftSpeed = Math.Round(layer.LiftSpeed / 10, 2);
-                var retractSpeed = Math.Round(layer.RetractSpeed / 10, 2);
-                var lightOffDelay = layer.LightOffDelay * 1000;
-                var pwmValue = layer.LightPWM;
-
-                if (layer.ExposureTime > 0 && pwmValue > 0)
-                {
-                    GCode.AppendLine($"M6054 \"{layerIndex + 1}.png\";");
-                }
-
-                // Absolute gcode
-                if (liftHeight > 0 && liftZHeight > layer.PositionZ)
-                {
-                    GCode.AppendLine($"G0 Z{liftZHeight} F{liftSpeed};");
-                    GCode.AppendLine($"G0 Z{layer.PositionZ} F{retractSpeed};");
-                }
-                else if (lastZPosition < layer.PositionZ)
-                {
-                    GCode.AppendLine($"G0 Z{layer.PositionZ} F{retractSpeed};");
-                }
-
-                GCode.AppendLine($"G4 P{lightOffDelay};");
-
-                if (layer.ExposureTime > 0 && pwmValue > 0)
-                {
-                    GCode.AppendLine($"M106 S300;");
-                    GCode.AppendLine($"G4 P{exposureTime};");
-                    GCode.AppendLine("M106 S0;");
-                }
-
-                lastZPosition = layer.PositionZ;
-            }
-
-            GCode.AppendFormat(GCodeEnd, Environment.NewLine, MaxPrintHeight);
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)
@@ -762,10 +619,12 @@ namespace UVtools.Core.FileFormats
             var keyParameter = (AsymmetricKeyParameter)new PemReader(txtreader).ReadObject();
             encryptEngine.Init(true, keyParameter);
 
-            using StringReader sr = new StringReader(GCode.ToString());
+            using StringReader sr = new(GCode.ToString());
             string line;
             while ((line = sr.ReadLine()) != null)
             {
+                line = line.Trim();
+                if (line == string.Empty || line[0] == ';') continue; // No empty lines nor comment start lines
                 progress += (uint)line.Length;
 
                 byte[] data = Encoding.UTF8.GetBytes(line);

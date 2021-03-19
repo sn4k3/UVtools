@@ -149,7 +149,7 @@ namespace UVtools.Core.Operations
                         }
                     }
                     if(!found)
-                        sb.AppendLine($"[ME]: {layerHeight:F2}mm layer height have no exposure(s).");
+                        sb.AppendLine($"[ME]: {Layer.ShowHeight(layerHeight)}mm layer height have no exposure(s).");
                 }
             }
 
@@ -211,7 +211,7 @@ namespace UVtools.Core.Operations
             get => _layerHeight;
             set
             {
-                if(!RaiseAndSetIfChanged(ref _layerHeight, Math.Round(value, 2))) return;
+                if(!RaiseAndSetIfChanged(ref _layerHeight, Layer.RoundHeight(value))) return;
                 RaisePropertyChanged(nameof(BottomLayersMM));
                 RaisePropertyChanged(nameof(AvailableLayerHeights));
             }
@@ -229,7 +229,7 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public decimal BottomLayersMM => Math.Round(LayerHeight * BottomLayers, 2);
+        public decimal BottomLayersMM => Layer.RoundHeight(LayerHeight * BottomLayers);
 
         public decimal BottomExposure
         {
@@ -650,7 +650,7 @@ namespace UVtools.Core.Operations
                 List<ExposureItem> list = new();
                 for (decimal layerHeight = _layerHeight; layerHeight <= endLayerHeight; layerHeight += _multipleLayerHeightStep)
                 {
-                    layerHeights.Add(Math.Round(layerHeight, 2));
+                    layerHeights.Add(Layer.RoundHeight(layerHeight));
                 }
 
                 return layerHeights.ToArray();
@@ -1264,11 +1264,11 @@ namespace UVtools.Core.Operations
             
             for (decimal currentHeight = _layerHeight; currentHeight <= totalHeight; currentHeight += 0.01m)
             {
-                currentHeight = Math.Round(currentHeight, 2);
+                currentHeight = Layer.RoundHeight(currentHeight);
                 for (decimal layerHeight = _layerHeight; layerHeight <= endLayerHeight; layerHeight += _multipleLayerHeightStep)
                 {
                     progress.Token.ThrowIfCancellationRequested();
-                    layerHeight = Math.Round(layerHeight, 2);
+                    layerHeight = Layer.RoundHeight(layerHeight);
                     
                     if (_multipleExposures)
                     {

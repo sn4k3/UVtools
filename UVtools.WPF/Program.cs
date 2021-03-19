@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using Avalonia;
-using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF
 {
@@ -21,23 +21,32 @@ namespace UVtools.WPF
 
             // Add the event handler for handling non-UI thread exceptions to the event.
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
-
+            //AppDomain.CurrentDomain.FirstChanceException += CurrentDomainOnFirstChanceException;
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
 
-        private static async void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        private static void CurrentDomainOnFirstChanceException(object? sender, FirstChanceExceptionEventArgs e)
         {
-            try
+            ErrorLog.AppendLine("First chance exception", e.Exception.ToString());
+        }
+
+
+        private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Exception ex = (Exception)e.ExceptionObject;
+            ErrorLog.AppendLine("Fatal Non-UI Error", ex.ToString());
+            
+            /*try
             {
-                Exception ex = (Exception)e.ExceptionObject;
                 string errorMsg = "An application error occurred. Please contact the administrator with the following information:\n\n" +
                                   $"{ex}";
 
                 await App.MainWindow.MessageBoxError(errorMsg, "Fatal Non-UI Error");
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-            }
+                Debug.WriteLine(exception);
+            }*/
         }
 
         // Avalonia configuration, don't remove; also used by visual designer.

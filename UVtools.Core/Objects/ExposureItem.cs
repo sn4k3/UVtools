@@ -16,7 +16,7 @@ namespace UVtools.Core.Objects
         public decimal LayerHeight
         {
             get => _layerHeight;
-            set => RaiseAndSetIfChanged(ref _layerHeight, Math.Round(value, 2));
+            set => RaiseAndSetIfChanged(ref _layerHeight, Layer.RoundHeight(value));
         }
 
 
@@ -59,7 +59,7 @@ namespace UVtools.Core.Objects
 
         public ExposureItem(decimal layerHeight, decimal bottomExposure = 0, decimal exposure = 0, byte brightness = 255)
         {
-            _layerHeight = Math.Round(layerHeight, 2);
+            _layerHeight = Layer.RoundHeight(layerHeight);
             _bottomExposure = Math.Round(bottomExposure, 2);
             _exposure = Math.Round(exposure, 2);
             _brightness = brightness;

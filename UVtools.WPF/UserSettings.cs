@@ -166,15 +166,18 @@ namespace UVtools.WPF
         {
             private Color _tooltipOverlayBackgroundColor = new Color(210, 255, 255, 192);
             private bool _tooltipOverlay = true;
-            private Color _volumeBoundsOutlineColor = new Color(210, 0, 255, 0);
+            private Color _volumeBoundsOutlineColor = new Color(255, 0, 255, 0);
             private byte _volumeBoundsOutlineThickness = 3;
             private bool _volumeBoundsOutline = true;
-            private Color _layerBoundsOutlineColor = new Color(210, 0, 255, 0);
+            private Color _layerBoundsOutlineColor = new Color(255, 0, 255, 0);
             private byte _layerBoundsOutlineThickness = 3;
             private bool _layerBoundsOutline = false;
-            private Color _hollowOutlineColor = new Color(210, 255, 165, 0);
-            private byte _hollowOutlineLineThickness = 3;
+            private Color _hollowOutlineColor = new Color(255, 255, 165, 0);
+            private sbyte _hollowOutlineLineThickness = 5;
             private bool _hollowOutline = false;
+            private Color _maskOutlineColor = new Color(255, 42, 157, 244);
+            private sbyte _maskOutlineLineThickness = 10;
+            private bool _maskClearRoiAfterSet = true;
             private Color _previousLayerDifferenceColor = new Color(255, 255, 0, 255);
             private Color _nextLayerDifferenceColor = new Color(255, 0, 255, 255);
             private Color _bothLayerDifferenceColor = new Color(255, 255, 0, 0);
@@ -195,6 +198,7 @@ namespace UVtools.WPF
             private uint _crosshairLength = 20;
             private byte _crosshairMargin = 5;
             private bool _autoRotateLayerBestView = true;
+            private bool _autoFlipLayerIfMirrored = true;
             private bool _layerZoomToFitOnLoad = true;
             private bool _showBackgroudGrid;
 
@@ -296,7 +300,7 @@ namespace UVtools.WPF
                 set => HollowOutlineColor = new Color(value);
             }
 
-            public byte HollowOutlineLineThickness
+            public sbyte HollowOutlineLineThickness
             {
                 get => _hollowOutlineLineThickness;
                 set => RaiseAndSetIfChanged(ref _hollowOutlineLineThickness, value);
@@ -306,6 +310,35 @@ namespace UVtools.WPF
             {
                 get => _hollowOutline;
                 set => RaiseAndSetIfChanged(ref _hollowOutline, value);
+            }
+
+            public Color MaskOutlineColor
+            {
+                get => _maskOutlineColor;
+                set
+                {
+                    RaiseAndSetIfChanged(ref _maskOutlineColor, value);
+                    RaisePropertyChanged(nameof(MaskOutlineBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush MaskOutlineBrush
+            {
+                get => new SolidColorBrush(_maskOutlineColor.ToAvalonia());
+                set => MaskOutlineColor = new Color(value);
+            }
+
+            public sbyte MaskOutlineLineThickness
+            {
+                get => _maskOutlineLineThickness;
+                set => RaiseAndSetIfChanged(ref _maskOutlineLineThickness, value);
+            }
+
+            public bool MaskClearROIAfterSet
+            {
+                get => _maskClearRoiAfterSet;
+                set => RaiseAndSetIfChanged(ref _maskClearRoiAfterSet, value);
             }
 
             public Color PreviousLayerDifferenceColor
@@ -546,6 +579,12 @@ namespace UVtools.WPF
             {
                 get => _autoRotateLayerBestView;
                 set => RaiseAndSetIfChanged(ref _autoRotateLayerBestView, value);
+            }
+
+            public bool AutoFlipLayerIfMirrored
+            {
+                get => _autoFlipLayerIfMirrored;
+                set => RaiseAndSetIfChanged(ref _autoFlipLayerIfMirrored, value);
             }
 
             public bool LayerZoomToFitOnLoad

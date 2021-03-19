@@ -582,7 +582,7 @@ namespace UVtools.WPF
                 {
                     LayerImageBox.AutoPan = false;
                     LayerImageBox.Cursor = StaticControls.CrossCursor;
-                    TooltipOverlayText = "Pixel editing is on:\n" +
+                    TooltipOverlayText = "Pixel editing is on (SHIFT):\n" +
                                                       "» Click over a pixel to draw\n" +
                                                       "» Hold CTRL to clear pixels";
                     UpdatePixelEditorCursor();
@@ -591,11 +591,12 @@ namespace UVtools.WPF
                 {
                     LayerImageBox.Cursor = StaticControls.CrossCursor;
                     LayerImageBox.SelectionMode = AdvancedImageBox.SelectionModes.Rectangle;
-                    TooltipOverlayText = "ROI selection mode:\n" +
-                                         "» Left-click drag to select a fixed region\n" +
-                                         "» Left-click + ALT drag to select specific objects\n" +
-                                         "» Right click on a specific object to select it\n" +
-                                         "Press Esc to clear the ROI";
+                    TooltipOverlayText = "ROI & Mask selection mode (SHIFT):\n" +
+                                         "» Left-click drag to select a fixed ROI region\n" +
+                                         "» Left-click + ALT drag to select specific objects ROI\n" +
+                                         "» Right-click on a specific object to select it ROI\n" +
+                                         "» Right-click + ALT on a specific object to select it as a Mask\n" +
+                                         "Press Esc to clear the ROI & Masks";
                 }
 
                 IsTooltipOverlayVisible = Settings.LayerPreview.TooltipOverlay;
@@ -673,15 +674,16 @@ namespace UVtools.WPF
         {
             //await this.MessageBoxInfo(Path.Combine(App.ApplicationPath, "Assets", "Themes"));
             if (!IsFileLoaded) return;
-            var ext = Path.GetExtension(SlicerFile.FileFullPath);
-            var extNoDot = ext.Remove(0, 1);
-            var extension = FileExtension.Find(extNoDot);
+            var filename = FileFormat.GetFileNameStripExtensions(SlicerFile.FileFullPath, out var ext);
+            //var ext = Path.GetExtension(SlicerFile.FileFullPath);
+            //var extNoDot = ext.Remove(0, 1);
+            var extension = FileExtension.Find(ext);
             if (extension is null)
             {
                 await this.MessageBoxError("Unable to find the target extension.", "Invalid extension");
                 return;
             }
-            SaveFileDialog dialog = new SaveFileDialog
+            SaveFileDialog dialog = new()
             {
                 DefaultExtension = extension.Extension,
                 Filters = new List<FileDialogFilter>
@@ -691,14 +693,14 @@ namespace UVtools.WPF
                         Name = extension.Description,
                         Extensions = new List<string>
                         {
-                            extNoDot
+                            ext
                         }
                     }
                 },
                 Directory = string.IsNullOrEmpty(Settings.General.DefaultDirectorySaveFile)
                     ? Path.GetDirectoryName(SlicerFile.FileFullPath)
                     : Settings.General.DefaultDirectorySaveFile,
-                InitialFileName = $"{Settings.General.FileSaveNamePrefix}{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}{Settings.General.FileSaveNameSuffix}"
+                InitialFileName = $"{Settings.General.FileSaveNamePrefix}{filename}{Settings.General.FileSaveNameSuffix}"
             };
             var file = await dialog.ShowAsync(this);
             if (string.IsNullOrEmpty(file)) return;
@@ -745,7 +747,7 @@ namespace UVtools.WPF
             ClipboardManager.Instance.Reset();
 
             SlicerFile?.Dispose();
-            App.SlicerFile = null;
+            SlicerFile = null;
 
             SlicerProperties.Clear();
             Issues.Clear();
@@ -765,6 +767,8 @@ namespace UVtools.WPF
 
             LayerImageBox.Image = null;
             LayerPixelPicker.Reset();
+
+            ClearROIAndMask();
 
             ResetDataContext();
         }
@@ -979,8 +983,7 @@ namespace UVtools.WPF
                     if (convertToFormat is not null)
                     {
                         var directory = Path.GetDirectoryName(sl1File.FileFullPath);
-                        var extensions = FileFormat.AllFileExtensionsString.OrderByDescending(s => s.Length).ToList();
-                        var filename = PathExtensions.GetFileNameStripExtensions(sl1File.FileFullPath, extensions);
+                        var filename = FileFormat.GetFileNameStripExtensions(sl1File.FileFullPath);
                         FileFormat convertedFile = null;
 
                         IsGUIEnabled = false;
@@ -1107,6 +1110,11 @@ namespace UVtools.WPF
             if (mat is not null && Settings.LayerPreview.AutoRotateLayerBestView)
             {
                 _showLayerImageRotated = mat.Height > mat.Width;
+            }
+
+            if (SlicerFile.MirrorDisplay)
+            {
+                _showLayerImageFlipped = true;
             }
 
             ResetDataContext();

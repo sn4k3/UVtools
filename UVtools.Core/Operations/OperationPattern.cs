@@ -34,7 +34,7 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Overrides
-
+        public override bool CanMask => false;
         public override string Title => "Pattern";
         public override string Description =>
             "Duplicates the model in a rectangular pattern around the build plate.\n" +

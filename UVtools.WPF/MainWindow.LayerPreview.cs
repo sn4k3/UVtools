@@ -60,6 +60,11 @@ namespace UVtools.WPF
         private uint _actualLayer;
 
         private bool _showLayerImageRotated;
+        private bool _showLayerImageRotateCwDirection = true;
+        private bool _showLayerImageRotateCcwDirection;
+        private bool _showLayerImageFlipped;
+        private bool _showLayerImageFlippedHorizontally = true;
+        private bool _showLayerImageFlippedVertically;
         private bool _showLayerImageDifference;
         private bool _showLayerImageIssues = true;
         private bool _showLayerImageCrosshairs = true;
@@ -74,8 +79,9 @@ namespace UVtools.WPF
 
         private long _showLayerRenderMs;
 
-        public LayerCache LayerCache = new LayerCache();
+        public LayerCache LayerCache = new ();
         private Point _lastPixelMouseLocation = Point.Empty;
+        private readonly List<Point[]> _maskPoints = new ();
 
 
         public void InitLayerPreview()
@@ -173,14 +179,136 @@ namespace UVtools.WPF
             get => _showLayerImageRotated;
             set
             {
-                if (!RaiseAndSetIfChanged(ref _showLayerImageRotated, value)) return;
                 var rect = LayerImageBox.SelectionRegion;
                 if (!rect.IsEmpty)
                 {
-                    LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet(), _showLayerImageRotated, true).ToAvalonia();
+                    rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
+                }
+
+                if (!RaiseAndSetIfChanged(ref _showLayerImageRotated, value) || !IsFileLoaded) return;
+                
+                if (!rect.IsEmpty)
+                {
+                    LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
                 }
 
                 ZoomToFit();
+                ShowLayer();
+            }
+        }
+
+        public bool ShowLayerImageRotateCWDirection
+        {
+            get => _showLayerImageRotateCwDirection;
+            set
+            {
+                var rect = LayerImageBox.SelectionRegion;
+                if (!rect.IsEmpty)
+                {
+                    rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
+                }
+
+                if (!RaiseAndSetIfChanged(ref _showLayerImageRotateCwDirection, value)) return;
+                if (!_showLayerImageRotated) return;
+
+                if (!rect.IsEmpty)
+                {
+                    LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
+                }
+
+                ZoomToFit();
+                ShowLayer();
+            }
+        }
+
+        public bool ShowLayerImageRotateCCWDirection
+        {
+            get => _showLayerImageRotateCcwDirection;
+            set
+            {
+                var rect = LayerImageBox.SelectionRegion;
+                if (!rect.IsEmpty)
+                {
+                    rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
+                }
+
+                if (!RaiseAndSetIfChanged(ref _showLayerImageRotateCcwDirection, value)) return;
+                if (!_showLayerImageRotated) return;
+
+                if (!rect.IsEmpty)
+                {
+                    LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
+                }
+
+                ZoomToFit();
+                ShowLayer();
+            }
+        }
+
+        public bool ShowLayerImageFlipped
+        {
+            get => _showLayerImageFlipped;
+            set
+            {
+                var rect = LayerImageBox.SelectionRegion;
+                if (!rect.IsEmpty)
+                {
+                    rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
+                }
+
+                if (!RaiseAndSetIfChanged(ref _showLayerImageFlipped, value)) return;
+
+                if (!rect.IsEmpty)
+                {
+                    LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
+                }
+
+                ShowLayer();
+            }
+        }
+
+        public bool ShowLayerImageFlippedHorizontally
+        {
+            get => _showLayerImageFlippedHorizontally;
+            set
+            {
+                var rect = LayerImageBox.SelectionRegion;
+                if (!rect.IsEmpty)
+                {
+                    rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
+                }
+
+                if (!RaiseAndSetIfChanged(ref _showLayerImageFlippedHorizontally, value)) return;
+                if (!_showLayerImageFlipped) return;
+
+                if (!rect.IsEmpty)
+                {
+                    LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
+                }
+
+                ShowLayer();
+            }
+        }
+
+        public bool ShowLayerImageFlippedVertically
+        {
+            get => _showLayerImageFlippedVertically;
+            set
+            {
+                var rect = LayerImageBox.SelectionRegion;
+                if (!rect.IsEmpty)
+                {
+                    rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
+                }
+
+                if (!RaiseAndSetIfChanged(ref _showLayerImageFlippedVertically, value)) return;
+                if (!_showLayerImageFlipped) return;
+
+                if (!rect.IsEmpty)
+                {
+                    LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
+                }
+
                 ShowLayer();
             }
         }
@@ -276,7 +404,9 @@ namespace UVtools.WPF
 
         public string MinimumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.LayerHeight}mm\n0";
         public string MaximumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.PrintHeight}mm\n{SlicerFile.LayerCount - 1}";
-        public string ActualLayerTooltip => SlicerFile is null ? "???" : $"{LayerCache.Layer?.PositionZ:0.00}mm\n{ActualLayer}\n{(ActualLayer + 1) * 100 / (SlicerFile.LayerCount)}%";
+        public string ActualLayerTooltip => SlicerFile is null ? "???" : $"{Layer.ShowHeight(LayerCache.Layer?.PositionZ ?? 0)}mm\n" +
+                                                                         $"{ActualLayer}\n" +
+                                                                         $"{(ActualLayer + 1) * 100 / SlicerFile.LayerCount}%";
 
         public uint SliderMaximumValue => SlicerFile?.LastLayerIndex ?? 0;
 
@@ -332,7 +462,10 @@ namespace UVtools.WPF
             get
             {
                 var roi = ROI;
-                if(roi.IsEmpty) return "ROI: NS";
+                if (roi.IsEmpty)
+                {
+                    return _maskPoints.Count > 0 ? $"Masks: {_maskPoints.Count}" : "ROI: NS";
+                }
                 var text = $"ROI: {roi} ({roi.Area()}px²)";
                 var roiMillimeters = ROIMillimeters;
                 if (!roiMillimeters.IsEmpty)
@@ -425,13 +558,13 @@ namespace UVtools.WPF
         }
 
 
-        #region ROI
+        #region ROI & Mask
         public Rectangle ROI
         {
             get
             {
                 var rect = LayerImageBox.SelectionRegion;
-                return rect.IsEmpty ? Rectangle.Empty : GetTransposedRectangle(rect.ToDotNet(), false);
+                return rect.IsEmpty ? Rectangle.Empty : GetTransposedRectangle(rect.ToDotNet(), true);
             }
             set => LayerImageBox.SelectionRegion = value.ToAvalonia();
         }
@@ -449,6 +582,53 @@ namespace UVtools.WPF
                     (float)Math.Round(roi.Width * pixelSize.Width, 2),
                     (float)Math.Round(roi.Height * pixelSize.Height, 2));
             }
+        }
+
+        public List<Point[]> MaskPoints => _maskPoints;
+
+        /*private set
+            {
+                if(!RaiseAndSetIfChanged(ref _maskPoints, value)) return;
+                ShowLayer();
+            }*/
+        public void AddMaskPoints(Point[] points)
+        {
+            if (_maskPoints.RemoveAll(points1 => points1.SequenceEqual(points)) <= 0)
+            {
+                _maskPoints.Add(points);
+            }
+
+            if(_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
+
+            ShowLayer();
+            RaisePropertyChanged(nameof(LayerROIStr));
+        }
+
+        public void AddMaskPoints(Point[][] points)
+        {
+            _maskPoints.Clear();
+            _maskPoints.AddRange(points);
+            ShowLayer();
+            RaisePropertyChanged(nameof(LayerROIStr));
+        }
+
+        public void ClearMask()
+        {
+            if (_maskPoints.Count <= 0) return;
+            _maskPoints.Clear();
+            ShowLayer();
+            RaisePropertyChanged(nameof(LayerROIStr));
+        }
+
+        public void ClearROI()
+        {
+            ROI = Rectangle.Empty;
+        }
+
+        public void ClearROIAndMask()
+        {
+            ClearROI();
+            ClearMask();
         }
 
         public void OnROIClick()
@@ -706,6 +886,16 @@ namespace UVtools.WPF
                     }
                 }
 
+                if (_maskPoints is not null && _maskPoints.Count > 0)
+                {
+                    using var vec = new VectorOfVectorOfPoint(_maskPoints.ToArray());
+                    CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1,
+                        new MCvScalar(Settings.LayerPreview.MaskOutlineColor.B,
+                            Settings.LayerPreview.MaskOutlineColor.G,
+                            Settings.LayerPreview.MaskOutlineColor.R),
+                        Settings.LayerPreview.MaskOutlineLineThickness);
+                }
+
                 for (var index = 0; index < Drawings.Count; index++)
                 {
                     if (Drawings[index].LayerIndex != ActualLayer) continue;
@@ -760,12 +950,19 @@ namespace UVtools.WPF
                     }
                     else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
                     {
+                        //var pixelBrightness = LayerCache.Image.GetPixelPos(operation.Location);
                         if (imageSpan[LayerCache.Image.GetPixelPos(operation.Location)] < 10) continue;
                         var color = DrawingsGrid.SelectedItems.Contains(operation)
                             ? Settings.PixelEditor.RemovePixelHighlightColor
                             : Settings.PixelEditor.RemovePixelColor;
                         for (int i = 0; i < LayerCache.LayerContours.Size; i++)
                         {
+                            /*if (pixelBrightness < 10 && (int) LayerCache.LayerHierarchyJagged.GetValue(0, i, 2) != -1 ||
+                                (int) LayerCache.LayerHierarchyJagged.GetValue(0, i, 3) == -1)
+                            {
+                                continue;
+                            }*/
+
                             if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], operation.Location, false) >= 0)
                             {
                                 CvInvoke.DrawContours(LayerCache.ImageBgr, LayerCache.LayerContours, i,
@@ -820,10 +1017,24 @@ namespace UVtools.WPF
                     }
                 }
 
+                if (_showLayerImageFlipped)
+                {
+                    var flipType = FlipType.None;
+                    if (_showLayerImageFlippedHorizontally)
+                        flipType |= FlipType.Horizontal;
+                    if (_showLayerImageFlippedVertically)
+                        flipType |= FlipType.Vertical;
+
+                    if (flipType != FlipType.None)
+                        CvInvoke.Flip(LayerCache.ImageBgr, LayerCache.ImageBgr, flipType);
+                }
+
                 if (_showLayerImageRotated)
                 {
-                    CvInvoke.Rotate(LayerCache.ImageBgr, LayerCache.ImageBgr, RotateFlags.Rotate90Clockwise);
+                    CvInvoke.Rotate(LayerCache.ImageBgr, LayerCache.ImageBgr, _showLayerImageRotateCcwDirection ? RotateFlags.Rotate90CounterClockwise : RotateFlags.Rotate90Clockwise);
                 }
+
+                
 
 
                 LayerImageBox.Image = LayerCache.Bitmap = LayerCache.ImageBgr.ToBitmap();
@@ -912,27 +1123,115 @@ namespace UVtools.WPF
                 lineThickness);
         }
 
-        public Point GetTransposedPoint(Point point, bool clockWise = true, bool ignoreLayerRotation = false)
+        public Point GetTransposedPoint(Point point, bool inverse = false)
         {
-            if (!_showLayerImageRotated && !ignoreLayerRotation) return point;
-            return clockWise
-                ? new Point(point.Y, LayerCache.Image.Height - 1 - point.X)
-                : new Point(LayerCache.Image.Height - 1 - point.Y, point.X);
+            if (point.IsEmpty) return point;
+
+            void Flip()
+            {
+                if (!_showLayerImageFlipped) return;
+                if (_showLayerImageFlippedHorizontally)
+                {
+                    point = new Point(LayerCache.Image.Width - 1 - point.X, point.Y);
+                }
+
+                if (_showLayerImageFlippedVertically)
+                {
+                    point = new Point(point.X, LayerCache.Image.Height - 1 - point.Y);
+                }
+            }
+
+            void Rotate()
+            {
+                if (!_showLayerImageRotated) return;
+                if (_showLayerImageRotateCcwDirection)
+                {
+                    point = inverse
+                        ? new Point(point.Y, LayerCache.Image.Width - 1 - point.X) // 90º CCW
+                        : new Point(LayerCache.Image.Width - 1 - point.Y, point.X); // 90º CW
+
+                }
+                else
+                {
+                    point = inverse
+                        ? new Point(LayerCache.Image.Height - 1 - point.Y, point.X) // 90º CW
+                        : new Point(point.Y, LayerCache.Image.Height - 1 - point.X); // 90º CCW
+                }
+            }
+
+            if (inverse)
+            {
+                Flip();
+                Rotate();
+            }
+            else
+            {
+                Rotate();
+                Flip();
+            }
+
+            return point;
         }
 
-        public Rectangle GetTransposedRectangle(RectangleF rectangleF, bool clockWise = true, bool ignoreLayerRotation = false) =>
-            GetTransposedRectangle(Rectangle.Round(rectangleF), clockWise, ignoreLayerRotation);
+        public Rectangle GetTransposedRectangle(RectangleF rectangleF, bool inverse = true) =>
+            GetTransposedRectangle(Rectangle.Round(rectangleF), inverse);
 
-        public Rectangle GetTransposedRectangle(Rectangle rectangle, bool clockWise = true, bool ignoreLayerRotation = false)
+        public Rectangle GetTransposedRectangle(Rectangle rectangle, bool inverse = false)
         {
-            if (rectangle.IsEmpty || (!ignoreLayerRotation && !_showLayerImageRotated)) return rectangle;
-            return clockWise
+            if (rectangle.IsEmpty) return rectangle;
+
+            void Flip()
+            {
+                if (!_showLayerImageFlipped) return;
+                if (_showLayerImageFlippedHorizontally)
+                {
+                    rectangle.Location = new Point(LayerCache.Image.Width - 1 - rectangle.Right, rectangle.Y);
+                }
+
+                if (_showLayerImageFlippedVertically)
+                {
+                    rectangle.Location = new Point(rectangle.X, LayerCache.Image.Height - 1 - rectangle.Bottom);
+                }
+            }
+
+            void Rotate()
+            {
+                if (!_showLayerImageRotated) return;
+                if (_showLayerImageRotateCcwDirection)
+                {
+                    rectangle = !inverse
+                        ? new Rectangle(rectangle.Y, LayerCache.Image.Width - rectangle.Right, rectangle.Height, rectangle.Width) // 90º CCW
+                        : new Rectangle(LayerCache.Image.Width - rectangle.Bottom, rectangle.X, rectangle.Height, rectangle.Width); // 90º CW
+
+                }
+                else
+                {
+                    rectangle = !inverse
+                        ? new Rectangle(LayerCache.Image.Height - rectangle.Bottom, rectangle.X, rectangle.Height, rectangle.Width) // 90º CW
+                        : new Rectangle(rectangle.Y, LayerCache.Image.Height - rectangle.Right, rectangle.Height, rectangle.Width); // 90º CCW
+                }
+            }
+
+            if (!inverse)
+            {
+                Flip();
+                Rotate();
+            }
+            else
+            {
+                Rotate();
+                Flip();
+            }
+
+            return rectangle;
+
+            /*return inverse
                 ? new Rectangle(LayerCache.Image.Height - rectangle.Bottom,
                     rectangle.Left, rectangle.Height, rectangle.Width)
                 //: new Rectangle(ActualLayerImage.Width - rectangle.Bottom, rectangle.Left, rectangle.Width, rectangle.Height);
                 //: new Rectangle(ActualLayerImage.Width - rectangle.Bottom, ActualLayerImage.Height-rectangle.Right, rectangle.Width, rectangle.Height); // Rotate90FlipX: // = Rotate270FlipY
                 //: new Rectangle(rectangle.Top, rectangle.Left, rectangle.Width, rectangle.Height); // Rotate270FlipX:  // = Rotate90FlipY
-                : new Rectangle(rectangle.Top, LayerCache.Image.Height - rectangle.Right, rectangle.Height, rectangle.Width); // Rotate90FlipNone:  // = Rotate270FlipXY
+                : new Rectangle(rectangle.Top, LayerCache.Image.Height - rectangle.Right, rectangle.Height, rectangle.Width); // Rotate90FlipNone:  // = Rotate270FlipXY*/
         }
 
         /// <summary>
@@ -943,10 +1242,9 @@ namespace UVtools.WPF
         /// </summary>
         private Rectangle GetTransposedIssueBounds(LayerIssue issue)
         {
-            if (issue.X >= 0 && issue.Y >= 0 && (issue.BoundingRectangle.IsEmpty || issue.Size == 1) &&
-                _showLayerImageRotated)
-                return new Rectangle(LayerCache.Image.Height - 1 - issue.Y,
-                    issue.X, 1, 1);
+            if (issue.X >= 0 && issue.Y >= 0 && (issue.BoundingRectangle.IsEmpty || issue.Size == 1))
+                return new Rectangle(GetTransposedPoint(issue.FirstPoint, true), new Size(1, 1));
+            //return new Rectangle(LayerCache.Image.Height - 1 - issue.Y, issue.X, 1, 1);
 
             return GetTransposedRectangle(issue.BoundingRectangle);
         }
@@ -1078,7 +1376,7 @@ namespace UVtools.WPF
                 case ZoomToFitType.Auto:
                     if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds ^ (_globalModifiers & KeyModifiers.Alt) != 0)
                     {
-                        if (!_showLayerImageRotated)
+                        /*if (!_showLayerImageRotated)
                         {
                             LayerImageBox.ZoomToRegion(SlicerFile.LayerManager.BoundingRectangle, margin);
                         }
@@ -1089,7 +1387,8 @@ namespace UVtools.WPF
                                 SlicerFile.LayerManager.BoundingRectangle.Height,
                                 SlicerFile.LayerManager.BoundingRectangle.Width, margin
                             );
-                        }
+                        }*/
+                        LayerImageBox.ZoomToRegion(GetTransposedRectangle(SlicerFile.BoundingRectangle), margin);
                     }
                     else
                     {
@@ -1100,7 +1399,7 @@ namespace UVtools.WPF
                     LayerImageBox.ZoomToFit();
                     break;
                 case ZoomToFitType.Volume:
-                    LayerImageBox.ZoomToRegion(GetTransposedRectangle(SlicerFile.LayerManager.BoundingRectangle), margin);
+                    LayerImageBox.ZoomToRegion(GetTransposedRectangle(SlicerFile.BoundingRectangle), margin);
                     break;
                 case ZoomToFitType.Selection:
                     LayerImageBox.ZoomToSelectionRegion(margin);
@@ -1152,6 +1451,13 @@ namespace UVtools.WPF
                 if (e.InitialPressMouseButton == MouseButton.Right)
                 {
                     if (!LayerImageBox.IsPointInImage(pointer.Position)) return;
+
+                    if ((e.KeyModifiers & KeyModifiers.Alt) != 0)
+                    {
+                        SelectObjectMask(location);
+                        return;
+                    }
+                    
                     SelectObjectRoi(location);
                     
                     return;
@@ -1213,7 +1519,18 @@ namespace UVtools.WPF
         {
             if (e.Key == Key.Escape)
             {
-                LayerImageBox.SelectNone();
+                if (e.KeyModifiers == KeyModifiers.Shift)
+                {
+                    ClearROI();
+                }
+                /*else if(e.KeyModifiers == KeyModifiers.Alt)
+                {
+                    ClearMask();
+                }*/
+                else
+                {
+                    ClearROIAndMask();
+                }
                 e.Handled = true;
                 return;
             }
@@ -1230,6 +1547,13 @@ namespace UVtools.WPF
                 if (e.Key == Key.R)
                 {
                     ShowLayerImageRotated = !_showLayerImageRotated;
+                    e.Handled = true;
+                    return;
+                }
+
+                if (e.Key == Key.F)
+                {
+                    ShowLayerImageFlipped = !_showLayerImageFlipped;
                     e.Handled = true;
                     return;
                 }
@@ -1287,9 +1611,12 @@ namespace UVtools.WPF
             var point = GetTransposedPoint(location);
             var brightness = LayerCache.Image.GetByte(point);
 
-            if (brightness == 0) return false;
             for (int i = 0; i < LayerCache.LayerContours.Size; i++)
             {
+                if (brightness == 0 &&
+                    ((int) LayerCache.LayerHierarchyJagged.GetValue(0, i, 2) != -1 ||
+                    (int) LayerCache.LayerHierarchyJagged.GetValue(0, i, 3) == -1)) continue;
+
                 if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], point, false) >= 0)
                 {
                     var rectangle =
@@ -1329,10 +1656,33 @@ namespace UVtools.WPF
             return (uint)rectangles.Count;
         }
 
+        public bool SelectObjectMask(Point location)
+        {
+            var point = GetTransposedPoint(location);
+            var brightness = LayerCache.Image.GetByte(point);
+
+            for (int i = 0; i < LayerCache.LayerContours.Size; i++)
+            {
+                if (brightness == 0 &&
+                    ((int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 2) != -1 ||
+                     (int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 3) == -1)) continue;
+                if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], point, false) >= 0)
+                {
+                    //var rectangle = GetTransposedRectangle(CvInvoke.BoundingRectangle(LayerCache.LayerContours[i]));
+                    //ROI = rectangle;
+                    AddMaskPoints(LayerCache.LayerContours[i].ToArray());
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public void OnLayerPixelPickerClicked()
         {
             if (!LayerPixelPicker.IsSet) return;
-            CenterLayerAt(GetTransposedPoint(LayerPixelPicker.Location, false), -1);
+            CenterLayerAt(GetTransposedPoint(LayerPixelPicker.Location, true), -1);
         }
 
         public async void SaveCurrentLayerImage()
@@ -1408,9 +1758,20 @@ namespace UVtools.WPF
                     //CvInvoke.Rectangle(cursor, new Rectangle(new Point(size.Width, 0), size), _pixelEditorCursorColor, 1, DrawingPixelText.LineType);
                     
                     CvInvoke.PutText(cursor, text, new Point(size.Width, size.Height), DrawingPixelText.Font, DrawingPixelText.FontScale, _pixelEditorCursorColor, DrawingPixelText.Thickness, DrawingPixelText.LineType, DrawingPixelText.Mirror);
+                    if (_showLayerImageFlipped)
+                    {
+                        var flipType = FlipType.None;
+                        if (_showLayerImageFlippedHorizontally)
+                            flipType |= FlipType.Horizontal;
+                        if (_showLayerImageFlippedVertically)
+                            flipType |= FlipType.Vertical;
+
+                        if (flipType != FlipType.None)
+                            CvInvoke.Flip(cursor, cursor, flipType);
+                    }
                     if (_showLayerImageRotated)
                     {
-                        CvInvoke.Rotate(cursor, cursor, RotateFlags.Rotate90Clockwise);
+                        CvInvoke.Rotate(cursor, cursor, _showLayerImageRotateCcwDirection ? RotateFlags.Rotate90CounterClockwise : RotateFlags.Rotate90Clockwise);
                     }
                     break;
                 case PixelOperation.PixelOperationType.Supports:
@@ -1439,7 +1800,7 @@ namespace UVtools.WPF
                     break;
             }
 
-            if (!(cursor is null))
+            if (cursor is not null)
             {
                 LayerImageBox.TrackerImage = cursor.ToBitmap();
                 //cursor.Save("D:\\Cursor.png");

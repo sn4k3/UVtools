@@ -120,7 +120,7 @@ namespace UVtools.Core.Operations
             get => _layerHeight;
             set
             {
-                if(!RaiseAndSetIfChanged(ref _layerHeight, Math.Round(value, 2))) return;
+                if(!RaiseAndSetIfChanged(ref _layerHeight, Layer.RoundHeight(value))) return;
                 RaisePropertyChanged(nameof(BottomHeight));
                 RaisePropertyChanged(nameof(NormalHeight));
                 RaisePropertyChanged(nameof(TotalHeight));
@@ -176,8 +176,8 @@ namespace UVtools.Core.Operations
 
         public uint LayerCount => (uint)(_bottomLayers + _normalLayers + (_extrudeText ? Math.Floor(_textHeight / _layerHeight) : 0));
 
-        public decimal BottomHeight => Math.Round(LayerHeight * BottomLayers, 2);
-        public decimal NormalHeight => Math.Round(LayerHeight * NormalLayers, 2);
+        public decimal BottomHeight => Layer.RoundHeight(LayerHeight * BottomLayers);
+        public decimal NormalHeight => Layer.RoundHeight(LayerHeight * NormalLayers);
 
         public decimal TotalHeight => BottomHeight + NormalHeight;
 

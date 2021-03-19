@@ -151,7 +151,7 @@ namespace UVtools.Core.Operations
             get => _layerHeight;
             set
             {
-                if(!RaiseAndSetIfChanged(ref _layerHeight, Math.Round(value, 2))) return;
+                if(!RaiseAndSetIfChanged(ref _layerHeight, Layer.RoundHeight(value))) return;
                 RaisePropertyChanged(nameof(BottomLayersMM));
                 RaisePropertyChanged(nameof(LayerCount));
                 RaisePropertyChanged(nameof(RealZSize));
@@ -171,7 +171,7 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public decimal BottomLayersMM => Math.Round(LayerHeight * BottomLayers, 2);
+        public decimal BottomLayersMM => Layer.RoundHeight(LayerHeight * BottomLayers);
 
         public decimal BottomExposure
         {
@@ -616,7 +616,7 @@ namespace UVtools.Core.Operations
                     currentX += xPixels + PartMargin;
                 }
 
-                pointTextList.Add(new KeyValuePair<Point, string>(partCenterText, step > 0 ? $"+{step:0.00}" : $"{step:0.00}"));
+                pointTextList.Add(new KeyValuePair<Point, string>(partCenterText, step > 0 ? $"+{step:F2}" : $"{step:F2}"));
 
                 return true;
             }

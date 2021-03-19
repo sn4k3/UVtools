@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using Avalonia;
@@ -15,6 +16,7 @@ using UVtools.WPF.Controls;
 using UVtools.WPF.Controls.Tools;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
+using Point = Avalonia.Point;
 
 namespace UVtools.WPF.Windows
 {
@@ -37,8 +39,9 @@ namespace UVtools.WPF.Windows
         private uint _layerIndexStart;
         private uint _layerIndexEnd;
         private bool _isROIVisible;
+        private bool _isMasksVisible;
 
-        private bool _clearRoiAfterOperation;
+        private bool _clearRoiAndMaskAfterOperation;
 
         private bool _isProfilesVisible;
         private ObservableCollection<Operation> _profiles = new();
@@ -113,7 +116,7 @@ namespace UVtools.WPF.Windows
                     ToolControl.BaseOperation.LayerIndexStart = value;
                 }
 
-                value = value.Clamp(0, App.SlicerFile.LastLayerIndex);
+                value = value.Clamp(0, SlicerFile.LastLayerIndex);
                 if (!RaiseAndSetIfChanged(ref _layerIndexStart, value)) return;
                 RaisePropertyChanged(nameof(LayerStartMM));
                 RaisePropertyChanged(nameof(LayerRangeCountStr));
@@ -127,7 +130,7 @@ namespace UVtools.WPF.Windows
             }
         }
 
-        public float LayerStartMM => App.SlicerFile[_layerIndexStart].PositionZ;
+        public float LayerStartMM => SlicerFile[_layerIndexStart].PositionZ;
 
         public uint LayerIndexEnd
         {
@@ -140,21 +143,21 @@ namespace UVtools.WPF.Windows
                     ToolControl.BaseOperation.LayerIndexEnd = value;
                 }
 
-                value = value.Clamp(0, App.SlicerFile.LastLayerIndex);
+                value = value.Clamp(0, SlicerFile.LastLayerIndex);
                 if (!RaiseAndSetIfChanged(ref _layerIndexEnd, value)) return;
                 RaisePropertyChanged(nameof(LayerEndMM));
                 RaisePropertyChanged(nameof(LayerRangeCountStr));
             }
         }
 
-        public float LayerEndMM => App.SlicerFile[_layerIndexEnd].PositionZ;
+        public float LayerEndMM => SlicerFile[_layerIndexEnd].PositionZ;
         
         public string LayerRangeCountStr
         {
             get
             {
                 uint layerCount = (uint) Math.Max(0, (int)LayerIndexEnd - LayerIndexStart + 1);
-                return $"({layerCount} layers / {Math.Round(App.SlicerFile.LayerHeight * layerCount, 2)}mm)";
+                return $"({layerCount} layers / {Layer.ShowHeight(SlicerFile.LayerHeight * layerCount)}mm)";
             }
             
         }
@@ -176,17 +179,33 @@ namespace UVtools.WPF.Windows
                 ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.Current;
         }
 
+        public void SelectFirstToCurrentLayer()
+        {
+            LayerIndexEnd = App.MainWindow.ActualLayer;
+            LayerIndexStart = 0;
+            if (!(ToolControl is null))
+                ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.None;
+        }
+
+        public void SelectCurrentToLastLayer()
+        {
+            LayerIndexStart = App.MainWindow.ActualLayer;
+            LayerIndexEnd = SlicerFile.LastLayerIndex;
+            if (!(ToolControl is null))
+                ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.None;
+        }
+
         public void SelectBottomLayers()
         {
             LayerIndexStart = 0;
-            LayerIndexEnd = App.SlicerFile.BottomLayerCount-1u;
+            LayerIndexEnd = SlicerFile.BottomLayerCount-1u;
             if (!(ToolControl is null))
                 ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.Bottom;
         }
 
         public void SelectNormalLayers()
         {
-            LayerIndexStart = App.SlicerFile.BottomLayerCount;
+            LayerIndexStart = SlicerFile.BottomLayerCount;
             LayerIndexEnd = MaximumLayerIndex;
             if (!(ToolControl is null))
                 ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.Normal;
@@ -236,7 +255,9 @@ namespace UVtools.WPF.Windows
         }
         #endregion
 
-        #region ROI
+        #region ROI & Masks
+
+        public bool IsROIOrMasksVisible => IsROIVisible || IsMasksVisible;
 
         public bool IsROIVisible
         {
@@ -245,15 +266,34 @@ namespace UVtools.WPF.Windows
                 if (ToolControl is null) return _isROIVisible;
                 return ToolControl.BaseOperation.CanROI && _isROIVisible;
             }
-            set => RaiseAndSetIfChanged(ref _isROIVisible, value);
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _isROIVisible, value)) return;
+                RaisePropertyChanged(nameof(IsROIOrMasksVisible));
+            }
+        }
+
+        public bool IsMasksVisible
+        {
+            get
+            {
+                if (ToolControl is null) return _isMasksVisible;
+                return ToolControl.BaseOperation.CanMask && _isMasksVisible;
+            }
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _isMasksVisible, value)) return;
+                RaisePropertyChanged(nameof(IsROIOrMasksVisible));
+            }
         }
 
         public Rectangle ROI => App.MainWindow.ROI;
+        public System.Drawing.Point[][] Masks => App.MainWindow.MaskPoints?.ToArray();
 
-        public bool ClearROIAfterOperation
+        public bool ClearROIAndMaskAfterOperation
         {
-            get => _clearRoiAfterOperation;
-            set => RaiseAndSetIfChanged(ref _clearRoiAfterOperation, value);
+            get => _clearRoiAndMaskAfterOperation;
+            set => RaiseAndSetIfChanged(ref _clearRoiAndMaskAfterOperation, value);
         }
 
         public async void ClearROI()
@@ -262,7 +302,17 @@ namespace UVtools.WPF.Windows
                                    "This action can not be reverted, to select another ROI you must quit this window and select it on layer preview.",
                 "Clear the current ROI?") != ButtonResult.Yes) return;
             IsROIVisible = false;
-            App.MainWindow.LayerImageBox.SelectNone();
+            App.MainWindow.ClearROI();
+            ToolControl?.Callback(Callbacks.ClearROI);
+        }
+
+        public async void ClearMasks()
+        {
+            if (await this.MessageBoxQuestion("Are you sure you want to clear all masks?\n" +
+                                              "This action can not be reverted, to select another mask(s) you must quit this window and select it on layer preview.",
+                "Clear the all masks?") != ButtonResult.Yes) return;
+            IsMasksVisible = false;
+            App.MainWindow.ClearMask();
             ToolControl?.Callback(Callbacks.ClearROI);
         }
 
@@ -290,7 +340,7 @@ namespace UVtools.WPF.Windows
                 if (ToolControl is null) return;
                 var operation = _selectedProfileItem.Clone();
                 operation.ProfileName = null;
-                operation.SlicerFile = App.SlicerFile;
+                operation.SlicerFile = SlicerFile;
                 ToolControl.BaseOperation = operation;
                 switch (operation.LayerRangeSelection)
                 {
@@ -491,6 +541,11 @@ namespace UVtools.WPF.Windows
             {
                 IsROIVisible = true;
             }
+
+            if (Masks?.Length > 0)
+            {
+                IsMasksVisible = true;
+            }
         }
 
         public ToolWindow(string description = null, bool layerRangeVisible = true) : this()
@@ -624,10 +679,11 @@ namespace UVtools.WPF.Windows
             {
                 ToolControl.BaseOperation.LayerIndexStart = LayerIndexStart;
                 ToolControl.BaseOperation.LayerIndexEnd = LayerIndexEnd;
-                if (IsROIVisible && ToolControl.BaseOperation.ROI.IsEmpty)
-                {
-                    ToolControl.BaseOperation.ROI = App.MainWindow.ROI;
-                }
+                /*if (IsROIVisible && ToolControl.BaseOperation.ROI.IsEmpty)
+                {                   
+                }*/
+                ToolControl.BaseOperation.SetROIIfEmpty(ROI);
+                ToolControl.BaseOperation.SetMasksIfEmpty(Masks);
 
                 if (!await ToolControl.ValidateForm()) return;
                 if (!string.IsNullOrEmpty(ToolControl.BaseOperation.ConfirmationText))
@@ -639,9 +695,9 @@ namespace UVtools.WPF.Windows
                 }
             }
 
-            if (ClearROIAfterOperation)
+            if (_clearRoiAndMaskAfterOperation)
             {
-                App.MainWindow.LayerImageBox.SelectNone();
+                App.MainWindow.ClearROIAndMask();
             }
 
             DialogResult = DialogResults.OK;

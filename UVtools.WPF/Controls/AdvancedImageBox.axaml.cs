@@ -942,21 +942,13 @@ namespace UVtools.WPF.Controls
         /// <summary>
         ///   Converts the given client size point to represent a coordinate on the source image.
         /// </summary>
-        /// <param name="point">The source point.</param>
-        /// <returns><c>Point.Empty</c> if the point could not be matched to the source image, otherwise the new translated point</returns>
-        public Point PointToImage(Point point)
-            => PointToImage(point, false);
-
-        /// <summary>
-        ///   Converts the given client size point to represent a coordinate on the source image.
-        /// </summary>
         /// <param name="x">The X co-ordinate of the point to convert.</param>
         /// <param name="y">The Y co-ordinate of the point to convert.</param>
         /// <param name="fitToBounds">
         ///   if set to <c>true</c> and the point is outside the bounds of the source image, it will be mapped to the nearest edge.
         /// </param>
         /// <returns><c>Point.Empty</c> if the point could not be matched to the source image, otherwise the new translated point</returns>
-        public Point PointToImage(double x, double y, bool fitToBounds = false)
+        public Point PointToImage(double x, double y, bool fitToBounds = true)
             => PointToImage(x, y, fitToBounds);
 
         /// <summary>
@@ -968,7 +960,7 @@ namespace UVtools.WPF.Controls
         ///   if set to <c>true</c> and the point is outside the bounds of the source image, it will be mapped to the nearest edge.
         /// </param>
         /// <returns><c>Point.Empty</c> if the point could not be matched to the source image, otherwise the new translated point</returns>
-        public Point PointToImage(int x, int y, bool fitToBounds = false)
+        public Point PointToImage(int x, int y, bool fitToBounds = true)
         {
             return PointToImage(x, y, fitToBounds);
         }
@@ -981,7 +973,7 @@ namespace UVtools.WPF.Controls
         ///   if set to <c>true</c> and the point is outside the bounds of the source image, it will be mapped to the nearest edge.
         /// </param>
         /// <returns><c>Point.Empty</c> if the point could not be matched to the source image, otherwise the new translated point</returns>
-        public virtual Point PointToImage(Point point, bool fitToBounds)
+        public virtual Point PointToImage(Point point, bool fitToBounds = true)
         {
             double x;
             double y;
@@ -990,13 +982,13 @@ namespace UVtools.WPF.Controls
 
             if (!fitToBounds || viewport.Contains(point))
             {
-                x = ((point.X + Offset.X - viewport.X) / ZoomFactor);
-                y = ((point.Y + Offset.Y - viewport.Y) / ZoomFactor);
+                x = (point.X + Offset.X - viewport.X) / ZoomFactor;
+                y = (point.Y + Offset.Y - viewport.Y) / ZoomFactor;
 
                 if (fitToBounds)
                 {
-                    x = x.Clamp(0, Image.Size.Width);
-                    y = y.Clamp(0, Image.Size.Height);
+                    x = x.Clamp(0, Image.Size.Width-1);
+                    y = y.Clamp(0, Image.Size.Height-1);
                 }
             }
             else

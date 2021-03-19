@@ -28,12 +28,13 @@ namespace UVtools.Core.Operations
         public const string StatusExtracting = "Extracting";
 
         public const string StatusIslands = "Layers processed (Islands/Overhangs)";
+        public const string StatusResinTrapsOptimized = "Layers optimized (Resin traps)";
         public const string StatusResinTraps = "Layers processed (Resin traps)";
         public const string StatusRepairLayers = "Repaired Layers";
 
-        public object Mutex = new object();
+        public object Mutex = new();
 
-        public CancellationTokenSource TokenSource { get; } = new CancellationTokenSource();
+        public CancellationTokenSource TokenSource { get; } = new();
         public CancellationToken Token => TokenSource.Token;
 
         private bool _canCancel = true;
@@ -175,7 +176,7 @@ namespace UVtools.Core.Operations
         {
             return _itemCount == 0 ?
 $"{_processedItems}/? {_itemName}" :
-$"{_processedItems.ToString().PadLeft(_itemCount.ToString().Length, '0')}/{_itemCount} {_itemName} | {ProgressPercent:0.00}%";
+$"{_processedItems.ToString().PadLeft(_itemCount.ToString().Length, '0')}/{_itemCount} {_itemName} | {ProgressPercent:F2}%";
         }
 
         public void TriggerRefresh()
@@ -184,6 +185,14 @@ $"{_processedItems.ToString().PadLeft(_itemCount.ToString().Length, '0')}/{_item
             RaisePropertyChanged(nameof(CanCancel));
             //OnPropertyChanged(nameof(ProgressPercent));
             //OnPropertyChanged(nameof(Description));
+        }
+
+        public void LockAndIncrement()
+        {
+            lock (Mutex)
+            {
+                ProcessedItems++;
+            }
         }
     }
 }

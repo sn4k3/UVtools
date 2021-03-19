@@ -101,8 +101,10 @@ namespace UVtools.Core.Operations
 
         public override bool Execute(Mat mat, params object[] arguments)
         {
-            Mat target = GetRoiOrDefault(mat);
+            using var original = mat.Clone();
+            var target = GetRoiOrDefault(mat);
             target.Rotate((double)AngleDegrees);
+            ApplyMask(original, mat);
             return true;
         }
 

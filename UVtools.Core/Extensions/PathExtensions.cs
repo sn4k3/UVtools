@@ -21,14 +21,19 @@ namespace UVtools.Core.Extensions
             return splitPath.Length == 0 ? string.Empty : splitPath[0];
         }
 
-        public static string GetFileNameStripExtensions(string path, List<string> extensions)
+        public static string GetFileNameStripExtensions(string path, List<string> extensions, out string strippedExtension)
         {
+            strippedExtension = string.Empty;
             path = Path.GetFileName(path);
             if (string.IsNullOrEmpty(path)) return string.Empty;
             foreach (var extension in extensions)
             {
                 var dotExtension = $".{extension}";
-                if (path.EndsWith(dotExtension)) return path.Remove(path.Length - dotExtension.Length);
+                if (path.EndsWith(dotExtension))
+                {
+                    strippedExtension = extension;
+                    return path.Remove(path.Length - dotExtension.Length);
+                }
             }
 
             return path;

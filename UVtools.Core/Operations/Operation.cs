@@ -10,6 +10,8 @@ using System;
 using System.Drawing;
 using System.Xml.Serialization;
 using Emgu.CV;
+using Emgu.CV.Util;
+using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
@@ -20,6 +22,7 @@ namespace UVtools.Core.Operations
     {
         #region Members
         private Rectangle _roi = Rectangle.Empty;
+        private Point[][] _maskPoints;
         private uint _layerIndexEnd;
         private uint _layerIndexStart;
         private string _profileName;
@@ -82,6 +85,11 @@ namespace UVtools.Core.Operations
         /// Gets if this operation can make use of ROI
         /// </summary>
         public virtual bool CanROI => true;
+
+        /// <summary>
+        /// Gets if this operation can make use maskable areas
+        /// </summary>
+        public virtual bool CanMask => CanROI;
 
         /// <summary>
         /// Gets if this operation can store profiles
@@ -170,10 +178,31 @@ namespace UVtools.Core.Operations
         public Rectangle ROI
         {
             get => _roi;
-            set => RaiseAndSetIfChanged(ref _roi, value);
+            set
+            {
+                if (!CanROI) return;
+                RaiseAndSetIfChanged(ref _roi, value);
+            }
         }
 
         public bool HaveROI => !ROI.IsEmpty;
+
+        /// <summary>
+        /// Gets or sets an Mask to process this operation
+        /// </summary>
+        [XmlIgnore]
+        public Point[][] MaskPoints
+        {
+            get => _maskPoints;
+            set
+            {
+                if (!CanMask) return;
+                if(!RaiseAndSetIfChanged(ref _maskPoints, value)) return;
+                //if(HaveMask) ROI = Rectangle.Empty;
+            }
+        }
+
+        public bool HaveMask => _maskPoints is not null && _maskPoints.Length > 0;
 
         /// <summary>
         /// Gets if this operation have been executed once
@@ -280,26 +309,55 @@ namespace UVtools.Core.Operations
         /// </summary>
         public virtual void InitWithSlicerFile() { }
 
+        public void SetROIIfEmpty(Rectangle roi)
+        {
+            if (HaveROI) return;
+            ROI = roi;
+        }
+
+        public void SetMasksIfEmpty(Point[][] points)
+        {
+            if (HaveMask) return;
+            MaskPoints = points;
+        }
+
         public Mat GetRoiOrDefault(Mat defaultMat)
         {
-            return HaveROI ? new Mat(defaultMat, ROI) : defaultMat;
+            return HaveROI && defaultMat.Size != _roi.Size ? new Mat(defaultMat, _roi) : defaultMat;
         }
 
-        public virtual Operation Clone()
+        public Mat GetMask(Mat mat) => GetMask(_maskPoints, mat);
+
+        public Mat GetMask(Point[][] points, Mat mat)
         {
-            var operation = MemberwiseClone() as Operation;
-            operation.SlicerFile = _slicerFile;
-            return operation;
+            if (!HaveMask) return null;
+
+            var mask = mat.CloneBlank();
+            using VectorOfVectorOfPoint vec = new(points);
+            CvInvoke.DrawContours(mask, vec, -1, EmguExtensions.WhiteByte, -1);
+            return GetRoiOrDefault(mask);
         }
 
-        public override string ToString()
+        public void ApplyMask(Mat original, Mat result, Mat mask)
         {
-            if (!string.IsNullOrEmpty(ProfileName)) return ProfileName;
-
-            var result = $"{Title}: {LayerRangeString}";
-            return result;
+            if (mask is null) return;
+            var originalRoi = GetRoiOrDefault(original);
+            var resultRoi = GetRoiOrDefault(result);
+            resultRoi.CopyTo(originalRoi, mask);
+            originalRoi.CopyTo(resultRoi);
         }
-        
+
+        /// <summary>
+        /// Gets a mask and apply it
+        /// </summary>
+        /// <param name="original">Original unmodified image</param>
+        /// <param name="result">Result image which will also be modified</param>
+        public void ApplyMask(Mat original, Mat result)
+        {
+            using var mask = GetMask(result);
+            ApplyMask(original, result, mask);
+        }
+
 
         protected virtual bool ExecuteInternally(OperationProgress progress)
         {
@@ -322,6 +380,21 @@ namespace UVtools.Core.Operations
         public virtual bool Execute(Mat mat, params object[] arguments)
         {
             throw new NotImplementedException();
+        }
+
+        public virtual Operation Clone()
+        {
+            var operation = MemberwiseClone() as Operation;
+            operation.SlicerFile = _slicerFile;
+            return operation;
+        }
+
+        public override string ToString()
+        {
+            if (!string.IsNullOrEmpty(ProfileName)) return ProfileName;
+
+            var result = $"{Title}: {LayerRangeString}";
+            return result;
         }
 
         public virtual void Dispose() { }

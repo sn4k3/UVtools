@@ -150,6 +150,17 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LightPWM,
         };
 
+        public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+            PrintParameterModifier.ExposureSeconds,
+            PrintParameterModifier.LiftHeight,
+            PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.RetractSpeed,
+            PrintParameterModifier.LightOffDelay,
+            
+            PrintParameterModifier.BottomLightPWM,
+            PrintParameterModifier.LightPWM,
+        };
+
         public override byte ThumbnailsCount { get; } = 2;
 
         public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = {new System.Drawing.Size(400, 400), new System.Drawing.Size(800, 480) };
@@ -207,146 +218,92 @@ namespace UVtools.Core.FileFormats
 
         }
 
-        public override bool SupportPerLayerSettings => true;
-
         public override float LayerHeight
         {
             get => JsonSettings.Properties.Size.LayerHeight;
             set
             {
-                JsonSettings.Properties.Size.LayerHeight = (float)Math.Round(value, 2);
+                JsonSettings.Properties.Size.LayerHeight = Layer.RoundHeight(value);
                 RaisePropertyChanged();
             }
         }
 
         public override uint LayerCount
         {
-            set
-            {
-                JsonSettings.Properties.Size.Layers = LayerCount;
-                RaisePropertyChanged();
-                RaisePropertyChanged(nameof(NormalLayerCount));
-            }
+            get => base.LayerCount;
+            set => base.LayerCount = JsonSettings.Properties.Size.Layers = base.LayerCount;
         }
 
         public override ushort BottomLayerCount
         {
             get => JsonSettings.Properties.Bottom.Count;
-            set
-            {
-                JsonSettings.Properties.Bottom.Count = value;
-                RaisePropertyChanged();
-            }
+            set => base.BottomLayerCount = JsonSettings.Properties.Bottom.Count = value;
         }
 
         public override float BottomExposureTime
         {
             get => JsonSettings.Properties.Bottom.LightOnTime;
-            set
-            {
-                JsonSettings.Properties.Bottom.LightOnTime = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.BottomExposureTime = JsonSettings.Properties.Bottom.LightOnTime = (float)Math.Round(value, 2);
         }
 
         public override float ExposureTime
         {
             get => JsonSettings.Properties.Exposure.LightOnTime;
-            set
-            {
-                JsonSettings.Properties.Exposure.LightOnTime = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.ExposureTime = JsonSettings.Properties.Exposure.LightOnTime = (float)Math.Round(value, 2);
         }
 
         public override float BottomLightOffDelay
         {
             get => JsonSettings.Properties.Bottom.LightOffTime;
-            set
-            {
-                JsonSettings.Properties.Bottom.LightOffTime = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.BottomLightOffDelay = JsonSettings.Properties.Bottom.LightOffTime = (float)Math.Round(value, 2);
         }
 
         public override float LightOffDelay
         {
             get => JsonSettings.Properties.Exposure.LightOffTime;
-            set
-            {
-                JsonSettings.Properties.Exposure.LightOffTime = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.LightOffDelay = JsonSettings.Properties.Exposure.LightOffTime = (float)Math.Round(value, 2);
         }
 
         public override float BottomLiftHeight
         {
             get => JsonSettings.Properties.Bottom.LiftHeight;
-            set
-            {
-                JsonSettings.Properties.Bottom.LiftHeight = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.BottomLiftHeight = JsonSettings.Properties.Bottom.LiftHeight = (float)Math.Round(value, 2);
         }
 
         public override float LiftHeight
         {
             get => JsonSettings.Properties.Exposure.LiftHeight;
-            set
-            {
-                JsonSettings.Properties.Exposure.LiftHeight = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.LiftHeight = JsonSettings.Properties.Exposure.LiftHeight = (float)Math.Round(value, 2);
         }
 
         public override float BottomLiftSpeed
         {
             get => JsonSettings.Properties.Bottom.LiftSpeed;
-            set
-            {
-                JsonSettings.Properties.Bottom.LiftSpeed = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.BottomLiftSpeed = JsonSettings.Properties.Bottom.LiftSpeed = (float)Math.Round(value, 2);
         }
 
         public override float LiftSpeed
         {
             get => JsonSettings.Properties.Exposure.LiftSpeed;
-            set
-            {
-                JsonSettings.Properties.Exposure.LiftSpeed = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.LiftSpeed = JsonSettings.Properties.Exposure.LiftSpeed = (float)Math.Round(value, 2);
         }
 
         public override float RetractSpeed
         {
             get => JsonSettings.Properties.Exposure.RetractSpeed;
-            set
-            {
-                JsonSettings.Properties.Exposure.RetractSpeed = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.RetractSpeed = JsonSettings.Properties.Exposure.RetractSpeed = (float)Math.Round(value, 2);
         }
 
         public override byte BottomLightPWM
         {
             get => JsonSettings.Properties.Bottom.LightPWM;
-            set
-            {
-                JsonSettings.Properties.Bottom.LightPWM = value;
-                RaisePropertyChanged();
-            }
+            set => base.BottomLightPWM = JsonSettings.Properties.Bottom.LightPWM = value;
         }
 
         public override byte LightPWM
         {
             get => JsonSettings.Properties.Exposure.LightPWM;
-            set
-            {
-                JsonSettings.Properties.Exposure.LightPWM = value;
-                RaisePropertyChanged();
-            }
+            set => base.LightPWM = JsonSettings.Properties.Exposure.LightPWM = value;
         }
 
         public override object[] Configs => new[] {(object) JsonSettings.Properties.Size, JsonSettings.Properties.Size.Millimeter, JsonSettings.Properties.Bottom, JsonSettings.Properties.Exposure};

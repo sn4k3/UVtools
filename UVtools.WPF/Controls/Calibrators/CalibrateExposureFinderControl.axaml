@@ -75,7 +75,7 @@
                            Value="{Binding Operation.BottomLayers}"/>
             <TextBlock Grid.Row="2" Grid.Column="8"
                        VerticalAlignment="Center"
-                       Text="{Binding Operation.BottomHeight, StringFormat=\{0:0.00\}mm}"/>
+                       Text="{Binding Operation.BottomHeight, StringFormat=\{0:F3\}mm}"/>
 
             <TextBlock Grid.Row="4" Grid.Column="0"
                        VerticalAlignment="Center"

@@ -1061,96 +1061,60 @@ namespace UVtools.Core.FileFormats
             get => HeaderSettings.LayerHeight;
             set
             {
-                HeaderSettings.LayerHeight = (float)Math.Round(value, 2);
+                HeaderSettings.LayerHeight = Layer.RoundHeight(value);
                 RaisePropertyChanged();
             }
         }
 
         public override uint LayerCount
         {
-            set
-            {
-                LayersDefinition.LayerCount = LayerCount;
-                RaisePropertyChanged();
-                RaisePropertyChanged(nameof(NormalLayerCount));
-            }
+            get => base.LayerCount;
+            set => base.LayerCount = LayersDefinition.LayerCount = base.LayerCount;
         }
 
         public override ushort BottomLayerCount
         {
-            get => (ushort)HeaderSettings.BottomLayersCount;
-            set
-            {
-                HeaderSettings.BottomLayersCount = value;
-                RaisePropertyChanged();
-            }
+            get => (ushort) HeaderSettings.BottomLayersCount;
+            set => base.BottomLayerCount = (ushort) (HeaderSettings.BottomLayersCount = value);
         }
 
         public override float BottomExposureTime
         {
             get => HeaderSettings.BottomExposureSeconds;
-            set
-            {
-                HeaderSettings.BottomExposureSeconds = (float) Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.BottomExposureTime = HeaderSettings.BottomExposureSeconds = (float) Math.Round(value, 2);
         }
 
         public override float ExposureTime
         {
             get => HeaderSettings.LayerExposureTime;
-            set
-            {
-                HeaderSettings.LayerExposureTime = (float) Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.ExposureTime = HeaderSettings.LayerExposureTime = (float) Math.Round(value, 2);
         }
 
-        public override float BottomLightOffDelay
-        {
-            get => LightOffDelay;
-            set => LightOffDelay = value;
-        }
+        public override float BottomLightOffDelay => LightOffDelay;
 
         public override float LightOffDelay
         {
             get => HeaderSettings.LightOffDelay;
-            set
-            {
-                HeaderSettings.LightOffDelay = (float) Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.LightOffDelay = HeaderSettings.LightOffDelay = (float) Math.Round(value, 2);
         }
 
-        public override float BottomLiftHeight
-        {
-            get => LiftHeight;
-            set => LiftHeight = value;
-        }
+        public override float BottomLiftHeight => LiftHeight;
 
         public override float LiftHeight
         {
             get => HeaderSettings.LiftHeight;
-            set
-            {
-                HeaderSettings.LiftHeight = (float) Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.LiftHeight = HeaderSettings.LiftHeight = (float) Math.Round(value, 2);
         }
 
-        public override float BottomLiftSpeed
-        {
-            get => LiftSpeed;
-            set => LiftSpeed = value;
-        }
+        public override float BottomLiftSpeed => LiftSpeed;
 
         public override float LiftSpeed
         {
-            get => (float) Math.Round(HeaderSettings.LiftSpeed * 60, 2);
+            get => (float)Math.Round(HeaderSettings.LiftSpeed * 60, 2);
             set
             {
                 HeaderSettings.LiftSpeed = (float) Math.Round(value / 60, 2);
-                RaisePropertyChanged();
+                base.LiftSpeed = value;
             }
         }
 
@@ -1160,7 +1124,7 @@ namespace UVtools.Core.FileFormats
             set
             {
                 HeaderSettings.RetractSpeed = (float) Math.Round(value / 60, 2);
-                RaisePropertyChanged();
+                base.RetractSpeed = value;
             }
         }
 
@@ -1187,21 +1151,13 @@ namespace UVtools.Core.FileFormats
         public override float MaterialGrams
         {
             get => (float) Math.Round(HeaderSettings.WeightG, 3);
-            set
-            {
-                HeaderSettings.WeightG = (float) Math.Round(value, 3);
-                RaisePropertyChanged();
-            }
+            set => base.MaterialGrams = HeaderSettings.WeightG = (float) Math.Round(value, 3);
         }
 
         public override float MaterialCost
         {
             get => (float) Math.Round(HeaderSettings.Price, 3);
-            set
-            {
-                HeaderSettings.Price = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.MaterialCost = HeaderSettings.Price = (float)Math.Round(value, 3);
         }
 
         public override string MachineName
@@ -1480,7 +1436,7 @@ namespace UVtools.Core.FileFormats
                 {
                     this[layerIndex] = new Layer((uint) layerIndex, image, LayerManager)
                     {
-                        PositionZ = (float) Math.Round(LayersDefinition[(uint)layerIndex].LayerHeight, 2),
+                        PositionZ = Layer.RoundHeight(LayersDefinition[(uint)layerIndex].LayerHeight),
                         ExposureTime = LayersDefinition[(uint)layerIndex].ExposureTime,
                         LiftHeight = LayersDefinition[(uint)layerIndex].LiftHeight,
                         LiftSpeed = (float)Math.Round(LayersDefinition[(uint)layerIndex].LiftSpeed * 60, 2),
@@ -1498,7 +1454,7 @@ namespace UVtools.Core.FileFormats
             {
                 for (uint layerIndex = 1; layerIndex < LayerCount; layerIndex++)
                 {
-                    this[layerIndex].PositionZ = (float)Math.Round(this[layerIndex-1].PositionZ + this[layerIndex].PositionZ, 2);
+                    this[layerIndex].PositionZ = Layer.RoundHeight(this[layerIndex-1].PositionZ + this[layerIndex].PositionZ);
                 }
             }
         }

@@ -104,10 +104,11 @@ namespace UVtools.Core.Operations
 
         public override bool Execute(Mat mat, params object[] arguments)
         {
-            using Mat filteredMat = new Mat();
-            using VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-            using Mat hierarchy = new Mat();
-            Mat target = GetRoiOrDefault(mat);
+            using Mat filteredMat = new();
+            using VectorOfVectorOfPoint contours = new();
+            using Mat hierarchy = new();
+            using var original = mat.Clone();
+            var target = GetRoiOrDefault(mat);
 
             CvInvoke.Threshold(target, filteredMat, 127, 255, ThresholdType.Binary); // Clean AA
             CvInvoke.FindContours(filteredMat, contours, hierarchy, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
@@ -129,8 +130,10 @@ namespace UVtools.Core.Operations
 
                 }
 
-                CvInvoke.DrawContours(target, contours, i, new MCvScalar(255), -1);
+                CvInvoke.DrawContours(target, contours, i, EmguExtensions.WhiteByte, -1);
             }
+
+            ApplyMask(original, mat);
 
             return true;
         }

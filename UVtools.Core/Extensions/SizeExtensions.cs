@@ -46,6 +46,13 @@ namespace UVtools.Core.Extensions
         public static Size Inflate(this Size size, int pixels) => new (size.Width + pixels, size.Height + pixels);
         public static Size Inflate(this Size size, int width, int height) => new (size.Width + width, size.Height + height);
 
+        /// <summary>
+        /// Exchange width with height
+        /// </summary>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        public static Size Invert(this Size size) => new(size.Height, size.Width);
+
         public static int Area(this Rectangle rect)
         {
             return rect.Width * rect.Height;
@@ -60,6 +67,7 @@ namespace UVtools.Core.Extensions
         {
             return Math.Max(size.Width, size.Height);
         }
+
 
         public static float Area(this RectangleF rect, int round = -1)
         {

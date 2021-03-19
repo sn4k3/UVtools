@@ -44,7 +44,7 @@
       />
           <TextBlock Grid.Row="2" Grid.Column="4"
                      VerticalAlignment="Center"
-                     Text="{Binding Operation.BottomHeight, StringFormat=\{0:0.00\}mm}"/>
+                     Text="{Binding Operation.BottomHeight, StringFormat=\{0:F3\}mm}"/>
 
 
 
@@ -59,12 +59,11 @@
                          Minimum="1"
                          Maximum="1000"
                          FormatString="F02"
-                         Value="{Binding Operation.NormalLayers}"
-      />
+                         Value="{Binding Operation.NormalLayers}"/>
           <TextBlock Grid.Row="2" Grid.Column="10"
                      IsEnabled="{Binding !Operation.SyncLayers}"
                      VerticalAlignment="Center"
-                     Text="{Binding Operation.NormalHeight, StringFormat=\{0:0.00\}mm}"/>
+                     Text="{Binding Operation.NormalHeight, StringFormat=\{0:F3\}mm}"/>
 
           <TextBlock Grid.Row="4" Grid.Column="0"
                      VerticalAlignment="Center"
@@ -163,7 +162,7 @@
                       Spacing="0">
             <TextBlock FontWeight="Bold">
                 <TextBlock.Text>
-                    <MultiBinding StringFormat="{}{0} / {1:0.00}mm">
+                    <MultiBinding StringFormat="{}{0} / {1:F3}mm">
                         <Binding Path="Operation.LayerCount"/>
                         <Binding Path="Operation.TotalHeight"/>
                     </MultiBinding>

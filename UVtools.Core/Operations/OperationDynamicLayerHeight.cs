@@ -127,7 +127,7 @@ namespace UVtools.Core.Operations
                 layerHeight <= _maximumLayerHeight;
                 layerHeight = layerHeight + (decimal) SlicerFile.LayerHeight)
             {
-                layerHeight = Math.Round(layerHeight, 2);
+                layerHeight = Layer.RoundHeight(layerHeight);
                 if (exposureTable.TryGetValue(layerHeight, out var exposure))
                 {
                     if (exposure.BottomExposure <= 0 || exposure.Exposure <= 0)
@@ -202,7 +202,7 @@ namespace UVtools.Core.Operations
             get => _minimumLayerHeight;
             set
             {
-                if (!RaiseAndSetIfChanged(ref _minimumLayerHeight, Math.Round(value, 2))) return;
+                if (!RaiseAndSetIfChanged(ref _minimumLayerHeight, Layer.RoundHeight(value))) return;
                 //RaisePropertyChanged(nameof(ExposureData));
                 //if (!IsExposureSetTypeManual) RebuildAutoExposureTable();
             }
@@ -213,7 +213,7 @@ namespace UVtools.Core.Operations
             get => _maximumLayerHeight;
             set
             {
-                if(!RaiseAndSetIfChanged(ref _maximumLayerHeight, Math.Round(value, 2))) return;
+                if(!RaiseAndSetIfChanged(ref _maximumLayerHeight, Layer.RoundHeight(value))) return;
                 //RaisePropertyChanged(nameof(ExposureData));
                 if(!IsExposureSetTypeManual) RebuildAutoExposureTable();
             }
@@ -489,7 +489,7 @@ namespace UVtools.Core.Operations
                 });
             }
 
-            float GetLastPositionZ(float layerHeight) => layers.Count > 0 ? (float)Math.Round(layers[^1].PositionZ + layerHeight, 2) : layerHeight;
+            float GetLastPositionZ(float layerHeight) => layers.Count > 0 ? Layer.RoundHeight(layers[^1].PositionZ + layerHeight) : layerHeight;
 
             (Mat, Mat) GetLayer(uint layerIndex)
             {
@@ -562,7 +562,7 @@ namespace UVtools.Core.Operations
                     }
 
                     var previousLayerHeight = currentLayerHeight;
-                    currentLayerHeight = (float)Math.Round(currentLayerHeight + SlicerFile.LayerHeight, 2);
+                    currentLayerHeight = Layer.RoundHeight(currentLayerHeight + SlicerFile.LayerHeight);
 
                     var (mat1, mat1Threshold) = GetLayer(layerIndex);
                     var (mat2, mat2Threshold) = GetLayer(++layerIndex);
@@ -632,11 +632,8 @@ namespace UVtools.Core.Operations
                 if (layerSum > 1) report.StackedLayers += layerSum;
                 Debug.WriteLine($" Packing {layerSum} layers with {currentLayerHeight}mm");
                 // Add the result
-                /*var thisPosZ = Math.Round(layers[^1].PositionZ + currentLayerHeight, 2);
-                if (layers.Count > 0 && thisPosZ != slicerFile[layerIndex].PositionZ)
-                {
-                    Debug.WriteLine($"{layerIndex}: ({thisPosZ} != {slicerFile[layerIndex].PositionZ}) Height mismatch!!");
-                }*/
+
+
                 var positionZ = GetLastPositionZ(currentLayerHeight);
                 if ((decimal)positionZ != (decimal)SlicerFile[layerIndex-1].PositionZ)
                 {

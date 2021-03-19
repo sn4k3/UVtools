@@ -46,7 +46,7 @@
 
           <TextBlock
               FontWeight="Bold"
-              Text="{Binding Operation.TotalHeight, StringFormat=\{0:0.00\}mm}"/>
+              Text="{Binding Operation.TotalHeight, StringFormat=\{0:F3\}mm}"/>
 
 
         </StackPanel>
@@ -63,7 +63,7 @@
       />
         <TextBlock Grid.Row="2" Grid.Column="4"
                    VerticalAlignment="Center"
-                   Text="{Binding Operation.BottomHeight, StringFormat=\{0:0.00\}mm}"/>
+                   Text="{Binding Operation.BottomHeight, StringFormat=\{0:F3\}mm}"/>
 
         <TextBlock Grid.Row="2" Grid.Column="6"
                    VerticalAlignment="Center"
@@ -77,7 +77,7 @@
                        Value="{Binding Operation.InterfaceLayers}"/>
         <TextBlock Grid.Row="2" Grid.Column="10"
                    VerticalAlignment="Center"
-                   Text="{Binding Operation.InterfaceHeight, StringFormat=\{0:0.00\}mm}"/>
+                   Text="{Binding Operation.InterfaceHeight, StringFormat=\{0:F3\}mm}"/>
 
         <TextBlock Grid.Row="4" Grid.Column="0"
                    VerticalAlignment="Center"
@@ -90,7 +90,7 @@
                        Value="{Binding Operation.NormalLayers}"/>
         <TextBlock Grid.Row="4" Grid.Column="4"
                    VerticalAlignment="Center"
-                   Text="{Binding Operation.NormalHeight, StringFormat=\{0:0.00\}mm}"/>
+                   Text="{Binding Operation.NormalHeight, StringFormat=\{0:F3\}mm}"/>
 
         <TextBlock Grid.Row="6" Grid.Column="0"
                    VerticalAlignment="Center"
@@ -164,7 +164,7 @@
           <StackPanel>
               <TextBlock FontWeight="Bold">
                   <TextBlock.Text>
-                      <MultiBinding StringFormat="Pie settings    [{0} divisions with {1:0.00}º steps]">
+                      <MultiBinding StringFormat="Pie settings    [{0} divisions with {1:F2}º steps]">
                           <Binding Path="Operation.Divisions"/>
                           <Binding Path="Operation.AngleStep"/>
                       </MultiBinding>

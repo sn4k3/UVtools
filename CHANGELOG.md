@@ -1,12 +1,60 @@
 # Changelog
 
+## 19/03/2021 - v2.7.0
+
+* **Core:**
+   * Write "Unhandled Exceptions" to an "errors.log" file at user settings directory
+   * Increase layer height max precision from 2 to 3 decimals
+* **Settings - Layer Preview:**
+   * Allow to set hollow line thickness to -1 to fill the area
+   * Add tooltip for "Auto rotate on load": Auto rotate the layer preview on file load for a landscape viewport
+   * Add option to masks outline color and thickness
+   * Add option to clear ROI when adding masks
+   * Add option "Auto flip on load": Auto flip the layer preview on file load if the file is marked to print mirrored on the printer LCD
+* **Layer preview:**
+   * Add selectable rotation directions 90º (CW and CCW)
+   * Add preview flip (CTRL+F) horizontally and/or vertically
+   * Add maskable regions to process on a layer (SHIFT + Alt + Click) on a area 
+   * ROI: Shortcut "Shift + left click" now also selects hollow black areas inside a white perimeter
+   * ROI: Shortcut "ESC + Shift" to clear only the ROI and leave masks in
+   * Fix a crash when using the pixel picker tool outside image bounds
+* **Pixel editor:**
+   * Change drawings brush diameter limit from 255 to 4000 maximum
+   * When using layers below go lower than layer 0 it no longer apply the modifications
+* **File formats:**
+   * Add an internal GCodeBuilder to generate identical gcode within formats with auto convertion, managing features and parsing information 
+   * Internally rearrange formats properties and pass values to the base class
+   * Fix "Save As" filename when using formats with dual extensions
+   * CBDDLP and CTB: "LightPWM" was setting "BottomLightPWM" instead
+   * CWS: Fix problem with filenames with dots (.) and ending with numbers (#171)
+   * CWS: Improved the enconding and decoding performance
+   * CWS: Implement all available print paramenters and per layer, missing values are got from gcode interpretation
+   * CWS: Use set "light off delay" layer value instead of calculating it 
+   * CWS: Get light off delay per layer parsed from gcode
+   * CWS - RGB flavour (Bene4 Mono): Warn about wrong resolution if width not multiples of 3 (#171)
+   * ZCode: Allow to set Bottom and Light intensity (LightPWM) on paramters and per layer
+   * ZCode: Allow to change bottom light pwm independent from normal light pwm
+   * LGS: Light off and bottom light off was setting the value on the wrong units
+   * UVJ: Unable to set per layer parameters
+* **Issues:**
+   * When computing islands and resin traps together, they will not compute in parallel anymore to prevent CPU and tasks exaustion, it will calculate islands first and then resin traps, this should also speed up the process on weaker machines
+   * Gather resin trap areas together when computing for other issues to spare a decoding cycle latter
+   * When using a threshold for islands detection it was also appling it to the overhangs
+   * Fix the spare decoding conditional cycle for partial scans
+   * Change resin trap search from parallel to sync to prevent fake detections and missing joints at cost of speed (#13)
+* **Tools:**
+   * Add layer selector: 'From first to current layer' and 'From current to last layer'
+   * I printed this file: Multiplier - Number of time(s) the file has been printed. Half numbers can be used to consume from a failed print. Example: 0.5x if a print canceled at 50% progress
+   * Pixel dimming: Increase wall thickness default from 5px to 10px
+   * Import layers: Importing layers was not marking layers as modified, then the save file won't save the new images in, to prevent other similar bugs, all layers that got replaced will be auto marked as modified
+
 ## 05/03/2021 - v2.6.2
 
 * (Add) Edit print paramenters: Option to enable or disable the 'Propagate modifications to layers' when working with global parameters
 * (Change) PrusaSlicer printer: Auto convert format from ctb to photon for Anycubic Photon
 * **(Fix) Change resolution:**
    * It was placing the object on random layers on the wrong position, shifting the object
-   * Add informaton on the too description to warn about diferent pixel pitch for target printer
+   * Add informaton on the tool description to warn about diferent pixel pitch for target printer
    * Add current pixel pitch in microns if available
 * (Fix) Exposure time finder: Multiple exposures was getting bottom and normal time from base file instead of commum properties fields
 

@@ -5,7 +5,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolIPrintedThisFileControl">
   
-    <Grid RowDefinitions="Auto,10,Auto,10,Auto" 
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto" 
           ColumnDefinitions="Auto,10,Auto">
         <TextBlock Grid.Row="0" Grid.Column="0"
                    VerticalAlignment="Center"
@@ -47,6 +47,23 @@
                        Value="{Binding Operation.PrintTime}"/>
         <TextBlock VerticalAlignment="Center"
                    Text="{Binding Operation.PrintTimeHours, StringFormat=s / {0:N4}h}"/>
+        </StackPanel>
+
+        <TextBlock Grid.Row="6" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Number of time(s) the file has been printed.
+&#x0a;Half numbers can be used to consume from a failed print. Example: 0.5x if a print canceled at 50% progress."
+                   Text="Multiplier:"/>
+
+      <StackPanel Grid.Row="6" Grid.Column="2"
+                    Orientation="Horizontal" Spacing="5">
+            <NumericUpDown Minimum="0.01"
+                           Maximum="500"
+                           Increment="1"
+                           MinWidth="200"
+                           Value="{Binding Operation.Multiplier}"/>
+            <TextBlock VerticalAlignment="Center"
+                       Text="time(s)"/>
         </StackPanel>
     </Grid>
 

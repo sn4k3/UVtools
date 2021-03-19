@@ -207,8 +207,8 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("lgs", "Longer Orange 10"),
-            new FileExtension("lgs30", "Longer Orange 30"),
+            new ("lgs", "Longer Orange 10"),
+            new ("lgs30", "Longer Orange 30"),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
@@ -217,12 +217,12 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.BottomExposureSeconds,
             PrintParameterModifier.ExposureSeconds,
 
-            PrintParameterModifier.BottomLightOffDelay,
-            PrintParameterModifier.LightOffDelay,
             PrintParameterModifier.BottomLiftHeight,
             PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.BottomLightOffDelay,
+            PrintParameterModifier.LightOffDelay,
         };
 
         public override byte ThumbnailsCount { get; } = 1;
@@ -298,108 +298,90 @@ namespace UVtools.Core.FileFormats
             get => HeaderSettings.LayerHeight;
             set
             {
-                HeaderSettings.LayerHeight = value;
+                HeaderSettings.LayerHeight = Layer.RoundHeight(value);
                 RaisePropertyChanged();
             }
         }
 
         public override uint LayerCount
         {
-            set
-            {
-                HeaderSettings.LayerCount = LayerCount;
-                RaisePropertyChanged();
-                RaisePropertyChanged(nameof(NormalLayerCount));
-            }
+            get => base.LayerCount;
+            set => base.LayerCount = HeaderSettings.LayerCount = base.LayerCount;
         }
 
         public override ushort BottomLayerCount
         {
-            get => (ushort)(HeaderSettings.BottomHeight / LayerHeight);
+            get => (ushort) (HeaderSettings.BottomHeight / LayerHeight);
             set
             {
                 HeaderSettings.BottomHeight = value * LayerHeight;
-                RaisePropertyChanged();
+                base.BottomLayerCount = value;
             }
         }
 
         public override float BottomExposureTime
         {
-            get => (float)Math.Round(HeaderSettings.BottomExposureTimeMs / 1000, 2);
+            get => TimeExtensions.MillisecondsToSeconds(HeaderSettings.BottomExposureTimeMs);
             set
             {
-                HeaderSettings.BottomExposureTimeMs = value * 1000;
-                RaisePropertyChanged();
+                HeaderSettings.BottomExposureTimeMs = TimeExtensions.SecondsToMilliseconds(value);
+                base.BottomExposureTime = value;
             }
         }
 
         public override float ExposureTime
         {
-            get => (float)Math.Round(HeaderSettings.ExposureTimeMs / 1000, 2);
+            get => TimeExtensions.MillisecondsToSeconds(HeaderSettings.ExposureTimeMs);
             set
             {
-                HeaderSettings.ExposureTimeMs = value * 1000;
-                RaisePropertyChanged();
-            }
-        }
-
-        public override float BottomLightOffDelay
-        {
-            get => HeaderSettings.BottomLightOffDelayMs;
-            set
-            {
-                HeaderSettings.BottomLightOffDelayMs = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public override float LightOffDelay
-        {
-            get => HeaderSettings.LightOffDelayMs;
-            set
-            {
-                HeaderSettings.LightOffDelayMs = value;
-                RaisePropertyChanged();
+                HeaderSettings.ExposureTimeMs = TimeExtensions.SecondsToMilliseconds(value);
+                base.ExposureTime = value;
             }
         }
 
         public override float BottomLiftHeight
         {
             get => HeaderSettings.BottomLiftHeight;
-            set
-            {
-                HeaderSettings.BottomLiftHeight = value;
-                RaisePropertyChanged();
-            }
+            set => base.BottomLiftHeight = HeaderSettings.BottomLiftHeight = value;
         }
 
         public override float LiftHeight
         {
             get => HeaderSettings.LiftHeight;
-            set
-            {
-                HeaderSettings.LiftHeight = value;
-                RaisePropertyChanged();
-            }
+            set => base.LiftHeight = HeaderSettings.LiftHeight = value;
         }
 
         public override float BottomLiftSpeed
         {
             get => HeaderSettings.BottomLiftSpeed;
-            set
-            {
-                HeaderSettings.BottomLiftSpeed = HeaderSettings.BottomLiftSpeed_ = value;
-                RaisePropertyChanged();
-            }
+            set => base.BottomLiftSpeed = HeaderSettings.BottomLiftSpeed = HeaderSettings.BottomLiftSpeed_ = value;
         }
 
         public override float LiftSpeed
         {
             get => HeaderSettings.LiftSpeed;
+            set => base.LiftSpeed = HeaderSettings.LiftSpeed = HeaderSettings.LiftSpeed_ = value;
+        }
+
+        public override float RetractSpeed => LiftSpeed;
+
+        public override float BottomLightOffDelay
+        {
+            get => TimeExtensions.MillisecondsToSeconds(HeaderSettings.BottomLightOffDelayMs);
             set
             {
-                HeaderSettings.LiftSpeed = HeaderSettings.LiftSpeed_ = value;
-                RaisePropertyChanged();
+                HeaderSettings.BottomLightOffDelayMs = TimeExtensions.SecondsToMilliseconds(value);
+                base.BottomLightOffDelay = value;
+            }
+        }
+
+        public override float LightOffDelay
+        {
+            get => TimeExtensions.MillisecondsToSeconds(HeaderSettings.LightOffDelayMs);
+            set
+            {
+                HeaderSettings.LightOffDelayMs = TimeExtensions.SecondsToMilliseconds(value);
+                base.LightOffDelay = value;
             }
         }
 
@@ -411,7 +393,7 @@ namespace UVtools.Core.FileFormats
 
         public override string MaterialName => "Unknown";
         public override string MachineName => null;*/
-        
+
         public override object[] Configs => new object[] { HeaderSettings };
 
         #endregion

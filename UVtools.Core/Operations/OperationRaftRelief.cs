@@ -242,35 +242,34 @@ namespace UVtools.Core.Operations
             Parallel.For(_ignoreFirstLayers, firstSupportLayerIndex, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
-                using (Mat dst = SlicerFile[layerIndex].LayerMat)
-                {
-                    var target = GetRoiOrDefault(dst);
+                using var result = SlicerFile[layerIndex].LayerMat;
+                using var original = result.Clone();
+                var target = GetRoiOrDefault(result);
 
-                    switch (ReliefType)
-                    {
-                        case RaftReliefTypes.Relief:
-                        case RaftReliefTypes.Dimming:
-                            using (Mat mask = new Mat())
-                            {
-                                /*CvInvoke.Subtract(target, supportsMat, mask);
+                switch (ReliefType)
+                {
+                    case RaftReliefTypes.Relief:
+                    case RaftReliefTypes.Dimming:
+                        using (Mat mask = new Mat())
+                        {
+                            /*CvInvoke.Subtract(target, supportsMat, mask);
                                 CvInvoke.Erode(mask, mask, kernel, anchor, operation.WallMargin, BorderType.Reflect101, new MCvScalar());
                                 CvInvoke.Subtract(target, patternMat, target, mask);*/
 
-                                CvInvoke.Erode(target, mask, kernel, anchor, WallMargin, BorderType.Reflect101,
-                                    default);
-                                CvInvoke.Subtract(mask, supportsMat, mask);
-                                CvInvoke.Subtract(target, patternMat, target, mask);
-                            }
+                            CvInvoke.Erode(target, mask, kernel, anchor, WallMargin, BorderType.Reflect101,
+                                default);
+                            CvInvoke.Subtract(mask, supportsMat, mask);
+                            CvInvoke.Subtract(target, patternMat, target, mask);
+                        }
 
-                            break;
-                        case RaftReliefTypes.Decimate:
-                            supportsMat.CopyTo(target);
-                            break;
-                    }
-
-
-                    SlicerFile[layerIndex].LayerMat = dst;
+                        break;
+                    case RaftReliefTypes.Decimate:
+                        supportsMat.CopyTo(target);
+                        break;
                 }
+
+                ApplyMask(original, result);
+                SlicerFile[layerIndex].LayerMat = result;
 
                 lock (progress.Mutex)
                 {

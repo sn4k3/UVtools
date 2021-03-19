@@ -851,7 +851,7 @@
                     Grid.Row="4"
                     Grid.Column="2"
                     Minimum="1"
-                    Maximum="255"
+                    Maximum="4000"
                     
                     HorizontalAlignment="Stretch"
                     Value="{Binding DrawingPixelDrawing.BrushSize}"/>
@@ -1567,7 +1567,7 @@
     <Grid 
       IsEnabled="{Binding IsFileLoaded}" 
       DockPanel.Dock="Right" 
-      ColumnDefinitions="150" 
+      ColumnDefinitions="160" 
       RowDefinitions="Auto,Auto,*,Auto,Auto,Auto,Auto"  Margin="5">
       <TextBlock
         Text="{Binding MaximumLayerString}"
@@ -1709,13 +1709,47 @@
             IsChecked="{Binding ShowLayerImageRotated}"
             HotKey="Ctrl + R"
             VerticalAlignment="Stretch"
-            ToolTip.Tip="Auto rotate layer preview image at 90º (This can slow down the layer preview) [CTRL+R]"
-          >
+            ToolTip.Tip="Auto rotate layer preview image at 90º (This can slow down the layer preview) [CTRL+R]">
+              <Button.ContextMenu>
+                  <ContextMenu PlacementMode="Bottom">
+                      <RadioButton
+                          GroupName="ShowLayerImageRotateDirection"
+                          IsChecked="{Binding ShowLayerImageRotateCWDirection}"
+                          Content="90º Clockwise (CW)"/>
+                      <RadioButton
+                        GroupName="ShowLayerImageRotateDirection"
+                          IsChecked="{Binding ShowLayerImageRotateCCWDirection}"
+                          Content="90º Counter-clockwise (CCW)"/>
+                  </ContextMenu>
+              </Button.ContextMenu>
             <StackPanel Orientation="Horizontal">
               <Image Source="/Assets/Icons/undo-alt-16x16.png"/>
-              <TextBlock Margin="5,0,5,0" Text="Rotate"/>
+              <TextBlock Margin="5,0,5,0" Text="Rotate ⮟"/>
             </StackPanel>
           </ToggleButton>
+
+
+            <ToggleButton
+                IsChecked="{Binding ShowLayerImageFlipped}"
+                HotKey="Ctrl + F"
+                VerticalAlignment="Stretch"
+                ToolTip.Tip="Auto flip layer preview image (This can slow down the layer preview) [CTRL+F]">
+                <Button.ContextMenu>
+                    <ContextMenu PlacementMode="Bottom">
+                        <CheckBox
+                            IsChecked="{Binding ShowLayerImageFlippedHorizontally}"
+                            Content="Horizontally"/>
+                        <CheckBox
+                            IsChecked="{Binding ShowLayerImageFlippedVertically}"
+                            Content="Vertically"/>
+                    </ContextMenu>
+                </Button.ContextMenu>
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="/Assets/Icons/flip-16x16.png"/>
+                    <TextBlock Margin="5,0,5,0" Text="Flip ⮟"/>
+                </StackPanel>
+            </ToggleButton>
+
 
           <ToggleButton
             IsChecked="{Binding ShowLayerImageDifference}"
@@ -1894,7 +1928,8 @@
             Command="{Binding OnROIClick}"
             ToolTip.Tip="Region of interest selection over layer.
 &#x0a;(NS): Not selected
-&#x0a;Click: go to region | ESC: Clear ROI"
+&#x0a;Click: go to region
+&#x0a;ESC: Clear ROI &amp; Masks | ESC + Shift: Clear ROI"
           >
             <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
               <Image Source="/Assets/Icons/object-group-16x16.png"/>

@@ -121,7 +121,7 @@ namespace UVtools.Core.Operations
             get => _layerHeight;
             set
             {
-                if(!RaiseAndSetIfChanged(ref _layerHeight, Math.Round(value, 2))) return;
+                if(!RaiseAndSetIfChanged(ref _layerHeight, Layer.RoundHeight(value))) return;
                 RaisePropertyChanged(nameof(BottomHeight));
                 RaisePropertyChanged(nameof(InterfaceHeight));
                 RaisePropertyChanged(nameof(NormalHeight));
@@ -169,9 +169,9 @@ namespace UVtools.Core.Operations
 
         public uint LayerCount => (uint) (_bottomLayers + _interfaceLayers + _normalLayers);
 
-        public decimal BottomHeight => Math.Round(LayerHeight * _bottomLayers, 2);
-        public decimal InterfaceHeight => Math.Round(LayerHeight * _interfaceLayers, 2);
-        public decimal NormalHeight => Math.Round(LayerHeight * _normalLayers, 2);
+        public decimal BottomHeight => Layer.RoundHeight(LayerHeight * _bottomLayers);
+        public decimal InterfaceHeight => Layer.RoundHeight(LayerHeight * _interfaceLayers);
+        public decimal NormalHeight => Layer.RoundHeight(LayerHeight * _normalLayers);
 
         public decimal TotalHeight => BottomHeight + InterfaceHeight + NormalHeight;
 

@@ -65,6 +65,12 @@ namespace UVtools.Core.Objects
             return true;
         }
 
+        protected void RaiseAndSet<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        {
+            field = value;
+            RaisePropertyChanged(propertyName);
+        }
+
 
         protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
         {

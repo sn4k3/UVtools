@@ -265,90 +265,44 @@ namespace UVtools.Core.FileFormats
             get => (float) Math.Round(HeaderSettings.LayerHeight);
             set
             {
-                HeaderSettings.LayerHeight = (float)Math.Round(value, 2);
+                HeaderSettings.LayerHeight = Layer.RoundHeight(value);
                 RaisePropertyChanged();
             }
         }
 
         public override uint LayerCount
         {
-            set
-            {
-                LayerSettings.LayerCount = LayerCount;
-                RaisePropertyChanged();
-                RaisePropertyChanged(nameof(NormalLayerCount));
-            }
+            get => base.LayerCount;
+            set => base.LayerCount = LayerSettings.LayerCount = LayerCount;
         }
 
         public override ushort BottomLayerCount
         {
             get => (ushort) HeaderSettings.BottomLayerCount;
-            set
-            {
-                HeaderSettings.BottomLayerCount = value;
-                RaisePropertyChanged();
-            }
+            set => base.BottomLayerCount = (ushort) (HeaderSettings.BottomLayerCount = value);
         }
 
         public override float BottomExposureTime
         {
             get => (float) HeaderSettings.BottomExposureSeconds;
-            set
-            {
-                HeaderSettings.BottomExposureSeconds = value;
-                RaisePropertyChanged();
-            }
+            set => base.BottomExposureTime = (float) (HeaderSettings.BottomExposureSeconds = value);
         }
 
         public override float ExposureTime
         {
-            get => (float)HeaderSettings.ExposureSeconds;
-            set
-            {
-                HeaderSettings.ExposureSeconds = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            get => (float) HeaderSettings.ExposureSeconds;
+            set => base.ExposureTime = (float) (HeaderSettings.ExposureSeconds = Math.Round(value, 2));
         }
 
-        public override float LightOffDelay
-        {
-            get => (float) HeaderSettings.LightOffDelay;
-            set
-            {
-                HeaderSettings.LightOffDelay = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
-        }
-
-        /*public override float BottomLiftHeight
-        {
-            get => HeaderSettings.BottomLiftHeight;
-            set
-            {
-                HeaderSettings.BottomLiftHeight = value;
-                RaisePropertyChanged();
-            }
-        }*/
-
+        public override float BottomLiftHeight => LightOffDelay;
+        
         public override float LiftHeight
         {
             get => (float) HeaderSettings.LiftHeight;
-            set
-            {
-                HeaderSettings.LiftHeight = (float)Math.Round(value, 2);
-                RaisePropertyChanged();
-            }
+            set => base.LiftHeight = (float) (HeaderSettings.LiftHeight = Math.Round(value, 2));
         }
 
-        /*public override float BottomLiftSpeed
-        {
-            get => HeaderSettings.BottomLiftSpeed;
-            set
-            {
-                HeaderSettings.BottomLiftSpeed = HeaderSettings.BottomLiftSpeed_ = value;
-                RaisePropertyChanged();
-            }
-        }*/
+        public override float BottomLiftSpeed => LiftSpeed;
 
         public override float LiftSpeed
         {
@@ -356,7 +310,7 @@ namespace UVtools.Core.FileFormats
             set
             {
                 HeaderSettings.LiftSpeed = Math.Round(value / 60.0, 2);
-                RaisePropertyChanged();
+                base.LiftSpeed = value;
             }
         }
 
@@ -365,12 +319,20 @@ namespace UVtools.Core.FileFormats
             get => (float)Math.Round(HeaderSettings.RetractSpeed * 60.0, 2);
             set
             {
-                HeaderSettings.RetractSpeed = Math.Round(value / 60.0, 2);
-                RaisePropertyChanged();
+                HeaderSettings.RetractSpeed = (float) Math.Round(value / 60.0, 2);
+                base.RetractSpeed = value;
             }
         }
 
+        public override float BottomLightOffDelay => LightOffDelay;
 
+        public override float LightOffDelay
+        {
+            get => (float)HeaderSettings.LightOffDelay;
+            set => base.LightOffDelay = (float)(HeaderSettings.LightOffDelay = Math.Round(value, 2));
+        }
+
+        
         public override float MaterialMilliliters
         {
             get => base.MaterialMilliliters;
@@ -501,9 +463,6 @@ namespace UVtools.Core.FileFormats
                 {
                     throw new FileLoadException("Not a valid PHOTONS file! TAGs doesn't match", fileFullPath);
                 }
-
-                HeaderSettings.LayerHeight = Math.Round(HeaderSettings.LayerHeight, 2);
-                HeaderSettings.VolumeMl = Math.Round(HeaderSettings.VolumeMl, 2);
 
                 int previewSize = (int) (HeaderSettings.PreviewResolutionX * HeaderSettings.PreviewResolutionY * 2);
                 byte[] previewData = new byte[previewSize];

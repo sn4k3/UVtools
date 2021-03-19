@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Timers;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
@@ -25,6 +24,10 @@ namespace UVtools.Core
     /// </summary>
     public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     {
+        #region Constants
+        public const byte HeightPrecision = 3;
+        #endregion
+
         #region Members
         private byte[] _compressedBytes;
         private uint _nonZeroPixelCount;
@@ -65,6 +68,11 @@ namespace UVtools.Core
                 MaterialMilliliters = 0; // Recalculate
             }
         }
+
+        /// <summary>
+        /// Gets if this layer is empty/all black pixels
+        /// </summary>
+        public bool IsEmpty => _nonZeroPixelCount == 0;
 
         public float ExposureMillimeters
         {
@@ -196,6 +204,11 @@ namespace UVtools.Core
         }
 
         /// <summary>
+        /// Gets if this layer can be exposed to UV light
+        /// </summary>
+        public bool CanExpose => _exposureTime > 0 && _lightPwm > 0;
+
+        /// <summary>
         /// Gets or sets the layer position on Z in mm
         /// </summary>
         public float PositionZ
@@ -220,7 +233,7 @@ namespace UVtools.Core
 
                 while ((previousLayer = previousLayer.PreviousLayer()) is not null) // This cycle returns the correct layer height if two or more layers have the same position z
                 {
-                    var layerHeight = (float)Math.Round(_positionZ - previousLayer.PositionZ, 2);
+                    var layerHeight = RoundHeight(_positionZ - previousLayer.PositionZ);
                     //Debug.WriteLine($"Layer {_index}-{previousLayer.Index}: {_positionZ} - {previousLayer.PositionZ}: {layerHeight}");
                     if (layerHeight == 0f) continue;
                     if (layerHeight < 0f) break;
@@ -503,12 +516,10 @@ namespace UVtools.Core
                 needDispose = true;
             }
 
-            using (var nonZeroMat = new Mat())
-            {
-                CvInvoke.FindNonZero(mat, nonZeroMat);
-                NonZeroPixelCount = (uint)nonZeroMat.Height;
-                BoundingRectangle = NonZeroPixelCount > 0 ? CvInvoke.BoundingRectangle(nonZeroMat) : Rectangle.Empty;
-            }
+            using var nonZeroMat = new Mat();
+            CvInvoke.FindNonZero(mat, nonZeroMat);
+            NonZeroPixelCount = (uint)nonZeroMat.Height;
+            BoundingRectangle = NonZeroPixelCount > 0 ? CvInvoke.BoundingRectangle(nonZeroMat) : Rectangle.Empty;
 
 
             if (needDispose) mat.Dispose();
@@ -779,7 +790,17 @@ namespace UVtools.Core
                 MaterialMilliliters = _materialMilliliters
             };
         }
+        #endregion
 
+        #region Static Methods
+
+        public static float RoundHeight(float height) => (float) Math.Round(height, HeightPrecision);
+        public static double RoundHeight(double height) => Math.Round(height, HeightPrecision);
+        public static decimal RoundHeight(decimal height) => Math.Round(height, HeightPrecision);
+
+        public static string ShowHeight(float height) => string.Format($"{{0:F{HeightPrecision}}}", height);
+        public static string ShowHeight(double height) => string.Format($"{{0:F{HeightPrecision}}}", height);
+        public static string ShowHeight(decimal height) => string.Format($"{{0:F{HeightPrecision}}}", height);
 
         #endregion
     }

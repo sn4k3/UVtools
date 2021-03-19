@@ -146,7 +146,7 @@ namespace UVtools.Core.Operations
             get => _layerHeight;
             set
             {
-                if(!RaiseAndSetIfChanged(ref _layerHeight, Math.Round(value, 2))) return;
+                if(!RaiseAndSetIfChanged(ref _layerHeight, Layer.RoundHeight(value))) return;
                 RaisePropertyChanged(nameof(BottomLayersMM));
                 RaisePropertyChanged(nameof(LayerCount));
                 RaisePropertyChanged(nameof(RealZSize));
@@ -166,7 +166,7 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public decimal BottomLayersMM => Math.Round(LayerHeight * BottomLayers, 2);
+        public decimal BottomLayersMM => Layer.RoundHeight(LayerHeight * BottomLayers);
 
         public decimal BottomExposure
         {

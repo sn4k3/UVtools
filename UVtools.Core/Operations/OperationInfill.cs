@@ -155,9 +155,10 @@ namespace UVtools.Core.Operations
             var infillColor = new MCvScalar(InfillBrightness);
 
             Mat patternMask = null;
-            using Mat erode = new Mat();
-            using Mat diff = new Mat();
+            using Mat erode = new ();
+            using Mat diff = new ();
             Mat target = GetRoiOrDefault(mat);
+            using var mask = GetMask(mat);
 
              
             if (InfillType == InfillAlgorithm.Cubic ||
@@ -304,8 +305,8 @@ namespace UVtools.Core.Operations
             CvInvoke.Subtract(target, erode, diff);
 
 
-            CvInvoke.BitwiseAnd(erode, patternMask, target);
-            CvInvoke.Add(target, diff, target);
+            CvInvoke.BitwiseAnd(erode, patternMask, target, mask);
+            CvInvoke.Add(target, diff, target, mask);
             patternMask?.Dispose();
 
             return true;

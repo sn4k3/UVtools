@@ -65,7 +65,7 @@
                              Value="{Binding Operation.Brightness}"/>
               <TextBlock
                          VerticalAlignment="Center"
-                         Text="{Binding Operation.BrightnessPercent, StringFormat=\{0:0.00\}%}"/>
+                         Text="{Binding Operation.BrightnessPercent, StringFormat=\{0:F2\}%}"/>
             </StackPanel>
            
       </Grid>

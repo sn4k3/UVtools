@@ -36,8 +36,8 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Members
-        private uint _wallThicknessStart = 5;
-        private uint _wallThicknessEnd = 5;
+        private uint _wallThicknessStart = 10;
+        private uint _wallThicknessEnd = 10;
         private bool _wallsOnly;
         private bool _chamfer;
         private Matrix<byte> _pattern;
@@ -613,7 +613,8 @@ namespace UVtools.Core.Operations
 
             using Mat erode = new Mat();
             using Mat diff = new Mat();
-            Mat target = GetRoiOrDefault(mat);
+            var target = GetRoiOrDefault(mat);
+            using var mask = GetMask(mat);
 
 
             CvInvoke.Erode(target, erode, kernel, anchor, wallThickness, BorderType.Reflect101, default);
@@ -622,13 +623,13 @@ namespace UVtools.Core.Operations
 
             if (WallsOnly)
             {
-                CvInvoke.BitwiseAnd(diff, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target);
-                CvInvoke.Add(erode, target, target);
+                CvInvoke.BitwiseAnd(diff, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, mask);
+                CvInvoke.Add(erode, target, target, mask);
             }
             else
             {
-                CvInvoke.BitwiseAnd(erode, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target);
-                CvInvoke.Add(target, diff, target);
+                CvInvoke.BitwiseAnd(erode, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, mask);
+                CvInvoke.Add(target, diff, target, mask);
             }
 
             return true;

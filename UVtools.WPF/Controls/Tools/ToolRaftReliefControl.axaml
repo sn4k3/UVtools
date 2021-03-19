@@ -67,7 +67,7 @@ you must manually input the layer index of the last raft where it ends and suppo
     <TextBlock
         Grid.Row="6" Grid.Column="4"
         IsVisible="{Binding !Operation.IsDecimate}"
-        Text="{Binding Operation.BrightnessPercent, StringFormat=\{0:0.00\}%}" VerticalAlignment="Center"/>
+        Text="{Binding Operation.BrightnessPercent, StringFormat=\{0:F2\}%}" VerticalAlignment="Center"/>
 
 
 

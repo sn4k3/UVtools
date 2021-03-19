@@ -215,8 +215,10 @@ namespace UVtools.Core.Operations
                 yScale = (decimal) arguments[1];
             }
 
+            using var original = mat.Clone();
             var target = GetRoiOrDefault(mat);
             target.TransformFromCenter((double) xScale, (double) yScale);
+            ApplyMask(original, mat);
             return true;
         }
 
