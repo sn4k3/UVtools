@@ -299,12 +299,10 @@ namespace UVtools.Core.Operations
                 }
             }
 
-
             CvInvoke.Erode(target, erode, kernel, anchor, WallThickness, BorderType.Reflect101,
                 default);
             CvInvoke.Subtract(target, erode, diff);
-
-
+            
             CvInvoke.BitwiseAnd(erode, patternMask, target, mask);
             CvInvoke.Add(target, diff, target, mask);
             patternMask?.Dispose();

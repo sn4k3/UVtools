@@ -43,9 +43,15 @@ namespace UVtools.Core
             {
                 _layers = value;
                 BoundingRectangle = Rectangle.Empty;
-                SlicerFile.LayerCount = Count;
+
+                if (SlicerFile.LayerCount != Count)
+                {
+                    SlicerFile.LayerCount = Count;
+                }
+
                 SlicerFile.RequireFullEncode = true;
                 if (value is null) return;
+                SetAllIsModified(true);
                 SlicerFile.PrintTime = SlicerFile.PrintTimeComputed;
                 SlicerFile.RebuildGCode();
             }
@@ -1073,7 +1079,6 @@ namespace UVtools.Core
                                     layerHollowAreas.TryAdd(layer.Index, listHollowArea);
                             }
                         }
-
                     }
 
                     progress.LockAndIncrement();
@@ -1083,6 +1088,8 @@ namespace UVtools.Core
             if (resinTrapConfig.Enabled)
             {
                 progress.Reset(OperationProgress.StatusResinTraps, Count);
+
+
 
                 for (uint layerIndex = 1; layerIndex < Count - 1; layerIndex++) // First and Last layers, always drains
                 {
@@ -1470,13 +1477,14 @@ namespace UVtools.Core
         
 
         /// <summary>
-        /// Desmodify all layers
+        /// Set the IsModified property for all layers
         /// </summary>
-        public void Desmodify()
+        public void SetAllIsModified(bool isModified)
         {
             for (uint i = 0; i < Count; i++)
             {
-                Layers[i].IsModified = false;
+                if(Layers[i] is null) continue;
+                Layers[i].IsModified = isModified;
             }
         }
 
@@ -1504,20 +1512,19 @@ namespace UVtools.Core
         /// <returns></returns>
         public void Reallocate(uint insertAtLayerIndex, uint layerCount, bool initBlack = false)
         {
-            var layers = Layers;
-            Layers = new Layer[Count + layerCount];
+            var newLayers = new Layer[Count + layerCount];
 
             // Rearrange
             for (uint layerIndex = 0; layerIndex < insertAtLayerIndex; layerIndex++)
             {
-                Layers[layerIndex] = layers[layerIndex];
+                newLayers[layerIndex] = _layers[layerIndex];
             }
 
             // Rearrange
-            for (uint layerIndex = insertAtLayerIndex; layerIndex < layers.Length; layerIndex++)
+            for (uint layerIndex = insertAtLayerIndex; layerIndex < _layers.Length; layerIndex++)
             {
-                Layers[layerCount + layerIndex] = layers[layerIndex];
-                Layers[layerCount + layerIndex].Index = layerCount + layerIndex;
+                newLayers[layerCount + layerIndex] = _layers[layerIndex];
+                newLayers[layerCount + layerIndex].Index = layerCount + layerIndex;
             }
 
             // Allocate new layers
@@ -1525,28 +1532,28 @@ namespace UVtools.Core
             {
                 Parallel.For(insertAtLayerIndex, insertAtLayerIndex + layerCount, layerIndex =>
                 {
-                    Layers[layerIndex] = new Layer((uint) layerIndex, EmguExtensions.InitMat(SlicerFile.Resolution), this);
+                    newLayers[layerIndex] = new Layer((uint) layerIndex, EmguExtensions.InitMat(SlicerFile.Resolution), this);
                 });
             }
             /*for (uint layerIndex = insertAtLayerIndex; layerIndex < insertAtLayerIndex + layerCount; layerIndex++)
             {
                 Layers[layerIndex] = initBlack ? new Layer(layerIndex, EmguExtensions.InitMat(SlicerFile.Resolution), this) : null;
             }*/
+            Layers = newLayers;
         }
 
         public void ReallocateRange(uint startLayerIndex, uint endLayerIndex)
         {
-            var layers = Layers;
             if ((int)(endLayerIndex - startLayerIndex) < 0) return;
-            Layers = new Layer[1 + endLayerIndex - startLayerIndex];
+            var newLayers = new Layer[1 + endLayerIndex - startLayerIndex];
 
             uint currentLayerIndex = 0;
             for (uint layerIndex = startLayerIndex; layerIndex <= endLayerIndex; layerIndex++)
             {
-                Layers[currentLayerIndex++] = layers[layerIndex];
+                newLayers[currentLayerIndex++] = _layers[layerIndex];
             }
-            
-            BoundingRectangle = Rectangle.Empty;
+
+            Layers = newLayers;
         }
 
         /// <summary>

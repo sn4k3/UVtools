@@ -26,7 +26,7 @@ namespace UVtools.Core.Extensions
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static uint SecondsToMillisecondsUint(float value) => (uint)value * 1000;
+        public static uint SecondsToMillisecondsUint(float value) => (uint)(value * 1000f);
 
         /// <summary>
         /// Converts milliseconds to seconds

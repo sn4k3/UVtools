@@ -83,22 +83,41 @@ Take **[Erode-Bottom.ps1](https://github.com/sn4k3/UVtools/blob/master/UVtools.S
     $morph.MorphOperation = [Emgu.CV.CvEnum.MorphOp]::Erode
     $morph.IterationsStart = $iterations
     $morph.SelectBottomLayers()
+    $validation = $morph.Validate()
+    if(![string]::IsNullOrEmpty($validation)) {
+        Write-Error $validation
+        return
+    }
     if(!$morph.Execute($progress)){ return }
 
     # Reuse object and erode normal layers with 1 less iteration
     $morph.IterationsStart = $iterations - 1
     $morph.SelectNormalLayers()
+    if(![string]::IsNullOrEmpty($validation)) {
+        Write-Error $validation
+        return
+    }
     if(!$morph.Execute($progress)){ return }
 
     # Rotate all layers, 45º
     $rotate = [UVtools.Core.Operations.OperationRotate]::new($slicerFile)
     $rotate.AngleDegrees = 45;
+    $validation = $rotate.Validate()
+    if(![string]::IsNullOrEmpty($validation)) {
+        Write-Error $validation
+        return
+    }
     if(!$rotate.Execute($progress)){ return }
 
     # Rotate layer 1, 90º
     $rotate.LayerIndexStart = 1
     $rotate.LayerIndexEnd = 1
     $rotate.AngleDegrees = 90
+    $validation = $rotate.Validate()
+    if(![string]::IsNullOrEmpty($validation)) {
+        Write-Error $validation
+        return
+    }
     if(!$rotate.Execute($progress)){ return }
     ```
 

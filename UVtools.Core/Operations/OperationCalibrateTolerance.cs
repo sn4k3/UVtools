@@ -730,7 +730,7 @@ namespace UVtools.Core.Operations
 
             Parallel.For(0, LayerCount, layerIndex =>
             {
-                newLayers[layerIndex] = new Layer((uint)layerIndex, layers[layerIndex], SlicerFile.LayerManager);
+                newLayers[layerIndex] = new Layer((uint)layerIndex, layers[layerIndex], SlicerFile.LayerManager) {IsModified = true};
                 layers[layerIndex].Dispose();
                 lock (progress)
                 {
@@ -741,15 +741,15 @@ namespace UVtools.Core.Operations
             if (SlicerFile.ThumbnailsCount > 0)
                 SlicerFile.SetThumbnails(GetThumbnail());
 
-            SlicerFile.SuppressRebuildProperties = true;
-            SlicerFile.LayerHeight = (float)LayerHeight;
-            SlicerFile.BottomExposureTime = (float)BottomExposure;
-            SlicerFile.ExposureTime = (float)NormalExposure;
-            SlicerFile.BottomLayerCount = BottomLayers;
-            SlicerFile.LayerManager.Layers = newLayers;
-            SlicerFile.LayerManager.RebuildLayersProperties();
-            SlicerFile.SuppressRebuildProperties = false;
-
+            SlicerFile.SuppressRebuildPropertiesWork(() =>
+            {
+                SlicerFile.LayerHeight = (float)LayerHeight;
+                SlicerFile.BottomExposureTime = (float)BottomExposure;
+                SlicerFile.ExposureTime = (float)NormalExposure;
+                SlicerFile.BottomLayerCount = BottomLayers;
+                SlicerFile.LayerManager.Layers = newLayers;
+            }, true);
+            
             var moveOp = new OperationMove(SlicerFile);
             moveOp.Execute(progress);
 

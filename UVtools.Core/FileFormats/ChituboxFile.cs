@@ -1589,6 +1589,7 @@ namespace UVtools.Core.FileFormats
 
                 this[layerIndex] = layer;
 
+                
                 lock (progress.Mutex)
                 {
                     progress++;

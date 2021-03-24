@@ -655,11 +655,12 @@ namespace UVtools.Core.Operations
                 ReUseLayer(layerIndex);
             }
 
-            SlicerFile.SuppressRebuildProperties = true;
-            SlicerFile.LayerManager.Layers = layers.ToArray();
-            SlicerFile.LayerManager.RebuildLayersProperties(false);
+            SlicerFile.SuppressRebuildPropertiesWork(() =>
+            {
+                SlicerFile.LayerManager.Layers = layers.ToArray();
+            }, true, false);
 
-            // Set exposures times
+            // Set exposures times per layer
             var exposureDictionary = ExposureTableDictionary;
             for (uint layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
             {
@@ -693,8 +694,6 @@ namespace UVtools.Core.Operations
                 Debug.WriteLine(layer.Index);
             }*/
 
-            SlicerFile.SuppressRebuildProperties = false;
-            
             report.NewLayerCount = SlicerFile.LayerCount;
             report.NewPrintTime = SlicerFile.PrintTime;
             Tag = report;

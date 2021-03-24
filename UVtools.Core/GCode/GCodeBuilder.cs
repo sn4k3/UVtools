@@ -756,30 +756,30 @@ namespace UVtools.Core.GCode
 
             if (rebuildGlobalTable)
             {
-                slicerFile.SuppressRebuildProperties = true;
-                var bottomLayer = slicerFile[0];
-                if (bottomLayer is not null)
+                slicerFile.SuppressRebuildPropertiesWork(() =>
                 {
-                    if (bottomLayer.ExposureTime > 0) slicerFile.BottomExposureTime = bottomLayer.ExposureTime;
-                    if (bottomLayer.LiftHeight > 0) slicerFile.BottomLiftHeight = bottomLayer.LiftHeight;
-                    if (bottomLayer.LiftSpeed > 0) slicerFile.BottomLiftSpeed = bottomLayer.LiftSpeed;
-                    if (bottomLayer.RetractSpeed > 0) slicerFile.RetractSpeed = bottomLayer.RetractSpeed;
-                    if (bottomLayer.LightOffDelay > 0) slicerFile.BottomLightOffDelay = bottomLayer.LightOffDelay;
-                    if (bottomLayer.LightPWM > 0) slicerFile.BottomLightPWM = bottomLayer.LightPWM;
-                }
+                    var bottomLayer = slicerFile[0];
+                    if (bottomLayer is not null)
+                    {
+                        if (bottomLayer.ExposureTime > 0) slicerFile.BottomExposureTime = bottomLayer.ExposureTime;
+                        if (bottomLayer.LiftHeight > 0) slicerFile.BottomLiftHeight = bottomLayer.LiftHeight;
+                        if (bottomLayer.LiftSpeed > 0) slicerFile.BottomLiftSpeed = bottomLayer.LiftSpeed;
+                        if (bottomLayer.RetractSpeed > 0) slicerFile.RetractSpeed = bottomLayer.RetractSpeed;
+                        if (bottomLayer.LightOffDelay > 0) slicerFile.BottomLightOffDelay = bottomLayer.LightOffDelay;
+                        if (bottomLayer.LightPWM > 0) slicerFile.BottomLightPWM = bottomLayer.LightPWM;
+                    }
 
-                var normalLayer = slicerFile[slicerFile.LastLayerIndex];
-                if (normalLayer is not null)
-                {
-                    if (normalLayer.ExposureTime > 0) slicerFile.ExposureTime = normalLayer.ExposureTime;
-                    if (normalLayer.LiftHeight > 0) slicerFile.LiftHeight = normalLayer.LiftHeight;
-                    if (normalLayer.LiftSpeed > 0) slicerFile.LiftSpeed = normalLayer.LiftSpeed;
-                    if (normalLayer.RetractSpeed > 0) slicerFile.RetractSpeed = normalLayer.RetractSpeed;
-                    if (normalLayer.LightOffDelay > 0) slicerFile.LightOffDelay = normalLayer.LightOffDelay;
-                    if (normalLayer.LightPWM > 0) slicerFile.LightPWM = normalLayer.LightPWM;
-                }
-
-                slicerFile.SuppressRebuildProperties = false;
+                    var normalLayer = slicerFile[slicerFile.LastLayerIndex];
+                    if (normalLayer is not null)
+                    {
+                        if (normalLayer.ExposureTime > 0) slicerFile.ExposureTime = normalLayer.ExposureTime;
+                        if (normalLayer.LiftHeight > 0) slicerFile.LiftHeight = normalLayer.LiftHeight;
+                        if (normalLayer.LiftSpeed > 0) slicerFile.LiftSpeed = normalLayer.LiftSpeed;
+                        if (normalLayer.RetractSpeed > 0) slicerFile.RetractSpeed = normalLayer.RetractSpeed;
+                        if (normalLayer.LightOffDelay > 0) slicerFile.LightOffDelay = normalLayer.LightOffDelay;
+                        if (normalLayer.LightPWM > 0) slicerFile.LightPWM = normalLayer.LightPWM;
+                    }
+                });
             }
         }
 

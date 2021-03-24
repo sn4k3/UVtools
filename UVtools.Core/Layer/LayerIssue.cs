@@ -424,4 +424,42 @@ namespace UVtools.Core
         }
     }
     #endregion
+
+    #region ResinTrapGround
+
+    public sealed class ResinTrapGroup
+    {
+        public List<List<LayerHollowArea>> Groups { get; } = new();
+
+        public int FindHollowArea(LayerHollowArea hollowArea)
+        {
+            for (var i = 0; i < Groups.Count; i++)
+            {
+                if (Groups[i].Any(area => ReferenceEquals(area, hollowArea)))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        public int Add(LayerHollowArea hollowArea)
+        {
+            var index = FindHollowArea(hollowArea);
+            if (index < 0) // Not found
+            {
+                index = Groups.Count;
+                Groups.Add(new List<LayerHollowArea>{hollowArea});
+                return index;
+            }
+
+            // Exists
+            Groups[index].Add(hollowArea);
+
+            return index;
+        }
+    }
+    #endregion
+
 }

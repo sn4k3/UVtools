@@ -262,9 +262,7 @@ namespace UVtools.Core.Managers
             }
 
             Add(clip);
-            slicerFile.SuppressRebuildProperties = true;
-            CurrentIndex = 0;
-            slicerFile.SuppressRebuildProperties = false;
+            slicerFile.SuppressRebuildPropertiesWork(() => CurrentIndex = 0);
         }
 
         /// <summary>

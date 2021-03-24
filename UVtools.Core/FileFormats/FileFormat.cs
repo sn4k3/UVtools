@@ -10,6 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -1048,10 +1049,7 @@ namespace UVtools.Core.FileFormats
                 e.PropertyName == nameof(LightPWM)
             )
             {
-                if (LayerManager is not null)
-                {
-                    LayerManager.RebuildLayersProperties(false, e.PropertyName);
-                }
+                LayerManager?.RebuildLayersProperties(false, e.PropertyName);
 
                 if(e.PropertyName != nameof(BottomLightPWM) && e.PropertyName != nameof(LightPWM))
                     PrintTime = PrintTimeComputed;
@@ -1306,7 +1304,7 @@ namespace UVtools.Core.FileFormats
 
             EncodeInternally(fileFullPath, progress);
 
-            LayerManager.Desmodify();
+            LayerManager.SetAllIsModified(false);
             RequireFullEncode = false;
         }
 
@@ -1333,6 +1331,13 @@ namespace UVtools.Core.FileFormats
             DecodeInternally(fileFullPath, progress);
 
             progress.Token.ThrowIfCancellationRequested();
+
+            var layerHeightDigits = LayerHeight.DecimalDigits();
+            if (layerHeightDigits > Layer.HeightPrecision)
+            {
+                throw new FileLoadException($"The layer height ({LayerHeight}mm) have more decimal digits than the supported ({Layer.HeightPrecision}) digits.\n" +
+                                                   "Lower and fix your layer height on slicer to avoid precision errors.", fileFullPath);
+            }
 
             // Sanitize
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
@@ -1806,49 +1811,48 @@ namespace UVtools.Core.FileFormats
             var slicerFile = (FileFormat)Activator.CreateInstance(to);
             if (slicerFile is null) return null;
 
-            slicerFile.SuppressRebuildProperties = true;
+            slicerFile.SuppressRebuildPropertiesWork(() =>
+            {
+                slicerFile.LayerManager = _layerManager.Clone();
+                slicerFile.AntiAliasing = ValidateAntiAliasingLevel();
+                slicerFile.LayerCount = _layerManager.Count;
+                slicerFile.BottomLayerCount = BottomLayerCount;
+                slicerFile.LayerHeight = LayerHeight;
+                slicerFile.ResolutionX = ResolutionX;
+                slicerFile.ResolutionY = ResolutionY;
+                slicerFile.DisplayWidth = DisplayWidth;
+                slicerFile.DisplayHeight = DisplayHeight;
+                slicerFile.MaxPrintHeight = MaxPrintHeight;
+                slicerFile.MirrorDisplay = MirrorDisplay;
+                slicerFile.BottomExposureTime = BottomExposureTime;
+                slicerFile.ExposureTime = ExposureTime;
 
-            slicerFile.LayerManager = _layerManager.Clone();
-            slicerFile.AntiAliasing = ValidateAntiAliasingLevel();
-            slicerFile.LayerCount = _layerManager.Count;
-            slicerFile.BottomLayerCount = BottomLayerCount;
-            slicerFile.LayerHeight = LayerHeight;
-            slicerFile.ResolutionX = ResolutionX;
-            slicerFile.ResolutionY = ResolutionY;
-            slicerFile.DisplayWidth = DisplayWidth;
-            slicerFile.DisplayHeight = DisplayHeight;
-            slicerFile.MaxPrintHeight = MaxPrintHeight;
-            slicerFile.MirrorDisplay = MirrorDisplay;
-            slicerFile.BottomExposureTime = BottomExposureTime;
-            slicerFile.ExposureTime = ExposureTime;
-            
-            slicerFile.BottomLiftHeight = BottomLiftHeight;
-            slicerFile.LiftHeight = LiftHeight;
+                slicerFile.BottomLiftHeight = BottomLiftHeight;
+                slicerFile.LiftHeight = LiftHeight;
 
-            slicerFile.BottomLiftSpeed = BottomLiftSpeed;
-            slicerFile.LiftSpeed = LiftSpeed;
-            slicerFile.RetractSpeed = RetractSpeed;
+                slicerFile.BottomLiftSpeed = BottomLiftSpeed;
+                slicerFile.LiftSpeed = LiftSpeed;
+                slicerFile.RetractSpeed = RetractSpeed;
 
-            slicerFile.BottomLightOffDelay = BottomLightOffDelay;
-            slicerFile.LightOffDelay = LightOffDelay;
+                slicerFile.BottomLightOffDelay = BottomLightOffDelay;
+                slicerFile.LightOffDelay = LightOffDelay;
 
-            slicerFile.BottomLightPWM = BottomLightPWM;
-            slicerFile.LightPWM = LightPWM;
+                slicerFile.BottomLightPWM = BottomLightPWM;
+                slicerFile.LightPWM = LightPWM;
 
-            slicerFile.MachineName = MachineName;
-            slicerFile.MaterialName = MaterialName;
-            slicerFile.MaterialMilliliters = MaterialMilliliters;
-            slicerFile.MaterialGrams = MaterialGrams;
-            slicerFile.MaterialCost = MaterialCost;
-            slicerFile.Xppmm = Xppmm;
-            slicerFile.Yppmm = Yppmm;
-            slicerFile.PrintTime = PrintTime;
-            slicerFile.PrintHeight = PrintHeight;
-            
+                slicerFile.MachineName = MachineName;
+                slicerFile.MaterialName = MaterialName;
+                slicerFile.MaterialMilliliters = MaterialMilliliters;
+                slicerFile.MaterialGrams = MaterialGrams;
+                slicerFile.MaterialCost = MaterialCost;
+                slicerFile.Xppmm = Xppmm;
+                slicerFile.Yppmm = Yppmm;
+                slicerFile.PrintTime = PrintTime;
+                slicerFile.PrintHeight = PrintHeight;
 
+                slicerFile.SetThumbnails(Thumbnails);
+            });
 
-            slicerFile.SuppressRebuildProperties = false;
-            slicerFile.SetThumbnails(Thumbnails);
             slicerFile.Encode(fileFullPath, progress);
 
             return slicerFile;
@@ -1872,6 +1876,55 @@ namespace UVtools.Core.FileFormats
             if (AntiAliasing < 2) return 1;
             if(AntiAliasing % 2 != 0) throw new ArgumentException("AntiAliasing must be multiples of 2, otherwise use 0 or 1 to disable it", nameof(AntiAliasing));
             return AntiAliasing;
+        }
+
+        /// <summary>
+        /// SuppressRebuildProperties = true, call the invoker and reset SuppressRebuildProperties = false
+        /// </summary>
+        /// <param name="action">Action work</param>
+        /// <param name="callRebuildOnEnd">True to force rebuild the layer properties after the work and before reset to false</param>
+        /// <param name="recalculateZPos">True to recalculate z position of each layer (requires <paramref name="callRebuildOnEnd"/> = true), otherwise false</param>
+        /// <param name="property">Property name to change for each layer, use null to update all properties (requires <paramref name="callRebuildOnEnd"/> = true)</param>
+        public void SuppressRebuildPropertiesWork(Action action, bool callRebuildOnEnd = false, bool recalculateZPos = true, string property = null)
+        {
+            /*SuppressRebuildProperties = true;
+            action.Invoke();
+            if(callRebuildOnEnd) LayerManager.RebuildLayersProperties(recalculateZPos, property);
+            SuppressRebuildProperties = false;*/
+            SuppressRebuildPropertiesWork(() =>
+            {
+                action.Invoke();
+                return true;
+            }, callRebuildOnEnd, recalculateZPos, property);
+        }
+
+        /// <summary>
+        /// SuppressRebuildProperties = true, call the invoker and reset SuppressRebuildProperties = false
+        /// </summary>
+        /// <param name="action">Action work</param>
+        /// <param name="callRebuildOnEnd">True to force rebuild the layer properties after the work and before reset to false</param>
+        /// <param name="recalculateZPos">True to recalculate z position of each layer (requires <paramref name="callRebuildOnEnd"/> = true), otherwise false</param>
+        /// <param name="property">Property name to change for each layer, use null to update all properties (requires <paramref name="callRebuildOnEnd"/> = true)</param>
+        public bool SuppressRebuildPropertiesWork(Func<bool> action, bool callRebuildOnEnd = false, bool recalculateZPos = true, string property = null)
+        {
+            bool result;
+            try
+            {
+                SuppressRebuildProperties = true;
+                result = action.Invoke();
+                if (callRebuildOnEnd && result) LayerManager.RebuildLayersProperties(recalculateZPos, property);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                throw;
+            }
+            finally
+            {
+                SuppressRebuildProperties = false;
+            }
+            
+            return result;
         }
 
         #endregion

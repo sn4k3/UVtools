@@ -1,5 +1,18 @@
 # Changelog
 
+## 24/03/2021 - v2.7.1
+
+* **File formats:**
+   * Add a layer height check on file load to prevent load files with more decimal digits than supported to avoid precision errors and bugs
+   * Fix a wrong cast causing seconds to miliseconds convertion to be caped to the wrong value
+   * Internally if a layer colection was replaced, all new layers will be marked as modified to avoid forgeting and ease the code
+* **Tools:**
+   * Pixel dimming: Better render quality, it now respects AA better and produce better walls (#172)
+   * Elephant foot: It now respects AA better and produce better walls for wall dimming 
+   * Layer Import: Cancelling the operation while importing layers was permanent supresseing layer properties update when changing a base property
+* (Change) PrusaSlicer print profiles: Improved raft height and bottom layer count for better print success, less delamination, shorter time and reduce wear of FEP
+* (Scripts): Add operation "Validate" pattern to docs and examples (#172)
+
 ## 19/03/2021 - v2.7.0
 
 * **Core:**
@@ -14,7 +27,7 @@
 * **Layer preview:**
    * Add selectable rotation directions 90º (CW and CCW)
    * Add preview flip (CTRL+F) horizontally and/or vertically
-   * Add maskable regions to process on a layer (SHIFT + Alt + Click) on a area 
+   * Add maskable regions to process on a layer (SHIFT + Alt + Right-Click) on a area 
    * ROI: Shortcut "Shift + left click" now also selects hollow black areas inside a white perimeter
    * ROI: Shortcut "ESC + Shift" to clear only the ROI and leave masks in
    * Fix a crash when using the pixel picker tool outside image bounds

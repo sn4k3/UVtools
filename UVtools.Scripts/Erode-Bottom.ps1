@@ -86,9 +86,6 @@ $inputFile = read-host "Enter input file"
     }
 }
 
-
-
-
 ######################################
 # All user inputs should be put here #
 ######################################
@@ -114,6 +111,11 @@ $morph = [UVtools.Core.Operations.OperationMorph]::new($slicerFile)
 $morph.MorphOperation = [Emgu.CV.CvEnum.MorphOp]::Erode
 $morph.IterationsStart = $iterations
 $morph.SelectBottomLayers()
+$validation = $morph.Validate()
+if(![string]::IsNullOrEmpty($validation)) {
+    Write-Error $validation
+    return
+}
 if(!$morph.Execute($progress)){ return; }
 
 

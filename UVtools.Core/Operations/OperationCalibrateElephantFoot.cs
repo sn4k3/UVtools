@@ -638,11 +638,12 @@ namespace UVtools.Core.Operations
                     using (var target = new Mat())
                     using (var mask = shape.CloneBlank())
                     {
-                        mask.SetTo(new MCvScalar(brightness));
-                        CvInvoke.Erode(shape, erode, kernel, anchor, DimmingWallThickness, BorderType.Reflect101,
-                            default);
-                        CvInvoke.Subtract(shape, erode, diff);
-                        CvInvoke.BitwiseAnd(diff, mask, target);
+                        mask.SetTo(new MCvScalar(byte.MaxValue-brightness));
+                        CvInvoke.Erode(shape, erode, kernel, anchor, DimmingWallThickness, BorderType.Reflect101, default);
+                        //CvInvoke.Subtract(shape, erode, diff);
+                        //CvInvoke.BitwiseAnd(diff, mask, target);
+                        //CvInvoke.Add(erode, target, target);
+                        CvInvoke.Subtract(shape, mask, target);
                         CvInvoke.Add(erode, target, target);
                         target.CopyTo(roi);
                         //addText(roi, count, $"W: {DimmingWallThickness}", $"B: {brightness}");
@@ -750,16 +751,16 @@ namespace UVtools.Core.Operations
 
             progress++;
 
-            SlicerFile.SuppressRebuildProperties = true;
-            SlicerFile.LayerHeight = (float)LayerHeight;
-            SlicerFile.BottomExposureTime = (float)BottomExposure;
-            SlicerFile.ExposureTime = (float)NormalExposure;
-            SlicerFile.BottomLayerCount = BottomLayers;
+            SlicerFile.SuppressRebuildPropertiesWork(() =>
+            {
+                SlicerFile.LayerHeight = (float)LayerHeight;
+                SlicerFile.BottomExposureTime = (float)BottomExposure;
+                SlicerFile.ExposureTime = (float)NormalExposure;
+                SlicerFile.BottomLayerCount = BottomLayers;
 
-            SlicerFile.LayerManager.Layers = newLayers;
-            SlicerFile.LayerManager.RebuildLayersProperties();
-            SlicerFile.SuppressRebuildProperties = false;
-
+                SlicerFile.LayerManager.Layers = newLayers;
+            }, true);
+            
             return !progress.Token.IsCancellationRequested;
         }
 

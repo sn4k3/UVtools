@@ -1290,19 +1290,19 @@ namespace UVtools.Core.Operations
             if (SlicerFile.ThumbnailsCount > 0)
                 SlicerFile.SetThumbnails(GetThumbnail());
 
-            SlicerFile.SuppressRebuildProperties = true;
-            SlicerFile.LayerHeight = (float)LayerHeight;
-            SlicerFile.BottomExposureTime = (float)BottomExposure;
-            SlicerFile.ExposureTime = (float)NormalExposure;
-            SlicerFile.BottomLayerCount = BottomLayers;
-            SlicerFile.LayerManager.Layers = newLayers.ToArray();
+            SlicerFile.SuppressRebuildPropertiesWork(() =>
+            {
+                SlicerFile.LayerHeight = (float)LayerHeight;
+                SlicerFile.BottomExposureTime = (float)BottomExposure;
+                SlicerFile.ExposureTime = (float)NormalExposure;
+                SlicerFile.BottomLayerCount = BottomLayers;
+                SlicerFile.LayerManager.Layers = newLayers.ToArray();
+            });
 
             if (_dontLiftSamePositionedLayers)
             {
                 SlicerFile.LayerManager.SetNoLiftForSamePositionedLayers();
             }
-
-            SlicerFile.SuppressRebuildProperties = false;
 
             if (_mirrorOutput)
             {

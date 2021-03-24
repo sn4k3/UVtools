@@ -575,17 +575,23 @@ namespace UVtools.Core.Operations
 
             using var patternMask = new Mat(matPattern, new Rectangle(0, 0, target.Width, target.Height));
             using var alternatePatternMask = new Mat(matAlternatePattern, new Rectangle(0, 0, target.Width, target.Height));
+            /*if (_wallsOnly)
+            {
+                CvInvoke.BitwiseNot(patternMask, patternMask);
+                CvInvoke.BitwiseNot(alternatePatternMask, alternatePatternMask);
+            }*/
+
+            CvInvoke.BitwiseNot(patternMask, patternMask);
+            CvInvoke.BitwiseNot(alternatePatternMask, alternatePatternMask);
+
             Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
                 using var mat = SlicerFile[layerIndex].LayerMat;
                 Execute(mat, layerIndex, patternMask, alternatePatternMask);
                 SlicerFile[layerIndex].LayerMat = mat;
-                
-                lock (progress.Mutex)
-                {
-                    progress++;
-                }
+
+                progress.LockAndIncrement();
             });
 
             return !progress.Token.IsCancellationRequested;
@@ -611,26 +617,30 @@ namespace UVtools.Core.Operations
             );
 
 
-            using Mat erode = new Mat();
-            using Mat diff = new Mat();
+            using Mat erode = new();
+            using Mat diff = new();
+            var original = mat.Clone();
             var target = GetRoiOrDefault(mat);
             using var mask = GetMask(mat);
 
 
             CvInvoke.Erode(target, erode, kernel, anchor, wallThickness, BorderType.Reflect101, default);
-            CvInvoke.Subtract(target, erode, diff);
 
-
-            if (WallsOnly)
+            if (_wallsOnly)
             {
-                CvInvoke.BitwiseAnd(diff, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, mask);
-                CvInvoke.Add(erode, target, target, mask);
+                CvInvoke.Subtract(target, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target);
+                //CvInvoke.BitwiseAnd(diff, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, mask);
+                CvInvoke.Add(erode, target, target);
             }
             else
             {
-                CvInvoke.BitwiseAnd(erode, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, mask);
-                CvInvoke.Add(target, diff, target, mask);
+                //CvInvoke.Subtract(target, erode, diff);
+                //CvInvoke.BitwiseAnd(erode, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, mask);
+                //CvInvoke.Add(target, diff, target, mask);
+                CvInvoke.Subtract(target, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, erode);
             }
+
+            ApplyMask(original, target, mask);
 
             return true;
         }

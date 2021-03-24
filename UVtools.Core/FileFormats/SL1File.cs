@@ -628,18 +628,19 @@ namespace UVtools.Core.FileFormats
                     throw new FileLoadException($"Malformed file: {IniPrusaslicer} is missing.");
                 }
 
-                SuppressRebuildProperties = true;
-                BottomLiftHeight = LookupCustomValue(Keyword_BottomLiftHeight, DefaultBottomLiftHeight);
-                BottomLiftSpeed = LookupCustomValue(Keyword_BottomLiftSpeed, DefaultBottomLiftSpeed);
-                LiftHeight = LookupCustomValue(Keyword_LiftHeight, DefaultLiftHeight);
-                LiftSpeed = LookupCustomValue(Keyword_LiftSpeed, DefaultLiftSpeed);
-                RetractSpeed = LookupCustomValue(Keyword_RetractSpeed, DefaultRetractSpeed);
-                BottomLightOffDelay = LookupCustomValue(Keyword_BottomLightOffDelay, DefaultBottomLightOffDelay);
-                LightOffDelay = LookupCustomValue(Keyword_LightOffDelay, DefaultLightOffDelay);
-                BottomLightPWM = LookupCustomValue(Keyword_BottomLightPWM, DefaultLightPWM);
-                LightPWM = LookupCustomValue(Keyword_LightPWM, DefaultBottomLightPWM);
-                SuppressRebuildProperties = false;
-
+                SuppressRebuildPropertiesWork(() =>
+                {
+                    BottomLiftHeight = LookupCustomValue(Keyword_BottomLiftHeight, DefaultBottomLiftHeight);
+                    BottomLiftSpeed = LookupCustomValue(Keyword_BottomLiftSpeed, DefaultBottomLiftSpeed);
+                    LiftHeight = LookupCustomValue(Keyword_LiftHeight, DefaultLiftHeight);
+                    LiftSpeed = LookupCustomValue(Keyword_LiftSpeed, DefaultLiftSpeed);
+                    RetractSpeed = LookupCustomValue(Keyword_RetractSpeed, DefaultRetractSpeed);
+                    BottomLightOffDelay = LookupCustomValue(Keyword_BottomLightOffDelay, DefaultBottomLightOffDelay);
+                    LightOffDelay = LookupCustomValue(Keyword_LightOffDelay, DefaultLightOffDelay);
+                    BottomLightPWM = LookupCustomValue(Keyword_BottomLightPWM, DefaultLightPWM);
+                    LightPWM = LookupCustomValue(Keyword_LightPWM, DefaultBottomLightPWM);
+                });
+                
                 LayerManager = new LayerManager((uint) (OutputConfigSettings.NumSlow + OutputConfigSettings.NumFast), this);
 
                 progress.ItemCount = LayerCount;

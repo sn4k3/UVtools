@@ -226,7 +226,7 @@ namespace UVtools.Core.Operations
         /// <summary>
         /// Validates the operation
         /// </summary>
-        /// <returns>null or empty if validates, or else, return a string with error message</returns>
+        /// <returns>null or empty if validates, otherwise return a string with error message</returns>
         public virtual StringTag Validate(params object[] parameters) => null;
 
         public bool CanValidate(params object[] parameters)
@@ -272,6 +272,18 @@ namespace UVtools.Core.Operations
         {
             LayerIndexStart = LayerIndexEnd = SlicerFile.LastLayerIndex; 
             LayerRangeSelection = Enumerations.LayerRangeSelection.Last;
+        }
+
+        public void SelectFirstToCurrentLayer(uint currentLayerIndex)
+        {
+            LayerIndexStart = 0;
+            LayerIndexEnd = Math.Min(currentLayerIndex, SlicerFile.LastLayerIndex);
+        }
+
+        public void SelectCurrentToLastLayer(uint currentLayerIndex)
+        {
+            LayerIndexStart = Math.Min(currentLayerIndex, SlicerFile.LastLayerIndex);
+            LayerIndexEnd = SlicerFile.LastLayerIndex;
         }
 
         public void SelectLayers(Enumerations.LayerRangeSelection range)
@@ -342,7 +354,11 @@ namespace UVtools.Core.Operations
         {
             if (mask is null) return;
             var originalRoi = GetRoiOrDefault(original);
-            var resultRoi = GetRoiOrDefault(result);
+            var resultRoi = result;
+            if (originalRoi.Size != result.Size) // Accept a ROI mat
+            {
+                resultRoi = GetRoiOrDefault(result);
+            }
             resultRoi.CopyTo(originalRoi, mask);
             originalRoi.CopyTo(resultRoi);
         }

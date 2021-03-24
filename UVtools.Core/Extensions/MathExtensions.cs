@@ -86,7 +86,7 @@ namespace UVtools.Core.Extensions
             var index = valStr.IndexOf('.');
             if (index < 0) return 0;
 
-            return (uint) (valStr.Substring(index).Length - 1);
+            return (uint) (valStr[index..].Length - 1);
         }
 
         public static uint DecimalDigits(this double val)
@@ -97,7 +97,7 @@ namespace UVtools.Core.Extensions
             var index = valStr.IndexOf('.');
             if (index < 0) return 0;
 
-            return (uint)(valStr.Substring(index).Length - 1);
+            return (uint)(valStr[index..].Length - 1);
         }
 
         public static uint DecimalDigits(this decimal val)
@@ -108,7 +108,7 @@ namespace UVtools.Core.Extensions
             var index = valStr.IndexOf('.');
             if (index < 0) return 0;
 
-            return (uint)(valStr.Substring(index).Length - 1);
+            return (uint)(valStr[index..].Length - 1);
         }
 
         public static bool IsInteger(this float val, float tolerance = 0.0001f) => Math.Abs(val - Math.Floor(val)) < tolerance;
