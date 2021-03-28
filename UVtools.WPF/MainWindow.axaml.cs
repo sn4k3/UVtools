@@ -1060,7 +1060,7 @@ namespace UVtools.WPF
                 }
             }
 
-            ClipboardManager.Instance.Init(SlicerFile);
+            Clipboard.Init(SlicerFile);
 
             if (SlicerFile is not ImageFile)
             {
@@ -1466,11 +1466,11 @@ namespace UVtools.WPF
 
             IsGUIEnabled = false;
 
-            LayerManager backup = null;
+            Clipboard.Snapshot();
+
             var result = await Task.Factory.StartNew(() =>
             {
                 ShowProgressWindow(baseOperation.ProgressTitle);
-                backup = SlicerFile.LayerManager.Clone();
 
                 try
                 {
@@ -1478,7 +1478,6 @@ namespace UVtools.WPF
                 }
                 catch (OperationCanceledException)
                 {
-                    SlicerFile.LayerManager = backup;
                 }
                 catch (Exception ex)
                 {
@@ -1494,7 +1493,7 @@ namespace UVtools.WPF
 
             if (result)
             {
-                ClipboardManager.Instance.Clip(baseOperation, backup);
+                Clipboard.Clip(baseOperation);
 
                 ShowLayer();
                 RefreshProperties();
@@ -1509,6 +1508,10 @@ namespace UVtools.WPF
                         OnClickDetectIssues();
                         break;
                 }
+            }
+            else
+            {
+                Clipboard.RestoreSnapshot();
             }
 
             if (baseOperation.Tag is not null)

@@ -81,10 +81,7 @@ namespace UVtools.Core.Operations
                 using var mat = SlicerFile[layerIndex].LayerMat;
                 Execute(mat);
                 SlicerFile[layerIndex].LayerMat = mat;
-                lock (progress.Mutex)
-                {
-                    progress++;
-                }
+                progress.LockAndIncrement();
             });
 
             return !progress.Token.IsCancellationRequested;

@@ -271,10 +271,7 @@ namespace UVtools.Core.Operations
                 ApplyMask(original, result);
                 SlicerFile[layerIndex].LayerMat = result;
 
-                lock (progress.Mutex)
-                {
-                    progress++;
-                }
+                progress.LockAndIncrement();
             });
 
 

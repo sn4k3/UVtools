@@ -387,6 +387,7 @@ namespace UVtools.WPF
                     try
                     {
                         SlicerFile.LayerManager.DrawModifications(Drawings, ProgressWindow.RestartProgress());
+                        return true;
                     }
                     catch (OperationCanceledException)
                     {
@@ -405,11 +406,18 @@ namespace UVtools.WPF
 
                 IsGUIEnabled = true;
 
+                if (!task.Result)
+                {
+                    Clipboard.RestoreSnapshot();
+                    ShowLayer();
+                    return;
+                }
+
                 Clipboard.Clip($"Draw {Drawings.Count} modifications");
 
                 if (Settings.PixelEditor.PartialUpdateIslandsOnEditing)
                 {
-                    List<uint> whiteListLayers = new List<uint>();
+                    List<uint> whiteListLayers = new();
                     foreach (var item in Drawings)
                     {
                         /*if (item.OperationType != PixelOperation.PixelOperationType.Drawing &&

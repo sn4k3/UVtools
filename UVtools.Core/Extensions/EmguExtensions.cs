@@ -252,7 +252,8 @@ namespace UVtools.Core.Extensions
 
         public static Mat InitMat(Size size, int channels = 1, DepthType depthType = DepthType.Cv8U)
         {
-            var mat = new Mat(size, depthType, channels);
+            return Mat.Zeros(size.Height, size.Width, depthType, channels);
+            /*var mat = new Mat(size, depthType, channels);
             switch (channels)
             {
                 case 1:
@@ -266,7 +267,7 @@ namespace UVtools.Core.Extensions
                     break;
             }
             
-            return mat;
+            return mat;*/
         }
 
         public static Mat InitMat(Size size, MCvScalar scalar, int channels = 1, DepthType depthType = DepthType.Cv8U)

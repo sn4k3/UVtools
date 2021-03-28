@@ -7,7 +7,9 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Text;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
@@ -88,13 +90,30 @@ namespace UVtools.Core.Operations
 
         protected override bool ExecuteInternally(OperationProgress progress)
         {
-            var oldLayers = SlicerFile.LayerManager.Layers;
+            uint totalClones = (LayerIndexEnd - LayerIndexStart + 1) * Clones;
+            progress.Reset(ProgressAction, totalClones);
+
+            var newLayers = new Layer[SlicerFile.LayerCount + totalClones];
+            uint newLayerIndex = 0;
+            for (uint layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
+            {
+                newLayers[newLayerIndex++] = SlicerFile[layerIndex];
+                if (layerIndex < LayerIndexStart || layerIndex > LayerIndexEnd) continue;
+                for (uint i = 0; i < Clones; i++)
+                {
+                    newLayers[newLayerIndex++] = SlicerFile[layerIndex].Clone();
+                    progress++;
+                }
+            }
+
+            SlicerFile.LayerManager.Layers = newLayers;
+
+            /*var oldLayers = SlicerFile.LayerManager.Layers;
 
             uint totalClones = (LayerIndexEnd - LayerIndexStart + 1) * Clones;
             uint newLayerCount = (uint) (oldLayers.Length + totalClones);
             var layers = new Layer[newLayerCount];
 
-            progress.Reset(ProgressAction, totalClones);
 
             uint newLayerIndex = 0;
             for (uint layerIndex = 0; layerIndex < oldLayers.Length; layerIndex++)
@@ -115,7 +134,7 @@ namespace UVtools.Core.Operations
                 newLayerIndex++;
             }
 
-            SlicerFile.LayerManager.Layers = layers;
+            SlicerFile.LayerManager.Layers = layers;*/
 
             return !progress.Token.IsCancellationRequested;
         }

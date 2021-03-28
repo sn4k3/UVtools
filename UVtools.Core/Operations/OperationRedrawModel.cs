@@ -244,10 +244,7 @@ namespace UVtools.Core.Operations
                     SlicerFile[fullMatLayerIndex].LayerMat = fullMat;
                 }
 
-                lock (progress.Mutex)
-                {
-                    progress++;
-                }
+                progress.LockAndIncrement();
             });
 
             return !progress.Token.IsCancellationRequested;

@@ -190,10 +190,7 @@ namespace UVtools.Core.Operations
                     }
                 }
 
-                lock (progress.Mutex)
-                {
-                    progress++;
-                }
+                progress.LockAndIncrement();
 
                 if (newX == 1.0m && newY == 1.0m) return;
 

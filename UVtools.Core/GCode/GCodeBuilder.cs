@@ -450,10 +450,10 @@ namespace UVtools.Core.GCode
         public void RebuildGCode(FileFormat slicerFile, StringBuilder header) => RebuildGCode(slicerFile, header?.ToString());
         public void RebuildGCode(FileFormat slicerFile, string header = null)
         {
-            if (slicerFile.LayerCount == 0) return;
             Clear();
-
             AppendUVtools();
+
+            if (slicerFile.LayerCount == 0) return;
 
             if (!string.IsNullOrWhiteSpace(header))
             {

@@ -136,23 +136,21 @@ namespace UVtools.Core.Operations
         {
             progress.ItemCount = Item.LayerCount;
 
-            var oldLayers = SlicerFile.LayerManager.Layers;
-
             var layers = new Layer[Item.LayerCount];
 
             uint newLayerIndex = 0;
-            for (uint layerIndex = 0; layerIndex < oldLayers.Length; layerIndex++)
+            for (uint layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
             {
                 progress.Token.ThrowIfCancellationRequested();
                 
-                var oldLayer = oldLayers[layerIndex];
+                var oldLayer = SlicerFile[layerIndex];
                 if (Item.IsDivision)
                 {
                     for (byte i = 0; i < Item.Modifier; i++)
                     {
                         var newLayer = oldLayer.Clone();
-                        newLayer.Index = newLayerIndex;
-                        newLayer.PositionZ = (float)(Item.LayerHeight * (newLayerIndex + 1));
+                        //newLayer.Index = newLayerIndex;
+                        //newLayer.PositionZ = (float)(Item.LayerHeight * (newLayerIndex + 1));
                         layers[newLayerIndex] = newLayer;
                         newLayerIndex++;
                         progress++;
@@ -160,16 +158,16 @@ namespace UVtools.Core.Operations
                 }
                 else
                 {
-                    using var mat = oldLayers[layerIndex++].LayerMat;
+                    using var mat = SlicerFile[layerIndex++].LayerMat;
                     for (byte i = 1; i < Item.Modifier; i++)
                     {
-                        using var nextMat = oldLayers[layerIndex++].LayerMat;
+                        using var nextMat = SlicerFile[layerIndex++].LayerMat;
                         CvInvoke.Add(mat, nextMat, mat);
                     }
 
                     var newLayer = oldLayer.Clone();
-                    newLayer.Index = newLayerIndex;
-                    newLayer.PositionZ = (float)(Item.LayerHeight * (newLayerIndex + 1));
+                    //newLayer.Index = newLayerIndex;
+                    //newLayer.PositionZ = (float)(Item.LayerHeight * (newLayerIndex + 1));
                     newLayer.LayerMat = mat;
                     layers[newLayerIndex] = newLayer;
                     newLayerIndex++;
@@ -178,8 +176,8 @@ namespace UVtools.Core.Operations
                 }
             }
 
-            SlicerFile.LayerManager.Layers = layers;
             SlicerFile.LayerHeight = (float)Item.LayerHeight;
+            SlicerFile.LayerManager.Layers = layers;
 
             return !progress.Token.IsCancellationRequested;
         }

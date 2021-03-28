@@ -293,10 +293,7 @@ namespace UVtools.Core.Operations
                 //Execute(mat);
                 SlicerFile[layerIndex].LayerMat = dstLayer;
 
-                lock (progress.Mutex)
-                {
-                    progress++;
-                }
+                progress.LockAndIncrement();
             });
 
             SlicerFile.LayerManager.BoundingRectangle = Rectangle.Empty;

@@ -73,9 +73,17 @@ namespace UVtools.Core.Operations
 
             progress ??= new OperationProgress(false);
 
-            progress.Reset("removed layers", (uint)layersRemove.Count);
+            progress.Reset("Removed layers", (uint)layersRemove.Count);
 
-            var oldLayers = slicerFile.LayerManager.Layers;
+            foreach (var layerIndex in layersRemove)
+            {
+                slicerFile[layerIndex] = null;
+                progress++;
+            }
+
+            slicerFile.LayerManager.RemoveNulls();
+
+            /*var oldLayers = slicerFile.LayerManager.Layers;
             var layerHeight = slicerFile.LayerHeight;
 
             var layers = new Layer[oldLayers.Length - layersRemove.Count];
@@ -109,7 +117,9 @@ namespace UVtools.Core.Operations
                 progress++;
             }
 
-            slicerFile.LayerManager.Layers = layers;
+            slicerFile.LayerManager.Layers = layers;*/
+
+
 
             return true;
         }

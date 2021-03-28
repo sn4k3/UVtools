@@ -9,17 +9,17 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Drawing;
+using System.Diagnostics;
+using System.Linq;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Managers
 {
-    public sealed class ClipboardItem : IList<Layer>
+    public sealed class ClipboardItem : List<Layer>
     {
         #region Properties
-        private readonly List<Layer> _layers = new();
-
+        
         /// <summary>
         /// Gets the LayerCount for this clip
         /// </summary>
@@ -32,62 +32,36 @@ namespace UVtools.Core.Managers
         /// </summary>
         public string Description { get; set; }
 
+        public bool IsFullBackup { get; set; }
+
         
         public Operations.Operation Operation { get; set; }
 
         #endregion
 
         #region Constructor
-        public ClipboardItem(FileFormat slicerFile, Operations.Operation operation) : this(slicerFile)
+        public ClipboardItem(FileFormat slicerFile, Operations.Operation operation, bool isFullBackup = false) : this(slicerFile)
         {
             Operation = operation;
             string description = operation.ToString();
             if (!description.StartsWith(operation.Title)) description = $"{operation.Title}: {description}";
             Description = description;
+            IsFullBackup = isFullBackup;
         }
         
-        public ClipboardItem(FileFormat slicerFile, string description = null)
+        public ClipboardItem(FileFormat slicerFile, string description = null, bool isFullBackup = false)
         {
             LayerCount = slicerFile.LayerCount;
             LayerHeight = slicerFile.LayerHeight;
             Description = description;
-        }
-        #endregion
-
-        #region List Implementation
-        public IEnumerator<Layer> GetEnumerator() => _layers.GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        public void Add(Layer item) => _layers.Add(item);
-
-        public void Clear() => _layers.Clear();
-
-        public bool Contains(Layer item) => _layers.Contains(item);
-
-        public void CopyTo(Layer[] array, int arrayIndex) => _layers.CopyTo(array, arrayIndex);
-
-        public bool Remove(Layer item) => _layers.Remove(item);
-
-        public int Count => _layers.Count;
-        public bool IsReadOnly => false;
-        public int IndexOf(Layer item) => _layers.IndexOf(item);
-
-        public void Insert(int index, Layer item) => _layers.Insert(index, item);
-
-        public void RemoveAt(int index) => _layers.RemoveAt(index);
-
-        public Layer this[int index]
-        {
-            get => _layers[index];
-            set => _layers[index] = value;
+            IsFullBackup = isFullBackup;
         }
         #endregion
 
         #region Methods
         public override string ToString()
         {
-            return $"{Description} ({Count})";
+            return $"{(IsFullBackup ? "* " : "")}{Description} ({Count})";
         }
         #endregion
     }
@@ -96,12 +70,12 @@ namespace UVtools.Core.Managers
     {
         #region Properties
 
-        public ObservableCollection<ClipboardItem> Items { get; } = new ObservableCollection<ClipboardItem>();
+        public ObservableCollection<ClipboardItem> Items { get; } = new();
 
         public FileFormat SlicerFile { get; set; }
 
         private int _currentIndex = -1;
-        private LayerManager _snapshotLayerManager;
+        private Layer[] _snapshotLayers;
         private bool _reallocatedLayerCount;
         private bool _suppressRestore;
 
@@ -121,27 +95,42 @@ namespace UVtools.Core.Managers
 
                 if (value >= 0 && !SuppressRestore)
                 {
+                    ReallocatedLayerCount = false;
                     int dir = oldIndex < _currentIndex ? 1 : -1;
 
                     for (int i = oldIndex + dir; i >= 0 && i < Count; i += dir)
                     {
-                        var layerManager = SlicerFile.LayerManager;
                         var clip = this[i];
-                        if (layerManager.Count != clip.LayerCount) // Need resize layer manager
+
+                        Layer[] layers;
+                        if (clip.IsFullBackup)
                         {
-                            layerManager = layerManager.ReallocateNew(clip.LayerCount);
-                            ReallocatedLayerCount = true;
+                            if(!_reallocatedLayerCount && SlicerFile.LayerCount != clip.Count) ReallocatedLayerCount = true;
+                            layers = clip.ToArray();
+                        }
+                        else
+                        {
+                            layers = SlicerFile.LayerManager.Layers.ToArray();
+
+                            if (SlicerFile.LayerCount != clip.LayerCount) // Need resize layer manager
+                            {
+                                //layers = SlicerFile.LayerManager.ReallocateNew(clip.LayerCount);
+                                layers = SlicerFile.LayerManager.ReallocateNew(clip.LayerCount);
+                                ReallocatedLayerCount = true;
+                            }
+
+                            foreach (var layer in clip)
+                            {
+                                layers[layer.Index] = layer;
+                            }
                         }
 
-                        layerManager.AddLayers(clip);
-
-                        layerManager.BoundingRectangle = Rectangle.Empty;
                         if (SlicerFile.LayerHeight != clip.LayerHeight)
                         {
                             SlicerFile.LayerHeight = clip.LayerHeight;
                         }
 
-                        SlicerFile.LayerManager = layerManager.Clone();
+                        SlicerFile.LayerManager.Layers = Layer.CloneLayers(layers);
                         if (i == _currentIndex) break;
                     }
                 }
@@ -168,10 +157,10 @@ namespace UVtools.Core.Managers
             set => RaiseAndSetIfChanged(ref _reallocatedLayerCount, value);
         }
 
-        public LayerManager SnapshotLayerManager
+        public Layer[] SnapshotLayers
         {
-            get => _snapshotLayerManager;
-            private set => RaiseAndSetIfChanged(ref _snapshotLayerManager, value);
+            get => _snapshotLayers;
+            private set => RaiseAndSetIfChanged(ref _snapshotLayers, value);
         }
         
         public ClipboardItem CurrentClip => _currentIndex < 0 || _currentIndex >= Count ? null : this[_currentIndex];
@@ -183,7 +172,7 @@ namespace UVtools.Core.Managers
 
         #region Singleton
         private static readonly Lazy<ClipboardManager> InstanceHolder =
-            new Lazy<ClipboardManager>(() => new ClipboardManager());
+            new(() => new ClipboardManager());
 
         public static ClipboardManager Instance => InstanceHolder.Value;
         #endregion
@@ -241,6 +230,24 @@ namespace UVtools.Core.Managers
 
         #region Methods
 
+        public void SuppressRestoreWork(Action action)
+        {
+            try
+            {
+                SuppressRestore = true;
+                action.Invoke();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                throw;
+            }
+            finally
+            {
+                SuppressRestore = false;
+            }
+        }
+
         /// <summary>
         /// Clears the manager
         /// </summary>
@@ -252,57 +259,91 @@ namespace UVtools.Core.Managers
         /// <param name="slicerFile"></param>
         public void Init(FileFormat slicerFile)
         {
-            Clear();
-            SlicerFile = slicerFile;
-            if(slicerFile is null) return;
-            var clip = new ClipboardItem(SlicerFile, "Original layers");
-            for (int layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
+            SuppressRestoreWork(() =>
             {
-                clip.Add(SlicerFile[layerIndex].Clone());
-            }
-
-            Add(clip);
-            slicerFile.SuppressRebuildPropertiesWork(() => CurrentIndex = 0);
+                Clear();
+                SlicerFile = slicerFile;
+                if (slicerFile is null) return;
+                var clip = new ClipboardItem(SlicerFile, "Original layers", true);
+                clip.AddRange(SlicerFile.LayerManager.CloneLayers());
+                Add(clip);
+                slicerFile.SuppressRebuildPropertiesWork(() => CurrentIndex = 0);
+            });
         }
 
         /// <summary>
         /// Snapshot layers and prepare manager to collect modified layers with <see cref="Clip"/>
         /// </summary>
-        public void Snapshot(LayerManager layerManager = null)
+        public void Snapshot(Layer[] layers = null)
         {
-            SnapshotLayerManager = layerManager ?? SlicerFile.LayerManager.Clone();
+            SnapshotLayers = layers ?? SlicerFile.LayerManager.CloneLayers();
+        }
+
+        public void RestoreSnapshot()
+        {
+            if (_snapshotLayers is null) return;
+            SlicerFile.LayerManager.Layers = _snapshotLayers;
+            SnapshotLayers = null;
         }
 
         /// <summary>
         /// Collect differences and create a clip
         /// </summary>
-        public ClipboardItem Clip(string description = null, LayerManager layerManagerSnapshot = null)
+        public ClipboardItem Clip(string description = null, Layer[] layers = null, bool doFullBackup = false)
         {
-            if(!(layerManagerSnapshot is null)) Snapshot(layerManagerSnapshot);
-            if (SnapshotLayerManager is null) throw new InvalidOperationException("A snapshot is required before perform a clip");
-            var clip = new ClipboardItem(SlicerFile, description);
+            ClipboardItem safeClip = null;
+            if (!doFullBackup)
+            {
+                if (layers is not null) Snapshot(layers);
+                if (_snapshotLayers is null) throw new InvalidOperationException("A snapshot is required before perform a clip");
 
-            int layerIndex = 0;
-            for (; 
+                if (_snapshotLayers.Length != SlicerFile.LayerCount)
+                {
+                    doFullBackup = true; // Force full backup when layer count changes
+                    if (Count > 0 && !this[0].IsFullBackup)
+                    {
+                        safeClip = new ClipboardItem(SlicerFile, "Fail-safe full backup", true);
+                        safeClip.AddRange(_snapshotLayers);
+                    }
+
+                    //Insert(0, safeClip);
+                }
+            }
+
+            var clip = new ClipboardItem(SlicerFile, description, doFullBackup);
+
+            if (doFullBackup)
+            {
+                clip.AddRange(SlicerFile.LayerManager.CloneLayers());
+            }
+            else
+            {
+                int layerIndex = 0;
+                for (;
                     layerIndex < SlicerFile.LayerCount
-                    && layerIndex < SnapshotLayerManager.Count
-                ; layerIndex++)
-            {
-                //if(SnapshotLayerManager.Count - 1 < layerIndex) break;
-                if(SnapshotLayerManager[layerIndex].Equals(SlicerFile[layerIndex])) continue;
-                
-                clip.Add(SlicerFile[layerIndex].Clone());
+                    && layerIndex < _snapshotLayers.Length;
+                    layerIndex++)
+                {
+                    //if(SnapshotLayers.Count - 1 < layerIndex) break;
+                    if (_snapshotLayers[layerIndex].Equals(SlicerFile[layerIndex])) continue;
+                    clip.Add(SlicerFile[layerIndex].Clone());
+                }
+
+                // Collect leftovers from snapshot
+                // This happens when current state has less layers then the snapshot/previous
+                // So we need to preserve them
+                for (; layerIndex < SlicerFile.LayerCount; layerIndex++)
+                {
+                    clip.Add(SlicerFile[layerIndex].Clone());
+                }
+
+                if (clip.Count == SlicerFile.LayerCount)
+                {
+                    clip.IsFullBackup = true;
+                }
             }
 
-            // Collect leftovers from snapshot
-            // This happens when current layer manager has less layers then the snapshot/previous
-            // So we need to preserve them
-            for (; layerIndex < SlicerFile.LayerCount; layerIndex++)
-            {
-                clip.Add(SlicerFile[layerIndex].Clone());
-            }
-
-            SnapshotLayerManager = null;
+            SnapshotLayers = null;
 
             if (clip.Count == 0)
             {
@@ -310,33 +351,38 @@ namespace UVtools.Core.Managers
                     return null;
             }
 
-            SuppressRestore = true;
-            var oldCurrentIndex = _currentIndex;
-            CurrentIndex = -1;
-
-            // Remove all redo's for integrity
-            for (int i = oldCurrentIndex - 1; i >= 0; i--)
+            SuppressRestoreWork(() =>
             {
-                RemoveAt(i);
-            }
+                var oldCurrentIndex = _currentIndex;
+                CurrentIndex = -1;
 
-            
-            Insert(0, clip);
-            
-            CurrentIndex = 0;
-            SuppressRestore = false;
+                // Remove all redo's for integrity
+                for (int i = oldCurrentIndex - 1; i >= 0; i--)
+                {
+                    //if(this[i].IsFullBackup) continue; // Full backups can survive
+                    RemoveAt(i);
+                }
 
+                if (safeClip is not null)
+                {
+                    Insert(0, safeClip);
+                }
+                Insert(0, clip);
+
+                CurrentIndex = 0;
+            });
+            
             return clip;
         }
 
         /// <summary>
         /// Collect differences and create a clip
         /// </summary>
-        public ClipboardItem Clip(Operations.Operation operation, LayerManager layerManagerSnapshot = null)
+        public ClipboardItem Clip(Operations.Operation operation, Layer[] layersSnapshot = null, bool doFullBackup = false)
         {
             string description = operation.ToString();
             if (!description.StartsWith(operation.Title)) description = $"{operation.Title}: {description}";
-            var clip = Clip(description, layerManagerSnapshot);
+            var clip = Clip(description, layersSnapshot, doFullBackup);
             if (clip is null) return null;
             clip.Operation = operation;
             return clip;
@@ -356,38 +402,6 @@ namespace UVtools.Core.Managers
 
         public void SetToOldest() => CurrentIndex = Count-1;
         public void SetToNewest() => CurrentIndex = 0;
-
-        /*public bool SetTo(int index)
-        {
-            if (index == _currentIndex || index < 0 || index >= Count) return false;
-            bool changed = false;
-            int dir = _currentIndex < index ? 1 : -1;
-
-            for (int i = _currentIndex+dir; i >= 0 && i < Count; i+=dir)
-            {
-                var layerManager = SlicerFile.LayerManager;
-                var clip = this[i];
-                if (layerManager.Count != clip.LayerCount) // Need resize layer manager
-                {
-                    layerManager = layerManager.Reallocate(clip.LayerCount);
-                    ReallocatedLayerCount = true;
-                }
-
-                layerManager.AddLayers(clip);
-
-                layerManager.BoundingRectangle = Rectangle.Empty;
-                SlicerFile.LayerManager = layerManager.Clone();
-                changed = true;
-                if (i == index) break;
-            }
-
-            if (changed)
-            {
-                CurrentIndex = index;
-            }
-
-            return changed;
-        }*/
 
         #endregion
     }

@@ -1,5 +1,27 @@
 # Changelog
 
+## 28/03/2021 - v2.7.2
+
+* **Core:**
+   * Fix some improper locks for progress counter and change to Interlocked instead
+   * Fix a bug when chaging layer count by remove or add layers it will malform the file after save and crash the program with some tools and/or clipboard
+   * Fix when a operation fails by other reason different from cancelation it was not restoring the backup
+   * When manually delete/fix issues it will also backup the layers
+* **LayerManager:** 
+   * LayerManager is now readonly and no longer used to transpose layers, each FileFormat have now a unique `LayerManager` instance which is set on the generic constructor
+   * Implemented `List<Layer>` methods to easy modify the layers array
+   * Changing the `Layers` instance will now recompute some properties, call the properties rebuild and forced sanitize of the structure
+   * Better reallocation methods
+* **Clipboard Manager:**
+   * Add the hability to do full backups, they will be marked with an asterisk (*) at clipboard items list
+   * When a partial backup is made and it backups all the layers it will be converted to full backup
+   * Clipboard can now restore a snapshot directly with `RestoreSnapshot`
+   * Prevent restore the initial backup upon file load and when clearing the clipboard
+   * Clip's that change the layer count will perform a full backup and also do a fail-safe backup behind if previous clip is not a full backup
+* **Pixel dimming:**
+   * Allow to load an image file as a pattern (Do not use very large files or it will take much time to dump the data into the textbox)
+   * Empty lines on patterns will be discarded and not trigger validation error
+
 ## 24/03/2021 - v2.7.1
 
 * **File formats:**

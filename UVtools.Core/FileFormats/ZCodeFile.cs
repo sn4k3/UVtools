@@ -528,7 +528,7 @@ namespace UVtools.Core.FileFormats
                     tr.Close();
                 }
 
-                LayerManager = new LayerManager(ManifestFile.Job.LayerCount, this);
+                LayerManager.Init(ManifestFile.Job.LayerCount);
                 progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
                 //var gcode = GCode.ToString();

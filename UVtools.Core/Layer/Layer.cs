@@ -537,7 +537,7 @@ namespace UVtools.Core
 
         public Layer NextLayer()
         {
-            if (ParentLayerManager is null || _index >= ParentLayerManager.Count - 1)
+            if (ParentLayerManager is null || _index >= ParentLayerManager.LayerCount - 1)
                 return null;
 
             return ParentLayerManager[_index + 1];
@@ -801,6 +801,16 @@ namespace UVtools.Core
         public static string ShowHeight(float height) => string.Format($"{{0:F{HeightPrecision}}}", height);
         public static string ShowHeight(double height) => string.Format($"{{0:F{HeightPrecision}}}", height);
         public static string ShowHeight(decimal height) => string.Format($"{{0:F{HeightPrecision}}}", height);
+
+        public static Layer[] CloneLayers(Layer[] layers)
+        {
+            var clonedLayers = new Layer[layers.Length];
+            for (uint layerIndex = 0; layerIndex < layers.Length; layerIndex++)
+            {
+                clonedLayers[layerIndex] = layers[layerIndex]?.Clone();
+            }
+            return clonedLayers;
+        }
 
         #endregion
     }

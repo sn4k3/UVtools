@@ -397,7 +397,7 @@ namespace UVtools.Core.FileFormats
 
                 JsonSettings = Helpers.JsonDeserializeObject<Settings>(entry.Open());
                 
-                LayerManager = new LayerManager(JsonSettings.Properties.Size.Layers, this);
+                LayerManager.Init(JsonSettings.Properties.Size.Layers);
 
                 entry = inputFile.GetEntry(FilePreviewTinyName);
                 if (!ReferenceEquals(entry, null))

@@ -111,7 +111,9 @@ namespace UVtools.WPF
 
 
             IsGUIEnabled = false;
-            
+
+            Clipboard.Snapshot();
+
             var task = await Task.Factory.StartNew(() =>
             {
                 ShowProgressWindow("Removing selected issues");
@@ -160,7 +162,7 @@ namespace UVtools.WPF
                             }
                         }
 
-                        progress++;
+                        progress.LockAndIncrement();
                     });
 
                     if (layersRemove.Count > 0)
@@ -181,7 +183,11 @@ namespace UVtools.WPF
 
             IsGUIEnabled = true;
 
-            if (!task) return;
+            if (!task)
+            {
+                Clipboard.RestoreSnapshot();
+                return;
+            }
 
             var whiteListLayers = new List<uint>();
 
@@ -206,6 +212,8 @@ namespace UVtools.WPF
                 //Issues.Remove(issue);
 
             }
+
+            Clipboard.Clip($"Manually removed {issueRemoveList.Count} issues");
 
             Issues.RemoveMany(issueRemoveList);
 

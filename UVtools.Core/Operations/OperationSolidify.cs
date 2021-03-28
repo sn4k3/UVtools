@@ -68,7 +68,7 @@ namespace UVtools.Core.Operations
 
         public override string ToString()
         {
-            var result = $"[Area: ={_areaCheckType} than {_minimumArea}px²]" + LayerRangeString;
+            var result = $"[Area: {_areaCheckType} than {_minimumArea}px²]" + LayerRangeString;
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
         }
@@ -93,10 +93,7 @@ namespace UVtools.Core.Operations
                 using var mat = SlicerFile[layerIndex].LayerMat;
                 Execute(mat);
                 SlicerFile[layerIndex].LayerMat = mat;
-                lock (progress.Mutex)
-                {
-                    progress++;
-                }
+                progress.LockAndIncrement();
             });
 
             return !progress.Token.IsCancellationRequested;

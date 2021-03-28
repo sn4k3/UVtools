@@ -1301,10 +1301,7 @@ namespace UVtools.Core.FileFormats
                     layer.Encode(image);
                     LayersDefinition.Layers[layerIndex] = layer;
                 }
-                lock (progress.Mutex)
-                {
-                    progress++;
-                }
+                progress.LockAndIncrement();
             });
 
             uint offsetLayerRle = FileMarkSettings.LayerImageAddress = (uint) (currentOffset + Helpers.Serializer.SizeOf(LayersDefinition.Section) + LayersDefinition.Section.Length);
@@ -1396,7 +1393,7 @@ namespace UVtools.Core.FileFormats
             Debug.Write("LayersDefinition -> ");
             Debug.WriteLine(LayersDefinition);
 
-            LayerManager = new LayerManager(LayersDefinition.LayerCount, this);
+            LayerManager.Init(LayersDefinition.LayerCount);
             LayersDefinition.Layers = new LayerData[LayerCount];
 
 
@@ -1443,10 +1440,7 @@ namespace UVtools.Core.FileFormats
                     };
                 }
 
-                lock (progress.Mutex)
-                {
-                    progress++;
-                }
+                progress.LockAndIncrement();
             });
 
             // Fix position z height values

@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
@@ -58,7 +59,8 @@ namespace UVtools.Core.Operations
             "1) Reduced layer expansion for large layer objects\n" +
             "2) Reduced cross layer exposure\n" +
             "3) Extended pixel life of the LCD\n\n" +
-            "NOTE: Run this tool only after repairs and all other transformations.";
+            "NOTE: Run this tool only after repairs and all other transformations.\n" +
+            "To create your own patterns: www.piskelapp.com";
 
         public override string ConfirmationText =>
             $"dim pixels from layers {LayerIndexStart} through {LayerIndexEnd}?";
@@ -85,11 +87,10 @@ namespace UVtools.Core.Operations
             foreach (var item in stringMatrix)
             {
                 if (string.IsNullOrWhiteSpace(item.Text)) continue;
-                var lines = item.Text.Split('\n');
+                var lines = item.Text.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                 for (var row = 0; row < lines.Length; row++)
                 {
-
-                    var bytes = lines[row].Trim().Split(' ');
+                    var bytes = lines[row].Split(' ');
                     if (row == 0)
                     {
                         item.Pattern = new Matrix<byte>(lines.Length, bytes.Length);
@@ -272,7 +273,52 @@ namespace UVtools.Core.Operations
 
         public bool IsAlternatePattern(uint layerIndex) => !IsNormalPattern(layerIndex);
 
-        
+        public unsafe void LoadPatternFromImage(Mat mat, bool isAlternatePattern = false)
+        {
+            var result = new string[mat.Height];
+            var span = mat.GetBytePointer();
+            Parallel.For(0, mat.Height, y =>
+            {
+                result[y] = string.Empty;
+                for (int x = 0; x < mat.Width; x++)
+                {
+                    result[y] += $"{span[mat.GetPixelPos(x, y)]} ";
+                }
+
+                result[y] = result[y].Trim();
+            });
+
+            StringBuilder sb = new();
+            foreach (var s in result)
+            {
+                sb.AppendLine(s);
+            }
+
+            if (isAlternatePattern)
+            {
+                AlternatePatternText = sb.ToString();
+            }
+            else
+            {
+                PatternText = sb.ToString();
+            }
+        }
+
+        public void LoadPatternFromImage(string filepath, bool isAlternatePattern = false)
+        {
+            try
+            {
+                using var mat = CvInvoke.Imread(filepath, ImreadModes.Grayscale);
+                LoadPatternFromImage(mat, isAlternatePattern);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
+            
+        }
+
+
         public void GeneratePixelDimming(string pattern)
         {
             if (pattern == "Chessboard")

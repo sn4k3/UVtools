@@ -68,28 +68,43 @@
       </StackPanel>
     
     <Grid 
-      RowDefinitions="200,10,Auto"
-        ColumnDefinitions="450,10,450"
-        >
+      RowDefinitions="Auto,200,10,Auto"
+        ColumnDefinitions="450,10,450">
+
+        <Button  Grid.Row="0" Grid.Column="0"
+                 Content="Load pattern from image"
+                 HorizontalContentAlignment="Center"
+                 VerticalAlignment="Stretch"
+                 HorizontalAlignment="Stretch"
+                 Command="{Binding LoadPatternFromImage}"
+                 CommandParameter="False"/>
+
         <TextBox
+          Grid.Row="1" Grid.Column="0"
           AcceptsReturn="True"
           Watermark="Pattern"
           UseFloatingWatermark="True"
            TextWrapping="NoWrap"
-          Text="{Binding Operation.PatternText}"
-          />
+          Text="{Binding Operation.PatternText}"/>
+
+        <Button  Grid.Row="0" Grid.Column="2"
+                 Content="Load alternate pattern from image"
+                 HorizontalContentAlignment="Center"
+                 VerticalAlignment="Stretch"
+                 HorizontalAlignment="Stretch"
+                 Command="{Binding LoadPatternFromImage}"
+                 CommandParameter="True"/>
       <TextBox
-        Grid.Column="2"
+          Grid.Row="1" Grid.Column="2"
           AcceptsReturn="True"
           Watermark="Alternate pattern (Optional)"
           UseFloatingWatermark="True"
            TextWrapping="NoWrap"
-        Text="{Binding Operation.AlternatePatternText}"
-          />
+        Text="{Binding Operation.AlternatePatternText}"/>
 
       <Border
-        Grid.Row="3"
-      BorderBrush="LightGray"
+        Grid.Row="3" Grid.Column="0"
+        BorderBrush="LightGray"
       BorderThickness="1"
       Padding="5"
       >
@@ -195,7 +210,7 @@
       </Border>
 
       <Border
-        Grid.Row="2"
+        Grid.Row="3"
         Grid.Column="2"
       BorderBrush="LightGray"
       BorderThickness="1"

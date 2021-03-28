@@ -182,10 +182,7 @@ namespace UVtools.Core.Operations
                                 bytes[image.GetPixelPos(issuePixel)] = 0;
                             }
 
-                            lock (progress.Mutex)
-                            {
-                                progress++;
-                            }
+                            progress.LockAndIncrement();
                         }
 
                         var nextLayerIndex = group.Key + 1;
@@ -287,10 +284,7 @@ namespace UVtools.Core.Operations
                         image.Dispose();
                     }
 
-                    lock (progress.Mutex)
-                    {
-                        progress++;
-                    }
+                    progress.LockAndIncrement();
                 });
             }
 

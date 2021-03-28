@@ -26,7 +26,7 @@ using UVtools.Core.PixelEditor;
 
 namespace UVtools.Core
 {
-    public class LayerManager : BindableBase, IEnumerable<Layer>, IDisposable
+    public class LayerManager : BindableBase, IList<Layer>, IDisposable
     {
         #region Properties
         public FileFormat SlicerFile { get; set; }
@@ -39,21 +39,53 @@ namespace UVtools.Core
         public Layer[] Layers
         {
             get => _layers;
-            protected internal set
+            set
             {
+                //if (ReferenceEquals(_layers, value)) return;
+
+                var rebuildProperties = false;
+                var oldLayerCount = LayerCount;
+                var oldLayers = _layers;
                 _layers = value;
                 BoundingRectangle = Rectangle.Empty;
 
-                if (SlicerFile.LayerCount != Count)
+                if (LayerCount != oldLayerCount)
                 {
-                    SlicerFile.LayerCount = Count;
+                    SlicerFile.LayerCount = LayerCount;
                 }
 
                 SlicerFile.RequireFullEncode = true;
-                if (value is null) return;
-                SetAllIsModified(true);
+                SlicerFile.PrintHeight = SlicerFile.PrintHeight;
                 SlicerFile.PrintTime = SlicerFile.PrintTimeComputed;
-                SlicerFile.RebuildGCode();
+
+                if (value is not null && LayerCount > 0)
+                {
+                    SlicerFile.MaterialMilliliters = 0;
+                    //SetAllIsModified(true);
+
+                    for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++) // Forced sanitize
+                    {
+                        if (_layers[layerIndex] is null) continue;
+                        _layers[layerIndex].Index = layerIndex;
+                        _layers[layerIndex].ParentLayerManager = this;
+
+                        if (layerIndex >= oldLayerCount || layerIndex < oldLayerCount && !_layers[layerIndex].Equals(oldLayers[layerIndex]))
+                        {
+                            // Marks as modified only if layer image changed on this index
+                            _layers[layerIndex].IsModified = true;
+                        }
+                    }
+
+                    if (LayerCount != oldLayerCount && !SlicerFile.SuppressRebuildProperties && LastLayer is not null)
+                    {
+                        RebuildLayersProperties();
+                        rebuildProperties = true;
+                    }
+                }
+
+                if(!rebuildProperties) SlicerFile.RebuildGCode();
+
+                RaisePropertyChanged();
             }
         }
 
@@ -66,6 +98,11 @@ namespace UVtools.Core
         /// Gets the last layer
         /// </summary>
         public Layer LastLayer => _layers?[^1];
+
+        /// <summary>
+        /// Gets the last layer index
+        /// </summary>
+        public uint LastLayerIndex => LayerCount - 1;
 
         /// <summary>
         /// Gets the bounding rectangle of the object
@@ -101,14 +138,135 @@ namespace UVtools.Core
                     (float)Math.Round(_boundingRectangle.Height * pixelSize.Height, 2));
             }
         }
+
+        public void Init(uint layerCount)
+        {
+            _layers = new Layer[layerCount];
+        }
+
+        public void Init(Layer[] layers)
+        {
+            _layers = layers;
+        }
+
+        public void Add(Layer layer)
+        {
+            Layers = _layers.Append(layer).ToArray();
+        }
+
+        public void Add(IEnumerable<Layer> layers)
+        {
+            var list = _layers.ToList();
+            list.AddRange(layers);
+            Layers = list.ToArray();
+        }
+
+        public void Clear()
+        {
+            //Layers = Array.Empty<Layer>();
+            Layers = null;
+        }
+
+        public bool Contains(Layer layer)
+        {
+            return _layers.Contains(layer);
+        }
+
+        public void CopyTo(Layer[] array, int arrayIndex)
+        {
+            _layers.CopyTo(array, arrayIndex);
+        }
+
+        public bool Remove(Layer layer)
+        {
+            var list = _layers.ToList();
+            var result = list.Remove(layer);
+            if (result)
+            {
+                Layers = list.ToArray();
+            }
+
+            return result;
+        }
+
+        public int IndexOf(Layer layer)
+        {
+            for (int layerIndex = 0; layerIndex < Count; layerIndex++)
+            {
+                if (_layers[layerIndex].Equals(layer)) return layerIndex;
+            }
+
+            return -1;
+        }
+
+        public void Prepend(Layer layer) => Insert(0, layer);
+        public void Prepend(IEnumerable<Layer> layers) => InsertRange(0, layers);
+        public void Append(Layer layer) => Add(layer);
+        public void AppendRange(IEnumerable<Layer> layers) => Add(layers);
+
+        public void Insert(int index, Layer layer)
+        {
+            if (index < 0) return;
+            if (index > Count) 
+            {
+                Add(layer); // Append
+                return;
+            }
+
+            var list = _layers.ToList();
+            list.Insert(index, layer);
+            Layers = list.ToArray();
+        }
+
+        public void InsertRange(int index, IEnumerable<Layer> layers)
+        {
+            if (index < 0) return;
             
+            if (index > Count)
+            {
+                Add(layers);
+                return;
+            }
+
+            var list = _layers.ToList();
+            list.InsertRange(index, layers);
+            Layers = list.ToArray();
+        }
+
+        public void RemoveAt(int index)
+        {
+            if (index >= LastLayerIndex) return;
+            var list = _layers.ToList();
+            list.RemoveAt(index);
+            Layers = list.ToArray();
+        }
+
+        public void RemoveRange(int index, int count)
+        {
+            if (count <= 0 || index >= LastLayerIndex) return;
+            var list = _layers.ToList();
+            list.RemoveRange(index, count);
+            Layers = list.ToArray();
+        }
+
+        /// <summary>
+        /// Removes all null layers in the collection
+        /// </summary>
+        public void RemoveNulls()
+        {
+            Layers = _layers.Where(layer => layer is not null).ToArray();
+        }
+
+        public int Count => _layers?.Length ?? 0;
+
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Gets the layers count
         /// </summary>
-        public uint Count => (uint) Layers.Length;
+        public uint LayerCount => (uint)(_layers?.Length ?? 0);
 
-        public byte LayerDigits => (byte)Count.ToString().Length;
+        public byte LayerDigits => (byte)LayerCount.ToString().Length;
 
         /// <summary>
         /// Gets if any layer got modified, otherwise false
@@ -117,9 +275,9 @@ namespace UVtools.Core
         {
             get
             {
-                for (uint i = 0; i < Count; i++)
+                for (uint i = 0; i < LayerCount; i++)
                 {
-                    if (Layers[i].IsModified) return true;
+                    if (_layers[i].IsModified) return true;
                 }
                 return false;
             }
@@ -128,14 +286,19 @@ namespace UVtools.Core
         /// <summary>
         /// Gets if all layers have same value parameters as global settings
         /// </summary>
-        public bool AllLayersHaveGlobalParameters => Layers.Where(layer => layer is not null).All(layer => layer.HaveGlobalParameters);
+        public bool AllLayersHaveGlobalParameters => _layers.Where(layer => layer is not null).All(layer => layer.HaveGlobalParameters);
 
         //public float LayerHeight => Layers[0].PositionZ;
 
         #endregion
 
         #region Constructors
-        public LayerManager(uint layerCount, FileFormat slicerFile)
+        public LayerManager(FileFormat slicerFile)
+        {
+            SlicerFile = slicerFile;
+        }
+
+        public LayerManager(uint layerCount, FileFormat slicerFile) : this(slicerFile)
         {
             SlicerFile = slicerFile;
             _layers = new Layer[layerCount];
@@ -145,20 +308,20 @@ namespace UVtools.Core
         #region Indexers
         public Layer this[uint index]
         {
-            get => Layers[index];
-            set => AddLayer(index, value);
+            get => _layers[index];
+            set => SetLayer(index, value);
         }
 
         public Layer this[int index]
         {
-            get => Layers[index];
-            set => AddLayer((uint) index, value);
+            get => _layers[index];
+            set => SetLayer((uint) index, value);
         }
 
         public Layer this[long index]
         {
-            get => Layers[index];
-            set => AddLayer((uint) index, value);
+            get => _layers[index];
+            set => SetLayer((uint) index, value);
         }
 
         #endregion
@@ -234,65 +397,69 @@ namespace UVtools.Core
         public void RebuildLayersProperties(bool recalculateZPos = true, string property = null)
         {
             //var layerHeight = SlicerFile.LayerHeight;
-            for (uint layerIndex = 0; layerIndex < Count; layerIndex++)
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
                 var layer = this[layerIndex];
                 layer.Index = layerIndex;
+                layer.ParentLayerManager = this;
 
-                if (property is null || property == nameof(SlicerFile.BottomLayerCount))
+                if (property != string.Empty)
                 {
-                    layer.ExposureTime = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
-                    layer.LiftHeight = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
-                    layer.LiftSpeed = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
-                    layer.RetractSpeed = SlicerFile.RetractSpeed;
-                    layer.LightPWM = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
-                    layer.LightOffDelay = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
-                }
-                else
-                {
-                    if (layer.IsNormalLayer)
+                    if (property is null || property == nameof(SlicerFile.BottomLayerCount))
                     {
-                        switch (property)
-                        {
-                            case nameof(SlicerFile.ExposureTime):
-                                layer.ExposureTime = SlicerFile.ExposureTime;
-                                break;
-                            case nameof(SlicerFile.LiftHeight):
-                                layer.LiftHeight = SlicerFile.LiftHeight;
-                                break;
-                            case nameof(SlicerFile.LiftSpeed):
-                                layer.LiftSpeed = SlicerFile.LiftSpeed;
-                                break;
-                            case nameof(SlicerFile.LightOffDelay):
-                                layer.LightOffDelay = SlicerFile.LightOffDelay;
-                                break;
-                            case nameof(SlicerFile.LightPWM):
-                                layer.LightPWM = SlicerFile.LightPWM;
-                                break;
-                        }
+                        layer.ExposureTime = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
+                        layer.LiftHeight = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
+                        layer.LiftSpeed = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
+                        layer.RetractSpeed = SlicerFile.RetractSpeed;
+                        layer.LightPWM = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
+                        layer.LightOffDelay = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
                     }
-                    else // Bottom layers
+                    else
                     {
-                        switch (property)
+                        if (layer.IsNormalLayer)
                         {
-                            case nameof(SlicerFile.BottomExposureTime):
-                                layer.ExposureTime = SlicerFile.BottomExposureTime;
-                                break;
-                            case nameof(SlicerFile.BottomLiftHeight):
-                                layer.LiftHeight = SlicerFile.BottomLiftHeight;
-                                break;
-                            case nameof(SlicerFile.BottomLiftSpeed):
-                                layer.LiftSpeed = SlicerFile.BottomLiftSpeed;
-                                break;
-                            case nameof(SlicerFile.RetractSpeed):
-                                layer.RetractSpeed = SlicerFile.RetractSpeed;
-                                break;
-                            case nameof(SlicerFile.BottomLightOffDelay):
-                                layer.LightOffDelay = SlicerFile.BottomLightOffDelay;
-                                break;
-                            case nameof(SlicerFile.BottomLightPWM):
-                                layer.LightPWM = SlicerFile.BottomLightPWM;
-                                break;
+                            switch (property)
+                            {
+                                case nameof(SlicerFile.ExposureTime):
+                                    layer.ExposureTime = SlicerFile.ExposureTime;
+                                    break;
+                                case nameof(SlicerFile.LiftHeight):
+                                    layer.LiftHeight = SlicerFile.LiftHeight;
+                                    break;
+                                case nameof(SlicerFile.LiftSpeed):
+                                    layer.LiftSpeed = SlicerFile.LiftSpeed;
+                                    break;
+                                case nameof(SlicerFile.LightOffDelay):
+                                    layer.LightOffDelay = SlicerFile.LightOffDelay;
+                                    break;
+                                case nameof(SlicerFile.LightPWM):
+                                    layer.LightPWM = SlicerFile.LightPWM;
+                                    break;
+                            }
+                        }
+                        else // Bottom layers
+                        {
+                            switch (property)
+                            {
+                                case nameof(SlicerFile.BottomExposureTime):
+                                    layer.ExposureTime = SlicerFile.BottomExposureTime;
+                                    break;
+                                case nameof(SlicerFile.BottomLiftHeight):
+                                    layer.LiftHeight = SlicerFile.BottomLiftHeight;
+                                    break;
+                                case nameof(SlicerFile.BottomLiftSpeed):
+                                    layer.LiftSpeed = SlicerFile.BottomLiftSpeed;
+                                    break;
+                                case nameof(SlicerFile.RetractSpeed):
+                                    layer.RetractSpeed = SlicerFile.RetractSpeed;
+                                    break;
+                                case nameof(SlicerFile.BottomLightOffDelay):
+                                    layer.LightOffDelay = SlicerFile.BottomLightOffDelay;
+                                    break;
+                                case nameof(SlicerFile.BottomLightPWM):
+                                    layer.LightPWM = SlicerFile.BottomLightPWM;
+                                    break;
+                            }
                         }
                     }
                 }
@@ -311,7 +478,7 @@ namespace UVtools.Core
         /// </summary>
         public void SetNoLiftForSamePositionedLayers()
         {
-            for (int layerIndex = 1; layerIndex < Count; layerIndex++)
+            for (int layerIndex = 1; layerIndex < LayerCount; layerIndex++)
             {
                 if (this[layerIndex - 1].PositionZ != this[layerIndex].PositionZ) continue;
                 this[layerIndex].LiftHeight = 0;
@@ -321,23 +488,20 @@ namespace UVtools.Core
 
         public Rectangle GetBoundingRectangle(OperationProgress progress = null)
         {
-            if (!_boundingRectangle.IsEmpty || Count == 0 || this[0] is null) return _boundingRectangle;
-            progress ??= new OperationProgress(OperationProgress.StatusOptimizingBounds, Count - 1);
+            if (!_boundingRectangle.IsEmpty || LayerCount == 0 || this[0] is null) return _boundingRectangle;
+            progress ??= new OperationProgress(OperationProgress.StatusOptimizingBounds, LayerCount - 1);
             _boundingRectangle = this[0].BoundingRectangle;
             if (_boundingRectangle.IsEmpty) // Safe checking
             {
-                progress.Reset(OperationProgress.StatusOptimizingBounds, Count-1);
-                Parallel.For(0, Count, layerIndex =>
+                progress.Reset(OperationProgress.StatusOptimizingBounds, LayerCount-1);
+                Parallel.For(0, LayerCount, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     
                     this[layerIndex].GetBoundingRectangle();
 
                     if (progress is null) return;
-                    lock (progress.Mutex)
-                    {
-                        progress++;
-                    }
+                    progress.LockAndIncrement();
                 });
                 _boundingRectangle = this[0].BoundingRectangle;
 
@@ -348,10 +512,10 @@ namespace UVtools.Core
                 }
             }
 
-            progress.Reset(OperationProgress.StatusCalculatingBounds, Count-1);
-            for (int i = 1; i < Count; i++)
+            progress.Reset(OperationProgress.StatusCalculatingBounds, LayerCount-1);
+            for (int i = 1; i < LayerCount; i++)
             {
-                if(this[i].BoundingRectangle.IsEmpty) continue;
+                if(this[i] is null || this[i].BoundingRectangle.IsEmpty) continue;
                 _boundingRectangle = Rectangle.Union(_boundingRectangle, this[i].BoundingRectangle);
                 progress++;
             }
@@ -360,19 +524,18 @@ namespace UVtools.Core
         }
 
         /// <summary>
-        /// Add a layer
+        /// Sets a layer
         /// </summary>
         /// <param name="index">Layer index</param>
         /// <param name="layer">Layer to add</param>
         /// <param name="makeClone">True to add a clone of the layer</param>
-        public void AddLayer(uint index, Layer layer, bool makeClone = false)
+        public void SetLayer(uint index, Layer layer, bool makeClone = false)
         {
-            if (Layers[index] is not null && layer is not null) layer.IsModified = true;
-            Layers[index] = makeClone && layer is not null ? layer.Clone() : layer;
-            if (layer is not null)
-            {
-                layer.ParentLayerManager = this;
-            }
+            if (_layers[index] is not null && layer is not null) layer.IsModified = true;
+            _layers[index] = makeClone && layer is not null ? layer.Clone() : layer;
+            if (layer is null) return;
+            layer.Index = index;
+            layer.ParentLayerManager = this;
         }
 
         /// <summary>
@@ -380,13 +543,11 @@ namespace UVtools.Core
         /// </summary>
         /// <param name="layers">Layers to add</param>
         /// <param name="makeClone">True to add a clone of layers</param>
-        public void AddLayers(IEnumerable<Layer> layers, bool makeClone = false)
+        public void SetLayers(IEnumerable<Layer> layers, bool makeClone = false)
         {
-            //layer.Index = index;
             foreach (var layer in layers)
             {
-                layer.ParentLayerManager = this;
-                Layers[layer.Index] = makeClone ? layer.Clone() : layer;
+                SetLayer(layer.Index, layer, makeClone);
             }
         }
 
@@ -397,7 +558,7 @@ namespace UVtools.Core
         /// <returns></returns>
         public Layer GetLayer(uint index)
         {
-            return Layers[index];
+            return _layers[index];
         }
 
         public static void MutateGetVarsIterationChamfer(uint startLayerIndex, uint endLayerIndex, int iterationsStart, int iterationsEnd, ref bool isFade, out float iterationSteps, out int maxIteration)
@@ -452,7 +613,7 @@ namespace UVtools.Core
             List<uint> actionLayers = new();
             bool checkedEmptyLayers = false;
             Mat emptyMat = new ();
-            Mat[] cachedLayers = new Mat[Count];
+            Mat[] cachedLayers = new Mat[LayerCount];
             const uint cacheCount = 300;
 
             bool IsIgnored(LayerIssue issue) => !(ignoredIssues is null) && ignoredIssues.Count > 0 && ignoredIssues.Contains(issue);
@@ -466,7 +627,7 @@ namespace UVtools.Core
             Mat GetCachedMat(uint layerIndex)
             {
                 if (cachedLayers[layerIndex] is not null) return cachedLayers[layerIndex];
-                Parallel.For(layerIndex, Math.Min(layerIndex + cacheCount, Count), i =>
+                Parallel.For(layerIndex, Math.Min(layerIndex + cacheCount, LayerCount), i =>
                 {
                     if (this[i].IsEmpty) return; // empty layers
                     cachedLayers[i] = this[i].LayerMat;
@@ -481,7 +642,7 @@ namespace UVtools.Core
             )
             {
                 checkedEmptyLayers = true;
-                for (uint layerIndex = 0; layerIndex < Count; layerIndex++)
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
                     var layer = this[layerIndex];
                     if (layer.IsEmpty)
@@ -500,7 +661,7 @@ namespace UVtools.Core
             if (!checkedEmptyLayers && emptyLayersConfig)
             {
                 checkedEmptyLayers = true;
-                for (uint layerIndex = 0; layerIndex < Count; layerIndex++)
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
                     var layer = this[layerIndex];
                     if (layer.IsEmpty)
@@ -522,11 +683,8 @@ namespace UVtools.Core
                     var layer = this[layerIndex];
                     if (layer.IsEmpty)
                     {
-                        lock (progress.Mutex)
-                        {
-                            progress++;
-                        }
-                        
+                        progress.LockAndIncrement();
+
                         return; // Empty layer
                     }
 
@@ -614,10 +772,7 @@ namespace UVtools.Core
                         }
                     }
 
-                    lock (progress.Mutex)
-                    {
-                        progress++;
-                    }
+                    progress.LockAndIncrement();
                 });
 
                 for (; i < layerAdvance - 1; i++)
@@ -673,7 +828,7 @@ namespace UVtools.Core
 
             if (islandConfig.Enabled || overhangConfig.Enabled || resinTrapConfig.Enabled || touchBoundConfig.Enabled || emptyLayersConfig)
             {
-                progress.Reset(OperationProgress.StatusIslands, Count);
+                progress.Reset(OperationProgress.StatusIslands, LayerCount);
 
                 // Detect contours
                 Parallel.ForEach(this,
@@ -1071,7 +1226,7 @@ namespace UVtools.Core
                                 listHollowArea.Add(new LayerHollowArea(contours[i].ToArray(),
                                     rect,
                                     layer.Index == 0 ||
-                                    layer.Index == Count - 1 // First and Last layers, always drains
+                                    layer.Index == LayerCount - 1 // First and Last layers, always drains
                                         ? LayerHollowArea.AreaType.Drain
                                         : LayerHollowArea.AreaType.Unknown));
 
@@ -1087,11 +1242,11 @@ namespace UVtools.Core
 
             if (resinTrapConfig.Enabled)
             {
-                progress.Reset(OperationProgress.StatusResinTraps, Count);
+                progress.Reset(OperationProgress.StatusResinTraps, LayerCount);
 
 
 
-                for (uint layerIndex = 1; layerIndex < Count - 1; layerIndex++) // First and Last layers, always drains
+                for (uint layerIndex = 1; layerIndex < LayerCount - 1; layerIndex++) // First and Last layers, always drains
                 {
                     if (progress.Token.IsCancellationRequested) break;
                     if (!layerHollowAreas.TryGetValue(layerIndex, out var areas))
@@ -1130,13 +1285,13 @@ namespace UVtools.Core
                                 checkArea.Processed = true;
                                 nextLayerIndex += dir;
 
-                                if (nextLayerIndex < 0 || nextLayerIndex >= Count)
+                                if (nextLayerIndex < 0 || nextLayerIndex >= LayerCount)
                                     break; // Exhausted layers
                                 bool haveNextAreas =
                                     layerHollowAreas.TryGetValue((uint) nextLayerIndex, out var nextAreas);
                                 Dictionary<int, LayerHollowArea> intersectingAreas = new();
 
-                                progress.Reset(OperationProgress.StatusResinTraps, Count, (uint) nextLayerIndex);
+                                progress.Reset(OperationProgress.StatusResinTraps, LayerCount, (uint) nextLayerIndex);
 
                                 using (var image = this[nextLayerIndex].LayerMat)
                                 {
@@ -1289,7 +1444,7 @@ namespace UVtools.Core
             });*/
             if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.PixelsCount).ToList();
 
-            for (uint layerIndex = 0; layerIndex < Count; layerIndex++)
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
                 if (!layerHollowAreas.TryGetValue(layerIndex, out var list)) continue;
                 if (list.Count == 0) continue;
@@ -1454,34 +1609,22 @@ namespace UVtools.Core
             }
 
             progress.Reset("Saving", (uint) modifiedLayers.Count);
-            Parallel.ForEach(modifiedLayers, (modfiedLayer, state) =>
+            Parallel.ForEach(modifiedLayers, (modifiedLayer, state) =>
             {
-                this[modfiedLayer.Key].LayerMat = modfiedLayer.Value;
-                modfiedLayer.Value.Dispose();
+                this[modifiedLayer.Key].LayerMat = modifiedLayer.Value;
+                modifiedLayer.Value.Dispose();
 
-                lock (progress)
-                {
-                    progress++;
-                }
+                progress.LockAndIncrement();
             });
-            /*foreach (var modfiedLayer in modfiedLayers)
-            {
-                this[modfiedLayer.Key].LayerMat = modfiedLayer.Value;
-                modfiedLayer.Value.Dispose();
-                progress++;
-            }*/
 
-            //pixelHistory.Clear();
         }
-
-        
 
         /// <summary>
         /// Set the IsModified property for all layers
         /// </summary>
         public void SetAllIsModified(bool isModified)
         {
-            for (uint i = 0; i < Count; i++)
+            for (uint i = 0; i < LayerCount; i++)
             {
                 if(Layers[i] is null) continue;
                 Layers[i].IsModified = isModified;
@@ -1492,27 +1635,46 @@ namespace UVtools.Core
         /// Reallocate with new size
         /// </summary>
         /// <returns></returns>
-        public LayerManager ReallocateNew(uint newLayerCount, bool makeClone = false)
+        public Layer[] ReallocateNew(uint newLayerCount, bool makeClone = false)
         {
-            LayerManager layerManager = new LayerManager(newLayerCount, SlicerFile);
-            foreach (var layer in this)
+            var layers = new Layer[newLayerCount];
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                if (layer.Index >= newLayerCount) break;
-                layerManager[layer.Index] = makeClone ? layer.Clone() : layer;
+                if (layerIndex >= newLayerCount) break;
+                var layer = this[layerIndex];
+                layers[layerIndex] = makeClone && layer is not null ? layer.Clone() : layer;
             }
 
-            layerManager.BoundingRectangle = Rectangle.Empty;
-
-            return layerManager;
+            return layers;
         }
 
         /// <summary>
-        /// Reallocate with add size
+        /// Reallocate layer count with a new size
+        /// </summary>
+        /// <param name="newLayerCount">New layer count</param>
+        /// <param name="initBlack"></param>
+        public void Reallocate(uint newLayerCount, bool initBlack = false)
+        {
+            var oldLayerCount = LayerCount;
+            int differenceLayerCount = (int)newLayerCount - Count;
+            if (differenceLayerCount == 0) return;
+            Array.Resize(ref _layers, (int) newLayerCount);
+            if (differenceLayerCount > 0 && initBlack)
+            {
+                Parallel.For(oldLayerCount, newLayerCount, layerIndex =>
+                {
+                    this[layerIndex] = new Layer((uint)layerIndex, EmguExtensions.InitMat(SlicerFile.Resolution), this);
+                });
+            }
+        }
+
+        /// <summary>
+        /// Reallocate at given index
         /// </summary>
         /// <returns></returns>
-        public void Reallocate(uint insertAtLayerIndex, uint layerCount, bool initBlack = false)
+        public void ReallocateInsert(uint insertAtLayerIndex, uint layerCount, bool initBlack = false)
         {
-            var newLayers = new Layer[Count + layerCount];
+            var newLayers = new Layer[LayerCount + layerCount];
 
             // Rearrange
             for (uint layerIndex = 0; layerIndex < insertAtLayerIndex; layerIndex++)
@@ -1539,9 +1701,14 @@ namespace UVtools.Core
             {
                 Layers[layerIndex] = initBlack ? new Layer(layerIndex, EmguExtensions.InitMat(SlicerFile.Resolution), this) : null;
             }*/
-            Layers = newLayers;
+            _layers = newLayers;
         }
 
+        /// <summary>
+        /// Reallocate at a kept range
+        /// </summary>
+        /// <param name="startLayerIndex"></param>
+        /// <param name="endLayerIndex"></param>
         public void ReallocateRange(uint startLayerIndex, uint endLayerIndex)
         {
             if ((int)(endLayerIndex - startLayerIndex) < 0) return;
@@ -1553,20 +1720,20 @@ namespace UVtools.Core
                 newLayers[currentLayerIndex++] = _layers[layerIndex];
             }
 
-            Layers = newLayers;
+            _layers = newLayers;
         }
 
         /// <summary>
         /// Reallocate at start
         /// </summary>
         /// <returns></returns>
-        public void ReallocateStart(uint layerCount, bool initBlack = false) => Reallocate(0, layerCount, initBlack);
+        public void ReallocateStart(uint layerCount, bool initBlack = false) => ReallocateInsert(0, layerCount, initBlack);
 
         /// <summary>
         /// Reallocate at end
         /// </summary>
         /// <returns></returns>
-        public void ReallocateEnd(uint layerCount, bool initBlack = false) => Reallocate(Count, layerCount, initBlack);
+        public void ReallocateEnd(uint layerCount, bool initBlack = false) => ReallocateInsert(LayerCount, layerCount, initBlack);
 
         /// <summary>
         /// Clone this object
@@ -1574,14 +1741,24 @@ namespace UVtools.Core
         /// <returns></returns>
         public LayerManager Clone()
         {
-            LayerManager layerManager = new LayerManager(Count, SlicerFile);
-            foreach (var layer in this)
+            LayerManager layerManager = new(SlicerFile);
+            layerManager.Init(CloneLayers());
+            /*foreach (var layer in this)
             {
                 layerManager[layer.Index] = layer.Clone();
-            }
+            }*/
             layerManager.BoundingRectangle = BoundingRectangle;
             
             return layerManager;
+        }
+
+        /// <summary>
+        /// Clone layers
+        /// </summary>
+        /// <returns></returns>
+        public Layer[] CloneLayers()
+        {
+            return Layer.CloneLayers(_layers);
         }
 
         public void Dispose() { }
@@ -1592,11 +1769,9 @@ namespace UVtools.Core
 
         public override string ToString()
         {
-            return $"{nameof(BoundingRectangle)}: {BoundingRectangle}, {nameof(Count)}: {Count}, {nameof(IsModified)}: {IsModified}";
+            return $"{nameof(BoundingRectangle)}: {BoundingRectangle}, {nameof(LayerCount)}: {LayerCount}, {nameof(IsModified)}: {IsModified}";
         }
 
         #endregion
-
-        
     }
 }

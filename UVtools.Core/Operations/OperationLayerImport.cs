@@ -245,7 +245,7 @@ namespace UVtools.Core.Operations
                 {
                     progress.Reset("Packing images", (uint)keyImage.Count);
                     SL1File format = new();
-                    format.LayerManager = new LayerManager((uint)keyImage.Count, format);
+                    format.LayerManager.Init((uint)keyImage.Count);
 
                     Parallel.ForEach(keyImage, pair =>
                     {
@@ -254,10 +254,7 @@ namespace UVtools.Core.Operations
                         if (pair.Key == 0) format.Resolution = mat.Size;
                         format[pair.Key] = new Layer(pair.Key, mat, format);
 
-                        lock (progress.Mutex)
-                        {
-                            progress++;
-                        }
+                        progress.LockAndIncrement();
                     });
 
                     progress.Token.ThrowIfCancellationRequested();
@@ -306,7 +303,7 @@ namespace UVtools.Core.Operations
                             if (SlicerFile.Resolution != fileFormat.Resolution &&
                                 (SlicerFile.Resolution.Width < fileFormatBoundingRectangle.Width ||
                                  SlicerFile.Resolution.Height < fileFormatBoundingRectangle.Height)) continue;
-                            SlicerFile.LayerManager.Reallocate(_startLayerIndex, fileFormat.LayerCount);
+                            SlicerFile.LayerManager.ReallocateInsert(_startLayerIndex, fileFormat.LayerCount);
                             break;
                         case ImportTypes.Replace:
                         case ImportTypes.Stack:
@@ -472,11 +469,7 @@ namespace UVtools.Core.Operations
                             }
 
 
-                            lock (progress.Mutex)
-                            {
-                                lastProcessedLayerIndex = Math.Max(lastProcessedLayerIndex, (int)layerIndex);
-                                progress++;
-                            }
+                            progress.LockAndIncrement();
                         });
 
                     fileFormat.Dispose();

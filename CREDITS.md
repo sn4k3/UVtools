@@ -50,3 +50,5 @@
 * Nadine Maillard
 * Sidney Cheng
 * Ben Ford
+* Mario Molero
+* Dennis Hansen

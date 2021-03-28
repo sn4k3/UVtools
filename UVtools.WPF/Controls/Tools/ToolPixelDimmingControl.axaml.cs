@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Emgu.CV;
 using UVtools.Core.Extensions;
@@ -23,7 +24,17 @@ namespace UVtools.WPF.Controls.Tools
         {
             AvaloniaXamlLoader.Load(this);
         }
-      
 
+        public async void LoadPatternFromImage(bool isAlternatePattern = false)
+        {
+            var dialog = new OpenFileDialog
+            {
+                AllowMultiple = false,
+                Filters = Helpers.ImagesFileFilter,
+            };
+            var files = await dialog.ShowAsync(ParentWindow);
+            if (files is null || files.Length == 0) return;
+            Operation.LoadPatternFromImage(files[0], isAlternatePattern);
+        }
     }
 }

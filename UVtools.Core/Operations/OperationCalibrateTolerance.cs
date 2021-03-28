@@ -732,10 +732,7 @@ namespace UVtools.Core.Operations
             {
                 newLayers[layerIndex] = new Layer((uint)layerIndex, layers[layerIndex], SlicerFile.LayerManager) {IsModified = true};
                 layers[layerIndex].Dispose();
-                lock (progress)
-                {
-                    progress++;
-                }
+                progress.LockAndIncrement();
             });
 
             if (SlicerFile.ThumbnailsCount > 0)

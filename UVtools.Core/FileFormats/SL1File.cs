@@ -641,7 +641,7 @@ namespace UVtools.Core.FileFormats
                     LightPWM = LookupCustomValue(Keyword_LightPWM, DefaultBottomLightPWM);
                 });
                 
-                LayerManager = new LayerManager((uint) (OutputConfigSettings.NumSlow + OutputConfigSettings.NumFast), this);
+                LayerManager.Init(OutputConfigSettings.NumSlow + OutputConfigSettings.NumFast);
 
                 progress.ItemCount = LayerCount;
 

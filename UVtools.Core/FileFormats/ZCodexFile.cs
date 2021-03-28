@@ -485,7 +485,7 @@ namespace UVtools.Core.FileFormats
                     throw new FileLoadException("ResinGCodeData not found", fileFullPath);
                 }
 
-                LayerManager = new LayerManager(ResinMetadataSettings.TotalLayersCount, this);
+                LayerManager.Init(ResinMetadataSettings.TotalLayersCount);
                 GCode.Clear();
                 using (TextReader tr = new StreamReader(entry.Open()))
                 {

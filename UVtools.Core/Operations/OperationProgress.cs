@@ -32,7 +32,7 @@ namespace UVtools.Core.Operations
         public const string StatusResinTraps = "Layers processed (Resin traps)";
         public const string StatusRepairLayers = "Repaired Layers";
 
-        public object Mutex = new();
+        public readonly object Mutex = new();
 
         public CancellationTokenSource TokenSource { get; } = new();
         public CancellationToken Token => TokenSource.Token;
@@ -104,7 +104,7 @@ namespace UVtools.Core.Operations
             set
             {
                 //_processedItems = value;
-                RaiseAndSetIfChanged(ref _processedItems, value);
+                if(!RaiseAndSetIfChanged(ref _processedItems, value)) return;
                 RaisePropertyChanged(nameof(ProgressPercent));
                 RaisePropertyChanged(nameof(Description));
             }
@@ -189,10 +189,14 @@ $"{_processedItems.ToString().PadLeft(_itemCount.ToString().Length, '0')}/{_item
 
         public void LockAndIncrement()
         {
-            lock (Mutex)
+            /*lock (Mutex)
             {
                 ProcessedItems++;
-            }
+            }*/
+            Interlocked.Increment(ref _processedItems);
+            RaisePropertyChanged(nameof(ProcessedItems));
+            RaisePropertyChanged(nameof(ProgressPercent));
+            RaisePropertyChanged(nameof(Description));
         }
     }
 }

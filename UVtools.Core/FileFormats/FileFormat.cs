@@ -482,7 +482,8 @@ namespace UVtools.Core.FileFormats
         public LayerManager LayerManager
         {
             get => _layerManager;
-            set
+            private init => _layerManager = value;
+            /*set
             {
                 var oldLayerManager = _layerManager;
                 if (!RaiseAndSetIfChanged(ref _layerManager, value) || value is null) return;
@@ -499,14 +500,14 @@ namespace UVtools.Core.FileFormats
 
                 if (oldLayerManager is null) return; // Init
 
-                if (oldLayerManager.Count != LayerCount)
+                if (oldLayerManager.LayerCount != LayerCount)
                 {
-                    LayerCount = _layerManager.Count;
+                    LayerCount = _layerManager.LayerCount;
                     if (SuppressRebuildProperties) return;
-                    if (LayerCount == 0 || this[LayerCount - 1] is null) return; // Not initialized
+                    if (LayerCount == 0 || this[LastLayerIndex] is null) return; // Not initialized
                     LayerManager.RebuildLayersProperties();
                 }
-            }
+            }*/
         }
 
         /// <summary>
@@ -722,7 +723,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the last layer index
         /// </summary>
-        public uint LastLayerIndex => LayerCount - 1;
+        public uint LastLayerIndex => LayerManager?.LastLayerIndex ?? 0;
 
         /// <summary>
         /// Checks if this file format supports per layer settings
@@ -734,7 +735,7 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public virtual uint LayerCount
         {
-            get => LayerManager?.Count ?? 0;
+            get => LayerManager?.LayerCount ?? 0;
             set {
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(NormalLayerCount));
@@ -1027,6 +1028,7 @@ namespace UVtools.Core.FileFormats
         #region Constructor
         protected FileFormat()
         {
+            LayerManager = new(this);
             Thumbnails = new Mat[ThumbnailsCount];
             PropertyChanged += OnPropertyChanged;
         }
@@ -1082,7 +1084,7 @@ namespace UVtools.Core.FileFormats
         #region Numerators
         public IEnumerator<Layer> GetEnumerator()
         {
-            return ((IEnumerable<Layer>)LayerManager.Layers).GetEnumerator();
+            return LayerManager.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -1123,7 +1125,7 @@ namespace UVtools.Core.FileFormats
         public virtual void Clear()
         {
             FileFullPath = null;
-            LayerManager = null;
+            LayerManager.Clear();
             GCode.Clear();
 
             if (Thumbnails is not null)
@@ -1491,16 +1493,11 @@ namespace UVtools.Core.FileFormats
                     {
                         if (progress.Token.IsCancellationRequested) return;
                         var byteArr = layer.CompressedBytes;
-                        using (FileStream stream = File.Create(Path.Combine(path, layer.Filename),
-                            byteArr.Length))
-                        {
-                            stream.Write(byteArr, 0, byteArr.Length);
-                            stream.Close();
-                            lock (progress.Mutex)
-                            {
-                                progress++;
-                            }
-                        }
+                        using var stream = File.Create(Path.Combine(path, layer.Filename),
+                            byteArr.Length);
+                        stream.Write(byteArr, 0, byteArr.Length);
+                        stream.Close();
+                        progress.LockAndIncrement();
                     });
                 }
             }
@@ -1813,9 +1810,9 @@ namespace UVtools.Core.FileFormats
 
             slicerFile.SuppressRebuildPropertiesWork(() =>
             {
-                slicerFile.LayerManager = _layerManager.Clone();
+                slicerFile.LayerManager.Init(_layerManager.CloneLayers());
                 slicerFile.AntiAliasing = ValidateAntiAliasingLevel();
-                slicerFile.LayerCount = _layerManager.Count;
+                slicerFile.LayerCount = _layerManager.LayerCount;
                 slicerFile.BottomLayerCount = BottomLayerCount;
                 slicerFile.LayerHeight = LayerHeight;
                 slicerFile.ResolutionX = ResolutionX;

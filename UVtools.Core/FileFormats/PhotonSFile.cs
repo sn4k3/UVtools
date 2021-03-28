@@ -406,10 +406,7 @@ namespace UVtools.Core.FileFormats
                         layerData[layerIndex].Encode(mat);
                     }
 
-                    lock (progress.Mutex)
-                    {
-                        progress++;
-                    }
+                    progress.LockAndIncrement();
                 });
 
                 progress.ItemName = "Saving layers";
@@ -491,7 +488,7 @@ namespace UVtools.Core.FileFormats
                     Debug.WriteLine($"Layer {layerIndex} -> {layerData[layerIndex]}");
                 }
 
-                LayerManager = new LayerManager(LayerSettings.LayerCount, this);
+                LayerManager.Init(LayerSettings.LayerCount);
                 progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
                 Parallel.For(0, LayerCount, 
@@ -502,10 +499,7 @@ namespace UVtools.Core.FileFormats
 
                     using var image = layerData[layerIndex].Decode();
                     this[layerIndex] = new Layer((uint) layerIndex, image, LayerManager);
-                    lock (progress.Mutex)
-                    {
-                        progress++;
-                    }
+                    progress.LockAndIncrement();
                 });
 
                 LayerManager.RebuildLayersProperties();

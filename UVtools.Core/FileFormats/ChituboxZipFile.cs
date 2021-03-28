@@ -438,7 +438,7 @@ namespace UVtools.Core.FileFormats
                     }
                 }
 
-                LayerManager = new LayerManager(HeaderSettings.LayerCount, this);
+                LayerManager.Init(HeaderSettings.LayerCount);
 
                 progress.ItemCount = LayerCount;
 
@@ -487,7 +487,7 @@ namespace UVtools.Core.FileFormats
                 }
 
                 entry = inputFile.GetEntry("preview_cropping.png");
-                if (!ReferenceEquals(entry, null))
+                if (entry is not null)
                 {
                     var count = CreatedThumbnailsCount;
                     Thumbnails[count] = new Mat();

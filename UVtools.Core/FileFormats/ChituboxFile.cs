@@ -1384,10 +1384,7 @@ namespace UVtools.Core.FileFormats
                         LayerDefinitions[aaIndex, layerIndex] = layerData;
                     }
 
-                    lock (progress.Mutex)
-                    {
-                        progress++;
-                    }
+                    progress.LockAndIncrement();
                 });
 
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
@@ -1559,7 +1556,7 @@ namespace UVtools.Core.FileFormats
                 }
             }
 
-            LayerManager = new LayerManager(HeaderSettings.LayerCount, this);
+            LayerManager.Init(HeaderSettings.LayerCount);
 
             progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
@@ -1589,11 +1586,8 @@ namespace UVtools.Core.FileFormats
 
                 this[layerIndex] = layer;
 
-                
-                lock (progress.Mutex)
-                {
-                    progress++;
-                }
+
+                progress.LockAndIncrement();
             });
         }
 

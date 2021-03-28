@@ -995,10 +995,7 @@ namespace UVtools.Core.FileFormats
                         LayersDefinitions[layerIndex] = layer;
                     }
 
-                    lock (progress.Mutex)
-                    {
-                        progress++;
-                    }
+                    progress.LockAndIncrement();
                 });
 
                 progress.Reset(OperationProgress.StatusWritingFile, LayerCount);
@@ -1129,7 +1126,7 @@ namespace UVtools.Core.FileFormats
                     progress.Token.ThrowIfCancellationRequested();
                 }
 
-                LayerManager = new LayerManager(HeaderSettings.LayerCount, this);
+                LayerManager.Init(HeaderSettings.LayerCount);
 
                 progress.Reset(OperationProgress.StatusDecodeLayers, HeaderSettings.LayerCount);
 
@@ -1150,10 +1147,7 @@ namespace UVtools.Core.FileFormats
                         };
                     }
 
-                    lock (progress.Mutex)
-                    {
-                        progress++;
-                    }
+                    progress.LockAndIncrement();
                 });
             }
         }
