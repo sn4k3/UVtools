@@ -55,7 +55,7 @@ With this approach you dont need to convert your .cs file to a script file .csx,
 5. Go to File -> Open Folder (Ctrl + O)
 6. Locate and open the folder: UVtools/UVtools.ScriptSample
 7. Now with the project open, locate and open "ScriptInsetSample.cs" inside Visual Code
-8. A message popup will show on bottom right, asking if you want to install the C# extension, accept and click install
+8. A popup message will show on bottom right, asking if you want to install the C# extension, accept and click install
 9. After get the confirmation of a successful installation i recommend to restart the Visual Code, you can close it and open again, last selected project will auto load with
 10. Now open the "ScriptInsetSample.cs" again
 11. Locate "public void ScriptInit()"
