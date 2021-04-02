@@ -12,7 +12,7 @@ using UVtools.Core.Scripting;
 namespace UVtools.ScriptSample
 {
     /// <summary>
-    /// Performs a black inset around objects
+    /// Change layer properties to random values
     /// </summary>
     public class ScriptChangeLayerPropertiesSample : ScriptGlobals
     {

@@ -15,7 +15,7 @@ using UVtools.Core.Scripting;
 namespace UVtools.ScriptSample
 {
     /// <summary>
-    /// Performs a black inset around objects
+    /// A workflow automation sample
     /// </summary>
     public class ScriptAutomateWorkflowSample : ScriptGlobals
     {
