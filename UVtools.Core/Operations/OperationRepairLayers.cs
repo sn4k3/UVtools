@@ -143,6 +143,7 @@ namespace UVtools.Core.Operations
                 var islandConfig = IslandDetectionConfig;
                 var overhangConfig = new OverhangDetectionConfiguration(false);
                 var touchingBoundsConfig = new TouchingBoundDetectionConfiguration(false);
+                var printHeightConfig = new PrintHeightDetectionConfiguration(false);
                 var resinTrapsConfig = new ResinTrapDetectionConfiguration(false);
                 var emptyLayersConfig = false;
 
@@ -157,7 +158,7 @@ namespace UVtools.Core.Operations
                             .Select(grp => grp.First())
                             .ToList();*/
                         islandConfig.WhiteListLayers = islandsToRecompute.ToList();
-                        recursiveIssues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapsConfig, touchingBoundsConfig, emptyLayersConfig);
+                        recursiveIssues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapsConfig, touchingBoundsConfig, printHeightConfig, emptyLayersConfig);
                         //Debug.WriteLine(i);
                     }
 

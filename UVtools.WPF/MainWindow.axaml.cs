@@ -215,6 +215,14 @@ namespace UVtools.WPF
             },
             new()
             {
+                Tag = new OperationScripting(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/code-16x16.png"))
+                }
+            },
+            new()
+            {
                 Tag = new OperationCalculator(),
                 Icon = new Avalonia.Controls.Image
                 {
@@ -784,7 +792,7 @@ namespace UVtools.WPF
             await settingsWindow.ShowDialog(this);
         }
 
-        public void OpenWebsite()
+        public void OpenHomePage()
         {
             App.OpenBrowser(About.Website);
         }
@@ -792,6 +800,11 @@ namespace UVtools.WPF
         public void OpenDonateWebsite()
         {
             App.OpenBrowser(About.Donate);
+        }
+
+        public void OpenWebsite(string url)
+        {
+            App.OpenBrowser(url);
         }
 
         public async void MenuHelpAboutClicked()
@@ -1098,7 +1111,7 @@ namespace UVtools.WPF
                 MenuFileConvertItems = menuItems.ToArray();
             }
 
-            using Mat mat = SlicerFile[0].LayerMat;
+            using var mat = SlicerFile[0].LayerMat;
 
             VisibleThumbnailIndex = 1;
 
@@ -1124,6 +1137,15 @@ namespace UVtools.WPF
             if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds)
             {
                 ZoomToFit();
+            }
+
+            if (mat.Size != SlicerFile.Resolution)
+            {
+                await this.MessageBoxWaring($"Layer image resolution of {mat.Size} mismatch with printer resolution of {SlicerFile.Resolution}.\n" +
+                                            "Printing this file can lead to problems or malformed model, please verify your slicing settings;\n" +
+                                            "Processing this file with some of the tools can lead to program crash or misfunction;\n" +
+                                            "If you used PrusaSlicer to slice this file, you must use it with compatible UVtools printer profiles (Help - Install profiles into PrusaSlicer).",
+                    "File and layer resolution mismatch!");
             }
 
             if (Settings.Issues.ComputeIssuesOnLoad)
@@ -1448,14 +1470,15 @@ namespace UVtools.WPF
                     {
                         var islandConfig = GetIslandDetectionConfiguration();
                         islandConfig.Enabled = operation.RepairIslands && operation.RemoveIslandsBelowEqualPixelCount > 0;
-                        var overhangConfig = new OverhangDetectionConfiguration { Enabled = false };
+                        var overhangConfig = new OverhangDetectionConfiguration(false);
                         var resinTrapConfig = GetResinTrapDetectionConfiguration();
                         resinTrapConfig.Enabled = operation.RepairResinTraps;
-                        var touchingBoundConfig = new TouchingBoundDetectionConfiguration { Enabled = false };
+                        var touchingBoundConfig = new TouchingBoundDetectionConfiguration(false);
+                        var printHeightConfig = new PrintHeightDetectionConfiguration(false);
 
                         if (islandConfig.Enabled || resinTrapConfig.Enabled)
                         {
-                            ComputeIssues(islandConfig, overhangConfig, resinTrapConfig, touchingBoundConfig, Settings.Issues.ComputeEmptyLayers);
+                            await ComputeIssues(islandConfig, overhangConfig, resinTrapConfig, touchingBoundConfig, printHeightConfig, Settings.Issues.ComputeEmptyLayers);
                         }
                     }
 

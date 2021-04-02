@@ -22,14 +22,21 @@ namespace UVtools.Core
         public OverhangDetectionConfiguration OverhangConfig { get; }
         public ResinTrapDetectionConfiguration ResinTrapConfig { get; }
         public TouchingBoundDetectionConfiguration TouchingBoundConfig { get; }
+        public PrintHeightDetectionConfiguration PrintHeightConfig { get; }
         public bool EmptyLayerConfig { get; }
 
-        public IssuesDetectionConfiguration(IslandDetectionConfiguration islandConfig, OverhangDetectionConfiguration overhangConfig, ResinTrapDetectionConfiguration resinTrapConfig, TouchingBoundDetectionConfiguration touchingBoundConfig, bool emptyLayerConfig)
+        public IssuesDetectionConfiguration(IslandDetectionConfiguration islandConfig,
+            OverhangDetectionConfiguration overhangConfig, 
+            ResinTrapDetectionConfiguration resinTrapConfig, 
+            TouchingBoundDetectionConfiguration touchingBoundConfig,
+            PrintHeightDetectionConfiguration printHeightConfig, 
+            bool emptyLayerConfig)
         {
             IslandConfig = islandConfig;
             OverhangConfig = overhangConfig;
             ResinTrapConfig = resinTrapConfig;
             TouchingBoundConfig = touchingBoundConfig;
+            PrintHeightConfig = printHeightConfig;
             EmptyLayerConfig = emptyLayerConfig;
         }
     }
@@ -211,6 +218,24 @@ namespace UVtools.Core
         }
     }
 
+    public sealed class PrintHeightDetectionConfiguration
+    {
+        /// <summary>
+        /// Gets if the detection is enabled
+        /// </summary>
+        public bool Enabled { get; set; } = true;
+
+        /// <summary>
+        /// Get the offset from top to sum to printer max Z height
+        /// </summary>
+        public float Offset { get; set; }
+
+        public PrintHeightDetectionConfiguration(bool enabled = true)
+        {
+            Enabled = enabled;
+        }
+    }
+
 
     public class LayerIssue : IEquatable<LayerIssue>, IEnumerable<Point>
     {
@@ -220,6 +245,7 @@ namespace UVtools.Core
             Overhang,
             ResinTrap,
             TouchingBound,
+            PrintHeight,
             EmptyLayer,
             //HoleSandwich,
         }

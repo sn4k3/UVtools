@@ -2,10 +2,25 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <Company>PTRTECH</Company>
+    <Description>Scripting samples</Description>
+    <Authors>Tiago Conceição</Authors>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <Copyright>Copyright © 2020 PTRTECH</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\UVtools.Core\UVtools.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -164,11 +164,29 @@
         <MenuItem 
           Header="_Website"
           InputGesture="Ctrl + F1" HotKey="Ctrl + F1"
-          Command="{Binding OpenWebsite}">
+          Command="{Binding OpenHomePage}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\internet-explorer-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
+
+          <MenuItem 
+              Header="Wi_ki &amp; tutorials"
+              Command="{Binding OpenWebsite}"
+              CommandParameter="https://github.com/sn4k3/UVtools/wiki">
+              <MenuItem.Icon>
+                  <Image Source="\Assets\Icons\wikipedia-16x16.png"/>
+              </MenuItem.Icon>
+          </MenuItem>
+
+          <MenuItem 
+              Header="_Facebook group"
+              Command="{Binding OpenWebsite}"
+              CommandParameter="https://www.facebook.com/groups/uvtools">
+              <MenuItem.Icon>
+                  <Image Source="\Assets\Icons\facebook-16x16.png"/>
+              </MenuItem.Icon>
+          </MenuItem>
         
         <MenuItem
           Header="_Donate"
@@ -176,16 +194,6 @@
           Command="{Binding OpenDonateWebsite}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\donate-16x16.png"/>
-          </MenuItem.Icon>
-        </MenuItem>
-
-        <Separator/>
-
-        <MenuItem
-          Header="_Benchmark"
-          Command="{Binding MenuHelpBenchmarkClicked}">
-          <MenuItem.Icon>
-            <Image Source="\Assets\Icons\microchip-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
 
@@ -210,6 +218,16 @@
         </MenuItem>
 
         <Separator/>
+
+        <MenuItem
+            Header="_Benchmark"
+            Command="{Binding MenuHelpBenchmarkClicked}">
+            <MenuItem.Icon>
+                <Image Source="\Assets\Icons\microchip-16x16.png"/>
+            </MenuItem.Icon>
+        </MenuItem>
+
+        <Separator/>
         
         <MenuItem
           Header="_Open settings folder"
@@ -217,6 +235,35 @@
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\open-16x16.png"/>
           </MenuItem.Icon>
+        </MenuItem>
+
+        <Separator/>
+
+        <MenuItem 
+            Header="_Report a issue"
+            Command="{Binding OpenWebsite}"
+            CommandParameter="https://github.com/sn4k3/UVtools/issues/new?assignees=sn4k3&amp;labels=&amp;template=bug_report.md&amp;title=%5BBUG%5D+">
+            <MenuItem.Icon>
+                <Image Source="\Assets\Icons\bug-16x16.png"/>
+            </MenuItem.Icon>
+        </MenuItem>
+
+        <MenuItem 
+            Header="Ask a _question"
+            Command="{Binding OpenWebsite}"
+            CommandParameter="https://github.com/sn4k3/UVtools/discussions/categories/q-a">
+            <MenuItem.Icon>
+                <Image Source="\Assets\Icons\question-16x16.png"/>
+            </MenuItem.Icon>
+        </MenuItem>
+
+        <MenuItem 
+            Header="Suggest an improvement or new features"
+            Command="{Binding OpenWebsite}"
+            CommandParameter="https://github.com/sn4k3/UVtools/discussions/categories/ideas">
+            <MenuItem.Icon>
+                <Image Source="\Assets\Icons\lightbulb-16x16.png"/>
+            </MenuItem.Icon>
         </MenuItem>
 
       </MenuItem>
@@ -727,6 +774,9 @@
                   <CheckBox
                     IsChecked="{Binding Settings.Issues.ComputeTouchingBounds}"
                     Content="Touching bounds"/>
+                  <CheckBox
+                      IsChecked="{Binding Settings.Issues.ComputePrintHeight}"
+                      Content="Print height"/>
                   <CheckBox
                     IsChecked="{Binding Settings.Issues.ComputeEmptyLayers}"
                     Content="Empty layers"/>

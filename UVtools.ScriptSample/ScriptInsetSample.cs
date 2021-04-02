@@ -29,7 +29,7 @@ namespace UVtools.ScriptSample
             Minimum = 1,
             Maximum = ushort.MaxValue,
             Increment = 1,
-            Value = 20
+            Value = 10
         };
 
         ScriptNumericalInput<ushort> InsetThickness = new()

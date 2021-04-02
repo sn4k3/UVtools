@@ -1,5 +1,31 @@
 # Changelog
 
+## 28/03/2021 - v2.8.0
+
+* **Scripting:**
+   * Add scripting capability, this allow to run external scripts inside the GUI and take advantage of visual layout to display user input fields
+   * Scripts run under the "Roslyn Scripting API" and can make use of the whole C# language, this mean a huge boost compared to PowerShell scripts
+   * Scripts are written in the same way UVtools is, by learning and programing scripts you are learning the UVtools core
+   * For more information see the script sample: https://github.com/sn4k3/UVtools/tree/master/UVtools.ScriptSample
+   * To run scripts go to: Tools - Scripting
+* **File formats:**
+   * Add a check and warning when opening an file that have a diferent layer and file resolution
+* **Issues:**
+   * Add "Print height" as new type of issue detection, all layers that goes beyond maximum printer Z height will be flagged as PrintHeight issue
+   * Print height issues will not be automatical fixed, however user can fix it by remove some layers to counter the problem, still is recommended to resize object on slicer
+   * Fix unable to compute issues when only islands or overhangs are selected to be detected alone (#177)
+* **Settings:**
+   * Add default directory for scripts on "General - File dialogs"
+   * Add checkbox on "Issues - Compute - Print height" to enable or disable this type of detection
+   * Add numerical on "Issues - Print height - Offset" to define a custom offset from Z top
+   * Fix default directories input width to not grow with text, it was overflowing on large strings
+* **Menu - Help:**
+   * Add web link to "Wiki & tutorials"
+   * Add web link to "Facebook group"
+   * Add web link to "Report a issue"
+   * Add web link to "Ask a question"
+   * Add web link to "Suggest an improvement or new features"
+
 ## 28/03/2021 - v2.7.2
 
 * **Core:**

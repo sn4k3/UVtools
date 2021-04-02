@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Emgu.CV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;

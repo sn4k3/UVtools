@@ -9,6 +9,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;

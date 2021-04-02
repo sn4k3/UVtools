@@ -8,6 +8,7 @@
 
 using System;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.Util;
@@ -396,6 +397,19 @@ namespace UVtools.Core.Operations
         public virtual bool Execute(Mat mat, params object[] arguments)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Copy this operation base configuration to another operation.
+        /// Layer range, ROI, Masks
+        /// </summary>
+        /// <param name="operation"></param>
+        public void CopyConfigurationTo(Operation operation)
+        {
+            operation.LayerIndexStart = LayerIndexStart;
+            operation.LayerIndexEnd = LayerIndexEnd;
+            operation.ROI = ROI;
+            operation.MaskPoints = MaskPoints;
         }
 
         public virtual Operation Clone()

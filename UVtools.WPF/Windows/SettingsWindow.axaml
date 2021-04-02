@@ -95,7 +95,9 @@
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="File dialog"/>
-                <Grid Margin="10" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,*,Auto,Auto">
+                <Grid Margin="10" 
+                      RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto" 
+                      ColumnDefinitions="Auto,10,429,Auto,Auto">
                   <TextBlock
                     VerticalAlignment="Center"
                     Grid.Row="0" Grid.Column="0"
@@ -103,7 +105,7 @@
                   <ComboBox Items="{Binding FileOpenDialogFilters}"
                             SelectedIndex="{Binding Settings.General.DefaultOpenFileExtensionIndex}"
                             HorizontalAlignment="Left"
-                            Width="473"
+                            Width="490"
                             MaxDropDownHeight="350"
                             Grid.ColumnSpan="3" Grid.Row="0" Grid.Column="2"/>
 
@@ -194,6 +196,29 @@
                     HorizontalAlignment="Stretch"
                     Grid.Row="8" Grid.Column="4">
                     <Image Source="/Assets/Icons/delete-16x16.png"/>
+                  </Button>
+
+                  <TextBlock VerticalAlignment="Center"
+                             Grid.Row="10" Grid.Column="0"
+                             Text="File convert default directory:"/>
+                  <TextBox
+                      Name="General.DefaultDirectoryScripts"
+                      Text="{Binding Settings.General.DefaultDirectoryScripts}"
+                      Grid.Row="10" Grid.Column="2" IsReadOnly="True"/>
+                  <Button Grid.Row="10" Grid.Column="3"
+                          VerticalAlignment="Stretch"
+                          HorizontalAlignment="Stretch"
+                          Command="{Binding GeneralOpenFolderField}"
+                          CommandParameter="DefaultDirectoryScripts">
+                      <Image Source="/Assets/Icons/open-16x16.png"/>
+                  </Button>
+                  <Button
+                      Command="{Binding GeneralClearField}"
+                      CommandParameter="DefaultDirectoryScripts"
+                      VerticalAlignment="Stretch"
+                      HorizontalAlignment="Stretch"
+                      Grid.Row="10" Grid.Column="4">
+                      <Image Source="/Assets/Icons/delete-16x16.png"/>
                   </Button>
 
                 </Grid>
@@ -738,19 +763,40 @@
                           IsChecked="{Binding Settings.Issues.ComputeIssuesOnClickTab}"
                           />
 
-                <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
-                  <TextBlock Text="Compute:" VerticalAlignment="Center"/>
-                  <CheckBox Content="Islands"
-                            IsChecked="{Binding Settings.Issues.ComputeIslands}"/>
-                  <CheckBox Content="Overhangs"
-                            IsChecked="{Binding Settings.Issues.ComputeOverhangs}"/>
-                  <CheckBox Content="Resin traps"
-                            IsChecked="{Binding Settings.Issues.ComputeResinTraps}"/>
-                  <CheckBox Content="Touching boundary"
-                            IsChecked="{Binding Settings.Issues.ComputeTouchingBounds}"/>
-                  <CheckBox Content="Empty layers"
-                            IsChecked="{Binding Settings.Issues.ComputeEmptyLayers}"/>
-                </StackPanel>
+                <Grid 
+                    RowDefinitions="Auto"
+                    ColumnDefinitions="Auto,10,Auto"
+                    Margin="10">
+                    <TextBlock 
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Text="Compute:" VerticalAlignment="Center"/>
+                    <StackPanel
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Orientation="Vertical" Spacing="10">
+
+                        <StackPanel
+                            Orientation="Horizontal" Spacing="10">
+                            <CheckBox Content="Islands"
+                                      IsChecked="{Binding Settings.Issues.ComputeIslands}"/>
+                            <CheckBox Content="Overhangs"
+                                      IsChecked="{Binding Settings.Issues.ComputeOverhangs}"/>
+                            <CheckBox Content="Resin traps"
+                                      IsChecked="{Binding Settings.Issues.ComputeResinTraps}"/>
+                            <CheckBox Content="Touching boundary"
+                                      IsChecked="{Binding Settings.Issues.ComputeTouchingBounds}"/>
+                            <CheckBox Content="Print height"
+                                      IsChecked="{Binding Settings.Issues.ComputePrintHeight}"/>
+                        </StackPanel>
+
+                        <StackPanel
+                            Orientation="Horizontal" Spacing="10">
+                          <CheckBox Content="Empty layers"
+                                    IsChecked="{Binding Settings.Issues.ComputeEmptyLayers}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
 
               </StackPanel>
             </Border>
@@ -760,10 +806,12 @@
                 Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Islands"/>
+                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold"
+                           ToolTip.Tip="Unsupported pixels"
+                           Text="Islands"/>
 
                 <CheckBox Margin="10,10"
-                          Content="Enhance island detection with an combined overhang check"
+                          Content="Enhance island detection with a combined overhang check"
                           IsChecked="{Binding Settings.Issues.IslandEnhancedDetection}"
                           ToolTip.Tip="Combines the island and overhang detections for a better and more realistic detection, also to discard false-positives. (Slower)
 &#x0a;If enabled, and when a island is found, it will check for overhangs on that same island, if no overhang found then the island will be discarded and considered safe, otherwise it will flag as an island issue.
@@ -789,7 +837,7 @@
                     VerticalAlignment="Center"
                     Text="Pixel intensity threshold for island detection"
                     ToolTip.Tip="Pixels below this threshold will be considered black during island detection.
-&#x0a;Pixels equal to or above this theshold will be considred white during island detection.
+&#x0a;Pixels equal to or above this threshold will be considered white during island detection.
 &#x0a;0 to disable."
                   />
                 </StackPanel>
@@ -892,7 +940,9 @@
                 Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Overhangs"/>
+                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold"
+                           ToolTip.Tip="Unsupported pixels that goes beyond a certain angle/threshold"
+                           Text="Overhangs"/>
 
                 <CheckBox
                   Margin="10,10"
@@ -924,7 +974,9 @@
                 Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Resin traps"/>
+                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold"
+                           ToolTip.Tip="Trapped resin inside hollow objects"
+                           Text="Resin traps"/>
 
                 <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
                   <NumericUpDown Width="60"
@@ -992,7 +1044,9 @@
                 Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Touching boundary"/>
+                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" 
+                           ToolTip.Tip="White pixels that nearly or touch the build plate edges"
+                           Text="Touching boundary"/>
 
                 <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
                   <NumericUpDown Width="60"
@@ -1124,6 +1178,31 @@
 
               </StackPanel>
             </Border>
+
+              <Border
+                  Classes="GroupBox"
+                  Margin="5">
+
+                  <StackPanel Orientation="Vertical">
+                      <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold"
+                                 ToolTip.Tip="Layers that surpass printer maximum height"
+                                 Text="Print height"/>
+
+                      <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
+                          <NumericUpDown Width="60"
+                                         Minimum="-50"
+                                         Maximum="50"
+                                         Increment="0.1"
+                                         Value="{Binding Settings.Issues.PrintHeightOffset}"/>
+                          <TextBlock
+                              VerticalAlignment="Center"
+                              Text="Offset height from printer maximum Z height"
+                              ToolTip.Tip="Layers height will be compared with printer maximum possible height + this offset, if a layer surpass this height, it will be marked as a issue.
+&#x0a;Use negative values if you want to give some down margin from top most.
+&#x0a;Note: Some file formats lacks of printer maximum height information, and in this cases the object final height will be used instead as printer maximum, in this cases use a Offset of 0 to not have false detected issues."/>
+                      </StackPanel>
+                    </StackPanel>
+                </Border>
 
           </StackPanel>
         </ScrollViewer>

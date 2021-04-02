@@ -265,8 +265,9 @@ namespace UVtools.WPF
             if (whiteListLayers.Count == 0) return;
             var islandConfig = GetIslandDetectionConfiguration();
             var overhangConfig = GetOverhangDetectionConfiguration();
-            var resinTrapConfig = new ResinTrapDetectionConfiguration { Enabled = false };
-            var touchingBoundConfig = new TouchingBoundDetectionConfiguration { Enabled = false };
+            var resinTrapConfig = new ResinTrapDetectionConfiguration(false);
+            var touchingBoundConfig = new TouchingBoundDetectionConfiguration(false);
+            var printHeightConfig = new PrintHeightDetectionConfiguration(false);
             islandConfig.Enabled = true;
             islandConfig.WhiteListLayers = whiteListLayers;
             overhangConfig.Enabled = true;
@@ -294,7 +295,7 @@ namespace UVtools.WPF
                 try
                 {
                     var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapConfig,
-                        touchingBoundConfig, false, IgnoredIssues,
+                        touchingBoundConfig, printHeightConfig, false, IgnoredIssues,
                         ProgressWindow.RestartProgress());
 
                     issues.RemoveAll(issue => issue.Type != LayerIssue.IssueType.Island && issue.Type != LayerIssue.IssueType.Overhang); // Remove all non islands and overhangs
@@ -435,13 +436,16 @@ namespace UVtools.WPF
                 GetOverhangDetectionConfiguration(),
                 GetResinTrapDetectionConfiguration(),
                 GetTouchingBoundsDetectionConfiguration(),
+                GetPrintHeightDetectionConfiguration(),
                 Settings.Issues.ComputeEmptyLayers);
         }
 
         private async Task ComputeIssues(IslandDetectionConfiguration islandConfig = null,
             OverhangDetectionConfiguration overhangConfig = null,
             ResinTrapDetectionConfiguration resinTrapConfig = null,
-            TouchingBoundDetectionConfiguration touchingBoundConfig = null, bool emptyLayersConfig = true)
+            TouchingBoundDetectionConfiguration touchingBoundConfig = null,
+            PrintHeightDetectionConfiguration printHeightConfig = null,
+            bool emptyLayersConfig = true)
         {
 
             Issues.Clear();
@@ -454,7 +458,7 @@ namespace UVtools.WPF
                 try
                 {
                     var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapConfig, touchingBoundConfig,
-                        emptyLayersConfig, IgnoredIssues, ProgressWindow.RestartProgress());
+                        printHeightConfig, emptyLayersConfig, IgnoredIssues, ProgressWindow.RestartProgress());
                     return issues;
                 }
                 catch (OperationCanceledException)
@@ -575,6 +579,15 @@ namespace UVtools.WPF
                 MarginTop = UserSettings.Instance.Issues.TouchingBoundMarginTop,
                 MarginRight = UserSettings.Instance.Issues.TouchingBoundMarginRight,
                 MarginBottom = UserSettings.Instance.Issues.TouchingBoundMarginBottom,
+            };
+        }
+
+        public PrintHeightDetectionConfiguration GetPrintHeightDetectionConfiguration()
+        {
+            return new PrintHeightDetectionConfiguration
+            {
+                Enabled = Settings.Issues.ComputePrintHeight,
+                Offset = (float) Settings.Issues.PrintHeightOffset
             };
         }
 

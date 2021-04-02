@@ -65,6 +65,19 @@ namespace UVtools.WPF.Controls
             }
         };
 
+        public static readonly List<FileDialogFilter> ScriptsFileFilter = new()
+        {
+            new FileDialogFilter
+            {
+                Name = "Script Files",
+                Extensions = new List<string>
+                {
+                    "csx",
+                    "cs",
+                }
+            }
+        };
+
         public static List<FileDialogFilter> ToAvaloniaFileFilter(List<KeyValuePair<string, List<string>>> data)
         {
             var result = new List<FileDialogFilter>(data.Capacity);

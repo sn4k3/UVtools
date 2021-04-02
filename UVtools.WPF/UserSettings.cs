@@ -43,6 +43,7 @@ namespace UVtools.WPF
             private string _defaultDirectorySaveFile;
             private string _defaultDirectoryExtractFile;
             private string _defaultDirectoryConvertFile;
+            private string _defaultDirectoryScripts;
             private bool _promptOverwriteFileSave = true;
             private string _fileSaveNamePrefix;
             private string _fileSaveNameSuffix = "_copy";
@@ -120,6 +121,13 @@ namespace UVtools.WPF
                 get => _defaultDirectoryConvertFile;
                 set => RaiseAndSetIfChanged(ref _defaultDirectoryConvertFile, value);
             }
+
+            public string DefaultDirectoryScripts
+            {
+                get => _defaultDirectoryScripts;
+                set => RaiseAndSetIfChanged(ref _defaultDirectoryScripts, value);
+            }
+
 
             public bool PromptOverwriteFileSave
             {
@@ -618,6 +626,7 @@ namespace UVtools.WPF
             private bool _computeOverhangs = true;
             private bool _computeResinTraps = true;
             private bool _computeTouchingBounds = true;
+            private bool _computePrintHeight = true;
             private bool _computeEmptyLayers = true;
             private bool _islandEnhancedDetection = true;
             private bool _islandAllowDiagonalBonds;
@@ -639,6 +648,7 @@ namespace UVtools.WPF
             private byte _touchingBoundMarginRight = 5;
             private byte _touchingBoundMarginBottom = 5;
             private bool _touchingBoundSyncMargins = true;
+            private decimal _printHeightOffset;
 
             public bool ComputeIssuesOnLoad
             {
@@ -680,6 +690,12 @@ namespace UVtools.WPF
             {
                 get => _computeTouchingBounds;
                 set => RaiseAndSetIfChanged(ref _computeTouchingBounds, value);
+            }
+
+            public bool ComputePrintHeight
+            {
+                get => _computePrintHeight;
+                set => RaiseAndSetIfChanged(ref _computePrintHeight, value);
             }
 
             public bool ComputeEmptyLayers
@@ -834,6 +850,12 @@ namespace UVtools.WPF
             {
                 get => _touchingBoundSyncMargins;
                 set => RaiseAndSetIfChanged(ref _touchingBoundSyncMargins, value);
+            }
+
+            public decimal PrintHeightOffset
+            {
+                get => _printHeightOffset;
+                set => RaiseAndSetIfChanged(ref _printHeightOffset, value);
             }
 
             public IssuesUserSettings Clone()

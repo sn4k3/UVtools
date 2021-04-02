@@ -596,6 +596,7 @@ namespace UVtools.Core
             OverhangDetectionConfiguration overhangConfig = null,
             ResinTrapDetectionConfiguration resinTrapConfig = null,
             TouchingBoundDetectionConfiguration touchBoundConfig = null,
+            PrintHeightDetectionConfiguration printHeightConfig = null,
             bool emptyLayersConfig = true,
             List<LayerIssue> ignoredIssues = null,
             OperationProgress progress = null)
@@ -604,6 +605,7 @@ namespace UVtools.Core
             overhangConfig ??= new OverhangDetectionConfiguration();
             resinTrapConfig ??= new ResinTrapDetectionConfiguration();
             touchBoundConfig ??= new TouchingBoundDetectionConfiguration();
+            printHeightConfig ??= new PrintHeightDetectionConfiguration();
             progress ??= new OperationProgress();
 
             var result = new ConcurrentBag<LayerIssue>();
@@ -803,6 +805,7 @@ namespace UVtools.Core
             OverhangDetectionConfiguration overhangConfig = null, 
             ResinTrapDetectionConfiguration resinTrapConfig = null,
             TouchingBoundDetectionConfiguration touchBoundConfig = null,
+            PrintHeightDetectionConfiguration printHeightConfig = null,
             bool emptyLayersConfig = true,
             List<LayerIssue> ignoredIssues = null,
             OperationProgress progress = null)
@@ -812,6 +815,7 @@ namespace UVtools.Core
             overhangConfig ??= new OverhangDetectionConfiguration();
             resinTrapConfig ??= new ResinTrapDetectionConfiguration();
             touchBoundConfig ??= new TouchingBoundDetectionConfiguration();
+            printHeightConfig ??= new PrintHeightDetectionConfiguration();
             progress ??= new OperationProgress();
             
             var result = new ConcurrentBag<LayerIssue>();
@@ -826,7 +830,33 @@ namespace UVtools.Core
                 return true;
             }
 
-            if (islandConfig.Enabled || overhangConfig.Enabled || resinTrapConfig.Enabled || touchBoundConfig.Enabled || emptyLayersConfig)
+            if (printHeightConfig.Enabled && SlicerFile.MaxPrintHeight > 0)
+            {
+                float printHeightWithOffset = Layer.RoundHeight(SlicerFile.MaxPrintHeight + printHeightConfig.Offset);
+                if (SlicerFile.PrintHeight > printHeightWithOffset)
+                {
+                    foreach (var layer in this)
+                    {
+                        if (layer.PositionZ > printHeightWithOffset)
+                        {
+                            AddIssue(new LayerIssue(layer, LayerIssue.IssueType.PrintHeight));
+                        }
+                    }
+                }
+            }
+
+            if (emptyLayersConfig)
+            {
+                foreach (var layer in this)
+                {
+                    if (layer.IsEmpty)
+                    {
+                        AddIssue(new LayerIssue(layer, LayerIssue.IssueType.EmptyLayer));
+                    }
+                }
+            }
+
+            if (islandConfig.Enabled || overhangConfig.Enabled || resinTrapConfig.Enabled || touchBoundConfig.Enabled)
             {
                 progress.Reset(OperationProgress.StatusIslands, LayerCount);
 
@@ -838,21 +868,15 @@ namespace UVtools.Core
                     if (progress.Token.IsCancellationRequested) return;
                     if (layer.IsEmpty)
                     {
-                        if (emptyLayersConfig)
-                        {
-                            AddIssue(new LayerIssue(layer, LayerIssue.IssueType.EmptyLayer));
-                        }
-
                         progress.LockAndIncrement();
-
                         return;
                     }
 
                     // Spare a decoding cycle
                     if (!touchBoundConfig.Enabled &&
                         !resinTrapConfig.Enabled &&
-                        !overhangConfig.Enabled || overhangConfig.Enabled && (layer.Index == 0 || overhangConfig.WhiteListLayers is not null && !overhangConfig.WhiteListLayers.Contains(layer.Index)) &&
-                        !islandConfig.Enabled || islandConfig.Enabled && (layer.Index == 0 || islandConfig.WhiteListLayers is not null && !islandConfig.WhiteListLayers.Contains(layer.Index))
+                        (!overhangConfig.Enabled || overhangConfig.Enabled && (layer.Index == 0 || overhangConfig.WhiteListLayers is not null && !overhangConfig.WhiteListLayers.Contains(layer.Index))) &&
+                        (!islandConfig.Enabled || islandConfig.Enabled && (layer.Index == 0 || islandConfig.WhiteListLayers is not null && !islandConfig.WhiteListLayers.Contains(layer.Index)))
                         )
                     {
                         progress.LockAndIncrement();
