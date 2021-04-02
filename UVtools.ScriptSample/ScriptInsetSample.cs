@@ -16,7 +16,10 @@ using Emgu.CV.CvEnum;
 
 namespace UVtools.ScriptSample
 {
-    public class ScriptSample : ScriptGlobals
+    /// <summary>
+    /// Performs a black inset around objects
+    /// </summary>
+    public class ScriptInsetSample : ScriptGlobals
     {
         ScriptNumericalInput<ushort> InsetMarginFromEdge = new()
         {
@@ -37,7 +40,7 @@ namespace UVtools.ScriptSample
             Minimum = 1,
             Maximum = ushort.MaxValue,
             Increment = 1,
-            Value = 10
+            Value = 5
         };
 
         /// <summary>
@@ -46,24 +49,24 @@ namespace UVtools.ScriptSample
         public void ScriptInit()
         {
             Script.Name = "Inset";
-            Script.Description = "Perform a black inset around objects";
+            Script.Description = "Performs a black inset around objects";
             Script.Author = "Tiago Conceição";
             Script.Version = new Version(0, 1);
-            Script.Inputs.AddRange(new[]
+            Script.UserInputs.AddRange(new[]
             {
                 InsetMarginFromEdge,
-                InsetThickness
+                InsetThickness  
             });
         }
 
         /// <summary>
-        /// Validate your user inputs here, this function trigger when user click on execute
+        /// Validate user inputs here, this function trigger when user click on execute
         /// </summary>
         /// <returns>A error message, empty or null if validation passes.</returns>
         public string ScriptValidate()
         {
             StringBuilder sb = new();
-
+            
             if (InsetMarginFromEdge.Value < InsetMarginFromEdge.Minimum)
             {
                 sb.AppendLine($"Inset edge margin must be at least {InsetMarginFromEdge.Minimum}{InsetMarginFromEdge.Unit}");
@@ -72,7 +75,7 @@ namespace UVtools.ScriptSample
             {
                 sb.AppendLine($"Inset thickness must be at least {InsetThickness.Minimum}{InsetThickness.Unit}");
             }
-
+            
             return sb.ToString();
         }
 
@@ -122,10 +125,11 @@ namespace UVtools.ScriptSample
                 layer.LayerMat = mat;
 
                 // Increment progress bar by 1
-                Progress.LockAndIncrement(); 
+                Progress.LockAndIncrement();
             });
 
-            return true;
+            // return true if not cancelled by user
+            return !Progress.Token.IsCancellationRequested;
         }
     }
 }
