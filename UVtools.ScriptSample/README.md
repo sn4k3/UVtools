@@ -41,7 +41,7 @@ this is possible by add a layer of abstraction for the file within it class, whi
 so you can write in any IDE, take advantage on code completion and other goodies, plus you can compile the code without any problem!
 
 On runtime UVtools will parse and strip the file and remove everthing that must be removed in order to run the script, that is the namespace and class so far.
-This approach you dont need to convert your .cs file to a script file .csx, you can just write the code, refresh script on UVtools and it will load from there. 
+With this approach you dont need to convert your .cs file to a script file .csx, you can just write the code, refresh script on UVtools and it will load from there. 
 
 ### How to setup the development environment
 
