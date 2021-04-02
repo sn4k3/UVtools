@@ -140,7 +140,7 @@ And they are executed in that same order when invoked (First init, then validate
 2. Open your file
 3. Change the "public class ScriptInsetSample" to "public class TheFileNameYouJustGive", note that class name must not contain other than A-Z words, it can have diferent name from file
 4. Locate "public void ScriptInit()" and modify with your information
-5. Create your user inputs if any and add them to configuration
+5. Create your user inputs if any and add them to configuration, they will show under UVtools dialog and user can modify the values
 6. Locate "public void ScriptValidate()" and put conditions to validate user inputs, if they exists
 7. Locate "public void ScriptExecute()" and write your code there
 
