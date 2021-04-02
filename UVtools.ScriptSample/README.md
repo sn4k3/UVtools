@@ -70,9 +70,9 @@ With this approach you dont need to convert your .cs file to a script file .csx,
 // References can be imported by IDE when required
 using ReferenceName; 
 
-namespace UVtools.ScriptSample // Require to compile and have IDE help
+namespace UVtools.ScriptSample // Require to compile and have the IDE help
 {
-    public class YourScriptName : ScriptGlobals // Require to compile and have IDE help
+    public class YourScriptName : ScriptGlobals // Require to compile and have the IDE help
     {
         // Put your user inputs here, for example:
         ScriptNumericalInput<ushort> InsetMarginFromEdge = new()
@@ -170,7 +170,7 @@ To public share you can use UVtools github: https://github.com/sn4k3/UVtools/dis
 This guide is more about to understand the scripting structure and setup the first script, this it's not about learn how to code, 
 if you are a C# programmer than this is not a problem, 
 but if you are starting you can search some tutorials on internet, often you can google what you want, 
-for example Google: C# get current time, and a lot of examples will tell you how to do that. 
+for example Google: "C# get current time", and a lot of examples will tell you how to do that. 
 It will take try, error and pratice but once you learn this skill it will be very easy to do this scripts.
 
 If you need some help regarding with UVtools Core codding you can post your questions at github: https://github.com/sn4k3/UVtools/discussions/categories/scripts
