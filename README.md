@@ -16,12 +16,12 @@ This simple tool can give you insight of supports and find some failures. Did yo
 ![Convertion Screenshot](https://raw.githubusercontent.com/sn4k3/UVtools/master/UVtools.GUI/Images/Screenshots/SL1ToCbddlp.png)
 
 # Why this project?
-I don't own a Prusa SL1 or any other resin printer, for now I’m only a FDM user with 
+I don't own a Prusa SL1 or any other resin printer, for now Iâ€™m only a FDM user with 
 Prusa MK3 and a Ender3.
 PrusaSlicer is my only choose, why? Because I think it's the best and feature more, 
 at least for me, simple but powerful. 
 
-So why this project? Well in fact I’m looking for a resin printer and i like to study 
+So why this project? Well in fact Iâ€™m looking for a resin printer and i like to study 
 and learn first before buy, get good and don't regret, and while inspecting i found that 
 resin printers firmwares are not as universal as FDM, too many file formats and there 
 before each printer can use their own property file, this of course limit the software selection,
@@ -403,6 +403,13 @@ There are multiple ways to open your file:
 # Library -> Developers
 
 Are you a developer? This project include a .NET 5.0 library (UVtools.Core) that can be referenced in your application to make use of my work. Easy to use calls that allow you work with the formats. For more information navigate main code.
+
+## Windows Build from Source
+Install Visual Studio and include .NET development support
+Install the Wix Toolset: https://wixtoolset.org/releases/ 
+   you will need both the core Wix toolset and the VS extension pack which is selected AFTER the main installation has completed (or from the main release page).
+Open UVtools.sln
+If required update the .NET developer pack VS will prompt on opening if needed (it's the lower section on the web page - something like .NET Framework 4.8)
 
 
 # TODO
