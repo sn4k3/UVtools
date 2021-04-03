@@ -406,9 +406,13 @@ Are you a developer? This project include a .NET 5.0 library (UVtools.Core) that
 
 ## Windows Build from Source
 Install Visual Studio and include .NET development support
+
 Install the Wix Toolset: https://wixtoolset.org/releases/ 
+
    you will need both the core Wix toolset and the VS extension pack which is selected AFTER the main installation has completed (or from the main release page).
+   
 Open UVtools.sln
+
 If required update the .NET developer pack VS will prompt on opening if needed (it's the lower section on the web page - something like .NET Framework 4.8)
 
 
