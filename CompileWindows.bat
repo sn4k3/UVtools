@@ -14,7 +14,8 @@ GOTO end
 
 
 :noMSBuild
-	echo MSBuild.exe path not found!
+    echo MSBuild.exe path not found! trying 'dotnet' instead
+	dotnet build 
 
 :end
 	pause
