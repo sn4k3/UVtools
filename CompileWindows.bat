@@ -18,4 +18,4 @@ GOTO end
     dotnet build 
 
 :end
-	pause
+    pause
