@@ -46,7 +46,7 @@ namespace UVtools.ScriptSample
 
             Random random = new();
 
-            for (uint layerIndex = Operation.LayerIndexStart; layerIndex < Operation.LayerIndexEnd; layerIndex++)
+            for (uint layerIndex = Operation.LayerIndexStart; layerIndex <= Operation.LayerIndexEnd; layerIndex++)
             {
                 Progress.Token.ThrowIfCancellationRequested(); // Abort operation, user requested cancellation
                 var layer = SlicerFile[layerIndex]; // Unpack and expose layer variable for easier use
