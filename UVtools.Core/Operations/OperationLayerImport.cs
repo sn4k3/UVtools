@@ -469,7 +469,11 @@ namespace UVtools.Core.Operations
                             }
 
 
-                            progress.LockAndIncrement();
+                            lock (progress.Mutex)
+                            {
+                                lastProcessedLayerIndex = Math.Max(lastProcessedLayerIndex, (int)layerIndex);
+                                progress++;
+                            }
                         });
 
                     fileFormat.Dispose();

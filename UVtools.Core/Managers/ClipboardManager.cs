@@ -130,7 +130,11 @@ namespace UVtools.Core.Managers
                             SlicerFile.LayerHeight = clip.LayerHeight;
                         }
 
-                        SlicerFile.LayerManager.Layers = Layer.CloneLayers(layers);
+                        SlicerFile.SuppressRebuildPropertiesWork(() =>
+                        {
+                            SlicerFile.LayerManager.Layers = Layer.CloneLayers(layers);
+                        });
+                        
                         if (i == _currentIndex) break;
                     }
                 }

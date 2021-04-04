@@ -41,7 +41,7 @@ namespace UVtools.Core.Operations
             $"Make sure to run only the scripts you trust! Or run UVtools in a sandbox while executing this.";
 
         public override string ConfirmationText =>
-            $"Run script from layers {LayerIndexStart} through {LayerIndexEnd}?";
+            $"run the {ScriptGlobals.Script.Name} script from layers {LayerIndexStart} through {LayerIndexEnd}?";
 
         public override string ProgressTitle =>
             $"Scripting from layers {LayerIndexStart} through {LayerIndexEnd}";

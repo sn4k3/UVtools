@@ -11,6 +11,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
+using UVtools.Core.Objects;
 
 namespace UVtools.Core
 {
@@ -453,11 +455,128 @@ namespace UVtools.Core
 
     #region ResinTrapGround
 
-    public sealed class ResinTrapGroup
+    public sealed class ResinTrapGroup : BindableBase, IList<LayerHollowArea>
     {
-        public List<List<LayerHollowArea>> Groups { get; } = new();
+        #region List Implementation
+        private readonly List<LayerHollowArea> hollowAreaList = new();
+        private LayerHollowArea.AreaType _currentAreaType = LayerHollowArea.AreaType.Trap;
 
-        public int FindHollowArea(LayerHollowArea hollowArea)
+        public IEnumerator<LayerHollowArea> GetEnumerator()
+        {
+            return hollowAreaList.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable) hollowAreaList).GetEnumerator();
+        }
+
+        public void Add(LayerHollowArea item)
+        {
+            if (item.Type == LayerHollowArea.AreaType.Drain)
+            {
+                CurrentAreaType = LayerHollowArea.AreaType.Drain;
+            }
+            else if (_currentAreaType == LayerHollowArea.AreaType.Drain)
+            {
+                item.Type = LayerHollowArea.AreaType.Drain;
+            }
+            hollowAreaList.Add(item);
+        }
+
+        public void Add(ResinTrapGroup group)
+        {
+            foreach (var area in group)
+            {
+                Add(area);
+            }
+        }
+
+        public void Clear()
+        {
+            CurrentAreaType = LayerHollowArea.AreaType.Trap;
+            hollowAreaList.Clear();
+        }
+
+        public bool Contains(LayerHollowArea item)
+        {
+            return hollowAreaList.Contains(item);
+        }
+
+        public void CopyTo(LayerHollowArea[] array, int arrayIndex)
+        {
+            hollowAreaList.CopyTo(array, arrayIndex);
+        }
+
+        public bool Remove(LayerHollowArea item)
+        {
+            var result = hollowAreaList.Remove(item);
+            if (Count == 0) CurrentAreaType = LayerHollowArea.AreaType.Trap;
+            return result;
+        }
+
+        public int Count => hollowAreaList.Count;
+
+        public bool IsReadOnly => false;
+
+        public int IndexOf(LayerHollowArea item)
+        {
+            return hollowAreaList.IndexOf(item);
+        }
+
+        public void Insert(int index, LayerHollowArea item)
+        {
+            if (item.Type == LayerHollowArea.AreaType.Drain)
+            {
+                CurrentAreaType = LayerHollowArea.AreaType.Drain;
+            }
+            else if (_currentAreaType == LayerHollowArea.AreaType.Drain)
+            {
+                item.Type = LayerHollowArea.AreaType.Drain;
+            }
+            hollowAreaList.Insert(index, item);
+        }
+
+        public void RemoveAt(int index)
+        {
+            hollowAreaList.RemoveAt(index);
+            if (Count == 0) CurrentAreaType = LayerHollowArea.AreaType.Trap;
+        }
+
+        public LayerHollowArea this[int index]
+        {
+            get => hollowAreaList[index];
+            set => hollowAreaList[index] = value;
+        }
+        #endregion
+
+        #region Properties
+        public LayerHollowArea.AreaType CurrentAreaType
+        {
+            get => _currentAreaType;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _currentAreaType, value)) return;
+                foreach (var area in this) // Update previous items
+                {
+                    area.Type = _currentAreaType;
+                }
+            }
+        }
+        #endregion
+    }
+
+    public sealed class ResinTrapTree
+    {
+        public List<ResinTrapGroup> Groups { get; } = new();
+
+        public ResinTrapGroup FindHollowGroup(LayerHollowArea hollowArea)
+        {
+            var i = FindHollowGroupIndex(hollowArea);
+            return i >= 0 ? Groups[i] : null;
+        }
+
+        public int FindHollowGroupIndex(LayerHollowArea hollowArea)
         {
             for (var i = 0; i < Groups.Count; i++)
             {
@@ -470,20 +589,54 @@ namespace UVtools.Core
             return -1;
         }
 
-        public int Add(LayerHollowArea hollowArea)
+        public ResinTrapGroup AddRoot(LayerHollowArea hollowArea) => AddRoot(hollowArea, out _);
+        public ResinTrapGroup AddRoot(LayerHollowArea hollowArea, out int index)
         {
-            var index = FindHollowArea(hollowArea);
+            index = FindHollowGroupIndex(hollowArea);
             if (index < 0) // Not found
             {
                 index = Groups.Count;
-                Groups.Add(new List<LayerHollowArea>{hollowArea});
-                return index;
+                Groups.Add(new(){hollowArea});
+            }
+            else // Exists
+            {
+                Groups[index].Add(hollowArea);
             }
 
-            // Exists
-            Groups[index].Add(hollowArea);
+            return Groups[index];
+        }
 
-            return index;
+        public ResinTrapGroup AddChild(ResinTrapGroup group, LayerHollowArea hollowArea)
+        {
+            // This will find if the area exists in any other group,
+            // If yes then the groups are merged, otherwise it will be added to the parent group
+
+            var findGroup = FindHollowGroup(hollowArea);
+            if (findGroup is not null && !ReferenceEquals(group, findGroup))
+            {
+                return MergeGroups(group, findGroup, true);
+            }
+            if(group.IndexOf(hollowArea) == -1) group.Add(hollowArea);
+            return group;
+        }
+
+        /// <summary>
+        /// Merges two groups
+        /// </summary>
+        /// <param name="group1"></param>
+        /// <param name="group2"></param>
+        /// <param name="manageGroups">True to remove old groups and add the new to group list</param>
+        /// <returns>A new group instance holding group1 and group2 items</returns>
+        public ResinTrapGroup MergeGroups(ResinTrapGroup group1, ResinTrapGroup group2, bool manageGroups = false)
+        {
+            ResinTrapGroup newGroup = new (){group1, group2};
+            if (manageGroups)
+            {
+                Groups.Remove(group1);
+                Groups.Remove(group2);
+                Groups.Add(newGroup);
+            }
+            return newGroup;
         }
     }
     #endregion

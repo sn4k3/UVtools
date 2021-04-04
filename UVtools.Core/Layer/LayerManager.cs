@@ -10,9 +10,11 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -1005,9 +1007,9 @@ namespace UVtools.Core
                                         islandImage = image;
                                     }
 
-                                    using (Mat labels = new Mat())
-                                    using (Mat stats = new Mat())
-                                    using (Mat centroids = new Mat())
+                                    using (Mat labels = new())
+                                    using (Mat stats = new())
+                                    using (Mat centroids = new())
                                     {
                                         var numLabels = CvInvoke.ConnectedComponentsWithStats(islandImage, labels, stats,
                                             centroids,
@@ -1028,7 +1030,7 @@ namespace UVtools.Core
                                         //stats[i][3]: Height of Connected Component
                                         //stats[i][4]: Total Area (in pixels) in Connected Component
 
-                                        Span<int> labelSpan = labels.GetPixelSpan<int>();
+                                        var labelSpan = labels.GetPixelSpan<int>();
 
                                         for (int i = 1; i < numLabels; i++)
                                         {
@@ -1169,35 +1171,30 @@ namespace UVtools.Core
 
                                 if (canProcessCheck)
                                 {
-                                    if (previousImage is null)
+                                    previousImage ??= this[layer.Index - 1].LayerMat;
+
+                                    using var subtractedImage = new Mat();
+                                    using var vecPoints = new VectorOfPoint();
+                                    var anchor = new Point(-1, -1);
+
+
+                                    CvInvoke.Subtract(image, previousImage, subtractedImage);
+                                    CvInvoke.Threshold(subtractedImage, subtractedImage, 127, 255,
+                                        ThresholdType.Binary);
+
+                                    CvInvoke.Erode(subtractedImage, subtractedImage,
+                                        CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3),
+                                            anchor),
+                                        anchor, overhangConfig.ErodeIterations, BorderType.Default,
+                                        new MCvScalar());
+
+                                    CvInvoke.FindNonZero(subtractedImage, vecPoints);
+                                    if (vecPoints.Size >= overhangConfig.RequiredPixelsToConsider)
                                     {
-                                        previousImage = this[layer.Index - 1].LayerMat;
-                                    }
-
-                                    using (var subtractedImage = new Mat())
-                                    using (var vecPoints = new VectorOfPoint())
-                                    {
-                                        var anchor = new Point(-1, -1);
-
-
-                                        CvInvoke.Subtract(image, previousImage, subtractedImage);
-                                        CvInvoke.Threshold(subtractedImage, subtractedImage, 127, 255,
-                                            ThresholdType.Binary);
-
-                                        CvInvoke.Erode(subtractedImage, subtractedImage,
-                                            CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3),
-                                                anchor),
-                                            anchor, overhangConfig.ErodeIterations, BorderType.Default,
-                                            new MCvScalar());
-
-                                        CvInvoke.FindNonZero(subtractedImage, vecPoints);
-                                        if (vecPoints.Size >= overhangConfig.RequiredPixelsToConsider)
-                                        {
-                                            AddIssue(new LayerIssue(
-                                                layer, LayerIssue.IssueType.Overhang, vecPoints.ToArray(),
-                                                layer.BoundingRectangle
-                                            ));
-                                        }
+                                        AddIssue(new LayerIssue(
+                                            layer, LayerIssue.IssueType.Overhang, vecPoints.ToArray(),
+                                            layer.BoundingRectangle
+                                        ));
                                     }
                                 }
                             }
@@ -1268,7 +1265,7 @@ namespace UVtools.Core
             {
                 progress.Reset(OperationProgress.StatusResinTraps, LayerCount);
 
-
+                ResinTrapTree resinTrapTree = new();
 
                 for (uint layerIndex = 1; layerIndex < LayerCount - 1; layerIndex++) // First and Last layers, always drains
                 {
@@ -1290,7 +1287,9 @@ namespace UVtools.Core
 
                         areaCount++;
 
-                        List<LayerHollowArea> linkedAreas = new();
+                        var trapGroup = resinTrapTree.AddRoot(area);
+
+                        //List<LayerHollowArea> linkedAreas = new();
 
                         for (sbyte dir = 1; dir >= -1 && area.Type != LayerHollowArea.AreaType.Drain; dir -= 2)
                             //Parallel.ForEach(new sbyte[] {1, -1}, new ParallelOptions {MaxDegreeOfParallelism = 2}, dir =>
@@ -1386,7 +1385,9 @@ namespace UVtools.Core
                                                             queue.Enqueue(intersectingAreas[i]);
                                                         }
 
-                                                        linkedAreas.Add(intersectingAreas[i]);
+
+                                                        trapGroup = resinTrapTree.AddChild(trapGroup, intersectingAreas[i]);
+                                                        //linkedAreas.Add(intersectingAreas[i]);
                                                         intersectingAreas.Remove(i);
                                                         if (intersectingAreas.Count == 0
                                                         ) // Intersection areas sweep end, quit this path
@@ -1433,7 +1434,8 @@ namespace UVtools.Core
                                                         resinTrapConfig.RequiredBlackPixelsToDrain)
                                                     ) // Black pixel without next areas = Drain
                                                     {
-                                                        area.Type = LayerHollowArea.AreaType.Drain;
+                                                        trapGroup.CurrentAreaType = LayerHollowArea.AreaType.Drain;
+                                                        //area.Type = LayerHollowArea.AreaType.Drain;
                                                         exitPixelLoop = true;
                                                         break;
                                                     }
@@ -1443,7 +1445,8 @@ namespace UVtools.Core
                                             if (queue.Count == 0 && blackCount > Math.Min(checkArea.Contour.Length / 2,
                                                 resinTrapConfig.RequiredBlackPixelsToDrain))
                                             {
-                                                area.Type = LayerHollowArea.AreaType.Drain;
+                                                trapGroup.CurrentAreaType = LayerHollowArea.AreaType.Drain;
+                                                //area.Type = LayerHollowArea.AreaType.Drain;
                                             }
 
                                         } // Dispose intersecting image
@@ -1452,10 +1455,10 @@ namespace UVtools.Core
                             } // Areas loop
                         } // Dir layer loop
 
-                        foreach (var linkedArea in linkedAreas) // Update linked areas
+                        /*foreach (var linkedArea in linkedAreas) // Update linked areas
                         {
                             linkedArea.Type = area.Type;
-                        }
+                        }*/
                     }//);
                 }
             }

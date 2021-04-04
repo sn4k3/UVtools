@@ -1,5 +1,11 @@
 # Changelog
 
+## 04/04/2021 - v2.8.1
+
+* Clipboard Manager: As now full backups are made when removing or adding layers, the undo and redo no longer rebuilds layer properties nor Z heights
+* Resin traps: Improved the detection to group areas with cross paths and process them as one whole area, this also increase the detection speed and performance (#179, #13 )
+* Action - Layer import: Fix a bug preventing to import layers of any kind
+
 ## 28/03/2021 - v2.8.0
 
 * **Scripting:**
