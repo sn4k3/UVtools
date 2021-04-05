@@ -39,7 +39,7 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Blured layers";
 
-        public override StringTag Validate(params object[] parameters)
+        public override string ValidateInternally()
         {
             var sb = new StringBuilder();
 
@@ -60,7 +60,7 @@ namespace UVtools.Core.Operations
                 }
             }
 
-            return new StringTag(sb.ToString());
+            return sb.ToString();
         }
 
         #endregion

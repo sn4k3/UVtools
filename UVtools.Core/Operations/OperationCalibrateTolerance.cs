@@ -76,7 +76,7 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Generated";
 
-        public override StringTag Validate(params object[] parameters)
+        public override string ValidateInternally()
         {
             var sb = new StringBuilder();
 
@@ -100,7 +100,7 @@ namespace UVtools.Core.Operations
                 sb.AppendLine("No objects to output.");
             }
             
-            return new StringTag(sb.ToString());
+            return sb.ToString();
         }
 
         public override string ToString()

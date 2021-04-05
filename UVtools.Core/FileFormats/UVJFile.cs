@@ -163,7 +163,7 @@ namespace UVtools.Core.FileFormats
 
         public override byte ThumbnailsCount { get; } = 2;
 
-        public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = {new System.Drawing.Size(400, 400), new System.Drawing.Size(800, 480) };
+        public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = {new(400, 400), new(800, 480) };
 
         public override uint ResolutionX
         {
@@ -346,28 +346,20 @@ namespace UVtools.Core.FileFormats
 
                 if (CreatedThumbnailsCount > 0)
                 {
-                    using (Stream stream = outputFile.CreateEntry(FilePreviewTinyName).Open())
-                    {
-                        using (var vec = new VectorOfByte())
-                        {
-                            CvInvoke.Imencode(".png", Thumbnails[0], vec);
-                            stream.WriteBytes(vec.ToArray());
-                            stream.Close();
-                        }
-                    }
+                    using var stream = outputFile.CreateEntry(FilePreviewTinyName).Open();
+                    using var vec = new VectorOfByte();
+                    CvInvoke.Imencode(".png", Thumbnails[0], vec);
+                    stream.WriteBytes(vec.ToArray());
+                    stream.Close();
                 }
 
                 if (CreatedThumbnailsCount > 1)
                 {
-                    using (Stream stream = outputFile.CreateEntry(FilePreviewHugeName).Open())
-                    {
-                        using (var vec = new VectorOfByte())
-                        {
-                            CvInvoke.Imencode(".png", Thumbnails[1], vec);
-                            stream.WriteBytes(vec.ToArray());
-                            stream.Close();
-                        }
-                    }
+                    using Stream stream = outputFile.CreateEntry(FilePreviewHugeName).Open();
+                    using var vec = new VectorOfByte();
+                    CvInvoke.Imencode(".png", Thumbnails[1], vec);
+                    stream.WriteBytes(vec.ToArray());
+                    stream.Close();
                 }
 
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)

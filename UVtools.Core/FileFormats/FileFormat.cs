@@ -458,7 +458,7 @@ namespace UVtools.Core.FileFormats
 
                 foreach (var thumbnail in Thumbnails)
                 {
-                    if (thumbnail is null) continue;
+                    if (thumbnail is null || thumbnail.IsEmpty) continue;
                     count++;
                 }
 
@@ -1194,7 +1194,7 @@ namespace UVtools.Core.FileFormats
         {
             for (int i = 0; i < ThumbnailsCount; i++)
             {
-                if(ReferenceEquals(Thumbnails[i], null)) continue;
+                if(Thumbnails[i] is null) continue;
                 if (Thumbnails[i].Height <= maxHeight) return Thumbnails[i];
             }
 
@@ -1232,9 +1232,18 @@ namespace UVtools.Core.FileFormats
         /// <param name="images"></param>
         public void SetThumbnails(Mat[] images)
         {
-            for (var i = 0; i < ThumbnailsCount; i++)
+            byte imageIndex = 0;
+            for (int i = 0; i < ThumbnailsCount; i++)
             {
-                Thumbnails[i] = images[Math.Min(i, images.Length - 1)].Clone();
+                var image = images[Math.Min(imageIndex++, images.Length - 1)];
+                if (image is null || image.IsEmpty)
+                {
+                    if (imageIndex >= images.Length) break;
+                    i--;
+                    continue;
+                }
+
+                Thumbnails[i] = image.Clone();
                 if (Thumbnails[i].Size != ThumbnailsOriginalSize[i])
                 {
                     CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);
@@ -1248,6 +1257,7 @@ namespace UVtools.Core.FileFormats
         /// <param name="images">Image to set</param>
         public void SetThumbnails(Mat image)
         {
+            if (image is null || image.IsEmpty) return;
             for (var i = 0; i < ThumbnailsCount; i++)
             {
                 Thumbnails[i] = image.Clone();
@@ -1299,7 +1309,7 @@ namespace UVtools.Core.FileFormats
 
             for (var i = 0; i < Thumbnails.Length; i++)
             {
-                if (Thumbnails[i] is null) continue;
+                if (Thumbnails[i] is null || Thumbnails[i].IsEmpty) continue;
                 if(Thumbnails[i].Size == ThumbnailsOriginalSize[i]) continue;
                 CvInvoke.Resize(Thumbnails[i], Thumbnails[i], new Size(ThumbnailsOriginalSize[i].Width, ThumbnailsOriginalSize[i].Height));
             }

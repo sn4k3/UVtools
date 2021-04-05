@@ -8,8 +8,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
@@ -38,6 +40,18 @@ namespace UVtools.Core.Operations
         public override bool CanCancel => false;
 
         public override bool CanHaveProfiles => false;
+
+        public override string ValidateInternally()
+        {
+            var sb = new StringBuilder();
+
+            if (LayerRangeCount == SlicerFile.LayerCount)
+            {
+                sb.AppendLine("You can't remove all layers from the file. Keep at least one.");
+            }
+
+            return sb.ToString();
+        }
 
         #endregion
 

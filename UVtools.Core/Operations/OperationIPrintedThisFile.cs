@@ -45,7 +45,7 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Consumed";
 
-        public override StringTag Validate(params object[] parameters)
+        public override string ValidateInternally()
         {
             var sb = new StringBuilder();
 
@@ -62,7 +62,7 @@ namespace UVtools.Core.Operations
                 sb.AppendLine("Print time must be higher than 0s.");
             }
 
-            return new StringTag(sb.ToString());
+            return sb.ToString();
         }
 
         public override string ToString()

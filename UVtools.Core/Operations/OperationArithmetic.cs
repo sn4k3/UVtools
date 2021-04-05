@@ -75,7 +75,7 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Calculated layers";
 
-        public override StringTag Validate(params object[] parameters)
+        public override string ValidateInternally()
         {
             var sb = new StringBuilder();
             if (string.IsNullOrWhiteSpace(_sentence))
@@ -87,7 +87,7 @@ namespace UVtools.Core.Operations
             else if (Operations.Count == 0)
                 sb.AppendLine("No operations to perform.");
 
-            return new StringTag(sb.ToString());
+            return sb.ToString();
         }
 
         public override string ToString()

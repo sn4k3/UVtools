@@ -44,7 +44,7 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Resized layers";
 
-        public override StringTag Validate(params object[] parameters)
+        public override string ValidateInternally()
         {
             var sb = new StringBuilder();
 
@@ -53,7 +53,7 @@ namespace UVtools.Core.Operations
                 sb.AppendLine("X and Y can't both be 100%.");
             }
 
-            return new StringTag(sb.ToString());
+            return sb.ToString();
         }
         #endregion
 

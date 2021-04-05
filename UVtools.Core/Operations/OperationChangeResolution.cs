@@ -74,7 +74,7 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Changed layers";
 
-        public override StringTag Validate(params object[] parameters)
+        public override string ValidateInternally()
         {
             var sb = new StringBuilder();
             if (SlicerFile.ResolutionX == NewResolutionX && SlicerFile.ResolutionY == NewResolutionY)
@@ -88,7 +88,7 @@ namespace UVtools.Core.Operations
                 sb.AppendLine("To fix this, try to rotate the object and/or resize to fit on this new resolution.");
             }
 
-            return new StringTag(sb.ToString());
+            return sb.ToString();
         }
 
         public override string ToString()

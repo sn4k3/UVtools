@@ -1,9 +1,18 @@
 # Changelog
 
+## 05/04/2021 - v2.8.2
+
+* **Operations:**
+   * Force validate all operations on execute if they haven't been before, if validation fails it will show the message error
+   * Add some utility functions to ease layer and mat allocation in the file
+   * Layer remove: Disallow to select and remove all layers
+   * Tool - Edit print parameters: Retract speed wasn't propagating the value to normal layers 
+* File formats: Better control, set and checking for null/empty thumbnails
+
 ## 04/04/2021 - v2.8.1
 
 * Clipboard Manager: As now full backups are made when removing or adding layers, the undo and redo no longer rebuilds layer properties nor Z heights
-* Resin traps: Improved the detection to group areas with cross paths and process them as one whole area, this also increase the detection speed and performance (#179, #13 )
+* Resin traps: Improved the detection to group areas with cross paths and process them as one whole area, this also increase the detection speed and performance (#179, #13)
 * Action - Layer import: Fix a bug preventing to import layers of any kind
 
 ## 28/03/2021 - v2.8.0

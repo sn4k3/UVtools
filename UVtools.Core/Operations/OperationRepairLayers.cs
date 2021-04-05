@@ -50,7 +50,7 @@ namespace UVtools.Core.Operations
 
         public override bool CanHaveProfiles => false;
 
-        public override StringTag Validate(params object[] parameters)
+        public override string ValidateInternally()
         {
             var sb = new StringBuilder();
 
@@ -59,7 +59,7 @@ namespace UVtools.Core.Operations
                 sb.AppendLine("You must select at least one repair operation.");
             }
 
-            return new StringTag(sb.ToString());
+            return sb.ToString();
         }
         #endregion
 

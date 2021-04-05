@@ -40,7 +40,7 @@ namespace UVtools.Core.Operations
 
         public override bool CanHaveProfiles => false;
 
-        public override StringTag Validate(params object[] parameters)
+        public override string ValidateInternally()
         {
             var sb = new StringBuilder();
 
@@ -49,7 +49,7 @@ namespace UVtools.Core.Operations
                 sb.AppendLine("Your parameters will put the model outside of build plate. Please adjust the location and margins.");
             }
 
-            return new StringTag(sb.ToString());
+            return sb.ToString();
         }
 
         public override string ToString()

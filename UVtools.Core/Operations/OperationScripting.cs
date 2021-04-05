@@ -48,15 +48,15 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Scripted layers";
 
-        public override StringTag Validate(params object[] parameters)
+        public override string ValidateInternally()
         {
             if (!CanExecute)
             {
-                return new StringTag("Script is not loaded.");
+                return "Script is not loaded.";
             }
 
             var scriptValidation = _scriptState.ContinueWithAsync<string>("return ScriptValidate();").Result;
-            return new StringTag(scriptValidation.ReturnValue);
+            return scriptValidation.ReturnValue;
         }
 
         #endregion

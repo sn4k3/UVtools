@@ -1302,7 +1302,7 @@ namespace UVtools.Core.FileFormats
 
                 if (HeaderSettings.EncryptionKey == 0)
                 {
-                    Random rnd = new Random();
+                    Random rnd = new();
                     HeaderSettings.EncryptionKey = (uint)rnd.Next(byte.MaxValue, int.MaxValue);
                 }
             }
@@ -1322,8 +1322,9 @@ namespace UVtools.Core.FileFormats
             for (byte i = 0; i < thumbnails.Length; i++)
             {
                 var image = thumbnails[i];
+                if(image is null) continue;
 
-                Preview preview = new Preview
+                Preview preview = new()
                 {
                     ResolutionX = (uint)image.Width,
                     ResolutionY = (uint)image.Height,

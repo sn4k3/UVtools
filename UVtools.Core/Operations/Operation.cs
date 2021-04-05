@@ -8,7 +8,6 @@
 
 using System;
 using System.Drawing;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.Util;
@@ -210,6 +209,12 @@ namespace UVtools.Core.Operations
         /// </summary>
         [XmlIgnore]
         public bool HaveExecuted { get; private set; }
+
+        /// <summary>
+        /// Gets if this operation have validated at least once
+        /// </summary>
+        [XmlIgnore]
+        public bool IsValidated { get; private set; }
         #endregion
 
         #region Constructor
@@ -224,16 +229,22 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Methods
+
+        public virtual string ValidateInternally() => null;
+
         /// <summary>
         /// Validates the operation
         /// </summary>
         /// <returns>null or empty if validates, otherwise return a string with error message</returns>
-        public virtual StringTag Validate(params object[] parameters) => null;
-
-        public bool CanValidate(params object[] parameters)
+        public string Validate()
         {
-            var result = Validate(parameters);
-            return result is null || string.IsNullOrEmpty(result.Content);
+            IsValidated = true;
+            return ValidateInternally();
+        }
+
+        public bool CanValidate()
+        {
+            return string.IsNullOrWhiteSpace(Validate());
         }
 
         public void SelectAllLayers()
@@ -383,7 +394,13 @@ namespace UVtools.Core.Operations
 
         public bool Execute(OperationProgress progress = null)
         {
-            if (_slicerFile is null) throw new InvalidOperationException($"{Title} can't execute due the lacking of file parent.");
+            if (_slicerFile is null) throw new InvalidOperationException($"{Title} can't execute due the lacking of a file parent.");
+            if (!IsValidated)
+            {
+                var msg = Validate();
+                if(!string.IsNullOrWhiteSpace(msg)) throw new InvalidOperationException($"{Title} can't execute due some errors:\n{msg}");
+            }
+
             progress ??= new OperationProgress();
             progress.Reset(ProgressAction, LayerRangeCount);
             HaveExecuted = true;

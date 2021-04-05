@@ -298,5 +298,29 @@ namespace UVtools.Core.Extensions
             return newMat;
         }
 
+        /// <summary>
+        /// Allocates a new array of mat 's
+        /// </summary>
+        /// <param name="count">Array size</param>
+        /// <returns></returns>
+        public static Mat[] Allocate(uint count) => Allocate(count, Size.Empty);
+
+        /// <summary>
+        /// Allocates a new array of mat 's
+        /// </summary>
+        /// <param name="count">Array size</param>
+        /// <param name="size">Image size to create, use <see cref="Size.Empty"/> to create a empty Mat</param>
+        /// <returns>New mat array</returns>
+        public static Mat[] Allocate(uint count, Size size)
+        {
+            var layers = new Mat[count];
+            for (var i = 0; i < layers.Length; i++)
+            {
+                layers[i] = size == Size.Empty ? new Mat() : InitMat(size);
+            }
+
+            return layers;
+        }
+
     }
 }

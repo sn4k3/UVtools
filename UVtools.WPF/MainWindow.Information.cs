@@ -128,7 +128,7 @@ namespace UVtools.WPF
                 if (!IsFileLoaded) return;
                 var index = value - 1;
                 if (index >= SlicerFile.CreatedThumbnailsCount) return;
-                if (SlicerFile.Thumbnails[index] is null) return;
+                if (SlicerFile.Thumbnails[index] is null || SlicerFile.Thumbnails[index].IsEmpty) return;
                 if (!RaiseAndSetIfChanged(ref _visibleThumbnailIndex, value)) return;
 
                 VisibleThumbnailImage = SlicerFile.Thumbnails[index].ToBitmap();

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using Avalonia;
+using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF
 {
@@ -31,12 +32,12 @@ namespace UVtools.WPF
         }
 
 
-        private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        private static async void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             Exception ex = (Exception)e.ExceptionObject;
             ErrorLog.AppendLine("Fatal Non-UI Error", ex.ToString());
-            
-            /*try
+
+            try
             {
                 string errorMsg = "An application error occurred. Please contact the administrator with the following information:\n\n" +
                                   $"{ex}";
@@ -46,7 +47,7 @@ namespace UVtools.WPF
             catch (Exception exception)
             {
                 Debug.WriteLine(exception);
-            }*/
+            }
         }
 
         // Avalonia configuration, don't remove; also used by visual designer.

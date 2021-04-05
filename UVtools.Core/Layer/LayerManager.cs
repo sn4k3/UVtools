@@ -431,6 +431,9 @@ namespace UVtools.Core
                                 case nameof(SlicerFile.LiftSpeed):
                                     layer.LiftSpeed = SlicerFile.LiftSpeed;
                                     break;
+                                case nameof(SlicerFile.RetractSpeed):
+                                    layer.RetractSpeed = SlicerFile.RetractSpeed;
+                                    break;
                                 case nameof(SlicerFile.LightOffDelay):
                                     layer.LightOffDelay = SlicerFile.LightOffDelay;
                                     break;
@@ -477,13 +480,16 @@ namespace UVtools.Core
 
         /// <summary>
         /// Set LiftHeight to 0 if previous and current have same PositionZ
+        /// <param name="zeroLightOffDelay">If true also set light off to 0, otherwise current value will be kept.</param>
         /// </summary>
-        public void SetNoLiftForSamePositionedLayers()
+        public void SetNoLiftForSamePositionedLayers(bool zeroLightOffDelay = false)
         {
             for (int layerIndex = 1; layerIndex < LayerCount; layerIndex++)
             {
-                if (this[layerIndex - 1].PositionZ != this[layerIndex].PositionZ) continue;
-                this[layerIndex].LiftHeight = 0;
+                var layer = this[layerIndex];
+                if (this[layerIndex - 1].PositionZ != layer.PositionZ) continue;
+                layer.LiftHeight = 0;
+                //if(zeroLightOffDelay) layer.LightOffDelay = 0;
             }
             SlicerFile?.RebuildGCode();
         }
@@ -1763,6 +1769,34 @@ namespace UVtools.Core
         public void ReallocateEnd(uint layerCount, bool initBlack = false) => ReallocateInsert(LayerCount, layerCount, initBlack);
 
         /// <summary>
+        /// Allocate layers from a Mat array
+        /// </summary>
+        /// <param name="mats"></param>
+        /// <returns>The new Layer array</returns>
+        public Layer[] AllocateFromMat(Mat[] mats)
+        {
+            var layers = new Layer[mats.Length];
+            Parallel.For(0L, mats.Length, i =>
+            {
+                layers[i] = new Layer((uint)i, mats[i], this);
+            });
+
+            return layers;
+        }
+
+        /// <summary>
+        /// Allocate layers from a Mat array and set them to the current file
+        /// </summary>
+        /// <param name="mats"></param>
+        /// /// <returns>The new Layer array</returns>
+        public Layer[] AllocateAndSetFromMat(Mat[] mats)
+        {
+            var layers = AllocateFromMat(mats);
+            Layers = layers;
+            return layers;
+        }
+
+        /// <summary>
         /// Clone this object
         /// </summary>
         /// <returns></returns>
@@ -1800,5 +1834,7 @@ namespace UVtools.Core
         }
 
         #endregion
+
+
     }
 }

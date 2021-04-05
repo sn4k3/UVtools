@@ -46,7 +46,7 @@ namespace UVtools.Core.Operations
 
         public override bool CanHaveProfiles => false;
 
-        public override StringTag Validate(params object[] parameters)
+        public override string ValidateInternally()
         {
             var sb = new StringBuilder();
             if (Clones <= 0)
@@ -54,7 +54,7 @@ namespace UVtools.Core.Operations
                 sb.AppendLine("Clones must be a positive number");
             }
 
-            return new StringTag(sb.ToString());
+            return sb.ToString();
         }
 
         public override string ToString()

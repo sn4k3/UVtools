@@ -103,9 +103,9 @@ namespace UVtools.WPF.Controls.Tools
             TextBox tbScriptName = new()
             {
                 IsReadOnly = true,
-                Text = $"{Operation.ScriptGlobals.Script.Name} v{Operation.ScriptGlobals.Script.Version} by {Operation.ScriptGlobals.Script.Author}",
+                Text = $"{Operation.ScriptGlobals.Script.Name} | Version: {Operation.ScriptGlobals.Script.Version} by {Operation.ScriptGlobals.Script.Author}",
                 UseFloatingWatermark = true,
-                Watermark = "Script name, Version and Author"
+                Watermark = "Script name, version and author"
             };
 
             TextBox tbScriptDescription = new()

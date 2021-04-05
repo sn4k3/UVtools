@@ -70,7 +70,7 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Dimmed layers";
 
-        public override StringTag Validate(params object[] parameters)
+        public override string ValidateInternally()
         {
             var sb = new StringBuilder();
             /*if (WallThicknessStart == 0 && WallsOnly)
@@ -100,7 +100,7 @@ namespace UVtools.Core.Operations
                         if (item.Pattern.Cols != bytes.Length)
                         {
                             sb.AppendLine($"Row {row + 1} have invalid number of pixels, the pattern must have equal pixel count per line, per defined on line 1");
-                            return new StringTag(sb.ToString());
+                            return sb.ToString();
                         }
                     }
 
@@ -113,7 +113,7 @@ namespace UVtools.Core.Operations
                         else
                         {
                             sb.AppendLine($"{bytes[col]} is a invalid number, use values from 0 to 255");
-                            return new StringTag(sb.ToString());
+                            return sb.ToString();
                         }
                     }
                 }
@@ -125,10 +125,10 @@ namespace UVtools.Core.Operations
             if (Pattern is null && AlternatePattern is null)
             {
                 sb.AppendLine("Either even or odd pattern must contain a valid matrix.");
-                return new StringTag(sb.ToString());
+                return sb.ToString();
             }
 
-            return new StringTag(sb.ToString());
+            return sb.ToString();
         }
         
         public override string ToString()
@@ -148,6 +148,16 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Properties
+
+        public uint WallThickness
+        {
+            get => _wallThicknessStart;
+            set
+            {
+                WallThicknessStart = value;
+                WallThicknessEnd = value;
+            }
+        }
 
         public uint WallThicknessStart
         {

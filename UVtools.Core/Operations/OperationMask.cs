@@ -38,7 +38,7 @@ namespace UVtools.Core.Operations
 
         public override bool CanHaveProfiles => false;
 
-        public override StringTag Validate(params object[] parameters)
+        public override string ValidateInternally()
         {
             var sb = new StringBuilder();
             if (Mask is null)
@@ -46,7 +46,7 @@ namespace UVtools.Core.Operations
                 sb.AppendLine("The mask can not be empty.");
             }
 
-            return new StringTag(sb.ToString());
+            return sb.ToString();
         }
         #endregion
 
