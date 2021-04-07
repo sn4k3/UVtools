@@ -11,7 +11,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using Emgu.CV;
 using MessageBox.Avalonia.Enums;
 using System;
 using System.Collections.Generic;
@@ -1142,7 +1141,7 @@ namespace UVtools.WPF
             if (mat.Size != SlicerFile.Resolution)
             {
                 await this.MessageBoxWaring($"Layer image resolution of {mat.Size} mismatch with printer resolution of {SlicerFile.Resolution}.\n" +
-                                            "Printing this file can lead to problems or malformed model, please verify your slicing settings;\n" +
+                                            "Printing this file can lead to problems or malformed model, please verify your slicer printer settings;\n" +
                                             "Processing this file with some of the tools can lead to program crash or misfunction;\n" +
                                             "If you used PrusaSlicer to slice this file, you must use it with compatible UVtools printer profiles (Help - Install profiles into PrusaSlicer).",
                     "File and layer resolution mismatch!");

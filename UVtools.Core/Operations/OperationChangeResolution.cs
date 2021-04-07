@@ -158,20 +158,25 @@ namespace UVtools.Core.Operations
         {
             progress.ItemCount = SlicerFile.LayerCount;
             var boundingRectangle = SlicerFile.BoundingRectangle;
+            var newSize = new Size((int) NewResolutionX, (int) NewResolutionY);
             Parallel.For(0, SlicerFile.LayerCount, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 
                 using var mat = SlicerFile[layerIndex].LayerMat;
-                using var matRoi = new Mat(mat, boundingRectangle);
-                using var matDst = new Mat(new Size((int)NewResolutionX, (int)NewResolutionY), mat.Depth, mat.NumberOfChannels);
-                using var matDstRoi = new Mat(matDst,
-                    new Rectangle((int)(NewResolutionX / 2 - boundingRectangle.Width / 2),
-                        (int)NewResolutionY / 2 - boundingRectangle.Height / 2,
-                        boundingRectangle.Width, boundingRectangle.Height));
-                matRoi.CopyTo(matDstRoi);
-                //Execute(mat);
-                SlicerFile[layerIndex].LayerMat = matDst;
+
+                if (mat.Size != newSize)
+                {
+                    using var matRoi = new Mat(mat, boundingRectangle);
+                    using var matDst = new Mat(newSize, mat.Depth, mat.NumberOfChannels);
+                    using var matDstRoi = new Mat(matDst,
+                        new Rectangle((int) (NewResolutionX / 2 - boundingRectangle.Width / 2),
+                            (int) NewResolutionY / 2 - boundingRectangle.Height / 2,
+                            boundingRectangle.Width, boundingRectangle.Height));
+                    matRoi.CopyTo(matDstRoi);
+                    //Execute(mat);
+                    SlicerFile[layerIndex].LayerMat = matDst;
+                }
 
                 progress.LockAndIncrement();
             });

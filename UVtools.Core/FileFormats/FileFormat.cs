@@ -15,7 +15,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -1300,6 +1299,8 @@ namespace UVtools.Core.FileFormats
             progress ??= new OperationProgress();
             progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
 
+            _layerManager.Sanitize();
+
             FileFullPath = fileFullPath;
 
             if (File.Exists(fileFullPath))
@@ -1351,23 +1352,8 @@ namespace UVtools.Core.FileFormats
                                                    "Lower and fix your layer height on slicer to avoid precision errors.", fileFullPath);
             }
 
-            // Sanitize
-            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            if (_layerManager.Sanitize())
             {
-                // Check for null layers
-                if(this[layerIndex] is null) throw new FileLoadException($"Layer {layerIndex} was defined but doesn't contain a valid image.", fileFullPath);
-                if(layerIndex <= 0) continue;
-                // Check for bigger position z than it successor
-                if(this[layerIndex-1].PositionZ > this[layerIndex].PositionZ) throw new FileLoadException($"Layer {layerIndex-1} ({this[layerIndex - 1].PositionZ}mm) have a higher Z position than the successor layer {layerIndex} ({this[layerIndex].PositionZ}mm).\n", fileFullPath);
-            }
-
-            // Fix 0mm positions at layer 0
-            if(this[0].PositionZ == 0)
-            {
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    this[layerIndex].PositionZ += LayerHeight;
-                }
                 Save(progress);
             }
         }

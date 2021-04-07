@@ -1,5 +1,12 @@
 # Changelog
 
+## 07/04/2021 - v2.8.3
+
+* File formats: Sanitize and check layers on encoding/saving file, will thrown a error and prevent the save if found any
+* GCode Parser: Do not sanitize the lack of lift height on a file to allow read files back with no lift's on the layers
+* CWS: Zips containing files without numbers was interrupting the decode method on first cath (#180)
+* Tool - Change resolution: Only manipulate the layer image if the new resolution is different from the image resolution
+
 ## 05/04/2021 - v2.8.2
 
 * **Operations:**

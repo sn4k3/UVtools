@@ -394,6 +394,37 @@ namespace UVtools.Core
         #region Methods
 
         /// <summary>
+        /// Sanitize layers and thrown exception if a severe problem is found
+        /// </summary>
+        /// <returns>True if one or more corrections has been applied, otherwise false</returns>
+        public bool Sanitize()
+        {
+            bool appliedCorrections = false;
+
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                // Check for null layers
+                if (this[layerIndex] is null) throw new InvalidDataException($"Layer {layerIndex} was defined but doesn't contain a valid image.");
+                if (layerIndex <= 0) continue;
+                // Check for bigger position z than it successor
+                if (this[layerIndex - 1].PositionZ > this[layerIndex].PositionZ) throw new InvalidDataException($"Layer {layerIndex - 1} ({this[layerIndex - 1].PositionZ}mm) have a higher Z position than the successor layer {layerIndex} ({this[layerIndex].PositionZ}mm).\n");
+            }
+
+            // Fix 0mm positions at layer 0
+            if (this[0].PositionZ == 0)
+            {
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                {
+                    this[layerIndex].PositionZ = Layer.RoundHeight(this[layerIndex].PositionZ + SlicerFile.LayerHeight);
+                }
+
+                appliedCorrections = true;
+            }
+
+            return appliedCorrections;
+        }
+
+        /// <summary>
         /// Rebuild layer properties based on slice settings
         /// </summary>
         public void RebuildLayersProperties(bool recalculateZPos = true, string property = null)

@@ -790,7 +790,7 @@ namespace UVtools.Core.FileFormats
                         layerIndexStr = $"{layerStr[i]}{layerIndexStr}";
                     }
 
-                    if (string.IsNullOrEmpty(layerIndexStr)) return;
+                    if (string.IsNullOrEmpty(layerIndexStr)) continue;
                     if (!uint.TryParse(layerIndexStr, out var layerIndex)) continue;
                     using var stream = pngEntry.Open();
                     this[layerIndex] = new Layer(layerIndex, stream, LayerManager);

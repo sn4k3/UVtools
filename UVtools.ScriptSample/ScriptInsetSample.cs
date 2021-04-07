@@ -90,7 +90,7 @@ namespace UVtools.ScriptSample
             Progress.Reset("Inset layers", Operation.LayerRangeCount); // Sets the progress name and number of items to process
 
             // Loop user selected layers in parallel, this will put each core of CPU working here on parallel
-            Parallel.For(Operation.LayerIndexStart, Operation.LayerIndexEnd, layerIndex =>
+            Parallel.For(Operation.LayerIndexStart, Operation.LayerIndexEnd+1, layerIndex =>
             {
                 if (Progress.Token.IsCancellationRequested) return; // Abort operation, user requested cancellation
 

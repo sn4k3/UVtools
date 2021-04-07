@@ -625,8 +625,8 @@ namespace UVtools.Core.GCode
                 gcode = gcode.Substring(gcode.IndexOf(startStr, StringComparison.InvariantCultureIgnoreCase) + startStr.Length + 1);
                 var endStrIndex = gcode.IndexOf(endStr, StringComparison.Ordinal);
                 var stripGcode = endStrIndex > 0 ? gcode.Substring(0, endStrIndex) : gcode;/*.Trim(' ', '\n', '\r', '\t');*/
-                
-                float liftHeight = slicerFile.GetInitialLayerValueOrNormal(layerIndex, slicerFile.BottomLiftHeight, slicerFile.LiftHeight);
+
+                float liftHeight = 0;// this allow read back no lifts slicerFile.GetInitialLayerValueOrNormal(layerIndex, slicerFile.BottomLiftHeight, slicerFile.LiftHeight);
                 float liftSpeed = slicerFile.GetInitialLayerValueOrNormal(layerIndex, slicerFile.BottomLiftSpeed, slicerFile.LiftSpeed);
                 float retractSpeed = slicerFile.RetractSpeed;
                 float lightOffDelay = 0;
