@@ -11,7 +11,7 @@
           Minimum="-359.99"
           Maximum="359.99"
           Increment="1.0"
-          FormatString="F02"
+          FormatString="F2"
           Value="{Binding Operation.AngleDegrees}"
           />
     <TextBlock VerticalAlignment="Center" Text="degrees"/>

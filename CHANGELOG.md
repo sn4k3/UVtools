@@ -1,5 +1,23 @@
 # Changelog
 
+## 08/04/2021 - v2.8.4
+
+* (Improvement) Layers: "IsBottomLayer" property will now computing the value taking the height into consideration instead of it index, this allow to identify the real bottom layers when using multiple layers with same heights
+* (Fix) GCode Builder: Finish print lift to top was setting the incorrect feedrate if the file format is not in mm/m speed units
+* **Operations:**
+   * **Exposure time finder:**
+      * Add option to "Also set light-off delay to zero" when "Do not perform the lifting sequence for layers with same Z positioning" is enabled
+      * Layers heights with more than 3 decimals was limiting the layer generation to 2 decimals leading to wrong the layer thickness
+      * Allow set layer heights with 3 decimals
+   * **Elephant foot:**
+      * Bottom and normal layers count was showing with decimals
+      * Allow set layer heights with 3 decimals
+   * XYZ Accuracy: Allow set layer heights with 3 decimals
+   * Tolerance XYZ: Allow set layer heights with 3 decimals
+   * Grayscale: Allow set layer heights with 3 decimals
+   * Stress tower: Allow set layer heights with 3 decimals
+   * Calculator - Optimal model tilt: Allow layer heights with 3 decimals
+
 ## 07/04/2021 - v2.8.3
 
 * File formats: Sanitize and check layers on encoding/saving file, will thrown a error and prevent the save if found any

@@ -390,7 +390,7 @@ namespace UVtools.Core.Operations
                 get => _layerHeight;
                 set
                 {
-                    if (!RaiseAndSetIfChanged(ref _layerHeight, value)) return;
+                    if (!RaiseAndSetIfChanged(ref _layerHeight, Layer.RoundHeight(value))) return;
                     RaisePropertyChanged(nameof(XYResolution));
                     RaisePropertyChanged(nameof(XYResolutionUm));
                     RaisePropertyChanged(nameof(TiltAngleDegrees));

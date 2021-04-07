@@ -29,7 +29,7 @@
                            Increment="0.1"
                            Minimum="0"
                            Maximum="10000"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.DisplayWidth}"/>
             <TextBlock Grid.Row="0" Grid.Column="4"
                        VerticalAlignment="Center"
@@ -44,7 +44,7 @@
                            Increment="0.1"
                            Minimum="0"
                            Maximum="10000"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.DisplayHeight}"/>
             <TextBlock Grid.Row="0" Grid.Column="10"
                        VerticalAlignment="Center"
@@ -57,9 +57,8 @@
                            Increment="0.01"
                            Minimum="0.01"
                            Maximum="0.30"
-                           FormatString="F02"
-                           Value="{Binding Operation.LayerHeight}"
-                     />
+                           FormatString="F3"
+                           Value="{Binding Operation.LayerHeight}"/>
             <TextBlock Grid.Row="2" Grid.Column="4"
                        VerticalAlignment="Center"
                        Text="mm"/>
@@ -85,7 +84,7 @@
                            Increment="0.5"
                            Minimum="0.1"
                            Maximum="200"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.BottomExposure}"/>
             <TextBlock Grid.Row="4" Grid.Column="4"
                        VerticalAlignment="Center"
@@ -99,7 +98,7 @@
                            Increment="0.5"
                            Minimum="0.1"
                            Maximum="200"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.NormalExposure}"/>
             <TextBlock Grid.Row="4" Grid.Column="10"
                        VerticalAlignment="Center"
@@ -201,7 +200,7 @@
                              Increment="0.5"
                              Minimum="0.3"
                              Maximum="100"
-                             FormatString="F02"
+                             FormatString="F2"
                              Value="{Binding Operation.BaseHeight}"/>
             <TextBlock Grid.Row="0" Grid.Column="4"
                          VerticalAlignment="Center"
@@ -215,7 +214,7 @@
                            Increment="0.5"
                            Minimum="0.5"
                            Maximum="100"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.FeaturesHeight}"/>
             <TextBlock Grid.Row="0" Grid.Column="10"
                        VerticalAlignment="Center"
@@ -229,7 +228,7 @@
                            Increment="0.5"
                            Minimum="1"
                            Maximum="100"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.FeaturesMargin}"/>
             <TextBlock Grid.Row="0" Grid.Column="16"
                        VerticalAlignment="Center"
@@ -302,7 +301,7 @@
                            Increment="0.5"
                            Minimum="0.01"
                            Maximum="100"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.BarSpacing}"/>
             <TextBlock Grid.Row="10" Grid.Column="4"
                        VerticalAlignment="Center"
@@ -317,7 +316,7 @@
                            Increment="0.5"
                            Minimum="0.01"
                            Maximum="100"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.BarLength}"/>
             <TextBlock Grid.Row="10" Grid.Column="10"
                        VerticalAlignment="Center"
@@ -383,7 +382,7 @@
                            Increment="0.5"
                            Minimum="0.1"
                            Maximum="100"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.TextScale}"/>
             <TextBlock Grid.Row="16" Grid.Column="10"
                        VerticalAlignment="Center"
@@ -463,7 +462,7 @@
                                        Increment="0.10"
                                        Minimum="0.10"
                                        Maximum="{Binding Operation.NormalExposure}"
-                                       FormatString="F02"
+                                       FormatString="F2"
                                        Value="{Binding Operation.MultipleBrightnessGenExposureTime}"/>
 
                         <TextBlock Grid.Row="0" Grid.Column="10"
@@ -560,7 +559,7 @@
                            Increment="0.01"
                            Minimum="0.01"
                            Maximum="0.30"
-                           FormatString="F02"
+                           FormatString="F3"
                            Value="{Binding Operation.LayerHeight}"/>
             <TextBlock Grid.Row="0" Grid.Column="4"
                        VerticalAlignment="Center"
@@ -573,7 +572,7 @@
                            Increment="0.01"
                            Minimum="0.01"
                            Maximum="0.1"
-                           FormatString="F02"
+                           FormatString="F3"
                            Value="{Binding Operation.MultipleLayerHeightStep}"/>
             <TextBlock Grid.Row="0" Grid.Column="10"
                        VerticalAlignment="Center"
@@ -586,7 +585,7 @@
                            Increment="0.01"
                            Minimum="{Binding Operation.LayerHeight}"
                            Maximum="0.3"
-                           FormatString="F02"
+                           FormatString="F3"
                            Value="{Binding Operation.MultipleLayerHeightMaximum}"/>
             <TextBlock Grid.Row="0" Grid.Column="16"
                        VerticalAlignment="Center"
@@ -614,17 +613,25 @@
                 <TextBlock Text="Only few printers support this, make sure your is supported or else it will print a malformed model.
 &#x0a;After this, do not apply any modification which reconstruct the z positions of the layers."/>
 
-                <StackPanel Orientation="Horizontal" Spacing="20">
                 <CheckBox
                     Content="Enable - For advanced users only!"
                     IsChecked="{Binding Operation.MultipleExposures}"/>
 
+                <StackPanel Orientation="Horizontal" Spacing="20">
+
                 <CheckBox
-                    ToolTip.Tip="The lift height will be set to 0 for sequential layers that share same z position.
-&#x0a;Some printers may not support this and always require a lift after each layer."
+                    ToolTip.Tip="The lift height will be set to 0 for sequential layers that share same z position, saving moves and time.
+&#x0a;Some printers may not support this and always require a lift after each layer, in that case turning this on will not affect the print."
                     Content="Do not perform the lifting sequence for layers with same Z positioning"
                     IsEnabled="{Binding Operation.MultipleExposures}"
                     IsChecked="{Binding Operation.DontLiftSamePositionedLayers}"/>
+
+                <CheckBox
+                    ToolTip.Tip="Sets the light-off delay to zero for each sequential layers with no lift's to save that additional time.
+&#x0a;Note that without a lift and a delay the UV LED and LCD will be almost always ON, that can lead to overheat and wear the LCD faster."
+                    Content="Also set light-off delay to zero"
+                    IsEnabled="{Binding Operation.DontLiftSamePositionedLayers}"
+                    IsChecked="{Binding Operation.ZeroLightOffSamePositionedLayers}"/>
                 </StackPanel>
 
                 <TextBlock Text="Automatic exposure generation:"
@@ -668,7 +675,7 @@
                                Increment="0.01"
                                Minimum="0"
                                Maximum="1000"
-                               FormatString="F02"
+                               FormatString="F2"
                                Value="{Binding Operation.ExposureGenBottomStep}"/>
                 <TextBlock Grid.Row="2" Grid.Column="4"
                            VerticalAlignment="Center"
@@ -682,7 +689,7 @@
                                Increment="0.01"
                                Minimum="0.01"
                                Maximum="1000"
-                               FormatString="F02"
+                               FormatString="F2"
                                Value="{Binding Operation.ExposureGenNormalStep}"/>
                 <TextBlock Grid.Row="2" Grid.Column="10"
                            VerticalAlignment="Center"
@@ -729,7 +736,7 @@
                                    Increment="0.1"
                                    Minimum="0.5"
                                    Maximum="1000"
-                                   FormatString="F02"
+                                   FormatString="F2"
                                    Value="{Binding Operation.ExposureGenManualBottom}"/>
                     <TextBlock Grid.Row="0" Grid.Column="10"
                                VerticalAlignment="Center"
@@ -742,7 +749,7 @@
                                  Increment="0.1"
                                  Minimum="0.1"
                                  Maximum="1000"
-                                 FormatString="F02"
+                                 FormatString="F2"
                                  Value="{Binding Operation.ExposureGenManualNormal}"/>
                     <TextBlock Grid.Row="0" Grid.Column="16"
                                VerticalAlignment="Center"

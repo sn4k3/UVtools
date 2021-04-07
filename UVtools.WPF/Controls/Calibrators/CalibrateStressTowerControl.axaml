@@ -29,7 +29,7 @@
                            Increment="0.1"
                            Minimum="0"
                            Maximum="10000"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.DisplayWidth}"/>
             <TextBlock Grid.Row="0" Grid.Column="4"
                        VerticalAlignment="Center"
@@ -44,7 +44,7 @@
                            Increment="0.1"
                            Minimum="0"
                            Maximum="10000"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.DisplayHeight}"/>
             <TextBlock Grid.Row="0" Grid.Column="10"
                        VerticalAlignment="Center"
@@ -58,7 +58,7 @@
                            Increment="0.01"
                            Minimum="0.01"
                            Maximum="0.30"
-                           FormatString="F02"
+                           FormatString="F3"
                            Value="{Binding Operation.LayerHeight}"
                      />
             <TextBlock Grid.Row="2" Grid.Column="4"
@@ -86,7 +86,7 @@
                            Increment="0.5"
                            Minimum="0.1"
                            Maximum="200"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.BottomExposure}"/>
             <TextBlock Grid.Row="4" Grid.Column="4"
                        VerticalAlignment="Center"
@@ -100,7 +100,7 @@
                            Increment="0.5"
                            Minimum="0.1"
                            Maximum="200"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.NormalExposure}"/>
             <TextBlock Grid.Row="4" Grid.Column="10"
                        VerticalAlignment="Center"
@@ -114,7 +114,7 @@
                            Increment="1"
                            Minimum="0"
                            Maximum="100"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.BaseHeight}"/>
             <TextBlock Grid.Row="6" Grid.Column="4"
                        VerticalAlignment="Center"
@@ -128,7 +128,7 @@
                            Increment="1"
                            Minimum="1"
                            Maximum="10000"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.BaseDiameter}"/>
             <TextBlock Grid.Row="6" Grid.Column="10"
                        VerticalAlignment="Center"
@@ -142,7 +142,7 @@
                            Increment="1"
                            Minimum="0"
                            Maximum="100"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.CeilHeight}"/>
             <TextBlock Grid.Row="8" Grid.Column="4"
                        VerticalAlignment="Center"
@@ -157,7 +157,7 @@
                            Increment="1"
                            Minimum="0"
                            Maximum="10000"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.BodyHeight}"/>
             <TextBlock Grid.Row="8" Grid.Column="10"
                        VerticalAlignment="Center"
@@ -259,7 +259,7 @@
                                Increment="1"
                                Minimum="0.1"
                                Maximum="10000"
-                               FormatString="F02"
+                               FormatString="F2"
                                Value="{Binding Operation.SpiralDiameter}"/>
                 <TextBlock Grid.Row="2" Grid.Column="4"
                            Text="mm"
@@ -274,7 +274,7 @@
                                Increment="1"
                                Minimum="0.01"
                                Maximum="359.99"
-                               FormatString="F02"
+                               FormatString="F2"
                                Value="{Binding Operation.SpiralAngleStepPerLayer}"/>
                 <TextBlock Grid.Row="2" Grid.Column="10"
                            Text="º/layer"

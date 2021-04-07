@@ -554,7 +554,18 @@ namespace UVtools.Core.GCode
                     break;
             }
 
-            AppendEndGCode(finalRaiseZPosition, slicerFile.LiftSpeed);
+            float endFeedRate = 0;
+            switch (GCodeSpeedUnit)
+            {
+                case GCodeSpeedUnits.MillimetersPerSecond:
+                    endFeedRate = (float)Math.Round(slicerFile.RetractSpeed / 60, 2);
+                    break;
+                case GCodeSpeedUnits.CentimetersPerMinute:
+                    endFeedRate = (float)Math.Round(slicerFile.RetractSpeed / 10, 2);
+                    break;
+            }
+
+            AppendEndGCode(finalRaiseZPosition, endFeedRate);
         }
 
         public void RebuildGCode(FileFormat slicerFile, object[] configs, string separator = ":")
@@ -769,7 +780,7 @@ namespace UVtools.Core.GCode
                         if (bottomLayer.LightPWM > 0) slicerFile.BottomLightPWM = bottomLayer.LightPWM;
                     }
 
-                    var normalLayer = slicerFile[slicerFile.LastLayerIndex];
+                    var normalLayer = slicerFile.LastLayer;
                     if (normalLayer is not null)
                     {
                         if (normalLayer.ExposureTime > 0) slicerFile.ExposureTime = normalLayer.ExposureTime;

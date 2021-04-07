@@ -10,39 +10,6 @@
       <Grid RowDefinitions="Auto,0,Auto,10,Auto,10,Auto,10,Auto"
             ColumnDefinitions="Auto,10,150,5,Auto,20,Auto,10,150,5,Auto">
 
-          <!--
-          <TextBlock
-              Grid.Row="0" Grid.Column="0"
-              VerticalAlignment="Center"
-              ToolTip.Tip="The printer display width.  Required to calculate the XY pixel resolution."
-              Text="Display width:"/>
-          <NumericUpDown Grid.Row="0" Grid.Column="2"
-                         
-                         Increment="0.1"
-                         Minimum="0"
-                         Maximum="10000"
-                         FormatString="F02"
-                         Value="{Binding Operation.DisplayWidth}"/>
-          <TextBlock Grid.Row="0" Grid.Column="4"
-                     VerticalAlignment="Center"
-                     Text="mm"/>
-
-          <TextBlock Grid.Row="0" Grid.Column="6"
-                     VerticalAlignment="Center"
-                     ToolTip.Tip="The printer display height. Required to calculate the XY pixel resolution."
-                     Text="Display height:"/>
-          <NumericUpDown Grid.Row="0" Grid.Column="8"
-                         
-                         Increment="0.1"
-                         Minimum="0"
-                         Maximum="10000"
-                         FormatString="F02"
-                         Value="{Binding Operation.DisplayHeight}"/>
-          <TextBlock Grid.Row="0" Grid.Column="10"
-                     VerticalAlignment="Center"
-                     Text="mm"/>
-                     !-->
-
           <TextBlock Grid.Row="2" Grid.Column="0"
                      VerticalAlignment="Center"
                      ToolTip.Tip="Never use less than this minimum layer height, layers will always stack at least to this height."

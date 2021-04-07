@@ -426,6 +426,7 @@ namespace UVtools.Core.FileFormats
 
         #endregion
 
+        #region Constructor
         public ZCodeFile()
         {
             GCode.UseTailComma = true;
@@ -435,7 +436,9 @@ namespace UVtools.Core.FileFormats
             GCode.GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds;
             GCode.GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.FilenameNonZeroPNG;
             GCode.MaxLEDPower = MaxLEDPower;
+            GCode.CommandClearImage.Enabled = false;
         }
+        #endregion
 
         #region Methods
 

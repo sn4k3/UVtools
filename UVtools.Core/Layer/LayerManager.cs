@@ -520,7 +520,7 @@ namespace UVtools.Core
                 var layer = this[layerIndex];
                 if (this[layerIndex - 1].PositionZ != layer.PositionZ) continue;
                 layer.LiftHeight = 0;
-                //if(zeroLightOffDelay) layer.LightOffDelay = 0;
+                if(zeroLightOffDelay) layer.LightOffDelay = 0;
             }
             SlicerFile?.RebuildGCode();
         }

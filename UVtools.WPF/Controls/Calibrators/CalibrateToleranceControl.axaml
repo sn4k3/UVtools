@@ -29,7 +29,7 @@
                            Increment="0.1"
                            Minimum="0"
                            Maximum="10000"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.DisplayWidth}"/>
             <TextBlock Grid.Row="0" Grid.Column="4"
                        VerticalAlignment="Center"
@@ -44,7 +44,7 @@
                            Increment="0.1"
                            Minimum="0"
                            Maximum="10000"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.DisplayHeight}"/>
             <TextBlock Grid.Row="0" Grid.Column="10"
                        VerticalAlignment="Center"
@@ -58,7 +58,7 @@
                            Increment="0.01"
                            Minimum="0.01"
                            Maximum="0.30"
-                           FormatString="F02"
+                           FormatString="F3"
                            Value="{Binding Operation.LayerHeight}"
                      />
             <TextBlock Grid.Row="2" Grid.Column="4"
@@ -86,7 +86,7 @@
                            Increment="0.5"
                            Minimum="0.1"
                            Maximum="200"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.BottomExposure}"/>
             <TextBlock Grid.Row="4" Grid.Column="4"
                        VerticalAlignment="Center"
@@ -100,7 +100,7 @@
                            Increment="0.5"
                            Minimum="0.1"
                            Maximum="200"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.NormalExposure}"/>
             <TextBlock Grid.Row="4" Grid.Column="10"
                        VerticalAlignment="Center"
@@ -114,7 +114,7 @@
                            Increment="1"
                            Minimum="5"
                            Maximum="100"
-                           FormatString="F02"
+                           FormatString="F2"
                            Value="{Binding Operation.ZSize}"/>
             <TextBlock Grid.Row="6" Grid.Column="4"
                        VerticalAlignment="Center"
@@ -264,7 +264,7 @@
                                  Increment="1.0"
                                  Minimum="2"
                                  Maximum="1000"
-                                 FormatString="F02"
+                                 FormatString="F2"
                                  Value="{Binding Operation.FemaleDiameter}"/>
                 <TextBlock Grid.Row="0" Grid.Column="4"
                              VerticalAlignment="Center"
@@ -278,7 +278,7 @@
                                Increment="1.0"
                                Minimum="2"
                                Maximum="1000"
-                               FormatString="F02"
+                               FormatString="F2"
                                Value="{Binding Operation.FemaleHoleDiameter}"/>
                 <TextBlock Grid.Row="0" Grid.Column="10"
                            VerticalAlignment="Center"
@@ -335,7 +335,7 @@
                                    Increment="0.01"
                                    Minimum="-1000"
                                    Maximum="0"
-                                   FormatString="F02"
+                                   FormatString="F2"
                                    Value="{Binding Operation.MaleThinnerOffset}"/>
                     <TextBlock Grid.Row="0" Grid.Column="10"
                                VerticalAlignment="Center"
@@ -349,7 +349,7 @@
                                    Increment="0.01"
                                    Minimum="-1000"
                                    Maximum="-0.01"
-                                   FormatString="F02"
+                                   FormatString="F2"
                                    Value="{Binding Operation.MaleThinnerStep}"/>
                     <TextBlock Grid.Row="0" Grid.Column="16"
                                VerticalAlignment="Center"
@@ -376,7 +376,7 @@
                                  Increment="0.01"
                                  Minimum="0"
                                  Maximum="1000"
-                                 FormatString="F02"
+                                 FormatString="F2"
                                  IsEnabled="{Binding !Operation.FuseParts}"
                                  Value="{Binding Operation.MaleThickerOffset}"/>
                   <TextBlock Grid.Row="2" Grid.Column="10"
@@ -394,7 +394,7 @@
                                  Minimum="0.01"
                                  Maximum="1000"
                                  IsEnabled="{Binding !Operation.FuseParts}"
-                                 FormatString="F02"
+                                 FormatString="F2"
                                  Value="{Binding Operation.MaleThickerStep}"/>
                   <TextBlock Grid.Row="2" Grid.Column="16"
                              VerticalAlignment="Center"
@@ -409,144 +409,7 @@
             </Expander>
         </Border>
 
-        <!--
-      <Border BorderBrush="Black" BorderThickness="1" Padding="5">
-        <Expander IsExpanded="True">
-          <Expander.Header>
-            <TextBlock Text="Step 4: Validate the printed model with your measures"
-                       FontWeight="Bold"
-                       Cursor="Hand"/>
-          </Expander.Header>
-
-          <StackPanel Spacing="10">
-
-            <StackPanel Orientation="Horizontal" Spacing="5">
-              <TextBlock VerticalAlignment="Center" Text="X:"/>
-              <NumericUpDown
-                             
-                             Increment="1"
-                             Minimum="0"
-                             Maximum="100"
-                             Width="100"
-                             FormatString="F02"
-                             Value="{Binding Operation.ObservedXSize}"/>
-              <TextBlock VerticalAlignment="Center" Text="mm"/>
-
-              <TextBlock VerticalAlignment="Center" Text="Y:"
-                         Margin="20,0,0,0"/>
-              <NumericUpDown
-                  
-                  Increment="1"
-                  Minimum="0"
-                  Maximum="100"
-                  Width="100"
-                  FormatString="F02"
-                  Value="{Binding Operation.ObservedYSize}"/>
-              <TextBlock VerticalAlignment="Center" Text="mm"/>
-
-              <TextBlock VerticalAlignment="Center" Text="Z:"
-                         Margin="20,0,0,0"/>
-              <NumericUpDown
-                  
-                  Increment="1"
-                  Minimum="0"
-                  Maximum="100"
-                  Width="100"
-                  FormatString="F02"
-                  Value="{Binding Operation.ObservedZSize}"/>
-              <TextBlock VerticalAlignment="Center" Text="mm"/>
-            </StackPanel>
-
-            <Grid RowDefinitions="Auto,10,Auto,10,Auto"
-                ColumnDefinitions="Auto,10,Auto">
-              <TextBlock Grid.Row="0" Grid.Column="0"
-                         VerticalAlignment="Center"
-                         FontWeight="Bold"
-                         ToolTip.Tip="The calculated expected size for the part based on your input"
-                         Text="Expected size:"/>
-
-              <TextBlock Grid.Row="0" Grid.Column="2" FontWeight="Bold"
-                         ToolTip.Tip="The calculated expected size for the part based on your input">
-                <TextBlock.Text>
-                  <MultiBinding StringFormat="\{0\}mm x \{1\}mm x \{2\}mm">
-                    <Binding Path="Operation.RealXSize"/>
-                    <Binding Path="Operation.RealYSize"/>
-                    <Binding Path="Operation.RealZSize"/>
-                  </MultiBinding>
-                </TextBlock.Text>
-              </TextBlock>
-
-              <TextBlock Grid.Row="2" Grid.Column="0"
-                         VerticalAlignment="Center"
-                         IsVisible="{Binding Operation.HollowModel}"
-                         FontWeight="Bold"
-                         ToolTip.Tip="The calculated expected wall thickness size for the part based on your input"
-                         Text="Expected wall size:"/>
-
-              <TextBlock Grid.Row="2" Grid.Column="2" FontWeight="Bold"
-                         IsVisible="{Binding Operation.HollowModel}"
-                         ToolTip.Tip="The calculated expected wall thickness size for the part based on your input">
-                <TextBlock.Text>
-                  <MultiBinding StringFormat="\{0\}mm x \{1\}mm">
-                    <Binding Path="Operation.WallThicknessRealXSize"/>
-                    <Binding Path="Operation.WallThicknessRealYSize"/>
-                  </MultiBinding>
-                </TextBlock.Text>
-              </TextBlock>
-
-              <TextBlock Grid.Row="4" Grid.Column="0"
-                         VerticalAlignment="Center"
-                         FontWeight="Bold"
-                         ToolTip.Tip="The resultant scale factor you should resize your model with"
-                         Text="Resultant scale factor:"/>
-
-              <TextBlock Grid.Row="4" Grid.Column="2" FontWeight="Bold"
-                         ToolTip.Tip="The resultant scale factor you should resize your model with">
-                <TextBlock.Text>
-                  <MultiBinding StringFormat="\{0\}% x \{1\}% x \{2\}%">
-                    <Binding Path="Operation.ScaleXFactor"/>
-                    <Binding Path="Operation.ScaleYFactor"/>
-                    <Binding Path="Operation.ScaleZFactor"/>
-                  </MultiBinding>
-                </TextBlock.Text>
-              </TextBlock>
-            </Grid>
-          </StackPanel>
-
-        </Expander>
-      </Border>
-
-      <Border BorderBrush="Black" BorderThickness="1" Padding="5">
-        <Expander IsExpanded="True">
-          <Expander.Header>
-            <TextBlock Text="Step 5: Save a resize profile with the results"
-                       FontWeight="Bold"
-                       Cursor="Hand"/>
-          </Expander.Header>
-
-          <Grid ColumnDefinitions="Auto,10,*,5,Auto,5,Auto">
-            <TextBlock VerticalAlignment="Center"
-                       Text="Profile name:"/>
-            <TextBox Grid.Column="2" VerticalAlignment="Center"
-                     IsEnabled="{Binding IsProfileAddEnabled}"
-                       Text="{Binding ProfileName}"/>
-            <Button Grid.Column="4" VerticalAlignment="Center"
-                    IsEnabled="{Binding IsProfileAddEnabled}"
-                    Command="{Binding AutoNameProfile}"
-                    ToolTip.Tip="Auto name the profile with the input values.
-&#x0a;Rename MyPrinterX to your printer name and MyResinX to your resin name."
-                    Content="Auto name"/>
-            <Button Grid.Column="6" VerticalAlignment="Center"
-                    IsEnabled="{Binding IsProfileAddEnabled}"
-                    Command="{Binding AddProfile}">
-              <Image Source="/Assets/Icons/plus-16x16.png"/>
-            </Button>
-          </Grid>
-        </Expander>
-      </Border>
-      !-->
-
-
+        
     </StackPanel>
 
     <Image Grid.Column="2"

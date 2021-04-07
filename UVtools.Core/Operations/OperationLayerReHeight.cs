@@ -78,9 +78,9 @@ namespace UVtools.Core.Operations
             var list = new List<OperationLayerReHeightItem>();
             for (byte i = 2; i < 255; i++) // Go lower heights
             {
-                if (layerHeight / i < 0.01m) break;
+                if (layerHeight / i < Layer.MinimumHeight) break;
                 if ((layerCount * (decimal)i).DecimalDigits() > 0) continue; // Cant multiply layers, no half layers!
-                if ((layerHeight / i).DecimalDigits() > 3) continue; // Cant divide height, more than 3 digits
+                if ((layerHeight / i).DecimalDigits() > Layer.HeightPrecision) continue; // Cant divide height, more than 3 digits
 
                 var item = new OperationLayerReHeightItem(false, i, Layer.RoundHeight(layerHeight / i), layerCount * i);
                 list.Add(item);
@@ -88,9 +88,9 @@ namespace UVtools.Core.Operations
 
             for (byte i = 2; i < 255; i++) // Go higher heights
             {
-                if (layerHeight * i > 0.20m) break;
+                if (layerHeight * i > Layer.MaximumHeight) break;
                 if ((layerCount / (decimal)i).DecimalDigits() > 0) continue; // Cant divide layers, no half layers!
-                if ((layerHeight * i).DecimalDigits() > 3) continue; // Cant multiply height, more than 3 digits
+                if ((layerHeight * i).DecimalDigits() > Layer.HeightPrecision) continue; // Cant multiply height, more than 3 digits
 
                 var item = new OperationLayerReHeightItem(true, i, Layer.RoundHeight(layerHeight * i), layerCount / i);
                 list.Add(item);

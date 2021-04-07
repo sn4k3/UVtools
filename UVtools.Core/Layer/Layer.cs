@@ -26,6 +26,9 @@ namespace UVtools.Core
     {
         #region Constants
         public const byte HeightPrecision = 3;
+        public const decimal HeightPrecisionIncrement = 0.001M;
+        public const decimal MinimumHeight = 0.01M;
+        public const decimal MaximumHeight = 0.2M;
         #endregion
 
         #region Members
@@ -113,7 +116,7 @@ namespace UVtools.Core
             }
         }
 
-        public bool IsBottomLayer => Index < ParentLayerManager.SlicerFile.BottomLayerCount;
+        public bool IsBottomLayer => (uint)(PositionZ / SlicerFile.LayerHeight) <= ParentLayerManager.SlicerFile.BottomLayerCount;
         public bool IsNormalLayer => !IsBottomLayer;
 
         /// <summary>

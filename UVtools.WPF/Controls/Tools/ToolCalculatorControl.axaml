@@ -85,7 +85,7 @@
             Minimum="0"
             Maximum="100000"
             Increment="0.01"
-            FormatString="F02"
+            FormatString="F2"
             Value="{Binding Operation.CalcMillimetersToPixels.DisplayWidth}"
           />
           <TextBlock
@@ -107,7 +107,7 @@
             Minimum="0"
             Maximum="100000"
             Increment="0.01"
-            FormatString="F02"
+            FormatString="F2"
             Value="{Binding Operation.CalcMillimetersToPixels.DisplayHeight}"
           />
           <TextBlock
@@ -136,7 +136,7 @@
             Minimum="0"
             Maximum="100000"
             Increment="0.5"
-            FormatString="F02"
+            FormatString="F2"
             Value="{Binding Operation.CalcMillimetersToPixels.Millimeters}"
           />
           <TextBlock
@@ -271,7 +271,7 @@
             Minimum="0"
             Maximum="1000"
             Increment="1.0"
-            FormatString="F02"
+            FormatString="F2"
             Value="{Binding Operation.CalcLightOffDelay.LiftHeight}"/>
           <TextBlock
             Grid.Row="0"
@@ -292,7 +292,7 @@
             Minimum="0"
             Maximum="1000"
             Increment="1.0"
-            FormatString="F02"
+            FormatString="F2"
             Value="{Binding Operation.CalcLightOffDelay.LiftSpeed}"/>
           <TextBlock
             Grid.Row="2"
@@ -313,7 +313,7 @@
             Minimum="0"
             Maximum="1000"
             Increment="1.0"
-            FormatString="F02"
+            FormatString="F2"
             Value="{Binding Operation.CalcLightOffDelay.RetractSpeed}"/>
           <TextBlock
             Grid.Row="4"
@@ -334,7 +334,7 @@
             Minimum="0"
             Maximum="1000"
             Increment="0.5"
-            FormatString="F02"
+            FormatString="F2"
             Value="{Binding Operation.CalcLightOffDelay.WaitTime}"/>
           <TextBlock
             Grid.Row="6"
@@ -413,7 +413,7 @@
             Minimum="0"
             Maximum="1000"
             Increment="1.0"
-            FormatString="F02"
+            FormatString="F2"
             Value="{Binding Operation.CalcLightOffDelay.BottomLiftHeight}"/>
           <TextBlock
             Grid.Row="0"
@@ -434,7 +434,7 @@
             Minimum="0"
             Maximum="1000"
             Increment="1.0"
-            FormatString="F02"
+            FormatString="F2"
             Value="{Binding Operation.CalcLightOffDelay.BottomLiftSpeed}"/>
           <TextBlock
             Grid.Row="2"
@@ -455,7 +455,7 @@
             Minimum="0"
             Maximum="1000"
             Increment="0.5"
-            FormatString="F02"
+            FormatString="F2"
             Value="{Binding Operation.CalcLightOffDelay.BottomWaitTime}"/>
           <TextBlock
             Grid.Row="6"
@@ -587,7 +587,7 @@
             Minimum="0"
             Maximum="100000"
             Increment="0.01"
-            FormatString="F02"
+            FormatString="F2"
             Value="{Binding Operation.CalcOptimalModelTilt.DisplayWidth}"
           />
           <TextBlock
@@ -609,7 +609,7 @@
             Minimum="0"
             Maximum="100000"
             Increment="0.01"
-            FormatString="F02"
+            FormatString="F2"
             Value="{Binding Operation.CalcOptimalModelTilt.DisplayHeight}"
           />
           <TextBlock
@@ -638,8 +638,7 @@
             Minimum="0.01"
             Maximum="0.20"
             Increment="0.01"
-            FormatString="F02"
-            
+            FormatString="F3"
             Value="{Binding Operation.CalcOptimalModelTilt.LayerHeight}"
           />
           <TextBlock

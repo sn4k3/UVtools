@@ -1472,7 +1472,7 @@
                                            Minimum="0"
                                            Maximum="255"
                                            Increment="0.5"
-                                           FormatString="F02"
+                                           FormatString="F2"
                                            Value="{Binding Settings.Automations.LightOffDelay}"/>
                             <TextBlock Grid.Row="0" Grid.Column="4"
                                        VerticalAlignment="Center"
@@ -1489,7 +1489,7 @@
                                            Minimum="0"
                                            Maximum="255"
                                            Increment="0.5"
-                                           FormatString="F02"
+                                           FormatString="F2"
                                            Value="{Binding Settings.Automations.BottomLightOffDelay}"/>
                             <TextBlock Grid.Row="0" Grid.Column="10"
                                        VerticalAlignment="Center"

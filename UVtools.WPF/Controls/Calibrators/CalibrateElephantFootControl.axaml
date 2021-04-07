@@ -20,7 +20,7 @@
                          Increment="0.01"
                          Minimum="0.01"
                          Maximum="0.30"
-                         FormatString="F02"
+                         FormatString="F3"
                          Value="{Binding Operation.LayerHeight}"/>
           <TextBlock Grid.Row="0" Grid.Column="4"
                      VerticalAlignment="Center"
@@ -39,9 +39,7 @@
                          Increment="1"
                          Minimum="1"
                          Maximum="1000"
-                         FormatString="F02"
-                         Value="{Binding Operation.BottomLayers}"
-      />
+                         Value="{Binding Operation.BottomLayers}"/>
           <TextBlock Grid.Row="2" Grid.Column="4"
                      VerticalAlignment="Center"
                      Text="{Binding Operation.BottomHeight, StringFormat=\{0:F3\}mm}"/>
@@ -58,7 +56,6 @@
                          Increment="1"
                          Minimum="1"
                          Maximum="1000"
-                         FormatString="F02"
                          Value="{Binding Operation.NormalLayers}"/>
           <TextBlock Grid.Row="2" Grid.Column="10"
                      IsEnabled="{Binding !Operation.SyncLayers}"
