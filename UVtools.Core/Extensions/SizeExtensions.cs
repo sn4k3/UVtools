@@ -47,6 +47,16 @@ namespace UVtools.Core.Extensions
         public static Size Inflate(this Size size, int width, int height) => new (size.Width + width, size.Height + height);
 
         /// <summary>
+        /// Gets if this size have a zero value on width or height
+        /// </summary>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        public static bool HaveZero(this Size size)
+        {
+            return size.Width <= 0 && size.Height <= 0;
+        }
+
+        /// <summary>
         /// Exchange width with height
         /// </summary>
         /// <param name="size"></param>
@@ -72,6 +82,16 @@ namespace UVtools.Core.Extensions
         public static float Area(this RectangleF rect, int round = -1)
         {
             return round >= 0 ? (float) Math.Round(rect.Width * rect.Height, round) : rect.Width * rect.Height;
+        }
+
+        /// <summary>
+        /// Gets if this size have a zero value on width or height
+        /// </summary>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        public static bool HaveZero(this SizeF size)
+        {
+            return size.Width <= 0 && size.Height <= 0;
         }
 
         public static float Area(this SizeF size, int round = -1)

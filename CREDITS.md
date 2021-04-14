@@ -53,3 +53,5 @@
 * Mario Molero
 * Dennis Hansen
 * Evert Goor
+* James Kao
+* Finn Newick

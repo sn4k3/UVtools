@@ -941,9 +941,7 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LiftSpeed,
         };
 
-        public override byte ThumbnailsCount { get; } = 1;
-
-        public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = {new Size(224, 168)};
+        public override Size[] ThumbnailsOriginalSize { get; } = {new(224, 168)};
 
         public override uint ResolutionX
         {
@@ -1014,7 +1012,7 @@ namespace UVtools.Core.FileFormats
             set { }
         }
 
-        public override float MaxPrintHeight
+        public override float MachineZ
         {
             get
             {

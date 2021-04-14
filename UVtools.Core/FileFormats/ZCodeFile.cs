@@ -22,7 +22,6 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.OpenSsl;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
-using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats
@@ -190,7 +189,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Archive;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new("zcode", "UnizMaker ZCode files")
+            new("zcode", "UnizMaker ZCode")
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
@@ -218,8 +217,6 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.RetractSpeed,
             PrintParameterModifier.LightPWM,
         };
-
-        public override byte ThumbnailsCount { get; } = 1;
 
         public override Size[] ThumbnailsOriginalSize { get; } = {new(640, 480)};
 
@@ -255,9 +252,9 @@ namespace UVtools.Core.FileFormats
             set => RaisePropertyChanged();
         }
 
-        public override float MaxPrintHeight
+        public override float MachineZ
         {
-            get => ManifestFile.Device.MachineZ > 0 ? ManifestFile.Device.MachineZ : base.MaxPrintHeight;
+            get => ManifestFile.Device.MachineZ > 0 ? ManifestFile.Device.MachineZ : base.MachineZ;
             set
             {
                 ManifestFile.Device.MachineZ = (ushort) value;

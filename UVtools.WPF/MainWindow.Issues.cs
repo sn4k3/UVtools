@@ -531,11 +531,12 @@ namespace UVtools.WPF
             }
         }
 
-        public IslandDetectionConfiguration GetIslandDetectionConfiguration()
+        
+        public IslandDetectionConfiguration GetIslandDetectionConfiguration(bool enable)
         {
-            return new IslandDetectionConfiguration
+            return new()
             {
-                Enabled = Settings.Issues.ComputeIslands,
+                Enabled = enable,
                 EnhancedDetection = Settings.Issues.IslandEnhancedDetection,
                 AllowDiagonalBonds = Settings.Issues.IslandAllowDiagonalBonds,
                 BinaryThreshold = Settings.Issues.IslandBinaryThreshold,
@@ -546,34 +547,38 @@ namespace UVtools.WPF
                 RequiredPixelBrightnessToSupport = Settings.Issues.IslandRequiredPixelBrightnessToSupport
             };
         }
+        public IslandDetectionConfiguration GetIslandDetectionConfiguration() => GetIslandDetectionConfiguration(Settings.Issues.ComputeIslands);
 
-        public OverhangDetectionConfiguration GetOverhangDetectionConfiguration()
+        public OverhangDetectionConfiguration GetOverhangDetectionConfiguration(bool enable)
         {
-            return new OverhangDetectionConfiguration
+            return new()
             {
-                Enabled = Settings.Issues.ComputeOverhangs,
+                Enabled = enable,
                 IndependentFromIslands = Settings.Issues.OverhangIndependentFromIslands,
                 ErodeIterations = Settings.Issues.OverhangErodeIterations,
             };
         }
+        public OverhangDetectionConfiguration GetOverhangDetectionConfiguration() => GetOverhangDetectionConfiguration(Settings.Issues.ComputeOverhangs);
 
-        public ResinTrapDetectionConfiguration GetResinTrapDetectionConfiguration()
+
+        public ResinTrapDetectionConfiguration GetResinTrapDetectionConfiguration(bool enable)
         {
-            return new ResinTrapDetectionConfiguration
+            return new()
             {
-                Enabled = Settings.Issues.ComputeResinTraps,
+                Enabled = enable,
                 BinaryThreshold = Settings.Issues.ResinTrapBinaryThreshold,
                 RequiredAreaToProcessCheck = Settings.Issues.ResinTrapRequiredAreaToProcessCheck,
                 RequiredBlackPixelsToDrain = Settings.Issues.ResinTrapRequiredBlackPixelsToDrain,
                 MaximumPixelBrightnessToDrain = Settings.Issues.ResinTrapMaximumPixelBrightnessToDrain
             };
         }
+        public ResinTrapDetectionConfiguration GetResinTrapDetectionConfiguration() => GetResinTrapDetectionConfiguration(Settings.Issues.ComputeResinTraps);
 
-        public TouchingBoundDetectionConfiguration GetTouchingBoundsDetectionConfiguration()
+        public TouchingBoundDetectionConfiguration GetTouchingBoundsDetectionConfiguration(bool enable)
         {
-            return new TouchingBoundDetectionConfiguration
+            return new()
             {
-                Enabled = Settings.Issues.ComputeTouchingBounds,
+                Enabled = enable,
                 MinimumPixelBrightness = UserSettings.Instance.Issues.TouchingBoundMinimumPixelBrightness,
                 MarginLeft = UserSettings.Instance.Issues.TouchingBoundMarginLeft,
                 MarginTop = UserSettings.Instance.Issues.TouchingBoundMarginTop,
@@ -581,15 +586,19 @@ namespace UVtools.WPF
                 MarginBottom = UserSettings.Instance.Issues.TouchingBoundMarginBottom,
             };
         }
+        public TouchingBoundDetectionConfiguration GetTouchingBoundsDetectionConfiguration() => GetTouchingBoundsDetectionConfiguration(Settings.Issues.ComputeTouchingBounds);
 
-        public PrintHeightDetectionConfiguration GetPrintHeightDetectionConfiguration()
+
+        public PrintHeightDetectionConfiguration GetPrintHeightDetectionConfiguration(bool enable)
         {
-            return new PrintHeightDetectionConfiguration
+            return new ()
             {
-                Enabled = Settings.Issues.ComputePrintHeight,
+                Enabled = enable,
                 Offset = (float) Settings.Issues.PrintHeightOffset
             };
         }
+        public PrintHeightDetectionConfiguration GetPrintHeightDetectionConfiguration() => GetPrintHeightDetectionConfiguration(Settings.Issues.ComputePrintHeight);
+
 
         #endregion
     }

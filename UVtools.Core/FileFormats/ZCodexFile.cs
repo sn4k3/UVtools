@@ -182,8 +182,6 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LightPWM,
         };
 
-        public override byte ThumbnailsCount { get; } = 1;
-
         public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = {new(320, 180)};
 
         public override uint ResolutionX

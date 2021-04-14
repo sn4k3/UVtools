@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
@@ -22,6 +23,8 @@ namespace UVtools.Core.Operations
     {
         #region Members
         private OperationLayerReHeightItem _item;
+        private bool _antiAliasing = true;
+
         #endregion
 
         #region Overrides
@@ -66,10 +69,23 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Properties
+
         public OperationLayerReHeightItem Item
         {
             get => _item;
-            set => RaiseAndSetIfChanged(ref _item, value);
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _item, value)) return;
+                RaisePropertyChanged(nameof(AntiAliasing));
+            }
+        }
+
+        public bool CanAntiAliasing => _item?.IsMultiply ?? false;
+
+        public bool AntiAliasing
+        {
+            get => _antiAliasing;
+            set => RaiseAndSetIfChanged(ref _antiAliasing, value);
         }
 
 
@@ -135,19 +151,19 @@ namespace UVtools.Core.Operations
         #region Methods
         protected override bool ExecuteInternally(OperationProgress progress)
         {
-            progress.ItemCount = Item.LayerCount;
+            progress.ItemCount = _item.LayerCount;
 
-            var layers = new Layer[Item.LayerCount];
+            var layers = new Layer[_item.LayerCount];
 
-            uint newLayerIndex = 0;
-            for (uint layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
+            if (_item.IsDivision)
             {
-                progress.Token.ThrowIfCancellationRequested();
-                
-                var oldLayer = SlicerFile[layerIndex];
-                if (Item.IsDivision)
+                uint newLayerIndex = 0;
+                for (uint layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
                 {
-                    for (byte i = 0; i < Item.Modifier; i++)
+                    progress.Token.ThrowIfCancellationRequested();
+
+                    var oldLayer = SlicerFile[layerIndex];
+                    for (byte i = 0; i < _item.Modifier; i++)
                     {
                         var newLayer = oldLayer.Clone();
                         //newLayer.Index = newLayerIndex;
@@ -157,25 +173,49 @@ namespace UVtools.Core.Operations
                         progress++;
                     }
                 }
-                else
+            }
+            else
+            {
+                var layerIndexes = new uint[SlicerFile.LayerCount / _item.Modifier];
+                for (uint i = 0; i < layerIndexes.Length; i++)
                 {
-                    using var mat = SlicerFile[layerIndex++].LayerMat;
+                    layerIndexes[i] = i * _item.Modifier;
+                }
+
+                Parallel.ForEach(layerIndexes, layerIndex =>
+                {
+                    if (progress.Token.IsCancellationRequested) return;
+                    var oldLayer = SlicerFile[layerIndex];
+                    using var mat = oldLayer.LayerMat;
+                    using var original = mat.Clone();
+
                     for (byte i = 1; i < Item.Modifier; i++)
                     {
-                        using var nextMat = SlicerFile[layerIndex++].LayerMat;
+                        using var nextMat = SlicerFile[layerIndex+i].LayerMat;
                         CvInvoke.Add(mat, nextMat, mat);
                     }
+
+                    /*if (_antiAliasing)
+                    {
+                        CvInvoke.Subtract(mat, original, mat);
+                        CvInvoke.PyrDown(mat, mat);
+                        CvInvoke.PyrUp(mat, mat);
+                        CvInvoke.Add(original, mat, mat);
+                    }*/
 
                     var newLayer = oldLayer.Clone();
                     //newLayer.Index = newLayerIndex;
                     //newLayer.PositionZ = (float)(Item.LayerHeight * (newLayerIndex + 1));
                     newLayer.LayerMat = mat;
-                    layers[newLayerIndex] = newLayer;
-                    newLayerIndex++;
-                    layerIndex--;
-                    progress++;
-                }
+                    layers[layerIndex / _item.Modifier] = newLayer;
+
+                    progress.LockAndIncrement();
+                });
+
+                
             }
+
+                    
 
             SlicerFile.LayerHeight = (float)Item.LayerHeight;
             SlicerFile.LayerManager.Layers = layers;

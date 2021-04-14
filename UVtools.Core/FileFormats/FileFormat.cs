@@ -211,8 +211,11 @@ namespace UVtools.Core.FileFormats
             new CWSFile(),   // CWS
             new ZCodeFile(),   // zcode
             new ZCodexFile(),   // zcodex
-            //new MakerbaseFile(),   // MKS
+            new MDLPFile(),   // MKS v1
+            new GR1File(),   // GR1 Workshop
+            new CXDLPFile(),   // Creality Box
             new LGSFile(),   // LGS, LGS30
+            new VDTFile(),   // VDT
             new UVJFile(),   // UVJ
             new ImageFile(),   // images
         };
@@ -237,7 +240,7 @@ namespace UVtools.Core.FileFormats
             {
                 var result = new List<KeyValuePair<string, List<string>>>
                 {
-                    new KeyValuePair<string, List<string>>("All slicer files", new List<string>())
+                    new("All slicer files", new List<string>())
                 };
                 
                 for (int i = 0; i < AvailableFormats.Length; i++)
@@ -287,10 +290,14 @@ namespace UVtools.Core.FileFormats
         /// <returns><see cref="FileFormat"/> object or null if not found</returns>
         public static FileFormat FindByExtension(string extension, bool isFilePath = false, bool createNewInstance = false)
         {
-            return (from fileFormat in AvailableFormats where fileFormat.IsExtensionValid(extension, isFilePath) select createNewInstance ? (FileFormat) Activator.CreateInstance(fileFormat.GetType()) : fileFormat).FirstOrDefault();
+            if (isFilePath)
+            {
+                GetFileNameStripExtensions(extension, out extension);
+            }
+            return (from fileFormat in AvailableFormats where fileFormat.IsExtensionValid(extension) select createNewInstance ? (FileFormat) Activator.CreateInstance(fileFormat.GetType()) : fileFormat).FirstOrDefault();
         }
 
-        public static FileExtension FindExtension(string extension, bool isFilePath = false, bool createNewInstance = false)
+        public static FileExtension FindExtension(string extension)
         {
             return AvailableFormats.SelectMany(format => format.FileExtensions).FirstOrDefault(ext => ext.Equals(extension));
         }
@@ -324,7 +331,7 @@ namespace UVtools.Core.FileFormats
         private LayerManager _layerManager;
         private float _printTime;
         private float _materialMilliliters;
-        private float _maxPrintHeight;
+        private float _machineZ;
         private ushort _bottomLayerCount = DefaultBottomLayerCount;
         private float _bottomExposureTime = DefaultBottomExposureTime;
         private float _exposureTime = DefaultExposureTime;
@@ -444,7 +451,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the thumbnails count present in this file format
         /// </summary>
-        public abstract byte ThumbnailsCount { get; }
+        public byte ThumbnailsCount => (byte)(ThumbnailsOriginalSize?.Length ?? 0);
 
         /// <summary>
         /// Gets the number of created thumbnails
@@ -594,10 +601,10 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets or sets the maximum printer build Z volume
         /// </summary>
-        public virtual float MaxPrintHeight
+        public virtual float MachineZ
         {
-            get => _maxPrintHeight > 0 ? _maxPrintHeight : PrintHeight;
-            set => RaiseAndSetIfChanged(ref _maxPrintHeight, value);
+            get => _machineZ > 0 ? _machineZ : PrintHeight;
+            set => RaiseAndSetIfChanged(ref _machineZ, value);
         }
 
         /// <summary>
@@ -727,7 +734,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Checks if this file format supports per layer settings
         /// </summary>
-        public virtual bool SupportPerLayerSettings => PrintParameterPerLayerModifiers is not null && PrintParameterPerLayerModifiers.Length > 0;
+        public bool SupportPerLayerSettings => PrintParameterPerLayerModifiers is not null && PrintParameterPerLayerModifiers.Length > 0;
 
         /// <summary>
         /// Gets or sets the layer count
@@ -1161,7 +1168,10 @@ namespace UVtools.Core.FileFormats
         /// <returns>True if valid, otherwise false</returns>
         public bool IsExtensionValid(string extension, bool isFilePath = false)
         {
-            extension = isFilePath ? Path.GetExtension(extension)?.Remove(0, 1) : extension;
+            if (isFilePath)
+            {
+                GetFileNameStripExtensions(extension, out extension);
+            }
             return FileExtensions.Any(fileExtension => fileExtension.Equals(extension));
         }
 
@@ -1352,7 +1362,28 @@ namespace UVtools.Core.FileFormats
                                                    "Lower and fix your layer height on slicer to avoid precision errors.", fileFullPath);
             }
 
-            if (_layerManager.Sanitize())
+            bool reSaveFile = false;
+
+            if(ResolutionX == 0 || ResolutionY == 0)
+            {
+                var layer = FirstLayer;
+                if (layer is not null)
+                {
+                    using var mat = layer.LayerMat;
+
+                    if (mat.Size.HaveZero())
+                    {
+                        throw new FileLoadException($"File resolution ({Resolution}) is invalid and can't be auto fixed due invalid layers with same problem ({mat.Size}).", fileFullPath);
+                    }
+                
+                    Resolution = mat.Size;
+                    reSaveFile = true;
+                }
+            }
+
+            reSaveFile |= _layerManager.Sanitize();
+
+            if (reSaveFile)
             {
                 Save(progress);
             }
@@ -1815,7 +1846,7 @@ namespace UVtools.Core.FileFormats
                 slicerFile.ResolutionY = ResolutionY;
                 slicerFile.DisplayWidth = DisplayWidth;
                 slicerFile.DisplayHeight = DisplayHeight;
-                slicerFile.MaxPrintHeight = MaxPrintHeight;
+                slicerFile.MachineZ = MachineZ;
                 slicerFile.MirrorDisplay = MirrorDisplay;
                 slicerFile.BottomExposureTime = BottomExposureTime;
                 slicerFile.ExposureTime = ExposureTime;

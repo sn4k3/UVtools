@@ -903,6 +903,12 @@
               <Component Id="owc1C3DE0BEF10A5791E37D4C3D97AED5E1" Guid="b1851a14-1200-d448-1acd-b229bf6ac918">
                 <File Id="owf1C3DE0BEF10A5791E37D4C3D97AED5E1" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon.ini" KeyPath="yes" />
               </Component>
+              <Component Id="owcFE63AE2337EB232D5C139086B8A44942" Guid="02bb8e1d-14a7-f786-5cb9-e7b37337918b">
+                <File Id="owfFE63AE2337EB232D5C139086B8A44942" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Creality HALOT-SKY CL-60.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc88F58B3D3A8E53CEFC3FE84F6C20FAB8" Guid="8f66ab9b-8ff1-f324-9ec5-5cbb688dd5f6">
+                <File Id="owf88F58B3D3A8E53CEFC3FE84F6C20FAB8" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Creality HALOT-SKY CL-89.ini" KeyPath="yes" />
+              </Component>
               <Component Id="owc0402794BACCC21B2ADA93D76665B1076" Guid="f9949f30-9613-fe85-e9f8-432d4764ed1f">
                 <File Id="owf0402794BACCC21B2ADA93D76665B1076" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Creality LD-002H.ini" KeyPath="yes" />
               </Component>

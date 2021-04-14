@@ -20,8 +20,13 @@ namespace UVtools.Core.FileFormats
             new ("tga", "TGA"),
         };
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = null;
-        public override byte ThumbnailsCount { get; } = 4;
-        public override Size[] ThumbnailsOriginalSize { get; } = null;
+        
+        public override Size[] ThumbnailsOriginalSize { get; } = {
+            Size.Empty,
+            Size.Empty,
+            Size.Empty,
+            Size.Empty
+        };
         public override uint ResolutionX
         {
             get => (uint) ImageMat.Width;

@@ -1140,11 +1140,18 @@ namespace UVtools.WPF
 
             if (mat.Size != SlicerFile.Resolution)
             {
-                await this.MessageBoxWaring($"Layer image resolution of {mat.Size} mismatch with printer resolution of {SlicerFile.Resolution}.\n" +
-                                            "Printing this file can lead to problems or malformed model, please verify your slicer printer settings;\n" +
-                                            "Processing this file with some of the tools can lead to program crash or misfunction;\n" +
-                                            "If you used PrusaSlicer to slice this file, you must use it with compatible UVtools printer profiles (Help - Install profiles into PrusaSlicer).",
-                    "File and layer resolution mismatch!");
+                var result = await this.MessageBoxWaring($"Layer image resolution of {mat.Size} mismatch with printer resolution of {SlicerFile.Resolution}.\n" +
+                                            "1) Printing this file can lead to problems or malformed model, please verify your slicer printer settings;\n" +
+                                            "2) Processing this file with some of the tools can lead to program crash or misfunction;\n" +
+                                            "3) If you used PrusaSlicer to slice this file, you must use it with compatible UVtools printer profiles (Help - Install profiles into PrusaSlicer).\n\n" +
+                                            "Click 'Yes' to auto fix and set the file resolution with the layer resolution, but only use this option if you are sure it's ok to!\n" +
+                                            "Click 'No' to continue as it is and ignore this warning, you can still repair issues and use some of the tools.",
+                    "File and layer resolution mismatch!", ButtonEnum.YesNo);
+                if(result == ButtonResult.Yes)
+                {
+                    SlicerFile.Resolution = mat.Size;
+                    RaisePropertyChanged(nameof(LayerResolutionStr));
+                }
             }
 
             if (Settings.Issues.ComputeIssuesOnLoad)
@@ -1156,6 +1163,20 @@ namespace UVtools.WPF
                     SelectedTabItem = TabIssues;
                     if(Settings.Issues.AutoRepairIssuesOnLoad)
                         await RunOperation(ToolRepairLayersControl.GetOperationRepairLayers());
+                }
+            }
+            else
+            {
+                await ComputeIssues(
+                    GetIslandDetectionConfiguration(false),
+                    GetOverhangDetectionConfiguration(false),
+                    GetResinTrapDetectionConfiguration(false),
+                    GetTouchingBoundsDetectionConfiguration(false),
+                    GetPrintHeightDetectionConfiguration(true),
+                    true);
+                if (Issues.Count > 0)
+                {
+                    SelectedTabItem = TabIssues;
                 }
             }
         }

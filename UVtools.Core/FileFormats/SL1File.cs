@@ -311,10 +311,11 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.ExposureSeconds,
         };
 
-        public override byte ThumbnailsCount { get; } = 2;
-
-        public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = { new System.Drawing.Size(400, 400), new System.Drawing.Size(800, 480) };
-        //public override Image<Rgba32>[] Thumbnails { get; set; }
+        public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } =
+        {
+            new(400, 400),
+            new(800, 480)
+        };
 
         public override uint ResolutionX
         {
@@ -356,7 +357,7 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float MaxPrintHeight
+        public override float MachineZ
         {
             get => PrinterSettings.MaxPrintHeight;
             set

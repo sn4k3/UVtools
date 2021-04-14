@@ -1,5 +1,6 @@
 @echo off
 SET DIR=%~dp0
+cd ..
 
 REM if exist "%SYSTEMROOT%\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe" SET MSBUILD_PATH="%SYSTEMROOT%\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe"
 if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe" SET MSBUILD_PATH="%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe"

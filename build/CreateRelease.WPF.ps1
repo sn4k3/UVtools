@@ -26,6 +26,9 @@ class FixedEncoder : System.Text.UTF8Encoding {
     }
 }
 
+# Script working directory
+Set-Location $PSScriptRoot\..
+
 ####################################
 ###         Configuration        ###
 ####################################
@@ -37,23 +40,21 @@ $stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
 $deployStopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
 $stopWatch.Start()
 
-# Script working directory
-Set-Location $PSScriptRoot
 
 # Variables
 $software = "UVtools"
 $project = "UVtools.WPF"
 $buildWith = "Release"
 $netFolder = "net5.0"
-$releaseFolder = "$PSScriptRoot\$project\bin\$buildWith\$netFolder"
-$objFolder = "$PSScriptRoot\$project\obj\$buildWith\$netFolder"
+$releaseFolder = "$project\bin\$buildWith\$netFolder"
+$objFolder = "$project\obj\$buildWith\$netFolder"
 $publishFolder = "publish"
 $platformsFolder = "UVtools.Platforms"
 
 $macIcns = "UVtools.CAD/UVtools.icns"
 
 #$version = (Get-Command "$releaseFolder\UVtools.dll").FileVersionInfo.ProductVersion
-$projectXml = [Xml] (Get-Content "$PSScriptRoot\$project\$project.csproj")
+$projectXml = [Xml] (Get-Content "$project\$project.csproj")
 $version = "$($projectXml.Project.PropertyGroup.Version)".Trim();
 if([string]::IsNullOrWhiteSpace($version)){
     Write-Error "Can not detect the UVtools version, does $project\$project.csproj exists?"
@@ -62,7 +63,7 @@ if([string]::IsNullOrWhiteSpace($version)){
 
 # MSI Variables
 $installers = @("UVtools.InstallerMM", "UVtools.Installer")
-$msiSourceFile = "$PSScriptRoot\UVtools.Installer\bin\Release\UVtools.msi"
+$msiSourceFile = "UVtools.Installer\bin\Release\UVtools.msi"
 $msbuild = "`"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe`" /t:Build /p:Configuration=$buildWith /p:MSIProductVersion=$version"
 
 Write-Output "
@@ -222,8 +223,8 @@ if($enableMSI)
     foreach($installer in $installers)
     {
         # Clean and build MSI
-        Remove-Item "$PSScriptRoot\$installer\obj" -Recurse -ErrorAction Ignore
-        Remove-Item "$PSScriptRoot\$installer\bin" -Recurse -ErrorAction Ignore
+        Remove-Item "$installer\obj" -Recurse -ErrorAction Ignore
+        Remove-Item "$installer\bin" -Recurse -ErrorAction Ignore
         iex "& $msbuild $installer\$installer.wixproj"
     }
 

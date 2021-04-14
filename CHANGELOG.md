@@ -1,5 +1,23 @@
 # Changelog
 
+## 14/04/2021 - v2.9.0
+
+* **File formats:**
+   * Add Voxeldance Tango (VDT)
+   * Add Makerbase MKS-DLP (MDLPv1)
+   * Add GR1 Workshop (GR1)
+   * Add Creality CXDLP (CXDLP)
+   * When decoding a file and have a empty resolution (Width: 0 or Height: 0) it will auto fix it by get and set the first layer image resolution to the file
+   * Fix when decoding a file it was already set to require a full encode, preventing fast saves on print parameters edits
+* **GUI:**
+   * When file resolution dismatch from layer resolution, it is now possible to auto fix it by set the layer resolution to the file
+   * When loading a file with auto scan for issues disabled it will force auto scan for issues types that are instant to check (print height and empty layers), if any exists it will auto select issues tab
+* **(Add) PrusaSlicer printers:**
+   * Creality HALOT-SKY CL-89
+   * Creality HALOT-SKY CL-60
+* (Improvement) Tool - Adjust layer height: Improve the performance when multiplying layers / go with higher layer height
+* (Fix) PrusaSlicer Printer - Wanhao D7: Change the auto convertion format from .zip to .xml.cws
+
 ## 08/04/2021 - v2.8.4
 
 * (Improvement) Layers: "IsBottomLayer" property will now computing the value taking the height into consideration instead of it index, this allow to identify the real bottom layers when using multiple layers with same heights

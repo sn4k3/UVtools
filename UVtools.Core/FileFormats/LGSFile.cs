@@ -225,9 +225,7 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LightOffDelay,
         };
 
-        public override byte ThumbnailsCount { get; } = 1;
-
-        public override Size[] ThumbnailsOriginalSize { get; } = {new Size(120, 150)};
+        public override Size[] ThumbnailsOriginalSize { get; } = {new(120, 150)};
 
         public override uint ResolutionX
         {

@@ -166,7 +166,7 @@ namespace UVtools.Core
         public void Clear()
         {
             //Layers = Array.Empty<Layer>();
-            Layers = null;
+            _layers = null;
         }
 
         public bool Contains(Layer layer)
@@ -869,9 +869,9 @@ namespace UVtools.Core
                 return true;
             }
 
-            if (printHeightConfig.Enabled && SlicerFile.MaxPrintHeight > 0)
+            if (printHeightConfig.Enabled && SlicerFile.MachineZ > 0)
             {
-                float printHeightWithOffset = Layer.RoundHeight(SlicerFile.MaxPrintHeight + printHeightConfig.Offset);
+                float printHeightWithOffset = Layer.RoundHeight(SlicerFile.MachineZ + printHeightConfig.Offset);
                 if (SlicerFile.PrintHeight > printHeightWithOffset)
                 {
                     foreach (var layer in this)

@@ -678,18 +678,18 @@ namespace UVtools.Core.FileFormats
 
         #region Properties
 
-        public Header HeaderSettings { get; protected internal set; } = new Header();
+        public Header HeaderSettings { get; protected internal set; } = new();
 
         public Preview[] Previews { get; protected internal set; }
 
         public LayerData[] LayersDefinitions { get; private set; }
 
-        public Dictionary<string, LayerData> LayersHash { get; } = new Dictionary<string, LayerData>();
+        public Dictionary<string, LayerData> LayersHash { get; } = new ();
 
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new FileExtension("phz", "Chitubox PHZ"),
+            new ("phz", "Chitubox PHZ"),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
@@ -715,9 +715,11 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LightOffDelay,
         };
 
-        public override byte ThumbnailsCount { get; } = 2;
-
-        public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = {new System.Drawing.Size(400, 300), new System.Drawing.Size(200, 125)};
+        public override Size[] ThumbnailsOriginalSize { get; } =
+        {
+            new(400, 300), 
+            new(200, 125)
+        };
 
         public override uint ResolutionX
         {
@@ -760,9 +762,9 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float MaxPrintHeight
+        public override float MachineZ
         {
-            get => HeaderSettings.BedSizeZ > 0 ? HeaderSettings.BedSizeZ : base.MaxPrintHeight;
+            get => HeaderSettings.BedSizeZ > 0 ? HeaderSettings.BedSizeZ : base.MachineZ;
             set
             {
                 HeaderSettings.BedSizeZ = (float)Math.Round(value, 2);

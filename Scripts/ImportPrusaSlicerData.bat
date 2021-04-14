@@ -1,7 +1,8 @@
 @echo off
 SET DIR=%~dp0
+cd ..
 SET INPUT_DIR=%AppData%\PrusaSlicer
-SET OUTPUT_DIR=%~dp0PrusaSlicer
+SET OUTPUT_DIR=PrusaSlicer
 
 SET PRINT_DIR=sla_print
 SET PRINTER_DIR=printer
@@ -57,13 +58,15 @@ SET files[47]=Wanhao CGR Mono.ini
 SET files[48]=Creality LD-002R.ini
 SET files[49]=Creality LD-002H.ini
 SET files[50]=Creality LD-006.ini
-SET files[51]=Voxelab Polaris 5.5.ini
-SET files[52]=Voxelab Proxima 6.ini
-SET files[53]=Voxelab Ceres 8.9.ini
-SET files[54]=Longer Orange 10.ini
-SET files[55]=Longer Orange 30.ini
-SET files[56]=Longer Orange4K.ini
-SET files[57]=Uniz IBEE.ini
+SET files[51]=Creality HALOT-SKY CL-89.ini
+SET files[52]=Creality HALOT-SKY CL-60.ini
+SET files[53]=Voxelab Polaris 5.5.ini
+SET files[54]=Voxelab Proxima 6.ini
+SET files[55]=Voxelab Ceres 8.9.ini
+SET files[56]=Longer Orange 10.ini
+SET files[57]=Longer Orange 30.ini
+SET files[58]=Longer Orange4K.ini
+SET files[59]=Uniz IBEE.ini
 
 echo PrusaSlicer Printers Instalation
 echo This will replace printers, all changes will be discarded

@@ -18,12 +18,12 @@ namespace UVtools.Core.Extensions
 {
     public static class EmguExtensions
     {
-        public static readonly MCvScalar WhiteByte = new MCvScalar(255);
-        public static readonly MCvScalar White3Byte = new MCvScalar(255, 255, 255);
-        public static readonly MCvScalar BlackByte = new MCvScalar(0);
-        public static readonly MCvScalar Black3Byte = new MCvScalar(0, 0, 0);
-        public static readonly MCvScalar Transparent4Byte = new MCvScalar(0, 0, 0, 0);
-        public static readonly MCvScalar Black4Byte = new MCvScalar(0, 0, 0, 255);
+        public static readonly MCvScalar WhiteByte = new(255);
+        public static readonly MCvScalar White3Byte = new(255, 255, 255);
+        public static readonly MCvScalar BlackByte = new(0);
+        public static readonly MCvScalar Black3Byte = new(0, 0, 0);
+        public static readonly MCvScalar Transparent4Byte = new(0, 0, 0, 0);
+        public static readonly MCvScalar Black4Byte = new(0, 0, 0, 255);
 
         public static unsafe byte* GetBytePointer(this Mat mat)
         {
@@ -64,8 +64,14 @@ namespace UVtools.Core.Extensions
 
         public static unsafe Span<T> GetPixelRowSpan<T>(this Mat mat, int y, int length = 0, int offset = 0)
         {
-            return new(IntPtr.Add(mat.DataPointer, y * mat.Step + offset).ToPointer(), length == 0 ? mat.Step : length);
+            return new(IntPtr.Add(mat.DataPointer, y * mat.Step + offset).ToPointer(), length <= 0 ? mat.Step : length);
             //return mat.GetPixelSpan<T>().Slice(offset, mat.Step);
+        }
+
+        public static unsafe Span<T> GetPixelColSpan<T>(this Mat mat, int x, int length = 0, int offset = 0)
+        {
+            var colMat = mat.Col(x);
+            return new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length <= 0 ? mat.Height : length);
         }
 
         /// <summary>

@@ -545,7 +545,7 @@ namespace UVtools.Core.GCode
                 lastZPosition = layer.PositionZ;
             }
 
-            float finalRaiseZPosition = slicerFile.MaxPrintHeight;
+            float finalRaiseZPosition = slicerFile.MachineZ;
             switch (GCodePositioningType)
             {
 

@@ -335,8 +335,6 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LightPWM,
         };
 
-        public override byte ThumbnailsCount { get; } = 0;
-
         public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = null;
 
         public override uint ResolutionX
@@ -383,10 +381,10 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float MaxPrintHeight
+        public override float MachineZ
         {
-            get => OutputSettings.PlatformZSize > 0 ? OutputSettings.PlatformZSize : base.MaxPrintHeight;
-            set => base.MaxPrintHeight = OutputSettings.PlatformZSize = (float)Math.Round(value, 2);
+            get => OutputSettings.PlatformZSize > 0 ? OutputSettings.PlatformZSize : base.MachineZ;
+            set => base.MachineZ = OutputSettings.PlatformZSize = (float)Math.Round(value, 2);
         }
 
         public override bool MirrorDisplay

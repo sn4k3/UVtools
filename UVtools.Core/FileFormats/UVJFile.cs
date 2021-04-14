@@ -161,9 +161,11 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LightPWM,
         };
 
-        public override byte ThumbnailsCount { get; } = 2;
-
-        public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = {new(400, 400), new(800, 480) };
+        public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } =
+        {
+            new(400, 400),
+            new(800, 480)
+        };
 
         public override uint ResolutionX
         {
@@ -340,39 +342,37 @@ namespace UVtools.Core.FileFormats
                 });
             }
 
-            using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
+            using ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create);
+            outputFile.PutFileContent(FileConfigName, JsonConvert.SerializeObject(JsonSettings), ZipArchiveMode.Create);
+
+            if (CreatedThumbnailsCount > 0)
             {
-                outputFile.PutFileContent(FileConfigName, JsonConvert.SerializeObject(JsonSettings), ZipArchiveMode.Create);
+                using var stream = outputFile.CreateEntry(FilePreviewTinyName).Open();
+                using var vec = new VectorOfByte();
+                CvInvoke.Imencode(".png", Thumbnails[0], vec);
+                stream.WriteBytes(vec.ToArray());
+                stream.Close();
+            }
 
-                if (CreatedThumbnailsCount > 0)
-                {
-                    using var stream = outputFile.CreateEntry(FilePreviewTinyName).Open();
-                    using var vec = new VectorOfByte();
-                    CvInvoke.Imencode(".png", Thumbnails[0], vec);
-                    stream.WriteBytes(vec.ToArray());
-                    stream.Close();
-                }
+            if (CreatedThumbnailsCount > 1)
+            {
+                using Stream stream = outputFile.CreateEntry(FilePreviewHugeName).Open();
+                using var vec = new VectorOfByte();
+                CvInvoke.Imencode(".png", Thumbnails[1], vec);
+                stream.WriteBytes(vec.ToArray());
+                stream.Close();
+            }
 
-                if (CreatedThumbnailsCount > 1)
-                {
-                    using Stream stream = outputFile.CreateEntry(FilePreviewHugeName).Open();
-                    using var vec = new VectorOfByte();
-                    CvInvoke.Imencode(".png", Thumbnails[1], vec);
-                    stream.WriteBytes(vec.ToArray());
-                    stream.Close();
-                }
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                progress.Token.ThrowIfCancellationRequested();
 
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    progress.Token.ThrowIfCancellationRequested();
+                Layer layer = this[layerIndex];
 
-                    Layer layer = this[layerIndex];
-
-                    var layerimagePath = $"{FolderImageName}/{layerIndex:D8}.png";
-                    outputFile.PutFileContent(layerimagePath, layer.CompressedBytes, ZipArchiveMode.Create);
+                var layerimagePath = $"{FolderImageName}/{layerIndex:D8}.png";
+                outputFile.PutFileContent(layerimagePath, layer.CompressedBytes, ZipArchiveMode.Create);
                     
-                    progress++;
-                }
+                progress++;
             }
         }
 
@@ -418,7 +418,8 @@ namespace UVtools.Core.FileFormats
                     entry = inputFile.GetEntry($"{FolderImageName}/{layerIndex:D8}.png");
                     if (entry is null) continue;
 
-                    this[layerIndex] = new Layer(layerIndex, entry.Open(), LayerManager)
+                    using var stream = entry.Open();
+                    this[layerIndex] = new Layer(layerIndex, stream, LayerManager)
                     {
                         PositionZ = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int) layerIndex].Z : GetHeightFromLayer(layerIndex),
                         LiftHeight = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LiftHeight : GetInitialLayerValueOrNormal(layerIndex, BottomLiftHeight, LiftHeight),

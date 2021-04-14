@@ -71,9 +71,13 @@ But also, i need victims for test subject. Proceed at your own risk!
 * CWS (NovaMaker)
 * RGB.CWS (Nova Bene4 Mono / Elfin2 Mono SE)
 * XML.CWS (Wanhao Workshop)
+* MDLP (Makerbase MKS-DLP v1)
+* GR1 (GR1 Workshop)
+* CXDLP (Creality Box)
 * LGS (Longer Orange 10)
 * LGS30 (Longer Orange 30)
-* UVJ (Zip file for manual manipulation format)
+* VDT (Voxeldance Tango)
+* UVJ (Zip file format for manual manipulation)
 * Image files (png, jpg, jpeg, gif, bmp)
 
 # Available printers for PrusaSlicer
@@ -132,6 +136,8 @@ But also, i need victims for test subject. Proceed at your own risk!
   * LD-002R
   * LD-002H
   * LD-006
+  * HALOT-SKY CL-89
+  * HALOT-SKY CL-60
 * **Voxelab**
   * Polaris 5.5
   * Proxima 6

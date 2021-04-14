@@ -220,9 +220,8 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.RetractSpeed,
         };
 
-        public override byte ThumbnailsCount { get; } = 1;
 
-        public override Size[] ThumbnailsOriginalSize { get; } = {new Size(225, 168) };
+        public override Size[] ThumbnailsOriginalSize { get; } = {new(225, 168) };
 
         public override uint ResolutionX
         {

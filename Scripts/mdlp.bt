@@ -1,0 +1,66 @@
+//------------------------------------------------
+//--- 010 Editor v8.0.1 Binary Template
+//
+//      File: Makerbase MKS-DLP mdlp
+//   Authors: Julien Delnatte
+//------------------------------------------------
+
+typedef struct {
+    uint16 startY <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 endY <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 startX <fgcolor=cBlack, bgcolor=cWhite>;
+    
+} layerPointsData;
+
+typedef struct() {
+    uint32 LayerPointNum <fgcolor=cBlack, bgcolor=cWhite>;
+
+    layerPointsData pD()[LayerPointNum];
+    BYTE CR_LF2[2] <fgcolor=cBlack, bgcolor=cRed>;
+} layerData;
+
+typedef struct(int size) {
+    BYTE layerDataBlock[size] <fgcolor=cBlack, bgcolor=0x00FF00>;
+} rgbPreviewImageRawData;
+
+struct HEADER {
+    char version[2] <fgcolor=cBlack, bgcolor=cWhite>;
+    ushort headerSize <fgcolor=cBlack, bgcolor=cWhite>;
+    BYTE header[header.headerSize] <fgcolor=cBlack, bgcolor=cRed>;
+
+    rgbPreviewImageRawData preview(116*116*2);
+    BYTE rn0[2] <fgcolor=cBlack, bgcolor=cRed>;
+
+    rgbPreviewImageRawData preview2(290*290*2);
+    BYTE rn1[2] <fgcolor=cBlack, bgcolor=cRed>;
+
+    uint16 totalLayers <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 resolutionX <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 resolutionY <fgcolor=cBlack, bgcolor=cWhite>;
+
+    uint32 plateformXLength <fgcolor=cBlack, bgcolor=cWhite>;
+    wchar_t plateformX[plateformXLength/2];
+
+    uint32 plateformYLength <fgcolor=cBlack, bgcolor=cWhite>;
+    wchar_t plateformY[plateformYLength/2];
+
+    uint32 layerThicknessLength <fgcolor=cBlack, bgcolor=cWhite>;
+    wchar_t layerThickness[layerThicknessLength/2];
+
+    uint16 exposureTime <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 turnOffTime <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 bottomExposure <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 bottomLayers <fgcolor=cBlack, bgcolor=cWhite>;
+} header;
+
+struct LAYERS {
+    local int i;
+    for( i = 0; i < header.totalLayers; i++ ){
+        layerData lD();
+    }
+} layers;
+ 
+struct FOOTER {
+    uint32 footerSize <fgcolor=cBlack, bgcolor=cWhite>;
+    BYTE str[footer.footerSize] <fgcolor=cBlack, bgcolor=cRed>;
+} footer;

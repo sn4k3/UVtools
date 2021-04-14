@@ -106,9 +106,11 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LightPWM,
         };
 
-        public override byte ThumbnailsCount { get; } = 2;
-
-        public override Size[] ThumbnailsOriginalSize { get; } = {new Size(954, 850), new Size(168, 150)};
+        public override Size[] ThumbnailsOriginalSize { get; } =
+        {
+            new(954, 850), 
+            new(168, 150)
+        };
 
         public override uint ResolutionX
         {
@@ -150,10 +152,10 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float MaxPrintHeight
+        public override float MachineZ
         {
-            get => HeaderSettings.MachineZ > 0 ? HeaderSettings.MachineZ : base.MaxPrintHeight;
-            set => base.MaxPrintHeight = HeaderSettings.MachineZ = (float)Math.Round(value, 2);
+            get => HeaderSettings.MachineZ > 0 ? HeaderSettings.MachineZ : base.MachineZ;
+            set => base.MachineZ = HeaderSettings.MachineZ = (float)Math.Round(value, 2);
         }
 
         public override bool MirrorDisplay
