@@ -423,16 +423,16 @@ namespace UVtools.Core.FileFormats
 
             public unsafe Mat Decode(bool consumeData = true)
             {
-                Mat image = new Mat(new Size((int) Width, (int) Height), DepthType.Cv8U, 3);
+                Mat image = new(new Size((int) Width, (int) Height), DepthType.Cv8U, 3);
                 var span = image.GetBytePointer();
 
                 int pixel = 0;
                 for (uint i = 0; i < Data.Length; i += 2)
                 {
-                    ushort color16 = (ushort)(Data[i] + (Data[i+1] << 8));
-                    var r =(color16 >> 11) & 0x1f;
-                    var g = (color16 >> 5) & 0x3f;
-                    var b = (color16 >> 0) & 0x1f;
+                    ushort color16 = BitExtensions.ToUShortLittleEndian(Data[i], Data[i+1]);
+                    byte r = (byte)((color16 >> 11) & 0x1f);
+                    byte g = (byte)((color16 >> 5) & 0x3f);
+                    byte b = (byte)((color16 >> 0) & 0x1f);
 
                     span[pixel++] = (byte) ((b << 3) | (b & 0x7));
                     span[pixel++] = (byte) ((g << 2) | (g & 0x3));
@@ -456,9 +456,9 @@ namespace UVtools.Core.FileFormats
                 for (int pixel = 0; pixel < imageLength; pixel += image.NumberOfChannels)
                 {
                     // BGR
-                    int b = span[pixel] >> 3;
-                    int g = span[pixel+1] >> 2;
-                    int r = span[pixel+2] >> 3;
+                    byte b = (byte)(span[pixel] >> 3);
+                    byte g = (byte)(span[pixel+1] >> 2);
+                    byte r = (byte)(span[pixel+2] >> 3);
                     
 
                     ushort color = (ushort) ((r << 11) | (g << 5) | (b << 0));
@@ -699,19 +699,21 @@ namespace UVtools.Core.FileFormats
                         case 0x0:
                             color = 0x00;
                             index++;
-                            reps = reps * 256 + EncodedRle[index];
+                            //reps = reps * 256 + EncodedRle[index];
+                            reps = (reps << 8) + EncodedRle[index];
                             break;
                         case 0xf:
                             color = 0xff;
                             index++;
-                            reps = reps * 256 + EncodedRle[index];
+                            //reps = reps * 256 + EncodedRle[index];
+                            reps = (reps << 8) + EncodedRle[index];
                             break;
                         default:
                             color = (byte) ((code << 4) | code);
                             break;
                     }
 
-                    color &= 0xff;
+                    //color &= 0xff;
 
                     // We only need to set the non-zero pixels
                     if (color != 0)

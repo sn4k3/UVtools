@@ -1431,13 +1431,14 @@
               >
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="PrusaSlicer SL1 files"/>
+                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="File convertion"/>
                 <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
-                  <CheckBox IsChecked="{Binding Settings.Automations.AutoConvertSL1Files}"
-                            ToolTip.Tip="Converts SL1 files to the format specified on 'PrusaSlicer - Printer - Notes' on 'FILEFORMAT_XXX' variable.
+                  <CheckBox IsChecked="{Binding Settings.Automations.AutoConvertFiles}"
+                            ToolTip.Tip="1) Converts the SL1 files to the format specified on 'PrusaSlicer - Printer - Notes' on 'FILEFORMAT_XXX' variable.
+&#x0a;2) Converts the VDT files to the format specified on 'Voxeldance Tango - Printer settings - Notes' on 'FILEFORMAT_XXX' variable.
 &#x0a;A new file with same name but a new extension will be created and overwrite any previous file.
 &#x0a;After a successful conversion the new file will automatically load in instead of the loaded SL1 file."
-                            Content="Auto convert SL1 files to the target format when possible and load it back"/>
+                            Content="Auto convert SL1 and VDT files to the target format when possible and load it back"/>
                 </StackPanel>
 
               </StackPanel>

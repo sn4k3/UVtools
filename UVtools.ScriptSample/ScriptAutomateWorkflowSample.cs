@@ -73,7 +73,7 @@ namespace UVtools.ScriptSample
             {
                 OperationMorph morph = new(SlicerFile)
                 {
-                    MorphOperation = MorphOp.Erode,
+                    MorphOperation = OperationMorph.MorphOperations.Erode,
                     Iterations = 4,
                 };
                 morph.SelectBottomLayers();

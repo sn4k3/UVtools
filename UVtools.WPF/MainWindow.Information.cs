@@ -31,15 +31,15 @@ namespace UVtools.WPF
 {
     public partial class MainWindow
     {
-        public ObservableCollection<SlicerProperty> SlicerProperties { get; } = new ObservableCollection<SlicerProperty>();
+        public ObservableCollection<SlicerProperty> SlicerProperties { get; } = new();
         public DataGrid PropertiesGrid;
         public DataGrid CurrentLayerGrid;
 
         private uint _visibleThumbnailIndex;
         private Bitmap _visibleThumbnailImage;
-        private ObservableCollection<StringTag> _currentLayerProperties = new ObservableCollection<StringTag>();
+        private ObservableCollection<ValueDescription> _currentLayerProperties = new();
 
-        public ObservableCollection<StringTag> CurrentLayerProperties
+        public ObservableCollection<ValueDescription> CurrentLayerProperties
         {
             get => _currentLayerProperties;
             set => RaiseAndSetIfChanged(ref _currentLayerProperties, value);
@@ -336,38 +336,33 @@ namespace UVtools.WPF
             
             var layer = LayerCache.Layer;
             CurrentLayerProperties.Clear();
-            CurrentLayerProperties.Add(new StringTag(nameof(layer.Index), $"{layer.Index}"));
-            CurrentLayerProperties.Add(new StringTag(nameof(layer.LayerHeight), $"{Layer.ShowHeight(layer.LayerHeight)}mm"));
-            //CurrentLayerProperties.Add(new KeyValuePair<string, string>(nameof(layer.Filename), layer.Filename));
-            CurrentLayerProperties.Add(new StringTag(nameof(layer.PositionZ), $"{Layer.ShowHeight(layer.PositionZ)}mm"));
-            CurrentLayerProperties.Add(new StringTag(nameof(layer.IsBottomLayer), layer.IsBottomLayer.ToString()));
-            CurrentLayerProperties.Add(new StringTag(nameof(layer.IsModified), layer.IsModified.ToString()));
-            //CurrentLayerProperties.Add(new StringTag(nameof(layer.BoundingRectangle), layer.BoundingRectangle.ToString()));
-            //CurrentLayerProperties.Add(new StringTag(nameof(layer.NonZeroPixelCount), layer.NonZeroPixelCount.ToString()));
-            CurrentLayerProperties.Add(new StringTag(nameof(layer.ExposureTime), $"{layer.ExposureTime:F2}s"));
+            CurrentLayerProperties.Add(new ValueDescription($"{layer.Index}", nameof(layer.Index)));
+            CurrentLayerProperties.Add(new ValueDescription($"{Layer.ShowHeight(layer.LayerHeight)}mm", nameof(layer.LayerHeight)));
+            CurrentLayerProperties.Add(new ValueDescription($"{Layer.ShowHeight(layer.PositionZ)}mm", nameof(layer.PositionZ)));
+            CurrentLayerProperties.Add(new ValueDescription(layer.IsBottomLayer.ToString(), nameof(layer.IsBottomLayer)));
+            CurrentLayerProperties.Add(new ValueDescription(layer.IsModified.ToString(), nameof(layer.IsModified)));
+            CurrentLayerProperties.Add(new ValueDescription($"{layer.ExposureTime:F2}s", nameof(layer.ExposureTime)));
 
             if (SlicerFile.PrintParameterPerLayerModifiers is not null)
             {
 
                 if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LiftHeight))
-                    CurrentLayerProperties.Add(new StringTag(nameof(layer.LiftHeight),
-                        $"{layer.LiftHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min"));
-                //CurrentLayerProperties.Adnew StringTagg>(nameof(layer.LiftSpeed), $"{layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min"));
+                    CurrentLayerProperties.Add(new ValueDescription($"{layer.LiftHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min", nameof(layer.LiftHeight)));
                 if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.RetractSpeed))
-                    CurrentLayerProperties.Add(new StringTag(nameof(layer.RetractSpeed),
-                        $"{layer.RetractSpeed}mm/min"));
+                    CurrentLayerProperties.Add(new ValueDescription($"{layer.RetractSpeed}mm/min",
+                        nameof(layer.RetractSpeed)));
 
                 if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LightOffDelay))
-                    CurrentLayerProperties.Add(new StringTag(nameof(layer.LightOffDelay),
-                        $"{layer.LightOffDelay}s"));
+                    CurrentLayerProperties.Add(new ValueDescription($"{layer.LightOffDelay}s",
+                        nameof(layer.LightOffDelay)));
                 
                 if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LightPWM))
-                    CurrentLayerProperties.Add(new StringTag(nameof(layer.LightPWM), layer.LightPWM.ToString()));
+                    CurrentLayerProperties.Add(new ValueDescription(layer.LightPWM.ToString(), nameof(layer.LightPWM)));
             }
             var materialMillilitersPercent = layer.MaterialMillilitersPercent;
             if (!float.IsNaN(materialMillilitersPercent))
             {
-                CurrentLayerProperties.Add(new StringTag(nameof(layer.MaterialMilliliters), $"{layer.MaterialMilliliters}ml ({materialMillilitersPercent:F2}%)"));
+                CurrentLayerProperties.Add(new ValueDescription($"{layer.MaterialMilliliters}ml ({materialMillilitersPercent:F2}%)", nameof(layer.MaterialMilliliters)));
             }
 
         }

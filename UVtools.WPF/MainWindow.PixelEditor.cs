@@ -378,15 +378,14 @@ namespace UVtools.WPF
             if (result == ButtonResult.Yes)
             {
                 IsGUIEnabled = false;
-
+                ShowProgressWindow("Drawing pixels");
                 Clipboard.Snapshot();
 
                 var task = await Task.Factory.StartNew(async () =>
                 {
-                    ShowProgressWindow("Drawing pixels");
                     try
                     {
-                        SlicerFile.LayerManager.DrawModifications(Drawings, ProgressWindow.RestartProgress());
+                        SlicerFile.LayerManager.DrawModifications(Drawings, Progress);
                         return true;
                     }
                     catch (OperationCanceledException)

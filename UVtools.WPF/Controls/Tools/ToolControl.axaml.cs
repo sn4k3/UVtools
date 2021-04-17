@@ -80,6 +80,6 @@ namespace UVtools.WPF.Controls.Tools
         /// </summary>
         /// <param name="text"></param>
         /// <returns></returns>
-        public async Task<bool> ValidateFormFromString(StringTag text) => await ValidateFormFromString(text?.ToString());
+        public async Task<bool> ValidateFormFromString(ValueDescription text) => await ValidateFormFromString(text?.ToString());
     }
 }

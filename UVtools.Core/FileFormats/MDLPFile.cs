@@ -420,7 +420,7 @@ namespace UVtools.Core.FileFormats
                 int spanIndex = 0;
                 for (int i = 0; i < previews[previewIndex].Length; i += 2)
                 {
-                    ushort rgb15 = (ushort)((ushort)(previews[previewIndex][i + 0] << 8) | previews[previewIndex][i + 1]);
+                    ushort rgb15 = BitExtensions.ToUShortBigEndian(previews[previewIndex][i], previews[previewIndex][i + 1]);
                     byte r = (byte)((rgb15 >> 11) << 3);
                     byte g = (byte)((rgb15 >> 5) << 2);
                     byte b = (byte)((rgb15 >> 0) << 3);

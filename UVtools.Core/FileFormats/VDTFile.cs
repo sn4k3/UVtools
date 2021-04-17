@@ -82,6 +82,7 @@ namespace UVtools.Core.FileFormats
             [JsonProperty("resolution_y")] public ushort ResolutionY { get; set; }
             [JsonProperty("x_mirror")] public bool XMirror { get; set; }
             [JsonProperty("y_mirror")] public bool YMirror { get; set; }
+            [JsonProperty("notes")] public string Notes { get; set; }
         }
 
         public sealed class VDTResin
@@ -89,6 +90,7 @@ namespace UVtools.Core.FileFormats
             [JsonProperty("name")] public string Name { get; set; }
             [JsonProperty("cost")] public float Cost { get; set; }
             [JsonProperty("density")] public float Density { get; set; } = 1;
+            [JsonProperty("notes")] public string Notes { get; set; }
         }
 
         public sealed class VDTPrint
@@ -512,6 +514,48 @@ namespace UVtools.Core.FileFormats
             outputFile.PutFileContent(FileManifestName, JsonConvert.SerializeObject(ManifestFile), ZipArchiveMode.Update);
 
             //Decode(FileFullPath, progress);
+        }
+
+        public T LookupCustomValue<T>(string name, T defaultValue, bool existsOnly = false)
+        {
+            //if (string.IsNullOrEmpty(PrinterSettings.PrinterNotes)) return defaultValue;
+            var result = string.Empty;
+            if (!existsOnly) name += '_';
+
+            foreach (var notes in new[] { ManifestFile.Machine.Notes })
+            {
+                if (string.IsNullOrWhiteSpace(notes)) continue;
+
+                var lines = notes.Split(new[] { "\\r\\n", "\\r", "\\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                foreach (var line in lines)
+                {
+                    if (!line.StartsWith(name)) continue;
+                    if (existsOnly || line == name) return "true".Convert<T>();
+                    var value = line.Remove(0, name.Length);
+                    foreach (var c in value)
+                    {
+                        if (typeof(T) == typeof(string))
+                        {
+                            if (char.IsWhiteSpace(c)) break;
+                        }
+                        else
+                        {
+                            if (!char.IsLetterOrDigit(c) && c != '.')
+                            {
+                                break;
+                            }
+                        }
+
+
+                        result += c;
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(result)) break; // Found a candidate
+            }
+
+            return string.IsNullOrWhiteSpace(result) ? defaultValue : result.Convert<T>();
         }
         #endregion
     }

@@ -34,7 +34,7 @@ namespace UVtools.Core.Operations
 
         public readonly object Mutex = new();
 
-        public CancellationTokenSource TokenSource { get; } = new();
+        public CancellationTokenSource TokenSource { get; private set; }
         public CancellationToken Token => TokenSource.Token;
 
         private bool _canCancel = true;
@@ -47,14 +47,15 @@ namespace UVtools.Core.Operations
         public 
             OperationProgress()
         {
+            Init();
         }
 
-        public OperationProgress(string name, uint value = 0)
+        public OperationProgress(string name, uint value = 0) : this()
         {
             Reset(name, value);
         }
 
-        public OperationProgress(bool canCancel)
+        public OperationProgress(bool canCancel) : this()
         {
             _canCancel = canCancel;
         }
@@ -162,6 +163,18 @@ namespace UVtools.Core.Operations
         {
             progress.ProcessedItems--;
             return progress;
+        }
+
+        public void Init(bool canCancel = true)
+        {
+            CanCancel = canCancel;
+            Title = "Operation";
+            ItemName = "Initializing";
+            ItemCount = 0;
+            ProcessedItems = 0;
+
+            TokenSource = new();
+            RaisePropertyChanged(nameof(CanCancel));
         }
 
         public void Reset(string name = "", uint itemCount = 0, uint items = 0)

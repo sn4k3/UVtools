@@ -4,17 +4,28 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolLayerReHeightControl">
-  <StackPanel Orientation="Vertical" Spacing="10">
+
+
+    <StackPanel Orientation="Vertical" Spacing="10">
     <TextBlock VerticalAlignment="Center" Text="{Binding CurrentLayers}"/>
 
-    <StackPanel Orientation="Horizontal" Spacing="10">
-      <TextBlock VerticalAlignment="Center" Text="Modifier:"/>
-      <ComboBox
-        MinWidth="300"
-        SelectedItem="{Binding Operation.Item}"
-        Items="{Binding Presets}"
+    <Grid RowDefinitions="Auto,10,Auto"
+          ColumnDefinitions="Auto,10,Auto">
+
+        <TextBlock Grid.Row="0" Grid.Column="0"  VerticalAlignment="Center" Text="Modifier:"/>
+        <ComboBox
+            Grid.Row="0" Grid.Column="2" Width="500"
+            SelectedItem="{Binding Operation.SelectedItem}"
+            Items="{Binding Operation.Presets}"
         />
+
+        <TextBlock Grid.Row="2" Grid.Column="0"  VerticalAlignment="Center" Text="Anti-Aliasing:"/>
+        <ComboBox Grid.Row="2" Grid.Column="2"  Width="500"
+                  IsEnabled="{Binding Operation.CanAntiAliasing}"
+                  Items="{Binding Operation.AntiAliasingType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  SelectedItem="{Binding Operation.AntiAliasingType, Converter={StaticResource FromValueDescriptionToEnumConverter}}">
+        </ComboBox>
+    </Grid>
+
     </StackPanel>
-    
-  </StackPanel>
 </UserControl>

@@ -56,8 +56,8 @@
         Grid.Row="2"
         Grid.Column="2"
         HorizontalAlignment="Stretch"
-        SelectedIndex="{Binding MorphSelectedIndex}"
-        Items="{Binding Operation.MorphOperations}"
+        Items="{Binding Operation.MorphOperation, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+        SelectedItem="{Binding Operation.MorphOperation, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
         />
 
     </Grid>

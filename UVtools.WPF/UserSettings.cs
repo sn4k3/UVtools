@@ -1121,7 +1121,7 @@ namespace UVtools.WPF
         public sealed class AutomationsUserSettings : BindableBase
         {
             private bool _saveFileAfterModifications = true;
-            private bool _autoConvertSl1Files = true;
+            private bool _autoConvertFiles = true;
             private bool _changeOnlyLightOffDelayIfZero = true;
             private decimal _lightOffDelay = 2.5m;
             private decimal _bottomLightOffDelay = 3m;
@@ -1132,10 +1132,10 @@ namespace UVtools.WPF
                 set => RaiseAndSetIfChanged(ref _saveFileAfterModifications, value);
             }
 
-            public bool AutoConvertSL1Files
+            public bool AutoConvertFiles
             {
-                get => _autoConvertSl1Files;
-                set => RaiseAndSetIfChanged(ref _autoConvertSl1Files, value);
+                get => _autoConvertFiles;
+                set => RaiseAndSetIfChanged(ref _autoConvertFiles, value);
             }
 
             public bool ChangeOnlyLightOffDelayIfZero

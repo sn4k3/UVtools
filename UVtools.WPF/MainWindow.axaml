@@ -9,10 +9,10 @@
         Icon="/Assets/Icons/UVtools.ico"
         MinWidth="1024"
         MinHeight="600"
-        DragDrop.AllowDrop="True"
-        >
-  
-  <DockPanel>
+        DragDrop.AllowDrop="True">
+
+    <Grid RowDefinitions="*" ColumnDefinitions="*">
+    <DockPanel Grid.Row="0" Grid.Column="0" IsEnabled="{Binding IsGUIEnabled}">
     <Menu DockPanel.Dock="Top">
       <MenuItem Name="MainMenu.File" Header="_File">
         <MenuItem 
@@ -568,10 +568,10 @@
                     Items="{Binding CurrentLayerProperties}">
             <DataGrid.Columns>
               <DataGridTextColumn  Header="Name"
-                                    Binding="{Binding Content}"
+                                    Binding="{Binding Description}"
                                     Width="Auto" />
               <DataGridTextColumn Header="Value"
-                                  Binding="{Binding TagString}"
+                                  Binding="{Binding Value}"
                                   Width="Auto" />
             </DataGrid.Columns>
             
@@ -1751,9 +1751,9 @@
     <Grid
       IsEnabled="{Binding IsFileLoaded}"
       ColumnDefinitions="*" RowDefinitions="Auto,*,Auto"  Margin="5">
-      <Grid
-        IsEnabled="{Binding IsFileLoaded}"
-        ColumnDefinitions="*,Auto" RowDefinitions="Auto"  Margin="5">
+        <Grid Grid.Row="0" Grid.Column="0"
+              IsEnabled="{Binding IsFileLoaded}"
+              ColumnDefinitions="*,Auto" RowDefinitions="Auto"  Margin="5">
         <WrapPanel HorizontalAlignment="Left" Grid.Row="0" Orientation="Horizontal">
           <ToggleButton
             IsChecked="{Binding ShowLayerImageRotated}"
@@ -2037,4 +2037,50 @@
 
 
   </DockPanel>
+        <Grid Grid.Row="0" Grid.Column="0"
+              RowDefinitions="*,Auto,*" ColumnDefinitions="*,Auto,*"
+              IsEnabled="{Binding IsProgressVisible}"
+              IsVisible="{Binding IsProgressVisible}">
+            <Border Grid.Row="1" Grid.Column="1" MinWidth="450"
+                Background="White"
+                BorderBrush="WhiteSmoke"
+                BorderThickness="5"
+                CornerRadius="5">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto"
+                      ColumnDefinitions="*">
+                    <TextBlock
+                        Grid.Row="0"
+                        Margin="10" Text="{Binding Progress.Title}"/>
+                    <TextBlock
+                        Grid.Row="1"
+                        Margin="10,0,10,10" Text="{Binding Progress.ElapsedTimeStr, StringFormat=Elapsed Time: \{0\}}"/>
+                    <TextBlock
+                        Grid.Row="2"
+                        Margin="10,0,10,10" Text="{Binding Progress.Description}" HorizontalAlignment="Center"/>
+
+                    <Grid
+                        Grid.Row="3"
+                        RowDefinitions="30" ColumnDefinitions="*,100">
+                        <ProgressBar
+                            Grid.Column="0"
+                            Minimum="0"
+                            Maximum="100"
+                            VerticalAlignment="Stretch"
+                            IsIndeterminate="{Binding Progress.IsIndeterminate}"
+                            Value="{Binding Progress.ProgressPercent}"  ShowProgressText="True"/>
+                        <Button
+                            IsEnabled="{Binding Progress.CanCancel}"
+                            Command="{Binding ProgressOnClickCancel}"
+                            Grid.Column="1"
+                            IsCancel="True"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            Content="Cancel"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
 </uc:WindowEx>

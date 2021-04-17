@@ -111,20 +111,19 @@ namespace UVtools.WPF
 
 
             IsGUIEnabled = false;
+            ShowProgressWindow("Removing selected issues", false);
 
             Clipboard.Snapshot();
 
             var task = await Task.Factory.StartNew(() =>
             {
-                ShowProgressWindow("Removing selected issues");
-                var progress = ProgressWindow.RestartProgress(false);
-                progress.Reset("Removing selected issues", (uint)processIssues.Count);
+                Progress.Reset("Removing selected issues", (uint)processIssues.Count);
                 bool result = false;
                 try
                 {
                     Parallel.ForEach(processIssues, layerIssues =>
                     {
-                        if (progress.Token.IsCancellationRequested) return;
+                        if (Progress.Token.IsCancellationRequested) return;
                         using (var image = SlicerFile[layerIssues.Key].LayerMat)
                         {
                             var bytes = image.GetPixelSpan<byte>();
@@ -162,7 +161,7 @@ namespace UVtools.WPF
                             }
                         }
 
-                        progress.LockAndIncrement();
+                        Progress.LockAndIncrement();
                     });
 
                     if (layersRemove.Count > 0)
@@ -275,6 +274,7 @@ namespace UVtools.WPF
 
 
             IsGUIEnabled = false;
+            ShowProgressWindow("Updating Issues");
 
 
             var issueList = Issues.ToList();
@@ -291,12 +291,10 @@ namespace UVtools.WPF
 
             var resultIssues = await Task.Factory.StartNew(() =>
             {
-                ShowProgressWindow("Updating Issues");
                 try
                 {
                     var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapConfig,
-                        touchingBoundConfig, printHeightConfig, false, IgnoredIssues,
-                        ProgressWindow.RestartProgress());
+                        touchingBoundConfig, printHeightConfig, false, IgnoredIssues, Progress);
 
                     issues.RemoveAll(issue => issue.Type != LayerIssue.IssueType.Island && issue.Type != LayerIssue.IssueType.Overhang); // Remove all non islands and overhangs
                     return issues;
@@ -450,15 +448,14 @@ namespace UVtools.WPF
 
             Issues.Clear();
             IsGUIEnabled = false;
-
+            ShowProgressWindow("Computing Issues");
 
             var resultIssues = await Task.Factory.StartNew(() =>
             {
-                ShowProgressWindow("Computing Issues");
                 try
                 {
                     var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapConfig, touchingBoundConfig,
-                        printHeightConfig, emptyLayersConfig, IgnoredIssues, ProgressWindow.RestartProgress());
+                        printHeightConfig, emptyLayersConfig, IgnoredIssues, Progress);
                     return issues;
                 }
                 catch (OperationCanceledException)
@@ -529,6 +526,13 @@ namespace UVtools.WPF
                 _issuesSliderCanvas.Children.Add(line);
                 Canvas.SetBottom(line, yPos);
             }
+        }
+
+        public void IssuesClear(bool clearIgnored = true)
+        {
+            Issues.Clear();
+            if(clearIgnored) IgnoredIssues.Clear();
+            UpdateLayerTrackerHighlightIssues();
         }
 
         

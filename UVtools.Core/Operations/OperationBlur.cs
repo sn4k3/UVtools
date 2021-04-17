@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
@@ -68,42 +69,30 @@ namespace UVtools.Core.Operations
         #region Enums
         public enum BlurAlgorithm
         {
+            [Description("Blur: Normalized box filter")]
             Blur,
+            [Description("Pyramid: Down/up-sampling step of Gaussian pyramid decomposition")]
             Pyramid,
+            [Description("Median Blur: Each pixel becomes the median of its surrounding pixels")]
             MedianBlur,
+            [Description("Gaussian Blur: Each pixel is a sum of fractions of each pixel in its neighborhood")]
             GaussianBlur,
+            [Description("Filter 2D: Applies an arbitrary linear filter to an image")]
             Filter2D
         }
         #endregion
 
         #region Properties
 
-        public static StringTag[] BlurTypes => new[]
-        {
-            new StringTag("Blur: Normalized box filter", BlurAlgorithm.Blur),
-            new StringTag("Pyramid: Down/up-sampling step of Gaussian pyramid decomposition", BlurAlgorithm.Pyramid),
-            new StringTag("Median Blur: Each pixel becomes the median of its surrounding pixels", BlurAlgorithm.MedianBlur),
-            new StringTag("Gaussian Blur: Each pixel is a sum of fractions of each pixel in its neighborhood", BlurAlgorithm.GaussianBlur),
-            new StringTag("Filter 2D: Applies an arbitrary linear filter to an image", BlurAlgorithm.Filter2D),
-        };
-
-        public byte BlurTypeIndex
-        {
-            get
-            {
-                for (byte i = 0; i < BlurTypes.Length; i++)
-                {
-                    if ((BlurAlgorithm)BlurTypes[i].Tag == BlurOperation) return i;
-                }
-
-                return 0;
-            }
-        }
-
         public BlurAlgorithm BlurOperation
         {
             get => _blurOperation;
-            set => RaiseAndSetIfChanged(ref _blurOperation, value);
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _blurOperation, value)) return;
+                RaisePropertyChanged(nameof(IsSizeEnabled));
+                RaisePropertyChanged(nameof(IsKernelVisible));
+            }
         }
 
         public uint Size
@@ -112,8 +101,13 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _size, value);
         }
 
+        public bool IsSizeEnabled => BlurOperation != BlurAlgorithm.Pyramid &&
+                                     BlurOperation != BlurAlgorithm.Filter2D;
+
+        public bool IsKernelVisible => BlurOperation == BlurAlgorithm.Filter2D;
+
         [XmlIgnore]
-        public Kernel Kernel { get; set; } = new Kernel();
+        public Kernel Kernel { get; set; } = new ();
 
         public override string ToString()
         {

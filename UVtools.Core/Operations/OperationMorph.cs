@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV;
@@ -19,8 +20,28 @@ namespace UVtools.Core.Operations
     [Serializable]
     public sealed class OperationMorph : Operation
     {
+        #region Enums
+        public enum MorphOperations
+        {
+            [Description("Erode: Contracts the boundaries within the object")]
+            Erode = MorphOp.Erode,
+
+            [Description("Dilate: Expands the boundaries within the object")]
+            Dilate = MorphOp.Dilate,
+
+            [Description("Gap Closing - Closes small holes inside the objects")]
+            Close = MorphOp.Close,
+
+            [Description("Noise Removal - Removes small isolated pixels")]
+            Open = MorphOp.Open,
+
+            [Description("Gradient - Removes the interior areas of objects")]
+            Gradient = MorphOp.Gradient,
+        }
+        #endregion
+
         #region Members
-        private MorphOp _morphOperation = MorphOp.Erode;
+        private MorphOperations _morphOperation = MorphOperations.Erode;
         private uint _iterationsStart = 1;
         private uint _iterationsEnd = 1;
         private bool _chamfer;
@@ -43,31 +64,7 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Properties
-
-
-        public static StringTag[] MorphOperations => new[]
-        {
-            new StringTag("Erode - Contracts the boundaries within the object", MorphOp.Erode),
-            new StringTag("Dilate - Expands the boundaries within the object", MorphOp.Dilate),
-            new StringTag("Gap Closing - Closes small holes inside the objects", MorphOp.Close),
-            new StringTag("Noise Removal - Removes small isolated pixels", MorphOp.Open),
-            new StringTag("Gradient - Removes the interior areas of objects", MorphOp.Gradient),
-        };
-
-        public byte MorphOperationIndex
-        {
-            get
-            {
-                for (byte i = 0; i < MorphOperations.Length; i++)
-                {
-                    if ((MorphOp) MorphOperations[i].Tag == MorphOperation) return i;
-                }
-
-                return 0;
-            }
-        }
-
-        public MorphOp MorphOperation
+        public MorphOperations MorphOperation
         {
             get => _morphOperation;
             set => RaiseAndSetIfChanged(ref _morphOperation, value);
@@ -185,7 +182,7 @@ namespace UVtools.Core.Operations
 
             using var original = mat.Clone();
             var target = GetRoiOrDefault(mat);
-            CvInvoke.MorphologyEx(target, target, MorphOperation, Kernel.Matrix, Kernel.Anchor, iterations, BorderType.Reflect101, default);
+            CvInvoke.MorphologyEx(target, target, (MorphOp) MorphOperation, Kernel.Matrix, Kernel.Anchor, iterations, BorderType.Reflect101, default);
             ApplyMask(original, mat);
             return true;
         }

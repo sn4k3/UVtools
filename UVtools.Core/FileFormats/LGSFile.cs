@@ -431,6 +431,26 @@ namespace UVtools.Core.FileFormats
             return bytes;
         }
 
+        public unsafe Mat PreviewDecode(byte[] data)
+        {
+            Mat mat = new((int)HeaderSettings.PreviewSizeY, (int)HeaderSettings.PreviewSizeX, DepthType.Cv8U, 3);
+            var span = mat.GetBytePointer();
+            int spanIndex = 0;
+            for (int i = 0; i < data.Length; i += 2)
+            {
+                ushort rgb15 = BitExtensions.ToUShortBigEndian(data[i], data[i + 1]);
+                byte r = (byte)((((rgb15 >> 11) & 0x1f) << 3) | 0x7);
+                byte g = (byte)((((rgb15 >> 6) & 0x1f) << 3) | 0x7);
+                byte b = (byte)((((rgb15 >> 0) & 0x1f) << 3) | 0x7);
+
+                span[spanIndex++] = b;
+                span[spanIndex++] = g;
+                span[spanIndex++] = r;
+            }
+
+            return mat;
+        }
+
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
             if (ResolutionY >= 2560) // Longer Orange 30
@@ -472,26 +492,6 @@ namespace UVtools.Core.FileFormats
             Debug.WriteLine("Encode Results:");
             Debug.WriteLine(HeaderSettings);
             Debug.WriteLine("-End-");
-        }
-
-        public unsafe Mat PreviewDecode(byte []data)
-        {
-            Mat mat = new Mat((int) HeaderSettings.PreviewSizeY, (int)HeaderSettings.PreviewSizeX, DepthType.Cv8U, 3);
-            var span = mat.GetBytePointer();
-            int spanIndex = 0;
-            for (int i = 0; i < data.Length; i+=2)
-            {
-                ushort rgb15 = (ushort) ((ushort)(data[i + 0] << 8) | data[i + 1]);
-                byte r = (byte) ((((rgb15 >> 11) & 0x1f) << 3) | 0x7);
-                byte g = (byte) ((((rgb15 >> 6) & 0x1f) << 3) | 0x7);
-                byte b = (byte) ((((rgb15 >> 0) & 0x1f) << 3) | 0x7);
-
-                span[spanIndex++] = b;
-                span[spanIndex++] = g;
-                span[spanIndex++] = r;
-            }
-
-            return mat;
         }
 
         protected override void DecodeInternally(string fileFullPath, OperationProgress progress)

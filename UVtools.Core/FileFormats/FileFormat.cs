@@ -1241,6 +1241,7 @@ namespace UVtools.Core.FileFormats
         /// <param name="images"></param>
         public void SetThumbnails(Mat[] images)
         {
+            if (images is null || images.Length == 0) return;
             byte imageIndex = 0;
             for (int i = 0; i < ThumbnailsCount; i++)
             {

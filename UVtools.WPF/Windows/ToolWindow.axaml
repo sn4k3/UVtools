@@ -11,8 +11,7 @@
         Title="Tool"
         Icon="/Assets/Icons/UVtools.ico">
 
-
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
+   <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
     
     <!-- Description -->
     <Border Grid.Row="0"
@@ -420,4 +419,5 @@
     </Border>
 
   </Grid>
+
 </controls:WindowEx>

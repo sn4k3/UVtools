@@ -55,7 +55,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 * SL1 (PrusaSlicer)
 * Zip (Chitubox)
 * Photon (Chitubox)
-* Photons (Chitubox) [Read-only]
+* Photons (Chitubox)
 * CBDDLP (Chitubox)
 * CBT (Chitubox)
 * PHZ (Chitubox)

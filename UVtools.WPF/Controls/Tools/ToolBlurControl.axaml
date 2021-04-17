@@ -17,16 +17,15 @@
       <ComboBox
         Grid.Column="2"
         HorizontalAlignment="Left"
-        SelectedIndex="{Binding SelectedAlgorithmIndex}"
         Width="450"
         HorizontalContentAlignment="Stretch"
-        Items="{Binding Operation.BlurTypes}"
-        />
+        Items="{Binding Operation.BlurOperation, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+        SelectedItem="{Binding Operation.BlurOperation, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
       <TextBlock 
         VerticalAlignment="Center"
         Grid.Row="2"
-        IsEnabled="{Binding IsSizeEnabled}"
+        IsEnabled="{Binding Operation.IsSizeEnabled}"
         Text="Size:"/>
       <NumericUpDown
         Grid.Row="2"
@@ -34,15 +33,13 @@
         HorizontalAlignment="Left"
         Width="150"
         Minimum="1"
-        IsEnabled="{Binding IsSizeEnabled}"
+        IsEnabled="{Binding Operation.IsSizeEnabled}"
         Value="{Binding Operation.Size}"
         />
     </Grid>
 
-    <uc:KernelControl
-      Name="KernelCtrl"
-      IsVisible="{Binding $parent[UserControl].IsKernelVisible}"
-      />
+    <uc:KernelControl Name="KernelCtrl"
+      IsVisible="{Binding $parent[UserControl].DataContext.Operation.IsKernelVisible}"/>
     
   </StackPanel>
 

@@ -48,7 +48,7 @@ namespace UVtools.WPF
 
         #region Controls
 
-        public ProgressWindow ProgressWindow = new ();
+        //public ProgressWindow ProgressWindow = new ();
 
         public static MenuItem[] MenuTools { get; } =
         {
@@ -328,7 +328,7 @@ namespace UVtools.WPF
 
         #region Members
 
-        public Stopwatch LastStopWatch = new Stopwatch();
+        public Stopwatch LastStopWatch = new();
         
         private bool _isGUIEnabled = true;
         private uint _savesCount;
@@ -352,14 +352,14 @@ namespace UVtools.WPF
                 if (!RaiseAndSetIfChanged(ref _isGUIEnabled, value)) return;
                 if (!_isGUIEnabled)
                 {
-                    ProgressWindow = new ProgressWindow();
+                    //ProgressWindow = new ProgressWindow();
                     return;
                 }
-                //if (ProgressWindow is null) return;
 
-                LastStopWatch = ProgressWindow.StopWatch;
-                ProgressWindow.Close();
-                ProgressWindow.Dispose();
+                LastStopWatch = Progress.StopWatch;
+                ProgressFinish();
+                //ProgressWindow.Close(DialogResults.OK);
+                //ProgressWindow.Dispose();
                 /*if (Dispatcher.UIThread.CheckAccess())
                 {
                     ProgressWindow.Close();
@@ -441,6 +441,7 @@ namespace UVtools.WPF
             InitializeComponent();
 
             App.ThemeSelector?.EnableThemes(this);
+            InitProgress();
             InitInformation();
             InitIssues();
             InitPixelEditor();
@@ -757,9 +758,7 @@ namespace UVtools.WPF
             SlicerFile = null;
 
             SlicerProperties.Clear();
-            Issues.Clear();
-            IgnoredIssues.Clear();
-            _issuesSliderCanvas.Children.Clear();
+            IssuesClear(true);
             Drawings.Clear();
 
             SelectedTabItem = TabInformation;
@@ -862,13 +861,13 @@ namespace UVtools.WPF
             if (result == ButtonResult.Yes)
             {
                 IsGUIEnabled = false;
+                ShowProgressWindow($"Downloading: {VersionChecker.Filename}", false);
 
                 var task = await Task.Factory.StartNew(async () =>
                 {
-                    ShowProgressWindow($"Downloading: {VersionChecker.Filename}");
                     try
                     {
-                        VersionChecker.AutoUpgrade(ProgressWindow.RestartProgress(false));
+                        VersionChecker.AutoUpgrade(Progress);
                         return true;
                     }
                     catch (OperationCanceledException)
@@ -942,13 +941,13 @@ namespace UVtools.WPF
             if (SlicerFile is null) return;
 
             IsGUIEnabled = false;
-            
+            ShowProgressWindow($"Opening: {fileNameOnly}");
+
             var task = await Task.Factory.StartNew( () =>
             {
-                ShowProgressWindow($"Opening: {fileNameOnly}");
                 try
                 {
-                    SlicerFile.Decode(fileName, ProgressWindow.RestartProgress());
+                    SlicerFile.Decode(fileName, Progress);
                     return true;
                 }
                 catch (OperationCanceledException)
@@ -985,27 +984,35 @@ namespace UVtools.WPF
                 return;
             }
 
-            if (SlicerFile is SL1File sl1File && Settings.Automations.AutoConvertSL1Files)
+            if (Settings.Automations.AutoConvertFiles)
             {
-                string fileExtension = sl1File.LookupCustomValue<string>(SL1File.Keyword_FileFormat, null);
-                if (!string.IsNullOrWhiteSpace(fileExtension))
+                string convertFileExtension = SlicerFile switch
                 {
-                    fileExtension = fileExtension.ToLower(CultureInfo.InvariantCulture);
-                    var convertToFormat = FileFormat.FindByExtension(fileExtension);
+                    SL1File sl1File => sl1File.LookupCustomValue<string>(SL1File.Keyword_FileFormat, null),
+                    VDTFile vdtFile => vdtFile.LookupCustomValue<string>(SL1File.Keyword_FileFormat, null),
+                    _ => null
+                };
+
+                if (!string.IsNullOrWhiteSpace(convertFileExtension))
+                {
+                    convertFileExtension = convertFileExtension.ToLower(CultureInfo.InvariantCulture);
+                    var convertToFormat = FileFormat.FindByExtension(convertFileExtension);
                     if (convertToFormat is not null)
                     {
-                        var directory = Path.GetDirectoryName(sl1File.FileFullPath);
-                        var filename = FileFormat.GetFileNameStripExtensions(sl1File.FileFullPath);
+                        var directory = Path.GetDirectoryName(SlicerFile.FileFullPath);
+                        var filename = FileFormat.GetFileNameStripExtensions(SlicerFile.FileFullPath);
                         FileFormat convertedFile = null;
 
                         IsGUIEnabled = false;
+                        ShowProgressWindow($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {convertFileExtension}");
 
                         task = await Task.Factory.StartNew(() =>
                         {
-                            ShowProgressWindow($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {fileExtension}");
                             try
                             {
-                                convertedFile = sl1File.Convert(convertToFormat, Path.Combine(directory, $"{filename}.{fileExtension}"), ProgressWindow.RestartProgress());
+                                convertedFile = SlicerFile.Convert(convertToFormat,
+                                    Path.Combine(directory, $"{filename}.{convertFileExtension}"),
+                                    Progress);
                                 return true;
                             }
                             catch (OperationCanceledException)
@@ -1014,7 +1021,8 @@ namespace UVtools.WPF
                             catch (Exception exception)
                             {
                                 Dispatcher.UIThread.InvokeAsync(async () =>
-                                    await this.MessageBoxError(exception.ToString(), "Error while converting the file"));
+                                    await this.MessageBoxError(exception.ToString(),
+                                        "Error while converting the file"));
                             }
 
                             return false;
@@ -1181,37 +1189,34 @@ namespace UVtools.WPF
             }
         }
 
-        private async void ShowProgressWindow(string title)
+        private async void ShowProgressWindow(string title, bool canCancel = true)
         {
             if (Dispatcher.UIThread.CheckAccess())
             {
-                ProgressWindow.SetTitle(title);
-                await ProgressWindow.ShowDialog(this);
+                ProgressShow(title, canCancel);
+
+                //ProgressWindow.SetTitle(title);
+                //await ProgressWindow.ShowDialog(this);
             }
             else
             {
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    try
+                    ProgressShow(title, canCancel);
+                    /*try
                     {
-                        ProgressWindow.SetTitle(title);
-                        await ProgressWindow.ShowDialog(this);
+                        
+                        //ProgressWindow.SetTitle(title);
+                        //await ProgressWindow.ShowDialog(this);
                     }
                     catch (Exception e)
                     {
                         Debug.WriteLine(e);
-                    }
+                    }*/
                     
                 });
             }
         }
-
-        private void ShowProgressWindowSync(string title)
-        {
-            ProgressWindow = new ProgressWindow(title);
-        }
-
-        
 
         private async void ConvertToOnTapped(object? sender, RoutedEventArgs e)
         {
@@ -1232,13 +1237,13 @@ namespace UVtools.WPF
 
 
             IsGUIEnabled = false;
+            ShowProgressWindow($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {Path.GetExtension(result)}");
 
             var task = await Task.Factory.StartNew(() =>
             {
-                ShowProgressWindow($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {Path.GetExtension(result)}");
                 try
                 {
-                    return SlicerFile.Convert(fileExtension.GetFileFormat(), result, ProgressWindow.RestartProgress()) is not null;
+                    return SlicerFile.Convert(fileExtension.GetFileFormat(), result, Progress) is not null;
                 }
                 catch (OperationCanceledException)
                 {
@@ -1309,14 +1314,13 @@ namespace UVtools.WPF
             var tempFile = filepath + FileFormat.TemporaryFileAppend;
 
             IsGUIEnabled = false;
+            ShowProgressWindow($"Saving {Path.GetFileName(filepath)}");
 
             var task = await Task.Factory.StartNew( () =>
             {
-                ShowProgressWindow($"Saving {Path.GetFileName(filepath)}");
-
                 try
                 {
-                    SlicerFile.SaveAs(tempFile, ProgressWindow.RestartProgress());
+                    SlicerFile.SaveAs(tempFile, Progress);
                     if (File.Exists(filepath))
                     {
                         File.Delete(filepath);
@@ -1383,13 +1387,13 @@ namespace UVtools.WPF
             string finalPath = Path.Combine(result, fileNameNoExt);
 
             IsGUIEnabled = false;
+            ShowProgressWindow($"Extracting {Path.GetFileName(SlicerFile.FileFullPath)}");
 
             await Task.Factory.StartNew(() =>
             {
-                ShowProgressWindow($"Extracting {Path.GetFileName(SlicerFile.FileFullPath)}");
                 try
                 {
-                    SlicerFile.Extract(finalPath, true, true, ProgressWindow.RestartProgress());
+                    SlicerFile.Extract(finalPath, true, true, Progress);
                 }
                 catch (OperationCanceledException)
                 {
@@ -1508,16 +1512,15 @@ namespace UVtools.WPF
             }
 
             IsGUIEnabled = false;
+            ShowProgressWindow(baseOperation.ProgressTitle, baseOperation.CanCancel);
 
             Clipboard.Snapshot();
 
             var result = await Task.Factory.StartNew(() =>
             {
-                ShowProgressWindow(baseOperation.ProgressTitle);
-
                 try
                 {
-                    return baseOperation.Execute(ProgressWindow.RestartProgress(baseOperation.CanCancel));
+                    return baseOperation.Execute(Progress);
                 }
                 catch (OperationCanceledException)
                 {
@@ -1544,11 +1547,16 @@ namespace UVtools.WPF
 
                 CanSave = true;
 
+               if(baseOperation.GetType().Name.StartsWith("OperationCalibrate"))
+               {
+                   IssuesClear();
+               }
+
                 switch (baseOperation)
                 {
                     // Tools
                     case OperationRepairLayers operation:
-                        OnClickDetectIssues();
+                        await OnClickDetectIssues();
                         break;
                 }
             }

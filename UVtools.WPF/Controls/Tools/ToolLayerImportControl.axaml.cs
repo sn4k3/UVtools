@@ -20,7 +20,7 @@ namespace UVtools.WPF.Controls.Tools
     public class ToolLayerImportControl : ToolControl
     {
         private bool _isAutoSortLayersByFileNameChecked;
-        private StringTag _selectedFile;
+        private ValueDescription _selectedFile;
         private Bitmap _previewImage;
 
         private ListBox FilesListBox;
@@ -60,7 +60,7 @@ namespace UVtools.WPF.Controls.Tools
             
         }
 
-        public StringTag SelectedFile
+        public ValueDescription SelectedFile
         {
             get => _selectedFile;
             set
@@ -71,12 +71,12 @@ namespace UVtools.WPF.Controls.Tools
                     PreviewImage = null;
                     return;
                 }
-                if (!_selectedFile.TagString.EndsWith(".png", StringComparison.OrdinalIgnoreCase) &&
-                    !_selectedFile.TagString.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) &&
-                    !_selectedFile.TagString.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) &&
-                    !_selectedFile.TagString.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) &&
-                    !_selectedFile.TagString.EndsWith(".gif", StringComparison.OrdinalIgnoreCase)) return;
-                PreviewImage = new Bitmap(_selectedFile.TagString);
+                if (!_selectedFile.ValueAsString.EndsWith(".png", StringComparison.OrdinalIgnoreCase) &&
+                    !_selectedFile.ValueAsString.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) &&
+                    !_selectedFile.ValueAsString.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) &&
+                    !_selectedFile.ValueAsString.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) &&
+                    !_selectedFile.ValueAsString.EndsWith(".gif", StringComparison.OrdinalIgnoreCase)) return;
+                PreviewImage = new Bitmap(_selectedFile.ValueAsString);
             }
         }
 
@@ -94,8 +94,8 @@ namespace UVtools.WPF.Controls.Tools
             FilesListBox = this.Find<ListBox>("FilesListBox");
             FilesListBox.DoubleTapped += (sender, args) =>
             {
-                if (!(FilesListBox.SelectedItem is StringTag file)) return;
-                App.StartProcess(file.TagString);
+                if (!(FilesListBox.SelectedItem is ValueDescription file)) return;
+                App.StartProcess(file.ValueAsString);
             };
             FilesListBox.KeyUp += (sender, e) =>
             {
@@ -197,7 +197,7 @@ namespace UVtools.WPF.Controls.Tools
 
         public void RemoveFiles()
         {
-            Operation.Files.RemoveMany(FilesListBox.SelectedItems.OfType<StringTag>());
+            Operation.Files.RemoveMany(FilesListBox.SelectedItems.OfType<ValueDescription>());
         }
 
         public void ClearFiles()

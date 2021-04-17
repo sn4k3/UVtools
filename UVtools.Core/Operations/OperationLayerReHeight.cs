@@ -8,22 +8,35 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
-using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
     [Serializable]
     public sealed class OperationLayerReHeight : Operation
     {
+        #region Enums
+
+        public enum OperationLayerReHeightAntiAliasingType : byte
+        {
+            //[Description("Hello")]
+            None,
+            [Description("Difference - Compute anti-aliasing by the layers difference and perform a down/up sample over pixels")]
+            Difference,
+            [Description("Average - Compute anti-aliasing by averaging the layers pixels")]
+            Average
+        }
+        #endregion
         #region Members
-        private OperationLayerReHeightItem _item;
-        private bool _antiAliasing = true;
+        private OperationLayerReHeightItem _selectedItem;
+        private OperationLayerReHeightAntiAliasingType _antiAliasingType;
 
         #endregion
 
@@ -38,10 +51,10 @@ namespace UVtools.Core.Operations
             " than current height will reduce model detail.\n\n" +
             "Note: Using dedicated slicer software to re-slice will usually yeild better results.";
         public override string ConfirmationText =>
-            $"adjust layer height to {Item.LayerHeight}mm?";
+            $"adjust layer height to {SelectedItem.LayerHeight}mm?";
 
         public override string ProgressTitle =>
-            $"Adjusting layer height to {Item.LayerHeight}mm";
+            $"Adjusting layer height to {SelectedItem.LayerHeight}mm";
 
         public override string ProgressAction => "Height adjusted layers";
 
@@ -51,7 +64,7 @@ namespace UVtools.Core.Operations
         {
             var sb = new StringBuilder();
 
-            if (Item is null)
+            if (SelectedItem is null)
             {
                 sb.AppendLine("No valid configurations, unable to proceed.");
             }
@@ -62,7 +75,7 @@ namespace UVtools.Core.Operations
 
         public override string ToString()
         {
-            var result = $"[Layer Count: {Item.LayerCount}] [Layer Height: {Item.LayerHeight}]" + LayerRangeString;
+            var result = $"[Layer Count: {SelectedItem.LayerCount}] [Layer Height: {SelectedItem.LayerHeight}]" + LayerRangeString;
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
         }
@@ -70,22 +83,24 @@ namespace UVtools.Core.Operations
 
         #region Properties
 
-        public OperationLayerReHeightItem Item
+        public OperationLayerReHeightItem[] Presets { get; }
+
+        public OperationLayerReHeightItem SelectedItem
         {
-            get => _item;
+            get => _selectedItem;
             set
             {
-                if(!RaiseAndSetIfChanged(ref _item, value)) return;
-                RaisePropertyChanged(nameof(AntiAliasing));
+                if(!RaiseAndSetIfChanged(ref _selectedItem, value)) return;
+                RaisePropertyChanged(nameof(CanAntiAliasing));
             }
         }
 
-        public bool CanAntiAliasing => _item?.IsMultiply ?? false;
+        public bool CanAntiAliasing => _selectedItem?.IsMultiply ?? false;
 
-        public bool AntiAliasing
+        public OperationLayerReHeightAntiAliasingType AntiAliasingType
         {
-            get => _antiAliasing;
-            set => RaiseAndSetIfChanged(ref _antiAliasing, value);
+            get => _antiAliasingType;
+            set => RaiseAndSetIfChanged(ref _antiAliasingType, value);
         }
 
 
@@ -120,7 +135,14 @@ namespace UVtools.Core.Operations
 
         public OperationLayerReHeight() { }
 
-        public OperationLayerReHeight(FileFormat slicerFile) : base(slicerFile) { }
+        public OperationLayerReHeight(FileFormat slicerFile) : base(slicerFile)
+        {
+            Presets = GetItems(slicerFile.LayerCount, (decimal) slicerFile.LayerHeight);
+            if (Presets is not null && Presets.Length > 0)
+            {
+                _selectedItem = Presets[0];
+            }
+        }
 
         #endregion
 
@@ -151,11 +173,11 @@ namespace UVtools.Core.Operations
         #region Methods
         protected override bool ExecuteInternally(OperationProgress progress)
         {
-            progress.ItemCount = _item.LayerCount;
+            progress.ItemCount = _selectedItem.LayerCount;
 
-            var layers = new Layer[_item.LayerCount];
+            var layers = new Layer[_selectedItem.LayerCount];
 
-            if (_item.IsDivision)
+            if (_selectedItem.IsDivision)
             {
                 uint newLayerIndex = 0;
                 for (uint layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
@@ -163,7 +185,7 @@ namespace UVtools.Core.Operations
                     progress.Token.ThrowIfCancellationRequested();
 
                     var oldLayer = SlicerFile[layerIndex];
-                    for (byte i = 0; i < _item.Modifier; i++)
+                    for (byte i = 0; i < _selectedItem.Modifier; i++)
                     {
                         var newLayer = oldLayer.Clone();
                         //newLayer.Index = newLayerIndex;
@@ -176,48 +198,90 @@ namespace UVtools.Core.Operations
             }
             else
             {
-                var layerIndexes = new uint[SlicerFile.LayerCount / _item.Modifier];
+                var layerIndexes = new uint[SlicerFile.LayerCount / _selectedItem.Modifier];
                 for (uint i = 0; i < layerIndexes.Length; i++)
                 {
-                    layerIndexes[i] = i * _item.Modifier;
+                    layerIndexes[i] = i * _selectedItem.Modifier;
                 }
 
                 Parallel.ForEach(layerIndexes, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     var oldLayer = SlicerFile[layerIndex];
-                    using var mat = oldLayer.LayerMat;
-                    using var original = mat.Clone();
+                    using var matSum = oldLayer.LayerMat;
+                    Mat matXorSum = null;
+                    using Mat aaAverageSum = new();
 
-                    for (byte i = 1; i < Item.Modifier; i++)
+                    if (_antiAliasingType == OperationLayerReHeightAntiAliasingType.Average)
                     {
-                        using var nextMat = SlicerFile[layerIndex+i].LayerMat;
-                        CvInvoke.Add(mat, nextMat, mat);
+                        matSum.ConvertTo(aaAverageSum, DepthType.Cv16U);
                     }
 
-                    /*if (_antiAliasing)
+                    for (byte i = 1; i < SelectedItem.Modifier; i++)
                     {
-                        CvInvoke.Subtract(mat, original, mat);
-                        CvInvoke.PyrDown(mat, mat);
-                        CvInvoke.PyrUp(mat, mat);
-                        CvInvoke.Add(original, mat, mat);
-                    }*/
+                        using var nextMat = SlicerFile[layerIndex+i].LayerMat;
+
+                        switch (_antiAliasingType)
+                        {
+                            case OperationLayerReHeightAntiAliasingType.None:
+                                CvInvoke.Add(matSum, nextMat, matSum);
+                                break;
+                            case OperationLayerReHeightAntiAliasingType.Difference:
+                            {
+                                using var previousMat = SlicerFile[layerIndex + i - 1].LayerMat;
+                                var matXor = new Mat();
+                                //CvInvoke.Threshold(previousMat, previousMat, 127, 255, ThresholdType.Binary);
+                                //CvInvoke.Threshold(nextMat, nextMat, 127, 255, ThresholdType.Binary);
+                                CvInvoke.BitwiseXor(previousMat, nextMat, matXor);
+                                matXor.SetTo(new MCvScalar((byte)(byte.MaxValue / _selectedItem.Modifier)), matXor);
+                                if (matXorSum is null)
+                                {
+                                    matXorSum = matXor.Clone();
+                                }
+                                else
+                                {
+                                    CvInvoke.Add(matXorSum, matXorSum, matXorSum);
+                                    CvInvoke.Add(matXorSum, matXor, matXorSum);
+                                }
+                                break;
+                            }
+                            case OperationLayerReHeightAntiAliasingType.Average:
+                                nextMat.ConvertTo(nextMat, DepthType.Cv16U);
+                                CvInvoke.Add(aaAverageSum, nextMat, aaAverageSum);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+
+                    switch (_antiAliasingType)
+                    {
+                        case OperationLayerReHeightAntiAliasingType.Difference:
+                            CvInvoke.Add(matSum, matXorSum, matSum);
+                            CvInvoke.PyrDown(matSum, matSum);
+                            CvInvoke.PyrUp(matSum, matSum);
+                            matXorSum.Dispose();
+                            break;
+                        case OperationLayerReHeightAntiAliasingType.Average:
+                            aaAverageSum.ConvertTo(matSum, DepthType.Cv8U, 1.0 / _selectedItem.Modifier);
+                            CvInvoke.PyrDown(matSum, matSum);
+                            CvInvoke.PyrUp(matSum, matSum);
+                            break;
+                    }
 
                     var newLayer = oldLayer.Clone();
                     //newLayer.Index = newLayerIndex;
                     //newLayer.PositionZ = (float)(Item.LayerHeight * (newLayerIndex + 1));
-                    newLayer.LayerMat = mat;
-                    layers[layerIndex / _item.Modifier] = newLayer;
+                    newLayer.LayerMat = matSum;
+                    layers[layerIndex / _selectedItem.Modifier] = newLayer;
 
                     progress.LockAndIncrement();
                 });
-
-                
             }
 
-                    
+            progress.Token.ThrowIfCancellationRequested();
 
-            SlicerFile.LayerHeight = (float)Item.LayerHeight;
+            SlicerFile.LayerHeight = (float)SelectedItem.LayerHeight;
             SlicerFile.LayerManager.Layers = layers;
 
             return !progress.Token.IsCancellationRequested;

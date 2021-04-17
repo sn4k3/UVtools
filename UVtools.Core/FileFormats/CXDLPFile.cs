@@ -255,6 +255,7 @@ namespace UVtools.Core.FileFormats
             public string FooterValue { get; set; } = HEADER_VALUE;
 
             [FieldOrder(2)]
+            [FieldEndianness(Endianness.Big)]
             public uint Unknown { get; set; } = 7;
 
             public void Validate()

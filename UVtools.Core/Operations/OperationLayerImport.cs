@@ -46,7 +46,7 @@ namespace UVtools.Core.Operations
         private bool _extendBeyondLayerCount = true;
         private bool _discardUnmodifiedLayers;
         private ushort _stackMargin = 50;
-        private ObservableCollection<StringTag> _files = new();
+        private ObservableCollection<ValueDescription> _files = new();
         #endregion
 
         #region Overrides
@@ -161,7 +161,7 @@ namespace UVtools.Core.Operations
         }
 
         [XmlIgnore]
-        public ObservableCollection<StringTag> Files
+        public ObservableCollection<ValueDescription> Files
         {
             get => _files;
             set => RaiseAndSetIfChanged(ref _files, value);
@@ -183,13 +183,13 @@ namespace UVtools.Core.Operations
 
         public void AddFile(string file)
         {
-            Files.Add(new StringTag(Path.GetFileNameWithoutExtension(file), file));
+            Files.Add(new ValueDescription(file, Path.GetFileNameWithoutExtension(file)));
         }
 
         public void Sort()
         {
             var sortedFiles = Files.ToList();
-            sortedFiles.Sort((file1, file2) => string.Compare(Path.GetFileNameWithoutExtension(file1.TagString), Path.GetFileNameWithoutExtension(file2.TagString), StringComparison.Ordinal));
+            sortedFiles.Sort((file1, file2) => string.Compare(Path.GetFileNameWithoutExtension(file1.ValueAsString), Path.GetFileNameWithoutExtension(file2.ValueAsString), StringComparison.Ordinal));
             Files.Clear();
             foreach (var file in sortedFiles)
             {
@@ -232,12 +232,12 @@ namespace UVtools.Core.Operations
                 // Order raw images
                 for (int i = 0; i < Count; i++)
                 {
-                    if (!Files[i].TagString.EndsWith(".png", StringComparison.OrdinalIgnoreCase) &&
-                        !Files[i].TagString.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) &&
-                        !Files[i].TagString.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) &&
-                        !Files[i].TagString.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) &&
-                        !Files[i].TagString.EndsWith(".gif", StringComparison.OrdinalIgnoreCase)) continue;
-                    keyImage.Add(new KeyValuePair<uint, string>((uint)keyImage.Count, Files[i].TagString));
+                    if (!Files[i].ValueAsString.EndsWith(".png", StringComparison.OrdinalIgnoreCase) &&
+                        !Files[i].ValueAsString.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) &&
+                        !Files[i].ValueAsString.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) &&
+                        !Files[i].ValueAsString.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) &&
+                        !Files[i].ValueAsString.EndsWith(".gif", StringComparison.OrdinalIgnoreCase)) continue;
+                    keyImage.Add(new KeyValuePair<uint, string>((uint)keyImage.Count, Files[i].ValueAsString));
                 }
 
                 // Create virtual file format with images
@@ -264,15 +264,15 @@ namespace UVtools.Core.Operations
                 // Order remaining possible file formats
                 for (int i = 0; i < Count; i++)
                 {
-                    if (Files[i].TagString.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
-                        Files[i].TagString.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) ||
-                        Files[i].TagString.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
-                        Files[i].TagString.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
-                        Files[i].TagString.EndsWith(".gif", StringComparison.OrdinalIgnoreCase)) continue;
+                    if (Files[i].ValueAsString.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                        Files[i].ValueAsString.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) ||
+                        Files[i].ValueAsString.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                        Files[i].ValueAsString.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                        Files[i].ValueAsString.EndsWith(".gif", StringComparison.OrdinalIgnoreCase)) continue;
 
-                    var fileFormat = FileFormat.FindByExtension(Files[i].TagString, true, true);
+                    var fileFormat = FileFormat.FindByExtension(Files[i].ValueAsString, true, true);
                     if (fileFormat is null) continue;
-                    fileFormat.FileFullPath = Files[i].TagString;
+                    fileFormat.FileFullPath = Files[i].ValueAsString;
                     fileFormats.Add(fileFormat);
                 }
 

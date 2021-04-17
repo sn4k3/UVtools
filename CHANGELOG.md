@@ -1,5 +1,18 @@
 # Changelog
 
+## 18/04/2021 - v2.9.1
+
+* **File formats:**
+   * PhotonS: Implement the write/encode method to allow to use this format and fix the thumbnail
+   * VDT: Allow to auto convert the .vdt to the target printer format using the Machine - Notes, using a flag: FILEFORMAT_YourPrinterExtension, for example: FILEFORMAT_CTB
+   * (Fix) Unable to convert files with no thumbnails to other file format that requires thumbnails
+* **Tools:**
+   * (Add) Re-height: Option to Anti-Aliasing layers
+   * (Fix) Morph and Blur: The combobox was not setting to the selected item when preform a redo operation (Ctrl+Shift+Z)
+* **GUI:**
+   * (Change) Progress window to be a grid element inside MainWindow, this allow to reuse the graphics and its elements without the need of spawning a Window instance everytime a progress is shown, resulting in better performance and more fluid transaction
+   * (Improvement) Clear issues when generating calibration tests
+
 ## 14/04/2021 - v2.9.0
 
 * **File formats:**

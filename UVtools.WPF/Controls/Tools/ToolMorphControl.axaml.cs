@@ -1,29 +1,14 @@
-﻿using System;
-using System.Diagnostics;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Emgu.CV.CvEnum;
 using UVtools.Core.Operations;
-using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools
 {
     public class ToolMorphControl : ToolControl
     {
-        private byte _morphSelectedIndex;
         public OperationMorph Operation => BaseOperation as OperationMorph;
 
         private KernelControl _kernelCtrl;
-
-        public byte MorphSelectedIndex
-        {
-            get => _morphSelectedIndex;
-            set
-            {
-                if(!RaiseAndSetIfChanged(ref _morphSelectedIndex, value)) return;
-                Operation.MorphOperation = (MorphOp)OperationMorph.MorphOperations[_morphSelectedIndex].Tag;
-            }
-        }
 
         public ToolMorphControl()
         {
@@ -41,17 +26,7 @@ namespace UVtools.WPF.Controls.Tools
         {
             Operation.Kernel.Matrix = _kernelCtrl.GetMatrix();
             Operation.Kernel.Anchor = _kernelCtrl.Anchor;
-            return !(Operation.Kernel.Matrix is null);
-        }
-
-        public override void Callback(ToolWindow.Callbacks callback)
-        {
-            switch (callback)
-            {
-                case ToolWindow.Callbacks.ProfileLoaded:
-                    MorphSelectedIndex = Operation.MorphOperationIndex;
-                    break;
-            }
+            return Operation.Kernel.Matrix is not null;
         }
     }
 }
