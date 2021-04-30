@@ -93,7 +93,7 @@
     <Border Background="WhiteSmoke">
         <Button 
           Command="{Binding Close}"
-          HotKey="Escape"
+          IsCancel="True"
           Padding="10" 
           Margin="20" 
           HorizontalAlignment="Right">

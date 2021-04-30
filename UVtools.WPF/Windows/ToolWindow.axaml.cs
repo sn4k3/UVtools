@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using Avalonia;
@@ -7,7 +6,6 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using DynamicData;
 using MessageBox.Avalonia.Enums;
 using UVtools.Core;
 using UVtools.Core.Extensions;
@@ -44,7 +42,7 @@ namespace UVtools.WPF.Windows
         private bool _clearRoiAndMaskAfterOperation;
 
         private bool _isProfilesVisible;
-        private ObservableCollection<Operation> _profiles = new();
+        private RangeObservableCollection<Operation> _profiles = new();
         private Operation _selectedProfileItem;
         private string _profileText;
 
@@ -325,7 +323,7 @@ namespace UVtools.WPF.Windows
             set => RaiseAndSetIfChanged(ref _isProfilesVisible, value);
         }
 
-        public ObservableCollection<Operation> Profiles
+        public RangeObservableCollection<Operation> Profiles
         {
             get => _profiles;
             set => RaiseAndSetIfChanged(ref _profiles, value);

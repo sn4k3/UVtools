@@ -18,7 +18,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Avalonia.ThemeManager;
 using Emgu.CV;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
@@ -30,7 +29,7 @@ namespace UVtools.WPF
 {
     public class App : Application
     {
-        public static ThemeSelector ThemeSelector { get; set; }
+        //public static ThemeSelector ThemeSelector { get; set; }
         public static MainWindow MainWindow;
         public static FileFormat SlicerFile = null;
 

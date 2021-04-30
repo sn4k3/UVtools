@@ -1,18 +1,13 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
-using DynamicData;
-using MessageBox.Avalonia.Enums;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
-using UVtools.WPF.Extensions;
 using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools
@@ -197,7 +192,7 @@ namespace UVtools.WPF.Controls.Tools
 
         public void RemoveFiles()
         {
-            Operation.Files.RemoveMany(FilesListBox.SelectedItems.OfType<ValueDescription>());
+            Operation.Files.RemoveRange(FilesListBox.SelectedItems.OfType<ValueDescription>());
         }
 
         public void ClearFiles()

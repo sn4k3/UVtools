@@ -12,7 +12,7 @@ namespace UVtools.WPF.Structures
 {
     public class PEProfileFolder : BindableBase
     {
-        private ObservableCollection<CheckBox> _items = new ObservableCollection<CheckBox>();
+        private RangeObservableCollection<CheckBox> _items = new ();
         private ushort _installed;
         private ushort _updates;
 
@@ -27,7 +27,7 @@ namespace UVtools.WPF.Structures
         public string SourcePath { get; }
         public string TargetPath { get; }
 
-        public ObservableCollection<CheckBox> Items
+        public RangeObservableCollection<CheckBox> Items
         {
             get => _items;
             set => RaiseAndSetIfChanged(ref _items, value);

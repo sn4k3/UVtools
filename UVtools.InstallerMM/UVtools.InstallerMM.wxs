@@ -179,9 +179,6 @@
         <Component Id="owcF8D46916EBAD015C45AD96CFA020065B" Guid="e65fa3f1-f330-eee1-9307-9a4d0835d4c2">
           <File Id="owfF8D46916EBAD015C45AD96CFA020065B" Source="$(var.SourceDir)\Avalonia.Markup.Xaml.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owc2360F1EA9FE0B1355D5D44A01B139070" Guid="5f41891e-50bf-de85-90a5-56cbc18299b8">
-          <File Id="owf2360F1EA9FE0B1355D5D44A01B139070" Source="$(var.SourceDir)\Avalonia.Markup.Xaml.Loader.dll" KeyPath="yes" />
-        </Component>
         <Component Id="owc6834F87221790516C5BC358659FB168A" Guid="a648aa0a-edab-e191-afb0-5744596ea468">
           <File Id="owf6834F87221790516C5BC358659FB168A" Source="$(var.SourceDir)\Avalonia.MicroCom.dll" KeyPath="yes" />
         </Component>
@@ -199,9 +196,6 @@
         </Component>
         <Component Id="owcA08BB73AE310A316EDFF2172A1050F82" Guid="07375671-126d-c2a6-be8f-5b5f6d2891a1">
           <File Id="owfA08BB73AE310A316EDFF2172A1050F82" Source="$(var.SourceDir)\Avalonia.Styling.dll" KeyPath="yes" />
-        </Component>
-        <Component Id="owc1FF8D55293A8E313D576AAE895471628" Guid="03163101-1cdb-415b-e8cc-ce48bb5a13fc">
-          <File Id="owf1FF8D55293A8E313D576AAE895471628" Source="$(var.SourceDir)\Avalonia.ThemeManager.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc0A621F7F94C102165C804D54ABDE7987" Guid="67ee26ea-3112-bccb-cb21-5160ed8c5ada">
           <File Id="owf0A621F7F94C102165C804D54ABDE7987" Source="$(var.SourceDir)\Avalonia.Themes.Default.dll" KeyPath="yes" />
@@ -247,9 +241,6 @@
         </Component>
         <Component Id="owc3883419A2BFFE7013C2194A99728AB11" Guid="dd137337-4b74-c76b-c87e-6b5f42697dd4">
           <File Id="owf3883419A2BFFE7013C2194A99728AB11" Source="$(var.SourceDir)\dbgshim.dll" KeyPath="yes" />
-        </Component>
-        <Component Id="owc0810B538AB40CCE1552F9EF3F42953A3" Guid="f95c1be6-57ee-5b8f-1c0f-2f4e227d8d79">
-          <File Id="owf0810B538AB40CCE1552F9EF3F42953A3" Source="$(var.SourceDir)\DynamicData.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc63D81B12D4DED477220E84E2AEBD7DBE" Guid="b08152e4-c420-0b27-69c4-3f58ac0a5fc7">
           <File Id="owf63D81B12D4DED477220E84E2AEBD7DBE" Source="$(var.SourceDir)\Emgu.CV.Platform.NetStandard.dll" KeyPath="yes" />
@@ -347,14 +338,8 @@
         <Component Id="owc29161E83FC02784120326979FF285358" Guid="a8d30e75-1063-4d27-60b6-13d4bd4f52eb">
           <File Id="owf29161E83FC02784120326979FF285358" Source="$(var.SourceDir)\opencv_videoio_ffmpeg451_64.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owcBFCA0BB8CBE4A68414FA088B4F7F3D22" Guid="babeb74f-9861-b222-a49a-ec268c3cd3ca">
-          <File Id="owfBFCA0BB8CBE4A68414FA088B4F7F3D22" Source="$(var.SourceDir)\ReactiveUI.dll" KeyPath="yes" />
-        </Component>
         <Component Id="owc363CAFE6342F1E71AB07D13BAEEE5FF0" Guid="8e946fdc-ea52-7c4b-a8b3-69e1ecf51086">
           <File Id="owf363CAFE6342F1E71AB07D13BAEEE5FF0" Source="$(var.SourceDir)\SkiaSharp.dll" KeyPath="yes" />
-        </Component>
-        <Component Id="owcB6B3A58616D1CC4857D00CF30CE2144F" Guid="9e96df83-7e62-ac6c-85b4-2a92ac85ef1e">
-          <File Id="owfB6B3A58616D1CC4857D00CF30CE2144F" Source="$(var.SourceDir)\Splat.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc25FBE4153F32A5634B0ADA8A6954CC89" Guid="6c98bea6-1304-2fb8-4ce3-709ad7fb9601">
           <File Id="owf25FBE4153F32A5634B0ADA8A6954CC89" Source="$(var.SourceDir)\System.AppContext.dll" KeyPath="yes" />

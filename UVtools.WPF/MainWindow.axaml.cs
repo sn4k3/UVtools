@@ -440,7 +440,7 @@ namespace UVtools.WPF
         {
             InitializeComponent();
 
-            App.ThemeSelector?.EnableThemes(this);
+            //App.ThemeSelector?.EnableThemes(this);
             InitProgress();
             InitInformation();
             InitIssues();

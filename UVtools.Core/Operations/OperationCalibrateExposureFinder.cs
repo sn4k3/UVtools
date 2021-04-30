@@ -12,7 +12,6 @@ using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -46,7 +45,7 @@ namespace UVtools.Core.Operations
         private decimal _normalExposure = 12;
         private decimal _topBottomMargin = 5;
         private decimal _leftRightMargin = 10;
-        private byte _chamferLayers = 5;
+        private byte _chamferLayers = 0;
         private byte _erodeBottomIterations = 0;
         private decimal _partMargin = 0;
         private bool _enableAntiAliasing = true;
@@ -88,7 +87,7 @@ namespace UVtools.Core.Operations
         private decimal _exposureGenManualLayerHeight;
         private decimal _exposureGenManualBottom;
         private decimal _exposureGenManualNormal;
-        private ObservableCollection<ExposureItem> _exposureTable = new();
+        private RangeObservableCollection<ExposureItem> _exposureTable = new();
         private CalibrateExposureFinderShapes _holeShape = CalibrateExposureFinderShapes.Square;
 
         #endregion
@@ -680,7 +679,7 @@ namespace UVtools.Core.Operations
         public ExposureItem ExposureManualEntry => new (_exposureGenManualLayerHeight, _exposureGenManualBottom, _exposureGenManualNormal);
 
 
-        public ObservableCollection<ExposureItem> ExposureTable
+        public RangeObservableCollection<ExposureItem> ExposureTable
         {
             get => _exposureTable;
             set => RaiseAndSetIfChanged(ref _exposureTable, value);
@@ -827,16 +826,14 @@ namespace UVtools.Core.Operations
 
         public void SortExposureTable()
         {
-            var list = _exposureTable.ToList();
-            list.Sort();
-            ExposureTable = new(list);
+            _exposureTable.Sort();
         }
 
         public void SanitizeExposureTable()
         {
             List<ExposureItem> list = _exposureTable.ToList().Distinct().ToList();
             list.Sort();
-            ExposureTable = new(list);
+            _exposureTable.ReplaceCollection(list);
         }
 
         public void GenerateExposure()

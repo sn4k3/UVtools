@@ -1,12 +1,10 @@
 using System;
 using System.Linq;
 using System.Timers;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
-using DynamicData;
 using MessageBox.Avalonia.Enums;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -148,7 +146,7 @@ namespace UVtools.WPF.Controls.Calibrators
                 $"Are you sure you want to remove the {_exposureTable.SelectedItems.Count} selected entries?"
             ) != ButtonResult.Yes) return;
 
-            Operation.ExposureTable.RemoveMany(_exposureTable.SelectedItems.Cast<ExposureItem>());
+            Operation.ExposureTable.RemoveRange(_exposureTable.SelectedItems.Cast<ExposureItem>());
         }
     }
 }

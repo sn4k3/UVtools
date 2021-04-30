@@ -70,7 +70,7 @@ namespace UVtools.Core.Managers
     {
         #region Properties
 
-        public ObservableCollection<ClipboardItem> Items { get; } = new();
+        public RangeObservableCollection<ClipboardItem> Items { get; } = new();
 
         public FileFormat SlicerFile { get; set; }
 

@@ -110,6 +110,7 @@
           Orientation="Horizontal" 
           Spacing="5">
             <Button Padding="10"
+                    IsDefault="True"
                     Command="{Binding InstallProfiles}"
                     >
               <StackPanel Orientation="Horizontal" Spacing="10">
@@ -118,7 +119,9 @@
               </StackPanel>
             </Button>
 
-          <Button Padding="10" Command="{Binding Close}">
+          <Button Padding="10" 
+                  IsCancel="True"
+                  Command="{Binding Close}">
             <StackPanel Orientation="Horizontal" Spacing="10">
               <Image Source="/Assets/Icons/exit-16x16.png"/>
               <TextBlock Text="Close"/>

@@ -180,7 +180,7 @@ namespace UVtools.Core.FileFormats
             public float SupportHeadPenetration { get; set; }
             public float SupportHeadWidth { get; set; }
 
-            public byte SupportPillarWideningFactor { set; get; }
+            public ushort SupportPillarWideningFactor { set; get; }
             public float SupportPillarDiameter { get; set; }
             public string SupportSmallPillarDiameterPercent { get; set; }
             public float SupportMaxBridgesOnPillar { get; set; }
@@ -198,7 +198,7 @@ namespace UVtools.Core.FileFormats
             public float SupportMaxPillarLinkDistance { get; set; }
 
 
-            public byte SupportPointsDensityRelative { get; set; }
+            public ushort SupportPointsDensityRelative { get; set; }
             public float SupportPointsMinimalDistance { get; set; }
 
             #endregion

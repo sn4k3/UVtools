@@ -19,11 +19,9 @@ namespace UVtools.Core.Extensions
         /// <returns>Byte array data</returns>
         public static byte[] ToArray(this Stream stream)
         {
-            using (var memoryStream = new MemoryStream())
-            {
-                stream.CopyTo(memoryStream);
-                return memoryStream.ToArray();
-            }
+            using var memoryStream = new MemoryStream();
+            stream.CopyTo(memoryStream);
+            return memoryStream.ToArray();
         }
     }
 }

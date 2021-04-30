@@ -172,32 +172,33 @@ namespace UVtools.WPF
         [Serializable]
         public sealed class LayerPreviewUserSettings : BindableBase
         {
-            private Color _tooltipOverlayBackgroundColor = new Color(210, 255, 255, 192);
+            private Color _tooltipOverlayBackgroundColor = new(210, 255, 255, 192);
             private bool _tooltipOverlay = true;
-            private Color _volumeBoundsOutlineColor = new Color(255, 0, 255, 0);
+            private Color _volumeBoundsOutlineColor = new(255, 0, 255, 0);
             private byte _volumeBoundsOutlineThickness = 3;
             private bool _volumeBoundsOutline = true;
-            private Color _layerBoundsOutlineColor = new Color(255, 0, 255, 0);
+            private Color _layerBoundsOutlineColor = new(255, 0, 255, 0);
             private byte _layerBoundsOutlineThickness = 3;
             private bool _layerBoundsOutline = false;
-            private Color _hollowOutlineColor = new Color(255, 255, 165, 0);
+            private Color _hollowOutlineColor = new(255, 255, 165, 0);
             private sbyte _hollowOutlineLineThickness = 5;
             private bool _hollowOutline = false;
-            private Color _maskOutlineColor = new Color(255, 42, 157, 244);
+            private Color _maskOutlineColor = new(255, 42, 157, 244);
             private sbyte _maskOutlineLineThickness = 10;
             private bool _maskClearRoiAfterSet = true;
-            private Color _previousLayerDifferenceColor = new Color(255, 255, 0, 255);
-            private Color _nextLayerDifferenceColor = new Color(255, 0, 255, 255);
-            private Color _bothLayerDifferenceColor = new Color(255, 255, 0, 0);
+            private Color _previousLayerDifferenceColor = new(255, 81, 131, 82);
+            private Color _nextLayerDifferenceColor = new(255, 81, 249, 252);
+            private Color _bothLayerDifferenceColor = new(255, 246, 240, 216);
             private bool _showLayerDifference = false;
-            private Color _islandColor = new Color(255, 255, 255, 0); 
-            private Color _islandHighlightColor = new Color(255, 255, 215, 0);
-            private Color _overhangColor = new Color(255, 255, 105, 180);
-            private Color _overhangHighlightColor = new Color(255, 255, 20, 147);
-            private Color _resinTrapColor = new Color(255, 255, 165, 0);
-            private Color _resinTrapHighlightColor = new Color(255, 244, 164, 96); 
-            private Color _touchingBoundsColor = new Color(255, 255, 0, 0);
-            private Color _crosshairColor = new Color(255, 255, 0, 0);
+            private bool _layerDifferenceHighlightSimilarityInstead = false;
+            private Color _islandColor = new(255, 255, 255, 0); 
+            private Color _islandHighlightColor = new(255, 255, 215, 0);
+            private Color _overhangColor = new(255, 255, 105, 180);
+            private Color _overhangHighlightColor = new(255, 255, 20, 147);
+            private Color _resinTrapColor = new(255, 255, 165, 0);
+            private Color _resinTrapHighlightColor = new(255, 244, 164, 96); 
+            private Color _touchingBoundsColor = new(255, 255, 0, 0);
+            private Color _crosshairColor = new(255, 255, 0, 0);
             private bool _zoomToFitPrintVolumeBounds = true;
             private byte _zoomLockLevelIndex = 7;
             private bool _zoomIssues = true;
@@ -404,6 +405,12 @@ namespace UVtools.WPF
             {
                 get => _showLayerDifference;
                 set => RaiseAndSetIfChanged(ref _showLayerDifference, value);
+            }
+
+            public bool LayerDifferenceHighlightSimilarityInstead
+            {
+                get => _layerDifferenceHighlightSimilarityInstead;
+                set => RaiseAndSetIfChanged(ref _layerDifferenceHighlightSimilarityInstead, value);
             }
 
             public Color IslandColor

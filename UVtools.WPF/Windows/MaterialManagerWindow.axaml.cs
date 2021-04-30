@@ -3,7 +3,6 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using DynamicData;
 using MessageBox.Avalonia.Enums;
 using UVtools.Core.Managers;
 using UVtools.Core.Objects;
@@ -83,7 +82,7 @@ namespace UVtools.WPF.Windows
         {
             if (_grid.SelectedItems.Count <= 0) return;
             if (await this.MessageBoxQuestion($"Are you sure you want to remove {_grid.SelectedItems.Count} materials?") != ButtonResult.Yes) return;
-            Manager.RemoveMany(_grid.SelectedItems.Cast<Material>());
+            Manager.RemoveRange(_grid.SelectedItems.Cast<Material>());
             MaterialManager.Save();
         }
 

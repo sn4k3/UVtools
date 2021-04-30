@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -684,7 +685,7 @@ namespace UVtools.WPF
                 InvalidateLayerNavigation();
             }
 
-            Stopwatch watch = Stopwatch.StartNew();
+            var watch = Stopwatch.StartNew();
             LayerCache.Layer = SlicerFile[_actualLayer];
 
             try
@@ -703,15 +704,59 @@ namespace UVtools.WPF
                 }
                 else if (_showLayerImageDifference)
                 {
-                    if (_actualLayer > 0 && _actualLayer < SlicerFile.LayerCount - 1)
-                    {
-                        Mat previousImage = null;
-                        Mat nextImage = null;
+                    //if (_actualLayer > 0 && _actualLayer < SlicerFile.LayerCount - 1)
+                   // {
+                    var previousLayer = _actualLayer > 0 ? SlicerFile[_actualLayer - 1] : null;
+                    var nextLayer = _actualLayer < SlicerFile.LastLayerIndex ? SlicerFile[_actualLayer + 1] : null;
+                    Mat previousImage = null;
+                    Mat nextImage = null;
 
+                    // Optimize empties for now...
+                    var rect = Rectangle.Empty;
+                    if (!LayerCache.Layer.IsEmpty)
+                    {
+                        rect = LayerCache.Layer.BoundingRectangle;
+                    }
+                    else if (previousLayer is not null && !previousLayer.IsEmpty)
+                    {
+                        rect = previousLayer.BoundingRectangle;
+                    }
+                    else if (nextLayer is not null && !nextLayer.IsEmpty)
+                    {
+                        rect = nextLayer.BoundingRectangle;
+                    }
+
+                    if (previousLayer is not null && !previousLayer.IsEmpty)
+                    {
+                        rect = Rectangle.Union(rect, previousLayer.BoundingRectangle);
+                    }
+                    if (nextLayer is not null && !nextLayer.IsEmpty)
+                    {
+                        rect = Rectangle.Union(rect, nextLayer.BoundingRectangle);
+                    }
+
+                    /*var rect = Rectangle.Union(
+                        Rectangle.Union(LayerCache.Layer.BoundingRectangle, previousLayer.BoundingRectangle),
+                        nextLayer.BoundingRectangle);*/
+
+                    if (!rect.IsEmpty && (previousLayer is not null || nextLayer is not null))
+                    {
+                        byte* previousSpan = null;
+                        byte* nextSpan = null;
                         // Can improve performance on >4K images?
                         Parallel.Invoke(
-                            () => { previousImage = SlicerFile[_actualLayer - 1].LayerMat; },
-                            () => { nextImage = SlicerFile[_actualLayer + 1].LayerMat; });
+                            () =>
+                            {
+                                if (previousLayer is null) return;
+                                previousImage = previousLayer.LayerMat;
+                                previousSpan = previousImage.GetBytePointer();
+                            },
+                            () =>
+                            {
+                                if (nextLayer is null) return;
+                                nextImage = nextLayer.LayerMat;
+                                nextSpan = nextImage.GetBytePointer();
+                            });
 
                         /*using (var previousImage = SlicerFile[_actualLayer - 1].LayerMat)
                             using (var nextImage = SlicerFile[_actualLayer + 1].LayerMat)
@@ -719,43 +764,61 @@ namespace UVtools.WPF
                         //var previousSpan = previousImage.GetPixelSpan<byte>();
                         //var nextSpan = nextImage.GetPixelSpan<byte>();
 
-                        var previousSpan = previousImage.GetBytePointer();
-                        var nextSpan = nextImage.GetBytePointer();
 
-                        int width = LayerCache.Image.Width;
+                        int width = LayerCache.Image.Step;
                         int channels = LayerCache.ImageBgr.NumberOfChannels;
-                        Parallel.For(0, LayerCache.Image.Height, y =>
+                        bool showSimilarityInstead =
+                            Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead;
+
+                        Parallel.For(rect.Y, rect.Bottom, y =>
                         {
-                            for (int x = 0; x < width; x++)
+                            for (int x = rect.X; x < rect.Right; x++)
                             {
                                 int pixel = y * width + x;
-                                if (imageSpan[pixel] != 0) continue;
-                                Color color = Color.Empty;
-                                if (previousSpan[pixel] > 0 && nextSpan[pixel] > 0)
+                                if (showSimilarityInstead)
                                 {
-                                    color = Settings.LayerPreview.NextLayerDifferenceColor;
+                                    if (imageSpan[pixel] == 0) continue;
                                 }
-                                else if (previousSpan[pixel] > 0)
+                                else
                                 {
+                                    if (imageSpan[pixel] != 0) continue;
+                                }
+
+                                byte brightness = 0;
+
+                                var color = Color.Empty;
+                                if (previousSpan is not null && nextSpan is not null && previousSpan[pixel] > 0 && nextSpan[pixel] > 0)
+                                {
+                                    brightness = Math.Max(previousSpan[pixel], nextSpan[pixel]);
+                                    color = Settings.LayerPreview.BothLayerDifferenceColor;
+                                }
+                                else if (previousSpan is not null && previousSpan[pixel] > 0)
+                                {
+                                    brightness = previousSpan[pixel];
                                     color = Settings.LayerPreview.PreviousLayerDifferenceColor;
                                 }
-                                else if (nextSpan[pixel] > 0)
+                                else if (nextSpan is not null && nextSpan[pixel] > 0)
                                 {
+                                    brightness = nextSpan[pixel];
                                     color = Settings.LayerPreview.NextLayerDifferenceColor;
                                 }
 
                                 if (color.IsEmpty) continue;
+
+                                color = color.FactorColor(brightness);
+
                                 var bgrPixel = pixel * channels;
                                 imageBgrSpan[bgrPixel] = color.B; // B
-                                imageBgrSpan[++bgrPixel] = color.G; // G
-                                imageBgrSpan[++bgrPixel] = color.R; // R
+                                imageBgrSpan[bgrPixel + 1] = color.G; // G
+                                imageBgrSpan[bgrPixel + 2] = color.R; // R
                                 //imageBgrSpan[++bgrPixel] = color.A; // A
                             }
                         });
-
-                        previousImage.Dispose();
-                        nextImage.Dispose();
                     }
+
+                    previousImage?.Dispose();
+                    nextImage?.Dispose();
+                   // }
                 }
 
 

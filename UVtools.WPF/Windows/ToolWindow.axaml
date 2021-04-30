@@ -404,8 +404,7 @@
           <Button 
             Padding="10"
             IsCancel="True"
-            Command="{Binding Close}"
-            HotKey="Escape">
+            Command="{Binding Close}">
             <StackPanel 
               Orientation="Horizontal"
               Spacing="10">

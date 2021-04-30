@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
-using Avalonia;
-using ReactiveUI;
+﻿using UVtools.Core.Objects;
 
 namespace UVtools.WPF.Structures
 {
-    public class SlicerProperty : ReactiveObject
+    public class SlicerProperty : BindableBase
     {
         private string _name;
         private string _value;
@@ -16,19 +11,19 @@ namespace UVtools.WPF.Structures
         public string Name
         {
             get => _name;
-            set => this.RaiseAndSetIfChanged(ref _name, value);
+            set => RaiseAndSetIfChanged(ref _name, value);
         }
 
         public string Value
         {
             get => _value;
-            set => this.RaiseAndSetIfChanged(ref _value, value);
+            set => RaiseAndSetIfChanged(ref _value, value);
         }
 
         public string Group
         {
             get => _group;
-            set => this.RaiseAndSetIfChanged(ref _group, value);
+            set => RaiseAndSetIfChanged(ref _group, value);
         }
 
         public SlicerProperty(string name, string value, string group = null)

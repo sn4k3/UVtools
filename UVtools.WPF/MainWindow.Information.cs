@@ -31,15 +31,15 @@ namespace UVtools.WPF
 {
     public partial class MainWindow
     {
-        public ObservableCollection<SlicerProperty> SlicerProperties { get; } = new();
+        public RangeObservableCollection<SlicerProperty> SlicerProperties { get; } = new();
         public DataGrid PropertiesGrid;
         public DataGrid CurrentLayerGrid;
 
         private uint _visibleThumbnailIndex;
         private Bitmap _visibleThumbnailImage;
-        private ObservableCollection<ValueDescription> _currentLayerProperties = new();
+        private RangeObservableCollection<ValueDescription> _currentLayerProperties = new();
 
-        public ObservableCollection<ValueDescription> CurrentLayerProperties
+        public RangeObservableCollection<ValueDescription> CurrentLayerProperties
         {
             get => _currentLayerProperties;
             set => RaiseAndSetIfChanged(ref _currentLayerProperties, value);

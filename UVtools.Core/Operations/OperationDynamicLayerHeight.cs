@@ -69,8 +69,8 @@ namespace UVtools.Core.Operations
         private ExposureSetTypes _exposureSetType = ExposureSetTypes.Linear;
         private decimal _bottomExposureStep = 0.5m;
         private decimal _exposureStep = 0.2m;
-        private ObservableCollection<ExposureItem> _automaticExposureTable = new();
-        private ObservableCollection<ExposureItem> _manualExposureTable = new();
+        private RangeObservableCollection<ExposureItem> _automaticExposureTable = new();
+        private RangeObservableCollection<ExposureItem> _manualExposureTable = new();
 
         #endregion
 
@@ -270,7 +270,7 @@ namespace UVtools.Core.Operations
         }
 
         [XmlIgnore]
-        public ObservableCollection<ExposureItem> AutomaticExposureTable
+        public RangeObservableCollection<ExposureItem> AutomaticExposureTable
         {
             get
             {
@@ -280,14 +280,14 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _automaticExposureTable, value);
         }
 
-        public ObservableCollection<ExposureItem> ManualExposureTable
+        public RangeObservableCollection<ExposureItem> ManualExposureTable
         {
             get => _manualExposureTable;
             set => RaiseAndSetIfChanged(ref _manualExposureTable, value);
         }
 
         [XmlIgnore]
-        public ObservableCollection<ExposureItem> ExposureTable => IsExposureSetTypeManual ? _manualExposureTable : AutomaticExposureTable;
+        public RangeObservableCollection<ExposureItem> ExposureTable => IsExposureSetTypeManual ? _manualExposureTable : AutomaticExposureTable;
 
         /// <summary>
         /// Gets the exposure table into a dictionary where key is the layer height

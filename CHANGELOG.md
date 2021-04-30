@@ -1,5 +1,26 @@
 # Changelog
 
+## 30/04/2021 - v2.9.2
+
+- (Upgrade) AvaloniaUI from 0.10 to 0.10.2
+- (Remove) Unused assemblies
+- **Issues**
+  - Improve the performance when loading big lists of issues into the DataGrid
+  - Auto refresh issues on the vertical highlight tracker once cath a modification on the Issues list
+- **Layer preview - Difference:**
+   - Layer difference will now only check the pixels inside the union of previous, current and next layer bounding rectangle, increasing the performance and speed
+   - Previous and next layer pixels if both exists was not showing with the configured color and using the next layer color instead
+   - Respect Anti-Aliasing pixels and fade colors accordingly
+   - Unlock the possiblity of using the layer difference on first and last layer
+   - Add a option to show similar pixels instead of the difference
+   - Change previous default color from (255, 0, 255) to (81, 131, 82) for better depth preception
+   - Change next default color from (0, 255, 255) to (81, 249, 252) for better depth preception
+   - Change previous & next default color from (255, 0, 0) to (246, 240, 216) for better depth preception
+- **(Fix) Pixel editor:**
+   - Modification was append instead of prepend on the list 
+   - Modification was not updating the index number on the list
+- (Fix) PrusaSlicer printer: Bene4 Mono screen, bed and height size
+
 ## 18/04/2021 - v2.9.1
 
 * **File formats:**
@@ -12,6 +33,7 @@
 * **GUI:**
    * (Change) Progress window to be a grid element inside MainWindow, this allow to reuse the graphics and its elements without the need of spawning a Window instance everytime a progress is shown, resulting in better performance and more fluid transaction
    * (Improvement) Clear issues when generating calibration tests
+   * (Fix) In some cases the process remains alive after quit the program
 
 ## 14/04/2021 - v2.9.0
 

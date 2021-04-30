@@ -39,13 +39,13 @@ namespace UVtools.Core.Managers
 
         #region Members
 
-        private ObservableCollection<Material> _materials = new();
+        private RangeObservableCollection<Material> _materials = new();
 
         #endregion
 
         #region Properties
 
-        public ObservableCollection<Material> Materials
+        public RangeObservableCollection<Material> Materials
         {
             get => _materials;
             set => RaiseAndSetIfChanged(ref _materials, value);
@@ -184,6 +184,11 @@ namespace UVtools.Core.Managers
             if (save) Save();
         }
 
+        public void RemoveRange(IEnumerable<Material> collection)
+        {
+            _materials.RemoveRange(collection);
+        }
+
         public int Count => _materials.Count;
         public bool IsReadOnly => false;
         public int IndexOf(Material item) => _materials.IndexOf(item);
@@ -266,13 +271,11 @@ namespace UVtools.Core.Managers
             }
         }
 
-        #endregion
-
         public void SortByName()
         {
-            var materials = _materials.ToList();
-            materials.Sort((material, material1) => string.Compare(material.Name, material1.Name, StringComparison.Ordinal));
-            Materials = new ObservableCollection<Material>(materials);
+            _materials.Sort((material, material1) => string.Compare(material.Name, material1.Name, StringComparison.Ordinal));
         }
+
+        #endregion
     }
 }

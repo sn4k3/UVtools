@@ -14,7 +14,7 @@ namespace UVtools.WPF
 {
     public partial class MainWindow
     {
-        public ObservableCollection<LogItem> Logs { get; } = new ObservableCollection<LogItem>();
+        public RangeObservableCollection<LogItem> Logs { get; } = new();
         private bool _isVerbose;
 
         public bool IsVerbose

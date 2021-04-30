@@ -16,7 +16,6 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
-using DynamicData;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -31,15 +30,15 @@ namespace UVtools.WPF
 {
     public partial class MainWindow
     {
-        public ObservableCollection<PixelOperation> Drawings { get; } = new ObservableCollection<PixelOperation>();
+        public RangeObservableCollection<PixelOperation> Drawings { get; } = new ();
         public DataGrid DrawingsGrid;
         private int _selectedPixelOperationTabIndex;
 
-        public PixelDrawing DrawingPixelDrawing { get; } = new PixelDrawing();
-        public PixelText DrawingPixelText { get; } = new PixelText();
-        public PixelEraser DrawingPixelEraser { get; } = new PixelEraser();
-        public PixelSupport DrawingPixelSupport { get; } = new PixelSupport();
-        public PixelDrainHole DrawingPixelDrainHole { get; } = new PixelDrainHole();
+        public PixelDrawing DrawingPixelDrawing { get; } = new();
+        public PixelText DrawingPixelText { get; } = new();
+        public PixelEraser DrawingPixelEraser { get; } = new();
+        public PixelSupport DrawingPixelSupport { get; } = new();
+        public PixelDrainHole DrawingPixelDrainHole { get; } = new();
 
         public int SelectedPixelOperationTabIndex
         {
@@ -123,7 +122,7 @@ namespace UVtools.WPF
         public void OnClickDrawingRemove()
         {
             if (DrawingsGrid.SelectedItems.Count == 0) return;
-            Drawings.RemoveMany(DrawingsGrid.SelectedItems.Cast<PixelOperation>());
+            Drawings.RemoveRange(DrawingsGrid.SelectedItems.Cast<PixelOperation>());
             ShowLayer();
         }
 
@@ -145,9 +144,19 @@ namespace UVtools.WPF
 
             if ((keyModifiers & KeyModifiers.Control) != 0)
             {
-                var removeItems = Drawings.Where(item =>
+                if (Drawings.RemoveAll(operation =>
                 {
-                    Rectangle rect = new Rectangle(item.Location, item.Size);
+                    Rectangle rect = new(operation.Location, operation.Size);
+                    rect.X -= operation.Size.Width / 2;
+                    rect.Y -= operation.Size.Height / 2;
+                    return rect.Contains(realLocation);
+                }) > 0)
+                {
+                    ShowLayer();
+                }
+                /*var removeItems = Drawings.Where(item =>
+                {
+                    Rectangle rect = new(item.Location, item.Size);
                     rect.X -= item.Size.Width / 2;
                     rect.Y -= item.Size.Height / 2;
                     return rect.Contains(realLocation);
@@ -156,7 +165,7 @@ namespace UVtools.WPF
                 {
                     Drawings.RemoveMany(removeItems);
                     ShowLayer();
-                }
+                }*/
                 
                 return;
             }
@@ -176,7 +185,7 @@ namespace UVtools.WPF
                         DrawingPixelDrawing.BrushShape, DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.Thickness, DrawingPixelDrawing.RemovePixelBrightness, DrawingPixelDrawing.PixelBrightness, isAdd);
 
                     //if (PixelHistory.Contains(operation)) continue;
-                    Drawings.Add(operationDrawing);
+                    AddDrawing(operationDrawing);
 
                     if (layerIndex == _actualLayer)
                     {
@@ -257,7 +266,7 @@ namespace UVtools.WPF
 
                     //if (PixelHistory.Contains(operation)) continue;
                     //PixelHistory.Add(operation);
-                    Drawings.Add(operationText);
+                    AddDrawing(operationText);
                     
                     /*var color = isAdd
                         ? Settings.PixelEditor.AddPixelColor : Settings.PixelEditor.RemovePixelColor;
@@ -284,7 +293,7 @@ namespace UVtools.WPF
                     var operationEraser = new PixelEraser(layerIndex, realLocation, DrawingPixelEraser.PixelBrightness);
 
                     //if (PixelHistory.Contains(operation)) continue;
-                    Drawings.Add(operationEraser);
+                    AddDrawing(operationEraser);
 
                     /*if (layerIndex == _actualLayer)
                     {
@@ -312,7 +321,7 @@ namespace UVtools.WPF
                     DrawingPixelSupport.BaseDiameter, DrawingPixelSupport.PixelBrightness);
 
                 //if (PixelHistory.Contains(operation)) return;
-                Drawings.Add(operationSupport);
+                AddDrawing(operationSupport);
 
                 CvInvoke.Circle(LayerCache.ImageBgr, location, operationSupport.TipDiameter / 2,
                     new MCvScalar(Settings.PixelEditor.SupportsColor.B, Settings.PixelEditor.SupportsColor.G, Settings.PixelEditor.SupportsColor.R), -1);
@@ -324,7 +333,7 @@ namespace UVtools.WPF
                 var operationDrainHole = new PixelDrainHole(ActualLayer, realLocation, DrawingPixelDrainHole.Diameter);
 
                 //if (PixelHistory.Contains(operation)) return;
-                Drawings.Add(operationDrainHole);
+                AddDrawing(operationDrainHole);
 
                 CvInvoke.Circle(LayerCache.ImageBgr, location, operationDrainHole.Diameter / 2,
                     new MCvScalar(Settings.PixelEditor.DrainHoleColor.B, Settings.PixelEditor.DrainHoleColor.G, Settings.PixelEditor.DrainHoleColor.R), -1);
@@ -333,6 +342,15 @@ namespace UVtools.WPF
             else
             {
                 throw new NotImplementedException("Missing pixel operation");
+            }
+        }
+
+        public void AddDrawing(PixelOperation operation)
+        {
+            Drawings.Insert(0, operation);
+            for (int i = 0; i < Drawings.Count; i++)
+            {
+                Drawings[i].Index = (uint) (Drawings.Count - i);
             }
         }
 

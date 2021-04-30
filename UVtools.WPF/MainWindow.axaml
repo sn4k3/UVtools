@@ -532,6 +532,7 @@
                     CanUserSortColumns="True"
                     GridLinesVisibility="Horizontal"
                     IsReadOnly="True"
+                    SelectionMode="Extended"
                     ClipboardCopyMode="IncludeHeader"
                     Items="{Binding SlicerProperties}">
             <DataGrid.Columns>
@@ -1583,8 +1584,6 @@
           
           <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" Orientation="Horizontal">
             
-            
-            
           </StackPanel>
           <DataGrid Items="{Binding Logs}"
                     CanUserReorderColumns="True"
@@ -1593,6 +1592,7 @@
                     GridLinesVisibility="All"
                     IsReadOnly="True"
                     ClipboardCopyMode="IncludeHeader"
+                    SelectionMode="Extended"
                     >
             <DataGrid.Columns>
               <DataGridTextColumn  Header="#"
@@ -1805,11 +1805,18 @@
             IsChecked="{Binding ShowLayerImageDifference}"
             ToolTip.Tip="Show layer differences where darker pixels were also present on previous layer and the white pixels the difference between previous and current layer."
             VerticalAlignment="Stretch"
-            Margin="1,0,0,0"
-          >
+            Margin="1,0,0,0">
+              <Button.ContextMenu>
+                  <ContextMenu PlacementMode="Bottom">
+                      <CheckBox
+                          Content="Show layer similarity instead of difference"
+                          ToolTip.Tip="If enabled, it will recolor the current layer pixels in common with the previous and next layer"
+                          IsChecked="{Binding Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead}"/>
+                  </ContextMenu>
+              </Button.ContextMenu>
             <StackPanel Orientation="Horizontal">
               <Image Source="/Assets/Icons/layers-16x16.png"/>
-              <TextBlock Margin="5,0,5,0" Text="Difference"/>
+              <TextBlock Margin="5,0,5,0" Text="Difference ⮟"/>
             </StackPanel>
           </ToggleButton>
 

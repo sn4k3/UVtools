@@ -29,11 +29,9 @@ namespace UVtools.Core.Extensions
             foreach (var extension in extensions)
             {
                 var dotExtension = $".{extension}";
-                if (path.EndsWith(dotExtension))
-                {
-                    strippedExtension = extension;
-                    return path.Remove(path.Length - dotExtension.Length);
-                }
+                if (!path.EndsWith(dotExtension)) continue;
+                strippedExtension = extension;
+                return path.Remove(path.Length - dotExtension.Length);
             }
 
             return path;

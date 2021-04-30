@@ -58,10 +58,8 @@ namespace UVtools.Core.Extensions
         public static void ImprovedExtractToDirectory(string sourceArchiveFileName, string destinationDirectoryName, Overwrite overwriteMethod = Overwrite.IfNewer)
         {
             //Opens the zip file up to be read
-            using (ZipArchive archive = ZipFile.OpenRead(sourceArchiveFileName))
-            {
-                archive.ImprovedExtractToDirectory(sourceArchiveFileName, destinationDirectoryName, overwriteMethod);
-            }
+            using var archive = ZipFile.OpenRead(sourceArchiveFileName);
+            archive.ImprovedExtractToDirectory(sourceArchiveFileName, destinationDirectoryName, overwriteMethod);
         }
 
         /// <summary>
@@ -82,7 +80,7 @@ namespace UVtools.Core.Extensions
         public static void ImprovedExtractToDirectory(this ZipArchive archive, string sourceArchiveFileName, string destinationDirectoryName, Overwrite overwriteMethod = Overwrite.IfNewer)
         {
             //Loops through each file in the zip file
-            foreach (ZipArchiveEntry file in archive.Entries)
+            foreach (var file in archive.Entries)
             {
                 file.ImprovedExtractToFile(destinationDirectoryName, overwriteMethod);
             }
@@ -207,73 +205,71 @@ namespace UVtools.Core.Extensions
             }
 
             //Opens the zip file in the mode we specified
-            using (ZipArchive zipFile = ZipFile.Open(archiveFullName, mode))
+            using ZipArchive zipFile = ZipFile.Open(archiveFullName, mode);
+            //This is a bit of a hack and should be refactored - I am
+            //doing a similar foreach loop for both modes, but for Create
+            //I am doing very little work while Update gets a lot of
+            //code.  This also does not handle any other mode (of
+            //which there currently wouldn't be one since we don't
+            //use Read here).
+            if (mode == ZipArchiveMode.Create)
             {
-                //This is a bit of a hack and should be refactored - I am
-                //doing a similar foreach loop for both modes, but for Create
-                //I am doing very little work while Update gets a lot of
-                //code.  This also does not handle any other mode (of
-                //which there currently wouldn't be one since we don't
-                //use Read here).
-                if (mode == ZipArchiveMode.Create)
+                foreach (string file in files)
                 {
-                    foreach (string file in files)
-                    {
-                        //Adds the file to the archive
-                        zipFile.CreateEntryFromFile(file, Path.GetFileName(file), compression);
-                    }
+                    //Adds the file to the archive
+                    zipFile.CreateEntryFromFile(file, Path.GetFileName(file), compression);
                 }
-                else
+            }
+            else
+            {
+                foreach (string file in files)
                 {
-                    foreach (string file in files)
-                    {
-                        var fileInZip = (from f in zipFile.Entries
-                                         where f.Name == Path.GetFileName(file)
-                                         select f).FirstOrDefault();
+                    var fileInZip = (from f in zipFile.Entries
+                        where f.Name == Path.GetFileName(file)
+                        select f).FirstOrDefault();
 
-                        switch (fileOverwrite)
-                        {
-                            case Overwrite.Always:
-                                //Deletes the file if it is found
-                                if (fileInZip != null)
+                    switch (fileOverwrite)
+                    {
+                        case Overwrite.Always:
+                            //Deletes the file if it is found
+                            if (fileInZip != null)
+                            {
+                                fileInZip.Delete();
+                            }
+
+                            //Adds the file to the archive
+                            zipFile.CreateEntryFromFile(file, Path.GetFileName(file), compression);
+
+                            break;
+                        case Overwrite.IfNewer:
+                            //This is a bit trickier - we only delete the file if it is
+                            //newer, but if it is newer or if the file isn't already in
+                            //the zip file, we will write it to the zip file
+                            if (fileInZip != null)
+                            {
+                                //Deletes the file only if it is older than our file.
+                                //Note that the file will be ignored if the existing file
+                                //in the archive is newer.
+                                if (fileInZip.LastWriteTime < File.GetLastWriteTime(file))
                                 {
                                     fileInZip.Delete();
-                                }
 
-                                //Adds the file to the archive
-                                zipFile.CreateEntryFromFile(file, Path.GetFileName(file), compression);
-
-                                break;
-                            case Overwrite.IfNewer:
-                                //This is a bit trickier - we only delete the file if it is
-                                //newer, but if it is newer or if the file isn't already in
-                                //the zip file, we will write it to the zip file
-                                if (fileInZip != null)
-                                {
-                                    //Deletes the file only if it is older than our file.
-                                    //Note that the file will be ignored if the existing file
-                                    //in the archive is newer.
-                                    if (fileInZip.LastWriteTime < File.GetLastWriteTime(file))
-                                    {
-                                        fileInZip.Delete();
-
-                                        //Adds the file to the archive
-                                        zipFile.CreateEntryFromFile(file, Path.GetFileName(file), compression);
-                                    }
-                                }
-                                else
-                                {
-                                    //The file wasn't already in the zip file so add it to the archive
+                                    //Adds the file to the archive
                                     zipFile.CreateEntryFromFile(file, Path.GetFileName(file), compression);
                                 }
-                                break;
-                            case Overwrite.Never:
-                                //Don't do anything - this is a decision that you need to
-                                //consider, however, since this will mean that no file will
-                                //be written.  You could write a second copy to the zip with
-                                //the same name (not sure that is wise, however).
-                                break;
-                        }
+                            }
+                            else
+                            {
+                                //The file wasn't already in the zip file so add it to the archive
+                                zipFile.CreateEntryFromFile(file, Path.GetFileName(file), compression);
+                            }
+                            break;
+                        case Overwrite.Never:
+                            //Don't do anything - this is a decision that you need to
+                            //consider, however, since this will mean that no file will
+                            //be written.  You could write a second copy to the zip with
+                            //the same name (not sure that is wise, however).
+                            break;
                     }
                 }
             }
@@ -311,15 +307,11 @@ namespace UVtools.Core.Extensions
             }
 
             if (string.IsNullOrEmpty(content)) return entry;
-            using (Stream stream = entry.Open())
-            {
-                if (mode == ZipArchiveMode.Update) stream.SetLength(0);
-                using (TextWriter tw = new StreamWriter(stream))
-                {
-                    tw.Write(content);
-                    tw.Close();
-                }
-            }
+            using var stream = entry.Open();
+            if (mode == ZipArchiveMode.Update) stream.SetLength(0);
+            using TextWriter tw = new StreamWriter(stream);
+            tw.Write(content);
+            tw.Close();
 
             return entry;
         }
@@ -343,13 +335,11 @@ namespace UVtools.Core.Extensions
                 entry = input.CreateEntry(filename);
             }
 
-            if (ReferenceEquals(content, null)) return entry;
-            using (Stream stream = entry.Open())
-            {
-                if (mode == ZipArchiveMode.Update) stream.SetLength(0);
-                stream.Write(content, 0, content.Length);
-                stream.Close();
-            }
+            if (content is null) return entry;
+            using var stream = entry.Open();
+            if (mode == ZipArchiveMode.Update) stream.SetLength(0);
+            stream.Write(content, 0, content.Length);
+            stream.Close();
             return entry;
         }
     }

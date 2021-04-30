@@ -538,7 +538,7 @@
                   <!--Diff & Touching bounds-->
                   <CheckBox Grid.Row="6" Grid.Column="0"
                             Grid.ColumnSpan="3"
-                            Content="Show layer diff colors by default"
+                            Content="Show layer difference by default"
                             IsChecked="{Binding Settings.LayerPreview.ShowLayerDifference}"
                           />
 
@@ -555,8 +555,13 @@
                            VerticalAlignment="Center"
                           Background="{Binding Settings.LayerPreview.TouchingBoundsBrush}"
                           Command="{Binding SelectColor}"
-                          CommandParameter="TouchingBoundsColor"
-                        />
+                          CommandParameter="TouchingBoundsColor"/>
+
+                  <CheckBox Grid.Row="8" Grid.Column="0"
+                            Grid.ColumnSpan="3"
+                            Content="Show layer similarity instead of difference"
+                            ToolTip.Tip="If enabled, it will recolor the current layer pixels in common with the previous and next layer"
+                            IsChecked="{Binding Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead}"/>
 
                   <!-- Crosshair -->
                   <TextBlock Grid.Row="8" Grid.Column="2"

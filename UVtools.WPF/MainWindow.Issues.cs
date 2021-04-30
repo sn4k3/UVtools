@@ -8,20 +8,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
-using Avalonia.Layout;
 using Avalonia.Threading;
-using Avalonia.Utilities;
-using DynamicData;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
@@ -31,14 +23,13 @@ using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
 using Brushes = Avalonia.Media.Brushes;
-using Size = Avalonia.Size;
 
 namespace UVtools.WPF
 {
     public partial class MainWindow
     {
         #region Members
-        private ObservableCollection<LayerIssue> _issues = new ObservableCollection<LayerIssue>();
+        private RangeObservableCollection<LayerIssue> _issues = new();
         private bool _firstTimeOnIssues = true;
         public DataGrid IssuesGrid;
 
@@ -46,7 +37,7 @@ namespace UVtools.WPF
         #endregion
 
         #region Properties
-        public ObservableCollection<LayerIssue> Issues
+        public RangeObservableCollection<LayerIssue> Issues
         {
             get => _issues;
             private set => RaiseAndSetIfChanged(ref _issues, value);
@@ -66,6 +57,10 @@ namespace UVtools.WPF
             IssuesGrid.CellPointerPressed += IssuesGridOnCellPointerPressed;
             IssuesGrid.SelectionChanged += IssuesGridOnSelectionChanged;
             IssuesGrid.KeyUp += IssuesGridOnKeyUp;
+            Issues.CollectionChanged += (sender, e) =>
+            {
+                UpdateLayerTrackerHighlightIssues();
+            };
         }
 
         public void IssueGoPrevious()
@@ -214,7 +209,7 @@ namespace UVtools.WPF
 
             Clipboard.Clip($"Manually removed {issueRemoveList.Count} issues");
 
-            Issues.RemoveMany(issueRemoveList);
+            Issues.RemoveRange(issueRemoveList);
 
             if (layersRemove.Count > 0)
             {
@@ -255,7 +250,7 @@ namespace UVtools.WPF
             var list = IssuesGrid.SelectedItems.Cast<LayerIssue>().ToArray();
             IgnoredIssues.AddRange(list);
             IssuesGrid.SelectedItems.Clear();
-            Issues.RemoveMany(list);
+            Issues.RemoveRange(list);
             ShowLayer();
         }
 
@@ -321,9 +316,7 @@ namespace UVtools.WPF
                 .ThenBy(issue => issue.LayerIndex)
                 .ThenBy(issue => issue.PixelsCount).ToList();
 
-            Issues.Clear();
-            Issues.AddRange(issueList);
-            UpdateLayerTrackerHighlightIssues();
+            Issues.ReplaceCollection(issueList);
         }
 
         public int IssueSelectedIndex
@@ -475,12 +468,10 @@ namespace UVtools.WPF
             
             if (resultIssues is null)
             {
-                UpdateLayerTrackerHighlightIssues();
                 return;
             }
             Issues.AddRange(resultIssues);
-            UpdateLayerTrackerHighlightIssues();
-
+            
             ShowLayer();
 
             RaisePropertyChanged(nameof(IssueSelectedIndexStr));
@@ -492,7 +483,7 @@ namespace UVtools.WPF
         public Dictionary<uint, uint> GetIssuesCountPerLayer()
         {
             if (Issues is null || Issues.Count == 0) return null;
-            Dictionary<uint, uint> layerIndexIssueCount = new Dictionary<uint, uint>();
+            Dictionary<uint, uint> layerIndexIssueCount = new();
             foreach (var issue in Issues)
             {
                 if (!layerIndexIssueCount.ContainsKey(issue.LayerIndex))
@@ -532,7 +523,6 @@ namespace UVtools.WPF
         {
             Issues.Clear();
             if(clearIgnored) IgnoredIssues.Clear();
-            UpdateLayerTrackerHighlightIssues();
         }
 
         

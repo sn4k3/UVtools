@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using ReactiveUI;
 using UVtools.Core.Objects;
 
 namespace UVtools.WPF.Structures

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia;
 using Avalonia.Markup.Xaml;
-using DynamicData.Annotations;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
@@ -22,7 +20,7 @@ namespace UVtools.WPF.Controls
         private int _anchorX = -1;
         private int _anchorY = -1;
         private string _matrixText;
-        public List<ElementShape> KernelShapes { get; } = new List<ElementShape>();
+        public List<ElementShape> KernelShapes { get; } = new();
 
         public string MatrixText
         {

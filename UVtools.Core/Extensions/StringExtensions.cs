@@ -31,7 +31,7 @@ namespace UVtools.Core.Extensions
             {
                 case null: throw new ArgumentNullException(nameof(input));
                 case "": throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input));
-                default: return input.First().ToString().ToUpper() + input.Substring(1);
+                default: return input.First().ToString().ToUpper() + input[1..];
             }
         }
 
@@ -47,7 +47,7 @@ namespace UVtools.Core.Extensions
         public static T Convert<T>(this string input)
         {
             var converter = TypeDescriptor.GetConverter(typeof(T));
-            if (converter != null)
+            if (converter is not null)
             {
                 //Cast ConvertFromString(string text) : object to (T)
                 return (T)converter.ConvertFromString(input);

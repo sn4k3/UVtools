@@ -5,10 +5,6 @@
         <Border Padding="20"></Border>
     </Design.PreviewWith>
 
-    <Style Selector="Expander[IsExpanded=true] /template/ ToggleButton#PART_toggle /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="TextBlock.Foreground" Value="{DynamicResource ToggleButtonForeground}"/>
-    </Style>
-
     <Style Selector="Border.GroupBox">
         <Setter Property="BorderThickness" Value="4" />
     </Style>
@@ -33,13 +29,6 @@
         <Setter Property="AcceptsTab" Value="True" />
     </Style>
 
-    <Style Selector="RadioButton">
-        <Setter Property="MinWidth" Value="30"></Setter>
-    </Style>
-
-    <Style Selector="CheckBox">
-        <Setter Property="MinWidth" Value="30"></Setter>
-    </Style>
 
     <Style Selector="NumericUpDown">
         <Setter Property="MinWidth" Value="130"></Setter>
