@@ -1,12 +1,33 @@
 # Changelog
 
+## 04/05/2021 - v2.9.3
+
+- (Upgrade) AvaloniaUI from 0.10.2 to 0.10.3
+- (Change) PrusaSlicer printers: Set 'Light-Off Delay' and 'Bottom Light-Off Delay' to 0 as default to allow UVtools auto-compute the right value once open the file in
+- **Exposure time finder:**
+   - Optimize layers by merge same position/exposure layers
+   - Add a fence option to the zebra bars
+   - Add a option to pattern the loaded model and generate multiple exposures on that
+   - Allow to generate tests without the holes feature
+   - Prevent from using more chamfers than the base height
+   - Removed two of the largest holes
+   - Hide not so often used 'Multiple brightness' and 'Multiple layer height' by default
+   - Disable Anti-Aliasing by default
+   - Change 'Part margin' from 1.5mm to 2.0mm
+   - Change 'Multiple exposures - Bottom exposure step' default to 0
+   - Fix a error when generating tests with multiple exposures
+   - Fix some typos
+- **XYZ accuracy test:**
+   - Change 'Wall thickess' default from 2.5mm to 3.0mm
+- (Improvement) Allow compute print time without a lift sequence
+
 ## 30/04/2021 - v2.9.2
 
 - (Upgrade) AvaloniaUI from 0.10 to 0.10.2
 - (Remove) Unused assemblies
-- **Issues**
-  - Improve the performance when loading big lists of issues into the DataGrid
-  - Auto refresh issues on the vertical highlight tracker once cath a modification on the Issues list
+- **Issues:**
+   - Improve the performance when loading big lists of issues into the DataGrid
+   - Auto refresh issues on the vertical highlight tracker once cath a modification on the Issues list
 - **Layer preview - Difference:**
    - Layer difference will now only check the pixels inside the union of previous, current and next layer bounding rectangle, increasing the performance and speed
    - Previous and next layer pixels if both exists was not showing with the configured color and using the next layer color instead

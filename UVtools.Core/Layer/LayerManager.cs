@@ -14,7 +14,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -523,6 +522,7 @@ namespace UVtools.Core
                 if(zeroLightOffDelay) layer.LightOffDelay = 0;
             }
             SlicerFile?.RebuildGCode();
+            SlicerFile.PrintTime = SlicerFile.PrintTimeComputed;
         }
 
         public Rectangle GetBoundingRectangle(OperationProgress progress = null)

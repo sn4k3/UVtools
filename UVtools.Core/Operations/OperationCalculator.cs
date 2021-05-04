@@ -287,7 +287,7 @@ namespace UVtools.Core.Operations
                 }
                 catch (Exception)
                 {
-                    return 0;
+                    return extraWaitTime;
                 }
                 
             }

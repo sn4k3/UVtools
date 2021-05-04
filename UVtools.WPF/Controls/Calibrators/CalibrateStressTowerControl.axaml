@@ -10,7 +10,7 @@
       <Border BorderBrush="Black" BorderThickness="1" Padding="5">
         <Expander IsExpanded="True">
           <Expander.Header>
-            <TextBlock Text="Step 1 - Commun properties"
+            <TextBlock Text="Step 1 - Common properties"
                        FontWeight="Bold"
                        Cursor="Hand"/>
           </Expander.Header>

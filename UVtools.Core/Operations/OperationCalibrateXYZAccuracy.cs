@@ -10,13 +10,11 @@ using System;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
-using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
@@ -38,7 +36,7 @@ namespace UVtools.Core.Operations
         private bool _centerHoleRelief = true;
         private bool _hollowModel = true;
         private bool _mirrorOutput;
-        private decimal _wallThickness = 2.5M;
+        private decimal _wallThickness = 3.0M;
         private decimal _observedXSize;
         private decimal _observedYSize;
         private decimal _observedZSize;

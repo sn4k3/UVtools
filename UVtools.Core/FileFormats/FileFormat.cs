@@ -915,11 +915,11 @@ namespace UVtools.Core.FileFormats
                         }
 
                         var lightOffDelay = OperationCalculator.LightOffDelayC.CalculateSeconds(layer.LiftHeight, layer.LiftSpeed, layer.RetractSpeed);
-                        time += layer.ExposureTime;
-                        if (lightOffDelay >= layer.LightOffDelay)
+                        time += layer.ExposureTime + lightOffDelay;
+                        /*if (lightOffDelay >= layer.LightOffDelay)
                             time += lightOffDelay;
                         else
-                            time += layer.LightOffDelay;
+                            time += layer.LightOffDelay;*/
                     }
                 }
 
@@ -1043,18 +1043,19 @@ namespace UVtools.Core.FileFormats
         {
             if (SuppressRebuildProperties) return;
             if (
-                e.PropertyName == nameof(BottomLayerCount) ||
-                e.PropertyName == nameof(BottomExposureTime) ||
-                e.PropertyName == nameof(ExposureTime) ||
-                e.PropertyName == nameof(BottomLightOffDelay) ||
-                e.PropertyName == nameof(LightOffDelay) ||
-                e.PropertyName == nameof(BottomLiftHeight) ||
-                e.PropertyName == nameof(LiftHeight) ||
-                e.PropertyName == nameof(BottomLiftSpeed) ||
-                e.PropertyName == nameof(LiftSpeed) ||
-                e.PropertyName == nameof(RetractSpeed) ||
-                e.PropertyName == nameof(BottomLightPWM) ||
-                e.PropertyName == nameof(LightPWM)
+                e.PropertyName 
+                    is nameof(BottomLayerCount) 
+                    or nameof(BottomExposureTime) 
+                    or nameof(ExposureTime) 
+                    or nameof(BottomLightOffDelay)
+                    or nameof(LightOffDelay)
+                    or nameof(BottomLiftHeight) 
+                    or nameof(LiftHeight) 
+                    or nameof(BottomLiftSpeed) 
+                    or nameof(LiftSpeed) 
+                    or nameof(RetractSpeed) 
+                    or nameof(BottomLightPWM) 
+                    or nameof(LightPWM)
             )
             {
                 LayerManager?.RebuildLayersProperties(false, e.PropertyName);

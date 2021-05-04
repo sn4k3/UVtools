@@ -220,6 +220,11 @@ namespace UVtools.Core.Extensions
             return new byte[mat.GetLength()];
         }
 
+        public static Mat New(this Mat mat)
+        {
+            return new(mat.Rows, mat.Cols, mat.Depth, mat.NumberOfChannels);
+        }
+
         /// <summary>
         /// Clone this <see cref="Mat"/> blanked (All zeros)
         /// </summary>

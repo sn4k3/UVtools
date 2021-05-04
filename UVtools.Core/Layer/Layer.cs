@@ -312,6 +312,8 @@ namespace UVtools.Core
             }
         }
 
+        public Mat LayerMatBoundingRectangle => new(LayerMat, BoundingRectangle);
+
         /// <summary>
         /// Gets a new Brg image instance
         /// </summary>

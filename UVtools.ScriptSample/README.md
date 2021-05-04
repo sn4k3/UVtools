@@ -26,7 +26,7 @@ If you unsure about a script, run UVtools under a sandbox.
 
 ## How to write scripts (For developers)
 
-The Roslyn Scripts runs C# code directly but require some commun data structures to be removed from the commun csharp file,
+The Roslyn Scripts runs C# code directly but require some common data structures to be removed from the common csharp file,
 such as "namespace" which is obligatory on a normal csharp file, and also a csharp file requires an class to encapsulate your code, you can't have code outside classes. 
 
 Scripts in otherway can run code directly without any namespace or class, so you can have a script just with "1 + 1",

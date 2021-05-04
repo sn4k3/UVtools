@@ -97,5 +97,10 @@ namespace UVtools.Core.Objects
             if (exposureComparison != 0) return exposureComparison;
             return _brightness.CompareTo(other._brightness);
         }
+
+        public ExposureItem Clone()
+        {
+            return MemberwiseClone() as ExposureItem;
+        }
     }
 }

@@ -184,6 +184,12 @@ namespace UVtools.Core.Operations
             ProcessedItems = items;
         }
 
+        public void ResetNameAndProcessed(string name = "", uint items = 0)
+        {
+            ItemName = name;
+            ProcessedItems = items;
+        }
+
 
         public override string ToString()
         {
