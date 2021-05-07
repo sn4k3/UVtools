@@ -71,7 +71,7 @@ namespace UVtools.WPF.Controls.Calibrators
 
         public void UpdatePreview()
         {
-            var layers = Operation.GetLayers();
+            var layers = Operation.GetLayers(true);
             _previewImage?.Dispose();
             if (layers is not null)
             {

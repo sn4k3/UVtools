@@ -57,7 +57,7 @@ namespace UVtools.Core
 
                 SlicerFile.RequireFullEncode = true;
                 SlicerFile.PrintHeight = SlicerFile.PrintHeight;
-                SlicerFile.PrintTime = SlicerFile.PrintTimeComputed;
+                SlicerFile.UpdatePrintTime();
 
                 if (value is not null && LayerCount > 0)
                 {
@@ -522,7 +522,7 @@ namespace UVtools.Core
                 if(zeroLightOffDelay) layer.LightOffDelay = 0;
             }
             SlicerFile?.RebuildGCode();
-            SlicerFile.PrintTime = SlicerFile.PrintTimeComputed;
+            SlicerFile?.UpdatePrintTime();
         }
 
         public Rectangle GetBoundingRectangle(OperationProgress progress = null)

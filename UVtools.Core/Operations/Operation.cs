@@ -142,7 +142,11 @@ namespace UVtools.Core.Operations
         public virtual uint LayerIndexStart
         {
             get => _layerIndexStart;
-            set => RaiseAndSetIfChanged(ref _layerIndexStart, value);
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _layerIndexStart, value)) return;
+                RaisePropertyChanged(nameof(LayerRangeCount));
+            }
         }
 
         /// <summary>
@@ -151,7 +155,11 @@ namespace UVtools.Core.Operations
         public virtual uint LayerIndexEnd
         {
             get => _layerIndexEnd;
-            set => RaiseAndSetIfChanged(ref _layerIndexEnd, value);
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _layerIndexEnd, value)) return;
+                RaisePropertyChanged(nameof(LayerRangeCount));
+            }
         }
 
         public uint LayerRangeCount => LayerIndexEnd - LayerIndexStart + 1;
@@ -220,7 +228,7 @@ namespace UVtools.Core.Operations
         #region Constructor
         protected Operation() { }
 
-        protected Operation(FileFormat slicerFile)
+        protected Operation(FileFormat slicerFile) : this()
         {
             _slicerFile = slicerFile;
             SelectAllLayers();

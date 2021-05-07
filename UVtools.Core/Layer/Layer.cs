@@ -15,6 +15,7 @@ using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
+using UVtools.Core.Operations;
 using Stream = System.IO.Stream;
 
 namespace UVtools.Core
@@ -304,9 +305,7 @@ namespace UVtools.Core
             }
             set
             {
-                using var vector = new VectorOfByte();
-                CvInvoke.Imencode(".png", value, vector);
-                CompressedBytes = vector.ToArray();
+                CompressedBytes = value.GetPngByes();
                 GetBoundingRectangle(value, true);
                 RaisePropertyChanged();
             }
@@ -501,6 +500,16 @@ namespace UVtools.Core
         #endregion
 
         #region Methods
+
+        public float CalculateLightOffDelay(float extraTime = 0)
+        {
+            return OperationCalculator.LightOffDelayC.CalculateSeconds(_liftHeight, _liftSpeed, _retractSpeed, extraTime);
+        }
+
+        public void UpdateLightOffDelay(float extraTime = 0)
+        {
+            LightOffDelay = CalculateLightOffDelay(extraTime);
+        }
 
         public string FormatFileName(string name)
         {

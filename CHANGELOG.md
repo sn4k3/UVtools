@@ -1,5 +1,22 @@
 # Changelog
 
+## /05/2021 - v2.10.0
+
+- **Exposure time finder:**
+   - Add a enable option for each feature
+   - Add a staircase: Creates an incremental stair at top from left to right that goes up to the top layer
+   - Add a section dedicated to the bullseye and revamp the design
+   - Add a section for counter triangles (this will take the space of the old bullseye)
+   - Allow negative fence offset for zebra bars
+   - Allow to preview the exposure time information
+   - Changed some defaults
+- (Add) Layer actions - Export layers to animated GIF
+   - **Note:** Non Windows users must install 'libgdiplus' dependency in order to use this tool
+- (Add) Tools - Dynamic lifts: Generate dynamic lift height and speeds for each layer given it mass
+- (Improvement) File formats using json files are now saved with human readable indentation
+- (Fix) GCode builder: Raise to top on completion command was not being sent when feedrate units are in mm/min 
+- (Fix) Tools - Layer Range Selector: Fix the 'to layer' minimum to not allow negative values and limit to 0
+
 ## 04/05/2021 - v2.9.3
 
 - (Upgrade) AvaloniaUI from 0.10.2 to 0.10.3

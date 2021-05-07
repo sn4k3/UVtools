@@ -373,9 +373,9 @@ namespace UVtools.Core.FileFormats
 
             using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
             {
-                outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings), ZipArchiveMode.Create);
-                outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings), ZipArchiveMode.Create);
-                outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings), ZipArchiveMode.Create);
+                outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings, Formatting.Indented), ZipArchiveMode.Create);
+                outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings, Formatting.Indented), ZipArchiveMode.Create);
+                outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings, Formatting.Indented), ZipArchiveMode.Create);
 
                 if (CreatedThumbnailsCount > 0)
                 {
@@ -626,9 +626,9 @@ M106 S0
 
             using (var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update))
             {
-                outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings), ZipArchiveMode.Update);
-                outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings), ZipArchiveMode.Update);
-                outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings), ZipArchiveMode.Update);
+                outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings, Formatting.Indented), ZipArchiveMode.Update);
+                outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings, Formatting.Indented), ZipArchiveMode.Update);
+                outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings, Formatting.Indented), ZipArchiveMode.Update);
                 outputFile.PutFileContent("ResinGCodeData", GCode.ToString(), ZipArchiveMode.Update);
             }
 

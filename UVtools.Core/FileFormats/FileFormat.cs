@@ -914,8 +914,8 @@ namespace UVtools.Core.FileFormats
                             break;
                         }
 
-                        var lightOffDelay = OperationCalculator.LightOffDelayC.CalculateSeconds(layer.LiftHeight, layer.LiftSpeed, layer.RetractSpeed);
-                        time += layer.ExposureTime + lightOffDelay;
+                        var lightOffDelay = layer.CalculateLightOffDelay();
+                        time += layer.ExposureTime + lightOffDelay > layer.LightOffDelay ? lightOffDelay : layer.LightOffDelay;
                         /*if (lightOffDelay >= layer.LightOffDelay)
                             time += lightOffDelay;
                         else
@@ -1951,6 +1951,11 @@ namespace UVtools.Core.FileFormats
             }
             
             return result;
+        }
+
+        public void UpdatePrintTime()
+        {
+            PrintTime = PrintTimeComputed;
         }
 
         #endregion

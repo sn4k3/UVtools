@@ -8,6 +8,9 @@
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="DesktopFolder" />
       <Directory Id="MergeRedirectFolder">
+        <Component Id="owc8E67DDA19FDE9EB745B0ADE651E8DC86" Guid="3744e071-b6de-ada6-7887-761d99e8f73b">
+          <File Id="owf8E67DDA19FDE9EB745B0ADE651E8DC86" Source="$(var.SourceDir)\AnimatedGif.dll" KeyPath="yes" />
+        </Component>
         <Component Id="owcF3EB3D7C133F5B48E5859309ABDC2EE0" Guid="5a6040ae-b91e-47b6-8438-d9cd47fb947a">
           <File Id="owfF3EB3D7C133F5B48E5859309ABDC2EE0" Source="$(var.SourceDir)\api-ms-win-core-console-l1-1-0.dll" KeyPath="yes" />
         </Component>

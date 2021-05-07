@@ -1,0 +1,127 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Tools.ToolLayerExportGifControl">
+
+    <StackPanel Spacing="10">
+
+        <StackPanel Orientation="Horizontal" Spacing="5">
+            <TextBox 
+                Watermark="Output filepath"
+                UseFloatingWatermark="True"
+                VerticalAlignment="Center"
+                IsReadOnly="True"
+                Width="500"
+                Text="{Binding Operation.FilePath}"/>
+            <Button
+                VerticalAlignment="Stretch"
+                Command="{Binding ChooseFilePath}">
+                <Image Source="/Assets/Icons/open-16x16.png"/>
+            </Button>
+        </StackPanel>
+
+        <CheckBox
+            Content="Clip layer image by volume bounds"
+            IsChecked="{Binding Operation.ClipByVolumeBounds}"/>
+
+        <CheckBox
+            Content="Render the layer number/count"
+            IsChecked="{Binding Operation.RenderLayerCount}"/>
+
+        <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10"
+              ColumnDefinitions="Auto,10,150,5,Auto,20,Auto">
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Frames-per-second: Number of shown layers within a second"
+                   Text="FPS:" />
+
+        <NumericUpDown Grid.Row="0" Grid.Column="2"
+                       Minimum="1"
+                       Maximum="255"
+                       Value="{Binding Operation.FPS}"/>
+
+        <TextBlock Grid.Row="0" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Time that each layer is visible in milliseconds"
+                   Text="{Binding Operation.FPSToMilliseconds, StringFormat={}{0}ms}" />
+
+        <TextBlock Grid.Row="0" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   Text="{Binding Operation.GifDurationSeconds, StringFormat=GIF duration: {0}s}" />
+
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Number of times to loop the animation.
+&#x0a;0 = Infinite loop."
+                   Text="Repeats:" />
+
+        <NumericUpDown Grid.Row="2" Grid.Column="2"
+                       Minimum="0"
+                       Maximum="65535"
+                       Value="{Binding Operation.Repeats}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="times" />
+
+        <TextBlock Grid.Row="4" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="After pack a layer, skip the following layers by this value"
+                   Text="Skip:" />
+
+        <NumericUpDown Grid.Row="4" Grid.Column="2"
+                       Minimum="0"
+                       Maximum="65535"
+                       Value="{Binding Operation.Skip}"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="layers" />
+
+        <TextBlock Grid.Row="4" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   Text="{Binding Operation.TotalLayers, StringFormat=Layers to pack: {0}}" />
+
+       <TextBlock Grid.Row="6" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Scale layer resolution by this percentage amount."
+                   Text="Scale:" />
+
+        <NumericUpDown Grid.Row="6" Grid.Column="2"
+                       Minimum="1"
+                       Maximum="100"
+                       FormatString="F2"
+                       Value="{Binding Operation.Scale}"/>
+
+        <TextBlock Grid.Row="6" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="%" />
+
+        <TextBlock Grid.Row="8" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Rotate:" />
+
+        <ComboBox Grid.Row="8" Grid.Column="2"
+                Grid.ColumnSpan="3"
+                HorizontalAlignment="Stretch"
+                Items="{Binding Operation.RotateDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                SelectedItem="{Binding Operation.RotateDirection, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+        <TextBlock Grid.Row="10" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Flip:" />
+
+        <ComboBox Grid.Row="10" Grid.Column="2"
+                  Grid.ColumnSpan="3"
+                  HorizontalAlignment="Stretch"
+                  Items="{Binding Operation.FlipDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  SelectedItem="{Binding Operation.FlipDirection, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+
+      </Grid>
+
+    </StackPanel>
+
+</UserControl>

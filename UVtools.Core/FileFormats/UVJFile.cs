@@ -343,7 +343,7 @@ namespace UVtools.Core.FileFormats
             }
 
             using ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create);
-            outputFile.PutFileContent(FileConfigName, JsonConvert.SerializeObject(JsonSettings), ZipArchiveMode.Create);
+            outputFile.PutFileContent(FileConfigName, JsonConvert.SerializeObject(JsonSettings, Formatting.Indented), ZipArchiveMode.Create);
 
             if (CreatedThumbnailsCount > 0)
             {
@@ -458,7 +458,7 @@ namespace UVtools.Core.FileFormats
 
             using (var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update))
             {
-                outputFile.PutFileContent(FileConfigName, JsonConvert.SerializeObject(JsonSettings), ZipArchiveMode.Update);
+                outputFile.PutFileContent(FileConfigName, JsonConvert.SerializeObject(JsonSettings, Formatting.Indented), ZipArchiveMode.Update);
             }
 
             //Decode(FileFullPath, progress);

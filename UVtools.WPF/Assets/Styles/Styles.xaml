@@ -15,7 +15,7 @@
     </Style>
 
   <Style Selector="Border.FooterActions">
-      <Setter Property="Padding" Value="5,20" />
+      <Setter Property="Padding" Value="10,20" />
       <Setter Property="Margin" Value="0,10,0, 0" />
   </Style>
 

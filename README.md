@@ -220,7 +220,7 @@ dotnet-runtime-5.0
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libdc1394-22 libavcodec-dev libavformat-dev libswscale-dev libopenexr24 libtbb-dev
+sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libdc1394-22 libavcodec-dev libavformat-dev libswscale-dev libopenexr24 libtbb-dev libgdiplus
 ```
 
 
@@ -264,7 +264,7 @@ anyone with same system version can make use of it without the need of the compi
 ### Arch/Manjaro/Similars
 
 ```bash
-sudo pacman -S openjpeg2 libjpeg-turbo libpng libgeotiff libdc1394 libdc1394 ffmpeg openexr tbb
+sudo pacman -S openjpeg2 libjpeg-turbo libpng libgeotiff libdc1394 libdc1394 ffmpeg openexr tbb libgdiplus
 ```
 
 To run UVtools open it folder on a terminal and call one of:
@@ -388,7 +388,7 @@ To run UVtools open it folder on a terminal and call one of:
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 brew analytics off
-brew install git cmake libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb
+brew install git cmake libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb mono-libgdiplus
 brew install --cask dotnet-sdk
 git clone https://github.com/emgucv/emgucv emgucv 
 cd emgucv

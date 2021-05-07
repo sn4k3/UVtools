@@ -100,7 +100,7 @@ namespace UVtools.WPF.Structures
         {
             try
             {
-                using WebClient client = new WebClient
+                using WebClient client = new()
                 {
                     Headers = new WebHeaderCollection
                     {
@@ -114,16 +114,17 @@ namespace UVtools.WPF.Structures
                 if (string.IsNullOrEmpty(tag_name)) return false;
                 tag_name = tag_name.Trim(' ', 'v', 'V');
                 Debug.WriteLine($"Version checker: v{App.VersionStr} <=> v{tag_name}");
-
+                Version checkVersion = new(tag_name);
                 Changelog = json.body;
 
-                if (string.Compare(tag_name, App.VersionStr, StringComparison.OrdinalIgnoreCase) > 0)
+                //if (string.Compare(tag_name, App.VersionStr, StringComparison.OrdinalIgnoreCase) > 0)
+                if (App.Version.CompareTo(checkVersion) < 0)
                 {
+                    Debug.WriteLine($"New version detected: {DownloadLink}\n" +
+                                    $"{_changelog}");
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         Version = tag_name;
-                        Debug.WriteLine($"New version detected: {DownloadLink}\n" + 
-                                        $"{_changelog}");
                     });
                     return true;
                 }

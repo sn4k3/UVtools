@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using Emgu.CV.Util;
 
 namespace UVtools.Core.Extensions
 {
@@ -331,6 +332,13 @@ namespace UVtools.Core.Extensions
             }
 
             return layers;
+        }
+
+        public static byte[] GetPngByes(this Mat mat)
+        {
+            using var vector = new VectorOfByte();
+            CvInvoke.Imencode(".png", mat, vector);
+            return vector.ToArray();
         }
 
     }

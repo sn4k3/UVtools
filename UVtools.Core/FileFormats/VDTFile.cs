@@ -410,7 +410,7 @@ namespace UVtools.Core.FileFormats
             RebuildVDTLayers();
 
             using var outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create);
-            outputFile.PutFileContent(FileManifestName, JsonConvert.SerializeObject(ManifestFile), ZipArchiveMode.Create);
+            outputFile.PutFileContent(FileManifestName, JsonConvert.SerializeObject(ManifestFile, Formatting.Indented), ZipArchiveMode.Create);
 
             if (CreatedThumbnailsCount > 0)
             {
@@ -511,7 +511,7 @@ namespace UVtools.Core.FileFormats
 
             RebuildVDTLayers();
             using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update);
-            outputFile.PutFileContent(FileManifestName, JsonConvert.SerializeObject(ManifestFile), ZipArchiveMode.Update);
+            outputFile.PutFileContent(FileManifestName, JsonConvert.SerializeObject(ManifestFile, Formatting.Indented), ZipArchiveMode.Update);
 
             //Decode(FileFullPath, progress);
         }

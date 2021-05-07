@@ -1,0 +1,207 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Tools.ToolDynamicLiftsControl">
+  <StackPanel Spacing="10">
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+          ColumnDefinitions="Auto,10,150,20,150,5,Auto">
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Property"/>
+
+        <TextBlock Grid.Row="0" Grid.Column="2"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Minimum"/>
+
+        <TextBlock Grid.Row="0" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Maximum"/>
+
+        <TextBlock Grid.Row="0" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Unit"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Bottom lift height:"/>
+
+        <NumericUpDown Grid.Row="2" Grid.Column="2"
+                   VerticalAlignment="Center"
+                   Minimum="1"
+                   Maximum="100"
+                   Increment="0.5"
+                   FormatString="F2"
+                   Value="{Binding Operation.MinBottomLiftHeight}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="3"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   Text="/"/>
+
+        <NumericUpDown Grid.Row="2" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Minimum="1"
+                       Maximum="100"
+                       Increment="0.5"
+                       FormatString="F2"
+                       Value="{Binding Operation.MaxBottomLiftHeight}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   Text="mm"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Bottom lift speed:"/>
+
+        <NumericUpDown Grid.Row="4" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Minimum="5"
+                       Maximum="1000"
+                       Increment="1"
+                       FormatString="F2"
+                       Value="{Binding Operation.MinBottomLiftSpeed}"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="3"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   Text="/"/>
+
+        <NumericUpDown Grid.Row="4" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Minimum="5"
+                       Maximum="1000"
+                       Increment="1"
+                       FormatString="F2"
+                       Value="{Binding Operation.MaxBottomLiftSpeed}"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   Text="mm/min"/>
+
+
+        <TextBlock Grid.Row="6" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Lift height:"/>
+
+        <NumericUpDown Grid.Row="6" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Minimum="1"
+                       Maximum="100"
+                       Increment="0.5"
+                       FormatString="F2"
+                       Value="{Binding Operation.MinLiftHeight}"/>
+
+        <TextBlock Grid.Row="6" Grid.Column="3"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   Text="/"/>
+
+        <NumericUpDown Grid.Row="6" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Minimum="1"
+                       Maximum="100"
+                       Increment="0.5"
+                       FormatString="F2"
+                       Value="{Binding Operation.MaxLiftHeight}"/>
+
+        <TextBlock Grid.Row="6" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   Text="mm"/>
+
+        <TextBlock Grid.Row="8" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Lift speed:"/>
+
+        <NumericUpDown Grid.Row="8" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Minimum="5"
+                       Maximum="1000"
+                       Increment="1"
+                       FormatString="F2"
+                       Value="{Binding Operation.MinLiftSpeed}"/>
+
+        <TextBlock Grid.Row="8" Grid.Column="3"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   Text="/"/>
+
+        <NumericUpDown Grid.Row="8" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Minimum="5"
+                       Maximum="1000"
+                       Increment="1"
+                       FormatString="F2"
+                       Value="{Binding Operation.MaxLiftSpeed}"/>
+
+        <TextBlock Grid.Row="8" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   Text="mm/min"/>
+    </Grid>
+
+      <CheckBox
+          Content="Update light-off delay accordingly"
+          ToolTip.Tip="If enabled, it will auto calculate the correct light-off delay based on the set lift"
+          IsChecked="{Binding Operation.UpdateLightOffDelay}"/>
+
+      <Grid RowDefinitions="Auto,10,Auto"
+            ColumnDefinitions="Auto,20,Auto,5,Auto"
+            IsEnabled="{Binding Operation.UpdateLightOffDelay}">
+
+          <TextBlock Grid.Row="0" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Center"
+                     FontWeight="Bold"
+                     Text="Bottom light-off extra time"/>
+
+          <TextBlock Grid.Row="0" Grid.Column="1"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Center"
+                     FontWeight="Bold"
+                     Text="/"/>
+
+          <TextBlock Grid.Row="0" Grid.Column="2"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Center"
+                     FontWeight="Bold"
+                     Text="Normal light-off extra time"/>
+
+          <NumericUpDown Grid.Row="2" Grid.Column="0"
+                         VerticalAlignment="Center"
+                         Minimum="0"
+                         Maximum="100"
+                         Increment="1"
+                         FormatString="F2"
+                         Value="{Binding Operation.LightOffDelayBottomExtraTime}"/>
+
+          <TextBlock Grid.Row="2" Grid.Column="1"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Center"
+                     Text="/"/>
+
+          <NumericUpDown Grid.Row="2" Grid.Column="2"
+                         VerticalAlignment="Center"
+                         Minimum="0"
+                         Maximum="100"
+                         Increment="1"
+                         FormatString="F2"
+                         Value="{Binding Operation.LightOffDelayExtraTime}"/>
+
+          <TextBlock Grid.Row="2" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     Text="s"/>
+
+      </Grid>
+
+  </StackPanel>
+</UserControl>

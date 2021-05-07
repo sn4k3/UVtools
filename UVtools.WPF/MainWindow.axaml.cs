@@ -198,6 +198,14 @@ namespace UVtools.WPF
             },
             new()
             {
+                Tag = new OperationDynamicLifts(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/angle-double-up-16x16.png"))
+                }
+            },
+            new()
+            {
                 Tag = new OperationLayerReHeight(),
                 Icon = new Avalonia.Controls.Image
                 {
@@ -314,6 +322,14 @@ namespace UVtools.WPF
                 Icon = new Avalonia.Controls.Image
                 {
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/trash-16x16.png"))
+                }
+            },
+            new()
+            {
+                Tag = new OperationLayerExportGif(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/gif-16x16.png"))
                 }
             },
         };

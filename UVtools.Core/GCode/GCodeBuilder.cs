@@ -8,6 +8,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -554,16 +555,13 @@ namespace UVtools.Core.GCode
                     break;
             }
 
-            float endFeedRate = 0;
-            switch (GCodeSpeedUnit)
+            float endFeedRate = GCodeSpeedUnit switch
             {
-                case GCodeSpeedUnits.MillimetersPerSecond:
-                    endFeedRate = (float)Math.Round(slicerFile.RetractSpeed / 60, 2);
-                    break;
-                case GCodeSpeedUnits.CentimetersPerMinute:
-                    endFeedRate = (float)Math.Round(slicerFile.RetractSpeed / 10, 2);
-                    break;
-            }
+                GCodeSpeedUnits.MillimetersPerMinute => slicerFile.RetractSpeed,
+                GCodeSpeedUnits.MillimetersPerSecond => (float) Math.Round(slicerFile.RetractSpeed / 60, 2),
+                GCodeSpeedUnits.CentimetersPerMinute => (float) Math.Round(slicerFile.RetractSpeed / 10, 2),
+                _ => throw new InvalidExpressionException($"Unhandled feedrate unit for {GCodeSpeedUnit}")
+            };
 
             AppendEndGCode(finalRaiseZPosition, endFeedRate);
         }
