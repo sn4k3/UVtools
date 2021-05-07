@@ -360,8 +360,7 @@ anyone with same system version can make use of it without the need of the compi
 
 ## Mac
 
-1. macOS 10.12 Sierra
-   1. If on a previous macOS version, use the universal UVtools package 
+1. macOS 10.13 High Sierra
 1. 4GB RAM or higher
 
 <!--- 
