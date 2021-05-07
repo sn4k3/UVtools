@@ -194,7 +194,7 @@ https://github.com/sn4k3/UVtools/wiki/Sliced-File-Conversion
 
 ## Windows
 
-1. Windows 7 or greater
+1. Windows 7 SP1 or greater
    1. If on Windows 10 N or NK: [Media Feature Pack](https://www.microsoft.com/download/details.aspx?id=48231) must be installed
 <!-- 1. [.NET 5.0](https://dotnet.microsoft.com/download/dotnet/5.0) installed (Comes pre-installed on Windows 10 with last updates)!-->
 1. 4GB RAM or higher
