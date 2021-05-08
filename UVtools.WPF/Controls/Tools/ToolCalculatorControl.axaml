@@ -232,7 +232,7 @@
       
     </TabItem>
 
-    <TabItem Header="Light-off delay">
+    <TabItem Header="Light-off delay" IsVisible="{Binding SlicerFile.CanUseAnyLightOffDelay}">
 
       <Grid RowDefinitions="Auto,10,Auto">
         <Border
@@ -403,12 +403,16 @@
           <TextBlock
             Grid.Row="0"
             Grid.Column="6"
+            IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+            IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
             VerticalAlignment="Center"
             HorizontalAlignment="Right"
             Text="Bottom lift height:"/>
           <NumericUpDown
             Grid.Row="0"
             Grid.Column="8"
+            IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+            IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
             VerticalAlignment="Center"
             Minimum="0"
             Maximum="1000"
@@ -418,18 +422,24 @@
           <TextBlock
             Grid.Row="0"
             Grid.Column="10"
+            IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+            IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
             VerticalAlignment="Center"
             Text="mm"/>
 
           <TextBlock
             Grid.Row="2"
             Grid.Column="6"
+            IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+            IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
             VerticalAlignment="Center"
             HorizontalAlignment="Right"
             Text="Bottom lift speed:"/>
           <NumericUpDown
             Grid.Row="2"
             Grid.Column="8"
+            IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+            IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
             VerticalAlignment="Center"
             Minimum="0"
             Maximum="1000"
@@ -439,18 +449,24 @@
           <TextBlock
             Grid.Row="2"
             Grid.Column="10"
+            IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+            IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
             VerticalAlignment="Center"
             Text="mm/min"/>
 
           <TextBlock
             Grid.Row="6"
             Grid.Column="6"
+            IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+            IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
             VerticalAlignment="Center"
             HorizontalAlignment="Right"
             Text="Bottom desired wait time:"/>
           <NumericUpDown
             Grid.Row="6"
             Grid.Column="8"
+            IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+            IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
             VerticalAlignment="Center"
             Minimum="0"
             Maximum="1000"
@@ -460,12 +476,16 @@
           <TextBlock
             Grid.Row="6"
             Grid.Column="10"
+            IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+            IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
             VerticalAlignment="Center"
             Text="s"/>
 
           <TextBlock
             Grid.Row="8"
             Grid.Column="6"
+            IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+            IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
             VerticalAlignment="Center"
             HorizontalAlignment="Right"
             FontWeight="Bold"
@@ -473,6 +493,8 @@
           <TextBox
             Grid.Row="8"
             Grid.Column="8"
+            IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+            IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
             VerticalAlignment="Center"
             IsReadOnly="true"
             FontWeight="Bold"
@@ -480,6 +502,8 @@
           <TextBlock
             Grid.Row="8"
             Grid.Column="10"
+            IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+            IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
             FontWeight="Bold"
             VerticalAlignment="Center"
             Text="s"/>
@@ -488,6 +512,8 @@
             Grid.Row="10"
             Grid.Column="6"
             Grid.ColumnSpan="3"
+            IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+            IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
             VerticalAlignment="Center"
             HorizontalAlignment="Right"
             Padding="10"
@@ -499,6 +525,8 @@
             Grid.Row="12"
             Grid.Column="6"
             Grid.ColumnSpan="5"
+            IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+            IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
             VerticalAlignment="Center"
             HorizontalAlignment="Center"
             Text="{Binding SlicerFile.BottomLightOffDelay, StringFormat=Current value: \{0\}}"/>

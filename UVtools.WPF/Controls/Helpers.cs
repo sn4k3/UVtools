@@ -15,7 +15,7 @@ namespace UVtools.WPF.Controls
     {
         public static readonly List<FileDialogFilter> ImagesFileFilter = new()
         {
-            new FileDialogFilter
+            new()
             {
                 Name = "Image Files",
                 Extensions = new List<string>
@@ -29,9 +29,9 @@ namespace UVtools.WPF.Controls
             }
         };
 
-        public static readonly List<FileDialogFilter> PngFileFilter = new List<FileDialogFilter>
+        public static readonly List<FileDialogFilter> PngFileFilter = new()
         {
-            new FileDialogFilter
+            new()
             {
                 Name = "Image Files",
                 Extensions = new List<string>
@@ -41,9 +41,9 @@ namespace UVtools.WPF.Controls
             }
         };
 
-        public static readonly List<FileDialogFilter> TxtFileFilter = new List<FileDialogFilter>
+        public static readonly List<FileDialogFilter> TxtFileFilter = new()
         {
-            new FileDialogFilter
+            new()
             {
                 Name = "Text Files",
                 Extensions = new List<string>
@@ -53,9 +53,9 @@ namespace UVtools.WPF.Controls
             }
         };
 
-        public static readonly List<FileDialogFilter> IniFileFilter = new List<FileDialogFilter>
+        public static readonly List<FileDialogFilter> IniFileFilter = new()
         {
-            new FileDialogFilter
+            new()
             {
                 Name = "Ini Files",
                 Extensions = new List<string>
@@ -65,9 +65,21 @@ namespace UVtools.WPF.Controls
             }
         };
 
+        public static readonly List<FileDialogFilter> OperationSettingFileFilter = new()
+        {
+            new()
+            {
+                Name = "UVtools operation settings",
+                Extensions = new List<string>
+                {
+                    "uvtop",
+                }
+            }
+        };
+
         public static readonly List<FileDialogFilter> ScriptsFileFilter = new()
         {
-            new FileDialogFilter
+            new()
             {
                 Name = "Script Files",
                 Extensions = new List<string>
@@ -87,9 +99,9 @@ namespace UVtools.WPF.Controls
 
         public static List<FileDialogFilter> ToAvaloniaFilter(string name, string extension)
         {
-            return new List<FileDialogFilter>(1)
+            return new(1)
             {
-                new FileDialogFilter {Name = name, Extensions = new List<string>(1) {extension}}
+                new() {Name = name, Extensions = new List<string>(1) {extension}}
             };
         }
     }

@@ -242,9 +242,9 @@ namespace UVtools.Core.Operations
             Parallel.For(_ignoreFirstLayers, firstSupportLayerIndex, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
-                using var result = SlicerFile[layerIndex].LayerMat;
-                using var original = result.Clone();
-                var target = GetRoiOrDefault(result);
+                using var mat = SlicerFile[layerIndex].LayerMat;
+                using var original = mat.Clone();
+                var target = GetRoiOrDefault(mat);
 
                 switch (ReliefType)
                 {
@@ -268,8 +268,8 @@ namespace UVtools.Core.Operations
                         break;
                 }
 
-                ApplyMask(original, result);
-                SlicerFile[layerIndex].LayerMat = result;
+                ApplyMask(original, target);
+                SlicerFile[layerIndex].LayerMat = mat;
 
                 progress.LockAndIncrement();
             });

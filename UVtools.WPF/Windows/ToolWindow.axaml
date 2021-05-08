@@ -365,6 +365,44 @@
       <Grid RowDefinitions="Auto"
           ColumnDefinitions="*">
         <StackPanel Spacing="10" Orientation="Horizontal">
+            <Button
+                Command="{Binding #OptionsContextMenu.Open}"
+                Padding="10"
+                Content="☰">
+                <Button.ContextMenu>
+                    <ContextMenu Name="OptionsContextMenu" PlacementMode="Top">
+                        <MenuItem
+                            IsVisible="{Binding CanROI}"
+                            Command="{Binding SelectVolumeBoundingRectangle}"
+                            Header="Select print volume ROI">
+                            <MenuItem.Icon>
+                                <Image Source="/Assets/Icons/expand-16x16.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+
+                        <Separator IsVisible="{Binding CanROI}"/>
+
+                      <MenuItem
+                          IsVisible="{Binding CanHaveProfiles}"
+                            Command="{Binding ImportSettings}"
+                            Header="Import settings">
+                            <MenuItem.Icon>
+                                <Image Source="/Assets/Icons/file-import-16x16.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+
+                        <MenuItem
+                            IsVisible="{Binding CanHaveProfiles}"
+                            Command="{Binding ExportSettings}"
+                            Header="Export settings">
+                            <MenuItem.Icon>
+                                <Image Source="/Assets/Icons/file-export-16x16.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                </Button.ContextMenu>
+            </Button>
+
           <Button
               Padding="10"
               IsDefault="True"
@@ -388,7 +426,8 @@
           Spacing="10" 
           HorizontalAlignment="Right" 
           Orientation="Horizontal">
-          <Button
+
+            <Button
             Padding="10"
             IsDefault="True"
             IsVisible="{Binding ButtonOkVisible}"

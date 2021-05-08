@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
+using System.IO;
+using System.Xml.Serialization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -9,12 +11,13 @@ using Avalonia.Threading;
 using MessageBox.Avalonia.Enums;
 using UVtools.Core;
 using UVtools.Core.Extensions;
+using UVtools.Core.Managers;
 using UVtools.Core.Operations;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Controls.Tools;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
-using Point = Avalonia.Point;
+using Helpers = UVtools.WPF.Controls.Helpers;
 
 namespace UVtools.WPF.Windows
 {
@@ -285,7 +288,20 @@ namespace UVtools.WPF.Windows
             }
         }
 
-        public Rectangle ROI => App.MainWindow.ROI;
+        public bool CanROI => ToolControl.BaseOperation.CanROI;
+
+        public Rectangle ROI
+        {
+            get => App.MainWindow.ROI;
+            set
+            {
+                App.MainWindow.ROI = App.MainWindow.GetTransposedRectangle(value);
+                ToolControl.BaseOperation.ROI = value;
+                IsROIVisible = !value.IsEmpty;
+                RaisePropertyChanged();
+            }
+        }
+
         public System.Drawing.Point[][] Masks => App.MainWindow.MaskPoints?.ToArray();
 
         public bool ClearROIAndMaskAfterOperation
@@ -299,8 +315,8 @@ namespace UVtools.WPF.Windows
             if (await this.MessageBoxQuestion("Are you sure you want to clear the current ROI?\n" +
                                    "This action can not be reverted, to select another ROI you must quit this window and select it on layer preview.",
                 "Clear the current ROI?") != ButtonResult.Yes) return;
-            IsROIVisible = false;
-            App.MainWindow.ClearROI();
+
+            ROI = Rectangle.Empty;
             ToolControl?.Callback(Callbacks.ClearROI);
         }
 
@@ -311,12 +327,21 @@ namespace UVtools.WPF.Windows
                 "Clear the all masks?") != ButtonResult.Yes) return;
             IsMasksVisible = false;
             App.MainWindow.ClearMask();
+            ToolControl.BaseOperation.ClearMasks();
             ToolControl?.Callback(Callbacks.ClearROI);
+        }
+
+        public void SelectVolumeBoundingRectangle()
+        {
+            ROI = SlicerFile.BoundingRectangle;
         }
 
         #endregion
 
         #region Profiles
+
+        public bool CanHaveProfiles => ToolControl.BaseOperation.CanHaveProfiles;
+
         public bool IsProfilesVisible
         {
             get => _isProfilesVisible;
@@ -565,8 +590,42 @@ namespace UVtools.WPF.Windows
             _buttonOkText = toolControl.BaseOperation.ButtonOkText;
             _buttonOkVisible = ButtonOkEnabled = toolControl.BaseOperation.HaveAction;
 
-            if (toolControl.BaseOperation.HaveExecuted) // Come from a redo or something
+            bool fromSession = false;
+            if (!toolControl.BaseOperation.HaveExecuted && Settings.Tools.RestoreLastUsedSettings)
             {
+                var operation = OperationSessionManager.Instance.Find(toolControl.BaseOperation.GetType());
+                if (operation is not null)
+                {
+                    toolControl.BaseOperation = operation.Clone();
+                    toolControl.BaseOperation.ClearROIandMasks();
+
+                    switch (operation.LayerRangeSelection)
+                    {
+                        case Enumerations.LayerRangeSelection.None:
+                            LayerIndexStart = operation.LayerIndexStart;
+                            LayerIndexEnd = operation.LayerIndexEnd;
+                            break;
+                        default:
+                            SelectLayers(operation.LayerRangeSelection);
+                            break;
+                    }
+
+                    fromSession = true;
+                }
+            }
+
+            if (toolControl.BaseOperation.HaveExecuted) // Come from a redo or session
+            {
+                if (toolControl.BaseOperation.HaveROI)
+                {
+                    ROI = toolControl.BaseOperation.ROI;
+                }
+
+                if (toolControl.BaseOperation.HaveMask)
+                {
+                    App.MainWindow.AddMaskPoints(toolControl.BaseOperation.MaskPoints);
+                }
+
                 LayerIndexStart = toolControl.BaseOperation.LayerIndexStart;
                 LayerIndexEnd = toolControl.BaseOperation.LayerIndexEnd;
             }
@@ -575,24 +634,37 @@ namespace UVtools.WPF.Windows
                 SelectLayers(toolControl.BaseOperation.StartLayerRangeSelection);
             }
 
-            //RaisePropertyChanged(nameof(IsContentVisible));
-            //RaisePropertyChanged(nameof(IsROIVisible));
-
             if (ToolControl.BaseOperation.CanHaveProfiles)
             {
+                _isProfilesVisible = true;
                 var profiles = OperationProfiles.GetOperations(ToolControl.BaseOperation.GetType());
-                Profiles.AddRange(profiles);
-                IsProfilesVisible = true;
+                _profiles.AddRange(profiles);
 
-                foreach (var operation in Profiles)
+                if (!toolControl.BaseOperation.HaveExecuted ||
+                    (toolControl.BaseOperation.HaveExecuted && fromSession && !Settings.Tools.LastUsedSettingsPriorityOverDefaultProfile))
                 {
-                    if (operation.ProfileIsDefault)
+                    //Operation profile = _profiles.FirstOrDefault(operation => operation.ProfileIsDefault);
+                    foreach (var operation in Profiles)
                     {
-                        SelectedProfileItem = operation;
-                        break;
+                        if (operation.ProfileIsDefault)
+                        {
+                            SelectedProfileItem = operation;
+                            break;
+                        }
                     }
                 }
             }
+
+            if (!ReferenceEquals(toolControl.BaseOperation.SlicerFile, SlicerFile)) // Sanitize
+            {
+                toolControl.BaseOperation.SlicerFile = SlicerFile;
+            }
+
+
+            //RaisePropertyChanged(nameof(IsContentVisible));
+            //RaisePropertyChanged(nameof(IsROIVisible));
+
+
 
             // Ensure the description don't stretch window
             DispatcherTimer.Run(() =>
@@ -728,6 +800,70 @@ namespace UVtools.WPF.Windows
             var parent = this.FindControl<Button>($"{name}Button");
             if (parent is null) return;
             menu.Open(parent);
+        }
+
+        public async void ExportSettings()
+        {
+            if (ToolControl.BaseOperation is null) return;
+            var dialog = new SaveFileDialog
+            {
+                Filters = Helpers.OperationSettingFileFilter,
+                InitialFileName = ToolControl.BaseOperation.Id
+            };
+
+            var file = await dialog.ShowAsync(this);
+
+            if (string.IsNullOrWhiteSpace(file)) return;
+
+            try
+            {
+                XmlSerializer serializer = new(ToolControl.BaseOperation.GetType());
+                await using StreamWriter writer = new(file);
+                serializer.Serialize(writer, ToolControl.BaseOperation);
+            }
+            catch (Exception e)
+            {
+                await this.MessageBoxError(e.ToString(), "Error while trying to export the settings");
+            }
+        }
+
+        public async void ImportSettings()
+        {
+            var dialog = new OpenFileDialog
+            {
+                AllowMultiple = false,
+                Filters = Helpers.OperationSettingFileFilter
+            };
+
+            var files = await dialog.ShowAsync(this);
+
+            if (files is null || files.Length == 0) return;
+
+            try
+            {
+                XmlSerializer serializer = new(ToolControl.BaseOperation.GetType());
+                await using var stream = File.OpenRead(files[0]);
+                var operation = (Operation)serializer.Deserialize(stream);
+
+                operation.SlicerFile = SlicerFile;
+                ToolControl.BaseOperation = operation;
+                switch (operation.LayerRangeSelection)
+                {
+                    case Enumerations.LayerRangeSelection.None:
+                        LayerIndexStart = operation.LayerIndexStart;
+                        LayerIndexEnd = operation.LayerIndexEnd;
+                        break;
+                    default:
+                        SelectLayers(operation.LayerRangeSelection);
+                        break;
+                }
+
+                ToolControl.Callback(Callbacks.ProfileLoaded);
+            }
+            catch (Exception e)
+            {
+                await this.MessageBoxError(e.ToString(), "Error while trying to import the settings");
+            }
         }
     }
 }

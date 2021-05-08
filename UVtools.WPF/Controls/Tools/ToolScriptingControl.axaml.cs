@@ -383,6 +383,11 @@ namespace UVtools.WPF.Controls.Tools
                                 MinWidth = 150
                             };
 
+                            if (numFLOAT.DecimalPlates > 0)
+                            {
+                                control.FormatString = $"F{numFLOAT.DecimalPlates}";
+                            }
+
                             var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
                             valueProperty.Subscribe(value =>
                             {
@@ -407,6 +412,11 @@ namespace UVtools.WPF.Controls.Tools
                                 MinWidth = 150
                             };
 
+                            if (numDOUBLE.DecimalPlates > 0)
+                            {
+                                control.FormatString = $"F{numDOUBLE.DecimalPlates}";
+                            }
+
                             var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
                             valueProperty.Subscribe(value =>
                             {
@@ -430,6 +440,11 @@ namespace UVtools.WPF.Controls.Tools
                                 Increment = (double)numDECIMAL.Increment,
                                 MinWidth = 150
                             };
+
+                            if (numDECIMAL.DecimalPlates > 0)
+                            {
+                                control.FormatString = $"F{numDECIMAL.DecimalPlates}";
+                            }
 
                             var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
                             valueProperty.Subscribe(value =>

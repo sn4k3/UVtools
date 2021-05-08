@@ -13,17 +13,17 @@ namespace UVtools.Core.Scripting
         /// <summary>
         /// Gets the input label
         /// </summary>
-        public string Label { get; init; }
+        public string Label { get; set; }
 
         /// <summary>
         /// Gets the hover tooltip for this input
         /// </summary>
-        public string ToolTip { get; init; }
+        public string ToolTip { get; set; }
 
         /// <summary>
         /// Gets the value representative unit name
         /// </summary>
-        public string Unit { get; init; }
+        public string Unit { get; set; }
     }
 
     public abstract class ScriptBaseInput<T> : ScriptBaseInput

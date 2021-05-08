@@ -284,67 +284,24 @@
         VerticalAlignment="Center">
         <TextBlock Text="{Binding SlicerFile.LayerHeight, StringFormat=Layer height: \{0\}mm}"/>
 
-        <TextBlock Text="  |  Bottom layers: "/>
-        <TextBlock Text="{Binding SlicerFile.BottomLayerCount}"/>
+        <TextBlock Text="  |  "/>
+        <TextBlock Text="{Binding SlicerFile.BottomLayerCount, StringFormat=Bottom layers: {0}}"/>
 
-        <TextBlock Text="  |  Exposures: "/>
+        <TextBlock Text="  |  "/>
+        <TextBlock Text="{Binding SlicerFile.ExposureRepresentation, StringFormat=Exposure: {0}}"/>
 
-        <TextBlock>
-          <TextBlock.Text>
-            <MultiBinding StringFormat="\{0\}s/\{1\}s">
-              <Binding Path="SlicerFile.BottomExposureTime"/>
-              <Binding Path="SlicerFile.ExposureTime"/>
-            </MultiBinding>
-          </TextBlock.Text>
-        </TextBlock>
+        <TextBlock IsVisible="{Binding SlicerFile.CanUseAnyLiftHeight}" Text="  |  "/>
+        <TextBlock IsVisible="{Binding SlicerFile.CanUseAnyLiftHeight}"
+                   Text="{Binding SlicerFile.LiftRepresentation, StringFormat=Lift: {0}}"/>
 
-        <TextBlock IsVisible="{Binding SlicerFile.BottomLiftHeight}" Text="  |  Lift: "/>
-        <TextBlock IsVisible="{Binding SlicerFile.BottomLiftHeight}">
-          <TextBlock.Text>
-            <MultiBinding StringFormat="\{0\}/\{1\}mm @ \{2\}/\{3\}mm/min">
-              <Binding Path="SlicerFile.BottomLiftHeight"/>
-              <Binding Path="SlicerFile.LiftHeight"/>
-              <Binding Path="SlicerFile.BottomLiftSpeed"/>
-              <Binding Path="SlicerFile.LiftSpeed"/>
-            </MultiBinding>
-          </TextBlock.Text>
-        </TextBlock>
 
-        <!--
-          <TextBlock IsVisible="{Binding SlicerFile.BottomLiftHeight}" Text="| Bottom lift:"/>
-          <TextBlock IsVisible="{Binding SlicerFile.BottomLiftHeight}">
-            <TextBlock.Text>
-              <MultiBinding StringFormat="\{0\}mm @ \{1\}mm/min">
-                <Binding Path="SlicerFile.BottomLiftHeight"/>
-                <Binding Path="SlicerFile.BottomLiftSpeed"/>
-              </MultiBinding>
-            </TextBlock.Text>
-          </TextBlock>
+        <TextBlock IsVisible="{Binding SlicerFile.CanUseRetractSpeed}" Text="  |  "/>
+        <TextBlock IsVisible="{Binding SlicerFile.CanUseRetractSpeed}"
+                   Text="{Binding SlicerFile.RetractRepresentation, StringFormat=Retract: {0}}"/>
 
-          <TextBlock IsVisible="{Binding SlicerFile.LiftHeight}" Text="| Lift:"/>
-          <TextBlock IsVisible="{Binding SlicerFile.LiftHeight}">
-            <TextBlock.Text>
-              <MultiBinding StringFormat="\{0\}mm @ \{1\}mm/min">
-                <Binding Path="SlicerFile.LiftHeight"/>
-                <Binding Path="SlicerFile.LiftSpeed"/>
-              </MultiBinding>
-            </TextBlock.Text>
-          </TextBlock>
-          !-->
-
-        <TextBlock IsVisible="{Binding SlicerFile.RetractSpeed}" Text="  |  "/>
-        <TextBlock IsVisible="{Binding SlicerFile.RetractSpeed}"
-          Text="{Binding SlicerFile.RetractSpeed, StringFormat=Retract Speed: \{0\}mm/min}"/>
-
-        <TextBlock IsVisible="{Binding SlicerFile.LightOffDelay}" Text="  |  Light-off: "/>
-        <TextBlock IsVisible="{Binding SlicerFile.LightOffDelay}">
-          <TextBlock.Text>
-            <MultiBinding StringFormat="\{0\}s/\{1\}s">
-              <Binding Path="SlicerFile.BottomLightOffDelay"/>
-              <Binding Path="SlicerFile.LightOffDelay"/>
-            </MultiBinding>
-          </TextBlock.Text>
-        </TextBlock>
+        <TextBlock IsVisible="{Binding SlicerFile.CanUseAnyLightOffDelay}" Text="  |  "/>
+        <TextBlock IsVisible="{Binding SlicerFile.CanUseAnyLightOffDelay}"
+                   Text="{Binding SlicerFile.LightOffDelayRepresentation, StringFormat=Light-off: {0}}"/>
 
         <TextBlock IsVisible="{Binding SlicerFile.PrintTimeHours}" Text="  |  "/>
         <TextBlock IsVisible="{Binding SlicerFile.PrintTimeHours}"

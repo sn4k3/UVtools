@@ -1,0 +1,99 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Tools.ToolPixelArithmeticControl">
+
+  <StackPanel Spacing="10">
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
+          ColumnDefinitions="Auto,10,Auto,20,Auto,10,Auto,20,Auto,10,Auto">
+        
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Operator:"/>
+
+        <ComboBox Grid.Row="0" Grid.Column="2"
+                  Grid.ColumnSpan="9"
+                  Width="610"
+                  Items="{Binding Operation.Operator, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  SelectedItem="{Binding Operation.Operator, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   IsVisible="{Binding Operation.ValueEnabled}"
+                   IsEnabled="{Binding Operation.ValueEnabled}"
+                   Text="Brightness:"/>
+
+        <StackPanel Grid.Row="2" Grid.Column="2"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal" Spacing="5"
+                    IsVisible="{Binding Operation.ValueEnabled}"
+                    IsEnabled="{Binding Operation.ValueEnabled}">
+            
+            <NumericUpDown
+                Minimum="0"
+                Maximum="255"
+                Value="{Binding Operation.Value}"/>
+
+            <TextBlock VerticalAlignment="Center"
+                       Text="{Binding Operation.ValuePercent, StringFormat={}{0}%}"/>
+
+        </StackPanel>
+
+      <CheckBox Grid.Row="2" Grid.Column="4"
+                Content="Affect empty/black pixels"
+                IsVisible="{Binding Operation.AffectBackPixelsEnabled}"
+                IsChecked="{Binding Operation.AffectBackPixels}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Right"
+                   IsVisible="{Binding Operation.ThresholdEnabled}"
+                   IsEnabled="{Binding Operation.ThresholdEnabled}"
+                   Text="Max.:"/>
+
+        <NumericUpDown Grid.Row="2" Grid.Column="6"
+                       Minimum="0"
+                       Maximum="255"
+                       IsVisible="{Binding Operation.ThresholdEnabled}"
+                       IsEnabled="{Binding Operation.ThresholdEnabled}"
+                       Value="{Binding Operation.ThresholdMaxValue}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="8"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Right"
+                   IsVisible="{Binding Operation.ThresholdEnabled}"
+                   IsEnabled="{Binding Operation.ThresholdEnabled}"
+                   Text="Threshold:"/>
+
+        <ComboBox Grid.Row="2" Grid.Column="10"
+                  Width="130"
+                  IsVisible="{Binding Operation.ThresholdEnabled}"
+                  IsEnabled="{Binding Operation.ThresholdEnabled}"
+                  Items="{Binding Operation.ThresholdType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  SelectedItem="{Binding Operation.ThresholdType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+
+        <TextBlock Grid.Row="4" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Presets:"/>
+
+        <StackPanel Grid.Row="4" Grid.Column="2"
+                    Grid.ColumnSpan="9"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal" Spacing="5">
+            <Button 
+                Command="{Binding Operation.PresetStripAntiAliasing}"
+                Content="Strip anti-aliasing"/>
+
+            <Button
+                IsVisible="{Binding Operation.ValueEnabled}"
+                Command="{Binding Operation.PresetHalfBrightness}"
+                Content="Half brightness"/>
+        </StackPanel>
+
+      </Grid>
+  </StackPanel>
+
+</UserControl>

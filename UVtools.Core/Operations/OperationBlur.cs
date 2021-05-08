@@ -175,7 +175,7 @@ namespace UVtools.Core.Operations
                     throw new ArgumentOutOfRangeException();
             }
 
-            ApplyMask(original, mat);
+            ApplyMask(original, target);
 
             return true;
         }

@@ -132,17 +132,25 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/code-branch-16x16.png"))
                 }
             },
-            new()
+            /*new()
             {
                 Tag = new OperationThreshold(),
                 Icon = new Avalonia.Controls.Image
                 {
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/th-16x16.png"))
                 }
+            },*/
+            new()
+            {
+                Tag = new OperationLayerArithmetic(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/square-root-16x16.png"))
+                }
             },
             new()
             {
-                Tag = new OperationArithmetic(),
+                Tag = new OperationPixelArithmetic(),
                 Icon = new Avalonia.Controls.Image
                 {
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/square-root-16x16.png"))
@@ -791,6 +799,9 @@ namespace UVtools.WPF
             LayerPixelPicker.Reset();
 
             ClearROIAndMask();
+
+            if(!Settings.Tools.LastUsedSettingsKeepOnCloseFile)
+                OperationSessionManager.Instance.Clear();
 
             ResetDataContext();
         }
@@ -1550,7 +1561,8 @@ namespace UVtools.WPF
                 return false;
             });
 
-
+            OperationSessionManager.Instance.Add(baseOperation);
+            
             IsGUIEnabled = true;
 
             if (result)

@@ -1,6 +1,30 @@
 # Changelog
 
-## /05/2021 - v2.10.0
+## 08/05/2021 - v2.11.0
+
+- **Tools:**
+   - (Add) Pixel Arithmetic
+   - (Add) Layer arithmetic: Operator $ to perform a absolute difference
+   - (Add) Allow to save and auto restore operation settings per session (#195)
+   - (Add) Allow to auto select the print volume ROI
+   - (Add) Allow to export and import operation settings from files
+   - (Improvement) Calculator - LightOff delay: Hide the bottom properties or the tab if the file format don't support them (#193)
+   - (Change) 'Arithmetic' to 'Layer arithmetic'   
+   - (Remove) 'Threshold pixels'
+   - (Fix) Solidfy was unable to save profiles
+   - (Fix) A redo operation (Ctrl + Shift + Z) wasn't restoring the settings when a default profile is set
+- **Operations:**
+   - (Fix) Passing a roi mat to `ApplyMask` would cause unwanted results
+   - (Improvement) Allow pass a full/original size mask to `ApplyMask`
+- **Scripting:**
+   - (Add) an script to create an printable file to clean the VAT (#170)
+   - (Improvement) Allow to change user input properties outside the initialization
+   - (Improvement) Auto format numerical input box with the fixed decimal cases
+- (Add) Settings: Section 'Tools'
+- (Improvement) GUI: The 'Lift, Retract and Light-off' at status bar now only shows for the supported formats
+- (Fix) Print time estimation calculation was wrong since v2.9.3 due a lacking of parentheses on the logic
+
+## 07/05/2021 - v2.10.0
 
 - **Exposure time finder:**
    - Add a enable option for each feature

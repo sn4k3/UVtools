@@ -240,7 +240,7 @@ namespace UVtools.Core.Operations
 
                 if (modified)
                 {
-                    ApplyMask(original, fullMat);
+                    ApplyMask(original, fullMatRoi);
                     SlicerFile[fullMatLayerIndex].LayerMat = fullMat;
                 }
 

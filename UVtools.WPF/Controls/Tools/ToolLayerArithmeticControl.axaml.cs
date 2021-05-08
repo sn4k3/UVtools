@@ -4,14 +4,14 @@ using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools
 {
-    public class ToolArithmeticControl : ToolControl
+    public class ToolLayerArithmeticControl : ToolControl
     {
-        public OperationArithmetic Operation => BaseOperation as OperationArithmetic;
+        public OperationLayerArithmetic Operation => BaseOperation as OperationLayerArithmetic;
 
-        public ToolArithmeticControl()
+        public ToolLayerArithmeticControl()
         {
             InitializeComponent();
-            BaseOperation = new OperationArithmetic(SlicerFile);
+            BaseOperation = new OperationLayerArithmetic(SlicerFile);
         }
 
         private void InitializeComponent()

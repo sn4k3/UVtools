@@ -22,7 +22,7 @@ namespace UVtools.WPF
     public sealed class UserSettings : BindableBase
     {
         #region Constants
-        public const ushort SETTINGS_VERSION = 2;
+        public const ushort SETTINGS_VERSION = 3;
         #endregion
 
         #region Sub classes
@@ -1122,6 +1122,36 @@ namespace UVtools.WPF
         }
         #endregion
 
+        #region Tools
+
+        [Serializable]
+        public sealed class ToolsUserSettings : BindableBase
+        {
+            private bool _restoreLastUsedSettings;
+            private bool _lastUsedSettingsKeepOnCloseFile = true;
+            private bool _lastUsedSettingsPriorityOverDefaultProfile = true;
+
+            public bool RestoreLastUsedSettings
+            {
+                get => _restoreLastUsedSettings;
+                set => RaiseAndSetIfChanged(ref _restoreLastUsedSettings, value);
+            }
+
+            public bool LastUsedSettingsKeepOnCloseFile
+            {
+                get => _lastUsedSettingsKeepOnCloseFile;
+                set => RaiseAndSetIfChanged(ref _lastUsedSettingsKeepOnCloseFile, value);
+            }
+
+            public bool LastUsedSettingsPriorityOverDefaultProfile
+            {
+                get => _lastUsedSettingsPriorityOverDefaultProfile;
+                set => RaiseAndSetIfChanged(ref _lastUsedSettingsPriorityOverDefaultProfile, value);
+            }
+        }
+
+        #endregion
+
         #region Automations
 
         [Serializable]
@@ -1214,6 +1244,7 @@ namespace UVtools.WPF
         private IssuesUserSettings _issues;
         private PixelEditorUserSettings _pixelEditor;
         private LayerRepairUserSettings _layerRepair;
+        private ToolsUserSettings _tools;
         private AutomationsUserSettings _automations;
         private ushort _settingsVersion = SETTINGS_VERSION;
         private string _appVersion;
@@ -1253,6 +1284,12 @@ namespace UVtools.WPF
         {
             get => _layerRepair ??= new LayerRepairUserSettings();
             set => _layerRepair = value;
+        }
+
+        public ToolsUserSettings Tools
+        {
+            get => _tools ??= new ToolsUserSettings();
+            set => _tools = value;
         }
 
         public AutomationsUserSettings Automations

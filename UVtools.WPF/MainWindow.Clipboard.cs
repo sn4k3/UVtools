@@ -70,7 +70,7 @@ namespace UVtools.WPF
                 return;
             }
             if (clip?.Operation is null) return;
-            if (clip.Operation.HaveROI)
+            /*if (clip.Operation.HaveROI)
             {
                 ROI = GetTransposedRectangle(clip.Operation.ROI);
             }
@@ -78,7 +78,7 @@ namespace UVtools.WPF
             if (clip.Operation.HaveMask)
             {
                 AddMaskPoints(clip.Operation.MaskPoints);
-            }
+            }*/
 
             var operation = await ShowRunOperation(clip.Operation.GetType(), clip.Operation);
             if (operation is null)

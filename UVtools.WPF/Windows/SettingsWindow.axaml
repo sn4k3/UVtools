@@ -1413,8 +1413,38 @@
         </ScrollViewer>
       </TabItem>
 
-      <TabItem Header="Automations" VerticalContentAlignment="Center">
+      <TabItem Header="Tools" VerticalContentAlignment="Center">
         <ScrollViewer Name="ScrollViewer5">
+          <StackPanel Orientation="Vertical" Spacing="5">
+            <Border
+                Classes="GroupBox"
+              Margin="5">
+
+              <StackPanel Orientation="Vertical">
+                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Common"/>
+                <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
+                  <CheckBox IsChecked="{Binding Settings.Tools.RestoreLastUsedSettings}" 
+                            Content="Keep and restore the last used settings on operations per user session/instance"/>
+
+                  <ToggleSwitch IsChecked="{Binding Settings.Tools.LastUsedSettingsKeepOnCloseFile}"
+                        OffContent="Discard the session when closing or loading files"
+                        OnContent="Keep the session when closing or loading files"/>
+
+                  <ToggleSwitch IsChecked="{Binding Settings.Tools.LastUsedSettingsPriorityOverDefaultProfile}"
+                                IsEnabled="{Binding Settings.Tools.RestoreLastUsedSettings}"
+                                OffContent="Default profile will priority over the session"
+                                OnContent="Session will priority over the default profile"/>
+                </StackPanel>
+
+              </StackPanel>
+            </Border>
+
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <TabItem Header="Automations" VerticalContentAlignment="Center">
+        <ScrollViewer Name="ScrollViewer6">
           <StackPanel Orientation="Vertical" Spacing="5">
             <Border
                 Classes="GroupBox"
@@ -1512,6 +1542,8 @@
             </StackPanel>
             </ScrollViewer>
           </TabItem>
+
+
 
     </TabControl>
 

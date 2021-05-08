@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -774,7 +775,11 @@ namespace UVtools.Core.FileFormats
         public virtual float BottomExposureTime
         {
             get => _bottomExposureTime;
-            set => RaiseAndSet(ref _bottomExposureTime, value);
+            set
+            {
+                RaiseAndSet(ref _bottomExposureTime, value);
+                RaisePropertyChanged(nameof(ExposureRepresentation));
+            }
         }
 
         /// <summary>
@@ -783,7 +788,11 @@ namespace UVtools.Core.FileFormats
         public virtual float ExposureTime
         {
             get => _exposureTime;
-            set => RaiseAndSet(ref _exposureTime, value);
+            set
+            {
+                RaiseAndSet(ref _exposureTime, value);
+                RaisePropertyChanged(nameof(ExposureRepresentation));
+            }
         }
 
         /// <summary>
@@ -792,7 +801,11 @@ namespace UVtools.Core.FileFormats
         public virtual float BottomLiftHeight
         {
             get => _bottomLiftHeight;
-            set => RaiseAndSet(ref _bottomLiftHeight, value);
+            set
+            {
+                RaiseAndSet(ref _bottomLiftHeight, value);
+                RaisePropertyChanged(nameof(LiftRepresentation));
+            }
         }
 
         /// <summary>
@@ -801,7 +814,11 @@ namespace UVtools.Core.FileFormats
         public virtual float LiftHeight
         {
             get => _liftHeight;
-            set => RaiseAndSet(ref _liftHeight, value);
+            set
+            {
+                RaiseAndSet(ref _liftHeight, value);
+                RaisePropertyChanged(nameof(LiftRepresentation));
+            }
         }
 
         /// <summary>
@@ -810,7 +827,11 @@ namespace UVtools.Core.FileFormats
         public virtual float BottomLiftSpeed
         {
             get => _bottomLiftSpeed;
-            set => RaiseAndSet(ref _bottomLiftSpeed, value);
+            set
+            {
+                RaiseAndSet(ref _bottomLiftSpeed, value);
+                RaisePropertyChanged(nameof(LiftRepresentation));
+            }
         }
 
         /// <summary>
@@ -819,7 +840,11 @@ namespace UVtools.Core.FileFormats
         public virtual float LiftSpeed
         {
             get => _liftSpeed;
-            set => RaiseAndSet(ref _liftSpeed, value);
+            set
+            {
+                RaiseAndSet(ref _liftSpeed, value);
+                RaisePropertyChanged(nameof(LiftRepresentation));
+            }
         }
 
         /// <summary>
@@ -828,7 +853,11 @@ namespace UVtools.Core.FileFormats
         public virtual float RetractSpeed
         {
             get => _retractSpeed;
-            set => RaiseAndSet(ref _retractSpeed, value);
+            set
+            {
+                RaiseAndSet(ref _retractSpeed, value);
+                RaisePropertyChanged(nameof(RetractRepresentation));
+            }
         }
 
         /// <summary>
@@ -837,7 +866,11 @@ namespace UVtools.Core.FileFormats
         public virtual float BottomLightOffDelay
         {
             get => _bottomLightOffDelay;
-            set => RaiseAndSet(ref _bottomLightOffDelay, value);
+            set
+            {
+                RaiseAndSet(ref _bottomLightOffDelay, value);
+                RaisePropertyChanged(nameof(LightOffDelayRepresentation));
+            }
         }
 
         /// <summary>
@@ -846,7 +879,11 @@ namespace UVtools.Core.FileFormats
         public virtual float LightOffDelay
         {
             get => _lightOffDelay;
-            set => RaiseAndSet(ref _lightOffDelay, value);
+            set
+            {
+                RaiseAndSet(ref _lightOffDelay, value);
+                RaisePropertyChanged(nameof(LightOffDelayRepresentation));
+            }
         }
 
         /// <summary>
@@ -865,6 +902,132 @@ namespace UVtools.Core.FileFormats
         {
             get => _lightPwm;
             set => RaiseAndSet(ref _lightPwm, value);
+        }
+
+        public bool CanUseBottomExposureTime => HavePrintParameterModifier(PrintParameterModifier.BottomExposureSeconds);
+        public bool CanUseExposureTime => HavePrintParameterModifier(PrintParameterModifier.ExposureSeconds);
+        public bool CanUseAnyExposureTime => CanUseBottomExposureTime || CanUseExposureTime;
+
+        public bool CanUseBottomLiftHeight => HavePrintParameterModifier(PrintParameterModifier.BottomLiftHeight);
+        public bool CanUseLiftHeight => HavePrintParameterModifier(PrintParameterModifier.LiftHeight);
+        public bool CanUseAnyLiftHeight => CanUseBottomLiftHeight || CanUseLiftHeight;
+
+        public bool CanUseBottomLiftSpeed => HavePrintParameterModifier(PrintParameterModifier.BottomLiftSpeed);
+        public bool CanUseLiftSpeed => HavePrintParameterModifier(PrintParameterModifier.LiftHeight);
+        public bool CanUseAnyLiftSpeed => CanUseBottomLiftSpeed || CanUseLiftSpeed;
+
+        public bool CanUseRetractSpeed => HavePrintParameterModifier(PrintParameterModifier.RetractSpeed);
+
+        public bool CanUseBottomLightOffDelay => HavePrintParameterModifier(PrintParameterModifier.BottomLightOffDelay);
+        public bool CanUseLightOffDelay => HavePrintParameterModifier(PrintParameterModifier.LightOffDelay);
+        public bool CanUseAnyLightOffDelay => CanUseBottomLightOffDelay || CanUseLightOffDelay;
+
+        public bool CanUseBottomLightPWM => HavePrintParameterModifier(PrintParameterModifier.BottomLightPWM);
+        public bool CanUseLightPWM => HavePrintParameterModifier(PrintParameterModifier.LightPWM);
+        public bool CanUseAnyLightPWM => CanUseBottomLightPWM || CanUseLightPWM;
+
+        public string ExposureRepresentation
+        {
+            get
+            {
+                var str = string.Empty;
+
+                if (CanUseBottomExposureTime)
+                {
+                    str += ExposureTime.ToString(CultureInfo.InvariantCulture);
+                }
+                if (CanUseExposureTime)
+                {
+                    if (!string.IsNullOrEmpty(str)) str += '/';
+                    str += BottomExposureTime.ToString(CultureInfo.InvariantCulture);
+                }
+
+                if (!string.IsNullOrEmpty(str)) str += 's';
+
+                return str;
+            }
+        }
+
+        public string LiftRepresentation
+        {
+            get
+            {
+                var str = string.Empty;
+
+                var haveBottomLiftHeight = CanUseBottomLiftHeight;
+                var haveLiftHeight = CanUseLiftHeight;
+
+                if (!haveBottomLiftHeight && !haveLiftHeight) return str;
+
+                if (haveBottomLiftHeight)
+                {
+                    str += BottomLiftHeight.ToString(CultureInfo.InvariantCulture);
+                }
+                if (haveLiftHeight)
+                {
+                    if (!string.IsNullOrEmpty(str)) str += '/';
+                    str += LiftHeight.ToString(CultureInfo.InvariantCulture);
+                }
+
+                if (string.IsNullOrEmpty(str)) return str;
+
+                str += "mm @ ";
+
+                var haveBottomLiftSpeed = CanUseBottomLiftSpeed;
+                var haveLiftSpeed = CanUseLiftSpeed;
+                if (haveBottomLiftSpeed)
+                {
+                    str += BottomLiftSpeed.ToString(CultureInfo.InvariantCulture);
+                }
+                if (haveLiftSpeed)
+                {
+                    if (haveBottomLiftSpeed) str += '/';
+                    str += LiftSpeed.ToString(CultureInfo.InvariantCulture);
+                }
+
+                str += "mm/min";
+
+                return str;
+            }
+        }
+
+        public string RetractRepresentation
+        {
+            get
+            {
+                var str = string.Empty;
+
+                if (CanUseRetractSpeed)
+                {
+                    str += RetractSpeed.ToString(CultureInfo.InvariantCulture);
+                }
+
+                if (!string.IsNullOrEmpty(str)) str += "mm/min";
+
+                return str;
+            }
+        }
+
+        public string LightOffDelayRepresentation
+        {
+            get
+            {
+                var str = string.Empty;
+
+                if (CanUseBottomLightOffDelay)
+                {
+                    str += BottomLightOffDelay.ToString(CultureInfo.InvariantCulture);
+                }
+                if (CanUseLightOffDelay)
+                {
+                    if (!string.IsNullOrEmpty(str)) str += '/';
+                    str += LightOffDelay.ToString(CultureInfo.InvariantCulture);
+                }
+
+                if (!string.IsNullOrEmpty(str)) str += 's';
+
+                return str;
+            }
         }
 
         #endregion
@@ -915,7 +1078,7 @@ namespace UVtools.Core.FileFormats
                         }
 
                         var lightOffDelay = layer.CalculateLightOffDelay();
-                        time += layer.ExposureTime + lightOffDelay > layer.LightOffDelay ? lightOffDelay : layer.LightOffDelay;
+                        time += layer.ExposureTime + (lightOffDelay > layer.LightOffDelay ? lightOffDelay : layer.LightOffDelay);
                         /*if (lightOffDelay >= layer.LightOffDelay)
                             time += lightOffDelay;
                         else

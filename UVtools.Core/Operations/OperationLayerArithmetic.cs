@@ -13,19 +13,18 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV;
 using UVtools.Core.FileFormats;
-using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
     [Serializable]
-    public class OperationArithmetic : Operation
+    public class OperationLayerArithmetic : Operation
     {
         #region Members
         private string _sentence;
         #endregion
 
         #region Enums
-        public enum ArithmeticOperators : byte
+        public enum LayerArithmeticOperators : byte
         {
             None,
             Add,
@@ -34,7 +33,8 @@ namespace UVtools.Core.Operations
             Divide,
             BitwiseAnd,
             BitwiseOr,
-            BitwiseXor
+            BitwiseXor,
+            AbsDiff
         }
         #endregion
 
@@ -42,23 +42,24 @@ namespace UVtools.Core.Operations
         public sealed class ArithmeticOperation
         {
             public uint LayerIndex { get; }
-            public ArithmeticOperators Operator { get; }
+            public LayerArithmeticOperators Operator { get; }
 
-            public ArithmeticOperation(uint layerIndex, ArithmeticOperators arithmeticOperator)
+            public ArithmeticOperation(uint layerIndex, LayerArithmeticOperators layerArithmeticOperator)
             {
                 LayerIndex = layerIndex;
-                Operator = arithmeticOperator;
+                Operator = layerArithmeticOperator;
             }
         }
         #endregion
 
         #region Overrides
-        public override string Title => "Arithmetic";
+        public override string Title => "Layer arithmetic";
         public override string Description =>
-            "Perform arithmetic operations over the layers pixels.\n\n" +
+            "Perform arithmetic operations over the layers\n" +
             "Available operators:\n" +
             " +  -  *  /  = Add, Subtract, Multiply, Divide\n" +
-            " &  |  ^  = Bitwise AND, OR, XOR\n\n" +
+            " &  |  ^  = Bitwise AND, OR, XOR\n" +
+            " $ = Absolute difference\n\n" +
             "Syntax: <set_to_layer_indexes> = <layer_index> <operator> <layer_index>\n" +
             "When: \"<set_to_layer_indexes> =\" is omitted, the result will assign to the first layer on the sentence.\n\n" +
             "Example 1: 10+11\n" +
@@ -115,9 +116,9 @@ namespace UVtools.Core.Operations
 
         #region Constructor
 
-        public OperationArithmetic() { }
+        public OperationLayerArithmetic() { }
 
-        public OperationArithmetic(FileFormat slicerFile) : base(slicerFile) { }
+        public OperationLayerArithmetic(FileFormat slicerFile) : base(slicerFile) { }
 
         #endregion
 
@@ -155,33 +156,36 @@ namespace UVtools.Core.Operations
                     continue;
                 }
 
-                ArithmeticOperators op = ArithmeticOperators.None;
+                LayerArithmeticOperators op = LayerArithmeticOperators.None;
                 switch (c)
                 {
                     case '+':
-                        op = ArithmeticOperators.Add;
+                        op = LayerArithmeticOperators.Add;
                         break;
                     case '-':
-                        op = ArithmeticOperators.Subtract;
+                        op = LayerArithmeticOperators.Subtract;
                         break;
                     case '*':
-                        op = ArithmeticOperators.Multiply;
+                        op = LayerArithmeticOperators.Multiply;
                         break;
                     case '/':
-                        op = ArithmeticOperators.Divide;
+                        op = LayerArithmeticOperators.Divide;
                         break;
                     case '&':
-                        op = ArithmeticOperators.BitwiseAnd;
+                        op = LayerArithmeticOperators.BitwiseAnd;
                         break;
                     case '|':
-                        op = ArithmeticOperators.BitwiseOr;
+                        op = LayerArithmeticOperators.BitwiseOr;
                         break;
                     case '^':
-                        op = ArithmeticOperators.BitwiseXor;
+                        op = LayerArithmeticOperators.BitwiseXor;
+                        break;
+                    case '$':
+                        op = LayerArithmeticOperators.AbsDiff;
                         break;
                 }
 
-                if (op == ArithmeticOperators.None  // No valid operator
+                if (op == LayerArithmeticOperators.None  // No valid operator
                     || string.IsNullOrWhiteSpace(layerIndexStr) // Started with a operator instead of layer
                     ) continue; 
 
@@ -200,7 +204,7 @@ namespace UVtools.Core.Operations
             {
                 if (uint.TryParse(layerIndexStr, out var layerIndex))
                 {
-                    Operations.Add(new ArithmeticOperation(layerIndex, ArithmeticOperators.None));
+                    Operations.Add(new ArithmeticOperation(layerIndex, LayerArithmeticOperators.None));
                 }
             }
 
@@ -227,26 +231,29 @@ namespace UVtools.Core.Operations
                 using var imageMask = GetMask(image);
                 switch (Operations[i - 1].Operator)
                 {
-                    case ArithmeticOperators.Add:
+                    case LayerArithmeticOperators.Add:
                         CvInvoke.Add(resultRoi, imageRoi, resultRoi, imageMask);
                         break;
-                    case ArithmeticOperators.Subtract:
+                    case LayerArithmeticOperators.Subtract:
                         CvInvoke.Subtract(resultRoi, imageRoi, resultRoi, imageMask);
                         break;
-                    case ArithmeticOperators.Multiply:
+                    case LayerArithmeticOperators.Multiply:
                         CvInvoke.Multiply(resultRoi, imageRoi, resultRoi);
                         break;
-                    case ArithmeticOperators.Divide:
+                    case LayerArithmeticOperators.Divide:
                         CvInvoke.Divide(resultRoi, imageRoi, resultRoi);
                         break;
-                    case ArithmeticOperators.BitwiseAnd:
+                    case LayerArithmeticOperators.BitwiseAnd:
                         CvInvoke.BitwiseAnd(resultRoi, imageRoi, resultRoi, imageMask);
                         break;
-                    case ArithmeticOperators.BitwiseOr:
+                    case LayerArithmeticOperators.BitwiseOr:
                         CvInvoke.BitwiseOr(resultRoi, imageRoi, resultRoi, imageMask);
                         break;
-                    case ArithmeticOperators.BitwiseXor:
+                    case LayerArithmeticOperators.BitwiseXor:
                         CvInvoke.BitwiseXor(resultRoi, imageRoi, resultRoi, imageMask);
+                        break;
+                    case LayerArithmeticOperators.AbsDiff:
+                        CvInvoke.AbsDiff(resultRoi, imageRoi, resultRoi);
                         break;
                 }
             }
@@ -272,7 +279,7 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Equality
-        protected bool Equals(OperationArithmetic other)
+        protected bool Equals(OperationLayerArithmetic other)
         {
             return _sentence == other._sentence;
         }
@@ -282,7 +289,7 @@ namespace UVtools.Core.Operations
             if (obj is null) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
-            return Equals((OperationArithmetic) obj);
+            return Equals((OperationLayerArithmetic) obj);
         }
 
         public override int GetHashCode()

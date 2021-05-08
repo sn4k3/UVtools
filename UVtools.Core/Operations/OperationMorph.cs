@@ -183,7 +183,7 @@ namespace UVtools.Core.Operations
             using var original = mat.Clone();
             var target = GetRoiOrDefault(mat);
             CvInvoke.MorphologyEx(target, target, (MorphOp) MorphOperation, Kernel.Matrix, Kernel.Anchor, iterations, BorderType.Reflect101, default);
-            ApplyMask(original, mat);
+            ApplyMask(original, target);
             return true;
         }
 

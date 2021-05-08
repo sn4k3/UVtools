@@ -15,21 +15,21 @@ namespace UVtools.Core.Scripting
         /// <summary>
         /// Gets the minimum for this input
         /// </summary>
-        public T Minimum { get; init; }
+        public T Minimum { get; set; }
 
         /// <summary>
         /// Gets the minimum for this input
         /// </summary>
-        public T Maximum { get; init; }
+        public T Maximum { get; set; }
 
         /// <summary>
         /// Gets the increment value for this
         /// </summary>
-        public T Increment { get; init; }
+        public T Increment { get; set; }
 
         /// <summary>
         /// Gets the number of decimal plates to round the value
         /// </summary>
-        public byte DecimalPlates { get; init; } = 2;
+        public byte DecimalPlates { get; set; } = 2;
     }
 }

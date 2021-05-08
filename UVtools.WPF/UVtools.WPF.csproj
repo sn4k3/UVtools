@@ -12,7 +12,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <Version>2.10.0</Version>
+    <Version>2.11.0</Version>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -74,6 +74,9 @@
     <AvaloniaResource Include="Assets\Icons\*" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Controls\Tools\ToolLayerArithmeticControl.axaml.cs">
+      <DependentUpon>ToolLayerArithmeticControl.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Windows\PrusaSlicerManagerWindow.axaml.cs">
       <DependentUpon>PrusaSlicerManagerWindow.axaml</DependentUpon>
     </Compile>

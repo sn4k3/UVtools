@@ -13,6 +13,7 @@ using Emgu.CV;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Managers;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -341,21 +342,37 @@ namespace UVtools.Core.Operations
         /// </summary>
         public virtual void InitWithSlicerFile() { }
 
+        public void ClearROI()
+        {
+            ROI = Rectangle.Empty;
+        }
+
+        public void ClearROIandMasks()
+        {
+            ClearROI();
+            ClearMasks();
+        }
+
         public void SetROIIfEmpty(Rectangle roi)
         {
             if (HaveROI) return;
             ROI = roi;
         }
 
+        public Mat GetRoiOrDefault(Mat defaultMat)
+        {
+            return HaveROI && defaultMat.Size != _roi.Size ? new Mat(defaultMat, _roi) : defaultMat;
+        }
+
+        public void ClearMasks()
+        {
+            MaskPoints = null;
+        }
+
         public void SetMasksIfEmpty(Point[][] points)
         {
             if (HaveMask) return;
             MaskPoints = points;
-        }
-
-        public Mat GetRoiOrDefault(Mat defaultMat)
-        {
-            return HaveROI && defaultMat.Size != _roi.Size ? new Mat(defaultMat, _roi) : defaultMat;
         }
 
         public Mat GetMask(Mat mat) => GetMask(_maskPoints, mat);
@@ -379,8 +396,15 @@ namespace UVtools.Core.Operations
             {
                 resultRoi = GetRoiOrDefault(result);
             }
-            resultRoi.CopyTo(originalRoi, mask);
-            originalRoi.CopyTo(resultRoi);
+
+            if (mask.Size != resultRoi.Size) // Accept a full size mask
+            {
+                mask = GetRoiOrDefault(mask);
+            }
+
+            using var tempMat = originalRoi.Clone();
+            resultRoi.CopyTo(tempMat, mask);
+            tempMat.CopyTo(resultRoi);
         }
 
         /// <summary>
@@ -390,7 +414,7 @@ namespace UVtools.Core.Operations
         /// <param name="result">Result image which will also be modified</param>
         public void ApplyMask(Mat original, Mat result)
         {
-            using var mask = GetMask(result);
+            using var mask = GetMask(original);
             ApplyMask(original, result, mask);
         }
 
@@ -408,6 +432,8 @@ namespace UVtools.Core.Operations
                 var msg = Validate();
                 if(!string.IsNullOrWhiteSpace(msg)) throw new InvalidOperationException($"{Title} can't execute due some errors:\n{msg}");
             }
+
+            
 
             progress ??= new OperationProgress();
             progress.Reset(ProgressAction, LayerRangeCount);

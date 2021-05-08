@@ -152,7 +152,7 @@ namespace UVtools.Core.Operations
                 CvInvoke.Flip(target, target, FlipTypeOpenCV);
             }
 
-            ApplyMask(original, mat);
+            ApplyMask(original, target);
 
             return true;
         }

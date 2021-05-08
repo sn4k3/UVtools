@@ -101,7 +101,7 @@ namespace UVtools.Core.Operations
             using var original = mat.Clone();
             var target = GetRoiOrDefault(mat);
             CvInvoke.Threshold(target, target, Threshold, Maximum, Type);
-            ApplyMask(original, mat);
+            ApplyMask(original, target);
             return true;
         }
 

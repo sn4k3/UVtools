@@ -130,7 +130,7 @@ namespace UVtools.Core.Operations
                 CvInvoke.DrawContours(target, contours, i, EmguExtensions.WhiteByte, -1);
             }
 
-            ApplyMask(original, mat);
+            ApplyMask(original, target);
 
             return true;
         }

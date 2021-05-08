@@ -13,6 +13,6 @@ namespace UVtools.Core.Scripting
         /// <summary>
         /// Gets if this input accepts multi lines
         /// </summary>
-        public bool MultiLine { get; init; }
+        public bool MultiLine { get; set; }
     }
 }
