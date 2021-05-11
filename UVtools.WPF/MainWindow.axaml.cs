@@ -19,6 +19,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UVtools.Core;
 using UVtools.Core.Extensions;
@@ -651,11 +652,8 @@ namespace UVtools.WPF
 
         protected override void OnKeyUp(KeyEventArgs e)
         {
-            base.OnKeyUp(e);
             _globalModifiers = e.KeyModifiers;
-            if ((e.Key == Key.LeftShift ||
-                 e.Key == Key.RightShift ||
-                (e.KeyModifiers & KeyModifiers.Shift) != 0) &&
+            if ((e.Key is Key.LeftShift or Key.RightShift || (e.KeyModifiers & KeyModifiers.Shift) != 0) &&
                  (e.KeyModifiers & KeyModifiers.Control) != 0 &&
                  e.Key == Key.Z)
             {
@@ -663,11 +661,9 @@ namespace UVtools.WPF
                 ClipboardUndo(true);
                 return;
             }
-                
-            if (e.Key == Key.LeftShift ||
-                e.Key == Key.RightShift ||
-                (e.KeyModifiers & KeyModifiers.Shift) == 0 ||
-                (e.KeyModifiers & KeyModifiers.Control) == 0)
+
+            if (e.Key is Key.LeftShift or Key.RightShift 
+                || (e.KeyModifiers & KeyModifiers.Shift) == 0 || (e.KeyModifiers & KeyModifiers.Control) == 0)
             {
                 LayerImageBox.TrackerImage = null;
                 LayerImageBox.Cursor = StaticControls.ArrowCursor;
@@ -675,7 +671,12 @@ namespace UVtools.WPF
                 LayerImageBox.SelectionMode = AdvancedImageBox.SelectionModes.None;
                 IsTooltipOverlayVisible = false;
                 e.Handled = true;
+                return;
             }
+
+            
+
+            base.OnKeyUp(e);
         }
         
         public void OpenContextMenu(string name)
@@ -934,12 +935,42 @@ namespace UVtools.WPF
 #endif
         }
 
-        public void ProcessFiles(string[] files, bool openNewWindow = false)
+        public async void ProcessFiles(string[] files, bool openNewWindow = false)
         {
             if (files is null || files.Length == 0) return;
 
             for (int i = 0; i < files.Length; i++)
             {
+                if (!File.Exists(files[i])) continue;
+
+                if (files[i].EndsWith(".uvtop"))
+                {
+                    if(!IsFileLoaded) continue;
+                    try
+                    {
+                        var fileText = File.ReadAllText(files[i]);
+                        var match = Regex.Match(fileText, @"(?:<\/\s*Operation)([a-zA-Z0-9_]+)(?:\s*>)");
+                        if(!match.Success) continue;
+                        if(match.Groups.Count < 1) continue;
+                        var operationName = match.Groups[1].Value;
+                        var baseType = typeof(Operation).FullName;
+                        if(string.IsNullOrWhiteSpace(baseType)) continue;
+                        var classname = baseType + operationName+", UVtools.Core";
+                        var type = Type.GetType(classname);
+                        if(type is null) continue;
+                        var operation = Operation.Deserialize(files[i], type);
+                        await ShowRunOperation(type, operation);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.WriteLine(e);
+                        throw;
+                    }
+                    
+                    continue;
+                }
+
+
                 if (i == 0 && !openNewWindow && (_globalModifiers & KeyModifiers.Shift) == 0)
                 {
                     ProcessFile(files[i]);
@@ -1066,15 +1097,16 @@ namespace UVtools.WPF
             }
 
             bool modified = false;
-            if (
-                Settings.Automations.BottomLightOffDelay > 0 &&
-                SlicerFile.PrintParameterModifiers is not null &&
-                SlicerFile.PrintParameterModifiers.Contains(FileFormat.PrintParameterModifier.BottomLightOffDelay) &&
-                (!Settings.Automations.ChangeOnlyLightOffDelayIfZero || Settings.Automations.ChangeOnlyLightOffDelayIfZero && SlicerFile.BottomLightOffDelay <= 0)
-                )
+            if (Settings.Automations.LightOffDelaySetMode != Enumerations.LightOffDelaySetMode.NoAction &&
+                SlicerFile.CanUseBottomLightOffDelay &&
+                (Settings.Automations.ChangeOnlyLightOffDelayIfZero && SlicerFile.BottomLightOffDelay == 0 || !Settings.Automations.ChangeOnlyLightOffDelayIfZero))
             {
-                var lightOff = OperationCalculator.LightOffDelayC.CalculateSeconds(SlicerFile.BottomLiftHeight,
-                    SlicerFile.BottomLiftSpeed, SlicerFile.RetractSpeed, (float)Settings.Automations.BottomLightOffDelay);
+                float lightOff = Settings.Automations.LightOffDelaySetMode switch
+                {
+                    Enumerations.LightOffDelaySetMode.UpdateWithExtraDelay => SlicerFile.CalculateBottomLightOffDelay((float) Settings.Automations.BottomLightOffDelay),
+                    Enumerations.LightOffDelaySetMode.UpdateWithoutExtraDelay => SlicerFile.CalculateBottomLightOffDelay(),
+                    _ => 0
+                };
                 if (lightOff != SlicerFile.BottomLightOffDelay)
                 {
                     modified = true;
@@ -1082,13 +1114,16 @@ namespace UVtools.WPF
                 }
             }
 
-            if (Settings.Automations.LightOffDelay > 0 &&
-                SlicerFile.PrintParameterModifiers is not null &&
-                SlicerFile.PrintParameterModifiers.Contains(FileFormat.PrintParameterModifier.LightOffDelay) &&
-                (!Settings.Automations.ChangeOnlyLightOffDelayIfZero || Settings.Automations.ChangeOnlyLightOffDelayIfZero && SlicerFile.LightOffDelay <= 0))
+            if (Settings.Automations.LightOffDelaySetMode != Enumerations.LightOffDelaySetMode.NoAction &&
+                SlicerFile.CanUseLightOffDelay &&
+                (Settings.Automations.ChangeOnlyLightOffDelayIfZero && SlicerFile.LightOffDelay == 0 || !Settings.Automations.ChangeOnlyLightOffDelayIfZero))
             {
-                var lightOff = OperationCalculator.LightOffDelayC.CalculateSeconds(SlicerFile.LiftHeight,
-                    SlicerFile.LiftSpeed, SlicerFile.RetractSpeed, (float)Settings.Automations.LightOffDelay);
+                float lightOff = Settings.Automations.LightOffDelaySetMode switch
+                {
+                    Enumerations.LightOffDelaySetMode.UpdateWithExtraDelay => SlicerFile.CalculateNormalLightOffDelay((float)Settings.Automations.LightOffDelay),
+                    Enumerations.LightOffDelaySetMode.UpdateWithoutExtraDelay => SlicerFile.CalculateNormalLightOffDelay(),
+                    _ => 0
+                };
                 if (lightOff != SlicerFile.LightOffDelay)
                 {
                     modified = true;
@@ -1470,16 +1505,13 @@ namespace UVtools.WPF
             {
                 //controlType = toolTypeBase;
                 removeContent = true;
-                control = new ToolControl(type.CreateInstance<Operation>());
+                control = new ToolControl(type.CreateInstance<Operation>(SlicerFile));
             }
             else
             {
                 control = controlType.CreateInstance<ToolControl>();
                 if (control is null) return null;
             }
-
-            if(loadOperation is not null)
-                control.BaseOperation = loadOperation;
 
             if (!control.CanRun)
             {
@@ -1492,7 +1524,10 @@ namespace UVtools.WPF
             }
 
             var window = new ToolWindow(control);
-            //window.ShowDialog(this);
+            if (loadOperation is not null)
+            {
+                control.BaseOperation = loadOperation;
+            }
             await window.ShowDialog(this);
             if (window.DialogResult != DialogResults.OK) return null;
             var operation = control.BaseOperation;
@@ -1540,6 +1575,7 @@ namespace UVtools.WPF
 
             IsGUIEnabled = false;
             ShowProgressWindow(baseOperation.ProgressTitle, baseOperation.CanCancel);
+            OperationSessionManager.Instance.Add(baseOperation);
 
             Clipboard.Snapshot();
 
@@ -1561,8 +1597,6 @@ namespace UVtools.WPF
                 return false;
             });
 
-            OperationSessionManager.Instance.Add(baseOperation);
-            
             IsGUIEnabled = true;
 
             if (result)

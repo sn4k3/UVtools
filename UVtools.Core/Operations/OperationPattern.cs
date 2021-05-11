@@ -75,8 +75,8 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _anchor, value);
         }
 
-        public uint ImageWidth { get; }
-        public uint ImageHeight { get; }
+        public uint ImageWidth { get; private set; }
+        public uint ImageHeight { get; private set; }
 
         public ushort Cols
         {
@@ -190,12 +190,24 @@ namespace UVtools.Core.Operations
 
         public OperationPattern() { }
 
-        public OperationPattern(FileFormat slicerFile, Rectangle srcRoi = default) : base(slicerFile)
+        public OperationPattern(FileFormat slicerFile) : base(slicerFile)
         {
-            ImageWidth = slicerFile.ResolutionX;
-            ImageHeight = slicerFile.ResolutionY;
+            SetRoi(SlicerFile.BoundingRectangle);
+        }
 
-            SetRoi(srcRoi.IsEmpty ? slicerFile.BoundingRectangle : srcRoi);
+        public OperationPattern(FileFormat slicerFile, Rectangle srcRoi) : base(slicerFile)
+        {
+            SetRoi(srcRoi.IsEmpty ? SlicerFile.BoundingRectangle : srcRoi);
+        }
+
+        public override void InitWithSlicerFile()
+        {
+            base.InitWithSlicerFile();
+
+            ImageWidth = SlicerFile.ResolutionX;
+            ImageHeight = SlicerFile.ResolutionY;
+
+            SetRoi(SlicerFile.BoundingRectangle);
             Fill();
         }
 

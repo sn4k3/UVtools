@@ -18,8 +18,8 @@ namespace UVtools.WPF.Controls.Tools
         public ToolMoveControl()
         {
             InitializeComponent();
-            var roi = App.MainWindow.ROI;
-            BaseOperation = new OperationMove(SlicerFile, roi);
+            
+            BaseOperation = new OperationMove(SlicerFile);
 
             Operation.PropertyChanged += (sender, e) =>
             {
@@ -40,15 +40,12 @@ namespace UVtools.WPF.Controls.Tools
             switch (callback)
             {
                 case ToolWindow.Callbacks.Init:
-                    ParentWindow.IsButton1Visible = true;
+                case ToolWindow.Callbacks.Loaded:
+                    Operation.ROI = App.MainWindow.ROI.IsEmpty ? SlicerFile.BoundingRectangle : App.MainWindow.ROI;
                     break;
                 case ToolWindow.Callbacks.ClearROI:
-                    Operation.ROI = App.SlicerFile.LayerManager.BoundingRectangle;
+                    Operation.ROI = SlicerFile.BoundingRectangle;
                     Operation.Reset();
-                    break;
-                case ToolWindow.Callbacks.Button1:
-                    Operation.Reset();
-                    IsMiddleCenterChecked = true;
                     break;
             }
         }

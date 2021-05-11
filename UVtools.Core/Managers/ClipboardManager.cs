@@ -13,11 +13,14 @@ using System.Diagnostics;
 using System.Linq;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
+using UVtools.Core.Operations;
 
 namespace UVtools.Core.Managers
 {
     public sealed class ClipboardItem : List<Layer>
     {
+        private Operation _operation;
+
         #region Properties
         
         /// <summary>
@@ -34,8 +37,16 @@ namespace UVtools.Core.Managers
 
         public bool IsFullBackup { get; set; }
 
-        
-        public Operations.Operation Operation { get; set; }
+
+        public Operations.Operation Operation
+        {
+            get => _operation;
+            set
+            {
+                _operation = value;
+                _operation.ImportedFrom = Operation.OperationImportFrom.Undo;
+            }
+        }
 
         #endregion
 

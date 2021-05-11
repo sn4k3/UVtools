@@ -59,7 +59,7 @@ namespace UVtools.WPF.Controls.Calibrators
             switch (callback)
             {
                 case ToolWindow.Callbacks.Init:
-                case ToolWindow.Callbacks.ProfileLoaded:
+                case ToolWindow.Callbacks.Loaded:
                     Operation.PropertyChanged += (sender, e) =>
                     {
                         _timer.Stop();

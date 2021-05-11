@@ -102,17 +102,17 @@ namespace UVtools.Core.Operations
         public OperationCalibrateStressTower() { }
 
         public OperationCalibrateStressTower(FileFormat slicerFile) : base(slicerFile)
-        {
-            _layerHeight = (decimal)slicerFile.LayerHeight;
-            _bottomLayers = slicerFile.BottomLayerCount;
-            _bottomExposure = (decimal)slicerFile.BottomExposureTime;
-            _normalExposure = (decimal)slicerFile.ExposureTime;
-            _mirrorOutput = slicerFile.MirrorDisplay;
-        }
+        { }
 
         public override void InitWithSlicerFile()
         {
             base.InitWithSlicerFile();
+            _layerHeight = (decimal)SlicerFile.LayerHeight;
+            _bottomLayers = SlicerFile.BottomLayerCount;
+            _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
+            _normalExposure = (decimal)SlicerFile.ExposureTime;
+            _mirrorOutput = SlicerFile.MirrorDisplay;
+
             if (SlicerFile.DisplayWidth > 0)
                 DisplayWidth = (decimal)SlicerFile.DisplayWidth;
             if (SlicerFile.DisplayHeight > 0)

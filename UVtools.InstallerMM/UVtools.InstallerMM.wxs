@@ -302,11 +302,14 @@
         <Component Id="owc7609DFEE03B95E830FD72B0699C9CF8C" Guid="c7b987b7-1a3c-0d2c-7831-ad6f4c3871e7">
           <File Id="owf7609DFEE03B95E830FD72B0699C9CF8C" Source="$(var.SourceDir)\Microsoft.Win32.SystemEvents.dll" KeyPath="yes" />
         </Component>
+        <Component Id="owc14CB9EF1BBF3C31A43771E2849BBB039" Guid="785bdc3f-43ca-90d5-d8be-40de895dae62">
+          <File Id="owf14CB9EF1BBF3C31A43771E2849BBB039" Source="$(var.SourceDir)\MoreLinq.dll" KeyPath="yes" />
+        </Component>
         <Component Id="owc6F31DEF09608AA645959666A4CB7FBBC" Guid="c94570a5-5bb4-a53f-e12f-9581bddf7d08">
           <File Id="owf6F31DEF09608AA645959666A4CB7FBBC" Source="$(var.SourceDir)\mscordaccore.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owcBEB204AA759A78D6BCFF6B15617ACFA5" Guid="03dc9cfc-30ba-a457-dab7-639389f1eedb">
-          <File Id="owfBEB204AA759A78D6BCFF6B15617ACFA5" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_5.0.421.11614.dll" KeyPath="yes" />
+        <Component Id="owc2D1DFFC83DB40FCC5A979071BE4CD029" Guid="dca022b7-7aaf-20c0-cb1a-f9de9fcdf5c5">
+          <File Id="owf2D1DFFC83DB40FCC5A979071BE4CD029" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_5.0.521.16609.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc5FC34571A1AE47A011FC6C2A95B00DA6" Guid="2591451e-0fe5-ccad-abf6-1d1097251253">
           <File Id="owf5FC34571A1AE47A011FC6C2A95B00DA6" Source="$(var.SourceDir)\mscordbi.dll" KeyPath="yes" />

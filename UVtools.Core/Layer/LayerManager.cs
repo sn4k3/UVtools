@@ -19,6 +19,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
+using MoreLinq.Extensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
@@ -91,6 +92,11 @@ namespace UVtools.Core
         }
 
         /// <summary>
+        /// Gets the last layer index
+        /// </summary>
+        public uint LastLayerIndex => LayerCount - 1;
+
+        /// <summary>
         /// Gets the first layer
         /// </summary>
         public Layer FirstLayer => _layers?[0];
@@ -101,9 +107,35 @@ namespace UVtools.Core
         public Layer LastLayer => _layers?[^1];
 
         /// <summary>
-        /// Gets the last layer index
+        /// Gets the smallest bottom layer using the pixel count
         /// </summary>
-        public uint LastLayerIndex => LayerCount - 1;
+        public Layer SmallestBottomLayer => _layers?.Where(layer => layer.IsBottomLayer && !layer.IsEmpty).MinBy(layer => layer.NonZeroPixelCount).FirstOrDefault();
+
+        /// <summary>
+        /// Gets the largest bottom layer using the pixel count
+        /// </summary>
+        public Layer LargestBottomLayer => _layers?.Where(layer => layer.IsBottomLayer && !layer.IsEmpty).MaxBy(layer => layer.NonZeroPixelCount).FirstOrDefault();
+
+        /// <summary>
+        /// Gets the smallest normal layer using the pixel count
+        /// </summary>
+        public Layer SmallestNormalLayer => _layers?.Where(layer => layer.IsNormalLayer && !layer.IsEmpty).MinBy(layer => layer.NonZeroPixelCount).FirstOrDefault();
+
+        /// <summary>
+        /// Gets the largest layer using the pixel count
+        /// </summary>
+        public Layer LargestNormalLayer => _layers?.Where(layer => layer.IsNormalLayer && !layer.IsEmpty).MaxBy(layer => layer.NonZeroPixelCount).FirstOrDefault();
+
+        /// <summary>
+        /// Gets the smallest normal layer using the pixel count
+        /// </summary>
+        public Layer SmallestLayer => _layers?.Where(layer => !layer.IsEmpty).MinBy(layer => layer.NonZeroPixelCount).FirstOrDefault();
+
+        /// <summary>
+        /// Gets the largest layer using the pixel count
+        /// </summary>
+        public Layer LargestLayer => _layers?.MaxBy(layer => layer.NonZeroPixelCount).FirstOrDefault();
+
 
         /// <summary>
         /// Gets the bounding rectangle of the object
@@ -152,7 +184,7 @@ namespace UVtools.Core
 
         public void Add(Layer layer)
         {
-            Layers = _layers.Append(layer).ToArray();
+            Layers = Enumerable.Append(_layers, layer).ToArray();
         }
 
         public void Add(IEnumerable<Layer> layers)
@@ -598,6 +630,16 @@ namespace UVtools.Core
         public Layer GetLayer(uint index)
         {
             return _layers[index];
+        }
+
+        public Layer GetSmallestLayerBetween(uint layerStartIndex, uint layerEndIndex)
+        {
+            return _layers?.Where((layer, index) => !layer.IsEmpty && index >= layerStartIndex && index <= layerEndIndex).MinBy(layer => layer.NonZeroPixelCount).FirstOrDefault();
+        }
+
+        public Layer GetLargestLayerBetween(uint layerStartIndex, uint layerEndIndex)
+        {
+            return _layers?.Where((layer, index) => !layer.IsEmpty && index >= layerStartIndex && index <= layerEndIndex).MaxBy(layer => layer.NonZeroPixelCount).FirstOrDefault();
         }
 
         public static void MutateGetVarsIterationChamfer(uint startLayerIndex, uint endLayerIndex, int iterationsStart, int iterationsEnd, ref bool isFade, out float iterationSteps, out int maxIteration)

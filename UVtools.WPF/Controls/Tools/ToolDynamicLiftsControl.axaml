@@ -5,8 +5,51 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolDynamicLiftsControl">
   <StackPanel Spacing="10">
-    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-          ColumnDefinitions="Auto,10,150,20,150,5,Auto">
+
+    <!--
+      <Grid RowDefinitions="Auto,5,Auto"
+            ColumnDefinitions="Auto,5,Auto,5,Auto"
+            HorizontalAlignment="Center">
+
+          <TextBlock Grid.Row="0" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     FontWeight="Bold"
+                     Text="View smallest:"/>
+
+          <TextBlock Grid.Row="2" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     FontWeight="Bold"
+                     Text="View largest:"/>
+
+
+          <Button Grid.Row="0" Grid.Column="2"
+                  VerticalAlignment="Stretch"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  Content="Bottom"/>
+
+          <Button Grid.Row="0" Grid.Column="4"
+                  VerticalAlignment="Stretch"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  Content="Normal"/>
+
+          <Button Grid.Row="2" Grid.Column="2"
+                  VerticalAlignment="Stretch"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  Content="Bottom"/>
+
+          <Button Grid.Row="2" Grid.Column="4"
+                  VerticalAlignment="Stretch"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  Content="Normal"/>
+
+      </Grid>
+-->
+      <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,5,Auto"
+            ColumnDefinitions="Auto,10,150,20,150,5,Auto,10,Auto">
         <TextBlock Grid.Row="0" Grid.Column="0"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
@@ -31,11 +74,19 @@
                    FontWeight="Bold"
                    Text="Unit"/>
 
+        <TextBlock Grid.Row="0" Grid.Column="8"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="View"/>
+
         <TextBlock Grid.Row="2" Grid.Column="0"
+                   IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
                    VerticalAlignment="Center"
                    Text="Bottom lift height:"/>
 
         <NumericUpDown Grid.Row="2" Grid.Column="2"
+                    IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
                    VerticalAlignment="Center"
                    Minimum="1"
                    Maximum="100"
@@ -44,11 +95,13 @@
                    Value="{Binding Operation.MinBottomLiftHeight}"/>
 
         <TextBlock Grid.Row="2" Grid.Column="3"
+                   IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    Text="/"/>
 
         <NumericUpDown Grid.Row="2" Grid.Column="4"
+                       IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
                        VerticalAlignment="Center"
                        Minimum="1"
                        Maximum="100"
@@ -57,14 +110,27 @@
                        Value="{Binding Operation.MaxBottomLiftHeight}"/>
 
         <TextBlock Grid.Row="2" Grid.Column="6"
+                   IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
                    VerticalAlignment="Center"
                    Text="mm"/>
 
+        <Button Grid.Row="2" Grid.Column="8"
+                IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                ToolTip.Tip="View the smallest bottom layer for the selected layer range"
+                Command="{Binding ViewSmallestLayer}"
+                CommandParameter="True"
+                Content="Smallest"/>
+
         <TextBlock Grid.Row="4" Grid.Column="0"
+                   IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
                    VerticalAlignment="Center"
                    Text="Bottom lift speed:"/>
 
         <NumericUpDown Grid.Row="4" Grid.Column="2"
+                       IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
                        VerticalAlignment="Center"
                        Minimum="5"
                        Maximum="1000"
@@ -73,11 +139,13 @@
                        Value="{Binding Operation.MinBottomLiftSpeed}"/>
 
         <TextBlock Grid.Row="4" Grid.Column="3"
+                   IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    Text="/"/>
 
         <NumericUpDown Grid.Row="4" Grid.Column="4"
+                       IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
                        VerticalAlignment="Center"
                        Minimum="5"
                        Maximum="1000"
@@ -86,15 +154,28 @@
                        Value="{Binding Operation.MaxBottomLiftSpeed}"/>
 
         <TextBlock Grid.Row="4" Grid.Column="6"
+                   IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
                    VerticalAlignment="Center"
                    Text="mm/min"/>
 
+        <Button Grid.Row="4" Grid.Column="8"
+                IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Command="{Binding ViewLargestLayer}"
+                CommandParameter="True"
+                ToolTip.Tip="View the largest bottom layer for the selected layer range"
+                Content="Largest"/>
+
 
         <TextBlock Grid.Row="6" Grid.Column="0"
+                   IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
                    VerticalAlignment="Center"
                    Text="Lift height:"/>
 
         <NumericUpDown Grid.Row="6" Grid.Column="2"
+                       IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
                        VerticalAlignment="Center"
                        Minimum="1"
                        Maximum="100"
@@ -103,11 +184,13 @@
                        Value="{Binding Operation.MinLiftHeight}"/>
 
         <TextBlock Grid.Row="6" Grid.Column="3"
+                   IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    Text="/"/>
 
         <NumericUpDown Grid.Row="6" Grid.Column="4"
+                       IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
                        VerticalAlignment="Center"
                        Minimum="1"
                        Maximum="100"
@@ -116,14 +199,27 @@
                        Value="{Binding Operation.MaxLiftHeight}"/>
 
         <TextBlock Grid.Row="6" Grid.Column="6"
+                   IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
                    VerticalAlignment="Center"
                    Text="mm"/>
 
+        <Button Grid.Row="6" Grid.Column="8"
+                IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Command="{Binding ViewSmallestLayer}"
+                CommandParameter="False"
+                ToolTip.Tip="View the smallest normal layer for the selected layer range"
+                Content="Smallest"/>
+
         <TextBlock Grid.Row="8" Grid.Column="0"
+                   IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
                    VerticalAlignment="Center"
                    Text="Lift speed:"/>
 
         <NumericUpDown Grid.Row="8" Grid.Column="2"
+                       IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
                        VerticalAlignment="Center"
                        Minimum="5"
                        Maximum="1000"
@@ -132,11 +228,13 @@
                        Value="{Binding Operation.MinLiftSpeed}"/>
 
         <TextBlock Grid.Row="8" Grid.Column="3"
+                   IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    Text="/"/>
 
         <NumericUpDown Grid.Row="8" Grid.Column="4"
+                       IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
                        VerticalAlignment="Center"
                        Minimum="5"
                        Maximum="1000"
@@ -145,63 +243,86 @@
                        Value="{Binding Operation.MaxLiftSpeed}"/>
 
         <TextBlock Grid.Row="8" Grid.Column="6"
+                   IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
                    VerticalAlignment="Center"
                    Text="mm/min"/>
+
+        <Button Grid.Row="8" Grid.Column="8"
+                IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Command="{Binding ViewLargestLayer}"
+                CommandParameter="False"
+                ToolTip.Tip="View the largest normal layer for the selected layer range"
+                Content="Largest"/>
+
+        <TextBlock Grid.Row="10" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Light-off mode:"/>
+
+        <ComboBox Grid.Row="10" Grid.Column="2"
+                  Grid.ColumnSpan="3"
+                  HorizontalAlignment="Stretch"
+                  Items="{Binding Operation.LightOffDelaySetMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  SelectedItem="{Binding Operation.LightOffDelaySetMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+        <TextBlock Grid.Row="12" Grid.Column="2"
+                   IsEnabled="{Binding !Operation.LightOffSetMode}"
+                   IsVisible="{Binding !Operation.LightOffSetMode}"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Bottom extra time"/>
+
+        <TextBlock Grid.Row="12" Grid.Column="4"
+                   IsEnabled="{Binding !Operation.LightOffSetMode}"
+                   IsVisible="{Binding !Operation.LightOffSetMode}"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Normal extra time"/>
+
+        <TextBlock Grid.Row="14" Grid.Column="0"
+                   IsEnabled="{Binding !Operation.LightOffSetMode}"
+                   IsVisible="{Binding !Operation.LightOffSetMode}"
+                   VerticalAlignment="Center"
+                   Text="Light-off delay:"/>
+
+        <NumericUpDown Grid.Row="14" Grid.Column="2"
+                       IsEnabled="{Binding !Operation.LightOffSetMode}"
+                       IsVisible="{Binding !Operation.LightOffSetMode}"
+                       VerticalAlignment="Center"
+                       Minimum="0"
+                       Maximum="100"
+                       Increment="1"
+                       FormatString="F2"
+                       Value="{Binding Operation.LightOffDelayBottomExtraTime}"/>
+
+        <TextBlock Grid.Row="14" Grid.Column="3"
+                   IsEnabled="{Binding !Operation.LightOffSetMode}"
+                   IsVisible="{Binding !Operation.LightOffSetMode}"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="/"/>
+
+        <NumericUpDown Grid.Row="14" Grid.Column="4"
+                       IsEnabled="{Binding !Operation.LightOffSetMode}"
+                       IsVisible="{Binding !Operation.LightOffSetMode}"
+                       VerticalAlignment="Center"
+                       Minimum="0"
+                       Maximum="100"
+                       Increment="1"
+                       FormatString="F2"
+                       Value="{Binding Operation.LightOffDelayExtraTime}"/>
+
+        <TextBlock Grid.Row="14" Grid.Column="6"
+                   IsEnabled="{Binding !Operation.LightOffSetMode}"
+                   IsVisible="{Binding !Operation.LightOffSetMode}"
+                   VerticalAlignment="Center"
+                   Text="s"/>
     </Grid>
-
-      <CheckBox
-          Content="Update light-off delay accordingly"
-          ToolTip.Tip="If enabled, it will auto calculate the correct light-off delay based on the set lift"
-          IsChecked="{Binding Operation.UpdateLightOffDelay}"/>
-
-      <Grid RowDefinitions="Auto,10,Auto"
-            ColumnDefinitions="Auto,20,Auto,5,Auto"
-            IsEnabled="{Binding Operation.UpdateLightOffDelay}">
-
-          <TextBlock Grid.Row="0" Grid.Column="0"
-                     VerticalAlignment="Center"
-                     HorizontalAlignment="Center"
-                     FontWeight="Bold"
-                     Text="Bottom light-off extra time"/>
-
-          <TextBlock Grid.Row="0" Grid.Column="1"
-                     VerticalAlignment="Center"
-                     HorizontalAlignment="Center"
-                     FontWeight="Bold"
-                     Text="/"/>
-
-          <TextBlock Grid.Row="0" Grid.Column="2"
-                     VerticalAlignment="Center"
-                     HorizontalAlignment="Center"
-                     FontWeight="Bold"
-                     Text="Normal light-off extra time"/>
-
-          <NumericUpDown Grid.Row="2" Grid.Column="0"
-                         VerticalAlignment="Center"
-                         Minimum="0"
-                         Maximum="100"
-                         Increment="1"
-                         FormatString="F2"
-                         Value="{Binding Operation.LightOffDelayBottomExtraTime}"/>
-
-          <TextBlock Grid.Row="2" Grid.Column="1"
-                     VerticalAlignment="Center"
-                     HorizontalAlignment="Center"
-                     Text="/"/>
-
-          <NumericUpDown Grid.Row="2" Grid.Column="2"
-                         VerticalAlignment="Center"
-                         Minimum="0"
-                         Maximum="100"
-                         Increment="1"
-                         FormatString="F2"
-                         Value="{Binding Operation.LightOffDelayExtraTime}"/>
-
-          <TextBlock Grid.Row="2" Grid.Column="4"
-                     VerticalAlignment="Center"
-                     Text="s"/>
-
-      </Grid>
 
   </StackPanel>
 </UserControl>

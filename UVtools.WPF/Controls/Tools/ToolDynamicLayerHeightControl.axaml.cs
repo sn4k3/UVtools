@@ -70,7 +70,7 @@ namespace UVtools.WPF.Controls.Tools
             switch (callback)
             {
                 case ToolWindow.Callbacks.Init:
-                case ToolWindow.Callbacks.ProfileLoaded:
+                case ToolWindow.Callbacks.Loaded:
                     /*Operation.PropertyChanged += (sender, e) =>
                     {
                         if (e.PropertyName.Equals(nameof(Operation.CacheObjectCount)))

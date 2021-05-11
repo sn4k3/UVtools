@@ -21,7 +21,7 @@ namespace UVtools.WPF.Controls.Tools
                 Operation.NewResolutionY = _selectedPresetItem.ResolutionY;
                 
                 //SelectedPresetItem = null;
-                Timer timer = new Timer(1);
+                Timer timer = new(1);
                 timer.Elapsed += (sender, args) =>
                 {
                     SelectedPresetItem = null;

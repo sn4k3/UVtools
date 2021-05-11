@@ -72,7 +72,10 @@ namespace UVtools.Core.Managers
         {
             if (item is null) return;
             _operations.RemoveAll(operation => operation.GetType() == item.GetType());
-            _operations.Add(item.Clone());
+            var operation = item.Clone();
+            operation.ClearROIandMasks();
+            operation.ImportedFrom = Operation.OperationImportFrom.Session;
+            _operations.Add(operation);
         }
 
         public void Clear()
@@ -108,7 +111,9 @@ namespace UVtools.Core.Managers
         {
             if (item is null) return;
             _operations.RemoveAll(operation => operation.GetType() == item.GetType());
-            _operations.Insert(index, item.Clone());
+            var operation = item.Clone();
+            operation.ImportedFrom = Operation.OperationImportFrom.Session;
+            _operations.Insert(index, operation);
         }
 
         public void RemoveAt(int index)

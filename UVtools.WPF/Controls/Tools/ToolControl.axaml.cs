@@ -16,8 +16,16 @@ namespace UVtools.WPF.Controls.Tools
             get => _baseOperation;
             set
             {
+                bool wasNullBefore = _baseOperation is null;
                 _baseOperation = value;
+                _baseOperation.SlicerFile = SlicerFile;
                 RaisePropertyChanged();
+
+                if (!wasNullBefore)
+                {
+                    Callback(ToolWindow.Callbacks.Loaded);
+                }
+
                 if (DataContext is null) return;
                 ResetDataContext();
             }

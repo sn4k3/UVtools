@@ -7,8 +7,10 @@
  */
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using MoreLinq.Extensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
@@ -17,6 +19,21 @@ namespace UVtools.Core.Operations
     [Serializable]
     public sealed class OperationDynamicLifts : Operation
     {
+        #region Enums
+        public enum DynamicLiftsLightOffDelaySetMode : byte
+        {
+            [Description("Set the light-off with an extra delay")]
+            UpdateWithExtraDelay,
+
+            [Description("Set the light-off without an extra delay")]
+            UpdateWithoutExtraDelay,
+
+            [Description("Set the light-off to zero")]
+            SetToZero,
+        }
+        #endregion
+
+        #region Members
         private float _minBottomLiftHeight;
         private float _maxBottomLiftHeight;
         private float _minLiftHeight;
@@ -25,11 +42,10 @@ namespace UVtools.Core.Operations
         private float _maxBottomLiftSpeed;
         private float _minLiftSpeed;
         private float _maxLiftSpeed;
-        private bool _updateLightOffDelay = true;
+
         private float _lightOffDelayBottomExtraTime = 3;
         private float _lightOffDelayExtraTime = 2.5f;
-
-        #region Members
+        private DynamicLiftsLightOffDelaySetMode _lightOffDelaySetMode = DynamicLiftsLightOffDelaySetMode.UpdateWithExtraDelay;
 
         #endregion
 
@@ -91,15 +107,28 @@ namespace UVtools.Core.Operations
                  $" [Bottom speed: {_minBottomLiftSpeed}/{_maxBottomLiftSpeed}mm/min]" +
                  $" [Height: {_minLiftHeight}/{_maxLiftHeight}mm]" +
                  $" [Speed: {_minLiftSpeed}/{_maxLiftSpeed}mm/min]" +
-                 $" [Light-off: {_updateLightOffDelay} {_lightOffDelayBottomExtraTime}/{_lightOffDelayExtraTime}s]" +
+                 $" [Light-off: {_lightOffDelaySetMode} {_lightOffDelayBottomExtraTime}/{_lightOffDelayExtraTime}s]" +
                  LayerRangeString;
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
         }
 
+        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+            if (e.PropertyName is nameof(LayerRangeCount))
+            {
+                RaisePropertyChanged(nameof(IsBottomLayersEnabled));
+                RaisePropertyChanged(nameof(IsNormalLayersEnabled));
+            }
+        }
+
         #endregion
 
         #region Properties
+
+        public bool IsBottomLayersEnabled => LayerIndexStart < SlicerFile.BottomLayerCount;
+        public bool IsNormalLayersEnabled => LayerIndexEnd >= SlicerFile.BottomLayerCount;
 
         public float MinBottomLiftHeight
         {
@@ -149,10 +178,10 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _maxLiftSpeed, (float)Math.Round(value, 2));
         }
 
-        public bool UpdateLightOffDelay
+        public DynamicLiftsLightOffDelaySetMode LightOffDelaySetMode
         {
-            get => _updateLightOffDelay;
-            set => RaiseAndSetIfChanged(ref _updateLightOffDelay, value);
+            get => _lightOffDelaySetMode;
+            set => RaiseAndSetIfChanged(ref _lightOffDelaySetMode, value);
         }
 
         public float LightOffDelayBottomExtraTime
@@ -197,11 +226,6 @@ namespace UVtools.Core.Operations
             where layer.Index >= LayerIndexStart
             where layer.Index <= LayerIndexEnd
             select layer.NonZeroPixelCount).Max();
-
-        public Layer MinBottomLayer => SlicerFile.Where(layer => layer.IsBottomLayer && !layer.IsEmpty).OrderBy(layer => layer.NonZeroPixelCount).First();
-        public Layer MaxBottomLayer => SlicerFile.Where(layer => layer.IsBottomLayer).OrderByDescending(layer => layer.NonZeroPixelCount).First();
-        public Layer MinLayer => SlicerFile.Where(layer => layer.IsNormalLayer && !layer.IsEmpty).OrderBy(layer => layer.NonZeroPixelCount).First();
-        public Layer MaxLayer => SlicerFile.Where(layer => layer.IsNormalLayer).OrderByDescending(layer => layer.NonZeroPixelCount).First();
 
         #endregion
 
@@ -294,10 +318,21 @@ namespace UVtools.Core.Operations
                 layer.LiftHeight = (float) Math.Round(liftHeight, 2);
                 layer.LiftSpeed = (float) Math.Round(liftSpeed, 2);
 
-                if (_updateLightOffDelay)
+                switch (_lightOffDelaySetMode)
                 {
-                    layer.UpdateLightOffDelay(layer.IsBottomLayer ? _lightOffDelayBottomExtraTime : _lightOffDelayExtraTime);
+                    case DynamicLiftsLightOffDelaySetMode.UpdateWithExtraDelay:
+                        layer.SetLightOffDelay(layer.IsBottomLayer ? _lightOffDelayBottomExtraTime : _lightOffDelayExtraTime);
+                        break;
+                    case DynamicLiftsLightOffDelaySetMode.UpdateWithoutExtraDelay:
+                        layer.SetLightOffDelay();
+                        break;
+                    case DynamicLiftsLightOffDelaySetMode.SetToZero:
+                        layer.LightOffDelay = 0;
+                        break;
+                    default:
+                        throw new NotImplementedException();
                 }
+                
 
                 progress++;
             }
@@ -307,6 +342,15 @@ namespace UVtools.Core.Operations
             return !progress.Token.IsCancellationRequested;
         }
 
+        public Layer GetSmallestLayer(bool isBottom)
+        {
+            return SlicerFile.Where((layer, index) => !layer.IsEmpty && layer.IsBottomLayer == isBottom && index >= LayerIndexStart && index <= LayerIndexEnd).MinBy(layer => layer.NonZeroPixelCount).FirstOrDefault();
+        }
+
+        public Layer GetLargestLayer(bool isBottom)
+        {
+            return SlicerFile.Where((layer, index) => !layer.IsEmpty && layer.IsBottomLayer == isBottom && index >= LayerIndexStart && index <= LayerIndexEnd).MaxBy(layer => layer.NonZeroPixelCount).FirstOrDefault();
+        }
 
         #endregion
 
@@ -314,7 +358,7 @@ namespace UVtools.Core.Operations
 
         private bool Equals(OperationDynamicLifts other)
         {
-            return _minBottomLiftHeight.Equals(other._minBottomLiftHeight) && _maxBottomLiftHeight.Equals(other._maxBottomLiftHeight) && _minLiftHeight.Equals(other._minLiftHeight) && _maxLiftHeight.Equals(other._maxLiftHeight) && _minBottomLiftSpeed.Equals(other._minBottomLiftSpeed) && _maxBottomLiftSpeed.Equals(other._maxBottomLiftSpeed) && _minLiftSpeed.Equals(other._minLiftSpeed) && _maxLiftSpeed.Equals(other._maxLiftSpeed) && _updateLightOffDelay == other._updateLightOffDelay && _lightOffDelayBottomExtraTime.Equals(other._lightOffDelayBottomExtraTime) && _lightOffDelayExtraTime.Equals(other._lightOffDelayExtraTime);
+            return _minBottomLiftHeight.Equals(other._minBottomLiftHeight) && _maxBottomLiftHeight.Equals(other._maxBottomLiftHeight) && _minLiftHeight.Equals(other._minLiftHeight) && _maxLiftHeight.Equals(other._maxLiftHeight) && _minBottomLiftSpeed.Equals(other._minBottomLiftSpeed) && _maxBottomLiftSpeed.Equals(other._maxBottomLiftSpeed) && _minLiftSpeed.Equals(other._minLiftSpeed) && _maxLiftSpeed.Equals(other._maxLiftSpeed) && _lightOffDelayBottomExtraTime.Equals(other._lightOffDelayBottomExtraTime) && _lightOffDelayExtraTime.Equals(other._lightOffDelayExtraTime) && _lightOffDelaySetMode == other._lightOffDelaySetMode;
         }
 
         public override bool Equals(object obj)
@@ -333,9 +377,9 @@ namespace UVtools.Core.Operations
             hashCode.Add(_maxBottomLiftSpeed);
             hashCode.Add(_minLiftSpeed);
             hashCode.Add(_maxLiftSpeed);
-            hashCode.Add(_updateLightOffDelay);
             hashCode.Add(_lightOffDelayBottomExtraTime);
             hashCode.Add(_lightOffDelayExtraTime);
+            hashCode.Add((int) _lightOffDelaySetMode);
             return hashCode.ToHashCode();
         }
 

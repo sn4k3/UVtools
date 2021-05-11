@@ -83,7 +83,7 @@ namespace UVtools.Core.Operations
 
         #region Properties
 
-        public OperationLayerReHeightItem[] Presets { get; }
+        public OperationLayerReHeightItem[] Presets { get; set; }
 
         public OperationLayerReHeightItem SelectedItem
         {
@@ -136,8 +136,12 @@ namespace UVtools.Core.Operations
         public OperationLayerReHeight() { }
 
         public OperationLayerReHeight(FileFormat slicerFile) : base(slicerFile)
+        { }
+
+        public override void InitWithSlicerFile()
         {
-            Presets = GetItems(slicerFile.LayerCount, (decimal) slicerFile.LayerHeight);
+            base.InitWithSlicerFile();
+            Presets = GetItems(SlicerFile.LayerCount, (decimal)SlicerFile.LayerHeight);
             if (Presets is not null && Presets.Length > 0)
             {
                 _selectedItem = Presets[0];

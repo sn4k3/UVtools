@@ -18,6 +18,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
+using MoreLinq;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
@@ -44,6 +45,7 @@ namespace UVtools.Core.Operations
             }
         }
         #endregion
+
         #region Constants
 
         const byte TextMarkingSpacing = 60;
@@ -954,17 +956,17 @@ namespace UVtools.Core.Operations
         public OperationCalibrateExposureFinder() { }
 
         public OperationCalibrateExposureFinder(FileFormat slicerFile) : base(slicerFile)
-        {
-            _layerHeight    = (decimal)slicerFile.LayerHeight;
-            _bottomLayers   = slicerFile.BottomLayerCount;
-            _bottomExposure = (decimal)slicerFile.BottomExposureTime;
-            _normalExposure = (decimal)slicerFile.ExposureTime;
-            _mirrorOutput   = slicerFile.MirrorDisplay;
-        }
+        { }
 
         public override void InitWithSlicerFile()
         {
             base.InitWithSlicerFile();
+            _layerHeight = (decimal)SlicerFile.LayerHeight;
+            _bottomLayers = SlicerFile.BottomLayerCount;
+            _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
+            _normalExposure = (decimal)SlicerFile.ExposureTime;
+            _mirrorOutput = SlicerFile.MirrorDisplay;
+
             if (SlicerFile.DisplayWidth > 0)
                 DisplayWidth = (decimal)SlicerFile.DisplayWidth;
             if (SlicerFile.DisplayHeight > 0)
@@ -1510,6 +1512,13 @@ namespace UVtools.Core.Operations
                         CvInvoke.FillPoly(layers[1], vec, EmguExtensions.WhiteByte,
                             _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                     }
+
+                    /*byte size = 60;
+                    var matRoi = new Mat(layers[1], new Rectangle(
+                        new Point(xPos + triangleWidth - size / 2, yHalfPos - size / 2),
+                        new Size(size, size)));
+
+                    CvInvoke.BitwiseNot(matRoi, matRoi);*/
                     
 
                     if (_counterTrianglesFence)
@@ -1586,7 +1595,7 @@ namespace UVtools.Core.Operations
             }
             else
             {
-                CvInvoke.PutText(thumbnail, $"Features: {Holes.Length + Bars.Length}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
+                CvInvoke.PutText(thumbnail, $"Features: {(_staircaseThickness > 0 ? 1 : 0) + Holes.Length + Bars.Length + BullsEyes.Length + (_counterTrianglesEnabled ? 1 : 0)}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
             }
             
 

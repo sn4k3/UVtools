@@ -177,17 +177,25 @@ namespace UVtools.Core.Operations
 
         public OperationMove() { }
 
-        public OperationMove(FileFormat slicerFile, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter) : base(slicerFile)
+        public OperationMove(FileFormat slicerFile) : this(slicerFile, Enumerations.Anchor.MiddleCenter)
+        { }
+
+        public OperationMove(FileFormat slicerFile, Enumerations.Anchor anchor) : base(slicerFile)
         {
-            ROI = slicerFile.LayerManager.BoundingRectangle;
-            _imageWidth = slicerFile.ResolutionX;
-            _imageHeight = slicerFile.ResolutionY;
             _anchor = anchor;
         }
 
         public OperationMove(FileFormat slicerFile, Rectangle srcRoi, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter) : this(slicerFile, anchor)
         {
             if(!srcRoi.IsEmpty) ROI = srcRoi;
+        }
+
+        public override void InitWithSlicerFile()
+        {
+            base.InitWithSlicerFile();
+            ROI = SlicerFile.BoundingRectangle;
+            _imageWidth = SlicerFile.ResolutionX;
+            _imageHeight = SlicerFile.ResolutionY;
         }
 
         /*public OperationMove(FileFormat slicerFile, Rectangle srcRoi, Mat mat, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter) : this(slicerFile, srcRoi, anchor)

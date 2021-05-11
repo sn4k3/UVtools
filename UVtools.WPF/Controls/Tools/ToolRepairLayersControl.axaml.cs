@@ -11,7 +11,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolRepairLayersControl()
         {
             InitializeComponent();
-            BaseOperation = GetOperationRepairLayers();
+            BaseOperation = new OperationRepairLayers(SlicerFile);
         }
 
         private void InitializeComponent()
@@ -30,13 +30,30 @@ namespace UVtools.WPF.Controls.Tools
             NoiseRemovalIterations = UserSettings.Instance.LayerRepair.OpeningIterations,
         };
 
+        public void SetFromUserSettings()
+        {
+            Operation.RepairIslands = UserSettings.Instance.LayerRepair.RepairIslands;
+            Operation.RepairResinTraps = UserSettings.Instance.LayerRepair.RepairResinTraps;
+            Operation.RemoveEmptyLayers = UserSettings.Instance.LayerRepair.RemoveEmptyLayers;
+            Operation.RemoveIslandsBelowEqualPixelCount = UserSettings.Instance.LayerRepair.RemoveIslandsBelowEqualPixels;
+            Operation.RemoveIslandsRecursiveIterations = UserSettings.Instance.LayerRepair.RemoveIslandsRecursiveIterations;
+            Operation.GapClosingIterations = UserSettings.Instance.LayerRepair.ClosingIterations;
+            Operation.NoiseRemovalIterations = UserSettings.Instance.LayerRepair.OpeningIterations;
+        }
+
         public override void Callback(ToolWindow.Callbacks callback)
         {
             switch (callback)
             {
                 case ToolWindow.Callbacks.Init:
-                    ParentWindow.LayerRangeVisible = false;
-                    ParentWindow.IsCheckBox1Visible = true;
+                case ToolWindow.Callbacks.Loaded:
+                    if (callback is ToolWindow.Callbacks.Init)
+                    {
+                        ParentWindow.LayerRangeVisible = false;
+                        ParentWindow.IsCheckBox1Visible = true;
+                    }
+
+                    SetFromUserSettings();
                     break;
                 case ToolWindow.Callbacks.Checkbox1:
                     ParentWindow.LayerRangeVisible = ParentWindow.IsCheckBox1Checked;

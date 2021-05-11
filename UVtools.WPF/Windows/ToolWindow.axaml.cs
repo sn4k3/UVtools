@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Xml.Serialization;
@@ -27,7 +28,7 @@ namespace UVtools.WPF.Windows
         {
             Init,
             ClearROI,
-            ProfileLoaded,
+            Loaded,
             Button1, // Reset to defaults
             Checkbox1, // Show Advanced
         }
@@ -35,6 +36,8 @@ namespace UVtools.WPF.Windows
         public ToolControl ToolControl;
         private string _description;
         private double _descriptionMaxWidth;
+        private double _expanderHeaderMaxWidth = double.NaN;
+        private double _profileBoxMaxWidth = double.NaN;
         private bool _layerRangeVisible = true;
         private bool _layerRangeSync;
         private uint _layerIndexStart;
@@ -61,7 +64,7 @@ namespace UVtools.WPF.Windows
         private bool _buttonOkEnabled = true;
         private string _buttonOkText = "Ok";
         private bool _buttonOkVisible = true;
-        private double _expanderHeaderMaxWidth;
+        
 
         #region Description
 
@@ -81,6 +84,12 @@ namespace UVtools.WPF.Windows
         {
             get => _expanderHeaderMaxWidth;
             set => RaiseAndSetIfChanged(ref _expanderHeaderMaxWidth, value);
+        }
+
+        public double ProfileBoxMaxWidth
+        {
+            get => _profileBoxMaxWidth;
+            set => RaiseAndSetIfChanged(ref _profileBoxMaxWidth, value);
         }
 
         #endregion
@@ -295,7 +304,7 @@ namespace UVtools.WPF.Windows
             get => App.MainWindow.ROI;
             set
             {
-                App.MainWindow.ROI = App.MainWindow.GetTransposedRectangle(value);
+                App.MainWindow.ROI = value;
                 ToolControl.BaseOperation.ROI = value;
                 IsROIVisible = !value.IsEmpty;
                 RaisePropertyChanged();
@@ -322,6 +331,7 @@ namespace UVtools.WPF.Windows
 
         public async void ClearMasks()
         {
+            var layer = SlicerFile.LayerManager.LargestNormalLayer;
             if (await this.MessageBoxQuestion("Are you sure you want to clear all masks?\n" +
                                               "This action can not be reverted, to select another mask(s) you must quit this window and select it on layer preview.",
                 "Clear the all masks?") != ButtonResult.Yes) return;
@@ -363,7 +373,7 @@ namespace UVtools.WPF.Windows
                 if (ToolControl is null) return;
                 var operation = _selectedProfileItem.Clone();
                 operation.ProfileName = null;
-                operation.SlicerFile = SlicerFile;
+                operation.ImportedFrom = Operation.OperationImportFrom.Profile;
                 ToolControl.BaseOperation = operation;
                 switch (operation.LayerRangeSelection)
                 {
@@ -376,8 +386,8 @@ namespace UVtools.WPF.Windows
                         break;
                 }
 
-                ToolControl.Callback(Callbacks.ProfileLoaded);
-                ToolControl.ResetDataContext();
+                //ToolControl.Callback(Callbacks.Loaded);
+                //ToolControl.ResetDataContext();
             }
         }
 
@@ -590,31 +600,21 @@ namespace UVtools.WPF.Windows
             _buttonOkText = toolControl.BaseOperation.ButtonOkText;
             _buttonOkVisible = ButtonOkEnabled = toolControl.BaseOperation.HaveAction;
 
-            bool fromSession = false;
-            if (!toolControl.BaseOperation.HaveExecuted && Settings.Tools.RestoreLastUsedSettings)
+            bool loadedFromSession = false;
+            if (!toolControl.BaseOperation.HaveExecuted 
+                && toolControl.BaseOperation.ImportedFrom is Operation.OperationImportFrom.None
+                && Settings.Tools.RestoreLastUsedSettings)
             {
                 var operation = OperationSessionManager.Instance.Find(toolControl.BaseOperation.GetType());
                 if (operation is not null)
                 {
                     toolControl.BaseOperation = operation.Clone();
-                    toolControl.BaseOperation.ClearROIandMasks();
-
-                    switch (operation.LayerRangeSelection)
-                    {
-                        case Enumerations.LayerRangeSelection.None:
-                            LayerIndexStart = operation.LayerIndexStart;
-                            LayerIndexEnd = operation.LayerIndexEnd;
-                            break;
-                        default:
-                            SelectLayers(operation.LayerRangeSelection);
-                            break;
-                    }
-
-                    fromSession = true;
+                    loadedFromSession = true;
                 }
             }
 
-            if (toolControl.BaseOperation.HaveExecuted) // Come from a redo or session
+            if (toolControl.BaseOperation.HaveExecuted 
+                || toolControl.BaseOperation.ImportedFrom is not Operation.OperationImportFrom.None) // Loaded from something
             {
                 if (toolControl.BaseOperation.HaveROI)
                 {
@@ -626,22 +626,30 @@ namespace UVtools.WPF.Windows
                     App.MainWindow.AddMaskPoints(toolControl.BaseOperation.MaskPoints);
                 }
 
-                LayerIndexStart = toolControl.BaseOperation.LayerIndexStart;
-                LayerIndexEnd = toolControl.BaseOperation.LayerIndexEnd;
+                if (toolControl.BaseOperation.LayerRangeSelection == Enumerations.LayerRangeSelection.None)
+                {
+                    LayerIndexStart = toolControl.BaseOperation.LayerIndexStart;
+                    LayerIndexEnd = toolControl.BaseOperation.LayerIndexEnd;
+                }
+                else
+                {
+                    SelectLayers(toolControl.BaseOperation.LayerRangeSelection);
+                }
             }
             else
             {
                 SelectLayers(toolControl.BaseOperation.StartLayerRangeSelection);
             }
 
+            
             if (ToolControl.BaseOperation.CanHaveProfiles)
             {
                 _isProfilesVisible = true;
                 var profiles = OperationProfiles.GetOperations(ToolControl.BaseOperation.GetType());
                 _profiles.AddRange(profiles);
 
-                if (!toolControl.BaseOperation.HaveExecuted ||
-                    (toolControl.BaseOperation.HaveExecuted && fromSession && !Settings.Tools.LastUsedSettingsPriorityOverDefaultProfile))
+                if (toolControl.BaseOperation.ImportedFrom is Operation.OperationImportFrom.None ||
+                    (loadedFromSession && !Settings.Tools.LastUsedSettingsPriorityOverDefaultProfile))
                 {
                     //Operation profile = _profiles.FirstOrDefault(operation => operation.ProfileIsDefault);
                     foreach (var operation in Profiles)
@@ -655,19 +663,13 @@ namespace UVtools.WPF.Windows
                 }
             }
 
-            if (!ReferenceEquals(toolControl.BaseOperation.SlicerFile, SlicerFile)) // Sanitize
-            {
-                toolControl.BaseOperation.SlicerFile = SlicerFile;
-            }
-
-
             //RaisePropertyChanged(nameof(IsContentVisible));
             //RaisePropertyChanged(nameof(IsROIVisible));
 
 
 
             // Ensure the description don't stretch window
-            DispatcherTimer.Run(() =>
+            /*DispatcherTimer.Run(() =>
             {
                 if (Bounds.Width == 0) return true;
                 //ScrollViewerMaxHeight = this.GetScreenWorkingArea().Height - Bounds.Height + ToolControl.Bounds.Height - UserSettings.Instance.General.WindowsVerticalMargin;
@@ -690,7 +692,7 @@ namespace UVtools.WPF.Windows
                 }, TimeSpan.FromMilliseconds(2));
 
                 return false;
-            }, TimeSpan.FromMilliseconds(1));
+            }, TimeSpan.FromMilliseconds(1));*/
 
             toolControl.Callback(Callbacks.Init);
             toolControl.DataContext = toolControl;
@@ -700,6 +702,30 @@ namespace UVtools.WPF.Windows
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        protected override void OnOpened(EventArgs e)
+        {
+            base.OnOpened(e);
+            var profileTextBox = this.FindControl<TextBox>("ProfileName");
+            DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl.Bounds.Width) - 20;
+            ExpanderHeaderMaxWidth = DescriptionMaxWidth - 40;
+            ProfileBoxMaxWidth = profileTextBox.Bounds.Width;
+            Height = MaxHeight;
+
+            DispatcherTimer.Run(() =>
+            {
+                if (Math.Max((int)_contentScrollViewer.Extent.Height - (int)_contentScrollViewer.Viewport.Height, 0) == 0)
+                {
+                    Height = 10;
+                    SizeToContent = SizeToContent.WidthAndHeight;
+                }
+                Position = new PixelPoint(
+                    (int)(App.MainWindow.Position.X + App.MainWindow.Width / 2 - Width / 2),
+                    App.MainWindow.Position.Y + 20
+                );
+                return false;
+            }, TimeSpan.FromMilliseconds(1));
         }
 
         public void FitToSize()
@@ -817,9 +843,7 @@ namespace UVtools.WPF.Windows
 
             try
             {
-                XmlSerializer serializer = new(ToolControl.BaseOperation.GetType());
-                await using StreamWriter writer = new(file);
-                serializer.Serialize(writer, ToolControl.BaseOperation);
+                ToolControl.BaseOperation.Serialize(file);
             }
             catch (Exception e)
             {
@@ -841,11 +865,8 @@ namespace UVtools.WPF.Windows
 
             try
             {
-                XmlSerializer serializer = new(ToolControl.BaseOperation.GetType());
-                await using var stream = File.OpenRead(files[0]);
-                var operation = (Operation)serializer.Deserialize(stream);
+                var operation = Operation.Deserialize(files[0], ToolControl.BaseOperation);
 
-                operation.SlicerFile = SlicerFile;
                 ToolControl.BaseOperation = operation;
                 switch (operation.LayerRangeSelection)
                 {
@@ -858,12 +879,23 @@ namespace UVtools.WPF.Windows
                         break;
                 }
 
-                ToolControl.Callback(Callbacks.ProfileLoaded);
+                
             }
             catch (Exception e)
             {
                 await this.MessageBoxError(e.ToString(), "Error while trying to import the settings");
             }
+        }
+
+        public void ResetToDefaults()
+        {
+            var operation = ToolControl.BaseOperation.GetType().CreateInstance<Operation>(SlicerFile);
+            operation.LayerIndexStart = ToolControl.BaseOperation.LayerIndexStart;
+            operation.LayerIndexEnd = ToolControl.BaseOperation.LayerIndexEnd;
+            operation.LayerRangeSelection = ToolControl.BaseOperation.LayerRangeSelection;
+            operation.ROI = ToolControl.BaseOperation.ROI;
+            operation.MaskPoints = ToolControl.BaseOperation.MaskPoints;
+            ToolControl.BaseOperation = operation;
         }
     }
 }

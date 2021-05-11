@@ -16,9 +16,9 @@ namespace UVtools.Core.Extensions
         /// Creates a new instance of this type
         /// </summary>
         /// <param name="type"></param>
-        public static object CreateInstance(this Type type)
+        public static object CreateInstance(this Type type, params object[]? paramArray)
         {
-            return Activator.CreateInstance(type);
+            return Activator.CreateInstance(type, paramArray);
         }
 
         /// <summary>
@@ -27,9 +27,9 @@ namespace UVtools.Core.Extensions
         /// <typeparam name="T">Target type</typeparam>
         /// <param name="type"></param>
         /// <returns>New instance of <see cref="T"/></returns>
-        public static T CreateInstance<T>(this Type type)
+        public static T CreateInstance<T>(this Type type, params object[]? paramArray)
         {
-            return (T)Activator.CreateInstance(type);
+            return (T)Activator.CreateInstance(type, paramArray);
         }
 
         public static byte ToByte(this bool value) => (byte)(value ? 1 : 0);

@@ -8,7 +8,6 @@
 
 using System;
 using System.Drawing;
-using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
@@ -17,7 +16,6 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
-using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
@@ -105,13 +103,18 @@ namespace UVtools.Core.Operations
         public OperationCalibrateGrayscale() { }
 
         public OperationCalibrateGrayscale(FileFormat slicerFile) : base(slicerFile)
+        { }
+
+        public override void InitWithSlicerFile()
         {
-            _layerHeight = (decimal)slicerFile.LayerHeight;
-            _bottomLayers = slicerFile.BottomLayerCount;
-            _bottomExposure = (decimal)slicerFile.BottomExposureTime;
-            _normalExposure = (decimal)slicerFile.ExposureTime;
-            _mirrorOutput = slicerFile.MirrorDisplay;
+            base.InitWithSlicerFile(); 
+            _layerHeight = (decimal)SlicerFile.LayerHeight;
+            _bottomLayers = SlicerFile.BottomLayerCount;
+            _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
+            _normalExposure = (decimal)SlicerFile.ExposureTime;
+            _mirrorOutput = SlicerFile.MirrorDisplay;
         }
+
         #endregion
 
         #region Properties

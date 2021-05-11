@@ -567,7 +567,7 @@ namespace UVtools.WPF
                 var rect = LayerImageBox.SelectionRegion;
                 return rect.IsEmpty ? Rectangle.Empty : GetTransposedRectangle(rect.ToDotNet(), true);
             }
-            set => LayerImageBox.SelectionRegion = value.ToAvalonia();
+            set => LayerImageBox.SelectionRegion = GetTransposedRectangle(value).ToAvalonia();
         }
 
         public RectangleF ROIMillimeters
@@ -1600,7 +1600,59 @@ namespace UVtools.WPF
 
             if ((e.KeyModifiers & KeyModifiers.Control) != 0)
             {
-                if (e.Key == Key.D0 || e.Key == Key.NumPad0)
+                if (e.Key is Key.LeftShift or Key.RightShift || (e.KeyModifiers & KeyModifiers.Shift) != 0) // Ctrl + Shift
+                {
+                    if (e.Key == Key.R)
+                    {
+                        ShowLayerImageRotated = true;
+                        if (_showLayerImageRotateCwDirection)
+                        {
+                            ShowLayerImageRotateCWDirection = false;
+                            ShowLayerImageRotateCCWDirection = true;
+                        }
+                        else
+                        {
+                            ShowLayerImageRotateCCWDirection = false;
+                            ShowLayerImageRotateCWDirection = true;
+                        }
+                        e.Handled = true;
+                        return;
+                    }
+
+                    if (e.Key == Key.F)
+                    {
+                        ShowLayerImageFlipped = true;
+                        if (!_showLayerImageFlippedHorizontally && !_showLayerImageFlippedVertically)
+                        {
+                            ShowLayerImageFlippedHorizontally = true;
+                        }
+                        else if (_showLayerImageFlippedHorizontally && !_showLayerImageFlippedVertically)
+                        {
+                            ShowLayerImageFlippedHorizontally = false;
+                            ShowLayerImageFlippedVertically = true;
+                        }
+                        else if (!_showLayerImageFlippedHorizontally && _showLayerImageFlippedVertically)
+                        {
+                            ShowLayerImageFlippedHorizontally = true;
+                        }
+                        else if (_showLayerImageFlippedHorizontally && _showLayerImageFlippedVertically)
+                        {
+                            ShowLayerImageFlippedVertically = false;
+                        }
+
+                        e.Handled = true;
+                        return;
+                    }
+
+                    if (e.Key == Key.B)
+                    {
+                        ROI = SlicerFile.BoundingRectangle;
+                        return;
+                    }
+
+                }
+
+                if (e.Key is Key.D0 or Key.NumPad0)
                 {
                     ZoomToFit();
                     e.Handled = true;
@@ -1682,8 +1734,7 @@ namespace UVtools.WPF
 
                 if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], point, false) >= 0)
                 {
-                    var rectangle =
-                        GetTransposedRectangle(CvInvoke.BoundingRectangle(LayerCache.LayerContours[i]));
+                    var rectangle = CvInvoke.BoundingRectangle(LayerCache.LayerContours[i]);
                     ROI = rectangle;
 
                     return true;
@@ -1714,7 +1765,7 @@ namespace UVtools.WPF
                 roiRectangle = Rectangle.Union(roiRectangle, rectangle);
             }
 
-            ROI = GetTransposedRectangle(roiRectangle);
+            ROI = roiRectangle;
 
             return (uint)rectangles.Count;
         }

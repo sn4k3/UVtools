@@ -8,12 +8,12 @@
 
 using System;
 using System.Drawing;
+using System.IO;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
-using UVtools.Core.Managers;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -21,7 +21,19 @@ namespace UVtools.Core.Operations
     [Serializable]
     public abstract class Operation : BindableBase, IDisposable
     {
+        #region Enums
+
+        public enum OperationImportFrom : byte
+        {
+            None,
+            Profile,
+            Session,
+            Undo,
+        }
+        #endregion
         #region Members
+        private FileFormat _slicerFile;
+        private OperationImportFrom _importedFrom = OperationImportFrom.None;
         private Rectangle _roi = Rectangle.Empty;
         private Point[][] _maskPoints;
         private uint _layerIndexEnd;
@@ -29,11 +41,21 @@ namespace UVtools.Core.Operations
         private string _profileName;
         private bool _profileIsDefault;
         private Enumerations.LayerRangeSelection _layerRangeSelection = Enumerations.LayerRangeSelection.All;
-        private FileFormat _slicerFile;
         public const byte ClassNameLength = 9;
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets from where this option got loaded/imported
+        /// </summary>
+        [XmlIgnore]
+        public OperationImportFrom ImportedFrom
+        {
+            get => _importedFrom;
+            set => RaiseAndSetIfChanged(ref _importedFrom, value);
+        }
+
         [XmlIgnore]
         public FileFormat SlicerFile
         {
@@ -463,6 +485,13 @@ namespace UVtools.Core.Operations
             operation.MaskPoints = MaskPoints;
         }
 
+        public void Serialize(string path)
+        {
+            XmlSerializer serializer = new(GetType());
+            using StreamWriter writer = new(path);
+            serializer.Serialize(writer, this);
+        }
+
         public virtual Operation Clone()
         {
             var operation = MemberwiseClone() as Operation;
@@ -479,6 +508,21 @@ namespace UVtools.Core.Operations
         }
 
         public virtual void Dispose() { }
+        #endregion
+
+        #region Static Methods
+
+        public static Operation Deserialize(string path, Type type)
+        {
+            XmlSerializer serializer = new(type);
+            using var stream = File.OpenRead(path);
+            var operation = (Operation)serializer.Deserialize(stream);
+            operation.ImportedFrom = OperationImportFrom.Session;
+            return operation;
+        }
+
+        public static Operation Deserialize(string path, Operation operation) => Deserialize(path, operation.GetType());
+
         #endregion
     }
 }

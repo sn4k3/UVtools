@@ -1487,20 +1487,27 @@
                   <StackPanel Orientation="Vertical">
                       <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Light-off delay"/>
 
-                      <CheckBox Margin="10,10,10,0"
+                    <ComboBox 
+                              Margin="10"
+                              HorizontalAlignment="Stretch"
+                              Items="{Binding Settings.Automations.LightOffDelaySetMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                              SelectedItem="{Binding Settings.Automations.LightOffDelaySetMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+                      <CheckBox Margin="10,0,10,10"
                                 Content="Change only light-off delay if value is zero"
                                 ToolTip.Tip="If enabled, it will only change light-off delay to the defined values if the original value is zero.
 &#x0a;If disabled, it will always change the light-off delay to the defined values."
+                                IsVisible="{Binding Settings.Automations.ChangeOnlyLightOffDelayIfZeroVisible}"
                                 IsChecked="{Binding Settings.Automations.ChangeOnlyLightOffDelayIfZero}"/>
 
-                      <Grid Margin="10"
+                      <Grid Margin="10,0,10,10"
+                            IsVisible="{Binding Settings.Automations.LightOffDelayExtraTimeVisible}"
                             RowDefinitions="Auto"
                             ColumnDefinitions="Auto,10,150,5,Auto,30,Auto,10,150,5,Auto">
                             
                             <TextBlock Grid.Row="0" Grid.Column="0" 
                                        VerticalAlignment="Center"
-                                       ToolTip.Tip="Auto set the extra 'light-off delay' based on lift height and speed.
-&#x0a;Use '0' to ignore this automation."
+                                       ToolTip.Tip="Auto set the extra 'light-off delay' based on lift height and speed."
                                        Text="Light-off delay:" />
 
                             <NumericUpDown Grid.Row="0" Grid.Column="2"
@@ -1517,8 +1524,7 @@
 
                             <TextBlock Grid.Row="0" Grid.Column="6"
                                        VerticalAlignment="Center"
-                                       ToolTip.Tip="Auto set the extra 'bottom light-off delay' based on bottom lift height and speed.
-&#x0a;Use '0' to ignore this automation."
+                                       ToolTip.Tip="Auto set the extra 'bottom light-off delay' based on bottom lift height and speed."
                                        Text="Bottom light-off delay:" />
                             <NumericUpDown Grid.Row="0" Grid.Column="8"
                                            

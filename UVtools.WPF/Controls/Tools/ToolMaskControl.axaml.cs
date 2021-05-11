@@ -84,6 +84,7 @@ namespace UVtools.WPF.Controls.Tools
                 case ToolWindow.Callbacks.Init:
                     ParentWindow.ButtonOkEnabled = false;
                     break;
+                case ToolWindow.Callbacks.Loaded:
                 case ToolWindow.Callbacks.ClearROI:
                     Operation.Mask = null;
                     MaskImage = null;

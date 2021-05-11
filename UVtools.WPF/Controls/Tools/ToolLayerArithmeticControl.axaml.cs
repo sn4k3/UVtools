@@ -24,7 +24,7 @@ namespace UVtools.WPF.Controls.Tools
             switch (callback)
             {
                 case ToolWindow.Callbacks.Init:
-                case ToolWindow.Callbacks.ProfileLoaded:
+                case ToolWindow.Callbacks.Loaded:
                     ParentWindow.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.Sentence);
                     Operation.PropertyChanged += (sender, e) =>
                     {

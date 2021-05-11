@@ -1957,6 +1957,44 @@ namespace UVtools.Core.FileFormats
             return changed;
         }
 
+        public float CalculateBottomLightOffDelay(float extraTime = 0) => CalculateLightOffDelay(true, extraTime);
+
+        public bool SetBottomLightOffDelay(float extraTime = 0) => SetLightOffDelay(true, extraTime);
+
+        public float CalculateNormalLightOffDelay(float extraTime = 0) => CalculateLightOffDelay(false, extraTime);
+
+        public bool SetNormalLightOffDelay(float extraTime = 0) => SetLightOffDelay(false, extraTime);
+
+        public float CalculateLightOffDelay(bool isBottomLayer, float extraTime = 0)
+        {
+            return isBottomLayer 
+                    ? OperationCalculator.LightOffDelayC.CalculateSeconds(BottomLiftHeight, BottomLiftSpeed, RetractSpeed, extraTime)
+                    : OperationCalculator.LightOffDelayC.CalculateSeconds(LiftHeight, LiftSpeed, RetractSpeed, extraTime);
+        }
+
+        public bool SetLightOffDelay(bool isBottomLayer, float extraTime = 0)
+        {
+            float lightOff = CalculateLightOffDelay(isBottomLayer, extraTime);
+            if (isBottomLayer)
+            {
+                if (BottomLightOffDelay != lightOff)
+                {
+                    BottomLightOffDelay = lightOff;
+                    return true;
+                }
+
+                return false;
+            }
+            
+            if (LightOffDelay != lightOff)
+            {
+                LightOffDelay = lightOff;
+                return true;
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Rebuilds GCode based on current settings
         /// </summary>

@@ -30,15 +30,6 @@ namespace UVtools.WPF.Controls.Tools
                 CanRun = false;
                 return;
             }
-
-
-            Operation.PropertyChanged += (sender, e) =>
-            {
-                if (e.PropertyName.Equals(nameof(Operation.IsWithinBoundary)))
-                {
-                    ParentWindow.ButtonOkEnabled = Operation.IsWithinBoundary;
-                }
-            };
         }
 
         private void InitializeComponent()
@@ -51,14 +42,18 @@ namespace UVtools.WPF.Controls.Tools
             switch (callback)
             {
                 case ToolWindow.Callbacks.Init:
-                    ParentWindow.IsButton1Visible = true;
+                case ToolWindow.Callbacks.Loaded:
+                    Operation.ROI = App.MainWindow.ROI.IsEmpty ? SlicerFile.BoundingRectangle : App.MainWindow.ROI;
+                    Operation.PropertyChanged += (sender, e) =>
+                    {
+                        if (e.PropertyName.Equals(nameof(Operation.IsWithinBoundary)))
+                        {
+                            ParentWindow.ButtonOkEnabled = Operation.IsWithinBoundary;
+                        }
+                    };
                     break;
                 case ToolWindow.Callbacks.ClearROI:
-                    Operation.SetRoi(App.SlicerFile.LayerManager.BoundingRectangle);
-                    break;
-                case ToolWindow.Callbacks.Button1:
-                    Operation.Fill();
-                    IsDefaultAnchorChecked = true;
+                    Operation.SetRoi(SlicerFile.BoundingRectangle);
                     break;
             }
         }

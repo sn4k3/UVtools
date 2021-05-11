@@ -1730,7 +1730,7 @@
                   </ContextMenu>
               </Button.ContextMenu>
             <StackPanel Orientation="Horizontal">
-              <Image Source="/Assets/Icons/undo-alt-16x16.png"/>
+              <Image Source="/Assets/Icons/sync-16x16.png"/>
               <TextBlock Margin="5,0,5,0" Text="Rotate ⮟"/>
             </StackPanel>
           </ToggleButton>
@@ -1890,7 +1890,7 @@
         BorderThickness="5"
         >
         <uc:AdvancedImageBox
-          ShowGrid="{Binding Settings.LayerPreview.ShowBackgroudGrid}"
+            ShowGrid="{Binding Settings.LayerPreview.ShowBackgroudGrid}"
           GridCellSize="15"
           Name="LayerImage"
         />

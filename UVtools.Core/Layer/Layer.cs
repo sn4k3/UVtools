@@ -506,7 +506,7 @@ namespace UVtools.Core
             return OperationCalculator.LightOffDelayC.CalculateSeconds(_liftHeight, _liftSpeed, _retractSpeed, extraTime);
         }
 
-        public void UpdateLightOffDelay(float extraTime = 0)
+        public void SetLightOffDelay(float extraTime = 0)
         {
             LightOffDelay = CalculateLightOffDelay(extraTime);
         }

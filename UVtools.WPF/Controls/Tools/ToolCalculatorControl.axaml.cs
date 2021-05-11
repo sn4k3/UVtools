@@ -2,6 +2,7 @@
 using Avalonia.Markup.Xaml;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
+using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools
 {
@@ -20,23 +21,33 @@ namespace UVtools.WPF.Controls.Tools
         {
             InitializeComponent();
             BaseOperation = new OperationCalculator(SlicerFile);
-            Operation.CalcLightOffDelay.PropertyChanged += (sender, e) =>
-            {
-                if (e.PropertyName != nameof(Operation.CalcLightOffDelay.LightOffDelay) &&
-                    e.PropertyName != nameof(Operation.CalcLightOffDelay.BottomLightOffDelay)) return;
-                LightOffDelayPrintTimeHours = Math.Round(
-                                                 (FileFormat.ExtraPrintTime +
-                                                 SlicerFile.BottomLayerCount * (Operation.CalcLightOffDelay.BottomLightOffDelay + (decimal) SlicerFile.BottomExposureTime) +
-                                                 SlicerFile.NormalLayerCount * (Operation.CalcLightOffDelay.LightOffDelay + (decimal)SlicerFile.ExposureTime))
-                                                 / 3600, 2);
-            };
-
-            _lightOffDelayPrintTimeHours = (decimal) SlicerFile.PrintTimeHours;
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        public override void Callback(ToolWindow.Callbacks callback)
+        {
+            switch (callback)
+            {
+                case ToolWindow.Callbacks.Init:
+                case ToolWindow.Callbacks.Loaded:
+                    Operation.CalcLightOffDelay.PropertyChanged += (sender, e) =>
+                    {
+                        if (e.PropertyName != nameof(Operation.CalcLightOffDelay.LightOffDelay) &&
+                            e.PropertyName != nameof(Operation.CalcLightOffDelay.BottomLightOffDelay)) return;
+                        LightOffDelayPrintTimeHours = Math.Round(
+                            (FileFormat.ExtraPrintTime +
+                             SlicerFile.BottomLayerCount * (Operation.CalcLightOffDelay.BottomLightOffDelay + (decimal)SlicerFile.BottomExposureTime) +
+                             SlicerFile.NormalLayerCount * (Operation.CalcLightOffDelay.LightOffDelay + (decimal)SlicerFile.ExposureTime))
+                            / 3600, 2);
+                    };
+
+                    _lightOffDelayPrintTimeHours = (decimal)SlicerFile.PrintTimeHours;
+                    break;
+            }
         }
 
         public void LightOffDelaySetParameters(byte side)

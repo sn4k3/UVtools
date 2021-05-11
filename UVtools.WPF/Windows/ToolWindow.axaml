@@ -195,40 +195,42 @@
           IsVisible="{Binding IsROIOrMasksVisible}">
 
           <StackPanel Orientation="Vertical">
-        <TextBlock
-          Classes="GroupBoxHeader"
-          Text="Region of interest (ROI) and Masks"/>
 
-        <StackPanel Margin="15" Spacing="10">
-        <StackPanel Spacing="10" 
-                    Orientation="Horizontal"
-                    IsVisible="{Binding IsROIVisible}">
-            <TextBlock VerticalAlignment="Center"
-                Text="{Binding ROI, StringFormat=Region: \{0\}}" />
+              <Grid
+                  ColumnDefinitions="Auto,*" Background="LightBlue">
+                  <TextBlock
+                      Padding="10" FontWeight="Bold"
+                      VerticalAlignment="Center"
+                      Text="Region of interest (ROI) and Masks" />
 
-            <Button
-                Padding="5"
-                Content="Clear ROI"
-                Command="{Binding ClearROI}"/>
-        </StackPanel>
+                  <StackPanel Orientation="Horizontal"
+                              Grid.Column="1"
+                              HorizontalAlignment="Right"
+                              Spacing="1">
+                      <Button
+                          VerticalAlignment="Center"
+                          Content="Clear ROI"
+                          IsVisible="{Binding IsROIVisible}"
+                          Command="{Binding ClearROI}"/>
+                      <Button
+                          VerticalAlignment="Center"
+                          Content="{Binding Masks.Length, StringFormat=Clear \{0\} mask(s)}"
+                          IsVisible="{Binding IsMasksVisible}"
+                          Command="{Binding ClearMasks}"/>
 
-        <StackPanel Spacing="10"
-                    Orientation="Horizontal"
-                    IsVisible="{Binding IsMasksVisible}">
-            <TextBlock VerticalAlignment="Center"
-                       Text="{Binding Masks.Length, StringFormat=Masks: \{0\}}" />
+                  </StackPanel>
 
-            <Button
-                Padding="5"
-                Content="Clear Masks"
-                Command="{Binding ClearMasks}"/>
-        </StackPanel>
+              </Grid>
 
-        <CheckBox
-            Content="Clear ROI and Masks after perform the operation"
-            IsChecked="{Binding ClearROIAndMaskAfterOperation}"/>
+        <StackPanel Margin="15" Spacing="5">
+          <TextBlock VerticalAlignment="Center"
+                     Text="{Binding ROI, StringFormat=Region: \{0\}}" />
 
-      </StackPanel>
+            <CheckBox
+                Content="Clear ROI and Masks after perform the operation"
+                IsChecked="{Binding ClearROIAndMaskAfterOperation}"/>
+
+          </StackPanel>
         </StackPanel>
 
 
@@ -274,12 +276,14 @@
           >
 
           <ComboBox 
+              Name="ProfileComboBox"
                   Margin="0,0,0,10"
                   IsEnabled="{Binding Profiles.Count}"
                   IsVisible="{Binding Profiles.Count}"
                   SelectedItem="{Binding SelectedProfileItem}"
                   HorizontalAlignment="Stretch"
-                  Items="{Binding Profiles}" />
+                  Items="{Binding Profiles}" 
+                  Width="{Binding ProfileBoxMaxWidth}"/>
 
           <Button
               Grid.Row="0"
@@ -320,11 +324,14 @@
           </Button>
 
           <TextBox
+            Name="ProfileName"
             Grid.Row="1"
             Grid.Column="0"
             IsEnabled="{Binding ButtonOkEnabled}"
             Text="{Binding ProfileText}"
-            Watermark="Profile name or leave empty for auto name"/>
+            Watermark="Profile name or leave empty for auto name"
+            Width="{Binding ProfileBoxMaxWidth}"
+           />
 
           <Button
             Grid.Row="1"
@@ -397,6 +404,16 @@
                             Header="Export settings">
                             <MenuItem.Icon>
                                 <Image Source="/Assets/Icons/file-export-16x16.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+
+                        <Separator IsVisible="{Binding CanHaveProfiles}"/>
+
+                        <MenuItem
+                            Command="{Binding ResetToDefaults}"
+                            Header="Reset to defaults">
+                            <MenuItem.Icon>
+                                <Image Source="/Assets/Icons/undo-alt-16x16.png"/>
                             </MenuItem.Icon>
                         </MenuItem>
                     </ContextMenu>

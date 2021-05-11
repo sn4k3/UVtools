@@ -145,7 +145,7 @@ namespace UVtools.WPF.Controls.Tools
             switch (callback)
             {
                 case ToolWindow.Callbacks.Init:
-                case ToolWindow.Callbacks.ProfileLoaded:
+                case ToolWindow.Callbacks.Loaded:
                     RefreshGUI();
                     Operation.Files.CollectionChanged += (sender, args) => RefreshGUI();
                     Operation.PropertyChanged += (sender, args) => RefreshGUI();

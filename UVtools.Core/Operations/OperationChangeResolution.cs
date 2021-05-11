@@ -122,7 +122,11 @@ namespace UVtools.Core.Operations
         public OperationChangeResolution() { }
 
         public OperationChangeResolution(FileFormat slicerFile) : base(slicerFile)
+        { }
+
+        public override void InitWithSlicerFile()
         {
+            base.InitWithSlicerFile();
             NewResolutionX = SlicerFile.ResolutionX;
             NewResolutionY = SlicerFile.ResolutionY;
         }

@@ -37,6 +37,7 @@ namespace UVtools.WPF.Controls.Tools
             switch (callback)
             {
                 case ToolWindow.Callbacks.Init:
+                case ToolWindow.Callbacks.Loaded:
                     ParentWindow.ButtonOkEnabled = Operation.CanExecute;
                     ReloadGUI();
                     Operation.PropertyChanged += (sender, e) =>

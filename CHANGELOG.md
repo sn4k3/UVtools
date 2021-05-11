@@ -1,5 +1,29 @@
 # Changelog
 
+## 11/05/2021 - v2.11.1
+
+- **Shortcuts:**
+   - (Add) (Ctrl + Shift + R) to turn on and cycle the Rotate modes
+   - (Add) (Ctrl + Shift + F) to turn on and cycle the Flip modes
+   - (Add) (Ctrl + Shift + B) to select the build volume as ROI
+- **GUI:**
+   - (Add) Allow to drag and drop '.uvtop' files into UVtools to sequential show and load operations from files
+   - (Change) Rotate icon on layer preview
+   - (Upgrade) AvaloniaUI from 0.10.3 to 0.10.4
+- **Tools:**
+   - (Add) 'Reset to defaults' button on every dialog
+   - (Improvement) Window size and position handling
+   - (Improvement) Constrain profile box width to not stretch the window
+   - (Improvement) ROI section design
+- **Dynamic lift:**
+   - (Add) View buttons to show the largest/smallest layers
+   - (Add) Light-off mode: Set the light-off with an extra delay
+   - (Add) Light-off mode: Set the light-off without an extra delay
+   - (Add) Light-off mode: Set the light-off to zero
+   - (Improvement) Disable bottom and/or normal layer fields when the selected range is outside
+- (Add) Settings - Automations: Light-off delay set modes
+- (Fix) Exposure time finder: Add staircase, bullseye and counter triangles to feature count at thumbnail
+
 ## 08/05/2021 - v2.11.0
 
 - **Tools:**

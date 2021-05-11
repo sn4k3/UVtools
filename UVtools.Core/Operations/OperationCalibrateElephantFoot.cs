@@ -359,12 +359,16 @@ namespace UVtools.Core.Operations
         public OperationCalibrateElephantFoot() { }
 
         public OperationCalibrateElephantFoot(FileFormat slicerFile) : base(slicerFile)
+        { }
+
+        public override void InitWithSlicerFile()
         {
-            _layerHeight = (decimal)slicerFile.LayerHeight;
+            base.InitWithSlicerFile();
+            _layerHeight = (decimal)SlicerFile.LayerHeight;
             //_bottomLayers = slicerFile.BottomLayerCount;
-            _bottomExposure = (decimal)slicerFile.BottomExposureTime;
-            _normalExposure = (decimal)slicerFile.ExposureTime;
-            _mirrorOutput = slicerFile.MirrorDisplay;
+            _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
+            _normalExposure = (decimal)SlicerFile.ExposureTime;
+            _mirrorOutput = SlicerFile.MirrorDisplay;
         }
 
         #endregion

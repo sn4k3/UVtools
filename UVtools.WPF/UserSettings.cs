@@ -22,7 +22,7 @@ namespace UVtools.WPF
     public sealed class UserSettings : BindableBase
     {
         #region Constants
-        public const ushort SETTINGS_VERSION = 3;
+        public const ushort SETTINGS_VERSION = 4;
         #endregion
 
         #region Sub classes
@@ -1159,6 +1159,7 @@ namespace UVtools.WPF
         {
             private bool _saveFileAfterModifications = true;
             private bool _autoConvertFiles = true;
+            private Enumerations.LightOffDelaySetMode _lightOffDelayDelaySetMode = Enumerations.LightOffDelaySetMode.UpdateWithExtraDelay;
             private bool _changeOnlyLightOffDelayIfZero = true;
             private decimal _lightOffDelay = 2.5m;
             private decimal _bottomLightOffDelay = 3m;
@@ -1175,11 +1176,27 @@ namespace UVtools.WPF
                 set => RaiseAndSetIfChanged(ref _autoConvertFiles, value);
             }
 
+            public Enumerations.LightOffDelaySetMode LightOffDelaySetMode
+            {
+                get => _lightOffDelayDelaySetMode;
+                set
+                {
+                    if(!RaiseAndSetIfChanged(ref _lightOffDelayDelaySetMode, value)) return;
+                    RaisePropertyChanged(nameof(ChangeOnlyLightOffDelayIfZeroVisible));
+                    RaisePropertyChanged(nameof(LightOffDelayExtraTimeVisible));
+                }
+            }
+
             public bool ChangeOnlyLightOffDelayIfZero
             {
                 get => _changeOnlyLightOffDelayIfZero;
                 set => RaiseAndSetIfChanged(ref _changeOnlyLightOffDelayIfZero, value);
             }
+
+            public bool ChangeOnlyLightOffDelayIfZeroVisible =>
+                _lightOffDelayDelaySetMode 
+                    is not Enumerations.LightOffDelaySetMode.NoAction 
+                    and not Enumerations.LightOffDelaySetMode.SetToZero;
 
 
             public decimal LightOffDelay
@@ -1193,6 +1210,9 @@ namespace UVtools.WPF
                 get => _bottomLightOffDelay;
                 set => RaiseAndSetIfChanged(ref _bottomLightOffDelay, value);
             }
+
+            public bool LightOffDelayExtraTimeVisible => _lightOffDelayDelaySetMode
+                is Enumerations.LightOffDelaySetMode.UpdateWithExtraDelay;
         }
 
         #endregion

@@ -185,18 +185,15 @@ namespace UVtools.WPF.Controls.Tools
             switch (callback)
             {
                 case ToolWindow.Callbacks.Init:
-                case ToolWindow.Callbacks.ProfileLoaded:
-                    ParentWindow.IsButton1Visible = true;
-                    ParentWindow.SelectCurrentLayer();
-                    ParentWindow.LayerRangeSync = true;
+                case ToolWindow.Callbacks.Loaded:
+                    if (callback is ToolWindow.Callbacks.Init)
+                    {
+                        ParentWindow.SelectCurrentLayer();
+                        ParentWindow.LayerRangeSync = true;
+                    }
+
                     PopulateGrid();
                     Operation.PropertyChanged += OperationOnPropertyChanged;
-                    break;
-                case ToolWindow.Callbacks.Button1:
-                    foreach (var rowControl in RowControls)
-                    {
-                        rowControl.NewValue.Value = (double) rowControl.Modifier.OldValue;
-                    }
                     break;
             }
         }

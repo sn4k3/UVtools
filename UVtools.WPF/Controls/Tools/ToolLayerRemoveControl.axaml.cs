@@ -2,6 +2,7 @@
 using Avalonia.Markup.Xaml;
 using UVtools.Core;
 using UVtools.Core.Operations;
+using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools
 {
@@ -33,17 +34,26 @@ namespace UVtools.WPF.Controls.Tools
         {
             InitializeComponent();
             BaseOperation = new OperationLayerRemove(SlicerFile);
-            Operation.PropertyChanged += (sender, args) =>
-            {
-                RaisePropertyChanged(nameof(InfoLayersStr));
-                RaisePropertyChanged(nameof(InfoHeightsStr));
-            };
-
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        public override void Callback(ToolWindow.Callbacks callback)
+        {
+            switch (callback)
+            {
+                case ToolWindow.Callbacks.Init:
+                case ToolWindow.Callbacks.Loaded:
+                    Operation.PropertyChanged += (sender, args) =>
+                    {
+                        RaisePropertyChanged(nameof(InfoLayersStr));
+                        RaisePropertyChanged(nameof(InfoHeightsStr));
+                    };
+                    break;
+            }
         }
     }
 }
