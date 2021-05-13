@@ -30,7 +30,7 @@ namespace UVtools.WPF.Controls
 
         public Vector Offset
         {
-            get => new Vector(HorizontalScrollBar.Value, VerticalScrollBar.Value);
+            get => new(HorizontalScrollBar.Value, VerticalScrollBar.Value);
             set
             {
                 HorizontalScrollBar.Value = value.X;
@@ -49,7 +49,7 @@ namespace UVtools.WPF.Controls
         private PropertyChangedEventHandler _propertyChanged;
         private readonly List<string> events = new ();
 
-        public event PropertyChangedEventHandler PropertyChanged
+        public new event PropertyChangedEventHandler PropertyChanged
         {
             add { _propertyChanged += value; events.Add("added"); }
             remove { _propertyChanged -= value; events.Add("removed"); }
@@ -1259,7 +1259,7 @@ namespace UVtools.WPF.Controls
         /// Resets the zoom to 100%.
         /// </summary>
         /// <param name="source">The source that initiated the action.</param>
-        private void PerformActualSize()
+        public void PerformActualSize()
         {
             SizeMode = SizeModes.Normal;
             //SetZoom(100, ImageZoomActions.ActualSize | (Zoom < 100 ? ImageZoomActions.ZoomIn : ImageZoomActions.ZoomOut));
@@ -1512,7 +1512,7 @@ namespace UVtools.WPF.Controls
                 var offsetX = Offset.X % pixelSize;
                 var offsetY = Offset.Y % pixelSize;
 
-                Pen pen = new Pen(PixelGridColor);
+                Pen pen = new(PixelGridColor);
                 for (double x = viewport.X + pixelSize - offsetX; x < viewport.Right; x += pixelSize)
                 {
                     context.DrawLine(pen, new Avalonia.Point(x, viewport.X), new Avalonia.Point(x, viewport.Bottom));

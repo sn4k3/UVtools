@@ -88,7 +88,7 @@ namespace UVtools.WPF.Structures
 
         public string VersionAnnouncementText => $"New version v{_version} is available!";
 
-        public string UrlLatestRelease => $"{About.Website}/releases/latest";
+        public string UrlLatestRelease = $"{About.Website}/releases/latest";
 
         public string DownloadLink => string.IsNullOrEmpty(Filename) ? null : $"{About.Website}/releases/download/v{_version}/{Filename}";
 
@@ -181,7 +181,7 @@ namespace UVtools.WPF.Structures
                         var targetDir = Path.Combine(App.ApplicationPath, upgradeFolder);
                         using (var stream = File.Open(DownloadedFile, FileMode.Open))
                         {
-                            using ZipArchive zip = new ZipArchive(stream, ZipArchiveMode.Read);
+                            using ZipArchive zip = new(stream, ZipArchiveMode.Read);
                             zip.ExtractToDirectory(targetDir, true);
                         }
 

@@ -1271,7 +1271,7 @@ namespace UVtools.Core.FileFormats
 
         public bool Equals(FileFormat other)
         {
-            if (ReferenceEquals(null, other)) return false;
+            if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
             return FileFullPath == other.FileFullPath;
         }
@@ -1283,6 +1283,7 @@ namespace UVtools.Core.FileFormats
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Clear();
         }
 
@@ -1614,40 +1615,38 @@ namespace UVtools.Core.FileFormats
             {
                 if (LayerCount > 0)
                 {
-                    using (TextWriter tw = new StreamWriter(Path.Combine(path, "Layers.ini")))
+                    using TextWriter tw = new StreamWriter(Path.Combine(path, "Layers.ini"));
+                    for (int layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                     {
-                        for (int layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                        var layer = this[layerIndex];
+                        tw.WriteLine($"[{layerIndex}]");
+                        tw.WriteLine($"{nameof(layer.NonZeroPixelCount)}: {layer.NonZeroPixelCount}");
+                        tw.WriteLine($"{nameof(layer.BoundingRectangle)}: {layer.BoundingRectangle}");
+                        tw.WriteLine($"{nameof(layer.IsBottomLayer)}: {layer.IsBottomLayer}");
+                        tw.WriteLine($"{nameof(layer.LayerHeight)}: {layer.LayerHeight}");
+                        tw.WriteLine($"{nameof(layer.PositionZ)}: {layer.PositionZ}");
+                        tw.WriteLine($"{nameof(layer.ExposureTime)}: {layer.ExposureTime}");
+
+                        if (HavePrintParameterPerLayerModifier(PrintParameterModifier.LightOffDelay))
+                            tw.WriteLine($"{nameof(layer.LightOffDelay)}: {layer.LightOffDelay}");
+                        if (HavePrintParameterPerLayerModifier(PrintParameterModifier.LiftHeight))
+                            tw.WriteLine($"{nameof(layer.LiftHeight)}: {layer.LiftHeight}");
+                        if (HavePrintParameterPerLayerModifier(PrintParameterModifier.LiftSpeed))
+                            tw.WriteLine($"{nameof(layer.LiftSpeed)}: {layer.LiftSpeed}");
+                        if (HavePrintParameterPerLayerModifier(PrintParameterModifier.RetractSpeed))
+                            tw.WriteLine($"{nameof(layer.RetractSpeed)}: {layer.RetractSpeed}");
+                        if (HavePrintParameterPerLayerModifier(PrintParameterModifier.LightPWM))
+                            tw.WriteLine($"{nameof(layer.LightPWM)}: {layer.LightPWM}");
+
+                        var materialMillilitersPercent = layer.MaterialMillilitersPercent;
+                        if (!float.IsNaN(materialMillilitersPercent))
                         {
-                            var layer = this[layerIndex];
-                            tw.WriteLine($"[{layerIndex}]");
-                            tw.WriteLine($"{nameof(layer.NonZeroPixelCount)}: {layer.NonZeroPixelCount}");
-                            tw.WriteLine($"{nameof(layer.BoundingRectangle)}: {layer.BoundingRectangle}");
-                            tw.WriteLine($"{nameof(layer.IsBottomLayer)}: {layer.IsBottomLayer}");
-                            tw.WriteLine($"{nameof(layer.LayerHeight)}: {layer.LayerHeight}");
-                            tw.WriteLine($"{nameof(layer.PositionZ)}: {layer.PositionZ}");
-                            tw.WriteLine($"{nameof(layer.ExposureTime)}: {layer.ExposureTime}");
-
-                            if (HavePrintParameterPerLayerModifier(PrintParameterModifier.LightOffDelay))
-                                tw.WriteLine($"{nameof(layer.LightOffDelay)}: {layer.LightOffDelay}");
-                            if (HavePrintParameterPerLayerModifier(PrintParameterModifier.LiftHeight))
-                                tw.WriteLine($"{nameof(layer.LiftHeight)}: {layer.LiftHeight}");
-                            if (HavePrintParameterPerLayerModifier(PrintParameterModifier.LiftSpeed))
-                                tw.WriteLine($"{nameof(layer.LiftSpeed)}: {layer.LiftSpeed}");
-                            if (HavePrintParameterPerLayerModifier(PrintParameterModifier.RetractSpeed))
-                                tw.WriteLine($"{nameof(layer.RetractSpeed)}: {layer.RetractSpeed}");
-                            if (HavePrintParameterPerLayerModifier(PrintParameterModifier.LightPWM))
-                                tw.WriteLine($"{nameof(layer.LightPWM)}: {layer.LightPWM}");
-
-                            var materialMillilitersPercent = layer.MaterialMillilitersPercent;
-                            if (!float.IsNaN(materialMillilitersPercent))
-                            {
-                                tw.WriteLine($"{nameof(layer.MaterialMilliliters)}: {layer.MaterialMilliliters}ml ({materialMillilitersPercent:F2}%)");
-                            }
-
-                            tw.WriteLine();
+                            tw.WriteLine($"{nameof(layer.MaterialMilliliters)}: {layer.MaterialMilliliters}ml ({materialMillilitersPercent:F2}%)");
                         }
-                        tw.Close();
+
+                        tw.WriteLine();
                     }
+                    tw.Close();
                 }
             }
 

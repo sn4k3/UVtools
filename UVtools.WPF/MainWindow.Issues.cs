@@ -43,7 +43,7 @@ namespace UVtools.WPF
             private set => RaiseAndSetIfChanged(ref _issues, value);
         }
 
-        public readonly List<LayerIssue> IgnoredIssues = new List<LayerIssue>();
+        public readonly List<LayerIssue> IgnoredIssues = new();
 
         public bool IssueCanGoPrevious => Issues.Count > 0 && _issueSelectedIndex > 0;
         public bool IssueCanGoNext => Issues.Count > 0 && _issueSelectedIndex < Issues.Count - 1;
@@ -83,8 +83,8 @@ namespace UVtools.WPF
                                     "Warning: Removing an island can cause other issues to appear if there is material present in the layers above it.\n" +
                                     "Always check previous and next layers before performing an island removal.", $"Remove {IssuesGrid.SelectedItems.Count} Issues?") != ButtonResult.Yes) return;
 
-            Dictionary<uint, List<LayerIssue>> processIssues = new Dictionary<uint, List<LayerIssue>>();
-            List<uint> layersRemove = new List<uint>();
+            Dictionary<uint, List<LayerIssue>> processIssues = new();
+            List<uint> layersRemove = new();
 
 
             foreach (LayerIssue issue in IssuesGrid.SelectedItems)
@@ -335,7 +335,7 @@ namespace UVtools.WPF
 
         private void IssuesGridOnSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            if (!(IssuesGrid.SelectedItem is LayerIssue issue))
+            if (IssuesGrid.SelectedItem is not LayerIssue issue)
             {
                 ShowLayer();
                 return;
@@ -374,7 +374,7 @@ namespace UVtools.WPF
         private void IssuesGridOnCellPointerPressed(object? sender, DataGridCellPointerPressedEventArgs e)
         {
             if (e.PointerPressedEventArgs.ClickCount == 2) return;
-            if (!(IssuesGrid.SelectedItem is LayerIssue issue)) return;
+            if (IssuesGrid.SelectedItem is not LayerIssue) return;
             // Double clicking an issue will center and zoom into the 
             // selected issue. Left click on an issue will zoom to fit.
             

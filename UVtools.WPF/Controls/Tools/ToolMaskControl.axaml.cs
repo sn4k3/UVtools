@@ -28,7 +28,7 @@ namespace UVtools.WPF.Controls.Tools
             set
             {
                 if(!RaiseAndSetIfChanged(ref _isMaskInverted, value)) return;
-                if (!Operation.HaveMask) return;
+                if (!Operation.HaveInputMask) return;
                 Operation.InvertMask();
                 MaskImage = Operation.Mask.ToBitmap();
             }
@@ -62,7 +62,7 @@ namespace UVtools.WPF.Controls.Tools
             {
                 if(!RaiseAndSetIfChanged(ref _maskImage, value)) return;
                 RaisePropertyChanged(nameof(InfoMaskResolutionStr));
-                ParentWindow.ButtonOkEnabled = Operation.HaveMask;
+                ParentWindow.ButtonOkEnabled = Operation.HaveInputMask;
             }
         }
 

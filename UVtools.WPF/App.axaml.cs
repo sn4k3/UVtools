@@ -33,7 +33,7 @@ namespace UVtools.WPF
         public static MainWindow MainWindow;
         public static FileFormat SlicerFile = null;
 
-        public static AppVersionChecker VersionChecker { get; } = new AppVersionChecker();
+        public static AppVersionChecker VersionChecker { get; } = new();
 
         public override void Initialize()
         {
@@ -95,8 +95,8 @@ namespace UVtools.WPF
 
         #region Utilities
 
-        public static string AppExecutable = Path.Combine(ApplicationPath, About.Software);
-        public static string AppExecutableQuoted = $"\"{AppExecutable}\"";
+        public static readonly string AppExecutable = Path.Combine(ApplicationPath, About.Software);
+        public static readonly string AppExecutableQuoted = $"\"{AppExecutable}\"";
         public static void NewInstance(string filePath)
         {
             try
@@ -182,7 +182,7 @@ namespace UVtools.WPF
             return res;
         }
 
-        public static Bitmap GetBitmapFromAsset(string url) => new Bitmap(GetAsset(url));
+        public static Bitmap GetBitmapFromAsset(string url) => new(GetAsset(url));
 
         public static string ApplicationPath => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 

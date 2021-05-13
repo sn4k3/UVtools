@@ -41,7 +41,7 @@ namespace UVtools.Core.Operations
         public override string ValidateInternally()
         {
             var sb = new StringBuilder();
-            if (Mask is null)
+            if (!HaveInputMask)
             {
                 sb.AppendLine("The mask can not be empty.");
             }
@@ -54,7 +54,7 @@ namespace UVtools.Core.Operations
         [XmlIgnore]
         public Mat Mask { get; set; }
 
-        public bool HaveMask => !(Mask is null);
+        public bool HaveInputMask => Mask is not null;
         #endregion
 
         #region Constructor
@@ -69,7 +69,7 @@ namespace UVtools.Core.Operations
 
         public void InvertMask()
         {
-            if (!HaveMask) return;
+            if (!HaveInputMask) return;
             CvInvoke.BitwiseNot(Mask, Mask);
         }
 

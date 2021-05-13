@@ -1,5 +1,10 @@
 # Changelog
 
+## 13/05/2021 - v2.11.2
+
+- (Improvement) Applied some refactorings on code
+- (Fix) MDLP, GR1 and CXDLP: Bad enconde of display width, display height and layer height properties
+
 ## 11/05/2021 - v2.11.1
 
 - **Shortcuts:**

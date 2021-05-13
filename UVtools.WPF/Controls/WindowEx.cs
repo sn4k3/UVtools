@@ -29,7 +29,7 @@ namespace UVtools.WPF.Controls
         private PropertyChangedEventHandler _propertyChanged;
         private readonly List<string> events = new();
 
-        public event PropertyChangedEventHandler PropertyChanged
+        public new event PropertyChangedEventHandler PropertyChanged
         {
             add { _propertyChanged += value; events.Add("added"); }
             remove { _propertyChanged -= value; events.Add("removed"); }

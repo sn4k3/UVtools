@@ -15,6 +15,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using BinarySerialization;
 using Emgu.CV;
@@ -65,12 +66,12 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public ushort ResolutionX { get; set; }
             [FieldOrder(2)] [FieldEndianness(Endianness.Big)] public ushort ResolutionY { get; set; }
             [FieldOrder(3)] [FieldEndianness(Endianness.Big)] public uint DisplayWidthDataSize { get; set; } = 6;
-            [FieldOrder(4)] [FieldLength(nameof(DisplayWidthDataSize))] public byte[] DisplayWidth { get; set; }
+            [FieldOrder(4)] [FieldLength(nameof(DisplayWidthDataSize))] public byte[] DisplayWidthBytes { get; set; }
             [FieldOrder(5)] [FieldEndianness(Endianness.Big)] public uint DisplayHeightDataSize { get; set; } = 6;
-            [FieldOrder(6)] [FieldLength(nameof(DisplayHeightDataSize))] public byte[] DisplayHeight { get; set; }
+            [FieldOrder(6)] [FieldLength(nameof(DisplayHeightDataSize))] public byte[] DisplayHeightBytes { get; set; }
 
             [FieldOrder(7)] [FieldEndianness(Endianness.Big)] public uint LayerHeightDataSize { get; set; } = 6;
-            [FieldOrder(8)] [FieldLength(nameof(LayerHeightDataSize))] public byte[] LayerHeight { get; set; }
+            [FieldOrder(8)] [FieldLength(nameof(LayerHeightDataSize))] public byte[] LayerHeightBytes { get; set; }
             [FieldOrder(9)] [FieldEndianness(Endianness.Big)] public ushort ExposureTime { get; set; }
             [FieldOrder(10)] [FieldEndianness(Endianness.Big)] public ushort LightOffDelay { get; set; }
             [FieldOrder(11)] [FieldEndianness(Endianness.Big)] public ushort BottomExposureTime { get; set; }
@@ -185,7 +186,7 @@ namespace UVtools.Core.FileFormats
 
         public override float DisplayWidth
         {
-            get => float.Parse(SlicerInfoSettings.DisplayWidth.Where(b => b != 0).Aggregate(string.Empty, (current, b) => current + System.Convert.ToChar(b)));
+            get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.DisplayWidthBytes.Where(b => b != 0).ToArray()));
             set
             {
                 string str = Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
@@ -193,17 +194,17 @@ namespace UVtools.Core.FileFormats
                 var data = new byte[SlicerInfoSettings.DisplayWidthDataSize];
                 for (var i = 0; i < str.Length; i++)
                 {
-                    data[i * 2] = System.Convert.ToByte(str[i]);
+                    data[i * 2 + 1] = System.Convert.ToByte(str[i]);
                 }
 
-                SlicerInfoSettings.DisplayWidth = data;
+                SlicerInfoSettings.DisplayWidthBytes = data;
                 RaisePropertyChanged();
             }
         }
 
         public override float DisplayHeight
         {
-            get => float.Parse(SlicerInfoSettings.DisplayHeight.Where(b => b != 0).Aggregate(string.Empty, (current, b) => current + System.Convert.ToChar(b)));
+            get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.DisplayHeightBytes.Where(b => b != 0).ToArray()));
             set
             {
                 string str = Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
@@ -211,10 +212,10 @@ namespace UVtools.Core.FileFormats
                 var data = new byte[SlicerInfoSettings.DisplayHeightDataSize];
                 for (var i = 0; i < str.Length; i++)
                 {
-                    data[i * 2] = System.Convert.ToByte(str[i]);
+                    data[i * 2 + 1] = System.Convert.ToByte(str[i]);
                 }
 
-                SlicerInfoSettings.DisplayHeight = data;
+                SlicerInfoSettings.DisplayHeightBytes = data;
                 RaisePropertyChanged();
             }
         }
@@ -229,7 +230,7 @@ namespace UVtools.Core.FileFormats
 
         public override float LayerHeight
         {
-            get => float.Parse(SlicerInfoSettings.LayerHeight.Where(b => b != 0).Aggregate(string.Empty, (current, b) => current + System.Convert.ToChar(b)));
+            get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.LayerHeightBytes.Where(b => b != 0).ToArray()));
             set
             {
                 string str = Layer.RoundHeight(value).ToString(CultureInfo.InvariantCulture);
@@ -237,10 +238,10 @@ namespace UVtools.Core.FileFormats
                 var data = new byte[SlicerInfoSettings.LayerHeightDataSize];
                 for (var i = 0; i < str.Length; i++)
                 {
-                    data[i * 2] = System.Convert.ToByte(str[i]);
+                    data[i * 2 + 1] = System.Convert.ToByte(str[i]);
                 }
 
-                SlicerInfoSettings.LayerHeight = data;
+                SlicerInfoSettings.LayerHeightBytes = data;
                 RaisePropertyChanged();
             }
         }

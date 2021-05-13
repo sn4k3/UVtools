@@ -814,7 +814,7 @@ namespace UVtools.WPF
 
         public async void MenuFileSettingsClicked()
         {
-            SettingsWindow settingsWindow = new SettingsWindow();
+            SettingsWindow settingsWindow = new();
             await settingsWindow.ShowDialog(this);
         }
 
@@ -891,7 +891,7 @@ namespace UVtools.WPF
                 IsGUIEnabled = false;
                 ShowProgressWindow($"Downloading: {VersionChecker.Filename}", false);
 
-                var task = await Task.Factory.StartNew(async () =>
+                var task = await Task.Factory.StartNew( () =>
                 {
                     try
                     {
@@ -1262,7 +1262,7 @@ namespace UVtools.WPF
             }
             else
             {
-                await Dispatcher.UIThread.InvokeAsync(async () =>
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     ProgressShow(title, canCancel);
                     /*try
@@ -1285,7 +1285,7 @@ namespace UVtools.WPF
             if (sender is not MenuItem item) return;
             if (item.Tag is not FileExtension fileExtension) return;
 
-            SaveFileDialog dialog = new SaveFileDialog
+            SaveFileDialog dialog = new()
             {
                 InitialFileName = Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath),
                 Filters = Helpers.ToAvaloniaFilter(fileExtension.Description, fileExtension.Extension),
@@ -1434,7 +1434,7 @@ namespace UVtools.WPF
         {
             if (!IsFileLoaded) return;
             string fileNameNoExt = Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath);
-            OpenFolderDialog dialog = new OpenFolderDialog
+            OpenFolderDialog dialog = new()
             {
                 Directory = string.IsNullOrEmpty(Settings.General.DefaultDirectoryExtractFile)
                     ? Path.GetDirectoryName(SlicerFile.FileFullPath)

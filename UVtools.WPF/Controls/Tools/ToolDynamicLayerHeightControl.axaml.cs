@@ -17,7 +17,7 @@ namespace UVtools.WPF.Controls.Tools
         public double MinimumLayerHeight => Layer.RoundHeight(SlicerFile.LayerHeight * 2);
         public double MaximumLayerHeight => FileFormat.MaximumLayerHeight;
 
-        private DataGrid ExposureTable;
+        private readonly DataGrid ExposureTable;
 
         public ToolDynamicLayerHeightControl()
         {

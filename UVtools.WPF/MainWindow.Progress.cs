@@ -18,7 +18,7 @@ namespace UVtools.WPF
     {
         #region Members
         public OperationProgress Progress { get; } = new();
-        private Timer _progressTimer = new(200) { AutoReset = true };
+        private readonly Timer _progressTimer = new(200) { AutoReset = true };
         private long _progressLastTotalSeconds;
         private LogItem _progressLogItem;
         private bool _isProgressVisible;

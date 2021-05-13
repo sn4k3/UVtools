@@ -48,11 +48,9 @@ namespace UVtools.WPF
 
             try
             {
-                using (TextWriter tw = new StreamWriter(file))
-                {
-                    tw.Write(SlicerFile.GCodeStr);
-                    tw.Close();
-                }
+                await using TextWriter tw = new StreamWriter(file);
+                await tw.WriteAsync(SlicerFile.GCodeStr);
+                tw.Close();
             }
             catch (Exception e)
             {

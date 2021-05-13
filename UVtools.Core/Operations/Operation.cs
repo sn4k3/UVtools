@@ -354,7 +354,7 @@ namespace UVtools.Core.Operations
                     SelectLastLayer();
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new NotImplementedException();
             }
         }
         
@@ -507,7 +507,7 @@ namespace UVtools.Core.Operations
             return result;
         }
 
-        public virtual void Dispose() { }
+        public virtual void Dispose() { GC.SuppressFinalize(this); }
         #endregion
 
         #region Static Methods

@@ -787,9 +787,8 @@ namespace UVtools.Core.Operations
         {
             get
             {
-                List<decimal> layerHeights = new List<decimal>();
+                List<decimal> layerHeights = new();
                 var endLayerHeight = _multipleLayerHeight ? _multipleLayerHeightMaximum : _layerHeight;
-                List<ExposureItem> list = new();
                 for (decimal layerHeight = _layerHeight; layerHeight <= endLayerHeight; layerHeight += _multipleLayerHeightStep)
                 {
                     layerHeights.Add(Layer.RoundHeight(layerHeight));

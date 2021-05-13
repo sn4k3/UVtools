@@ -6,8 +6,7 @@
              x:Class="UVtools.WPF.Controls.AdvancedImageBox">
   <Grid
     RowDefinitions="*,Auto"
-    ColumnDefinitions="*,Auto"
-    >
+    ColumnDefinitions="*,Auto">
 
     <ContentControl
       Name="ViewPort"
@@ -16,7 +15,7 @@
 
     <ScrollBar
       Name="VerticalScrollBar"
-      Grid.Column="1"
+      Grid.Row="0" Grid.Column="1"
       Orientation="Vertical"
       ViewportSize="{Binding #ViewPort.Bounds.Height}"
       Minimum="0"
@@ -26,7 +25,7 @@
       
     <ScrollBar
       Name="HorizontalScrollBar"
-      Grid.Row="1"
+      Grid.Row="1" Grid.Column="0"
       Orientation="Horizontal"
       ViewportSize="{Binding #ViewPort.Bounds.Width}"
       Minimum="0"

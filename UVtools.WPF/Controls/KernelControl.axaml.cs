@@ -46,7 +46,7 @@ namespace UVtools.WPF.Controls
             set => RaiseAndSetIfChanged(ref _matrixHeight, value);
         }
 
-        public Size MatrixSize => new Size((int)_matrixWidth, (int)_matrixHeight);
+        public Size MatrixSize => new((int)_matrixWidth, (int)_matrixHeight);
 
         public int AnchorX
         {
@@ -61,7 +61,7 @@ namespace UVtools.WPF.Controls
         }
 
         
-        public Point Anchor => new Point(_anchorX, _anchorY);
+        public Point Anchor => new(_anchorX, _anchorY);
 
 
         public KernelControl()
@@ -90,28 +90,26 @@ namespace UVtools.WPF.Controls
                 return;
             }
 
-            using (var kernel = CvInvoke.GetStructuringElement(SelectedKernelShape, MatrixSize, Anchor))
+            using var kernel = CvInvoke.GetStructuringElement(SelectedKernelShape, MatrixSize, Anchor);
+            string text = string.Empty;
+            for (int y = 0; y < kernel.Height; y++)
             {
-                string text = string.Empty;
-                for (int y = 0; y < kernel.Height; y++)
+                var span = kernel.GetPixelRowSpan<byte>(y);
+                var line = string.Empty;
+                for (int x = 0; x < span.Length; x++)
                 {
-                    var span = kernel.GetPixelRowSpan<byte>(y);
-                    var line = string.Empty;
-                    for (int x = 0; x < span.Length; x++)
-                    {
-                        line += $" {span[x]}";
-                    }
-
-                    line = line.Remove(0, 1);
-                    text += line;
-                    if (y < kernel.Height - 1)
-                    {
-                        text += '\n';
-                    }
+                    line += $" {span[x]}";
                 }
 
-                MatrixText = text;
+                line = line.Remove(0, 1);
+                text += line;
+                if (y < kernel.Height - 1)
+                {
+                    text += '\n';
+                }
             }
+
+            MatrixText = text;
         }
 
         public void ResetKernel()

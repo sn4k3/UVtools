@@ -97,7 +97,7 @@ namespace UVtools.Core.FileFormats
 
             [FieldOrder(1)]
             [FieldLength(nameof(DisplayWidthDataSize))]
-            public byte[] DisplayWidth { get; set; }
+            public byte[] DisplayWidthBytes { get; set; }
 
             [FieldOrder(2)]
             [FieldEndianness(Endianness.Big)]
@@ -105,7 +105,7 @@ namespace UVtools.Core.FileFormats
 
             [FieldOrder(3)]
             [FieldLength(nameof(DisplayHeightDataSize))]
-            public byte[] DisplayHeight { get; set; }
+            public byte[] DisplayHeightBytes { get; set; }
 
             [FieldOrder(4)]
             [FieldEndianness(Endianness.Big)]
@@ -113,7 +113,7 @@ namespace UVtools.Core.FileFormats
 
             [FieldOrder(5)]
             [FieldLength(nameof(LayerHeightDataSize))]
-            public byte[] LayerHeight { get; set; }
+            public byte[] LayerHeightBytes { get; set; }
 
             [FieldOrder(6)]
             [FieldEndianness(Endianness.Big)]
@@ -328,7 +328,7 @@ namespace UVtools.Core.FileFormats
 
         public override float DisplayWidth
         {
-            get => float.Parse(SlicerInfoSettings.DisplayWidth.Where(b => b != 0).Aggregate(string.Empty, (current, b) => current + System.Convert.ToChar(b)));
+            get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.DisplayWidthBytes.Where(b => b != 0).ToArray()));
             set
             {
                 string str = Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
@@ -336,17 +336,17 @@ namespace UVtools.Core.FileFormats
                 var data = new byte[SlicerInfoSettings.DisplayWidthDataSize];
                 for (var i = 0; i < str.Length; i++)
                 {
-                    data[i * 2] = System.Convert.ToByte(str[i]);
+                    data[i * 2 + 1] = System.Convert.ToByte(str[i]);
                 }
 
-                SlicerInfoSettings.DisplayWidth = data;
+                SlicerInfoSettings.DisplayWidthBytes = data;
                 RaisePropertyChanged();
             }
         }
 
         public override float DisplayHeight
         {
-            get => float.Parse(SlicerInfoSettings.DisplayHeight.Where(b => b != 0).Aggregate(string.Empty, (current, b) => current + System.Convert.ToChar(b)));
+            get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.DisplayHeightBytes.Where(b => b != 0).ToArray()));
             set
             {
                 string str = Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
@@ -354,10 +354,10 @@ namespace UVtools.Core.FileFormats
                 var data = new byte[SlicerInfoSettings.DisplayHeightDataSize];
                 for (var i = 0; i < str.Length; i++)
                 {
-                    data[i * 2] = System.Convert.ToByte(str[i]);
+                    data[i * 2 + 1] = System.Convert.ToByte(str[i]);
                 }
 
-                SlicerInfoSettings.DisplayHeight = data;
+                SlicerInfoSettings.DisplayHeightBytes = data;
                 RaisePropertyChanged();
             }
         }
@@ -370,7 +370,7 @@ namespace UVtools.Core.FileFormats
 
         public override float LayerHeight
         {
-            get => float.Parse(SlicerInfoSettings.LayerHeight.Where(b => b != 0).Aggregate(string.Empty, (current, b) => current + System.Convert.ToChar(b)));
+            get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.LayerHeightBytes.Where(b => b != 0).ToArray()));
             set
             {
                 string str = Layer.RoundHeight(value).ToString(CultureInfo.InvariantCulture);
@@ -378,10 +378,10 @@ namespace UVtools.Core.FileFormats
                 var data = new byte[SlicerInfoSettings.LayerHeightDataSize];
                 for (var i = 0; i < str.Length; i++)
                 {
-                    data[i * 2] = System.Convert.ToByte(str[i]);
+                    data[i * 2 + 1] = System.Convert.ToByte(str[i]);
                 }
 
-                SlicerInfoSettings.LayerHeight = data;
+                SlicerInfoSettings.LayerHeightBytes = data;
                 RaisePropertyChanged();
             }
         }
