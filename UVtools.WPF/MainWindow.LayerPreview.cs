@@ -93,62 +93,54 @@ namespace UVtools.WPF
             LayerNavigationTooltipBorder = this.FindControl<Border>("Layer.Navigation.Tooltip.Border");
             _issuesSliderCanvas = this.Find<Canvas>("Layer.Navigation.IssuesCanvas");
 
-
-
             _showLayerImageDifference = Settings.LayerPreview.ShowLayerDifference;
             _showLayerOutlinePrintVolumeBoundary = Settings.LayerPreview.VolumeBoundsOutline;
             _showLayerOutlineLayerBoundary = Settings.LayerPreview.LayerBoundsOutline;
             _showLayerOutlineHollowAreas = Settings.LayerPreview.HollowOutline;
-
+            
             LayerImageBox.ZoomLevels = new AdvancedImageBox.ZoomLevelCollection(AppSettings.ZoomLevels);
-            LayerImageBox.PropertyChanged += (sender, e) =>
+
+            LayerImageBox.GetObservable(AdvancedImageBox.ZoomProperty).Subscribe(zoom =>
             {
-                if (e.PropertyName == nameof(LayerImageBox.Zoom))
+                var oldZoom = LayerImageBox.OldZoom;
+                RaisePropertyChanged(nameof(LayerZoomStr));
+                AddLogVerbose($"Zoomed from {oldZoom} to {zoom}");
+                
+                if (_showLayerImageCrosshairs &&
+                    Issues.Count > 0 &&
+                    (oldZoom < 50 &&
+                     zoom >= 50 // Trigger refresh as crosshair thickness increases at lower zoom levels
+                     || oldZoom > 100 && zoom <= 100
+                     || oldZoom is >= 50 and <= 100 && (zoom is < 50 or > 100)
+                     || oldZoom <= AppSettings.CrosshairFadeLevel &&
+                     zoom > AppSettings.CrosshairFadeLevel // Trigger refresh as zoom level manually crosses fade threshold
+                     || oldZoom > AppSettings.CrosshairFadeLevel && zoom <= AppSettings.CrosshairFadeLevel)
+
+                )
                 {
-                    RaisePropertyChanged(nameof(LayerZoomStr));
-                    AddLogVerbose($"Zoomed from {LayerImageBox.OldZoom} to {LayerImageBox.Zoom}");
-
-                    if (ShowLayerImageCrosshairs &&
-                        Issues.Count > 0 &&
-                        (LayerImageBox.OldZoom < 50 &&
-                         LayerImageBox.Zoom >= 50 // Trigger refresh as crosshair thickness increases at lower zoom levels
-                         || LayerImageBox.OldZoom > 100 && LayerImageBox.Zoom <= 100
-                         || LayerImageBox.OldZoom >= 50 && LayerImageBox.OldZoom <= 100 && (LayerImageBox.Zoom < 50 || LayerImageBox.Zoom > 100)
-                         || LayerImageBox.OldZoom <= AppSettings.CrosshairFadeLevel &&
-                         LayerImageBox.Zoom > AppSettings.CrosshairFadeLevel // Trigger refresh as zoom level manually crosses fade threshold
-                         || LayerImageBox.OldZoom > AppSettings.CrosshairFadeLevel && LayerImageBox.Zoom <= AppSettings.CrosshairFadeLevel)
-
-                    )
+                    if (Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues)
                     {
-                        if (Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues)
-                        {
-                            if (IssuesGrid.SelectedItems.Count == 0 || !IssuesGrid.SelectedItems.Cast<LayerIssue>().Any(
-                                issue => // Find a valid candidate to update layer preview, otherwise quit
-                                    issue.LayerIndex == _actualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
-                                    issue.Type != LayerIssue.IssueType.TouchingBound)) return;
-                        }
-                        else
-                        {
-                            if (!Issues.Any(
-                                issue => // Find a valid candidate to update layer preview, otherwise quit
-                                    issue.LayerIndex == _actualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
-                                    issue.Type != LayerIssue.IssueType.TouchingBound)) return;
-                        }
-
-                        // A timer is used here rather than invoking ShowLayer directly to eliminate sublte visual flashing
-                        // that will occur on the transition when the crosshair fades or unfades if ShowLayer is called directly.
-                        ShowLayer();
+                        if (IssuesGrid.SelectedItems.Count == 0 || !IssuesGrid.SelectedItems.Cast<LayerIssue>().Any(
+                            issue => // Find a valid candidate to update layer preview, otherwise quit
+                                issue.LayerIndex == _actualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
+                                issue.Type != LayerIssue.IssueType.TouchingBound)) return;
+                    }
+                    else
+                    {
+                        if (!Issues.Any(
+                            issue => // Find a valid candidate to update layer preview, otherwise quit
+                                issue.LayerIndex == _actualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
+                                issue.Type != LayerIssue.IssueType.TouchingBound)) return;
                     }
 
-                    return;
+                    // A timer is used here rather than invoking ShowLayer directly to eliminate sublte visual flashing
+                    // that will occur on the transition when the crosshair fades or unfades if ShowLayer is called directly.
+                    ShowLayer();
                 }
+            });
 
-                if (e.PropertyName == nameof(LayerImageBox.SelectionRegion))
-                {
-                    RaisePropertyChanged(nameof(LayerROIStr));
-                }
-
-            };
+            LayerImageBox.GetObservable(AdvancedImageBox.SelectionRegionProperty)
+                .Subscribe(rect => RaisePropertyChanged(nameof(LayerROIStr)));
 
             LayerImageBox.PointerMoved += LayerImageBoxOnPointerMoved;
             LayerImageBox.KeyUp += LayerImageBox_KeyUp;
@@ -1248,7 +1240,7 @@ namespace UVtools.WPF
                 if (!_showLayerImageFlipped) return;
                 if (_showLayerImageFlippedHorizontally)
                 {
-                    rectangle.Location = new Point(LayerCache.Image.Width - 1 - rectangle.Right, rectangle.Y);
+                    rectangle.Location = new Point(LayerCache.Image.Width - rectangle.Right, rectangle.Y);
                 }
 
                 if (_showLayerImageFlippedVertically)
@@ -1801,7 +1793,8 @@ namespace UVtools.WPF
 
         public async void SaveCurrentLayerImage()
         {
-            SaveFileDialog dialog = new SaveFileDialog
+            if (!IsFileLoaded) return;
+            SaveFileDialog dialog = new()
             {
                 Filters = Helpers.PngFileFilter,
                 DefaultExtension = ".png",
@@ -1812,6 +1805,22 @@ namespace UVtools.WPF
             if (string.IsNullOrEmpty(result)) return;
 
             LayerCache.ImageBgr.Save(result);
+        }
+
+        public async void SaveCurrentROIImage()
+        {
+            if (!IsFileLoaded || !LayerImageBox.HaveSelection) return;
+            SaveFileDialog dialog = new()
+            {
+                Filters = Helpers.PngFileFilter,
+                DefaultExtension = ".png",
+                InitialFileName = $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_layer{ActualLayer}_ROI.png"
+            };
+
+            var result = await dialog.ShowAsync(this);
+            if (string.IsNullOrEmpty(result)) return;
+
+            LayerImageBox.GetSelectedBitmap()?.Save(result);
         }
 
         const byte _pixelEditorCursorMinDiamater = 10;

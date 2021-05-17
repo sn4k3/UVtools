@@ -116,7 +116,6 @@ namespace UVtools.WPF.Structures
                 Debug.WriteLine($"Version checker: v{App.VersionStr} <=> v{tag_name}");
                 Version checkVersion = new(tag_name);
                 Changelog = json.body;
-
                 //if (string.Compare(tag_name, App.VersionStr, StringComparison.OrdinalIgnoreCase) > 0)
                 if (App.Version.CompareTo(checkVersion) < 0)
                 {

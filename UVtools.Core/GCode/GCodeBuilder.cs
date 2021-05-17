@@ -514,10 +514,10 @@ namespace UVtools.Core.GCode
 
                 AppendLineIfCanComment(BeginLayerComments, layerIndex, layer.PositionZ);
 
-                if (layer.CanExpose)
-                {
-                    AppendShowImageM6054(GetShowImageString(layerIndex));
-                }
+                //if (layer.CanExpose)
+                //{ Dont check this for compability
+                AppendShowImageM6054(GetShowImageString(layerIndex));
+                //}
 
                 if (liftHeight > 0 && liftZPosAbs > layer.PositionZ)
                 {
@@ -627,7 +627,7 @@ namespace UVtools.Core.GCode
             float positionZ = 0;
             for (uint layerIndex = 0; layerIndex < slicerFile.LayerCount; layerIndex++)
             {
-                var layer = slicerFile[layerIndex];
+                var layer = slicerFile[layerIndex]; 
                 if(layer is null) continue;
                 var startStr = CommandShowImageM6054.ToStringWithoutComments(GetShowImageString(layerIndex));
                 var endStr = CommandShowImageM6054.ToStringWithoutComments(GetShowImageString(layerIndex+1));

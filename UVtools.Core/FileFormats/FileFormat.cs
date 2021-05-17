@@ -216,6 +216,7 @@ namespace UVtools.Core.FileFormats
             new GR1File(),   // GR1 Workshop
             new CXDLPFile(),   // Creality Box
             new LGSFile(),   // LGS, LGS30
+            new VDAFile(),   // VDA
             new VDTFile(),   // VDT
             new UVJFile(),   // UVJ
             new ImageFile(),   // images
@@ -367,12 +368,12 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the available <see cref="FileFormat.PrintParameterModifier"/>
         /// </summary>
-        public abstract PrintParameterModifier[] PrintParameterModifiers { get; }
+        public virtual PrintParameterModifier[] PrintParameterModifiers => null;
 
         /// <summary>
         /// Gets the available <see cref="FileFormat.PrintParameterModifier"/> per layer
         /// </summary>
-        public virtual PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = null;
+        public virtual PrintParameterModifier[] PrintParameterPerLayerModifiers => null;
 
         /// <summary>
         /// Checks if a <see cref="PrintParameterModifier"/> exists on print parameters
@@ -476,7 +477,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the original thumbnail sizes
         /// </summary>
-        public abstract Size[] ThumbnailsOriginalSize { get; }
+        public virtual Size[] ThumbnailsOriginalSize => null;
 
         /// <summary>
         /// Gets the thumbnails for this <see cref="FileFormat"/>
@@ -587,12 +588,12 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets or sets the display width in millimeters
         /// </summary>
-        public abstract float DisplayWidth { get; set; }
+        public virtual float DisplayWidth { get; set; }
 
         /// <summary>
         /// Gets or sets the display height in millimeters
         /// </summary>
-        public abstract float DisplayHeight { get; set; }
+        public virtual float DisplayHeight { get; set; }
 
         /// <summary>
         /// Gets or sets if images need to be mirrored on lcd to print on the correct orientation
@@ -903,6 +904,8 @@ namespace UVtools.Core.FileFormats
             get => _lightPwm;
             set => RaiseAndSet(ref _lightPwm, value);
         }
+
+        public bool CanUseBottomLayerCount => HavePrintParameterModifier(PrintParameterModifier.BottomLayerCount);
 
         public bool CanUseBottomExposureTime => HavePrintParameterModifier(PrintParameterModifier.BottomExposureSeconds);
         public bool CanUseExposureTime => HavePrintParameterModifier(PrintParameterModifier.ExposureSeconds);
@@ -1528,26 +1531,7 @@ namespace UVtools.Core.FileFormats
                                                    "Lower and fix your layer height on slicer to avoid precision errors.", fileFullPath);
             }
 
-            bool reSaveFile = false;
-
-            if(ResolutionX == 0 || ResolutionY == 0)
-            {
-                var layer = FirstLayer;
-                if (layer is not null)
-                {
-                    using var mat = layer.LayerMat;
-
-                    if (mat.Size.HaveZero())
-                    {
-                        throw new FileLoadException($"File resolution ({Resolution}) is invalid and can't be auto fixed due invalid layers with same problem ({mat.Size}).", fileFullPath);
-                    }
-                
-                    Resolution = mat.Size;
-                    reSaveFile = true;
-                }
-            }
-
-            reSaveFile |= _layerManager.Sanitize();
+            bool reSaveFile = _layerManager.Sanitize();
 
             if (reSaveFile)
             {

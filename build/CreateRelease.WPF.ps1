@@ -225,7 +225,7 @@ if($enableMSI)
         # Clean and build MSI
         Remove-Item "$installer\obj" -Recurse -ErrorAction Ignore
         Remove-Item "$installer\bin" -Recurse -ErrorAction Ignore
-        iex "& $msbuild $installer\$installer.wixproj"
+        Invoke-Expression "& $msbuild $installer\$installer.wixproj"
     }
 
     Write-Output "Coping $runtime MSI to: $msiTargetFile"

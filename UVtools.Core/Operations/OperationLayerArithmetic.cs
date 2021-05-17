@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -53,6 +54,8 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Overrides
+
+        public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
         public override string Title => "Layer arithmetic";
         public override string Description =>
             "Perform arithmetic operations over the layers\n" +
@@ -63,7 +66,7 @@ namespace UVtools.Core.Operations
             "Syntax: <set_to_layer_indexes> = <layer_index> <operator> <layer_index>\n" +
             "When: \"<set_to_layer_indexes> =\" is omitted, the result will assign to the first layer on the sentence.\n\n" +
             "Example 1: 10+11\n" +
-            "Example 2: 10,11,12 = 11+12-10*5\n" +
+            "Example 2: 10,11,12 = 11+12-10*5   Same as: 10:12 = 11+12-10*5\n" +
             "On example 1 the layer 10 will be set with the result of layer 10 plus layer 11.\n" +
             "On example 2 the layers 10,11,12 will be set with the result of layer 11 plus 12 minus 10 all multiplied by layer 5.\n\n" +
             "Note: Calculation are made sequential, math order rules wont apply here.";
@@ -87,13 +90,15 @@ namespace UVtools.Core.Operations
                 sb.AppendLine("No layers to assign.");
             else if (Operations.Count == 0)
                 sb.AppendLine("No operations to perform.");
+            else if (!IsValid)
+                sb.AppendLine("The operation will have no impact and will not be performed.");
 
             return sb.ToString();
         }
 
         public override string ToString()
         {
-            var result = $"{_sentence}" + LayerRangeString;
+            var result = $"{_sentence}";
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
         }
@@ -106,12 +111,13 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _sentence, value);
         }
         [XmlIgnore]
-        public List<ArithmeticOperation> Operations { get; } = new();
+        public List<ArithmeticOperation> Operations { get; private set; } = new();
 
         [XmlIgnore]
-        public List<uint> SetLayers { get; } = new List<uint>();
+        public List<uint> SetLayers { get; private set; } = new();
 
-        public bool IsValid => SetLayers.Count > 0 & Operations.Count > 0;
+        public bool IsValid => SetLayers.Count > 0 && Operations.Count > 0 && 
+                               !(SetLayers.Count == 1 && Operations.Count == 1 && SetLayers[0] == Operations[0].LayerIndex);
         #endregion
 
         #region Constructor
@@ -135,14 +141,30 @@ namespace UVtools.Core.Operations
             if (splitSentence.Length >= 2)
             {
                 operations = splitSentence[1];
-                var setLayers = splitSentence[0].Replace(" ", string.Empty).Split(',');
+                var setLayers = splitSentence[0].Replace(" ", string.Empty).Split(',', StringSplitOptions.TrimEntries);
                 foreach (var layer in setLayers)
                 {
+                    var rangeSplit = layer.Split(':', StringSplitOptions.TrimEntries);
+                    if (rangeSplit.Length > 1)
+                    {
+                        uint.TryParse(rangeSplit[0].Trim(), out var startLayer);
+                        if (!uint.TryParse(rangeSplit[1].Trim(), out var endLayer)) endLayer = SlicerFile.LastLayerIndex;
+                        for (var index = startLayer; index <= endLayer; index++)
+                        {
+                            if (SetLayers.Contains(index)) continue;
+                            SetLayers.Add(index);
+                        }
+                        continue;
+                    }
+
                     if (!uint.TryParse(layer.Trim(), out var layerIndex)) continue;
                     if (SetLayers.Contains(layerIndex)) continue;
                     SetLayers.Add(layerIndex);
                 }
             }
+
+            SetLayers = SetLayers.Where(layerIndex => layerIndex <= SlicerFile.LastLayerIndex).ToList();
+            SetLayers.Sort();
 
             operations = operations.Replace(" ", string.Empty);
             if (string.IsNullOrWhiteSpace(operations)) return false;
@@ -208,8 +230,10 @@ namespace UVtools.Core.Operations
                 }
             }
 
-            if (Operations.Count == 0) return false;
-            if (SetLayers.Count == 0)
+            Operations = Operations.Where(op => op.LayerIndex <= SlicerFile.LastLayerIndex).ToList();
+
+            //if (Operations.Count == 0) return false;
+            if (SetLayers.Count == 0 && Operations.Count > 0)
             {
                 SetLayers.Add(Operations[0].LayerIndex);
             }
@@ -223,12 +247,15 @@ namespace UVtools.Core.Operations
 
             using var result = SlicerFile[Operations[0].LayerIndex].LayerMat;
             using var resultRoi = GetRoiOrDefault(result);
+            using var imageMask = GetMask(resultRoi);
+
+            progress.ItemCount = (uint) Operations.Count;
             for (int i = 1; i < Operations.Count; i++)
             {
                 progress.Token.ThrowIfCancellationRequested();
                 using var image = SlicerFile[Operations[i].LayerIndex].LayerMat;
                 var imageRoi = GetRoiOrDefault(image);
-                using var imageMask = GetMask(image);
+                
                 switch (Operations[i - 1].Operator)
                 {
                     case LayerArithmeticOperators.Add:
@@ -256,20 +283,26 @@ namespace UVtools.Core.Operations
                         CvInvoke.AbsDiff(resultRoi, imageRoi, resultRoi);
                         break;
                 }
+
+                progress++;
             }
 
+            progress.Reset("Applied layers", (uint) SetLayers.Count);
             Parallel.ForEach(SetLayers, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
-                if (Operations.Count == 1 && HaveROI)
+                progress.LockAndIncrement();
+                if (Operations.Count == 1 || HaveROIorMask)
                 {
-                    var mat = SlicerFile[layerIndex].LayerMat;
+                    using var mat = SlicerFile[layerIndex].LayerMat;
                     var matRoi = GetRoiOrDefault(mat);
-                    using var imageMask = GetMask(mat);
                     resultRoi.CopyTo(matRoi, imageMask);
                     SlicerFile[layerIndex].LayerMat = mat;
                     return;
                 }
+
+                //ApplyMask(mat, resultRoi, imageMask);
+
                 SlicerFile[layerIndex].LayerMat = result;
             });
 

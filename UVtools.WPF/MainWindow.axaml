@@ -284,11 +284,13 @@
         VerticalAlignment="Center">
         <TextBlock Text="{Binding SlicerFile.LayerHeight, StringFormat=Layer height: \{0\}mm}"/>
 
-        <TextBlock Text="  |  "/>
-        <TextBlock Text="{Binding SlicerFile.BottomLayerCount, StringFormat=Bottom layers: {0}}"/>
+        <TextBlock IsVisible="{Binding SlicerFile.CanUseBottomLayerCount}" Text="  |  "/>
+        <TextBlock IsVisible="{Binding SlicerFile.CanUseBottomLayerCount}" 
+                   Text="{Binding SlicerFile.BottomLayerCount, StringFormat=Bottom layers: {0}}"/>
 
-        <TextBlock Text="  |  "/>
-        <TextBlock Text="{Binding SlicerFile.ExposureRepresentation, StringFormat=Exposure: {0}}"/>
+        <TextBlock IsVisible="{Binding SlicerFile.CanUseAnyExposureTime}" Text="  |  "/>
+        <TextBlock IsVisible="{Binding SlicerFile.CanUseAnyExposureTime}"
+                   Text="{Binding SlicerFile.ExposureRepresentation, StringFormat=Exposure: {0}}"/>
 
         <TextBlock IsVisible="{Binding SlicerFile.CanUseAnyLiftHeight}" Text="  |  "/>
         <TextBlock IsVisible="{Binding SlicerFile.CanUseAnyLiftHeight}"
@@ -1875,8 +1877,20 @@
             ToolTip.Tip="Save layer image to a file"
             VerticalAlignment="Stretch"
             Margin="1,0,0,0">
-            <StackPanel Orientation="Horizontal">
-              <Image Source="/Assets/Icons/save-16x16.png"/>
+              <Button.ContextMenu>
+                  <ContextMenu PlacementMode="Bottom">
+                      <MenuItem
+                          Command="{Binding SaveCurrentROIImage}"
+                          Header="Save the selected region (ROI)">
+                          <MenuItem.Icon>
+                              <Image Source="/Assets/Icons/object-group-16x16.png"/>
+                          </MenuItem.Icon>
+                      </MenuItem>
+                    </ContextMenu>
+              </Button.ContextMenu>
+              <StackPanel Orientation="Horizontal">
+                <Image Source="/Assets/Icons/save-16x16.png"/>
+                <TextBlock Text=" ⮟"/>
             </StackPanel>
           </Button>
 
@@ -1891,9 +1905,8 @@
         >
         <uc:AdvancedImageBox
             ShowGrid="{Binding Settings.LayerPreview.ShowBackgroudGrid}"
-          GridCellSize="15"
-          Name="LayerImage"
-        />
+            GridCellSize="15"
+            Name="LayerImage"/>
       </Border>
       
 

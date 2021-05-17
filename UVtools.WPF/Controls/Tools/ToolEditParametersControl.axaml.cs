@@ -11,6 +11,7 @@ using Avalonia.Markup.Xaml;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
+using UVtools.WPF.Extensions;
 using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools
@@ -117,6 +118,7 @@ namespace UVtools.WPF.Controls.Tools
             if (Operation.Modifiers is null || Operation.Modifiers.Length == 0)
             {
                 CanRun = false;
+                App.MainWindow.MessageBoxError("No available properties to edit on this file format.", BaseOperation.Title).GetAwaiter();
                 return;
             }
 

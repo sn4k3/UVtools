@@ -118,9 +118,7 @@ namespace UVtools.WPF.Extensions
             
 
             using var lockBuffer = writableBitmap.Lock();
-
-           
-
+            
             unsafe
             {
 

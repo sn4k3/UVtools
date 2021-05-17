@@ -235,6 +235,8 @@ namespace UVtools.Core.Operations
 
         public bool HaveMask => _maskPoints is not null && _maskPoints.Length > 0;
 
+        public bool HaveROIorMask => HaveROI || HaveMask;
+
         /// <summary>
         /// Gets if this operation have been executed once
         /// </summary>

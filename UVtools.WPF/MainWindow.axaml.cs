@@ -508,7 +508,7 @@ namespace UVtools.WPF
             var clientSizeObs = this.GetObservable(ClientSizeProperty);
             clientSizeObs.Subscribe(size => UpdateLayerTrackerHighlightIssues());
             var windowStateObs = this.GetObservable(WindowStateProperty);
-            windowStateObs.Subscribe(size => UpdateLayerTrackerHighlightIssues());
+            windowStateObs.Subscribe(windowsState => UpdateLayerTrackerHighlightIssues());
 
 
             DataContext = this;

@@ -224,6 +224,7 @@
 
         <StackPanel Margin="15" Spacing="5">
           <TextBlock VerticalAlignment="Center"
+                     IsVisible="{Binding IsROIVisible}"
                      Text="{Binding ROI, StringFormat=Region: \{0\}}" />
 
             <CheckBox

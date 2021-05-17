@@ -76,6 +76,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 * CXDLP (Creality Box)
 * LGS (Longer Orange 10)
 * LGS30 (Longer Orange 30)
+* VDA.ZIP (Voxeldance Additive)
 * VDT (Voxeldance Tango)
 * UVJ (Zip file format for manual manipulation)
 * Image files (png, jpg, jpeg, gif, bmp)

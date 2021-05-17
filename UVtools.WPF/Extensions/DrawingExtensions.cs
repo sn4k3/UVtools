@@ -15,22 +15,22 @@ namespace UVtools.WPF.Extensions
     {
         public static Avalonia.Media.Color ToAvalonia(this System.Drawing.Color color)
         {
-            return new Avalonia.Media.Color(color.A, color.R, color.G, color.B);
+            return new(color.A, color.R, color.G, color.B);
         }
 
         public static System.Drawing.Color ToDotNet(this Avalonia.Media.Color color)
         {
-            return System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B);
+            return Color.FromArgb(color.A, color.R, color.G, color.B);
         }
 
         public static Rect ToAvalonia(this Rectangle rectangle)
         {
-            return new Rect(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height); 
+            return new(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height); 
         }
 
         public static Rectangle ToDotNet(this Rect rectangle)
         {
-            return new Rectangle((int) rectangle.X, (int) rectangle.Y, (int) rectangle.Width, (int) rectangle.Height);
+            return new((int) rectangle.X, (int) rectangle.Y, (int) rectangle.Width, (int) rectangle.Height);
         }
     }
 }

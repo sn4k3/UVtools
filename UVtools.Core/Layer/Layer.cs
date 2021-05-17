@@ -202,7 +202,8 @@ namespace UVtools.Core
             get => _lightPwm;
             set
             {
-                if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
+                if (value == 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
+                if (value == 0) value = FileFormat.DefaultLightPWM;
                 RaiseAndSetIfChanged(ref _lightPwm, value);
             }
         }
@@ -511,10 +512,22 @@ namespace UVtools.Core
             LightOffDelay = CalculateLightOffDelay(extraTime);
         }
 
-        public string FormatFileName(string name)
+        public string FormatFileName(string prepend, byte padDigits, bool layerIndexZeroStarted = true)
         {
-            return $"{name}{Index.ToString().PadLeft(ParentLayerManager.LayerDigits, '0')}.png";
+            var index = Index;
+            if (!layerIndexZeroStarted)
+            {
+                index++;
+            }
+            return $"{prepend}{index.ToString().PadLeft(padDigits, '0')}.png";
         }
+
+        public string FormatFileName(string prepend = "", bool layerIndexZeroStarted = true)
+            => FormatFileName(prepend, ParentLayerManager.LayerDigits, layerIndexZeroStarted);
+
+        public string FormatFileName(byte padDigits, bool layerIndexZeroStarted = true)
+            => FormatFileName(string.Empty, padDigits, layerIndexZeroStarted);
+
 
         public Rectangle GetBoundingRectangle(Mat mat = null, bool reCalculate = false)
         {
@@ -625,8 +638,8 @@ namespace UVtools.Core
             // These arrays are used to 
             // get row and column numbers 
             // of 8 neighbors of a given cell 
-            List<LayerIssue> result = new List<LayerIssue>();
-            List<Point> pixels = new List<Point>();
+            List<LayerIssue> result = new();
+            List<Point> pixels = new();
 
 
 
@@ -700,7 +713,7 @@ namespace UVtools.Core
                             int y2;
 
 
-                            Queue<Point> queue = new Queue<Point>();
+                            Queue<Point> queue = new();
                             queue.Enqueue(new Point(x, y));
                             // Mark this cell as visited 
                             visited[x, y] = true;

@@ -6,7 +6,9 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.IO;
+using System.Reflection;
 
 namespace UVtools.Core
 {
@@ -19,5 +21,8 @@ namespace UVtools.Core
         public static string Donate = "https://paypal.me/SkillTournament";
 
         public static string DemoFile = "UVtools_demo_file.sl1";
+
+        public static Version Version => Assembly.GetExecutingAssembly().GetName().Version;
+        public static string VersionStr => Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
     }
 }

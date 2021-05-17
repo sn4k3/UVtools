@@ -68,12 +68,10 @@ namespace UVtools.WPF
         {
             get
             {
-                using (var framebuffer = Bitmap.Lock())
-                {
-                    var info = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
-                        framebuffer.Format.ToSkColorType(), SKAlphaType.Premul);
-                    return SKSurface.Create(info, framebuffer.Address, framebuffer.RowBytes).Canvas;
-                }
+                using var framebuffer = Bitmap.Lock();
+                var info = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
+                    framebuffer.Format.ToSkColorType(), SKAlphaType.Premul);
+                return SKSurface.Create(info, framebuffer.Address, framebuffer.RowBytes).Canvas;
             }
         }
 

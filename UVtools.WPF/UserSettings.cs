@@ -224,7 +224,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush TooltipOverlayBackgroundBrush
             {
-                get => new SolidColorBrush(_tooltipOverlayBackgroundColor.ToAvalonia());
+                get => new(_tooltipOverlayBackgroundColor.ToAvalonia());
                 set => TooltipOverlayBackgroundColor = new Color(value);
             }
 
@@ -247,7 +247,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush VolumeBoundsOutlineBrush
             {
-                get => new SolidColorBrush(_volumeBoundsOutlineColor.ToAvalonia());
+                get => new(_volumeBoundsOutlineColor.ToAvalonia());
                 set => VolumeBoundsOutlineColor = new Color(value);
             }
 
@@ -276,7 +276,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush LayerBoundsOutlineBrush
             {
-                get => new SolidColorBrush(_layerBoundsOutlineColor.ToAvalonia());
+                get => new(_layerBoundsOutlineColor.ToAvalonia());
                 set => LayerBoundsOutlineColor = new Color(value);
             }
 
@@ -305,7 +305,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush HollowOutlineBrush
             {
-                get => new SolidColorBrush(_hollowOutlineColor.ToAvalonia());
+                get => new(_hollowOutlineColor.ToAvalonia());
                 set => HollowOutlineColor = new Color(value);
             }
 
@@ -334,7 +334,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush MaskOutlineBrush
             {
-                get => new SolidColorBrush(_maskOutlineColor.ToAvalonia());
+                get => new(_maskOutlineColor.ToAvalonia());
                 set => MaskOutlineColor = new Color(value);
             }
 
@@ -363,7 +363,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush PreviousLayerDifferenceBrush
             {
-                get => new SolidColorBrush(_previousLayerDifferenceColor.ToAvalonia());
+                get => new(_previousLayerDifferenceColor.ToAvalonia());
                 set => PreviousLayerDifferenceColor = new Color(value);
             }
 
@@ -380,7 +380,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush NextLayerDifferenceBrush
             {
-                get => new SolidColorBrush(_nextLayerDifferenceColor.ToAvalonia());
+                get => new(_nextLayerDifferenceColor.ToAvalonia());
                 set => NextLayerDifferenceColor = new Color(value);
             }
 
@@ -397,7 +397,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush BothLayerDifferenceBrush
             {
-                get => new SolidColorBrush(_bothLayerDifferenceColor.ToAvalonia());
+                get => new(_bothLayerDifferenceColor.ToAvalonia());
                 set => BothLayerDifferenceColor = new Color(value);
             }
 
@@ -426,7 +426,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush IslandBrush
             {
-                get => new SolidColorBrush(_islandColor.ToAvalonia());
+                get => new(_islandColor.ToAvalonia());
                 set => IslandColor = new Color(value);
             }
 
@@ -443,7 +443,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush IslandHighlightBrush
             {
-                get => new SolidColorBrush(_islandHighlightColor.ToAvalonia());
+                get => new(_islandHighlightColor.ToAvalonia());
                 set => IslandHighlightColor = new Color(value);
             }
 
@@ -460,7 +460,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush OverhangBrush
             {
-                get => new SolidColorBrush(_overhangColor.ToAvalonia());
+                get => new(_overhangColor.ToAvalonia());
                 set => OverhangColor = new Color(value);
             }
 
@@ -477,7 +477,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush OverhangHighlightBrush
             {
-                get => new SolidColorBrush(_overhangHighlightColor.ToAvalonia());
+                get => new(_overhangHighlightColor.ToAvalonia());
                 set => OverhangHighlightColor = new Color(value);
             }
 
@@ -494,7 +494,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush ResinTrapBrush
             {
-                get => new SolidColorBrush(_resinTrapColor.ToAvalonia());
+                get => new(_resinTrapColor.ToAvalonia());
                 set => ResinTrapColor = new Color(value);
             }
 
@@ -511,7 +511,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush ResinTrapHighlightBrush
             {
-                get => new SolidColorBrush(_resinTrapHighlightColor.ToAvalonia());
+                get => new(_resinTrapHighlightColor.ToAvalonia());
                 set => ResinTrapHighlightColor = new Color(value);
             }
             public Color TouchingBoundsColor
@@ -527,7 +527,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush TouchingBoundsBrush
             {
-                get => new SolidColorBrush(_touchingBoundsColor.ToAvalonia());
+                get => new(_touchingBoundsColor.ToAvalonia());
                 set => TouchingBoundsColor = new Color(value);
             }
 
@@ -544,7 +544,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush CrosshairBrush
             {
-                get => new SolidColorBrush(_crosshairColor.ToAvalonia());
+                get => new(_crosshairColor.ToAvalonia());
                 set => CrosshairColor = new Color(value);
             }
 
@@ -877,15 +877,15 @@ namespace UVtools.WPF
         [Serializable]
         public sealed class PixelEditorUserSettings : BindableBase
         {
-            private Color _addPixelColor = new Color(255, 144, 238, 144);
-            private Color _addPixelHighlightColor = new Color(255, 0, 255, 0);
-            private Color _removePixelColor = new Color(255, 219, 112, 147);
-            private Color _removePixelHighlightColor = new Color(255, 139, 0, 0);
-            private Color _supportsColor = new Color(255, 0, 255, 255);
-            private Color _supportsHighlightColor = new Color(255, 0, 139, 139);
-            private Color _drainHoleColor = new Color(255, 142, 69, 133);
-            private Color _drainHoleHighlightColor = new Color(255, 159, 0, 197);
-            private Color _cursorColor = new Color(150, 52, 152, 219);
+            private Color _addPixelColor = new(255, 144, 238, 144);
+            private Color _addPixelHighlightColor = new(255, 0, 255, 0);
+            private Color _removePixelColor = new(255, 219, 112, 147);
+            private Color _removePixelHighlightColor = new(255, 139, 0, 0);
+            private Color _supportsColor = new(255, 0, 255, 255);
+            private Color _supportsHighlightColor = new(255, 0, 139, 139);
+            private Color _drainHoleColor = new(255, 142, 69, 133);
+            private Color _drainHoleHighlightColor = new(255, 159, 0, 197);
+            private Color _cursorColor = new(150, 52, 152, 219);
             private bool _partialUpdateIslandsOnEditing = true;
             private bool _closeEditorOnApply;
 
@@ -902,7 +902,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush AddPixelBrush
             {
-                get => new SolidColorBrush(_addPixelColor.ToAvalonia());
+                get => new(_addPixelColor.ToAvalonia());
                 set => AddPixelColor = new Color(value);
             }
 
@@ -919,7 +919,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush AddPixelHighlightBrush
             {
-                get => new SolidColorBrush(_addPixelHighlightColor.ToAvalonia());
+                get => new(_addPixelHighlightColor.ToAvalonia());
                 set => AddPixelHighlightColor = new Color(value);
             }
 
@@ -936,7 +936,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush RemovePixelBrush
             {
-                get => new SolidColorBrush(_removePixelColor.ToAvalonia());
+                get => new(_removePixelColor.ToAvalonia());
                 set => RemovePixelColor = new Color(value);
             }
 
@@ -953,7 +953,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush RemovePixelHighlightBrush
             {
-                get => new SolidColorBrush(_removePixelHighlightColor.ToAvalonia());
+                get => new(_removePixelHighlightColor.ToAvalonia());
                 set => RemovePixelHighlightColor = new Color(value);
             }
 
@@ -970,7 +970,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush SupportsBrush
             {
-                get => new SolidColorBrush(_supportsColor.ToAvalonia());
+                get => new(_supportsColor.ToAvalonia());
                 set => SupportsColor = new Color(value);
             }
 
@@ -987,7 +987,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush SupportsHighlightBrush
             {
-                get => new SolidColorBrush(_supportsHighlightColor.ToAvalonia());
+                get => new(_supportsHighlightColor.ToAvalonia());
                 set => SupportsHighlightColor = new Color(value);
             }
 
@@ -1004,7 +1004,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush DrainHoleBrush
             {
-                get => new SolidColorBrush(_drainHoleColor.ToAvalonia());
+                get => new(_drainHoleColor.ToAvalonia());
                 set => DrainHoleColor = new Color(value);
             }
 
@@ -1021,7 +1021,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush DrainHoleHighlightBrush
             {
-                get => new SolidColorBrush(_drainHoleHighlightColor.ToAvalonia());
+                get => new(_drainHoleHighlightColor.ToAvalonia());
                 set => DrainHoleHighlightColor = new Color(value);
             }
 
@@ -1038,7 +1038,7 @@ namespace UVtools.WPF
             [XmlIgnore]
             public SolidColorBrush CursorBrush
             {
-                get => new SolidColorBrush(_cursorColor.ToAvalonia());
+                get => new(_cursorColor.ToAvalonia());
                 set => CursorColor = new Color(value);
             }
 

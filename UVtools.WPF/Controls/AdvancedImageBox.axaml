@@ -8,10 +8,9 @@
     RowDefinitions="*,Auto"
     ColumnDefinitions="*,Auto">
 
-    <ContentControl
-      Name="ViewPort"
-      Background="Transparent"
-      />
+    <ContentPresenter Grid.Row="0" Grid.Column="0" 
+                      Name="ViewPort"
+                      Background="Transparent"/>
 
     <ScrollBar
       Name="VerticalScrollBar"
@@ -20,8 +19,7 @@
       ViewportSize="{Binding #ViewPort.Bounds.Height}"
       Minimum="0"
       Maximum="0"
-      Visibility="Auto"
-      />
+      Visibility="Auto"/>
       
     <ScrollBar
       Name="HorizontalScrollBar"
@@ -30,13 +28,12 @@
       ViewportSize="{Binding #ViewPort.Bounds.Width}"
       Minimum="0"
       Maximum="0"
-      Visibility="Auto"
-      />
+      Visibility="Auto"/>
 
     <Border
       Grid.Row="1"
       Grid.Column="1"
-      Background="WhiteSmoke"
-      />
+      Background="WhiteSmoke"/>
+
   </Grid>
 </UserControl>

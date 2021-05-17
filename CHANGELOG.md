@@ -1,5 +1,25 @@
 # Changelog
 
+## 17/05/2021 - v2.12.0
+
+- **Layer arithmetic:**
+   - (Add) Allow to use ':' to define a layer range to set, eg, 0:20 to select from 0 to 20 layers
+   - (Improvement) Modifications with set ROI and/or Mask(s) are only applied to target layer on that same regions
+   - (Improvement) Disallow set one layer to the same layer without any modification
+   - (Improvement) Clear and sanitize non-existing layers indexes
+   - (Improvement) Disable the layer range selector from dialog
+   - (Fix) Prevent error when using non-existing layers indexes
+   - (Fix) Allow use only a mask for operations
+   - (Fix) Implement the progress bar
+- **File formats:**
+   - (Add) VDA.ZIP (Voxeldance Additive)
+   - (Improvement) Add a check to global `LightPWM` if 0 it will force to 255
+   - (Improvement) Add a check to layer `LightPWM` if 0 it will force to 255
+- (Add) Allow to save the selected region (ROI) to a image file
+- (Update) .NET 5.0.5 to 5.0.6
+- (Fix) Getting the transposed rectangle in fliped images are offseting the position by -1
+- (Fix) Tools: Hide ROI Region text when empty/not selected
+
 ## 13/05/2021 - v2.11.2
 
 - (Improvement) Applied some refactorings on code

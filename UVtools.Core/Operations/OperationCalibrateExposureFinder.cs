@@ -128,7 +128,7 @@ namespace UVtools.Core.Operations
         private bool _bullsEyeInvertQuadrants = true;
 
         private bool _counterTrianglesEnabled = true;
-        private sbyte _counterTrianglesTipOffset = 1;
+        private sbyte _counterTrianglesTipOffset = 3;
         private bool _counterTrianglesFence = false;
 
         private bool _patternModel;

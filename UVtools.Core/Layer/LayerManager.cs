@@ -441,6 +441,23 @@ namespace UVtools.Core
                 if (this[layerIndex - 1].PositionZ > this[layerIndex].PositionZ) throw new InvalidDataException($"Layer {layerIndex - 1} ({this[layerIndex - 1].PositionZ}mm) have a higher Z position than the successor layer {layerIndex} ({this[layerIndex].PositionZ}mm).\n");
             }
 
+            if (SlicerFile.ResolutionX == 0 || SlicerFile.ResolutionY == 0)
+            {
+                var layer = FirstLayer;
+                if (layer is not null)
+                {
+                    using var mat = layer.LayerMat;
+
+                    if (mat.Size.HaveZero())
+                    {
+                        throw new FileLoadException($"File resolution ({SlicerFile.Resolution}) is invalid and can't be auto fixed due invalid layers with same problem ({mat.Size}).", SlicerFile.FileFullPath);
+                    }
+
+                    SlicerFile.Resolution = mat.Size;
+                    appliedCorrections = true;
+                }
+            }
+
             // Fix 0mm positions at layer 0
             if (this[0].PositionZ == 0)
             {
@@ -449,6 +466,18 @@ namespace UVtools.Core
                     this[layerIndex].PositionZ = Layer.RoundHeight(this[layerIndex].PositionZ + SlicerFile.LayerHeight);
                 }
 
+                appliedCorrections = true;
+            }
+
+            // Fix LightPWM of 0
+            if (SlicerFile.LightPWM == 0)
+            {
+                SlicerFile.LightPWM = FileFormat.DefaultLightPWM;
+                appliedCorrections = true;
+            }
+            if (SlicerFile.BottomLightPWM == 0)
+            {
+                SlicerFile.BottomLightPWM = FileFormat.DefaultBottomLightPWM;
                 appliedCorrections = true;
             }
 
@@ -779,7 +808,7 @@ namespace UVtools.Core
                     if (touchBoundConfig.Enabled)
                     {
                         // TouchingBounds Checker
-                        List<Point> pixels = new List<Point>();
+                        List<Point> pixels = new();
                         bool touchTop = layer.BoundingRectangle.Top <= touchBoundConfig.MarginTop;
                         bool touchBottom = layer.BoundingRectangle.Bottom >= image.Height - touchBoundConfig.MarginBottom;
                         bool touchLeft = layer.BoundingRectangle.Left <= touchBoundConfig.MarginLeft;
@@ -1113,7 +1142,7 @@ namespace UVtools.Core
 
                                         for (int i = 1; i < numLabels; i++)
                                         {
-                                            Rectangle rect = new Rectangle(
+                                            Rectangle rect = new(
                                                 (int) ccStats.GetValue(i, (int) ConnectedComponentsTypes.Left),
                                                 (int) ccStats.GetValue(i, (int) ConnectedComponentsTypes.Top),
                                                 (int) ccStats.GetValue(i, (int) ConnectedComponentsTypes.Width),
@@ -1128,7 +1157,7 @@ namespace UVtools.Core
                                                 previousSpan = previousImage.GetPixelSpan<byte>();
                                             }
 
-                                            List<Point> points = new List<Point>();
+                                            List<Point> points = new();
                                             uint pixelsSupportingIsland = 0;
 
                                             for (int y = rect.Y; y < rect.Bottom; y++)
@@ -1573,7 +1602,7 @@ namespace UVtools.Core
             progress ??= new OperationProgress();
             progress.Reset("Drawings", (uint) drawings.Count);
 
-            ConcurrentDictionary<uint, Mat> modifiedLayers = new ConcurrentDictionary<uint, Mat>();
+            ConcurrentDictionary<uint, Mat> modifiedLayers = new();
             for (var i = 0; i < drawings.Count; i++)
             {
                 var operation = drawings[i];
@@ -1648,7 +1677,7 @@ namespace UVtools.Core
                         int yStart = Math.Max(0, operation.Location.Y - operationSupport.TipDiameter / 2);
                         int xStart = Math.Max(0, operation.Location.X - operationSupport.TipDiameter / 2);
 
-                        using (Mat matCircleRoi = new Mat(mat, new Rectangle(xStart, yStart, operationSupport.TipDiameter, operationSupport.TipDiameter)))
+                        using (Mat matCircleRoi = new(mat, new Rectangle(xStart, yStart, operationSupport.TipDiameter, operationSupport.TipDiameter)))
                         {
                             using (Mat matCircleMask = matCircleRoi.CloneBlank())
                             {
@@ -1683,9 +1712,9 @@ namespace UVtools.Core
                         int yStart = Math.Max(0, operation.Location.Y - radius);
                         int xStart = Math.Max(0, operation.Location.X - radius);
 
-                        using (Mat matCircleRoi = new Mat(mat, new Rectangle(xStart, yStart, operationDrainHole.Diameter, operationDrainHole.Diameter)))
+                        using (Mat matCircleRoi = new(mat, new Rectangle(xStart, yStart, operationDrainHole.Diameter, operationDrainHole.Diameter)))
                         {
-                            using (Mat matCircleRoiInv = new Mat())
+                            using (Mat matCircleRoiInv = new())
                             {
                                 CvInvoke.Threshold(matCircleRoi, matCircleRoiInv, 100, 255, ThresholdType.BinaryInv);
                                 using (Mat matCircleMask = matCircleRoi.CloneBlank())

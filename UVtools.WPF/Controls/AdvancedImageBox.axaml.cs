@@ -2,15 +2,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using UVtools.Core.Extensions;
 using UVtools.WPF.Extensions;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
@@ -26,7 +28,7 @@ namespace UVtools.WPF.Controls
     {
         public ScrollBar HorizontalScrollBar { get; }
         public ScrollBar VerticalScrollBar { get; }
-        public ContentControl ViewPortControl { get; }
+        public ContentPresenter ViewPort { get; }
 
         public Vector Offset
         {
@@ -40,19 +42,18 @@ namespace UVtools.WPF.Controls
             }
         }
 
-        public Size Viewport => ViewPortControl.Bounds.Size;
+        public Size ViewPortSize => ViewPort.Bounds.Size;
 
         #region Bindable Base
         /// <summary>
         ///     Multicast event for property change notifications.
         /// </summary>
         private PropertyChangedEventHandler _propertyChanged;
-        private readonly List<string> events = new ();
 
         public new event PropertyChangedEventHandler PropertyChanged
         {
-            add { _propertyChanged += value; events.Add("added"); }
-            remove { _propertyChanged -= value; events.Add("removed"); }
+            add => _propertyChanged += value;
+            remove => _propertyChanged -= value;
         }
         protected bool RaiseAndSetIfChanged<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
         {
@@ -123,16 +124,10 @@ namespace UVtools.WPF.Controls
             /// <summary>
             /// Returns the default zoom levels
             /// </summary>
-            public static ZoomLevelCollection Default
-            {
-                get
-                {
-                    return new ZoomLevelCollection(new[]
-                                                   {
-                                         7, 10, 15, 20, 25, 30, 50, 70, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1200, 1600, 3200
-                                       });
-                }
-            }
+            public static ZoomLevelCollection Default =>
+                new(new[] {
+                    7, 10, 15, 20, 25, 30, 50, 70, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1200, 1600, 3200
+                });
 
             #endregion
 
@@ -233,9 +228,9 @@ namespace UVtools.WPF.Controls
             /// <param name="arrayIndex">A 64-bit integer that represents the index in the <see cref="Array"/> at which storing begins.</param>
             public void CopyTo(int[] array, int arrayIndex)
             {
-                for (int i = 0; i < this.Count; i++)
+                for (int i = 0; i < Count; i++)
                 {
-                    array[arrayIndex + i] = this.List.Values[i];
+                    array[arrayIndex + i] = List.Values[i];
                 }
             }
 
@@ -245,7 +240,7 @@ namespace UVtools.WPF.Controls
             /// <param name="zoomLevel">The zoom level.</param>
             public int FindNearest(int zoomLevel)
             {
-                int nearestValue = this.List.Values[0];
+                int nearestValue = List.Values[0];
                 int nearestDifference = Math.Abs(nearestValue - zoomLevel);
                 for (int i = 1; i < Count; i++)
                 {
@@ -297,8 +292,8 @@ namespace UVtools.WPF.Controls
             /// <returns>The next matching increased zoom level for the given current zoom if applicable, otherwise the nearest zoom.</returns>
             public int NextZoom(int zoomLevel)
             {
-                var index = IndexOf(this.FindNearest(zoomLevel));
-                if (index < this.Count - 1)
+                var index = IndexOf(FindNearest(zoomLevel));
+                if (index < Count - 1)
                 {
                     index++;
                 }
@@ -381,7 +376,7 @@ namespace UVtools.WPF.Controls
         public enum SizeModes : byte
         {
             /// <summary>
-            /// The image is disiplayed according to current zoom and scroll properties.
+            /// The image is displayed according to current zoom and scroll properties.
             /// </summary>
             Normal,
 
@@ -393,7 +388,7 @@ namespace UVtools.WPF.Controls
             /// <summary>
             /// The image is stretched to fill as much of the client area of the control as possible, whilst retaining the same aspect ratio for the width and height.
             /// </summary>
-            //Fit
+            Fit
         }
 
         [Flags]
@@ -452,67 +447,94 @@ namespace UVtools.WPF.Controls
 
         #endregion
 
-        #region Constants
-        public static readonly int MinZoom = 10;
-        public static readonly int MaxZoom = 3500;
-        #endregion
+        public static readonly DirectProperty<AdvancedImageBox, bool> CanRenderProperty =
+            AvaloniaProperty.RegisterDirect<AdvancedImageBox, bool>(
+                nameof(CanRender),
+                o => o.CanRender);
 
+        /// <summary>
+        /// Gets or sets if control can render the image
+        /// </summary>
         public bool CanRender
         {
             get => _canRender;
             set
             {
-                if (!RaiseAndSetIfChanged(ref _canRender, value)) return;
+                if (!SetAndRaise(CanRenderProperty, ref _canRender, value)) return;
                 if (_canRender) TriggerRender();
             }
         }
 
+        public static readonly StyledProperty<byte> GridCellSizeProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, byte>(nameof(GridCellSize), 15);
+
         /// <summary>
-        /// Gets or sets the basic cell size
+        /// Gets or sets the grid cell size
         /// </summary>
         public byte GridCellSize
         {
-            get => _gridCellSize;
-            set => RaiseAndSetIfChanged(ref _gridCellSize, value);
+            get => GetValue(GridCellSizeProperty);
+            set => SetValue(GridCellSizeProperty, value);
         }
+
+        public static readonly StyledProperty<ISolidColorBrush> GridColorProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, ISolidColorBrush>(nameof(GridColor), Brushes.Gainsboro);
 
         /// <summary>
         /// Gets or sets the color used to create the checkerboard style background
         /// </summary>
         public ISolidColorBrush GridColor
         {
-            get => _gridColor;
-            set => RaiseAndSetIfChanged(ref _gridColor, value);
+            get => GetValue(GridColorProperty);
+            set => SetValue(GridColorProperty, value);
         }
+
+        public static readonly StyledProperty<ISolidColorBrush> GridColorAlternateProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, ISolidColorBrush>(nameof(GridColorAlternate), Brushes.White);
 
         /// <summary>
         /// Gets or sets the color used to create the checkerboard style background
         /// </summary>
         public ISolidColorBrush GridColorAlternate
         {
-            get => _gridColorAlternate;
-            set => RaiseAndSetIfChanged(ref _gridColorAlternate, value);
+            get => GetValue(GridColorAlternateProperty);
+            set => SetValue(GridColorAlternateProperty, value);
         }
+
+        public static readonly StyledProperty<Bitmap> ImageProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, Bitmap>(nameof(Image));
 
         /// <summary>
         /// Gets or sets the image to be displayed
         /// </summary>
         public Bitmap Image
         {
-            get => _image;
+            get => GetValue(ImageProperty);
             set
             {
-                if (!RaiseAndSetIfChanged(ref _image, value)) return;
+                SetValue(ImageProperty, value);
 
-                if (Image is null)
+                if (value is null)
                 {
                     SelectNone();
                 }
 
                 UpdateViewPort();
                 TriggerRender();
+
+                RaisePropertyChanged(nameof(IsImageLoaded));
             }
         }
+
+        public WriteableBitmap ImageAsWriteableBitmap => (WriteableBitmap) Image;
+
+        public bool IsImageLoaded => Image is not null;
+
+        public static readonly DirectProperty<AdvancedImageBox, Bitmap> TrackerImageProperty =
+            AvaloniaProperty.RegisterDirect<AdvancedImageBox, Bitmap>(
+                nameof(TrackerImage),
+                o => o.TrackerImage,
+                (o, v) => o.TrackerImage = v);
 
         /// <summary>
         /// Gets or sets an image to follow the mouse pointer
@@ -522,29 +544,33 @@ namespace UVtools.WPF.Controls
             get => _trackerImage;
             set
             {
-                if (!RaiseAndSetIfChanged(ref _trackerImage, value)) return;
-                RaisePropertyChanged(nameof(HaveTrackerImage));
+                if (!SetAndRaise(TrackerImageProperty, ref _trackerImage, value)) return;
                 TriggerRender();
+                RaisePropertyChanged(nameof(HaveTrackerImage));
             }
         }
 
-        public bool HaveTrackerImage => !(_trackerImage is null);
+        public bool HaveTrackerImage => _trackerImage is not null;
+
+        public static readonly StyledProperty<bool> TrackerImageAutoZoomProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(TrackerImageAutoZoom), true);
 
         /// <summary>
         /// Gets or sets if the tracker image will be scaled to the current zoom
         /// </summary>
         public bool TrackerImageAutoZoom
         {
-            get => _trackerImageAutoZoom;
-            set => RaiseAndSetIfChanged(ref _trackerImageAutoZoom, value);
+            get => GetValue(TrackerImageAutoZoomProperty);
+            set => SetValue(TrackerImageAutoZoomProperty, value);
         }
-
+        
         public bool IsHorizontalBarVisible
         {
             get
             {
                 if (Image is null) return false;
-                return ScaledImageWidth > Viewport.Width;
+                if (SizeMode != SizeModes.Normal) return false;
+                return ScaledImageWidth > ViewPortSize.Width;
             }
         }
 
@@ -553,34 +579,51 @@ namespace UVtools.WPF.Controls
             get
             {
                 if (Image is null) return false;
-                return ScaledImageHeight > Viewport.Height;
+                if (SizeMode != SizeModes.Normal) return false;
+                return ScaledImageHeight > ViewPortSize.Height;
             }
         }
 
-        public static readonly DirectProperty<AdvancedImageBox, bool> ShowGridProperty =
-            AvaloniaProperty.RegisterDirect<AdvancedImageBox, bool>(nameof(ShowGrid),
-                c => c.ShowGrid, (c, v) => c.ShowGrid = v);
+        public static readonly StyledProperty<bool> ShowGridProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(ShowGrid), true);
+
         /// <summary>
-        /// Gets or sets if the checkerboard background should be displayed
+        /// Gets or sets the grid visibility when reach high zoom levels
         /// </summary>
         public bool ShowGrid
         {
-            get => _showGrid;
-            set => SetAndRaise(ShowGridProperty, ref _showGrid, value);
+            get => GetValue(ShowGridProperty);
+            set => SetValue(ShowGridProperty, value);
         }
 
+        public static readonly DirectProperty<AdvancedImageBox, Point> PointerPositionProperty =
+            AvaloniaProperty.RegisterDirect<AdvancedImageBox, Point>(
+                nameof(PointerPosition),
+                o => o.PointerPosition);
+
+        /// <summary>
+        /// Gets the current pointer position
+        /// </summary>
         public Point PointerPosition
         {
             get => _pointerPosition;
-            private set => RaiseAndSetIfChanged(ref _pointerPosition, value);
+            private set => SetAndRaise(PointerPositionProperty, ref _pointerPosition, value);
         }
 
+        public static readonly DirectProperty<AdvancedImageBox, bool> IsPanningProperty =
+            AvaloniaProperty.RegisterDirect<AdvancedImageBox, bool>(
+                nameof(IsPanning),
+                o => o.IsPanning);
+
+        /// <summary>
+        /// Gets if control is currently panning
+        /// </summary>
         public bool IsPanning
         {
             get => _isPanning;
             protected set
             {
-                if (!RaiseAndSetIfChanged(ref _isPanning, value)) return;
+                if (!SetAndRaise(IsPanningProperty, ref _isPanning, value)) return;
                 _startScrollPosition = Offset;
 
                 if (value)
@@ -596,94 +639,242 @@ namespace UVtools.WPF.Controls
             }
         }
 
+        public static readonly DirectProperty<AdvancedImageBox, bool> IsSelectingProperty =
+            AvaloniaProperty.RegisterDirect<AdvancedImageBox, bool>(
+                nameof(IsSelecting),
+                o => o.IsSelecting);
+
+        /// <summary>
+        /// Gets if control is currently selecting a ROI
+        /// </summary>
         public bool IsSelecting
         {
             get => _isSelecting;
-            protected set => RaiseAndSetIfChanged(ref _isSelecting, value);
+            protected set => SetAndRaise(IsSelectingProperty, ref _isSelecting, value);
         }
 
+        /// <summary>
+        /// Gets the center point of the viewport
+        /// </summary>
         public Point CenterPoint
         {
             get
             {
                 var viewport = GetImageViewPort();
-                return new Point(viewport.Width / 2, viewport.Height / 2);
+                return new(viewport.Width / 2, viewport.Height / 2);
             }
         }
 
+        public static readonly StyledProperty<bool> AutoPanProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(AutoPan), true);
+
+        /// <summary>
+        /// Gets or sets if the control can pan with the mouse
+        /// </summary>
         public bool AutoPan
         {
-            get => _autoPan;
-            set => RaiseAndSetIfChanged(ref _autoPan, value);
+            get => GetValue(AutoPanProperty);
+            set => SetValue(AutoPanProperty, value);
         }
 
+        public static readonly StyledProperty<MouseButtons> PanWithMouseButtonsProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, MouseButtons>(nameof(PanWithMouseButtons), MouseButtons.LeftButton | MouseButtons.MiddleButton | MouseButtons.RightButton);
+
+        /// <summary>
+        /// Gets or sets the mouse buttons to pan the image
+        /// </summary>
         public MouseButtons PanWithMouseButtons
         {
-            get => _panWithMouseButtons;
-            set => RaiseAndSetIfChanged(ref _panWithMouseButtons, value);
+            get => GetValue(PanWithMouseButtonsProperty);
+            set => SetValue(PanWithMouseButtonsProperty, value);
         }
 
+        public static readonly StyledProperty<bool> PanWithArrowsProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(PanWithArrows), true);
+
+        /// <summary>
+        /// Gets or sets if the control can pan with the keyboard arrows
+        /// </summary>
         public bool PanWithArrows
         {
-            get => _panWithArrows;
-            set => RaiseAndSetIfChanged(ref _panWithArrows, value);
+            get => GetValue(PanWithArrowsProperty);
+            set => SetValue(PanWithArrowsProperty, value);
         }
 
+        public static readonly StyledProperty<MouseButtons> SelectWithMouseButtonsProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, MouseButtons>(nameof(SelectWithMouseButtons), MouseButtons.LeftButton | MouseButtons.RightButton);
+
+
+        /// <summary>
+        /// Gets or sets the mouse buttons to select a region on image
+        /// </summary>
         public MouseButtons SelectWithMouseButtons
         {
-            get => _selectWithMouseButtons;
-            set => RaiseAndSetIfChanged(ref _selectWithMouseButtons, value);
+            get => GetValue(SelectWithMouseButtonsProperty);
+            set => SetValue(SelectWithMouseButtonsProperty, value);
         }
 
-        public bool InvertMouse
+        public static readonly StyledProperty<bool> InvertMousePanProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(InvertMousePan), false);
+
+        /// <summary>
+        /// Gets or sets if mouse pan is inverted
+        /// </summary>
+        public bool InvertMousePan
         {
-            get => _invertMouse;
-            set => RaiseAndSetIfChanged(ref _invertMouse, value);
+            get => GetValue(InvertMousePanProperty);
+            set => SetValue(InvertMousePanProperty, value);
         }
 
+        public static readonly StyledProperty<bool> AutoCenterProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(AutoCenter), true);
+
+        /// <summary>
+        /// Gets or sets if image is auto centered
+        /// </summary>
         public bool AutoCenter
         {
-            get => _autoCenter;
-            set => RaiseAndSetIfChanged(ref _autoCenter, value);
+            get => GetValue(AutoCenterProperty);
+            set => SetValue(AutoCenterProperty, value);
         }
 
+        public static readonly StyledProperty<SizeModes> SizeModeProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, SizeModes>(nameof(SizeMode), SizeModes.Normal);
+
+        /// <summary>
+        /// Gets or sets the image size mode
+        /// </summary>
         public SizeModes SizeMode
         {
-            get => _sizeMode;
-            set => RaiseAndSetIfChanged(ref _sizeMode, value);
+            get => GetValue(SizeModeProperty);
+            set
+            {
+                SetValue(SizeModeProperty, value);
+                SizeModeChanged();
+                RaisePropertyChanged(nameof(IsHorizontalBarVisible));
+                RaisePropertyChanged(nameof(IsVerticalBarVisible));
+            }
         }
 
-        private bool _allowZoom = true;
-        public virtual bool AllowZoom
+        private void SizeModeChanged()
         {
-            get => _allowZoom;
-            set => RaiseAndSetIfChanged(ref _allowZoom, value);
+            switch (SizeMode)
+            {
+                case SizeModes.Normal:
+                    HorizontalScrollBar.Visibility = ScrollBarVisibility.Auto;
+                    VerticalScrollBar.Visibility = ScrollBarVisibility.Auto;
+                    break;
+                case SizeModes.Stretch:
+                case SizeModes.Fit:
+                    HorizontalScrollBar.Visibility = ScrollBarVisibility.Hidden;
+                    VerticalScrollBar.Visibility = ScrollBarVisibility.Hidden;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(SizeMode), SizeMode, null);
+            }
         }
+
+        public static readonly StyledProperty<bool> AllowZoomProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(AllowZoom), true);
+
+        /// <summary>
+        /// Gets or sets if zoom is allowed
+        /// </summary>
+        public bool AllowZoom
+        {
+            get => GetValue(AllowZoomProperty);
+            set => SetValue(AllowZoomProperty, value);
+        }
+
+        public static readonly DirectProperty<AdvancedImageBox, ZoomLevelCollection> ZoomLevelsProperty =
+            AvaloniaProperty.RegisterDirect<AdvancedImageBox, ZoomLevelCollection>(
+                nameof(ZoomLevels),
+                o => o.ZoomLevels,
+                (o, v) => o.ZoomLevels = v);
 
         ZoomLevelCollection _zoomLevels = ZoomLevelCollection.Default;
         /// <summary>
         ///   Gets or sets the zoom levels.
         /// </summary>
         /// <value>The zoom levels.</value>
-        public virtual ZoomLevelCollection ZoomLevels
+        public ZoomLevelCollection ZoomLevels
         {
             get => _zoomLevels;
-            set => RaiseAndSetIfChanged(ref _zoomLevels, value);
+            set => SetAndRaise(ZoomLevelsProperty, ref _zoomLevels, value);
         }
 
-        private int _oldZoom = 100;
-        private int _zoom = 100;
+        public static readonly StyledProperty<int> MinZoomProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, int>(nameof(MinZoom), 10);
 
         /// <summary>
-        ///   Gets or sets the zoom.
+        /// Gets or sets the minimum possible zoom.
         /// </summary>
         /// <value>The zoom.</value>
-        public virtual int OldZoom
+        public int MinZoom
         {
-            get => _oldZoom;
-            set => RaiseAndSetIfChanged(ref _oldZoom, value);
+            get => GetValue(MinZoomProperty);
+            set => SetValue(MinZoomProperty, value);
         }
 
+        public static readonly StyledProperty<int> MaxZoomProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, int>(nameof(MaxZoom), 3500);
+
+        /// <summary>
+        /// Gets or sets the maximum possible zoom.
+        /// </summary>
+        /// <value>The zoom.</value>
+        public int MaxZoom
+        {
+            get => GetValue(MaxZoomProperty);
+            set => SetValue(MaxZoomProperty, value);
+        }
+
+
+        public static readonly DirectProperty<AdvancedImageBox, int> OldZoomProperty =
+            AvaloniaProperty.RegisterDirect<AdvancedImageBox, int>(
+                nameof(OldZoom),
+                o => o.OldZoom);
+
+        private int _oldZoom = 100;
+
+        /// <summary>
+        /// Gets the previous zoom value
+        /// </summary>
+        /// <value>The zoom.</value>
+        public int OldZoom
+        {
+            get => _oldZoom;
+            private set => SetAndRaise(OldZoomProperty, ref _oldZoom, value);
+        }
+
+        public static readonly StyledProperty<int> ZoomProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, int>(nameof(Zoom), 100);
+
+        /// <summary>
+        ///  Gets or sets the zoom.
+        /// </summary>
+        /// <value>The zoom.</value>
+        public int Zoom
+        {
+            get => GetValue(ZoomProperty);
+            set
+            {
+                var newZoom = value.Clamp(MinZoom, MaxZoom);
+
+                var previousZoom = Zoom;
+                if (previousZoom == newZoom) return;
+                OldZoom = previousZoom;
+                SetValue(ZoomProperty, value);
+
+                UpdateViewPort();
+                TriggerRender();
+
+                RaisePropertyChanged(nameof(IsHorizontalBarVisible));
+                RaisePropertyChanged(nameof(IsVerticalBarVisible));
+            }
+        }
+
+        /*
         /// <summary>
         ///   Gets or sets the zoom.
         /// </summary>
@@ -708,52 +899,90 @@ namespace UVtools.WPF.Controls
                 //SetZoom(value, value > Zoom ? ImageZoomActions.ZoomIn : ImageZoomActions.ZoomOut);
             }
         }
+        */
 
-        public virtual bool IsActualSize => Zoom == 100;
+        public bool IsActualSize => Zoom == 100;
 
-        private ISolidColorBrush _pixelGridColor = Brushes.DimGray;
+        public static readonly StyledProperty<ISolidColorBrush> PixelGridColorProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, ISolidColorBrush>(nameof(PixelGridColor), Brushes.DimGray);
+
         /// <summary>
         /// Gets or sets the color of the pixel grid.
         /// </summary>
         /// <value>The color of the pixel grid.</value>
         public virtual ISolidColorBrush PixelGridColor
         {
-            get => _pixelGridColor;
-            set => RaiseAndSetIfChanged(ref _pixelGridColor, value);
+            get => GetValue(PixelGridColorProperty);
+            set => SetValue(PixelGridColorProperty, value);
         }
 
-        private int _pixelGridThreshold = 5;
+        public static readonly StyledProperty<int> PixelGridZoomThresholdProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, int>(nameof(PixelGridZoomThreshold), 5);
+
         /// <summary>
         /// Gets or sets the minimum size of zoomed pixel's before the pixel grid will be drawn
         /// </summary>
         /// <value>The pixel grid threshold.</value>
 
-        public virtual int PixelGridThreshold
+        public int PixelGridZoomThreshold
         {
-            get => _pixelGridThreshold;
-            set => RaiseAndSetIfChanged(ref _pixelGridThreshold, value);
+            get => GetValue(PixelGridZoomThresholdProperty);
+            set => SetValue(PixelGridZoomThresholdProperty, value);
         }
+
+        public static readonly StyledProperty<SelectionModes> SelectionModeProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, SelectionModes>(nameof(SelectionMode), SelectionModes.None);
 
         public SelectionModes SelectionMode
         {
-            get => _selectionMode;
-            set => RaiseAndSetIfChanged(ref _selectionMode, value);
+            get => GetValue(SelectionModeProperty);
+            set => SetValue(SelectionModeProperty, value);
         }
+
+        public static readonly StyledProperty<ISolidColorBrush> SelectionColorProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, ISolidColorBrush>(nameof(SelectionColor), new SolidColorBrush(new Color(127, 0, 128, 255)));
 
         public ISolidColorBrush SelectionColor
         {
-            get => _selectionColor;
-            set => RaiseAndSetIfChanged(ref _selectionColor, value);
+            get => GetValue(SelectionColorProperty);
+            set => SetValue(SelectionColorProperty, value);
         }
+
+        public static readonly StyledProperty<Rect> SelectionRegionProperty =
+            AvaloniaProperty.Register<AdvancedImageBox, Rect>(nameof(SelectionRegion), Rect.Empty);
+
 
         public Rect SelectionRegion
         {
-            get => _selectionRegion;
+            get => GetValue(SelectionRegionProperty);
             set
             {
-                if (!RaiseAndSetIfChanged(ref _selectionRegion, value)) return;
+                SetValue(SelectionRegionProperty, value);
+                //if (!RaiseAndSetIfChanged(ref _selectionRegion, value)) return;
                 TriggerRender();
                 RaisePropertyChanged(nameof(HaveSelection));
+                RaisePropertyChanged(nameof(SelectionRegionNet));
+                RaisePropertyChanged(nameof(SelectionPixelSize));
+            }
+        }
+
+        public Rectangle SelectionRegionNet
+        {
+            get
+            {
+                var rect = SelectionRegion;
+                return new Rectangle((int) Math.Ceiling(rect.X), (int)Math.Ceiling(rect.Y),
+                        (int)Math.Floor(rect.Width), (int)Math.Floor(rect.Height)
+                );
+            }
+        }
+
+        public PixelSize SelectionPixelSize
+        {
+            get
+            {
+                var rect = SelectionRegion;
+                return new PixelSize((int) Math.Floor(rect.Width), (int) Math.Floor(rect.Height));
             }
         }
 
@@ -765,23 +994,7 @@ namespace UVtools.WPF.Controls
         private Vector _startScrollPosition;
         private bool _isPanning;
         private bool _isSelecting;
-        private Bitmap _image;
         private Bitmap _trackerImage;
-        private bool _trackerImageAutoZoom = true;
-        private byte _gridCellSize;
-        private ISolidColorBrush _gridColor = Brushes.Gainsboro;
-        private ISolidColorBrush _gridColorAlternate = Brushes.White;
-        private bool _showGrid = true;
-        private bool _autoPan = true;
-        private MouseButtons _panWithMouseButtons = MouseButtons.LeftButton | MouseButtons.MiddleButton | MouseButtons.RightButton;
-        private bool _panWithArrows = true;
-        private MouseButtons _selectWithMouseButtons = MouseButtons.LeftButton | MouseButtons.RightButton;
-        private bool _invertMouse = false;
-        private bool _autoCenter = true;
-        private SizeModes _sizeMode = SizeModes.Normal;
-        private ISolidColorBrush _selectionColor = new SolidColorBrush(new Color(127, 0, 128, 255));
-        private Rect _selectionRegion = Rect.Empty;
-        private SelectionModes _selectionMode = SelectionModes.None;
         private bool _canRender = true;
         private Point _pointerPosition;
         
@@ -796,11 +1009,13 @@ namespace UVtools.WPF.Controls
 
             HorizontalScrollBar = this.FindControl<ScrollBar>("HorizontalScrollBar");
             VerticalScrollBar = this.FindControl<ScrollBar>("VerticalScrollBar");
-            ViewPortControl = this.FindControl<ContentControl>("ViewPort");
+            ViewPort = this.FindControl<ContentPresenter>("ViewPort");
+
+            SizeModeChanged();
 
             HorizontalScrollBar.Scroll += ScrollBarOnScroll;
             VerticalScrollBar.Scroll += ScrollBarOnScroll;
-            ViewPortControl.PointerWheelChanged += FillContainerOnPointerWheelChanged;
+            ViewPort.PointerWheelChanged += FillContainerOnPointerWheelChanged;
         }
 
         private void ScrollBarOnScroll(object? sender, ScrollEventArgs e)
@@ -828,7 +1043,6 @@ namespace UVtools.WPF.Controls
 
         private void FillContainerOnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
         {
-            Debug.WriteLine("mouse whell");
             e.Handled = true;
             if (Image is null) return;
             if (AllowZoom && SizeMode == SizeModes.Normal)
@@ -839,7 +1053,7 @@ namespace UVtools.WPF.Controls
                 // TODO: Really should update the source method to handle multiple increments rather than calling it multiple times
                 /*for (int i = 0; i < spins; i++)
                 {*/
-                ProcessMouseZoom(e.Delta.Y > 0, e.GetPosition(ViewPortControl));
+                ProcessMouseZoom(e.Delta.Y > 0, e.GetPosition(ViewPort));
                 //}
             }
         }
@@ -865,10 +1079,10 @@ namespace UVtools.WPF.Controls
             var result = action switch
             {
                 ZoomActions.None => Zoom,
-                ZoomActions.ZoomIn => ZoomLevels.NextZoom(Zoom),
-                ZoomActions.ZoomOut => ZoomLevels.PreviousZoom(Zoom),
+                ZoomActions.ZoomIn => _zoomLevels.NextZoom(Zoom),
+                ZoomActions.ZoomOut => _zoomLevels.PreviousZoom(Zoom),
                 ZoomActions.ActualSize => 100,
-                _ => throw new ArgumentOutOfRangeException(nameof(action)),
+                _ => throw new ArgumentOutOfRangeException(nameof(action), action, null),
             };
             return result;
         }
@@ -895,8 +1109,8 @@ namespace UVtools.WPF.Controls
             int currentZoom = Zoom;
             int newZoom = GetZoomLevel(action);
 
-            if (preservePosition && Zoom != currentZoom)
-                CanRender = false;
+            /*if (preservePosition && Zoom != currentZoom)
+                CanRender = false;*/
 
             RestoreSizeMode();
             Zoom = newZoom;
@@ -949,7 +1163,7 @@ namespace UVtools.WPF.Controls
         /// </param>
         /// <returns><c>Point.Empty</c> if the point could not be matched to the source image, otherwise the new translated point</returns>
         public Point PointToImage(double x, double y, bool fitToBounds = true)
-            => PointToImage(x, y, fitToBounds);
+            => PointToImage(new Point(x, y), fitToBounds);
 
         /// <summary>
         ///   Converts the given client size point to represent a coordinate on the source image.
@@ -962,7 +1176,7 @@ namespace UVtools.WPF.Controls
         /// <returns><c>Point.Empty</c> if the point could not be matched to the source image, otherwise the new translated point</returns>
         public Point PointToImage(int x, int y, bool fitToBounds = true)
         {
-            return PointToImage(x, y, fitToBounds);
+            return PointToImage(new Point(x, y), fitToBounds);
         }
 
         /// <summary>
@@ -985,10 +1199,11 @@ namespace UVtools.WPF.Controls
                 x = (point.X + Offset.X - viewport.X) / ZoomFactor;
                 y = (point.Y + Offset.Y - viewport.Y) / ZoomFactor;
 
+                var image = Image;
                 if (fitToBounds)
                 {
-                    x = x.Clamp(0, Image.Size.Width-1);
-                    y = y.Clamp(0, Image.Size.Height-1);
+                    x = x.Clamp(0, image.Size.Width-1);
+                    y = y.Clamp(0, image.Size.Height-1);
                 }
             }
             else
@@ -997,7 +1212,7 @@ namespace UVtools.WPF.Controls
                 y = 0;
             }
 
-            return new Point(x, y);
+            return new(x, y);
         }
 
         /// <summary>
@@ -1028,8 +1243,9 @@ namespace UVtools.WPF.Controls
         public virtual void ScrollTo(Point imageLocation, Point relativeDisplayPoint)
         {
             //CanRender = false;
-            var x = imageLocation.X * ZoomFactor - relativeDisplayPoint.X;
-            var y = imageLocation.Y * ZoomFactor - relativeDisplayPoint.Y;
+            var zoomFactor = ZoomFactor;
+            var x = imageLocation.X * zoomFactor - relativeDisplayPoint.X;
+            var y = imageLocation.Y * zoomFactor - relativeDisplayPoint.Y;
 
 
             _canRender = true;
@@ -1077,34 +1293,35 @@ namespace UVtools.WPF.Controls
         }
 
         /// <summary>
-        ///   Zooms to the maximum size for displaying the entire image within the bounds of the control.
+        /// Zooms to the maximum size for displaying the entire image within the bounds of the control.
         /// </summary>
         public virtual void ZoomToFit()
         {
-            if (Image is null) return;
+            var image = Image;
+            if (image is null) return;
 
             double zoom;
             double aspectRatio;
 
-            if (Image.Size.Width > Image.Size.Height)
+            if (image.Size.Width > image.Size.Height)
             {
-                aspectRatio = Viewport.Width / Image.Size.Width;
+                aspectRatio = ViewPortSize.Width / image.Size.Width;
                 zoom = aspectRatio * 100.0;
 
-                if (Viewport.Height < Image.Size.Height * zoom / 100.0)
+                if (ViewPortSize.Height < image.Size.Height * zoom / 100.0)
                 {
-                    aspectRatio = Viewport.Height / Image.Size.Height;
+                    aspectRatio = ViewPortSize.Height / image.Size.Height;
                     zoom = aspectRatio * 100.0;
                 }
             }
             else
             {
-                aspectRatio = Viewport.Height / Image.Size.Height;
+                aspectRatio = ViewPortSize.Height / image.Size.Height;
                 zoom = aspectRatio * 100.0;
 
-                if (Viewport.Width < Image.Size.Width * zoom / 100.0)
+                if (ViewPortSize.Width < image.Size.Width * zoom / 100.0)
                 {
-                    aspectRatio = Viewport.Width / Image.Size.Width;
+                    aspectRatio = ViewPortSize.Width / image.Size.Width;
                     zoom = aspectRatio * 100.0;
                 }
             }
@@ -1143,18 +1360,18 @@ namespace UVtools.WPF.Controls
         /// </summary>
         /// <param name="rectangle">The rectangle to fit the view port to.</param>
         /// <param name="margin">Give a margin to rectangle by a value to zoom-out that pixel value</param>
-        public virtual void ZoomToRegion(Rectangle rectangle, double margin = 0) => ZoomToRegion(rectangle.ToAvalonia(), margin);
+        public void ZoomToRegion(Rectangle rectangle, double margin = 0) => ZoomToRegion(rectangle.ToAvalonia(), margin);
 
         /// <summary>
         ///   Adjusts the view port to fit the given region
         /// </summary>
         /// <param name="rectangle">The rectangle to fit the view port to.</param>
         /// <param name="margin">Give a margin to rectangle by a value to zoom-out that pixel value</param>
-        public virtual void ZoomToRegion(Rect rectangle, double margin = 0)
+        public void ZoomToRegion(Rect rectangle, double margin = 0)
         {
             if (margin > 0) rectangle = rectangle.Inflate(margin);
-            var ratioX = Viewport.Width / rectangle.Width;
-            var ratioY = Viewport.Height / rectangle.Height;
+            var ratioX = ViewPortSize.Width / rectangle.Width;
+            var ratioY = ViewPortSize.Height / rectangle.Height;
             var zoomFactor = Math.Min(ratioX, ratioY);
             var cx = rectangle.X + rectangle.Width / 2;
             var cy = rectangle.Y + rectangle.Height / 2;
@@ -1178,14 +1395,14 @@ namespace UVtools.WPF.Controls
         /// </summary>
         /// <param name="imageLocation">The point of the image to attempt to center.</param>
         public virtual void CenterAt(System.Drawing.Point imageLocation)
-            => ScrollTo(new Point(imageLocation.X, imageLocation.Y), new Point(Viewport.Width / 2, Viewport.Height / 2));
+            => ScrollTo(new Point(imageLocation.X, imageLocation.Y), new Point(ViewPortSize.Width / 2, ViewPortSize.Height / 2));
 
         /// <summary>
         ///   Centers the given point in the image in the center of the control
         /// </summary>
         /// <param name="imageLocation">The point of the image to attempt to center.</param>
         public virtual void CenterAt(Point imageLocation)
-         => ScrollTo(imageLocation, new Point(Viewport.Width / 2, Viewport.Height / 2));
+         => ScrollTo(imageLocation, new Point(ViewPortSize.Width / 2, ViewPortSize.Height / 2));
 
         /// <summary>
         ///   Centers the given point in the image in the center of the control
@@ -1228,13 +1445,13 @@ namespace UVtools.WPF.Controls
             //var height = scaledImageHeight <= Viewport.Height ? Viewport.Height : scaledImageHeight;
 
             bool changed = false;
-            if (HorizontalScrollBar.Maximum != width)
+            if (Math.Abs(HorizontalScrollBar.Maximum - width) > 0.01)
             {
                 HorizontalScrollBar.Maximum = width;
                 changed = true;
             }
 
-            if (VerticalScrollBar.Maximum != scaledImageHeight)
+            if (Math.Abs(VerticalScrollBar.Maximum - scaledImageHeight) > 0.01)
             {
                 VerticalScrollBar.Maximum = height;
                 changed = true;
@@ -1304,7 +1521,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="Point"/> which has been scaled to match the current zoom level</returns>
         public virtual Point GetScaledPoint(Point source)
         {
-            return new Point(source.X * ZoomFactor, source.Y * ZoomFactor);
+            return new(source.X * ZoomFactor, source.Y * ZoomFactor);
         }
 
         /// <summary>
@@ -1314,7 +1531,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="PointF"/> which has been scaled to match the current zoom level</returns>
         public virtual PointF GetScaledPoint(PointF source)
         {
-            return new PointF((float)(source.X * this.ZoomFactor), (float)(source.Y * this.ZoomFactor));
+            return new((float)(source.X * ZoomFactor), (float)(source.Y * ZoomFactor));
         }
 
         /// <summary>
@@ -1372,7 +1589,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="Rectangle"/> which has been scaled to match the current zoom level</returns>
         public virtual Rect GetScaledRectangle(Rect source)
         {
-            return new Rect(source.Left * ZoomFactor, source.Top * ZoomFactor, source.Width * ZoomFactor, source.Height * ZoomFactor);
+            return new(source.Left * ZoomFactor, source.Top * ZoomFactor, source.Width * ZoomFactor, source.Height * ZoomFactor);
         }
 
         /// <summary>
@@ -1382,7 +1599,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="RectangleF"/> which has been scaled to match the current zoom level</returns>
         public virtual RectangleF GetScaledRectangle(RectangleF source)
         {
-            return new RectangleF((float)(source.Left * ZoomFactor), (float)(source.Top * ZoomFactor), (float)(source.Width * ZoomFactor), (float)(source.Height * ZoomFactor));
+            return new((float)(source.Left * ZoomFactor), (float)(source.Top * ZoomFactor), (float)(source.Width * ZoomFactor), (float)(source.Height * ZoomFactor));
         }
 
         /// <summary>
@@ -1393,7 +1610,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="SizeF"/> which has been resized to match the current zoom level</returns>
         public SizeF GetScaledSize(float width, float height)
         {
-            return this.GetScaledSize(new SizeF(width, height));
+            return GetScaledSize(new SizeF(width, height));
         }
 
         /// <summary>
@@ -1404,7 +1621,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="Size"/> which has been resized to match the current zoom level</returns>
         public Size GetScaledSize(int width, int height)
         {
-            return this.GetScaledSize(new Size(width, height));
+            return GetScaledSize(new Size(width, height));
         }
 
         /// <summary>
@@ -1414,7 +1631,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="SizeF"/> which has been resized to match the current zoom level</returns>
         public virtual SizeF GetScaledSize(SizeF source)
         {
-            return new SizeF((float)(source.Width * this.ZoomFactor), (float)(source.Height * this.ZoomFactor));
+            return new((float)(source.Width * ZoomFactor), (float)(source.Height * ZoomFactor));
         }
 
         /// <summary>
@@ -1424,7 +1641,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="Size"/> which has been resized to match the current zoom level</returns>
         public virtual Size GetScaledSize(Size source)
         {
-            return new Size(source.Width * ZoomFactor, source.Height * ZoomFactor);
+            return new(source.Width * ZoomFactor, source.Height * ZoomFactor);
         }
 
         /// <summary>
@@ -1433,12 +1650,13 @@ namespace UVtools.WPF.Controls
         /// <exception cref="System.InvalidOperationException">Thrown if no image is currently set</exception>
         public virtual void SelectAll()
         {
-            if (Image is null) return;
-            SelectionRegion = new Rect(0, 0, Image.Size.Width, Image.Size.Height);
+            var image = Image;
+            if (image is null) return;
+            SelectionRegion = new Rect(0, 0, image.Size.Width, image.Size.Height);
         }
 
         /// <summary>
-        ///   Clears any existing selection region
+        /// Clears any existing selection region
         /// </summary>
         public virtual void SelectNone()
         {
@@ -1454,25 +1672,29 @@ namespace UVtools.WPF.Controls
 
         public override void Render(DrawingContext context)
         {
-            Debug.WriteLine($"Render: {DateTime.Now.Ticks}");
+            //Debug.WriteLine($"Render: {DateTime.Now.Ticks}");
             base.Render(context);
 
             // Draw Grid
-            if (ShowGrid)
+            var gridCellSize = GridCellSize;
+            if (ShowGrid & gridCellSize > 0 && (!IsHorizontalBarVisible || !IsVerticalBarVisible))
             {
                 // draw the background
-                var currentColor = GridColor;
-                for (int y = 0; y < Viewport.Height; y += GridCellSize)
+                var gridColor = GridColor;
+                var altColor = GridColorAlternate;
+                var currentColor = gridColor;
+                for (int y = 0; y < ViewPortSize.Height; y += gridCellSize)
                 {
                     var firstRowColor = currentColor;
-                    for (int x = 0; x < Viewport.Width; x += GridCellSize)
+                    
+                    for (int x = 0; x < ViewPortSize.Width; x += gridCellSize)
                     {
-                        context.FillRectangle(currentColor, new Rect(x, y, GridCellSize, GridCellSize));
-                        currentColor = ReferenceEquals(currentColor, GridColor) ? GridColorAlternate : GridColor;
+                        context.FillRectangle(currentColor, new Rect(x, y, gridCellSize, gridCellSize));
+                        currentColor = ReferenceEquals(currentColor, gridColor) ? altColor : gridColor;
                     }
 
-                    if (firstRowColor == currentColor)
-                        currentColor = ReferenceEquals(currentColor, GridColor) ? GridColorAlternate : GridColor;
+                    if (Equals(firstRowColor, currentColor))
+                        currentColor = ReferenceEquals(currentColor, gridColor) ? altColor : gridColor;
                 }
 
             }
@@ -1481,18 +1703,22 @@ namespace UVtools.WPF.Controls
                 context.FillRectangle(Background, new Rect(0, 0, Viewport.Width, Viewport.Height));
             }*/
 
-            if (Image is null) return;
+            var image = Image;
+            if (image is null) return;
             // Draw iamge
-            context.DrawImage(_image,
+            context.DrawImage(image,
                 GetSourceImageRegion(),
                 GetImageViewPort()
             );
 
+            var zoomFactor = ZoomFactor;
+
+
             if (HaveTrackerImage && _pointerPosition.X >= 0 && _pointerPosition.Y >= 0)
             {
                 var destSize = TrackerImageAutoZoom 
-                    ? new Size(_trackerImage.Size.Width * ZoomFactor, _trackerImage.Size.Height * ZoomFactor)
-                    : _image.Size;
+                    ? new Size(_trackerImage.Size.Width * zoomFactor, _trackerImage.Size.Height * zoomFactor)
+                    : image.Size;
 
                 var destPos = new Point(
                     _pointerPosition.X - destSize.Width / 2,
@@ -1505,20 +1731,19 @@ namespace UVtools.WPF.Controls
 
             //SkiaContext.SkCanvas.dr
             // Draw pixel grid
-            var pixelSize = ZoomFactor;
-            if (pixelSize > PixelGridThreshold)
+            if (zoomFactor > PixelGridZoomThreshold && SizeMode == SizeModes.Normal)
             {
                 var viewport = GetImageViewPort();
-                var offsetX = Offset.X % pixelSize;
-                var offsetY = Offset.Y % pixelSize;
+                var offsetX = Offset.X % zoomFactor;
+                var offsetY = Offset.Y % zoomFactor;
 
                 Pen pen = new(PixelGridColor);
-                for (double x = viewport.X + pixelSize - offsetX; x < viewport.Right; x += pixelSize)
+                for (double x = viewport.X + zoomFactor - offsetX; x < viewport.Right; x += zoomFactor)
                 {
                     context.DrawLine(pen, new Avalonia.Point(x, viewport.X), new Avalonia.Point(x, viewport.Bottom));
                 }
 
-                for (double y = viewport.Y + pixelSize - offsetY; y < viewport.Bottom; y += pixelSize)
+                for (double y = viewport.Y + zoomFactor - offsetY; y < viewport.Bottom; y += zoomFactor)
                 {
                     context.DrawLine(pen, new Avalonia.Point(viewport.Y, y), new Avalonia.Point(viewport.Right, y));
                 }
@@ -1529,9 +1754,10 @@ namespace UVtools.WPF.Controls
             if (!SelectionRegion.IsEmpty)
             {
                 var rect = GetOffsetRectangle(SelectionRegion);
-                context.FillRectangle(SelectionColor, rect);
-                Color solidColor = Color.FromArgb(255, SelectionColor.Color.R, SelectionColor.Color.G, SelectionColor.Color.B);
-                context.DrawRectangle(new Pen(solidColor.ToUint32()), rect);
+                var selectionColor = SelectionColor;
+                context.FillRectangle(selectionColor, rect);
+                Color color = Color.FromArgb(255, selectionColor.Color.R, selectionColor.Color.G, selectionColor.Color.B);
+                context.DrawRectangle(new Pen(color.ToUint32()), rect);
             }
         }
 
@@ -1544,7 +1770,7 @@ namespace UVtools.WPF.Controls
         {
             var offset = GetOffsetPoint(new Point (source.X, source.Y));
 
-            return new Point((int)offset.X, (int)offset.Y);
+            return new((int)offset.X, (int)offset.Y);
         }
 
         /// <summary>
@@ -1581,7 +1807,7 @@ namespace UVtools.WPF.Controls
             var offsetX = viewport.Left + Offset.X;
             var offsetY = viewport.Top + Offset.Y;
 
-            return new Point(scaled.X + offsetX, scaled.Y + offsetY);
+            return new(scaled.X + offsetX, scaled.Y + offsetY);
         }
 
         /// <summary>
@@ -1596,7 +1822,7 @@ namespace UVtools.WPF.Controls
             var offsetX = viewport.Left - Offset.X;
             var offsetY = viewport.Top - Offset.Y;
 
-            return new Rect(new Point(scaled.Left + offsetX, scaled.Top + offsetY), scaled.Size);
+            return new(new Point(scaled.Left + offsetX, scaled.Top + offsetY), scaled.Size);
         }
 
         /// <summary>
@@ -1609,7 +1835,7 @@ namespace UVtools.WPF.Controls
         /// <returns>A <see cref="Rectangle"/> which has been resized and repositioned to match the current zoom level and image offset</returns>
         public Rectangle GetOffsetRectangle(int x, int y, int width, int height)
         {
-            return this.GetOffsetRectangle(new Rectangle(x, y, width, height));
+            return GetOffsetRectangle(new Rectangle(x, y, width, height));
         }
 
         /// <summary>
@@ -1637,8 +1863,7 @@ namespace UVtools.WPF.Controls
             var offsetX = viewport.Left + Offset.X;
             var offsetY = viewport.Top + Offset.Y;
 
-            return new Rectangle(new System.Drawing.Point((int)(scaled.Left + offsetX), (int)(scaled.Top + offsetY)),
-                new System.Drawing.Size((int)scaled.Size.Width, (int)scaled.Size.Height));
+            return new(new System.Drawing.Point((int)(scaled.Left + offsetX), (int)(scaled.Top + offsetY)), new System.Drawing.Size((int)scaled.Size.Width, (int)scaled.Size.Height));
         }
 
         /// <summary>
@@ -1650,7 +1875,8 @@ namespace UVtools.WPF.Controls
         /// </returns>
         public Rectangle FitRectangle(Rectangle rectangle)
         {
-            if (Image is null) return Rectangle.Empty;
+            var image = Image;
+            if (image is null) return Rectangle.Empty;
             var x = rectangle.X;
             var y = rectangle.Y;
             var w = rectangle.Width;
@@ -1666,17 +1892,17 @@ namespace UVtools.WPF.Controls
                 y = 0;
             }
 
-            if (x + w > Image.Size.Width)
+            if (x + w > image.Size.Width)
             {
-                w = (int)(Image.Size.Width - x);
+                w = (int)(image.Size.Width - x);
             }
 
-            if (y + h > Image.Size.Height)
+            if (y + h > image.Size.Height)
             {
-                h = (int)(Image.Size.Height - y);
+                h = (int)(image.Size.Height - y);
             }
 
-            return new Rectangle(x, y, w, h);
+            return new(x, y, w, h);
         }
 
         /// <summary>
@@ -1688,7 +1914,8 @@ namespace UVtools.WPF.Controls
         /// </returns>
         public Rect FitRectangle(Rect rectangle)
         {
-            if (Image is null) return Rect.Empty;
+            var image = Image;
+            if (image is null) return Rect.Empty;
             var x = rectangle.X;
             var y = rectangle.Y;
             var w = rectangle.Width;
@@ -1706,94 +1933,119 @@ namespace UVtools.WPF.Controls
                 y = 0;
             }
 
-            if (x + w > Image.Size.Width)
+            if (x + w > image.Size.Width)
             {
-                w = Image.Size.Width - x;
+                w = image.Size.Width - x;
             }
 
-            if (y + h > Image.Size.Height)
+            if (y + h > image.Size.Height)
             {
-                h = Image.Size.Height - y;
+                h = image.Size.Height - y;
             }
 
-            return new Rect(x, y, w, h);
+            return new(x, y, w, h);
         }
 
         /// <summary>
         ///   Gets the source image region.
         /// </summary>
         /// <returns></returns>
-        public virtual Rect GetSourceImageRegion()
+        public Rect GetSourceImageRegion()
         {
-            if (Image is null) return Rect.Empty;
+            var image = Image;
+            if (image is null) return Rect.Empty;
 
-            if (SizeMode != SizeModes.Stretch)
+            switch (SizeMode)
             {
-                var viewPort = GetImageViewPort();
-                double sourceLeft = (Offset.X / ZoomFactor);
-                double sourceTop = (Offset.Y / ZoomFactor);
-                double sourceWidth = (viewPort.Width / ZoomFactor);
-                double sourceHeight = (viewPort.Height / ZoomFactor);
+                case SizeModes.Normal:
+                    var offset = Offset;
+                    var viewPort = GetImageViewPort();
+                    var zoomFactor = ZoomFactor;
+                    double sourceLeft = (offset.X / zoomFactor);
+                    double sourceTop = (offset.Y / zoomFactor);
+                    double sourceWidth = (viewPort.Width / zoomFactor);
+                    double sourceHeight = (viewPort.Height / zoomFactor);
 
-                return new Rect(sourceLeft, sourceTop, sourceWidth, sourceHeight);
+                    return new(sourceLeft, sourceTop, sourceWidth, sourceHeight);
             }
 
-            return new Rect(0, 0, Image.Size.Width, Image.Size.Height);
+            return new(0, 0, image.Size.Width, image.Size.Height);
+
         }
 
         /// <summary>
         /// Gets the image view port.
         /// </summary>
         /// <returns></returns>
-        public virtual Rect GetImageViewPort()
+        public Rect GetImageViewPort()
         {
-            if (Viewport.Width == 0 && Viewport.Height == 0) return Rect.Empty;
+            if (ViewPortSize.Width == 0 && ViewPortSize.Height == 0) return Rect.Empty;
 
             double xOffset = 0;
             double yOffset = 0;
-            double width;
-            double height;
+            double width = 0;
+            double height = 0;
 
-            if (SizeMode != SizeModes.Stretch)
+            switch (SizeMode)
             {
-                if (AutoCenter)
-                {
-                    xOffset = (!IsHorizontalBarVisible ? (Viewport.Width - ScaledImageWidth) / 2 : 0);
-                    yOffset = (!IsVerticalBarVisible ? (Viewport.Height - ScaledImageHeight) / 2 : 0);
-                }
+                case SizeModes.Normal:
+                    if (AutoCenter)
+                    {
+                        xOffset = (!IsHorizontalBarVisible ? (ViewPortSize.Width - ScaledImageWidth) / 2 : 0);
+                        yOffset = (!IsVerticalBarVisible ? (ViewPortSize.Height - ScaledImageHeight) / 2 : 0);
+                    }
 
-                width = Math.Min(ScaledImageWidth - Math.Abs(Offset.X), Viewport.Width);
-                height = Math.Min(ScaledImageHeight - Math.Abs(Offset.Y), Viewport.Height);
-            }
-            else
-            {
-                width = Viewport.Width;
-                height = Viewport.Height;
+                    width = Math.Min(ScaledImageWidth - Math.Abs(Offset.X), ViewPortSize.Width);
+                    height = Math.Min(ScaledImageHeight - Math.Abs(Offset.Y), ViewPortSize.Height);
+                    break;
+                case SizeModes.Stretch:
+                    width = ViewPortSize.Width;
+                    height = ViewPortSize.Height;
+                    break;
+                case SizeModes.Fit:
+                    var image = Image;
+                    double scaleFactor = Math.Min(ViewPortSize.Width / image.Size.Width, ViewPortSize.Height / image.Size.Height);
+                    
+                    width = Math.Floor(image.Size.Width * scaleFactor);
+                    height = Math.Floor(image.Size.Height * scaleFactor);
+
+                    if (AutoCenter)
+                    {
+                        xOffset = (ViewPortSize.Width - width) / 2;
+                        yOffset = (ViewPortSize.Height - height) / 2;
+                    }
+
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(SizeMode), SizeMode, null);
             }
 
-            return new Rect(xOffset, yOffset, width, height);
+            return new(xOffset, yOffset, width, height);
         }
 
         /// <summary>
-        ///   Gets the width of the scaled image.
+        /// Gets the width of the scaled image.
         /// </summary>
         /// <value>The width of the scaled image.</value>
-        protected virtual double ScaledImageWidth => Image.Size.Width * ZoomFactor;
+        protected double ScaledImageWidth => Image.Size.Width * ZoomFactor;
 
         /// <summary>
-        ///   Gets the height of the scaled image.
+        /// Gets the height of the scaled image.
         /// </summary>
         /// <value>The height of the scaled image.</value>
-        protected virtual double ScaledImageHeight => Image.Size.Height * ZoomFactor;
+        protected double ScaledImageHeight => Image.Size.Height * ZoomFactor;
 
-        public double ZoomFactor => _zoom / 100.0;
+        /// <summary>
+        /// Gets the zoom factor, the zoom / 100
+        /// </summary>
+        public double ZoomFactor => Zoom / 100.0;
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
             if (e.Handled
-                || IsPanning
-                || IsSelecting
+                || _isPanning
+                || _isSelecting
                 || Image is null) return;
 
             var pointer = e.GetCurrentPoint(this);
@@ -1816,6 +2068,7 @@ namespace UVtools.WPF.Controls
                         pointer.Properties.IsRightButtonPressed && (PanWithMouseButtons & MouseButtons.RightButton) != 0
                     )
                     || !AutoPan
+                    || SizeMode != SizeModes.Normal
 
                 ) return;
 
@@ -1824,8 +2077,8 @@ namespace UVtools.WPF.Controls
 
             var location = pointer.Position;
 
-            if (location.X > Viewport.Width) return;
-            if (location.Y > Viewport.Height) return;
+            if (location.X > ViewPortSize.Width) return;
+            if (location.Y > ViewPortSize.Height) return;
             _startMousePosition = location;
         }
 
@@ -1854,18 +2107,18 @@ namespace UVtools.WPF.Controls
             var pointer = e.GetCurrentPoint(this);
             PointerPosition = pointer.Position;
 
-            if (!IsPanning && !IsSelecting)
+            if (!_isPanning && !_isSelecting)
             {
                 TriggerRender(true);
                 return;
             }
 
-            if (IsPanning)
+            if (_isPanning)
             {
                 double x;
                 double y;
 
-                if (!InvertMouse)
+                if (!InvertMousePan)
                 {
                     x = _startScrollPosition.X + (_startMousePosition.X - _pointerPosition.X);
                     y = _startScrollPosition.Y + (_startMousePosition.Y - _pointerPosition.Y);
@@ -1878,7 +2131,7 @@ namespace UVtools.WPF.Controls
 
                 Offset = new Vector(x, y);
             }
-            else if (IsSelecting)
+            else if (_isSelecting)
             {
                 double x;
                 double y;
@@ -1912,10 +2165,11 @@ namespace UVtools.WPF.Controls
                 x -= imageOffset.X - Offset.X;
                 y -= imageOffset.Y - Offset.Y;
 
-                x /= ZoomFactor;
-                y /= ZoomFactor;
-                w /= ZoomFactor;
-                h /= ZoomFactor;
+                var zoomFactor = ZoomFactor;
+                x /= zoomFactor;
+                y /= zoomFactor;
+                w /= zoomFactor;
+                h /= zoomFactor;
 
                 if (w != 0 && h != 0)
                 {
@@ -1925,6 +2179,38 @@ namespace UVtools.WPF.Controls
 
             e.Handled = true;
         }
+
+        public Bitmap GetSelectedBitmap()
+        {
+            var image = ImageAsWriteableBitmap;
+            if (image is null || !HaveSelection) return null;
+            var selection = SelectionRegionNet;
+            var pixelSize = SelectionPixelSize;
+            using var frameBuffer = image.Lock();
+
+            var newBitmap = new WriteableBitmap(pixelSize, image.Dpi, frameBuffer.Format, AlphaFormat.Unpremul);
+            using var newFrameBuffer = newBitmap.Lock();
+
+            int i = 0;
+
+            unsafe
+            {
+                var inputPixels = (uint*) (void*) frameBuffer.Address;
+                var targetPixels = (uint*) (void*) newFrameBuffer.Address;
+
+                for (int y = selection.Y; y < selection.Bottom; y++)
+                {
+                    var thisY = y * frameBuffer.Size.Width;
+                    for (int x = selection.X; x < selection.Right; x++)
+                    {
+                        targetPixels[i++] = inputPixels[thisY + x];
+                    }
+                }
+            }
+
+            return newBitmap;
+        }
+
         #endregion
     }
 }

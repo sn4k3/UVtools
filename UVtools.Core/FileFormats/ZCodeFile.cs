@@ -35,7 +35,7 @@ namespace UVtools.Core.FileFormats
         public class ZcodePrintDevice
         {
             [XmlAttribute("z")]
-            public ushort MachineZ { get; set; } = 220;
+            public float MachineZ { get; set; } = 220;
 
             [XmlAttribute("height")]
             public uint ResolutionY { get; set; } = 2400;
@@ -257,7 +257,7 @@ namespace UVtools.Core.FileFormats
             get => ManifestFile.Device.MachineZ > 0 ? ManifestFile.Device.MachineZ : base.MachineZ;
             set
             {
-                ManifestFile.Device.MachineZ = (ushort) value;
+                ManifestFile.Device.MachineZ = value;
                 RaisePropertyChanged();
             }
         }

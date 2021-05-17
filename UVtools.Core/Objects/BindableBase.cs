@@ -21,12 +21,11 @@ namespace UVtools.Core.Objects
         ///     Multicast event for property change notifications.
         /// </summary>
         private PropertyChangedEventHandler _propertyChanged;
-        private List<string> events = new List<string>();
 
         public event PropertyChangedEventHandler PropertyChanged
         {
-            add { _propertyChanged += value; events.Add("added"); }
-            remove { _propertyChanged -= value; events.Add("removed"); }
+            add => _propertyChanged += value;
+            remove => _propertyChanged -= value;
         }
 
         /// <summary>
