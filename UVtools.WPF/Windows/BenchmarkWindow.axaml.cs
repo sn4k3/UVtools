@@ -33,7 +33,7 @@ namespace UVtools.WPF.Windows
         public const string RunsAbbreviation = "TDPS";
         public const string StressCPUTestName = "Stress CPU (Run until stop)";
 
-        private readonly RNGCryptoServiceProvider _randomProvider = new RNGCryptoServiceProvider();
+        private readonly RNGCryptoServiceProvider _randomProvider = new();
 
         private CancellationTokenSource _tokenSource;
         private CancellationToken _token => _tokenSource.Token;
@@ -219,7 +219,7 @@ namespace UVtools.WPF.Windows
         #region Tests
         public byte[] EncodeCbddlpImage(Mat image, byte bit = 0)
         {
-            List<byte> rawData = new List<byte>();
+            List<byte> rawData = new();
             var span = image.GetPixelSpan<byte>();
 
             bool obit = false;
@@ -279,7 +279,7 @@ namespace UVtools.WPF.Windows
 
         private byte[] EncodeCbtImage(Mat image)
         {
-            List<byte> rawData = new List<byte>();
+            List<byte> rawData = new();
             byte color = byte.MaxValue >> 1;
             uint stride = 0;
             var span = image.GetPixelSpan<byte>();
@@ -359,7 +359,7 @@ namespace UVtools.WPF.Windows
 
         public byte[] EncodePW0Image(Mat image)
         {
-            List<byte> rawData = new List<byte>();
+            List<byte> rawData = new();
             var span = image.GetPixelSpan<byte>();
 
             int lastColor = -1;
@@ -424,7 +424,7 @@ namespace UVtools.WPF.Windows
         {
             var bytes = new byte[width * height];
             _randomProvider.GetBytes(bytes);
-            Mat mat = new Mat(new Size(width, height), DepthType.Cv8U, 1);
+            Mat mat = new(new Size(width, height), DepthType.Cv8U, 1);
             mat.SetBytes(bytes);
             return mat;
         }

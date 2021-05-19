@@ -1,5 +1,11 @@
 # Changelog
 
+## 19/05/2021 - v2.12.1
+
+- (Upgrade) AvaloniaUI from 0.10.4 to 0.10.5
+- (Improvement) VDT: Implement a new key for better auto convert files between with latest version of Tango
+- (Change) Exposure time finder: Bar fence offset from 2px to 4px
+
 ## 17/05/2021 - v2.12.0
 
 - **Layer arithmetic:**

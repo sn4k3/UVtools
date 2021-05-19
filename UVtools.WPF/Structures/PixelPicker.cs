@@ -6,7 +6,7 @@ namespace UVtools.WPF.Structures
     public class PixelPicker : BindableBase
     {
         private bool _isSet;
-        private Point _location = new Point(0,0);
+        private Point _location = new(0,0);
         private byte _brightness;
 
         public bool IsSet

@@ -569,8 +569,8 @@ namespace UVtools.Core.FileFormats
                     manifest.Slices[layerIndex] = new CWSManifest.Slice(this[layerIndex].FormatFileName(filename));
                 }
 
-                XmlSerializer serializer = new XmlSerializer(manifest.GetType());
-                XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+                XmlSerializer serializer = new(manifest.GetType());
+                XmlSerializerNamespaces ns = new();
                 ns.Add("", "");
                 var entry = outputFile.CreateEntry(CWSManifest.FileName);
                 using (var stream = entry.Open())

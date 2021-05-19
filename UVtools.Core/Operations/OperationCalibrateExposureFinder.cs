@@ -89,7 +89,7 @@ namespace UVtools.Core.Operations
         private decimal _barLength = 4;
         private sbyte _barVerticalSplitter = 0;
         private byte _barFenceThickness = 10;
-        private sbyte _barFenceOffset = 2;
+        private sbyte _barFenceOffset = 4;
         private string _barThicknessesPx = "4, 6, 8, 60"; //"4, 6, 8, 10, 12, 14, 16, 18, 20";
         private string _barThicknessesMm = "0.2, 0.3, 0.4, 3"; //"0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.2";
 

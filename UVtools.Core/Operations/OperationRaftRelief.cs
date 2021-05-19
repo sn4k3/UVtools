@@ -250,7 +250,7 @@ namespace UVtools.Core.Operations
                 {
                     case RaftReliefTypes.Relief:
                     case RaftReliefTypes.Dimming:
-                        using (Mat mask = new Mat())
+                        using (Mat mask = new())
                         {
                             /*CvInvoke.Subtract(target, supportsMat, mask);
                                 CvInvoke.Erode(mask, mask, kernel, anchor, operation.WallMargin, BorderType.Reflect101, new MCvScalar());

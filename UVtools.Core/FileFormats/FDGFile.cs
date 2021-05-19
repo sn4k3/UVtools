@@ -333,7 +333,7 @@ namespace UVtools.Core.FileFormats
 
             public static unsafe byte[] Encode(Mat image)
             {
-                List<byte> rawData = new List<byte>();
+                List<byte> rawData = new();
                 var span = image.GetBytePointer();
                 var imageLength = image.GetLength();
 
@@ -464,7 +464,7 @@ namespace UVtools.Core.FileFormats
 
                 if (Parent.HeaderSettings.EncryptionKey > 0)
                 {
-                    KeyRing kr = new KeyRing(Parent.HeaderSettings.EncryptionKey, layerIndex);
+                    KeyRing kr = new(Parent.HeaderSettings.EncryptionKey, layerIndex);
                     EncodedRle = kr.Read(EncodedRle);
                 }
 
@@ -524,7 +524,7 @@ namespace UVtools.Core.FileFormats
 
             public void Encode(Mat image, uint layerIndex)
             {
-                List<byte> rawData = new List<byte>();
+                List<byte> rawData = new();
                 
                 //byte color = byte.MaxValue >> 1;
                 byte color = byte.MaxValue;
@@ -589,7 +589,7 @@ namespace UVtools.Core.FileFormats
 
                 if (Parent.HeaderSettings.EncryptionKey > 0)
                 {
-                    KeyRing kr = new KeyRing(Parent.HeaderSettings.EncryptionKey, layerIndex);
+                    KeyRing kr = new(Parent.HeaderSettings.EncryptionKey, layerIndex);
                     EncodedRle = kr.Read(rawData).ToArray();
                 }
                 else
@@ -637,7 +637,7 @@ namespace UVtools.Core.FileFormats
 
             public List<byte> Read(List<byte> input)
             {
-                List<byte> data = new List<byte>(input.Count);
+                List<byte> data = new(input.Count);
                 data.AddRange(input.Select(t => (byte)(t ^ Next())));
 
                 return data;
@@ -963,7 +963,7 @@ namespace UVtools.Core.FileFormats
                         HeaderSettings.PreviewLargeOffsetAddress = currentOffset;
                     }
                     
-                    Preview preview = new Preview
+                    Preview preview = new()
                     {
                         ResolutionX = (uint) image.Width,
                         ResolutionY = (uint) image.Height,
@@ -990,7 +990,7 @@ namespace UVtools.Core.FileFormats
                 Parallel.For(0, LayerCount, /*new ParallelOptions{MaxDegreeOfParallelism = 1},*/ layerIndex =>
                 {
                     if(progress.Token.IsCancellationRequested) return;
-                    LayerData layer = new LayerData(this, (uint) layerIndex);
+                    LayerData layer = new(this, (uint) layerIndex);
                     using (var image = this[layerIndex].LayerMat)
                     {
                         layer.Encode(image, (uint) layerIndex);

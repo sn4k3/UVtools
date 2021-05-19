@@ -116,7 +116,7 @@ namespace UVtools.WPF.Windows
             foreach (PropertyInfo propertyInfo in Settings.General.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 if (propertyInfo.Name != field) continue;
-                OpenFolderDialog dialog = new OpenFolderDialog();
+                OpenFolderDialog dialog = new();
                 var filename = await dialog.ShowAsync(this);
                 if (string.IsNullOrEmpty(filename)) return;
                 propertyInfo.SetValue(Settings.General, filename);

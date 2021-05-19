@@ -57,7 +57,7 @@ namespace UVtools.WPF
         private Canvas _issuesSliderCanvas;
 
 
-        private Timer _layerNavigationTooltipTimer = new Timer(0.1) { AutoReset = false };
+        private Timer _layerNavigationTooltipTimer = new(0.1) { AutoReset = false };
         private uint _actualLayer;
 
         private bool _showLayerImageRotated;
@@ -99,22 +99,23 @@ namespace UVtools.WPF
             _showLayerOutlineHollowAreas = Settings.LayerPreview.HollowOutline;
             
             LayerImageBox.ZoomLevels = new AdvancedImageBox.ZoomLevelCollection(AppSettings.ZoomLevels);
-
+            
             LayerImageBox.GetObservable(AdvancedImageBox.ZoomProperty).Subscribe(zoom =>
             {
+                var newZoom = zoom;
                 var oldZoom = LayerImageBox.OldZoom;
                 RaisePropertyChanged(nameof(LayerZoomStr));
-                AddLogVerbose($"Zoomed from {oldZoom} to {zoom}");
+                AddLogVerbose($"Zoomed from {oldZoom} to {newZoom}");
                 
                 if (_showLayerImageCrosshairs &&
                     Issues.Count > 0 &&
                     (oldZoom < 50 &&
-                     zoom >= 50 // Trigger refresh as crosshair thickness increases at lower zoom levels
-                     || oldZoom > 100 && zoom <= 100
-                     || oldZoom is >= 50 and <= 100 && (zoom is < 50 or > 100)
+                     newZoom >= 50 // Trigger refresh as crosshair thickness increases at lower zoom levels
+                     || oldZoom > 100 && newZoom <= 100
+                     || oldZoom is >= 50 and <= 100 && (newZoom is < 50 or > 100)
                      || oldZoom <= AppSettings.CrosshairFadeLevel &&
-                     zoom > AppSettings.CrosshairFadeLevel // Trigger refresh as zoom level manually crosses fade threshold
-                     || oldZoom > AppSettings.CrosshairFadeLevel && zoom <= AppSettings.CrosshairFadeLevel)
+                     newZoom > AppSettings.CrosshairFadeLevel // Trigger refresh as zoom level manually crosses fade threshold
+                     || oldZoom > AppSettings.CrosshairFadeLevel && newZoom <= AppSettings.CrosshairFadeLevel)
 
                 )
                 {
@@ -1739,7 +1740,7 @@ namespace UVtools.WPF
         public uint SelectObjectRoi(Rectangle roiRectangle)
         {
             if (roiRectangle.IsEmpty) return 0;
-            List<Rectangle> rectangles = new List<Rectangle>();
+            List<Rectangle> rectangles = new();
             for (int i = 0; i < LayerCache.LayerContours.Size; i++)
             {
                 var rectangle = CvInvoke.BoundingRectangle(LayerCache.LayerContours[i]);
@@ -1827,7 +1828,7 @@ namespace UVtools.WPF
         public void UpdatePixelEditorCursor()
         {
             Mat cursor = null;
-            MCvScalar _pixelEditorCursorColor = new MCvScalar(
+            MCvScalar _pixelEditorCursorColor = new(
                 Settings.PixelEditor.CursorColor.B, 
                 Settings.PixelEditor.CursorColor.G,
                 Settings.PixelEditor.CursorColor.R,

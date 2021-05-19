@@ -1047,7 +1047,7 @@ namespace UVtools.WPF
                 string convertFileExtension = SlicerFile switch
                 {
                     SL1File sl1File => sl1File.LookupCustomValue<string>(SL1File.Keyword_FileFormat, null),
-                    VDTFile vdtFile => vdtFile.LookupCustomValue<string>(SL1File.Keyword_FileFormat, null),
+                    VDTFile vdtFile => vdtFile.ManifestFile.Machine.UVToolsConvertTo,
                     _ => null
                 };
 
@@ -1074,8 +1074,7 @@ namespace UVtools.WPF
                                 return true;
                             }
                             catch (OperationCanceledException)
-                            {
-                            }
+                            { }
                             catch (Exception exception)
                             {
                                 Dispatcher.UIThread.InvokeAsync(async () =>

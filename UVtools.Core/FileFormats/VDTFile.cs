@@ -83,6 +83,7 @@ namespace UVtools.Core.FileFormats
             [JsonProperty("x_mirror")] public bool XMirror { get; set; }
             [JsonProperty("y_mirror")] public bool YMirror { get; set; }
             [JsonProperty("notes")] public string Notes { get; set; }
+            [JsonProperty("uvtools_convert_to")] public string UVToolsConvertTo { get; set; }
         }
 
         public sealed class VDTResin

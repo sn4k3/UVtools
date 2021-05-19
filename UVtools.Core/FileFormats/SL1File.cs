@@ -589,7 +589,7 @@ namespace UVtools.Core.FileFormats
                 {
                     if (!entity.Name.EndsWith(".ini")) continue;
                     iniFiles.Add(entity.Name);
-                    using StreamReader streamReader = new StreamReader(entity.Open());
+                    using StreamReader streamReader = new(entity.Open());
                     string line;
                     while ((line = streamReader.ReadLine()) != null)
                     {
@@ -652,7 +652,7 @@ namespace UVtools.Core.FileFormats
                     if (entity.Name.StartsWith("thumbnail"))
                     {
                         using Stream stream = entity.Open();
-                        Mat image = new Mat();
+                        Mat image = new();
                         CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
                         byte thumbnailIndex =
                             (byte) (image.Width == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Width &&

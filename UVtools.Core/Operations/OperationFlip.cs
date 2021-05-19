@@ -143,7 +143,7 @@ namespace UVtools.Core.Operations
 
             if (MakeCopy)
             {
-                using Mat dst = new Mat();
+                using Mat dst = new();
                 CvInvoke.Flip(target, dst, FlipTypeOpenCV);
                 CvInvoke.Add(target, dst, target);
             }

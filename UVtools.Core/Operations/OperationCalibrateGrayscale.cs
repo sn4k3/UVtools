@@ -358,7 +358,7 @@ namespace UVtools.Core.Operations
             layers[0] = EmguExtensions.InitMat(SlicerFile.Resolution);
 
             int radius = Math.Max(100, Math.Min(SlicerFile.Resolution.Width, SlicerFile.Resolution.Height) - _outerMargin * 2) / 2 ;
-            Point center = new Point(SlicerFile.Resolution.Width / 2, SlicerFile.Resolution.Height / 2);
+            Point center = new(SlicerFile.Resolution.Width / 2, SlicerFile.Resolution.Height / 2);
             int innerRadius = Math.Max(100, radius - _innerMargin);
             double topLineLength = 0;
 
@@ -400,7 +400,7 @@ namespace UVtools.Core.Operations
             FontFace fontFace = FontFace.HersheyDuplex;
             double fontScale = 2;
             int fontThickness = 5;
-            Point fontPoint = new Point((int) (center.X + radius / 2.5f + _textXOffset), (int)(center.Y + AngleStep / 1.5));
+            Point fontPoint = new((int) (center.X + radius / 2.5f + _textXOffset), (int)(center.Y + AngleStep / 1.5));
 
             var halfAngleStep = AngleStep / 2;
             var rotatedAngle = halfAngleStep;

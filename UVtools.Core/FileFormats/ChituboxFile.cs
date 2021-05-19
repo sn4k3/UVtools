@@ -413,7 +413,7 @@ namespace UVtools.Core.FileFormats
 
             public unsafe byte[] Encode(Mat image)
             {
-                List<byte> rawData = new List<byte>();
+                List<byte> rawData = new();
                 ushort color15 = 0;
                 uint rep = 0;
 
@@ -617,7 +617,7 @@ namespace UVtools.Core.FileFormats
 
                 if (Parent.HeaderSettings.EncryptionKey > 0)
                 {
-                    KeyRing kr = new KeyRing(Parent.HeaderSettings.EncryptionKey, layerIndex);
+                    KeyRing kr = new(Parent.HeaderSettings.EncryptionKey, layerIndex);
                     EncodedRle = kr.Read(EncodedRle);
                 }
 
@@ -691,7 +691,7 @@ namespace UVtools.Core.FileFormats
 
             public unsafe byte[] EncodeCbddlpImage(Mat image, byte bit)
             {
-                List<byte> rawData = new List<byte>();
+                List<byte> rawData = new();
                 var span = image.GetBytePointer();
                 var imageLength = image.GetLength();
 
@@ -754,7 +754,7 @@ namespace UVtools.Core.FileFormats
 
             private unsafe byte[] EncodeCbtImage(Mat image, uint layerIndex)
             {
-                List<byte> rawData = new List<byte>();
+                List<byte> rawData = new();
                 byte color = byte.MaxValue >> 1;
                 uint stride = 0;
                 var span = image.GetBytePointer();
@@ -831,7 +831,7 @@ namespace UVtools.Core.FileFormats
 
                 if (Parent.HeaderSettings.EncryptionKey > 0)
                 {
-                    KeyRing kr = new KeyRing(Parent.HeaderSettings.EncryptionKey, layerIndex);
+                    KeyRing kr = new(Parent.HeaderSettings.EncryptionKey, layerIndex);
                     EncodedRle = kr.Read(rawData.ToArray());
                 }
                 else
@@ -935,7 +935,7 @@ namespace UVtools.Core.FileFormats
 
             public List<byte> Read(List<byte> input)
             {
-                List<byte> data = new List<byte>(input.Count);
+                List<byte> data = new(input.Count);
                 data.AddRange(input.Select(t => (byte) (t ^ Next())));
 
                 return data;
@@ -1380,7 +1380,7 @@ namespace UVtools.Core.FileFormats
                 Parallel.For(0, LayerCount, /*new ParallelOptions{MaxDegreeOfParallelism = 1},*/ layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
-                    LayerData layerData = new LayerData(this, (uint) layerIndex);
+                    LayerData layerData = new(this, (uint) layerIndex);
                     using (var image = this[layerIndex].LayerMat)
                     {
                         layerData.Encode(image, aaIndex, (uint) layerIndex);

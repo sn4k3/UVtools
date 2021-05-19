@@ -49,7 +49,7 @@ namespace UVtools.WPF.Structures
         {
             get
             {
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new();
                 foreach (CheckBox item in Items)
                 {
                     if (!item.IsChecked.HasValue || !item.IsChecked.Value) continue;
@@ -87,7 +87,7 @@ namespace UVtools.WPF.Structures
             Updates = 0;
             Installed = 0;
             if (!Directory.Exists(SourcePath)) return;
-            DirectoryInfo di = new DirectoryInfo(SourcePath);
+            DirectoryInfo di = new(SourcePath);
             var files = di.GetFiles("*.ini");
             if (files.Length == 0) return;
 
@@ -104,7 +104,7 @@ namespace UVtools.WPF.Structures
                 if (folderExists)
                 {
                     var targetFile = $"{TargetPath}{Path.DirectorySeparatorChar}{files[i].Name}";
-                    FileInfo targetFileInfo = new FileInfo(targetFile);
+                    FileInfo targetFileInfo = new(targetFile);
                     if (targetFileInfo.Exists)
                     {
                         Installed++;

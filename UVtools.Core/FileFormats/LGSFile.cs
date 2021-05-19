@@ -99,8 +99,8 @@ namespace UVtools.Core.FileFormats
 
             public unsafe byte[] Encode(Mat mat)
             {
-                List<byte> rawData = new List<byte>();
-                List<byte> chunk = new List<byte>();
+                List<byte> rawData = new();
+                List<byte> chunk = new();
                 var spanMat = mat.GetBytePointer();
                 var imageLength = mat.GetLength();
 

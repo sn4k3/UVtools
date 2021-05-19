@@ -315,7 +315,7 @@ namespace UVtools.Core.Operations
             var layers = new Mat[LayerCount];
             
             Slicer slicer = new(SlicerFile.Resolution, new SizeF((float) DisplayWidth, (float) DisplayHeight));
-            Point center = new Point(SlicerFile.Resolution.Width / 2, SlicerFile.Resolution.Height / 2);
+            Point center = new(SlicerFile.Resolution.Width / 2, SlicerFile.Resolution.Height / 2);
             uint baseRadius = slicer.PixelsFromMillimeters(_baseDiameter) / 2;
             uint baseLayers = (ushort) Math.Floor(_baseHeight / _layerHeight);
             uint bodyLayers = (ushort) Math.Floor(_bodyHeight / _layerHeight);
@@ -355,7 +355,7 @@ namespace UVtools.Core.Operations
                     {
                         spiralAngle = -spiralAngle;
                     }
-                    Point location = new Point((int) (center.X - baseRadius + spiralRadius), center.Y);
+                    Point location = new((int) (center.X - baseRadius + spiralRadius), center.Y);
                     var locationCW = location.Rotate((double) spiralAngle, center);
                     var locationCCW = location.Rotate((double) -spiralAngle, center);
 

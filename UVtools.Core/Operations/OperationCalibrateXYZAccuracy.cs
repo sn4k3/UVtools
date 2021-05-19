@@ -690,8 +690,8 @@ namespace UVtools.Core.Operations
 
                         if (_hollowModel && i != 0 && _wallThickness > 0)
                         {
-                            Size rectSize = new Size((int) (XPixels - WallThicknessXPixels * 2), (int) (YPixels - WallThicknessYPixels * 2));
-                            Point rectLocation = new Point((int) (currentX + WallThicknessXPixels), (int) (currentY + WallThicknessYPixels));
+                            Size rectSize = new((int) (XPixels - WallThicknessXPixels * 2), (int) (YPixels - WallThicknessYPixels * 2));
+                            Point rectLocation = new((int) (currentX + WallThicknessXPixels), (int) (currentY + WallThicknessYPixels));
                             CvInvoke.Rectangle(layers[i], new Rectangle(rectLocation, rectSize),
                                 EmguExtensions.Black3Byte, -1);
                         }

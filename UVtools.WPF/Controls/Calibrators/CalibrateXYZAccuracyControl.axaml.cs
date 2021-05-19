@@ -88,7 +88,7 @@ namespace UVtools.WPF.Controls.Calibrators
 
         public async void AddProfile()
         {
-            OperationResize resize = new OperationResize
+            OperationResize resize = new()
             {
                 ProfileName = ProfileName,
                 X = Operation.ScaleXFactor,

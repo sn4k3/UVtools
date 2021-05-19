@@ -145,14 +145,14 @@ namespace UVtools.Core.Extensions
             {
                 var dx = Math.Abs(dst.Step - src.Step) / 2;
                 var dy = Math.Abs(dst.Height - src.Height) / 2;
-                Mat m = new Mat(dst, new Rectangle(dx, dy, src.Width, src.Height));
+                Mat m = new(dst, new Rectangle(dx, dy, src.Width, src.Height));
                 src.CopyTo(m);
             }
             else if (dst.Step < src.Step && dst.Height < src.Height)
             {
                 var dx = Math.Abs(dst.Step - src.Step) / 2;
                 var dy = Math.Abs(dst.Height - src.Height) / 2;
-                Mat m = new Mat(src, new Rectangle(dx, dy, dst.Width, dst.Height));
+                Mat m = new(src, new Rectangle(dx, dy, dst.Width, dst.Height));
                 m.CopyTo(dst);
             }
         }

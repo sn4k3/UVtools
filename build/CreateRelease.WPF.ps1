@@ -34,7 +34,7 @@ Set-Location $PSScriptRoot\..
 ####################################
 $enableMSI = $true
 #$buildOnly = $null
-#$buildOnly = "win-x64"
+$buildOnly = "win-x64"
 # Profilling
 $stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
 $deployStopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
@@ -104,11 +104,11 @@ $runtimes =
         "exclude" = @()
         "include" = @("libcvextern.so")
     }
-    "linux-arm64" = @{
-        "extraCmd" = "-p:PublishReadyToRun=true"
-        "exclude" = @()
-        "include" = @("libcvextern.so")
-    }
+    #"linux-arm64" = @{
+    #    "extraCmd" = "-p:PublishReadyToRun=true"
+    #    "exclude" = @()
+    #    "include" = @("libcvextern.so")
+    #}
     #"unix-x64" = @{
     #    "extraCmd" = "-p:PublishReadyToRun=true"
     #    "exclude" = @("x86", "x64", "libcvextern.dylib")

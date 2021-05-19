@@ -450,7 +450,7 @@ namespace UVtools.Core.FileFormats
                 var span = image.GetBytePointer();
                 var imageLength = image.GetLength();
 
-                Preview preview = new Preview((uint) image.Width, (uint) image.Height);
+                Preview preview = new((uint) image.Width, (uint) image.Height);
 
                 int i = 0;
                 for (int pixel = 0; pixel < imageLength; pixel += image.NumberOfChannels)
@@ -612,7 +612,7 @@ namespace UVtools.Core.FileFormats
 
             public unsafe byte[] EncodePWS(Mat image)
             {
-                List<byte> rawData = new List<byte>();
+                List<byte> rawData = new();
                 var span = image.GetBytePointer();
                 var imageLength = image.GetLength();
 
@@ -751,7 +751,7 @@ namespace UVtools.Core.FileFormats
 
             public unsafe byte[] EncodePW0(Mat image)
             {
-                List<byte> rawData = new List<byte>();
+                List<byte> rawData = new();
                 var span = image.GetBytePointer();
                 var imageLength = image.GetLength();
 
@@ -1295,7 +1295,7 @@ namespace UVtools.Core.FileFormats
             Parallel.For(0, LayerCount, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
-                LayerData layer = new LayerData(this, (uint) layerIndex);
+                LayerData layer = new(this, (uint) layerIndex);
                 using (var image = this[layerIndex].LayerMat)
                 {
                     layer.Encode(image);

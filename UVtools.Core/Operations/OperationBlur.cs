@@ -146,7 +146,7 @@ namespace UVtools.Core.Operations
 
         public override bool Execute(Mat mat, params object[] arguments)
         {
-            Size size = new Size((int)Size, (int)Size);
+            Size size = new((int)Size, (int)Size);
             Point anchor = Kernel.Anchor;
             if (anchor.IsEmpty) anchor = new Point(-1, -1);
             //if (size.IsEmpty) size = new Size(3, 3);

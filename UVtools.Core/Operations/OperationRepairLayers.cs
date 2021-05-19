@@ -291,7 +291,7 @@ namespace UVtools.Core.Operations
 
             if (RemoveEmptyLayers)
             {
-                List<uint> removeLayers = new List<uint>();
+                List<uint> removeLayers = new();
                 for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
                 {
                     if (SlicerFile[layerIndex].NonZeroPixelCount == 0)

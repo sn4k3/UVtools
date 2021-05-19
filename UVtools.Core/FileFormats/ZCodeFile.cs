@@ -460,8 +460,8 @@ namespace UVtools.Core.FileFormats
                     progress++;
                 }
 
-                XmlSerializer serializer = new XmlSerializer(ManifestFile.GetType());
-                XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+                XmlSerializer serializer = new(ManifestFile.GetType());
+                XmlSerializerNamespaces ns = new();
                 ns.Add("", "");
                 var entry = outputFile.CreateEntry(ManifestFilename);
                 using (var stream = entry.Open())
@@ -596,8 +596,8 @@ namespace UVtools.Core.FileFormats
                 }
             } while (deleted);
 
-            XmlSerializer serializer = new XmlSerializer(ManifestFile.GetType());
-            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            XmlSerializer serializer = new(ManifestFile.GetType());
+            XmlSerializerNamespaces ns = new();
             ns.Add("", "");
             var entry = outputFile.CreateEntry(ManifestFilename);
             using var stream = entry.Open();

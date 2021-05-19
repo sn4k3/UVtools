@@ -396,7 +396,7 @@ namespace UVtools.Core.FileFormats
                 {
                     using (Stream stream = entry.Open())
                     {
-                        Mat image = new Mat();
+                        Mat image = new();
                         CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
                         Thumbnails[0] = image;
                         stream.Close();
@@ -407,7 +407,7 @@ namespace UVtools.Core.FileFormats
                 if (entry is not null)
                 {
                     using Stream stream = entry.Open();
-                    Mat image = new Mat();
+                    Mat image = new();
                     CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
                     Thumbnails[1] = image;
                     stream.Close();

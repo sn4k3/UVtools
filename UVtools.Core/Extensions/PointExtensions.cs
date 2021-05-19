@@ -25,7 +25,7 @@ namespace UVtools.Core.Extensions
             double x = cos * dx - sin * dy + pivot.X;
             double y = sin * dx + cos * dy + pivot.Y;
 
-            Point rotated = new Point((int)Math.Round(x), (int)Math.Round(y));
+            Point rotated = new((int)Math.Round(x), (int)Math.Round(y));
             return rotated;
         }
 

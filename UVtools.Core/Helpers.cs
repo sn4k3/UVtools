@@ -29,7 +29,7 @@ namespace UVtools.Core
 
         public static MemoryStream Serialize(object value)
         {
-            MemoryStream stream = new MemoryStream();
+            MemoryStream stream = new();
             Serializer.Serialize(stream, value);
             return stream;
         }

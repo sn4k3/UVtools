@@ -62,7 +62,7 @@ namespace UVtools.WPF.Structures
             return new Color(a, r, g, b);
         }
 
-        public static Color Empty => new Color(0,0,0,0);
+        public static Color Empty => new(0,0,0,0);
 
         public Color FactorColor(byte pixelColor, byte min = 0, byte max = byte.MaxValue) =>
             FactorColor(pixelColor / 255f, min, max);
