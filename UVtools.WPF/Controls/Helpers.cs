@@ -24,9 +24,48 @@ namespace UVtools.WPF.Controls
                     "bmp",
                     "jpeg",
                     "jpg",
-                    "gif"
+                    "tif",
+                    "tiff",
                 }
-            }
+            },
+        };
+
+        public static readonly List<FileDialogFilter> ImagesFullFileFilter = new()
+        {
+            new()
+            {
+                Name = "PNG Files",
+                Extensions = new List<string>
+                {
+                    "png"
+                }
+            },
+            new()
+            {
+                Name = "JPG Files",
+                Extensions = new List<string>
+                {
+                    "jpg",
+                    "jpeg"
+                }
+            },
+            new()
+            {
+                Name = "BMP Files",
+                Extensions = new List<string>
+                {
+                    "bmp",
+                }
+            },
+            new()
+            {
+                Name = "TIF Files",
+                Extensions = new List<string>
+                {
+                    "tif",
+                    "tiff",
+                }
+            },
         };
 
         public static readonly List<FileDialogFilter> PngFileFilter = new()

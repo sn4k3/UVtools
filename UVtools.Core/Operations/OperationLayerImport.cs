@@ -53,7 +53,7 @@ namespace UVtools.Core.Operations
 
         public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
         public override bool CanROI => false;
-        public override string Title => "Import Layers";
+        public override string Title => "Import layers";
 
         public override string Description =>
             "Import layers from local files into the model at a selected layer height.\n" +

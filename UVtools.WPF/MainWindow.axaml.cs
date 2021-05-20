@@ -338,7 +338,15 @@ namespace UVtools.WPF
                 Tag = new OperationLayerExportGif(),
                 Icon = new Avalonia.Controls.Image
                 {
-                    Source = new Bitmap(App.GetAsset("/Assets/Icons/gif-16x16.png"))
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/file-gif-16x16.png"))
+                }
+            },
+            new()
+            {
+                Tag = new OperationLayerExportHeatMap(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/file-image-16x16.png"))
                 }
             },
         };

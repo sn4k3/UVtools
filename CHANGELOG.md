@@ -1,5 +1,9 @@
 # Changelog
 
+## /05/2021 - v2.12.2
+
+- (Add) Layer action - Export layers to heat map: Export a layer range to a grayscale heat map image that represents the median of the mass in the Z depth/perception. The pixel brightness/intensity shows where the most mass are concentrated.
+
 ## 19/05/2021 - v2.12.1
 
 - (Upgrade) AvaloniaUI from 0.10.4 to 0.10.5
