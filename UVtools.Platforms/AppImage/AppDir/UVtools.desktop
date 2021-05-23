@@ -1,0 +1,12 @@
+# Desktop Entry Specification: https://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html
+# https://github.com/AppImage/AppImageKit/wiki/Bundling-.NET-Core-apps
+[Desktop Entry]
+Type=Application
+Name=UVtools
+Comment=MSLA/DLP, file analysis, calibration, repair, conversion and manipulation
+URL=https://github.com/sn4k3/UVtools
+Icon=UVtools
+Exec=UVtools
+Path=~
+Terminal=true
+Categories=Development;

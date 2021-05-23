@@ -12,7 +12,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
 using UVtools.Core.FileFormats;
-using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
@@ -58,7 +57,7 @@ namespace UVtools.Core.Operations
         public override bool CanROI => false;
         public override string Title => "Change print resolution";
         public override string Description =>
-            "Crops or resizes all layer images to fit an alternate print resolution\n" +
+            "Crops or resizes all layer images to fit an alternate print resolution.\n" +
             "Useful to make files printable on a different printer than they were originally sliced for without the need to re-slice.\n\n" +
             "NOTE: Please ensure that the actual model will fit within the new print resolution. The operation will be aborted if it will result in any of the actual model being clipped.\n" +
             "Only use this tool if both source and target printer have the same pixel pitch spec, otherwise the model size will be invalidated and result in a different size than the originally sliced for. " +

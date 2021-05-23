@@ -16,7 +16,7 @@ namespace UVtools.Core.Extensions
         
         public static Point Rotate(this Point point, double angleDegree, Point pivot = default)
         {
-            if (angleDegree == 0 || angleDegree == 360) return point;
+            if (angleDegree is 0 or 360) return point;
             double angle = angleDegree * Math.PI / 180;
             double cos = Math.Cos(angle);
             double sin = Math.Sin(angle);

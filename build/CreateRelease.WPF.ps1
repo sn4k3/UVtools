@@ -33,8 +33,8 @@ Set-Location $PSScriptRoot\..
 ###         Configuration        ###
 ####################################
 $enableMSI = $true
-#$buildOnly = $null
-#$buildOnly = "win-x64"
+#$buildOnly = 'linux-x64'
+#$buildOnly = 'win-x64'
 # Profilling
 $stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
 $deployStopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
@@ -50,6 +50,11 @@ $releaseFolder = "$project\bin\$buildWith\$netFolder"
 $objFolder = "$project\obj\$buildWith\$netFolder"
 $publishFolder = "publish"
 $platformsFolder = "UVtools.Platforms"
+
+# Not supported yet! No fuse on WSL
+$appImageFile = 'appimagetool-x86_64.AppImage'
+$appImageFilePath = "$platformsFolder/AppImage/$appImageFile"
+$appImageUrl = "https://github.com/AppImage/AppImageKit/releases/download/continuous/$appImageFile"
 
 $macIcns = "UVtools.CAD/UVtools.icns"
 
@@ -120,6 +125,11 @@ $runtimes =
     }
 }
 
+
+# https://github.com/AppImage/AppImageKit/wiki/Bundling-.NET-Core-apps
+#Invoke-WebRequest -Uri $appImageUrl -OutFile $appImageFilePath
+#wsl chmod a+x $appImageFilePath
+
 foreach ($obj in $runtimes.GetEnumerator()) {
     if(![string]::IsNullOrWhiteSpace($buildOnly) -and !$buildOnly.Equals($obj.Name)) {continue}
     # Configuration
@@ -154,9 +164,13 @@ Building: $runtime"
         Copy-Item "$platformsFolder\$runtime\$includeObj" -Destination "$publishFolder\$runtime"  -Recurse -ErrorAction Ignore
     }
 
-    Write-Output "Compressing $runtime to: $targetZip"
-    Write-Output $targetZip "$publishFolder/$runtime"
-    
+    #if($runtime.Equals('linux-x64')){
+    #    $appDirDest = "$publishFolder/AppImage.$runtime/AppDir"
+    #    Copy-Item "$platformsFolder/AppImage/AppDir" $appDirDest -Force -Recurse
+    #    wsl chmod 755 "$appDirDest/AppRun"
+    #    wsl cp -a "$publishFolder/$runtime/." "$appDirDest/usr/bin"
+    #    wsl $appImageFilePath $appDirDest
+    #}
     if($runtime.Equals('osx-x64')){
         $macAppFolder = "${software}.app"
         $macPublishFolder = "$publishFolder/${macAppFolder}"
@@ -179,6 +193,8 @@ Building: $runtime"
         
     }
     else {
+        Write-Output "Compressing $runtime to: $targetZip"
+        Write-Output $targetZip "$publishFolder/$runtime"
         wsl cd "$publishFolder/$runtime" `&`& pwd `&`& zip -r "../../$targetZip" .
     }
 

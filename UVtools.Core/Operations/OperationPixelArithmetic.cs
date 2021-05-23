@@ -72,7 +72,7 @@ namespace UVtools.Core.Operations
         public override string Title => "Pixel arithmetic";
 
         public override string Description =>
-            "Perform arithmetic operations over the pixels";
+            "Perform arithmetic operations over the pixels.";
 
         public override string ConfirmationText =>
             $"arithmetic {_operator}" +

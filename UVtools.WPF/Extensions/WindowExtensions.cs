@@ -34,6 +34,8 @@ namespace UVtools.WPF.Extensions
                     WindowStartupLocation = location,
                     CanResize = false,
                     MaxWidth = window.GetScreenWorkingArea().Width - UserSettings.Instance.General.WindowsHorizontalMargin,
+                    MaxHeight = window.GetScreenWorkingArea().Height - UserSettings.Instance.General.WindowsVerticalMargin,
+                    SizeToContent = SizeToContent.WidthAndHeight,
                     ShowInCenter = true
                 });
             return await messageBoxStandardWindow.ShowDialog(window);

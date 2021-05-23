@@ -34,6 +34,7 @@ namespace UVtools.Core.Operations
             Average
         }
         #endregion
+
         #region Members
         private OperationLayerReHeightItem _selectedItem;
         private OperationLayerReHeightAntiAliasingType _antiAliasingType;
@@ -46,7 +47,7 @@ namespace UVtools.Core.Operations
         public override bool CanROI => false;
         public override string Title => "Adjust layer height";
         public override string Description =>
-            "Adjust the layer height of the model\n\n" +
+            "Adjust the layer height of the model.\n\n" +
             "Adjusting to values lower than current height will reduce layer lines, adjusting to values higher" +
             " than current height will reduce model detail.\n\n" +
             "Note: Using dedicated slicer software to re-slice will usually yeild better results.";

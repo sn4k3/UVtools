@@ -383,6 +383,14 @@ namespace UVtools.Core.Operations
             ROI = roi;
         }
 
+        public Size GetRoiSizeOrDefault() => GetRoiSizeOrDefault(SlicerFile.Resolution);
+        public Size GetRoiSizeOrDefault(Mat defaultMat) => GetRoiSizeOrDefault(defaultMat.Size);
+        
+        public Size GetRoiSizeOrDefault(Size defaultSize)
+        {
+            return HaveROI && defaultSize != _roi.Size ? _roi.Size : defaultSize;
+        }
+
         public Mat GetRoiOrDefault(Mat defaultMat)
         {
             return HaveROI && defaultMat.Size != _roi.Size ? new Mat(defaultMat, _roi) : defaultMat;

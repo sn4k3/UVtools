@@ -1,6 +1,12 @@
 # Changelog
 
-## /05/2021 - v2.12.2
+## 23/05/2021 - v2.13.0
+
+- (Add) Tool - Light bleed compensation: Compensate the over-curing and light bleed from clear resins by dimming the sequential pixels
+- (Add) Infill: Honeycomb infill type
+- (Upgrade) MessageBox from 1.2.0 to 1.3.1 to fix the small size messages 
+
+## 20/05/2021 - v2.12.2
 
 - (Add) Layer action - Export layers to heat map: Export a layer range to a grayscale heat map image that represents the median of the mass in the Z depth/perception. The pixel brightness/intensity shows where the most mass are concentrated.
 

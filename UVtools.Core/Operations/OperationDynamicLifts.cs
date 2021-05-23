@@ -54,7 +54,7 @@ namespace UVtools.Core.Operations
         public override string Title => "Dynamic lifts";
 
         public override string Description =>
-            "Generate dynamic lift height and speeds for each layer given it mass\n" +
+            "Generate dynamic lift height and speeds for each layer given it mass.\n" +
             "Larger masses requires more lift height and less speed while smaller masses can go with shorter lift height and more speed.\n" +
             "If you have a raft, start after it layer number to not influence the calculations.\n" +
             "Note: Only few printers support this. Running this on an unsupported printer will cause no harm.";

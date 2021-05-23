@@ -175,6 +175,14 @@ namespace UVtools.WPF
             },
             new()
             {
+                Tag = new OperationLightBleedCompensation(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/lightbulb-solid-16x16.png"))
+                }
+            },
+            new()
+            {
                 Tag = new OperationInfill(),
                 Icon = new Avalonia.Controls.Image
                 {

@@ -65,7 +65,7 @@ namespace UVtools.Core.Operations
         public override string Title => "Export layers to GIF";
 
         public override string Description =>
-            "Export a layer range to an animated GIF file\n" +
+            "Export a layer range to an animated GIF file.\n" +
             "Note: This process is slow, optimize the parameters to output few layers as possible and/or scale them down.";
 
         public override string ConfirmationText =>

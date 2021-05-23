@@ -12,7 +12,6 @@ using System.Xml.Serialization;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using UVtools.Core.FileFormats;
-using UVtools.Core.Objects;
 using UVtools.Core.Scripting;
 
 namespace UVtools.Core.Operations
@@ -36,7 +35,7 @@ namespace UVtools.Core.Operations
         public override string Title => "Scripting";
 
         public override string Description =>
-            $"Run external scripts to manipulate the loaded file\n" +
+            $"Run external scripts to manipulate the loaded file.\n" +
             $"The scripts have wide access to your system and able to do modifications, read/write files, etc. " +
             $"Make sure to run only the scripts you trust! Or run UVtools in a sandbox while executing this.";
 

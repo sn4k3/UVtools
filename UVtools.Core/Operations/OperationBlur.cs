@@ -21,15 +21,17 @@ namespace UVtools.Core.Operations
     [Serializable]
     public sealed class OperationBlur : Operation
     {
+        #region Members
         private BlurAlgorithm _blurOperation = BlurAlgorithm.Blur;
         private uint _size = 1;
+        #endregion
 
         #region Overrides
 
         public override string Title => "Blur";
         public override string Description =>
-            $"Blur layer images by applying a low pass filter\n\n" +
-            "NOTE: Target printer must support AntiAliasing in order to use this function.\n\n" +
+            $"Blur layer images by applying a low pass filter.\n\n" +
+            "NOTE: Target printer must support AntiAliasing in order to use this function.\n" +
             "See https://docs.opencv.org/master/d4/d13/tutorial_py_filtering.html";
 
         public override string ConfirmationText =>

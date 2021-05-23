@@ -28,7 +28,7 @@ namespace UVtools.Core.Operations
         #region Overrides
 
         public override bool CanHaveProfiles => false;
-        public override string Title => "Export layers to heat map";
+        public override string Title => "Export layers to heat map.";
 
         public override string Description =>
             "Export a layer range to a grayscale heat map image that represents the median of the mass in the Z depth/perception\n" +
