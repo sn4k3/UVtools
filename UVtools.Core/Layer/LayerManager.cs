@@ -1432,7 +1432,7 @@ namespace UVtools.Core
                                         using (var vec =
                                             new VectorOfVectorOfPoint(new VectorOfPoint(checkArea.Contour)))
                                         {
-                                            CvInvoke.DrawContours(emguImage, vec, -1, EmguExtensions.WhiteByte, -1);
+                                            CvInvoke.DrawContours(emguImage, vec, -1, EmguExtensions.WhiteColor, -1);
                                         }
 
                                         using (var intersectingAreasMat = image.CloneBlank())
@@ -1638,7 +1638,7 @@ namespace UVtools.Core
                     var operationText = (PixelText)operation;
                     var mat = modifiedLayers.GetOrAdd(operation.LayerIndex, u => this[operation.LayerIndex].LayerMat);
 
-                    CvInvoke.PutText(mat, operationText.Text, operationText.Location, operationText.Font, operationText.FontScale, new MCvScalar(operationText.Brightness), operationText.Thickness, operationText.LineType, operationText.Mirror);
+                    mat.PutTextRotated(operationText.Text, operationText.Location, operationText.Font, operationText.FontScale, new MCvScalar(operationText.Brightness), operationText.Thickness, operationText.LineType, operationText.Mirror, operationText.Angle);
                 }
                 else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
                 {

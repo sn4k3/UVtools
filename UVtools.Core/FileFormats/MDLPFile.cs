@@ -454,7 +454,7 @@ namespace UVtools.Core.FileFormats
                 using var mat = EmguExtensions.InitMat(Resolution);
                 foreach (var line in layerDefs[layerIndex].Lines)
                 {
-                    CvInvoke.Line(mat, new Point(line.StartX, line.StartY), new Point(line.StartX, line.EndY), EmguExtensions.WhiteByte);
+                    CvInvoke.Line(mat, new Point(line.StartX, line.StartY), new Point(line.StartX, line.EndY), EmguExtensions.WhiteColor);
                 }
 
                 this[layerIndex] = new Layer((uint) layerIndex, mat, this);

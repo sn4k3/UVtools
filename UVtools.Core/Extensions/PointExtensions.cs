@@ -16,7 +16,7 @@ namespace UVtools.Core.Extensions
         
         public static Point Rotate(this Point point, double angleDegree, Point pivot = default)
         {
-            if (angleDegree is 0 or 360) return point;
+            if (angleDegree % 360 == 0) return point;
             double angle = angleDegree * Math.PI / 180;
             double cos = Math.Cos(angle);
             double sin = Math.Sin(angle);
@@ -25,9 +25,30 @@ namespace UVtools.Core.Extensions
             double x = cos * dx - sin * dy + pivot.X;
             double y = sin * dx + cos * dy + pivot.Y;
 
-            Point rotated = new((int)Math.Round(x), (int)Math.Round(y));
-            return rotated;
+            return new((int)Math.Round(x), (int)Math.Round(y));
         }
+
+        public static PointF Rotate(this PointF point, double angleDegree, PointF pivot = default)
+        {
+            if (angleDegree % 360 == 0) return point;
+            double angle = angleDegree * Math.PI / 180;
+            double cos = Math.Cos(angle);
+            double sin = Math.Sin(angle);
+            double dx = point.X - pivot.X;
+            double dy = point.Y - pivot.Y;
+            double x = cos * dx - sin * dy + pivot.X;
+            double y = sin * dx + cos * dy + pivot.Y;
+
+            return new((float) x, (float) y);
+        }
+
+        public static Point Half(this Point point)=> new(point.X / 2, point.Y / 2);
+
+        public static PointF Half(this PointF point) => new(point.X / 2, point.Y / 2);
+
+        public static Size ToSize(this Point point) => new(point.X, point.Y);
+
+        public static SizeF ToSize(this PointF point) => new(point.X, point.Y);
 
     }
 }

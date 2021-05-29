@@ -1236,13 +1236,13 @@ namespace UVtools.Core.Operations
             var layers = new Mat[2];
             layers[0] = EmguExtensions.InitMat(rect.Size);
 
-            CvInvoke.Rectangle(layers[0], rect, EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+            CvInvoke.Rectangle(layers[0], rect, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
             layers[1] = layers[0].CloneBlank();
             if (holes.Length > 0)
             {
                 CvInvoke.Rectangle(layers[1],
                     new Rectangle(rect.Size.Width - holePanelWidth, 0, rect.Size.Width, layers[0].Height),
-                    EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
             }
 
             
@@ -1254,7 +1254,7 @@ namespace UVtools.Core.Operations
             {
                 CvInvoke.Rectangle(layers[1],
                     new Rectangle(0, 0, layers[1].Size.Width-holePanelWidth, _staircaseThickness),
-                    EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
             }
 
             // Print holes
@@ -1297,13 +1297,13 @@ namespace UVtools.Core.Operations
                                 case CalibrateExposureFinderShapes.Square:
                                     CvInvoke.Rectangle(layers[layerIndex],
                                         new Rectangle(new Point(xPos, yPos), new Size(diameter-1, diameter-1)),
-                                        EmguExtensions.WhiteByte, -1,
+                                        EmguExtensions.WhiteColor, -1,
                                         _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                                     break;
                                 case CalibrateExposureFinderShapes.Circle:
                                     CvInvoke.Circle(layers[layerIndex],
                                         new Point(xPos, yPos),
-                                        radius, EmguExtensions.WhiteByte, -1,
+                                        radius, EmguExtensions.WhiteColor, -1,
                                         _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                                     break;
                             }
@@ -1334,13 +1334,13 @@ namespace UVtools.Core.Operations
                             case CalibrateExposureFinderShapes.Square:
                                 CvInvoke.Rectangle(layers[layerIndex],
                                     new Rectangle(new Point(xPos, yPos), new Size(diameter-1, diameter-1)),
-                                    EmguExtensions.BlackByte, -1,
+                                    EmguExtensions.BlackColor, -1,
                                     _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                                 break;
                             case CalibrateExposureFinderShapes.Circle:
                                 CvInvoke.Circle(layers[layerIndex],
                                     new Point(xPos, yPos),
-                                    radius, EmguExtensions.BlackByte, -1,
+                                    radius, EmguExtensions.BlackColor, -1,
                                     _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                                 break;
                         }
@@ -1374,17 +1374,17 @@ namespace UVtools.Core.Operations
                 {
                     // Print positive bottom
                     CvInvoke.Rectangle(layers[1], new Rectangle(xPos, yPos, barLengthPx - 1, barSpacingPx - 1),
-                        EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                        EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                     // Print positive top
                     yPos += barSpacingPx;
                     CvInvoke.Rectangle(layers[1], new Rectangle(xPos + barLengthPx + _barVerticalSplitter, yPos, barLengthPx - 1, bars[i] - 1),
-                        EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                        EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                     yPos += bars[i];
                 }
 
                 // Left over
                 CvInvoke.Rectangle(layers[1], new Rectangle(xPos, yPos, barLengthPx - 1, barSpacingPx - 1),
-                    EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
 
                 yPos += barSpacingPx;
 
@@ -1395,7 +1395,7 @@ namespace UVtools.Core.Operations
                             yStartPos - 1, 
                             barsPanelWidth - _barFenceThickness + 1,
                             yPos - yStartPos + _barFenceThickness / 2 + _barFenceOffset + 1),
-                        EmguExtensions.WhiteByte, _barFenceThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                        EmguExtensions.WhiteColor, _barFenceThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
 
                     yPos += _barFenceThickness * 2 + _barFenceOffset * 2;
                 }
@@ -1406,7 +1406,7 @@ namespace UVtools.Core.Operations
             if (!textSize.IsEmpty)
             {
                 CvInvoke.Rotate(layers[1], layers[1], RotateFlags.Rotate90CounterClockwise);
-                CvInvoke.PutText(layers[1], _text, new Point(_staircaseThickness + featuresMarginX, layers[1].Height - barsPanelWidth - featuresMarginX * (barsPanelWidth > 0 ? 2 : 1)), _textFont, _textScale, EmguExtensions.WhiteByte, _textThickness, _enableAntiAliasing ? LineType.AntiAlias :  LineType.EightConnected);
+                CvInvoke.PutText(layers[1], _text, new Point(_staircaseThickness + featuresMarginX, layers[1].Height - barsPanelWidth - featuresMarginX * (barsPanelWidth > 0 ? 2 : 1)), _textFont, _textScale, EmguExtensions.WhiteColor, _textThickness, _enableAntiAliasing ? LineType.AntiAlias :  LineType.EightConnected);
                 CvInvoke.Rotate(layers[1], layers[1], RotateFlags.Rotate90Clockwise);
             }
 
@@ -1416,7 +1416,7 @@ namespace UVtools.Core.Operations
                 yPos = bullseyeYPos;
                 foreach (var circle in bulleyes)
                 {
-                    CvInvoke.Circle(layers[1], new Point(bullseyeXPos, yPos), circle.Radius, EmguExtensions.WhiteByte, circle.Thickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    CvInvoke.Circle(layers[1], new Point(bullseyeXPos, yPos), circle.Radius, EmguExtensions.WhiteColor, circle.Thickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                 }
 
                 if (_bullsEyeInvertQuadrants)
@@ -1442,7 +1442,7 @@ namespace UVtools.Core.Operations
                             new Size(
                                 bulleyesDiameter + 10 + _bullsEyeFenceOffset*2 + _bullsEyeFenceThickness, 
                                 bulleyesDiameter + 10 + _bullsEyeFenceOffset*2 + _bullsEyeFenceThickness)), 
-                        EmguExtensions.WhiteByte,
+                        EmguExtensions.WhiteColor,
                         _bullsEyeFenceThickness, 
                         _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                 }
@@ -1454,14 +1454,14 @@ namespace UVtools.Core.Operations
             if (isPreview)
             {
                 var textHeightStart = layers[1].Height - featuresMarginY - TextMarkingSpacing;
-                CvInvoke.PutText(layers[1], $"{Microns}u", new Point(TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                CvInvoke.PutText(layers[1], $"{_bottomExposure}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                CvInvoke.PutText(layers[1], $"{_normalExposure}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                CvInvoke.PutText(layers[1], $"{Microns}u", new Point(TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                CvInvoke.PutText(layers[1], $"{_bottomExposure}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                CvInvoke.PutText(layers[1], $"{_normalExposure}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                 if (holes.Length > 0)
                 {
-                    CvInvoke.PutText(layers[1], $"{Microns}u", new Point(layers[1].Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                    CvInvoke.PutText(layers[1], $"{_bottomExposure}s", new Point(layers[1].Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                    CvInvoke.PutText(layers[1], $"{_normalExposure}s", new Point(layers[1].Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    CvInvoke.PutText(layers[1], $"{Microns}u", new Point(layers[1].Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    CvInvoke.PutText(layers[1], $"{_bottomExposure}s", new Point(layers[1].Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    CvInvoke.PutText(layers[1], $"{_normalExposure}s", new Point(layers[1].Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                 }
             }
 
@@ -1508,7 +1508,7 @@ namespace UVtools.Core.Operations
                     foreach (var triangle in triangles)
                     {
                         using var vec = new VectorOfPoint(triangle);
-                        CvInvoke.FillPoly(layers[1], vec, EmguExtensions.WhiteByte,
+                        CvInvoke.FillPoly(layers[1], vec, EmguExtensions.WhiteColor,
                             _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                     }
 
@@ -1528,7 +1528,7 @@ namespace UVtools.Core.Operations
                         CvInvoke.Rectangle(layers[1], new Rectangle(
                                 new Point(triangles[0][0].X - 0, triangles[0][0].Y - 0),
                                 new Size(triangleWidth * 2 + 0, triangleHeight + 0)
-                            ), EmguExtensions.WhiteByte, outlineThickness,
+                            ), EmguExtensions.WhiteColor, outlineThickness,
                             _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                     }
                 }
@@ -1587,14 +1587,14 @@ namespace UVtools.Core.Operations
             CvInvoke.Line(thumbnail, new Point(xSpacing, ySpacing + 5), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.PutText(thumbnail, "Exposure Time Cal.", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
-            CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
+            CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
             if (_patternModel)
             {
-                CvInvoke.PutText(thumbnail, $"Patterned Model", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
+                CvInvoke.PutText(thumbnail, $"Patterned Model", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
             }
             else
             {
-                CvInvoke.PutText(thumbnail, $"Features: {(_staircaseThickness > 0 ? 1 : 0) + Holes.Length + Bars.Length + BullsEyes.Length + (_counterTrianglesEnabled ? 1 : 0)}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
+                CvInvoke.PutText(thumbnail, $"Features: {(_staircaseThickness > 0 ? 1 : 0) + Holes.Length + Bars.Length + BullsEyes.Length + (_counterTrianglesEnabled ? 1 : 0)}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
             }
             
 
@@ -1679,7 +1679,7 @@ namespace UVtools.Core.Operations
                             {
                                 if (_patternModelGlueBottomLayers)
                                 {
-                                    newMatRoi.SetTo(EmguExtensions.WhiteByte);
+                                    newMatRoi.SetTo(EmguExtensions.WhiteColor);
                                 }
                             }
 
@@ -1697,11 +1697,11 @@ namespace UVtools.Core.Operations
 
                                 if (_multipleBrightness)
                                 {
-                                    CvInvoke.PutText(newMatRoi, brightness.ToString(), new(xHalf - 60, yHalf + 20 - TextMarkingLineBreak * 4), TextMarkingFontFace, 2, EmguExtensions.BlackByte, 3, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                                    CvInvoke.PutText(newMatRoi, brightness.ToString(), new(xHalf - 60, yHalf + 20 - TextMarkingLineBreak * 4), TextMarkingFontFace, 2, EmguExtensions.BlackColor, 3, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                                 }
-                                CvInvoke.PutText(newMatRoi, $"{microns}u", new(xHalf - 60, yHalf + 20 - TextMarkingLineBreak * 2), TextMarkingFontFace, 2, EmguExtensions.BlackByte, 3, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                                CvInvoke.PutText(newMatRoi, $"{group.Key.BottomExposure}s", new(xHalf - 60, yHalf + 20), TextMarkingFontFace, 2, EmguExtensions.BlackByte, 3, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                                CvInvoke.PutText(newMatRoi, $"{group.Key.Exposure}s", new(xHalf - 60, yHalf + 20 + TextMarkingLineBreak * 2), TextMarkingFontFace, 2, EmguExtensions.BlackByte, 3, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                                CvInvoke.PutText(newMatRoi, $"{microns}u", new(xHalf - 60, yHalf + 20 - TextMarkingLineBreak * 2), TextMarkingFontFace, 2, EmguExtensions.BlackColor, 3, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                                CvInvoke.PutText(newMatRoi, $"{group.Key.BottomExposure}s", new(xHalf - 60, yHalf + 20), TextMarkingFontFace, 2, EmguExtensions.BlackColor, 3, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                                CvInvoke.PutText(newMatRoi, $"{group.Key.Exposure}s", new(xHalf - 60, yHalf + 20 + TextMarkingLineBreak * 2), TextMarkingFontFace, 2, EmguExtensions.BlackColor, 3, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                             }
 
                             if (brightness < 255)
@@ -1863,7 +1863,7 @@ namespace UVtools.Core.Operations
                             {
                                 CvInvoke.Rectangle(matRoi,
                                     new Rectangle(staircaseWidth - staircaseWidthForLayer, 0, staircaseWidthForLayer, _staircaseThickness),
-                                    EmguExtensions.WhiteByte, -1,
+                                    EmguExtensions.WhiteColor, -1,
                                     _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                             }
                         }
@@ -1890,19 +1890,19 @@ namespace UVtools.Core.Operations
                         }
 
                         var textHeightStart = matRoi.Height - featuresMarginY - TextMarkingSpacing;
-                        CvInvoke.PutText(matRoi, $"{microns}u", new Point(TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                        CvInvoke.PutText(matRoi, $"{bottomExposureTemp}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                        CvInvoke.PutText(matRoi, $"{normalExposureTemp}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                        CvInvoke.PutText(matRoi, $"{microns}u", new Point(TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                        CvInvoke.PutText(matRoi, $"{bottomExposureTemp}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                        CvInvoke.PutText(matRoi, $"{normalExposureTemp}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                         if (holes.Length > 0)
                         {
-                            CvInvoke.PutText(matRoi, $"{microns}u", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                            CvInvoke.PutText(matRoi, $"{bottomExposureTemp}s", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                            CvInvoke.PutText(matRoi, $"{normalExposureTemp}s", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                            CvInvoke.PutText(matRoi, $"{microns}u", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                            CvInvoke.PutText(matRoi, $"{bottomExposureTemp}s", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                            CvInvoke.PutText(matRoi, $"{normalExposureTemp}s", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                         }
 
                         if (_multipleBrightness)
                         {
-                            CvInvoke.PutText(matRoi, brightness.ToString(), new Point(matRoi.Width / 3, 35), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteByte, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                            CvInvoke.PutText(matRoi, brightness.ToString(), new Point(matRoi.Width / 3, 35), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                             if (brightness < 255 &&
                                 (_multipleBrightnessExcludeFrom == CalibrateExposureFinderMultipleBrightnessExcludeFrom.None ||
                                  _multipleBrightnessExcludeFrom == CalibrateExposureFinderMultipleBrightnessExcludeFrom.Bottom && !isBottomLayer ||

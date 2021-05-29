@@ -255,7 +255,7 @@ namespace UVtools.Core.Operations
                                 CvInvoke.DrawContours(image,
                                     vec,
                                     -1,
-                                    EmguExtensions.WhiteByte,
+                                    EmguExtensions.WhiteColor,
                                     -1);
                             }
                         }

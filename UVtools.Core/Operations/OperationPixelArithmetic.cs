@@ -295,13 +295,13 @@ namespace UVtools.Core.Operations
                 case PixelArithmeticOperators.KeepRegion:
                 {
                     using var targetClone = target.Clone();
-                    original.SetTo(EmguExtensions.BlackByte);
-                    mat.SetTo(EmguExtensions.BlackByte);
+                    original.SetTo(EmguExtensions.BlackColor);
+                    mat.SetTo(EmguExtensions.BlackColor);
                     targetClone.CopyTo(target);
                     break;
                 }
                 case PixelArithmeticOperators.DiscardRegion:
-                    target.SetTo(EmguExtensions.BlackByte);
+                    target.SetTo(EmguExtensions.BlackColor);
                     break;
                 default:
                     throw new NotImplementedException();

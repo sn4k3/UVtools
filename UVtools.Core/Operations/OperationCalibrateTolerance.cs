@@ -523,16 +523,16 @@ namespace UVtools.Core.Operations
                     case Shapes.Circle:
                         currentX += (int) FemaleDiameterXPixels / 2;
                         currentY += (int) FemaleDiameterXPixels / 2;
-                        CvInvoke.Circle(layer, new Point(currentX, currentY), (int) (FemaleDiameterXPixels / 2), EmguExtensions.WhiteByte, -1, lineType);
-                        CvInvoke.Circle(layer, new Point(currentX, currentY), (int) (FemaleHoleDiameterXPixels / 2), EmguExtensions.BlackByte, -1, lineType);
+                        CvInvoke.Circle(layer, new Point(currentX, currentY), (int) (FemaleDiameterXPixels / 2), EmguExtensions.WhiteColor, -1, lineType);
+                        CvInvoke.Circle(layer, new Point(currentX, currentY), (int) (FemaleHoleDiameterXPixels / 2), EmguExtensions.BlackColor, -1, lineType);
                         currentX += (int) FemaleDiameterXPixels / 2 + PartMargin;
                         
                         break;
                     case Shapes.Square:
                         int offsetX = (int) ((FemaleDiameterXPixels - FemaleHoleDiameterXPixels) / 2);
                         int offsetY = (int) ((FemaleDiameterYPixels - FemaleHoleDiameterYPixels) / 2);
-                        CvInvoke.Rectangle(layer, new Rectangle(currentX, currentY, (int) FemaleDiameterXPixels, (int) FemaleDiameterXPixels), EmguExtensions.WhiteByte, -1, lineType);
-                        CvInvoke.Rectangle(layer, new Rectangle(currentX + offsetX, currentY + offsetY, (int) FemaleHoleDiameterXPixels, (int) FemaleHoleDiameterYPixels), EmguExtensions.BlackByte, -1, lineType);
+                        CvInvoke.Rectangle(layer, new Rectangle(currentX, currentY, (int) FemaleDiameterXPixels, (int) FemaleDiameterXPixels), EmguExtensions.WhiteColor, -1, lineType);
+                        CvInvoke.Rectangle(layer, new Rectangle(currentX + offsetX, currentY + offsetY, (int) FemaleHoleDiameterXPixels, (int) FemaleHoleDiameterYPixels), EmguExtensions.BlackColor, -1, lineType);
                         currentX += (int)FemaleDiameterXPixels + PartMargin;
                         currentY = startY + (int) FemaleDiameterYPixels / 2;
                         break;
@@ -567,18 +567,18 @@ namespace UVtools.Core.Operations
                     switch (Shape)
                     {
                         case Shapes.Circle:
-                            CvInvoke.Circle(layer, new Point(currentX + halfDiameterX, currentY + halfDiameterY), (int)(FemaleDiameterXPixels / 2), EmguExtensions.WhiteByte, -1, lineType);
-                            CvInvoke.Circle(layer, new Point(currentX + halfDiameterX, currentY + halfDiameterY), (int)(FemaleHoleDiameterXPixels / 2), EmguExtensions.BlackByte, -1, lineType);
-                            CvInvoke.Circle(layer, new Point(currentX + halfDiameterX, currentY + halfDiameterY), xPixels / 2, EmguExtensions.WhiteByte, -1, lineType);
+                            CvInvoke.Circle(layer, new Point(currentX + halfDiameterX, currentY + halfDiameterY), (int)(FemaleDiameterXPixels / 2), EmguExtensions.WhiteColor, -1, lineType);
+                            CvInvoke.Circle(layer, new Point(currentX + halfDiameterX, currentY + halfDiameterY), (int)(FemaleHoleDiameterXPixels / 2), EmguExtensions.BlackColor, -1, lineType);
+                            CvInvoke.Circle(layer, new Point(currentX + halfDiameterX, currentY + halfDiameterY), xPixels / 2, EmguExtensions.WhiteColor, -1, lineType);
                             break;
                         case Shapes.Square:
                             int offsetX = (int)((FemaleDiameterXPixels - FemaleHoleDiameterXPixels) / 2);
                             int offsetY = (int)((FemaleDiameterYPixels - FemaleHoleDiameterYPixels) / 2);
-                            CvInvoke.Rectangle(layer, new Rectangle(currentX, currentY, (int)FemaleDiameterXPixels, (int)FemaleDiameterXPixels), EmguExtensions.WhiteByte, -1, lineType);
-                            CvInvoke.Rectangle(layer, new Rectangle(currentX + offsetX, currentY + offsetY, (int)FemaleHoleDiameterXPixels, (int)FemaleHoleDiameterYPixels), EmguExtensions.BlackByte, -1, lineType);
+                            CvInvoke.Rectangle(layer, new Rectangle(currentX, currentY, (int)FemaleDiameterXPixels, (int)FemaleDiameterXPixels), EmguExtensions.WhiteColor, -1, lineType);
+                            CvInvoke.Rectangle(layer, new Rectangle(currentX + offsetX, currentY + offsetY, (int)FemaleHoleDiameterXPixels, (int)FemaleHoleDiameterYPixels), EmguExtensions.BlackColor, -1, lineType);
                             offsetX = (int)((FemaleDiameterXPixels - xPixels) / 2);
                             offsetY = (int)((FemaleDiameterYPixels - yPixels) / 2);
-                            CvInvoke.Rectangle(layer, new Rectangle(currentX + offsetX, currentY + offsetY, xPixels, yPixels), EmguExtensions.WhiteByte, -1, lineType);
+                            CvInvoke.Rectangle(layer, new Rectangle(currentX + offsetX, currentY + offsetY, xPixels, yPixels), EmguExtensions.WhiteColor, -1, lineType);
                             break;
                     }
 
@@ -604,10 +604,10 @@ namespace UVtools.Core.Operations
                     switch (Shape)
                     {
                         case Shapes.Circle:
-                            CvInvoke.Circle(layer, new Point(currentX + halfDiameterX, currentY + halfDiameterY), halfDiameterX, EmguExtensions.WhiteByte, -1, lineType);
+                            CvInvoke.Circle(layer, new Point(currentX + halfDiameterX, currentY + halfDiameterY), halfDiameterX, EmguExtensions.WhiteColor, -1, lineType);
                             break;
                         case Shapes.Square:
-                            CvInvoke.Rectangle(layer, new Rectangle(currentX, currentY, xPixels, yPixels), EmguExtensions.WhiteByte, -1, lineType);
+                            CvInvoke.Rectangle(layer, new Rectangle(currentX, currentY, xPixels, yPixels), EmguExtensions.WhiteColor, -1, lineType);
                             break;
                     }
 
@@ -680,7 +680,7 @@ namespace UVtools.Core.Operations
             {
                 foreach (var keyValuePair in pointTextList)
                 {
-                    CvInvoke.PutText(layers[layerIndex], keyValuePair.Value, keyValuePair.Key, fontFace, fontScale, EmguExtensions.BlackByte, fontThickness, lineType);
+                    CvInvoke.PutText(layers[layerIndex], keyValuePair.Value, keyValuePair.Key, fontFace, fontScale, EmguExtensions.BlackColor, fontThickness, lineType);
                 }
             });
 
@@ -705,8 +705,8 @@ namespace UVtools.Core.Operations
             CvInvoke.Line(thumbnail, new Point(xSpacing, ySpacing + 5), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.PutText(thumbnail, "Tolerance Cal.", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
-            CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
-            CvInvoke.PutText(thumbnail, $"Objects: {OutputObjects}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
+            CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
+            CvInvoke.PutText(thumbnail, $"Objects: {OutputObjects}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
 
             /*thumbnail.SetTo(EmguExtensions.Black3Byte);
                 

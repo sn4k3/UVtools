@@ -489,11 +489,11 @@ namespace UVtools.Core.Operations
             
             maxY += ellipseHeight;
             using Mat shape = EmguExtensions.InitMat(new Size(maxX + startX, maxY + startY));
-            CvInvoke.FillPoly(shape, new VectorOfPoint(pointList.ToArray()), EmguExtensions.WhiteByte, lineType);
-            CvInvoke.Circle(shape, new Point(0, 0), length / 4, EmguExtensions.BlackByte, -1, lineType);
+            CvInvoke.FillPoly(shape, new VectorOfPoint(pointList.ToArray()), EmguExtensions.WhiteColor, lineType);
+            CvInvoke.Circle(shape, new Point(0, 0), length / 4, EmguExtensions.BlackColor, -1, lineType);
             CvInvoke.Ellipse(shape, new Point(maxX / 2, maxY - ellipseHeight), new Size(maxX / 3, ellipseHeight), 0, 0, 360,
-                EmguExtensions.WhiteByte, -1, lineType);
-            CvInvoke.Circle(shape, new Point(length / 2, (int) (maxY - 100 * _partScale)), length / 5, EmguExtensions.BlackByte, -1, lineType);
+                EmguExtensions.WhiteColor, -1, lineType);
+            CvInvoke.Circle(shape, new Point(length / 2, (int) (maxY - 100 * _partScale)), length / 5, EmguExtensions.BlackColor, -1, lineType);
 
             int currentX = 0;
             int currentY = 0;
@@ -510,7 +510,7 @@ namespace UVtools.Core.Operations
 
             void addText(Mat mat, ushort number, params string[] text)
             {
-                var color = _extrudeText ? EmguExtensions.WhiteByte : EmguExtensions.BlackByte;
+                var color = _extrudeText ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor;
                 CvInvoke.PutText(mat, number.ToString(), new Point((int) (100 * _partScale), (int) (55 * _partScale)), font, 1.5 * (double) _partScale, color, (int) (4 * _partScale), lineType);
                 CvInvoke.PutText(mat, "UVtools EP", new Point(fontStartX, fontStartY), font, 0.8 * (double) _partScale, color, (int) (2 * _partScale), lineType);
                 CvInvoke.PutText(mat, $"{Microns}um", new Point(fontStartX, fontStartY + fontMargin), font, fontScale, color, fontThickness, lineType);
@@ -679,8 +679,8 @@ namespace UVtools.Core.Operations
             CvInvoke.Line(thumbnail, new Point(xSpacing, ySpacing + 5), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.PutText(thumbnail, "Elephant Foot Cal.", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
-            CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
-            CvInvoke.PutText(thumbnail, $"{ObjectCount} Objects", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
+            CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
+            CvInvoke.PutText(thumbnail, $"{ObjectCount} Objects", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
 
             /*thumbnail.SetTo(EmguExtensions.Black3Byte);
                 

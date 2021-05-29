@@ -200,16 +200,45 @@
                    VerticalAlignment="Center"
                    Text="px"/>
 
-          <CheckBox Grid.Row="12" Grid.Column="2" Grid.ColumnSpan="2"
-                    Content="Hollow model"
-                    IsChecked="{Binding Operation.HollowModel}"/>
+          <TextBlock Grid.Row="12" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Drain hole diameter:">
+              <TextBlock.IsEnabled>
+                  <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                      <Binding Path="Operation.HollowModel"/>
+                      <Binding Path="Operation.CenterHoleRelief"/>
+                  </MultiBinding>
+              </TextBlock.IsEnabled>
+          </TextBlock>
+          <NumericUpDown Grid.Row="12" Grid.Column="2"
+                         Increment="0.5"
+                         Minimum="0"
+                         Maximum="100"
+                         FormatString="F2"
+                         Value="{Binding Operation.DrainHoleArea}">
+            <NumericUpDown.IsEnabled>
+              <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                <Binding Path="Operation.HollowModel"/>
+                <Binding Path="Operation.CenterHoleRelief"/>
+              </MultiBinding>
+            </NumericUpDown.IsEnabled>
+          </NumericUpDown>
+          <TextBlock Grid.Row="12" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     Text="mm³">
+              <TextBlock.IsEnabled>
+                  <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                      <Binding Path="Operation.HollowModel"/>
+                      <Binding Path="Operation.CenterHoleRelief"/>
+                  </MultiBinding>
+              </TextBlock.IsEnabled>
+          </TextBlock>
 
           <TextBlock Grid.Row="12" Grid.Column="6" Grid.ColumnSpan="3"
                     Text="Wall thickness:"
                     VerticalAlignment="Center"
                     IsEnabled="{Binding Operation.HollowModel}"/>
           <NumericUpDown Grid.Row="12" Grid.Column="8"
-                         
                          Increment="0.5"
                          Minimum="0"
                          Maximum="100"
@@ -221,16 +250,21 @@
                      IsEnabled="{Binding Operation.HollowModel}"
                      Text="mm"/>
 
-          <CheckBox Grid.Row="14" Grid.Column="2" Grid.ColumnSpan="4"
-                    VerticalAlignment="Center"
-                    IsChecked="{Binding Operation.CenterHoleRelief}"
-                    Content="Relief with a center hole"/>
-
-          <CheckBox Grid.Row="14" Grid.Column="8"
-                    Grid.ColumnSpan="3"
+          <CheckBox Grid.Row="14" Grid.Column="0"
+                    Grid.ColumnSpan="2"
                     ToolTip.Tip="Most of the printers requires a mirror output to print with the correct orientation"
                     IsChecked="{Binding Operation.MirrorOutput}"
                     Content="Mirror output" />
+
+          <CheckBox Grid.Row="14" Grid.Column="2" Grid.ColumnSpan="4"
+                    VerticalAlignment="Center"
+                    IsChecked="{Binding Operation.CenterHoleRelief}"
+                    Content="Relief base with a center hole"/>
+
+
+          <CheckBox Grid.Row="14" Grid.Column="8" Grid.ColumnSpan="3"
+                    Content="Hollow model"
+                    IsChecked="{Binding Operation.HollowModel}"/>
 
           <TextBlock Grid.Row="16" Grid.Column="0"
                      VerticalAlignment="Center"

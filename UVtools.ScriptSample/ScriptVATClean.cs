@@ -91,7 +91,7 @@ namespace UVtools.ScriptSample
             CvInvoke.Rectangle(mat, new Rectangle(
                 new Point(InputInset.Value, InputInset.Value),
                 new Size((int) (SlicerFile.ResolutionX - InputInset.Value*2)-1, (int) (SlicerFile.ResolutionY - InputInset.Value*2)-1)
-                ), EmguExtensions.WhiteByte, -1, LineType.FourConnected);
+                ), EmguExtensions.WhiteColor, -1, LineType.FourConnected);
             layer.LayerMat = mat;
 
             SlicerFile.SuppressRebuildPropertiesWork(() =>
@@ -132,8 +132,8 @@ namespace UVtools.ScriptSample
             CvInvoke.Line(thumbnail, new Point(xSpacing, ySpacing + 5), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.PutText(thumbnail, "VAT Clean Utility", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
-            CvInvoke.PutText(thumbnail, $"Exposure time: {SlicerFile.ExposureTime}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
-            CvInvoke.PutText(thumbnail, $"Use the spatula in!", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
+            CvInvoke.PutText(thumbnail, $"Exposure time: {SlicerFile.ExposureTime}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
+            CvInvoke.PutText(thumbnail, $"Use the spatula in!", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
 
             return thumbnail;
         }

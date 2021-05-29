@@ -351,6 +351,14 @@ namespace UVtools.WPF
             },
             new()
             {
+                Tag = new OperationLayerExportSkeleton(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/file-image-16x16.png"))
+                }
+            },
+            new()
+            {
                 Tag = new OperationLayerExportHeatMap(),
                 Icon = new Avalonia.Controls.Image
                 {

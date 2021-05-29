@@ -74,6 +74,8 @@ namespace UVtools.WPF
         private bool _showLayerOutlineLayerBoundary;
         private bool _showLayerOutlineHollowAreas;
         private bool _showLayerOutlineEdgeDetection;
+        private bool _showLayerOutlineSkeletonize;
+
 
         private bool _isTooltipOverlayVisible;
         private string _tooltipOverlayText;
@@ -375,6 +377,16 @@ namespace UVtools.WPF
             set
             {
                 if (!RaiseAndSetIfChanged(ref _showLayerOutlineEdgeDetection, value)) return;
+                ShowLayer();
+            }
+        }
+
+        public bool ShowLayerOutlineSkeletonize
+        {
+            get => _showLayerOutlineSkeletonize;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _showLayerOutlineSkeletonize, value)) return;
                 ShowLayer();
             }
         }
@@ -693,7 +705,12 @@ namespace UVtools.WPF
                 {
                     using var canny = new Mat();
                     CvInvoke.Canny(LayerCache.Image, canny, 80, 40, 3, true);
-                    CvInvoke.CvtColor(canny, LayerCache.ImageBgr, ColorConversion.Gray2Bgra);
+                    CvInvoke.CvtColor(canny, LayerCache.ImageBgr, ColorConversion.Gray2Bgr);
+                }
+                else if (_showLayerOutlineSkeletonize)
+                {
+                    using var skeletonize = LayerCache.Image.Skeletonize();
+                    CvInvoke.CvtColor(skeletonize, LayerCache.ImageBgr, ColorConversion.Gray2Bgr);
                 }
                 else if (_showLayerImageDifference)
                 {
@@ -1000,9 +1017,14 @@ namespace UVtools.WPF
                                 ? Settings.PixelEditor.RemovePixelHighlightColor
                                 : Settings.PixelEditor.RemovePixelColor);
 
-                        CvInvoke.PutText(LayerCache.ImageBgr, operationText.Text, operationText.Location,
+
+
+                        /*CvInvoke.PutText(LayerCache.ImageBgr, operationText.Text, operationText.Location,
                             operationText.Font, operationText.FontScale, new MCvScalar(color.B, color.G, color.R),
-                            operationText.Thickness, operationText.LineType, operationText.Mirror);
+                            operationText.Thickness, operationText.LineType, operationText.Mirror);*/
+                        LayerCache.ImageBgr.PutTextRotated(operationText.Text, operationText.Location,
+                        operationText.Font, operationText.FontScale, new MCvScalar(color.B, color.G, color.R),
+                        operationText.Thickness, operationText.LineType, operationText.Mirror, operationText.Angle);
                     }
                     else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
                     {
@@ -1876,12 +1898,17 @@ namespace UVtools.WPF
 
                     int baseLine = 0;
                     var size = CvInvoke.GetTextSize(text, DrawingPixelText.Font, DrawingPixelText.FontScale, DrawingPixelText.Thickness, ref baseLine);
-                    cursor = EmguExtensions.InitMat(new Size(size.Width * 2, size.Height * 2), 4);
+                    //var rotatedSize = size.Rotate(DrawingPixelText.Angle);
+                    //Point point = (rotatedSize.Inflate(rotatedSize)).Rotate(DrawingPixelText.Angle, rotatedSize.ToPoint());
+                    cursor = EmguExtensions.InitMat(size.Inflate(), 4);
                     //CvInvoke.Rectangle(cursor, new Rectangle(Point.Empty, size), _pixelEditorCursorColor, -1, DrawingPixelText.LineType);
                     //_pixelEditorCursorColor.V3 = 255;
                     //CvInvoke.Rectangle(cursor, new Rectangle(new Point(size.Width, 0), size), _pixelEditorCursorColor, 1, DrawingPixelText.LineType);
                     
-                    CvInvoke.PutText(cursor, text, new Point(size.Width, size.Height), DrawingPixelText.Font, DrawingPixelText.FontScale, _pixelEditorCursorColor, DrawingPixelText.Thickness, DrawingPixelText.LineType, DrawingPixelText.Mirror);
+                    CvInvoke.PutText(cursor, text, size.ToPoint(), DrawingPixelText.Font, DrawingPixelText.FontScale, _pixelEditorCursorColor, DrawingPixelText.Thickness, DrawingPixelText.LineType, DrawingPixelText.Mirror);
+                    cursor.RotateAdjustBounds(DrawingPixelText.Angle);
+                    //cursor.Rotate(DrawingPixelText.Angle);
+                    //cursor.PutTextRotated(text, cursor.Size.ToPoint().Half(), DrawingPixelText.Font, DrawingPixelText.FontScale, _pixelEditorCursorColor, DrawingPixelText.Thickness, DrawingPixelText.LineType, DrawingPixelText.Mirror, DrawingPixelText.Angle);
                     if (_showLayerImageFlipped)
                     {
                         var flipType = FlipType.None;

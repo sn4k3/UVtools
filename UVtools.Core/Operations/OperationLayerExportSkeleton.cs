@@ -7,17 +7,15 @@
  */
 
 using System;
-using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
-using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations
 {
     [Serializable]
-    public sealed class OperationLayerExportHeatMap : Operation
+    public sealed class OperationLayerExportSkeleton : Operation
     {
         #region Members
         private string _filePath;
@@ -28,31 +26,18 @@ namespace UVtools.Core.Operations
         #region Overrides
 
         public override bool CanHaveProfiles => false;
-        public override string Title => "Export layers to heat map";
+        public override string Title => "Export layers to skeleton";
 
         public override string Description =>
-            "Export a layer range to a grayscale heat map image that represents the median of the mass in the Z depth/perception.\n" +
-            "The pixel brightness/intensity shows where the most mass are concentrated.";
+            "Export a layer range to a skeletonized image that is the sum of each layer skeleton.";
 
         public override string ConfirmationText =>
-            $"generate a heatmap from layers {LayerIndexStart} through {LayerIndexEnd}?";
+            $"skeletonize from layers {LayerIndexStart} through {LayerIndexEnd}?";
 
         public override string ProgressTitle =>
-            $"Generating a heatmap from layers {LayerIndexStart} through {LayerIndexEnd}";
+            $"Skeletonizing from layers {LayerIndexStart} through {LayerIndexEnd}";
 
-        public override string ProgressAction => "Packed layers";
-
-        public override string ValidateInternally()
-        {
-            var sb = new StringBuilder();
-
-            if (LayerRangeCount < 2)
-            {
-                sb.AppendLine("To generate a heat map at least two layers are required.");
-            }
-
-            return sb.ToString();
-        }
+        public override string ProgressAction => "Skeletonized layers";
 
         public override string ToString()
         {
@@ -82,12 +67,12 @@ namespace UVtools.Core.Operations
 
         #region Constructor
 
-        public OperationLayerExportHeatMap()
+        public OperationLayerExportSkeleton()
         { }
 
-        public OperationLayerExportHeatMap(FileFormat slicerFile) : base(slicerFile)
+        public OperationLayerExportSkeleton(FileFormat slicerFile) : base(slicerFile)
         {
-            _filePath = SlicerFile.FileFullPath + ".heatmap.png";
+            _filePath = SlicerFile.FileFullPath + ".skeleton.png";
         }
 
         #endregion
@@ -96,9 +81,9 @@ namespace UVtools.Core.Operations
 
         protected override bool ExecuteInternally(OperationProgress progress)
         {
-            using var sumMat32 = EmguExtensions.InitMat(SlicerFile.Resolution, 1, DepthType.Cv32S);
-            var sumMat32Roi = GetRoiOrDefault(sumMat32);
-            using var mask = GetMask(sumMat32);
+            using var skeletonSum = EmguExtensions.InitMat(SlicerFile.Resolution);
+            var skeletonSumRoi = GetRoiOrDefault(skeletonSum);
+            using var mask = GetMask(skeletonSum);
             
 
             Parallel.For(LayerIndexStart, LayerIndexEnd+1, layerIndex =>
@@ -106,29 +91,24 @@ namespace UVtools.Core.Operations
                 if (progress.Token.IsCancellationRequested) return;
 
                 using var mat = SlicerFile[layerIndex].LayerMat;
-                using var mat32 = new Mat();
-                mat.ConvertTo(mat32, DepthType.Cv32S);
-                var mat32Roi = GetRoiOrDefault(mat32);
-
+                var matRoi = GetRoiOrDefault(mat);
+                using var skeletonRoi = matRoi.Skeletonize();
                 lock (progress.Mutex)
                 {
-                    CvInvoke.Add(sumMat32Roi, mat32Roi, sumMat32Roi, mask);
+                    CvInvoke.Add(skeletonSumRoi, skeletonRoi, skeletonSumRoi, mask);
                     progress++;
                 }
             });
 
             if (!progress.Token.IsCancellationRequested)
             {
-                using var sumMat = EmguExtensions.InitMat(sumMat32.Size);
-                sumMat32.ConvertTo(sumMat, DepthType.Cv8U, 1.0 / LayerRangeCount);
                 if (_cropByRoi && HaveROI)
                 {
-                    var sumMatRoi = GetRoiOrDefault(sumMat);
-                    sumMatRoi.Save(_filePath);
+                    skeletonSumRoi.Save(_filePath);
                 }
                 else
                 {
-                    sumMat.Save(_filePath);
+                    skeletonSum.Save(_filePath);
                 }
             }
 
@@ -139,14 +119,14 @@ namespace UVtools.Core.Operations
 
         #region Equality
 
-        private bool Equals(OperationLayerExportHeatMap other)
+        private bool Equals(OperationLayerExportSkeleton other)
         {
             return _filePath == other._filePath && _cropByRoi == other._cropByRoi;
         }
 
         public override bool Equals(object obj)
         {
-            return ReferenceEquals(this, obj) || obj is OperationLayerExportHeatMap other && Equals(other);
+            return ReferenceEquals(this, obj) || obj is OperationLayerExportSkeleton other && Equals(other);
         }
 
         public override int GetHashCode()

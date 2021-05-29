@@ -19,6 +19,7 @@ namespace UVtools.Core.PixelEditor
         private ushort _thickness = 1;
         private string _text;
         private bool _mirror;
+        private double _angle;
         private byte _removePixelBrightness;
         public override PixelOperationType OperationType => PixelOperationType.Text;
 
@@ -54,6 +55,12 @@ namespace UVtools.Core.PixelEditor
             set => RaiseAndSetIfChanged(ref _mirror, value);
         }
 
+        public double Angle
+        {
+            get => _angle;
+            set => RaiseAndSetIfChanged(ref _angle, value);
+        }
+
         public byte RemovePixelBrightness
         {
             get => _removePixelBrightness;
@@ -74,13 +81,14 @@ namespace UVtools.Core.PixelEditor
 
         public PixelText(){}
 
-        public PixelText(uint layerIndex, Point location, LineType lineType, FontFace font, double fontScale, ushort thickness, string text, bool mirror, byte removePixelBrightness, byte pixelBrightness, bool isAdd) : base(layerIndex, location, lineType, pixelBrightness)
+        public PixelText(uint layerIndex, Point location, LineType lineType, FontFace font, double fontScale, ushort thickness, string text, bool mirror, double angle, byte removePixelBrightness, byte pixelBrightness, bool isAdd) : base(layerIndex, location, lineType, pixelBrightness)
         {
             _font = font;
             _fontScale = fontScale;
             _thickness = thickness;
             _text = text;
             _mirror = mirror;
+            _angle = angle;
             IsAdd = isAdd;
             _removePixelBrightness = removePixelBrightness;
 

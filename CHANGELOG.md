@@ -1,5 +1,12 @@
 # Changelog
 
+## 29/05/2021 - v2.13.1
+
+- (Add) Layer preview - Outline: Skeletonize
+- (Add) Actions - Export layers to skeleton: Export a layer range to a skeletonized image that is the sum of each layer skeleton
+- (Add) Pixel editor - Text: Allow to rotate text placement by any angle (#206)
+- (Add) Calibrate - XYZ Accuracy: Drain hole diameter (#205)
+
 ## 23/05/2021 - v2.13.0
 
 - (Add) Tool - Light bleed compensation: Compensate the over-curing and light bleed from clear resins by dimming the sequential pixels

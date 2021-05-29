@@ -62,7 +62,7 @@ namespace UVtools.WPF.Controls.Calibrators
                     {
                         _timer.Stop();
                         _timer.Start();
-                        if (e.PropertyName == nameof(Operation.ScaleXFactor) || e.PropertyName == nameof(Operation.ScaleYFactor))
+                        if (e.PropertyName is nameof(Operation.ScaleXFactor) or nameof(Operation.ScaleYFactor))
                         {
                             RaisePropertyChanged(nameof(IsProfileAddEnabled));
                             return;

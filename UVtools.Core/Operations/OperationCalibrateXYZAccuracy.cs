@@ -49,6 +49,7 @@ namespace UVtools.Core.Operations
         private bool _outputBLObject;
         private bool _outputBCObject;
         private bool _outputBRObject;
+        private decimal _drainHoleArea = 3;
 
         #endregion
 
@@ -251,6 +252,12 @@ namespace UVtools.Core.Operations
         public uint YPixels => (uint)Math.Floor(YSize * Yppmm);
 
         public uint LayerCount => (uint) Math.Floor(ZSize / LayerHeight);
+
+        public decimal DrainHoleArea
+        {
+            get => _drainHoleArea;
+            set => RaiseAndSetIfChanged(ref _drainHoleArea, value);
+        }
 
         public bool CenterHoleRelief
         {
@@ -602,7 +609,7 @@ namespace UVtools.Core.Operations
 
         public Mat[] GetLayers()
         {
-            var layers = new Mat[2];
+            var layers = new Mat[3];
             for (byte i = 0; i < layers.Length; i++)
             {
                 layers[i] = EmguExtensions.InitMat(SlicerFile.Resolution);
@@ -620,6 +627,9 @@ namespace UVtools.Core.Operations
             const double fontScale = 1.3;
             const byte fontThickness = 3;
 
+            var xPixels = XPixels;
+            var yPixels = YPixels;
+
             for (int y = 0; y < 3; y++)
             {
                 switch (y)
@@ -629,11 +639,11 @@ namespace UVtools.Core.Operations
                         positionYStr = "T";
                         break;
                     case 1:
-                        currentY = (int)(SlicerFile.Resolution.Height / 2 - YPixels / 2);
+                        currentY = (int)(SlicerFile.Resolution.Height / 2 - yPixels / 2);
                         positionYStr = "M";
                         break;
                     case 2:
-                        currentY = (int)(SlicerFile.Resolution.Height - YPixels - _topBottomMargin);
+                        currentY = (int)(SlicerFile.Resolution.Height - yPixels - _topBottomMargin);
                         positionYStr = "B";
                         break;
                 }
@@ -646,11 +656,11 @@ namespace UVtools.Core.Operations
                             positionStr = $"{positionYStr}L";
                             break;
                         case 1:
-                            currentX = (int)(SlicerFile.Resolution.Width / 2 - XPixels / 2);
+                            currentX = (int)(SlicerFile.Resolution.Width / 2 - xPixels / 2);
                             positionStr = $"{positionYStr}C";
                             break;
                         case 2:
-                            currentX = (int)(SlicerFile.Resolution.Width - XPixels - _leftRightMargin);
+                            currentX = (int)(SlicerFile.Resolution.Width - xPixels - _leftRightMargin);
                             positionStr = $"{positionYStr}R";
                             break;
                     }
@@ -669,31 +679,39 @@ namespace UVtools.Core.Operations
                         if(y == 2 && x == 2 && !_outputBRObject) continue;
                         var layer = layers[i];
                         CvInvoke.Rectangle(layer, 
-                            new Rectangle(currentX, currentY, (int) XPixels, (int) YPixels), 
-                            EmguExtensions.WhiteByte, -1);
+                            new Rectangle(currentX, currentY, (int)xPixels, (int) yPixels), 
+                            EmguExtensions.WhiteColor, -1);
                         
                         CvInvoke.PutText(layer, positionStr, 
                             new Point(currentX + fontStartX, currentY + fontStartY), fontFace, fontScale, 
-                            EmguExtensions.BlackByte, fontThickness);
+                            EmguExtensions.BlackColor, fontThickness);
 
                         CvInvoke.PutText(layer, $"{XSize},{YSize},{ZSize}",
-                            new Point(currentX + fontStartX, (int) (currentY + YPixels - fontStartY + 25)), fontFace, fontScale,
-                            EmguExtensions.BlackByte, fontThickness);
+                            new Point(currentX + fontStartX, (int) (currentY + yPixels - fontStartY + 25)), fontFace, fontScale,
+                            EmguExtensions.BlackColor, fontThickness);
 
                         if (CenterHoleRelief)
                         {
                             CvInvoke.Circle(layer,
-                                new Point((int) (currentX + XPixels / 2), (int) (currentY + YPixels / 2)),
-                                (int) (Math.Min(XPixels, YPixels) / 4),
-                                EmguExtensions.Black3Byte, -1);
+                                new Point((int) (currentX + xPixels / 2), (int) (currentY + yPixels / 2)),
+                                (int) (Math.Min(xPixels, yPixels) / 4),
+                                EmguExtensions.BlackColor, -1);
                         }
 
-                        if (_hollowModel && i != 0 && _wallThickness > 0)
+                        if (_hollowModel && i > 0 && _wallThickness > 0)
                         {
-                            Size rectSize = new((int) (XPixels - WallThicknessXPixels * 2), (int) (YPixels - WallThicknessYPixels * 2));
+                            Size rectSize = new((int) (xPixels - WallThicknessXPixels * 2), (int) (yPixels - WallThicknessYPixels * 2));
                             Point rectLocation = new((int) (currentX + WallThicknessXPixels), (int) (currentY + WallThicknessYPixels));
                             CvInvoke.Rectangle(layers[i], new Rectangle(rectLocation, rectSize),
-                                EmguExtensions.Black3Byte, -1);
+                                EmguExtensions.BlackColor, -1);
+                        }
+
+                        if (i == 2 && _drainHoleArea > 0)
+                        {
+                            Size rectSize = new((int)xPixels, (int)(Yppmm * _drainHoleArea));
+                            Point rectLocation = new(currentX, (int)(currentY + xPixels / 2 - rectSize.Height / 2));
+                            CvInvoke.Rectangle(layers[i], new Rectangle(rectLocation, rectSize),
+                                EmguExtensions.BlackColor, -1);
                         }
                     }
                 }
@@ -720,8 +738,8 @@ namespace UVtools.Core.Operations
             CvInvoke.Line(thumbnail, new Point(xSpacing, ySpacing + 5), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.PutText(thumbnail, "XYZ Accuracy Cal.", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
-            CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
-            CvInvoke.PutText(thumbnail, $"{XSize} x {YSize} x {ZSize} mm", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
+            CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
+            CvInvoke.PutText(thumbnail, $"{XSize} x {YSize} x {ZSize} mm", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
 
             /*thumbnail.SetTo(EmguExtensions.Black3Byte);
                 
@@ -752,10 +770,18 @@ namespace UVtools.Core.Operations
             {
                 IsModified = true
             };
+            var ventLayer = new Layer(0, layers[2], SlicerFile.LayerManager)
+            {
+                IsModified = true
+            };
+
 
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                newLayers[layerIndex] = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, bottomLayer.Clone(), layer.Clone());
+                newLayers[layerIndex] = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, bottomLayer.Clone(),
+                    (_hollowModel || _centerHoleRelief) && _drainHoleArea > 0 && layerIndex <= _bottomLayers + (int)Math.Floor(_drainHoleArea / _layerHeight)
+                        ? ventLayer.Clone() : layer.Clone());
+
                 progress++;
             }
 

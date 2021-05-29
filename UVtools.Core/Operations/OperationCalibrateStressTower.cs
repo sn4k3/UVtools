@@ -341,7 +341,7 @@ namespace UVtools.Core.Operations
             Parallel.For(0, baseLayers, layerIndex =>
             {
                 int chamferOffset = (int) Math.Max(0, _chamferLayers - layerIndex);
-                CvInvoke.Circle(layers[layerIndex], center, (int) baseRadius - chamferOffset, EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                CvInvoke.Circle(layers[layerIndex], center, (int) baseRadius - chamferOffset, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
             });
 
 
@@ -363,11 +363,11 @@ namespace UVtools.Core.Operations
 
                     for (uint spiralLayerIndex = (uint) layerIndex; spiralLayerIndex < maxLayer; spiralLayerIndex++)
                     {
-                        CvInvoke.Circle(layers[spiralLayerIndex], locationCW, (int)spiralRadius, EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                        CvInvoke.Circle(layers[spiralLayerIndex], locationCW, (int)spiralRadius, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                         if (_spiralDirection == SpiralDirections.Both)
                         {
                             spiralAngle = -spiralAngle;
-                            CvInvoke.Circle(layers[spiralLayerIndex], locationCCW, (int)spiralRadius, EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                            CvInvoke.Circle(layers[spiralLayerIndex], locationCCW, (int)spiralRadius, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                         }
                     }
                 }
@@ -378,7 +378,7 @@ namespace UVtools.Core.Operations
             Parallel.For(0, ceilLayers, i =>
             {
                 uint layerIndex = (uint)(currrentlayer + i);
-                CvInvoke.Circle(layers[layerIndex], center, (int)baseRadius, EmguExtensions.WhiteByte, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                CvInvoke.Circle(layers[layerIndex], center, (int)baseRadius, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
             });
 
 
@@ -404,8 +404,8 @@ namespace UVtools.Core.Operations
             CvInvoke.Line(thumbnail, new Point(xSpacing, ySpacing + 5), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.PutText(thumbnail, "Stress Tower", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
-            CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
-            CvInvoke.PutText(thumbnail, $"{_spirals} Spirals @ {_spiralAngleStepPerLayer}deg", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
+            CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
+            CvInvoke.PutText(thumbnail, $"{_spirals} Spirals @ {_spiralAngleStepPerLayer}deg", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
             return thumbnail;
         }
 

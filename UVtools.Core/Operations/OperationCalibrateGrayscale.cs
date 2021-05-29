@@ -362,7 +362,7 @@ namespace UVtools.Core.Operations
             int innerRadius = Math.Max(100, radius - _innerMargin);
             double topLineLength = 0;
 
-            CvInvoke.Circle(layers[0], center, radius, EmguExtensions.WhiteByte, -1, LineType.AntiAlias);
+            CvInvoke.Circle(layers[0], center, radius, EmguExtensions.WhiteColor, -1, LineType.AntiAlias);
             layers[1] = layers[0].Clone();
             layers[2] = layers[0].Clone();
 
@@ -414,7 +414,7 @@ namespace UVtools.Core.Operations
                 {
                     text = $"{Math.Round(brightness * _normalExposure / byte.MaxValue, 2)}s";
                 }
-                CvInvoke.PutText(layers[2], text, fontPoint, fontFace, fontScale, EmguExtensions.BlackByte, fontThickness, lineType);
+                CvInvoke.PutText(layers[2], text, fontPoint, fontFace, fontScale, EmguExtensions.BlackColor, fontThickness, lineType);
                 rotatedAngle += AngleStep;
                 layers[2].Rotate(AngleStep);
             }
@@ -426,12 +426,12 @@ namespace UVtools.Core.Operations
                 var holeRadius = Math.Min(radius, _centerHoleDiameter) / 2;
                 if (_innerMargin > 0)
                 {
-                    CvInvoke.Circle(layers[2], center, holeRadius + _innerMargin, EmguExtensions.WhiteByte, -1, lineType);
+                    CvInvoke.Circle(layers[2], center, holeRadius + _innerMargin, EmguExtensions.WhiteColor, -1, lineType);
                 }
 
                 foreach (var layer in layers)
                 {
-                    CvInvoke.Circle(layer, center, holeRadius, EmguExtensions.BlackByte, -1, lineType);
+                    CvInvoke.Circle(layer, center, holeRadius, EmguExtensions.BlackColor, -1, lineType);
                 }
             }
 
@@ -439,11 +439,11 @@ namespace UVtools.Core.Operations
             fontThickness = 3;
             CvInvoke.PutText(layers[0], $"{Microns}um at {_bottomExposure}s/{_normalExposure}s", 
                 new Point(center.X - radius / 2, center.Y + radius / 2 +40), 
-                fontFace, fontScale, EmguExtensions.BlackByte, fontThickness, lineType, true);
+                fontFace, fontScale, EmguExtensions.BlackColor, fontThickness, lineType, true);
 
             CvInvoke.PutText(layers[0], $"{_startBrightness}-{_endBrightness} S:{_brightnessSteps}",
                 new Point(center.X - radius / 2, center.Y + radius / 2 - 40),
-                fontFace, fontScale, EmguExtensions.BlackByte, fontThickness, lineType, true);
+                fontFace, fontScale, EmguExtensions.BlackColor, fontThickness, lineType, true);
 
             if (_mirrorOutput)
             {
@@ -466,8 +466,8 @@ namespace UVtools.Core.Operations
             CvInvoke.Line(thumbnail, new Point(xSpacing, ySpacing + 5), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.PutText(thumbnail, "Grayscale Cal.", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
-            CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
-            CvInvoke.PutText(thumbnail, $"Divs:{Divisions} Angle:{AngleStep}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.White3Byte, fontThickness);
+            CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
+            CvInvoke.PutText(thumbnail, $"Divs:{Divisions} Angle:{AngleStep}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
 
             return thumbnail;
         }

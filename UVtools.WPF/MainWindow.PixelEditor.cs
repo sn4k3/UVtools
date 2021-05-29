@@ -262,7 +262,7 @@ namespace UVtools.WPF
                 {
                     var operationText = new PixelText(layerIndex, realLocation, DrawingPixelText.LineType,
                         DrawingPixelText.Font, DrawingPixelText.FontScale, DrawingPixelText.Thickness,
-                        DrawingPixelText.Text, DrawingPixelText.Mirror, DrawingPixelText.RemovePixelBrightness, DrawingPixelText.PixelBrightness, isAdd);
+                        DrawingPixelText.Text, DrawingPixelText.Mirror, DrawingPixelText.Angle, DrawingPixelText.RemovePixelBrightness, DrawingPixelText.PixelBrightness, isAdd);
 
                     //if (PixelHistory.Contains(operation)) continue;
                     //PixelHistory.Add(operation);

@@ -89,27 +89,27 @@ namespace UVtools.ScriptSample
             // Do the left eye
             x = xCenter - noseThickness/2 - faceSpacing - eyeDiameter/2;
             y = faceSpacing;
-            CvInvoke.Circle(mats[0], new Point(x, y), eyeDiameter/2, EmguExtensions.WhiteByte, -1, lineType);
-            CvInvoke.Circle(mats[1], new Point(x, y), eyeDiameter/2, EmguExtensions.WhiteByte, -1, lineType);
+            CvInvoke.Circle(mats[0], new Point(x, y), eyeDiameter/2, EmguExtensions.WhiteColor, -1, lineType);
+            CvInvoke.Circle(mats[1], new Point(x, y), eyeDiameter/2, EmguExtensions.WhiteColor, -1, lineType);
             Progress++;
 
             // Do the right eye, the mirror of left...
             x = (int)(SlicerFile.ResolutionX - x);
-            CvInvoke.Circle(mats[0], new Point(x, y), eyeDiameter / 2, EmguExtensions.WhiteByte, -1, lineType);
-            CvInvoke.Circle(mats[3], new Point(x, y), eyeDiameter / 2, EmguExtensions.WhiteByte, -1, lineType);
+            CvInvoke.Circle(mats[0], new Point(x, y), eyeDiameter / 2, EmguExtensions.WhiteColor, -1, lineType);
+            CvInvoke.Circle(mats[3], new Point(x, y), eyeDiameter / 2, EmguExtensions.WhiteColor, -1, lineType);
             Progress++;
 
             // Do the noose
             x = xCenter - noseThickness / 2;
-            CvInvoke.Rectangle(mats[0], new Rectangle(x, y, noseThickness, noseHeight), EmguExtensions.WhiteByte, -1, lineType);
-            CvInvoke.Rectangle(mats[2], new Rectangle(x, y, noseThickness, noseHeight), EmguExtensions.WhiteByte, -1, lineType);
+            CvInvoke.Rectangle(mats[0], new Rectangle(x, y, noseThickness, noseHeight), EmguExtensions.WhiteColor, -1, lineType);
+            CvInvoke.Rectangle(mats[2], new Rectangle(x, y, noseThickness, noseHeight), EmguExtensions.WhiteColor, -1, lineType);
             Progress++;
 
             // Do the mouth
             x = xCenter;
             y += noseHeight + faceSpacing;
-            CvInvoke.Ellipse(mats[0], new Point(x, y), new Size(eyeDiameter+faceSpacing+noseThickness/2, mouthHeight), 0, 0, 180, EmguExtensions.WhiteByte, -1, lineType);
-            CvInvoke.Ellipse(mats[4], new Point(x, y), new Size(eyeDiameter+faceSpacing+noseThickness/2, mouthHeight), 0, 0, 180, EmguExtensions.WhiteByte, -1, lineType);
+            CvInvoke.Ellipse(mats[0], new Point(x, y), new Size(eyeDiameter+faceSpacing+noseThickness/2, mouthHeight), 0, 0, 180, EmguExtensions.WhiteColor, -1, lineType);
+            CvInvoke.Ellipse(mats[4], new Point(x, y), new Size(eyeDiameter+faceSpacing+noseThickness/2, mouthHeight), 0, 0, 180, EmguExtensions.WhiteColor, -1, lineType);
 
             SlicerFile.LayerManager.AllocateAndSetFromMat(mats); // Replace layers and rebuild properties
 
