@@ -410,16 +410,20 @@ There are multiple ways to open your file:
 
 Are you a developer? This project include a .NET 5.0 library (UVtools.Core) that can be referenced in your application to make use of my work. Easy to use calls that allow you work with the formats. For more information navigate main code.
 
-## Windows Build from Source
-Install Visual Studio and include .NET development support
+## Develop and build from Source
 
-Install the Wix Toolset: https://wixtoolset.org/releases/ 
+The fastest way to compile the project is by run the `build/CompileWindows.bat`, however if you wish to develop with visual studio follow the following steps:
 
-   you will need both the core Wix toolset and the VS extension pack which is selected AFTER the main installation has completed (or from the main release page).
-   
-Open UVtools.sln
-
-If required update the .NET developer pack VS will prompt on opening if needed (it's the lower section on the web page - something like .NET Framework 4.8)
+1. Install Visual Studio and include .NET development support
+1. Install the .NET 5.0 SDK if not included on previous instalation
+   * https://dotnet.microsoft.com/download/dotnet/5.0
+1. Install the Avalonia for Visual Sutdio:
+   * https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio
+1. Install the Wix Toolset: (Required only for MSI build, **optional**)
+   1. https://wixtoolset.org/releases
+   1. https://marketplace.visualstudio.com/items?itemName=WixToolset.WiXToolset
+1. Open UVtools.sln
+1. Build
 
 
 # TODO
