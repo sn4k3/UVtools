@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.Runtime.ExceptionServices;
 using Avalonia;
+using UVtools.Core.Slicer;
 using UVtools.WPF.Extensions;
+using Size = System.Drawing.Size;
 
 namespace UVtools.WPF
 {
@@ -20,6 +23,9 @@ namespace UVtools.WPF
             ProgramStartupTime = Stopwatch.StartNew();
             Args = args;
 
+            //Slicer slicer = new(Size.Empty, SizeF.Empty, "D:\\Cube1x1x1.stl");
+            //var slices = slicer.SliceModel(0.05f);
+            
             // Add the event handler for handling non-UI thread exceptions to the event.
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
             //AppDomain.CurrentDomain.FirstChanceException += CurrentDomainOnFirstChanceException;

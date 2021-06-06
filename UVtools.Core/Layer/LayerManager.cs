@@ -997,7 +997,7 @@ namespace UVtools.Core
                     using (var image = layer.LayerMat)
                     {
                         int step = image.Step;
-                        var span = image.GetPixelSpan<byte>();
+                        var span = image.GetDataSpan<byte>();
 
                         if (touchBoundConfig.Enabled)
                         {
@@ -1138,7 +1138,7 @@ namespace UVtools.Core
                                         //stats[i][3]: Height of Connected Component
                                         //stats[i][4]: Total Area (in pixels) in Connected Component
 
-                                        var labelSpan = labels.GetPixelSpan<int>();
+                                        var labelSpan = labels.GetDataSpan<int>();
 
                                         for (int i = 1; i < numLabels; i++)
                                         {
@@ -1154,7 +1154,7 @@ namespace UVtools.Core
                                             if (previousImage is null)
                                             {
                                                 previousImage = this[layer.Index - 1].LayerMat;
-                                                previousSpan = previousImage.GetPixelSpan<byte>();
+                                                previousSpan = previousImage.GetDataSpan<byte>();
                                             }
 
                                             List<Point> points = new();
@@ -1227,7 +1227,7 @@ namespace UVtools.Core
                                                         anchor, overhangConfig.ErodeIterations, BorderType.Default,
                                                         new MCvScalar());
 
-                                                    var subtractedSpan = subtractedImage.GetPixelSpan<byte>();
+                                                    var subtractedSpan = subtractedImage.GetDataSpan<byte>();
 
                                                     for (int y = 0; y < subtractedImage.Height; y++)
                                                     for (int x = 0; x < subtractedImage.Step; x++)
@@ -1426,8 +1426,8 @@ namespace UVtools.Core
 
                                 using (var image = this[nextLayerIndex].LayerMat)
                                 {
-                                    var span = image.GetPixelSpan<byte>();
-                                    using (var emguImage = image.CloneBlank())
+                                    var span = image.GetDataSpan<byte>();
+                                    using (var emguImage = image.NewBlank())
                                     {
                                         using (var vec =
                                             new VectorOfVectorOfPoint(new VectorOfPoint(checkArea.Contour)))
@@ -1435,7 +1435,7 @@ namespace UVtools.Core
                                             CvInvoke.DrawContours(emguImage, vec, -1, EmguExtensions.WhiteColor, -1);
                                         }
 
-                                        using (var intersectingAreasMat = image.CloneBlank())
+                                        using (var intersectingAreasMat = image.NewBlank())
                                         {
                                             if (haveNextAreas)
                                             {
@@ -1455,8 +1455,8 @@ namespace UVtools.Core
                                             bool exitPixelLoop = false;
                                             uint blackCount = 0;
 
-                                            var spanContour = emguImage.GetPixelSpan<byte>();
-                                            var spanIntersect = intersectingAreasMat.GetPixelSpan<byte>();
+                                            var spanContour = emguImage.GetDataSpan<byte>();
+                                            var spanIntersect = intersectingAreasMat.GetDataSpan<byte>();
                                             for (int y = checkArea.BoundingRectangle.Y;
                                                 y < checkArea.BoundingRectangle.Bottom &&
                                                 area.Type != LayerHollowArea.AreaType.Drain && !exitPixelLoop;
@@ -1638,7 +1638,7 @@ namespace UVtools.Core
                     var operationText = (PixelText)operation;
                     var mat = modifiedLayers.GetOrAdd(operation.LayerIndex, u => this[operation.LayerIndex].LayerMat);
 
-                    mat.PutTextRotated(operationText.Text, operationText.Location, operationText.Font, operationText.FontScale, new MCvScalar(operationText.Brightness), operationText.Thickness, operationText.LineType, operationText.Mirror, operationText.Angle);
+                    mat.PutTextRotated(operationText.Text, operationText.Location, operationText.Font, operationText.FontScale, new MCvScalar(operationText.Brightness), operationText.Thickness, operationText.LineType, operationText.Mirror, operationText.LineAlignment, operationText.Angle);
                 }
                 else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
                 {
@@ -1679,7 +1679,7 @@ namespace UVtools.Core
 
                         using (Mat matCircleRoi = new(mat, new Rectangle(xStart, yStart, operationSupport.TipDiameter, operationSupport.TipDiameter)))
                         {
-                            using (Mat matCircleMask = matCircleRoi.CloneBlank())
+                            using (Mat matCircleMask = matCircleRoi.NewBlank())
                             {
                                 CvInvoke.Circle(matCircleMask, new Point(operationSupport.TipDiameter / 2, operationSupport.TipDiameter / 2),
                                     operationSupport.TipDiameter / 2, new MCvScalar(operation.PixelBrightness), -1);
@@ -1717,7 +1717,7 @@ namespace UVtools.Core
                             using (Mat matCircleRoiInv = new())
                             {
                                 CvInvoke.Threshold(matCircleRoi, matCircleRoiInv, 100, 255, ThresholdType.BinaryInv);
-                                using (Mat matCircleMask = matCircleRoi.CloneBlank())
+                                using (Mat matCircleMask = matCircleRoi.NewBlank())
                                 {
                                     CvInvoke.Circle(matCircleMask, new Point(radius, radius), radius, new MCvScalar(255), -1);
                                     CvInvoke.BitwiseAnd(matCircleRoiInv, matCircleMask, matCircleMask);

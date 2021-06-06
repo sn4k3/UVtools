@@ -617,8 +617,8 @@ namespace UVtools.Core.FileFormats
                     using (var mat = layer.LayerMat)
                     using (var matEncode = new Mat(mat.Height, mat.Step / 3, DepthType.Cv8U, 3))
                     {
-                        var span = mat.GetPixelSpan<byte>();
-                        var spanEncode = matEncode.GetPixelSpan<byte>();
+                        var span = mat.GetDataSpan<byte>();
+                        var spanEncode = matEncode.GetDataSpan<byte>();
                         for (int i = 0; i < span.Length; i++)
                         {
                             spanEncode[i] = span[i];
@@ -815,8 +815,8 @@ namespace UVtools.Core.FileFormats
                             using Mat mat = new();
                             CvInvoke.Imdecode(layer.CompressedBytes, ImreadModes.Color, mat);
                             using Mat matDecode = new(mat.Height, mat.Step, DepthType.Cv8U, 1);
-                            var span = mat.GetPixelSpan<byte>();
-                            var spanDecode = matDecode.GetPixelSpan<byte>();
+                            var span = mat.GetDataSpan<byte>();
+                            var spanDecode = matDecode.GetDataSpan<byte>();
                             for (int i = 0; i < span.Length; i++)
                             {
                                 spanDecode[i] = span[i];

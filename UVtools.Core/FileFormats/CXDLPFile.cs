@@ -486,7 +486,7 @@ namespace UVtools.Core.FileFormats
             {
                 if (progress.Token.IsCancellationRequested) return;
                 if (Thumbnails[previewIndex] is null) return;
-                var span = Thumbnails[previewIndex].GetPixelSpanByte();
+                var span = Thumbnails[previewIndex].GetDataByteSpan();
                 int index = 0;
                 for (int i = 0; i < span.Length; i += 3)
                 {
@@ -531,7 +531,7 @@ namespace UVtools.Core.FileFormats
                 List<LayerLine> layerLines = new();
                 var layer = this[layerIndex];
                 using var mat = layer.LayerMat;
-                var span = mat.GetPixelSpanByte();
+                var span = mat.GetDataByteSpan();
 
                 for (int x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++)
                 {
@@ -598,7 +598,7 @@ namespace UVtools.Core.FileFormats
             Parallel.For(0, previews.Length, previewIndex =>
             {
                 var mat = new Mat(ThumbnailsOriginalSize[previewIndex], DepthType.Cv8U, 3);
-                var span = mat.GetPixelSpanByte();
+                var span = mat.GetDataByteSpan();
 
                 int spanIndex = 0;
                 for (int i = 0; i < previews[previewIndex].Length; i += 2)

@@ -175,7 +175,7 @@ namespace UVtools.Core.Operations
                         if (progress.Token.IsCancellationRequested) return;
                         Layer layer = SlicerFile[group.Key];
                         Mat image = layer.LayerMat;
-                        Span<byte> bytes = image.GetPixelSpan<byte>();
+                        Span<byte> bytes = image.GetDataSpan<byte>();
                         foreach (var issue in group)
                         {
                             foreach (var issuePixel in issue.Pixels)
@@ -225,7 +225,7 @@ namespace UVtools.Core.Operations
 
                                 initImage();
                                 if (bytes == null)
-                                    bytes = image.GetPixelSpan<byte>();
+                                    bytes = image.GetDataSpan<byte>();
 
                                 foreach (var issuePixel in issue.Pixels)
                                 {

@@ -15,7 +15,7 @@ namespace UVtools.Core.Extensions
 
             byte g = (byte)(color.G == 0 ? 0 :
                 Math.Min(Math.Max(min, color.G * factor), max));
-
+            
             byte b = (byte)(color.B == 0 ? 0 :
                 Math.Min(Math.Max(min, color.B * factor), max));
             return Color.FromArgb(r, g, b);

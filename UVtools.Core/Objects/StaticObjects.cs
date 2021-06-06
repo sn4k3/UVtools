@@ -13,10 +13,8 @@ namespace UVtools.Core.Objects
         // Compute the file's hash.
         public static byte[] GetHashSha256(string filename)
         {
-            using (var stream = File.OpenRead(filename))
-            {
-                return Sha256.ComputeHash(stream);
-            }
+            using var stream = File.OpenRead(filename);
+            return Sha256.ComputeHash(stream);
         }
     }
 }

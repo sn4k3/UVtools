@@ -640,7 +640,7 @@ namespace UVtools.Core.Operations
                     using (var erode = new Mat())
                     using (var diff = new Mat())
                     using (var target = new Mat())
-                    using (var mask = shape.CloneBlank())
+                    using (var mask = shape.NewBlank())
                     {
                         mask.SetTo(new MCvScalar(byte.MaxValue-brightness));
                         CvInvoke.Erode(shape, erode, kernel, anchor, DimmingWallThickness, BorderType.Reflect101, default);

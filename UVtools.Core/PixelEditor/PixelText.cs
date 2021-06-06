@@ -9,6 +9,7 @@ using System;
 using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using UVtools.Core.Extensions;
 
 namespace UVtools.Core.PixelEditor
 {
@@ -19,6 +20,7 @@ namespace UVtools.Core.PixelEditor
         private ushort _thickness = 1;
         private string _text;
         private bool _mirror;
+        private EmguExtensions.PutTextLineAlignment _lineAlignment = EmguExtensions.PutTextLineAlignment.Left;
         private double _angle;
         private byte _removePixelBrightness;
         public override PixelOperationType OperationType => PixelOperationType.Text;
@@ -55,6 +57,12 @@ namespace UVtools.Core.PixelEditor
             set => RaiseAndSetIfChanged(ref _mirror, value);
         }
 
+        public EmguExtensions.PutTextLineAlignment LineAlignment
+        {
+            get => _lineAlignment;
+            set => RaiseAndSetIfChanged(ref _lineAlignment, value);
+        }
+
         public double Angle
         {
             get => _angle;
@@ -81,19 +89,20 @@ namespace UVtools.Core.PixelEditor
 
         public PixelText(){}
 
-        public PixelText(uint layerIndex, Point location, LineType lineType, FontFace font, double fontScale, ushort thickness, string text, bool mirror, double angle, byte removePixelBrightness, byte pixelBrightness, bool isAdd) : base(layerIndex, location, lineType, pixelBrightness)
+        public PixelText(uint layerIndex, Point location, LineType lineType, FontFace font, double fontScale, ushort thickness, string text, bool mirror, EmguExtensions.PutTextLineAlignment lineAlignment, double angle, byte removePixelBrightness, byte pixelBrightness, bool isAdd) : base(layerIndex, location, lineType, pixelBrightness)
         {
             _font = font;
             _fontScale = fontScale;
             _thickness = thickness;
             _text = text;
             _mirror = mirror;
+            _lineAlignment = lineAlignment;
             _angle = angle;
             IsAdd = isAdd;
             _removePixelBrightness = removePixelBrightness;
 
             int baseLine = 0;
-            Size = CvInvoke.GetTextSize(text, font, fontScale, thickness, ref baseLine);
+            Size = EmguExtensions.GetTextSizeExtended(text, font, fontScale, thickness, ref baseLine, lineAlignment);
             Rectangle = new Rectangle(location, Size);
         }
 

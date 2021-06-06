@@ -644,7 +644,7 @@ namespace UVtools.Core
 
 
             var mat = LayerMat;
-            var bytes = mat.GetPixelSpan<byte>();
+            var bytes = mat.GetDataSpan<byte>();
 
 
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 06/06/2021 - v2.13.2
+
+- (Upgrade) AvaloniaUI from 0.10.5 to 0.10.6
+- (Add) Pixel editor - Text: Allow multi-line text and line alignment modes
+
 ## 29/05/2021 - v2.13.1
 
 - (Add) Layer preview - Outline: Skeletonize

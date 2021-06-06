@@ -982,7 +982,7 @@
                 </Border>
 
                 <Grid
-      RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+      RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
       ColumnDefinitions="Auto,10,130,5,40">
 
                   <TextBlock
@@ -1050,77 +1050,92 @@
                     Grid.Row="8"
                     Grid.Column="2"
                     Grid.ColumnSpan="3"
+                    AcceptsReturn="True"
+                    Height="90"
                     Text="{Binding DrawingPixelText.Text}"/>
 
+                  <TextBlock
+                      Grid.Row="10"
+                      Grid.Column="0"
+                      VerticalAlignment="Center"
+                      Text="Line alignment:" />
+                  <ComboBox
+                      Grid.Row="10"
+                      Grid.Column="2"
+                      Grid.ColumnSpan="3"
+                      Width="180"
+                      Items="{Binding DrawingPixelText.LineAlignment, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      SelectedItem="{Binding DrawingPixelText.LineAlignment, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
                   <CheckBox
-                  Grid.Row="10"
+                  Grid.Row="12"
                   Grid.Column="2"
                   Grid.ColumnSpan="3"
                   Content="Flip text Vertically"
                   IsChecked="{Binding DrawingPixelText.Mirror}"/>
 
                   <TextBlock
-                      Grid.Row="12"
+                      Grid.Row="14"
                       Grid.Column="0"
                       VerticalAlignment="Center"
                       Text="Rotation angle:" />
                   <NumericUpDown
-                      Grid.Row="12"
+                      Grid.Row="14"
                       Grid.Column="2"
                       FormatString="F2"
                       Minimum="-360"
                       Maximum="360"
                       Value="{Binding DrawingPixelText.Angle}"/>
                   <TextBlock
-                      Grid.Row="12"
+                      Grid.Row="14"
                       Grid.Column="4"
                       VerticalAlignment="Center"
                       Text="º" />
 
                   <TextBlock
-                      Grid.Row="14"
+                      Grid.Row="16"
                       Grid.Column="0"
                       VerticalAlignment="Center"
                       Text="Remove pixel brightness:" />
                   <NumericUpDown
-                      Grid.Row="14"
+                      Grid.Row="16"
                       Grid.Column="2"
                       Minimum="0"
                       Maximum="255"
                       
                       Value="{Binding DrawingPixelText.RemovePixelBrightness}"/>
                   <TextBlock
-                      Grid.Row="14"
+                      Grid.Row="16"
                       Grid.Column="4"
                       VerticalAlignment="Center"
                       Text="{Binding DrawingPixelText.RemovePixelBrightnessPercent, StringFormat=\{0:0\}%}" />
 
                   <TextBlock
-                      Grid.Row="16"
+                      Grid.Row="18"
                       Grid.Column="0"
                       VerticalAlignment="Center"
                       Text="Add pixel brightness:" />
                   <NumericUpDown
-                      Grid.Row="16"
+                      Grid.Row="18"
                       Grid.Column="2"
                       Minimum="1"
                       Maximum="255"
                       
                       Value="{Binding DrawingPixelText.PixelBrightness}"/>
                   <TextBlock
-                      Grid.Row="16"
+                      Grid.Row="18"
                       Grid.Column="4"
                       VerticalAlignment="Center"
                       Text="{Binding DrawingPixelText.PixelBrightnessPercent, StringFormat=\{0:0\}%}" />
 
 
                   <TextBlock
-                    Grid.Row="18"
+                    Grid.Row="20"
                     Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Layers depth below:" />
                   <NumericUpDown
-                    Grid.Row="18"
+                    Grid.Row="20"
                     Grid.Column="2"
                     Grid.ColumnSpan="3"
                     Minimum="0"
@@ -1129,12 +1144,12 @@
 
 
                   <TextBlock
-                      Grid.Row="20"
+                      Grid.Row="22"
                       Grid.Column="0"
                       VerticalAlignment="Center"
                       Text="Layers depth above:" />
                   <NumericUpDown
-                    Grid.Row="20"
+                    Grid.Row="22"
                     Grid.Column="2"
                     Grid.ColumnSpan="3"
                     Minimum="0"

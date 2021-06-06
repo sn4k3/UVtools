@@ -1237,7 +1237,7 @@ namespace UVtools.Core.Operations
             layers[0] = EmguExtensions.InitMat(rect.Size);
 
             CvInvoke.Rectangle(layers[0], rect, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-            layers[1] = layers[0].CloneBlank();
+            layers[1] = layers[0].NewBlank();
             if (holes.Length > 0)
             {
                 CvInvoke.Rectangle(layers[1],
@@ -1666,7 +1666,7 @@ namespace UVtools.Core.Operations
                     {
                         var newLayer = layer.Clone();
                         newLayer.ExposureTime = (float)(newLayer.IsBottomLayer ? group.Key.BottomExposure : group.Key.Exposure);
-                        using var newMat = mat.CloneBlank();
+                        using var newMat = mat.NewBlank();
                         foreach (var brightness in brightnesses)
                         {
                             ExposureItem item = new(group.Key.LayerHeight, group.Key.BottomExposure, group.Key.Exposure, brightness);

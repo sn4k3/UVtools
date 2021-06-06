@@ -121,7 +121,7 @@ namespace UVtools.WPF
                         if (Progress.Token.IsCancellationRequested) return;
                         using (var image = SlicerFile[layerIssues.Key].LayerMat)
                         {
-                            var bytes = image.GetPixelSpan<byte>();
+                            var bytes = image.GetDataSpan<byte>();
 
                             bool edited = false;
 

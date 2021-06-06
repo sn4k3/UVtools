@@ -381,7 +381,7 @@ namespace UVtools.Core.Operations
                                         }
 
                                         using var layer = fileFormat[i].LayerMat;
-                                        using var layerRoi = layer.RoiFromCenter(SlicerFile.Resolution, fileFormatBoundingRectangle);
+                                        using var layerRoi = layer.NewRoiFromCenter(SlicerFile.Resolution, fileFormatBoundingRectangle);
                                         SlicerFile[layerIndex] = new Layer(layerIndex, layerRoi, SlicerFile);
 
                                         break;
@@ -396,7 +396,7 @@ namespace UVtools.Core.Operations
                                         }
 
                                         using var layer = fileFormat[i].LayerMat;
-                                        using var layerRoi = layer.RoiFromCenter(SlicerFile.Resolution, fileFormatBoundingRectangle);
+                                        using var layerRoi = layer.NewRoiFromCenter(SlicerFile.Resolution, fileFormatBoundingRectangle);
                                         SlicerFile[layerIndex] = new Layer(layerIndex, layerRoi, SlicerFile);
                                         break;
                                     }

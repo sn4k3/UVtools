@@ -171,7 +171,7 @@ namespace UVtools.Core.Operations
                 or InfillAlgorithm.CubicInterlinked)
             {
                 using var infillPattern = EmguExtensions.InitMat(new Size(_infillSpacing, _infillSpacing));
-                using var matPattern = mat.CloneBlank();
+                using var matPattern = mat.NewBlank();
                 bool firstPattern = true;
                 uint accumulator = 0;
                 bool dynamicCenter = false;

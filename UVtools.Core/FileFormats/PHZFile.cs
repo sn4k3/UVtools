@@ -572,7 +572,7 @@ namespace UVtools.Core.FileFormats
                 //int pixel = 0;
                 for (int y = 0; y < image.Height; y++)
                 {
-                    var span = image.GetPixelRowSpan<byte>(y);
+                    var span = image.GetRowSpan<byte>(y);
                     for (int x = 0; x < span.Length; x++)
                     {
                         

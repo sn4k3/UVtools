@@ -314,7 +314,7 @@ namespace UVtools.Core.Operations
         {
             var layers = new Mat[LayerCount];
             
-            Slicer slicer = new(SlicerFile.Resolution, new SizeF((float) DisplayWidth, (float) DisplayHeight));
+            Slicer.Slicer slicer = new(SlicerFile.Resolution, new SizeF((float) DisplayWidth, (float) DisplayHeight));
             Point center = new(SlicerFile.Resolution.Width / 2, SlicerFile.Resolution.Height / 2);
             uint baseRadius = slicer.PixelsFromMillimeters(_baseDiameter) / 2;
             uint baseLayers = (ushort) Math.Floor(_baseHeight / _layerHeight);

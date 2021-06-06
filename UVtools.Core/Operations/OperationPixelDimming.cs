@@ -622,8 +622,8 @@ namespace UVtools.Core.Operations
             AlternatePattern ??= Pattern;
 
             using var blankMat = EmguExtensions.InitMat(SlicerFile.Resolution);
-            using var matPattern = blankMat.CloneBlank();
-            using var matAlternatePattern = blankMat.CloneBlank();
+            using var matPattern = blankMat.NewBlank();
+            using var matAlternatePattern = blankMat.NewBlank();
             var target = GetRoiOrDefault(blankMat);
 
             CvInvoke.Repeat(Pattern, target.Rows / Pattern.Rows + 1, target.Cols / Pattern.Cols + 1, matPattern);

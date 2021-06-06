@@ -80,7 +80,7 @@ namespace UVtools.ScriptSample
             // Layer 3 = Right eye
             // Layer 4 = Mouth
             // Exercise for you: Do eyebrows
-            var mats = EmguExtensions.Allocate(layerCount, SlicerFile.Resolution); // Allocate x images with file resolution
+            var mats = EmguExtensions.InitMats(layerCount, SlicerFile.Resolution); // Allocate x images with file resolution
 
             int x, y;
             int xCenter = (int) (SlicerFile.ResolutionX / 2);

@@ -24,6 +24,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
+using Emgu.CV.XImgproc;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.PixelEditor;
@@ -692,7 +693,7 @@ namespace UVtools.WPF
 
             var watch = Stopwatch.StartNew();
             LayerCache.Layer = SlicerFile[_actualLayer];
-
+            
             try
             {
                 //var imageSpan = LayerCache.Image.GetPixelSpan<byte>();
@@ -1024,7 +1025,7 @@ namespace UVtools.WPF
                             operationText.Thickness, operationText.LineType, operationText.Mirror);*/
                         LayerCache.ImageBgr.PutTextRotated(operationText.Text, operationText.Location,
                         operationText.Font, operationText.FontScale, new MCvScalar(color.B, color.G, color.R),
-                        operationText.Thickness, operationText.LineType, operationText.Mirror, operationText.Angle);
+                        operationText.Thickness, operationText.LineType, operationText.Mirror, operationText.LineAlignment, operationText.Angle);
                     }
                     else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
                     {
@@ -1087,8 +1088,7 @@ namespace UVtools.WPF
                     {
                         // Don't render crosshairs for selected issue that are not on the current layer, or for 
                         // issue types that don't have a specific location or bounds.
-                        if (issue.LayerIndex != ActualLayer || issue.Type == LayerIssue.IssueType.EmptyLayer
-                                                            || issue.Type == LayerIssue.IssueType.TouchingBound)
+                        if (issue.LayerIndex != ActualLayer || issue.Type is LayerIssue.IssueType.EmptyLayer or LayerIssue.IssueType.TouchingBound)
                             continue;
 
                         DrawCrosshair(issue.BoundingRectangle);
@@ -1116,7 +1116,7 @@ namespace UVtools.WPF
 
 
                 LayerImageBox.Image = LayerCache.Bitmap = LayerCache.ImageBgr.ToBitmap();
-
+                
                 RefreshCurrentLayerData();
 
                 watch.Stop();
@@ -1897,15 +1897,17 @@ namespace UVtools.WPF
                     if (string.IsNullOrEmpty(text) || DrawingPixelText.FontScale < 0.2) return;
 
                     int baseLine = 0;
-                    var size = CvInvoke.GetTextSize(text, DrawingPixelText.Font, DrawingPixelText.FontScale, DrawingPixelText.Thickness, ref baseLine);
+                    //var size = CvInvoke.GetTextSize(text, DrawingPixelText.Font, DrawingPixelText.FontScale, DrawingPixelText.Thickness, ref baseLine);
+                    var size = EmguExtensions.GetTextSizeExtended(text, DrawingPixelText.Font, DrawingPixelText.FontScale, DrawingPixelText.Thickness, ref baseLine, DrawingPixelText.LineAlignment);
                     //var rotatedSize = size.Rotate(DrawingPixelText.Angle);
                     //Point point = (rotatedSize.Inflate(rotatedSize)).Rotate(DrawingPixelText.Angle, rotatedSize.ToPoint());
                     cursor = EmguExtensions.InitMat(size.Inflate(), 4);
                     //CvInvoke.Rectangle(cursor, new Rectangle(Point.Empty, size), _pixelEditorCursorColor, -1, DrawingPixelText.LineType);
                     //_pixelEditorCursorColor.V3 = 255;
                     //CvInvoke.Rectangle(cursor, new Rectangle(new Point(size.Width, 0), size), _pixelEditorCursorColor, 1, DrawingPixelText.LineType);
-                    
-                    CvInvoke.PutText(cursor, text, size.ToPoint(), DrawingPixelText.Font, DrawingPixelText.FontScale, _pixelEditorCursorColor, DrawingPixelText.Thickness, DrawingPixelText.LineType, DrawingPixelText.Mirror);
+
+                    cursor.PutTextExtended(text, size.ToPoint(), DrawingPixelText.Font, DrawingPixelText.FontScale, _pixelEditorCursorColor, DrawingPixelText.Thickness, DrawingPixelText.LineType, DrawingPixelText.Mirror, DrawingPixelText.LineAlignment);
+                    //CvInvoke.PutText(cursor, text, size.ToPoint(), DrawingPixelText.Font, DrawingPixelText.FontScale, _pixelEditorCursorColor, DrawingPixelText.Thickness, DrawingPixelText.LineType, DrawingPixelText.Mirror);
                     cursor.RotateAdjustBounds(DrawingPixelText.Angle);
                     //cursor.Rotate(DrawingPixelText.Angle);
                     //cursor.PutTextRotated(text, cursor.Size.ToPoint().Half(), DrawingPixelText.Font, DrawingPixelText.FontScale, _pixelEditorCursorColor, DrawingPixelText.Thickness, DrawingPixelText.LineType, DrawingPixelText.Mirror, DrawingPixelText.Angle);

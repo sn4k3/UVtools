@@ -94,7 +94,7 @@ namespace UVtools.WPF.Controls
             string text = string.Empty;
             for (int y = 0; y < kernel.Height; y++)
             {
-                var span = kernel.GetPixelRowSpan<byte>(y);
+                var span = kernel.GetRowSpan<byte>(y);
                 var line = string.Empty;
                 for (int x = 0; x < span.Length; x++)
                 {
