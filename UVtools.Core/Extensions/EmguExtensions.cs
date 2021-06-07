@@ -20,7 +20,14 @@ namespace UVtools.Core.Extensions
     public static class EmguExtensions
     {
         #region Constants
+        /// <summary>
+        /// White color: 255, 255, 255, 255
+        /// </summary>
         public static readonly MCvScalar WhiteColor = new(255, 255, 255, 255);
+
+        /// <summary>
+        /// Black color: 0, 0, 0, 255
+        /// </summary>
         public static readonly MCvScalar BlackColor = new(0, 0, 0, 255);
         //public static readonly MCvScalar TransparentColor = new();
         #endregion
@@ -43,7 +50,7 @@ namespace UVtools.Core.Extensions
         /// <returns></returns>
         public static Mat New(this Mat mat)
         {
-            return new(mat.Rows, mat.Cols, mat.Depth, mat.NumberOfChannels);
+            return new(mat.Size, mat.Depth, mat.NumberOfChannels);
         }
 
         /// <summary>
@@ -54,9 +61,7 @@ namespace UVtools.Core.Extensions
         /// <returns></returns>
         public static Mat New(this Mat src, MCvScalar color)
         {
-            Mat mat = new(src.Rows, src.Cols, src.Depth, src.NumberOfChannels);
-            mat.SetTo(color);
-            return mat;
+            return InitMat(src.Size, color, src.NumberOfChannels, src.Depth);
         }
 
         /// <summary>
@@ -81,11 +86,26 @@ namespace UVtools.Core.Extensions
         }
 
 
+        /// <summary>
+        /// Creates a new <see cref="Mat"/> and zero it
+        /// </summary>
+        /// <param name="size"></param>
+        /// <param name="channels"></param>
+        /// <param name="depthType"></param>
+        /// <returns></returns>
         public static Mat InitMat(Size size, int channels = 1, DepthType depthType = DepthType.Cv8U)
         {
             return size.IsEmpty ? new() : Mat.Zeros(size.Height, size.Width, depthType, channels);
         }
 
+        /// <summary>
+        /// Creates a new <see cref="Mat"/> and set it to a <see cref="MCvScalar"/>
+        /// </summary>
+        /// <param name="size"></param>
+        /// <param name="color"></param>
+        /// <param name="channels"></param>
+        /// <param name="depthType"></param>
+        /// <returns></returns>
         public static Mat InitMat(Size size, MCvScalar color, int channels = 1, DepthType depthType = DepthType.Cv8U)
         {
             if (size.IsEmpty) return new();
@@ -120,48 +140,88 @@ namespace UVtools.Core.Extensions
         #endregion
 
         #region Memory accessors
+
+        /// <summary>
+        /// Gets the byte pointer of this <see cref="Mat"/>
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <returns></returns>
         public static unsafe byte* GetBytePointer(this Mat mat)
         {
             return (byte*)mat.DataPointer.ToPointer();
         }
 
         /// <summary>
+        /// Gets the whole data span to manipulate or read pixels
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <returns></returns>
+        public static Span<byte> GetDataByteSpan(this Mat mat)
+        {
+            return mat.GetDataSpan<byte>();
+        }
+
+        /// <summary>
+        /// Gets the data span to manipulate or read pixels given a length and offset
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="mat"></param>
+        /// <param name="length"></param>
+        /// <param name="offset"></param>
+        /// <returns></returns>
+        public static unsafe Span<T> GetDataSpan<T>(this Mat mat, int length = 0, int offset = 0)
+        {
+            return new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length <= 0 ? mat.GetLength() : length);
+        }
+
+        /// <summary>
         /// Gets a single pixel span to manipulate or read pixels
         /// </summary>
-        /// <typeparam name="T">Pixel type</typeparam>
-        /// <param name="mat"><see cref="Mat"/> Input</param>
-        /// <returns>A <see cref="Span{T}"/> containing all pixels in data memory</returns>
-        public static unsafe Span<T> GetDataSpan<T>(this Mat mat)
-        {
-            return new(mat.DataPointer.ToPointer(), mat.GetLength());
-        }
-
-        public static unsafe Span<byte> GetDataByteSpan(this Mat mat)
-        {
-            return new(mat.DataPointer.ToPointer(), mat.GetLength());
-        }
-
-        public static unsafe Span<T> GetDataSpan<T>(this Mat mat, int length, int offset = 0)
-        {
-            return new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length);
-        }
-
+        /// <typeparam name="T"></typeparam>
+        /// <param name="mat"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
         public static Span<T> GetPixelSpan<T>(this Mat mat, int x, int y)
         {
             return mat.GetDataSpan<T>(mat.NumberOfChannels, mat.GetPixelPos(x, y));
         }
 
+        /// <summary>
+        /// Gets a single pixel span to manipulate or read pixels
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="mat"></param>
+        /// <param name="pos"></param>
+        /// <returns></returns>
         public static Span<T> GetPixelSpan<T>(this Mat mat, int pos)
         {
             return mat.GetDataSpan<T>(mat.NumberOfChannels, pos);
         }
 
-
+        /// <summary>
+        /// Gets a row span to manipulate or read pixels
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="mat"></param>
+        /// <param name="y"></param>
+        /// <param name="length"></param>
+        /// <param name="offset"></param>
+        /// <returns></returns>
         public static unsafe Span<T> GetRowSpan<T>(this Mat mat, int y, int length = 0, int offset = 0)
         {
             return new(IntPtr.Add(mat.DataPointer, y * mat.Step + offset).ToPointer(), length <= 0 ? mat.Step : length);
         }
 
+        /// <summary>
+        /// Gets a col span to manipulate or read pixels
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="mat"></param>
+        /// <param name="x"></param>
+        /// <param name="length"></param>
+        /// <param name="offset"></param>
+        /// <returns></returns>
         public static unsafe Span<T> GetColSpan<T>(this Mat mat, int x, int length = 0, int offset = 0)
         {
             var colMat = mat.Col(x);
@@ -215,6 +275,12 @@ namespace UVtools.Core.Extensions
             return data;
         }
 
+        /// <summary>
+        /// Gets a byte pixel at a position
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="pos"></param>
+        /// <returns></returns>
         public static byte GetByte(this Mat mat, int pos)
         {
             //return new Span<byte>(IntPtr.Add(mat.DataPointer, pos).ToPointer(), mat.Step)[0];
@@ -223,24 +289,73 @@ namespace UVtools.Core.Extensions
             return value[0];
         }
 
+        /// <summary>
+        /// Gets a byte pixel at a position
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
         public static byte GetByte(this Mat mat, int x, int y) => GetByte(mat, mat.GetPixelPos(x, y));
+
+        /// <summary>
+        /// Gets a byte pixel at a position
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="pos"></param>
+        /// <returns></returns>
         public static byte GetByte(this Mat mat, Point pos) => GetByte(mat, mat.GetPixelPos(pos.X, pos.Y));
 
-
+        /// <summary>
+        /// Sets a byte pixel at a position
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="pixel"></param>
+        /// <param name="value"></param>
         public static void SetByte(this Mat mat, int pixel, byte value) => SetByte(mat, pixel, new[] { value });
 
+        /// <summary>
+        /// Sets a byte pixel at a position
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="pixel"></param>
+        /// <param name="value"></param>
         public static void SetByte(this Mat mat, int pixel, byte[] value) =>
             Marshal.Copy(value, 0, mat.DataPointer + pixel, value.Length);
 
+        /// <summary>
+        /// Sets a byte pixel at a position
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="value"></param>
         public static void SetByte(this Mat mat, int x, int y, byte value) =>
             SetByte(mat, x, y, new[] { value });
 
+        /// <summary>
+        /// Sets a byte pixel at a position
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="value"></param>
         public static void SetByte(this Mat mat, int x, int y, byte[] value) =>
             SetByte(mat, y * mat.Step + x * mat.NumberOfChannels, value);
 
+        /// <summary>
+        /// Sets bytes
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="value"></param>
         public static void SetBytes(this Mat mat, byte[] value) =>
             Marshal.Copy(value, 0, mat.DataPointer, value.Length);
 
+        /// <summary>
+        /// Gets PNG byte array
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <returns></returns>
         public static byte[] GetPngByes(this Mat mat)
         {
             using var vector = new VectorOfByte();
