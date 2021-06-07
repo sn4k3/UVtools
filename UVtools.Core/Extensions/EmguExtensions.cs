@@ -39,9 +39,7 @@ namespace UVtools.Core.Extensions
         /// <param name="mat"></param>
         /// <returns>Blank byte array</returns>
         public static byte[] CreateBlankByteArray(this Mat mat)
-        {
-            return new byte[mat.GetLength()];
-        }
+            => new byte[mat.GetLength()];
 
         /// <summary>
         /// Creates a new empty <see cref="Mat"/> with same size and type of the source
@@ -49,9 +47,7 @@ namespace UVtools.Core.Extensions
         /// <param name="mat"></param>
         /// <returns></returns>
         public static Mat New(this Mat mat)
-        {
-            return new(mat.Size, mat.Depth, mat.NumberOfChannels);
-        }
+            => new(mat.Size, mat.Depth, mat.NumberOfChannels);
 
         /// <summary>
         /// Creates a new empty <see cref="Mat"/> with same size and type of the source
@@ -60,9 +56,7 @@ namespace UVtools.Core.Extensions
         /// <param name="color"></param>
         /// <returns></returns>
         public static Mat New(this Mat src, MCvScalar color)
-        {
-            return InitMat(src.Size, color, src.NumberOfChannels, src.Depth);
-        }
+            => InitMat(src.Size, color, src.NumberOfChannels, src.Depth);
 
         /// <summary>
         /// Creates a new blanked (All zeros) <see cref="Mat"/> with same size and type of the source
@@ -70,9 +64,7 @@ namespace UVtools.Core.Extensions
         /// <param name="mat"></param>
         /// <returns>Blanked <see cref="Mat"/></returns>
         public static Mat NewBlank(this Mat mat)
-        {
-            return InitMat(mat.Size, mat.NumberOfChannels, mat.Depth);
-        }
+            => InitMat(mat.Size, mat.NumberOfChannels, mat.Depth);
 
         /// <summary>
         /// Creates a <see cref="Mat"/> with same size and type of the source and set it to a color
@@ -81,9 +73,7 @@ namespace UVtools.Core.Extensions
         /// <param name="color"></param>
         /// <returns></returns>
         public static Mat NewSetTo(this Mat mat, MCvScalar color)
-        {
-            return InitMat(mat.Size, color, mat.NumberOfChannels, mat.Depth);
-        }
+            => InitMat(mat.Size, color, mat.NumberOfChannels, mat.Depth);
 
 
         /// <summary>
@@ -94,9 +84,7 @@ namespace UVtools.Core.Extensions
         /// <param name="depthType"></param>
         /// <returns></returns>
         public static Mat InitMat(Size size, int channels = 1, DepthType depthType = DepthType.Cv8U)
-        {
-            return size.IsEmpty ? new() : Mat.Zeros(size.Height, size.Width, depthType, channels);
-        }
+            => size.IsEmpty ? new() : Mat.Zeros(size.Height, size.Width, depthType, channels);
 
         /// <summary>
         /// Creates a new <see cref="Mat"/> and set it to a <see cref="MCvScalar"/>
