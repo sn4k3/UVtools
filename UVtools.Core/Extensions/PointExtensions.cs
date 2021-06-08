@@ -13,7 +13,7 @@ namespace UVtools.Core.Extensions
     public static class PointExtensions
     {
         public static double FindLength(Point start, Point end) => Math.Sqrt(Math.Pow(end.Y - start.Y, 2) + Math.Pow(end.X - start.X, 2));
-        
+
         public static Point Rotate(this Point point, double angleDegree, Point pivot = default)
         {
             if (angleDegree % 360 == 0) return point;

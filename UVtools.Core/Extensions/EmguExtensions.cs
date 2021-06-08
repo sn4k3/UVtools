@@ -547,6 +547,98 @@ namespace UVtools.Core.Extensions
         }
         #endregion
 
+        #region Draw Methods
+
+        /// <summary>
+        /// Draw a rotated square around a center point
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="size"></param>
+        /// <param name="center"></param>
+        /// <param name="color"></param>
+        /// <param name="angle"></param>
+        /// <param name="thickness"></param>
+        /// <param name="lineType"></param>
+        public static void DrawRotatedSquare(this Mat src, int size, Point center, MCvScalar color, int angle = 0, int thickness = -1, LineType lineType = LineType.EightConnected)
+            => src.DrawRotatedRectangle(new(size, size), center, color, angle, thickness, lineType);
+
+        /// <summary>
+        /// Draw a rotated rectangle around a center point
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="size"></param>
+        /// <param name="center"></param>
+        /// <param name="color"></param>
+        /// <param name="angle"></param>
+        /// <param name="thickness"></param>
+        /// <param name="lineType"></param>
+        public static void DrawRotatedRectangle(this Mat src, Size size, Point center, MCvScalar color, int angle = 0, int thickness = -1, LineType lineType = LineType.EightConnected)
+        {
+            var rect = new RotatedRect(center, size, angle);
+            var vertices = rect.GetVertices();
+            var points = new Point[vertices.Length];
+
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                points[i] = new(
+                    (int)Math.Round(vertices[i].X), 
+                    (int)Math.Round(vertices[i].Y)
+                    );
+            }
+
+            if (thickness <= 0)
+            {
+                using var vec = new VectorOfPoint(points);
+                CvInvoke.FillConvexPoly(src, vec, color, lineType);
+            }
+            else
+            {
+                CvInvoke.Polylines(src, points, true, color, thickness, lineType);
+            }
+        }
+
+        /// <summary>
+        /// Draw a polygon given number of sides and length
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="sides">Number of polygon sides, Special: use 1 to draw a line and >= 100 to draw a native OpenCV circle</param>
+        /// <param name="radius">Radius</param>
+        /// <param name="center">Center position</param>
+        /// <param name="color"></param>
+        /// <param name="startingAngle"></param>
+        /// <param name="thickness"></param>
+        /// <param name="lineType"></param>
+        public static void DrawPolygon(this Mat src, int sides, int radius, Point center, MCvScalar color, double startingAngle = 0, int thickness = -1, LineType lineType = LineType.EightConnected)
+        {
+            if (sides == 1)
+            {
+                Point point1 = new(center.X - radius, center.Y);
+                point1 = point1.Rotate(startingAngle, center);
+                Point point2 = new(center.X + radius, center.Y);
+                point2 = point2.Rotate(startingAngle, center);
+                CvInvoke.Line(src, point1, point2, color, thickness < 1 ? 1 : thickness, lineType);
+                return;
+            }
+            if (sides >= 100)
+            {
+                CvInvoke.Circle(src, center, radius, color, thickness, lineType);
+                return;
+            }
+
+            var points = DrawingExtensions.GetPolygonVertices(sides, radius, center, startingAngle);
+            if (thickness <= 0)
+            {
+                using var vec = new VectorOfPoint(points);
+                CvInvoke.FillConvexPoly(src, vec, color, lineType);
+            }
+            else
+            {
+                CvInvoke.Polylines(src, points, true, color, thickness, lineType);
+            }
+            
+        }
+        #endregion
+
         #region Text methods
         public enum PutTextLineAlignment : byte
         {
