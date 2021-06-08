@@ -28,7 +28,12 @@ typedef struct(int size) {
 
 struct HEADER {
     uint32 headerSize <fgcolor=cBlack, bgcolor=cWhite>;
-    BYTE header[header.headerSize] <fgcolor=cBlack, bgcolor=cRed>;
+    BYTE header[headerSize] <fgcolor=cBlack, bgcolor=cRed>;
+
+    uint16 unknown <fgcolor=cBlack, bgcolor=cWhite>;
+
+    uint32 modelSize <fgcolor=cBlack, bgcolor=cWhite>;
+    BYTE model[modelSize] <fgcolor=cBlack, bgcolor=cRed>;
 
     uint16 totalLayers <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 resolutionX <fgcolor=cBlack, bgcolor=cWhite>;
@@ -43,6 +48,8 @@ struct HEADER {
     rgbPreviewImageRawData preview2(290*290*2);
     BYTE rn2[2] <fgcolor=cBlack, bgcolor=cRed>;
 
+    byte offset[64];
+
     uint32 plateformXLength <fgcolor=cBlack, bgcolor=cWhite>;
     wchar_t plateformX[plateformXLength/2];
 
@@ -52,8 +59,8 @@ struct HEADER {
     uint32 layerThicknessLength <fgcolor=cBlack, bgcolor=cWhite>;
     wchar_t layerThickness[layerThicknessLength/2];
 
-    uint16 exposureTime <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 turnOffTime <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 exposureTime <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 bottomExposure <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 bottomLayers <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 bottomRaise <fgcolor=cBlack, bgcolor=cWhite>;
