@@ -43,8 +43,8 @@ namespace UVtools.ScriptSample
                                  "- First layer must show the whole face and do the normal lift sequence and raise to the next layer.\n" +
                                  "- Then all the renaming layers should print one object per layer at same height, if not, then your printer is not able.\n" +
                                  "Note: Look at printer screen to confirm the layer position, exposure time is set to 5s on first two layers, and 10s on remaining layers.\n" +
-                                 "When a layer start to exposure, count out loud the seconds, should be 5s for the first two, and 10s for the 3rd and on layers\n" +
-                                 "If the time match then your printer is compatible, otherwise if all layers took about 5s then your printer is not compatible.\n" +
+                                 "When a layer start to exposure, count out loud the seconds, should be 5s for the first two, and 10s for the 3rd and on layers.\n" +
+                                 "If the time match then your printer is compatible, otherwise if all layers took around 5s then your printer is not compatible.\n" +
                                  "If you find yours compatible and not on the official list, please report to us.\n" +
                                  "https://github.com/sn4k3/UVtools/wiki/Printer-compability-with-per-layer-settings-and-advanced-tools";
             Script.Author = "Tiago Conceição";
