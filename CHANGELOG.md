@@ -3,7 +3,7 @@
 ## 12/06/2021 - v2.13.3
 
 - **File formats:**
-   - (Add) CXDLP v2 
+   - (Add) CXDLP v2 (#214)
    - (Improvement) GR1, MDLP and CXDLP decode/encode performance and memory optimization
    - (Remove) CXDLP v1 from available formats
 - (Add) Pixel editor - Drawing: New brushes of shapes/polygons with rotation
