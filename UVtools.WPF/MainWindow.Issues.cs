@@ -335,14 +335,15 @@ namespace UVtools.WPF
 
         private void IssuesGridOnSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
+            if (DataContext is null) return;
+
             if (IssuesGrid.SelectedItem is not LayerIssue issue)
             {
                 ShowLayer();
                 return;
             }
 
-            if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
-                (issue.X == -1 && issue.Y == -1))
+            if (issue.Type is LayerIssue.IssueType.TouchingBound or LayerIssue.IssueType.EmptyLayer || (issue.X == -1 && issue.Y == -1))
             {
                 ZoomToFit();
             }

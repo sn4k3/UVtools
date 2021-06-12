@@ -13,16 +13,28 @@ namespace UVtools.Core.PixelEditor
 {
     public class PixelDrawing : PixelOperation
     {
-        private BrushShapeType _brushShape = BrushShapeType.Rectangle;
+        private BrushShapeType _brushShape = BrushShapeType.Square;
         private ushort _brushSize = 1;
         private short _thickness = -1;
         private byte _removePixelBrightness;
+        private double _rotationAngle;
         public const byte MinRectangleBrush = 1;
         public const byte MinCircleBrush = 7;
         public enum BrushShapeType : byte
         {
-            Rectangle = 0,
-            Circle
+            //Mask = 0,
+            Line = 1,
+            Triangle = 3,
+            Square = 4,
+            Pentagon = 5,
+            Hexagon = 6,
+            Heptagon = 7,
+            Octagon = 8,
+            Nonagon = 9,
+            Decagon = 10,
+            Hendecagon = 11,
+            Dodecagon = 12,
+            Circle = 100,
         }
 
         public override PixelOperationType OperationType => PixelOperationType.Drawing;
@@ -40,6 +52,12 @@ namespace UVtools.Core.PixelEditor
                     BrushSize = Math.Max(MinCircleBrush, BrushSize);
                 }
             }
+        }
+
+        public double RotationAngle
+        {
+            get => _rotationAngle;
+            set => RaiseAndSetIfChanged(ref _rotationAngle, Math.Round(value, 2));
         }
 
         public ushort BrushSize
@@ -77,9 +95,10 @@ namespace UVtools.Core.PixelEditor
 
         }
 
-        public PixelDrawing(uint layerIndex, Point location, LineType lineType, BrushShapeType brushShape, ushort brushSize, short thickness, byte removePixelBrightness, byte pixelBrightness, bool isAdd) : base(layerIndex, location, lineType, pixelBrightness)
+        public PixelDrawing(uint layerIndex, Point location, LineType lineType, BrushShapeType brushShape, double rotationAngle, ushort brushSize, short thickness, byte removePixelBrightness, byte pixelBrightness, bool isAdd) : base(layerIndex, location, lineType, pixelBrightness)
         {
             _brushShape = brushShape;
+            _rotationAngle = rotationAngle;
             _brushSize = brushSize;
             _thickness = thickness;
             _removePixelBrightness = removePixelBrightness;

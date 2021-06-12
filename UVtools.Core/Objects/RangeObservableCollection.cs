@@ -420,7 +420,7 @@
                 return;
             }
 
-            if (!(collection is IList<T> list))
+            if (collection is not IList<T> list)
                 list = new List<T>(collection);
 
             using (BlockReentrancy())

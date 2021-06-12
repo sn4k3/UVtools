@@ -89,7 +89,7 @@ namespace UVtools.WPF.Controls.Tools
             FilesListBox = this.Find<ListBox>("FilesListBox");
             FilesListBox.DoubleTapped += (sender, args) =>
             {
-                if (!(FilesListBox.SelectedItem is ValueDescription file)) return;
+                if (FilesListBox.SelectedItem is not ValueDescription file) return;
                 App.StartProcess(file.ValueAsString);
             };
             FilesListBox.KeyUp += (sender, e) =>

@@ -623,7 +623,7 @@ namespace UVtools.WPF
             if (e.Handled
                 || !IsFileLoaded
                 || LayerImageBox.IsPanning
-                || !(LayerImageBox.TrackerImage is null)
+                || LayerImageBox.TrackerImage is not null
                 || LayerImageBox.Cursor == StaticControls.CrossCursor
                 || LayerImageBox.Cursor == StaticControls.HandCursor
                 || LayerImageBox.SelectionMode == AdvancedImageBox.SelectionModes.Rectangle

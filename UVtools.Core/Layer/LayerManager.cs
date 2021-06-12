@@ -10,7 +10,6 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -728,7 +727,7 @@ namespace UVtools.Core
             Mat[] cachedLayers = new Mat[LayerCount];
             const uint cacheCount = 300;
 
-            bool IsIgnored(LayerIssue issue) => !(ignoredIssues is null) && ignoredIssues.Count > 0 && ignoredIssues.Contains(issue);
+            bool IsIgnored(LayerIssue issue) => ignoredIssues is not null && ignoredIssues.Count > 0 && ignoredIssues.Contains(issue);
             bool AddIssue(LayerIssue issue)
             {
                 if (IsIgnored(issue)) return false;
@@ -931,7 +930,7 @@ namespace UVtools.Core
             var result = new ConcurrentBag<LayerIssue>();
             var layerHollowAreas = new ConcurrentDictionary<uint, List<LayerHollowArea>>();
 
-            bool IsIgnored(LayerIssue issue) => !(ignoredIssues is null) && ignoredIssues.Count > 0 && ignoredIssues.Contains(issue);
+            bool IsIgnored(LayerIssue issue) => ignoredIssues is not null && ignoredIssues.Count > 0 && ignoredIssues.Contains(issue);
 
             bool AddIssue(LayerIssue issue)
             {
@@ -1115,9 +1114,10 @@ namespace UVtools.Core
                                         islandImage = image;
                                     }
 
-                                    using (Mat labels = new())
-                                    using (Mat stats = new())
-                                    using (Mat centroids = new())
+                                    using (
+                                        Mat labels = new(),
+                                        stats = new(),
+                                        centroids = new())
                                     {
                                         var numLabels = CvInvoke.ConnectedComponentsWithStats(islandImage, labels, stats,
                                             centroids,
@@ -1620,9 +1620,11 @@ namespace UVtools.Core
                         continue;
                     }
 
-                    switch (operationDrawing.BrushShape)
+                    mat.DrawPolygon((byte)operationDrawing.BrushShape, operationDrawing.BrushSize / 2, operationDrawing.Location,
+                        new MCvScalar(operationDrawing.Brightness), operationDrawing.RotationAngle, operationDrawing.Thickness, operationDrawing.LineType);
+                    /*switch (operationDrawing.BrushShape)
                     {
-                        case PixelDrawing.BrushShapeType.Rectangle:
+                        case PixelDrawing.BrushShapeType.Square:
                             CvInvoke.Rectangle(mat, operationDrawing.Rectangle, new MCvScalar(operationDrawing.Brightness), operationDrawing.Thickness, operationDrawing.LineType);
                             break;
                         case PixelDrawing.BrushShapeType.Circle:
@@ -1631,7 +1633,7 @@ namespace UVtools.Core
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
-                    }
+                    }*/
                 }
                 else if (operation.OperationType == PixelOperation.PixelOperationType.Text)
                 {

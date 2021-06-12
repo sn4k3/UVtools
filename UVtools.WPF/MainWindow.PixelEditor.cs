@@ -25,6 +25,7 @@ using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.PixelEditor;
 using UVtools.WPF.Extensions;
+using DrawingExtensions = UVtools.Core.Extensions.DrawingExtensions;
 
 namespace UVtools.WPF
 {
@@ -182,7 +183,7 @@ namespace UVtools.WPF
                 for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
                 {
                     var operationDrawing = new PixelDrawing(layerIndex, realLocation, DrawingPixelDrawing.LineType,
-                        DrawingPixelDrawing.BrushShape, DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.Thickness, DrawingPixelDrawing.RemovePixelBrightness, DrawingPixelDrawing.PixelBrightness, isAdd);
+                        DrawingPixelDrawing.BrushShape, DrawingPixelDrawing.RotationAngle, DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.Thickness, DrawingPixelDrawing.RemovePixelBrightness, DrawingPixelDrawing.PixelBrightness, isAdd);
 
                     //if (PixelHistory.Contains(operation)) continue;
                     AddDrawing(operationDrawing);
@@ -195,26 +196,57 @@ namespace UVtools.WPF
 
                         if (operationDrawing.BrushSize == 1)
                         {
-                            unsafe
+                            /*unsafe
                             {
                                 using var framebuffer = bitmap.Lock();
                                 var data = (uint*)framebuffer.Address.ToPointer();
                                 data[bitmap.GetPixelPos(location)] =
                                     color.ToUint32();
-                            }
-                            
-                            LayerImageBox.InvalidateArrange();
+                            }*/
+
+                            LayerCache.Canvas.DrawPoint(location.X, location.Y, new SKColor(color.ToUint32()));
+
+
+                            LayerImageBox.InvalidateVisual();
                                // LayerCache.ImageBgr.SetByte(operationDrawing.Location.X, operationDrawing.Location.Y,
                                  //   new[] { color.B, color.G, color.R });
                             continue;
                         }
 
+                        int halfBrush = operationDrawing.BrushSize / 2;
                         switch (operationDrawing.BrushShape)
                         {
-                            case PixelDrawing.BrushShapeType.Rectangle:
+                            case PixelDrawing.BrushShapeType.Line:
+                                Point point1 = new(location.X - halfBrush, location.Y);
+                                Point point2 = new(location.X + halfBrush, location.Y);
+                                point1 = point1.Rotate(operationDrawing.RotationAngle, location);
+                                point2 = point2.Rotate(operationDrawing.RotationAngle, location);
 
-                                int shiftPos = operationDrawing.BrushSize / 2;
-                                LayerCache.Canvas.DrawRect(location.X - shiftPos, location.Y - shiftPos, 
+                                if (_showLayerImageRotated)
+                                {
+                                    if (_showLayerImageRotateCcwDirection)
+                                    {
+                                        point1 = point1.Rotate(90, location);
+                                        point2 = point2.Rotate(90, location);
+                                    }
+                                    else
+                                    {
+                                        point1 = point1.Rotate(-90, location);
+                                        point2 = point2.Rotate(-90, location);
+                                    }
+                                }
+
+                                LayerCache.Canvas.DrawLine(point1.X, point1.Y, point2.X, point2.Y, new SKPaint
+                                {
+                                    IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
+                                    Color = new SKColor(color.ToUint32()),
+                                    IsStroke = operationDrawing.Thickness >= 0,
+                                    StrokeWidth = operationDrawing.Thickness,
+                                    StrokeCap = SKStrokeCap.Round
+                                });
+                                break;
+                            /*case PixelDrawing.BrushShapeType.Square:
+                                LayerCache.Canvas.DrawRect(location.X - halfBrush, location.Y - halfBrush, 
                                     operationDrawing.BrushSize, 
                                     operationDrawing.BrushSize,
                                     new SKPaint
@@ -227,10 +259,8 @@ namespace UVtools.WPF
                                 /*CvInvoke.Rectangle(LayerCache.ImageBgr, GetTransposedRectangle(operationDrawing.Rectangle),
                                     new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
                                     operationDrawing.LineType);*/
-                                break;
+                                //break;
                             case PixelDrawing.BrushShapeType.Circle:
-
-                               
                                 LayerCache.Canvas.DrawCircle(location.X, location.Y, operationDrawing.BrushSize / 2f,
                                     new SKPaint
                                     {
@@ -239,13 +269,69 @@ namespace UVtools.WPF
                                         IsStroke = operationDrawing.Thickness >= 0,
                                         StrokeWidth = operationDrawing.Thickness
                                     });
-
+                                
                                 /*CvInvoke.Circle(LayerCache.ImageBgr, location, operationDrawing.BrushSize / 2,
                                     new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
                                     operationDrawing.LineType);*/
                                 break;
                             default:
-                                throw new ArgumentOutOfRangeException();
+                                var angle = operationDrawing.RotationAngle;
+                                if (_showLayerImageRotated)
+                                {
+                                    if (!_showLayerImageFlipped || _showLayerImageFlippedHorizontally && _showLayerImageFlippedVertically)
+                                    {
+                                        if (_showLayerImageRotateCcwDirection)
+                                        {
+                                            angle -= 90;
+                                        }
+                                        else
+                                        {
+                                            angle += 90;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (_showLayerImageRotateCcwDirection)
+                                        {
+                                            angle += 90;
+                                        }
+                                        else
+                                        {
+                                            angle -= 90;
+                                        }
+                                    }
+                                }
+
+
+                                var vertices = DrawingExtensions.GetPolygonVertices((byte) operationDrawing.BrushShape,
+                                    operationDrawing.BrushSize / 2, location, angle, _showLayerImageFlipped && _showLayerImageFlippedHorizontally, _showLayerImageFlipped && _showLayerImageFlippedVertically);
+
+                                //if(angle % 360 != 0) PointExtensions.Rotate(vertices, angle, location);
+
+                                var path = new SKPath();
+                                path.MoveTo(vertices[0].X, vertices[0].Y);
+                                for (var i = 1; i < vertices.Length; i++)
+                                {
+                                    path.LineTo(vertices[i].X, vertices[i].Y);
+                                }
+                                path.Close();
+
+                                LayerCache.Canvas.DrawPath(path, new SKPaint
+                                {
+                                    IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
+                                    Color = new SKColor(color.ToUint32()),
+                                    IsStroke = operationDrawing.Thickness >= 0,
+                                    StrokeWidth = operationDrawing.Thickness
+                                });
+                                /*LayerCache.Canvas.DrawPoints(SKPointMode.Polygon, points,
+                                    new SKPaint
+                                    {
+                                        IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
+                                        Color = new SKColor(color.ToUint32()),
+                                        IsStroke = operationDrawing.Thickness >= 0,
+                                        StrokeWidth = operationDrawing.Thickness
+                                    });*/
+                                break;
                         }
                         LayerImageBox.InvalidateVisual();
                         //RefreshLayerImage();

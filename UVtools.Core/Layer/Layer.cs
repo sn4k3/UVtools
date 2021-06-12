@@ -625,6 +625,7 @@ namespace UVtools.Core
             return changed;
         }
 
+        /*
         /// <summary>
         /// Gets all islands start pixel location for this layer
         /// https://www.geeksforgeeks.org/find-number-of-islands/
@@ -651,17 +652,6 @@ namespace UVtools.Core
             var previousLayerImage = PreviousLayer()?.LayerMat;
             var previousBytes = previousLayerImage?.GetBytes();
 
-
-            /*var nextLayerImage = NextLayer()?.Image;
-            byte[] nextBytes = null;
-            if (!ReferenceEquals(nextLayerImage, null))
-            {
-                if (nextLayerImage.TryGetSinglePixelSpan(out var nextPixelSpan))
-                {
-                    nextBytes = MemoryMarshal.AsBytes(nextPixelSpan).ToArray();
-                }
-            }*/
-
             // Make a bool array to
             // mark visited cells. 
             // Initially all cells 
@@ -687,12 +677,6 @@ namespace UVtools.Core
                     for (int x = 0; x < mat.Width; x++)
                     {
                         pixelIndex = y * mat.Width + x;
-
-                        /*if (bytes[pixelIndex] == 0 && previousBytes?[pixelIndex] == byte.MaxValue &&
-                            nextBytes?[pixelIndex] == byte.MaxValue)
-                        {
-                            result.Add(new LayerIssue(this, LayerIssue.IssueType.HoleSandwich, new []{new Point(x, y)}));
-                        }*/
 
                         if (bytes[pixelIndex] > minPixel && !visited[x, y])
                         {
@@ -798,7 +782,7 @@ namespace UVtools.Core
             pixels.Clear();
 
             return result;
-        }
+        }*/
 
         public Layer Clone()
         {

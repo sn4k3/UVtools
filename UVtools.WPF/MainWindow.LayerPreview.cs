@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -24,7 +23,6 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
-using Emgu.CV.XImgproc;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.PixelEditor;
@@ -991,9 +989,11 @@ namespace UVtools.WPF
                             continue;
                         }
 
-                        switch (operationDrawing.BrushShape)
+                        LayerCache.ImageBgr.DrawPolygon((byte)operationDrawing.BrushShape, operationDrawing.BrushSize / 2, operationDrawing.Location,
+                            new MCvScalar(color.B, color.G, color.R), operationDrawing.RotationAngle, operationDrawing.Thickness, operationDrawing.LineType);
+                        /*switch (operationDrawing.BrushShape)
                         {
-                            case PixelDrawing.BrushShapeType.Rectangle:
+                            case PixelDrawing.BrushShapeType.Square:
                                 CvInvoke.Rectangle(LayerCache.ImageBgr, operationDrawing.Rectangle,
                                     new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
                                     operationDrawing.LineType);
@@ -1005,7 +1005,7 @@ namespace UVtools.WPF
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException();
-                        }
+                        }*/
                     }
                     else if (operation.OperationType == PixelOperation.PixelOperationType.Text)
                     {
@@ -1861,10 +1861,45 @@ namespace UVtools.WPF
                     
                     if (DrawingPixelDrawing.BrushSize > 1)
                     {
-                        cursor = EmguExtensions.InitMat(new Size(DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.BrushSize), 4);
-                        switch (DrawingPixelDrawing.BrushShape)
+                        if ((byte)DrawingPixelDrawing.BrushShape >= 1)
                         {
-                            case PixelDrawing.BrushShapeType.Rectangle:
+                            int cursorSize = DrawingPixelDrawing.BrushSize;
+                            if (DrawingPixelDrawing.Thickness > 1)
+                            {
+                                cursorSize += DrawingPixelDrawing.Thickness;
+                            }
+                            cursor = EmguExtensions.InitMat(new Size(cursorSize, cursorSize), 4);
+
+                            cursor.DrawPolygon((byte) DrawingPixelDrawing.BrushShape, DrawingPixelDrawing.BrushSize / 2, cursor.Size.ToPoint().Half(), 
+                                _pixelEditorCursorColor, DrawingPixelDrawing.RotationAngle, DrawingPixelDrawing.Thickness, DrawingPixelDrawing.LineType);
+
+                            if (DrawingPixelDrawing.BrushShape != PixelDrawing.BrushShapeType.Circle)
+                            {
+                                if (_showLayerImageFlipped)
+                                {
+                                    var flipType = FlipType.None;
+                                    if (_showLayerImageFlippedHorizontally)
+                                        flipType |= FlipType.Horizontal;
+                                    if (_showLayerImageFlippedVertically)
+                                        flipType |= FlipType.Vertical;
+
+                                    if (flipType != FlipType.None)
+                                        CvInvoke.Flip(cursor, cursor, flipType);
+                                }
+
+                                if (_showLayerImageRotated)
+                                {
+                                    CvInvoke.Rotate(cursor, cursor,
+                                        _showLayerImageRotateCcwDirection
+                                            ? RotateFlags.Rotate90CounterClockwise
+                                            : RotateFlags.Rotate90Clockwise);
+                                }
+                            }
+                        }
+
+                        /*switch (DrawingPixelDrawing.BrushShape)
+                        {
+                            case PixelDrawing.BrushShapeType.Square:
                                 CvInvoke.Rectangle(cursor,
                                     new Rectangle(Point.Empty, new Size(DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.BrushSize)),
                                     _pixelEditorCursorColor, DrawingPixelDrawing.Thickness, DrawingPixelDrawing.LineType);
@@ -1889,7 +1924,7 @@ namespace UVtools.WPF
                                     1, DrawingPixelDrawing.LineType
                                 );
                                 break;
-                        }
+                        }*/
                     }
                     break;
                 case PixelOperation.PixelOperationType.Text:

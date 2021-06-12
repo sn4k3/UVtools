@@ -1070,6 +1070,7 @@ namespace UVtools.WPF
             private bool _removeEmptyLayers = true;
             private ushort _removeIslandsBelowEqualPixels = 5;
             private ushort _removeIslandsRecursiveIterations = 4;
+            private ushort _attachIslandsBelowLayers = 2;
             private byte _closingIterations = 2;
             private byte _openingIterations = 0;
 
@@ -1101,6 +1102,12 @@ namespace UVtools.WPF
             {
                 get => _removeIslandsRecursiveIterations;
                 set => RaiseAndSetIfChanged(ref _removeIslandsRecursiveIterations, value);
+            }
+
+            public ushort AttachIslandsBelowLayers
+            {
+                get => _attachIslandsBelowLayers;
+                set => RaiseAndSetIfChanged(ref _attachIslandsBelowLayers, value);
             }
 
             public byte ClosingIterations

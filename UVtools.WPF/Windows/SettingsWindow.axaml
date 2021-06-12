@@ -1387,6 +1387,15 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
+                    <NumericUpDown
+                        Value="{Binding Settings.LayerRepair.AttachIslandsBelowLayers}"
+                        Width="70"
+                        Minimum="0"
+                        Maximum="65535"/>
+                    <TextBlock VerticalAlignment="Center" Text="Attempt to attach islands down to this layers (0 = Disabled)"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
                   <NumericUpDown
                     Value="{Binding Settings.LayerRepair.ClosingIterations}"
                     Width="70"

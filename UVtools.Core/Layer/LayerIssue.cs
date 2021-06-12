@@ -11,7 +11,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core
@@ -105,6 +104,12 @@ namespace UVtools.Core
         public IslandDetectionConfiguration(bool enabled = true)
         {
             Enabled = enabled;
+        }
+
+        public IslandDetectionConfiguration Clone()
+        {
+            var clone = MemberwiseClone() as IslandDetectionConfiguration;
+            return clone;
         }
     }
 
@@ -307,7 +312,7 @@ namespace UVtools.Core
                     return (uint)(BoundingRectangle.Width * BoundingRectangle.Height);
                 }
 
-                if (ReferenceEquals(Pixels, null)) return 0;
+                if (Pixels is null) return 0;
                 return (uint)Pixels.Length;
             }
         }
@@ -315,9 +320,9 @@ namespace UVtools.Core
         /// <summary>
         /// Check if this issue have a valid start point to show
         /// </summary>
-        public bool HaveValidPoint => !ReferenceEquals(Pixels, null) && Pixels.Length > 0;
+        public bool HaveValidPoint => Pixels?.Length > 0;
 
-        public LayerIssue(Layer layer, IssueType type, Point[] pixels = null, Rectangle boundingRectangle = new Rectangle())
+        public LayerIssue(Layer layer, IssueType type, Point[] pixels = null, Rectangle boundingRectangle = default)
         {
             Layer = layer;
             Type = type;
@@ -346,19 +351,19 @@ namespace UVtools.Core
 
         public bool Equals(LayerIssue other)
         {
-            if (ReferenceEquals(null, other)) return false;
+            if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
             return Layer.Index == other.Layer.Index
                    && Type == other.Type 
                    && PixelsCount == other.PixelsCount 
-                   && !(Pixels is null) && !(other.Pixels is null) && Pixels.SequenceEqual(other.Pixels)
+                   && Pixels is not null && other.Pixels is not null && Pixels.SequenceEqual(other.Pixels)
                    //&& BoundingRectangle.Equals(other.BoundingRectangle)
                 ;
         }
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
+            if (obj is null) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
             return Equals((LayerIssue) obj);

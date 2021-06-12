@@ -214,6 +214,7 @@ namespace UVtools.Core.FileFormats
             new ZCodexFile(),   // zcodex
             new MDLPFile(),   // MKS v1
             new GR1File(),   // GR1 Workshop
+            //new CXDLPv1File(),   // Creality Box v1
             new CXDLPFile(),   // Creality Box
             new LGSFile(),   // LGS, LGS30
             new VDAFile(),   // VDA

@@ -42,13 +42,35 @@ namespace UVtools.Core.Extensions
             return new((float) x, (float) y);
         }
 
-        public static Point Half(this Point point)=> new(point.X / 2, point.Y / 2);
+        public static void Rotate(Point[] points, double angleDegree, Point pivot = default)
+        {
+            for (int i = 0; i < points.Length; i++)
+            {
+                points[i] = points[i].Rotate(angleDegree, pivot);
+            }
+        }
 
+        public static void Rotate(PointF[] points, double angleDegree, PointF pivot = default)
+        {
+            for (int i = 0; i < points.Length; i++)
+            {
+                points[i] = points[i].Rotate(angleDegree, pivot);
+            }
+        }
+
+        public static Point OffsetBy(this Point point, int value)=> new(point.X + value, point.Y + value);
+        public static Point OffsetBy(this Point point, int x, int y) => new(point.X + x, point.Y + y);
+        public static Point OffsetBy(this Point point, Point other) => new(point.X + other.X, point.Y + other.Y);
+
+
+        public static Point Half(this Point point) => new(point.X / 2, point.Y / 2);
         public static PointF Half(this PointF point) => new(point.X / 2, point.Y / 2);
 
         public static Size ToSize(this Point point) => new(point.X, point.Y);
 
         public static SizeF ToSize(this PointF point) => new(point.X, point.Y);
+
+        
 
     }
 }

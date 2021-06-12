@@ -6,8 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-// https://github.com/cbiffle/catibo/blob/master/doc/cbddlp-ctb.adoc
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,6 +18,7 @@ using System.Threading.Tasks;
 using BinarySerialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using MoreLinq;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 
@@ -113,6 +112,15 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public ushort EndY { get; set; }
             [FieldOrder(2)] [FieldEndianness(Endianness.Big)] public ushort StartX { get; set; }
 
+            public static byte[] GetBytes(ushort StartY, ushort EndY, ushort StartX)
+            {
+                var bytes = new byte[6];
+                BitExtensions.ToBytesBigEndian(StartY, bytes);
+                BitExtensions.ToBytesBigEndian(EndY, bytes, 2);
+                BitExtensions.ToBytesBigEndian(StartX, bytes, 4);
+                return bytes;
+            }
+
 
             public LayerLine()
             { }
@@ -127,11 +135,13 @@ namespace UVtools.Core.FileFormats
 
         public sealed class PageBreak
         {
+            public static byte[] Bytes => new byte[] {0x0D, 0x0A};
             [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public byte Line { get; set; } = 0x0D;
             [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public byte Break { get; set; } = 0x0A;
         }
 
         #endregion
+
         #endregion
 
         #region Properties
@@ -298,7 +308,7 @@ namespace UVtools.Core.FileFormats
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
             using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
-            var pageBreak = new PageBreak();
+            var pageBreak = PageBreak.Bytes;
 
             Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 
@@ -335,57 +345,70 @@ namespace UVtools.Core.FileFormats
             for (int i = 0; i < ThumbnailsOriginalSize.Length; i++)
             {
                 Helpers.SerializeWriteFileStream(outputFile, previews[i]);
-                Helpers.SerializeWriteFileStream(outputFile, pageBreak);
+                outputFile.WriteBytes(pageBreak);
             }
             Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
             
             progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-            var layerDefs = new LayerDef[LayerCount];
-            Parallel.For(0, LayerCount, layerIndex =>
-            {
-                if (progress.Token.IsCancellationRequested) return;
-                List<LayerLine> layerLines = new();
-                var layer = this[layerIndex];
-                using var mat = layer.LayerMat;
-                var span = mat.GetDataByteSpan();
+            var range = Enumerable.Range(0, (int)LayerCount);
 
-                for (int x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++)
-                {
-                    int y = layer.BoundingRectangle.Y;
-                    int startY = -1;
-                    for (; y < layer.BoundingRectangle.Bottom; y++)
-                    {
-                        int pos = mat.GetPixelPos(x, y);
-                        if (span[pos] < 128) // Black pixel
-                        {
-                            if(startY == -1) continue; // Keep ignoring
-                            layerLines.Add(new LayerLine((ushort) startY, (ushort) (y-1), (ushort) x));
-                            startY = -1;
-                        }
-                        else  // White pixel
-                        {
-                            if (startY >= 0) continue; // Keep sum
-                            startY = y;
-                        }
-                    }
-
-                    if (startY >= 0)
-                    {
-                        layerLines.Add(new LayerLine((ushort)startY, (ushort)(y - 1), (ushort) x));
-                    }
-                }
-
-                layerDefs[layerIndex] = new LayerDef((uint) layerLines.Count, layerLines.ToArray());
-
-                progress.LockAndIncrement();
-            });
-
-            progress.Reset(OperationProgress.StatusWritingFile, LayerCount);
-            for (int layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            var layerBytes = new List<byte>[LayerCount];
+            foreach (var batch in range.Batch(Environment.ProcessorCount * 10))
             {
                 progress.Token.ThrowIfCancellationRequested();
-                Helpers.SerializeWriteFileStream(outputFile, layerDefs[layerIndex]);
-                progress++;
+
+                Parallel.ForEach(batch, layerIndex =>
+                {
+                    if (progress.Token.IsCancellationRequested) return;
+                    var layer = this[layerIndex];
+                    using var mat = layer.LayerMat;
+                    var span = mat.GetDataByteSpan();
+
+                    layerBytes[layerIndex] = new();
+
+                    uint lineCount = 0;
+
+                    for (int x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++)
+                    {
+                        int y = layer.BoundingRectangle.Y;
+                        int startY = -1;
+                        for (; y < layer.BoundingRectangle.Bottom; y++)
+                        {
+                            int pos = mat.GetPixelPos(x, y);
+                            if (span[pos] < 128) // Black pixel
+                            {
+                                if (startY == -1) continue; // Keep ignoring
+                                layerBytes[layerIndex].AddRange(LayerLine.GetBytes((ushort)startY, (ushort)(y - 1), (ushort)x));
+                                startY = -1;
+                                lineCount++;
+                            }
+                            else
+                            {
+                                if (startY >= 0) continue; // Keep sum
+                                startY = y;
+                            }
+                        }
+
+                        if (startY >= 0)
+                        {
+                            layerBytes[layerIndex].AddRange(LayerLine.GetBytes((ushort)startY, (ushort)(y - 1), (ushort)x));
+                            lineCount++;
+                        }
+                    }
+
+                    layerBytes[layerIndex].InsertRange(0, BitExtensions.ToBytesBigEndian(lineCount));
+                    layerBytes[layerIndex].AddRange(pageBreak);
+
+                    progress.LockAndIncrement();
+                });
+
+                progress.Token.ThrowIfCancellationRequested();
+
+                foreach (var layerIndex in batch)
+                {
+                    outputFile.WriteBytes(layerBytes[layerIndex].ToArray());
+                    layerBytes[layerIndex] = null;
+                }
             }
 
             Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
@@ -438,28 +461,49 @@ namespace UVtools.Core.FileFormats
             SlicerInfoSettings = Helpers.Deserialize<SlicerInfo>(inputFile);
 
             LayerManager.Init(SlicerInfoSettings.LayerCount);
-            progress.ItemCount = LayerCount;
-            LayerDef[] layerDefs = new LayerDef[LayerCount];
-            for (int layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-            {
-                progress.Token.ThrowIfCancellationRequested();
-                layerDefs[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
-                progress++;
-            }
+
 
             progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
-            Parallel.For(0, LayerCount, layerIndex =>
+
+            var range = Enumerable.Range(0, (int)LayerCount);
+
+            var linesBytes = new byte[LayerCount][];
+            foreach (var batch in range.Batch(Environment.ProcessorCount * 10))
             {
-                if (progress.Token.IsCancellationRequested) return;
-                using var mat = EmguExtensions.InitMat(Resolution);
-                foreach (var line in layerDefs[layerIndex].Lines)
+                progress.Token.ThrowIfCancellationRequested();
+
+                foreach (var layerIndex in batch)
                 {
-                    CvInvoke.Line(mat, new Point(line.StartX, line.StartY), new Point(line.StartX, line.EndY), EmguExtensions.WhiteColor);
+                    var lineCount = BitExtensions.ToUIntBigEndian(inputFile.ReadBytes(4));
+
+                    linesBytes[layerIndex] = new byte[lineCount * 6];
+                    inputFile.ReadBytes(linesBytes[layerIndex]);
+                    inputFile.Seek(2, SeekOrigin.Current);
+
+                    progress.Token.ThrowIfCancellationRequested();
                 }
 
-                this[layerIndex] = new Layer((uint) layerIndex, mat, this);
-                progress.LockAndIncrement();
-            });
+                Parallel.ForEach(batch, layerIndex =>
+                {
+                    if (progress.Token.IsCancellationRequested) return;
+                    using var mat = EmguExtensions.InitMat(Resolution);
+
+                    for (int i = 0; i < linesBytes[layerIndex].Length; i++)
+                    {
+                        var startY = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i++]);
+                        var endY = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i++]);
+                        var startX = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i]);
+                        
+                        CvInvoke.Line(mat, new Point(startX, startY), new Point(startX, endY), EmguExtensions.WhiteColor);
+                    }
+
+                    linesBytes[layerIndex] = null;
+
+                    this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+
+                    progress.LockAndIncrement();
+                });
+            }
 
             HeaderSettings = Helpers.Deserialize<Header>(inputFile);
             HeaderSettings.Validate();

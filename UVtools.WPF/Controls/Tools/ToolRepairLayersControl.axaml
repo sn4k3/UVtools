@@ -35,15 +35,17 @@
       </StackPanel>
 
     <Grid ColumnDefinitions="Auto,10,150,5,Auto"
-          RowDefinitions="Auto,10,Auto">
+          RowDefinitions="Auto,10,Auto,10,Auto">
 
       <!-- Remove islands equal or smaller than -->
       <TextBlock
         Grid.Row="0"
         Grid.Column="0"
           VerticalAlignment="Center"
+        IsEnabled="{Binding Operation.RepairIslands}"
         ToolTip.Tip="The pixel area threshold above which islands will not be removed by this repair.
-  &#x0a;Islands remaining after repair will require supports to be added manually."
+&#x0a;Islands remaining after repair will require supports to be added manually.
+&#x0a;NOTE: This repair method requires the issues to be manually computed before hand."
           Text="Remove islands equal or smaller than:"/>
       
         <NumericUpDown
@@ -52,9 +54,11 @@
           Increment="1"
           Minimum="0"
           Maximum="65535"
+          IsEnabled="{Binding Operation.RepairIslands}"
           
           ToolTip.Tip="The pixel area threshold above which islands will not be removed by this repair.
-&#x0a;Islands remaining after repair will require supports to be added manually."
+&#x0a;Islands remaining after repair will require supports to be added manually.
+&#x0a;NOTE: This repair method requires the issues to be manually computed before hand."
           Value="{Binding Operation.RemoveIslandsBelowEqualPixelCount}"
           />
         
@@ -62,6 +66,7 @@
         Grid.Row="0"
         Grid.Column="4"
           VerticalAlignment="Center"
+        IsEnabled="{Binding Operation.RepairIslands}"
           Text="px"/>
 
 
@@ -70,10 +75,11 @@
         Grid.Row="2"
         Grid.Column="0"
           VerticalAlignment="Center"
+        IsEnabled="{Binding Operation.RepairIslands}"
         ToolTip.Tip="If the removal of an island in the current layer results in a new island being introduce in the layer above, the island in the layer above will also be automatically removed.
 &#x0a;This process will repeat for up to the number of layers specified. Set to 0 to repeat until there are no more valid islands to remove.
-&#x0a;
 &#x0a;NOTE: Use with caution as this can remove large portions of your model if proper supports have not been added beforehand.
+&#x0a;This repair method requires the issues to be manually computed before hand.
 &#x0a;Using this function with high values can be extremely slow depending on resolution and issue count."
           Text="Recursively remove islands for up to:"/>
 
@@ -83,22 +89,54 @@
         Increment="1"
         Minimum="0"
         Maximum="65535"
-        
+        IsEnabled="{Binding Operation.RepairIslands}"
         ToolTip.Tip="If the removal of an island in the current layer results in a new island being introduce in the layer above, the island in the layer above will also be automatically removed.
 &#x0a;This process will repeat for up to the number of layers specified. Set to 0 to repeat until there are no more valid islands to remove.
-&#x0a;
 &#x0a;NOTE: Use with caution as this can remove large portions of your model if proper supports have not been added beforehand.
+&#x0a;This repair method requires the issues to be manually computed before hand.
 &#x0a;Using this function with high values can be extremely slow depending on resolution and issue count."
         Value="{Binding Operation.RemoveIslandsRecursiveIterations}"
         />
         
-
       <TextBlock
         Grid.Row="2"
         Grid.Column="4"
           VerticalAlignment="Center"
+        IsEnabled="{Binding Operation.RepairIslands}"
           Text="layers"/>
 
+
+      <!-- Attempt to attach islands below -->
+      <TextBlock
+          Grid.Row="4"
+          Grid.Column="0"
+          VerticalAlignment="Center"
+          IsEnabled="{Binding Operation.RepairIslands}"
+          ToolTip.Tip="Attempt to attach the islands down to n layers when found a safe mass below to support it.
+&#x0a;NOTE: Use with caution and with a low value, this can mostly be used when there are some missed support layers in between as observed from the issues.
+&#x0a;This repair method requires the issues to be manually computed before hand.
+&#x0a;Use 0 to disable this repair method."
+          Text="Attempt to attach islands down to:"/>
+
+      <NumericUpDown
+          Grid.Row="4"
+          Grid.Column="2"
+          Increment="1"
+          Minimum="0"
+          Maximum="65535"
+          IsEnabled="{Binding Operation.RepairIslands}"
+          ToolTip.Tip="Attempt to attach the islands down to n layers when found a safe mass below to support it.
+&#x0a;NOTE: Use with caution and with a low value, this can mostly be used when there are some missed support layers in between as observed from the issues.
+&#x0a;This repair method requires the issues to be manually computed before hand.
+&#x0a;Use 0 to disable this repair method."
+          Value="{Binding Operation.AttachIslandsBelowLayers}"/>
+
+      <TextBlock
+          Grid.Row="4"
+          Grid.Column="4"
+          VerticalAlignment="Center"
+          IsEnabled="{Binding Operation.RepairIslands}"
+          Text="layers"/>
     </Grid>
 
 

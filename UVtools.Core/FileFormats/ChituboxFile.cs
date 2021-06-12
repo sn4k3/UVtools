@@ -380,6 +380,13 @@ namespace UVtools.Core.FileFormats
                 var image = new Mat(new Size((int) ResolutionX, (int) ResolutionY), DepthType.Cv8U, 3);
                 var span = image.GetBytePointer();
 
+                /*var previewSize = ResolutionX * ResolutionY  * 2;
+                if (previewSize != rawImageData.Length)
+                {
+                    throw new FileLoadException($"Thumbnail out of size, expecting {previewSize} bytes, got {rawImageData.Length}");
+                    return null;
+                }*/
+
                 int pixel = 0;
                 for (int n = 0; n < rawImageData.Length; n++)
                 {

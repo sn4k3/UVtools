@@ -308,8 +308,8 @@
         <Component Id="owc6F31DEF09608AA645959666A4CB7FBBC" Guid="c94570a5-5bb4-a53f-e12f-9581bddf7d08">
           <File Id="owf6F31DEF09608AA645959666A4CB7FBBC" Source="$(var.SourceDir)\mscordaccore.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owc4E313F8BFFE35360B32FE794558D37F8" Guid="3a8b626a-4506-c48d-46b6-b63a59616c3c">
-          <File Id="owf4E313F8BFFE35360B32FE794558D37F8" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_5.0.621.22011.dll" KeyPath="yes" />
+        <Component Id="owc628E325F4699E7AEC74011370E41ACEE" Guid="1965c775-7da4-0dcd-7aa2-4bda54a68382">
+          <File Id="owf628E325F4699E7AEC74011370E41ACEE" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_5.0.721.25508.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc5FC34571A1AE47A011FC6C2A95B00DA6" Guid="2591451e-0fe5-ccad-abf6-1d1097251253">
           <File Id="owf5FC34571A1AE47A011FC6C2A95B00DA6" Source="$(var.SourceDir)\mscordbi.dll" KeyPath="yes" />
@@ -897,8 +897,8 @@
               <Component Id="owc1C3DE0BEF10A5791E37D4C3D97AED5E1" Guid="b1851a14-1200-d448-1acd-b229bf6ac918">
                 <File Id="owf1C3DE0BEF10A5791E37D4C3D97AED5E1" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcFE63AE2337EB232D5C139086B8A44942" Guid="02bb8e1d-14a7-f786-5cb9-e7b37337918b">
-                <File Id="owfFE63AE2337EB232D5C139086B8A44942" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Creality HALOT-SKY CL-60.ini" KeyPath="yes" />
+              <Component Id="owc64BDFB521E8E34CAE3547B3D1B8F3996" Guid="71d86e2a-c6b7-884a-65ff-2260e4edd56f">
+                <File Id="owf64BDFB521E8E34CAE3547B3D1B8F3996" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Creality HALOT-ONE CL-60.ini" KeyPath="yes" />
               </Component>
               <Component Id="owc88F58B3D3A8E53CEFC3FE84F6C20FAB8" Guid="8f66ab9b-8ff1-f324-9ec5-5cbb688dd5f6">
                 <File Id="owf88F58B3D3A8E53CEFC3FE84F6C20FAB8" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Creality HALOT-SKY CL-89.ini" KeyPath="yes" />

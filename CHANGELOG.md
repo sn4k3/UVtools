@@ -1,5 +1,16 @@
 # Changelog
 
+## 12/06/2021 - v2.13.3
+
+- **File formats:**
+   - (Add) CXDLP v2 
+   - (Improved) GR1, MDLP, CXDLP decode and encode performance and memory optimization
+   - (Remove) CXDLP v1 from available formats
+- (Add) Pixel editor - Drawing: New brushes of shapes/polygons
+- (Upgrade) .NET from 5.0.6 to 5.0.7
+- (Fix) When there are issues on the list, executing any operation will navigate to the last layer
+- (Fix) PrusaSlicer printer: Rename "Creality HALOT-SKY CL-60" to "Creality HALOT-ONE CL-60"
+
 ## 06/06/2021 - v2.13.2
 
 - (Upgrade) AvaloniaUI from 0.10.5 to 0.10.6

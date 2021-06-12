@@ -823,7 +823,7 @@
                 </Border>
 
                 <Grid
-                    RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+                    RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
                     ColumnDefinitions="Auto,10,130,5,40">
 
                   <TextBlock
@@ -853,12 +853,30 @@
                     SelectedItem="{Binding DrawingPixelDrawing.BrushShape}"/>
 
                   <TextBlock
-                    Grid.Row="4"
+                      Grid.Row="4"
+                      Grid.Column="0"
+                      VerticalAlignment="Center"
+                      Text="Rotation angle:" />
+                  <NumericUpDown
+                      Grid.Row="4"
+                      Grid.Column="2"
+                      FormatString="F2"
+                      Minimum="-360"
+                      Maximum="360"
+                      Value="{Binding DrawingPixelDrawing.RotationAngle}"/>
+                  <TextBlock
+                      Grid.Row="4"
+                      Grid.Column="4"
+                      VerticalAlignment="Center"
+                      Text="º" />
+
+                  <TextBlock
+                    Grid.Row="6"
                     Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Brush diameter:" />
                   <NumericUpDown
-                    Grid.Row="4"
+                    Grid.Row="6"
                     Grid.Column="2"
                     Minimum="1"
                     Maximum="4000"
@@ -866,18 +884,18 @@
                     HorizontalAlignment="Stretch"
                     Value="{Binding DrawingPixelDrawing.BrushSize}"/>
                   <TextBlock
-                    Grid.Row="4"
+                    Grid.Row="6"
                     Grid.Column="4"
                     VerticalAlignment="Center"
                     Text="px" />
 
                   <TextBlock
-                    Grid.Row="6"
+                    Grid.Row="8"
                     Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Thickness:" />
                   <NumericUpDown
-                    Grid.Row="6"
+                    Grid.Row="8"
                     Grid.Column="2"
                     Minimum="-1"
                     Maximum="255"
@@ -885,18 +903,18 @@
                     HorizontalAlignment="Stretch"
                     Value="{Binding DrawingPixelDrawing.Thickness}"/>
                   <TextBlock
-                    Grid.Row="6"
+                    Grid.Row="8"
                     Grid.Column="4"
                     VerticalAlignment="Center"
                     Text="px" />
 
                   <TextBlock
-                      Grid.Row="8"
+                      Grid.Row="10"
                       Grid.Column="0"
                       VerticalAlignment="Center"
                       Text="Remove pixel brightness:" />
                   <NumericUpDown
-                      Grid.Row="8"
+                      Grid.Row="10"
                       Grid.Column="2"
                       Minimum="0"
                       Maximum="255"
@@ -904,18 +922,18 @@
                       HorizontalAlignment="Stretch"
                       Value="{Binding DrawingPixelDrawing.RemovePixelBrightness}"/>
                   <TextBlock
-                      Grid.Row="8"
+                      Grid.Row="10"
                       Grid.Column="4"
                       VerticalAlignment="Center"
                       Text="{Binding DrawingPixelDrawing.RemovePixelBrightnessPercent, StringFormat=\{0:0\}%}" />
 
                   <TextBlock
-                      Grid.Row="10"
+                      Grid.Row="12"
                       Grid.Column="0"
                       VerticalAlignment="Center"
                       Text="Add pixel brightness:" />
                   <NumericUpDown
-                      Grid.Row="10"
+                      Grid.Row="12"
                       Grid.Column="2"
                       Minimum="1"
                       Maximum="255"
@@ -923,18 +941,18 @@
                       HorizontalAlignment="Stretch"
                       Value="{Binding DrawingPixelDrawing.PixelBrightness}"/>
                   <TextBlock
-                      Grid.Row="10"
+                      Grid.Row="12"
                       Grid.Column="4"
                       VerticalAlignment="Center"
                       Text="{Binding DrawingPixelDrawing.PixelBrightnessPercent, StringFormat=\{0:0\}%}" />
 
                   <TextBlock
-                    Grid.Row="12"
+                    Grid.Row="14"
                     Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Layers depth below:" />
                   <NumericUpDown
-                    Grid.Row="12"
+                    Grid.Row="14"
                     Grid.Column="2"
                     Grid.ColumnSpan="3"
                     Minimum="0"
@@ -944,12 +962,12 @@
 
 
                   <TextBlock
-                      Grid.Row="14"
+                      Grid.Row="16"
                       Grid.Column="0"
                       VerticalAlignment="Center"
                       Text="Layers depth above:" />
                   <NumericUpDown
-                    Grid.Row="14"
+                    Grid.Row="16"
                     Grid.Column="2"
                     Grid.ColumnSpan="3"
                     Minimum="0"

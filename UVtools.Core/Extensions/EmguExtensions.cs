@@ -608,7 +608,8 @@ namespace UVtools.Core.Extensions
         /// <param name="startingAngle"></param>
         /// <param name="thickness"></param>
         /// <param name="lineType"></param>
-        public static void DrawPolygon(this Mat src, int sides, int radius, Point center, MCvScalar color, double startingAngle = 0, int thickness = -1, LineType lineType = LineType.EightConnected)
+        /// <param name="flip"></param>
+        public static void DrawPolygon(this Mat src, int sides, int radius, Point center, MCvScalar color, double startingAngle = 0, int thickness = -1, LineType lineType = LineType.EightConnected, FlipType flip = FlipType.None)
         {
             if (sides == 1)
             {
@@ -625,7 +626,9 @@ namespace UVtools.Core.Extensions
                 return;
             }
 
-            var points = DrawingExtensions.GetPolygonVertices(sides, radius, center, startingAngle);
+            var points = DrawingExtensions.GetPolygonVertices(sides, radius, center, startingAngle,
+                (flip & FlipType.Horizontal) != 0, (flip & FlipType.Vertical) != 0);
+
             if (thickness <= 0)
             {
                 using var vec = new VectorOfPoint(points);

@@ -4,6 +4,11 @@
 //      File: Creality
 //   Authors: Julien Delnatte
 //------------------------------------------------
+// CHANGELOG:
+// Add uint16 unknown after header (Set to 2)
+// Add uint32 modelSize and BYTE model[modelSize] after unknown
+// Add byte offset[64] after resolutionY (Zeros)
+
 
 typedef struct {
     BitfieldDisablePadding();    ushort startY:13;    ushort endY:13;    ushort x:14;
@@ -39,6 +44,8 @@ struct HEADER {
     uint16 resolutionX <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 resolutionY <fgcolor=cBlack, bgcolor=cWhite>;
 
+    byte offset[64];
+
     rgbPreviewImageRawData preview(116*116*2);
     BYTE rn0[2] <fgcolor=cBlack, bgcolor=cRed>;
 
@@ -46,9 +53,7 @@ struct HEADER {
     BYTE rn1[2] <fgcolor=cBlack, bgcolor=cRed>;
 
     rgbPreviewImageRawData preview2(290*290*2);
-    BYTE rn2[2] <fgcolor=cBlack, bgcolor=cRed>;
-
-    byte offset[64];
+    BYTE rn2[2] <fgcolor=cBlack, bgcolor=cRed>;   
 
     uint32 plateformXLength <fgcolor=cBlack, bgcolor=cWhite>;
     wchar_t plateformX[plateformXLength/2];

@@ -41,19 +41,17 @@ namespace UVtools.Core
 
         public static uint SerializeWriteFileStream(FileStream fs, object value, int offset = 0)
         {
-            using MemoryStream stream = Serialize(value);
+            using var stream = Serialize(value);
             return fs.WriteStream(stream, offset);
         }
 
         public static T JsonDeserializeObject<T>(Stream stream)
         {
-            using (TextReader tr = new StreamReader(stream))
-            {
-                return JsonConvert.DeserializeObject<T>(tr.ReadToEnd());
-            }
+            using TextReader tr = new StreamReader(stream);
+            return JsonConvert.DeserializeObject<T>(tr.ReadToEnd());
         }
 
-        public static SHA1CryptoServiceProvider SHA1 { get; } = new SHA1CryptoServiceProvider();
+        public static SHA1CryptoServiceProvider SHA1 { get; } = new();
         public static string ComputeSHA1Hash(byte[] input)
         {
             return Convert.ToBase64String(SHA1.ComputeHash(input));

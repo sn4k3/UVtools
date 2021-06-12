@@ -9,9 +9,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV;
@@ -19,7 +21,6 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
-using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
@@ -32,8 +33,10 @@ namespace UVtools.Core.Operations
         private bool _removeEmptyLayers = true;
         private ushort _removeIslandsBelowEqualPixelCount = 5;
         private ushort _removeIslandsRecursiveIterations = 4;
+        private ushort _attachIslandsBelowLayers = 2;
         private uint _gapClosingIterations = 1;
         private uint _noiseRemovalIterations;
+
         #endregion
 
         #region Overrides
@@ -102,6 +105,12 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _removeIslandsRecursiveIterations, value);
         }
 
+        public ushort AttachIslandsBelowLayers
+        {
+            get => _attachIslandsBelowLayers;
+            set => RaiseAndSetIfChanged(ref _attachIslandsBelowLayers, value);
+        }
+
         public uint GapClosingIterations
         {
             get => _gapClosingIterations;
@@ -126,21 +135,20 @@ namespace UVtools.Core.Operations
         protected override bool ExecuteInternally(OperationProgress progress)
         {
             // Remove islands
-            if (!ReferenceEquals(Issues, null)
-                && !ReferenceEquals(IslandDetectionConfig, null)
-                && RepairIslands
-                && RemoveIslandsBelowEqualPixelCount > 0
-                && RemoveIslandsRecursiveIterations != 1)
+            if (Issues is not null
+                && IslandDetectionConfig is not null
+                && _repairIslands
+                && _removeIslandsBelowEqualPixelCount > 0
+                && _removeIslandsRecursiveIterations != 1)
             {
                 progress.Reset("Removed recursive islands");
-                ushort limit = RemoveIslandsRecursiveIterations == 0
+                ushort limit = _removeIslandsRecursiveIterations == 0
                     ? ushort.MaxValue
-                    : RemoveIslandsRecursiveIterations;
+                    : _removeIslandsRecursiveIterations;
 
                 var recursiveIssues = Issues;
-                ConcurrentBag<uint> islandsToRecompute = null;
-
-                var islandConfig = IslandDetectionConfig;
+                var islandsToRecompute = new ConcurrentBag<uint>();
+                var islandConfig = IslandDetectionConfig.Clone();
                 var overhangConfig = new OverhangDetectionConfiguration(false);
                 var touchingBoundsConfig = new TouchingBoundDetectionConfiguration(false);
                 var printHeightConfig = new PrintHeightDetectionConfiguration(false);
@@ -148,7 +156,7 @@ namespace UVtools.Core.Operations
                 var emptyLayersConfig = false;
 
                 islandConfig.Enabled = true;
-                islandConfig.RequiredAreaToProcessCheck = (ushort) Math.Floor(RemoveIslandsBelowEqualPixelCount / 2m);
+                islandConfig.RequiredAreaToProcessCheck = (ushort) Math.Floor(_removeIslandsBelowEqualPixelCount / 2.0);
 
                 for (uint i = 0; i < limit; i++)
                 {
@@ -169,7 +177,8 @@ namespace UVtools.Core.Operations
                         .GroupBy(issue => issue.LayerIndex);
 
                     if (!issuesGroup.Any()) break; // Nothing to process
-                    islandsToRecompute = new ConcurrentBag<uint>();
+
+                    islandsToRecompute.Clear();
                     Parallel.ForEach(issuesGroup, group =>
                     {
                         if (progress.Token.IsCancellationRequested) return;
@@ -193,17 +202,127 @@ namespace UVtools.Core.Operations
                         layer.LayerMat = image;
                     });
 
+                    // Remove from main list due the replicate below repair
+                    Issues.RemoveAll(issue => issue.Type == LayerIssue.IssueType.Island && issue.Pixels.Length <= RemoveIslandsBelowEqualPixelCount);
+
                     if (islandsToRecompute.IsEmpty) break; // No more leftovers
                 }
             }
 
+            if (_repairIslands && _attachIslandsBelowLayers > 0)
+            {
+                var islandsToProcess = Issues;
+
+                if (islandsToProcess is null)
+                {
+                    var islandConfig = IslandDetectionConfig.Clone();
+                    var overhangConfig = new OverhangDetectionConfiguration(false);
+                    var touchingBoundsConfig = new TouchingBoundDetectionConfiguration(false);
+                    var printHeightConfig = new PrintHeightDetectionConfiguration(false);
+                    var resinTrapsConfig = new ResinTrapDetectionConfiguration(false);
+                    var emptyLayersConfig = false;
+
+                    islandConfig.Enabled = true;
+
+                    islandsToProcess = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapsConfig, touchingBoundsConfig, printHeightConfig, emptyLayersConfig, null, progress);
+                }
+
+                var issuesGroup =
+                    islandsToProcess
+                        .Where(issue => issue.Type == LayerIssue.IssueType.Island)
+                        .GroupBy(issue => issue.LayerIndex);
+
+
+                progress.Reset("Attempt to attach islands below", (uint) islandsToProcess.Count);
+                Parallel.ForEach(issuesGroup, group =>
+                {
+                    using var mat = SlicerFile[group.Key].LayerMat;
+                    var matSpan = mat.GetDataByteSpan();
+                    var matCache = new Dictionary<uint, Mat>();
+                    var matCacheModified = new Dictionary<uint, bool>();
+                    var startLayer = Math.Max(0, (int)group.Key - 2);
+                    var lowestPossibleLayer = (uint)Math.Max(0, (int)group.Key - 1 - _attachIslandsBelowLayers);
+                    
+                    for (var layerIndex = startLayer+1; layerIndex >= lowestPossibleLayer; layerIndex--)
+                    {
+                        Debug.WriteLine(layerIndex);
+                        Monitor.Enter(SlicerFile[layerIndex].Mutex);
+                        matCache.Add((uint) layerIndex, SlicerFile[layerIndex].LayerMat);
+                        matCacheModified.Add((uint) layerIndex, false);
+                    }
+
+                    foreach (var issue in group)
+                    {
+                        int foundAt = startLayer == 0 ? 0 : - 1;
+                        var requiredSupportingPixels = Math.Max(1, issue.PixelsCount * IslandDetectionConfig.RequiredPixelsToSupportMultiplier);
+
+                        for (var layerIndex = startLayer; layerIndex >= lowestPossibleLayer && foundAt < 0; layerIndex--)
+                        {
+                            uint pixelsSupportingIsland = 0;
+                            
+                            unsafe
+                            {
+                                var span = matCache[(uint) layerIndex].GetBytePointer();
+                                foreach (var point in issue.Pixels)
+                                {
+                                    if (span[mat.GetPixelPos(point)] <
+                                        IslandDetectionConfig.RequiredPixelBrightnessToSupport)
+                                    {
+                                        continue;
+                                    }
+
+                                    pixelsSupportingIsland++;
+
+                                    if (pixelsSupportingIsland >= requiredSupportingPixels)
+                                    {
+                                        foundAt = layerIndex + 1;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        // Copy pixels
+                        if (foundAt >= 0)
+                        {
+                            for (var layerIndex = startLayer + 1; layerIndex >= foundAt; layerIndex--)
+                            {
+                                matCacheModified[(uint) layerIndex] = true;
+                                unsafe
+                                {
+                                    var span = matCache[(uint) layerIndex].GetBytePointer();
+                                    foreach (var point in issue.Pixels)
+                                    {
+                                        var pos = mat.GetPixelPos(point);
+                                        span[pos] = (byte) Math.Min(span[pos] + matSpan[pos], byte.MaxValue);
+                                    }
+                                }
+                            }
+                        }
+
+                        progress.LockAndIncrement();
+                    }
+
+                    foreach (var dict in matCache)
+                    {
+                        if (matCacheModified[dict.Key])
+                        {
+                            SlicerFile[dict.Key].LayerMat = dict.Value;
+                        }
+                        dict.Value.Dispose();
+                        Monitor.Exit(SlicerFile[dict.Key].Mutex);
+                    }
+                });
+
+            }
+
             progress.Reset(ProgressAction, LayerRangeCount);
-            if (RepairIslands || RepairResinTraps)
+            if (_repairIslands || _repairResinTraps)
             {
                 Parallel.For(LayerIndexStart, LayerIndexEnd, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
-                    Layer layer = SlicerFile[layerIndex];
+                    var layer = SlicerFile[layerIndex];
                     Mat image = null;
 
                     void initImage()
@@ -213,7 +332,7 @@ namespace UVtools.Core.Operations
 
                     if (Issues is not null)
                     {
-                        if (RepairIslands && RemoveIslandsBelowEqualPixelCount > 0 && RemoveIslandsRecursiveIterations == 1)
+                        if (_repairIslands && _removeIslandsBelowEqualPixelCount > 0 && _removeIslandsRecursiveIterations == 1)
                         {
                             Span<byte> bytes = null;
                             foreach (var issue in Issues)
@@ -221,7 +340,7 @@ namespace UVtools.Core.Operations
                                 if (
                                     issue.LayerIndex != layerIndex ||
                                     issue.Type != LayerIssue.IssueType.Island ||
-                                    issue.Pixels.Length > RemoveIslandsBelowEqualPixelCount) continue;
+                                    issue.Pixels.Length > _removeIslandsBelowEqualPixelCount) continue;
 
                                 initImage();
                                 if (bytes == null)
@@ -232,21 +351,9 @@ namespace UVtools.Core.Operations
                                     bytes[image.GetPixelPos(issuePixel)] = 0;
                                 }
                             }
-                            /*if (issues.TryGetValue((uint)layerIndex, out var issueList))
-                            {
-                                var bytes = image.GetPixelSpan<byte>();
-                                foreach (var issue in issueList.Where(issue =>
-                                    issue.Type == LayerIssue.IssueType.Island && issue.Pixels.Length <= removeIslandsBelowEqualPixels))
-                                {
-                                    foreach (var issuePixel in issue.Pixels)
-                                    {
-                                        bytes[image.GetPixelPos(issuePixel)] = 0;
-                                    }
-                                }
-                            }*/
                         }
 
-                        if (RepairResinTraps)
+                        if (_repairResinTraps)
                         {
                             foreach (var issue in Issues.Where(issue => issue.LayerIndex == layerIndex && issue.Type == LayerIssue.IssueType.ResinTrap))
                             {
@@ -261,25 +368,25 @@ namespace UVtools.Core.Operations
                         }
                     }
 
-                    if (RepairIslands && (GapClosingIterations > 0 || NoiseRemovalIterations > 0))
+                    if (_repairIslands && (_gapClosingIterations > 0 || _noiseRemovalIterations > 0))
                     {
                         initImage();
                         using Mat kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3),
                             new Point(-1, -1));
-                        if (GapClosingIterations > 0)
+                        if (_gapClosingIterations > 0)
                         {
                             CvInvoke.MorphologyEx(image, image, MorphOp.Close, kernel, new Point(-1, -1),
-                                (int)GapClosingIterations, BorderType.Default, default);
+                                (int)_gapClosingIterations, BorderType.Default, default);
                         }
 
-                        if (NoiseRemovalIterations > 0)
+                        if (_noiseRemovalIterations > 0)
                         {
                             CvInvoke.MorphologyEx(image, image, MorphOp.Open, kernel, new Point(-1, -1),
-                                (int)NoiseRemovalIterations, BorderType.Default, default);
+                                (int)_noiseRemovalIterations, BorderType.Default, default);
                         }
                     }
 
-                    if (!ReferenceEquals(image, null))
+                    if (image is not null)
                     {
                         layer.LayerMat = image;
                         image.Dispose();
@@ -289,7 +396,7 @@ namespace UVtools.Core.Operations
                 });
             }
 
-            if (RemoveEmptyLayers)
+            if (_removeEmptyLayers)
             {
                 List<uint> removeLayers = new();
                 for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)

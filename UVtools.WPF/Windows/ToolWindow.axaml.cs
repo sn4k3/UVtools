@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Drawing;
-using System.IO;
-using System.Xml.Serialization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -147,7 +144,7 @@ namespace UVtools.WPF.Windows
             get => _layerIndexEnd;
             set
             {
-                if (!(ToolControl?.BaseOperation is null))
+                if (ToolControl?.BaseOperation is not null)
                 {
                     ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.None;
                     ToolControl.BaseOperation.LayerIndexEnd = value;
@@ -178,14 +175,14 @@ namespace UVtools.WPF.Windows
         {
             LayerIndexStart = 0;
             LayerIndexEnd = MaximumLayerIndex;
-            if(!(ToolControl is null))
+            if(ToolControl is not null)
                 ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.All;
         }
 
         public void SelectCurrentLayer()
         {
             LayerIndexStart = LayerIndexEnd = App.MainWindow.ActualLayer;
-            if (!(ToolControl is null))
+            if (ToolControl is not null)
                 ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.Current;
         }
 
@@ -193,7 +190,7 @@ namespace UVtools.WPF.Windows
         {
             LayerIndexEnd = App.MainWindow.ActualLayer;
             LayerIndexStart = 0;
-            if (!(ToolControl is null))
+            if (ToolControl is not null)
                 ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.None;
         }
 
@@ -201,7 +198,7 @@ namespace UVtools.WPF.Windows
         {
             LayerIndexStart = App.MainWindow.ActualLayer;
             LayerIndexEnd = SlicerFile.LastLayerIndex;
-            if (!(ToolControl is null))
+            if (ToolControl is not null)
                 ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.None;
         }
 
@@ -209,7 +206,7 @@ namespace UVtools.WPF.Windows
         {
             LayerIndexStart = 0;
             LayerIndexEnd = SlicerFile.BottomLayerCount-1u;
-            if (!(ToolControl is null))
+            if (ToolControl is not null)
                 ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.Bottom;
         }
 
@@ -217,21 +214,21 @@ namespace UVtools.WPF.Windows
         {
             LayerIndexStart = SlicerFile.BottomLayerCount;
             LayerIndexEnd = MaximumLayerIndex;
-            if (!(ToolControl is null))
+            if (ToolControl is not null)
                 ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.Normal;
         }
 
         public void SelectFirstLayer()
         {
             LayerIndexStart = LayerIndexEnd = 0;
-            if (!(ToolControl is null))
+            if (ToolControl is not null)
                 ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.First;
         }
 
         public void SelectLastLayer()
         {
             LayerIndexStart = LayerIndexEnd = MaximumLayerIndex;
-            if (!(ToolControl is null))
+            if (ToolControl is not null)
                 ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.Last;
         }
 
@@ -401,7 +398,7 @@ namespace UVtools.WPF.Windows
         {
             var name = string.IsNullOrWhiteSpace(_profileText) ? null : _profileText.Trim();
             var operation = OperationProfiles.FindByName(ToolControl.BaseOperation, name);
-            if (!(operation is null))
+            if (operation is not null)
             {
                 if (await this.MessageBoxQuestion(
                     $"A profile with same name or settings already exists.\nDo you want to overwrite:\n{operation}",

@@ -75,7 +75,7 @@ namespace UVtools.WPF.Controls.Calibrators
         {
             Operation.ErodeKernel.Matrix = _kernelCtrl.GetMatrix();
             Operation.ErodeKernel.Anchor = _kernelCtrl.Anchor;
-            return !(Operation.ErodeKernel.Matrix is null);
+            return Operation.ErodeKernel.Matrix is not null;
         }
 
         public void UpdatePreview()

@@ -55,3 +55,4 @@
 * Evert Goor
 * James Kao
 * Finn Newick
+* Thomas Wilbert
