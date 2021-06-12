@@ -4,7 +4,7 @@
 
 - **File formats:**
    - (Add) CXDLP v2 
-   - (Improvement) GR1, MDLP, CXDLP decode and encode performance and memory optimization
+   - (Improvement) GR1, MDLP and CXDLP decode/encode performance and memory optimization
    - (Remove) CXDLP v1 from available formats
 - (Add) Pixel editor - Drawing: New brushes of shapes/polygons with rotation
 - (Add) Island repair: Attempt to attach the islands down to n layers when found a safe mass below to support it.
