@@ -35,6 +35,7 @@ Set-Location $PSScriptRoot\..
 $enableMSI = $true
 #$buildOnly = 'linux-x64'
 #$buildOnly = 'win-x64'
+$enableNugetPublish = $true
 # Profilling
 $stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
 $deployStopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
@@ -129,6 +130,29 @@ $runtimes =
 # https://github.com/AppImage/AppImageKit/wiki/Bundling-.NET-Core-apps
 #Invoke-WebRequest -Uri $appImageUrl -OutFile $appImageFilePath
 #wsl chmod a+x $appImageFilePath
+
+if($null -ne $enableNugetPublish -and $enableNugetPublish)
+{
+    $nugetApiKeyFile = 'build/nuget_api.key'
+    if (Test-Path -Path $nugetApiKeyFile -PathType Leaf)
+    {
+        Write-Output "Creating nuget package"
+        dotnet pack UVtools.Core --configuration 'Release'
+
+        $nupkg = "UVtools.Core/bin/Release/UVtools.Core.$version.nupkg"
+
+        if (Test-Path -Path $nupkg -PathType Leaf){
+            $nugetApiKeyFile = (Get-Content $nugetApiKeyFile)
+            dotnet nuget push $nupkg --api-key $nugetApiKeyFile --source https://api.nuget.org/v3/index.json
+            #Remove-Item $nupkg
+        }else {
+            Write-Error "Nuget package publish failed!"
+            Write-Error "File '$nupkg' was not found"
+            return
+        }
+    }
+}
+return 
 
 foreach ($obj in $runtimes.GetEnumerator()) {
     if(![string]::IsNullOrWhiteSpace($buildOnly) -and !$buildOnly.Equals($obj.Name)) {continue}
@@ -228,7 +252,7 @@ $stopWatch.Stop()
 #>
 
 # MSI Installer for Windows
-if($enableMSI)
+if($null -ne $enableMSI -and $enableMSI)
 {
     $deployStopWatch.Restart()
     $runtime = 'win-x64'

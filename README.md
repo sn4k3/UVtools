@@ -1,9 +1,11 @@
 # UVtools
 
-[![License](https://img.shields.io/github/license/sn4k3/UVtools)](https://github.com/sn4k3/UVtools/blob/master/LICENSE)
-[![GitHub repo size](https://img.shields.io/github/repo-size/sn4k3/UVtools)](https://github.com/sn4k3/UVtools)
-[![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/sn4k3/UVtools?include_prereleases)](https://github.com/sn4k3/UVtools/releases)
-[![Downloads](https://img.shields.io/github/downloads/sn4k3/UVtools/total)](https://github.com/sn4k3/UVtools/releases)
+[![License](https://img.shields.io/github/license/sn4k3/UVtools?style=flat-square)](https://github.com/sn4k3/UVtools/blob/master/LICENSE)
+[![GitHub repo size](https://img.shields.io/github/repo-size/sn4k3/UVtools?style=flat-square)](https://github.com/sn4k3/UVtools)
+[![GitHub repo size](https://img.shields.io/github/languages/code-size/sn4k3/UVtools?style=flat-square)](https://github.com/sn4k3/UVtools)
+[![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/sn4k3/UVtools?include_prereleases&style=flat-square)](https://github.com/sn4k3/UVtools/releases)
+[![Downloads](https://img.shields.io/github/downloads/sn4k3/UVtools/total?style=flat-square)](https://github.com/sn4k3/UVtools/releases)
+[![Nuget](https://img.shields.io/nuget/v/UVtools.Core?style=flat-square)](https://www.nuget.org/packages/UVtools.Core)
 
 **MSLA/DLP, file analysis, calibration, repair, conversion and manipulation**
 
@@ -408,7 +410,14 @@ There are multiple ways to open your file:
 
 # Library -> Developers
 
-Are you a developer? This project include a .NET 5.0 library (UVtools.Core) that can be referenced in your application to make use of my work. Easy to use calls that allow you work with the formats. For more information navigate main code.
+Are you a developer?
+This project include a .NET 5.0 library (UVtools.Core) that can be referenced in your application to make use of my work. 
+Easy to use calls that allow you work with the formats. For more information navigate main code to see some calls.
+
+Nuget package: https://www.nuget.org/packages/UVtools.Core 
+```powershell
+dotnet add package UVtools.Core
+```
 
 ## Develop and build from Source
 
