@@ -152,7 +152,6 @@ if($null -ne $enableNugetPublish -and $enableNugetPublish)
         }
     }
 }
-return 
 
 foreach ($obj in $runtimes.GetEnumerator()) {
     if(![string]::IsNullOrWhiteSpace($buildOnly) -and !$buildOnly.Equals($obj.Name)) {continue}
