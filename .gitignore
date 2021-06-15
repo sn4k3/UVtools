@@ -356,3 +356,4 @@ MigrationBackup/
 UVtools.Platforms/linux-x64/libcvextern.so
 
 build/nuget_api.key
+build/*.key

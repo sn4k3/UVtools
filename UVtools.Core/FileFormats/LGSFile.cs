@@ -6,9 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-// https://github.com/cbiffle/catibo/blob/master/doc/cbddlp-ctb.adoc
-
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -34,7 +31,7 @@ namespace UVtools.Core.FileFormats
             //[FieldOrder(0)]  public uint Offset1     { get; set; }
 
             /// <summary>
-            /// Gets the file tag = MKSDLP
+            /// Gets the model name
             /// </summary>
             [FieldOrder(0)] [FieldLength(8)] public string Name { get; set; } = NameValue; // 0x00:
             [FieldOrder(1)] public uint Uint_08 { get; set; } = 4278190081; // 0x08: 0xff000001 ?
@@ -72,7 +69,7 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(33)] public float Float_88 { get; set; } = 6; // 0x88: 6?
             [FieldOrder(34)] public float Float_8c { get; set; } = 150; // 0x8c: 150 ?
             [FieldOrder(35)] public float Float_90 { get; set; } = 1001; // 0x90: 1001 ?
-            [FieldOrder(36)] public float Float_94 { get; set; } = 140;// 0x94: 140 for Longer 10, 170 for Longer 30?
+            [FieldOrder(36)] public float Float_94 { get; set; } = 140;// 0x94: 140 for lgs10, 170 for lgs30, 190 for lgs4k
             [FieldOrder(37)] public uint Uint_98 { get; set; } // 0x98: 0 ?
             [FieldOrder(38)] public uint Uint_9c { get; set; } // 0x9c: 0 ?
             [FieldOrder(39)] public uint Uint_a0 { get; set; } // 0xa0: 0 ?

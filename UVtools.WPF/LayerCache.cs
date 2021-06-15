@@ -27,7 +27,7 @@ namespace UVtools.WPF
         //private SKCanvas _canvas;
         private WriteableBitmap _bitmap;
 
-        public bool IsCached => !ReferenceEquals(_layer, null);
+        public bool IsCached => _layer is not null;
 
         public unsafe Layer Layer
         {
@@ -108,7 +108,7 @@ namespace UVtools.WPF
         public void CacheContours(bool refresh = false)
         {
             if(refresh) Clear();
-            if (!ReferenceEquals(_layerContours, null)) return;
+            if (_layerContours is not null) return;
             _layerContours = new VectorOfVectorOfPoint();
             _layerHierarchy = new Mat();
             CvInvoke.FindContours(Image, _layerContours, _layerHierarchy, RetrType.Ccomp,

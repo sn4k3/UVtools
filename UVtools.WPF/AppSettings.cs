@@ -5,11 +5,6 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
-using System;
-using System.Linq;
-using System.Reflection;
-using UVtools.Core.FileFormats;
-
 namespace UVtools.WPF
 {
     public static class AppSettings

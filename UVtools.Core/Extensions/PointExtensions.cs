@@ -65,6 +65,9 @@ namespace UVtools.Core.Extensions
 
         public static Point Half(this Point point) => new(point.X / 2, point.Y / 2);
         public static PointF Half(this PointF point) => new(point.X / 2, point.Y / 2);
+        public static Point ToPoint(this PointF point) => new((int) Math.Round(point.X), (int) Math.Round(point.Y));
+
+
 
         public static Size ToSize(this Point point) => new(point.X, point.Y);
 

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using Org.BouncyCastle.Asn1.X509;
 using QuantumConcepts.Formats.StereoLithography;
 
 namespace UVtools.Core.Slicer
@@ -152,8 +153,25 @@ namespace UVtools.Core.Slicer
 
         public Dictionary<float, Slice> SliceModel(float layerHeight)
         {
+            /*float volume = 0;
+            _stl.Facets.ForEach(facet =>
+            {
+                var v1 = facet.Vertices[0];
+                var v2 = facet.Vertices[1];
+                var v3 = facet.Vertices[2];
+
+                volume += (
+                     -(v3.X * v2.Y * v1.Z)
+                    + (v2.X * v3.Y * v1.Z)
+                    + (v3.X * v1.Y * v2.Z)
+                    - (v1.X * v3.Y * v2.Z)
+                    - (v2.X * v1.Y * v3.Z)
+                    + (v1.X * v2.Y * v3.Z)
+                ) / 6;
+            });*/
             var newDict = new Dictionary<float, Slice>();
-            for (var z = RangeUtils.CalculateLowZ(_stl); z <= RangeUtils.CalculateHighZ(_stl); z += layerHeight)
+            
+            for (var z = Layer.RoundHeight(LowZ); z <= HighZ; z = Layer.RoundHeight(z+layerHeight))
             {
                 if (_slices.Keys.Contains(z))
                     newDict[z] = _slices[z];
@@ -164,6 +182,11 @@ namespace UVtools.Core.Slicer
                 }
             }
             return newDict;
+        }
+
+        public void SliceModel2()
+        {
+
         }
         #endregion
 

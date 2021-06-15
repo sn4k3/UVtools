@@ -21,6 +21,8 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Avalonia.Controls.Primitives;
+using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -546,7 +548,6 @@ namespace UVtools.WPF
         protected override void OnOpened(EventArgs e)
         {
             base.OnOpened(e);
-
             var windowSize = this.GetScreenWorkingArea();
 
             if (Settings.General.StartMaximized

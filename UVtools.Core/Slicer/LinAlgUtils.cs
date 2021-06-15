@@ -85,17 +85,18 @@ namespace UVtools.Core.Slicer
             };
         }
 
-        public static float CalculateDimensionalValueAtIndex(PointF p1, PointF p2, float z, string precision = "0000")
+        public static float CalculateDimensionalValueAtIndex(PointF p1, PointF p2, float z, byte precision = 4)
         {
             var slope = (p1.Y - p2.Y) / (p1.X - p2.X);
             var intercept = p1.Y - (slope * p1.X);
             var rawVal = slope * z + intercept;
+            return (float)Math.Round(rawVal, precision);
             // using floats we end up with some infinitesimal rounding errors, 
             // so we need to set the precision to something reasonable. Default is 1/100th of a micron
             // I'm sure there's a better way than converting it to a string and then back to a float,
             // but that's what I've got right now, so that's what I'm doing.
-            var strVal = rawVal.ToString($"0.{precision}");
-            return float.Parse(strVal, CultureInfo.InvariantCulture.NumberFormat);
+            //var strVal = rawVal.ToString($"0.{precision}");
+            //return float.Parse(strVal, CultureInfo.InvariantCulture.NumberFormat);
         }
     }
 }

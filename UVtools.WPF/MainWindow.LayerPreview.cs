@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -23,6 +24,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
+using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.PixelEditor;
@@ -50,7 +52,8 @@ namespace UVtools.WPF
         #endregion
 
         public AdvancedImageBox LayerImageBox { get; private set; }
-        public SliderEx LayerSlider;
+        public Slider LayerSlider;
+        public Track LayerSlicerTrack;
         public Panel LayerNavigationTooltipPanel;
         public Border LayerNavigationTooltipBorder;
         private Canvas _issuesSliderCanvas;
@@ -86,13 +89,19 @@ namespace UVtools.WPF
         private readonly List<Point[]> _maskPoints = new ();
 
 
+
         public void InitLayerPreview()
         {
             LayerImageBox = this.FindControl<AdvancedImageBox>("LayerImage");
-            LayerSlider = this.FindControl<SliderEx>("Layer.Navigation.Slider");
+            LayerSlider = this.FindControl<Slider>("Layer.Navigation.Slider");
             LayerNavigationTooltipPanel = this.FindControl<Panel>("Layer.Navigation.Tooltip.Panel");
             LayerNavigationTooltipBorder = this.FindControl<Border>("Layer.Navigation.Tooltip.Border");
             _issuesSliderCanvas = this.Find<Canvas>("Layer.Navigation.IssuesCanvas");
+
+            LayerSlider.TemplateApplied += (sender, e) =>
+            {
+                LayerSlicerTrack = e.NameScope.Find<Track>("PART_Track");
+            };
 
             _showLayerImageDifference = Settings.LayerPreview.ShowLayerDifference;
             _showLayerOutlinePrintVolumeBoundary = Settings.LayerPreview.VolumeBoundsOutline;
@@ -546,9 +555,9 @@ namespace UVtools.WPF
             get
             {
                 double top = 0;
-                if (LayerSlider?.Track != null)
+                if (LayerSlicerTrack != null)
                 {
-                    double trackerPos = LayerSlider.Track.Thumb.Bounds.Height / 2 + LayerSlider.Track.Thumb.Bounds.Top;
+                    double trackerPos = LayerSlicerTrack.Thumb.Bounds.Height / 2 + LayerSlicerTrack.Thumb.Bounds.Top;
                     double halfTooltipHeight = LayerNavigationTooltipBorder.Bounds.Height / 2;
                     top = (trackerPos - halfTooltipHeight).Clamp(0,
                         LayerSlider.Bounds.Height - LayerNavigationTooltipBorder.Bounds.Height);

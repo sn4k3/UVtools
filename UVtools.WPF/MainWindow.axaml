@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:uc="clr-namespace:UVtools.WPF.Controls"
+        xmlns:uvtava="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
         mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="600"
         x:Class="UVtools.WPF.MainWindow"
         Title="UVtools"
@@ -1677,7 +1678,7 @@
           Name="Layer.Navigation.IssuesCanvas" Width="20"
           />
 
-        <uc:SliderEx
+        <Slider
           Grid.Column="2"
           Name="Layer.Navigation.Slider"
           Minimum="0"
@@ -1958,7 +1959,7 @@
         BorderBrush="WhiteSmoke"
         BorderThickness="5"
         >
-        <uc:AdvancedImageBox
+        <uvtava:AdvancedImageBox
             ShowGrid="{Binding Settings.LayerPreview.ShowBackgroudGrid}"
             GridCellSize="15"
             Name="LayerImage"/>

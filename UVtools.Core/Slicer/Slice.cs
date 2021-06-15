@@ -6,7 +6,9 @@
  *  of this license document, but changing it is not allowed.
  */
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Slicer
 {
@@ -37,6 +39,18 @@ namespace UVtools.Core.Slicer
             }
 
             return true;
+        }
+
+        public Point[] ToContour()
+        {
+            var points = new Point[Count*2];
+            for (var i = 0; i < Count; i++)
+            {
+                points[i] = this[i][0].ToPoint();
+                points[i+1] = this[i][1].ToPoint();
+            }
+
+            return points;
         }
     }
 }
