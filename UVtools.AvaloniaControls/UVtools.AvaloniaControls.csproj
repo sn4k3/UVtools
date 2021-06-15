@@ -8,7 +8,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageIcon>UVtools.png</PackageIcon>
     <PackageIconUrl />
-    <RepositoryUrl>https://github.com/sn4k3/UVtools/UVtools.AvaloniaControls</RepositoryUrl>
+    <RepositoryUrl>https://github.com/sn4k3/UVtools/tree/master/UVtools.AvaloniaControls</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>Advanced image box</PackageTags>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
