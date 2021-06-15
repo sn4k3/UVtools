@@ -10,5 +10,6 @@
       * Pan & zoom
       * Select regions
       * Pixel grid
+      * Cursor images
       * Configurable
       * Fast
