@@ -24,7 +24,7 @@ if (Test-Path -Path $nugetApiKeyFile -PathType Leaf)
 
     if (Test-Path -Path $nupkg -PathType Leaf){
         $nugetApiKeyFile = (Get-Content $nugetApiKeyFile)
-        #dotnet nuget push $nupkg --api-key $nugetApiKeyFile --source https://api.nuget.org/v3/index.json
+        dotnet nuget push $nupkg --api-key $nugetApiKeyFile --source https://api.nuget.org/v3/index.json
         #Remove-Item $nupkg
     }else {
         Write-Error "Nuget package publish failed!"
