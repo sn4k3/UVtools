@@ -8,7 +8,6 @@
 
 using System;
 using System.Text;
-using System.Threading.Tasks;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
 using UVtools.Core.Objects;

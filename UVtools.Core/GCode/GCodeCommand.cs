@@ -40,7 +40,7 @@ namespace UVtools.Core.GCode
             Comment = comment;
         }
 
-        public void Reset(string command, string arguments, string comment, bool enabled = true)
+        public void Set(string command, string arguments, string comment, bool enabled = true)
         {
             Enabled = enabled;
             Command = command;
@@ -48,13 +48,13 @@ namespace UVtools.Core.GCode
             Comment = comment;
         }
 
-        public void Reset(string command, string arguments)
+        public void Set(string command, string arguments)
         {
             Command = command;
             Arguments = arguments;
         }
 
-        public void Reset(string command)
+        public void Set(string command)
         {
             Command = command;
         }

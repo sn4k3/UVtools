@@ -509,13 +509,16 @@ namespace UVtools.Core.FileFormats
 
         public CWSFile()
         {
-            GCode.UseComments = true;
-            GCode.GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Partial;
-            GCode.GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.MillimetersPerMinute;
-            GCode.GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds;
-            GCode.GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.LayerIndexZero;
-            GCode.CommandShowImageM6054.Reset(";<Slice>", "{0}");
-            GCode.CommandWaitG4.Reset(";<Delay>", "{0}");
+            GCode = new GCodeBuilder
+            {
+                UseComments = true,
+                GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Partial,
+                GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.MillimetersPerMinute,
+                GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds,
+                GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.LayerIndexZero
+            };
+            GCode.CommandShowImageM6054.Set(";<Slice>", "{0}");
+            GCode.CommandWaitG4.Set(";<Delay>", "{0}");
         }
 
         #region Methods
@@ -647,7 +650,7 @@ namespace UVtools.Core.FileFormats
             }
 
             RebuildGCode();
-            outputFile.PutFileContent($"{filename}.gcode", GCode.ToString(), ZipArchiveMode.Create);
+            outputFile.PutFileContent($"{filename}.gcode", GCodeStr, ZipArchiveMode.Create);
         }
 
         protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
@@ -839,7 +842,7 @@ namespace UVtools.Core.FileFormats
             //GCode.Clear();
             //GCode.AppendLine($"; {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.Now}");
             StringBuilder sb = new();
-            sb.AppendLine(";(****Build and Slicing Parameters ****)");
+            sb.AppendLine(";(**** Build and Slicing Parameters ****)");
 
             foreach (var propertyInfo in OutputSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
@@ -987,7 +990,7 @@ namespace UVtools.Core.FileFormats
                         break;
                     }
                 }
-                outputFile.PutFileContent($"{Path.GetFileNameWithoutExtension(FileFullPath)}.gcode", GCode.ToString(), ZipArchiveMode.Update);
+                outputFile.PutFileContent($"{Path.GetFileNameWithoutExtension(FileFullPath)}.gcode", GCodeStr, ZipArchiveMode.Update);
 
                 /*foreach (var layer in this)
                 {

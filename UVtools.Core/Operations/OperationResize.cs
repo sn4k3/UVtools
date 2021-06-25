@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Emgu.CV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
-using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
@@ -54,6 +53,13 @@ namespace UVtools.Core.Operations
             }
 
             return sb.ToString();
+        }
+
+        public override string ToString()
+        {
+            var result = $"[X: {_x}%, Y: {_y}%] [Fade: {_isFade}] [Constrain: {_constrainXy}]" + LayerRangeString;
+            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+            return result;
         }
         #endregion
 
@@ -110,13 +116,6 @@ namespace UVtools.Core.Operations
         public OperationResize(FileFormat slicerFile) : base(slicerFile) { }
 
         #endregion
-
-        public override string ToString()
-        {
-            var result = $"[X: {_x}%, Y: {_y}%] [Fade: {_isFade}] [Constrain: {_constrainXy}]"+ LayerRangeString;
-            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
-            return result;
-        }
 
         #region Equality
 

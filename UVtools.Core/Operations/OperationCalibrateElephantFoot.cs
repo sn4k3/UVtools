@@ -26,12 +26,12 @@ namespace UVtools.Core.Operations
     public sealed class OperationCalibrateElephantFoot : Operation
     {
         #region Members
-        private decimal _layerHeight = 0.05M;
+        private decimal _layerHeight;
         private bool _syncLayers;
-        private ushort _bottomLayers = 10;
-        private ushort _normalLayers = 70;
-        private decimal _bottomExposure = 60;
-        private decimal _normalExposure = 12;
+        private ushort _bottomLayers;
+        private ushort _normalLayers;
+        private decimal _bottomExposure;
+        private decimal _normalExposure;
         private decimal _partScale = 1;
         private byte _margin = 30;
         private bool _extrudeText = true;
@@ -364,10 +364,12 @@ namespace UVtools.Core.Operations
         public override void InitWithSlicerFile()
         {
             base.InitWithSlicerFile();
-            _layerHeight = (decimal)SlicerFile.LayerHeight;
-            //_bottomLayers = slicerFile.BottomLayerCount;
-            _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
-            _normalExposure = (decimal)SlicerFile.ExposureTime;
+            if(_layerHeight <= 0) _layerHeight = (decimal)SlicerFile.LayerHeight;
+            if(_bottomExposure <= 0) _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
+            if(_normalExposure <= 0) _normalExposure = (decimal)SlicerFile.ExposureTime;
+            if (_bottomLayers <= 0) _bottomLayers = (ushort) Slicer.Slicer.MillimetersToLayers(1M, _layerHeight);
+            if (_normalLayers <= 0) _normalLayers = (ushort) Slicer.Slicer.MillimetersToLayers(3.5M, _layerHeight);
+
             _mirrorOutput = SlicerFile.MirrorDisplay;
         }
 

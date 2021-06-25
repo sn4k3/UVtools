@@ -1,5 +1,22 @@
 # Changelog
 
+## 25/06/2021 - v2.13.4
+
+- (Fix) ZCode: lcd.gcode was blank / not generating when converting from any file format
+- (Fix) Zcodex: Change MaterialId from `uint` to `string` (#223, #224)
+- (Fix) CXDLP: Set the default printer name to `CL-89` when creating new instance, was `null` before
+- (Fix) Some tools were unable to pull certain settings from profiles and imported settings:
+   - Elephant foot
+   - Exposure finder
+   - Grayscale
+   - Stress tower
+   - Tolerance
+   - XYZ Accuracy
+   - Change resolution
+   - Dynamic lifts
+- (Change) `Layer repair` icon at Issues tab and `Outline` icon on preview toolbar (#227)
+- (Developers) Created `UVtools.AvaloniaControls` project with `AdvancedImageBox` control for AvaloniaUI
+
 ## 12/06/2021 - v2.13.3
 
 - **File formats:**

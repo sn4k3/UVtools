@@ -426,14 +426,17 @@ namespace UVtools.Core.FileFormats
         #region Constructor
         public ZCodeFile()
         {
-            GCode.UseTailComma = true;
-            GCode.UseComments = false;
-            GCode.GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Absolute;
-            GCode.GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.CentimetersPerMinute;
-            GCode.GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds;
-            GCode.GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.FilenameNonZeroPNG;
-            GCode.MaxLEDPower = MaxLEDPower;
-            GCode.CommandClearImage.Enabled = false;
+            GCode = new GCodeBuilder
+            {
+                UseTailComma = true,
+                UseComments = false,
+                GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Absolute,
+                GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.CentimetersPerMinute,
+                GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds,
+                GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.FilenameNonZeroPNG,
+                MaxLEDPower = MaxLEDPower,
+                CommandClearImage = {Enabled = false}
+            };
         }
         #endregion
 
@@ -441,123 +444,119 @@ namespace UVtools.Core.FileFormats
 
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
-            using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
+            using ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create);
+            if (Thumbnails.Length > 0 && Thumbnails[0] is not null)
             {
-                if (Thumbnails.Length > 0 && Thumbnails[0] is not null)
-                {
-                    using var thumbnailsStream = outputFile.CreateEntry(PreviewFilename).Open();
-                    using var vec = new VectorOfByte();
-                    CvInvoke.Imencode(".png", Thumbnails[0], vec);
-                    thumbnailsStream.WriteBytes(vec.ToArray());
-                    thumbnailsStream.Close();
-                }
-
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    progress.Token.ThrowIfCancellationRequested();
-                    var layer = this[layerIndex];
-                    outputFile.PutFileContent($"{layerIndex + 1}.png", layer.CompressedBytes, ZipArchiveMode.Create);
-                    progress++;
-                }
-
-                XmlSerializer serializer = new(ManifestFile.GetType());
-                XmlSerializerNamespaces ns = new();
-                ns.Add("", "");
-                var entry = outputFile.CreateEntry(ManifestFilename);
-                using (var stream = entry.Open())
-                {
-                    serializer.Serialize(stream, ManifestFile, ns);
-                }
-
-                outputFile.PutFileContent(GCodeFilename, EncryptGCode(progress), ZipArchiveMode.Create);
+                using var thumbnailsStream = outputFile.CreateEntry(PreviewFilename).Open();
+                using var vec = new VectorOfByte();
+                CvInvoke.Imencode(".png", Thumbnails[0], vec);
+                thumbnailsStream.WriteBytes(vec.ToArray());
+                thumbnailsStream.Close();
             }
+
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                progress.Token.ThrowIfCancellationRequested();
+                var layer = this[layerIndex];
+                outputFile.PutFileContent($"{layerIndex + 1}.png", layer.CompressedBytes, ZipArchiveMode.Create);
+                progress++;
+            }
+
+            XmlSerializer serializer = new(ManifestFile.GetType());
+            XmlSerializerNamespaces ns = new();
+            ns.Add("", "");
+            var entry = outputFile.CreateEntry(ManifestFilename);
+            using (var stream = entry.Open())
+            {
+                serializer.Serialize(stream, ManifestFile, ns);
+            }
+
+            outputFile.PutFileContent(GCodeFilename, EncryptGCode(progress), ZipArchiveMode.Create);
         }
 
         protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
         {
-            using (var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read))
+            using var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read);
+            var entry = inputFile.GetEntry(ManifestFilename);
+            if (entry is null)
             {
-                var entry = inputFile.GetEntry(ManifestFilename);
-                if (entry is null)
-                {
-                    Clear();
-                    throw new FileLoadException($"{ManifestFilename} not found", fileFullPath);
-                }
+                Clear();
+                throw new FileLoadException($"{ManifestFilename} not found", fileFullPath);
+            }
 
-                try
-                {
-                    var serializer = new XmlSerializer(ManifestFile.GetType());
-                    using var stream = entry.Open();
-                    ManifestFile = (ZCodePrint)serializer.Deserialize(stream);
-                }
-                catch (Exception e)
-                {
-                    Clear();
-                    throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", fileFullPath);
-                }
+            try
+            {
+                var serializer = new XmlSerializer(ManifestFile.GetType());
+                using var stream = entry.Open();
+                ManifestFile = (ZCodePrint)serializer.Deserialize(stream);
+            }
+            catch (Exception e)
+            {
+                Clear();
+                throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", fileFullPath);
+            }
 
-                entry = inputFile.GetEntry(GCodeFilename);
-                if (entry is null)
-                {
-                    Clear();
-                    throw new FileLoadException($"{GCodeFilename} not found", fileFullPath);
-                }
+            entry = inputFile.GetEntry(GCodeFilename);
+            if (entry is null)
+            {
+                Clear();
+                throw new FileLoadException($"{GCodeFilename} not found", fileFullPath);
+            }
 
-                var encryptEngine = new RsaEngine();
-                using var txtreader = new StringReader(GCodeRSAPublicKey);
-                var keyParameter = (AsymmetricKeyParameter)new PemReader(txtreader).ReadObject();
-                encryptEngine.Init(true, keyParameter);
+            var encryptEngine = new RsaEngine();
+            using var txtreader = new StringReader(GCodeRSAPublicKey);
+            var keyParameter = (AsymmetricKeyParameter)new PemReader(txtreader).ReadObject();
+            encryptEngine.Init(true, keyParameter);
 
-                using (TextReader tr = new StreamReader(entry.Open()))
+            using (TextReader tr = new StreamReader(entry.Open()))
+            {
+                string line;
+                progress.Reset("Decrypting GCode", (uint) (entry.Length / 88));
+                while ((line = tr.ReadLine()) != null)
                 {
-                    string line;
-                    progress.Reset("Decrypting GCode", (uint) (entry.Length / 88));
-                    while ((line = tr.ReadLine()) != null)
-                    {
-                        if (string.IsNullOrEmpty(line)) continue;
-                        if (!line.EndsWith("==")) continue;
+                    if (string.IsNullOrEmpty(line)) continue;
+                    if (!line.EndsWith("==")) continue;
                         
-                        byte[] data = System.Convert.FromBase64String(line);
-                        var decodedBytes = encryptEngine.ProcessBlock(data, 0, data.Length);
-                        decodedBytes = decodedBytes.Skip(2).SkipWhile(b => b == 255 || b == 0).ToArray();
-                        GCode.AppendLine(Encoding.UTF8.GetString(decodedBytes));
+                    byte[] data = System.Convert.FromBase64String(line);
+                    var decodedBytes = encryptEngine.ProcessBlock(data, 0, data.Length);
+                    decodedBytes = decodedBytes.Skip(2).SkipWhile(b => b is 255 or 0).ToArray();
+                    GCode.AppendLine(Encoding.UTF8.GetString(decodedBytes));
                         
-                        progress++;
-                    }
-
-                    tr.Close();
-                }
-
-                LayerManager.Init(ManifestFile.Job.LayerCount);
-                progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
-
-                //var gcode = GCode.ToString();
-                //float lastPostZ = LayerHeight;
-
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    if (progress.Token.IsCancellationRequested) break;
-                    entry = inputFile.GetEntry($"{layerIndex+1}.png");
-                    if (entry is null)
-                    {
-                        Clear();
-                        throw new FileLoadException($"Layer {layerIndex+1} not found", fileFullPath);
-                    }
-
-                    using var stream = entry.Open();
-                    this[layerIndex] = new Layer(layerIndex, stream, LayerManager);
-
                     progress++;
                 }
 
-                GCode.ParseLayersFromGCode(this);
+                tr.Close();
+            }
 
-                entry = inputFile.GetEntry(PreviewFilename);
-                if (entry is not null)
+            LayerManager.Init(ManifestFile.Job.LayerCount);
+            progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
+
+            //var gcode = GCode.ToString();
+            //float lastPostZ = LayerHeight;
+
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                if (progress.Token.IsCancellationRequested) break;
+                entry = inputFile.GetEntry($"{layerIndex+1}.png");
+                if (entry is null)
                 {
-                    Thumbnails[0] = new Mat();
-                    CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[0]);
+                    Clear();
+                    throw new FileLoadException($"Layer {layerIndex+1} not found", fileFullPath);
                 }
+
+                using var stream = entry.Open();
+                this[layerIndex] = new Layer(layerIndex, stream, LayerManager);
+
+                progress++;
+            }
+
+            GCode.ParseLayersFromGCode(this);
+
+            entry = inputFile.GetEntry(PreviewFilename);
+            if (entry is not null)
+            {
+                Thumbnails[0] = new Mat();
+                CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[0]);
             }
 
             LayerManager.GetBoundingRectangle(progress);
@@ -619,7 +618,7 @@ namespace UVtools.Core.FileFormats
             var keyParameter = (AsymmetricKeyParameter)new PemReader(txtreader).ReadObject();
             encryptEngine.Init(true, keyParameter);
 
-            using StringReader sr = new(GCode.ToString());
+            using StringReader sr = new(GCodeStr);
             string line;
             while ((line = sr.ReadLine()) != null)
             {

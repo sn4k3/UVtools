@@ -24,6 +24,7 @@ namespace UVtools.Core.Operations
     [Serializable]
     public sealed class OperationLayerExportGif : Operation
     {
+        #region Enums
         public enum ExportGifRotateDirection : byte
         {
             None = 9,
@@ -45,7 +46,7 @@ namespace UVtools.Core.Operations
             Vertically,
             Both,
         }
-
+        #endregion
 
         #region Members
         private string _filePath;

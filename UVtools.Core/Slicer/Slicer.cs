@@ -205,5 +205,13 @@ namespace UVtools.Core.Slicer
         
         public static uint PixelsFromMillimetersX(Size resolution, SizeF display, decimal millimeters) => (uint)Math.Floor(resolution.Width / display.Width * (double) millimeters);
         public static uint PixelsFromMillimetersY(Size resolution, SizeF display, decimal millimeters) => (uint)Math.Floor(resolution.Height / display.Height * (double) millimeters);
+
+        public static uint MillimetersToLayers(float millimeters, float layerHeight) => (uint) Math.Floor(millimeters / layerHeight);
+        public static uint MillimetersToLayers(double millimeters, double layerHeight) => (uint) Math.Floor(millimeters / layerHeight);
+        public static uint MillimetersToLayers(decimal millimeters, decimal layerHeight) => (uint) Math.Floor(millimeters / layerHeight);
+
+        public static uint LayersToMillimeters(uint layers, float layerHeight) => (uint)Math.Floor(layers * layerHeight);
+        public static uint LayersToMillimeters(uint layers, double layerHeight) => (uint)Math.Floor(layers * layerHeight);
+        public static uint LayersToMillimeters(uint layers, decimal layerHeight) => (uint)Math.Floor(layers * layerHeight);
     }
 }

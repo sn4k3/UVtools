@@ -6,8 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-// https://github.com/cbiffle/catibo/blob/master/doc/cbddlp-ctb.adoc
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

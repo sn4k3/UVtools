@@ -61,10 +61,10 @@ namespace UVtools.Core.Operations
         #region Members
         private decimal _displayWidth;
         private decimal _displayHeight;
-        private decimal _layerHeight = 0.05M;
-        private ushort _bottomLayers = 3;
-        private decimal _bottomExposure = 60;
-        private decimal _normalExposure = 12;
+        private decimal _layerHeight;
+        private ushort _bottomLayers;
+        private decimal _bottomExposure;
+        private decimal _normalExposure;
         private decimal _topBottomMargin = 5;
         private decimal _leftRightMargin = 10;
         private byte _chamferLayers = 0;
@@ -960,10 +960,7 @@ namespace UVtools.Core.Operations
         public override void InitWithSlicerFile()
         {
             base.InitWithSlicerFile();
-            _layerHeight = (decimal)SlicerFile.LayerHeight;
-            _bottomLayers = SlicerFile.BottomLayerCount;
-            _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
-            _normalExposure = (decimal)SlicerFile.ExposureTime;
+           
             _mirrorOutput = SlicerFile.MirrorDisplay;
 
             if (SlicerFile.DisplayWidth > 0)
@@ -971,14 +968,17 @@ namespace UVtools.Core.Operations
             if (SlicerFile.DisplayHeight > 0)
                 DisplayHeight = (decimal)SlicerFile.DisplayHeight;
 
+            if(_layerHeight <= 0) _layerHeight = (decimal)SlicerFile.LayerHeight;
+            if(_bottomLayers <= 0) _bottomLayers = SlicerFile.BottomLayerCount;
+            if(_bottomExposure <= 0) _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
+            if(_normalExposure <= 0) _normalExposure = (decimal)SlicerFile.ExposureTime;
+
             if (_exposureGenManualBottom == 0)
                 _exposureGenManualBottom = (decimal) SlicerFile.BottomExposureTime;
             if (_exposureGenManualNormal == 0)
                 _exposureGenManualNormal = (decimal)SlicerFile.ExposureTime;
             if (_multipleBrightnessGenExposureTime == 0)
-            {
                 _multipleBrightnessGenExposureTime = (decimal)SlicerFile.ExposureTime;
-            }
 
             if (!SlicerFile.HavePrintParameterPerLayerModifier(FileFormat.PrintParameterModifier.ExposureSeconds))
             {

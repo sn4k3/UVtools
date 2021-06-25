@@ -16,6 +16,7 @@ using System.Reflection;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
 using UVtools.Core.Objects;
@@ -73,7 +74,7 @@ namespace UVtools.Core.FileFormats
 
         #region Properties
         public Header HeaderSettings { get; } = new Header();
-
+        
         public override FileFormatType FileType => FileFormatType.Archive;
 
         public override FileExtension[] FileExtensions { get; } = {
@@ -325,16 +326,21 @@ namespace UVtools.Core.FileFormats
 
         public override object[] Configs => new object[] { HeaderSettings };
 
+        public override bool SupportsGCode => base.SupportsGCode && !IsPHZZip;
+
         public bool IsPHZZip;
         #endregion
 
         public ChituboxZipFile()
         {
-            GCode.UseComments = true;
-            GCode.GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Absolute;
-            GCode.GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.MillimetersPerMinute;
-            GCode.GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds;
-            GCode.GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.FilenameNonZeroPNG;
+            GCode = new GCodeBuilder
+            {
+                UseComments = true,
+                GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Absolute,
+                GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.MillimetersPerMinute,
+                GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds,
+                GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.FilenameNonZeroPNG
+            };
         }
 
         #region Methods
@@ -372,7 +378,7 @@ namespace UVtools.Core.FileFormats
                 if (!IsPHZZip)
                 {
                     RebuildGCode();
-                    outputFile.PutFileContent(GCodeFilename, GCode.ToString(), ZipArchiveMode.Create);
+                    outputFile.PutFileContent(GCodeFilename, GCodeStr, ZipArchiveMode.Create);
                 }
 
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
@@ -444,7 +450,7 @@ namespace UVtools.Core.FileFormats
 
                 progress.ItemCount = LayerCount;
 
-                var gcode = GCode?.ToString();
+                var gcode = GCodeStr;
                 float lastPostZ = LayerHeight;
 
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
@@ -537,7 +543,7 @@ namespace UVtools.Core.FileFormats
 
                 if (!IsPHZZip)
                 {
-                    outputFile.PutFileContent(GCodeFilename, GCode.ToString(), ZipArchiveMode.Update);
+                    outputFile.PutFileContent(GCodeFilename, GCodeStr, ZipArchiveMode.Update);
                 }
             }
 

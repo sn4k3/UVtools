@@ -1175,7 +1175,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the GCode, returns null if not supported
         /// </summary>
-        public GCodeBuilder GCode { get; set; } = new();
+        public GCodeBuilder GCode { get; set; }
 
         /// <summary>
         /// Gets the GCode, returns null if not supported
@@ -1183,9 +1183,14 @@ namespace UVtools.Core.FileFormats
         public string GCodeStr => GCode?.ToString();
 
         /// <summary>
-        /// Gets if this file have available gcode
+        /// Gets if this file format supports gcode
         /// </summary>
-        public bool HaveGCode => !GCode?.IsEmpty ?? false;
+        public virtual bool SupportsGCode => GCode is not null;
+
+        /// <summary>
+        /// Gets if this file have available gcode to read
+        /// </summary>
+        public bool HaveGCode => SupportsGCode && !GCode.IsEmpty;
 
         /// <summary>
         /// Get all configuration objects with properties and values
@@ -1301,7 +1306,7 @@ namespace UVtools.Core.FileFormats
         {
             FileFullPath = null;
             LayerManager.Clear();
-            GCode.Clear();
+            GCode?.Clear();
 
             if (Thumbnails is not null)
             {
@@ -1984,7 +1989,7 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public virtual void RebuildGCode()
         {
-            if (GCode.IsEmpty) return;
+            if (!SupportsGCode) return;
             GCode.RebuildGCode(this);
         }
 

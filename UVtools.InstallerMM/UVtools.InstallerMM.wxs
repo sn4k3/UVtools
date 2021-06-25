@@ -833,6 +833,12 @@
         <Component Id="owc7382C9C8FF3A521BF6356335630BD375" Guid="aa17a4dd-086a-d8ca-2a94-5bed85c6d151">
           <File Id="owf7382C9C8FF3A521BF6356335630BD375" Source="$(var.SourceDir)\ucrtbase.dll" KeyPath="yes" />
         </Component>
+        <Component Id="owc569F1566ECE625286E8493EC67315736" Guid="c148e3e9-5880-6add-e3f9-b0bbc36f5071">
+          <File Id="owf569F1566ECE625286E8493EC67315736" Source="$(var.SourceDir)\UVtools.AvaloniaControls.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc9783B2A71C9B9BA65282E5F7847AF853" Guid="5d8bba8d-dd57-3bf5-32a2-79feff36a7e0">
+          <File Id="owf9783B2A71C9B9BA65282E5F7847AF853" Source="$(var.SourceDir)\UVtools.AvaloniaControls.pdb" KeyPath="yes" />
+        </Component>
         <Component Id="owc540CF8CDBE6617C60879532E387E1716" Guid="bd0331df-7b7e-28be-f87a-809cdbfa07f0">
           <File Id="owf540CF8CDBE6617C60879532E387E1716" Source="$(var.SourceDir)\UVtools.Core.dll" KeyPath="yes" />
         </Component>

@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using UVtools.Core.FileFormats;
-using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {

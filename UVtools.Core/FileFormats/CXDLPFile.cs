@@ -82,13 +82,17 @@ namespace UVtools.Core.FileFormats
 
             [FieldOrder(4)]
             [FieldLength(nameof(PrinterModelSize))]
-            public byte[] PrinterModelArray { get; set; }
+            public byte[] PrinterModelArray { get; set; } = { 0x43, 0x4C, 0x2D, 0x38, 0x39, 0x0 }; // CL-89
 
             [Ignore]
             public string PrinterModel
             {
                 get => Encoding.ASCII.GetString(PrinterModelArray).TrimEnd(char.MinValue);
-                set => PrinterModelArray = Encoding.ASCII.GetBytes(value+char.MinValue);
+                set
+                {
+                    PrinterModelArray = Encoding.ASCII.GetBytes(value + char.MinValue);
+                    PrinterModelSize = (uint) PrinterModelArray.Length;
+                }
             }
 
             /// <summary>

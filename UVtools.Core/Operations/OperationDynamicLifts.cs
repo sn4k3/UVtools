@@ -235,12 +235,26 @@ namespace UVtools.Core.Operations
         { }
 
         public OperationDynamicLifts(FileFormat slicerFile) : base(slicerFile)
-        {
-            _minBottomLiftHeight = _maxBottomLiftHeight = SlicerFile.BottomLiftHeight;
-            _minLiftHeight = _maxLiftHeight = SlicerFile.LiftHeight;
+        { }
 
-            _minBottomLiftSpeed = _maxBottomLiftSpeed = SlicerFile.BottomLiftSpeed;
-            _minLiftSpeed = _maxLiftSpeed = SlicerFile.LiftSpeed;
+        public override void InitWithSlicerFile()
+        {
+            base.InitWithSlicerFile();
+
+            if(_minBottomLiftHeight <= 0) _minBottomLiftHeight = SlicerFile.BottomLiftHeight;
+            if (_maxBottomLiftHeight <= 0 || _maxBottomLiftHeight < _minBottomLiftHeight) _maxBottomLiftHeight = _minBottomLiftHeight;
+
+            if (_minLiftHeight <= 0) _minLiftHeight = SlicerFile.LiftHeight;
+            if (_maxLiftHeight <= 0 || _maxLiftHeight < _minLiftHeight) _maxLiftHeight = _minLiftHeight;
+
+            if (_minBottomLiftSpeed <= 0) _minBottomLiftSpeed = SlicerFile.BottomLiftSpeed;
+            if (_maxBottomLiftSpeed <= 0 || _maxBottomLiftSpeed < _minBottomLiftSpeed) _maxBottomLiftSpeed = _minBottomLiftSpeed;
+
+            if(_minLiftSpeed <= 0) _minLiftSpeed = SlicerFile.LiftSpeed;
+            if (_maxLiftSpeed <= 0 || _maxLiftSpeed < _minLiftSpeed) _maxLiftSpeed = _minLiftSpeed;
+
+            RaisePropertyChanged(nameof(IsBottomLayersEnabled));
+            RaisePropertyChanged(nameof(IsNormalLayersEnabled));
         }
 
         #endregion

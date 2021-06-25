@@ -5,6 +5,8 @@
 //   Authors: Julien Delnatte
 //------------------------------------------------
 
+BigEndian();
+
 typedef struct {
     BitfieldDisablePadding();    ushort startY:13;    ushort endY:13;    ushort x:14;
     ubyte grey <fgcolor=cBlack, bgcolor=cWhite>;

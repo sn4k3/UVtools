@@ -648,6 +648,7 @@
             Spacing="2"
             VerticalAlignment="Center">
             <RepeatButton
+                VerticalAlignment="Stretch"
               HotKey="Ctrl + Shift + Down"
               ToolTip.Tip="Go to the previous issue [Ctrl + Shift + Down]"
               IsEnabled="{Binding IssueCanGoPrevious}"
@@ -659,7 +660,7 @@
 
             <TextBlock VerticalAlignment="Center">
               <TextBlock.Text>
-                <MultiBinding StringFormat="\{0\}/\{1\}">
+                <MultiBinding StringFormat="{}{0}/{1}">
                   <Binding Path="IssueSelectedIndexStr"/>
                   <Binding Path="Issues.Count"/>
                 </MultiBinding>
@@ -667,6 +668,7 @@
             </TextBlock>
 
             <RepeatButton
+                VerticalAlignment="Stretch"
               HotKey="Ctrl + Shift + Up"
               ToolTip.Tip="Go to the next issue [Ctrl + Shift + Up]"
               IsEnabled="{Binding IssueCanGoNext}"
@@ -677,6 +679,7 @@
             </RepeatButton>
 
             <Button
+                VerticalAlignment="Stretch"
               ToolTip.Tip="Hides and ignores the selected issues, they won't be re-detected.
 &#x0a;ALT + Click to re-enable the ignored issues."
               IsEnabled="{Binding #IssuesGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
@@ -685,6 +688,7 @@
             </Button>
 
             <Button
+                VerticalAlignment="Stretch"
               ToolTip.Tip="Remove selected issue when possible.
 &#x0a;Islands: All pixels are removed (turn black).
 &#x0a;ResinTrap: All trap areas are filled with white pixels.
@@ -709,14 +713,16 @@
             <Button
               IsEnabled="{Binding IsFileLoaded}"
               ToolTip.Tip="Attempt to repair issues"
+              VerticalAlignment="Stretch"
               Command="{Binding OnClickRepairIssues}">
               <StackPanel Orientation="Horizontal" Spacing="5">
-                <Image Source="/Assets/Icons/wrench-16x16.png" />
+                <Image Source="/Assets/Icons/toolbox-16x16.png" />
                 <!--<TextBlock VerticalAlignment="Center" Text="Repair"/>!-->
               </StackPanel>
             </Button>
 
             <Button
+                VerticalAlignment="Stretch"
               ToolTip.Tip="Compute Issues.
 &#x0a;Right click to access settings."
               Command="{Binding OnClickDetectIssues}">
@@ -1883,7 +1889,7 @@
               </ContextMenu>
             </Button.ContextMenu>
             <StackPanel Orientation="Horizontal">
-              <Image Source="/Assets/Icons/geometry-16x16.png"/>
+              <Image Source="/Assets/Icons/vector-square-16x16.png"/>
               <TextBlock Margin="5,0,5,0" Text="Outline ⮟"/>
             </StackPanel>
           </Button>

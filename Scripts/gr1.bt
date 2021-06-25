@@ -5,6 +5,8 @@
 //   Authors: Julien Delnatte
 //------------------------------------------------
 
+BigEndian();
+
 typedef struct {
     uint16 startY <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 endY <fgcolor=cBlack, bgcolor=cWhite>;

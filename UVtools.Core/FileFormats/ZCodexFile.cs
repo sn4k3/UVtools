@@ -50,7 +50,7 @@ namespace UVtools.Core.FileFormats
 
             public string Guid { get; set; } = "07452AC2-7494-4576-BA60-BFEA8815F917";
             public string Material { get; set; }
-            public uint MaterialId { get; set; }
+            public string MaterialId { get; set; }
             public float LayerThickness { get; set; }
             public uint PrintTime { get; set; }
             public uint LayerTime { get; set; }
@@ -350,6 +350,15 @@ namespace UVtools.Core.FileFormats
         public override object[] Configs => new[] {(object) ResinMetadataSettings, UserSettings, ZCodeMetadataSettings};
         #endregion
 
+        #region Constructor
+
+        public ZCodexFile()
+        {
+            GCode = new();
+        }
+
+        #endregion
+
         #region Methods
 
         public override void Clear()
@@ -521,7 +530,7 @@ M106 S255
 M106 S0
                          */
 
-                        var gcode = GCode.ToString();
+                        var gcode = GCodeStr;
 
                         if (line.StartsWith(GCodeKeywordDelaySupportFull) || line.StartsWith(GCodeKeywordDelayModel))
                         {
@@ -594,7 +603,7 @@ M106 S0
 
         public override void RebuildGCode()
         {
-            var gcode = GCode.ToString();
+            var gcode = GCodeStr;
             gcode = Regex.Replace(gcode, @"Z[+]?([0-9]*\.[0-9]+|[0-9]+) F[+]?([0-9]*\.[0-9]+|[0-9]+)",
                 $"Z{UserSettings.ZLiftDistance} F{UserSettings.ZLiftFeedRate}");
 
@@ -629,7 +638,7 @@ M106 S0
                 outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings, Formatting.Indented), ZipArchiveMode.Update);
                 outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings, Formatting.Indented), ZipArchiveMode.Update);
                 outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings, Formatting.Indented), ZipArchiveMode.Update);
-                outputFile.PutFileContent("ResinGCodeData", GCode.ToString(), ZipArchiveMode.Update);
+                outputFile.PutFileContent("ResinGCodeData", GCodeStr, ZipArchiveMode.Update);
             }
 
             //Decode(FileFullPath, progress);

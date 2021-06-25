@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Emgu.CV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
-using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {

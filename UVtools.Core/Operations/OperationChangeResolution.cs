@@ -126,8 +126,8 @@ namespace UVtools.Core.Operations
         public override void InitWithSlicerFile()
         {
             base.InitWithSlicerFile();
-            NewResolutionX = SlicerFile.ResolutionX;
-            NewResolutionY = SlicerFile.ResolutionY;
+            if(_newResolutionX <= 0) _newResolutionX = SlicerFile.ResolutionX;
+            if(_newResolutionY <= 0) _newResolutionY = SlicerFile.ResolutionY;
         }
 
         #endregion

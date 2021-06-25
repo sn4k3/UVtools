@@ -17,7 +17,7 @@ namespace UVtools.WPF
 {
     public partial class MainWindow
     {
-        public bool HaveGCode => IsFileLoaded && SlicerFile.HaveGCode;
+        public bool HaveGCode => IsFileLoaded && SlicerFile.SupportsGCode;
 
         public string GCodeStr => SlicerFile?.GCodeStr;
         public uint GCodeLines => !HaveGCode ? 0 : SlicerFile.GCode.LineCount;
