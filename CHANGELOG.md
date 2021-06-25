@@ -3,7 +3,7 @@
 ## 25/06/2021 - v2.13.4
 
 - (Fix) ZCode: lcd.gcode was blank / not generating when converting from any file format
-- (Fix) Zcodex: Change MaterialId from `uint` to `string` (#223, #224)
+- (Fix) Zcodex: Change MaterialId from `uint` to `string` (#223, #226)
 - (Fix) CXDLP: Set the default printer name to `CL-89` when creating new instance, was `null` before
 - (Fix) Some tools were unable to pull certain settings from profiles and imported settings:
    - Elephant foot
