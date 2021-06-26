@@ -20,7 +20,7 @@ struct HEADER {
     char name[8] <fgcolor=cBlack, bgcolor=cWhite>;
     uint32 Uint_08 <fgcolor=cBlack, bgcolor=cRed>;
     uint32 Uint_0C <fgcolor=cBlack, bgcolor=cRed>;
-    uint32 Uint_10 <fgcolor=cBlack, bgcolor=cRed>;
+    uint32 PrinterModel <fgcolor=cBlack, bgcolor=cRed>;
     uint32 Uint_14 <fgcolor=cBlack, bgcolor=cRed>;
     uint32 Uint_18 <fgcolor=cBlack, bgcolor=cRed>;
     
@@ -54,7 +54,7 @@ struct HEADER {
     float Float_88 <fgcolor=cBlack, bgcolor=cRed>;
     float Float_8c <fgcolor=cBlack, bgcolor=cRed>;
     float Float_90 <fgcolor=cBlack, bgcolor=cRed>;
-    float Float_94 <fgcolor=cBlack, bgcolor=cRed>;
+    float MachineZ <fgcolor=cBlack, bgcolor=cRed>;
     uint32 Uint_98 <fgcolor=cBlack, bgcolor=cRed>;
     uint32 Uint_9c <fgcolor=cBlack, bgcolor=cRed>;
     uint32 Uint_a0 <fgcolor=cBlack, bgcolor=cRed>;
@@ -64,6 +64,12 @@ struct HEADER {
     uint32 PreviewSizeY <fgcolor=cBlack, bgcolor=cRed>;
 
     rgbPreviewImageRawData preview(PreviewSizeX*PreviewSizeY*2);
+
+    if(MachineZ == 150) // .lgs120
+    {
+        uint32 pngLength <fgcolor=cBlack, bgcolor=cRed>;
+        byte png[pngLength] <fgcolor=cBlack, bgcolor=cYellow>;
+    }
 } header;
 
 struct LAYERS {
