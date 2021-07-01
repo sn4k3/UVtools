@@ -22,7 +22,7 @@ struct HEADER {
     uint32 Uint_0C <fgcolor=cBlack, bgcolor=cRed>;
     uint32 PrinterModel <fgcolor=cBlack, bgcolor=cRed>;
     uint32 Uint_14 <fgcolor=cBlack, bgcolor=cRed>;
-    uint32 Uint_18 <fgcolor=cBlack, bgcolor=cRed>;
+    uint32 MagicKey <fgcolor=cBlack, bgcolor=cRed>;
     
     float PixelPerMmX <fgcolor=cBlack, bgcolor=cRed>;
     float PixelPerMmY <fgcolor=cBlack, bgcolor=cRed>;
@@ -65,7 +65,7 @@ struct HEADER {
 
     rgbPreviewImageRawData preview(PreviewSizeX*PreviewSizeY*2);
 
-    if(MachineZ == 150) // .lgs120
+    if(PrinterModel == 120) // .lgs120
     {
         uint32 pngLength <fgcolor=cBlack, bgcolor=cRed>;
         byte png[pngLength] <fgcolor=cBlack, bgcolor=cYellow>;
