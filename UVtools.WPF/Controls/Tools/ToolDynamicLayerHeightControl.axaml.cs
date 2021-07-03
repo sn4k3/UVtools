@@ -44,7 +44,7 @@ namespace UVtools.WPF.Controls.Tools
                 return;
             }
 
-            if (!SlicerFile.HavePrintParameterPerLayerModifier(FileFormat.PrintParameterModifier.ExposureSeconds))
+            if (!SlicerFile.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.ExposureSeconds))
             {
                 App.MainWindow.MessageBoxWaring($"Your printer seems to not support this tool, still you are allowed to run it for analyze, packing layers or simulation.\n" +
                                                       $"Do not print this file after run this tool on a not compatible printer, it will result in malformed model and height violation.\n" +

@@ -191,12 +191,20 @@
         
         <MenuItem
           Header="_Donate"
-          InputGesture="Ctrl + Shift + F1" HotKey="Ctrl + Shift + F1"
           Command="{Binding OpenDonateWebsite}">
           <MenuItem.Icon>
             <Image Source="\Assets\Icons\donate-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
+
+          <MenuItem
+              Header="_Sponsor"
+              Command="{Binding OpenWebsite}"
+              CommandParameter="https://github.com/sponsors/sn4k3">
+              <MenuItem.Icon>
+                  <Image Source="\Assets\Icons\heart-16x16.png"/>
+              </MenuItem.Icon>
+          </MenuItem>
 
         <Separator/>
 

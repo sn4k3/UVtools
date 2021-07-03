@@ -1187,7 +1187,7 @@ namespace UVtools.Core.FileFormats
         public override object[] Configs => new object[] { FileMarkSettings, HeaderSettings, PreviewSettings, LayersDefinition };
 
         public LayerRleFormat LayerFormat =>
-            FileFullPath.EndsWith(".pws") || FileFullPath.EndsWith($".pws{TemporaryFileAppend}")
+            FileEndsWith(".pws")
                 ? LayerRleFormat.PWS
                 : LayerRleFormat.PW0;
 
@@ -1195,32 +1195,32 @@ namespace UVtools.Core.FileFormats
         {
             get
             {
-                if (FileFullPath.EndsWith(".pws") || FileFullPath.EndsWith($".pws{TemporaryFileAppend}"))
+                if (FileEndsWith(".pws"))
                 {
                     return AnyCubicMachine.AnyCubicPhotonS;
                 }
 
-                if (FileFullPath.EndsWith(".pw0") || FileFullPath.EndsWith($".pw0{TemporaryFileAppend}"))
+                if (FileEndsWith(".pw0"))
                 {
                     return AnyCubicMachine.AnyCubicPhotonZero;
                 }
 
-                if (FileFullPath.EndsWith(".pwx") || FileFullPath.EndsWith($".pwx{TemporaryFileAppend}"))
+                if (FileEndsWith(".pwx"))
                 {
                     return AnyCubicMachine.AnyCubicPhotonX;
                 }
 
-                if (FileFullPath.EndsWith(".pwmo") || FileFullPath.EndsWith($".pwmo{TemporaryFileAppend}"))
+                if (FileEndsWith(".pwmo"))
                 {
                     return AnyCubicMachine.AnyCubicPhotonMono;
                 }
 
-                if (FileFullPath.EndsWith(".pwms") || FileFullPath.EndsWith($".pwms{TemporaryFileAppend}"))
+                if (FileEndsWith(".pwms"))
                 {
                     return AnyCubicMachine.AnyCubicPhotonMonoSE;
                 }
 
-                if (FileFullPath.EndsWith(".pwmx") || FileFullPath.EndsWith($".pwmx{TemporaryFileAppend}"))
+                if (FileEndsWith(".pwmx"))
                 {
                     return AnyCubicMachine.AnyCubicPhotonMonoX;
                 }

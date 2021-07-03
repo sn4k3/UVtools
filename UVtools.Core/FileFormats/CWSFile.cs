@@ -532,7 +532,7 @@ namespace UVtools.Core.FileFormats
                 Printer = PrinterType.Elfin;
                 for (int i = 0; i < FileExtensions.Length; i++)
                 {
-                    if (!fileFullPath.EndsWith(FileExtensions[i].Extension) && !fileFullPath.EndsWith($"{FileExtensions[i].Extension}{TemporaryFileAppend}")) continue;
+                    if (!FileEndsWith(FileExtensions[i].Extension)) continue;
                     Printer = (PrinterType) i+1;
                 }
             }

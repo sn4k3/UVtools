@@ -811,7 +811,8 @@
                     Content="Enable - For advanced users only!"
                     IsChecked="{Binding Operation.MultipleExposures}"/>
 
-                <StackPanel Orientation="Horizontal" Spacing="20">
+                <StackPanel Orientation="Horizontal" Spacing="20"
+                            IsVisible="{Binding SlicerFile.CanUseLayerLiftHeight}">
 
                 <CheckBox
                     ToolTip.Tip="The lift height will be set to 0 for sequential layers that share same z position, saving moves and time.

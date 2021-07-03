@@ -264,6 +264,7 @@ namespace UVtools.Core.FileFormats
                     var now = DateTime.Now;
                     return $"{now.Year}-{now.Month:D2}-{now.Day:D2} at {now.Hour:D2}:{now.Minute:D2}:{now.Second:D2} {now.Kind}";
                 }
+                set{}
             }
             public float LayerHeight { get; set; }
             public string MaterialName { get; set; } = About.Software;
@@ -303,7 +304,8 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Archive;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new("sl1", "PrusaSlicer SL1")
+            new("sl1", "PrusaSlicer SL1"),
+            new("sl1s", "PrusaSlicer SL1S Speed")
         };
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
             PrintParameterModifier.BottomLayerCount,

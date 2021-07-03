@@ -960,11 +960,14 @@
               <Component Id="owc7B488E0A9D9B2656D06620E0CEEFDA13" Guid="7c2fe9e4-adb9-72d1-c0f4-ee7311cabadf">
                 <File Id="owf7B488E0A9D9B2656D06620E0CEEFDA13" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Longer Orange 10.ini" KeyPath="yes" />
               </Component>
+              <Component Id="owc81404C7F01EDBA07B087B424DAA40376" Guid="aaee9d27-478d-5d85-c09b-e2b2c8f61633">
+                <File Id="owf81404C7F01EDBA07B087B424DAA40376" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Longer Orange 120.ini" KeyPath="yes" />
+              </Component>
               <Component Id="owc227006E17D85BD8103B64C6480AF8A6F" Guid="33dff0a8-a2a6-7ad5-51b1-a91bc258b227">
                 <File Id="owf227006E17D85BD8103B64C6480AF8A6F" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Longer Orange 30.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcCF42E79995933F0457692A2F239FCBB5" Guid="fa18ff15-0e8a-1624-2359-2a9fc30791f0">
-                <File Id="owfCF42E79995933F0457692A2F239FCBB5" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Longer Orange4K.ini" KeyPath="yes" />
+              <Component Id="owc6FE42BDB3CE927703AA1E9971366D810" Guid="b3fd97c9-d3b8-b5db-942f-f7ab9d2195e5">
+                <File Id="owf6FE42BDB3CE927703AA1E9971366D810" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Longer Orange 4K.ini" KeyPath="yes" />
               </Component>
               <Component Id="owc60E90B40E8992C21339B84C28DFE9891" Guid="e8e24d92-2cb1-0bec-3963-817532a4c171">
                 <File Id="owf60E90B40E8992C21339B84C28DFE9891" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Bene4 Mono.ini" KeyPath="yes" />
@@ -1037,6 +1040,9 @@
               </Component>
               <Component Id="owcD0FD9259BE924EB58AE9F7A85AE0A9E8" Guid="360b089c-8765-92db-0c8f-367d80202d8f">
                 <File Id="owfD0FD9259BE924EB58AE9F7A85AE0A9E8" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\UVtools Prusa SL1.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc92527EBFC9C5B568C8D66A882C08D0B5" Guid="dcca948b-ff91-af94-7363-d77b50dde1a5">
+                <File Id="owf92527EBFC9C5B568C8D66A882C08D0B5" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\UVtools Prusa SL1S SPEED.ini" KeyPath="yes" />
               </Component>
               <Component Id="owc2D767EDC65A9490BE5587F5807220F67" Guid="1b34ea21-cadd-c887-3f4e-8655903ef11a">
                 <File Id="owf2D767EDC65A9490BE5587F5807220F67" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Voxelab Ceres 8.9.ini" KeyPath="yes" />

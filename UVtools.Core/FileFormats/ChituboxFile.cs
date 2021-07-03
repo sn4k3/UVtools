@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using BinarySerialization;
 using Emgu.CV;
@@ -29,6 +30,7 @@ namespace UVtools.Core.FileFormats
         #region Constants
         private const uint MAGIC_CBDDLP = 0x12FD0019; // 318570521
         private const uint MAGIC_CBT = 0x12FD0086; // 318570630
+        private const uint MAGIC_CBTv4 = 0x12FD0106; // 318570758
         private const ushort REPEATRGB15MASK = 0x20;
 
         private const byte RLE8EncodingLimit = 0x7d; // 125;
@@ -36,7 +38,11 @@ namespace UVtools.Core.FileFormats
 
         private const uint ENCRYPTYION_MODE_CBDDLP = 0x8;  // 0 or 8
         private const uint ENCRYPTYION_MODE_CTBv2 = 0xF; // 15 for ctb v2 files
-        private const uint ENCRYPTYION_MODE_CTBv3 = 0x2000000F; // 536870927 for ctb v3 files (This allow per layer settings, while 0xF don't)
+        private const uint ENCRYPTYION_MODE_CTBv3 = 536870927; // 536870927 for ctb v3 files (This allow per layer settings, while 15 don't)
+        private const uint ENCRYPTYION_MODE_CTBv4 = 1073741839; // 1073741839 for ctb v3 files (This allow per layer settings, while 15 don't)
+
+        private const string CTBv4_DISCLAIMER = "Layout and record format for the ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc..The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";
+        private const ushort CTBv4_DISCLAIMER_SIZE = 320;
         #endregion
 
         #region Sub Classes
@@ -270,13 +276,13 @@ namespace UVtools.Core.FileFormats
         public class SlicerInfo
         {
             private string _machineName;
-            [FieldOrder(0)] public uint Padding1           { get; set; }
-            [FieldOrder(1)] public uint Padding2           { get; set; }
-            [FieldOrder(2)] public uint Padding3           { get; set; }
-            [FieldOrder(3)] public uint Padding4           { get; set; }
-            [FieldOrder(4)] public uint Padding5           { get; set; }
-            [FieldOrder(5)] public uint Padding6           { get; set; }
-            [FieldOrder(6)] public uint Padding7           { get; set; }
+            [FieldOrder(0)] public float BottomLiftDistance2 { get; set; }
+            [FieldOrder(1)] public float BottomLiftSpeed2    { get; set; }
+            [FieldOrder(2)] public float LiftHeight2         { get; set; }
+            [FieldOrder(3)] public float LiftSpeed2          { get; set; }
+            [FieldOrder(4)] public float RetractHeight2      { get; set; }
+            [FieldOrder(5)] public float RetractSpeed2       { get; set; }
+            [FieldOrder(6)] public float RestTimeAfterLift    { get; set; }
 
             /// <summary>
             /// Gets the machine name offset to a string naming the machine type, and its length in bytes.
@@ -290,14 +296,14 @@ namespace UVtools.Core.FileFormats
 
             /// <summary>
             /// Gets the parameter used to control encryption.
-            /// Not totally understood. 0/8 for cbddlp files, 0xF (15) for ctb files, 0x2000000F (536870927) for v3 ctb files allow per layer parameters
+            /// Not totally understood. 0/8 for cbddlp files, 0xF (15) for ctb files, 0x2000000F (536870927) for v3 ctb and 1073741839 for v4 ctb files to allow per layer parameters
             /// </summary>
             [FieldOrder(9)] public uint EncryptionMode     { get; set; } = ENCRYPTYION_MODE_CTBv3;
 
             /// <summary>
             /// Gets a number that increments with time or number of models sliced, or both. Zeroing it in output seems to have no effect. Possibly a user tracking bug.
             /// </summary>
-            [FieldOrder(10)] public uint MysteriousId      { get; set; }
+            [FieldOrder(10)] public uint MysteriousId      { get; set; } = 305419896; // v3 = 305419896 | v4 = 27087675
 
             /// <summary>
             /// Gets the user-selected antialiasing level. For cbddlp files this will match the level_set_count. For ctb files, this number is essentially arbitrary.
@@ -309,13 +315,13 @@ namespace UVtools.Core.FileFormats
             /// (No provision is made to name the software being used, so this assumes that only one software package can generate the files.
             /// Probably best to hardcode it at 0x01060300.)
             /// </summary>
-            [FieldOrder(12)] public uint SoftwareVersion { get; set; } = 0x01060300;
-            [FieldOrder(13)] public uint Unknown1          { get; set; }
-            [FieldOrder(14)] public uint Padding8          { get; set; }
+            [FieldOrder(12)] public uint SoftwareVersion { get; set; } = 0x01060300; // ctb v3 = 17171200 | ctb v4 = 16777216
+            [FieldOrder(13)] public float RestTimeAfterRetract { get; set; }
+            [FieldOrder(14)] public float RestTimeAfterLift2   { get; set; }
             [FieldOrder(15)] public uint TransitionLayerCount { get; set; } // CTB not all printers
-            [FieldOrder(16)] public uint Padding10         { get; set; }
-            [FieldOrder(17)] public uint Padding11         { get; set; }
-            [FieldOrder(18)] public uint Padding12         { get; set; }
+            [FieldOrder(16)] public uint Padding1         { get; set; }
+            [FieldOrder(17)] public uint Padding2         { get; set; }
+            [FieldOrder(18)] public uint Padding3         { get; set; }
 
             /// <summary>
             /// Gets the machine name. string is not nul-terminated.
@@ -337,10 +343,88 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(EncryptionMode)}: {EncryptionMode}, {nameof(MysteriousId)}: {MysteriousId}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(Unknown1)}: {Unknown1}, {nameof(Padding8)}: {Padding8}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(Padding10)}: {Padding10}, {nameof(Padding11)}: {Padding11}, {nameof(Padding12)}: {Padding12}, {nameof(MachineName)}: {MachineName}";
+                return $"{nameof(BottomLiftDistance2)}: {BottomLiftDistance2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(EncryptionMode)}: {EncryptionMode}, {nameof(MysteriousId)}: {MysteriousId}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(MachineName)}: {MachineName}";
             }
         }
 
+        #endregion
+
+        #region PrintParametersV4
+        public sealed class PrintParametersV4
+        {
+            [FieldOrder(1)]
+            [FieldLength(CTBv4_DISCLAIMER_SIZE)] 
+            public string Disclaimer { get; set; } = CTBv4_DISCLAIMER; // 320 bytes
+
+            [FieldOrder(2)]
+            public float BottomRetractSpeed { get; set; }
+
+            [FieldOrder(3)]
+            public float BottomRetractSpeed2 { get; set; }
+
+            [FieldOrder(4)]
+            public uint Padding1 { get; set; }
+
+            [FieldOrder(5)]
+            public float Four1 { get; set; } = 4; // 4?
+
+            [FieldOrder(6)]
+            public uint Padding2 { get; set; }
+
+            [FieldOrder(7)]
+            public float Four2 { get; set; } = 4; // ?
+
+            [FieldOrder(8)]
+            public float RestTimeAfterRetract { get; set; }
+
+            [FieldOrder(9)]
+            public float RestTimeAfterLift { get; set; }
+
+            [FieldOrder(10)]
+            public float RestTimeBeforeLift { get; set; }
+
+            [FieldOrder(11)]
+            public float BottomRetractHeight2 { get; set; }
+
+            [FieldOrder(12)]
+            public float Unknown1 { get; set; } // 2955.996 or uint:1161347054 but changes
+
+            [FieldOrder(13)]
+            public uint Unknown2 { get; set; } // 73470 but changes
+
+            [FieldOrder(14)]
+            public uint Unknown3 { get; set; } = 5; // 5?
+
+            [FieldOrder(15)]
+            public uint Unknown4 { get; set; } // 139 but changes
+
+            [FieldOrder(16)]
+            public uint Padding3 { get; set; }
+
+            [FieldOrder(17)]
+            public uint Padding4 { get; set; }
+
+            [FieldOrder(18)]
+            public uint Padding5 { get; set; }
+
+            [FieldOrder(19)]
+            public uint Padding6 { get; set; }
+
+            [FieldOrder(20)]
+            public uint Unknown5 { get; set; } // 23047 but changes
+
+            [FieldOrder(21)]
+            public uint Unknown6 { get; set; } // 320 but changes
+
+            [FieldOrder(22)]
+            [FieldCount(420)] 
+            private byte[] Reserved { get; set; } = new byte[420]; // 420 bytes
+
+            public override string ToString()
+            {
+                return $"{nameof(Disclaimer)}: {Disclaimer}, {nameof(BottomRetractSpeed)}: {BottomRetractSpeed}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(Padding1)}: {Padding1}, {nameof(Four1)}: {Four1}, {nameof(Padding2)}: {Padding2}, {nameof(Four2)}: {Four2}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(BottomRetractHeight2)}: {BottomRetractHeight2}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Unknown5)}: {Unknown5}, {nameof(Unknown6)}: {Unknown6}, {nameof(Reserved)}: {Reserved}";
+            }
+        }
         #endregion
 
         #region Preview
@@ -523,8 +607,6 @@ namespace UVtools.Core.FileFormats
 
             [Ignore] public byte[] EncodedRle { get; set; }
             [Ignore] public ChituboxFile Parent { get; set; }
-
-            [Ignore] public uint Version { get; set; } = 2;
 
             public LayerData()
             {
@@ -814,7 +896,6 @@ namespace UVtools.Core.FileFormats
                         rawData.Add((byte)(stride >> 8));
                         rawData.Add((byte)stride);
                     }
-
                 }
 
 
@@ -864,7 +945,7 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// Gets a copy of layer data defenition
             /// </summary>
-            [FieldOrder(0)] public LayerData LayerData { get; set; } = new LayerData();
+            [FieldOrder(0)] public LayerData LayerData { get; set; } = new();
 
             /// <summary>
             /// Gets the total size of ctbImageInfo and Image data
@@ -872,14 +953,14 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(1)] public uint TotalSize { get; set; }
             [FieldOrder(2)] public float LiftHeight { get; set; }
             [FieldOrder(3)] public float LiftSpeed { get; set; }
-            [FieldOrder(4)] public uint Unknown6 { get; set; }
-            [FieldOrder(5)] public uint Unknown7 { get; set; }
+            [FieldOrder(4)] public float LiftHeight2 { get; set; }
+            [FieldOrder(5)] public float LiftSpeed2 { get; set; }
             [FieldOrder(6)] public float RetractSpeed { get; set; }
-            [FieldOrder(7)] public uint Unknown8 { get; set; }
-            [FieldOrder(8)] public uint Unknown9 { get; set; }
-            [FieldOrder(9)] public uint Unknown10 { get; set; }
-            [FieldOrder(10)] public uint Unknown11 { get; set; }
-            [FieldOrder(11)] public uint Unknown12 { get; set; } = 28672; // 28672 v3?
+            [FieldOrder(7)] public float RetractHeight2 { get; set; }
+            [FieldOrder(8)] public float RetractSpeed2 { get; set; }
+            [FieldOrder(9)] public float RestTimeBeforeLift { get; set; }
+            [FieldOrder(10)] public float RestTimeAfterLift { get; set; }
+            [FieldOrder(11)] public float RestTimeAfterRetract { get; set; } // 28672 v3?
             [FieldOrder(12)] public float LightPWM { get; set; }
 
             public LayerDataEx()
@@ -905,7 +986,7 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(LayerData)}: {LayerData}, {nameof(TotalSize)}: {TotalSize}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(Unknown6)}: {Unknown6}, {nameof(Unknown7)}: {Unknown7}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Unknown8)}: {Unknown8}, {nameof(Unknown9)}: {Unknown9}, {nameof(Unknown10)}: {Unknown10}, {nameof(Unknown11)}: {Unknown11}, {nameof(Unknown12)}: {Unknown12}, {nameof(LightPWM)}: {LightPWM}";
+                return $"{nameof(LayerData)}: {LayerData}, {nameof(TotalSize)}: {TotalSize}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(LightPWM)}: {LightPWM}";
             }
         }
 
@@ -965,10 +1046,11 @@ namespace UVtools.Core.FileFormats
 
         #region Properties
 
-        public Header HeaderSettings { get; protected internal set; } = new Header();
-        public PrintParameters PrintParametersSettings { get; protected internal set; } = new PrintParameters();
+        public Header HeaderSettings { get; protected internal set; } = new();
+        public PrintParameters PrintParametersSettings { get; protected internal set; } = new();
 
-        public SlicerInfo SlicerInfoSettings { get; protected internal set; } = new SlicerInfo();
+        public SlicerInfo SlicerInfoSettings { get; protected internal set; } = new();
+        public PrintParametersV4 PrintParametersV4Settings { get; protected internal set; } = new();
 
         public Preview[] Previews { get; protected internal set; }
 
@@ -1005,6 +1087,7 @@ namespace UVtools.Core.FileFormats
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers {
             get
             {
+                if (!IsCbtFile) return null; // Only ctb files
                 if (HeaderSettings.Version >= 3)
                 {
                     return new[]
@@ -1018,14 +1101,15 @@ namespace UVtools.Core.FileFormats
                     };
                 }
                 
-                if (HeaderSettings.Version <= 2)
+                /* Disable for v2 beside the fields on format they are not used
+                 if (HeaderSettings.Version <= 2)
                 {
                     return new[]
                     {
                         PrintParameterModifier.ExposureSeconds,
                         PrintParameterModifier.LightOffDelay,
                     };
-                }
+                }*/
 
                 return null;
             } 
@@ -1192,7 +1276,7 @@ namespace UVtools.Core.FileFormats
         public override float RetractSpeed
         {
             get => PrintParametersSettings.RetractSpeed;
-            set => base.RetractSpeed = PrintParametersSettings.RetractSpeed = (float)Math.Round(value, 2);
+            set => base.RetractSpeed = PrintParametersV4Settings.BottomRetractSpeed = PrintParametersSettings.RetractSpeed = (float)Math.Round(value, 2);
         }
 
         public override byte BottomLightPWM
@@ -1249,10 +1333,22 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override object[] Configs => new[] { (object)HeaderSettings, PrintParametersSettings, SlicerInfoSettings };
+        public override object[] Configs
+        {
+            get
+            {
+                if (HeaderSettings.Version <= 1)
+                    return new object[] { HeaderSettings };
+
+                if (HeaderSettings.Version <= 3)
+                    return new object[] {HeaderSettings, PrintParametersSettings, SlicerInfoSettings};
+                
+                return new object[] { HeaderSettings, PrintParametersSettings, SlicerInfoSettings, PrintParametersV4Settings };
+            }
+        }
 
         public bool IsCbddlpFile => HeaderSettings.Magic == MAGIC_CBDDLP;
-        public bool IsCbtFile => HeaderSettings.Magic == MAGIC_CBT;
+        public bool IsCbtFile => HeaderSettings.Magic is MAGIC_CBT or MAGIC_CBTv4;
 
         public bool CanHash => !IsCbtFile && HeaderSettings.Version <= 2;
         #endregion
@@ -1281,7 +1377,7 @@ namespace UVtools.Core.FileFormats
         {
             LayersHash.Clear();
 
-            HeaderSettings.Magic = fileFullPath.EndsWith(".ctb") || fileFullPath.EndsWith($".ctb{TemporaryFileAppend}") ? MAGIC_CBT : MAGIC_CBDDLP;
+            HeaderSettings.Magic = FileEndsWith(".ctb") ? MAGIC_CBT : MAGIC_CBDDLP;
             HeaderSettings.PrintParametersSize = (uint)Helpers.Serializer.SizeOf(PrintParametersSettings);
 
             if (IsCbtFile)
@@ -1295,23 +1391,33 @@ namespace UVtools.Core.FileFormats
 
                 if (HeaderSettings.Version <= 2)
                 {
-                    if (SlicerInfoSettings.Unknown1 == 0)
-                        SlicerInfoSettings.Unknown1 = 0x200; // 512 for v2 | 0 for v3
+                    //if (SlicerInfoSettings.RestTimeAfterRetract == 0)
+                        //SlicerInfoSettings.RestTimeAfterRetract = 0x200; // 512 for v2 | 0 for v3
                     SlicerInfoSettings.EncryptionMode = ENCRYPTYION_MODE_CTBv2;
                     PrintParametersSettings.Padding4 = 0x1234; // 4660
+
+                    if (SlicerInfoSettings.MysteriousId == 0)
+                        SlicerInfoSettings.MysteriousId = 305419896;
                 }
-                else
+                else if(HeaderSettings.Version == 3)
                 {
                     SlicerInfoSettings.EncryptionMode = ENCRYPTYION_MODE_CTBv3;
+
+                    if (SlicerInfoSettings.MysteriousId == 0)
+                        SlicerInfoSettings.MysteriousId = 305419896;
+                }
+                else 
+                {
+                    SlicerInfoSettings.EncryptionMode = ENCRYPTYION_MODE_CTBv4;
+
+                    if (SlicerInfoSettings.MysteriousId == 0)
+                        SlicerInfoSettings.MysteriousId = 27087820;
                 }
 
-                
-                if(SlicerInfoSettings.MysteriousId == 0)
-                    SlicerInfoSettings.MysteriousId = 0x12345678;
 
                 if (HeaderSettings.EncryptionKey == 0)
                 {
-                    Random rnd = new();
+                    var rnd = new Random();
                     HeaderSettings.EncryptionKey = (uint)rnd.Next(byte.MaxValue, int.MaxValue);
                 }
             }
@@ -1374,6 +1480,11 @@ namespace UVtools.Core.FileFormats
 
 
                 currentOffset += Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
+
+                if (HeaderSettings.Version >= 4)
+                {
+                    currentOffset += Helpers.SerializeWriteFileStream(outputFile, PrintParametersV4Settings);
+                }
             }
 
             HeaderSettings.LayersDefinitionOffsetAddress = currentOffset;
@@ -1449,6 +1560,7 @@ namespace UVtools.Core.FileFormats
             Debug.WriteLine(Previews[1]);
             Debug.WriteLine(PrintParametersSettings);
             Debug.WriteLine(SlicerInfoSettings);
+            Debug.WriteLine(PrintParametersV4Settings);
             Debug.WriteLine("-End-");
         }
 
@@ -1459,9 +1571,14 @@ namespace UVtools.Core.FileFormats
             //HeaderSettings = Helpers.ByteToType<CbddlpFile.Header>(InputFile);
             //HeaderSettings = Helpers.Serializer.Deserialize<Header>(InputFile.ReadBytes(Helpers.Serializer.SizeOf(typeof(Header))));
             HeaderSettings = Helpers.Deserialize<Header>(inputFile);
-            if (HeaderSettings.Magic != MAGIC_CBDDLP && HeaderSettings.Magic != MAGIC_CBT)
+
+            /*if (HeaderSettings.Magic == MAGIC_CBTv4)
             {
-                throw new FileLoadException("Not a valid CBDDLP nor CTB nor Photon file!", fileFullPath);
+                throw new FileLoadException("CTB v4 not supported!", fileFullPath);
+            }*/
+            if (HeaderSettings.Magic is not MAGIC_CBDDLP and not MAGIC_CBT and not MAGIC_CBTv4)
+            {
+                throw new FileLoadException($"Not a valid PHOTON nor CBDDLP nor CTB file! Magic Value: {HeaderSettings.Magic}", fileFullPath);
             }
 
             if (HeaderSettings.Version == 1 || HeaderSettings.AntiAliasLevel == 0)
@@ -1520,6 +1637,13 @@ namespace UVtools.Core.FileFormats
                 MachineName = System.Text.Encoding.UTF8.GetString(bytes);
                 Debug.WriteLine($"{nameof(MachineName)}: {MachineName}");*/
             //}
+
+            if (HeaderSettings.Version >= 4)
+            {
+                PrintParametersV4Settings = Helpers.Deserialize<PrintParametersV4>(inputFile);
+                Debug.Write("Print Parameters V4 -> ");
+                Debug.WriteLine(PrintParametersV4Settings);
+            }
 
             LayerDefinitions = new LayerData[HeaderSettings.AntiAliasLevel, HeaderSettings.LayerCount];
             var LayerDefinitionsEx = HeaderSettings.Version >= 3 ? new LayerDataEx[HeaderSettings.LayerCount] : null;
@@ -1651,6 +1775,12 @@ namespace UVtools.Core.FileFormats
                     outputFile.Seek(LayerDefinitions[0, layerIndex].DataAddress - 84, SeekOrigin.Begin);
                     Helpers.SerializeWriteFileStream(outputFile, new LayerDataEx(LayerDefinitions[0, layerIndex], layerIndex));
                 }
+            }
+
+            if (HeaderSettings.Version >= 4)
+            {
+                outputFile.Seek(SlicerInfoSettings.MachineNameAddress + SlicerInfoSettings.MachineNameSize, SeekOrigin.Begin);
+                Helpers.SerializeWriteFileStream(outputFile, PrintParametersV4Settings);
             }
         }
 

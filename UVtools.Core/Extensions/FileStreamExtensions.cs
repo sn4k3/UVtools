@@ -24,6 +24,26 @@ namespace UVtools.Core.Extensions
             return buffer;
         }
 
+        public static uint ReadUShortLittleEndian(this FileStream fs, int offset = 0)
+        {
+            return BitExtensions.ToUShortLittleEndian(fs.ReadBytes(2, offset));
+        }
+
+        public static uint ReadUShortBigEndian(this FileStream fs, int offset = 0)
+        {
+            return BitExtensions.ToUShortBigEndian(fs.ReadBytes(2, offset));
+        }
+
+        public static uint ReadUIntLittleEndian(this FileStream fs, int offset = 0)
+        {
+            return BitExtensions.ToUIntLittleEndian(fs.ReadBytes(4, offset));
+        }
+
+        public static uint ReadUIntBigEndian(this FileStream fs, int offset = 0)
+        {
+            return BitExtensions.ToUIntBigEndian(fs.ReadBytes(4, offset));
+        }
+
         public static uint WriteStream(this FileStream fs, MemoryStream stream, int offset = 0)
         {
             return fs.WriteBytes(stream.ToArray(), offset);

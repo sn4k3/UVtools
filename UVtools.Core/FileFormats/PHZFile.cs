@@ -710,10 +710,10 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LightPWM,
         };
 
-        public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+        /*public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
             PrintParameterModifier.ExposureSeconds,
             PrintParameterModifier.LightOffDelay,
-        };
+        };*/
 
         public override Size[] ThumbnailsOriginalSize { get; } =
         {

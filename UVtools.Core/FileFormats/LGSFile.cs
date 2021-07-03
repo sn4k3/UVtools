@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -28,17 +29,16 @@ namespace UVtools.Core.FileFormats
         public class Header
         {
             public const string NameValue = "Longer3D";
-            //[FieldOrder(0)]  public uint Offset1     { get; set; }
-
+            
             /// <summary>
             /// Gets the model name
             /// </summary>
             [FieldOrder(0)] [FieldLength(8)] public string Name { get; set; } = NameValue; // 0x00:
-            [FieldOrder(1)] public uint Uint_08 { get; set; } = 4278190081; // 0x08: 0xff000001 ?
+            [FieldOrder(1)] public uint Uint_08 { get; set; } = 1; // 0x08: 0xff000001 ?
             [FieldOrder(2)] public uint Uint_0c { get; set; } = 1; // 0x0c: 1 ?
-            [FieldOrder(3)] public uint Uint_10 { get; set; } = 30; // 0x10: 30 ?
+            [FieldOrder(3)] public uint PrinterModel { get; set; } = 30; // 10, 30, 120, 4000 (4k), 4500 (4k mono)
             [FieldOrder(4)] public uint Uint_14 { get; set; } = 0; // 0x14: 0 ?
-            [FieldOrder(5)] public uint Uint_18 { get; set; } = 34; // 0x18: 34 ?
+            [FieldOrder(5)] public uint MagicKey { get; set; } = 34; // 0x18: 34
             [FieldOrder(6)] public float PixelPerMmX { get; set; } = 15.404f;
             [FieldOrder(7)] public float PixelPerMmY { get; set; } = 4.866f;
             [FieldOrder(8)] public float ResolutionX { get; set; }
@@ -69,7 +69,7 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(33)] public float Float_88 { get; set; } = 6; // 0x88: 6?
             [FieldOrder(34)] public float Float_8c { get; set; } = 150; // 0x8c: 150 ?
             [FieldOrder(35)] public float Float_90 { get; set; } = 1001; // 0x90: 1001 ?
-            [FieldOrder(36)] public float Float_94 { get; set; } = 140;// 0x94: 140 for lgs10, 170 for lgs30, 190 for lgs4k
+            [FieldOrder(36)] public float MachineZ { get; set; } = 140;// 0x94: 140 for lgs10, 170 for lgs30, 150 for lgs120, 190 for lgs4k
             [FieldOrder(37)] public uint Uint_98 { get; set; } // 0x98: 0 ?
             [FieldOrder(38)] public uint Uint_9c { get; set; } // 0x9c: 0 ?
             [FieldOrder(39)] public uint Uint_a0 { get; set; } // 0xa0: 0 ?
@@ -77,6 +77,45 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(41)] public uint Uint_a8 { get; set; } = 4; // 0xa8: 4 ?
             [FieldOrder(42)] public uint PreviewSizeX { get; set; } = 120;
             [FieldOrder(43)] public uint PreviewSizeY { get; set; } = 150;
+        }
+
+        #endregion
+
+        #region LGS120PngPreview
+
+        public class LGS120PngPreview
+        {
+            public const ushort ResolutionX = 1200;
+            public const ushort ResolutionY = 1600;
+
+            [FieldOrder(0)] public uint DataSize { get; set; }
+
+            [FieldOrder(1)]
+            [FieldLength(nameof(DataSize))]
+            public byte[] EncodedRle { get; set; }
+
+            public void Encode(Mat mat)
+            {
+                if (mat.Width != ResolutionX || mat.Height != ResolutionY)
+                {
+                    using var resizeMat = new Mat();
+                    CvInvoke.Resize(mat, resizeMat, new Size(ResolutionX, ResolutionY));
+                    EncodedRle = resizeMat.GetPngByes();
+                }
+                else
+                {
+                    EncodedRle = mat.GetPngByes();
+                }
+            }
+
+            public Mat Decode(bool consumeRle = true)
+            {
+                var mat = new Mat();
+                CvInvoke.Imdecode(EncodedRle, ImreadModes.AnyColor, mat);
+                if (consumeRle)
+                    EncodedRle = null;
+                return mat;
+            }
         }
 
         #endregion
@@ -200,12 +239,14 @@ namespace UVtools.Core.FileFormats
 
         #region Properties
 
-        public Header HeaderSettings { get; protected internal set; } = new Header();
+        public Header HeaderSettings { get; protected internal set; } = new();
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
             new ("lgs", "Longer Orange 10"),
             new ("lgs30", "Longer Orange 30"),
+            //new ("lgs120", "Longer Orange 120"),
+            //new ("lgs4k", "Longer Orange 4k"),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
@@ -274,6 +315,12 @@ namespace UVtools.Core.FileFormats
         {
             get => ResolutionY / HeaderSettings.PixelPerMmY;
             set { }
+        }
+
+        public override float MachineZ
+        {
+            get => HeaderSettings.MachineZ > 0 ? HeaderSettings.MachineZ : base.MachineZ;
+            set => base.MachineZ = HeaderSettings.MachineZ = (float)Math.Round(value, 2);
         }
 
         public override bool MirrorDisplay
@@ -389,6 +436,7 @@ namespace UVtools.Core.FileFormats
         public override string MaterialName => "Unknown";
         public override string MachineName => null;*/
 
+
         public override object[] Configs => new object[] { HeaderSettings };
 
         #endregion
@@ -450,18 +498,34 @@ namespace UVtools.Core.FileFormats
 
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
-            if (ResolutionY >= 2560) // Longer Orange 30
+            if (FileEndsWith(".lgs")) // Longer Orange 10
             {
-                HeaderSettings.Float_94 = 170;
+                MachineZ = 140;
+                HeaderSettings.PrinterModel = 10;
             }
-            
+            else if (FileEndsWith(".lgs30")) // Longer Orange 30
+            {
+                MachineZ = 170;
+                HeaderSettings.PrinterModel = 30;
+            }
+            else if (FileEndsWith(".lgs120")) // Longer Orange 120
+            {
+                MachineZ = 150;
+                HeaderSettings.PrinterModel = 120;
+            }
+            else if (FileEndsWith(".lgs4k")) // Longer Orange 4K & Mono
+            {
+                MachineZ = 190;
+                if(HeaderSettings.PrinterModel is not 4000 and not 4500) HeaderSettings.PrinterModel = 4500;
+            }
+
             //uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
             using (var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write))
             {
                 outputFile.WriteSerialize(HeaderSettings);
                 outputFile.WriteBytes(PreviewEncode(Thumbnails[0]));
 
-                LayerData[] layerData = new LayerData[LayerCount];
+                var layerData = new LayerData[LayerCount];
 
                 Parallel.For(0, LayerCount, layerIndex =>
                 {
@@ -493,47 +557,51 @@ namespace UVtools.Core.FileFormats
 
         protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
         {
-            using (var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read))
+            using var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            HeaderSettings = Helpers.Deserialize<Header>(inputFile);
+            if (HeaderSettings.Name != Header.NameValue)
             {
-                HeaderSettings = Helpers.Deserialize<Header>(inputFile);
-                if (HeaderSettings.Name != Header.NameValue)
-                {
-                    throw new FileLoadException("Not a valid LGS file!", fileFullPath);
-                }
+                throw new FileLoadException("Not a valid LGS file!", fileFullPath);
+            }
 
-                // Fix inconsistencies found of different version of plugin and slicers
-                if (ResolutionX > ResolutionY)
-                {
-                    var oldX = ResolutionX;
-                    ResolutionX = ResolutionY;
-                    ResolutionY = oldX;
-                }
+            // Fix inconsistencies found of different version of plugin and slicers
+            if (ResolutionX > ResolutionY)
+            {
+                var oldX = ResolutionX;
+                ResolutionX = ResolutionY;
+                ResolutionY = oldX;
+            }
 
-                int previewSize = (int) (HeaderSettings.PreviewSizeX * HeaderSettings.PreviewSizeY * 2);
-                byte[] previewData = new byte[previewSize];
+            int previewSize = (int) (HeaderSettings.PreviewSizeX * HeaderSettings.PreviewSizeY * 2);
+            byte[] previewData = new byte[previewSize];
 
 
-                uint currentOffset = (uint) Helpers.Serializer.SizeOf(HeaderSettings);
-                currentOffset += inputFile.ReadBytes(previewData);
-                Thumbnails[0] = PreviewDecode(previewData);
+            uint currentOffset = (uint) Helpers.Serializer.SizeOf(HeaderSettings);
+            currentOffset += inputFile.ReadBytes(previewData);
+            Thumbnails[0] = PreviewDecode(previewData);
+
+            if (FileEndsWith(".lgs120"))
+            {
+                var pngPreview = Helpers.Deserialize<LGS120PngPreview>(inputFile);
+            }
   
 
-                LayerData[] layerData = new LayerData[HeaderSettings.LayerCount];
-                progress.Reset(OperationProgress.StatusGatherLayers, HeaderSettings.LayerCount);
+            LayerData[] layerData = new LayerData[HeaderSettings.LayerCount];
+            progress.Reset(OperationProgress.StatusGatherLayers, HeaderSettings.LayerCount);
 
-                for (int layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
-                {
-                    progress.Token.ThrowIfCancellationRequested();
-                    layerData[layerIndex] = Helpers.Deserialize<LayerData>(inputFile);
-                    layerData[layerIndex].Parent = this;
-                }
+            for (int layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
+            {
+                progress.Token.ThrowIfCancellationRequested();
+                layerData[layerIndex] = Helpers.Deserialize<LayerData>(inputFile);
+                layerData[layerIndex].Parent = this;
+            }
 
-                LayerManager.Init(HeaderSettings.LayerCount);
-                progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
+            LayerManager.Init(HeaderSettings.LayerCount);
+            progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
-                Parallel.For(0, LayerCount, 
-                    //new ParallelOptions{MaxDegreeOfParallelism = 1},
-                    layerIndex =>
+            Parallel.For(0, LayerCount, 
+                //new ParallelOptions{MaxDegreeOfParallelism = 1},
+                layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
 
@@ -543,8 +611,7 @@ namespace UVtools.Core.FileFormats
                     progress.LockAndIncrement();
                 });
 
-                LayerManager.RebuildLayersProperties();
-            }
+            LayerManager.RebuildLayersProperties();
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)

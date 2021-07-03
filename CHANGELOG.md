@@ -1,5 +1,21 @@
 # Changelog
 
+## 03/06/2021 - v2.14.0
+
+- **File Formats:**
+   - (Add) SL1S: Prusa SL1S Speed
+   - (Add) CTB v4 support (318570758)
+   - (Improvement) PHOTON, CBDDLP, CTB v2, PHZ: Disallow per layer settings, beside the format support, printers never use it
+   - (Improvement) Longer Orange format with new found keys
+   - (Improvement) CXDLP: Fix the resolution from CL-60 and trigger an error when a invalid resolution was set and unable to detect the printer model
+- **Prusa Slicer:**
+   - (Add) UVtools Prusa SL1S SPEED
+   - (Add) Longer Orange 120
+   - (Fix) Creality HALOT-ONE CL-60: Flip resolution & display and remove mirror
+   - (Fix) Creality HALOT-SKY CL-89: Remove mirror
+   - (Improvement) Longer Orange printers with better default settings
+- (Add) Button on `Help - Sponsor`: Open github sponsor webpage
+
 ## 25/06/2021 - v2.13.4
 
 - (Fix) ZCode: lcd.gcode was blank / not generating when converting from any file format

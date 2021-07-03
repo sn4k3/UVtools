@@ -560,13 +560,17 @@ namespace UVtools.Core.FileFormats
         {
             using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
 
-            if (ResolutionX == 2560 && ResolutionY == 1620)
+            if (ResolutionX == 1620 && ResolutionY == 2560)
             {
                 MachineName = "CL-60";
             }
             else if (ResolutionX == 3840 && ResolutionY == 2400)
             {
                 MachineName = "CL-89";
+            }
+            else if (!MachineName.StartsWith("CL-"))
+            {
+                throw new Exception("Unable to detect printer model from resolution, check if resolution is well defined on slicer for your printer model.");
             }
 
             var pageBreak = PageBreak.Bytes;

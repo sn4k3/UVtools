@@ -55,6 +55,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 # Known File Formats
 
 * SL1 (PrusaSlicer)
+* SL1S (PrusaSlicer)
 * Zip (Chitubox)
 * Photon (Chitubox)
 * Photons (Chitubox)
@@ -78,6 +79,8 @@ But also, i need victims for test subject. Proceed at your own risk!
 * CXDLP (Creality Box)
 * LGS (Longer Orange 10)
 * LGS30 (Longer Orange 30)
+* LGS120 (Longer Orange 120)
+* LGS4K (Longer Orange 4K & mono)
 * VDA.ZIP (Voxeldance Additive)
 * VDT (Voxeldance Tango)
 * UVJ (Zip file format for manual manipulation)
@@ -139,8 +142,8 @@ But also, i need victims for test subject. Proceed at your own risk!
   * LD-002R
   * LD-002H
   * LD-006
+  * HALOT-ONE CL-60
   * HALOT-SKY CL-89
-  * HALOT-SKY CL-60
 * **Voxelab**
   * Polaris 5.5
   * Proxima 6
@@ -148,7 +151,8 @@ But also, i need victims for test subject. Proceed at your own risk!
 * **Longer**
   * Orange 10
   * Orange 30
-  * Orange4K
+  * Orange 120
+  * Orange 4K
 * **Uniz IBEE**
 * **Zortrax Inkspire**
 
@@ -437,7 +441,7 @@ The fastest way to compile the project is by run the `build/CompileWindows.bat`,
 
 # TODO
 * More file formats
-* Clean up (always)
+* Clean up & performance (always)
 * See features request under Github
 
 # Support my work / Donate
@@ -445,4 +449,5 @@ The fastest way to compile the project is by run the `build/CompileWindows.bat`,
 All my work here is given for free (OpenSource), it took some hours to build, test and polish the program.
 If you're happy to contribute for a better program and for my work i will appreciate the tip.
 
-PP: https://paypal.me/SkillTournament
+Sponsor: https://github.com/sponsors/sn4k3
+PayPal: https://paypal.me/SkillTournament

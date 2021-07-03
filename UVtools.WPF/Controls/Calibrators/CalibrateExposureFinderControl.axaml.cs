@@ -31,7 +31,7 @@ namespace UVtools.WPF.Controls.Calibrators
             set => RaiseAndSetIfChanged(ref _previewImage, value);
         }
 
-        public bool CanSupportPerLayerSettings => SlicerFile.HavePrintParameterPerLayerModifier(FileFormat.PrintParameterModifier.ExposureSeconds);
+        public bool CanSupportPerLayerSettings => SlicerFile.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.ExposureSeconds);
 
         public CalibrateExposureFinderControl()
         {

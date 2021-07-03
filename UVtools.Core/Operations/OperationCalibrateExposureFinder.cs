@@ -980,7 +980,7 @@ namespace UVtools.Core.Operations
             if (_multipleBrightnessGenExposureTime == 0)
                 _multipleBrightnessGenExposureTime = (decimal)SlicerFile.ExposureTime;
 
-            if (!SlicerFile.HavePrintParameterPerLayerModifier(FileFormat.PrintParameterModifier.ExposureSeconds))
+            if (!SlicerFile.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.ExposureSeconds))
             {
                 _multipleLayerHeight = false;
                 _multipleExposures = false;

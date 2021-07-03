@@ -14,8 +14,8 @@ namespace UVtools.WPF.Controls.Tools
         {
             InitializeComponent();
             BaseOperation = new OperationDynamicLifts(SlicerFile);
-            if (!SlicerFile.HavePrintParameterPerLayerModifier(FileFormat.PrintParameterModifier.LiftHeight) ||
-                !SlicerFile.HavePrintParameterPerLayerModifier(FileFormat.PrintParameterModifier.LiftSpeed))
+            if (!SlicerFile.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.LiftHeight) ||
+                !SlicerFile.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.LiftSpeed))
             {
                 App.MainWindow.MessageBoxInfo("Your printer/format does not support this tool.", "Dynamic lifts - Printer not supported");
                 CanRun = false;

@@ -17,7 +17,7 @@ typedef struct(int size) {
 } rgbPreviewImageRawData;
 
 struct HEADER {
-    char name[8] <fgcolor=cBlack, bgcolor=cWhite>;
+    char Name[8] <fgcolor=cBlack, bgcolor=cWhite>;
     uint32 Uint_08 <fgcolor=cBlack, bgcolor=cRed>;
     uint32 Uint_0C <fgcolor=cBlack, bgcolor=cRed>;
     uint32 PrinterModel <fgcolor=cBlack, bgcolor=cRed>;

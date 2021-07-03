@@ -367,12 +367,12 @@ namespace UVtools.Core.FileFormats
         public abstract FileExtension[] FileExtensions { get; }
 
         /// <summary>
-        /// Gets the available <see cref="FileFormat.PrintParameterModifier"/>
+        /// Gets the available <see cref="PrintParameterModifier"/>
         /// </summary>
         public virtual PrintParameterModifier[] PrintParameterModifiers => null;
 
         /// <summary>
-        /// Gets the available <see cref="FileFormat.PrintParameterModifier"/> per layer
+        /// Gets the available <see cref="PrintParameterModifier"/> per layer
         /// </summary>
         public virtual PrintParameterModifier[] PrintParameterPerLayerModifiers => null;
 
@@ -385,12 +385,12 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifiers is not null && PrintParameterModifiers.Contains(modifier);
 
         /// <summary>
-        /// Checks if a <see cref="PrintParameterModifier"/> exists on print parameters
+        /// Checks if a <see cref="PrintParameterModifier"/> exists on layer parameters
         /// </summary>
         /// <param name="modifier"></param>
         /// <returns>True if exists, otherwise false</returns>
-        public bool HavePrintParameterPerLayerModifier(PrintParameterModifier modifier) =>
-            PrintParameterPerLayerModifiers is not null && PrintParameterPerLayerModifiers.Contains(modifier);
+        public bool HaveLayerParameterModifier(PrintParameterModifier modifier) =>
+            SupportPerLayerSettings && PrintParameterPerLayerModifiers.Contains(modifier);
 
         /// <summary>
         /// Gets the file filter for open and save dialogs
@@ -917,7 +917,7 @@ namespace UVtools.Core.FileFormats
         public bool CanUseAnyLiftHeight => CanUseBottomLiftHeight || CanUseLiftHeight;
 
         public bool CanUseBottomLiftSpeed => HavePrintParameterModifier(PrintParameterModifier.BottomLiftSpeed);
-        public bool CanUseLiftSpeed => HavePrintParameterModifier(PrintParameterModifier.LiftHeight);
+        public bool CanUseLiftSpeed => HavePrintParameterModifier(PrintParameterModifier.LiftSpeed);
         public bool CanUseAnyLiftSpeed => CanUseBottomLiftSpeed || CanUseLiftSpeed;
 
         public bool CanUseRetractSpeed => HavePrintParameterModifier(PrintParameterModifier.RetractSpeed);
@@ -929,6 +929,13 @@ namespace UVtools.Core.FileFormats
         public bool CanUseBottomLightPWM => HavePrintParameterModifier(PrintParameterModifier.BottomLightPWM);
         public bool CanUseLightPWM => HavePrintParameterModifier(PrintParameterModifier.LightPWM);
         public bool CanUseAnyLightPWM => CanUseBottomLightPWM || CanUseLightPWM;
+
+        public bool CanUseLayerExposureTime => HaveLayerParameterModifier(PrintParameterModifier.ExposureSeconds);
+        public bool CanUseLayerLiftHeight => HaveLayerParameterModifier(PrintParameterModifier.LiftHeight);
+        public bool CanUseLayerLiftSpeed => HaveLayerParameterModifier(PrintParameterModifier.LiftSpeed);
+        public bool CanUseLayerRetractSpeed => HaveLayerParameterModifier(PrintParameterModifier.RetractSpeed);
+        public bool CanUseLayerLightOffDelay => HaveLayerParameterModifier(PrintParameterModifier.LightOffDelay);
+        public bool CanUseLayerLightPWM => HaveLayerParameterModifier(PrintParameterModifier.LightPWM);
 
         public string ExposureRepresentation
         {
@@ -1368,6 +1375,13 @@ namespace UVtools.Core.FileFormats
             return result;
         }
 
+        public bool FileEndsWith(string extension)
+        {
+            if (extension[0] != '.') extension = $".{extension}";
+            return FileFullPath.EndsWith(extension, StringComparison.OrdinalIgnoreCase) ||
+                   FileFullPath.EndsWith($"{extension}{TemporaryFileAppend}", StringComparison.OrdinalIgnoreCase);
+        }
+
         /// <summary>
         /// Gets a thumbnail by it height or lower
         /// </summary>
@@ -1617,15 +1631,15 @@ namespace UVtools.Core.FileFormats
                         tw.WriteLine($"{nameof(layer.PositionZ)}: {layer.PositionZ}");
                         tw.WriteLine($"{nameof(layer.ExposureTime)}: {layer.ExposureTime}");
 
-                        if (HavePrintParameterPerLayerModifier(PrintParameterModifier.LightOffDelay))
+                        if (HaveLayerParameterModifier(PrintParameterModifier.LightOffDelay))
                             tw.WriteLine($"{nameof(layer.LightOffDelay)}: {layer.LightOffDelay}");
-                        if (HavePrintParameterPerLayerModifier(PrintParameterModifier.LiftHeight))
+                        if (HaveLayerParameterModifier(PrintParameterModifier.LiftHeight))
                             tw.WriteLine($"{nameof(layer.LiftHeight)}: {layer.LiftHeight}");
-                        if (HavePrintParameterPerLayerModifier(PrintParameterModifier.LiftSpeed))
+                        if (HaveLayerParameterModifier(PrintParameterModifier.LiftSpeed))
                             tw.WriteLine($"{nameof(layer.LiftSpeed)}: {layer.LiftSpeed}");
-                        if (HavePrintParameterPerLayerModifier(PrintParameterModifier.RetractSpeed))
+                        if (HaveLayerParameterModifier(PrintParameterModifier.RetractSpeed))
                             tw.WriteLine($"{nameof(layer.RetractSpeed)}: {layer.RetractSpeed}");
-                        if (HavePrintParameterPerLayerModifier(PrintParameterModifier.LightPWM))
+                        if (HaveLayerParameterModifier(PrintParameterModifier.LightPWM))
                             tw.WriteLine($"{nameof(layer.LightPWM)}: {layer.LightPWM}");
 
                         var materialMillilitersPercent = layer.MaterialMillilitersPercent;
