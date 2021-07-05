@@ -254,7 +254,6 @@ git submodule update --init --recursive
 cd platforms/ubuntu/20.04
 ./apt_install_dependency
 ./cmake_configure
-cmake build
 ```
 
 Make sure all commands run with success.
@@ -273,6 +272,7 @@ anyone with same system version can make use of it without the need of the compi
 ### Arch/Manjaro/Similars
 
 ```bash
+sudo pacman -Syu
 sudo pacman -S openjpeg2 libjpeg-turbo libpng libgeotiff libdc1394 libdc1394 ffmpeg openexr tbb libgdiplus
 ```
 
@@ -299,13 +299,12 @@ this process is very slow but only need to run once. Open a terminal on any fold
 
 ```bash
 sudo pacman -Syu
-sudo pacman -S base-devel git cmake msbuild
+sudo pacman -S base-devel git cmake msbuild libusb
 git clone https://github.com/emgucv/emgucv emgucv 
 cd emgucv
 git submodule update --init --recursive
 cd platforms/ubuntu/20.04
 ./cmake_configure
-cmake build
 ```
 
 Make sure all commands run with success.
@@ -345,14 +344,14 @@ but most of the time you will need compile the EmguCV to compile the dependencie
 this process is very slow but only need to run once. Open a terminal on any folder of your preference and run the following commands:
 
 ```bash
+sudo yum update -y
 sudo yum groupinstall -y "Development Tools" "Development Libraries"
-sudo yum install -y cmake gcc-c++ dotnet-sdk-5.0
+sudo yum install -y cmake gcc-c++ dotnet-sdk-5.0 libusb
 git clone https://github.com/emgucv/emgucv emgucv 
 cd emgucv
 git submodule update --init --recursive
 cd platforms/ubuntu/20.04
 ./cmake_configure
-cmake build
 ```
 
 Make sure all commands run with success.
@@ -396,7 +395,7 @@ To run UVtools open it folder on a terminal and call one of:
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 brew analytics off
-brew install git cmake libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb mono-libgdiplus
+brew install git cmake libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb mono-libgdiplus libusb
 brew install --cask dotnet-sdk
 git clone https://github.com/emgucv/emgucv emgucv 
 cd emgucv
