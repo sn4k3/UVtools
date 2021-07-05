@@ -1,17 +1,19 @@
 # UVtools
 
 [![License](https://img.shields.io/github/license/sn4k3/UVtools?style=flat-square)](https://github.com/sn4k3/UVtools/blob/master/LICENSE)
-[![GitHub repo size](https://img.shields.io/github/repo-size/sn4k3/UVtools?style=flat-square)](https://github.com/sn4k3/UVtools)
-[![GitHub repo size](https://img.shields.io/github/languages/code-size/sn4k3/UVtools?style=flat-square)](https://github.com/sn4k3/UVtools)
+[![GitHub repo size](https://img.shields.io/github/repo-size/sn4k3/UVtools?style=flat-square)](#)
+[![Code size](https://img.shields.io/github/languages/code-size/sn4k3/UVtools?style=flat-square)](#)
+[![Total code](https://img.shields.io/tokei/lines/github/sn4k3/UVtools?style=flat-square)](#)
+[![Nuget](https://img.shields.io/nuget/v/UVtools.Core?style=flat-square)](https://www.nuget.org/packages/UVtools.Core)
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/sn4k3/UVtools?include_prereleases&style=flat-square)](https://github.com/sn4k3/UVtools/releases)
 [![Downloads](https://img.shields.io/github/downloads/sn4k3/UVtools/total?style=flat-square)](https://github.com/sn4k3/UVtools/releases)
-[![Nuget](https://img.shields.io/nuget/v/UVtools.Core?style=flat-square)](https://www.nuget.org/packages/UVtools.Core)
+
 
 **MSLA/DLP, file analysis, calibration, repair, conversion and manipulation**
 
 This simple tool can give you insight of supports and find some failures. Did you forget what resin or other settings you used on a project? This can also save you, check every setting that were used with or simply change them!
 
-* Facebook group: https://www.facebook.com/groups/uvtools
+- Facebook group: https://www.facebook.com/groups/uvtools
 
 ![GUI Screenshot](https://raw.githubusercontent.com/sn4k3/UVtools/master/UVtools.GUI/Images/Screenshots/UVtools_GUI.png)
 ![GUI Screenshot Islands](https://raw.githubusercontent.com/sn4k3/UVtools/master/UVtools.GUI/Images/Screenshots/UVtools_GUI_Islands.png)
@@ -41,120 +43,120 @@ But also, i need victims for test subject. Proceed at your own risk!
 
 # Features
 
-* View image layer by layer
-* View and extract thumbnails
-* View all used settings
-* Edit print properties and save file
-* Mutate and filter layers
-* Check islands, overhangs, resin traps and repair/remove them as other issues
-* Export file to a folder
-* Convert format to another format
-* Calibration tests
-* Portable (No installation needed)
+- View image layer by layer
+- View and extract thumbnails
+- View all used settings
+- Edit print properties and save file
+- Mutate and filter layers
+- Check islands, overhangs, resin traps and repair/remove them as other issues
+- Export file to a folder
+- Convert format to another format
+- Calibration tests
+- Portable (No installation needed)
 
 # Known File Formats
 
-* SL1 (PrusaSlicer)
-* SL1S (PrusaSlicer)
-* Zip (Chitubox)
-* Photon (Chitubox)
-* Photons (Chitubox)
-* CBDDLP (Chitubox)
-* CBT (Chitubox)
-* PHZ (Chitubox)
-* FDG (Voxelab)
-* PWS (Photon Workshop)
-* PW0 (Photon Workshop)
-* PWX (Photon Workshop)
-* PWMO (Photon Workshop)
-* PWMS (Photon Workshop)
-* PWMX (Photon Workshop)
-* ZCode (UnizMaker)
-* ZCodex (Z-Suite)
-* CWS (NovaMaker)
-* RGB.CWS (Nova Bene4 Mono / Elfin2 Mono SE)
-* XML.CWS (Wanhao Workshop)
-* MDLP (Makerbase MKS-DLP v1)
-* GR1 (GR1 Workshop)
-* CXDLP (Creality Box)
-* LGS (Longer Orange 10)
-* LGS30 (Longer Orange 30)
-* LGS120 (Longer Orange 120)
-* LGS4K (Longer Orange 4K & mono)
-* VDA.ZIP (Voxeldance Additive)
-* VDT (Voxeldance Tango)
-* UVJ (Zip file format for manual manipulation)
-* Image files (png, jpg, jpeg, gif, bmp)
+- SL1 (PrusaSlicer)
+- SL1S (PrusaSlicer)
+- Zip (Chitubox)
+- Photon (Chitubox)
+- Photons (Chitubox)
+- CBDDLP (Chitubox)
+- CBT (Chitubox)
+- PHZ (Chitubox)
+- FDG (Voxelab)
+- PWS (Photon Workshop)
+- PW0 (Photon Workshop)
+- PWX (Photon Workshop)
+- PWMO (Photon Workshop)
+- PWMS (Photon Workshop)
+- PWMX (Photon Workshop)
+- ZCode (UnizMaker)
+- ZCodex (Z-Suite)
+- CWS (NovaMaker)
+- RGB.CWS (Nova Bene4 Mono / Elfin2 Mono SE)
+- XML.CWS (Wanhao Workshop)
+- MDLP (Makerbase MKS-DLP v1)
+- GR1 (GR1 Workshop)
+- CXDLP (Creality Box)
+- LGS (Longer Orange 10)
+- LGS30 (Longer Orange 30)
+- LGS120 (Longer Orange 120)
+- LGS4K (Longer Orange 4K & mono)
+- VDA.ZIP (Voxeldance Additive)
+- VDT (Voxeldance Tango)
+- UVJ (Zip file format for manual manipulation)
+- Image files (png, jpg, jpeg, gif, bmp)
 
 # Available printers for PrusaSlicer
 
-* **EPAX**
-  * E6 Mono
-  * E10 Mono
-  * X1
-  * X10
-  * X10 4K Mono
-  * X133 4K Mono
-  * X156 4K Color
-  * X1K 2K Mono
-* **Nova3D**
-  * Elfin
-  * Bene4 Mono
-* **AnyCubic**
-  * Photon
-  * Photon S
-  * Photon Zero
-* **Elegoo**
-  * Mars
-  * Mars 2 Pro
-  * Mars C
-  * Saturn
-* **Peopoly**
-  * Phenom
-  * Phenom L
-  * Phenom XXL
-  * Phenom Noir
-* **QIDI**
-  * Shadow5.5
-  * Shadow6.0 Pro
-  * S-Box
-  * 3D ibox mono
-* **Phrozen**
-  * Shuffle
-  * Shuffle Lite
-  * Shuffle XL
-  * Shuffle XL Lite
-  * Shuffle 16
-  * Shuffle 4K
-  * Sonic
-  * Sonic 4K
-  * Sonic Mighty 4K
-  * Sonic Mini
-  * Sonic Mini 4K
-  * Transform
-* **Kelant S400**
-* **Wanhao**
-  * D7
-  * D8
-  * CGR Mini Mono
-  * CGR Mono
-* **Creality**
-  * LD-002R
-  * LD-002H
-  * LD-006
-  * HALOT-ONE CL-60
-  * HALOT-SKY CL-89
-* **Voxelab**
-  * Polaris 5.5
-  * Proxima 6
-  * Ceres 8.9
-* **Longer**
-  * Orange 10
-  * Orange 30
-  * Orange 120
-  * Orange 4K
-* **Uniz IBEE**
-* **Zortrax Inkspire**
+- **EPAX**
+  - E6 Mono
+  - E10 Mono
+  - X1
+  - X10
+  - X10 4K Mono
+  - X133 4K Mono
+  - X156 4K Color
+  - X1K 2K Mono
+- **Nova3D**
+  - Elfin
+  - Bene4 Mono
+- **AnyCubic**
+  - Photon
+  - Photon S
+  - Photon Zero
+- **Elegoo**
+  - Mars
+  - Mars 2 Pro
+  - Mars C
+  - Saturn
+- **Peopoly**
+  - Phenom
+  - Phenom L
+  - Phenom XXL
+  - Phenom Noir
+- **QIDI**
+  - Shadow5.5
+  - Shadow6.0 Pro
+  - S-Box
+  - 3D ibox mono
+- **Phrozen**
+  - Shuffle
+  - Shuffle Lite
+  - Shuffle XL
+  - Shuffle XL Lite
+  - Shuffle 16
+  - Shuffle 4K
+  - Sonic
+  - Sonic 4K
+  - Sonic Mighty 4K
+  - Sonic Mini
+  - Sonic Mini 4K
+  - Transform
+- **Kelant S400**
+- **Wanhao**
+  - D7
+  - D8
+  - CGR Mini Mono
+  - CGR Mono
+- **Creality**
+  - LD-002R
+  - LD-002H
+  - LD-006
+  - HALOT-ONE CL-60
+  - HALOT-SKY CL-89
+- **Voxelab**
+  - Polaris 5.5
+  - Proxima 6
+  - Ceres 8.9
+- **Longer**
+  - Orange 10
+  - Orange 30
+  - Orange 120
+  - Orange 4K
+- **Uniz IBEE**
+- **Zortrax Inkspire**
 
 # Available profiles for PrusaSlicer
 
@@ -414,14 +416,18 @@ There are multiple ways to open your file:
 
 # Library -> Developers
 
-Are you a developer?
+Are you a developer? 
 This project include a .NET 5.0 library (UVtools.Core) that can be referenced in your application to make use of my work. 
 Easy to use calls that allow you work with the formats. For more information navigate main code to see some calls.
 
-Nuget package: https://www.nuget.org/packages/UVtools.Core 
+Nuget package: https://www.nuget.org/packages/UVtools.Core
+
+[![Nuget](https://img.shields.io/nuget/v/UVtools.Core?style=flat-square)](https://www.nuget.org/packages/UVtools.Core)
+
 ```powershell
 dotnet add package UVtools.Core
 ```
+
 
 ## Develop and build from Source
 
@@ -429,9 +435,9 @@ The fastest way to compile the project is by run the `build/CompileWindows.bat`,
 
 1. Install Visual Studio and include .NET development support
 1. Install the .NET 5.0 SDK if not included on previous instalation
-   * https://dotnet.microsoft.com/download/dotnet/5.0
+   - https://dotnet.microsoft.com/download/dotnet/5.0
 1. Install the Avalonia for Visual Sutdio:
-   * https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio
+   - https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio
 1. Install the Wix Toolset: (Required only for MSI build, **optional**)
    1. https://wixtoolset.org/releases
    1. https://marketplace.visualstudio.com/items?itemName=WixToolset.WiXToolset
@@ -440,14 +446,14 @@ The fastest way to compile the project is by run the `build/CompileWindows.bat`,
 
 
 # TODO
-* More file formats
-* Clean up & performance (always)
-* See features request under Github
+- More file formats
+- Clean up & performance (always)
+- See features request under Github
 
 # Support my work / Donate
 
 All my work here is given for free (OpenSource), it took some hours to build, test and polish the program.
 If you're happy to contribute for a better program and for my work i will appreciate the tip.
 
-Sponsor: https://github.com/sponsors/sn4k3
-PayPal: https://paypal.me/SkillTournament
+- Sponsor: https://github.com/sponsors/sn4k3
+- PayPal: https://paypal.me/SkillTournament
