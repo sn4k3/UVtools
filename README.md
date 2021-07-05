@@ -252,8 +252,8 @@ git clone https://github.com/emgucv/emgucv emgucv
 cd emgucv
 git submodule update --init --recursive
 cd platforms/ubuntu/20.04
-./apt_install_dependency.sh
-./cmake_configure.sh
+./apt_install_dependency
+./cmake_configure
 cmake build
 ```
 
@@ -304,7 +304,7 @@ git clone https://github.com/emgucv/emgucv emgucv
 cd emgucv
 git submodule update --init --recursive
 cd platforms/ubuntu/20.04
-./cmake_configure.sh
+./cmake_configure
 cmake build
 ```
 
@@ -351,7 +351,7 @@ git clone https://github.com/emgucv/emgucv emgucv
 cd emgucv
 git submodule update --init --recursive
 cd platforms/ubuntu/20.04
-./cmake_configure.sh
+./cmake_configure
 cmake build
 ```
 
