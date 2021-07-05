@@ -85,7 +85,7 @@ struct SLICER_INFO {
 
     uint MachineNameAddress <fgcolor=cBlack, bgcolor=cRed>;
     uint MachineNameSize <fgcolor=cBlack, bgcolor=cRed>;
-    uint EncryptionMode <fgcolor=cBlack, bgcolor=cRed>; // 0/8 for cbddlp files, 0xF (15) for ctb files, 0x2000000F (536870927) for v3 ctb files allow per layer parameters
+    uint EncryptionMode <fgcolor=cBlack, bgcolor=cRed>; // 0/8 for cbddlp files, 0xF (15) for ctb files, 0x2000000F (536870927) for v3 ctb and 1073741839 for v4 ctb files to allow per layer parameters
     uint MysteriousId <fgcolor=cBlack, bgcolor=cRed>; // v3 = 305419896 | v4 = 27087675
     uint AntiAliasLevel <fgcolor=cBlack, bgcolor=cRed>;
     uint SoftwareVersion <fgcolor=cBlack, bgcolor=cRed>; // ctb v3 = 17171200 | ctb v4 = 16777216
