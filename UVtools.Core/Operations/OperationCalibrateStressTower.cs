@@ -178,7 +178,7 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _normalExposure, Math.Round(value, 2));
         }
 
-        public uint LayerCount => (uint) Math.Floor((_baseHeight + _bodyHeight + _ceilHeight) / LayerHeight);
+        public uint LayerCount => (uint)((_baseHeight + _bodyHeight + _ceilHeight) / LayerHeight);
 
         public decimal TotalHeight => _baseHeight + _bodyHeight + _ceilHeight;
 
@@ -317,10 +317,10 @@ namespace UVtools.Core.Operations
             Slicer.Slicer slicer = new(SlicerFile.Resolution, new SizeF((float) DisplayWidth, (float) DisplayHeight));
             Point center = new(SlicerFile.Resolution.Width / 2, SlicerFile.Resolution.Height / 2);
             uint baseRadius = slicer.PixelsFromMillimeters(_baseDiameter) / 2;
-            uint baseLayers = (ushort) Math.Floor(_baseHeight / _layerHeight);
-            uint bodyLayers = (ushort) Math.Floor(_bodyHeight / _layerHeight);
-            uint spiralLayers = (uint) Math.Floor(_spiralDiameter / _layerHeight);
-            uint ceilLayers = (ushort) Math.Floor(_ceilHeight / _layerHeight);
+            uint baseLayers = (ushort)(_baseHeight / _layerHeight);
+            uint bodyLayers = (ushort)(_bodyHeight / _layerHeight);
+            uint spiralLayers = (uint)(_spiralDiameter / _layerHeight);
+            uint ceilLayers = (ushort)(_ceilHeight / _layerHeight);
             uint currrentlayer = baseLayers;
 
             decimal spiralOffsetAngle = 360m / _spirals;

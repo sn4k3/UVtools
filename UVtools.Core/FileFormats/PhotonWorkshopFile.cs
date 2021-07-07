@@ -764,7 +764,7 @@ namespace UVtools.Core.FileFormats
                     {
                         int done = reps;
 
-                        if (lastColor == 0 || lastColor == 0xf)
+                        if (lastColor is 0 or 0xf)
                         {
                             if (done > RLE4EncodingLimit)
                             {
@@ -1044,6 +1044,8 @@ namespace UVtools.Core.FileFormats
             get => true;
             set {}
         }
+
+        public override bool IsAntiAliasingEmulated => true;
 
         public override byte AntiAliasing
         {

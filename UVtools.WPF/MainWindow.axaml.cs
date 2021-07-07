@@ -973,7 +973,7 @@ namespace UVtools.WPF
                     if(!IsFileLoaded) continue;
                     try
                     {
-                        var fileText = File.ReadAllText(files[i]);
+                        var fileText = await File.ReadAllTextAsync(files[i]);
                         var match = Regex.Match(fileText, @"(?:<\/\s*Operation)([a-zA-Z0-9_]+)(?:\s*>)");
                         if(!match.Success) continue;
                         if(match.Groups.Count < 1) continue;

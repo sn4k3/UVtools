@@ -980,8 +980,7 @@ namespace UVtools.AvaloniaControls
             {
                 var rect = SelectionRegion;
                 return new Rectangle((int) Math.Ceiling(rect.X), (int)Math.Ceiling(rect.Y),
-                        (int)Math.Floor(rect.Width), (int)Math.Floor(rect.Height)
-                );
+                        (int)rect.Width, (int)rect.Height);
             }
         }
 
@@ -990,7 +989,7 @@ namespace UVtools.AvaloniaControls
             get
             {
                 var rect = SelectionRegion;
-                return new PixelSize((int) Math.Floor(rect.Width), (int) Math.Floor(rect.Height));
+                return new PixelSize((int) rect.Width, (int) rect.Height);
             }
         }
 
@@ -1465,7 +1464,7 @@ namespace UVtools.AvaloniaControls
                 }
             }
 
-            Zoom = (int)Math.Round(Math.Floor(zoom));
+            Zoom = (int)zoom;
         }
 
         /// <summary>

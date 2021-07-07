@@ -353,12 +353,8 @@ namespace UVtools.Core.FileFormats
                 {
                     using (Stream stream = outputFile.CreateEntry("preview.png").Open())
                     {
-                        using (var vec = new VectorOfByte())
-                        {
-                            CvInvoke.Imencode(".png", Thumbnails[0], vec);
-                            stream.WriteBytes(vec.ToArray());
-                            stream.Close();
-                        }
+                        stream.WriteBytes(Thumbnails[0].GetPngByes());
+                        stream.Close();
                     }
                 }
 
@@ -368,8 +364,7 @@ namespace UVtools.Core.FileFormats
                     {
                         using (var vec = new VectorOfByte())
                         {
-                            CvInvoke.Imencode(".png", Thumbnails[1], vec);
-                            stream.WriteBytes(vec.ToArray());
+                            stream.WriteBytes(Thumbnails[1].GetPngByes());
                             stream.Close();
                         }
                     }

@@ -105,7 +105,7 @@ namespace UVtools.WPF.Controls.Calibrators
                     ) != ButtonResult.Yes) return;
             }
 
-            Operation.GenerateExposure();
+            Operation.GenerateExposureTable();
         }
 
         public async void ExposureTableAddManual()

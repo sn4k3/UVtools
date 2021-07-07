@@ -285,14 +285,8 @@ namespace UVtools.Core.Operations
 
             public static float CalculateSeconds(float liftHeight, float liftSpeed, float retract, float extraWaitTime = 0)
             {
-                try
-                {
-                    return (float) Math.Round(liftHeight / (liftSpeed / 60f) + liftHeight / (retract / 60f) + extraWaitTime, 2);
-                }
-                catch (Exception)
-                {
-                    return extraWaitTime;
-                }
+                if (liftSpeed == 0 || retract == 0) return extraWaitTime;
+                return (float) Math.Round(liftHeight / (liftSpeed / 60f) + liftHeight / (retract / 60f) + extraWaitTime, 2);
                 
             }
 

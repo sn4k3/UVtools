@@ -14,7 +14,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using BinarySerialization;
 using Emgu.CV;
@@ -692,8 +691,6 @@ namespace UVtools.Core.FileFormats
                     }
 
                     span[i] = (byte) newC;
-
-
                 }
 
                 return image;
@@ -1178,6 +1175,8 @@ namespace UVtools.Core.FileFormats
                 RaisePropertyChanged();
             }
         }
+
+        public override bool IsAntiAliasingEmulated => IsCbddlpFile;
 
         public override byte AntiAliasing
         {

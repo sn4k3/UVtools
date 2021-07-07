@@ -607,24 +607,42 @@
                 Padding="5">
             <Expander IsExpanded="False">
                 <Expander.Header>
+                    <StackPanel Orientation="Horizontal" Cursor="Hand">
                     <TextBlock Text="Multiple brightness"
-                               FontWeight="Bold"
-                               Cursor="Hand"/>
+                               IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"
+                               FontWeight="Bold"/>
+                    <TextBlock Text="Multiple brightness/exposures with emulated AntiAliasing and time fractions"
+                               IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                               FontWeight="Bold"/>
+                    </StackPanel>
 
                 </Expander.Header>
 
                 <StackPanel Spacing="10">
 
-                    <TextBlock Text="Only printers able to do Anti-Aliasing and enabled on file can support this, make sure your is supported or else it can print a full white or full black model.
+                    <TextBlock 
+                        Text="Only printers able to do Anti-Aliasing and enabled on file can support this.
+&#x0a;Make sure your is supported or else it can print a full white or full black model.
 &#x0a;Also take into consideration some printers/formats have fixed usable AA levels and all in between will be threshold, study this first.
+&#x0a;When using this section, always set the exposure time to the highest time you want to test.
 &#x0a;If your printer is able to do 'Multiple exposures times per layer', please use that method instead of this (More accurate and AA threshold free)."/>
+
+                    <TextBlock 
+                        IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                        TextWrapping="Wrap"
+                        FontWeight="Bold"
+                        Text="Note: This file format uses time fractions to emulate AntiAliasing.
+&#x0a;This can be used to replace the 'Multiple exposures' sections and print multiple models at once at different timings.
+&#x0a;However you can't set the object time, instead fractions of the main exposure must be used.
+&#x0a;The brightness table will tell you the expected exposure time of each object."/>
+
                 <CheckBox
                         Content="Enable - For advanced users only!"
                         IsChecked="{Binding Operation.MultipleBrightness}"/>
 
 
 
-                  <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
+                  <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
                           ColumnDefinitions="Auto,10,200,5,Auto,20,Auto,10,Auto,5,Auto,5,Auto"
                           IsEnabled="{Binding Operation.MultipleBrightness}">
 
@@ -642,11 +660,13 @@
                                    VerticalAlignment="Center"/>
 
                         <TextBlock Grid.Row="0" Grid.Column="6"
+                                   IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"
                                    ToolTip.Tip="Append a brightness level to the list by giving a desired exposure time. Supplied time must be lower than the common exposure time or you need to increase it on the common 'Normal Exposure'."
                                    Text="Generate by exposure time:"
                                    VerticalAlignment="Center"/>
 
                         <NumericUpDown Grid.Row="0" Grid.Column="8"
+                                       IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"
                                        Increment="0.10"
                                        Minimum="0.10"
                                        Maximum="{Binding Operation.NormalExposure}"
@@ -654,11 +674,13 @@
                                        Value="{Binding Operation.MultipleBrightnessGenExposureTime}"/>
 
                         <TextBlock Grid.Row="0" Grid.Column="10"
+                                   IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"
                                    Text="s"
                                    VerticalAlignment="Center"/>
 
                         <Button
                             Grid.Row="0" Grid.Column="12" VerticalContentAlignment="Center"
+                            IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"
                             HorizontalContentAlignment="Center"
                             VerticalAlignment="Stretch"
                             Command="{Binding BrightnessExposureGenAdd}">
@@ -678,6 +700,69 @@
                         <TextBox Grid.Row="2" Grid.Column="2"
                                  Grid.ColumnSpan="11"
                                  Text="{Binding Operation.MultipleBrightnessValues}"/>
+
+                    <!--
+                    <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3"
+                               IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                               FontWeight="Bold"
+                               Text="Emulated AntiAliasing with time fractions"
+                               VerticalAlignment="Center"/>
+                    !-->
+
+                        <TextBlock Grid.Row="4" Grid.Column="0"
+                                   IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                                   ToolTip.Tip="AntiAliasing level to set on file.
+&#x0a;This value is used to set the maximum available time fractions on the next field.
+&#x0a;Lower levels have larger time windows, while higher levels allow lower time windows (Recommended)."
+                                   Text="AntiAliasing:"
+                                   VerticalAlignment="Center"/>
+
+                        <NumericUpDown Grid.Row="4" Grid.Column="2"
+                                       IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                                       Increment="2"
+                                       Minimum="2"
+                                       Maximum="{Binding Operation.MaximumAntiAliasing}"
+                                       Value="{Binding Operation.MultipleBrightnessGenEmulatedAALevel}"/>
+
+                        <TextBlock Grid.Row="4" Grid.Column="4"
+                                   IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                                   Text="x"
+                                   VerticalAlignment="Center"/>
+
+
+                    <TextBlock Grid.Row="4" Grid.Column="6"
+                               IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                               ToolTip.Tip="Amount of fractions from the main exposure: 2 to 16"
+                               Text="Generate by time fractions:"
+                               VerticalAlignment="Center"/>
+                    
+
+                    <NumericUpDown Grid.Row="4" Grid.Column="8"
+                                   IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                                   Increment="1"
+                                   Minimum="2"
+                                   Maximum="{Binding Operation.MultipleBrightnessGenEmulatedAALevel}"
+                                   Value="{Binding Operation.MultipleBrightnessGenExposureFractions}"/>
+
+                        <TextBlock Grid.Row="4" Grid.Column="10"
+                                   IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                                   Text="÷"
+                                   VerticalAlignment="Center"/>
+
+                    <!--<Button
+                        IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                        Grid.Row="4" Grid.Column="12" VerticalContentAlignment="Center"
+                        HorizontalContentAlignment="Center"
+                        VerticalAlignment="Stretch"
+                        Command="{Binding Operation.GenerateBrightnessExposureFractions}">
+                      <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Image Source="/Assets/Icons/refresh-16x16.png"/>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Text="Gen"/>
+                      </StackPanel>
+                    </Button>
+                    !-->
                     </Grid>
 
                     

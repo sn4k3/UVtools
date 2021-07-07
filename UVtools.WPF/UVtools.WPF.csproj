@@ -12,7 +12,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <Version>2.14.0</Version>
+    <Version>2.14.1</Version>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -29,9 +29,9 @@
     <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.6" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.6" />
     <PackageReference Include="Avalonia.Diagnostics" Version="0.10.6" />
-    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.1.4349" />
+    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.2.4673" />
     <PackageReference Include="MessageBox.Avalonia" Version="1.5.1" />
-    <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.4" />
+    <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.6" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\UVtools.AvaloniaControls\UVtools.AvaloniaControls.csproj" />

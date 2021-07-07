@@ -156,7 +156,7 @@ namespace UVtools.Core.Operations
                 var emptyLayersConfig = false;
 
                 islandConfig.Enabled = true;
-                islandConfig.RequiredAreaToProcessCheck = (ushort) Math.Floor(_removeIslandsBelowEqualPixelCount / 2.0);
+                islandConfig.RequiredAreaToProcessCheck = (ushort)(_removeIslandsBelowEqualPixelCount / 2);
 
                 for (uint i = 0; i < limit; i++)
                 {

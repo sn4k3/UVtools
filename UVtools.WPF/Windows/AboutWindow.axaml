@@ -33,6 +33,14 @@
           UseFloatingWatermark="True"/>
 
         <TextBox
+            Text="{Binding OpenCVDescription}"
+            IsReadOnly="True"
+            BorderBrush="Transparent"
+            CaretBrush="Transparent"
+            Watermark="OpenCV Version:"
+            UseFloatingWatermark="True"/>
+
+        <TextBox
           Text="{Binding ProcessorCount}"
           IsReadOnly="True"
           BorderBrush="Transparent"
@@ -48,31 +56,11 @@
           Watermark="Screens, resolution, working area, usable area:"
           UseFloatingWatermark="True"/>
 
-        <!--
-        <TextBox
-          Text="{Binding ScreenResolution}"
-          IsReadOnly="True"
-          BorderBrush="Transparent"
-          CaretBrush="Transparent"
-          Watermark="Resolution:"
-          UseFloatingWatermark="True"/>
-
-        <TextBox
-          Text="{Binding WorkingArea}"
-          IsReadOnly="True"
-          BorderBrush="Transparent"
-          CaretBrush="Transparent"
-          Watermark="Working Area:"
-          UseFloatingWatermark="True"/>
-
-        <TextBox
-          Text="{Binding RealWorkingArea}"
-          IsReadOnly="True"
-          BorderBrush="Transparent"
-          CaretBrush="Transparent"
-          Watermark="Real Working Area:"
-          UseFloatingWatermark="True"/>
-          -->
+        <Button 
+            Margin="0,20,0,0"
+            HorizontalAlignment="Stretch"
+            Content="Copy OpenCV build information to clipboard"
+            Command="{Binding SetOpenCVInformationToClipboard}" /> 
       </StackPanel>
       </Border>
       <Grid 

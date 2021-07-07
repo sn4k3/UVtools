@@ -1,5 +1,20 @@
 # Changelog
 
+## 07/06/2021 - v2.14.1
+
+- (Upgrade) EmguCV from 4.5.1 to 4.5.2
+- **File formats:**
+   - (Add) Getter `IsAntiAliasingEmulated`: Gets whatever a file format uses real or emulated AntiAliasing
+   - (Add) Getter `IsDisplayPortrait`: Gets if the display is in portrait mode
+   - (Add) Getter `IsDisplayLandscape`: Gets if the display is in landscape mode
+- **Tool - Resize:** (#235)
+   - (Fix) Division by 0 when start layer is equal to end layer
+   - (Fix) Calculations when using the option "Increase or decrease towards 100%"
+- (Add) About window: OpenCV build number and a button to copy build information to clipboard
+- (Improvement) Exposure exposure finder: Improve the **Multiple brightness** section to auto fill with correct values for file formats that use time fractions to emulate AntiAliasing, this can be used to replace the **Multiple exposures** section
+- (Fix) UVJ: Error when using a null or empty layer array on manifest `config.json` file (#232)
+- (Fix) GCode parser: When only a G4/wait command is present on a layer it was setting the global exposure time and discard the this value per layer
+
 ## 03/06/2021 - v2.14.0
 
 - **File Formats:**

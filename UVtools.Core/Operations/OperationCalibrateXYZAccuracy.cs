@@ -248,10 +248,10 @@ namespace UVtools.Core.Operations
 
         public decimal RealZSize => LayerCount * _layerHeight;
         
-        public uint XPixels => (uint)Math.Floor(XSize * Xppmm);
-        public uint YPixels => (uint)Math.Floor(YSize * Yppmm);
+        public uint XPixels => (uint)(XSize * Xppmm);
+        public uint YPixels => (uint)(YSize * Yppmm);
 
-        public uint LayerCount => (uint) Math.Floor(ZSize / LayerHeight);
+        public uint LayerCount => (uint)(ZSize / LayerHeight);
 
         public decimal DrainHoleArea
         {
@@ -308,8 +308,8 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public uint WallThicknessXPixels => (uint)Math.Floor(WallThickness * Xppmm);
-        public uint WallThicknessYPixels => (uint)Math.Floor(WallThickness * Yppmm);
+        public uint WallThicknessXPixels => (uint)(WallThickness * Xppmm);
+        public uint WallThicknessYPixels => (uint)(WallThickness * Yppmm);
 
         public bool OutputTLObject
         {
@@ -779,7 +779,7 @@ namespace UVtools.Core.Operations
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
                 newLayers[layerIndex] = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, bottomLayer.Clone(),
-                    (_hollowModel || _centerHoleRelief) && _drainHoleArea > 0 && layerIndex <= _bottomLayers + (int)Math.Floor(_drainHoleArea / _layerHeight)
+                    (_hollowModel || _centerHoleRelief) && _drainHoleArea > 0 && layerIndex <= _bottomLayers + (int)(_drainHoleArea / _layerHeight)
                         ? ventLayer.Clone() : layer.Clone());
 
                 progress++;

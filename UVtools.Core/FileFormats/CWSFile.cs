@@ -627,11 +627,10 @@ namespace UVtools.Core.FileFormats
                             spanEncode[i] = span[i];
                         }
 
-                        using VectorOfByte vec = new();
-                        CvInvoke.Imencode(".png", matEncode, vec);
+                        var bytes = matEncode.GetPngByes();
                         lock (progress.Mutex)
                         {
-                            outputFile.PutFileContent(layerImagePath, vec.ToArray(), ZipArchiveMode.Create);
+                            outputFile.PutFileContent(layerImagePath, bytes, ZipArchiveMode.Create);
                             progress++;
                         }
                     }

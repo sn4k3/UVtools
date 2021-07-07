@@ -388,11 +388,9 @@ namespace UVtools.Core.FileFormats
 
                 if (CreatedThumbnailsCount > 0)
                 {
-                    using (Stream stream = outputFile.CreateEntry("Preview.png").Open())
+                    using (var stream = outputFile.CreateEntry("Preview.png").Open())
                     {
-                        var vec = new VectorOfByte();
-                        CvInvoke.Imencode(".png", Thumbnails[0], vec);
-                        stream.WriteBytes(vec.ToArray());
+                        stream.WriteBytes(Thumbnails[0].GetPngByes());
                         stream.Close();
                     }
                 }

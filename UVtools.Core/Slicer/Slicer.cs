@@ -199,19 +199,19 @@ namespace UVtools.Core.Slicer
 
 
 
-        public uint PixelsFromMillimetersX(decimal millimeters) => (uint) Math.Floor(millimeters * (decimal) Ppmm.Width);
-        public uint PixelsFromMillimetersY(decimal millimeters) => (uint) Math.Floor(millimeters * (decimal) Ppmm.Height);
-        public uint PixelsFromMillimeters (decimal millimeters) => (uint) Math.Floor(millimeters * (decimal) Math.Max(Ppmm.Width, Ppmm.Height));
+        public uint PixelsFromMillimetersX(decimal millimeters) => (uint)(millimeters * (decimal) Ppmm.Width);
+        public uint PixelsFromMillimetersY(decimal millimeters) => (uint)(millimeters * (decimal) Ppmm.Height);
+        public uint PixelsFromMillimeters (decimal millimeters) => (uint)(millimeters * (decimal) Math.Max(Ppmm.Width, Ppmm.Height));
         
-        public static uint PixelsFromMillimetersX(Size resolution, SizeF display, decimal millimeters) => (uint)Math.Floor(resolution.Width / display.Width * (double) millimeters);
-        public static uint PixelsFromMillimetersY(Size resolution, SizeF display, decimal millimeters) => (uint)Math.Floor(resolution.Height / display.Height * (double) millimeters);
+        public static uint PixelsFromMillimetersX(Size resolution, SizeF display, decimal millimeters) => (uint)(resolution.Width / display.Width * (double) millimeters);
+        public static uint PixelsFromMillimetersY(Size resolution, SizeF display, decimal millimeters) => (uint)(resolution.Height / display.Height * (double) millimeters);
 
-        public static uint MillimetersToLayers(float millimeters, float layerHeight) => (uint) Math.Floor(millimeters / layerHeight);
-        public static uint MillimetersToLayers(double millimeters, double layerHeight) => (uint) Math.Floor(millimeters / layerHeight);
-        public static uint MillimetersToLayers(decimal millimeters, decimal layerHeight) => (uint) Math.Floor(millimeters / layerHeight);
+        public static uint MillimetersToLayers(float millimeters, float layerHeight) => (uint)(millimeters / layerHeight);
+        public static uint MillimetersToLayers(double millimeters, double layerHeight) => (uint)(millimeters / layerHeight);
+        public static uint MillimetersToLayers(decimal millimeters, decimal layerHeight) => (uint)(millimeters / layerHeight);
 
-        public static uint LayersToMillimeters(uint layers, float layerHeight) => (uint)Math.Floor(layers * layerHeight);
-        public static uint LayersToMillimeters(uint layers, double layerHeight) => (uint)Math.Floor(layers * layerHeight);
-        public static uint LayersToMillimeters(uint layers, decimal layerHeight) => (uint)Math.Floor(layers * layerHeight);
+        public static uint LayersToMillimeters(uint layers, float layerHeight) => (uint)(layers * layerHeight);
+        public static uint LayersToMillimeters(uint layers, double layerHeight) => (uint)(layers * layerHeight);
+        public static uint LayersToMillimeters(uint layers, decimal layerHeight) => (uint)(layers * layerHeight);
     }
 }

@@ -197,7 +197,7 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public uint LayerCount => (uint) Math.Floor(ZSize / LayerHeight);
+        public uint LayerCount => (uint)(ZSize / LayerHeight);
 
         public decimal RealZSize => LayerCount * _layerHeight;
 
@@ -282,8 +282,8 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public uint FemaleDiameterXPixels => (uint)Math.Floor(_femaleDiameter * Xppmm);
-        public uint FemaleDiameterYPixels => (uint)Math.Floor(_femaleDiameter * Yppmm);
+        public uint FemaleDiameterXPixels => (uint)(_femaleDiameter * Xppmm);
+        public uint FemaleDiameterYPixels => (uint)(_femaleDiameter * Yppmm);
 
         public decimal FemaleDiameterRealXSize
         {
@@ -316,8 +316,8 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public uint FemaleHoleDiameterXPixels => (uint)Math.Floor(_femaleHoleDiameter * Xppmm);
-        public uint FemaleHoleDiameterYPixels => (uint)Math.Floor(_femaleHoleDiameter * Yppmm);
+        public uint FemaleHoleDiameterXPixels => (uint)(_femaleHoleDiameter * Xppmm);
+        public uint FemaleHoleDiameterYPixels => (uint)(_femaleHoleDiameter * Yppmm);
 
         public decimal FemaleHoleDiameterRealXSize
         {
@@ -543,8 +543,8 @@ namespace UVtools.Core.Operations
             {
                 decimal millimeters = Math.Round(_femaleHoleDiameter + step, 2);
                 if (millimeters <= 0) return false;
-                int xPixels = (int) Math.Floor(millimeters * Xppmm);
-                int yPixels = (int) Math.Floor(millimeters * Yppmm);
+                int xPixels = (int)(millimeters * Xppmm);
+                int yPixels = (int)(millimeters * Yppmm);
                 Point partCenterText;
 
                 if (_fuseParts)

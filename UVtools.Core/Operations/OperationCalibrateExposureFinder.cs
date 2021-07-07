@@ -101,9 +101,10 @@ namespace UVtools.Core.Operations
 
         private bool _multipleBrightness;
         private CalibrateExposureFinderMultipleBrightnessExcludeFrom _multipleBrightnessExcludeFrom = CalibrateExposureFinderMultipleBrightnessExcludeFrom.BottomAndBase;
-        private string _multipleBrightnessValues = "255, 242, 230, 217, 204, 191";
+        private string _multipleBrightnessValues;
         private decimal _multipleBrightnessGenExposureTime;
-
+        private byte _multipleBrightnessGenEmulatedAALevel = FileFormat.MaximumAntiAliasing;
+        private byte _multipleBrightnessGenExposureFractions = 8;
 
         private bool _multipleLayerHeight;
         private decimal _multipleLayerHeightMaximum = 0.1m;
@@ -200,9 +201,58 @@ namespace UVtools.Core.Operations
 
             if (_multipleBrightness)
             {
-                if (MultipleBrightnessValuesArray.Length == 0)
+                var brightnessValues = MultipleBrightnessValuesArray;
+                if (brightnessValues.Length == 0)
                 {
                     sb.AppendLine($"Multiple brightness tests are enabled but no valid values are set, use from 1 to 255.");
+                }
+                else
+                {
+                    if (SlicerFile.IsAntiAliasingEmulated)
+                    {
+                        if (brightnessValues.Length > 16)
+                        {
+                            sb.AppendLine(
+                                "[ME] This format uses time fractions to emulate AntiAliasing, only up 16 levels of greys/brightness are permitted.");
+                        }
+                        else
+                        {
+                            /*byte aalevel = brightnessValues.Length switch
+                            {
+                                <= 2 => 2,
+                                <= 4 => 4,
+                                <= 8 => 8,
+                                <= 16 => 16,
+                                _ => 2
+                            };*/
+
+                            var increment = 255f / _multipleBrightnessGenEmulatedAALevel;
+
+                            byte[] validAA = new byte[_multipleBrightnessGenEmulatedAALevel];
+
+                            for (byte frac = 0; frac < _multipleBrightnessGenEmulatedAALevel; frac++)
+                            {
+                                validAA[frac] = (byte)(byte.MaxValue - increment * frac);
+                            }
+
+                            string invalidAA = string.Empty;
+
+                            foreach (var brightness in brightnessValues)
+                            {
+                                if (!validAA.Contains(brightness))
+                                    invalidAA += $"{brightness}, ";
+                            }
+
+                            invalidAA = invalidAA.Trim().TrimEnd(',');
+
+                            if (!string.IsNullOrWhiteSpace(invalidAA))
+                            {
+                                sb.AppendLine($"[ME] This format uses time fractions to emulate AntiAliasing, only some levels greys/brightness are permitted, and everything outside that is thresholded.");
+                                sb.AppendLine($" - your input have the following wrong levels: {invalidAA}");
+                                sb.AppendLine($" - AntiAliasing level: {_multipleBrightnessGenEmulatedAALevel} with usable values of: {string.Join(", ", validAA)}");
+                            }
+                        }
+                    }
                 }
             }
 
@@ -459,7 +509,7 @@ namespace UVtools.Core.Operations
                     {
                         if (string.IsNullOrWhiteSpace(mmStr)) continue;
                         if (!decimal.TryParse(mmStr, out var mm)) continue;
-                        var mmPx = (int)Math.Floor(mm * Ppmm);
+                        var mmPx = (int)(mm * Ppmm);
                         if (mmPx is <= 0 or > 500) continue;
                         if(holes.Contains(mmPx)) continue;
                         holes.Add(mmPx);
@@ -557,7 +607,7 @@ namespace UVtools.Core.Operations
                     {
                         if (string.IsNullOrWhiteSpace(mmStr)) continue;
                         if (!decimal.TryParse(mmStr, out var mm)) continue;
-                        var mmPx = (int)Math.Floor(mm * Xppmm);
+                        var mmPx = (int)(mm * Xppmm);
                         if (mmPx is <= 0 or > 500) continue;
                         if (bars.Contains(mmPx)) continue;
                         bars.Add(mmPx);
@@ -675,6 +725,28 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _multipleBrightnessGenExposureTime, value);
         }
 
+        public byte MaximumAntiAliasing => FileFormat.MaximumAntiAliasing;
+
+        public byte MultipleBrightnessGenEmulatedAALevel
+        {
+            get => _multipleBrightnessGenEmulatedAALevel;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _multipleBrightnessGenEmulatedAALevel, value)) return;
+                GenerateBrightnessExposureFractions();
+            }
+        }
+
+        public byte MultipleBrightnessGenExposureFractions
+        {
+            get => _multipleBrightnessGenExposureFractions;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _multipleBrightnessGenExposureFractions, value)) return;
+                GenerateBrightnessExposureFractions();
+            }
+        }
+
         /// <summary>
         /// Gets all holes in pixels and ordered
         /// </summary>
@@ -689,7 +761,7 @@ namespace UVtools.Core.Operations
                 {
                     if (string.IsNullOrWhiteSpace(brightnessStr)) continue;
                     if (!byte.TryParse(brightnessStr, out var brightness)) continue;
-                    if (brightness <= 0 || brightness > 255) continue;
+                    if (brightness is <= 0 or > 255) continue;
                     if (values.Contains(brightness)) continue;
                     values.Add(brightness);
                 }
@@ -881,9 +953,9 @@ namespace UVtools.Core.Operations
                             string.IsNullOrWhiteSpace(splitDiameterThickness[1])) continue;
                         if (!decimal.TryParse(splitDiameterThickness[0], out var diameterMm)) continue;
                         if (!decimal.TryParse(splitDiameterThickness[1], out var thicknessMm)) continue;
-                        var diameter = (int)Math.Floor(diameterMm * Ppmm);
+                        var diameter = (int)(diameterMm * Ppmm);
                         if (diameterMm is <= 0 or > 500) continue;
-                        var thickness = (int)Math.Floor(thicknessMm * Ppmm);
+                        var thickness = (int)(thicknessMm * Ppmm);
                         if (thickness is <= 0 or > 500) continue;
                         if (bulleyes.Exists(circle => circle.Diameter == diameter)) continue;
                         bulleyes.Add(new BullsEyeCircle((ushort)diameter, (ushort)thickness));
@@ -984,6 +1056,14 @@ namespace UVtools.Core.Operations
             {
                 _multipleLayerHeight = false;
                 _multipleExposures = false;
+            }
+
+            if (string.IsNullOrWhiteSpace(_multipleBrightnessValues))
+            {
+                _multipleBrightnessValues = 
+                    SlicerFile.IsAntiAliasingEmulated 
+                        ? "255, 239, 223, 207, 191, 175, 159, 143"
+                        : "255, 242, 230, 217, 204, 191";
             }
         }
 
@@ -1127,7 +1207,22 @@ namespace UVtools.Core.Operations
             return list;
         }
 
-        public void GenerateExposure()
+        public void GenerateBrightnessExposureFractions()
+        {
+            var fractions = _multipleBrightnessGenExposureFractions;
+            var increment = 255f / _multipleBrightnessGenEmulatedAALevel;
+
+            byte[] validAA = new byte[fractions];
+
+            for (byte frac = 0; frac < fractions; frac++)
+            {
+                validAA[frac] = (byte)(byte.MaxValue - increment * frac);
+            }
+
+            MultipleBrightnessValues = string.Join(", ", validAA);
+        }
+
+        public void GenerateExposureTable()
         {
             var endLayerHeight = _multipleLayerHeight ? _multipleLayerHeightMaximum : _layerHeight;
             List<ExposureItem> list = new();
@@ -1603,10 +1698,10 @@ namespace UVtools.Core.Operations
 
         protected override bool ExecuteInternally(OperationProgress progress)
         {
-            int sideMarginPx = (int)Math.Floor(_leftRightMargin * Xppmm);
-            int topBottomMarginPx = (int)Math.Floor(_topBottomMargin * Yppmm);
-            int partMarginXPx = (int) Math.Floor(_partMargin * Xppmm);
-            int partMarginYPx = (int) Math.Floor(_partMargin * Yppmm);
+            int sideMarginPx = (int)(_leftRightMargin * Xppmm);
+            int topBottomMarginPx = (int)(_topBottomMargin * Yppmm);
+            int partMarginXPx = (int)(_partMargin * Xppmm);
+            int partMarginYPx = (int)(_partMargin * Yppmm);
 
             var anchor = new Point(-1, -1);
             using var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
@@ -1661,7 +1756,7 @@ namespace UVtools.Core.Operations
                     var layer = SlicerFile[layerIndex];
                     using var mat = layer.LayerMat;
                     var matRoi = new Mat(mat, boundingRectangle);
-                    int layerCountOnHeight = (int)Math.Floor(layer.PositionZ / SlicerFile.LayerHeight);
+                    int layerCountOnHeight = (int)(layer.PositionZ / SlicerFile.LayerHeight);
                     foreach (var group in tableGrouped)
                     {
                         var newLayer = layer.Clone();
@@ -1800,12 +1895,12 @@ namespace UVtools.Core.Operations
                     if (!layerDifference.IsInteger()) return; // Not at right height to process with layer height
                                                               //Debug.WriteLine($"{currentHeight} / {layerHeight} = {layerDifference}, Floor={Math.Floor(layerDifference)}");
 
-                    int firstFeatureLayer = (int)Math.Floor(_baseHeight / layerHeight);
-                    int lastLayer = (int)Math.Floor((_baseHeight + _featuresHeight) / layerHeight);
-                    int layerCountOnHeight = (int)Math.Floor(currentHeight / layerHeight);
+                    int firstFeatureLayer = (int)(_baseHeight / layerHeight);
+                    int lastLayer = (int)((_baseHeight + _featuresHeight) / layerHeight);
+                    int layerCountOnHeight = (int)(currentHeight / layerHeight);
                     bool isBottomLayer = layerCountOnHeight <= _bottomLayers;
                     bool isBaseLayer = currentHeight <= _baseHeight;
-                    ushort microns = (ushort)Math.Floor(layerHeight * 1000);
+                    ushort microns = (ushort)(layerHeight * 1000);
                     Point position;
                     bool addSomething = false;
 
@@ -1985,6 +2080,19 @@ namespace UVtools.Core.Operations
                 {
                     new OperationFlip(SlicerFile) { FlipDirection = Enumerations.FlipDirection.Horizontally }.Execute(progress);
                 }
+            }
+
+            if (_multipleBrightness && SlicerFile.IsAntiAliasingEmulated)
+            {
+                /*SlicerFile.AntiAliasing = MultipleBrightnessValuesArray.Length switch
+                {
+                    <= 2 => 2,
+                    <= 4 => 4,
+                    <= 8 => 8,
+                    <= 16 => 16,
+                    _ => 16
+                };*/
+                SlicerFile.AntiAliasing = _multipleBrightnessGenEmulatedAALevel;
             }
 
             if (SlicerFile.ThumbnailsCount > 0)

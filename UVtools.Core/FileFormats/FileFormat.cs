@@ -55,6 +55,8 @@ namespace UVtools.Core.FileFormats
         public const byte DefaultBottomLightPWM = 255;
         public const byte DefaultLightPWM = 255;
 
+        public const byte MaximumAntiAliasing = 16;
+
         public const float MinimumLayerHeight = 0.01f;
         public const float MaximumLayerHeight = 0.20f;
         #endregion 
@@ -602,6 +604,16 @@ namespace UVtools.Core.FileFormats
         public virtual bool MirrorDisplay { get; set; }
 
         /// <summary>
+        /// Gets if the display is in portrait mode
+        /// </summary>
+        public bool IsDisplayPortrait => ResolutionY > ResolutionX;
+
+        /// <summary>
+        /// Gets if the display is in landscape mode
+        /// </summary>
+        public bool IsDisplayLandscape => !IsDisplayPortrait;
+
+        /// <summary>
         /// Gets or sets the maximum printer build Z volume
         /// </summary>
         public virtual float MachineZ
@@ -703,6 +715,11 @@ namespace UVtools.Core.FileFormats
         /// Checks if this file have AntiAliasing
         /// </summary>
         public bool HaveAntiAliasing => AntiAliasing > 1;
+
+        /// <summary>
+        /// Gets if the AntiAliasing is emulated/fake with fractions of the time or if is real grey levels
+        /// </summary>
+        public virtual bool IsAntiAliasingEmulated => false;
 
         /// <summary>
         /// Gets or sets the AntiAliasing level
@@ -1692,6 +1709,10 @@ namespace UVtools.Core.FileFormats
                             byteArr.Length);
                         stream.Write(byteArr, 0, byteArr.Length);
                         stream.Close();
+
+                        //using var mat = layer.LayerMat;
+                        //mat.Save(Path.Combine(path, $"{layer.Filename}.jpg"));
+
                         progress.LockAndIncrement();
                     });
                 }

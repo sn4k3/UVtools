@@ -119,7 +119,7 @@ namespace UVtools.Core.Objects
         /// <summary>
         /// Gets the number of consumed bottles 
         /// </summary>
-        public uint ConsumedBottles => (uint) Math.Floor(_consumedVolume / _bottleVolume);
+        public uint ConsumedBottles => (uint)(_consumedVolume / _bottleVolume);
 
         /// <summary>
         /// Gets the total number of owned bottles
@@ -236,7 +236,7 @@ namespace UVtools.Core.Objects
         public bool Consume(decimal volume, double printSeconds = 0)
         {
             if (volume <= 0 || _bottleVolume == 0) return true; // Safe check
-            int consumedBottles = (int) Math.Floor(volume / _bottleVolume);
+            int consumedBottles = (int)(volume / _bottleVolume);
             decimal remainder = volume % _bottleVolume;
 
             if (remainder > 0)

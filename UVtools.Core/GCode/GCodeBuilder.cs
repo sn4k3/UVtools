@@ -641,16 +641,16 @@ namespace UVtools.Core.GCode
                 float lightOffDelay = 0;
                 byte pwm = slicerFile.GetInitialLayerValueOrNormal(layerIndex, slicerFile.BottomLightPWM, slicerFile.LightPWM);
                 float exposureTime = slicerFile.GetInitialLayerValueOrNormal(layerIndex, slicerFile.BottomExposureTime, slicerFile.ExposureTime);
-                var moveG0Regex = Regex.Match(stripGcode, CommandMoveG0.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(\d+)"), RegexOptions.IgnoreCase);
-                var moveG1Regex = Regex.Match(stripGcode, CommandMoveG1.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(\d+)"), RegexOptions.IgnoreCase);
-                var waitG4Regex = Regex.Match(stripGcode, CommandWaitG4.ToStringWithoutComments(@"(\d+)"), RegexOptions.IgnoreCase);
+                var moveG0Regex = Regex.Matches(stripGcode, CommandMoveG0.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(\d+)"), RegexOptions.IgnoreCase);
+                var moveG1Regex = Regex.Matches(stripGcode, CommandMoveG1.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(\d+)"), RegexOptions.IgnoreCase);
+                var waitG4Regex = Regex.Matches(stripGcode, CommandWaitG4.ToStringWithoutComments(@"(\d+)"), RegexOptions.IgnoreCase);
                 var pwmM106Regex = Regex.Match(stripGcode, CommandTurnLEDM106.ToStringWithoutComments(@"(\d+)"), RegexOptions.IgnoreCase);
-                var moveRegex = moveG0Regex.Success ? moveG0Regex : moveG1Regex;
+                var moveRegex = moveG0Regex.Count > 0 ? moveG0Regex : moveG1Regex;
 
-                if (moveRegex.Success)
+                if (moveRegex.Count >= 1 && moveRegex[0].Success)
                 {
-                    float liftPosTemp = float.Parse(moveRegex.Groups[1].Value, CultureInfo.InvariantCulture);
-                    float liftSpeedTemp = float.Parse(moveRegex.Groups[3].Value, CultureInfo.InvariantCulture);
+                    float liftPosTemp = float.Parse(moveRegex[0].Groups[1].Value, CultureInfo.InvariantCulture);
+                    float liftSpeedTemp = float.Parse(moveRegex[0].Groups[3].Value, CultureInfo.InvariantCulture);
 
                     switch (GCodeSpeedUnit)
                     {
@@ -666,11 +666,10 @@ namespace UVtools.Core.GCode
                             throw new ArgumentOutOfRangeException();
                     }
 
-                    moveRegex = moveRegex.NextMatch();
-                    if (moveRegex.Success)
+                    if (moveRegex.Count >= 2 && moveRegex[1].Success)
                     {
-                        float retractPos = float.Parse(moveRegex.Groups[1].Value, CultureInfo.InvariantCulture);
-                        retractSpeed = float.Parse(moveRegex.Groups[3].Value, CultureInfo.InvariantCulture);
+                        float retractPos = float.Parse(moveRegex[1].Groups[1].Value, CultureInfo.InvariantCulture);
+                        retractSpeed = float.Parse(moveRegex[1].Groups[3].Value, CultureInfo.InvariantCulture);
                         liftSpeed = liftSpeedTemp;
 
                         switch (positionType)
@@ -727,9 +726,9 @@ namespace UVtools.Core.GCode
                     }
                 }
 
-                if (waitG4Regex.Success)
+                if (waitG4Regex.Count >= 1 && waitG4Regex[0].Success)
                 {
-                    lightOffDelay = float.Parse(waitG4Regex.Groups[1].Value, CultureInfo.InvariantCulture);
+                    lightOffDelay = float.Parse(waitG4Regex[0].Groups[1].Value, CultureInfo.InvariantCulture);
                     switch (GCodeTimeUnit)
                     {
                         case GCodeTimeUnits.Milliseconds:
@@ -737,10 +736,9 @@ namespace UVtools.Core.GCode
                             break;
                     }
                     
-                    waitG4Regex = waitG4Regex.NextMatch();
-                    if (waitG4Regex.Success)
+                    if (waitG4Regex.Count >= 2 && waitG4Regex[1].Success)
                     {
-                        exposureTime = float.Parse(waitG4Regex.Groups[1].Value, CultureInfo.InvariantCulture);
+                        exposureTime = float.Parse(waitG4Regex[1].Groups[1].Value, CultureInfo.InvariantCulture);
                         switch (GCodeTimeUnit)
                         {
                             case GCodeTimeUnits.Milliseconds:
@@ -748,8 +746,9 @@ namespace UVtools.Core.GCode
                                 break;
                         }
                     }
-                    else // Only one match, meaning light off delay is not present
+                    else // Only one match, meaning light off delay is not present and the only time is the cure time
                     {
+                        exposureTime = lightOffDelay;
                         lightOffDelay = slicerFile.GetInitialLayerValueOrNormal(layerIndex, slicerFile.BottomLightOffDelay, slicerFile.LightOffDelay);
                     }
                 }

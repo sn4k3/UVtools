@@ -354,6 +354,8 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 UVtools.Platforms/linux-x64/libcvextern.so
+UVtools.Platforms/arch-x64/libcvextern.so
 
 build/nuget_api.key
 build/*.key
+

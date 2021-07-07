@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Markup.Xaml;
+using Emgu.CV;
+using Emgu.CV.Stitching;
 using UVtools.Core;
 using UVtools.WPF.Controls;
 
@@ -18,6 +21,16 @@ namespace UVtools.WPF.Windows
 
         public string OSDescription => $"{RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture}";
         public string FrameworkDescription => RuntimeInformation.FrameworkDescription;
+
+        public string OpenCVDescription
+        {
+            get
+            {
+                var match = Regex.Match(CvInvoke.BuildInformation, @"(?:Version control:\s*)(\S*)");
+                if (!match.Success) return "Not found!";
+                return match.Groups[1].Value;
+            }
+        }
         public int ProcessorCount => Environment.ProcessorCount;
         public int ScreenCount => Screens.ScreenCount;
         //public string ScreenResolution => $"{Screens.Primary.Bounds.Width} x {Screens.Primary.Bounds.Height} @ {Screens.Primary.PixelDensity*100}%";
@@ -43,7 +56,6 @@ namespace UVtools.WPF.Windows
             }
         }
 
-
         public AboutWindow()
         {
             InitializeComponent();
@@ -55,5 +67,10 @@ namespace UVtools.WPF.Windows
         {
             AvaloniaXamlLoader.Load(this);
         }
+
+        public void SetOpenCVInformationToClipboard()
+        {
+            Application.Current.Clipboard.SetTextAsync(CvInvoke.BuildInformation);
+        } 
     }
 }

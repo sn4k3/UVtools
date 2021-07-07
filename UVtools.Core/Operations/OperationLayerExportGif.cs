@@ -155,7 +155,7 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public int FPSToMilliseconds => (int) Math.Floor(1000.0 / _fps);
+        public int FPSToMilliseconds => 1000 / _fps;
 
         public ushort Repeats
         {
@@ -175,7 +175,7 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public uint TotalLayers => (uint) Math.Floor(LayerRangeCount / (float) (_skip + 1));
+        public uint TotalLayers => (uint)(LayerRangeCount / (float) (_skip + 1));
 
         public uint GifDurationMilliseconds => (uint)(TotalLayers * FPSToMilliseconds);
         public float GifDurationSeconds => (float)Math.Round(GifDurationMilliseconds / 1000.0, 2);
@@ -259,16 +259,16 @@ namespace UVtools.Core.Operations
 
                 if (_flipDirection != ExportGifFlipDirection.None)
                 {
-                    var flipType = _flipDirection switch
+                    FlipType? flipType = _flipDirection switch
                     {
                         ExportGifFlipDirection.Horizontally => FlipType.Horizontal,
                         ExportGifFlipDirection.Vertically => FlipType.Vertical,
-                        ExportGifFlipDirection.Both => FlipType.Horizontal | FlipType.Vertical,
-                        _ => FlipType.None
+                        ExportGifFlipDirection.Both => FlipType.Both,
+                        _ => null
                     };
 
-                    if (flipType != FlipType.None)
-                        CvInvoke.Flip(matRoi, matRoi, flipType);
+                    if (flipType is not null)
+                        CvInvoke.Flip(matRoi, matRoi, flipType.Value);
                 }
 
                 if (_rotateDirection != ExportGifRotateDirection.None)

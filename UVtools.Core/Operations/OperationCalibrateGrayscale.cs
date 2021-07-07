@@ -253,7 +253,7 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public int Divisions => (int)Math.Floor((_endBrightness - _startBrightness) / (decimal)_brightnessSteps) + 1;
+        public int Divisions => (int)((_endBrightness - _startBrightness) / (decimal)_brightnessSteps) + 1;
         public float AngleStep => 360f / Divisions;
 
         public bool EnableCenterHoleRelief

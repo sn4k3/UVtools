@@ -346,9 +346,7 @@ namespace UVtools.Core.Extensions
         /// <returns></returns>
         public static byte[] GetPngByes(this Mat mat)
         {
-            using var vector = new VectorOfByte();
-            CvInvoke.Imencode(".png", mat, vector);
-            return vector.ToArray();
+            return CvInvoke.Imencode(".png", mat);
         }
         #endregion
 
@@ -609,7 +607,7 @@ namespace UVtools.Core.Extensions
         /// <param name="thickness"></param>
         /// <param name="lineType"></param>
         /// <param name="flip"></param>
-        public static void DrawPolygon(this Mat src, int sides, int radius, Point center, MCvScalar color, double startingAngle = 0, int thickness = -1, LineType lineType = LineType.EightConnected, FlipType flip = FlipType.None)
+        public static void DrawPolygon(this Mat src, int sides, int radius, Point center, MCvScalar color, double startingAngle = 0, int thickness = -1, LineType lineType = LineType.EightConnected, FlipType? flip = null)
         {
             if (sides == 1)
             {
@@ -627,8 +625,9 @@ namespace UVtools.Core.Extensions
             }
 
             var points = DrawingExtensions.GetPolygonVertices(sides, radius, center, startingAngle,
-                (flip & FlipType.Horizontal) != 0, (flip & FlipType.Vertical) != 0);
-
+                flip is FlipType.Horizontal or FlipType.Both,
+                flip is FlipType.Vertical or FlipType.Both);
+            
             if (thickness <= 0)
             {
                 using var vec = new VectorOfPoint(points);

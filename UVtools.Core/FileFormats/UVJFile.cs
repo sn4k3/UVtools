@@ -113,8 +113,8 @@ namespace UVtools.Core.FileFormats
 
         public class Settings
         {
-            public Properties Properties { get; set; } = new Properties();
-            public List<LayerData> Layers { get; set; } = new List<LayerData>();
+            public Properties Properties { get; set; } = new();
+            public List<LayerData> Layers { get; set; } = new();
 
             public override string ToString()
             {
@@ -348,18 +348,14 @@ namespace UVtools.Core.FileFormats
             if (CreatedThumbnailsCount > 0)
             {
                 using var stream = outputFile.CreateEntry(FilePreviewTinyName).Open();
-                using var vec = new VectorOfByte();
-                CvInvoke.Imencode(".png", Thumbnails[0], vec);
-                stream.WriteBytes(vec.ToArray());
+                stream.WriteBytes(Thumbnails[0].GetPngByes());
                 stream.Close();
             }
 
             if (CreatedThumbnailsCount > 1)
             {
-                using Stream stream = outputFile.CreateEntry(FilePreviewHugeName).Open();
-                using var vec = new VectorOfByte();
-                CvInvoke.Imencode(".png", Thumbnails[1], vec);
-                stream.WriteBytes(vec.ToArray());
+                using var stream = outputFile.CreateEntry(FilePreviewHugeName).Open();
+                stream.WriteBytes(Thumbnails[1].GetPngByes());
                 stream.Close();
             }
 
@@ -421,13 +417,13 @@ namespace UVtools.Core.FileFormats
                     using var stream = entry.Open();
                     this[layerIndex] = new Layer(layerIndex, stream, LayerManager)
                     {
-                        PositionZ = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int) layerIndex].Z : GetHeightFromLayer(layerIndex),
-                        LiftHeight = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LiftHeight : GetInitialLayerValueOrNormal(layerIndex, BottomLiftHeight, LiftHeight),
-                        LiftSpeed = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LiftSpeed : GetInitialLayerValueOrNormal(layerIndex, BottomLiftSpeed, LiftSpeed),
-                        RetractSpeed = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.RetractSpeed : RetractSpeed,
-                        LightOffDelay = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LightOffTime : GetInitialLayerValueOrNormal(layerIndex, BottomLightOffDelay, LightOffDelay),
-                        ExposureTime = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LightOnTime : GetInitialLayerValueOrNormal(layerIndex, BottomExposureTime, ExposureTime),
-                        LightPWM = JsonSettings.Layers.Count >= layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LightPWM : GetInitialLayerValueOrNormal(layerIndex, BottomLightPWM, LightPWM),
+                        PositionZ = JsonSettings.Layers?.Count > layerIndex ? JsonSettings.Layers[(int) layerIndex].Z : GetHeightFromLayer(layerIndex),
+                        LiftHeight = JsonSettings.Layers?.Count > layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LiftHeight : GetInitialLayerValueOrNormal(layerIndex, BottomLiftHeight, LiftHeight),
+                        LiftSpeed = JsonSettings.Layers?.Count > layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LiftSpeed : GetInitialLayerValueOrNormal(layerIndex, BottomLiftSpeed, LiftSpeed),
+                        RetractSpeed = JsonSettings.Layers?.Count > layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.RetractSpeed : RetractSpeed,
+                        LightOffDelay = JsonSettings.Layers?.Count > layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LightOffTime : GetInitialLayerValueOrNormal(layerIndex, BottomLightOffDelay, LightOffDelay),
+                        ExposureTime = JsonSettings.Layers?.Count > layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LightOnTime : GetInitialLayerValueOrNormal(layerIndex, BottomExposureTime, ExposureTime),
+                        LightPWM = JsonSettings.Layers?.Count > layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LightPWM : GetInitialLayerValueOrNormal(layerIndex, BottomLightPWM, LightPWM),
                     };
                 }
                 

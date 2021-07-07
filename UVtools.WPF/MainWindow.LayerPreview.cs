@@ -1104,16 +1104,18 @@ namespace UVtools.WPF
                     }
                 }
 
-                if (_showLayerImageFlipped)
+                if (_showLayerImageFlipped && (_showLayerImageFlippedHorizontally || _showLayerImageFlippedVertically))
                 {
-                    var flipType = FlipType.None;
-                    if (_showLayerImageFlippedHorizontally)
-                        flipType |= FlipType.Horizontal;
-                    if (_showLayerImageFlippedVertically)
-                        flipType |= FlipType.Vertical;
+                    var flipType = FlipType.Both;
 
-                    if (flipType != FlipType.None)
-                        CvInvoke.Flip(LayerCache.ImageBgr, LayerCache.ImageBgr, flipType);
+                    if (_showLayerImageFlippedHorizontally && _showLayerImageFlippedVertically)
+                        flipType = FlipType.Both;
+                    else if (_showLayerImageFlippedHorizontally)
+                        flipType = FlipType.Horizontal;
+                    else if (_showLayerImageFlippedVertically)
+                        flipType = FlipType.Vertical;
+
+                    CvInvoke.Flip(LayerCache.ImageBgr, LayerCache.ImageBgr, flipType);
                 }
 
                 if (_showLayerImageRotated)
@@ -1884,16 +1886,18 @@ namespace UVtools.WPF
 
                             if (DrawingPixelDrawing.BrushShape != PixelDrawing.BrushShapeType.Circle)
                             {
-                                if (_showLayerImageFlipped)
+                                if (_showLayerImageFlipped && (_showLayerImageFlippedHorizontally || _showLayerImageFlippedVertically))
                                 {
-                                    var flipType = FlipType.None;
-                                    if (_showLayerImageFlippedHorizontally)
-                                        flipType |= FlipType.Horizontal;
-                                    if (_showLayerImageFlippedVertically)
-                                        flipType |= FlipType.Vertical;
+                                    var flipType = FlipType.Both;
 
-                                    if (flipType != FlipType.None)
-                                        CvInvoke.Flip(cursor, cursor, flipType);
+                                    if (_showLayerImageFlippedHorizontally && _showLayerImageFlippedVertically)
+                                        flipType = FlipType.Both;
+                                    else if (_showLayerImageFlippedHorizontally)
+                                        flipType = FlipType.Horizontal;
+                                    else if (_showLayerImageFlippedVertically)
+                                        flipType = FlipType.Vertical;
+
+                                    CvInvoke.Flip(cursor, cursor, flipType);
                                 }
 
                                 if (_showLayerImageRotated)
@@ -1955,17 +1959,20 @@ namespace UVtools.WPF
                     cursor.RotateAdjustBounds(DrawingPixelText.Angle);
                     //cursor.Rotate(DrawingPixelText.Angle);
                     //cursor.PutTextRotated(text, cursor.Size.ToPoint().Half(), DrawingPixelText.Font, DrawingPixelText.FontScale, _pixelEditorCursorColor, DrawingPixelText.Thickness, DrawingPixelText.LineType, DrawingPixelText.Mirror, DrawingPixelText.Angle);
-                    if (_showLayerImageFlipped)
+                    if (_showLayerImageFlipped && (_showLayerImageFlippedHorizontally || _showLayerImageFlippedVertically))
                     {
-                        var flipType = FlipType.None;
-                        if (_showLayerImageFlippedHorizontally)
-                            flipType |= FlipType.Horizontal;
-                        if (_showLayerImageFlippedVertically)
-                            flipType |= FlipType.Vertical;
+                        var flipType = FlipType.Both;
 
-                        if (flipType != FlipType.None)
-                            CvInvoke.Flip(cursor, cursor, flipType);
+                        if (_showLayerImageFlippedHorizontally && _showLayerImageFlippedVertically)
+                            flipType = FlipType.Both;
+                        else if (_showLayerImageFlippedHorizontally)
+                            flipType = FlipType.Horizontal;
+                        else if (_showLayerImageFlippedVertically)
+                            flipType = FlipType.Vertical;
+
+                        CvInvoke.Flip(cursor, cursor, flipType);
                     }
+
                     if (_showLayerImageRotated)
                     {
                         CvInvoke.Rotate(cursor, cursor, _showLayerImageRotateCcwDirection ? RotateFlags.Rotate90CounterClockwise : RotateFlags.Rotate90Clockwise);

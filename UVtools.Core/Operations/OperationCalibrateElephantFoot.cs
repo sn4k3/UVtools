@@ -342,15 +342,15 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public int ErodeObjects => _isErodeEnabled ? 
-            (int)Math.Floor((_erodeEndIteration - _erodeStartIteration) / (decimal)_erodeIterationSteps) + 1 
+        public uint ErodeObjects => _isErodeEnabled ? 
+            (uint)((_erodeEndIteration - _erodeStartIteration) / (decimal)_erodeIterationSteps) + 1 
             : 0;
 
-        public int DimmingObjects => _isDimmingEnabled ?
-            (int) Math.Floor((_dimmingEndBrightness - _dimmingStartBrightness) / (decimal) _dimmingBrightnessSteps) + 1
+        public uint DimmingObjects => _isDimmingEnabled ?
+            (uint)((_dimmingEndBrightness - _dimmingStartBrightness) / (decimal) _dimmingBrightnessSteps) + 1
             : 0;
 
-        public int ObjectCount => (_outputOriginalPart ? 1 : 0) + ErodeObjects + DimmingObjects;
+        public uint ObjectCount => (_outputOriginalPart ? 1u : 0) + ErodeObjects + DimmingObjects;
 
         #endregion
 

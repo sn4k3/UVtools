@@ -150,51 +150,40 @@ namespace UVtools.Core.Operations
 
         protected override bool ExecuteInternally(OperationProgress progress)
         {
-            if (X == 1m && Y == 1m) return false;
+            if (_x <= 0 || _y <= 0) return false;
+            if (_x == 100 && _y == 100) return false;
 
-            decimal xSteps = Math.Abs(X - 1) / (LayerIndexEnd - LayerIndexStart);
-            decimal ySteps = Math.Abs(Y - 1) / (LayerIndexEnd - LayerIndexStart);
+            decimal xSteps = Math.Abs(100 - _x) / (LayerIndexEnd - LayerIndexStart + 1);
+            decimal ySteps = Math.Abs(100 - _y) / (LayerIndexEnd - LayerIndexStart + 1);
 
             Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
-                var newX = X;
-                var newY = Y;
+                var newX = _x;
+                var newY = _y;
                 if (IsFade)
                 {
-                    if (newX != 1m)
+                    if (newX != 100)
                     {
-
-                        //maxIteration = Math.Max(iterationsStart, iterationsEnd);
-
-                        newX = newX < 1m
+                        newX = newX < 100
                             ? newX + (layerIndex - LayerIndexStart) * xSteps
                             : newX - (layerIndex - LayerIndexStart) * xSteps;
-
-                        // constrain
-                        //iterations = Math.Min(Math.Max(1, iterations), maxIteration);
                     }
 
-                    if (newY != 1m)
+                    if (newY != 100)
                     {
-
-                        //maxIteration = Math.Max(iterationsStart, iterationsEnd);
-
-                        newY = (newY < 1m
+                        newY = newY < 100
                             ? newY + (layerIndex - LayerIndexStart) * ySteps
-                            : newY - (layerIndex - LayerIndexStart) * ySteps);
-
-                        // constrain
-                        //iterations = Math.Min(Math.Max(1, iterations), maxIteration);
+                            : newY - (layerIndex - LayerIndexStart) * ySteps;
                     }
                 }
 
                 progress.LockAndIncrement();
 
-                if (newX == 1.0m && newY == 1.0m) return;
+                if (newX == 100 && newY == 100) return;
 
                 using var mat = SlicerFile[layerIndex].LayerMat;
-                Execute(mat, newX  / 100m, newY / 100m);
+                Execute(mat, newX  / 100, newY / 100);
                 SlicerFile[layerIndex].LayerMat = mat;
             });
 
