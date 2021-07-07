@@ -229,7 +229,7 @@ dotnet-runtime-5.0
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libdc1394-22 libavcodec-dev libavformat-dev libswscale-dev libopenexr24 libtbb-dev libgdiplus
+sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libdc1394-22 libavcodec-dev libavformat-dev libswscale-dev libopenexr24 libtbb-dev libgl1-mesa-dev libgdiplus
 ```
 
 
@@ -326,7 +326,7 @@ anyone with same system version can make use of it without the need of the compi
 sudo yum update -y
 sudo yum install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
 sudo yum install -y https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-sudo yum install -y libjpeg-devel libjpeg-turbo-devel libpng-devel libgeotiff-devel libdc1394-devel ffmpeg-devel tbb-devel
+sudo yum install -y libjpeg-devel libjpeg-turbo-devel libpng-devel libgeotiff-devel libdc1394-devel ffmpeg-devel tbb-devel mesa-libGL
 ```
 
 
@@ -395,7 +395,7 @@ To run UVtools open it folder on a terminal and call one of:
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 brew analytics off
-brew install git cmake libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb mono-libgdiplus libusb
+brew install git cmake libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb mono mono-libgdiplus libusb
 brew install --cask dotnet-sdk
 git clone https://github.com/emgucv/emgucv emgucv 
 cd emgucv
