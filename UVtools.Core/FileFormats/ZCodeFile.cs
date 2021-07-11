@@ -125,7 +125,7 @@ namespace UVtools.Core.FileFormats
             public float VolumeMl { get; set; }
 
             [XmlElement("thickness")]
-            public float LayerHeight { get; set; }
+            public float LayerHeight { get; set; } = FileFormat.DefaultLayerHeight;
 
             [XmlElement("price")]
             public float Price { get; set; }
@@ -276,7 +276,7 @@ namespace UVtools.Core.FileFormats
 
         public override float LayerHeight
         {
-            get => ManifestFile.Job.LayerHeight;
+            get => ManifestFile.Job.LayerHeight > 0 ? ManifestFile.Job.LayerHeight : ManifestFile.Profile.Slice.LayerHeight;
             set
             {
                 ManifestFile.Job.LayerHeight = ManifestFile.Profile.Slice.LayerHeight = Layer.RoundHeight(value);

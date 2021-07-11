@@ -681,6 +681,8 @@ namespace UVtools.Core.Extensions
         }
 
         public static Size GetTextSizeExtended(string text, FontFace fontFace, double fontScale, int thickness, ref int baseLine, PutTextLineAlignment lineAlignment = default)
+            => GetTextSizeExtended(text, fontFace, fontScale, thickness, 0, ref baseLine, lineAlignment);
+        public static Size GetTextSizeExtended(string text, FontFace fontFace, double fontScale, int thickness, int lineGapOffset, ref int baseLine, PutTextLineAlignment lineAlignment = default)
         {
             text = text.TrimEnd('\n', '\r', ' ');
             var lines = text.Split(StaticObjects.LineBreakCharacters, StringSplitOptions.None);
@@ -688,7 +690,7 @@ namespace UVtools.Core.Extensions
 
             if (lines.Length is 0 or 1) return textSize;
 
-            var lineGap = textSize.Height / 3;
+            var lineGap = textSize.Height / 3 + lineGapOffset;
             var width = 0;
             var height = lines.Length * (lineGap + textSize.Height) - lineGap;
 
@@ -706,11 +708,16 @@ namespace UVtools.Core.Extensions
             return new(width, height);
         }
 
-        /// <summary>
-        /// Extended OpenCV PutText to accepting line breaks and line alignment
-        /// </summary>
         public static void PutTextExtended(this Mat src, string text, Point org, FontFace fontFace, double fontScale,
-            MCvScalar color, int thickness = 1, LineType lineType = LineType.EightConnected, bool bottomLeftOrigin = false, PutTextLineAlignment lineAlignment = default)
+            MCvScalar color, int thickness = 1, LineType lineType = LineType.EightConnected,
+            bool bottomLeftOrigin = false, PutTextLineAlignment lineAlignment = default)
+            => src.PutTextExtended(text, org, fontFace, fontScale, color, thickness, 0, lineType, bottomLeftOrigin, lineAlignment);
+
+            /// <summary>
+            /// Extended OpenCV PutText to accepting line breaks and line alignment
+            /// </summary>
+            public static void PutTextExtended(this Mat src, string text, Point org, FontFace fontFace, double fontScale,
+            MCvScalar color, int thickness = 1, int lineGapOffset = 0, LineType lineType = LineType.EightConnected, bool bottomLeftOrigin = false, PutTextLineAlignment lineAlignment = default)
         {
             text = text.TrimEnd('\n', '\r', ' ');
             var lines = text.Split(StaticObjects.LineBreakCharacters, StringSplitOptions.None);
@@ -727,7 +734,7 @@ namespace UVtools.Core.Extensions
             // Get height of text lines in pixels (height of all lines is the same)
             int baseLine = 0;
             var textSize = CvInvoke.GetTextSize(text, fontFace, fontScale, thickness, ref baseLine);
-            var lineGap = textSize.Height / 3;
+            var lineGap = textSize.Height / 3 + lineGapOffset;
             var linesSize = new Size[lines.Length];
             int width = 0;
 
@@ -769,15 +776,25 @@ namespace UVtools.Core.Extensions
             }
         }
 
+            /// <summary>
+            /// Extended OpenCV PutText to accepting line breaks, line alignment and rotation
+            /// </summary>
+            public static void PutTextRotated(this Mat src, string text, Point org, FontFace fontFace, double fontScale,
+                MCvScalar color,
+                int thickness = 1, LineType lineType = LineType.EightConnected, bool bottomLeftOrigin = false,
+                PutTextLineAlignment lineAlignment = default, double angle = 0)
+                => src.PutTextRotated(text, org, fontFace, fontScale, color, thickness, 0, lineType, bottomLeftOrigin,
+                    lineAlignment, angle);
+
         /// <summary>
         /// Extended OpenCV PutText to accepting line breaks, line alignment and rotation
         /// </summary>
         public static void PutTextRotated(this Mat src, string text, Point org, FontFace fontFace, double fontScale, MCvScalar color,
-        int thickness = 1, LineType lineType = LineType.EightConnected, bool bottomLeftOrigin = false, PutTextLineAlignment lineAlignment = default, double angle = 0)
+        int thickness = 1, int lineGapOffset = 0, LineType lineType = LineType.EightConnected, bool bottomLeftOrigin = false, PutTextLineAlignment lineAlignment = default, double angle = 0)
         {
             if (angle % 360 == 0) // No rotation needed, cheaper cycle
             {
-                src.PutTextExtended(text, org, fontFace, fontScale, color, thickness, lineType, bottomLeftOrigin, lineAlignment);
+                src.PutTextExtended(text, org, fontFace, fontScale, color, thickness, lineGapOffset, lineType, bottomLeftOrigin, lineAlignment);
                 return;
             }
 
@@ -786,10 +803,10 @@ namespace UVtools.Core.Extensions
             var sizeDifference = (rotatedSrc.Size - src.Size).Half();
             org.Offset(sizeDifference.ToPoint());
             org = org.Rotate(-angle, new Point(rotatedSrc.Size.Width / 2, rotatedSrc.Size.Height / 2));
-            rotatedSrc.PutTextExtended(text, org, fontFace, fontScale, color, thickness, lineType, bottomLeftOrigin, lineAlignment);
+            rotatedSrc.PutTextExtended(text, org, fontFace, fontScale, color, thickness, lineGapOffset, lineType, bottomLeftOrigin, lineAlignment);
    
             using var mask = rotatedSrc.NewBlank();
-            mask.PutTextExtended(text, org, fontFace, fontScale, WhiteColor, thickness, lineType, bottomLeftOrigin, lineAlignment);
+            mask.PutTextExtended(text, org, fontFace, fontScale, WhiteColor, thickness, lineGapOffset, lineType, bottomLeftOrigin, lineAlignment);
 
             rotatedSrc.Rotate(angle, src.Size);
             mask.Rotate(angle, src.Size);

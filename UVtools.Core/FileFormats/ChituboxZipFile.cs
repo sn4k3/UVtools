@@ -349,7 +349,7 @@ namespace UVtools.Core.FileFormats
         {
             using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
             {
-                if (Thumbnails.Length > 0 && !ReferenceEquals(Thumbnails[0], null))
+                if (Thumbnails.Length > 0 && Thumbnails[0] is not null)
                 {
                     using (Stream stream = outputFile.CreateEntry("preview.png").Open())
                     {
@@ -358,7 +358,7 @@ namespace UVtools.Core.FileFormats
                     }
                 }
 
-                if (Thumbnails.Length > 1 && !ReferenceEquals(Thumbnails[1], null))
+                if (Thumbnails.Length > 1 && Thumbnails[1] is not null)
                 {
                     using (Stream stream = outputFile.CreateEntry("preview_cropping.png").Open())
                     {

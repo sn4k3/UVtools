@@ -585,6 +585,19 @@ namespace UVtools.Core
             SlicerFile?.UpdatePrintTime();
         }
 
+        public IEnumerable<Layer> GetSamePositionedLayers()
+        {
+            var layers = new List<Layer>();
+            for (int layerIndex = 1; layerIndex < LayerCount; layerIndex++)
+            {
+                var layer = this[layerIndex];
+                if (this[layerIndex - 1].PositionZ != layer.PositionZ) continue;
+                layers.Add(layer);
+            }
+
+            return layers;
+        }
+
         public Rectangle GetBoundingRectangle(OperationProgress progress = null)
         {
             if (!_boundingRectangle.IsEmpty || LayerCount == 0 || this[0] is null) return _boundingRectangle;

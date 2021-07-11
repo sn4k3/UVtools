@@ -39,7 +39,7 @@ namespace UVtools.Core.FileFormats
         private const string ExtractConfigFileExtension = "ini";
 
 
-        public const float DefaultLayerHeight = 0.5f;
+        public const float DefaultLayerHeight = 0.05f;
         public const ushort DefaultBottomLayerCount = 4;
 
         public const float DefaultBottomExposureTime = 30;
@@ -1217,6 +1217,11 @@ namespace UVtools.Core.FileFormats
         public bool HaveGCode => SupportsGCode && !GCode.IsEmpty;
 
         /// <summary>
+        /// Disable or enable the gcode auto rebuild when needed, set this to false to manually write your own gcode
+        /// </summary>
+        public bool SuppressRebuildGCode { get; set; }
+
+        /// <summary>
         /// Get all configuration objects with properties and values
         /// </summary>
         public abstract object[] Configs { get; }
@@ -2024,7 +2029,7 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public virtual void RebuildGCode()
         {
-            if (!SupportsGCode) return;
+            if (!SupportsGCode || SuppressRebuildGCode) return;
             GCode.RebuildGCode(this);
         }
 

@@ -896,24 +896,6 @@
                     Content="Enable - For advanced users only!"
                     IsChecked="{Binding Operation.MultipleExposures}"/>
 
-                <StackPanel Orientation="Horizontal" Spacing="20"
-                            IsVisible="{Binding SlicerFile.CanUseLayerLiftHeight}">
-
-                <CheckBox
-                    ToolTip.Tip="The lift height will be set to 0 for sequential layers that share same z position, saving moves and time.
-&#x0a;Some printers may not support this and always require a lift after each layer, in that case turning this on will not affect the print."
-                    Content="Do not perform the lifting sequence for layers with same Z positioning"
-                    IsEnabled="{Binding Operation.MultipleExposures}"
-                    IsChecked="{Binding Operation.DontLiftSamePositionedLayers}"/>
-
-                <CheckBox
-                    ToolTip.Tip="Sets the light-off delay to zero for each sequential layers with no lift's to save that additional time.
-&#x0a;Note that without a lift and a delay the UV LED and LCD will be almost always ON, that can lead to overheat and wear the LCD faster."
-                    Content="Also set light-off delay to zero"
-                    IsEnabled="{Binding Operation.DontLiftSamePositionedLayers}"
-                    IsChecked="{Binding Operation.ZeroLightOffSamePositionedLayers}"/>
-                </StackPanel>
-
                 <TextBlock Text="Automatic exposure generation:"
                            IsEnabled="{Binding Operation.MultipleExposures}"
                            FontWeight="Bold"/>
@@ -1113,6 +1095,79 @@
                     </DataGrid.Columns>
 
                 </DataGrid>
+
+
+                <StackPanel Orientation="Vertical" Spacing="10"
+                            IsEnabled="{Binding Operation.MultipleExposures}"
+                            IsVisible="{Binding SlicerFile.SupportPerLayerSettings}">
+
+                    <CheckBox
+                        ToolTip.Tip="Change some defined settings for sequential layers that share same z position"
+                        Content="Use different settings for layers with same Z positioning:"
+                        FontWeight="Bold"
+                        IsChecked="{Binding Operation.DifferentSettingsForSamePositionedLayers}"/>
+
+                    <Grid RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,10,Auto,5,Auto" IsEnabled="{Binding Operation.DifferentSettingsForSamePositionedLayers}">
+                        <CheckBox Grid.Row="0" Grid.Column="0"
+                                   ToolTip.Tip="Use a low value to speed up layers with same Z position, lift is not really required here.
+&#x0a;Set no lift height (0mm) will not work on most of the printers, so far, only gcode printers are known/able to use no lifts.
+&#x0a;However set 0mm on a not compatible printer will cause no harm, value will be contained inside a min-max inside firmware."
+                                   Content="Lift height:"
+                                   IsVisible="{Binding SlicerFile.CanUseLayerLiftHeight}"
+                                   IsChecked="{Binding Operation.SamePositionedLayersLiftHeightEnabled}"
+                                   VerticalAlignment="Center"/>
+                        <NumericUpDown Grid.Row="0" Grid.Column="2"
+                                       Increment="0.5"
+                                       Minimum="0"
+                                       Maximum="1000"
+                                       FormatString="F2"
+                                       IsVisible="{Binding SlicerFile.CanUseLayerLiftHeight}"
+                                       IsEnabled="{Binding Operation.SamePositionedLayersLiftHeightEnabled}"
+                                       Value="{Binding Operation.SamePositionedLayersLiftHeight}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="4"
+                                   Text="mm"
+                                   IsVisible="{Binding SlicerFile.CanUseLayerLiftHeight}"
+                                   VerticalAlignment="Center"/>
+
+                        <CheckBox Grid.Row="2" Grid.Column="0"
+                                  ToolTip.Tip="Use a low value to speed up layers with same Z position, a delay is not really required here.
+&#x0a;Set no delay (0s) is not recommended for gcode printers, as most need some time to render the image before move to the next command, 2s is recommended as a safe-guard."
+                                  Content="Light-off delay:"
+                                  IsVisible="{Binding SlicerFile.CanUseLayerLightOffDelay}"
+                                  IsChecked="{Binding Operation.SamePositionedLayersLightOffDelayEnabled}"
+                                  VerticalAlignment="Center"/>
+                        <NumericUpDown Grid.Row="2" Grid.Column="2"
+                                       Increment="0.5"
+                                       Minimum="0"
+                                       Maximum="1000"
+                                       FormatString="F2"
+                                       IsVisible="{Binding SlicerFile.CanUseLayerLightOffDelay}"
+                                       IsEnabled="{Binding Operation.SamePositionedLayersLightOffDelayEnabled}"
+                                       Value="{Binding Operation.SamePositionedLayersLightOffDelay}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="4"
+                                 Text="s"
+                                 IsVisible="{Binding SlicerFile.CanUseLayerLightOffDelay}"
+                                 VerticalAlignment="Center"/>
+
+                    </Grid>
+
+
+                    <!--
+                <CheckBox
+                    ToolTip.Tip="The lift height will be set to 0 for sequential layers that share same z position, saving moves and time.
+&#x0a;Some printers may not support this and always require a lift after each layer, in that case turning this on will not affect the print."
+                    Content="Do not perform the lifting sequence for layers with same Z positioning"
+                    IsEnabled="{Binding Operation.MultipleExposures}"
+                    IsChecked="{Binding Operation.DontLiftSamePositionedLayers}"/>
+
+                <CheckBox
+                    ToolTip.Tip="Sets the light-off delay to zero for each sequential layers with no lift's to save that additional time.
+&#x0a;Note that without a lift and a delay the UV LED and LCD will be almost always ON, that can lead to overheat and wear the LCD faster."
+                    Content="Also set light-off delay to zero"
+                    IsEnabled="{Binding Operation.DontLiftSamePositionedLayers}"
+                    IsChecked="{Binding Operation.ZeroLightOffSamePositionedLayers}"/>
+                    !-->
+                </StackPanel>
 
             </StackPanel>
 

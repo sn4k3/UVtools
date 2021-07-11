@@ -341,8 +341,8 @@
         <Component Id="owc3FC8434C1A84605AEEBC6A100CA2F3E1" Guid="47d7e276-db6d-424e-d797-1a69e1e24b3b">
           <File Id="owf3FC8434C1A84605AEEBC6A100CA2F3E1" Source="$(var.SourceDir)\Newtonsoft.Json.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owc29161E83FC02784120326979FF285358" Guid="a8d30e75-1063-4d27-60b6-13d4bd4f52eb">
-          <File Id="owf29161E83FC02784120326979FF285358" Source="$(var.SourceDir)\opencv_videoio_ffmpeg451_64.dll" KeyPath="yes" />
+        <Component Id="owcC8F0982CA6FC282C6992A07EAF832954" Guid="eca80656-9710-cdb8-cb7f-c54f35b4b913">
+          <File Id="owfC8F0982CA6FC282C6992A07EAF832954" Source="$(var.SourceDir)\opencv_videoio_ffmpeg452_64.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc363CAFE6342F1E71AB07D13BAEEE5FF0" Guid="8e946fdc-ea52-7c4b-a8b3-69e1ecf51086">
           <File Id="owf363CAFE6342F1E71AB07D13BAEEE5FF0" Source="$(var.SourceDir)\SkiaSharp.dll" KeyPath="yes" />
@@ -866,9 +866,6 @@
         </Component>
         <Component Id="owc1FE1E0B70F7D880A2FB9AFA8E0E36EF5" Guid="545300b7-5398-2ce2-788f-02287a83e8a7">
           <File Id="owf1FE1E0B70F7D880A2FB9AFA8E0E36EF5" Source="$(var.SourceDir)\UVtools_demo_file.sl1" KeyPath="yes" />
-        </Component>
-        <Component Id="owc507468650B23000B702AAAE48E658343" Guid="dba8edf4-02a3-c04a-50fc-896025548077">
-          <File Id="owf507468650B23000B702AAAE48E658343" Source="$(var.SourceDir)\vccorlib140.dll" KeyPath="yes" />
         </Component>
         <Component Id="owcEB2D9343E9BF3366381E9864468EFB9A" Guid="c4f85169-dfa6-1369-3b95-34e28199fa0f">
           <File Id="owfEB2D9343E9BF3366381E9864468EFB9A" Source="$(var.SourceDir)\vcruntime140.dll" KeyPath="yes" />

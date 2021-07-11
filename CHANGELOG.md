@@ -1,5 +1,22 @@
 # Changelog
 
+## 11/06/2021 - v2.14.2
+
+- **Exposure time finder:**
+   - (Add) [ME] Option: 'Use different settings for layers with same Z positioning'
+   - (Add) [ME] Option: 'Lift height' for same Z positioned layers
+   - (Add) [ME] Option: 'Light-off delay' for same Z positioned layers
+   - (Improvement) Auto-detect and optimize the 'multiple exposures' test to decrease the print time, by set a minimal lift to almost none
+   - (Improvement) Better information on the thumbnail
+   - (Fix) Importing a profile would crash the application
+   - (Fix) Error with 'Pattern loaded model' fails when generating more models than build plate can afford (#239)
+- **GCode:**
+   - (Fix) When the last layer have no lifts and a move to top command is set on end, that value were being set incorrectly as last layer position
+   - (Fix) Layer parsing from mm/s to mm/m bad convertion
+- (Add) File formats: Setter `SuppressRebuildGCode` to disable or enable the gcode auto rebuild when needed, set this to false to manually write your own gcode
+- (Add) UVtools version to error logs
+- (Fix) ZCode: Some test files come with layer height of 0mm on a property, in that case lookup layer height on the second property as fallback
+
 ## 07/06/2021 - v2.14.1
 
 - (Upgrade) EmguCV from 4.5.1 to 4.5.2
@@ -11,7 +28,7 @@
    - (Fix) Division by 0 when start layer is equal to end layer
    - (Fix) Calculations when using the option "Increase or decrease towards 100%"
 - (Add) About window: OpenCV build number and a button to copy build information to clipboard
-- (Improvement) Exposure exposure finder: Improve the **Multiple brightness** section to auto fill with correct values for file formats that use time fractions to emulate AntiAliasing, this can be used to replace the **Multiple exposures** section
+- (Improvement) Exposure time finder: Improve the **Multiple brightness** section to auto fill with correct values for file formats that use time fractions to emulate AntiAliasing, this can be used to replace the **Multiple exposures** section
 - (Fix) UVJ: Error when using a null or empty layer array on manifest `config.json` file (#232)
 - (Fix) GCode parser: When only a G4/wait command is present on a layer it was setting the global exposure time and discard the this value per layer
 

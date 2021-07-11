@@ -15,7 +15,7 @@ namespace UVtools.WPF
             try
             {
                 File.AppendAllText(FullPath,
-                    $"({errorType}) @ {DateTime.Now}: {text}{Environment.NewLine}");
+                    $"[v{App.VersionStr}] ({errorType}) @ {DateTime.Now}: {text}{Environment.NewLine}");
             }
             catch (Exception exception)
             {
@@ -23,7 +23,7 @@ namespace UVtools.WPF
             }
         }
 
-        public static StreamWriter AppendText()
+        public static StreamWriter GetStreamWriter()
         {
             return File.AppendText(FullPath);
         }

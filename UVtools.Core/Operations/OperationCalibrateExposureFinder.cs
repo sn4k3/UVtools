@@ -110,8 +110,11 @@ namespace UVtools.Core.Operations
         private decimal _multipleLayerHeightMaximum = 0.1m;
         private decimal _multipleLayerHeightStep = 0.01m;
 
-        private bool _dontLiftSamePositionedLayers;
-        private bool _zeroLightOffSamePositionedLayers;
+        private bool _differentSettingsForSamePositionedLayers;
+        private bool _samePositionedLayersLiftHeightEnabled = true;
+        private decimal _samePositionedLayersLiftHeight;
+        private bool _samePositionedLayersLightOffDelayEnabled = true;
+        private decimal _samePositionedLayersLightOffDelay;
         private bool _multipleExposures;
         private ExposureGenTypes _exposureGenType = ExposureGenTypes.Linear;
         private bool _exposureGenIgnoreBaseExposure;
@@ -136,7 +139,6 @@ namespace UVtools.Core.Operations
         private byte _bullsEyeFenceThickness = 10;
         private sbyte _bullsEyeFenceOffset;
         private bool _patternModelGlueBottomLayers = true;
-
         #endregion
 
         #region Overrides
@@ -755,15 +757,17 @@ namespace UVtools.Core.Operations
             get
             {
                 List<byte> values = new();
-
-                var split = _multipleBrightnessValues.Split(',', StringSplitOptions.TrimEntries);
-                foreach (var brightnessStr in split)
+                if (!string.IsNullOrWhiteSpace(_multipleBrightnessValues))
                 {
-                    if (string.IsNullOrWhiteSpace(brightnessStr)) continue;
-                    if (!byte.TryParse(brightnessStr, out var brightness)) continue;
-                    if (brightness is <= 0 or > 255) continue;
-                    if (values.Contains(brightness)) continue;
-                    values.Add(brightness);
+                    var split = _multipleBrightnessValues.Split(',', StringSplitOptions.TrimEntries);
+                    foreach (var brightnessStr in split)
+                    {
+                        if (string.IsNullOrWhiteSpace(brightnessStr)) continue;
+                        if (!byte.TryParse(brightnessStr, out var brightness)) continue;
+                        if (brightness is <= 0 or > 255) continue;
+                        if (values.Contains(brightness)) continue;
+                        values.Add(brightness);
+                    }
                 }
 
                 return values.OrderByDescending(brightness => brightness).ToArray();
@@ -801,16 +805,34 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public bool DontLiftSamePositionedLayers
+        public bool DifferentSettingsForSamePositionedLayers
         {
-            get => _dontLiftSamePositionedLayers;
-            set => RaiseAndSetIfChanged(ref _dontLiftSamePositionedLayers, value);
+            get => _differentSettingsForSamePositionedLayers;
+            set => RaiseAndSetIfChanged(ref _differentSettingsForSamePositionedLayers, value);
         }
 
-        public bool ZeroLightOffSamePositionedLayers
+        public bool SamePositionedLayersLiftHeightEnabled
         {
-            get => _zeroLightOffSamePositionedLayers;
-            set => RaiseAndSetIfChanged(ref _zeroLightOffSamePositionedLayers, value);
+            get => _samePositionedLayersLiftHeightEnabled;
+            set => RaiseAndSetIfChanged(ref _samePositionedLayersLiftHeightEnabled, value);
+        }
+
+        public decimal SamePositionedLayersLiftHeight
+        {
+            get => _samePositionedLayersLiftHeight;
+            set => RaiseAndSetIfChanged(ref _samePositionedLayersLiftHeight, Math.Round(value, 2));
+        }
+
+        public bool SamePositionedLayersLightOffDelayEnabled
+        {
+            get => _samePositionedLayersLightOffDelayEnabled;
+            set => RaiseAndSetIfChanged(ref _samePositionedLayersLightOffDelayEnabled, value);
+        }
+
+        public decimal SamePositionedLayersLightOffDelay
+        {
+            get => _samePositionedLayersLightOffDelay;
+            set => RaiseAndSetIfChanged(ref _samePositionedLayersLightOffDelay, Math.Round(value, 2));
         }
 
         public bool MultipleExposures
@@ -1027,7 +1049,23 @@ namespace UVtools.Core.Operations
         public OperationCalibrateExposureFinder() { }
 
         public OperationCalibrateExposureFinder(FileFormat slicerFile) : base(slicerFile)
-        { }
+        {
+            if (SlicerFile.SupportPerLayerSettings)
+            {
+                _differentSettingsForSamePositionedLayers = true;
+                if (SlicerFile.SupportsGCode)
+                {
+                    _samePositionedLayersLiftHeight = 0;
+                    _samePositionedLayersLightOffDelay = 2;
+                }
+                else
+                {
+                    _samePositionedLayersLiftHeight = 0.1m;
+                    _samePositionedLayersLightOffDelay = 0;
+                }
+            }
+
+        }
 
         public override void InitWithSlicerFile()
         {
@@ -1107,7 +1145,7 @@ namespace UVtools.Core.Operations
 
         private bool Equals(OperationCalibrateExposureFinder other)
         {
-            return _displayWidth == other._displayWidth && _displayHeight == other._displayHeight && _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _partMargin == other._partMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _baseHeight == other._baseHeight && _featuresHeight == other._featuresHeight && _featuresMargin == other._featuresMargin && _staircaseThickness == other._staircaseThickness && _holesEnabled == other._holesEnabled && _holeShape == other._holeShape && _unitOfMeasure == other._unitOfMeasure && _holeDiametersPx == other._holeDiametersPx && _holeDiametersMm == other._holeDiametersMm && _barsEnabled == other._barsEnabled && _barSpacing == other._barSpacing && _barLength == other._barLength && _barVerticalSplitter == other._barVerticalSplitter && _barFenceThickness == other._barFenceThickness && _barFenceOffset == other._barFenceOffset && _barThicknessesPx == other._barThicknessesPx && _barThicknessesMm == other._barThicknessesMm && _textEnabled == other._textEnabled && _textFont == other._textFont && _textScale.Equals(other._textScale) && _textThickness == other._textThickness && _text == other._text && _multipleBrightness == other._multipleBrightness && _multipleBrightnessExcludeFrom == other._multipleBrightnessExcludeFrom && _multipleBrightnessValues == other._multipleBrightnessValues && _multipleBrightnessGenExposureTime == other._multipleBrightnessGenExposureTime && _multipleLayerHeight == other._multipleLayerHeight && _multipleLayerHeightMaximum == other._multipleLayerHeightMaximum && _multipleLayerHeightStep == other._multipleLayerHeightStep && _dontLiftSamePositionedLayers == other._dontLiftSamePositionedLayers && _zeroLightOffSamePositionedLayers == other._zeroLightOffSamePositionedLayers && _multipleExposures == other._multipleExposures && _exposureGenType == other._exposureGenType && _exposureGenIgnoreBaseExposure == other._exposureGenIgnoreBaseExposure && _exposureGenBottomStep == other._exposureGenBottomStep && _exposureGenNormalStep == other._exposureGenNormalStep && _exposureGenTests == other._exposureGenTests && _exposureGenManualLayerHeight == other._exposureGenManualLayerHeight && _exposureGenManualBottom == other._exposureGenManualBottom && _exposureGenManualNormal == other._exposureGenManualNormal && Equals(_exposureTable, other._exposureTable) && _bullsEyeEnabled == other._bullsEyeEnabled && _bullsEyeConfigurationPx == other._bullsEyeConfigurationPx && _bullsEyeConfigurationMm == other._bullsEyeConfigurationMm && _bullsEyeInvertQuadrants == other._bullsEyeInvertQuadrants && _counterTrianglesEnabled == other._counterTrianglesEnabled && _counterTrianglesTipOffset == other._counterTrianglesTipOffset && _counterTrianglesFence == other._counterTrianglesFence && _patternModel == other._patternModel && _bullsEyeFenceThickness == other._bullsEyeFenceThickness && _bullsEyeFenceOffset == other._bullsEyeFenceOffset && _patternModelGlueBottomLayers == other._patternModelGlueBottomLayers;
+            return _displayWidth == other._displayWidth && _displayHeight == other._displayHeight && _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _partMargin == other._partMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _baseHeight == other._baseHeight && _featuresHeight == other._featuresHeight && _featuresMargin == other._featuresMargin && _staircaseThickness == other._staircaseThickness && _holesEnabled == other._holesEnabled && _holeShape == other._holeShape && _unitOfMeasure == other._unitOfMeasure && _holeDiametersPx == other._holeDiametersPx && _holeDiametersMm == other._holeDiametersMm && _barsEnabled == other._barsEnabled && _barSpacing == other._barSpacing && _barLength == other._barLength && _barVerticalSplitter == other._barVerticalSplitter && _barFenceThickness == other._barFenceThickness && _barFenceOffset == other._barFenceOffset && _barThicknessesPx == other._barThicknessesPx && _barThicknessesMm == other._barThicknessesMm && _textEnabled == other._textEnabled && _textFont == other._textFont && _textScale.Equals(other._textScale) && _textThickness == other._textThickness && _text == other._text && _multipleBrightness == other._multipleBrightness && _multipleBrightnessExcludeFrom == other._multipleBrightnessExcludeFrom && _multipleBrightnessValues == other._multipleBrightnessValues && _multipleBrightnessGenExposureTime == other._multipleBrightnessGenExposureTime && _multipleBrightnessGenEmulatedAALevel == other._multipleBrightnessGenEmulatedAALevel && _multipleBrightnessGenExposureFractions == other._multipleBrightnessGenExposureFractions && _multipleLayerHeight == other._multipleLayerHeight && _multipleLayerHeightMaximum == other._multipleLayerHeightMaximum && _multipleLayerHeightStep == other._multipleLayerHeightStep && _differentSettingsForSamePositionedLayers == other._differentSettingsForSamePositionedLayers && _samePositionedLayersLiftHeightEnabled == other._samePositionedLayersLiftHeightEnabled && _samePositionedLayersLiftHeight == other._samePositionedLayersLiftHeight && _samePositionedLayersLightOffDelayEnabled == other._samePositionedLayersLightOffDelayEnabled && _samePositionedLayersLightOffDelay == other._samePositionedLayersLightOffDelay && _multipleExposures == other._multipleExposures && _exposureGenType == other._exposureGenType && _exposureGenIgnoreBaseExposure == other._exposureGenIgnoreBaseExposure && _exposureGenBottomStep == other._exposureGenBottomStep && _exposureGenNormalStep == other._exposureGenNormalStep && _exposureGenTests == other._exposureGenTests && _exposureGenManualLayerHeight == other._exposureGenManualLayerHeight && _exposureGenManualBottom == other._exposureGenManualBottom && _exposureGenManualNormal == other._exposureGenManualNormal && Equals(_exposureTable, other._exposureTable) && _bullsEyeEnabled == other._bullsEyeEnabled && _bullsEyeConfigurationPx == other._bullsEyeConfigurationPx && _bullsEyeConfigurationMm == other._bullsEyeConfigurationMm && _bullsEyeInvertQuadrants == other._bullsEyeInvertQuadrants && _counterTrianglesEnabled == other._counterTrianglesEnabled && _counterTrianglesTipOffset == other._counterTrianglesTipOffset && _counterTrianglesFence == other._counterTrianglesFence && _patternModel == other._patternModel && _bullsEyeFenceThickness == other._bullsEyeFenceThickness && _bullsEyeFenceOffset == other._bullsEyeFenceOffset && _patternModelGlueBottomLayers == other._patternModelGlueBottomLayers;
         }
 
         public override bool Equals(object obj)
@@ -1157,11 +1195,16 @@ namespace UVtools.Core.Operations
             hashCode.Add((int) _multipleBrightnessExcludeFrom);
             hashCode.Add(_multipleBrightnessValues);
             hashCode.Add(_multipleBrightnessGenExposureTime);
+            hashCode.Add(_multipleBrightnessGenEmulatedAALevel);
+            hashCode.Add(_multipleBrightnessGenExposureFractions);
             hashCode.Add(_multipleLayerHeight);
             hashCode.Add(_multipleLayerHeightMaximum);
             hashCode.Add(_multipleLayerHeightStep);
-            hashCode.Add(_dontLiftSamePositionedLayers);
-            hashCode.Add(_zeroLightOffSamePositionedLayers);
+            hashCode.Add(_differentSettingsForSamePositionedLayers);
+            hashCode.Add(_samePositionedLayersLiftHeightEnabled);
+            hashCode.Add(_samePositionedLayersLiftHeight);
+            hashCode.Add(_samePositionedLayersLightOffDelayEnabled);
+            hashCode.Add(_samePositionedLayersLightOffDelay);
             hashCode.Add(_multipleExposures);
             hashCode.Add((int) _exposureGenType);
             hashCode.Add(_exposureGenIgnoreBaseExposure);
@@ -1681,8 +1724,43 @@ namespace UVtools.Core.Operations
             CvInvoke.Line(thumbnail, new Point(xSpacing, 0), new Point(xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.Line(thumbnail, new Point(xSpacing, ySpacing + 5), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
             CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
-            CvInvoke.PutText(thumbnail, "Exposure Time Cal.", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
-            CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
+            CvInvoke.PutText(thumbnail, "Exposure Time Cal.", new Point(xSpacing, ySpacing * 2 - 10), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
+
+
+            string text = string.Empty;
+
+            if (_multipleLayerHeight)
+            {
+                text += $"{Microns}um-{(ushort)(_multipleLayerHeightMaximum *1000)}um/{(ushort)(_multipleLayerHeightStep *1000)}um\n";
+            }
+            else
+            {
+                text += $"Layer height: {Microns}um\n";
+            }
+
+            if (_multipleExposures)
+            {
+                text += $"{_exposureTable[0].Exposure}s-{_exposureTable[^1].Exposure}s/{_exposureGenNormalStep}s";
+                if (!_patternModel)
+                {
+                    text += $"\nObjects: {_exposureTable.Count}";
+                }
+            }
+            else
+            {
+                text += $"{_bottomExposure}s/{_normalExposure}s";
+            }
+
+            if (_patternModel)
+            {
+                text += "\nPatterned Model";
+            }
+
+
+            thumbnail.PutTextExtended(text, new Point(xSpacing, ySpacing * 3 - 20), fontFace, 0.8, EmguExtensions.WhiteColor, 2, 10);
+
+
+            /*CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
             if (_patternModel)
             {
                 CvInvoke.PutText(thumbnail, $"Patterned Model", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
@@ -1690,7 +1768,7 @@ namespace UVtools.Core.Operations
             else
             {
                 CvInvoke.PutText(thumbnail, $"Features: {(_staircaseThickness > 0 ? 1 : 0) + Holes.Length + Bars.Length + BullsEyes.Length + (_counterTrianglesEnabled ? 1 : 0)}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
-            }
+            }*/
             
 
             return thumbnail;
@@ -1732,7 +1810,7 @@ namespace UVtools.Core.Operations
                             currentY += boundingRectangle.Height + partMarginYPx;
                         }
 
-                        if (currentY + topBottomMarginPx >= SlicerFile.ResolutionY) break;
+                        if (currentY + boundingRectangle.Height + topBottomMarginPx >= SlicerFile.ResolutionY) break;
 
                         var item = multipleExposure.Clone();
                         item.Brightness = brightness;
@@ -2098,9 +2176,14 @@ namespace UVtools.Core.Operations
             if (SlicerFile.ThumbnailsCount > 0)
                 SlicerFile.SetThumbnails(GetThumbnail());
 
-            if (_dontLiftSamePositionedLayers)
+            if (_differentSettingsForSamePositionedLayers)
             {
-                SlicerFile.LayerManager.SetNoLiftForSamePositionedLayers(_zeroLightOffSamePositionedLayers);
+                var layers = SlicerFile.LayerManager.GetSamePositionedLayers();
+                foreach (var layer in layers)
+                {
+                    if(_samePositionedLayersLiftHeightEnabled)    layer.LiftHeight    = (float) _samePositionedLayersLiftHeight;
+                    if(_samePositionedLayersLightOffDelayEnabled) layer.LightOffDelay = (float) _samePositionedLayersLightOffDelay;
+                }
             }
 
             new OperationMove(SlicerFile).Execute(progress);

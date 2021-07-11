@@ -15,6 +15,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using Org.BouncyCastle.Asn1.Cms;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
@@ -29,8 +30,8 @@ namespace UVtools.Core.GCode
         public GCodeCommand CommandPositioningAbsoluteG90 { get; } = new("G90", null, "Absolute positioning");
         public GCodeCommand CommandPositioningPartialG91 { get; } = new("G91", null, "Partial positioning");
 
-        public GCodeCommand CommandTurnMotorsOnM17 { get; } = new("M17", null, "Enable motors");
-        public GCodeCommand CommandTurnMotorsOffM18 { get; } = new("M18", null, "Disable motors");
+        public GCodeCommand CommandMotorsOnM17 { get; } = new("M17", null, "Enable motors");
+        public GCodeCommand CommandMotorsOffM18 { get; } = new("M18", null, "Disable motors");
 
         public GCodeCommand CommandHomeG28 { get; } = new("G28", "Z0", "Home Z");
 
@@ -289,7 +290,7 @@ namespace UVtools.Core.GCode
             AppendUnitsMmG21();
             AppendPositioningType();
             AppendLightOffM106();
-            AppendEnableMotors();
+            AppendMotorsOn();
             AppendClearImage();
             AppendHomeZG28();
             AppendLineIfCanComment(EndStartGCodeComments);
@@ -305,7 +306,7 @@ namespace UVtools.Core.GCode
                 AppendMoveG0(raiseZ, feedRate);
             }
 
-            AppendDisableMotors();
+            AppendMotorsOff();
             AppendLineIfCanComment(EndEndGCodeComments);
         }
 
@@ -329,22 +330,22 @@ namespace UVtools.Core.GCode
             }
         }
 
-        public void AppendEnableMotors()
+        public void AppendMotorsOn()
         {
-            AppendLine(CommandTurnMotorsOnM17);
+            AppendLine(CommandMotorsOnM17);
         }
 
-        public void AppendDisableMotors()
+        public void AppendMotorsOff()
         {
-            AppendLine(CommandTurnMotorsOffM18);
+            AppendLine(CommandMotorsOffM18);
         }
 
         public void AppendTurnMotors(bool enable)
         {
             if (enable)
-                AppendEnableMotors();
+                AppendMotorsOn();
             else 
-                AppendDisableMotors();
+                AppendMotorsOff();
         }
 
         public void AppendHomeZG28()
@@ -434,18 +435,13 @@ namespace UVtools.Core.GCode
             AppendLine(CommandShowImageM6054, layerIndex);
         }
 
-        /*public void AppendLayer(Layer layer)
-        {
-
-        }*/
-
         public string GetShowImageString(uint layerIndex) => _gCodeShowImageType switch
         {
             GCodeShowImageTypes.FilenameZeroPNG => $"{layerIndex}.png",
             GCodeShowImageTypes.FilenameNonZeroPNG => $"{layerIndex + 1}.png",
             GCodeShowImageTypes.LayerIndexZero => $"{layerIndex}",
             GCodeShowImageTypes.LayerIndexNonZero => $"{layerIndex + 1}",
-            _ => throw new ArgumentOutOfRangeException()
+            _ => throw new InvalidExpressionException($"Unhandled image type for {_gCodeShowImageType}")
         };
 
         public void RebuildGCode(FileFormat slicerFile, StringBuilder header) => RebuildGCode(slicerFile, header?.ToString());
@@ -470,14 +466,14 @@ namespace UVtools.Core.GCode
             for (uint layerIndex = 0; layerIndex < slicerFile.LayerCount; layerIndex++)
             {
                 var layer = slicerFile[layerIndex];
-                float exposureTime = layer.ExposureTime;
+                float exposureTime = ConvertFromSeconds(layer.ExposureTime);
                 float liftHeight = layer.LiftHeight;
                 float liftZPos = Layer.RoundHeight(liftHeight + layer.PositionZ);
                 float liftZPosAbs = liftZPos;
-                float liftSpeed = layer.LiftSpeed;
+                float liftSpeed = ConvertFromMillimetersPerMinute(layer.LiftSpeed);
                 float retractPos = layer.PositionZ;
-                float retractSpeed = layer.RetractSpeed;
-                float lightOffDelay = layer.LightOffDelay;
+                float retractSpeed = ConvertFromMillimetersPerMinute(layer.RetractSpeed);
+                float lightOffDelay = ConvertFromSeconds(layer.LightOffDelay);
                 ushort pwmValue = layer.LightPWM;
                 if (_maxLedPower != byte.MaxValue)
                 {
@@ -489,26 +485,6 @@ namespace UVtools.Core.GCode
                     case GCodePositioningTypes.Partial:
                         liftZPos = liftHeight;
                         retractPos = Layer.RoundHeight(layer.PositionZ - lastZPosition - liftHeight);
-                        break;
-                }
-
-                switch (GCodeTimeUnit)
-                {
-                    case GCodeTimeUnits.Milliseconds:
-                        exposureTime *= 1000;
-                        lightOffDelay *= 1000;
-                        break;
-                }
-
-                switch (GCodeSpeedUnit)
-                {
-                    case GCodeSpeedUnits.MillimetersPerSecond:
-                        liftSpeed = (float)Math.Round(liftSpeed / 60, 2);
-                        retractSpeed = (float)Math.Round(retractSpeed / 60, 2);
-                        break;
-                    case GCodeSpeedUnits.CentimetersPerMinute:
-                        liftSpeed = (float)Math.Round(liftSpeed / 10, 2);
-                        retractSpeed = (float)Math.Round(retractSpeed / 10);
                         break;
                 }
 
@@ -555,15 +531,8 @@ namespace UVtools.Core.GCode
                     break;
             }
 
-            float endFeedRate = GCodeSpeedUnit switch
-            {
-                GCodeSpeedUnits.MillimetersPerMinute => slicerFile.RetractSpeed,
-                GCodeSpeedUnits.MillimetersPerSecond => (float) Math.Round(slicerFile.RetractSpeed / 60, 2),
-                GCodeSpeedUnits.CentimetersPerMinute => (float) Math.Round(slicerFile.RetractSpeed / 10, 2),
-                _ => throw new InvalidExpressionException($"Unhandled feedrate unit for {GCodeSpeedUnit}")
-            };
 
-            AppendEndGCode(finalRaiseZPosition, endFeedRate);
+            AppendEndGCode(finalRaiseZPosition, ConvertFromMillimetersPerMinute(slicerFile.RetractSpeed));
         }
 
         public void RebuildGCode(FileFormat slicerFile, object[] configs, string separator = ":")
@@ -633,7 +602,7 @@ namespace UVtools.Core.GCode
                 var endStr = CommandShowImageM6054.ToStringWithoutComments(GetShowImageString(layerIndex+1));
                 gcode = gcode.Substring(gcode.IndexOf(startStr, StringComparison.InvariantCultureIgnoreCase) + startStr.Length + 1);
                 var endStrIndex = gcode.IndexOf(endStr, StringComparison.Ordinal);
-                var stripGcode = endStrIndex > 0 ? gcode.Substring(0, endStrIndex) : gcode;/*.Trim(' ', '\n', '\r', '\t');*/
+                var stripGcode = endStrIndex > 0 ? gcode[..endStrIndex] : gcode;/*.Trim(' ', '\n', '\r', '\t');*/
 
                 float liftHeight = 0;// this allow read back no lifts slicerFile.GetInitialLayerValueOrNormal(layerIndex, slicerFile.BottomLiftHeight, slicerFile.LiftHeight);
                 float liftSpeed = slicerFile.GetInitialLayerValueOrNormal(layerIndex, slicerFile.BottomLiftSpeed, slicerFile.LiftSpeed);
@@ -650,26 +619,12 @@ namespace UVtools.Core.GCode
                 if (moveRegex.Count >= 1 && moveRegex[0].Success)
                 {
                     float liftPosTemp = float.Parse(moveRegex[0].Groups[1].Value, CultureInfo.InvariantCulture);
-                    float liftSpeedTemp = float.Parse(moveRegex[0].Groups[3].Value, CultureInfo.InvariantCulture);
-
-                    switch (GCodeSpeedUnit)
-                    {
-                        case GCodeSpeedUnits.MillimetersPerSecond:
-                            liftSpeedTemp = (float) Math.Round(liftSpeedTemp / 60, 2);
-                            break;
-                        case GCodeSpeedUnits.MillimetersPerMinute:
-                            break;
-                        case GCodeSpeedUnits.CentimetersPerMinute:
-                            liftSpeedTemp *= 10;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                    float liftSpeedTemp = ConvertToMillimetersPerMinute(float.Parse(moveRegex[0].Groups[3].Value, CultureInfo.InvariantCulture));
 
                     if (moveRegex.Count >= 2 && moveRegex[1].Success)
                     {
                         float retractPos = float.Parse(moveRegex[1].Groups[1].Value, CultureInfo.InvariantCulture);
-                        retractSpeed = float.Parse(moveRegex[1].Groups[3].Value, CultureInfo.InvariantCulture);
+                        retractSpeed = ConvertToMillimetersPerMinute(float.Parse(moveRegex[1].Groups[3].Value, CultureInfo.InvariantCulture));
                         liftSpeed = liftSpeedTemp;
 
                         switch (positionType)
@@ -683,33 +638,21 @@ namespace UVtools.Core.GCode
                                 positionZ = Layer.RoundHeight(positionZ + liftPosTemp + retractPos);
                                 break;
                         }
-
-                        switch (GCodeSpeedUnit)
-                        {
-                            case GCodeSpeedUnits.MillimetersPerSecond:
-                                retractSpeed = (float)Math.Round(retractSpeed / 60, 2);
-                                break;
-                            case GCodeSpeedUnits.MillimetersPerMinute:
-                                break;
-                            case GCodeSpeedUnits.CentimetersPerMinute:
-                                retractSpeed *= 10;
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
                     }
                     else
                     {
-                        switch (positionType)
+                        if (liftPosTemp - positionZ <= FileFormat.MaximumLayerHeight)
                         {
-                            case GCodePositioningTypes.Absolute:
-                                positionZ = liftPosTemp;
-                                break;
-                            case GCodePositioningTypes.Partial:
-                                positionZ = Layer.RoundHeight(positionZ + liftPosTemp);
-                                break;
+                            switch (positionType)
+                            {
+                                case GCodePositioningTypes.Absolute:
+                                    positionZ = liftPosTemp;
+                                    break;
+                                case GCodePositioningTypes.Partial:
+                                    positionZ = Layer.RoundHeight(positionZ + liftPosTemp);
+                                    break;
+                            }
                         }
-                        
                     }
                 }
 
@@ -728,23 +671,11 @@ namespace UVtools.Core.GCode
 
                 if (waitG4Regex.Count >= 1 && waitG4Regex[0].Success)
                 {
-                    lightOffDelay = float.Parse(waitG4Regex[0].Groups[1].Value, CultureInfo.InvariantCulture);
-                    switch (GCodeTimeUnit)
-                    {
-                        case GCodeTimeUnits.Milliseconds:
-                            lightOffDelay = TimeExtensions.MillisecondsToSeconds(lightOffDelay);
-                            break;
-                    }
+                    lightOffDelay = ConvertToSeconds(float.Parse(waitG4Regex[0].Groups[1].Value, CultureInfo.InvariantCulture));
                     
                     if (waitG4Regex.Count >= 2 && waitG4Regex[1].Success)
                     {
-                        exposureTime = float.Parse(waitG4Regex[1].Groups[1].Value, CultureInfo.InvariantCulture);
-                        switch (GCodeTimeUnit)
-                        {
-                            case GCodeTimeUnits.Milliseconds:
-                                exposureTime = TimeExtensions.MillisecondsToSeconds(exposureTime);
-                                break;
-                        }
+                        exposureTime = ConvertToSeconds(float.Parse(waitG4Regex[1].Groups[1].Value, CultureInfo.InvariantCulture));
                     }
                     else // Only one match, meaning light off delay is not present and the only time is the cure time
                     {
@@ -766,7 +697,7 @@ namespace UVtools.Core.GCode
             {
                 slicerFile.SuppressRebuildPropertiesWork(() =>
                 {
-                    var bottomLayer = slicerFile[0];
+                    var bottomLayer = slicerFile.FirstLayer;
                     if (bottomLayer is not null)
                     {
                         if (bottomLayer.ExposureTime > 0) slicerFile.BottomExposureTime = bottomLayer.ExposureTime;
@@ -794,6 +725,68 @@ namespace UVtools.Core.GCode
         public StringReader GetStringReader()
         {
             return new(_gcode.ToString());
+        }
+
+        /// <summary>
+        /// Converts seconds to current gcode norm
+        /// </summary>
+        /// <param name="seconds"></param>
+        /// <returns></returns>
+        public float ConvertFromSeconds(float seconds)
+        {
+            return _gCodeTimeUnit switch
+            {
+                GCodeTimeUnits.Seconds => seconds,
+                GCodeTimeUnits.Milliseconds => TimeExtensions.SecondsToMilliseconds(seconds),
+                _ => throw new InvalidExpressionException($"Unhandled time unit for {_gCodeTimeUnit}")
+            };
+        }
+
+        /// <summary>
+        /// Converts speed in mm/min to current gcode norm
+        /// </summary>
+        /// <param name="mmMin">Millimeters per minute</param>
+        /// <returns></returns>
+        public float ConvertFromMillimetersPerMinute(float mmMin)
+        {
+            return _gCodeSpeedUnit switch
+            {
+                GCodeSpeedUnits.MillimetersPerMinute => mmMin,
+                GCodeSpeedUnits.MillimetersPerSecond => (float) Math.Round(mmMin / 60, 2),
+                GCodeSpeedUnits.CentimetersPerMinute => (float) Math.Round(mmMin / 10, 2),
+                _ => throw new InvalidExpressionException($"Unhandled speed unit for {_gCodeSpeedUnit}")
+            };
+        }
+
+        /// <summary>
+        /// Converts time from current gcode norm in <see cref="GCodeTimeUnit"/> to s
+        /// </summary>
+        /// <param name="time">Time in <see cref="GCodeTimeUnit"/></param>
+        /// <returns></returns>
+        public float ConvertToSeconds(float time)
+        {
+            return _gCodeTimeUnit switch
+            {
+                GCodeTimeUnits.Seconds => time,
+                GCodeTimeUnits.Milliseconds => TimeExtensions.MillisecondsToSeconds(time),
+                _ => throw new InvalidExpressionException($"Unhandled time unit for {_gCodeTimeUnit}")
+            };
+        }
+
+        /// <summary>
+        /// Converts speed from current gcode norm in <see cref="GCodeSpeedUnit"/> to mm/min
+        /// </summary>
+        /// <param name="speed">Speed in <see cref="GCodeSpeedUnit"/></param>
+        /// <returns></returns>
+        public float ConvertToMillimetersPerMinute(float speed)
+        {
+            return _gCodeSpeedUnit switch
+            {
+                GCodeSpeedUnits.MillimetersPerMinute => speed,
+                GCodeSpeedUnits.MillimetersPerSecond => (float)Math.Round(speed * 60, 2),
+                GCodeSpeedUnits.CentimetersPerMinute => (float)Math.Round(speed * 10, 2),
+                _ => throw new InvalidExpressionException($"Unhandled speed unit for {_gCodeSpeedUnit}")
+            };
         }
     }
     #endregion
