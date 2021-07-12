@@ -19,15 +19,16 @@ namespace UVtools.WPF
     {
         public bool HaveGCode => IsFileLoaded && SlicerFile.SupportsGCode;
 
-        public string GCodeStr => SlicerFile?.GCodeStr;
         public uint GCodeLines => !HaveGCode ? 0 : SlicerFile.GCode.LineCount;
 
         public void OnClickRebuildGcode()
         {
             if (!HaveGCode) return;
+            var temp = SlicerFile.SuppressRebuildGCode;
+            SlicerFile.SuppressRebuildGCode = false;
             SlicerFile.RebuildGCode();
+            SlicerFile.SuppressRebuildGCode = temp;
             RaisePropertyChanged(nameof(GCodeLines));
-            RaisePropertyChanged(nameof(GCodeStr));
 
             CanSave = true;
         }
@@ -69,7 +70,7 @@ namespace UVtools.WPF
         public void OnClickGCodeSaveClipboard()
         {
             if (!HaveGCode) return;
-            Application.Current.Clipboard.SetTextAsync(GCodeStr);
+            Application.Current.Clipboard.SetTextAsync(SlicerFile.GCodeStr);
         }
     }
 }

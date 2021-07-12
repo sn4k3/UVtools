@@ -586,7 +586,16 @@
             HorizontalAlignment="Right"
             VerticalAlignment="Center">
 
-            <Button
+              <ToggleButton
+                  IsChecked="{Binding SlicerFile.SuppressRebuildGCode}"
+                  ToolTip.Tip="Enable this to directly edit and use custom gcode.
+&#x0a;While this is active, UVtools won't update/generate the gcode, meaning any future change won't be replicated to gcode, unless you press the 'Refresh' button.
+&#x0a;To save the file with your custom gcode this setting must remain active while saving the file or else it will be re-generated.
+&#x0a;Use with caution and only if you know what you are doing!">
+                  <Image Source="/Assets/Icons/pencil-alt-16x16.png"/>
+              </ToggleButton>
+
+              <Button
              ToolTip.Tip="Rebuild GCode with current settings"
              Command="{Binding OnClickRebuildGcode}">
               <Image Source="/Assets/Icons/refresh-16x16.png"/>
@@ -627,8 +636,9 @@
           <TextBox 
             Name="GCodeText"
             Grid.Row="1"
-            IsReadOnly="True"
-            Text="{Binding GCodeStr}" />
+            IsReadOnly="{Binding !SlicerFile.SuppressRebuildGCode}"
+            AcceptsReturn="True"
+            Text="{Binding SlicerFile.GCodeStr}" />
         </Grid>
         
       </TabItem>

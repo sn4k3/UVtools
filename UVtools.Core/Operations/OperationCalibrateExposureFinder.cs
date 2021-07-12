@@ -10,6 +10,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -28,6 +29,57 @@ namespace UVtools.Core.Operations
     [Serializable]
     public sealed class OperationCalibrateExposureFinder : Operation
     {
+        #region Enums
+        public enum CalibrateExposureFinderShapes : byte
+        {
+            Square,
+            Circle
+        }
+        public static Array ShapesItems => Enum.GetValues(typeof(CalibrateExposureFinderShapes));
+
+        public enum CalibrateExposureFinderMeasures : byte
+        {
+            Pixels,
+            Millimeters,
+        }
+
+        public static Array MeasuresItems => Enum.GetValues(typeof(CalibrateExposureFinderMeasures));
+
+        public enum CalibrateExposureFinderMultipleBrightnessExcludeFrom : byte
+        {
+            None,
+            Bottom,
+            BottomAndBase
+        }
+        public static Array MultipleBrightnessExcludeFromItems => Enum.GetValues(typeof(CalibrateExposureFinderMultipleBrightnessExcludeFrom));
+
+        public enum CalibrateExposureFinderExposureGenTypes : byte
+        {
+            Linear,
+            Multiplier
+        }
+
+        public static Array ExposureGenTypeItems => Enum.GetValues(typeof(CalibrateExposureFinderExposureGenTypes));
+
+        public enum CalibrateExposureFinderMultipleExposuresBaseLayersPrintModes : byte
+        {
+            [Description("Iterative exposure: Print each base layer at it own exposure time")]
+            Iterative,
+
+            [Description("Lowest exposure: Base layers will print at the lowest defined exposure time")]
+            UseLowest,
+
+            [Description("Middle exposure: Base layers will print at the middle defined exposure time")]
+            UseMiddle,
+
+            [Description("Highest exposure: Base layers will print at the highest defined exposure time")]
+            UseHighest,
+
+            [Description("Custom exposure: Base layers will print at a custom defined exposure time")]
+            Custom
+        }
+        #endregion
+
         #region Subclasses
 
         public sealed class BullsEyeCircle
@@ -80,7 +132,7 @@ namespace UVtools.Core.Operations
         
         private bool _holesEnabled = false;
         private CalibrateExposureFinderShapes _holeShape = CalibrateExposureFinderShapes.Square;
-        private Measures _unitOfMeasure = Measures.Pixels;
+        private CalibrateExposureFinderMeasures _unitOfMeasure = CalibrateExposureFinderMeasures.Pixels;
         private string _holeDiametersPx = "2, 3, 4, 5, 6, 7, 8, 9, 10, 11";
         private string _holeDiametersMm = "0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2";
 
@@ -110,13 +162,15 @@ namespace UVtools.Core.Operations
         private decimal _multipleLayerHeightMaximum = 0.1m;
         private decimal _multipleLayerHeightStep = 0.01m;
 
+        private CalibrateExposureFinderMultipleExposuresBaseLayersPrintModes _multipleExposuresBaseLayersPrintMode;
+        private decimal _multipleExposuresBaseLayersCustomExposure;
         private bool _differentSettingsForSamePositionedLayers;
         private bool _samePositionedLayersLiftHeightEnabled = true;
         private decimal _samePositionedLayersLiftHeight;
         private bool _samePositionedLayersLightOffDelayEnabled = true;
         private decimal _samePositionedLayersLightOffDelay;
         private bool _multipleExposures;
-        private ExposureGenTypes _exposureGenType = ExposureGenTypes.Linear;
+        private CalibrateExposureFinderExposureGenTypes _exposureGenType = CalibrateExposureFinderExposureGenTypes.Linear;
         private bool _exposureGenIgnoreBaseExposure;
         private decimal _exposureGenBottomStep = 0;
         private decimal _exposureGenNormalStep = 0.2m;
@@ -139,6 +193,7 @@ namespace UVtools.Core.Operations
         private byte _bullsEyeFenceThickness = 10;
         private sbyte _bullsEyeFenceOffset;
         private bool _patternModelGlueBottomLayers = true;
+        
         #endregion
 
         #region Overrides
@@ -466,7 +521,7 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _holeShape, value);
         }
 
-        public Measures UnitOfMeasure
+        public CalibrateExposureFinderMeasures UnitOfMeasure
         {
             get => _unitOfMeasure;
             set
@@ -476,7 +531,7 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public bool IsUnitOfMeasureMm => _unitOfMeasure == Measures.Millimeters;
+        public bool IsUnitOfMeasureMm => _unitOfMeasure == CalibrateExposureFinderMeasures.Millimeters;
 
         public string HoleDiametersMm
         {
@@ -504,7 +559,7 @@ namespace UVtools.Core.Operations
 
                 List<int> holes = new();
 
-                if (_unitOfMeasure == Measures.Millimeters)
+                if (_unitOfMeasure == CalibrateExposureFinderMeasures.Millimeters)
                 {
                     var split = _holeDiametersMm.Split(',', StringSplitOptions.TrimEntries);
                     foreach (var mmStr in split)
@@ -602,7 +657,7 @@ namespace UVtools.Core.Operations
 
                 List<int> bars = new();
 
-                if (_unitOfMeasure == Measures.Millimeters)
+                if (_unitOfMeasure == CalibrateExposureFinderMeasures.Millimeters)
                 {
                     var split = _barThicknessesMm.Split(',', StringSplitOptions.TrimEntries);
                     foreach (var mmStr in split)
@@ -805,6 +860,24 @@ namespace UVtools.Core.Operations
             }
         }
 
+        public CalibrateExposureFinderMultipleExposuresBaseLayersPrintModes MultipleExposuresBaseLayersPrintMode
+        {
+            get => _multipleExposuresBaseLayersPrintMode;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _multipleExposuresBaseLayersPrintMode, value)) return;
+                RaisePropertyChanged(nameof(IsMultipleExposuresBaseLayersPrintModeCustom));
+            }
+        }
+
+        public bool IsMultipleExposuresBaseLayersPrintModeCustom => _multipleExposuresBaseLayersPrintMode == CalibrateExposureFinderMultipleExposuresBaseLayersPrintModes.Custom;
+
+        public decimal MultipleExposuresBaseLayersCustomExposure
+        {
+            get => _multipleExposuresBaseLayersCustomExposure;
+            set => RaiseAndSetIfChanged(ref _multipleExposuresBaseLayersCustomExposure, value);
+        }
+
         public bool DifferentSettingsForSamePositionedLayers
         {
             get => _differentSettingsForSamePositionedLayers;
@@ -841,7 +914,7 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _multipleExposures, value);
         }
 
-        public ExposureGenTypes ExposureGenType
+        public CalibrateExposureFinderExposureGenTypes ExposureGenType
         {
             get => _exposureGenType;
             set => RaiseAndSetIfChanged(ref _exposureGenType, value);
@@ -963,7 +1036,7 @@ namespace UVtools.Core.Operations
 
                 List<BullsEyeCircle> bulleyes = new();
                 
-                if (_unitOfMeasure == Measures.Millimeters)
+                if (_unitOfMeasure == CalibrateExposureFinderMeasures.Millimeters)
                 {
                     var splitGroup = _bullsEyeConfigurationMm.Split(',', StringSplitOptions.TrimEntries);
                     foreach (var group in splitGroup)
@@ -1082,13 +1155,15 @@ namespace UVtools.Core.Operations
             if(_bottomLayers <= 0) _bottomLayers = SlicerFile.BottomLayerCount;
             if(_bottomExposure <= 0) _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
             if(_normalExposure <= 0) _normalExposure = (decimal)SlicerFile.ExposureTime;
-
+            
             if (_exposureGenManualBottom == 0)
                 _exposureGenManualBottom = (decimal) SlicerFile.BottomExposureTime;
             if (_exposureGenManualNormal == 0)
                 _exposureGenManualNormal = (decimal)SlicerFile.ExposureTime;
             if (_multipleBrightnessGenExposureTime == 0)
                 _multipleBrightnessGenExposureTime = (decimal)SlicerFile.ExposureTime;
+
+            if (_multipleExposuresBaseLayersCustomExposure <= 0) _multipleExposuresBaseLayersCustomExposure = (decimal)SlicerFile.ExposureTime;
 
             if (!SlicerFile.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.ExposureSeconds))
             {
@@ -1107,45 +1182,11 @@ namespace UVtools.Core.Operations
 
         #endregion
 
-        #region Enums
-
-        public enum CalibrateExposureFinderShapes : byte
-        {
-            Square,
-            Circle
-        }
-        public static Array ShapesItems => Enum.GetValues(typeof(CalibrateExposureFinderShapes));
-
-        public enum Measures : byte
-        {
-            Pixels,
-            Millimeters,
-        }
-
-        public static Array MeasuresItems => Enum.GetValues(typeof(Measures));
-
-        public enum CalibrateExposureFinderMultipleBrightnessExcludeFrom : byte
-        {
-            None,
-            Bottom,
-            BottomAndBase
-        }
-        public static Array MultipleBrightnessExcludeFromItems => Enum.GetValues(typeof(CalibrateExposureFinderMultipleBrightnessExcludeFrom));
-
-        public enum ExposureGenTypes : byte
-        {
-            Linear,
-            Multiplier
-        }
-
-        public static Array ExposureGenTypeItems => Enum.GetValues(typeof(ExposureGenTypes));
-        #endregion
-
         #region Equality
-
+        
         private bool Equals(OperationCalibrateExposureFinder other)
         {
-            return _displayWidth == other._displayWidth && _displayHeight == other._displayHeight && _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _partMargin == other._partMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _baseHeight == other._baseHeight && _featuresHeight == other._featuresHeight && _featuresMargin == other._featuresMargin && _staircaseThickness == other._staircaseThickness && _holesEnabled == other._holesEnabled && _holeShape == other._holeShape && _unitOfMeasure == other._unitOfMeasure && _holeDiametersPx == other._holeDiametersPx && _holeDiametersMm == other._holeDiametersMm && _barsEnabled == other._barsEnabled && _barSpacing == other._barSpacing && _barLength == other._barLength && _barVerticalSplitter == other._barVerticalSplitter && _barFenceThickness == other._barFenceThickness && _barFenceOffset == other._barFenceOffset && _barThicknessesPx == other._barThicknessesPx && _barThicknessesMm == other._barThicknessesMm && _textEnabled == other._textEnabled && _textFont == other._textFont && _textScale.Equals(other._textScale) && _textThickness == other._textThickness && _text == other._text && _multipleBrightness == other._multipleBrightness && _multipleBrightnessExcludeFrom == other._multipleBrightnessExcludeFrom && _multipleBrightnessValues == other._multipleBrightnessValues && _multipleBrightnessGenExposureTime == other._multipleBrightnessGenExposureTime && _multipleBrightnessGenEmulatedAALevel == other._multipleBrightnessGenEmulatedAALevel && _multipleBrightnessGenExposureFractions == other._multipleBrightnessGenExposureFractions && _multipleLayerHeight == other._multipleLayerHeight && _multipleLayerHeightMaximum == other._multipleLayerHeightMaximum && _multipleLayerHeightStep == other._multipleLayerHeightStep && _differentSettingsForSamePositionedLayers == other._differentSettingsForSamePositionedLayers && _samePositionedLayersLiftHeightEnabled == other._samePositionedLayersLiftHeightEnabled && _samePositionedLayersLiftHeight == other._samePositionedLayersLiftHeight && _samePositionedLayersLightOffDelayEnabled == other._samePositionedLayersLightOffDelayEnabled && _samePositionedLayersLightOffDelay == other._samePositionedLayersLightOffDelay && _multipleExposures == other._multipleExposures && _exposureGenType == other._exposureGenType && _exposureGenIgnoreBaseExposure == other._exposureGenIgnoreBaseExposure && _exposureGenBottomStep == other._exposureGenBottomStep && _exposureGenNormalStep == other._exposureGenNormalStep && _exposureGenTests == other._exposureGenTests && _exposureGenManualLayerHeight == other._exposureGenManualLayerHeight && _exposureGenManualBottom == other._exposureGenManualBottom && _exposureGenManualNormal == other._exposureGenManualNormal && Equals(_exposureTable, other._exposureTable) && _bullsEyeEnabled == other._bullsEyeEnabled && _bullsEyeConfigurationPx == other._bullsEyeConfigurationPx && _bullsEyeConfigurationMm == other._bullsEyeConfigurationMm && _bullsEyeInvertQuadrants == other._bullsEyeInvertQuadrants && _counterTrianglesEnabled == other._counterTrianglesEnabled && _counterTrianglesTipOffset == other._counterTrianglesTipOffset && _counterTrianglesFence == other._counterTrianglesFence && _patternModel == other._patternModel && _bullsEyeFenceThickness == other._bullsEyeFenceThickness && _bullsEyeFenceOffset == other._bullsEyeFenceOffset && _patternModelGlueBottomLayers == other._patternModelGlueBottomLayers;
+            return _displayWidth == other._displayWidth && _displayHeight == other._displayHeight && _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _partMargin == other._partMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _baseHeight == other._baseHeight && _featuresHeight == other._featuresHeight && _featuresMargin == other._featuresMargin && _staircaseThickness == other._staircaseThickness && _holesEnabled == other._holesEnabled && _holeShape == other._holeShape && _unitOfMeasure == other._unitOfMeasure && _holeDiametersPx == other._holeDiametersPx && _holeDiametersMm == other._holeDiametersMm && _barsEnabled == other._barsEnabled && _barSpacing == other._barSpacing && _barLength == other._barLength && _barVerticalSplitter == other._barVerticalSplitter && _barFenceThickness == other._barFenceThickness && _barFenceOffset == other._barFenceOffset && _barThicknessesPx == other._barThicknessesPx && _barThicknessesMm == other._barThicknessesMm && _textEnabled == other._textEnabled && _textFont == other._textFont && _textScale.Equals(other._textScale) && _textThickness == other._textThickness && _text == other._text && _multipleBrightness == other._multipleBrightness && _multipleBrightnessExcludeFrom == other._multipleBrightnessExcludeFrom && _multipleBrightnessValues == other._multipleBrightnessValues && _multipleBrightnessGenExposureTime == other._multipleBrightnessGenExposureTime && _multipleBrightnessGenEmulatedAALevel == other._multipleBrightnessGenEmulatedAALevel && _multipleBrightnessGenExposureFractions == other._multipleBrightnessGenExposureFractions && _multipleLayerHeight == other._multipleLayerHeight && _multipleLayerHeightMaximum == other._multipleLayerHeightMaximum && _multipleLayerHeightStep == other._multipleLayerHeightStep && _multipleExposuresBaseLayersPrintMode == other._multipleExposuresBaseLayersPrintMode && _multipleExposuresBaseLayersCustomExposure == other._multipleExposuresBaseLayersCustomExposure && _differentSettingsForSamePositionedLayers == other._differentSettingsForSamePositionedLayers && _samePositionedLayersLiftHeightEnabled == other._samePositionedLayersLiftHeightEnabled && _samePositionedLayersLiftHeight == other._samePositionedLayersLiftHeight && _samePositionedLayersLightOffDelayEnabled == other._samePositionedLayersLightOffDelayEnabled && _samePositionedLayersLightOffDelay == other._samePositionedLayersLightOffDelay && _multipleExposures == other._multipleExposures && _exposureGenType == other._exposureGenType && _exposureGenIgnoreBaseExposure == other._exposureGenIgnoreBaseExposure && _exposureGenBottomStep == other._exposureGenBottomStep && _exposureGenNormalStep == other._exposureGenNormalStep && _exposureGenTests == other._exposureGenTests && _exposureGenManualLayerHeight == other._exposureGenManualLayerHeight && _exposureGenManualBottom == other._exposureGenManualBottom && _exposureGenManualNormal == other._exposureGenManualNormal && Equals(_exposureTable, other._exposureTable) && _bullsEyeEnabled == other._bullsEyeEnabled && _bullsEyeConfigurationPx == other._bullsEyeConfigurationPx && _bullsEyeConfigurationMm == other._bullsEyeConfigurationMm && _bullsEyeInvertQuadrants == other._bullsEyeInvertQuadrants && _counterTrianglesEnabled == other._counterTrianglesEnabled && _counterTrianglesTipOffset == other._counterTrianglesTipOffset && _counterTrianglesFence == other._counterTrianglesFence && _patternModel == other._patternModel && _bullsEyeFenceThickness == other._bullsEyeFenceThickness && _bullsEyeFenceOffset == other._bullsEyeFenceOffset && _patternModelGlueBottomLayers == other._patternModelGlueBottomLayers;
         }
 
         public override bool Equals(object obj)
@@ -1200,6 +1241,8 @@ namespace UVtools.Core.Operations
             hashCode.Add(_multipleLayerHeight);
             hashCode.Add(_multipleLayerHeightMaximum);
             hashCode.Add(_multipleLayerHeightStep);
+            hashCode.Add((int) _multipleExposuresBaseLayersPrintMode);
+            hashCode.Add(_multipleExposuresBaseLayersCustomExposure);
             hashCode.Add(_differentSettingsForSamePositionedLayers);
             hashCode.Add(_samePositionedLayersLiftHeightEnabled);
             hashCode.Add(_samePositionedLayersLiftHeight);
@@ -1282,11 +1325,11 @@ namespace UVtools.Core.Operations
 
                     switch (_exposureGenType)
                     {
-                        case ExposureGenTypes.Linear:
+                        case CalibrateExposureFinderExposureGenTypes.Linear:
                             bottomExposureTime = _bottomExposure + _exposureGenBottomStep * testN; 
                             exposureTime = _normalExposure + _exposureGenNormalStep * testN; 
                             break;
-                        case ExposureGenTypes.Multiplier:
+                        case CalibrateExposureFinderExposureGenTypes.Multiplier:
                             bottomExposureTime = _bottomExposure + _bottomExposure * layerHeight * _exposureGenBottomStep * testN;
                             exposureTime = _normalExposure + _normalExposure * layerHeight * _exposureGenNormalStep * testN;
                             break;
@@ -1986,7 +2029,10 @@ namespace UVtools.Core.Operations
                         lastExposureItem is not null &&
                         lastcurrentHeight == currentHeight &&
                         lastExposureItem.LayerHeight == layerHeight &&
-                        (isBottomLayer && lastExposureItem.BottomExposure == bottomExposure || !isBottomLayer && lastExposureItem.Exposure == normalExposure);
+                        (
+                            (isBottomLayer && lastExposureItem.BottomExposure == bottomExposure || !isBottomLayer && lastExposureItem.Exposure == normalExposure) ||
+                            (!isBottomLayer && isBaseLayer && _multipleExposuresBaseLayersPrintMode != CalibrateExposureFinderMultipleExposuresBaseLayersPrintModes.Iterative)
+                        );
 
                     using var mat = reUseLastLayer ? newLayers[^1].LayerMat : EmguExtensions.InitMat(SlicerFile.Resolution);
 
@@ -2098,7 +2144,29 @@ namespace UVtools.Core.Operations
 
                     if (reUseLastLayer)
                     {
-                        newLayers[^1].LayerMat = mat;
+                        var layer = newLayers[^1];
+                        layer.LayerMat = mat;
+
+                        if (!isBottomLayer && isBaseLayer)
+                        {
+                            switch (_multipleExposuresBaseLayersPrintMode)
+                            {
+                                case CalibrateExposureFinderMultipleExposuresBaseLayersPrintModes.UseLowest:
+                                    layer.ExposureTime = (float)_exposureTable[0].Exposure;
+                                    break;
+                                case CalibrateExposureFinderMultipleExposuresBaseLayersPrintModes.UseMiddle:
+                                    layer.ExposureTime = (float)_exposureTable[(int)Math.Ceiling((_exposureTable.Count - 1) / 2.0)].Exposure;
+                                    break;
+                                case CalibrateExposureFinderMultipleExposuresBaseLayersPrintModes.UseHighest:
+                                    layer.ExposureTime = (float)_exposureTable[^1].Exposure;
+                                    break;
+                                case CalibrateExposureFinderMultipleExposuresBaseLayersPrintModes.Custom:
+                                    layer.ExposureTime = (float)_multipleExposuresBaseLayersCustomExposure;
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException($"Unhandled type for {_multipleExposuresBaseLayersCustomExposure}");
+                            }
+                        }
                     }
                     else
                     {

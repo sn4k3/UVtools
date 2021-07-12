@@ -353,6 +353,7 @@ namespace UVtools.Core.FileFormats
         private string _materialName;
         private float _materialGrams;
         private float _materialCost;
+        private bool _suppressRebuildGCode;
 
         #endregion
 
@@ -525,6 +526,11 @@ namespace UVtools.Core.FileFormats
         /// Gets the first layer
         /// </summary>
         public Layer FirstLayer => _layerManager?.FirstLayer;
+
+        /// <summary>
+        /// Gets the first layer normal layer
+        /// </summary>
+        public Layer FirstNormalLayer => _layerManager?.Layers.FirstOrDefault(layer => layer.IsNormalLayer);
 
         /// <summary>
         /// Gets the last layer
@@ -1204,7 +1210,20 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the GCode, returns null if not supported
         /// </summary>
-        public string GCodeStr => GCode?.ToString();
+        public string GCodeStr
+        {
+            get => GCode?.ToString();
+            set
+            {
+                GCode.Clear();
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    GCode.Append(value);
+                }
+                RaisePropertyChanged();
+                
+            }
+        }
 
         /// <summary>
         /// Gets if this file format supports gcode
@@ -1219,7 +1238,11 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Disable or enable the gcode auto rebuild when needed, set this to false to manually write your own gcode
         /// </summary>
-        public bool SuppressRebuildGCode { get; set; }
+        public bool SuppressRebuildGCode
+        {
+            get => _suppressRebuildGCode;
+            set => RaiseAndSetIfChanged(ref _suppressRebuildGCode, value);
+        }
 
         /// <summary>
         /// Get all configuration objects with properties and values
@@ -2029,8 +2052,9 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public virtual void RebuildGCode()
         {
-            if (!SupportsGCode || SuppressRebuildGCode) return;
+            if (!SupportsGCode || _suppressRebuildGCode) return;
             GCode.RebuildGCode(this);
+            RaisePropertyChanged(nameof(GCodeStr));
         }
 
         /// <summary>

@@ -1096,8 +1096,44 @@
 
                 </DataGrid>
 
+                <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,10,*" Margin="0,10,0,0">
+                  <TextBlock Grid.Row="0" Grid.Column="0"
+                             ToolTip.Tip="Print mode for non-bottom base layers.
+&#x0a;A option other than 'Iterative' will speed up the print process and merge all base layers in the same height.
+&#x0a;The referred exposures come from the generated table."
+                             Text="Base layers print mode:"
+                             VerticalAlignment="Center"/>
 
-                <StackPanel Orientation="Vertical" Spacing="10"
+                  <ComboBox Grid.Row="0" Grid.Column="2"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Items="{Binding Operation.MultipleExposuresBaseLayersPrintMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                            SelectedItem="{Binding Operation.MultipleExposuresBaseLayersPrintMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+                </Grid>
+
+                <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,10,Auto,5,Auto">
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               Text="Base layers exposure:  "
+                               ToolTip.Tip="Use this custom exposure time for base layers"
+                               IsEnabled="{Binding Operation.IsMultipleExposuresBaseLayersPrintModeCustom}"
+                               VerticalAlignment="Center"/>
+
+                    <NumericUpDown Grid.Row="0" Grid.Column="2"
+                                   Increment="0.5"
+                                   Minimum="0.1"
+                                   Maximum="1000"
+                                   FormatString="F2"
+                                   IsEnabled="{Binding Operation.IsMultipleExposuresBaseLayersPrintModeCustom}"
+                                   Value="{Binding Operation.MultipleExposuresBaseLayersCustomExposure}"/>
+
+                    <TextBlock Grid.Row="0" Grid.Column="4"
+                               Text="s  (For 'custom' mode only)"
+                               IsEnabled="{Binding Operation.IsMultipleExposuresBaseLayersPrintModeCustom}"
+                               VerticalAlignment="Center"/>
+                </Grid>
+
+
+                <StackPanel Orientation="Vertical" Margin="0,10,0,0" Spacing="10"
                             IsEnabled="{Binding Operation.MultipleExposures}"
                             IsVisible="{Binding SlicerFile.SupportPerLayerSettings}">
 

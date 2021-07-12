@@ -1,6 +1,12 @@
 # Changelog
 
-## 11/06/2021 - v2.14.2
+## 12/07/2021 - v2.14.3
+
+- (Add) Exposure time finder: Base layers print modes, a option to speed up the print process and merge all base layers in the same height
+- (Add) GCode tab: Allow to temporarily edit and use custom gcode
+- (Change) Zcode: Omit M18 at end of the gcode to prevent carrier goes up and crash to the limit at a end of a print
+
+## 11/07/2021 - v2.14.2
 
 - **Exposure time finder:**
    - (Add) [ME] Option: 'Use different settings for layers with same Z positioning'
@@ -17,7 +23,7 @@
 - (Add) UVtools version to error logs
 - (Fix) ZCode: Some test files come with layer height of 0mm on a property, in that case lookup layer height on the second property as fallback
 
-## 07/06/2021 - v2.14.1
+## 07/07/2021 - v2.14.1
 
 - (Upgrade) EmguCV from 4.5.1 to 4.5.2
 - **File formats:**
@@ -32,7 +38,7 @@
 - (Fix) UVJ: Error when using a null or empty layer array on manifest `config.json` file (#232)
 - (Fix) GCode parser: When only a G4/wait command is present on a layer it was setting the global exposure time and discard the this value per layer
 
-## 03/06/2021 - v2.14.0
+## 03/07/2021 - v2.14.0
 
 - **File Formats:**
    - (Add) SL1S: Prusa SL1S Speed

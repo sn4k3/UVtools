@@ -74,7 +74,7 @@ namespace UVtools.ScriptSample
             }*/
 
             // 0.01 test
-            gcode.AppendComment("0.01 layer height simulated print test");
+            /*gcode.AppendComment("0.01 layer height simulated print test");
             pos = 1;
             layerHeight = 0.01f;
 
@@ -86,7 +86,7 @@ namespace UVtools.ScriptSample
                 pos = Layer.RoundHeight(pos + layerHeight);
                 var liftPos = Layer.RoundHeight(pos + liftHeight);
                 gcode.AppendLiftMoveG0(liftPos, feedrate, pos, feedrate, lightoff);
-            }
+            }*/
 
             // 0.001 test
             /*gcode.AppendComment("0.001 layer height simulated print test");
@@ -121,22 +121,18 @@ namespace UVtools.ScriptSample
             }
             */
 
-            /*gcode.AppendMoveG0(2, gcode.ConvertFromMillimetersPerMinute(150));
+            gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(150), 1, gcode.ConvertFromMillimetersPerMinute(150));
             gcode.AppendWaitG4(lightoff);
-            gcode.AppendMoveG0(2.5f, gcode.ConvertFromMillimetersPerMinute(160));
+            gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(180), 1.5f, gcode.ConvertFromMillimetersPerMinute(180));
             gcode.AppendWaitG4(lightoff);
-            gcode.AppendMoveG0(3f, gcode.ConvertFromMillimetersPerMinute(170));
+            gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(195), 2, gcode.ConvertFromMillimetersPerMinute(195));
             gcode.AppendWaitG4(lightoff);
-            gcode.AppendMoveG0(3.5f, gcode.ConvertFromMillimetersPerMinute(180));
+            gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(200), 2.5f, gcode.ConvertFromMillimetersPerMinute(200));
             gcode.AppendWaitG4(lightoff);
-            gcode.AppendMoveG0(4.0f, gcode.ConvertFromMillimetersPerMinute(190));
+            gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(250), 3f, gcode.ConvertFromMillimetersPerMinute(250));
             gcode.AppendWaitG4(lightoff);
-            gcode.AppendMoveG0(4.5f, gcode.ConvertFromMillimetersPerMinute(195));
+            gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(300), 3.5f, gcode.ConvertFromMillimetersPerMinute(300));
             gcode.AppendWaitG4(lightoff);
-            gcode.AppendMoveG0(5f, gcode.ConvertFromMillimetersPerMinute(199));
-            gcode.AppendWaitG4(lightoff);
-            gcode.AppendMoveG0(5.5f, gcode.ConvertFromMillimetersPerMinute(205));
-            gcode.AppendWaitG4(lightoff);*/
 
             gcode.AppendMoveG0(100, feedrate);
             //gcode.AppendTurnMotors(false);

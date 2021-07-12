@@ -16,7 +16,6 @@ using System.Text;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Util;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.OpenSsl;
@@ -435,7 +434,8 @@ namespace UVtools.Core.FileFormats
                 GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds,
                 GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.FilenameNonZeroPNG,
                 MaxLEDPower = MaxLEDPower,
-                CommandClearImage = {Enabled = false}
+                CommandClearImage = {Enabled = false},
+                CommandMotorsOffM18 = {Enabled = false},
             };
         }
         #endregion
