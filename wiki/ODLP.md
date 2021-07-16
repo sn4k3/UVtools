@@ -10,7 +10,7 @@ a ZIP + PNG slices approach due the incapacity of CPU to process such data schem
 - Universal: the file and revisions should always be compatible with any firmware that take this file
 - No encrypted files: The data should be plain and easy to access
 - No property or changed variant of the file format should exists!
-- Machine follows gcode commands
+- Machine follows sequential gcode commands
 
 ## Printer firmware checks (can print this file?)
 1. Marker == "ODLPTiCo" - This is a double check if file is really a .odlp beside it extension, case sensitive compare
@@ -20,7 +20,13 @@ a ZIP + PNG slices approach due the incapacity of CPU to process such data schem
 
 ## Printer firmware layer data adquisiton
 
-1. On gcode, when machine firmware detects M6054, it goes to the layer table at layer x index given by the command and gets the layer data to buffer the image
+1. Machine firmware detects `M6054 i` gcode command
+2. Goes to the layer definition table at the `i` index given by the `M6054` command
+3. Gets the image address and jumps to it
+4. Start to read and buffer the image to the LCD
+
+**Note:** Printer only continue to execute the next gcode command after the image is displayed/buffered. 
+When using a sencond board to display the image, it must send a OK back in order to resume the gcode execution.
 
 ## In file optimizations
 
