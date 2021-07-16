@@ -13,17 +13,19 @@ a ZIP + PNG slices approach due the incapacity of CPU to process such data schem
 - Machine follows sequential gcode commands
 
 ## Printer firmware checks (can print this file?)
-1. Marker == "ODLPTiCo" - This is a double check if file is really a .odlp beside it extension, case sensitive compare
-1. Compare machine resolution with file resoltuion
-2. Can use ImageDataType? For example, if processor is unable to process PNG images, trigger an error and dont allow to continue
-3. Parse gcode and check for problems, such as, print on a position out of printer Z range
+
+1. Marker == "ODLPTiCo" - This is a double check if file is really a .odlp beside it extension, case sensitive compare.
+1. Compare machine resolution with file resoltuion.
+2. Can use ImageDataType? For example, if processor is unable to process PNG images, trigger an error and dont allow to continue.
+3. Parse gcode and check for problems, such as, print on a position out of printer Z range.
 
 ## Printer firmware layer data adquisiton
 
-1. Machine firmware detects `M6054 i` gcode command
-2. Goes to the layer definition table at the `i` index given by the `M6054` command
-3. Gets the image address and jumps to it
-4. Start to read and buffer the image to the LCD
+1. Machine firmware detects `M6054 i` gcode command.
+2. Goes to the layer definition table at the `i` index given by the `M6054` command.
+3. Gets the image address and jumps to it.
+4. Start to read and buffer the image to the LCD.
+5. Jump back to the resume position and continue to execute the gcode.
 
 **Note:** Printer only continue to execute the next gcode command after the image is displayed/buffered. 
 When using a sencond board to display the image, it must send a OK back in order to resume the gcode execution.
@@ -50,7 +52,7 @@ ResolutionY=1080 (uint)
 MirrorX=1 (byte) 0 = false | 1 = true
 MirrorY=0 (byte) 0 = false | 1 = true
 ImageDataType=PNG\0\0\0\0\0 (char[8]) compressed image data type, eg: RLE or PNG or JPG or BITMAP
-ReservedBytes=4 (uint) Number reserved of bytes, this can be used for custom use of each brand, but not important for general file format
+CustomTableSize=4 (uint) Number reserved of bytes for a custom table, this can be used for custom use of each brand, but not important for general file format
 NumberOfPreviews=2 (byte) Number of previews/thumbnails on this file
 LayerCount=1000 (uint) Total number of layers
 LayerDefinitionsAddress=00000 (uint) Address for layer definition
@@ -62,7 +64,7 @@ ModifiedBy=UVtools v2.15.0 (text) program/slicer who last modified the file
 MachineNameSize=sizeof(MachineName) (ushort)
 MachineName=Phrozen Sonic Mini (string)
 
-#[ReservedBytes]
+#[CustomTable]
 # This can be used to store slicer specific settings or additional information
 # Still both printer and software must not depend on this
 ExampleOfCustomField=4 (uint)
@@ -127,5 +129,5 @@ M18;Disable motors
 
 
 Notes:
-1) Previews start address = header size + reserved bytes size
+1) Previews start address = header size + custom table size
 2) File header dont need much information, everything can be parsed from gcode!
