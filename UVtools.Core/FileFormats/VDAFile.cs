@@ -8,24 +8,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Xml.Serialization;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
-using Emgu.CV.Util;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.OpenSsl;
 using UVtools.Core.Extensions;
-using UVtools.Core.GCode;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats
 {
+    #region Sub Classes
     [Serializable]
     [XmlRoot(ElementName = "root")]
     public class VDARoot
@@ -146,6 +138,7 @@ namespace UVtools.Core.FileFormats
         public VDAMachines Machines { get; set; } = new();
         public List<VDALayer> Layers { get; set; } = new();
     }
+    #endregion
 
     public class VDAFile : FileFormat
     {

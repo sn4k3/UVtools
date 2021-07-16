@@ -63,12 +63,12 @@ namespace UVtools.Core.FileFormats
 
         public bool Equals(FileExtension other)
         {
-            return Extension.Equals(other.Extension, StringComparison.InvariantCultureIgnoreCase);
+            return Extension.Equals(other.Extension, StringComparison.OrdinalIgnoreCase);
         }
 
         public bool Equals(string other)
         {
-            return Extension.Equals(other, StringComparison.InvariantCultureIgnoreCase);
+            return Extension.Equals(other, StringComparison.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object obj)

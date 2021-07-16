@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
+﻿using System.ComponentModel;
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
@@ -38,7 +35,7 @@ namespace UVtools.WPF.Controls.Tools
                 Modifier = modifier;
 
                 modifier.NewValue = modifier.OldValue.Clamp(modifier.Minimum, modifier.Maximum);
-
+                
                 Name = new TextBlock
                 {
                     Text = $"{modifier.Name}:",
@@ -46,6 +43,8 @@ namespace UVtools.WPF.Controls.Tools
                     Padding = new Thickness(15, 0),
                     Tag = this,
                 };
+
+                if(!string.IsNullOrWhiteSpace(modifier.Description)) ToolTip.SetTip(Name, modifier.Description);
 
                 OldValue = new TextBlock
                 {

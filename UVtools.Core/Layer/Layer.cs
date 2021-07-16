@@ -11,7 +11,6 @@ using System.Drawing;
 using System.Linq;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
@@ -33,24 +32,27 @@ namespace UVtools.Core
         #endregion
 
         #region Members
+
+        public object Mutex = new();
         private byte[] _compressedBytes;
         private uint _nonZeroPixelCount;
         private Rectangle _boundingRectangle = Rectangle.Empty;
         private bool _isModified;
         private uint _index;
         private float _positionZ;
+        private float _waitTimeBeforeCure;
         private float _exposureTime;
+        private float _waitTimeAfterCure;
         private float _lightOffDelay = FileFormat.DefaultLightOffDelay;
         private float _liftHeight = FileFormat.DefaultLiftHeight;
         private float _liftSpeed = FileFormat.DefaultLiftSpeed;
+        private float _waitTimeAfterLift;
         private float _retractSpeed = FileFormat.DefaultRetractSpeed;
         private byte _lightPwm = FileFormat.DefaultLightPWM;
         private float _materialMilliliters;
         #endregion
 
         #region Properties
-
-        public object Mutex = new();
 
         /// <summary>
         /// Gets the parent layer manager
@@ -130,7 +132,23 @@ namespace UVtools.Core
         }
 
         /// <summary>
-        /// Gets or sets the normal layer exposure time in seconds
+        /// Gets or sets the wait time in seconds before cure the layer
+        /// AKA: Light-off delay
+        /// Chitubox: Rest time after retract
+        /// Lychee: Wait before print
+        /// </summary>
+        public float WaitTimeBeforeCure
+        {
+            get => _waitTimeBeforeCure;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _waitTimeBeforeCure, value)) return;
+                SlicerFile?.UpdatePrintTimeQueued();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the exposure time in seconds
         /// </summary>
         public float ExposureTime
         {
@@ -138,7 +156,23 @@ namespace UVtools.Core
             set
             {
                 if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
-                RaiseAndSetIfChanged(ref _exposureTime, value);
+                if(!RaiseAndSetIfChanged(ref _exposureTime, value)) return;
+                SlicerFile?.UpdatePrintTimeQueued();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the wait time in seconds after cure the layer
+        /// Chitubox: Rest time before lift
+        /// Lychee: Wait after print
+        /// </summary>
+        public float WaitTimeAfterCure
+        {
+            get => _waitTimeAfterCure;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _waitTimeAfterCure, value)) return;
+                SlicerFile?.UpdatePrintTimeQueued();
             }
         }
 
@@ -151,7 +185,8 @@ namespace UVtools.Core
             set
             {
                 if (value < 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
-                RaiseAndSetIfChanged(ref _lightOffDelay, value);
+                if(!RaiseAndSetIfChanged(ref _lightOffDelay, value)) return;
+                SlicerFile?.UpdatePrintTimeQueued();
             }
         }
 
@@ -164,7 +199,8 @@ namespace UVtools.Core
             set
             {
                 if (value < 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
-                RaiseAndSetIfChanged(ref _liftHeight, value);
+                if(!RaiseAndSetIfChanged(ref _liftHeight, value)) return;
+                SlicerFile?.UpdatePrintTimeQueued();
             }
         }
 
@@ -177,7 +213,18 @@ namespace UVtools.Core
             set
             {
                 if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
-                RaiseAndSetIfChanged(ref _liftSpeed, value);
+                if(!RaiseAndSetIfChanged(ref _liftSpeed, value)) return;
+                SlicerFile?.UpdatePrintTimeQueued();
+            }
+        }
+
+        public float WaitTimeAfterLift
+        {
+            get => _waitTimeAfterLift;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _waitTimeAfterLift, value)) return;
+                SlicerFile?.UpdatePrintTimeQueued();
             }
         }
 
@@ -190,7 +237,8 @@ namespace UVtools.Core
             set
             {
                 if (value <= 0) value = SlicerFile.RetractSpeed;
-                RaiseAndSetIfChanged(ref _retractSpeed, value);
+                if(!RaiseAndSetIfChanged(ref _retractSpeed, value)) return;
+                SlicerFile?.UpdatePrintTimeQueued();
             }
         }
 
@@ -351,19 +399,27 @@ namespace UVtools.Core
                 if (SlicerFile is null) return false; // Cant verify
                 if (IsBottomLayer)
                 {
-                    if (ExposureTime != SlicerFile.BottomExposureTime ||
+                    if (
+                        LightOffDelay != SlicerFile.BottomLightOffDelay ||
+                        WaitTimeBeforeCure != SlicerFile.BottomWaitTimeBeforeCure ||
+                        ExposureTime != SlicerFile.BottomExposureTime ||
+                        WaitTimeBeforeCure != SlicerFile.BottomWaitTimeBeforeCure ||
                         LiftHeight != SlicerFile.BottomLiftHeight ||
                         LiftSpeed != SlicerFile.BottomLiftSpeed ||
-                        LightOffDelay != SlicerFile.BottomLightOffDelay ||
+                        WaitTimeAfterLift != SlicerFile.BottomWaitTimeAfterLift ||
                         LightPWM != SlicerFile.BottomLightPWM 
                         ) return false;
                 }
                 else
                 {
-                    if (ExposureTime != SlicerFile.ExposureTime ||
+                    if (
+                        LightOffDelay != SlicerFile.LightOffDelay ||
+                        WaitTimeBeforeCure != SlicerFile.WaitTimeBeforeCure ||
+                        ExposureTime != SlicerFile.ExposureTime ||
+                        WaitTimeAfterCure != SlicerFile.WaitTimeAfterCure ||
                         LiftHeight != SlicerFile.LiftHeight ||
                         LiftSpeed != SlicerFile.LiftSpeed ||
-                        LightOffDelay != SlicerFile.LightOffDelay ||
+                        WaitTimeAfterLift != SlicerFile.WaitTimeAfterLift ||
                         LightPWM != SlicerFile.LightPWM
                     ) return false;
                 }
@@ -385,10 +441,13 @@ namespace UVtools.Core
 
             if (parentLayerManager is null) return;
             _positionZ = SlicerFile.GetHeightFromLayer(index);
+            _lightOffDelay = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
+            _waitTimeBeforeCure = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomWaitTimeBeforeCure, SlicerFile.WaitTimeBeforeCure);
             _exposureTime = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
+            _waitTimeAfterCure = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomWaitTimeAfterCure, SlicerFile.WaitTimeAfterCure);
             _liftHeight = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
             _liftSpeed = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
-            _lightOffDelay = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
+            _waitTimeAfterLift = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomWaitTimeAfterLift, SlicerFile.WaitTimeAfterLift);
             _retractSpeed = SlicerFile.RetractSpeed;
             _lightPwm = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
         }
@@ -496,15 +555,39 @@ namespace UVtools.Core
 
         public override string ToString()
         {
-            return $"{nameof(Index)}: {Index}, {nameof(Filename)}: {Filename}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(BoundingRectangle)}: {BoundingRectangle}, {nameof(IsBottomLayer)}: {IsBottomLayer}, {nameof(IsNormalLayer)}: {IsNormalLayer}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(LightPWM)}: {LightPWM}, {nameof(IsModified)}: {IsModified}, {nameof(HaveGlobalParameters)}: {HaveGlobalParameters}";
+            return $"{nameof(Index)}: {Index}, " +
+                   $"{nameof(Filename)}: {Filename}, " +
+                   $"{nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, " +
+                   $"{nameof(BoundingRectangle)}: {BoundingRectangle}, " +
+                   $"{nameof(IsBottomLayer)}: {IsBottomLayer}, " +
+                   $"{nameof(IsNormalLayer)}: {IsNormalLayer}, " +
+                   $"{nameof(LayerHeight)}: {LayerHeight}, " +
+                   $"{nameof(PositionZ)}: {PositionZ}, " +
+                   $"{nameof(LightOffDelay)}: {LightOffDelay}, " +
+                   $"{nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, " +
+                   $"{nameof(ExposureTime)}: {ExposureTime}, " +
+                   $"{nameof(WaitTimeAfterCure)}: {WaitTimeAfterCure}, " +
+                   $"{nameof(LiftHeight)}: {LiftHeight}, " +
+                   $"{nameof(LiftSpeed)}: {LiftSpeed}, " +
+                   $"{nameof(WaitTimeAfterLift)}: {WaitTimeAfterLift}, " +
+                   $"{nameof(RetractSpeed)}: {RetractSpeed}, " +
+                   $"{nameof(LightPWM)}: {LightPWM}, " +
+                   $"{nameof(IsModified)}: {IsModified}, " +
+                   $"{nameof(HaveGlobalParameters)}: {HaveGlobalParameters}";
         }
         #endregion
 
         #region Methods
 
-        public float CalculateLightOffDelay(float extraTime = 0)
+        public float CalculateMotorMovementTime(float extraTime = 0)
         {
             return OperationCalculator.LightOffDelayC.CalculateSeconds(_liftHeight, _liftSpeed, _retractSpeed, extraTime);
+        }
+
+        public float CalculateLightOffDelay(float extraTime = 0)
+        {
+            if (SlicerFile is null) return OperationCalculator.LightOffDelayC.CalculateSeconds(_liftHeight, _liftSpeed, _retractSpeed, extraTime);
+            return SlicerFile.SupportsGCode ? extraTime : OperationCalculator.LightOffDelayC.CalculateSeconds(_liftHeight, _liftSpeed, _retractSpeed, extraTime);
         }
 
         public void SetLightOffDelay(float extraTime = 0)
@@ -572,15 +655,27 @@ namespace UVtools.Core
 
         public bool SetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier, decimal value)
         {
-            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.ExposureSeconds))
+            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.LightOffDelay))
+            {
+                LightOffDelay = (float)value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.WaitTimeBeforeCure))
+            {
+                WaitTimeBeforeCure = (float)value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.ExposureTime))
             {
                 ExposureTime = (float)value;
                 return true;
             }
 
-            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.LightOffDelay))
+            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.WaitTimeAfterCure))
             {
-                LightOffDelay = (float)value;
+                WaitTimeAfterCure = (float)value;
                 return true;
             }
 
@@ -593,6 +688,12 @@ namespace UVtools.Core
             if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.LiftSpeed))
             {
                 LiftSpeed = (float)value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.WaitTimeAfterLift))
+            {
+                WaitTimeAfterLift = (float)value;
                 return true;
             }
 
@@ -789,11 +890,14 @@ namespace UVtools.Core
             return new(_index, CompressedBytes.ToArray(), ParentLayerManager)
             {
                 PositionZ = _positionZ,
+                LightOffDelay = _lightOffDelay,
+                WaitTimeBeforeCure = _waitTimeBeforeCure,
                 ExposureTime = _exposureTime,
+                WaitTimeAfterCure = _waitTimeAfterCure,
                 LiftHeight = _liftHeight,
                 LiftSpeed = _liftSpeed,
+                WaitTimeAfterLift = _waitTimeAfterLift,
                 RetractSpeed = _retractSpeed,
-                LightOffDelay = _lightOffDelay,
                 LightPWM = _lightPwm,
                 BoundingRectangle = _boundingRectangle,
                 NonZeroPixelCount = _nonZeroPixelCount,

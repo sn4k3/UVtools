@@ -9,13 +9,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV;
@@ -311,27 +309,41 @@ namespace UVtools.Core.FileFormats
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
             PrintParameterModifier.BottomLayerCount,
-            PrintParameterModifier.BottomExposureSeconds,
-            PrintParameterModifier.ExposureSeconds,
 
-            PrintParameterModifier.BottomLiftHeight,
-            PrintParameterModifier.LiftHeight,
-            PrintParameterModifier.BottomLiftSpeed,
-            PrintParameterModifier.LiftSpeed,
-            PrintParameterModifier.RetractSpeed,
             PrintParameterModifier.BottomLightOffDelay,
             PrintParameterModifier.LightOffDelay,
+
+            PrintParameterModifier.BottomWaitTimeBeforeCure,
+            PrintParameterModifier.WaitTimeBeforeCure,
+
+            PrintParameterModifier.BottomExposureTime,
+            PrintParameterModifier.ExposureTime,
+
+            PrintParameterModifier.BottomWaitTimeAfterCure,
+            PrintParameterModifier.WaitTimeAfterCure,
+
+            PrintParameterModifier.BottomLiftHeight,
+            PrintParameterModifier.BottomLiftSpeed,
+            PrintParameterModifier.LiftHeight,
+            PrintParameterModifier.LiftSpeed,
+
+            PrintParameterModifier.BottomWaitTimeAfterLift,
+            PrintParameterModifier.WaitTimeAfterLift,
+
+            PrintParameterModifier.RetractSpeed,
 
             PrintParameterModifier.BottomLightPWM,
             PrintParameterModifier.LightPWM,
         };
 
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
-            PrintParameterModifier.ExposureSeconds,
+            PrintParameterModifier.WaitTimeBeforeCure,
+            PrintParameterModifier.ExposureTime,
+            PrintParameterModifier.WaitTimeAfterCure,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.WaitTimeAfterLift,
             PrintParameterModifier.RetractSpeed,
-            PrintParameterModifier.LightOffDelay,
             PrintParameterModifier.LightPWM,
         };
 
@@ -431,6 +443,34 @@ namespace UVtools.Core.FileFormats
             set => base.BottomLayerCount = SliceSettings.HeadLayersNum = value;
         }
 
+        public override float BottomLightOffDelay
+        {
+            get => BottomWaitTimeBeforeCure;
+            set => BottomWaitTimeBeforeCure = value;
+        }
+
+        public override float LightOffDelay
+        {
+            get => WaitTimeBeforeCure;
+            set => WaitTimeBeforeCure = value;
+        }
+
+        public override float BottomWaitTimeBeforeCure
+        {
+            get => base.BottomWaitTimeBeforeCure;
+            set => base.BottomWaitTimeBeforeCure = base.BottomLightOffDelay = value;
+        }
+
+        public override float WaitTimeBeforeCure
+        {
+            get => TimeExtensions.MillisecondsToSeconds(SliceSettings.WaitBeforeExpoMs);
+            set
+            {
+                SliceSettings.WaitBeforeExpoMs = TimeExtensions.SecondsToMillisecondsUint(value);
+                base.WaitTimeBeforeCure = base.LightOffDelay = value;
+            }
+        }
+
         public override float BottomExposureTime
         {
             get => TimeExtensions.MillisecondsToSeconds(OutputSettings.BottomLayersTime);
@@ -481,16 +521,6 @@ namespace UVtools.Core.FileFormats
             set => base.RetractSpeed = OutputSettings.ZLiftRetractRate = SliceSettings.LiftDownSpeed = (float)Math.Round(value, 2);
         }
 
-        public override float LightOffDelay
-        {
-            get => TimeExtensions.MillisecondsToSeconds(SliceSettings.WaitBeforeExpoMs);
-            set
-            {
-                SliceSettings.WaitBeforeExpoMs = TimeExtensions.SecondsToMillisecondsUint(value);
-                base.LightOffDelay = value;
-            }
-        }
-
         public override byte BottomLightPWM
         {
             get => OutputSettings.BottomLightPWM;
@@ -507,6 +537,7 @@ namespace UVtools.Core.FileFormats
         public override object[] Configs => Printer == PrinterType.Wanhao ? new object[] { SliceBuildConfig, OutputSettings } : new object[] { SliceSettings, OutputSettings};
         #endregion
 
+        #region Constructor
         public CWSFile()
         {
             GCode = new GCodeBuilder
@@ -515,11 +546,14 @@ namespace UVtools.Core.FileFormats
                 GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Partial,
                 GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.MillimetersPerMinute,
                 GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds,
-                GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.LayerIndexZero
+                GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.LayerIndexZero,
+                LayerMoveCommand = GCodeBuilder.GCodeMoveCommands.G1,
+                EndGCodeMoveCommand = GCodeBuilder.GCodeMoveCommands.G1
             };
             GCode.CommandShowImageM6054.Set(";<Slice>", "{0}");
             GCode.CommandWaitG4.Set(";<Delay>", "{0}");
         }
+        #endregion
 
         #region Methods
 
@@ -837,6 +871,7 @@ namespace UVtools.Core.FileFormats
 
         public override void RebuildGCode()
         {
+            if (!SupportsGCode || SuppressRebuildGCode) return;
             //string arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
             //GCode.Clear();
             //GCode.AppendLine($"; {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.Now}");
@@ -938,6 +973,7 @@ namespace UVtools.Core.FileFormats
             }
 
             GCode.AppendFormat(Printer == PrinterType.Wanhao ? WanhaoGCodeEnd : GCodeEnd, Environment.NewLine, SliceSettings.LiftWhenFinished);*/
+            RaisePropertyChanged(nameof(GCodeStr));
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)

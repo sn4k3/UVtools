@@ -157,11 +157,11 @@ namespace UVtools.Core.FileFormats
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
         {
             PrintParameterModifier.BottomLayerCount,
-            PrintParameterModifier.BottomExposureSeconds,
-            PrintParameterModifier.ExposureSeconds,
+            PrintParameterModifier.LightOffDelay,
+            PrintParameterModifier.BottomExposureTime,
+            PrintParameterModifier.ExposureTime,
 
             //PrintParameterModifier.BottomLightOffDelay,
-            PrintParameterModifier.LightOffDelay,
             /*PrintParameterModifier.BottomLiftHeight,
             PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
@@ -272,6 +272,14 @@ namespace UVtools.Core.FileFormats
             set => base.BottomLayerCount = SlicerInfoSettings.BottomLayers = value;
         }
 
+        public override float BottomLightOffDelay => LightOffDelay;
+
+        public override float LightOffDelay
+        {
+            get => SlicerInfoSettings.LightOffDelay;
+            set => base.LightOffDelay = SlicerInfoSettings.LightOffDelay = (ushort)value;
+        }
+
         public override float BottomExposureTime
         {
             get => SlicerInfoSettings.BottomExposureTime;
@@ -282,18 +290,6 @@ namespace UVtools.Core.FileFormats
         {
             get => SlicerInfoSettings.ExposureTime;
             set => base.ExposureTime = SlicerInfoSettings.ExposureTime = (ushort)value;
-        }
-
-        public override float BottomLightOffDelay
-        {
-            get => LightOffDelay;
-            set { }
-        }
-
-        public override float LightOffDelay
-        {
-            get => SlicerInfoSettings.LightOffDelay;
-            set => base.LightOffDelay = SlicerInfoSettings.LightOffDelay = (ushort)value;
         }
 
         public override object[] Configs => new[] { (object)HeaderSettings, SlicerInfoSettings };

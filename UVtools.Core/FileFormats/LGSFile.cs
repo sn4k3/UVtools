@@ -252,15 +252,18 @@ namespace UVtools.Core.FileFormats
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
         {
             PrintParameterModifier.BottomLayerCount,
-            PrintParameterModifier.BottomExposureSeconds,
-            PrintParameterModifier.ExposureSeconds,
+
+            PrintParameterModifier.BottomLightOffDelay,
+            PrintParameterModifier.LightOffDelay,
+
+            PrintParameterModifier.BottomExposureTime,
+            PrintParameterModifier.ExposureTime,
 
             PrintParameterModifier.BottomLiftHeight,
             PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
-            PrintParameterModifier.BottomLightOffDelay,
-            PrintParameterModifier.LightOffDelay,
+            
         };
 
         public override Size[] ThumbnailsOriginalSize { get; } = {new(120, 150)};
@@ -361,6 +364,26 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        public override float BottomLightOffDelay
+        {
+            get => TimeExtensions.MillisecondsToSeconds(HeaderSettings.BottomLightOffDelayMs);
+            set
+            {
+                HeaderSettings.BottomLightOffDelayMs = TimeExtensions.SecondsToMilliseconds(value);
+                base.BottomLightOffDelay = value;
+            }
+        }
+
+        public override float LightOffDelay
+        {
+            get => TimeExtensions.MillisecondsToSeconds(HeaderSettings.LightOffDelayMs);
+            set
+            {
+                HeaderSettings.LightOffDelayMs = TimeExtensions.SecondsToMilliseconds(value);
+                base.LightOffDelay = value;
+            }
+        }
+
         public override float BottomExposureTime
         {
             get => TimeExtensions.MillisecondsToSeconds(HeaderSettings.BottomExposureTimeMs);
@@ -406,26 +429,6 @@ namespace UVtools.Core.FileFormats
         }
 
         public override float RetractSpeed => LiftSpeed;
-
-        public override float BottomLightOffDelay
-        {
-            get => TimeExtensions.MillisecondsToSeconds(HeaderSettings.BottomLightOffDelayMs);
-            set
-            {
-                HeaderSettings.BottomLightOffDelayMs = TimeExtensions.SecondsToMilliseconds(value);
-                base.BottomLightOffDelay = value;
-            }
-        }
-
-        public override float LightOffDelay
-        {
-            get => TimeExtensions.MillisecondsToSeconds(HeaderSettings.LightOffDelayMs);
-            set
-            {
-                HeaderSettings.LightOffDelayMs = TimeExtensions.SecondsToMilliseconds(value);
-                base.LightOffDelay = value;
-            }
-        }
 
         /*public override float PrintTime => 0;
 

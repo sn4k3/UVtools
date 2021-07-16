@@ -32,10 +32,10 @@ Set-Location $PSScriptRoot\..
 ####################################
 ###         Configuration        ###
 ####################################
-$enableMSI = $true
+#$enableMSI = $true
 #$buildOnly = 'linux-x64'
-#$buildOnly = 'win-x64'
-$enableNugetPublish = $true
+$buildOnly = 'osx-x64'
+#$enableNugetPublish = $true
 # Profilling
 $stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
 $deployStopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
@@ -122,7 +122,7 @@ $runtimes =
     "osx-x64" = @{
         "extraCmd" = "-p:PublishReadyToRun=true"
         "exclude" = @()
-        "include" = @("libcvextern.dylib")
+        "include" = @("libcvextern.dylib", "libusb-1.0.0.dylib")
     }
 }
 
@@ -212,7 +212,7 @@ Building: $runtime"
         wsl cp -a "$publishFolder/$runtime/." "$macPublishFolder/Contents/MacOS"
 
         wsl cd "$publishFolder/" `&`& pwd `&`& zip -r "../$targetZip" "$macAppFolder/*"
-        wsl cd "$publishFolder/$runtime" `&`& pwd `&`& zip -r "../../$macTargetZipLegacy" .
+        #wsl cd "$publishFolder/$runtime" `&`& pwd `&`& zip -r "../../$macTargetZipLegacy" .
         
     }
     else {

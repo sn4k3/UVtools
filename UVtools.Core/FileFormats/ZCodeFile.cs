@@ -193,26 +193,37 @@ namespace UVtools.Core.FileFormats
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
             PrintParameterModifier.BottomLayerCount,
-            PrintParameterModifier.BottomExposureSeconds,
-            PrintParameterModifier.ExposureSeconds,
+
+            PrintParameterModifier.BottomWaitTimeBeforeCure,
+            PrintParameterModifier.WaitTimeBeforeCure,
+
+            PrintParameterModifier.BottomExposureTime,
+            PrintParameterModifier.ExposureTime,
+
+            PrintParameterModifier.BottomWaitTimeAfterCure,
+            PrintParameterModifier.WaitTimeAfterCure,
 
             PrintParameterModifier.BottomLiftHeight,
             PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
+
+            PrintParameterModifier.BottomWaitTimeAfterLift,
+            PrintParameterModifier.WaitTimeAfterLift,
+
             PrintParameterModifier.RetractSpeed,
-            PrintParameterModifier.BottomLightOffDelay,
-            PrintParameterModifier.LightOffDelay,
 
             PrintParameterModifier.BottomLightPWM,
             PrintParameterModifier.LightPWM,
         };
 
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
-            PrintParameterModifier.ExposureSeconds,
-            PrintParameterModifier.LightOffDelay,
+            PrintParameterModifier.WaitTimeBeforeCure,
+            PrintParameterModifier.ExposureTime,
+            PrintParameterModifier.WaitTimeAfterCure,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.WaitTimeAfterLift,
             PrintParameterModifier.RetractSpeed,
             PrintParameterModifier.LightPWM,
         };
@@ -295,6 +306,38 @@ namespace UVtools.Core.FileFormats
             set => base.BottomLayerCount = ManifestFile.Profile.Slice.BottomLayerCount = value;
         }
 
+        public override float BottomLightOffDelay
+        {
+            get => BottomWaitTimeBeforeCure;
+            set => BottomWaitTimeBeforeCure = value;
+        }
+
+        public override float LightOffDelay
+        {
+            get => WaitTimeBeforeCure;
+            set => WaitTimeBeforeCure = value;
+        }
+
+        public override float BottomWaitTimeBeforeCure
+        {
+            get => TimeExtensions.MillisecondsToSeconds(ManifestFile.Profile.Slice.BottomLightOffDelay);
+            set
+            {
+                ManifestFile.Profile.Slice.BottomLightOffDelay = TimeExtensions.SecondsToMillisecondsUint(value);
+                base.BottomWaitTimeBeforeCure = base.BottomLightOffDelay = value;
+            }
+        }
+
+        public override float WaitTimeBeforeCure
+        {
+            get => TimeExtensions.MillisecondsToSeconds(ManifestFile.Profile.Slice.LightOffDelay);
+            set
+            {
+                ManifestFile.Profile.Slice.LightOffDelay = TimeExtensions.SecondsToMillisecondsUint(value);
+                base.WaitTimeBeforeCure = base.LightOffDelay = value;
+            }
+        }
+
         public override float BottomExposureTime
         {
             get => TimeExtensions.MillisecondsToSeconds(ManifestFile.Profile.Slice.BottomExposureTime);
@@ -337,26 +380,6 @@ namespace UVtools.Core.FileFormats
         {
             get => ManifestFile.Profile.Slice.LiftSpeed;
             set => base.LiftSpeed = ManifestFile.Profile.Slice.LiftSpeed = (float)Math.Round(value, 2);
-        }
-
-        public override float BottomLightOffDelay
-        {
-            get => TimeExtensions.MillisecondsToSeconds(ManifestFile.Profile.Slice.BottomLightOffDelay);
-            set
-            {
-                ManifestFile.Profile.Slice.BottomLightOffDelay = TimeExtensions.SecondsToMillisecondsUint(value);
-                base.BottomLightOffDelay = value;
-            }
-        }
-
-        public override float LightOffDelay
-        {
-            get => (float)Math.Round(ManifestFile.Profile.Slice.LightOffDelay / 1000f, 2);
-            set
-            {
-                ManifestFile.Profile.Slice.LightOffDelay = (uint)(value * 1000);
-                base.LightOffDelay = value;
-            }
         }
 
         public override byte LightPWM
@@ -433,9 +456,10 @@ namespace UVtools.Core.FileFormats
                 GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.CentimetersPerMinute,
                 GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds,
                 GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.FilenameNonZeroPNG,
+                LayerMoveCommand = GCodeBuilder.GCodeMoveCommands.G0,
+                EndGCodeMoveCommand = GCodeBuilder.GCodeMoveCommands.G1,
                 MaxLEDPower = MaxLEDPower,
                 CommandClearImage = {Enabled = false},
-                CommandMotorsOffM18 = {Enabled = false},
             };
         }
         #endregion

@@ -314,6 +314,11 @@
         <TextBlock IsVisible="{Binding SlicerFile.CanUseAnyLightOffDelay}"
                    Text="{Binding SlicerFile.LightOffDelayRepresentation, StringFormat=Light-off: {0}}"/>
 
+        <TextBlock IsVisible="{Binding SlicerFile.CanUseAnyWaitTime}" Text="  |  "/>
+        <TextBlock IsVisible="{Binding SlicerFile.CanUseAnyWaitTime}"
+                   ToolTip.Tip="Wait time: Before cure / After cure / After lift"
+                   Text="{Binding SlicerFile.WaitTimeRepresentation, StringFormat=Wait time: {0}}"/>
+
         <TextBlock IsVisible="{Binding SlicerFile.PrintTimeHours}" Text="  |  "/>
         <TextBlock IsVisible="{Binding SlicerFile.PrintTimeHours}"
           Text="{Binding SlicerFile.PrintTimeString, StringFormat=Print time: \{0\}}"/>

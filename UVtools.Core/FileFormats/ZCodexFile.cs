@@ -19,6 +19,7 @@ using Emgu.CV.Stitching;
 using Emgu.CV.Util;
 using Newtonsoft.Json;
 using UVtools.Core.Extensions;
+using UVtools.Core.GCode;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats
@@ -165,14 +166,15 @@ namespace UVtools.Core.FileFormats
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
             PrintParameterModifier.BottomLayerCount,
-            PrintParameterModifier.BottomExposureSeconds,
-            PrintParameterModifier.ExposureSeconds,
+            
+            PrintParameterModifier.WaitTimeBeforeCure,
 
-
+            PrintParameterModifier.BottomExposureTime,
+            PrintParameterModifier.ExposureTime,
+            
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
             PrintParameterModifier.RetractSpeed,
-            PrintParameterModifier.LightOffDelay
         };
 
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
@@ -252,6 +254,20 @@ namespace UVtools.Core.FileFormats
             set => base.BottomLayerCount = ResinMetadataSettings.BottomLayersNumber = UserSettings.BottomLayersCount = value;
         }
 
+        public override float BottomLightOffDelay => BottomWaitTimeBeforeCure;
+
+        public override float LightOffDelay => WaitTimeBeforeCure;
+        public override float BottomWaitTimeBeforeCure => WaitTimeBeforeCure;
+        public override float WaitTimeBeforeCure
+        {
+            get => TimeExtensions.MillisecondsToSeconds(ResinMetadataSettings.BlankingLayerTime);
+            set
+            {
+                UserSettings.ExposureOffTime = ResinMetadataSettings.BlankingLayerTime = TimeExtensions.SecondsToMillisecondsUint(value);
+                base.WaitTimeBeforeCure = base.LightOffDelay = value;
+            }
+        }
+
         public override float BottomExposureTime
         {
             get => TimeExtensions.MillisecondsToSeconds(UserSettings.BottomLayerExposureTime);
@@ -294,19 +310,7 @@ namespace UVtools.Core.FileFormats
             set => base.RetractSpeed = UserSettings.ZLiftRetractRate = (float)Math.Round(value, 2);
         }
 
-        public override float BottomLightOffDelay => LightOffDelay;
-
-        public override float LightOffDelay
-        {
-            get => TimeExtensions.MillisecondsToSeconds(ResinMetadataSettings.BlankingLayerTime);
-            set
-            {
-                UserSettings.ExposureOffTime = ResinMetadataSettings.BlankingLayerTime = TimeExtensions.SecondsToMillisecondsUint(value);
-                base.LightOffDelay = value;
-            }
-        }
-
-
+        
         public override float PrintTime
         {
             get => ResinMetadataSettings.PrintTime;
@@ -354,7 +358,16 @@ namespace UVtools.Core.FileFormats
 
         public ZCodexFile()
         {
-            GCode = new();
+            GCode = new()
+            {
+                UseComments = true,
+                GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Partial,
+                GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.MillimetersPerMinute,
+                GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds,
+                GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.LayerIndexZero,
+                LayerMoveCommand = GCodeBuilder.GCodeMoveCommands.G1,
+                EndGCodeMoveCommand = GCodeBuilder.GCodeMoveCommands.G1
+            };
         }
 
         #endregion
@@ -610,6 +623,8 @@ M106 S0
 
             GCode.Clear();
             GCode.Append(gcode);
+
+            RaisePropertyChanged(nameof(GCodeStr));
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)

@@ -497,47 +497,35 @@ namespace UVtools.Core
 
                 if (property != string.Empty)
                 {
-                    if (property is null || property == nameof(SlicerFile.BottomLayerCount))
+                    if (property is null or nameof(SlicerFile.BottomLayerCount))
                     {
+                        layer.LightOffDelay = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
+                        layer.WaitTimeBeforeCure = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomWaitTimeBeforeCure, SlicerFile.WaitTimeBeforeCure);
                         layer.ExposureTime = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
+                        layer.WaitTimeAfterCure = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomWaitTimeAfterCure, SlicerFile.WaitTimeAfterCure);
                         layer.LiftHeight = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
                         layer.LiftSpeed = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
+                        layer.WaitTimeAfterLift = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomWaitTimeAfterLift, SlicerFile.WaitTimeAfterLift);
                         layer.RetractSpeed = SlicerFile.RetractSpeed;
                         layer.LightPWM = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
-                        layer.LightOffDelay = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
                     }
                     else
                     {
-                        if (layer.IsNormalLayer)
+                        if (layer.IsBottomLayer)
                         {
                             switch (property)
                             {
-                                case nameof(SlicerFile.ExposureTime):
-                                    layer.ExposureTime = SlicerFile.ExposureTime;
+                                case nameof(SlicerFile.BottomLightOffDelay):
+                                    layer.LightOffDelay = SlicerFile.BottomLightOffDelay;
                                     break;
-                                case nameof(SlicerFile.LiftHeight):
-                                    layer.LiftHeight = SlicerFile.LiftHeight;
+                                case nameof(SlicerFile.BottomWaitTimeBeforeCure):
+                                    layer.WaitTimeBeforeCure = SlicerFile.BottomWaitTimeBeforeCure;
                                     break;
-                                case nameof(SlicerFile.LiftSpeed):
-                                    layer.LiftSpeed = SlicerFile.LiftSpeed;
-                                    break;
-                                case nameof(SlicerFile.RetractSpeed):
-                                    layer.RetractSpeed = SlicerFile.RetractSpeed;
-                                    break;
-                                case nameof(SlicerFile.LightOffDelay):
-                                    layer.LightOffDelay = SlicerFile.LightOffDelay;
-                                    break;
-                                case nameof(SlicerFile.LightPWM):
-                                    layer.LightPWM = SlicerFile.LightPWM;
-                                    break;
-                            }
-                        }
-                        else // Bottom layers
-                        {
-                            switch (property)
-                            {
                                 case nameof(SlicerFile.BottomExposureTime):
                                     layer.ExposureTime = SlicerFile.BottomExposureTime;
+                                    break;
+                                case nameof(SlicerFile.BottomWaitTimeAfterCure):
+                                    layer.WaitTimeAfterCure = SlicerFile.BottomWaitTimeAfterCure;
                                     break;
                                 case nameof(SlicerFile.BottomLiftHeight):
                                     layer.LiftHeight = SlicerFile.BottomLiftHeight;
@@ -545,14 +533,48 @@ namespace UVtools.Core
                                 case nameof(SlicerFile.BottomLiftSpeed):
                                     layer.LiftSpeed = SlicerFile.BottomLiftSpeed;
                                     break;
+                                case nameof(SlicerFile.BottomWaitTimeAfterLift):
+                                    layer.WaitTimeAfterLift = SlicerFile.BottomWaitTimeAfterLift;
+                                    break;
                                 case nameof(SlicerFile.RetractSpeed):
                                     layer.RetractSpeed = SlicerFile.RetractSpeed;
                                     break;
-                                case nameof(SlicerFile.BottomLightOffDelay):
-                                    layer.LightOffDelay = SlicerFile.BottomLightOffDelay;
-                                    break;
+                                
                                 case nameof(SlicerFile.BottomLightPWM):
                                     layer.LightPWM = SlicerFile.BottomLightPWM;
+                                    break;
+                            }
+                        }
+                        else // Normal layers
+                        {
+                            switch (property)
+                            {
+                                case nameof(SlicerFile.LightOffDelay):
+                                    layer.LightOffDelay = SlicerFile.LightOffDelay;
+                                    break;
+                                case nameof(SlicerFile.WaitTimeBeforeCure):
+                                    layer.WaitTimeBeforeCure = SlicerFile.WaitTimeBeforeCure;
+                                    break;
+                                case nameof(SlicerFile.ExposureTime):
+                                    layer.ExposureTime = SlicerFile.ExposureTime;
+                                    break;
+                                case nameof(SlicerFile.WaitTimeAfterCure):
+                                    layer.WaitTimeAfterCure = SlicerFile.WaitTimeAfterCure;
+                                    break;
+                                case nameof(SlicerFile.LiftHeight):
+                                    layer.LiftHeight = SlicerFile.LiftHeight;
+                                    break;
+                                case nameof(SlicerFile.LiftSpeed):
+                                    layer.LiftSpeed = SlicerFile.LiftSpeed;
+                                    break;
+                                case nameof(SlicerFile.WaitTimeAfterLift):
+                                    layer.WaitTimeAfterLift = SlicerFile.WaitTimeAfterLift;
+                                    break;
+                                case nameof(SlicerFile.RetractSpeed):
+                                    layer.RetractSpeed = SlicerFile.RetractSpeed;
+                                    break;
+                                case nameof(SlicerFile.LightPWM):
+                                    layer.LightPWM = SlicerFile.LightPWM;
                                     break;
                             }
                         }
@@ -579,10 +601,15 @@ namespace UVtools.Core
                 var layer = this[layerIndex];
                 if (this[layerIndex - 1].PositionZ != layer.PositionZ) continue;
                 layer.LiftHeight = 0;
-                if(zeroLightOffDelay) layer.LightOffDelay = 0;
+                layer.WaitTimeAfterLift = 0;
+                if (zeroLightOffDelay)
+                {
+                    layer.LightOffDelay = 0;
+                    layer.WaitTimeBeforeCure = 0;
+                    layer.WaitTimeAfterCure = 0;
+                }
             }
             SlicerFile?.RebuildGCode();
-            SlicerFile?.UpdatePrintTime();
         }
 
         public IEnumerable<Layer> GetSamePositionedLayers()

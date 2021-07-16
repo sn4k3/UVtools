@@ -1309,7 +1309,7 @@ namespace UVtools.WPF
             if (sender is not MenuItem item) return;
             if (item.Tag is not FileExtension fileExtension) return;
 
-            SaveFileDialog dialog = new()
+            SaveFileDialog saveDialog = new()
             {
                 InitialFileName = Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath),
                 Filters = Helpers.ToAvaloniaFilter(fileExtension.Description, fileExtension.Extension),
@@ -1318,7 +1318,7 @@ namespace UVtools.WPF
                     : Settings.General.DefaultDirectoryConvertFile
             };
 
-            var result = await dialog.ShowAsync(this);
+            var result = await saveDialog.ShowAsync(this);
             if (string.IsNullOrEmpty(result)) return;
 
 
@@ -1354,12 +1354,21 @@ namespace UVtools.WPF
            
             if (task)
             {
-                if (await this.MessageBoxQuestion(
+                var question = await this.MessageBoxQuestion(
                     $"Conversion completed in {LastStopWatch.ElapsedMilliseconds / 1000}s\n\n" +
-                    $"Do you want to open {Path.GetFileName(result)} in a new window?",
-                    "Conversion complete") == ButtonResult.Yes)
+                    $"Do you want to open '{Path.GetFileName(result)}' in a new window?\n" +
+                    "Yes: Open in a new window.\n" +
+                    "No: Open in this window.\n" +
+                    "Cancel: Do not perform any action.\n",
+                    "Conversion complete", ButtonEnum.YesNoCancel);
+                switch (question)
                 {
-                    App.NewInstance(result);
+                    case ButtonResult.No:
+                        ProcessFile(result, _actualLayer);
+                        break;
+                    case ButtonResult.Yes:
+                        App.NewInstance(result);
+                        break;
                 }
             }
             else
@@ -1547,11 +1556,12 @@ namespace UVtools.WPF
                 control.IsVisible = false;
             }
 
-            var window = new ToolWindow(control);
+            
             if (loadOperation is not null)
             {
                 control.BaseOperation = loadOperation;
             }
+            var window = new ToolWindow(control);
             await window.ShowDialog(this);
             if (window.DialogResult != DialogResults.OK) return null;
             var operation = control.BaseOperation;

@@ -695,16 +695,19 @@ namespace UVtools.Core.FileFormats
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
         {
             PrintParameterModifier.BottomLayerCount,
-            PrintParameterModifier.BottomExposureSeconds,
-            PrintParameterModifier.ExposureSeconds,
+
+            PrintParameterModifier.BottomLightOffDelay,
+            PrintParameterModifier.LightOffDelay,
+
+            PrintParameterModifier.BottomExposureTime,
+            PrintParameterModifier.ExposureTime,
 
             PrintParameterModifier.BottomLiftHeight,
             PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
             PrintParameterModifier.RetractSpeed,
-            PrintParameterModifier.BottomLightOffDelay,
-            PrintParameterModifier.LightOffDelay,
+            
 
             PrintParameterModifier.BottomLightPWM,
             PrintParameterModifier.LightPWM,
@@ -820,6 +823,18 @@ namespace UVtools.Core.FileFormats
             set => base.BottomLayerCount = (ushort) (HeaderSettings.BottomLayersCount2 = HeaderSettings.BottomLayersCount = value);
         }
 
+        public override float BottomLightOffDelay
+        {
+            get => HeaderSettings.BottomLightOffDelay;
+            set => base.BottomLightOffDelay = HeaderSettings.BottomLightOffDelay = (float)Math.Round(value, 2);
+        }
+
+        public override float LightOffDelay
+        {
+            get => HeaderSettings.LightOffDelay;
+            set => base.LightOffDelay = HeaderSettings.LightOffDelay = (float)Math.Round(value, 2);
+        }
+
         public override float BottomExposureTime
         {
             get => HeaderSettings.BottomExposureSeconds;
@@ -860,18 +875,6 @@ namespace UVtools.Core.FileFormats
         {
             get => HeaderSettings.RetractSpeed;
             set => base.RetractSpeed = HeaderSettings.RetractSpeed = (float)Math.Round(value, 2);
-        }
-
-        public override float BottomLightOffDelay
-        {
-            get => HeaderSettings.BottomLightOffDelay;
-            set => base.BottomLightOffDelay = HeaderSettings.BottomLightOffDelay = (float)Math.Round(value, 2);
-        }
-
-        public override float LightOffDelay
-        {
-            get => HeaderSettings.LightOffDelay;
-            set => base.LightOffDelay = HeaderSettings.LightOffDelay = (float)Math.Round(value, 2);
         }
 
         public override byte BottomLightPWM

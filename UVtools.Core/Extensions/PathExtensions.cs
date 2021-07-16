@@ -29,7 +29,7 @@ namespace UVtools.Core.Extensions
             foreach (var extension in extensions)
             {
                 var dotExtension = $".{extension}";
-                if (!path.EndsWith(dotExtension)) continue;
+                if (!path.EndsWith(dotExtension, StringComparison.OrdinalIgnoreCase)) continue;
                 strippedExtension = extension;
                 return path.Remove(path.Length - dotExtension.Length);
             }

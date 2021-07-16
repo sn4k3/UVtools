@@ -342,21 +342,22 @@ namespace UVtools.WPF
             CurrentLayerProperties.Add(new ValueDescription(layer.IsBottomLayer.ToString(), nameof(layer.IsBottomLayer)));
             CurrentLayerProperties.Add(new ValueDescription(layer.IsModified.ToString(), nameof(layer.IsModified)));
             CurrentLayerProperties.Add(new ValueDescription($"{layer.ExposureTime:F2}s", nameof(layer.ExposureTime)));
-
-            if (SlicerFile.PrintParameterPerLayerModifiers is not null)
+            
+            if (SlicerFile.SupportPerLayerSettings)
             {
 
-                if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LiftHeight))
+                if (SlicerFile.CanUseLayerLiftHeight)
                     CurrentLayerProperties.Add(new ValueDescription($"{layer.LiftHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min", nameof(layer.LiftHeight)));
-                if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.RetractSpeed))
-                    CurrentLayerProperties.Add(new ValueDescription($"{layer.RetractSpeed}mm/min",
-                        nameof(layer.RetractSpeed)));
+                if (SlicerFile.CanUseLayerRetractSpeed)
+                    CurrentLayerProperties.Add(new ValueDescription($"{layer.RetractSpeed}mm/min", nameof(layer.RetractSpeed)));
 
-                if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LightOffDelay))
-                    CurrentLayerProperties.Add(new ValueDescription($"{layer.LightOffDelay}s",
-                        nameof(layer.LightOffDelay)));
-                
-                if (SlicerFile.PrintParameterPerLayerModifiers.Contains(FileFormat.PrintParameterModifier.LightPWM))
+                if (SlicerFile.CanUseLayerLightOffDelay)
+                    CurrentLayerProperties.Add(new ValueDescription($"{layer.LightOffDelay}s", nameof(layer.LightOffDelay)));
+
+                if (SlicerFile.CanUseLayerWaitTimeBeforeCure)
+                    CurrentLayerProperties.Add(new ValueDescription($"{layer.WaitTimeBeforeCure}/{layer.WaitTimeAfterCure}/{layer.WaitTimeAfterLift}s", "WaitTimes:"));
+
+                if (SlicerFile.CanUseLayerLightPWM)
                     CurrentLayerProperties.Add(new ValueDescription(layer.LightPWM.ToString(), nameof(layer.LightPWM)));
             }
             var materialMillilitersPercent = layer.MaterialMillilitersPercent;

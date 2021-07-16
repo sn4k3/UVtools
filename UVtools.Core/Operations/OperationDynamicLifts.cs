@@ -329,8 +329,8 @@ namespace UVtools.Core.Operations
                     liftSpeed = (_maxLiftSpeed - (_maxLiftSpeed * layer.NonZeroPixelCount / maxNormalPixels)).Clamp(_minLiftSpeed, _maxLiftSpeed);
                 }
 
-                layer.LiftHeight = (float) Math.Round(liftHeight, 2);
-                layer.LiftSpeed = (float) Math.Round(liftSpeed, 2);
+                layer.LiftHeight = (float) Math.Round(liftHeight, 1);
+                layer.LiftSpeed = (float) Math.Round(liftSpeed, 1);
 
                 switch (_lightOffDelaySetMode)
                 {
@@ -350,8 +350,6 @@ namespace UVtools.Core.Operations
 
                 progress++;
             }
-
-            SlicerFile.UpdatePrintTime();
 
             return !progress.Token.IsCancellationRequested;
         }

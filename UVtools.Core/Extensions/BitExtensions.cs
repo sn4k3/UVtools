@@ -83,6 +83,36 @@ namespace UVtools.Core.Extensions
             buffer[offset + 3] = (byte)value;
         }
 
+        public static byte[] ToBytesLittleEndian(int value)
+        {
+            var bytes = new byte[4];
+            ToBytesLittleEndian(value, bytes);
+            return bytes;
+        }
+
+        public static void ToBytesLittleEndian(int value, byte[] buffer, uint offset = 0)
+        {
+            buffer[offset] = (byte)value;
+            buffer[offset + 1] = (byte)(value >> 8);
+            buffer[offset + 2] = (byte)(value >> 16);
+            buffer[offset + 3] = (byte)(value >> 24);
+        }
+
+        public static byte[] ToBytesBigEndian(int value)
+        {
+            var bytes = new byte[4];
+            ToBytesBigEndian(value, bytes);
+            return bytes;
+        }
+
+        public static void ToBytesBigEndian(int value, byte[] buffer, uint offset = 0)
+        {
+            buffer[offset] = (byte)(value >> 24);
+            buffer[offset + 1] = (byte)(value >> 16);
+            buffer[offset + 2] = (byte)(value >> 8);
+            buffer[offset + 3] = (byte)value;
+        }
+
 
     }
 }

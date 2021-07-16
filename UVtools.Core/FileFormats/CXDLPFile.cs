@@ -55,7 +55,7 @@ namespace UVtools.Core.FileFormats
 
             [FieldOrder(2)]
             [FieldEndianness(Endianness.Big)]
-            public ushort Unknown { get; set; } = 2;
+            public ushort Version { get; set; } = 2;
 
             /// <summary>
             /// Gets the size of the printer model
@@ -130,7 +130,7 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(HeaderSize)}: {HeaderSize}, {nameof(HeaderValue)}: {HeaderValue}, {nameof(Unknown)}: {Unknown}, {nameof(PrinterModelSize)}: {PrinterModelSize}, {nameof(PrinterModelArray)}: {PrinterModelArray}, {nameof(PrinterModel)}: {PrinterModel}, {nameof(LayerCount)}: {LayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(Offset)}: {Offset}";
+                return $"{nameof(HeaderSize)}: {HeaderSize}, {nameof(HeaderValue)}: {HeaderValue}, {nameof(Version)}: {Version}, {nameof(PrinterModelSize)}: {PrinterModelSize}, {nameof(PrinterModelArray)}: {PrinterModelArray}, {nameof(PrinterModel)}: {PrinterModel}, {nameof(LayerCount)}: {LayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(Offset)}: {Offset}";
             }
         }
 
@@ -221,38 +221,38 @@ namespace UVtools.Core.FileFormats
         {
             [FieldOrder(0)]
             [FieldEndianness(Endianness.Big)]
-            public uint Unknown { get; set; }
+            public uint LayerArea { get; set; }
 
             public PreLayer()
             {
             }
 
-            public PreLayer(uint unknown)
+            public PreLayer(uint layerArea)
             {
-                Unknown = unknown;
+                LayerArea = layerArea;
             }
         }
 
         public sealed class LayerDef
         {
-            [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public uint Unknown { get; set; }
+            [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public uint LayerArea { get; set; }
             [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public uint LineCount { get; set; }
             [FieldOrder(2)] [FieldCount(nameof(LineCount))] public LayerLine[] Lines { get; set; }
             [FieldOrder(3)] public PageBreak PageBreak { get; set; } = new();
 
-            public static byte[] GetHeaderBytes(uint unknown, uint lineCount)
+            public static byte[] GetHeaderBytes(uint layerArea, uint lineCount)
             {
                 var bytes = new byte[8];
-                BitExtensions.ToBytesBigEndian(unknown, bytes);
+                BitExtensions.ToBytesBigEndian(layerArea, bytes);
                 BitExtensions.ToBytesBigEndian(lineCount, bytes, 4);
                 return bytes;
             }
 
             public LayerDef() { }
 
-            public LayerDef(uint unknown, uint lineCount, LayerLine[] lines)
+            public LayerDef(uint layerArea, uint lineCount, LayerLine[] lines)
             {
-                Unknown = unknown;
+                LayerArea = layerArea;
                 LineCount = lineCount;
                 Lines = lines;
             }
@@ -335,9 +335,9 @@ namespace UVtools.Core.FileFormats
             [SerializeAs(SerializedType.TerminatedString)]
             public string FooterValue { get; set; } = HEADER_VALUE;
 
-            [FieldOrder(2)]
+            /*[FieldOrder(2)]
             [FieldEndianness(Endianness.Big)]
-            public uint Unknown { get; set; } = 7;
+            public uint CheckSum { get; set; }*/
 
             public void Validate()
             {
@@ -366,15 +366,17 @@ namespace UVtools.Core.FileFormats
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
         {
             PrintParameterModifier.BottomLayerCount,
-            PrintParameterModifier.BottomExposureSeconds,
-            PrintParameterModifier.ExposureSeconds,
+
+            PrintParameterModifier.LightOffDelay,
+
+            PrintParameterModifier.BottomExposureTime,
+            PrintParameterModifier.ExposureTime,
 
             PrintParameterModifier.BottomLiftHeight,
             PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
             PrintParameterModifier.RetractSpeed,
-            PrintParameterModifier.LightOffDelay,
 
             PrintParameterModifier.BottomLightPWM,
             PrintParameterModifier.LightPWM,
@@ -413,6 +415,7 @@ namespace UVtools.Core.FileFormats
             set
             {
                 string str = Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
+                //string str = Math.Round(value, 2).ToString("0.000000");
                 SlicerInfoSettings.DisplayWidthDataSize = (uint)(str.Length * 2);
                 var data = new byte[SlicerInfoSettings.DisplayWidthDataSize];
                 for (var i = 0; i < str.Length; i++)
@@ -431,6 +434,7 @@ namespace UVtools.Core.FileFormats
             set
             {
                 string str = Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
+                //string str = Math.Round(value, 2).ToString("0.000000");
                 SlicerInfoSettings.DisplayHeightDataSize = (uint)(str.Length * 2);
                 var data = new byte[SlicerInfoSettings.DisplayHeightDataSize];
                 for (var i = 0; i < str.Length; i++)
@@ -455,6 +459,7 @@ namespace UVtools.Core.FileFormats
             set
             {
                 string str = Layer.RoundHeight(value).ToString(CultureInfo.InvariantCulture);
+                //string str = Layer.RoundHeight(value).ToString("0.000000");
                 SlicerInfoSettings.LayerHeightDataSize = (uint)(str.Length * 2);
                 var data = new byte[SlicerInfoSettings.LayerHeightDataSize];
                 for (var i = 0; i < str.Length; i++)
@@ -477,6 +482,14 @@ namespace UVtools.Core.FileFormats
         {
             get => SlicerInfoSettings.BottomLayers;
             set => base.BottomLayerCount = SlicerInfoSettings.BottomLayers = value;
+        }
+
+        public override float BottomLightOffDelay => SlicerInfoSettings.LightOffDelay;
+
+        public override float LightOffDelay
+        {
+            get => SlicerInfoSettings.LightOffDelay;
+            set => base.LightOffDelay = SlicerInfoSettings.LightOffDelay = (ushort)value;
         }
 
         public override float BottomExposureTime
@@ -521,14 +534,6 @@ namespace UVtools.Core.FileFormats
             set => base.RetractSpeed = SlicerInfoSettings.RetractSpeed = (ushort)value;
         }
 
-        public override float BottomLightOffDelay => SlicerInfoSettings.LightOffDelay;
-
-        public override float LightOffDelay
-        {
-            get => SlicerInfoSettings.LightOffDelay;
-            set => base.LightOffDelay = SlicerInfoSettings.LightOffDelay = (ushort)value;
-        }
-
         public override byte BottomLightPWM
         {
             get => (byte) SlicerInfoSettings.BottomLightPWM;
@@ -558,7 +563,7 @@ namespace UVtools.Core.FileFormats
 
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
-            using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
+            using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.ReadWrite);
 
             if (ResolutionX == 1620 && ResolutionY == 2560)
             {
@@ -624,7 +629,7 @@ namespace UVtools.Core.FileFormats
             for (int layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
                 //var layer = this[layerIndex];
-                outputFile.WriteBytes(BitExtensions.ToBytesBigEndian(this[layerIndex].NonZeroPixelCount));
+                outputFile.WriteBytes(BitExtensions.ToBytesBigEndian((uint)Math.Round(this[layerIndex].BoundingRectangleMillimeters.Area()*1000)));
                 //preLayers[layerIndex] = new(layer.NonZeroPixelCount);
             }
             //Helpers.SerializeWriteFileStream(outputFile, preLayers);
@@ -679,7 +684,9 @@ namespace UVtools.Core.FileFormats
                         }
                     }
 
-                    layerBytes[layerIndex].InsertRange(0, LayerDef.GetHeaderBytes(layer.NonZeroPixelCount, lineCount));
+                    layerBytes[layerIndex].InsertRange(0, LayerDef.GetHeaderBytes(
+                        (uint)Math.Round(layer.BoundingRectangleMillimeters.Area()*1000), 
+                        lineCount));
                     layerBytes[layerIndex].AddRange(pageBreak);
 
                     progress.LockAndIncrement();
@@ -765,6 +772,10 @@ namespace UVtools.Core.FileFormats
 
             Helpers.SerializeWriteFileStream(outputFile, FooterSettings);
 
+            uint checkSum = CalculateCheckSum(outputFile, false);
+
+            outputFile.Write(BitExtensions.ToBytesBigEndian(checkSum));
+
             Debug.WriteLine("Encode Results:");
             Debug.WriteLine(HeaderSettings);
             Debug.WriteLine("-End-");
@@ -773,11 +784,28 @@ namespace UVtools.Core.FileFormats
         protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
         {
             using var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+
+            inputFile.Seek(0, SeekOrigin.Begin);
+
             HeaderSettings = Helpers.Deserialize<Header>(inputFile);
+            Debug.WriteLine(HeaderSettings);
             HeaderSettings.Validate();
 
-            Debug.WriteLine(HeaderSettings);
+            var position = inputFile.Position;
 
+            var expectedCheckSum = CalculateCheckSum(inputFile, false, -4);
+            inputFile.Seek(3, SeekOrigin.Current);
+            byte checkSum = (byte) inputFile.ReadByte();
+
+            inputFile.Seek(position, SeekOrigin.Begin);
+
+
+            if (expectedCheckSum != checkSum)
+            {
+                throw new FileLoadException($"Checksum fails, expecting: {expectedCheckSum} but got: {checkSum}.\n" +
+                                            $"Try to reslice the file.", fileFullPath);
+            }
+            
             byte[][] previews = new byte[ThumbnailsOriginalSize.Length][];
             for (int i = 0; i < ThumbnailsOriginalSize.Length; i++)
             {
@@ -925,11 +953,40 @@ namespace UVtools.Core.FileFormats
                 offset += size.Area() * 2 + 2; // + page break
             }
             
-            using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);
+            using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.ReadWrite);
             outputFile.Seek(offset, SeekOrigin.Begin);
             Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
+
+            uint checkSum = CalculateCheckSum(outputFile, false, -4);
+            outputFile.WriteBytes(BitExtensions.ToBytesBigEndian(checkSum));
         }
 
-     #endregion
+        private byte CalculateCheckSum(FileStream fs, bool restorePosition = true, int offsetSize = 0)
+        {
+            byte checkSum = 0;
+            var position = fs.Position;
+            var dataSize = fs.Length + offsetSize;
+            const int bufferSize = 50 * 1024 * 1024;
+
+            fs.Seek(0, SeekOrigin.Begin);
+
+            for (
+                int chunkSize = (int)Math.Min(bufferSize, dataSize - fs.Position); 
+                chunkSize > 0; 
+                chunkSize = (int)Math.Min(chunkSize, dataSize - fs.Position))
+            {
+                var bytes = fs.ReadBytes(chunkSize);
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    checkSum ^= bytes[i];
+                }
+            }
+
+            if (restorePosition) fs.Seek(position, SeekOrigin.Begin);
+
+            return checkSum;
+        }
+
+        #endregion
     }
 }

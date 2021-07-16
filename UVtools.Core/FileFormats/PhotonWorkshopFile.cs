@@ -925,11 +925,13 @@ namespace UVtools.Core.FileFormats
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
         {
             PrintParameterModifier.BottomLayerCount,
-            PrintParameterModifier.BottomExposureSeconds,
-            PrintParameterModifier.ExposureSeconds,
+
+            PrintParameterModifier.LightOffDelay,
+
+            PrintParameterModifier.BottomExposureTime,
+            PrintParameterModifier.ExposureTime,
 
             //PrintParameterModifier.BottomLightOffDelay,
-            PrintParameterModifier.LightOffDelay,
             //PrintParameterModifier.BottomLiftHeight,
             //PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
@@ -938,7 +940,7 @@ namespace UVtools.Core.FileFormats
         };
 
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
-            PrintParameterModifier.ExposureSeconds,
+            PrintParameterModifier.ExposureTime,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
         };
@@ -1080,6 +1082,14 @@ namespace UVtools.Core.FileFormats
             set => base.BottomLayerCount = (ushort) (HeaderSettings.BottomLayersCount = value);
         }
 
+        public override float BottomLightOffDelay => LightOffDelay;
+
+        public override float LightOffDelay
+        {
+            get => HeaderSettings.LightOffDelay;
+            set => base.LightOffDelay = HeaderSettings.LightOffDelay = (float)Math.Round(value, 2);
+        }
+
         public override float BottomExposureTime
         {
             get => HeaderSettings.BottomExposureSeconds;
@@ -1090,14 +1100,6 @@ namespace UVtools.Core.FileFormats
         {
             get => HeaderSettings.LayerExposureTime;
             set => base.ExposureTime = HeaderSettings.LayerExposureTime = (float) Math.Round(value, 2);
-        }
-
-        public override float BottomLightOffDelay => LightOffDelay;
-
-        public override float LightOffDelay
-        {
-            get => HeaderSettings.LightOffDelay;
-            set => base.LightOffDelay = HeaderSettings.LightOffDelay = (float) Math.Round(value, 2);
         }
 
         public override float BottomLiftHeight => LiftHeight;

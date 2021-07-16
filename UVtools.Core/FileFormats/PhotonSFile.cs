@@ -231,11 +231,14 @@ namespace UVtools.Core.FileFormats
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
         {
             PrintParameterModifier.BottomLayerCount,
-            PrintParameterModifier.BottomExposureSeconds,
-            PrintParameterModifier.ExposureSeconds,
+
+            PrintParameterModifier.LightOffDelay,
+
+            PrintParameterModifier.BottomExposureTime,
+            PrintParameterModifier.ExposureTime,
 
             //PrintParameterModifier.BottomLightOffDelay,
-            PrintParameterModifier.LightOffDelay,
+            
             //PrintParameterModifier.BottomLiftHeight,
             //PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
@@ -310,6 +313,14 @@ namespace UVtools.Core.FileFormats
             set => base.BottomLayerCount = (ushort) (HeaderSettings.BottomLayerCount = value);
         }
 
+        public override float BottomLightOffDelay => LightOffDelay;
+
+        public override float LightOffDelay
+        {
+            get => (float)HeaderSettings.LightOffDelay;
+            set => base.LightOffDelay = (float)(HeaderSettings.LightOffDelay = Math.Round(value, 2));
+        }
+
         public override float BottomExposureTime
         {
             get => (float) HeaderSettings.BottomExposureSeconds;
@@ -342,14 +353,6 @@ namespace UVtools.Core.FileFormats
         {
             get => (float)Math.Round(HeaderSettings.RetractSpeed * 60.0, 2);
             set => base.RetractSpeed = (float) (HeaderSettings.RetractSpeed = (float) Math.Round(value / 60.0, 2));
-        }
-
-        public override float BottomLightOffDelay => LightOffDelay;
-
-        public override float LightOffDelay
-        {
-            get => (float)HeaderSettings.LightOffDelay;
-            set => base.LightOffDelay = (float)(HeaderSettings.LightOffDelay = Math.Round(value, 2));
         }
 
         

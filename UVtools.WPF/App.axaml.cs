@@ -67,6 +67,13 @@ namespace UVtools.WPF
                     }
                 }*/
 
+                if (!CvInvoke.Init())
+                {
+                    Console.WriteLine("UVtools can not init OpenCV library\n" +
+                                      "Please build or install this dependencies in order to run UVtools\n" +
+                                      "Check manual or page at 'Requirements' section for help");
+                }
+
                 MainWindow = new MainWindow();
                 try
                 {

@@ -1,5 +1,53 @@
 # Changelog
 
+## 16/07/2021 - v2.15.0
+
+- **File formats:**
+   - (Add) Wait time before cure: The time to rest/wait in seconds before cure a new layer
+   - (Add) Wait time before after: The time to rest/wait in seconds after cure a new layer
+   - (Add) Wait time after lift: The time to rest/wait in seconds after a lift/peel move
+   - (Change) All gcode file formats dropped light-off delay field in favor of new 'Wait time before cure' field, setting light-off delay still valid but it redirects to the new field
+   - (Change) Reorder 'Light-off delay' before 'Exposure time'
+   - (Improvement) Recalculate the print time when a related property changes
+   - (Fix) Generic time estimation calculation was ignoring exposure times
+   - (Fix) Unable to load files with uppercase extensions
+   - (Fix) ZIP: Use G1 at end of gcode instead of G0
+   - (Fix) CWS: Use G1 for movements
+   - **(Fix) CXDLP:** (#240)
+      - Layer area calculation
+      - Validation checksum 
+   - **(Fix) ZCODE:**
+      - Use G1 at end of gcode instead of G0 to prevent crash to top bug on firmware
+      - Put back the M18 motors off at end of gcode
+- **GCode Builder/Parser:**
+   - (Add) Allow to choose between G0 and G1 for layer movements and end gcode
+   - (Fix) Safe guard: If the total print height is larger than set machine Z, do not raise/lower print on completeness
+   - (Fix) Light-off delay is the real delay time and not the calculated movement of the lifts plus the extra time
+   - (Improvement) Parse gcode line by line instead searching on a group of layers to allow a better control and identification
+- **Tools:**
+   - **Change print parameters:**
+      - (Add) Tooltips to labels
+      - (Add) Sun UTF-8 to the Light PWM value unit to describe intensity
+   - (Improvement) Dynamic lifts: Round lift height and speed to 1 decimal
+   - (Fix) Exposure time finder: Time estimation when using 'Use different settings for layers with same Z positioning'
+- **Prusa Slicer:**
+  - (Add) Note keyword: BottomWaitBeforeCure_xxx
+  - (Add) Note keyword: WaitBeforeCure_xxx
+  - (Add) Note keyword: BottomWaitAfterCure_xxx
+  - (Add) Note keyword: WaitAfterCure_xxx
+  - (Add) Note keyword: BottomWaitAfterLift_xxx
+  - (Add) Note keyword: WaitAfterLift_xxx
+  - (Change) Uniz IBEE: Remove light-off delay and implement wait time keywords
+- **macOS:** (#236)
+  - (Remove) osx legacy packages from build and downloads
+  - (Fix) macOS: Simplify the libcvextern.dylib and remove libtesseract dependency
+  - (Fix) macOS: Include libusb-1.0.0.dylib
+  - Note: `brew install libusb` still required
+- **UI:**
+  - (Fix) Refresh gcode does not update text on UI for ZIP, CWS, ZCODEX files
+  - (Fix) Operations: Import a .uvtop file by drag and drop into the UI would not load the layer range
+  - (Change) When convert a file, the result dialog will have Yes, No and Cancel actions, where No will open the converted file on current window, while Cancel will not perform any action (The old No behaviour)
+
 ## 12/07/2021 - v2.14.3
 
 - (Add) Exposure time finder: Base layers print modes, a option to speed up the print process and merge all base layers in the same height

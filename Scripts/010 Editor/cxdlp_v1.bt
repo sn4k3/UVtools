@@ -87,5 +87,5 @@ struct FOOTER {
     uint32 footerSize <fgcolor=cBlack, bgcolor=cWhite>;
     BYTE str[footer.footerSize] <fgcolor=cBlack, bgcolor=cRed>;
 
-    uint32 unknown <fgcolor=cBlack, bgcolor=cWhite>;
+    uint32 checkSum <fgcolor=cBlack, bgcolor=cWhite>;
 } footer;

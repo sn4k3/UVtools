@@ -18,14 +18,14 @@ typedef struct {
 } layerPointsData;
 
 typedef struct {
-    uint32 unknown <fgcolor=cBlack, bgcolor=cWhite>;
+    uint32 layerArea <fgcolor=cBlack, bgcolor=cWhite>;
 } layerDef;
 
 typedef struct() {
-    uint32 unknown <fgcolor=cBlack, bgcolor=cWhite>;
-    uint32 LayerPointNum <fgcolor=cBlack, bgcolor=cWhite>;
+    uint32 layerArea <fgcolor=cBlack, bgcolor=cWhite>;
+    uint32 layerPointNum <fgcolor=cBlack, bgcolor=cWhite>;
 
-    layerPointsData pD()[LayerPointNum];
+    layerPointsData pD()[layerPointNum];
     BYTE CR_LF2[2] <fgcolor=cBlack, bgcolor=cRed>;
 } layerData;
 
@@ -37,7 +37,7 @@ struct HEADER {
     uint32 headerSize <fgcolor=cBlack, bgcolor=cWhite>;
     BYTE header[headerSize] <fgcolor=cBlack, bgcolor=cRed>;
 
-    uint16 unknown <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 version <fgcolor=cBlack, bgcolor=cWhite>;
 
     uint32 modelSize <fgcolor=cBlack, bgcolor=cWhite>;
     BYTE model[modelSize] <fgcolor=cBlack, bgcolor=cRed>;
@@ -66,8 +66,8 @@ struct HEADER {
     uint32 layerThicknessLength <fgcolor=cBlack, bgcolor=cWhite>;
     wchar_t layerThickness[layerThicknessLength/2];
 
-    uint16 turnOffTime <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 exposureTime <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 turnOffTime <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 bottomExposure <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 bottomLayers <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 bottomRaise <fgcolor=cBlack, bgcolor=cWhite>;
@@ -99,5 +99,6 @@ struct FOOTER {
     uint32 footerSize <fgcolor=cBlack, bgcolor=cWhite>;
     BYTE str[footer.footerSize] <fgcolor=cBlack, bgcolor=cRed>;
 
-    uint32 unknown <fgcolor=cBlack, bgcolor=cWhite>;
+    byte checkSumControl[3] <fgcolor=cBlack, bgcolor=cWhite>;
+    unsigned byte checkSumByte <fgcolor=cBlack, bgcolor=cWhite>;
 } footer;

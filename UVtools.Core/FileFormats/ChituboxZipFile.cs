@@ -16,10 +16,8 @@ using System.Reflection;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
-using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats
@@ -83,27 +81,38 @@ namespace UVtools.Core.FileFormats
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
             PrintParameterModifier.BottomLayerCount,
-            PrintParameterModifier.BottomExposureSeconds,
-            PrintParameterModifier.ExposureSeconds,
+
+            PrintParameterModifier.BottomWaitTimeBeforeCure,
+            PrintParameterModifier.WaitTimeBeforeCure,
+            
+            PrintParameterModifier.BottomExposureTime,
+            PrintParameterModifier.ExposureTime,
+
+            PrintParameterModifier.BottomWaitTimeAfterCure,
+            PrintParameterModifier.WaitTimeAfterCure,
 
             PrintParameterModifier.BottomLiftHeight,
             PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
-            PrintParameterModifier.RetractSpeed,
-            PrintParameterModifier.BottomLightOffDelay,
-            PrintParameterModifier.LightOffDelay,
 
+            PrintParameterModifier.BottomWaitTimeAfterLift,
+            PrintParameterModifier.WaitTimeAfterLift,
+
+            PrintParameterModifier.RetractSpeed,
+            
             PrintParameterModifier.BottomLightPWM,
             PrintParameterModifier.LightPWM,
         };
 
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
-            PrintParameterModifier.ExposureSeconds,
+            PrintParameterModifier.WaitTimeBeforeCure,
+            PrintParameterModifier.ExposureTime,
+            PrintParameterModifier.WaitTimeAfterCure,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.WaitTimeAfterLift,
             PrintParameterModifier.RetractSpeed,
-            PrintParameterModifier.LightOffDelay,
             PrintParameterModifier.LightPWM,
         };
 
@@ -202,6 +211,30 @@ namespace UVtools.Core.FileFormats
             set => base.BottomLayerCount = HeaderSettings.BottomLayerCount = HeaderSettings.BottomLayCount = value;
         }
 
+        public override float BottomLightOffDelay
+        {
+            get => BottomWaitTimeBeforeCure;
+            set => BottomWaitTimeBeforeCure = value;
+        }
+
+        public override float LightOffDelay
+        {
+            get => WaitTimeBeforeCure;
+            set => WaitTimeBeforeCure = value;
+        }
+
+        public override float BottomWaitTimeBeforeCure
+        {
+            get => HeaderSettings.BottomLightOffDelay;
+            set => base.BottomWaitTimeBeforeCure = HeaderSettings.BottomLightOffDelay = (float)Math.Round(value, 2);
+        }
+
+        public override float WaitTimeBeforeCure
+        {
+            get => HeaderSettings.LightOffDelay;
+            set => base.WaitTimeBeforeCure = HeaderSettings.LightOffDelay = (float)Math.Round(value, 2);
+        }
+
         public override float BottomExposureTime
         {
             get => HeaderSettings.BottomExposureTime;
@@ -242,18 +275,6 @@ namespace UVtools.Core.FileFormats
         {
             get => HeaderSettings.RetractSpeed;
             set => base.RetractSpeed = HeaderSettings.RetractSpeed = (float)Math.Round(value, 2);
-        }
-
-        public override float BottomLightOffDelay
-        {
-            get => HeaderSettings.BottomLightOffDelay;
-            set => base.BottomLightOffDelay = HeaderSettings.BottomLightOffDelay = (float)Math.Round(value, 2);
-        }
-
-        public override float LightOffDelay
-        {
-            get => HeaderSettings.LightOffDelay;
-            set => base.LightOffDelay = HeaderSettings.LightOffDelay = (float)Math.Round(value, 2);
         }
 
         public override byte BottomLightPWM
@@ -339,7 +360,9 @@ namespace UVtools.Core.FileFormats
                 GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Absolute,
                 GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.MillimetersPerMinute,
                 GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds,
-                GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.FilenameNonZeroPNG
+                GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.FilenameNonZeroPNG,
+                LayerMoveCommand = GCodeBuilder.GCodeMoveCommands.G0,
+                EndGCodeMoveCommand = GCodeBuilder.GCodeMoveCommands.G1
             };
         }
 
@@ -503,8 +526,9 @@ namespace UVtools.Core.FileFormats
 
         public override void RebuildGCode()
         {
-            if (IsPHZZip) return;
+            if (!SupportsGCode || SuppressRebuildGCode) return;
             GCode.RebuildGCode(this, new object[]{ HeaderSettings });
+            RaisePropertyChanged(nameof(GCodeStr));
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)

@@ -11,7 +11,6 @@ using System.IO;
 using System.IO.Compression;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Util;
 using Newtonsoft.Json;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
@@ -98,16 +97,22 @@ namespace UVtools.Core.FileFormats
         {
             [JsonProperty("layer_thickness")] public float LayerHeight { get; set; }
             [JsonProperty("bottom_layers")] public ushort BottomLayers { get; set; } = DefaultBottomLayerCount;
+            [JsonProperty("bottom_light_off_delay")] public float BottomLightOffDelay { get; set; } = DefaultBottomLightOffDelay;
+            [JsonProperty("light_off_delay")] public float LightOffDelay { get; set; } = DefaultLightOffDelay;
+            [JsonProperty("bottom_wait_time_before_cure")] public float BottomWaitTimeBeforeCure { get; set; } = DefaultBottomLightOffDelay;
+            [JsonProperty("wait_time_before_cure")] public float WaitTimeBeforeCure { get; set; } = DefaultLightOffDelay;
             [JsonProperty("bottom_exposure_time")] public float BottomExposureTime { get; set; } = DefaultBottomExposureTime;
             [JsonProperty("exposure_time")] public float ExposureTime { get; set; } = DefaultExposureTime;
+            [JsonProperty("bottom_wait_time_after_cure")] public float BottomWaitTimeAfterCure { get; set; } = DefaultBottomLightOffDelay;
+            [JsonProperty("wait_time_after_cure")] public float WaitTimeAfterCure { get; set; } = DefaultLightOffDelay;
             [JsonProperty("bottom_lift_distance")] public float BottomLiftHeight { get; set; } = DefaultBottomLiftHeight;
             [JsonProperty("lift_distance")] public float LiftHeight { get; set; } = DefaultLiftHeight;
             [JsonProperty("bottom_lift_speed")] public float BottomLiftSpeed { get; set; } = DefaultBottomLiftSpeed;
             [JsonProperty("lift_speed")] public float LiftSpeed { get; set; } = DefaultLiftSpeed;
             [JsonProperty("bottom_retract_speed")] public float BottomRetractSpeed { get; set; } = DefaultRetractSpeed;
+            [JsonProperty("bottom_wait_time_after_lift")] public float BottomWaitTimeAfterLift { get; set; } = DefaultBottomLightOffDelay;
+            [JsonProperty("wait_time_after_lift")] public float WaitTimeAfterLift { get; set; } = DefaultLightOffDelay;
             [JsonProperty("retract_speed")] public float RetractSpeed { get; set; } = DefaultRetractSpeed;
-            [JsonProperty("bottom_light_off_delay")] public float BottomLightOffDelay { get; set; } = DefaultBottomLightOffDelay;
-            [JsonProperty("light_off_delay")] public float LightOffDelay { get; set; } = DefaultLightOffDelay;
         }
 
         public sealed class VDTPrintStatistics
@@ -122,11 +127,14 @@ namespace UVtools.Core.FileFormats
         public sealed class VDTLayer
         {
             [JsonProperty("height")] public float PositionZ { get; set; }
+            [JsonProperty("light_off_delay")] public float LightOffDelay { get; set; } = DefaultLightOffDelay;
+            [JsonProperty("wait_time_before_cure")] public float WaitTimeBeforeCure { get; set; } = DefaultLightOffDelay;
             [JsonProperty("exposure_time")] public float ExposureTime { get; set; } = DefaultExposureTime;
+            [JsonProperty("wait_time_after_cure")] public float WaitTimeAfterCure { get; set; } = DefaultLightOffDelay;
             [JsonProperty("lift_distance")] public float LiftHeight { get; set; } = DefaultLiftHeight;
             [JsonProperty("lift_speed")] public float LiftSpeed { get; set; } = DefaultLiftSpeed;
+            [JsonProperty("wait_time_after_lift")] public float WaitTimeAfterLift { get; set; } = DefaultLightOffDelay;
             [JsonProperty("retract_speed")] public float RetractSpeed { get; set; } = DefaultRetractSpeed;
-            [JsonProperty("light_off_delay")] public float LightOffDelay { get; set; } = DefaultLightOffDelay;
             [JsonProperty("light_pwm")] public byte LightPWM { get; set; } = DefaultLightPWM;
         }
 
@@ -143,15 +151,27 @@ namespace UVtools.Core.FileFormats
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
             PrintParameterModifier.BottomLayerCount,
-            PrintParameterModifier.BottomExposureSeconds,
-            PrintParameterModifier.ExposureSeconds,
 
             PrintParameterModifier.BottomLightOffDelay,
             PrintParameterModifier.LightOffDelay,
+
+            PrintParameterModifier.BottomWaitTimeBeforeCure,
+            PrintParameterModifier.WaitTimeBeforeCure,
+
+            PrintParameterModifier.BottomExposureTime,
+            PrintParameterModifier.ExposureTime,
+
+            PrintParameterModifier.BottomWaitTimeAfterCure,
+            PrintParameterModifier.WaitTimeAfterCure,
+
             PrintParameterModifier.BottomLiftHeight,
             PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
+
+            PrintParameterModifier.BottomWaitTimeAfterLift,
+            PrintParameterModifier.WaitTimeAfterLift,
+
             PrintParameterModifier.RetractSpeed,
 
             PrintParameterModifier.BottomLightPWM,
@@ -159,11 +179,15 @@ namespace UVtools.Core.FileFormats
         };
 
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
-            PrintParameterModifier.ExposureSeconds,
+            
+            PrintParameterModifier.LightOffDelay,
+            PrintParameterModifier.WaitTimeBeforeCure,
+            PrintParameterModifier.ExposureTime,
+            PrintParameterModifier.BottomWaitTimeAfterCure,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.WaitTimeAfterLift,
             PrintParameterModifier.RetractSpeed,
-            PrintParameterModifier.LightOffDelay,
             
             PrintParameterModifier.BottomLightPWM,
             PrintParameterModifier.LightPWM,
@@ -268,6 +292,29 @@ namespace UVtools.Core.FileFormats
             set => base.BottomLayerCount = ManifestFile.Print.BottomLayers = value;
         }
 
+        public override float BottomLightOffDelay
+        {
+            get => ManifestFile.Print.BottomLightOffDelay;
+            set => base.BottomLightOffDelay = ManifestFile.Print.BottomLightOffDelay = (float)Math.Round(value, 2);
+        }
+
+        public override float LightOffDelay
+        {
+            get => ManifestFile.Print.LightOffDelay;
+            set => base.LightOffDelay = ManifestFile.Print.LightOffDelay = (float)Math.Round(value, 2);
+        }
+
+        public override float BottomWaitTimeBeforeCure
+        {
+            get => ManifestFile.Print.BottomWaitTimeBeforeCure;
+            set => base.BottomWaitTimeBeforeCure = ManifestFile.Print.BottomWaitTimeBeforeCure = (float)Math.Round(value, 2);
+        }
+        public override float WaitTimeBeforeCure
+        {
+            get => ManifestFile.Print.WaitTimeBeforeCure;
+            set => base.WaitTimeBeforeCure = ManifestFile.Print.WaitTimeBeforeCure = (float)Math.Round(value, 2);
+        }
+
         public override float BottomExposureTime
         {
             get => ManifestFile.Print.BottomExposureTime;
@@ -280,16 +327,15 @@ namespace UVtools.Core.FileFormats
             set => base.ExposureTime = ManifestFile.Print.ExposureTime = (float)Math.Round(value, 2);
         }
 
-        public override float BottomLightOffDelay
+        public override float BottomWaitTimeAfterCure
         {
-            get => ManifestFile.Print.BottomLightOffDelay;
-            set => base.BottomLightOffDelay = ManifestFile.Print.BottomLightOffDelay = (float)Math.Round(value, 2);
+            get => ManifestFile.Print.BottomWaitTimeAfterCure;
+            set => base.BottomWaitTimeAfterCure = ManifestFile.Print.BottomWaitTimeAfterCure = (float)Math.Round(value, 2);
         }
-
-        public override float LightOffDelay
+        public override float WaitTimeAfterCure
         {
-            get => ManifestFile.Print.LightOffDelay;
-            set => base.LightOffDelay = ManifestFile.Print.LightOffDelay = (float)Math.Round(value, 2);
+            get => ManifestFile.Print.WaitTimeAfterCure;
+            set => base.WaitTimeAfterCure = ManifestFile.Print.WaitTimeAfterCure = (float)Math.Round(value, 2);
         }
 
         public override float BottomLiftHeight
@@ -314,6 +360,17 @@ namespace UVtools.Core.FileFormats
         {
             get => ManifestFile.Print.LiftSpeed;
             set => base.LiftSpeed = ManifestFile.Print.LiftSpeed = (float)Math.Round(value, 2);
+        }
+
+        public override float BottomWaitTimeAfterLift
+        {
+            get => ManifestFile.Print.BottomWaitTimeAfterLift;
+            set => base.BottomWaitTimeAfterLift = ManifestFile.Print.BottomWaitTimeAfterLift = (float)Math.Round(value, 2);
+        }
+        public override float WaitTimeAfterLift
+        {
+            get => ManifestFile.Print.WaitTimeAfterLift;
+            set => base.WaitTimeAfterLift = ManifestFile.Print.WaitTimeAfterLift = (float)Math.Round(value, 2);
         }
 
         public override float RetractSpeed
@@ -393,11 +450,14 @@ namespace UVtools.Core.FileFormats
                 layers[layerIndex] = new VDTLayer
                 {
                     PositionZ = layer.PositionZ,
+                    LightOffDelay = layer.LightOffDelay,
+                    WaitTimeBeforeCure = layer.WaitTimeBeforeCure,
                     ExposureTime = layer.ExposureTime,
+                    WaitTimeAfterCure = layer.WaitTimeAfterCure,
                     LiftHeight = layer.LiftHeight,
                     LiftSpeed = layer.LiftSpeed,
+                    WaitTimeAfterLift = layer.WaitTimeAfterLift,
                     RetractSpeed = layer.RetractSpeed,
-                    LightOffDelay = layer.LightOffDelay,
                     LightPWM = layer.LightPWM
                 };
             }
@@ -474,11 +534,14 @@ namespace UVtools.Core.FileFormats
                     this[layerIndex] = new Layer(layerIndex, stream, LayerManager)
                     {
                         PositionZ = manifestLayer.PositionZ,
+                        LightOffDelay = manifestLayer.LightOffDelay,
+                        WaitTimeBeforeCure = manifestLayer.WaitTimeBeforeCure,
                         ExposureTime = manifestLayer.ExposureTime,
+                        WaitTimeAfterCure = manifestLayer.WaitTimeAfterCure,
                         LiftHeight = manifestLayer.LiftHeight,
                         LiftSpeed = manifestLayer.LiftSpeed,
+                        WaitTimeAfterLift = manifestLayer.WaitTimeAfterLift,
                         RetractSpeed = manifestLayer.RetractSpeed,
-                        LightOffDelay = manifestLayer.LightOffDelay,
                         LightPWM = manifestLayer.LightPWM,
                     };
                 }

@@ -31,11 +31,17 @@ namespace UVtools.Core.FileFormats
         public const string Keyword_FileFormat = "FILEFORMAT";
 
         public const string Keyword_BottomLightOffDelay = "BottomLightOffDelay";
-        public const string Keyword_LightOffDelay       = "LightOffDelay";
+        public const string Keyword_LightOffDelay = "LightOffDelay";
+        public const string Keyword_BottomWaitTimeBeforeCure = "BottomWaitBeforeCure";
+        public const string Keyword_WaitTimeBeforeCure = "WaitBeforeCure";
+        public const string Keyword_BottomWaitTimeAfterCure = "BottomWaitAfterCure";
+        public const string Keyword_WaitTimeAfterCure = "WaitAfterCure";
         public const string Keyword_BottomLiftHeight    = "BottomLiftHeight";
         public const string Keyword_BottomLiftSpeed     = "BottomLiftSpeed";
         public const string Keyword_LiftHeight          = "LiftHeight";
         public const string Keyword_LiftSpeed           = "LiftSpeed";
+        public const string Keyword_BottomWaitTimeAfterLift = "BottomWaitAfterLift";
+        public const string Keyword_WaitTimeAfterLift = "WaitAfterLift";
         public const string Keyword_RetractSpeed        = "RetractSpeed";
         public const string Keyword_BottomLightPWM      = "BottomLightPWM";
         public const string Keyword_LightPWM            = "LightPWM";
@@ -309,8 +315,8 @@ namespace UVtools.Core.FileFormats
         };
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
             PrintParameterModifier.BottomLayerCount,
-            PrintParameterModifier.BottomExposureSeconds,
-            PrintParameterModifier.ExposureSeconds,
+            PrintParameterModifier.BottomExposureTime,
+            PrintParameterModifier.ExposureTime,
         };
 
         public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } =
@@ -631,13 +637,25 @@ namespace UVtools.Core.FileFormats
 
                 SuppressRebuildPropertiesWork(() =>
                 {
-                    BottomLiftHeight = LookupCustomValue(Keyword_BottomLiftHeight, DefaultBottomLiftHeight);
-                    BottomLiftSpeed = LookupCustomValue(Keyword_BottomLiftSpeed, DefaultBottomLiftSpeed);
-                    LiftHeight = LookupCustomValue(Keyword_LiftHeight, DefaultLiftHeight);
-                    LiftSpeed = LookupCustomValue(Keyword_LiftSpeed, DefaultLiftSpeed);
-                    RetractSpeed = LookupCustomValue(Keyword_RetractSpeed, DefaultRetractSpeed);
                     BottomLightOffDelay = LookupCustomValue(Keyword_BottomLightOffDelay, DefaultBottomLightOffDelay);
                     LightOffDelay = LookupCustomValue(Keyword_LightOffDelay, DefaultLightOffDelay);
+
+                    BottomWaitTimeBeforeCure = LookupCustomValue(Keyword_BottomWaitTimeBeforeCure, 0f);
+                    WaitTimeBeforeCure = LookupCustomValue(Keyword_WaitTimeBeforeCure, 0f);
+
+                    BottomWaitTimeAfterCure = LookupCustomValue(Keyword_BottomWaitTimeAfterCure, 0f);
+                    WaitTimeAfterCure = LookupCustomValue(Keyword_WaitTimeAfterCure, 0f);
+
+                    BottomLiftHeight = LookupCustomValue(Keyword_BottomLiftHeight, DefaultBottomLiftHeight);
+                    BottomLiftSpeed = LookupCustomValue(Keyword_BottomLiftSpeed, DefaultBottomLiftSpeed);
+
+                    LiftHeight = LookupCustomValue(Keyword_LiftHeight, DefaultLiftHeight);
+                    LiftSpeed = LookupCustomValue(Keyword_LiftSpeed, DefaultLiftSpeed);
+
+                    BottomWaitTimeAfterLift = LookupCustomValue(Keyword_BottomWaitTimeAfterLift, 0f);
+                    WaitTimeAfterLift = LookupCustomValue(Keyword_WaitTimeAfterLift, 0f);
+
+                    RetractSpeed = LookupCustomValue(Keyword_RetractSpeed, DefaultRetractSpeed);
                     BottomLightPWM = LookupCustomValue(Keyword_BottomLightPWM, DefaultLightPWM);
                     LightPWM = LookupCustomValue(Keyword_LightPWM, DefaultBottomLightPWM);
                 });

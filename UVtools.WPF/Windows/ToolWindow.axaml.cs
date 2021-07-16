@@ -611,7 +611,7 @@ namespace UVtools.WPF.Windows
             }
 
             if (toolControl.BaseOperation.HaveExecuted 
-                || toolControl.BaseOperation.ImportedFrom is not Operation.OperationImportFrom.None) // Loaded from something
+                || toolControl.BaseOperation.ImportedFrom != Operation.OperationImportFrom.None) // Loaded from something
             {
                 if (toolControl.BaseOperation.HaveROI)
                 {
@@ -645,7 +645,7 @@ namespace UVtools.WPF.Windows
                 var profiles = OperationProfiles.GetOperations(ToolControl.BaseOperation.GetType());
                 _profiles.AddRange(profiles);
 
-                if (toolControl.BaseOperation.ImportedFrom is Operation.OperationImportFrom.None ||
+                if (toolControl.BaseOperation.ImportedFrom == Operation.OperationImportFrom.None ||
                     (loadedFromSession && !Settings.Tools.LastUsedSettingsPriorityOverDefaultProfile))
                 {
                     //Operation profile = _profiles.FirstOrDefault(operation => operation.ProfileIsDefault);

@@ -17,6 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Timers;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
@@ -59,6 +60,8 @@ namespace UVtools.Core.FileFormats
 
         public const float MinimumLayerHeight = 0.01f;
         public const float MaximumLayerHeight = 0.20f;
+
+        private const ushort QueueTimerPrintTime = 250;
         #endregion 
 
         #region Enums
@@ -90,25 +93,43 @@ namespace UVtools.Core.FileFormats
         {
             
             #region Instances
-            public static PrintParameterModifier BottomLayerCount { get; } = new ("Bottom layer count", null, "layers",0, ushort.MaxValue, 0);
-            public static PrintParameterModifier BottomExposureSeconds { get; } = new ("Bottom exposure time", null, "s", 0.1M, 1000, 2);
-            public static PrintParameterModifier ExposureSeconds { get; } = new ("Exposure time", null, "s", 0.1M, 1000, 2);
-            
-            public static PrintParameterModifier BottomLightOffDelay { get; } = new ("Bottom light-off seconds", null, "s");
-            public static PrintParameterModifier LightOffDelay { get; } = new ("Light-off seconds", null, "s");
-            public static PrintParameterModifier BottomLiftHeight { get; } = new ("Bottom lift height", @"Modify 'Bottom lift height' millimeters between bottom layers", "mm", 1);
-            public static PrintParameterModifier LiftHeight { get; } = new ("Lift height", @"Modify 'Lift height' millimeters between layers", "mm");
-            public static PrintParameterModifier BottomLiftSpeed { get; } = new ("Bottom lift Speed", @"Modify 'Bottom lift Speed' mm/min between bottom layers", "mm/min", 10);
-            public static PrintParameterModifier LiftSpeed { get; } = new ("Lift speed", @"Modify 'Lift speed' mm/min between layers", "mm/min", 10, 5000, 2);
-            public static PrintParameterModifier RetractSpeed { get; } = new ("Retract speed", @"Modify 'Retract speed' mm/min between layer", "mm/min", 10, 5000, 2);
+            public static PrintParameterModifier BottomLayerCount { get; } = new ("Bottom layers count", "Number of bottom/burn-in layers", "layers",0, ushort.MaxValue, 0);
 
-            public static PrintParameterModifier BottomLightPWM { get; } = new ("Bottom light PWM", @"Modify 'Bottom light PWM' value", null, 1, byte.MaxValue, 0);
-            public static PrintParameterModifier LightPWM { get; } = new ("Light PWM", @"Modify 'Light PWM' value", null, 1, byte.MaxValue, 0);
+            public static PrintParameterModifier BottomLightOffDelay { get; } = new("Bottom light-off seconds", "Total motor movement time + rest time to wait before cure a new bottom layer", "s");
+            public static PrintParameterModifier LightOffDelay { get; } = new("Light-off seconds", "Total motor movement time + rest time to wait before cure a new layer", "s");
+
+            public static PrintParameterModifier BottomWaitTimeBeforeCure { get; } = new ("Bottom wait before cure", "Time to wait/rest before cure a new bottom layer\nChitubox: Rest after retract\nLychee: Wait before print", "s", 0, 1000, 2);
+            public static PrintParameterModifier WaitTimeBeforeCure { get; } = new ("Wait before cure", "Time to wait/rest before cure a new layer\nChitubox: Rest after retract\nLychee: Wait before print", "s", 0, 1000, 2);
+            
+            public static PrintParameterModifier BottomExposureTime { get; } = new ("Bottom exposure time", "Bottom layers cure time", "s", 0.1M, 1000, 2);
+            public static PrintParameterModifier ExposureTime { get; } = new ("Exposure time", "Layers cure time", "s", 0.1M, 1000, 2);
+           
+            public static PrintParameterModifier BottomWaitTimeAfterCure { get; } = new("Bottom wait after cure", "Time to wait/rest after cure a new bottom layer\nChitubox: Rest before lift\nLychee: Wait after print", "s", 0, 1000, 2);
+            public static PrintParameterModifier WaitTimeAfterCure { get; } = new("Wait after cure", "Time to wait/rest after cure a new bottom layer\nChitubox: Rest before lift\nLychee: Wait after print", "s", 0, 1000, 2);
+            
+            public static PrintParameterModifier BottomLiftHeight { get; } = new ("Bottom lift height", "Bottom lift/peel height between layers", "mm", 1);
+            public static PrintParameterModifier LiftHeight { get; } = new ("Lift height", @"Lift/peel height between layers", "mm");
+            
+            public static PrintParameterModifier BottomLiftSpeed { get; } = new ("Bottom lift speed", null, "mm/min", 10, 5000, 2);
+            public static PrintParameterModifier LiftSpeed { get; } = new ("Lift speed", null, "mm/min", 10, 5000, 2);
+           
+            public static PrintParameterModifier BottomWaitTimeAfterLift { get; } = new("Bottom wait after lift", "Time to wait/rest after a lift/peel sequence at bottom layers\nChitubox: Rest after lift\nLychee: Wait after lift", "s", 0, 1000, 2);
+            public static PrintParameterModifier WaitTimeAfterLift { get; } = new("Wait after lift", "Time to wait/rest after a lift/peel sequence at layers\nChitubox: Rest after lift\nLychee: Wait after lift", "s", 0, 1000, 2);
+           
+            public static PrintParameterModifier RetractSpeed { get; } = new ("Retract speed", "Down speed from lift height to next layer cure position", "mm/min", 10, 5000, 2);
+
+            public static PrintParameterModifier BottomLightPWM { get; } = new ("Bottom light PWM", "UV LED power for bottom layers", "☀", 1, byte.MaxValue, 0);
+            public static PrintParameterModifier LightPWM { get; } = new ("Light PWM", "UV LED power for layers", "☀", 1, byte.MaxValue, 0);
 
             public static PrintParameterModifier[] Parameters = {
                 BottomLayerCount,
-                BottomExposureSeconds,
-                ExposureSeconds,
+
+                BottomWaitTimeBeforeCure,
+                WaitTimeBeforeCure,
+                BottomExposureTime,
+                ExposureTime,
+                BottomWaitTimeAfterCure,
+                WaitTimeAfterCure,
 
                 BottomLightOffDelay,
                 LightOffDelay,
@@ -116,6 +137,8 @@ namespace UVtools.Core.FileFormats
                 BottomLiftSpeed,
                 LiftHeight,
                 LiftSpeed,
+                BottomWaitTimeAfterLift,
+                WaitTimeAfterLift,
                 RetractSpeed,
 
                 BottomLightPWM,
@@ -299,6 +322,8 @@ namespace UVtools.Core.FileFormats
             {
                 GetFileNameStripExtensions(extension, out extension);
             }
+
+            if (string.IsNullOrWhiteSpace(extension)) return null;
             return (from fileFormat in AvailableFormats where fileFormat.IsExtensionValid(extension) select createNewInstance ? (FileFormat) Activator.CreateInstance(fileFormat.GetType()) : fileFormat).FirstOrDefault();
         }
 
@@ -354,6 +379,14 @@ namespace UVtools.Core.FileFormats
         private float _materialGrams;
         private float _materialCost;
         private bool _suppressRebuildGCode;
+
+        private readonly Timer _queueTimerPrintTime = new(QueueTimerPrintTime){AutoReset = false};
+        private float _bottomWaitTimeBeforeCure;
+        private float _waitTimeBeforeCure;
+        private float _bottomWaitTimeAfterCure;
+        private float _waitTimeAfterCure;
+        private float _bottomWaitTimeAfterLift;
+        private float _waitTimeAfterLift;
 
         #endregion
 
@@ -794,6 +827,26 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public uint NormalLayerCount => LayerCount - BottomLayerCount;
 
+        public virtual float BottomWaitTimeBeforeCure
+        {
+            get => _bottomWaitTimeBeforeCure;
+            set
+            {
+                RaiseAndSet(ref _bottomWaitTimeBeforeCure, value);
+                RaisePropertyChanged(nameof(WaitTimeRepresentation));
+            }
+        }
+
+        public virtual float WaitTimeBeforeCure
+        {
+            get => _waitTimeBeforeCure;
+            set
+            {
+                RaiseAndSet(ref _waitTimeBeforeCure, value);
+                RaisePropertyChanged(nameof(WaitTimeRepresentation));
+            }
+        }
+
         /// <summary>
         /// Gets or sets the initial exposure time for <see cref="BottomLayerCount"/> in seconds
         /// </summary>
@@ -817,6 +870,26 @@ namespace UVtools.Core.FileFormats
             {
                 RaiseAndSet(ref _exposureTime, value);
                 RaisePropertyChanged(nameof(ExposureRepresentation));
+            }
+        }
+
+        public virtual float BottomWaitTimeAfterCure
+        {
+            get => _bottomWaitTimeAfterCure;
+            set
+            {
+                RaiseAndSet(ref _bottomWaitTimeAfterCure, value);
+                RaisePropertyChanged(nameof(WaitTimeRepresentation));
+            }
+        }
+
+        public virtual float WaitTimeAfterCure
+        {
+            get => _waitTimeAfterCure;
+            set
+            {
+                RaiseAndSet(ref _waitTimeAfterCure, value);
+                RaisePropertyChanged(nameof(WaitTimeRepresentation));
             }
         }
 
@@ -869,6 +942,26 @@ namespace UVtools.Core.FileFormats
             {
                 RaiseAndSet(ref _liftSpeed, value);
                 RaisePropertyChanged(nameof(LiftRepresentation));
+            }
+        }
+
+        public virtual float BottomWaitTimeAfterLift
+        {
+            get => _bottomWaitTimeAfterLift;
+            set
+            {
+                RaiseAndSet(ref _bottomWaitTimeAfterLift, value);
+                RaisePropertyChanged(nameof(WaitTimeRepresentation));
+            }
+        }
+
+        public virtual float WaitTimeAfterLift
+        {
+            get => _waitTimeAfterLift;
+            set
+            {
+                RaiseAndSet(ref _waitTimeAfterLift, value);
+                RaisePropertyChanged(nameof(WaitTimeRepresentation));
             }
         }
 
@@ -931,9 +1024,21 @@ namespace UVtools.Core.FileFormats
 
         public bool CanUseBottomLayerCount => HavePrintParameterModifier(PrintParameterModifier.BottomLayerCount);
 
-        public bool CanUseBottomExposureTime => HavePrintParameterModifier(PrintParameterModifier.BottomExposureSeconds);
-        public bool CanUseExposureTime => HavePrintParameterModifier(PrintParameterModifier.ExposureSeconds);
+        public bool CanUseBottomLightOffDelay => HavePrintParameterModifier(PrintParameterModifier.BottomLightOffDelay);
+        public bool CanUseLightOffDelay => HavePrintParameterModifier(PrintParameterModifier.LightOffDelay);
+        public bool CanUseAnyLightOffDelay => CanUseBottomLightOffDelay || CanUseLightOffDelay;
+
+        public bool CanUseBottomWaitTimeBeforeCure => HavePrintParameterModifier(PrintParameterModifier.BottomWaitTimeBeforeCure);
+        public bool CanUseWaitTimeBeforeCure => HavePrintParameterModifier(PrintParameterModifier.WaitTimeBeforeCure);
+        public bool CanUseAnyWaitTimeBeforeCure => CanUseBottomWaitTimeBeforeCure || CanUseWaitTimeBeforeCure;
+
+        public bool CanUseBottomExposureTime => HavePrintParameterModifier(PrintParameterModifier.BottomExposureTime);
+        public bool CanUseExposureTime => HavePrintParameterModifier(PrintParameterModifier.ExposureTime);
         public bool CanUseAnyExposureTime => CanUseBottomExposureTime || CanUseExposureTime;
+
+        public bool CanUseBottomWaitTimeAfterCure => HavePrintParameterModifier(PrintParameterModifier.BottomWaitTimeAfterCure);
+        public bool CanUseWaitTimeAfterCure => HavePrintParameterModifier(PrintParameterModifier.WaitTimeAfterCure);
+        public bool CanUseAnyWaitTimeAfterCure => CanUseBottomWaitTimeAfterCure || CanUseWaitTimeAfterCure;
 
         public bool CanUseBottomLiftHeight => HavePrintParameterModifier(PrintParameterModifier.BottomLiftHeight);
         public bool CanUseLiftHeight => HavePrintParameterModifier(PrintParameterModifier.LiftHeight);
@@ -943,19 +1048,25 @@ namespace UVtools.Core.FileFormats
         public bool CanUseLiftSpeed => HavePrintParameterModifier(PrintParameterModifier.LiftSpeed);
         public bool CanUseAnyLiftSpeed => CanUseBottomLiftSpeed || CanUseLiftSpeed;
 
+        public bool CanUseBottomWaitTimeAfterLift => HavePrintParameterModifier(PrintParameterModifier.BottomWaitTimeAfterLift);
+        public bool CanUseWaitTimeAfterLift => HavePrintParameterModifier(PrintParameterModifier.WaitTimeAfterLift);
+        public bool CanUseAnyWaitTimeAfterLift => CanUseBottomWaitTimeAfterLift || CanUseWaitTimeAfterLift;
+
         public bool CanUseRetractSpeed => HavePrintParameterModifier(PrintParameterModifier.RetractSpeed);
 
-        public bool CanUseBottomLightOffDelay => HavePrintParameterModifier(PrintParameterModifier.BottomLightOffDelay);
-        public bool CanUseLightOffDelay => HavePrintParameterModifier(PrintParameterModifier.LightOffDelay);
-        public bool CanUseAnyLightOffDelay => CanUseBottomLightOffDelay || CanUseLightOffDelay;
+        public bool CanUseAnyWaitTime => CanUseBottomWaitTimeBeforeCure || CanUseBottomWaitTimeAfterCure || CanUseBottomWaitTimeAfterLift ||
+                                         CanUseWaitTimeBeforeCure || CanUseWaitTimeAfterCure || CanUseWaitTimeAfterLift;
 
         public bool CanUseBottomLightPWM => HavePrintParameterModifier(PrintParameterModifier.BottomLightPWM);
         public bool CanUseLightPWM => HavePrintParameterModifier(PrintParameterModifier.LightPWM);
         public bool CanUseAnyLightPWM => CanUseBottomLightPWM || CanUseLightPWM;
 
-        public bool CanUseLayerExposureTime => HaveLayerParameterModifier(PrintParameterModifier.ExposureSeconds);
+        public bool CanUseLayerWaitTimeBeforeCure => HaveLayerParameterModifier(PrintParameterModifier.WaitTimeBeforeCure);
+        public bool CanUseLayerExposureTime => HaveLayerParameterModifier(PrintParameterModifier.ExposureTime);
+        public bool CanUseLayerWaitTimeAfterCure => HaveLayerParameterModifier(PrintParameterModifier.WaitTimeAfterCure);
         public bool CanUseLayerLiftHeight => HaveLayerParameterModifier(PrintParameterModifier.LiftHeight);
         public bool CanUseLayerLiftSpeed => HaveLayerParameterModifier(PrintParameterModifier.LiftSpeed);
+        public bool CanUseLayerWaitTimeAfterLift => HaveLayerParameterModifier(PrintParameterModifier.WaitTimeAfterLift);
         public bool CanUseLayerRetractSpeed => HaveLayerParameterModifier(PrintParameterModifier.RetractSpeed);
         public bool CanUseLayerLightOffDelay => HaveLayerParameterModifier(PrintParameterModifier.LightOffDelay);
         public bool CanUseLayerLightPWM => HaveLayerParameterModifier(PrintParameterModifier.LightPWM);
@@ -1064,6 +1175,26 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        public string WaitTimeRepresentation
+        {
+            get
+            {
+                var str = string.Empty;
+
+                if (CanUseBottomWaitTimeBeforeCure || CanUseBottomWaitTimeAfterCure || CanUseBottomWaitTimeAfterLift)
+                {
+                    str += $"{BottomWaitTimeBeforeCure}/{BottomWaitTimeAfterCure}/{BottomWaitTimeAfterLift}s";
+                }
+                if (!string.IsNullOrEmpty(str)) str += "|";
+                if (CanUseWaitTimeBeforeCure || CanUseWaitTimeAfterCure || CanUseWaitTimeAfterLift)
+                {
+                    str += $"{WaitTimeBeforeCure}/{WaitTimeAfterCure}/{WaitTimeAfterLift}s";
+                }
+
+                return str;
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -1111,8 +1242,20 @@ namespace UVtools.Core.FileFormats
                             break;
                         }
 
-                        var lightOffDelay = layer.CalculateLightOffDelay();
-                        time += layer.ExposureTime + (lightOffDelay > layer.LightOffDelay ? lightOffDelay : layer.LightOffDelay);
+                        var motorTime = layer.CalculateMotorMovementTime();
+                        time += layer.WaitTimeBeforeCure + layer.ExposureTime + layer.WaitTimeAfterCure + layer.WaitTimeAfterLift;
+                        if (SupportsGCode)
+                        {
+                            time += motorTime;
+                            if (layer.WaitTimeBeforeCure <= 0)
+                            {
+                                time += layer.LightOffDelay;
+                            }
+                        }
+                        else
+                        {
+                            time += motorTime > layer.LightOffDelay ? motorTime : layer.LightOffDelay;
+                        }
                         /*if (lightOffDelay >= layer.LightOffDelay)
                             time += lightOffDelay;
                         else
@@ -1122,11 +1265,38 @@ namespace UVtools.Core.FileFormats
 
                 if (computeGeneral)
                 {
-                    time = ExtraPrintTime + 
+                    var bottomMotorTime = CalculateMotorMovementTime(true);
+                    var motorTime = CalculateMotorMovementTime(false);
+                    time = ExtraPrintTime +
                            BottomLightOffDelay * BottomLayerCount +
                            LightOffDelay * NormalLayerCount +
-                           OperationCalculator.LightOffDelayC.CalculateSeconds(BottomLiftHeight, BottomLiftSpeed, RetractSpeed) * BottomLayerCount +
-                           OperationCalculator.LightOffDelayC.CalculateSeconds(LiftHeight, LiftSpeed, RetractSpeed) * NormalLayerCount;
+                           BottomWaitTimeBeforeCure * BottomLayerCount +
+                           WaitTimeBeforeCure * NormalLayerCount +
+                           BottomExposureTime * BottomLayerCount +
+                           ExposureTime * NormalLayerCount +
+                           BottomWaitTimeAfterCure * BottomLayerCount +
+                           WaitTimeAfterCure * NormalLayerCount +
+                           BottomWaitTimeAfterLift * BottomLayerCount +
+                           WaitTimeAfterLift * NormalLayerCount;
+
+                    if (SupportsGCode)
+                    {
+                        time += bottomMotorTime * BottomLayerCount + motorTime * NormalLayerCount;
+
+                        if (BottomWaitTimeBeforeCure <= 0)
+                        {
+                            time += BottomLightOffDelay * BottomLayerCount;
+                        }
+                        if (WaitTimeBeforeCure <= 0)
+                        {
+                            time += LightOffDelay * NormalLayerCount;
+                        }
+                    }
+                    else
+                    {
+                        time += motorTime > BottomLightOffDelay ? bottomMotorTime * BottomLayerCount : BottomLightOffDelay * BottomLayerCount;
+                        time += motorTime > LightOffDelay ? motorTime * NormalLayerCount : LightOffDelay * NormalLayerCount;
+                    }
                 }
 
                 return (float) Math.Round(time, 2);
@@ -1141,7 +1311,14 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the estimate print time in hours and minutes formatted
         /// </summary>
-        public string PrintTimeString => TimeSpan.FromSeconds(PrintTime).ToString("hh\\hmm\\m");
+        public string PrintTimeString
+        {
+            get
+            {
+                var printTime = PrintTime;
+                return TimeSpan.FromSeconds(printTime >= float.PositiveInfinity ? 0 : printTime).ToString("hh\\hmm\\m");
+            }
+        }
 
         /// <summary>
         /// Gets the estimate used material in ml
@@ -1261,6 +1438,7 @@ namespace UVtools.Core.FileFormats
             LayerManager = new(this);
             Thumbnails = new Mat[ThumbnailsCount];
             PropertyChanged += OnPropertyChanged;
+            _queueTimerPrintTime.Elapsed += (sender, e) => UpdatePrintTime();
         }
 
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -1268,15 +1446,21 @@ namespace UVtools.Core.FileFormats
             if (SuppressRebuildProperties) return;
             if (
                 e.PropertyName 
-                    is nameof(BottomLayerCount) 
-                    or nameof(BottomExposureTime) 
-                    or nameof(ExposureTime) 
+                    is nameof(BottomLayerCount)
                     or nameof(BottomLightOffDelay)
                     or nameof(LightOffDelay)
+                    or nameof(BottomWaitTimeBeforeCure)
+                    or nameof(WaitTimeBeforeCure)
+                    or nameof(BottomExposureTime) 
+                    or nameof(ExposureTime)
+                    or nameof(BottomWaitTimeAfterCure)
+                    or nameof(WaitTimeAfterCure)
                     or nameof(BottomLiftHeight) 
                     or nameof(LiftHeight) 
                     or nameof(BottomLiftSpeed) 
-                    or nameof(LiftSpeed) 
+                    or nameof(LiftSpeed)
+                    or nameof(BottomWaitTimeAfterLift)
+                    or nameof(WaitTimeAfterLift)
                     or nameof(RetractSpeed) 
                     or nameof(BottomLightPWM) 
                     or nameof(LightPWM)
@@ -1285,7 +1469,7 @@ namespace UVtools.Core.FileFormats
                 LayerManager?.RebuildLayersProperties(false, e.PropertyName);
 
                 if(e.PropertyName != nameof(BottomLightPWM) && e.PropertyName != nameof(LightPWM))
-                    PrintTime = PrintTimeComputed;
+                    UpdatePrintTimeQueued();
                 return;
             }
         }
@@ -1345,6 +1529,7 @@ namespace UVtools.Core.FileFormats
         public void Dispose()
         {
             GC.SuppressFinalize(this);
+            _queueTimerPrintTime.Dispose();
             Clear();
         }
 
@@ -1398,7 +1583,7 @@ namespace UVtools.Core.FileFormats
             {
                 GetFileNameStripExtensions(extension, out extension);
             }
-            return FileExtensions.Any(fileExtension => fileExtension.Equals(extension));
+            return !string.IsNullOrWhiteSpace(extension) && FileExtensions.Any(fileExtension => fileExtension.Equals(extension));
         }
 
         /// <summary>
@@ -1674,14 +1859,22 @@ namespace UVtools.Core.FileFormats
                         tw.WriteLine($"{nameof(layer.IsBottomLayer)}: {layer.IsBottomLayer}");
                         tw.WriteLine($"{nameof(layer.LayerHeight)}: {layer.LayerHeight}");
                         tw.WriteLine($"{nameof(layer.PositionZ)}: {layer.PositionZ}");
-                        tw.WriteLine($"{nameof(layer.ExposureTime)}: {layer.ExposureTime}");
 
                         if (HaveLayerParameterModifier(PrintParameterModifier.LightOffDelay))
                             tw.WriteLine($"{nameof(layer.LightOffDelay)}: {layer.LightOffDelay}");
+                        if (HaveLayerParameterModifier(PrintParameterModifier.WaitTimeBeforeCure))
+                            tw.WriteLine($"{nameof(layer.WaitTimeBeforeCure)}: {layer.WaitTimeBeforeCure}");
+                        tw.WriteLine($"{nameof(layer.ExposureTime)}: {layer.ExposureTime}");
+                        if (HaveLayerParameterModifier(PrintParameterModifier.WaitTimeAfterCure))
+                            tw.WriteLine($"{nameof(layer.WaitTimeAfterCure)}: {layer.WaitTimeAfterCure}");
+
+
                         if (HaveLayerParameterModifier(PrintParameterModifier.LiftHeight))
                             tw.WriteLine($"{nameof(layer.LiftHeight)}: {layer.LiftHeight}");
                         if (HaveLayerParameterModifier(PrintParameterModifier.LiftSpeed))
                             tw.WriteLine($"{nameof(layer.LiftSpeed)}: {layer.LiftSpeed}");
+                        if (HaveLayerParameterModifier(PrintParameterModifier.WaitTimeAfterLift))
+                            tw.WriteLine($"{nameof(layer.WaitTimeAfterLift)}: {layer.WaitTimeAfterLift}");
                         if (HaveLayerParameterModifier(PrintParameterModifier.RetractSpeed))
                             tw.WriteLine($"{nameof(layer.RetractSpeed)}: {layer.RetractSpeed}");
                         if (HaveLayerParameterModifier(PrintParameterModifier.LightPWM))
@@ -1782,16 +1975,6 @@ namespace UVtools.Core.FileFormats
                 PrintParameterModifier.BottomLayerCount.Value = BottomLayerCount;
             }
 
-            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomExposureSeconds))
-            {
-                PrintParameterModifier.BottomExposureSeconds.Value = (decimal) BottomExposureTime;
-            }
-
-            if (PrintParameterModifiers.Contains(PrintParameterModifier.ExposureSeconds))
-            {
-                PrintParameterModifier.ExposureSeconds.Value = (decimal)ExposureTime;
-            }
-
             if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLightOffDelay))
             {
                 PrintParameterModifier.BottomLightOffDelay.Value = (decimal)BottomLightOffDelay;
@@ -1800,6 +1983,36 @@ namespace UVtools.Core.FileFormats
             if (PrintParameterModifiers.Contains(PrintParameterModifier.LightOffDelay))
             {
                 PrintParameterModifier.LightOffDelay.Value = (decimal)LightOffDelay;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomWaitTimeBeforeCure))
+            {
+                PrintParameterModifier.BottomWaitTimeBeforeCure.Value = (decimal)BottomWaitTimeBeforeCure;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.WaitTimeBeforeCure))
+            {
+                PrintParameterModifier.WaitTimeBeforeCure.Value = (decimal)WaitTimeBeforeCure;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomExposureTime))
+            {
+                PrintParameterModifier.BottomExposureTime.Value = (decimal) BottomExposureTime;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.ExposureTime))
+            {
+                PrintParameterModifier.ExposureTime.Value = (decimal)ExposureTime;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomWaitTimeAfterCure))
+            {
+                PrintParameterModifier.BottomWaitTimeAfterCure.Value = (decimal)BottomWaitTimeAfterCure;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.WaitTimeAfterCure))
+            {
+                PrintParameterModifier.WaitTimeAfterCure.Value = (decimal)WaitTimeAfterCure;
             }
 
             if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLiftHeight))
@@ -1820,6 +2033,16 @@ namespace UVtools.Core.FileFormats
             if (PrintParameterModifiers.Contains(PrintParameterModifier.LiftSpeed))
             {
                 PrintParameterModifier.LiftSpeed.Value = (decimal)LiftSpeed;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomWaitTimeAfterLift))
+            {
+                PrintParameterModifier.BottomWaitTimeAfterLift.Value = (decimal)BottomWaitTimeAfterLift;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.WaitTimeAfterLift))
+            {
+                PrintParameterModifier.WaitTimeAfterLift.Value = (decimal)WaitTimeAfterLift;
             }
 
             if (PrintParameterModifiers.Contains(PrintParameterModifier.RetractSpeed))
@@ -1846,14 +2069,24 @@ namespace UVtools.Core.FileFormats
             if (PrintParameterPerLayerModifiers is null) return;
             var layer = this[layerIndex];
 
-            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.ExposureSeconds))
-            {
-                PrintParameterModifier.ExposureSeconds.Value = (decimal)layer.ExposureTime;
-            }
-
             if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LightOffDelay))
             {
                 PrintParameterModifier.LightOffDelay.Value = (decimal)layer.LightOffDelay;
+            }
+
+            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.WaitTimeBeforeCure))
+            {
+                PrintParameterModifier.WaitTimeBeforeCure.Value = (decimal)layer.WaitTimeBeforeCure;
+            }
+
+            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.ExposureTime))
+            {
+                PrintParameterModifier.ExposureTime.Value = (decimal)layer.ExposureTime;
+            }
+
+            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.WaitTimeAfterCure))
+            {
+                PrintParameterModifier.WaitTimeAfterCure.Value = (decimal)layer.WaitTimeAfterCure;
             }
 
             if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LiftHeight))
@@ -1864,6 +2097,11 @@ namespace UVtools.Core.FileFormats
             if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LiftSpeed))
             {
                 PrintParameterModifier.LiftSpeed.Value = (decimal)layer.LiftSpeed;
+            }
+
+            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.WaitTimeAfterLift))
+            {
+                PrintParameterModifier.WaitTimeAfterLift.Value = (decimal)layer.WaitTimeAfterLift;
             }
 
             if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.RetractSpeed))
@@ -1886,15 +2124,26 @@ namespace UVtools.Core.FileFormats
         {
             if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerCount))
                 return BottomLayerCount;
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomExposureSeconds))
-                return BottomExposureTime;
-            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
-                return ExposureTime;
 
             if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightOffDelay))
                 return BottomLightOffDelay;
             if (ReferenceEquals(modifier, PrintParameterModifier.LightOffDelay))
                 return LightOffDelay;
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomWaitTimeBeforeCure))
+                return BottomWaitTimeBeforeCure;
+            if (ReferenceEquals(modifier, PrintParameterModifier.WaitTimeBeforeCure))
+                return WaitTimeBeforeCure;
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomExposureTime))
+                return BottomExposureTime;
+            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureTime))
+                return ExposureTime;
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomWaitTimeAfterCure))
+                return BottomWaitTimeAfterCure;
+            if (ReferenceEquals(modifier, PrintParameterModifier.WaitTimeAfterCure))
+                return WaitTimeAfterCure;
 
             if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftHeight))
                 return BottomLiftHeight;
@@ -1904,6 +2153,12 @@ namespace UVtools.Core.FileFormats
                 return BottomLiftSpeed;
             if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed))
                 return LiftSpeed;
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomWaitTimeAfterLift))
+                return BottomWaitTimeAfterLift;
+            if (ReferenceEquals(modifier, PrintParameterModifier.WaitTimeAfterLift))
+                return WaitTimeAfterLift;
+
             if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
                 return RetractSpeed;
 
@@ -1928,25 +2183,48 @@ namespace UVtools.Core.FileFormats
                 BottomLayerCount = (ushort)value;
                 return true;
             }
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomExposureSeconds))
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightOffDelay))
+            {
+                BottomLightOffDelay = (float)value;
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.LightOffDelay))
+            {
+                LightOffDelay = (float)value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomWaitTimeBeforeCure))
+            {
+                BottomWaitTimeBeforeCure = (float)value;
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.WaitTimeBeforeCure))
+            {
+                WaitTimeBeforeCure = (float)value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomExposureTime))
             {
                 BottomExposureTime = (float) value;
                 return true;
             }
-            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureSeconds))
+            if (ReferenceEquals(modifier, PrintParameterModifier.ExposureTime))
             {
                 ExposureTime = (float) value;
                 return true;
             }
 
-            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightOffDelay))
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomWaitTimeAfterCure))
             {
-                BottomLightOffDelay = (float) value;
+                BottomWaitTimeAfterCure = (float)value;
                 return true;
             }
-            if (ReferenceEquals(modifier, PrintParameterModifier.LightOffDelay))
+            if (ReferenceEquals(modifier, PrintParameterModifier.WaitTimeAfterCure))
             {
-                LightOffDelay = (float) value;
+                WaitTimeAfterCure = (float)value;
                 return true;
             }
 
@@ -1970,6 +2248,18 @@ namespace UVtools.Core.FileFormats
                 LiftSpeed = (float) value;
                 return true;
             }
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomWaitTimeAfterLift))
+            {
+                BottomWaitTimeAfterLift = (float)value;
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.WaitTimeAfterLift))
+            {
+                WaitTimeAfterLift = (float)value;
+                return true;
+            }
+
             if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
             {
                 RetractSpeed = (float) value;
@@ -2017,8 +2307,16 @@ namespace UVtools.Core.FileFormats
 
         public bool SetNormalLightOffDelay(float extraTime = 0) => SetLightOffDelay(false, extraTime);
 
+        public float CalculateMotorMovementTime(bool isBottomLayer, float extraTime = 0)
+        {
+            return isBottomLayer
+                ? OperationCalculator.LightOffDelayC.CalculateSeconds(BottomLiftHeight, BottomLiftSpeed, RetractSpeed, extraTime)
+                : OperationCalculator.LightOffDelayC.CalculateSeconds(LiftHeight, LiftSpeed, RetractSpeed, extraTime);
+        }
+
         public float CalculateLightOffDelay(bool isBottomLayer, float extraTime = 0)
         {
+            if (SupportsGCode) return extraTime;
             return isBottomLayer 
                     ? OperationCalculator.LightOffDelayC.CalculateSeconds(BottomLiftHeight, BottomLiftSpeed, RetractSpeed, extraTime)
                     : OperationCalculator.LightOffDelayC.CalculateSeconds(LiftHeight, LiftSpeed, RetractSpeed, extraTime);
@@ -2104,18 +2402,29 @@ namespace UVtools.Core.FileFormats
                 slicerFile.DisplayHeight = DisplayHeight;
                 slicerFile.MachineZ = MachineZ;
                 slicerFile.MirrorDisplay = MirrorDisplay;
+
+                slicerFile.BottomLightOffDelay = BottomLightOffDelay;
+                slicerFile.LightOffDelay = LightOffDelay;
+
+                slicerFile.BottomWaitTimeBeforeCure = BottomWaitTimeBeforeCure;
+                slicerFile.WaitTimeBeforeCure = WaitTimeBeforeCure;
+
                 slicerFile.BottomExposureTime = BottomExposureTime;
                 slicerFile.ExposureTime = ExposureTime;
+
+                slicerFile.BottomWaitTimeAfterCure = BottomWaitTimeAfterCure;
+                slicerFile.WaitTimeAfterCure = WaitTimeAfterCure;
 
                 slicerFile.BottomLiftHeight = BottomLiftHeight;
                 slicerFile.LiftHeight = LiftHeight;
 
                 slicerFile.BottomLiftSpeed = BottomLiftSpeed;
                 slicerFile.LiftSpeed = LiftSpeed;
-                slicerFile.RetractSpeed = RetractSpeed;
 
-                slicerFile.BottomLightOffDelay = BottomLightOffDelay;
-                slicerFile.LightOffDelay = LightOffDelay;
+                slicerFile.BottomWaitTimeAfterLift = BottomWaitTimeAfterLift;
+                slicerFile.WaitTimeAfterLift = WaitTimeAfterLift;
+
+                slicerFile.RetractSpeed = RetractSpeed;
 
                 slicerFile.BottomLightPWM = BottomLightPWM;
                 slicerFile.LightPWM = LightPWM;
@@ -2210,6 +2519,13 @@ namespace UVtools.Core.FileFormats
         public void UpdatePrintTime()
         {
             PrintTime = PrintTimeComputed;
+            Debug.WriteLine($"Time updated: {_printTime}s");
+        }
+
+        public void UpdatePrintTimeQueued()
+        {
+            _queueTimerPrintTime.Stop();
+            _queueTimerPrintTime.Start();
         }
 
         #endregion

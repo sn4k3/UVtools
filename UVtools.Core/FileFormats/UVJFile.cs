@@ -135,11 +135,13 @@ namespace UVtools.Core.FileFormats
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
             PrintParameterModifier.BottomLayerCount,
-            PrintParameterModifier.BottomExposureSeconds,
-            PrintParameterModifier.ExposureSeconds,
 
             PrintParameterModifier.BottomLightOffDelay,
             PrintParameterModifier.LightOffDelay,
+
+            PrintParameterModifier.BottomExposureTime,
+            PrintParameterModifier.ExposureTime,
+
             PrintParameterModifier.BottomLiftHeight,
             PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
@@ -151,11 +153,12 @@ namespace UVtools.Core.FileFormats
         };
 
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
-            PrintParameterModifier.ExposureSeconds,
+            PrintParameterModifier.LightOffDelay,
+            PrintParameterModifier.ExposureTime,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
             PrintParameterModifier.RetractSpeed,
-            PrintParameterModifier.LightOffDelay,
+            
             
             PrintParameterModifier.BottomLightPWM,
             PrintParameterModifier.LightPWM,
@@ -242,6 +245,18 @@ namespace UVtools.Core.FileFormats
             set => base.BottomLayerCount = JsonSettings.Properties.Bottom.Count = value;
         }
 
+        public override float LightOffDelay
+        {
+            get => JsonSettings.Properties.Exposure.LightOffTime;
+            set => base.LightOffDelay = JsonSettings.Properties.Exposure.LightOffTime = (float)Math.Round(value, 2);
+        }
+
+        public override float BottomLiftHeight
+        {
+            get => JsonSettings.Properties.Bottom.LiftHeight;
+            set => base.BottomLiftHeight = JsonSettings.Properties.Bottom.LiftHeight = (float)Math.Round(value, 2);
+        }
+
         public override float BottomExposureTime
         {
             get => JsonSettings.Properties.Bottom.LightOnTime;
@@ -258,18 +273,6 @@ namespace UVtools.Core.FileFormats
         {
             get => JsonSettings.Properties.Bottom.LightOffTime;
             set => base.BottomLightOffDelay = JsonSettings.Properties.Bottom.LightOffTime = (float)Math.Round(value, 2);
-        }
-
-        public override float LightOffDelay
-        {
-            get => JsonSettings.Properties.Exposure.LightOffTime;
-            set => base.LightOffDelay = JsonSettings.Properties.Exposure.LightOffTime = (float)Math.Round(value, 2);
-        }
-
-        public override float BottomLiftHeight
-        {
-            get => JsonSettings.Properties.Bottom.LiftHeight;
-            set => base.BottomLiftHeight = JsonSettings.Properties.Bottom.LiftHeight = (float)Math.Round(value, 2);
         }
 
         public override float LiftHeight

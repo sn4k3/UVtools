@@ -973,6 +973,13 @@ namespace UVtools.Core.FileFormats
                     LiftSpeed = layerData.Parent[layerIndex].LiftSpeed;
                     RetractSpeed = layerData.Parent[layerIndex].RetractSpeed;
                     LightPWM = layerData.Parent[layerIndex].LightPWM;
+
+                    if (layerData.Parent.HeaderSettings.Version >= 4)
+                    {
+                        RestTimeAfterRetract = layerData.Parent[layerIndex].WaitTimeBeforeCure;
+                        RestTimeBeforeLift = layerData.Parent[layerIndex].WaitTimeAfterCure;
+                        RestTimeAfterLift = layerData.Parent[layerIndex].WaitTimeAfterLift;
+                    }
                 }
 
                 if (layerData.DataSize > 0)
@@ -1063,41 +1070,101 @@ namespace UVtools.Core.FileFormats
             new("photon", "Chitubox Photon"),
         };
 
-        public override PrintParameterModifier[] PrintParameterModifiers { get; } =
+        public override PrintParameterModifier[] PrintParameterModifiers
         {
-            PrintParameterModifier.BottomLayerCount,
-            PrintParameterModifier.BottomExposureSeconds,
-            PrintParameterModifier.ExposureSeconds,
+            get
+            {
+                if (HeaderSettings.Version >= 4)
+                {
+                    return new[]
+                    {
 
-            PrintParameterModifier.BottomLiftHeight,
-            PrintParameterModifier.BottomLiftSpeed,
-            PrintParameterModifier.LiftHeight,
-            PrintParameterModifier.LiftSpeed,
-            PrintParameterModifier.RetractSpeed,
-            PrintParameterModifier.BottomLightOffDelay,
-            PrintParameterModifier.LightOffDelay,
+                        PrintParameterModifier.BottomLayerCount,
 
-            PrintParameterModifier.BottomLightPWM,
-            PrintParameterModifier.LightPWM,
-        };
+                        PrintParameterModifier.BottomLightOffDelay,
+                        PrintParameterModifier.LightOffDelay,
+
+                        //PrintParameterModifier.BottomWaitTimeBeforeCure,
+                        PrintParameterModifier.WaitTimeBeforeCure,
+
+                        PrintParameterModifier.BottomExposureTime,
+                        PrintParameterModifier.ExposureTime,
+
+                        //PrintParameterModifier.BottomWaitTimeAfterCure,
+                        PrintParameterModifier.WaitTimeAfterCure,
+
+                        PrintParameterModifier.BottomLiftHeight,
+                        PrintParameterModifier.BottomLiftSpeed,
+                        PrintParameterModifier.LiftHeight,
+                        PrintParameterModifier.LiftSpeed,
+
+                        //PrintParameterModifier.BottomWaitTimeAfterLift,
+                        PrintParameterModifier.WaitTimeAfterLift,
+
+                        PrintParameterModifier.RetractSpeed,
+
+                        PrintParameterModifier.BottomLightPWM,
+                        PrintParameterModifier.LightPWM,
+                    };
+                }
+
+                return new[]
+                {
+
+                    PrintParameterModifier.BottomLayerCount,
+
+                    PrintParameterModifier.BottomLightOffDelay,
+                    PrintParameterModifier.LightOffDelay,
+                    PrintParameterModifier.BottomExposureTime,
+                    PrintParameterModifier.ExposureTime,
+
+                    PrintParameterModifier.BottomLiftHeight,
+                    PrintParameterModifier.BottomLiftSpeed,
+                    PrintParameterModifier.LiftHeight,
+                    PrintParameterModifier.LiftSpeed,
+                    PrintParameterModifier.RetractSpeed,
+
+
+                    PrintParameterModifier.BottomLightPWM,
+                    PrintParameterModifier.LightPWM,
+                };
+            }
+        }
+
+
 
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers {
             get
             {
                 if (!IsCbtFile) return null; // Only ctb files
-                if (HeaderSettings.Version >= 3)
+                if (HeaderSettings.Version == 3)
                 {
                     return new[]
                     {
-                        PrintParameterModifier.ExposureSeconds,
+                        PrintParameterModifier.LightOffDelay,
+                        PrintParameterModifier.ExposureTime,
                         PrintParameterModifier.LiftHeight,
                         PrintParameterModifier.LiftSpeed,
                         PrintParameterModifier.RetractSpeed,
-                        PrintParameterModifier.LightOffDelay,
                         PrintParameterModifier.LightPWM,
                     };
                 }
-                
+                if (HeaderSettings.Version >= 4)
+                {
+                    return new[]
+                    {
+                        PrintParameterModifier.LightOffDelay,
+                        PrintParameterModifier.WaitTimeBeforeCure,
+                        PrintParameterModifier.ExposureTime,
+                        PrintParameterModifier.WaitTimeAfterCure,
+                        PrintParameterModifier.LiftHeight,
+                        PrintParameterModifier.LiftSpeed,
+                        PrintParameterModifier.WaitTimeAfterLift,
+                        PrintParameterModifier.RetractSpeed,
+                        PrintParameterModifier.LightPWM,
+                    };
+                }
+
                 /* Disable for v2 beside the fields on format they are not used
                  if (HeaderSettings.Version <= 2)
                 {
@@ -1224,18 +1291,6 @@ namespace UVtools.Core.FileFormats
             set => base.BottomLayerCount = (ushort) (HeaderSettings.BottomLayersCount = value);
         }
 
-        public override float BottomExposureTime
-        {
-            get => HeaderSettings.BottomExposureSeconds;
-            set => base.BottomExposureTime = HeaderSettings.BottomExposureSeconds = (float) Math.Round(value, 2);
-        }
-
-        public override float ExposureTime
-        {
-            get => HeaderSettings.LayerExposureSeconds;
-            set => base.ExposureTime = HeaderSettings.LayerExposureSeconds = (float)Math.Round(value, 2);
-        }
-
         public override float BottomLightOffDelay
         {
             get => PrintParametersSettings.BottomLightOffDelay;
@@ -1246,6 +1301,40 @@ namespace UVtools.Core.FileFormats
         {
             get => PrintParametersSettings.LightOffDelay;
             set => base.LightOffDelay = HeaderSettings.LightOffDelay = PrintParametersSettings.LightOffDelay = (float)Math.Round(value, 2);
+        }
+
+        public override float BottomWaitTimeBeforeCure => WaitTimeBeforeCure;
+        public override float WaitTimeBeforeCure
+        {
+            get => HeaderSettings.Version >= 4 ? PrintParametersV4Settings.RestTimeAfterRetract : 0;
+            set
+            {
+                if (HeaderSettings.Version < 4) return;
+                base.WaitTimeBeforeCure = SlicerInfoSettings.RestTimeAfterRetract = PrintParametersV4Settings.RestTimeAfterRetract = (float)Math.Round(value, 2);
+            }
+        }
+
+        public override float BottomExposureTime
+        {
+            get => HeaderSettings.BottomExposureSeconds;
+            set => base.BottomExposureTime = HeaderSettings.BottomExposureSeconds = (float) Math.Round(value, 2);
+        }
+
+        public override float BottomWaitTimeAfterCure => WaitTimeAfterCure;
+        public override float WaitTimeAfterCure
+        {
+            get => HeaderSettings.Version >= 4 ? PrintParametersV4Settings.RestTimeBeforeLift : 0;
+            set
+            {
+                if (HeaderSettings.Version < 4) return;
+                base.WaitTimeAfterCure = PrintParametersV4Settings.RestTimeBeforeLift = (float)Math.Round(value, 2);
+            }
+        }
+
+        public override float ExposureTime
+        {
+            get => HeaderSettings.LayerExposureSeconds;
+            set => base.ExposureTime = HeaderSettings.LayerExposureSeconds = (float)Math.Round(value, 2);
         }
 
         public override float BottomLiftHeight
@@ -1270,6 +1359,17 @@ namespace UVtools.Core.FileFormats
         {
             get => PrintParametersSettings.LiftSpeed;
             set => base.LiftSpeed = PrintParametersSettings.LiftSpeed = (float)Math.Round(value, 2);
+        }
+
+        public override float BottomWaitTimeAfterLift => WaitTimeAfterLift;
+        public override float WaitTimeAfterLift
+        {
+            get => HeaderSettings.Version >= 4 ? PrintParametersV4Settings.RestTimeAfterLift : 0;
+            set
+            {
+                if (HeaderSettings.Version < 4) return;
+                base.WaitTimeAfterLift = SlicerInfoSettings.RestTimeAfterLift = SlicerInfoSettings.RestTimeAfterLift2 = PrintParametersV4Settings.RestTimeAfterLift = (float)Math.Round(value, 2);
+            }
         }
 
         public override float RetractSpeed
@@ -1715,6 +1815,13 @@ namespace UVtools.Core.FileFormats
                     layer.LiftSpeed = LayerDefinitionsEx[layerIndex].LiftSpeed;
                     layer.RetractSpeed = LayerDefinitionsEx[layerIndex].RetractSpeed;
                     layer.LightPWM = (byte) LayerDefinitionsEx[layerIndex].LightPWM;
+
+                    if (HeaderSettings.Version >= 4)
+                    {
+                        layer.WaitTimeBeforeCure = LayerDefinitionsEx[layerIndex].RestTimeAfterRetract;
+                        layer.WaitTimeAfterCure = LayerDefinitionsEx[layerIndex].RestTimeBeforeLift;
+                        layer.WaitTimeAfterLift = LayerDefinitionsEx[layerIndex].RestTimeAfterLift;
+                    }
                 }
 
                 this[layerIndex] = layer;

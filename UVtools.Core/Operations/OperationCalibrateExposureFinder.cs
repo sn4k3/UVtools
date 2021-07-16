@@ -1165,7 +1165,7 @@ namespace UVtools.Core.Operations
 
             if (_multipleExposuresBaseLayersCustomExposure <= 0) _multipleExposuresBaseLayersCustomExposure = (decimal)SlicerFile.ExposureTime;
 
-            if (!SlicerFile.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.ExposureSeconds))
+            if (!SlicerFile.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.ExposureTime))
             {
                 _multipleLayerHeight = false;
                 _multipleExposures = false;
