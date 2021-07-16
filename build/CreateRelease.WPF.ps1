@@ -32,9 +32,9 @@ Set-Location $PSScriptRoot\..
 ####################################
 ###         Configuration        ###
 ####################################
-#$enableMSI = $true
+$enableMSI = $true
 #$buildOnly = 'linux-x64'
-$buildOnly = 'osx-x64'
+#$buildOnly = 'osx-x64'
 #$enableNugetPublish = $true
 # Profilling
 $stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
