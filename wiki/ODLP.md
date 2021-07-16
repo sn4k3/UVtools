@@ -41,13 +41,13 @@ While this is optional and either way it must be valid to print, is highly recom
 # Draft 1
 
 ```ini
-[FILE]
+[File]
 Marker=ODLPTiCo (char[8]) Extra validation beside file extension, constant
 Version=1 (ushort) File format revision
 ModifiedTime=1626451007 (uint) UNIX Timestamp when file gets modified
 ModifiedBy=UVtools v2.15.0\0\0\0\0\0\0\0.. (char[50] fixed!) program/slicer who last modified the file
 
-[HEADER]
+[Header]
 HeaderTableSize=sizeof(header) (uint), including headersize field
 MachineZ=130.00 (float)
 DisplayWidth=68.04 (float)
