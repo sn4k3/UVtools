@@ -30,6 +30,10 @@ a ZIP + PNG slices approach due the incapacity of CPU to process such data schem
 **Note:** Printer only continue to execute the next gcode command after the image is displayed/buffered. 
 When using a sencond board to display the image, it must send a OK back in order to resume the gcode execution.
 
+## Software data adquisiton
+
+For slicers and other programs, data and per layer settings should be parsed from gcode.
+
 ## In file optimizations
 
 1. When generating the file, layers that share the same image data, may reuse that data instead of duplicate the image. 
@@ -48,7 +52,7 @@ ModifiedTime=1626451007 (uint) UNIX Timestamp when file gets modified
 ModifiedBy=UVtools v2.15.0\0\0\0\0\0\0\0.. (char[50] fixed!) program/slicer who last modified the file
 
 [Header]
-HeaderTableSize=sizeof(header) (uint), including headersize field
+HeaderTableSize=sizeof(header) (uint), excluding this field
 MachineZ=130.00 (float)
 DisplayWidth=68.04 (float)
 DisplayHeight=120.96 (float)
@@ -74,30 +78,30 @@ CustomTableSize=4 (uint) Number reserved of bytes for a custom table, this can b
 ExampleOfCustomField=4 (uint)
 
 [Preview 1]
-PreviewTableSize=12 (uint), including PreviewTableSize field and exclude image data size
+PreviewTableSize=8 (uint), Size of table excluding this field
 ResolutionX=400 (ushort)
 ResolutionY=400 (ushort)
 PreviewDataSize=sizeof(DATA) (uint)
 RLE/RGB16/PNG/JPG/BITMAP
 
 [Preview 2]
-PreviewTableSize=8 (uint), including PreviewTableSize field and exclude image data size
+PreviewTableSize=8 (uint), Size of table excluding this field
 ResolutionX=400 (ushort)
-ResolutionY=400 (ushort)
+ResolutionY=800 (ushort)
 PreviewDataSize=sizeof(DATA) (uint)
 RLE/RGB16/PNG/JPG/BITMAP
 
 [LayerDefinitions]
 [Layer 1]
-LayerTableSize=8 (uint), including LayerTableSize field and exclude image data size
+LayerTableSize=4 (uint), Size of table excluding this field
 DataAddress=0000
 
 [Layer 2]
-LayerTableSize=8 (uint), including LayerTableSize field and exclude image data size
+LayerTableSize=4 (uint), Size of table excluding this field
 DataAddress=1111
 
 [Layer 3]
-LayerTableSize=8 (uint), including LayerTableSize field and exclude image data size
+LayerTableSize=4 (uint), Size of table excluding this field
 DataAddress=1111 (Identical layers can point to the same data if they share the same image, sparing space on file)
 
 DataSize=sizeof(RLE) (uint)
@@ -141,4 +145,4 @@ M18;Disable motors
 
 Notes:
 1) Previews start address = file table size + header table size + custom table size
-2) File header dont need much information, everything can be parsed from gcode!
+2) Header dont need much information, everything can be parsed from gcode!
