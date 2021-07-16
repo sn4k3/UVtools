@@ -35,8 +35,8 @@ While this is optional and either way it must be valid to print, is highly recom
 ```
 #[HEADER]
 Marker=ODLPTiCo (char[8]) Extra validation beside file extension, constant
-Version=1 (ushort)
-MachineZ=130 (float)
+Version=1 (ushort) File format revision
+MachineZ=130.00 (float)
 DisplayWidth=68.04 (float)
 DisplayHeight=120.96 (float)
 ResolutionX=1080 (uint)
