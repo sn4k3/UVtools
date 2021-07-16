@@ -75,7 +75,7 @@ MachineName=Phrozen Sonic Mini (string)
 CustomTableSize=4 (uint) Number reserved of bytes for a custom table, this can be used for custom use of each brand, but not important for general file format
 # This can be used to store slicer specific settings or additional information
 # Still both printer and software must not depend on this
-ExampleOfCustomField=4 (uint)
+ExampleOfCustomField=1001 (uint)
 
 [Preview 1]
 PreviewTableSize=8 (uint), Size of table excluding this field
