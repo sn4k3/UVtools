@@ -13,6 +13,7 @@ a ZIP + PNG slices approach due the incapacity of CPU to process such data schem
 - Machine follows gcode commands
 
 ## Printer firmware checks (can print this file?)
+1. Marker == "ODLPTiCo" - This double check if file is really a .odlp beside it extension
 1. Compare machine resolution with file resoltuion
 2. Can use ImageDataType? For example, if processor is unable to process PNG images, trigger an error and dont allow to continue
 3. Parse gcode and check for problems, such as, print on a position out of printer Z range
@@ -21,11 +22,19 @@ a ZIP + PNG slices approach due the incapacity of CPU to process such data schem
 
 1. On gcode, when machine firmware detects M6054, it goes to the layer table at layer x index given by the command and gets the layer data to buffer the image
 
+## In file optimizations
+
+1. When generating the file, layers that share the same image data, must reuse that data instead of duplicate the image. 
+This allow to spare a good amount of data when file contains multiple layers that share same image over and over, for example, functional parts.
+See example on file sample bellow at `[Layer 3]`.
+While this is optional and either way it must be valid to print, is highly recommended to hash the layers.
+
 
 # Draft 1
 
 ```
 #[HEADER]
+Marker=ODLPTiCo (char[8]) Extra validation beside file extension, constant
 Version=1 (ushort)
 MachineZ=130 (float)
 DisplayWidth=68.04 (float)
@@ -67,11 +76,18 @@ RLE/PNG/JPG/BITMAP
 #[LayerDefinitions]
 #[Layer 1]
 DataSize=sizeof(LAYER_DATA) (uint)
-RLE/PNG/JPG/BITMAP
+DataAddress=0000
 
 #[Layer 2]
 DataSize=sizeof(LAYER_DATA) (uint)
-RLE/PNG/JPG/BITMAP
+DataAddress=1111
+
+#[Layer 3]
+DataSize=sizeof(LAYER_DATA) (uint)
+DataAddress=1111 (Identical layers can point to the same data if they share the same image, sparing space on file)
+
+RLE/PNG/JPG/BITMAP of layer 1
+RLE/PNG/JPG/BITMAP of layer 2
 
 [GCode] (text - dynamic size)
 ;START_GCODE_BEGIN
