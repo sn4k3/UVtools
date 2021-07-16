@@ -10,10 +10,12 @@ a ZIP + PNG slices approach due the incapacity of CPU to process such data schem
 - Universal: the file and revisions should always be compatible with any firmware that take this file
 - No encrypted files: The data should be plain and easy to access
 - No property or changed variant of the file format should exists!
+- Machine follows gcode commands
 
 ## Printer firmware checks (can print this file?)
-1. Compare resolution
+1. Compare machine resolution with file resoltuion
 2. Can use ImageDataType? For example, if processor is unable to process PNG images, trigger an error and dont allow to continue
+3. Parse gcode and check for problems, such as, print on a position out of printer Z range
 
 ## Printer firmware layer data adquisiton
 
