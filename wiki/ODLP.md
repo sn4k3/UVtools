@@ -1,4 +1,4 @@
-# Open source and universal file format for mSLA/DLP (.odlp)
+# Open source and universal binnary file format for mSLA/DLP (.odlp)
 
 This file format aims for simplicity and universal file format for low-end printers that can't take
 a ZIP + PNG slices approach due the incapacity of CPU to process such data schemes.
