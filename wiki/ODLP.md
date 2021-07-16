@@ -41,9 +41,14 @@ While this is optional and either way it must be valid to print, is highly recom
 # Draft 1
 
 ```ini
-[HEADER]
-Marker=ODLPTiCo # (char[8]) Extra validation beside file extension, constant
+[FILE]
+Marker=ODLPTiCo (char[8]) Extra validation beside file extension, constant
 Version=1 (ushort) File format revision
+ModifiedTime=1626451007 (uint) UNIX Timestamp when file gets modified
+ModifiedBy=UVtools v2.15.0\0\0\0\0\0\0\0.. (char[50] fixed!) program/slicer who last modified the file
+
+[HEADER]
+HeaderTableSize=sizeof(header) (uint), including headersize field
 MachineZ=130.00 (float)
 DisplayWidth=68.04 (float)
 DisplayHeight=120.96 (float)
@@ -53,58 +58,57 @@ MirrorX=1 (byte) 0 = false | 1 = true
 MirrorY=0 (byte) 0 = false | 1 = true
 PreviewDataType=RGB16\0\0\0 (char[8]) compressed image data type, eg: RLE-XXX or RGB16 or PNG or JPG or BITMAP OR other?
 LayerDataType=PNG\0\0\0\0\0 (char[8]) compressed image data type, eg: RLE-XXX or PNG or JPG or BITMAP OR other?
-CustomTableSize=4 (uint) Number reserved of bytes for a custom table, this can be used for custom use of each brand, but not important for general file format
 NumberOfPreviews=2 (byte) Number of previews/thumbnails on this file
 LayerCount=1000 (uint) Total number of layers
 LayerDefinitionsAddress=00000 (uint) Address for layer definition
 GCodeAddress=000000 (uint) gcode text address, size = Total file size - GCodeAddress
-GCodeSize=sizeof(gcode) (uint) gcode text length
-FileUpdateTime=1626451007 (uint) UNIX Timestamp
-ModifiedBySize=sizeof(ModifiedBy) (uint)
-MachineNameSize=sizeof(MachineName) (ushort)
-ReservedBytes=000000000 (byte[512]) Reserved for future revisions of the file format
-# Down to this point everything is static size
-
 # Dynamic text fields
-ModifiedBy=UVtools v2.15.0 (text) program/slicer who last modified the file
+MachineNameSize=sizeof(MachineName) (ushort)
 MachineName=Phrozen Sonic Mini (string)
+# HEADER ends here
 
 [CustomTable]
+CustomTableSize=4 (uint) Number reserved of bytes for a custom table, this can be used for custom use of each brand, but not important for general file format
 # This can be used to store slicer specific settings or additional information
 # Still both printer and software must not depend on this
 ExampleOfCustomField=4 (uint)
 
 [Preview 1]
+PreviewTableSize=12 (uint), including PreviewTableSize field and exclude image data size
 ResolutionX=400 (ushort)
 ResolutionY=400 (ushort)
 PreviewDataSize=sizeof(DATA) (uint)
-ReservedBytes=00000000 (byte[32]) Reserved 32 bytes / 4 uints for future use
 RLE/RGB16/PNG/JPG/BITMAP
 
 [Preview 2]
+PreviewTableSize=8 (uint), including PreviewTableSize field and exclude image data size
 ResolutionX=400 (ushort)
 ResolutionY=400 (ushort)
 PreviewDataSize=sizeof(DATA) (uint)
-ReservedBytes=00000000 (byte[32]) Reserved 32 bytes / 4 uints for future use
 RLE/RGB16/PNG/JPG/BITMAP
 
 [LayerDefinitions]
 [Layer 1]
-DataSize=sizeof(LAYER_DATA) (uint)
+LayerTableSize=8 (uint), including LayerTableSize field and exclude image data size
 DataAddress=0000
 
 [Layer 2]
-DataSize=sizeof(LAYER_DATA) (uint)
+LayerTableSize=8 (uint), including LayerTableSize field and exclude image data size
 DataAddress=1111
 
 [Layer 3]
-DataSize=sizeof(LAYER_DATA) (uint)
+LayerTableSize=8 (uint), including LayerTableSize field and exclude image data size
 DataAddress=1111 (Identical layers can point to the same data if they share the same image, sparing space on file)
 
+DataSize=sizeof(RLE) (uint)
 RLE/PNG/JPG/BITMAP of layer 1
+
+DataSize=sizeof(RLE) (uint)
 RLE/PNG/JPG/BITMAP of layer 2
 
-[GCode] (raw text - dynamic size)
+[GCode]
+GCodeSize=sizeof(gcode) (uint) gcode text length
+# Following by raw text
 ;START_GCODE_BEGIN
 G21;Set units to be mm
 G90;Absolute positioning
@@ -136,5 +140,5 @@ M18;Disable motors
 
 
 Notes:
-1) Previews start address = header size + custom table size
+1) Previews start address = file table size + header table size + custom table size
 2) File header dont need much information, everything can be parsed from gcode!
