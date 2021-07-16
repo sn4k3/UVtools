@@ -13,7 +13,7 @@ a ZIP + PNG slices approach due the incapacity of CPU to process such data schem
 - Machine follows gcode commands
 
 ## Printer firmware checks (can print this file?)
-1. Marker == "ODLPTiCo" - This double check if file is really a .odlp beside it extension
+1. Marker == "ODLPTiCo" - This is a double check if file is really a .odlp beside it extension, case sensitive compare
 1. Compare machine resolution with file resoltuion
 2. Can use ImageDataType? For example, if processor is unable to process PNG images, trigger an error and dont allow to continue
 3. Parse gcode and check for problems, such as, print on a position out of printer Z range
