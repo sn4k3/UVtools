@@ -4,7 +4,7 @@
 
 - **File formats:**
    - (Add) Wait time before cure: The time to rest/wait in seconds before cure a new layer
-   - (Add) Wait time before after: The time to rest/wait in seconds after cure a new layer
+   - (Add) Wait time after cure: The time to rest/wait in seconds after cure a new layer
    - (Add) Wait time after lift: The time to rest/wait in seconds after a lift/peel move
    - (Change) All gcode file formats dropped light-off delay field in favor of new 'Wait time before cure' field, setting light-off delay still valid but it redirects to the new field
    - (Change) Reorder 'Light-off delay' before 'Exposure time'
