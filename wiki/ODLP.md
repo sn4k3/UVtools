@@ -1,12 +1,15 @@
 # Open source and universal file format for mSLA/DLP (.odlp)
 
+This file format aims for simplicity and universal file format for low-end printers that can't take
+a ZIP + PNG slices approach due the incapacity of CPU to process such data schemes.
+
 ## Implementation requesites
 
 - Open-source file format
 - Document the changes and revisions, as well the reserved table if any
 - Universal: the file and revisions should always be compatible with any firmware that take this file
 - No encrypted files: The data should be plain and easy to access
-- No property or changed variant of the file format shoud exists!
+- No property or changed variant of the file format should exists!
 
 ## Printer firmware checks (can print this file?)
 1. Compare resolution
