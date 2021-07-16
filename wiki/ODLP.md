@@ -24,7 +24,7 @@ a ZIP + PNG slices approach due the incapacity of CPU to process such data schem
 
 ## In file optimizations
 
-1. When generating the file, layers that share the same image data, must reuse that data instead of duplicate the image. 
+1. When generating the file, layers that share the same image data, may reuse that data instead of duplicate the image. 
 This allow to spare a good amount of data when file contains multiple layers that share same image over and over, for example, functional parts.
 See example on file sample bellow at `[Layer 3]`.
 While this is optional and either way it must be valid to print, is highly recommended to hash the layers.
