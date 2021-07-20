@@ -384,6 +384,8 @@ brew install libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 brew analytics off
 brew cask install dotnet
+brew install --cask dotnet-sdk
+brew install git cmake libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb mono mono-libgdiplus libusb
 ```
 -->
 
@@ -401,8 +403,7 @@ To run UVtools open it folder on a terminal and call one of:
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 brew analytics off
-brew install git cmake libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb mono mono-libgdiplus libusb
-brew install --cask dotnet-sdk
+brew install git cmake mono mono-libgdiplus
 git clone https://github.com/emgucv/emgucv emgucv 
 cd emgucv
 git submodule update --init --recursive

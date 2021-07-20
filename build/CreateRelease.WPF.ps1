@@ -122,7 +122,7 @@ $runtimes =
     "osx-x64" = @{
         "extraCmd" = "-p:PublishReadyToRun=true"
         "exclude" = @()
-        "include" = @("libcvextern.dylib", "libusb-1.0.0.dylib")
+        "include" = @("libcvextern.dylib")
     }
 }
 
