@@ -11,6 +11,7 @@
    - When positively set any of the light-off delays on a CTBv4 it will auto zero the 'Wait times' properties and vice-versa
    - Automation to set light-off delay on file load, will no longer do when any of 'Wait times' are defined for a CTBv4
 - (Improvement) PrusaSlicer printers that use .cws format, implement the wait times on printer notes
+- (Upgrade) .NET from 5.0.7 to 5.0.8
 - (Fix) GCode parser: Commented commands were being parsed
 - (Fix) Exposure time information on bottom status bar was inverted, showing normal/bottom time instead of bottom/normal
 - (Fix) macOS: Installing libusb is no longer a requirement
