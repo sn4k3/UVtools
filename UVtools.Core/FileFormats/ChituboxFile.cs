@@ -1294,13 +1294,31 @@ namespace UVtools.Core.FileFormats
         public override float BottomLightOffDelay
         {
             get => PrintParametersSettings.BottomLightOffDelay;
-            set => base.BottomLightOffDelay = PrintParametersSettings.BottomLightOffDelay = (float)Math.Round(value, 2);
+            set
+            {
+                base.BottomLightOffDelay = PrintParametersSettings.BottomLightOffDelay = (float) Math.Round(value, 2);
+                if (HeaderSettings.Version >= 4 && value > 0)
+                {
+                    WaitTimeBeforeCure = 0;
+                    WaitTimeAfterCure = 0;
+                    WaitTimeAfterLift = 0;
+                }
+            }
         }
 
         public override float LightOffDelay
         {
             get => PrintParametersSettings.LightOffDelay;
-            set => base.LightOffDelay = HeaderSettings.LightOffDelay = PrintParametersSettings.LightOffDelay = (float)Math.Round(value, 2);
+            set
+            {
+                base.LightOffDelay = HeaderSettings.LightOffDelay = PrintParametersSettings.LightOffDelay = (float) Math.Round(value, 2);
+                if (HeaderSettings.Version >= 4 && value > 0)
+                {
+                    WaitTimeBeforeCure = 0;
+                    WaitTimeAfterCure = 0;
+                    WaitTimeAfterLift = 0;
+                }
+            }
         }
 
         public override float BottomWaitTimeBeforeCure => WaitTimeBeforeCure;
@@ -1309,8 +1327,22 @@ namespace UVtools.Core.FileFormats
             get => HeaderSettings.Version >= 4 ? PrintParametersV4Settings.RestTimeAfterRetract : 0;
             set
             {
-                if (HeaderSettings.Version < 4) return;
+                if (HeaderSettings.Version < 4)
+                {
+                    if (value > 0)
+                    {
+                        SetBottomLightOffDelay(value);
+                        SetNormalLightOffDelay(value);
+                    }
+
+                    return;
+                }
                 base.WaitTimeBeforeCure = SlicerInfoSettings.RestTimeAfterRetract = PrintParametersV4Settings.RestTimeAfterRetract = (float)Math.Round(value, 2);
+                if (value > 0)
+                {
+                    BottomLightOffDelay = 0;
+                    LightOffDelay = 0;
+                }
             }
         }
 
@@ -1327,7 +1359,12 @@ namespace UVtools.Core.FileFormats
             set
             {
                 if (HeaderSettings.Version < 4) return;
-                base.WaitTimeAfterCure = PrintParametersV4Settings.RestTimeBeforeLift = (float)Math.Round(value, 2);
+                base.WaitTimeAfterCure = PrintParametersV4Settings.RestTimeBeforeLift = (float) Math.Round(value, 2);
+                if (value > 0)
+                {
+                    BottomLightOffDelay = 0;
+                    LightOffDelay = 0;
+                }
             }
         }
 
@@ -1369,6 +1406,11 @@ namespace UVtools.Core.FileFormats
             {
                 if (HeaderSettings.Version < 4) return;
                 base.WaitTimeAfterLift = SlicerInfoSettings.RestTimeAfterLift = SlicerInfoSettings.RestTimeAfterLift2 = PrintParametersV4Settings.RestTimeAfterLift = (float)Math.Round(value, 2);
+                if (value > 0)
+                {
+                    BottomLightOffDelay = 0;
+                    LightOffDelay = 0;
+                }
             }
         }
 

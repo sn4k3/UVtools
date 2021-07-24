@@ -1079,12 +1079,12 @@ namespace UVtools.Core.FileFormats
 
                 if (CanUseBottomExposureTime)
                 {
-                    str += ExposureTime.ToString(CultureInfo.InvariantCulture);
+                    str += BottomExposureTime.ToString(CultureInfo.InvariantCulture);
                 }
                 if (CanUseExposureTime)
                 {
                     if (!string.IsNullOrEmpty(str)) str += '/';
-                    str += BottomExposureTime.ToString(CultureInfo.InvariantCulture);
+                    str += ExposureTime.ToString(CultureInfo.InvariantCulture);
                 }
 
                 if (!string.IsNullOrEmpty(str)) str += 's';

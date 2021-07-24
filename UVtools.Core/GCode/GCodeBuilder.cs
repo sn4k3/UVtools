@@ -19,6 +19,7 @@ using Org.BouncyCastle.Asn1.Cms;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
+using UVtools.Core.Operations;
 
 namespace UVtools.Core.GCode
 {
@@ -98,12 +99,14 @@ namespace UVtools.Core.GCode
         #region Members
         private readonly StringBuilder _gcode = new();
 
-        private bool _useTailComma = true;
-        private bool _useComments = true;
+       
         private GCodePositioningTypes _gCodePositioningType = GCodePositioningTypes.Absolute;
         private GCodeTimeUnits _gCodeTimeUnit = GCodeTimeUnits.Milliseconds;
         private GCodeSpeedUnits _gCodeSpeedUnit = GCodeSpeedUnits.MillimetersPerMinute;
         private GCodeShowImageTypes _gCodeShowImageType = GCodeShowImageTypes.FilenameNonZeroPNG;
+        private bool _syncMovementsWithDelay;
+        private bool _useTailComma = true;
+        private bool _useComments = true;
         private ushort _maxLedPower = byte.MaxValue;
         private uint _lineCount;
         private GCodeMoveCommands _layerMoveCommand;
@@ -147,6 +150,12 @@ namespace UVtools.Core.GCode
         {
             get => _endGCodeMoveCommand;
             set => RaiseAndSetIfChanged(ref _endGCodeMoveCommand, value);
+        }
+
+        public bool SyncMovementsWithDelay
+        {
+            get => _syncMovementsWithDelay;
+            set => RaiseAndSetIfChanged(ref _syncMovementsWithDelay, value);
         }
 
         public bool UseTailComma
@@ -384,12 +393,12 @@ namespace UVtools.Core.GCode
                 AppendMoveG1(z, feedRate);
         }
 
-        public void AppendLiftMoveGx(float upZ, float upFeedRate, float downZ, float downFeedRate, float waitAfterLift = 0, float waitAfterRetract = 0)
+        public void AppendLiftMoveGx(float upZ, float upFeedRate, float downZ, float downFeedRate, float waitAfterLift = 0, float waitAfterRetract = 0, Layer layer = null)
         {
             if (_layerMoveCommand == GCodeMoveCommands.G0)
-                AppendLiftMoveG0(upZ, upFeedRate, downZ, downFeedRate, waitAfterLift, waitAfterRetract);
+                AppendLiftMoveG0(upZ, upFeedRate, downZ, downFeedRate, waitAfterLift, waitAfterRetract, layer);
             else
-                AppendLiftMoveG1(upZ, upFeedRate, downZ, downFeedRate, waitAfterLift, waitAfterRetract);
+                AppendLiftMoveG1(upZ, upFeedRate, downZ, downFeedRate, waitAfterLift, waitAfterRetract, layer);
         }
 
 
@@ -399,10 +408,17 @@ namespace UVtools.Core.GCode
             AppendLine(CommandMoveG0, z, feedRate);
         }
 
-        public void AppendLiftMoveG0(float upZ, float upFeedRate, float downZ, float downFeedRate, float waitAfterLift = 0, float waitAfterRetract = 0)
+        public void AppendLiftMoveG0(float upZ, float upFeedRate, float downZ, float downFeedRate, float waitAfterLift = 0, float waitAfterRetract = 0, Layer layer = null)
         {
             if (upZ == 0 || upFeedRate <= 0) return;
             AppendLineOverrideComment(CommandMoveG0, "Z Lift", upZ, upFeedRate); // Z Lift
+            if (_syncMovementsWithDelay && layer is not null)
+            {
+                // Finish this
+                var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(layer.LiftHeight, layer.LiftSpeed, 0.75f);
+                var time = ConvertFromSeconds(seconds);
+                AppendWaitG4($"0{time}", "Sync movement");
+            }
 
             if (waitAfterLift > 0)
             {
@@ -412,6 +428,13 @@ namespace UVtools.Core.GCode
             if (downZ != 0 && downFeedRate > 0)
             {
                 AppendLineOverrideComment(CommandMoveG0, "Retract to layer height", downZ, downFeedRate);
+                if (_syncMovementsWithDelay && layer is not null)
+                {
+                    // Finish this
+                    var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(layer.LiftHeight, layer.RetractSpeed, 0.75f);
+                    var time = ConvertFromSeconds(seconds);
+                    AppendWaitG4($"0{time}", "Sync movement");
+                }
             }
 
             if (waitAfterRetract > 0)
@@ -426,10 +449,20 @@ namespace UVtools.Core.GCode
             AppendLine(CommandMoveG1, z, feedRate);
         }
 
-        public void AppendLiftMoveG1(float upZ, float upFeedRate, float downZ, float downFeedRate, float waitAfterLift = 0, float waitAfterRetract = 0)
+        public void AppendLiftMoveG1(float upZ, float upFeedRate, float downZ, float downFeedRate, float waitAfterLift = 0, float waitAfterRetract = 0, Layer layer = null)
         {
             if (upZ == 0 || upFeedRate <= 0) return;
             AppendLineOverrideComment(CommandMoveG1, "Lift Z", upZ, upFeedRate); // Z Lift
+            if (_syncMovementsWithDelay && layer is not null)
+            {
+                // Finish this
+                var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(layer.LiftHeight, layer.LiftSpeed, 0.75f);
+                if (seconds > layer.WaitTimeAfterLift) // Fix if wait time already include this
+                {
+                    var time = ConvertFromSeconds(seconds);
+                    AppendWaitG4($"0{time}", "Sync movement");
+                }
+            }
 
             if (waitAfterLift > 0)
             {
@@ -439,6 +472,16 @@ namespace UVtools.Core.GCode
             if (downZ != 0 && downFeedRate > 0)
             {
                 AppendLineOverrideComment(CommandMoveG1, "Retract to layer height", downZ, downFeedRate);
+                if (_syncMovementsWithDelay && layer is not null)
+                {
+                    // Finish this
+                    var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(layer.LiftHeight, layer.RetractSpeed, 0.75f);
+                    if (seconds > layer.WaitTimeBeforeCure) // Fix if wait time already include this
+                    {
+                        var time = ConvertFromSeconds(seconds);
+                        AppendWaitG4($"0{time}", "Sync movement");
+                    }
+                }
             }
 
             if (waitAfterRetract > 0)
@@ -451,6 +494,13 @@ namespace UVtools.Core.GCode
         {
             if (time < 0) return;
             AppendLineOverrideComment(CommandWaitG4, comment, time);
+        }
+
+        public void AppendWaitG4(string timeStr, string comment = null)
+        {
+            if (!float.TryParse(timeStr, out var time)) return;
+            if (time < 0) return;
+            AppendLineOverrideComment(CommandWaitG4, comment, timeStr);
         }
 
         public void AppendTurnLightM106(ushort value)
@@ -560,7 +610,7 @@ namespace UVtools.Core.GCode
 
                 if (liftHeight > 0 && liftZPosAbs > layer.PositionZ)
                 {
-                    AppendLiftMoveGx(liftZPos, liftSpeed, retractPos, retractSpeed, waitAfterLift);
+                    AppendLiftMoveGx(liftZPos, liftSpeed, retractPos, retractSpeed, waitAfterLift, 0, layer);
                 }
                 else if (lastZPosition < layer.PositionZ) // Ensure Z is on correct position
                 {
@@ -675,7 +725,8 @@ namespace UVtools.Core.GCode
             string line;
             while ((line = reader.ReadLine()) != null)
             {
-                if(string.IsNullOrWhiteSpace(line)) continue;
+                line = line.Trim();
+                if (string.IsNullOrWhiteSpace(line)) continue;
                 
                 // Search for and switch position type when needed
                 if (line.StartsWith(CommandPositioningAbsoluteG90.Command))
@@ -690,145 +741,174 @@ namespace UVtools.Core.GCode
                     continue;
                 }
 
-                var match = Regex.Match(line, CommandShowImageM6054.ToStringWithoutComments(GetShowImageString(@"(\d+)")), RegexOptions.IgnoreCase);
-                if (match.Success && match.Groups.Count >= 2) // Begin new layer
+                Match match = null;
+
+                // Display image
+                if (line.StartsWith(CommandShowImageM6054.Command))
                 {
-                    var layerIndex = uint.Parse(match.Groups[1].Value);
-                    if (_gCodeShowImageType is GCodeShowImageTypes.FilenameNonZeroPNG or GCodeShowImageTypes.LayerIndexNonZero) layerIndex--;
-                    if (layerIndex > slicerFile.LayerCount)
+                    match = Regex.Match(line, 
+                        CommandShowImageM6054.ToStringWithoutComments(GetShowImageString(@"(\d+)")),
+                        RegexOptions.IgnoreCase);
+                    if (match.Success && match.Groups.Count >= 2) // Begin new layer
                     {
-                        throw new FileLoadException($"GCode parser detected the layer {layerIndex}, but the file was sliced to {slicerFile.LayerCount} layers.", slicerFile.FileFullPath);
+                        var layerIndex = uint.Parse(match.Groups[1].Value);
+                        if (_gCodeShowImageType is GCodeShowImageTypes.FilenameNonZeroPNG or GCodeShowImageTypes
+                            .LayerIndexNonZero) layerIndex--;
+                        if (layerIndex > slicerFile.LayerCount)
+                        {
+                            throw new FileLoadException(
+                                $"GCode parser detected the layer {layerIndex}, but the file was sliced to {slicerFile.LayerCount} layers.",
+                                slicerFile.FileFullPath);
+                        }
+
+                        // Propagate values before switch to the new layer
+                        layerBlock.PositionZ ??= positionZ;
+                        layerBlock.SetLayer();
+
+                        layerBlock.Init();
+                        layerBlock.LayerIndex = layerIndex;
+
+                        continue;
                     }
-
-                    // Propagate values before switch to the new layer
-                    layerBlock.PositionZ ??= positionZ;
-                    layerBlock.SetLayer();
-
-                    layerBlock.Init();
-                    layerBlock.LayerIndex = layerIndex;
-
-                    continue;
                 }
 
                 if (!layerBlock.IsValid) continue; // No layer yet found to work on, skip
 
-
                 // Check moves
-                var moveG0Regex = Regex.Match(line, CommandMoveG0.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(([0-9]*[.])?[0-9]+)"), RegexOptions.IgnoreCase);
-                var moveG1Regex = Regex.Match(line, CommandMoveG1.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(([0-9]*[.])?[0-9]+)"), RegexOptions.IgnoreCase);
-                match = moveG0Regex.Success && moveG0Regex.Groups.Count >= 2 ? moveG0Regex : moveG1Regex;
-
-                if (match.Success && match.Groups.Count >= 4 && !layerBlock.RetractSpeed.HasValue)
+                if (line.StartsWith(CommandMoveG0.Command) || line.StartsWith(CommandMoveG1.Command))
                 {
-                    float pos = float.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
-                    float speed = ConvertToMillimetersPerMinute(float.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture));
+                    var moveG0Regex = Regex.Match(line,
+                        CommandMoveG0.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(([0-9]*[.])?[0-9]+)"),
+                        RegexOptions.IgnoreCase);
+                    var moveG1Regex = Regex.Match(line,
+                        CommandMoveG1.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(([0-9]*[.])?[0-9]+)"),
+                        RegexOptions.IgnoreCase);
+                    match = moveG0Regex.Success && moveG0Regex.Groups.Count >= 2 ? moveG0Regex : moveG1Regex;
 
-                    if (!layerBlock.PositionZ.HasValue) // Lift or pos, set here for now
+                    if (match.Success && match.Groups.Count >= 4 && !layerBlock.RetractSpeed.HasValue)
                     {
+                        float pos = float.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+                        float speed = ConvertToMillimetersPerMinute(float.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture));
+
+                        if (!layerBlock.PositionZ.HasValue) // Lift or pos, set here for now
+                        {
+                            switch (positionType)
+                            {
+                                case GCodePositioningTypes.Absolute:
+                                    layerBlock.PositionZ = pos;
+                                    break;
+                                case GCodePositioningTypes.Partial:
+                                    layerBlock.PositionZ = Layer.RoundHeight(positionZ + pos);
+                                    break;
+                            }
+
+                            layerBlock.LiftSpeed = speed;
+                            continue;
+                        }
+
+
+                        // ~90% sure its retract here, still is possible to bug this with 2 lifts
+                        layerBlock.RetractSpeed = speed;
+
                         switch (positionType)
                         {
                             case GCodePositioningTypes.Absolute:
-                                layerBlock.PositionZ = pos;
+                                layerBlock.LiftHeight = Layer.RoundHeight(layerBlock.PositionZ.Value - pos);
+                                layerBlock.PositionZ = positionZ = pos;
                                 break;
                             case GCodePositioningTypes.Partial:
-                                layerBlock.PositionZ = Layer.RoundHeight(positionZ + pos);
+                                layerBlock.LiftHeight = layerBlock.PositionZ - positionZ;
+                                layerBlock.PositionZ = positionZ = Layer.RoundHeight(layerBlock.PositionZ.Value + pos);
                                 break;
                         }
 
-                        layerBlock.LiftSpeed = speed;
                         continue;
                     }
-                    
-                    
-                    // ~90% sure its retract here, still is possible to bug this with 2 lifts
-                    layerBlock.RetractSpeed = speed;
-                    
-                    switch (positionType)
-                    {
-                        case GCodePositioningTypes.Absolute:
-                            layerBlock.LiftHeight = Layer.RoundHeight(layerBlock.PositionZ.Value - pos);
-                            layerBlock.PositionZ = positionZ = pos;
-                            break;
-                        case GCodePositioningTypes.Partial:
-                            layerBlock.LiftHeight = layerBlock.PositionZ - positionZ;
-                            layerBlock.PositionZ = positionZ = Layer.RoundHeight(layerBlock.PositionZ.Value + pos);
-                            break;
-                    }
-
-                    continue;
                 }
 
                 // Check for waits 
-                match = Regex.Match(line, CommandWaitG4.ToStringWithoutComments(@"(([0-9]*[.])?[0-9]+)"), RegexOptions.IgnoreCase);
-                if (match.Success && match.Groups.Count >= 2)
+                if (line.StartsWith(CommandWaitG4.Command))
                 {
-                    var waitTime = float.Parse(match.Groups[1].Value);
-
-                    if (layerBlock.PositionZ.HasValue && !layerBlock.RetractSpeed.HasValue) // Must be wait time after lift, if not, don't blame me!
+                    match = Regex.Match(line, CommandWaitG4.ToStringWithoutComments(@"(([0-9]*[.])?[0-9]+)"),
+                        RegexOptions.IgnoreCase);
+                    if (match.Success && match.Groups.Count >= 2)
                     {
-                        layerBlock.WaitTimeAfterLift ??= 0;
-                        layerBlock.WaitTimeAfterLift += ConvertToSeconds(waitTime);
-                        continue;
-                    }
+                        if (_syncMovementsWithDelay && match.Groups[1].Value.StartsWith('0')) continue; // Sync movement delay, skip
 
-                    if (!layerBlock.LightPWM.HasValue) // Before cure
-                    {
-                        layerBlock.WaitTimeBeforeCure ??= 0;
-                        layerBlock.WaitTimeBeforeCure += ConvertToSeconds(waitTime);
-                        continue;
-                    }
+                        var waitTime = float.Parse(match.Groups[1].Value);
 
-                    if (layerBlock.IsExposing) // Must be exposure time, if not, don't blame me!
-                    {
-                        layerBlock.ExposureTime ??= 0;
-                        layerBlock.ExposureTime += ConvertToSeconds(waitTime);
-                        continue;
-                    }
+                        if (layerBlock.PositionZ.HasValue &&
+                            !layerBlock.RetractSpeed.HasValue) // Must be wait time after lift, if not, don't blame me!
+                        {
+                            layerBlock.WaitTimeAfterLift ??= 0;
+                            layerBlock.WaitTimeAfterLift += ConvertToSeconds(waitTime);
+                            continue;
+                        }
 
-                    if (layerBlock.IsAfterLightOff)
-                    {
-                        if (!layerBlock.WaitTimeBeforeCure.HasValue) // Novamaker fix, delay on last line, broke logic but safer
+                        if (!layerBlock.LightPWM.HasValue) // Before cure
                         {
                             layerBlock.WaitTimeBeforeCure ??= 0;
                             layerBlock.WaitTimeBeforeCure += ConvertToSeconds(waitTime);
+                            continue;
                         }
-                        else
+
+                        if (layerBlock.IsExposing) // Must be exposure time, if not, don't blame me!
                         {
-                            layerBlock.WaitTimeAfterCure ??= 0;
-                            layerBlock.WaitTimeAfterCure += ConvertToSeconds(waitTime);
+                            layerBlock.ExposureTime ??= 0;
+                            layerBlock.ExposureTime += ConvertToSeconds(waitTime);
+                            continue;
                         }
-                        
+
+                        if (layerBlock.IsAfterLightOff)
+                        {
+                            if (!layerBlock.WaitTimeBeforeCure
+                                .HasValue) // Novamaker fix, delay on last line, broke logic but safer
+                            {
+                                layerBlock.WaitTimeBeforeCure ??= 0;
+                                layerBlock.WaitTimeBeforeCure += ConvertToSeconds(waitTime);
+                            }
+                            else
+                            {
+                                layerBlock.WaitTimeAfterCure ??= 0;
+                                layerBlock.WaitTimeAfterCure += ConvertToSeconds(waitTime);
+                            }
+
+                            continue;
+                        }
+
                         continue;
                     }
-
-                    continue;
                 }
 
                 // Check LightPWM
-                match = Regex.Match(line, CommandTurnLEDM106.ToStringWithoutComments(@"(\d+)"), RegexOptions.IgnoreCase);
-                if (match.Success && match.Groups.Count >= 2)
+                if (line.StartsWith(CommandTurnLEDM106.Command))
                 {
-                    byte pwm;
-                    if (_maxLedPower == byte.MaxValue)
+                    match = Regex.Match(line, CommandTurnLEDM106.ToStringWithoutComments(@"(\d+)"),
+                        RegexOptions.IgnoreCase);
+                    if (match.Success && match.Groups.Count >= 2)
                     {
-                        pwm = byte.Parse(match.Groups[1].Value);
-                    }
-                    else
-                    {
-                        ushort pwmValue = ushort.Parse(match.Groups[1].Value);
-                        pwm = (byte)(pwmValue * byte.MaxValue / _maxLedPower);
-                    }
+                        byte pwm;
+                        if (_maxLedPower == byte.MaxValue)
+                        {
+                            pwm = byte.Parse(match.Groups[1].Value);
+                        }
+                        else
+                        {
+                            ushort pwmValue = ushort.Parse(match.Groups[1].Value);
+                            pwm = (byte) (pwmValue * byte.MaxValue / _maxLedPower);
+                        }
 
-                    if (pwm == 0 && layerBlock.LightPWM.HasValue)
-                    {
-                        layerBlock.IsAfterLightOff = true;
-                    }
-                    else if(!layerBlock.IsAfterLightOff)
-                    {
-                        layerBlock.LightPWM = pwm;
-                    }
+                        if (pwm == 0 && layerBlock.LightPWM.HasValue)
+                        {
+                            layerBlock.IsAfterLightOff = true;
+                        }
+                        else if (!layerBlock.IsAfterLightOff)
+                        {
+                            layerBlock.LightPWM = pwm;
+                        }
 
-                    continue;
+                        continue;
+                    }
                 }
             }
 

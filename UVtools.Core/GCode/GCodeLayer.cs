@@ -8,6 +8,7 @@
 
 using System;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Operations;
 
 namespace UVtools.Core.GCode
 {
@@ -118,6 +119,15 @@ namespace UVtools.Core.GCode
             layer.WaitTimeAfterLift = WaitTimeAfterLift ?? 0;
             layer.RetractSpeed = RetractSpeed ?? SlicerFile.RetractSpeed;
             layer.LightPWM = LightPWM ?? SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
+
+            if (SlicerFile.GCode.SyncMovementsWithDelay) // Dirty fix of the value
+            {
+                var syncTime = OperationCalculator.LightOffDelayC.CalculateSeconds(layer.LiftHeight, layer.LiftSpeed, layer.RetractSpeed, 1.5f);
+                if (syncTime < layer.WaitTimeBeforeCure)
+                {
+                    layer.WaitTimeBeforeCure = (float) Math.Round(layer.WaitTimeBeforeCure - syncTime, 2);
+                }
+            }
         }
     }
 }

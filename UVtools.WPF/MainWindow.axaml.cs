@@ -1125,33 +1125,52 @@ namespace UVtools.WPF
                 SlicerFile.CanUseBottomLightOffDelay &&
                 (Settings.Automations.ChangeOnlyLightOffDelayIfZero && SlicerFile.BottomLightOffDelay == 0 || !Settings.Automations.ChangeOnlyLightOffDelayIfZero))
             {
-                float lightOff = Settings.Automations.LightOffDelaySetMode switch
+                if (SlicerFile is ChituboxFile chituboxFile &&
+                    chituboxFile.HeaderSettings.Version >= 4 && 
+                    (chituboxFile.WaitTimeBeforeCure > 0 || chituboxFile.WaitTimeAfterCure > 0 || chituboxFile.WaitTimeAfterLift > 0))
                 {
-                    Enumerations.LightOffDelaySetMode.UpdateWithExtraDelay => SlicerFile.CalculateBottomLightOffDelay((float) Settings.Automations.BottomLightOffDelay),
-                    Enumerations.LightOffDelaySetMode.UpdateWithoutExtraDelay => SlicerFile.CalculateBottomLightOffDelay(),
-                    _ => 0
-                };
-                if (lightOff != SlicerFile.BottomLightOffDelay)
-                {
-                    modified = true;
-                    SlicerFile.BottomLightOffDelay = lightOff;
+                    // Ignore this automation
                 }
+                else
+                {
+                    float lightOff = Settings.Automations.LightOffDelaySetMode switch
+                    {
+                        Enumerations.LightOffDelaySetMode.UpdateWithExtraDelay => SlicerFile.CalculateBottomLightOffDelay((float)Settings.Automations.BottomLightOffDelay),
+                        Enumerations.LightOffDelaySetMode.UpdateWithoutExtraDelay => SlicerFile.CalculateBottomLightOffDelay(),
+                        _ => 0
+                    };
+                    if (lightOff != SlicerFile.BottomLightOffDelay)
+                    {
+                        modified = true;
+                        SlicerFile.BottomLightOffDelay = lightOff;
+                    }
+                }
+                
             }
 
             if (Settings.Automations.LightOffDelaySetMode != Enumerations.LightOffDelaySetMode.NoAction &&
                 SlicerFile.CanUseLightOffDelay &&
                 (Settings.Automations.ChangeOnlyLightOffDelayIfZero && SlicerFile.LightOffDelay == 0 || !Settings.Automations.ChangeOnlyLightOffDelayIfZero))
             {
-                float lightOff = Settings.Automations.LightOffDelaySetMode switch
+                if (SlicerFile is ChituboxFile chituboxFile &&
+                    chituboxFile.HeaderSettings.Version >= 4 &&
+                    (chituboxFile.WaitTimeBeforeCure > 0 || chituboxFile.WaitTimeAfterCure > 0 || chituboxFile.WaitTimeAfterLift > 0))
                 {
-                    Enumerations.LightOffDelaySetMode.UpdateWithExtraDelay => SlicerFile.CalculateNormalLightOffDelay((float)Settings.Automations.LightOffDelay),
-                    Enumerations.LightOffDelaySetMode.UpdateWithoutExtraDelay => SlicerFile.CalculateNormalLightOffDelay(),
-                    _ => 0
-                };
-                if (lightOff != SlicerFile.LightOffDelay)
+                    // Ignore this automation
+                }
+                else
                 {
-                    modified = true;
-                    SlicerFile.LightOffDelay = lightOff;
+                    float lightOff = Settings.Automations.LightOffDelaySetMode switch
+                    {
+                        Enumerations.LightOffDelaySetMode.UpdateWithExtraDelay => SlicerFile.CalculateNormalLightOffDelay((float)Settings.Automations.LightOffDelay),
+                        Enumerations.LightOffDelaySetMode.UpdateWithoutExtraDelay => SlicerFile.CalculateNormalLightOffDelay(),
+                        _ => 0
+                    };
+                    if (lightOff != SlicerFile.LightOffDelay)
+                    {
+                        modified = true;
+                        SlicerFile.LightOffDelay = lightOff;
+                    }
                 }
             }
 

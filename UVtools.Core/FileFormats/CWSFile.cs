@@ -18,7 +18,6 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
 using UVtools.Core.Operations;
@@ -310,8 +309,8 @@ namespace UVtools.Core.FileFormats
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
             PrintParameterModifier.BottomLayerCount,
 
-            PrintParameterModifier.BottomLightOffDelay,
-            PrintParameterModifier.LightOffDelay,
+            //PrintParameterModifier.BottomLightOffDelay,
+            //PrintParameterModifier.LightOffDelay,
 
             PrintParameterModifier.BottomWaitTimeBeforeCure,
             PrintParameterModifier.WaitTimeBeforeCure,
@@ -347,7 +346,7 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LightPWM,
         };
 
-        public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } = null;
+        public override System.Drawing.Size[] ThumbnailsOriginalSize => null;
 
         public override uint ResolutionX
         {
@@ -542,6 +541,7 @@ namespace UVtools.Core.FileFormats
         {
             GCode = new GCodeBuilder
             {
+                SyncMovementsWithDelay = true,
                 UseComments = true,
                 GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Partial,
                 GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.MillimetersPerMinute,

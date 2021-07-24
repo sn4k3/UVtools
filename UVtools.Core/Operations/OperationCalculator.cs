@@ -271,23 +271,35 @@ namespace UVtools.Core.Operations
                 _bottomWaitTime = bottomWaitTime;
             }
 
-            public static decimal CalculateSeconds(decimal liftHeight, decimal liftSpeed, decimal retract, decimal waitTime = 0)
+            public static decimal CalculateSeconds(decimal liftHeight, decimal liftSpeed, decimal retractSpeed, decimal extraWaitTime = 0)
             {
-                try
+                var time = extraWaitTime;
+                if (liftSpeed > 0)
                 {
-                    return Math.Round(liftHeight / (liftSpeed / 60m) + liftHeight / (retract / 60m) + waitTime, 2);
+                    time += liftHeight / (liftSpeed / 60m);
                 }
-                catch (Exception)
+                if (retractSpeed > 0)
                 {
-                    return 0;
+                    time += liftHeight / (retractSpeed / 60m);
                 }
+                
+                return Math.Round(time, 2);
             }
 
-            public static float CalculateSeconds(float liftHeight, float liftSpeed, float retract, float extraWaitTime = 0)
+            public static float CalculateSeconds(float liftHeight, float liftSpeed, float retractSpeed, float extraWaitTime = 0)
             {
-                if (liftSpeed == 0 || retract == 0) return extraWaitTime;
-                return (float) Math.Round(liftHeight / (liftSpeed / 60f) + liftHeight / (retract / 60f) + extraWaitTime, 2);
-                
+                var time = extraWaitTime;
+                if (liftSpeed > 0)
+                {
+                    time += liftHeight / (liftSpeed / 60f);
+                }
+                if (retractSpeed > 0)
+                {
+                    time += liftHeight / (retractSpeed / 60f);
+                }
+
+                return (float)Math.Round(time, 2);
+
             }
 
             public static uint CalculateMilliseconds(float liftHeight, float liftSpeed, float retract, float extraWaitTime = 0) =>
@@ -296,15 +308,8 @@ namespace UVtools.Core.Operations
 
             public static float CalculateSecondsLiftOnly(float liftHeight, float liftSpeed, float extraWaitTime = 0)
             {
-                try
-                {
-                    return (float)Math.Round(liftHeight / (liftSpeed / 60f) + extraWaitTime, 2);
-                }
-                catch (Exception)
-                {
-                    return 0;
-                }
-
+                if (liftSpeed <= 0) return extraWaitTime;
+                return (float)Math.Round(liftHeight / (liftSpeed / 60f) + extraWaitTime, 2);
             }
 
             public static uint CalculateMillisecondsLiftOnly(float liftHeight, float liftSpeed, float extraWaitTime = 0) =>

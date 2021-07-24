@@ -1,5 +1,20 @@
 # Changelog
 
+## 24/07/2021 - v2.15.1
+
+- **(Improvement) CWS:**
+   - Remove light-off delay from the format
+   - Sync movements with a delay time
+   - Auto convert the light-off delay time to wait before cure time when required
+- **(Improvement) CTB:**
+   - When positively set the 'Wait time before cure' property on a CTBv3 or lower, it will compute the right light-off delay with that extra time into consideration
+   - When positively set any of the light-off delays on a CTBv4 it will auto zero the 'Wait times' properties and vice-versa
+   - Automation to set light-off delay on file load, will no longer do when any of 'Wait times' are defined for a CTBv4
+- (Improvement) PrusaSlicer printers that use .cws format, implement the wait times on printer notes
+- (Fix) GCode parser: Commented commands were being parsed
+- (Fix) Exposure time information on bottom status bar was inverted, showing normal/bottom time instead of bottom/normal
+- (Fix) macOS: Installing libusb is no longer a requirement
+
 ## 16/07/2021 - v2.15.0
 
 - **File formats:**
