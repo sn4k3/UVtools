@@ -9,8 +9,9 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolIPrintedThisFileControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationIPrintedThisFile(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

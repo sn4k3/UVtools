@@ -19,17 +19,9 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolPatternControl()
         {
+            BaseOperation = new OperationPattern(SlicerFile, App.MainWindow.ROI);
+            if (!ValidateSpawn()) return;
             InitializeComponent();
-            var roi = App.MainWindow.ROI;
-            BaseOperation = new OperationPattern(SlicerFile, roi);
-
-            if (Operation.MaxRows < 2 && Operation.MaxCols < 2)
-            {
-                App.MainWindow.MessageBoxInfo("The available free volume is not enough to pattern this object.\n" +
-                                              "To run this tool the free space must allow at least 1 copy.", "Unable to pattern");
-                CanRun = false;
-                return;
-            }
         }
 
         private void InitializeComponent()

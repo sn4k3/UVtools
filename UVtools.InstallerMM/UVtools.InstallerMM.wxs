@@ -900,6 +900,9 @@
               <Component Id="owc1C3DE0BEF10A5791E37D4C3D97AED5E1" Guid="b1851a14-1200-d448-1acd-b229bf6ac918">
                 <File Id="owf1C3DE0BEF10A5791E37D4C3D97AED5E1" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon.ini" KeyPath="yes" />
               </Component>
+              <Component Id="owcD9B52941C3B939A8B3215DD20CF242D0" Guid="19f42433-a592-01d2-ece1-41f37945261d">
+                <File Id="owfD9B52941C3B939A8B3215DD20CF242D0" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Creality HALOT-MAX CL-133.ini" KeyPath="yes" />
+              </Component>
               <Component Id="owc64BDFB521E8E34CAE3547B3D1B8F3996" Guid="71d86e2a-c6b7-884a-65ff-2260e4edd56f">
                 <File Id="owf64BDFB521E8E34CAE3547B3D1B8F3996" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Creality HALOT-ONE CL-60.ini" KeyPath="yes" />
               </Component>
@@ -969,8 +972,29 @@
               <Component Id="owc60E90B40E8992C21339B84C28DFE9891" Guid="e8e24d92-2cb1-0bec-3963-817532a4c171">
                 <File Id="owf60E90B40E8992C21339B84C28DFE9891" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Bene4 Mono.ini" KeyPath="yes" />
               </Component>
+              <Component Id="owcC502436F48FF41D38156813AD32AAC8D" Guid="89478893-b2a3-a64b-c27a-0d99e3dce4d8">
+                <File Id="owfC502436F48FF41D38156813AD32AAC8D" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Bene4.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc99B5CFB726FA398251B212CEECF36083" Guid="f94cafa3-bc47-9bc0-350b-5eeb40679c36">
+                <File Id="owf99B5CFB726FA398251B212CEECF36083" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Bene5.ini" KeyPath="yes" />
+              </Component>
               <Component Id="owc2D13CB27790279041B7046CCA000768B" Guid="c27b7fdd-753f-0d08-6310-6ecef6ae4fa4">
                 <File Id="owf2D13CB27790279041B7046CCA000768B" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Elfin.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc5012419DCAC6A0DF4B7E37C7691031EB" Guid="ddeea951-7f98-641a-9af5-fc8371c1aef0">
+                <File Id="owf5012419DCAC6A0DF4B7E37C7691031EB" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Elfin2 Mono SE.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc25A67BA4D2E63BC50D256F00A5E60BA2" Guid="8158f079-73e1-238f-4b6b-fcee7f48c8ce">
+                <File Id="owf25A67BA4D2E63BC50D256F00A5E60BA2" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Elfin2.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcAAD60F81138D7049AF41740104BCAB41" Guid="090fee7f-9e2b-d016-c83b-7b98e33999b5">
+                <File Id="owfAAD60F81138D7049AF41740104BCAB41" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Elfin3 Mini.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcA250307D58F323E1C6DC46EA020395EE" Guid="c83aaa8a-e13b-ac0e-7640-4d50b88a60ef">
+                <File Id="owfA250307D58F323E1C6DC46EA020395EE" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Whale.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcDCAE3DE6C60367FB788A82F49EEE1A5A" Guid="c3be403f-2f35-cbf7-d36c-948f227dce15">
+                <File Id="owfDCAE3DE6C60367FB788A82F49EEE1A5A" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Whale2.ini" KeyPath="yes" />
               </Component>
               <Component Id="owc66B3B56E9ED020CAA7BBA3FAC953C136" Guid="cffd69b2-fd9b-7837-4f02-4bf3f71ec59f">
                 <File Id="owf66B3B56E9ED020CAA7BBA3FAC953C136" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Peopoly Phenom L.ini" KeyPath="yes" />

@@ -1,7 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
-using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools
 {
@@ -12,8 +11,10 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolBlurControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationBlur(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
+            
             _kernelCtrl = this.Find<KernelControl>("KernelCtrl");
         }
 

@@ -36,9 +36,10 @@ namespace UVtools.WPF.Controls.Calibrators
 
         public CalibrateXYZAccuracyControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationCalibrateXYZAccuracy(SlicerFile);
-
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
+            
             _timer = new Timer(20)
             {
                 AutoReset = false

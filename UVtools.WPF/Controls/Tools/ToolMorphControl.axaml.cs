@@ -12,8 +12,9 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolMorphControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationMorph(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
             _kernelCtrl = this.Find<KernelControl>("KernelCtrl");
         }
 

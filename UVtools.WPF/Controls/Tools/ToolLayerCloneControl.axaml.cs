@@ -32,8 +32,9 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolLayerCloneControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationLayerClone(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

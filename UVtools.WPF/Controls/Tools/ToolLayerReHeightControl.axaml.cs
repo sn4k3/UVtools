@@ -1,6 +1,5 @@
 ﻿using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
-using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF.Controls.Tools
 {
@@ -12,14 +11,10 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolLayerReHeightControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationLayerReHeight(SlicerFile);
-            if (Operation.SelectedItem is null)
-            {
-                App.MainWindow.MessageBoxInfo("No valid configuration to be able to re-height.\n" +
-                                              "As workaround clone first or last layer and try re run this tool.", "Not possible to re-height");
-                CanRun = false;
-            }
+            if (!ValidateSpawn()) return;
+
+            InitializeComponent();
         }
 
         private void InitializeComponent()

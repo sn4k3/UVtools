@@ -12,8 +12,9 @@ namespace UVtools.WPF.Controls.Tools
         public OperationLayerExportHeatMap Operation => BaseOperation as OperationLayerExportHeatMap;
         public ToolLayerExportHeatMapControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationLayerExportHeatMap(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

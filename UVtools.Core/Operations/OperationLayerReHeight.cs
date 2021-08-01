@@ -61,6 +61,17 @@ namespace UVtools.Core.Operations
 
         public override bool CanHaveProfiles => false;
 
+        public override string ValidateSpawn()
+        {
+            if (Presets is null || Presets.Length == 0)
+            {
+                return "No valid configuration to be able to re-height.\n" +
+                       "As workaround clone first or last layer and try re run this tool.";
+            }
+
+            return null;
+        }
+
         public override string ValidateInternally()
         {
             var sb = new StringBuilder();

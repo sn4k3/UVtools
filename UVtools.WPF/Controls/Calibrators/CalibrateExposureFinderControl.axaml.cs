@@ -35,9 +35,12 @@ namespace UVtools.WPF.Controls.Calibrators
 
         public CalibrateExposureFinderControl()
         {
-            InitializeComponent();
-            _exposureTable = this.FindControl<DataGrid>("ExposureTable");
             BaseOperation = new OperationCalibrateExposureFinder(SlicerFile);
+            if (!ValidateSpawn()) return;
+
+            InitializeComponent();
+            
+            _exposureTable = this.FindControl<DataGrid>("ExposureTable");
 
             _timer = new Timer(100)
             {

@@ -24,10 +24,12 @@ namespace UVtools.WPF.Controls.Calibrators
         
         public CalibrateGrayscaleControl()
         {
+            BaseOperation = new OperationCalibrateGrayscale(SlicerFile);
+            if (!ValidateSpawn()) return;
+
             InitializeComponent();
 
-            BaseOperation = new OperationCalibrateGrayscale(SlicerFile);
-
+            
             _timer = new Timer(20)
             {
                 AutoReset = false

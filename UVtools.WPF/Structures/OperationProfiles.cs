@@ -39,6 +39,7 @@ namespace UVtools.WPF.Structures
         [XmlElement(typeof(OperationBlur))]
         [XmlElement(typeof(OperationDynamicLayerHeight))]
         [XmlElement(typeof(OperationDynamicLifts))]
+        [XmlElement(typeof(OperationRaiseOnPrintFinish))]
         [XmlElement(typeof(OperationChangeResolution))]
         
         [XmlElement(typeof(OperationLayerExportGif))]

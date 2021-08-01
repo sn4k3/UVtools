@@ -32,8 +32,9 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolLayerRemoveControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationLayerRemove(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

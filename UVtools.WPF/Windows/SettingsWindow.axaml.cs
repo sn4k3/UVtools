@@ -146,7 +146,7 @@ namespace UVtools.WPF.Windows
                 foreach (var propertyInfo in properties)
                 {
                     if (propertyInfo.Name != property) continue;
-                    var color = (Color)propertyInfo.GetValue(packObject, null) ?? new Color(0,255,255,255);
+                    var color = (Color)propertyInfo.GetValue(packObject, null) ?? new Color(255,255,255,255);
                     var window = new ColorPickerWindow(color.ToAvalonia());
                     var result = await window.ShowDialog<DialogResults>(this);
                     if (result != DialogResults.OK) return;

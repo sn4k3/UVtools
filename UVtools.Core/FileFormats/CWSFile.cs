@@ -580,11 +580,12 @@ namespace UVtools.Core.FileFormats
                 }
             }
 
-            var filename = Path.GetFileNameWithoutExtension(fileFullPath);
+            /*var filename = Path.GetFileNameWithoutExtension(fileFullPath);
             if (fileFullPath.EndsWith(TemporaryFileAppend))
             {
                 filename = Path.GetFileNameWithoutExtension(filename);
-            }
+            }*/
+            var filename = About.Software;
 
             if (char.IsDigit(filename[^1]))
             {
@@ -635,7 +636,7 @@ namespace UVtools.Core.FileFormats
                 foreach (var propertyInfo in SliceSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
                     var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
-                    if (ReferenceEquals(displayNameAttribute, null)) continue;
+                    if (displayNameAttribute is null) continue;
                     tw.WriteLine($"{displayNameAttribute.DisplayName.PadRight(24)}= {propertyInfo.GetValue(SliceSettings)}");
                 }
             }
@@ -815,7 +816,7 @@ namespace UVtools.Core.FileFormats
                 {
                     if (!pngEntry.Name.EndsWith(".png")) continue;
                     var filename = Path.GetFileNameWithoutExtension(pngEntry.Name).Replace(inputFilename, string.Empty, StringComparison.Ordinal);
-
+                    
                     var layerIndexStr = string.Empty;
                     var layerStr = filename;
                     for (int i = layerStr.Length - 1; i >= 0; i--)
@@ -881,7 +882,7 @@ namespace UVtools.Core.FileFormats
             foreach (var propertyInfo in OutputSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
-                if (ReferenceEquals(displayNameAttribute, null)) continue;
+                if (displayNameAttribute is null) continue;
                 if (propertyInfo.Name.Equals(nameof(OutputSettings.LayersNum)))
                 {
                     sb.AppendLine($";{displayNameAttribute.DisplayName} = {propertyInfo.GetValue(OutputSettings)}");
@@ -1011,21 +1012,18 @@ namespace UVtools.Core.FileFormats
                     foreach (var propertyInfo in SliceSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
                     {
                         var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
-                        if (ReferenceEquals(displayNameAttribute, null)) continue;
+                        if (displayNameAttribute is null) continue;
                         tw.WriteLine($"{displayNameAttribute.DisplayName.PadRight(24)}= {propertyInfo.GetValue(SliceSettings)}");
                     }
                 }
 
-
-                foreach (var zipentry in outputFile.Entries)
+                var entriesToRemove = outputFile.Entries.Where(zipEntry => zipEntry.Name.EndsWith(".gcode")).ToArray();
+                foreach (var zipEntry in entriesToRemove)
                 {
-                    if (zipentry.Name.EndsWith(".gcode"))
-                    {
-                        zipentry.Delete();
-                        break;
-                    }
+                    zipEntry.Delete();
                 }
-                outputFile.PutFileContent($"{Path.GetFileNameWithoutExtension(FileFullPath)}.gcode", GCodeStr, ZipArchiveMode.Update);
+
+                outputFile.PutFileContent($"{About.Software}.gcode", GCodeStr, ZipArchiveMode.Update);
 
                 /*foreach (var layer in this)
                 {

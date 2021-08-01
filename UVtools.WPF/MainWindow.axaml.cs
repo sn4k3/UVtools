@@ -233,6 +233,14 @@ namespace UVtools.WPF
             },
             new()
             {
+                Tag = new OperationRaiseOnPrintFinish(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/level-up-alt-16x16.png"))
+                }
+            },
+            new()
+            {
                 Tag = new OperationChangeResolution(),
                 Icon = new Avalonia.Controls.Image
                 {
@@ -567,7 +575,7 @@ namespace UVtools.WPF
             ProcessFiles(Program.Args);
             if (!IsFileLoaded && Settings.General.LoadDemoFileOnStartup)
             {
-                ProcessFile(About.DemoFile);
+                ProcessFile(Path.Combine(App.ApplicationPath, About.DemoFile));
             }
 
             DispatcherTimer.Run(() =>
@@ -906,7 +914,7 @@ namespace UVtools.WPF
                     $"{VersionChecker.Changelog}", $"Update UVtools to v{VersionChecker.Version}?", ButtonEnum.YesNoCancel);
 
 
-            if (result == ButtonResult.No || OperatingSystem.IsMacOS())
+            if (result == ButtonResult.No)
             {
                 App.OpenBrowser(VersionChecker.UrlLatestRelease);
                 return;

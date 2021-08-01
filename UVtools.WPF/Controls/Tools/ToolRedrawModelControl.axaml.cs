@@ -12,8 +12,9 @@ namespace UVtools.WPF.Controls.Tools
         public OperationRedrawModel Operation => BaseOperation as OperationRedrawModel;
         public ToolRedrawModelControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationRedrawModel(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

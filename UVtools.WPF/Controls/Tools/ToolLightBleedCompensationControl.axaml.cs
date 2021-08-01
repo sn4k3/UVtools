@@ -8,8 +8,9 @@ namespace UVtools.WPF.Controls.Tools
         public OperationLightBleedCompensation Operation => BaseOperation as OperationLightBleedCompensation;
         public ToolLightBleedCompensationControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationLightBleedCompensation(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

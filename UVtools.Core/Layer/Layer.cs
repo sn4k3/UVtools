@@ -250,8 +250,8 @@ namespace UVtools.Core
             get => _lightPwm;
             set
             {
-                if (value == 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
-                if (value == 0) value = FileFormat.DefaultLightPWM;
+                //if (value == 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
+                //if (value == 0) value = FileFormat.DefaultLightPWM;
                 RaiseAndSetIfChanged(ref _lightPwm, value);
             }
         }
@@ -593,6 +593,17 @@ namespace UVtools.Core
         public void SetLightOffDelay(float extraTime = 0)
         {
             LightOffDelay = CalculateLightOffDelay(extraTime);
+        }
+
+        /// <summary>
+        /// Zero all 'wait times / delays' for this layer
+        /// </summary>
+        public void SetNoDelays()
+        {
+            LightOffDelay = 0;
+            WaitTimeBeforeCure = 0;
+            WaitTimeAfterCure = 0;
+            WaitTimeAfterLift = 0;
         }
 
         public string FormatFileName(string prepend, byte padDigits, bool layerIndexZeroStarted = true)

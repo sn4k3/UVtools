@@ -17,9 +17,10 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolMoveControl()
         {
+            BaseOperation = new OperationMove(SlicerFile);
+            if (!ValidateSpawn()) return;
             InitializeComponent();
             
-            BaseOperation = new OperationMove(SlicerFile);
 
             Operation.PropertyChanged += (sender, e) =>
             {

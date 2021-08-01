@@ -19,8 +19,9 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolCalculatorControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationCalculator(SlicerFile);
+            if (!ValidateSpawn()) return; 
+            InitializeComponent();
         }
 
         private void InitializeComponent()

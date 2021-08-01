@@ -72,6 +72,16 @@ namespace UVtools.Core.Operations
 
         public override bool CanHaveProfiles => false;
 
+        public override string ValidateSpawn()
+        {
+            if (Modifiers is null || Modifiers.Length == 0)
+            {
+                return "No available properties to edit on this file format.";
+            }
+
+            return null;
+        }
+
         public override string ValidateInternally()
         {
             var sb = new StringBuilder();

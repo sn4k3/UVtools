@@ -573,9 +573,13 @@ namespace UVtools.Core.FileFormats
             {
                 MachineName = "CL-89";
             }
+            else if (ResolutionX == 3840 && ResolutionY == 2160)
+            {
+                MachineName = "CL-133";
+            }
             else if (!MachineName.StartsWith("CL-"))
             {
-                throw new Exception("Unable to detect printer model from resolution, check if resolution is well defined on slicer for your printer model.");
+                throw new Exception("Unable to detect the printer model from resolution, check if resolution is well defined on slicer for your printer model.");
             }
 
             var pageBreak = PageBreak.Bytes;

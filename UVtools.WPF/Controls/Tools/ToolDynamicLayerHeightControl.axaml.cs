@@ -1,4 +1,3 @@
-using System;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using UVtools.Core;
@@ -22,27 +21,7 @@ namespace UVtools.WPF.Controls.Tools
         public ToolDynamicLayerHeightControl()
         {
             BaseOperation = new OperationDynamicLayerHeight(SlicerFile);
-
-            if (SlicerFile.LayerHeight * 2 > FileFormat.MaximumLayerHeight)
-            {
-                App.MainWindow.MessageBoxError($"This file already uses the maximum layer height possible ({SlicerFile.LayerHeight}mm).\n" +
-                                                     $"Layers can not be stacked, please re-slice your file with the lowest layer height of 0.01mm.",
-                    $"{BaseOperation.Title} unable to run");
-                CanRun = false;
-                return;
-            }
-
-            for (uint layerIndex = 1; layerIndex < SlicerFile.LayerCount; layerIndex++)
-            {
-                if ((decimal)Math.Round(SlicerFile[layerIndex].PositionZ - SlicerFile[layerIndex - 1].PositionZ, Layer.HeightPrecision) ==
-                    (decimal)SlicerFile.LayerHeight) continue;
-                App.MainWindow.MessageBoxError($"This file contain layer(s) with modified positions, starting at layer {layerIndex}.\n" +
-                                                     $"This tool requires sequential layers with equal height.\n" +
-                                                     $"If you run this tool before, you cant re-run.",
-                    $"{BaseOperation.Title} unable to run");
-                CanRun = false;
-                return;
-            }
+            if (!ValidateSpawn()) return;
 
             if (!SlicerFile.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.ExposureTime))
             {

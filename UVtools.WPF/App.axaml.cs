@@ -108,7 +108,7 @@ namespace UVtools.WPF
         {
             try
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (OperatingSystem.IsWindows())
                 {
                     StartProcess($"{AppExecutable}.exe", $"\"{filePath}\"");
                 }

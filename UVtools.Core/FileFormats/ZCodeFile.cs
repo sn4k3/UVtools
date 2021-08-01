@@ -603,19 +603,12 @@ namespace UVtools.Core.FileFormats
             }
 
             using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update);
-            bool deleted;
 
-            do
+            var entriesToRemove = outputFile.Entries.Where(zipEntry => zipEntry.Name.EndsWith(".gcode") || zipEntry.Name.EndsWith(".xml")).ToArray();
+            foreach (var zipEntry in entriesToRemove)
             {
-                deleted = false;
-                foreach (var zipentry in outputFile.Entries)
-                {
-                    if (!zipentry.Name.EndsWith(".gcode") && !zipentry.Name.EndsWith(".xml")) continue;
-                    zipentry.Delete();
-                    deleted = true;
-                    break;
-                }
-            } while (deleted);
+                zipEntry.Delete();
+            }
 
             XmlSerializer serializer = new(ManifestFile.GetType());
             XmlSerializerNamespaces ns = new();

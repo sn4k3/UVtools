@@ -549,21 +549,16 @@ namespace UVtools.Core.FileFormats
                 FileFullPath = filePath;
             }
 
-            using (var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update))
+            using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update);
+            var entriesToRemove = outputFile.Entries.Where(zipEntry => zipEntry.Name.EndsWith(".gcode")).ToArray();
+            foreach (var zipEntry in entriesToRemove)
             {
-                foreach (var zipentry in outputFile.Entries)
-                {
-                    if (zipentry.Name.EndsWith(".gcode"))
-                    {
-                        zipentry.Delete();
-                        break;
-                    }
-                }
+                zipEntry.Delete();
+            }
 
-                if (!IsPHZZip)
-                {
-                    outputFile.PutFileContent(GCodeFilename, GCodeStr, ZipArchiveMode.Update);
-                }
+            if (!IsPHZZip)
+            {
+                outputFile.PutFileContent(GCodeFilename, GCodeStr, ZipArchiveMode.Update);
             }
 
             //Decode(FileFullPath, progress);

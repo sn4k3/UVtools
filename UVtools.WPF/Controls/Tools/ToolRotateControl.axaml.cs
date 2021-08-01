@@ -9,8 +9,9 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolRotateControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationRotate(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

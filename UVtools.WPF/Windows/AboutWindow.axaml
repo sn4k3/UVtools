@@ -14,8 +14,11 @@
   <StackPanel Orientation="Vertical">
     <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
       <Border Margin="20,20,0,20">
-      <StackPanel Spacing="5">
-        <Image Margin="0,0,0,15" HorizontalAlignment="Center" Source="/Assets/Icons/UVtools_alt.ico" Width="256"/>
+      <StackPanel Spacing="5" MaxWidth="360">
+        <Image Margin="0,0,0,15" 
+               HorizontalAlignment="Center"
+               Source="/Assets/Icons/UVtools_alt.ico"
+               Width="256"/>
         <TextBox 
           Text="{Binding OSDescription}"
           IsReadOnly="True" 
@@ -23,6 +26,14 @@
           CaretBrush="Transparent"
           Watermark="Operative System:"
           UseFloatingWatermark="True"/>
+
+        <TextBox
+            Text="{Binding RuntimeDescription}"
+            IsReadOnly="True"
+            BorderBrush="Transparent"
+            CaretBrush="Transparent"
+            Watermark="Runtime:"
+            UseFloatingWatermark="True"/>
 
         <TextBox
           Text="{Binding FrameworkDescription}"
@@ -74,6 +85,7 @@
         <TextBlock Grid.Row="6" Text="{Binding Company}"/>
         <TextBox Grid.Row="8" 
                  IsReadOnly="True"
+                 MaxHeight="550"
                  Text="{Binding Description}"/>
       </Grid>
     </StackPanel>

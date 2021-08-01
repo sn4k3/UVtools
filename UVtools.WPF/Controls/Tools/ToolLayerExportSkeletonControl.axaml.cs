@@ -1,5 +1,4 @@
 using System.IO;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
@@ -11,8 +10,9 @@ namespace UVtools.WPF.Controls.Tools
         public OperationLayerExportSkeleton Operation => BaseOperation as OperationLayerExportSkeleton;
         public ToolLayerExportSkeletonControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationLayerExportSkeleton(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

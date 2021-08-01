@@ -1,5 +1,31 @@
 # Changelog
 
+## 01/08/2021 - v2.16.0
+
+- **(Add) PrusaSlicer printers:**
+   - Creality HALOT-MAX CL-133
+   - Nova3D Elfin2
+   - Nova3D Elfin2 Mono SE
+   - Nova3D Elfin3 Mini
+   - Nova3D Bene4
+   - Nova3D Bene5
+   - Nova3D Whale
+   - Nova3D Whale2
+- **About box:**
+  - (Add) Runtime information
+  - (Fix) Limit panels width and height to not overgrow
+- **(Fix) macOS:**
+   - macOS version auto-upgrade (Will only work on future releases and if running v2.16.0 or greater)
+   - Demo file not loading
+   - Auto disable windows scaling factor when on Monjave or greater on new instalations
+- (Add) Tool: Raise platform on print finish
+- (Add) CXDLP: Support for Halot MAX CL-133
+- (Improvement) Tools: Better handling/validation of tools that are unable to run with abstraction
+- (Improvement) CWS: Simplify filenames inside the archive
+- (Upgrade) EmguCV from 4.5.2 to 4.5.3
+- (Change) Allow to set layer `LightPWM` to 0
+- (Fix) Arrange dropdown arrow from layer image save icon to be at center
+
 ## 24/07/2021 - v2.15.1
 
 - **(Improvement) CWS:**

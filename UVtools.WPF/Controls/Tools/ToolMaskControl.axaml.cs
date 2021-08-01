@@ -68,8 +68,9 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolMaskControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationMask(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

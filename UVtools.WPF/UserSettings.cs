@@ -1369,8 +1369,18 @@ namespace UVtools.WPF
         #endregion
 
         #region Constructor
+
         private UserSettings()
-        { }
+        {
+            if (OperatingSystem.IsMacOS()) // Fix macOS scaling information
+            {
+                var monjave = new Version(10, 14, 6);
+                if (Environment.OSVersion.Version.CompareTo(monjave) >= 0)
+                {
+                    General.WindowsTakeIntoAccountScreenScaling = false;
+                }
+            }
+        }
         #endregion
 
         #region Static Methods
@@ -1450,7 +1460,8 @@ namespace UVtools.WPF
                 Instance.LayerPreview,
                 Instance.Issues,
                 Instance.PixelEditor,
-                Instance.LayerRepair
+                Instance.LayerRepair,
+                Instance.Automations
             };
         #endregion
 

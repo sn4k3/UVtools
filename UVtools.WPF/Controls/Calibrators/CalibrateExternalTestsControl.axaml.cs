@@ -1,7 +1,4 @@
-﻿using System.Diagnostics;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+﻿using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
 using UVtools.WPF.Controls.Tools;
 
@@ -12,8 +9,10 @@ namespace UVtools.WPF.Controls.Calibrators
         public OperationCalibrateExternalTests Operation => BaseOperation as OperationCalibrateExternalTests;
         public CalibrateExternalTestsControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationCalibrateExternalTests(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
+            
         }
 
         private void InitializeComponent()

@@ -10,8 +10,9 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolRepairLayersControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationRepairLayers(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

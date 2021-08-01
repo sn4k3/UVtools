@@ -1,12 +1,6 @@
-﻿using System.Diagnostics;
-using System.Timers;
-using Avalonia.Markup.Xaml;
-using Avalonia.Media.Imaging;
-using Avalonia.Threading;
+﻿using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
 using UVtools.WPF.Controls.Tools;
-using UVtools.WPF.Extensions;
-using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Calibrators
 {
@@ -16,8 +10,9 @@ namespace UVtools.WPF.Controls.Calibrators
 
         public CalibrateStressTowerControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationCalibrateStressTower(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

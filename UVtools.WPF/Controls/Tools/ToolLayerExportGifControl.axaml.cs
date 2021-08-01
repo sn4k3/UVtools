@@ -11,8 +11,9 @@ namespace UVtools.WPF.Controls.Tools
         public OperationLayerExportGif Operation => BaseOperation as OperationLayerExportGif;
         public ToolLayerExportGifControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationLayerExportGif(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

@@ -52,15 +52,15 @@ namespace UVtools.WPF.Structures
         {
             get
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (OperatingSystem.IsWindows())
                 {
                     return "win-x64";
                 }
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                if (OperatingSystem.IsLinux())
                 {
                     return "linux-x64";
                 }
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                if (OperatingSystem.IsMacOS())
                 {
                     return "osx-x64";
                 }
@@ -195,15 +195,26 @@ namespace UVtools.WPF.Structures
                             stream.WriteLine($"cd '{App.ApplicationPath}'");
                             stream.WriteLine($"killall {About.Software}");
                             stream.WriteLine("sleep 0.5");
-                            stream.WriteLine($"cp -fR {upgradeFolder}/* .");
+                            
+                            
+                            //stream.WriteLine($"[ -f {About.Software} ] && {App.AppExecutableQuoted} & || dotnet {About.Software}.dll &");
+                            if (OperatingSystem.IsMacOS() && App.ApplicationPath.EndsWith(".app/Contents/MacOS"))
+                            {
+                                stream.WriteLine($"cp -fR {upgradeFolder}/* ../../../");
+                                stream.WriteLine($"open ../../../{About.Software}.app");
+                            }
+                            else
+                            {
+                                stream.WriteLine($"cp -fR {upgradeFolder}/* .");
+                                stream.WriteLine($"if [ -f '{About.Software}' ]; then");
+                                stream.WriteLine($"  ./{About.Software} &");
+                                stream.WriteLine("else");
+                                stream.WriteLine($"  dotnet {About.Software}.dll &");
+                                stream.WriteLine("fi");
+                            }
+
                             stream.WriteLine($"rm -fr {upgradeFolder}");
                             stream.WriteLine("sleep 0.5");
-                            //stream.WriteLine($"[ -f {About.Software} ] && {App.AppExecutableQuoted} & || dotnet {About.Software}.dll &");
-                            stream.WriteLine($"if [ -f '{About.Software}' ]; then");
-                            stream.WriteLine($"  ./{About.Software} &");
-                            stream.WriteLine("else");
-                            stream.WriteLine($"  dotnet {About.Software}.dll &");
-                            stream.WriteLine("fi");
                             stream.WriteLine($"rm -f {upgradeFileName}");
                             //stream.WriteLine("exit");
                             stream.Close();

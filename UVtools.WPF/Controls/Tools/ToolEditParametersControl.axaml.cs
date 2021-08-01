@@ -110,17 +110,10 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolEditParametersControl()
         {
-            InitializeComponent();
-
             BaseOperation = new OperationEditParameters(SlicerFile);
-
-            if (Operation.Modifiers is null || Operation.Modifiers.Length == 0)
-            {
-                CanRun = false;
-                App.MainWindow.MessageBoxError("No available properties to edit on this file format.", BaseOperation.Title).GetAwaiter();
-                return;
-            }
-
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
+            
             grid = this.FindControl<Grid>("grid");
         }
 

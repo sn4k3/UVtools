@@ -10,8 +10,9 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolLayerArithmeticControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationLayerArithmetic(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

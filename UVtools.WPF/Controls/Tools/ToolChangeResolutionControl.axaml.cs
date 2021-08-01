@@ -33,8 +33,9 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolChangeResolutionControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationChangeResolution(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

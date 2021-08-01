@@ -1,10 +1,6 @@
-﻿using System;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Emgu.CV;
-using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
-using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF.Controls.Tools
 {
@@ -15,8 +11,10 @@ namespace UVtools.WPF.Controls.Tools
        
         public ToolPixelDimmingControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationPixelDimming(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
+            
             Operation.GeneratePixelDimming("Chessboard");
         }
 

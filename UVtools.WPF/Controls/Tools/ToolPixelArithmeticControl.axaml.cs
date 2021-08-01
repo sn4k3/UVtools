@@ -8,8 +8,9 @@ namespace UVtools.WPF.Controls.Tools
         public OperationPixelArithmetic Operation => BaseOperation as OperationPixelArithmetic;
         public ToolPixelArithmeticControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationPixelArithmetic(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

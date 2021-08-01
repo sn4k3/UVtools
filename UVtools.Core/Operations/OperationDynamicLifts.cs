@@ -67,6 +67,17 @@ namespace UVtools.Core.Operations
 
         public override string ProgressAction => "Generated lifts";
 
+        public override string ValidateSpawn()
+        {
+            if (!SlicerFile.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.LiftHeight) ||
+                !SlicerFile.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.LiftSpeed))
+            {
+                return NotSupportedMessage;
+            }
+
+            return null;
+        }
+
         public override string ValidateInternally()
         {
             var sb = new StringBuilder();

@@ -9,8 +9,9 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolRaftReliefControl()
         {
-            this.InitializeComponent();
             BaseOperation = new OperationRaftRelief(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

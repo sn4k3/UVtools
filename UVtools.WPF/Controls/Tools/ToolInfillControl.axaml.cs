@@ -9,8 +9,9 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolInfillControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationInfill(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

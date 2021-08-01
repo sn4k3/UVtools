@@ -21,6 +21,11 @@ namespace UVtools.Core.Operations
     [Serializable]
     public abstract class Operation : BindableBase, IDisposable
     {
+        #region Constants
+        public const string NotSupportedMessage = "The current printer and/or file format is not compatible with this tool.";
+        public string NotSupportedTitle => $"{Title} - Unable to run";
+        #endregion
+
         #region Enums
 
         public enum OperationImportFrom : byte
@@ -31,6 +36,7 @@ namespace UVtools.Core.Operations
             Undo,
         }
         #endregion
+
         #region Members
         private FileFormat _slicerFile;
         private OperationImportFrom _importedFrom = OperationImportFrom.None;
@@ -262,6 +268,22 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Methods
+
+        public bool CanSpawn => string.IsNullOrWhiteSpace(ValidateSpawn());
+
+        /// <summary>
+        /// Gets if this operation can spawn under the <see cref="SlicerFile"/>
+        /// </summary>
+        public virtual string ValidateSpawn() => null;
+
+        /// <summary>
+        /// Gets if this operation can spawn under the <see cref="SlicerFile"/>
+        /// </summary>
+        public bool ValidateSpawn(out string message)
+        {
+            message = ValidateSpawn();
+            return string.IsNullOrWhiteSpace(message);
+        }
 
         public virtual string ValidateInternally() => null;
 

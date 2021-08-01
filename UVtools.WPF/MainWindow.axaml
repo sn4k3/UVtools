@@ -1975,7 +1975,7 @@
               </Button.ContextMenu>
               <StackPanel Orientation="Horizontal">
                 <Image Source="/Assets/Icons/save-16x16.png"/>
-                <TextBlock Text=" ⮟"/>
+                <TextBlock VerticalAlignment="Center" Text=" ⮟"/>
             </StackPanel>
           </Button>
 

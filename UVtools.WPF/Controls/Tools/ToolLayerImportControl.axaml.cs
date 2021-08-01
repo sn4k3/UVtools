@@ -84,8 +84,10 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolLayerImportControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationLayerImport(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
+
             FilesListBox = this.Find<ListBox>("FilesListBox");
             FilesListBox.DoubleTapped += (sender, args) =>
             {

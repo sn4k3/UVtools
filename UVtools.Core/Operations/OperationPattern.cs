@@ -48,6 +48,17 @@ namespace UVtools.Core.Operations
 
         public override bool CanHaveProfiles => false;
 
+        public override string ValidateSpawn()
+        {
+            if (MaxRows < 2 && MaxCols < 2)
+            {
+                return "The available free volume is not enough to pattern this object.\n" +
+                                              "To run this tool the free space must allow at least 1 copy.";
+            }
+
+            return null;
+        }
+
         public override string ValidateInternally()
         {
             var sb = new StringBuilder();

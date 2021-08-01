@@ -29,9 +29,10 @@ namespace UVtools.WPF.Controls.Calibrators
 
         public CalibrateElephantFootControl()
         {
-            InitializeComponent();
-            
             BaseOperation = new OperationCalibrateElephantFoot(SlicerFile);
+            if (!ValidateSpawn()) return;
+
+            InitializeComponent();
             
             _kernelCtrl = this.Find<KernelControl>("KernelCtrl");
 

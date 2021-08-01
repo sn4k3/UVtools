@@ -118,7 +118,7 @@ namespace UVtools.Core.GCode
             layer.LiftSpeed = LiftSpeed ?? SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
             layer.WaitTimeAfterLift = WaitTimeAfterLift ?? 0;
             layer.RetractSpeed = RetractSpeed ?? SlicerFile.RetractSpeed;
-            layer.LightPWM = LightPWM ?? SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
+            layer.LightPWM = LightPWM ?? 0;//SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
 
             if (SlicerFile.GCode.SyncMovementsWithDelay) // Dirty fix of the value
             {

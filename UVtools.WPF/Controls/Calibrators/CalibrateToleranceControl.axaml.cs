@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Timers;
+﻿using System.Timers;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
@@ -38,8 +37,10 @@ namespace UVtools.WPF.Controls.Calibrators
 
         public CalibrateToleranceControl()
         {
-            InitializeComponent();
             BaseOperation = new OperationCalibrateTolerance(SlicerFile);
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
+            
 
             _timer = new Timer(100)
             {

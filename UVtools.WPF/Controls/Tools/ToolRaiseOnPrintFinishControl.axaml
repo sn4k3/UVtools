@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             MinWidth="600"
+             x:Class="UVtools.WPF.Controls.Tools.ToolRaiseOnPrintFinishControl">
+
+  <Grid RowDefinitions="Auto"
+        ColumnDefinitions="Auto,10,200,5,Auto,20,Auto">
+    <TextBlock Grid.Row="0" Grid.Column="0"
+               VerticalAlignment="Center"
+               Text="Raise to:"
+               />
+
+    <NumericUpDown Grid.Row="0" Grid.Column="2"
+               VerticalAlignment="Center"
+               Increment="1"
+                Minimum="{Binding Operation.MinimumPositionZ}"
+                Maximum="1000"
+                FormatString="F2"
+                Value="{Binding Operation.PositionZ}"
+               />
+
+    <TextBlock Grid.Row="0" Grid.Column="4"
+               VerticalAlignment="Center"
+               Text="mm"
+               />
+
+    <CheckBox Grid.Row="0" Grid.Column="6" 
+               VerticalAlignment="Center"
+               ToolTip.Tip="If enabled, output a dummy pixel inside the layer bound to prevent a empty image and to ensure the correct handle by the firmware. This will also prevent layer being removed by auto-fix issues (Empty Layers)."
+               Content="Output a dummy pixel"
+              IsChecked="{Binding Operation.OutputDummyPixel}"
+               />
+  </Grid>
+  
+</UserControl>

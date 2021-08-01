@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using System.Threading.Tasks;
 using Avalonia.Markup.Xaml;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
@@ -48,6 +49,25 @@ namespace UVtools.WPF.Controls.Tools
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        public bool ValidateSpawn()
+        {
+            if(_baseOperation is null)
+            {
+                App.MainWindow.MessageBoxInfo("The operation does not contain a valid configuration.\n" +
+                                              "Please contact the support/developer.", BaseOperation.NotSupportedTitle).ConfigureAwait(false);
+                CanRun = false;
+                return false;
+            }
+            if (!_baseOperation.ValidateSpawn(out var message))
+            {
+                App.MainWindow.MessageBoxInfo(message, BaseOperation.NotSupportedTitle).ConfigureAwait(false);
+                CanRun = false;
+                return false;
+            }
+
+            return true;
         }
 
         public virtual void Callback(ToolWindow.Callbacks callback) { }

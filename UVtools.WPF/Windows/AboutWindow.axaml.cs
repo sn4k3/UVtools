@@ -20,6 +20,9 @@ namespace UVtools.WPF.Windows
         public string Description => App.AssemblyDescription;
 
         public string OSDescription => $"{RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture}";
+
+        public string RuntimeDescription => RuntimeInformation.RuntimeIdentifier;
+
         public string FrameworkDescription => RuntimeInformation.FrameworkDescription;
 
         public string OpenCVDescription

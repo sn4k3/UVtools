@@ -21,10 +21,11 @@ namespace UVtools.WPF.Controls.Tools
 
         public ToolScriptingControl()
         {
+            BaseOperation = new OperationScripting(SlicerFile);
+            if (!ValidateSpawn()) return;
             InitializeComponent();
             _scriptConfigurationPanel = this.FindControl<StackPanel>("ScriptConfigurationPanel");
             _scriptVariablesGrid = this.FindControl<Grid>("ScriptVariablesGrid");
-            BaseOperation = new OperationScripting(SlicerFile);
         }
 
         private void InitializeComponent()
