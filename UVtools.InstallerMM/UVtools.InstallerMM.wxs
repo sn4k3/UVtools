@@ -341,8 +341,8 @@
         <Component Id="owc3FC8434C1A84605AEEBC6A100CA2F3E1" Guid="47d7e276-db6d-424e-d797-1a69e1e24b3b">
           <File Id="owf3FC8434C1A84605AEEBC6A100CA2F3E1" Source="$(var.SourceDir)\Newtonsoft.Json.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owcC8F0982CA6FC282C6992A07EAF832954" Guid="eca80656-9710-cdb8-cb7f-c54f35b4b913">
-          <File Id="owfC8F0982CA6FC282C6992A07EAF832954" Source="$(var.SourceDir)\opencv_videoio_ffmpeg452_64.dll" KeyPath="yes" />
+        <Component Id="owcCB6DF5BB7A5BDAA67D11BB13C52A4927" Guid="dc9a18cc-9c4c-5a90-c668-983489a0805d">
+          <File Id="owfCB6DF5BB7A5BDAA67D11BB13C52A4927" Source="$(var.SourceDir)\opencv_videoio_ffmpeg453_64.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc363CAFE6342F1E71AB07D13BAEEE5FF0" Guid="8e946fdc-ea52-7c4b-a8b3-69e1ecf51086">
           <File Id="owf363CAFE6342F1E71AB07D13BAEEE5FF0" Source="$(var.SourceDir)\SkiaSharp.dll" KeyPath="yes" />
