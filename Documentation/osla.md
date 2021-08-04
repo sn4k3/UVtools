@@ -1,7 +1,14 @@
-# Open source and universal binnary file format for mSLA/DLP (.odlp)
+# Open source and universal binnary file format for mSLA/DLP (.osla)
 
-This file format aims for simplicity and universal file format for low-end printers that can't take
-a ZIP + PNG slices approach due the incapacity of CPU to process such data schemes.
+This file format aims for simplicity, versatility, cleanest as possible and universal format for low-end printers that can't handle
+a ZIP + PNG slices approach due the incapacity of CPU to process such data schemes. 
+
+## File extensions
+
+This file format share and reserve the following file extensions:
+- .osla (Open SLA)
+- .odlp (Open DLP)
+- .omsla (Open mSLA)
 
 ## Implementation requesites
 
@@ -14,7 +21,7 @@ a ZIP + PNG slices approach due the incapacity of CPU to process such data schem
 
 ## Printer firmware checks (can print this file?)
 
-1. Marker == "ODLPTiCo" - This is a double check if file is really a .odlp beside it extension, case sensitive compare.
+1. Marker == "OSLATiCo" - This is a double check if file is really a .osla beside it extension, case sensitive compare.
 1. Compare machine resolution with file resoltuion.
 2. Can use ImageDataType? For example, if processor is unable to process PNG images, trigger an error and dont allow to continue.
 3. Parse gcode and check for problems, such as, print on a position out of printer Z range.
@@ -29,16 +36,18 @@ a ZIP + PNG slices approach due the incapacity of CPU to process such data schem
 
 **Note:** Printer only continue to execute the next gcode command after the image is displayed/buffered. 
 When using a sencond board to display the image, it must send a OK back in order to resume the gcode execution.
+But a custom flag or M code command should exist to buffer the image in the background, eg: M6055.
 
 ## Software data adquisiton
 
-For slicers and other programs, data and per layer settings should be parsed from gcode.
+For slicers and other programs, data and per layer settings should be parsed from gcode.  
+For example, take UVtools [GCodeBuilder.cs](https://github.com/sn4k3/UVtools/blob/master/UVtools.Core/GCode/GCodeBuilder.cs) as example and search for `ParseLayersFromGCode` method
 
 ## In file optimizations
 
 1. When generating the file, layers that share the same image data, may reuse that data instead of duplicate the image. 
 This allow to spare a good amount of data when file contains multiple layers that share same image over and over, for example, functional parts.
-See example on file sample bellow at `[Layer 3]`.
+See example on file sample bellow at `[Layer 3]`.  
 While this is optional and either way it must be valid to print, is highly recommended to hash the layers.
 
 ## Image data type
@@ -180,5 +189,5 @@ M18;Disable motors
 
 
 Notes:
-1) Previews start address = file table size + header table size + custom table size
-2) Header dont need much information, everything can be parsed from gcode!
+1. Previews start address = file table size + header table size + custom table size
+2. Header dont need much information, everything can be parsed from gcode!
