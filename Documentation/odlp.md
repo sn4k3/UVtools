@@ -43,16 +43,21 @@ While this is optional and either way it must be valid to print, is highly recom
 
 ## Image data type
 
-This file format allows common and custom image data types, such as: 
-- BITMAP
-- PNG
-- JPG/JPEG
-- SVG/Vector
-- RLE
-- Custom
+1. This file format allows common and custom image data types, such as: 
+   - BITMAP
+   - PNG
+   - JPG/JPEG
+   - SVG/Vector
+   - LINE-XXY
+   - LINE-XYY
+   - RLE-XXXX
+   - Custom
+2. Having different data types for previews and layers are allowed.
+eg: `PreviewDataType=RGB16` and `LayerDataType=PNG`
+3. The only requesite is to correct define the type of image data on the [Header] and respect that.
+4. Custom image data types are possible, you must take a unique non conflicting ID but the documentation how to read and write are required in order to use a custom type. 
+5. If you want to apply and register your data type ID to be globaly used on firmwares, you must send us the draft for approval and get that ID reserved for the applied data scheme.
 
-The only requesite is to define the correct type of image data on the [Header] and respect that.
-Custom image data types are possible, but the documentation how to read and write are required in order to use a custom scheme.
 
 # Draft 1
 
