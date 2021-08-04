@@ -41,6 +41,18 @@ This allow to spare a good amount of data when file contains multiple layers tha
 See example on file sample bellow at `[Layer 3]`.
 While this is optional and either way it must be valid to print, is highly recommended to hash the layers.
 
+## Image data type
+
+This file format allows common and custom image data types, such as: 
+- BITMAP
+- PNG
+- JPG/JPEG
+- SVG/Vector
+- RLE
+- Custom
+
+The only requesite is to define the correct type of image data on the [Header] and respect that.
+Custom image data types are possible, but the documentation how to read and write are required in order to use a custom scheme.
 
 # Draft 1
 
