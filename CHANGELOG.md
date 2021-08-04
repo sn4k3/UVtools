@@ -15,10 +15,10 @@
   - (Add) Runtime information
   - (Fix) Limit panels width and height to not overgrow
 - **(Fix) macOS:**
-   - macOS version auto-upgrade (Will only work on future releases and if running v2.16.0 or greater)
+   - Version auto-upgrade (Will only work on future releases and if running v2.16.0 or greater)
    - Demo file not loading
    - Auto disable windows scaling factor when on Monjave or greater on new instalations
-- (Add) Tool: Raise platform on print finish
+- (Add) Tool: Raise platform on print finish (#247)
 - (Add) CXDLP: Support for Halot MAX CL-133
 - (Improvement) Tools: Better handling/validation of tools that are unable to run with abstraction
 - (Improvement) CWS: Simplify filenames inside the archive

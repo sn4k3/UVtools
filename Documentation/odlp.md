@@ -44,22 +44,41 @@ While this is optional and either way it must be valid to print, is highly recom
 
 # Draft 1
 
+## Structure
+
+1. [File] (118 bytes)
+2. [Header] (56 bytes + sizeof(machine name))
+3. [Custom table] (0 or more bytes)
+4. [Previews] (0 or more)
+   - Preview 1 (12 bytes + sizeof(preview image data))
+   - Preview 2 (12 bytes + sizeof(preview image data))
+   - Preview n (12 bytes + sizeof(preview image data))
+5. [Layer definitions]
+   - Layer 0 (4 bytes)
+   - Layer 1 (4 bytes)
+6. [Layer image data]
+   - Layer 0 data (n bytes) 
+   - Layer 1 data (n bytes) 
+7. [GCode] (4 bytes + sizeof(gcode text))
+
+
 ```ini
 [File]
 Marker=ODLPTiCo (char[8]) Extra validation beside file extension, constant
 Version=1 (ushort) File format revision
+CreatedTime=1600451007 (uint) UNIX Timestamp when file was created (Set once)
+CreatedBy=UVtools v2.14.0\0\0\0\0\0\0\0.. (char[50] fixed!) program/slicer who created the file (Set once)
 ModifiedTime=1626451007 (uint) UNIX Timestamp when file gets modified
 ModifiedBy=UVtools v2.15.0\0\0\0\0\0\0\0.. (char[50] fixed!) program/slicer who last modified the file
 
 [Header]
 HeaderTableSize=sizeof(header) (uint), excluding this field
+ResolutionX=1080 (uint)
+ResolutionY=1080 (uint)
 MachineZ=130.00 (float)
 DisplayWidth=68.04 (float)
 DisplayHeight=120.96 (float)
-ResolutionX=1080 (uint)
-ResolutionY=1080 (uint)
-MirrorX=1 (byte) 0 = false | 1 = true
-MirrorY=0 (byte) 0 = false | 1 = true
+DisplayMirror=0 (byte) 0 = No mirror | 1 = Horizontally | 2 = Vertically | 3 = Horizontally+Vertically | >3 = No mirror
 PreviewDataType=RGB16\0\0\0 (char[8]) compressed image data type, eg: RLE-XXX or RGB16 or PNG or JPG or BITMAP OR other?
 LayerDataType=PNG\0\0\0\0\0 (char[8]) compressed image data type, eg: RLE-XXX or PNG or JPG or BITMAP OR other?
 NumberOfPreviews=2 (byte) Number of previews/thumbnails on this file
@@ -94,15 +113,15 @@ RLE/RGB16/PNG/JPG/BITMAP
 [LayerDefinitions]
 [Layer 1]
 LayerTableSize=4 (uint), Size of table excluding this field
-DataAddress=0000
+DataAddress=0000 (uint)
 
 [Layer 2]
 LayerTableSize=4 (uint), Size of table excluding this field
-DataAddress=1111
+DataAddress=1111 (uint)
 
 [Layer 3]
 LayerTableSize=4 (uint), Size of table excluding this field
-DataAddress=1111 (Identical layers can point to the same data if they share the same image, sparing space on file)
+DataAddress=1111 (uint) (Identical layers can point to the same data if they share the same image, sparing space on file)
 
 DataSize=sizeof(RLE) (uint)
 RLE/PNG/JPG/BITMAP of layer 1

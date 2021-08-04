@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
@@ -641,7 +642,7 @@ namespace UVtools.Core.FileFormats
                 if (line == string.Empty || line[0] == ';') continue; // No empty lines nor comment start lines
                 progress += (uint)line.Length;
 
-                byte[] data = Encoding.UTF8.GetBytes(line);
+                var data = Encoding.UTF8.GetBytes(line);
                 List<byte> padData = new(64) {0, 1, 0};
                 padData.AddRange(data);
                 
@@ -656,6 +657,7 @@ namespace UVtools.Core.FileFormats
                 }
 
                 var padDataArray = padData.ToArray();
+                //Debug.WriteLine(string.Join(", ", padDataArray));
 
                 var encodedBytes = encryptEngine.ProcessBlock(padDataArray, 0, padDataArray.Length);
                 sb.AppendLine(System.Convert.ToBase64String(encodedBytes));
