@@ -18,6 +18,7 @@ This file format share and reserve the following file extensions:
 - No encrypted files: The data should be plain and easy to access
 - No property or changed variant of the file format should exists!
 - Machine follows sequential gcode commands
+- Endianness: Little-Endian (LE)
 
 ## Printer firmware checks (can print this file?)
 
@@ -67,6 +68,16 @@ eg: `PreviewDataType=RGB16` and `LayerDataType=PNG`
 4. Custom image data types are possible, you must take a unique non conflicting ID but the documentation how to read and write are required in order to use a custom type. 
 5. If you want to apply and register your data type ID to be globaly used on firmwares, you must send us the draft for approval and get that ID reserved for the applied data scheme.
 
+## Previews
+
+1. Able to save 0 or more previews
+2. Previews must all use same image data type
+3. Previews must be sorted from bigger to smaller
+
+## Offsets
+
+- Preview n = `sizeof(File) + sizeof(Header) + sizeof(CustomTable) + n * PreviewTableSize + SUM(sizeof(..n PreviewDataSize))`
+- Layer n = `LayerDefinitionsAddress + n * LayerTableSize`
 
 # Draft 1
 
