@@ -150,16 +150,13 @@ RLE/RGB16/PNG/JPG/BITMAP
 [LayerDefinitions]
 [Layer 1]
 DataAddress=0000 (uint)
-
 [Layer 2]
 DataAddress=1111 (uint)
-
 [Layer 3]
 DataAddress=1111 (uint) (Identical layers can point to the same data if they share the same image, sparing space on file)
 
 DataSize=sizeof(RLE) (uint)
 RLE/PNG/JPG/BITMAP of layer 1
-
 DataSize=sizeof(RLE) (uint)
 RLE/PNG/JPG/BITMAP of layer 2
 
@@ -194,8 +191,3 @@ M18;Disable motors
 ;END_GCODE_END
 ;<Completed>
 ```
-
-
-Notes:
-1. Previews start address = file table size + header table size + custom table size
-2. Header dont need much information, everything can be parsed from gcode!
