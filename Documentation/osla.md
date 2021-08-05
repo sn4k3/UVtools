@@ -72,13 +72,13 @@ eg: `PreviewDataType=RGB16` and `LayerDataType=PNG`
 
 ## Structure
 
-1. [File] (118 bytes)
-2. [Header] (56 bytes + sizeof(machine name))
+1. [File] (150 bytes)
+2. [Header] (68 bytes + sizeof(machine name))
 3. [Custom table] (0 or more bytes)
 4. [Previews] (0 or more)
-   - Preview 1 (12 bytes + sizeof(preview image data))
-   - Preview 2 (12 bytes + sizeof(preview image data))
-   - Preview n (12 bytes + sizeof(preview image data))
+   - Preview 1 (8 bytes + sizeof(preview image data))
+   - Preview 2 (8 bytes + sizeof(preview image data))
+   - Preview n (8 bytes + sizeof(preview image data))
 5. [Layer definitions]
    - Layer 0 (4 bytes)
    - Layer 1 (4 bytes)
@@ -90,11 +90,11 @@ eg: `PreviewDataType=RGB16` and `LayerDataType=PNG`
 
 ```ini
 [File]
-Marker=ODLPTiCo (char[8]) Extra validation beside file extension, constant
+Marker=OSLATiCo (char[8]) Extra validation beside file extension, constant
 Version=1 (ushort) File format revision
-CreatedTime=1600451007 (uint) UNIX Timestamp when file was created (Set once)
+CreatedDateTime=2021-07-10 10:00:00Z (char[20] / DateTime) Universal sortable date and time string, as defined by ISO 8601 (yyyy-MM-dd HH:mm:ssZ)
 CreatedBy=UVtools v2.14.0\0\0\0\0\0\0\0.. (char[50] fixed!) program/slicer who created the file (Set once)
-ModifiedTime=1626451007 (uint) UNIX Timestamp when file gets modified
+ModifiedDateTime=2021-08-10 12:00:00Z (char[20] / DateTime) Universal sortable date and time string, as defined by ISO 8601 (yyyy-MM-dd HH:mm:ssZ)
 ModifiedBy=UVtools v2.15.0\0\0\0\0\0\0\0.. (char[50] fixed!) program/slicer who last modified the file
 
 [Header]
@@ -105,12 +105,14 @@ MachineZ=130.00 (float)
 DisplayWidth=68.04 (float)
 DisplayHeight=120.96 (float)
 DisplayMirror=0 (byte) 0 = No mirror | 1 = Horizontally | 2 = Vertically | 3 = Horizontally+Vertically | >3 = No mirror
-PreviewDataType=RGB16\0\0\0 (char[8]) compressed image data type, eg: RLE-XXX or RGB16 or PNG or JPG or BITMAP OR other?
-LayerDataType=PNG\0\0\0\0\0 (char[8]) compressed image data type, eg: RLE-XXX or PNG or JPG or BITMAP OR other?
+PreviewDataType=RGB16\0\0\0\0\0 (char[10]) compressed image data type, eg: RLE-XXX or RGB16 or PNG or JPG or BITMAP OR other?
+LayerDataType=PNG\0\0\0\0\0\0\0 (char[10]) compressed image data type, eg: RLE-XXX or PNG or JPG or BITMAP OR other?
+PreviewTableSize=8 (uint), Size of each preview table
 NumberOfPreviews=2 (byte) Number of previews/thumbnails on this file
 LayerCount=1000 (uint) Total number of layers
-LayerDefinitionsAddress=00000 (uint) Address for layer definition
-GCodeAddress=000000 (uint) gcode text address, size = Total file size - GCodeAddress
+LayerTableSize=4 (uint), Size of each layer table
+LayerDefinitionsAddress=00000 (uint) Address for layer definition start
+GCodeAddress=000000 (uint) Address for gcode definition start
 # Dynamic text fields
 MachineNameSize=sizeof(MachineName) (ushort)
 MachineName=Phrozen Sonic Mini (string)
@@ -123,14 +125,12 @@ CustomTableSize=4 (uint) Number reserved of bytes for a custom table, this can b
 ExampleOfCustomField=1001 (uint)
 
 [Preview 1]
-PreviewTableSize=8 (uint), Size of table excluding this field
 ResolutionX=400 (ushort)
 ResolutionY=400 (ushort)
 PreviewDataSize=sizeof(DATA) (uint)
 RLE/RGB16/PNG/JPG/BITMAP
 
 [Preview 2]
-PreviewTableSize=8 (uint), Size of table excluding this field
 ResolutionX=400 (ushort)
 ResolutionY=800 (ushort)
 PreviewDataSize=sizeof(DATA) (uint)
@@ -138,15 +138,12 @@ RLE/RGB16/PNG/JPG/BITMAP
 
 [LayerDefinitions]
 [Layer 1]
-LayerTableSize=4 (uint), Size of table excluding this field
 DataAddress=0000 (uint)
 
 [Layer 2]
-LayerTableSize=4 (uint), Size of table excluding this field
 DataAddress=1111 (uint)
 
 [Layer 3]
-LayerTableSize=4 (uint), Size of table excluding this field
 DataAddress=1111 (uint) (Identical layers can point to the same data if they share the same image, sparing space on file)
 
 DataSize=sizeof(RLE) (uint)
