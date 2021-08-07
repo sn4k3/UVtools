@@ -54,10 +54,10 @@ While this is optional and either way it must be valid to print, is highly recom
 ## Image data type
 
 1. This file format allows common and custom image data types, such as: 
-   - BITMAP
    - PNG
    - JPG/JPEG
-   - SVG/Vector
+   - BMP
+   - SVG
    - LINE-XXY
    - LINE-XYY
    - RLE-XXXX
@@ -143,13 +143,13 @@ ExampleOfCustomField=1001 (uint)
 ResolutionX=400 (ushort)
 ResolutionY=400 (ushort)
 PreviewDataSize=sizeof(DATA) (uint)
-RLE/RGB16/PNG/JPG/BITMAP
+RLE/RGB16/PNG/JPG/BMP
 
 [Preview 2]
 ResolutionX=400 (ushort)
 ResolutionY=800 (ushort)
 PreviewDataSize=sizeof(DATA) (uint)
-RLE/RGB16/PNG/JPG/BITMAP
+RLE/RGB16/PNG/JPG/BMP
 
 [LayerDefinitions]
 [Layer 1]
@@ -160,9 +160,9 @@ DataAddress=1111 (uint)
 DataAddress=1111 (uint) (Identical layers can point to the same data if they share the same image, sparing space on file)
 
 DataSize=sizeof(RLE) (uint)
-RLE/PNG/JPG/BITMAP of layer 1
+RLE/PNG/JPG/BMP of layer 1
 DataSize=sizeof(RLE) (uint)
-RLE/PNG/JPG/BITMAP of layer 2
+RLE/PNG/JPG/BMP of layer 2
 
 [GCode]
 GCodeSize=sizeof(gcode) (uint) gcode text length
