@@ -120,8 +120,8 @@ PreviewDataType=RGB16\0\0\0\0\0 (char[10]) compressed image data type, eg: RLE-X
 LayerDataType=PNG\0\0\0\0\0\0\0 (char[10]) compressed image data type, eg: RLE-XXX or PNG or JPG or BITMAP OR other?
 PreviewTableSize=8 (uint), Size of each preview table
 NumberOfPreviews=2 (byte) Number of previews/thumbnails on this file
-LayerCount=1000 (uint) Total number of layers
 LayerTableSize=4 (uint), Size of each layer table
+LayerCount=1000 (uint) Total number of layers
 LayerDefinitionsAddress=00000 (uint) Address for layer definition start
 GCodeAddress=000000 (uint) Address for gcode definition start
 # Dynamic text fields
