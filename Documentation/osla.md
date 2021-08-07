@@ -84,7 +84,7 @@ eg: `PreviewDataType=RGB16` and `LayerDataType=PNG`
 ## Structure
 
 1. [File] (150 bytes)
-2. [Header] (68 bytes + sizeof(machine name))
+2. [Header] (67 bytes + sizeof(machine name))
 3. [Custom table] (0 or more bytes)
 4. [Previews] (0 or more)
    - Preview 1 (8 bytes + sizeof(preview image data))
@@ -125,7 +125,7 @@ LayerCount=1000 (uint) Total number of layers
 LayerDefinitionsAddress=00000 (uint) Address for layer definition start
 GCodeAddress=000000 (uint) Address for gcode definition start
 # Dynamic text fields
-MachineNameSize=sizeof(MachineName) (ushort)
+MachineNameSize=sizeof(MachineName) (byte)
 MachineName=Phrozen Sonic Mini (string)
 # HEADER ends here
 
