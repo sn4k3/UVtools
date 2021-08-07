@@ -84,7 +84,7 @@ eg: `PreviewDataType=RGB16` and `LayerDataType=PNG`
 ## Structure
 
 1. [File] (150 bytes)
-2. [Header] (67 bytes + sizeof(machine name))
+2. [Header] (81 bytes + sizeof(machine name))
 3. [Custom table] (0 or more bytes)
 4. [Previews] (0 or more)
    - Preview 1 (8 bytes + sizeof(preview image data))
@@ -121,9 +121,13 @@ LayerDataType=PNG\0\0\0\0\0\0\0 (char[10]) compressed image data type, eg: RLE-X
 PreviewTableSize=8 (uint), Size of each preview table
 NumberOfPreviews=2 (byte) Number of previews/thumbnails on this file
 LayerTableSize=4 (uint), Size of each layer table
+BottomLayerCount=4 (ushort) Total number of bottom/burn layers
 LayerCount=1000 (uint) Total number of layers
 LayerDefinitionsAddress=00000 (uint) Address for layer definition start
 GCodeAddress=000000 (uint) Address for gcode definition start
+PrintTime=12345 (uint) Print time in seconds
+MaterialMilliliters=36.50 (float) Material used in milliliters
+MaterialCost=3.40 (float) Material cost in currency
 # Dynamic text fields
 MachineNameSize=sizeof(MachineName) (byte)
 MachineName=Phrozen Sonic Mini (string)
