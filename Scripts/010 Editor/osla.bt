@@ -33,9 +33,10 @@ struct HEADER {
     uint PreviewTableSize <fgcolor=cBlack, bgcolor=cRed>;
     uint PreviewCount <fgcolor=cBlack, bgcolor=cRed>;
 
-    uint LayerTableSize <fgcolor=cBlack, bgcolor=cRed>;
+    float LayerHeight <fgcolor=cBlack, bgcolor=cRed>;
     ushort BottomLayersCount <fgcolor=cBlack, bgcolor=cRed>;
     uint LayerCount <fgcolor=cBlack, bgcolor=cRed>;
+    uint LayerTableSize <fgcolor=cBlack, bgcolor=cRed>;
     uint LayerDefinitionsAddress <fgcolor=cBlack, bgcolor=cRed>;
 
     uint GCodeAddress <fgcolor=cBlack, bgcolor=cRed>;

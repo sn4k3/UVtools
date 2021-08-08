@@ -91,7 +91,7 @@ eg: `PreviewDataType=RGB565` and `LayerDataType=PNG`
 ## Structure
 
 1. [File] (150 bytes)
-2. [Header] (193 bytes)
+2. [Header] (197 bytes)
 3. [Custom table] (0 or more bytes)
 4. [Previews] (0 or more)
    - Preview 1 (8 bytes + sizeof(preview image data))
@@ -127,9 +127,10 @@ PreviewDataType=RGB565\0\0\0\0\0\0\0\0\0\0 (char[16]) compressed image data type
 LayerDataType=PNG\0\0\0\0\0\0\0\0\0\0\0\0\0 (char[16]) compressed image data type, eg: RLE-XXX or PNG or JPG or BMP OR other?
 PreviewTableSize=8 (uint), Size of each preview table
 PreviewCount=2 (byte) Number of previews/thumbnails on this file
-LayerTableSize=4 (uint), Size of each layer table
+LayerHeight=0.05 (float) Layer height in mm
 BottomLayerCount=4 (ushort) Total number of bottom/burn layers
 LayerCount=1000 (uint) Total number of layers
+LayerTableSize=4 (uint), Size of each layer table
 LayerDefinitionsAddress=00000 (uint) Address for layer definition start
 GCodeAddress=000000 (uint) Address for gcode definition start
 PrintTime=12345 (uint) Print time in seconds
