@@ -91,7 +91,7 @@ eg: `PreviewDataType=RGB565` and `LayerDataType=PNG`
 ## Structure
 
 1. [File] (150 bytes)
-2. [Header] (81 bytes + sizeof(machine name))
+2. [Header] (193 bytes)
 3. [Custom table] (0 or more bytes)
 4. [Previews] (0 or more)
    - Preview 1 (8 bytes + sizeof(preview image data))
@@ -123,8 +123,8 @@ MachineZ=130.00 (float)
 DisplayWidth=68.04 (float)
 DisplayHeight=120.96 (float)
 DisplayMirror=0 (byte) 0 = No mirror | 1 = Horizontally | 2 = Vertically | 3 = Horizontally+Vertically | >3 = No mirror
-PreviewDataType=RGB565\0\0\0\0 (char[10]) compressed image data type, eg: RLE-XXX or RGB565 or PNG or JPG or BMP OR other?
-LayerDataType=PNG\0\0\0\0\0\0\0 (char[10]) compressed image data type, eg: RLE-XXX or PNG or JPG or BMP OR other?
+PreviewDataType=RGB565\0\0\0\0\0\0\0\0\0\0 (char[16]) compressed image data type, eg: RLE-XXX or RGB565 or PNG or JPG or BMP OR other?
+LayerDataType=PNG\0\0\0\0\0\0\0\0\0\0\0\0\0 (char[16]) compressed image data type, eg: RLE-XXX or PNG or JPG or BMP OR other?
 PreviewTableSize=8 (uint), Size of each preview table
 PreviewCount=2 (byte) Number of previews/thumbnails on this file
 LayerTableSize=4 (uint), Size of each layer table
@@ -135,9 +135,8 @@ GCodeAddress=000000 (uint) Address for gcode definition start
 PrintTime=12345 (uint) Print time in seconds
 MaterialMilliliters=36.50 (float) Material used in milliliters
 MaterialCost=3.40 (float) Material cost in currency
-# Dynamic text fields
-MachineNameSize=sizeof(MachineName) (byte)
-MachineName=Phrozen Sonic Mini (string)
+MaterialName=Generic Crystal Clear Water Washable @ 100um\0\0\0\0\0\0 (char[50])
+MachineName=Super Advanted 1000K Ultimate Edition\0\0\0... (char[50])
 # HEADER ends here
 
 [CustomTable]
