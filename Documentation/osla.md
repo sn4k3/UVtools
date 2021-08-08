@@ -56,14 +56,18 @@ While this is optional and either way it must be valid to print, is highly recom
 1. This file format allows common and custom image data types, such as: 
    - PNG
    - JPG/JPEG
+   - TIF/TIFF
    - BMP
    - SVG
    - LINE-XXY
    - LINE-XYY
+   - RGB555
+   - RGB565
+   - RGB888
    - RLE-XXXX
    - Custom
 2. Having different data types for previews and layers are allowed.
-eg: `PreviewDataType=RGB16` and `LayerDataType=PNG`
+eg: `PreviewDataType=RGB565` and `LayerDataType=PNG`
 3. The only requesite is to correct define the type of image data on the [Header] and respect that.
 4. Custom image data types are possible, you must take a unique non conflicting ID but the documentation how to read and write are required in order to use a custom type. 
 5. If you want to apply and register your data type ID to be globaly used on firmwares, you must send us the draft for approval and get that ID reserved for the applied data scheme.
@@ -116,8 +120,8 @@ MachineZ=130.00 (float)
 DisplayWidth=68.04 (float)
 DisplayHeight=120.96 (float)
 DisplayMirror=0 (byte) 0 = No mirror | 1 = Horizontally | 2 = Vertically | 3 = Horizontally+Vertically | >3 = No mirror
-PreviewDataType=RGB16\0\0\0\0\0 (char[10]) compressed image data type, eg: RLE-XXX or RGB16 or PNG or JPG or BITMAP OR other?
-LayerDataType=PNG\0\0\0\0\0\0\0 (char[10]) compressed image data type, eg: RLE-XXX or PNG or JPG or BITMAP OR other?
+PreviewDataType=RGB565\0\0\0\0 (char[10]) compressed image data type, eg: RLE-XXX or RGB565 or PNG or JPG or BMP OR other?
+LayerDataType=PNG\0\0\0\0\0\0\0 (char[10]) compressed image data type, eg: RLE-XXX or PNG or JPG or BMP OR other?
 PreviewTableSize=8 (uint), Size of each preview table
 NumberOfPreviews=2 (byte) Number of previews/thumbnails on this file
 LayerTableSize=4 (uint), Size of each layer table
