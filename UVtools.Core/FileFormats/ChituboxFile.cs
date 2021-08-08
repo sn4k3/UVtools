@@ -27,21 +27,31 @@ namespace UVtools.Core.FileFormats
     {
 
         #region Constants
-        private const uint MAGIC_CBDDLP = 0x12FD0019; // 318570521
-        private const uint MAGIC_CBT = 0x12FD0086; // 318570630
-        private const uint MAGIC_CBTv4 = 0x12FD0106; // 318570758
-        private const ushort REPEATRGB15MASK = 0x20;
+        public const uint MAGIC_CBDDLP = 0x12FD0019; // 318570521
+        public const uint MAGIC_CBT = 0x12FD0086; // 318570630
+        public const uint MAGIC_CBTv4 = 0x12FD0106; // 318570758
+        public const uint MAGIC_CBT_ENCRYPTED = 0x12FD0107; // 318570759
+        public const ushort REPEATRGB15MASK = 0x20;
 
-        private const byte RLE8EncodingLimit = 0x7d; // 125;
-        private const ushort RLE16EncodingLimit = 0xFFF;
+        public const byte RLE8EncodingLimit = 0x7d; // 125;
+        public const ushort RLE16EncodingLimit = 0xFFF;
 
-        private const uint ENCRYPTYION_MODE_CBDDLP = 0x8;  // 0 or 8
-        private const uint ENCRYPTYION_MODE_CTBv2 = 0xF; // 15 for ctb v2 files
-        private const uint ENCRYPTYION_MODE_CTBv3 = 536870927; // 536870927 for ctb v3 files (This allow per layer settings, while 15 don't)
-        private const uint ENCRYPTYION_MODE_CTBv4 = 1073741839; // 1073741839 for ctb v3 files (This allow per layer settings, while 15 don't)
+        public const uint ENCRYPTYION_MODE_CBDDLP = 0x8;  // 0 or 8
+        public const uint ENCRYPTYION_MODE_CTBv2 = 0xF; // 15 for ctb v2 files
+        public const uint ENCRYPTYION_MODE_CTBv3 = 536870927; // 536870927 for ctb v3 files (This allow per layer settings, while 15 don't)
+        public const uint ENCRYPTYION_MODE_CTBv4 = 1073741839; // 1073741839 for ctb v3 files (This allow per layer settings, while 15 don't)
 
         private const string CTBv4_DISCLAIMER = "Layout and record format for the ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc..The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";
         private const ushort CTBv4_DISCLAIMER_SIZE = 320;
+
+        public static readonly byte[] SomethingNew1 = {
+            0xD0, 0x5B, 0x8E, 0x33, 0x71, 0xDE, 0x3D, 0x1A, 0xE5, 0x4F, 0x22, 0xDD, 0xDF, 0x5B, 0xFD, 0x94,
+            0xAB, 0x5D, 0x64, 0x3A, 0x9D, 0x7E, 0xBF, 0xAF, 0x42, 0x03, 0xF3, 0x10, 0xD8, 0x52, 0x2A, 0xEA
+        };
+
+        public static readonly byte[] SomethingNew2 = {
+            0x0F, 0x01, 0x0A, 0x05, 0x05, 0x0B, 0x06, 0x07, 0x08, 0x06, 0x0A, 0x0C, 0x0C, 0x0D, 0x09, 0x0F
+        };
         #endregion
 
         #region Sub Classes
@@ -1060,7 +1070,7 @@ namespace UVtools.Core.FileFormats
 
         public LayerData[,] LayerDefinitions { get; private set; }
 
-        public Dictionary<string, LayerData> LayersHash { get; } = new Dictionary<string, LayerData>();
+        public Dictionary<string, LayerData> LayersHash { get; } = new();
 
         public override FileFormatType FileType => FileFormatType.Binary;
 
@@ -1233,7 +1243,7 @@ namespace UVtools.Core.FileFormats
             set => base.MachineZ = HeaderSettings.BedSizeZ = (float)Math.Round(value, 2);
         }
 
-        public override bool MirrorDisplay
+        public override bool DisplayMirror
         {
             get => HeaderSettings.ProjectorType > 0;
             set
@@ -1321,7 +1331,21 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float BottomWaitTimeBeforeCure => WaitTimeBeforeCure;
+        public override float BottomWaitTimeBeforeCure
+        {
+            get => WaitTimeBeforeCure;
+            set
+            {
+                if (HeaderSettings.Version < 4)
+                {
+                    if (value > 0)
+                    {
+                        SetBottomLightOffDelay(value);
+                    }
+                }
+            }
+        }
+
         public override float WaitTimeBeforeCure
         {
             get => HeaderSettings.Version >= 4 ? PrintParametersV4Settings.RestTimeAfterRetract : 0;
@@ -1331,7 +1355,6 @@ namespace UVtools.Core.FileFormats
                 {
                     if (value > 0)
                     {
-                        SetBottomLightOffDelay(value);
                         SetNormalLightOffDelay(value);
                     }
 
@@ -1729,7 +1752,7 @@ namespace UVtools.Core.FileFormats
 
             FileFullPath = fileFullPath;
 
-            progress.Reset(OperationProgress.StatusDecodeThumbnails, ThumbnailsCount);
+            progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
 
             Debug.Write("Header -> ");
             Debug.WriteLine(HeaderSettings);

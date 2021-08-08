@@ -273,7 +273,7 @@ namespace UVtools.Core.FileFormats
             set { }
         }
 
-        public override bool MirrorDisplay
+        public override bool DisplayMirror
         {
             get => true;
             set { }
@@ -321,10 +321,30 @@ namespace UVtools.Core.FileFormats
             set => base.LightOffDelay = (float)(HeaderSettings.LightOffDelay = Math.Round(value, 2));
         }
 
+        public override float BottomWaitTimeBeforeCure
+        {
+            get => base.BottomWaitTimeBeforeCure;
+            set
+            {
+                SetBottomLightOffDelay(value);
+                base.BottomWaitTimeBeforeCure = value;
+            }
+        }
+
+        public override float WaitTimeBeforeCure
+        {
+            get => base.WaitTimeBeforeCure;
+            set
+            {
+                SetNormalLightOffDelay(value);
+                base.WaitTimeBeforeCure = value;
+            }
+        }
+
         public override float BottomExposureTime
         {
             get => (float) HeaderSettings.BottomExposureSeconds;
-            set => base.BottomExposureTime = (float) (HeaderSettings.BottomExposureSeconds = value);
+            set => base.BottomExposureTime = (float) (HeaderSettings.BottomExposureSeconds = Math.Round(value, 2));
         }
 
         public override float ExposureTime

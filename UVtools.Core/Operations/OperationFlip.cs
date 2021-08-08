@@ -19,7 +19,7 @@ namespace UVtools.Core.Operations
     {
         #region Members
         private bool _makeCopy;
-        private Enumerations.FlipDirection _flipDirection = Enumerations.FlipDirection.Horizontally;
+        private FlipType _flipDirection = FlipType.Horizontal;
         #endregion
 
         #region Overrides
@@ -29,14 +29,14 @@ namespace UVtools.Core.Operations
             "Note: Before perform this operation, un-rotate the layer preview to see the real orientation.";
 
         public override string ConfirmationText =>
-            FlipDirection == Enumerations.FlipDirection.Both
-                ? $"flip {(MakeCopy == true? "and blend ":"")}layers {LayerIndexStart} through {LayerIndexEnd} Horizontally and Vertically?"
-                : $"flip {(MakeCopy == true ? "and blend " : "")}layers {LayerIndexStart} through {LayerIndexEnd} {FlipDirection}?";
+            FlipDirection == FlipType.Both
+                ? $"flip {(_makeCopy ? "and blend ":"")}layers {LayerIndexStart} through {LayerIndexEnd} Horizontally and Vertically?"
+                : $"flip {(_makeCopy ? "and blend " : "")}layers {LayerIndexStart} through {LayerIndexEnd} {FlipDirection}?";
 
         public override string ProgressTitle =>
-            FlipDirection == Enumerations.FlipDirection.Both
-                ? $"Flipping {(MakeCopy == true ? "and blending " : "")}layers {LayerIndexStart} through {LayerIndexEnd} Horizontally and Vertically"
-                : $"Flipping {(MakeCopy == true ? "and blending " : "")}layers {LayerIndexStart} through {LayerIndexEnd} {FlipDirection}";
+            FlipDirection == FlipType.Both
+                ? $"Flipping {(_makeCopy ? "and blending " : "")}layers {LayerIndexStart} through {LayerIndexEnd} Horizontally and Vertically"
+                : $"Flipping {(_makeCopy ? "and blending " : "")}layers {LayerIndexStart} through {LayerIndexEnd} {FlipDirection}";
 
         public override string ProgressAction => "Flipped layers";
 
@@ -50,7 +50,7 @@ namespace UVtools.Core.Operations
 
         #region Properties
 
-        public Enumerations.FlipDirection FlipDirection
+        public FlipType FlipDirection
         {
             get => _flipDirection;
             set => RaiseAndSetIfChanged(ref _flipDirection, value);
@@ -62,29 +62,6 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _makeCopy, value);
         }
 
-        public static Array FlipDirections => Enum.GetValues(typeof(Enumerations.FlipDirection));
-
-        public FlipType FlipTypeOpenCV
-        {
-            get
-            {
-                var flipType = FlipType.Horizontal;
-                switch (FlipDirection)
-                {
-                    case Enumerations.FlipDirection.Horizontally:
-                        flipType = FlipType.Horizontal;
-                        break;
-                    case Enumerations.FlipDirection.Vertically:
-                        flipType = FlipType.Vertical;
-                        break;
-                    case Enumerations.FlipDirection.Both:
-                        flipType = FlipType.Horizontal | FlipType.Vertical;
-                        break;
-                }
-
-                return flipType;
-            }
-        }
         #endregion
 
         #region Constructor
@@ -144,12 +121,12 @@ namespace UVtools.Core.Operations
             if (MakeCopy)
             {
                 using Mat dst = new();
-                CvInvoke.Flip(target, dst, FlipTypeOpenCV);
+                CvInvoke.Flip(target, dst, _flipDirection);
                 CvInvoke.Add(target, dst, target);
             }
             else
             {
-                CvInvoke.Flip(target, target, FlipTypeOpenCV);
+                CvInvoke.Flip(target, target, _flipDirection);
             }
 
             ApplyMask(original, target);

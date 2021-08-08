@@ -112,7 +112,7 @@ namespace UVtools.Core.Operations
             if(_bottomLayers <= 0) _bottomLayers = SlicerFile.BottomLayerCount;
             if(_bottomExposure <= 0) _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
             if(_normalExposure <= 0) _normalExposure = (decimal)SlicerFile.ExposureTime;
-            _mirrorOutput = SlicerFile.MirrorDisplay;
+            _mirrorOutput = SlicerFile.DisplayMirror;
         }
 
         #endregion

@@ -60,11 +60,11 @@ namespace UVtools.Core.FileFormats
 
                 public VDABy By { get; set; } = new();
 
-                public string When { get; set; } = DateTime.Now.ToString("u");
+                public string When { get; set; } = DateTime.UtcNow.ToString("u");
 
                 public void Reset()
                 {
-                    When = DateTime.Now.ToString("u");
+                    When = DateTime.UtcNow.ToString("u");
                     By.Reset();
                 }
             }

@@ -44,7 +44,7 @@ namespace UVtools.Core.FileFormats
 
             [JsonProperty("application_version")] public string ApplicationVersion { get; set; } = "2.1.15.14";
             //2021-04-09 17:48:46
-            [JsonProperty("create_datetime")] public string CreateDateTime { get; set; } = DateTime.Now.ToString("u");
+            [JsonProperty("create_datetime")] public string CreateDateTime { get; set; } = DateTime.UtcNow.ToString("u");
 
             [JsonProperty("file_version")] public byte FileVersion { get; set; } = 1;
 
@@ -257,7 +257,7 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override bool MirrorDisplay => ManifestFile.Machine.XMirror || ManifestFile.Machine.YMirror;
+        public override bool DisplayMirror => ManifestFile.Machine.XMirror || ManifestFile.Machine.YMirror;
 
         public override byte AntiAliasing
         {
@@ -442,7 +442,7 @@ namespace UVtools.Core.FileFormats
 
         public void RebuildVDTLayers()
         {
-            ManifestFile.CreateDateTime = DateTime.Now.ToString("u");
+            ManifestFile.CreateDateTime = DateTime.UtcNow.ToString("u");
             var layers = new VDTLayer[LayerCount];
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {

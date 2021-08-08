@@ -273,7 +273,7 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override bool MirrorDisplay => true;
+        public override bool DisplayMirror => true;
 
         public override byte AntiAliasing
         {
@@ -456,7 +456,7 @@ namespace UVtools.Core.FileFormats
                 GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Absolute,
                 GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.CentimetersPerMinute,
                 GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds,
-                GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.FilenameNonZeroPNG,
+                GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.FilenamePng1Started,
                 LayerMoveCommand = GCodeBuilder.GCodeMoveCommands.G0,
                 EndGCodeMoveCommand = GCodeBuilder.GCodeMoveCommands.G1,
                 MaxLEDPower = MaxLEDPower,

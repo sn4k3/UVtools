@@ -1,4 +1,4 @@
-﻿using System.Timers;
+using System.Timers;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
@@ -10,9 +10,9 @@ using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Calibrators
 {
-    public class CalibrateElephantFootControl : ToolControl
+    public class CalibrateLiftHeightControl : ToolControl
     {
-        public OperationCalibrateElephantFoot Operation => BaseOperation as OperationCalibrateElephantFoot;
+        public OperationCalibrateLiftHeight Operation => BaseOperation as OperationCalibrateLiftHeight;
 
         private readonly Timer _timer;
 
@@ -23,17 +23,13 @@ namespace UVtools.WPF.Controls.Calibrators
             set => RaiseAndSetIfChanged(ref _previewImage, value);
         }
 
-        private KernelControl _kernelCtrl;
-        
-
-        public CalibrateElephantFootControl()
+        public CalibrateLiftHeightControl()
         {
-            BaseOperation = new OperationCalibrateElephantFoot(SlicerFile);
+            BaseOperation = new OperationCalibrateLiftHeight(SlicerFile);
             if (!ValidateSpawn()) return;
 
             InitializeComponent();
-            
-            _kernelCtrl = this.Find<KernelControl>("KernelCtrl");
+
 
             _timer = new Timer(20)
             {
@@ -58,24 +54,11 @@ namespace UVtools.WPF.Controls.Calibrators
                     {
                         _timer.Stop();
                         _timer.Start();
-                        if (e.PropertyName == nameof(Operation.ObjectCount))
-                        {
-                            ParentWindow.ButtonOkEnabled = Operation.ObjectCount > 0;
-                            return;
-                        }
                     };
-                    ParentWindow.ButtonOkEnabled = Operation.ObjectCount > 0;
                     _timer.Stop();
                     _timer.Start();
                     break;
             }
-        }
-
-        public override bool UpdateOperation()
-        {
-            Operation.ErodeKernel.Matrix = _kernelCtrl.GetMatrix();
-            Operation.ErodeKernel.Anchor = _kernelCtrl.Anchor;
-            return Operation.ErodeKernel.Matrix is not null;
         }
 
         public void UpdatePreview()

@@ -168,7 +168,7 @@ namespace UVtools.Core.FileFormats
             set => base.MachineZ = HeaderSettings.MachineZ = (float)Math.Round(value, 2);
         }
 
-        public override bool MirrorDisplay
+        public override bool DisplayMirror
         {
             get => HeaderSettings.Mirror > 0;
             set
@@ -360,7 +360,7 @@ namespace UVtools.Core.FileFormats
                 GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Absolute,
                 GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.MillimetersPerMinute,
                 GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds,
-                GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.FilenameNonZeroPNG,
+                GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.FilenamePng1Started,
                 LayerMoveCommand = GCodeBuilder.GCodeMoveCommands.G0,
                 EndGCodeMoveCommand = GCodeBuilder.GCodeMoveCommands.G1
             };
@@ -467,9 +467,6 @@ namespace UVtools.Core.FileFormats
                 LayerManager.Init(HeaderSettings.LayerCount);
 
                 progress.ItemCount = LayerCount;
-
-                var gcode = GCodeStr;
-                float lastPostZ = LayerHeight;
 
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {

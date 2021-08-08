@@ -15,11 +15,13 @@ namespace UVtools.Core.Operations
 {
     public sealed class OperationProgress : BindableBase
     {
-        public const string StatusDecodeThumbnails = "Decoded Thumbnails";
+        public const string StatusDecodePreviews = "Decoded Previews";
         public const string StatusGatherLayers = "Gathered Layers";
         public const string StatusDecodeLayers = "Decoded Layers";
+        public const string StatusEncodePreviews = "Encoded Previews";
         public const string StatusEncodeLayers = "Encoded Layers";
         public const string StatusWritingFile = "Writing File";
+        public const string StatusDecodeGcode = "Decoding GCode";
         public const string StatusEncodeGcode = "Encoding GCode";
 
         public const string StatusOptimizingBounds = "Gathering Bounds";

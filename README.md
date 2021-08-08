@@ -8,6 +8,7 @@
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/sn4k3/UVtools?include_prereleases&style=flat-square)](https://github.com/sn4k3/UVtools/releases)
 [![Downloads](https://img.shields.io/github/downloads/sn4k3/UVtools/total?style=flat-square)](https://github.com/sn4k3/UVtools/releases)
 
+**Download the latest version at:** https://github.com/sn4k3/UVtools/releases/latest
 
 **MSLA/DLP, file analysis, calibration, repair, conversion and manipulation**
 

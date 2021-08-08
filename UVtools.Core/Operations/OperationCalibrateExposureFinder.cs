@@ -1144,7 +1144,7 @@ namespace UVtools.Core.Operations
         {
             base.InitWithSlicerFile();
            
-            _mirrorOutput = SlicerFile.MirrorDisplay;
+            _mirrorOutput = SlicerFile.DisplayMirror;
 
             if (SlicerFile.DisplayWidth > 0)
                 DisplayWidth = (decimal)SlicerFile.DisplayWidth;
@@ -2224,7 +2224,7 @@ namespace UVtools.Core.Operations
 
                 if (_mirrorOutput)
                 {
-                    new OperationFlip(SlicerFile) { FlipDirection = Enumerations.FlipDirection.Horizontally }.Execute(progress);
+                    new OperationFlip(SlicerFile) { FlipDirection = FlipType.Horizontal }.Execute(progress);
                 }
             }
 

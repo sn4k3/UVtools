@@ -59,7 +59,7 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override bool MirrorDisplay
+        public override bool DisplayMirror
         {
             get => false;
             set { }

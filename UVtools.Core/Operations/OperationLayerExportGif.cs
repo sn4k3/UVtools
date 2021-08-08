@@ -24,30 +24,6 @@ namespace UVtools.Core.Operations
     [Serializable]
     public sealed class OperationLayerExportGif : Operation
     {
-        #region Enums
-        public enum ExportGifRotateDirection : byte
-        {
-            None = 9,
-            /// <summary>Rotate 90 degrees clockwise</summary>
-            [Description("Rotate 90º CW")]
-            Rotate90Clockwise = 0,
-            /// <summary>Rotate 180 degrees clockwise</summary>
-            [Description("Rotate 180º")]
-            Rotate180 = 1,
-            /// <summary>Rotate 270 degrees clockwise</summary>
-            [Description("Rotate 90º CCW")]
-            Rotate90CounterClockwise = 2,
-        }
-
-        public enum ExportGifFlipDirection : byte
-        {
-            None,
-            Horizontally,
-            Vertically,
-            Both,
-        }
-        #endregion
-
         #region Members
         private string _filePath;
         private bool _clipByVolumeBounds;
@@ -56,8 +32,8 @@ namespace UVtools.Core.Operations
         private ushort _repeats;
         private ushort _skip;
         private decimal _scale = 50;
-        private ExportGifRotateDirection _rotateDirection = ExportGifRotateDirection.None;
-        private ExportGifFlipDirection _flipDirection = ExportGifFlipDirection.None;
+        private Enumerations.RotateDirection _rotateDirection = Enumerations.RotateDirection.None;
+        private Enumerations.FlipDirection _flipDirection = Enumerations.FlipDirection.None;
 
         #endregion
 
@@ -188,13 +164,13 @@ namespace UVtools.Core.Operations
 
         public float ScaleFactor => (float)_scale / 100f;
 
-        public ExportGifRotateDirection RotateDirection
+        public Enumerations.RotateDirection RotateDirection
         {
             get => _rotateDirection;
             set => RaiseAndSetIfChanged(ref _rotateDirection, value);
         }
 
-        public ExportGifFlipDirection FlipDirection
+        public Enumerations.FlipDirection FlipDirection
         {
             get => _flipDirection;
             set => RaiseAndSetIfChanged(ref _flipDirection, value);
@@ -257,23 +233,14 @@ namespace UVtools.Core.Operations
                     CvInvoke.Resize(matRoi, matRoi, new Size((int) (matRoi.Width * ScaleFactor), (int)(matRoi.Height * ScaleFactor)));
                 }
 
-                if (_flipDirection != ExportGifFlipDirection.None)
+                if (_flipDirection != Enumerations.FlipDirection.None)
                 {
-                    FlipType? flipType = _flipDirection switch
-                    {
-                        ExportGifFlipDirection.Horizontally => FlipType.Horizontal,
-                        ExportGifFlipDirection.Vertically => FlipType.Vertical,
-                        ExportGifFlipDirection.Both => FlipType.Both,
-                        _ => null
-                    };
-
-                    if (flipType is not null)
-                        CvInvoke.Flip(matRoi, matRoi, flipType.Value);
+                    CvInvoke.Flip(matRoi, matRoi, Enumerations.ToOpenCVFlipType(_flipDirection));
                 }
 
-                if (_rotateDirection != ExportGifRotateDirection.None)
+                if (_rotateDirection != Enumerations.RotateDirection.None)
                 {
-                    CvInvoke.Rotate(matRoi, matRoi, (RotateFlags) _rotateDirection);
+                    CvInvoke.Rotate(matRoi, matRoi, Enumerations.ToOpenCVRotateFlags(_rotateDirection));
                 }
 
                 if (_renderLayerCount)

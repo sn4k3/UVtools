@@ -75,7 +75,7 @@
       </StackPanel>
       </Border>
       <Grid 
-        RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,*"
+        RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,*"
         Margin="20"
         >
 
@@ -83,7 +83,15 @@
         <TextBlock Grid.Row="2" Text="{Binding Version}"/>
         <TextBlock Grid.Row="4" Text="{Binding Copyright}"/>
         <TextBlock Grid.Row="6" Text="{Binding Company}"/>
-        <TextBox Grid.Row="8" 
+        <Button Grid.Row="8" VerticalAlignment="Center"
+                Command="{Binding OpenLicense}">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Image Source="/Assets/Icons/balance-scale-16x16.png"></Image>
+                <TextBlock VerticalAlignment="Center" Text="{Binding License}"/>
+            </StackPanel>
+        </Button>
+
+        <TextBox Grid.Row="10" 
                  IsReadOnly="True"
                  MaxHeight="550"
                  Text="{Binding Description}"/>

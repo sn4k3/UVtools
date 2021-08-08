@@ -595,12 +595,15 @@ namespace UVtools.Core
         /// <param name="zeroLightOffDelay">If true also set light off to 0, otherwise current value will be kept.</param>
         /// </summary>
         public void SetNoLiftForSamePositionedLayers(bool zeroLightOffDelay = false)
+            => SetLiftForSamePositionedLayers(0, zeroLightOffDelay);
+
+        public void SetLiftForSamePositionedLayers(float liftHeight = 0, bool zeroLightOffDelay = false)
         {
             for (int layerIndex = 1; layerIndex < LayerCount; layerIndex++)
             {
                 var layer = this[layerIndex];
                 if (this[layerIndex - 1].PositionZ != layer.PositionZ) continue;
-                layer.LiftHeight = 0;
+                layer.LiftHeight = liftHeight;
                 layer.WaitTimeAfterLift = 0;
                 if (zeroLightOffDelay)
                 {

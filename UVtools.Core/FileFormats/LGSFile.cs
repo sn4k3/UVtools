@@ -326,7 +326,7 @@ namespace UVtools.Core.FileFormats
             set => base.MachineZ = HeaderSettings.MachineZ = (float)Math.Round(value, 2);
         }
 
-        public override bool MirrorDisplay
+        public override bool DisplayMirror
         {
             get => true;
             set { }
@@ -381,6 +381,26 @@ namespace UVtools.Core.FileFormats
             {
                 HeaderSettings.LightOffDelayMs = TimeExtensions.SecondsToMilliseconds(value);
                 base.LightOffDelay = value;
+            }
+        }
+
+        public override float BottomWaitTimeBeforeCure
+        {
+            get => base.BottomWaitTimeBeforeCure;
+            set
+            {
+                SetBottomLightOffDelay(value);
+                base.BottomWaitTimeBeforeCure = value;
+            }
+        }
+
+        public override float WaitTimeBeforeCure
+        {
+            get => base.WaitTimeBeforeCure;
+            set
+            {
+                SetNormalLightOffDelay(value);
+                base.WaitTimeBeforeCure = value;
             }
         }
 

@@ -561,16 +561,16 @@ namespace UVtools.Core
                    $"{nameof(BoundingRectangle)}: {BoundingRectangle}, " +
                    $"{nameof(IsBottomLayer)}: {IsBottomLayer}, " +
                    $"{nameof(IsNormalLayer)}: {IsNormalLayer}, " +
-                   $"{nameof(LayerHeight)}: {LayerHeight}, " +
-                   $"{nameof(PositionZ)}: {PositionZ}, " +
-                   $"{nameof(LightOffDelay)}: {LightOffDelay}, " +
-                   $"{nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, " +
-                   $"{nameof(ExposureTime)}: {ExposureTime}, " +
-                   $"{nameof(WaitTimeAfterCure)}: {WaitTimeAfterCure}, " +
-                   $"{nameof(LiftHeight)}: {LiftHeight}, " +
-                   $"{nameof(LiftSpeed)}: {LiftSpeed}, " +
-                   $"{nameof(WaitTimeAfterLift)}: {WaitTimeAfterLift}, " +
-                   $"{nameof(RetractSpeed)}: {RetractSpeed}, " +
+                   $"{nameof(LayerHeight)}: {LayerHeight}mm, " +
+                   $"{nameof(PositionZ)}: {PositionZ}mm, " +
+                   $"{nameof(LightOffDelay)}: {LightOffDelay}s, " +
+                   $"{nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}s, " +
+                   $"{nameof(ExposureTime)}: {ExposureTime}s, " +
+                   $"{nameof(WaitTimeAfterCure)}: {WaitTimeAfterCure}s, " +
+                   $"{nameof(LiftHeight)}: {LiftHeight}mm, " +
+                   $"{nameof(LiftSpeed)}: {LiftSpeed}mm/mim, " +
+                   $"{nameof(WaitTimeAfterLift)}: {WaitTimeAfterLift}s, " +
+                   $"{nameof(RetractSpeed)}: {RetractSpeed}mm/mim, " +
                    $"{nameof(LightPWM)}: {LightPWM}, " +
                    $"{nameof(IsModified)}: {IsModified}, " +
                    $"{nameof(HaveGlobalParameters)}: {HaveGlobalParameters}";
@@ -606,21 +606,21 @@ namespace UVtools.Core
             WaitTimeAfterLift = 0;
         }
 
-        public string FormatFileName(string prepend, byte padDigits, bool layerIndexZeroStarted = true)
+        public string FormatFileName(string prepend, byte padDigits, bool layerIndexZeroStarted = true, string appendExt = ".png")
         {
             var index = Index;
             if (!layerIndexZeroStarted)
             {
                 index++;
             }
-            return $"{prepend}{index.ToString().PadLeft(padDigits, '0')}.png";
+            return $"{prepend}{index.ToString().PadLeft(padDigits, '0')}{appendExt}";
         }
 
-        public string FormatFileName(string prepend = "", bool layerIndexZeroStarted = true)
-            => FormatFileName(prepend, ParentLayerManager.LayerDigits, layerIndexZeroStarted);
+        public string FormatFileName(string prepend = "", bool layerIndexZeroStarted = true, string appendExt = ".png")
+            => FormatFileName(prepend, ParentLayerManager.LayerDigits, layerIndexZeroStarted, appendExt);
 
-        public string FormatFileName(byte padDigits, bool layerIndexZeroStarted = true)
-            => FormatFileName(string.Empty, padDigits, layerIndexZeroStarted);
+        public string FormatFileName(byte padDigits, bool layerIndexZeroStarted = true, string appendExt = ".png")
+            => FormatFileName(string.Empty, padDigits, layerIndexZeroStarted, appendExt);
 
 
         public Rectangle GetBoundingRectangle(Mat mat = null, bool reCalculate = false)

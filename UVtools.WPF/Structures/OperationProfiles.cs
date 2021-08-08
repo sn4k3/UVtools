@@ -47,6 +47,7 @@ namespace UVtools.WPF.Structures
         [XmlElement(typeof(OperationCalibrateExposureFinder))]
         [XmlElement(typeof(OperationCalibrateElephantFoot))]
         [XmlElement(typeof(OperationCalibrateXYZAccuracy))]
+        [XmlElement(typeof(OperationCalibrateLiftHeight))]
         [XmlElement(typeof(OperationCalibrateTolerance))]
         [XmlElement(typeof(OperationCalibrateGrayscale))]
         [XmlElement(typeof(OperationCalibrateStressTower))]

@@ -91,8 +91,8 @@ eg: `PreviewDataType=RGB565` and `LayerDataType=PNG`
 ## Structure
 
 1. [File] (150 bytes)
-2. [Header] (197 bytes)
-3. [Custom table] (0 or more bytes)
+2. [Header] (199 bytes)
+3. [Custom table] (4 bytes + 0 or more bytes)
 4. [Previews] (0 or more)
    - Preview 1 (8 bytes + sizeof(preview image data))
    - Preview 2 (8 bytes + sizeof(preview image data))

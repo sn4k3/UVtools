@@ -751,7 +751,7 @@ namespace UVtools.Core.FileFormats
             set => base.MachineZ = HeaderSettings.BedSizeZ = (float)Math.Round(value, 2);
         }
 
-        public override bool MirrorDisplay
+        public override bool DisplayMirror
         {
             get => HeaderSettings.ProjectorType > 0;
             set
@@ -809,6 +809,26 @@ namespace UVtools.Core.FileFormats
         {
             get => HeaderSettings.LightOffDelay;
             set => base.LightOffDelay = HeaderSettings.LightOffDelay = (float)Math.Round(value, 2);
+        }
+
+        public override float BottomWaitTimeBeforeCure
+        {
+            get => base.BottomWaitTimeBeforeCure;
+            set
+            {
+                SetBottomLightOffDelay(value);
+                base.BottomWaitTimeBeforeCure = value;
+            }
+        }
+
+        public override float WaitTimeBeforeCure
+        {
+            get => base.WaitTimeBeforeCure;
+            set
+            {
+                SetNormalLightOffDelay(value);
+                base.WaitTimeBeforeCure = value;
+            }
         }
 
         public override float BottomExposureTime
@@ -1070,7 +1090,7 @@ namespace UVtools.Core.FileFormats
                 FileFullPath = fileFullPath;
 
 
-                progress.Reset(OperationProgress.StatusDecodeThumbnails, ThumbnailsCount);
+                progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
                 Debug.Write("Header -> ");
                 Debug.WriteLine(HeaderSettings);
 

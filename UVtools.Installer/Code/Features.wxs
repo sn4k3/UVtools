@@ -3,7 +3,7 @@
   <Fragment>
 
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="ProgramFilesFolder">
+      <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLLOCATION" Name="UVtools">
           <Merge Id="UVtools" SourceFile="$(var.UVtools.InstallerMM.TargetPath)" DiskId="1" Language="1033" />
       </Directory>

@@ -26,6 +26,7 @@
 
 # Supporters / Contributors
 
+- https://github.com/sponsors/sn4k3
 - Ingo Strohmenger
 - Sven Vogt
 - Paul Hammerstrom
@@ -58,3 +59,4 @@
 - Thomas Wilbert
 - Gary Kyle
 - Peter Csaki
+- Chris Luginbuhl

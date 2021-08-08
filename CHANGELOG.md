@@ -1,5 +1,23 @@
 # Changelog
 
+## 08/08/2021 - v2.17.0
+
+- **Windows MSI:**
+   - (Fix) Use the folder programs x64 instead of x86 for new installation path (#254)
+   - (Improvement) Mark program and all files as x64
+   - (Improvement) Add UVtools logo to side panel and top banner
+   - (Improvement) Add open-source logo to side panel
+   - (Improvement) License text aligment and bold title
+- (Add) File format: OSLA / ODLP / OMSLA - Universal binary file format
+- (Add) Calibration - Lift height: Generates test models with various strategies and increments to measure the optimal lift height or peel forces for layers given the printed area
+- (Add) Layer Actions - Export layers to images (PNG, JPG/JPEG, JP2, TIF/TIFF, BMP, PBM, PGM, SR/RAS and SVG)
+- (Add) About box: License with link
+- (Add) Include a copy of the LICENSE on the packages
+- (Improvement) File formats: Implement `Wait time before cure` properties on file formats with light-off delay, when used it will calculate the right light-off delay with that extra time and set to `LightOffDelay` property
+- (Improvement) Change all date times to Utc instead of local
+- (Fix) Tool - Flip: 'Both' were not working correctly
+- (Fix) Linux: File 'UVtools.sh' with incorrect line break type, changed to \n (#258)
+
 ## 01/08/2021 - v2.16.0
 
 - **(Add) PrusaSlicer printers:**

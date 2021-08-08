@@ -235,6 +235,7 @@ namespace UVtools.Core.FileFormats
             new FDGFile(), // fdg
             new PhotonWorkshopFile(),   // PSW
             new CWSFile(),   // CWS
+            new OSLAFile(),  // OSLA
             new ZCodeFile(),   // zcode
             new ZCodexFile(),   // zcodex
             new MDLPFile(),   // MKS v1
@@ -487,6 +488,9 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public string FileFullPath { get; set; }
 
+        public string Filename => Path.GetFileName(FileFullPath);
+        public string FilenameNoExt => GetFileNameStripExtensions(FileFullPath);
+
         /// <summary>
         /// Gets the thumbnails count present in this file format
         /// </summary>
@@ -640,7 +644,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets or sets if images need to be mirrored on lcd to print on the correct orientation
         /// </summary>
-        public virtual bool MirrorDisplay { get; set; }
+        public virtual bool DisplayMirror { get; set; }
 
         /// <summary>
         /// Gets if the display is in portrait mode
@@ -827,157 +831,6 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public uint NormalLayerCount => LayerCount - BottomLayerCount;
 
-        public virtual float BottomWaitTimeBeforeCure
-        {
-            get => _bottomWaitTimeBeforeCure;
-            set
-            {
-                RaiseAndSet(ref _bottomWaitTimeBeforeCure, value);
-                RaisePropertyChanged(nameof(WaitTimeRepresentation));
-            }
-        }
-
-        public virtual float WaitTimeBeforeCure
-        {
-            get => _waitTimeBeforeCure;
-            set
-            {
-                RaiseAndSet(ref _waitTimeBeforeCure, value);
-                RaisePropertyChanged(nameof(WaitTimeRepresentation));
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the initial exposure time for <see cref="BottomLayerCount"/> in seconds
-        /// </summary>
-        public virtual float BottomExposureTime
-        {
-            get => _bottomExposureTime;
-            set
-            {
-                RaiseAndSet(ref _bottomExposureTime, value);
-                RaisePropertyChanged(nameof(ExposureRepresentation));
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the normal layer exposure time in seconds
-        /// </summary>
-        public virtual float ExposureTime
-        {
-            get => _exposureTime;
-            set
-            {
-                RaiseAndSet(ref _exposureTime, value);
-                RaisePropertyChanged(nameof(ExposureRepresentation));
-            }
-        }
-
-        public virtual float BottomWaitTimeAfterCure
-        {
-            get => _bottomWaitTimeAfterCure;
-            set
-            {
-                RaiseAndSet(ref _bottomWaitTimeAfterCure, value);
-                RaisePropertyChanged(nameof(WaitTimeRepresentation));
-            }
-        }
-
-        public virtual float WaitTimeAfterCure
-        {
-            get => _waitTimeAfterCure;
-            set
-            {
-                RaiseAndSet(ref _waitTimeAfterCure, value);
-                RaisePropertyChanged(nameof(WaitTimeRepresentation));
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the bottom lift height in mm
-        /// </summary>
-        public virtual float BottomLiftHeight
-        {
-            get => _bottomLiftHeight;
-            set
-            {
-                RaiseAndSet(ref _bottomLiftHeight, value);
-                RaisePropertyChanged(nameof(LiftRepresentation));
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the lift height in mm
-        /// </summary>
-        public virtual float LiftHeight
-        {
-            get => _liftHeight;
-            set
-            {
-                RaiseAndSet(ref _liftHeight, value);
-                RaisePropertyChanged(nameof(LiftRepresentation));
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the bottom lift speed in mm/min
-        /// </summary>
-        public virtual float BottomLiftSpeed
-        {
-            get => _bottomLiftSpeed;
-            set
-            {
-                RaiseAndSet(ref _bottomLiftSpeed, value);
-                RaisePropertyChanged(nameof(LiftRepresentation));
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the speed in mm/min
-        /// </summary>
-        public virtual float LiftSpeed
-        {
-            get => _liftSpeed;
-            set
-            {
-                RaiseAndSet(ref _liftSpeed, value);
-                RaisePropertyChanged(nameof(LiftRepresentation));
-            }
-        }
-
-        public virtual float BottomWaitTimeAfterLift
-        {
-            get => _bottomWaitTimeAfterLift;
-            set
-            {
-                RaiseAndSet(ref _bottomWaitTimeAfterLift, value);
-                RaisePropertyChanged(nameof(WaitTimeRepresentation));
-            }
-        }
-
-        public virtual float WaitTimeAfterLift
-        {
-            get => _waitTimeAfterLift;
-            set
-            {
-                RaiseAndSet(ref _waitTimeAfterLift, value);
-                RaisePropertyChanged(nameof(WaitTimeRepresentation));
-            }
-        }
-
-        /// <summary>
-        /// Gets the speed in mm/min for the retracts
-        /// </summary>
-        public virtual float RetractSpeed
-        {
-            get => _retractSpeed;
-            set
-            {
-                RaiseAndSet(ref _retractSpeed, value);
-                RaisePropertyChanged(nameof(RetractRepresentation));
-            }
-        }
-
         /// <summary>
         /// Gets or sets the bottom layer off time in seconds
         /// </summary>
@@ -986,7 +839,7 @@ namespace UVtools.Core.FileFormats
             get => _bottomLightOffDelay;
             set
             {
-                RaiseAndSet(ref _bottomLightOffDelay, value);
+                RaiseAndSet(ref _bottomLightOffDelay, (float)Math.Round(value, 2));
                 RaisePropertyChanged(nameof(LightOffDelayRepresentation));
             }
         }
@@ -999,8 +852,160 @@ namespace UVtools.Core.FileFormats
             get => _lightOffDelay;
             set
             {
-                RaiseAndSet(ref _lightOffDelay, value);
+                RaiseAndSet(ref _lightOffDelay, (float)Math.Round(value, 2));
                 RaisePropertyChanged(nameof(LightOffDelayRepresentation));
+            }
+        }
+
+        public virtual float BottomWaitTimeBeforeCure
+        {
+            get => _bottomWaitTimeBeforeCure;
+            set
+            {
+                RaiseAndSet(ref _bottomWaitTimeBeforeCure, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(WaitTimeRepresentation));
+            }
+        }
+
+
+        public virtual float WaitTimeBeforeCure
+        {
+            get => _waitTimeBeforeCure;
+            set
+            {
+                RaiseAndSet(ref _waitTimeBeforeCure, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(WaitTimeRepresentation));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the initial exposure time for <see cref="BottomLayerCount"/> in seconds
+        /// </summary>
+        public virtual float BottomExposureTime
+        {
+            get => _bottomExposureTime;
+            set
+            {
+                RaiseAndSet(ref _bottomExposureTime, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(ExposureRepresentation));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the normal layer exposure time in seconds
+        /// </summary>
+        public virtual float ExposureTime
+        {
+            get => _exposureTime;
+            set
+            {
+                RaiseAndSet(ref _exposureTime, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(ExposureRepresentation));
+            }
+        }
+
+        public virtual float BottomWaitTimeAfterCure
+        {
+            get => _bottomWaitTimeAfterCure;
+            set
+            {
+                RaiseAndSet(ref _bottomWaitTimeAfterCure, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(WaitTimeRepresentation));
+            }
+        }
+
+        public virtual float WaitTimeAfterCure
+        {
+            get => _waitTimeAfterCure;
+            set
+            {
+                RaiseAndSet(ref _waitTimeAfterCure, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(WaitTimeRepresentation));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the bottom lift height in mm
+        /// </summary>
+        public virtual float BottomLiftHeight
+        {
+            get => _bottomLiftHeight;
+            set
+            {
+                RaiseAndSet(ref _bottomLiftHeight, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(LiftRepresentation));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the lift height in mm
+        /// </summary>
+        public virtual float LiftHeight
+        {
+            get => _liftHeight;
+            set
+            {
+                RaiseAndSet(ref _liftHeight, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(LiftRepresentation));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the bottom lift speed in mm/min
+        /// </summary>
+        public virtual float BottomLiftSpeed
+        {
+            get => _bottomLiftSpeed;
+            set
+            {
+                RaiseAndSet(ref _bottomLiftSpeed, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(LiftRepresentation));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the speed in mm/min
+        /// </summary>
+        public virtual float LiftSpeed
+        {
+            get => _liftSpeed;
+            set
+            {
+                RaiseAndSet(ref _liftSpeed, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(LiftRepresentation));
+            }
+        }
+
+        public virtual float BottomWaitTimeAfterLift
+        {
+            get => _bottomWaitTimeAfterLift;
+            set
+            {
+                RaiseAndSet(ref _bottomWaitTimeAfterLift, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(WaitTimeRepresentation));
+            }
+        }
+
+        public virtual float WaitTimeAfterLift
+        {
+            get => _waitTimeAfterLift;
+            set
+            {
+                RaiseAndSet(ref _waitTimeAfterLift, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(WaitTimeRepresentation));
+            }
+        }
+
+        /// <summary>
+        /// Gets the speed in mm/min for the retracts
+        /// </summary>
+        public virtual float RetractSpeed
+        {
+            get => _retractSpeed;
+            set
+            {
+                RaiseAndSet(ref _retractSpeed, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(RetractRepresentation));
             }
         }
 
@@ -1547,7 +1552,7 @@ namespace UVtools.Core.FileFormats
 
             if (Thumbnails is not null)
             {
-                for (int i = 0; i < ThumbnailsCount; i++)
+                for (int i = 0; i < Thumbnails.Length; i++)
                 {
                     Thumbnails[i]?.Dispose();
                 }
@@ -2316,6 +2321,7 @@ namespace UVtools.Core.FileFormats
 
         public float CalculateLightOffDelay(bool isBottomLayer, float extraTime = 0)
         {
+            extraTime = (float)Math.Round(extraTime, 2);
             if (SupportsGCode) return extraTime;
             return isBottomLayer 
                     ? OperationCalculator.LightOffDelayC.CalculateSeconds(BottomLiftHeight, BottomLiftSpeed, RetractSpeed, extraTime)
@@ -2401,33 +2407,37 @@ namespace UVtools.Core.FileFormats
                 slicerFile.DisplayWidth = DisplayWidth;
                 slicerFile.DisplayHeight = DisplayHeight;
                 slicerFile.MachineZ = MachineZ;
-                slicerFile.MirrorDisplay = MirrorDisplay;
+                slicerFile.DisplayMirror = DisplayMirror;
 
+                // Exposure
+                slicerFile.BottomExposureTime = BottomExposureTime;
+                slicerFile.ExposureTime = ExposureTime;
+
+                // Lift
+                slicerFile.BottomLiftHeight = BottomLiftHeight;
+                slicerFile.LiftHeight = LiftHeight;
+
+                slicerFile.BottomLiftSpeed = BottomLiftSpeed;
+                slicerFile.LiftSpeed = LiftSpeed;
+                
+                slicerFile.RetractSpeed = RetractSpeed;
+
+                // Wait times
                 slicerFile.BottomLightOffDelay = BottomLightOffDelay;
                 slicerFile.LightOffDelay = LightOffDelay;
 
                 slicerFile.BottomWaitTimeBeforeCure = BottomWaitTimeBeforeCure;
                 slicerFile.WaitTimeBeforeCure = WaitTimeBeforeCure;
 
-                slicerFile.BottomExposureTime = BottomExposureTime;
-                slicerFile.ExposureTime = ExposureTime;
-
                 slicerFile.BottomWaitTimeAfterCure = BottomWaitTimeAfterCure;
                 slicerFile.WaitTimeAfterCure = WaitTimeAfterCure;
-
-                slicerFile.BottomLiftHeight = BottomLiftHeight;
-                slicerFile.LiftHeight = LiftHeight;
-
-                slicerFile.BottomLiftSpeed = BottomLiftSpeed;
-                slicerFile.LiftSpeed = LiftSpeed;
 
                 slicerFile.BottomWaitTimeAfterLift = BottomWaitTimeAfterLift;
                 slicerFile.WaitTimeAfterLift = WaitTimeAfterLift;
 
-                slicerFile.RetractSpeed = RetractSpeed;
-
                 slicerFile.BottomLightPWM = BottomLightPWM;
                 slicerFile.LightPWM = LightPWM;
+
 
                 slicerFile.MachineName = MachineName;
                 slicerFile.MaterialName = MaterialName;

@@ -10,7 +10,7 @@
   Version="$(var.MSIProductVersion)"
   -->
   <Product Id="*" Name="UVtools" Language="1033" Version="$(var.MSIProductVersion)" Manufacturer="PTRTECH" UpgradeCode="1ea6d212-15c0-425e-b2ec-4b6c60817552">
-    <Package InstallerVersion="301" Compressed="yes" InstallScope="perMachine" />
+    <Package InstallerVersion="301" Compressed="yes" InstallScope="perMachine" Platform="x64" />
     <MediaTemplate EmbedCab="yes" />
     <!-- Major Upgrade Rule to disallow downgrades -->
     <!-- AllowSameVersionUpgrades="yes" -->

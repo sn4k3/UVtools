@@ -230,7 +230,7 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override bool MirrorDisplay { get; set; }
+        public override bool DisplayMirror { get; set; }
 
         public override byte AntiAliasing
         {
@@ -274,6 +274,26 @@ namespace UVtools.Core.FileFormats
         {
             get => SlicerInfoSettings.LightOffDelay;
             set => base.LightOffDelay = SlicerInfoSettings.LightOffDelay = (ushort)value;
+        }
+
+        public override float BottomWaitTimeBeforeCure
+        {
+            get => base.BottomWaitTimeBeforeCure;
+            set
+            {
+                SetBottomLightOffDelay(value);
+                base.BottomWaitTimeBeforeCure = value;
+            }
+        }
+
+        public override float WaitTimeBeforeCure
+        {
+            get => base.WaitTimeBeforeCure;
+            set
+            {
+                SetNormalLightOffDelay(value);
+                base.WaitTimeBeforeCure = value;
+            }
         }
 
         public override float BottomExposureTime

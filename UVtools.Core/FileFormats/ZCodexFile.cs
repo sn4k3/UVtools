@@ -209,7 +209,7 @@ namespace UVtools.Core.FileFormats
             set { }
         }
 
-        public override bool MirrorDisplay
+        public override bool DisplayMirror
         {
             get => true;
             set { }
@@ -364,7 +364,7 @@ namespace UVtools.Core.FileFormats
                 GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Partial,
                 GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.MillimetersPerMinute,
                 GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds,
-                GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.LayerIndexZero,
+                GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.LayerIndex0Started,
                 LayerMoveCommand = GCodeBuilder.GCodeMoveCommands.G1,
                 EndGCodeMoveCommand = GCodeBuilder.GCodeMoveCommands.G1
             };

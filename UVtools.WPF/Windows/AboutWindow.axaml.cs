@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Markup.Xaml;
 using Emgu.CV;
-using Emgu.CV.Stitching;
 using UVtools.Core;
 using UVtools.WPF.Controls;
 
@@ -17,6 +16,7 @@ namespace UVtools.WPF.Windows
         public string Version => $"Version: {App.VersionStr} {RuntimeInformation.ProcessArchitecture}";
         public string Copyright => App.AssemblyCopyright;
         public string Company => App.AssemblyCompany;
+        public string License => About.License;
         public string Description => App.AssemblyDescription;
 
         public string OSDescription => $"{RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture}";
@@ -74,6 +74,8 @@ namespace UVtools.WPF.Windows
         public void SetOpenCVInformationToClipboard()
         {
             Application.Current.Clipboard.SetTextAsync(CvInvoke.BuildInformation);
-        } 
+        }
+
+        public void OpenLicense() => App.OpenBrowser(About.LicenseUrl);
     }
 }

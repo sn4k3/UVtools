@@ -441,6 +441,26 @@ namespace UVtools.Core.FileFormats
             set => base.LightOffDelay = SlicerInfoSettings.LightOffDelay = (ushort)value;
         }
 
+        public override float BottomWaitTimeBeforeCure
+        {
+            get => base.BottomWaitTimeBeforeCure;
+            set
+            {
+                SetBottomLightOffDelay(value);
+                base.BottomWaitTimeBeforeCure = value;
+            }
+        }
+
+        public override float WaitTimeBeforeCure
+        {
+            get => base.WaitTimeBeforeCure;
+            set
+            {
+                SetNormalLightOffDelay(value);
+                base.WaitTimeBeforeCure = value;
+            }
+        }
+
         public override float BottomExposureTime
         {
             get => SlicerInfoSettings.BottomExposureTime;

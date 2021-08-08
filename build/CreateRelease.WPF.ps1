@@ -69,7 +69,7 @@ if([string]::IsNullOrWhiteSpace($version)){
 
 # MSI Variables
 $installers = @("UVtools.InstallerMM", "UVtools.Installer")
-$msiSourceFile = "UVtools.Installer\bin\Release\UVtools.msi"
+$msiSourceFile = "UVtools.Installer\bin\x64\Release\UVtools.msi"
 $msbuild = "`"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe`" /t:Build /p:Configuration=$buildWith /p:MSIProductVersion=$version"
 
 Write-Output "

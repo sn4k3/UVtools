@@ -21,7 +21,6 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Avalonia.Controls.Primitives;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Extensions;
@@ -293,6 +292,14 @@ namespace UVtools.WPF
             },
             new()
             {
+                Tag = new OperationCalibrateLiftHeight(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/long-arrow-alt-up-16x16.png"))
+                }
+            },
+            new()
+            {
                 Tag = new OperationCalibrateTolerance(),
                 Icon = new Avalonia.Controls.Image
                 {
@@ -349,6 +356,14 @@ namespace UVtools.WPF
                 Icon = new Avalonia.Controls.Image
                 {
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/trash-16x16.png"))
+                }
+            },
+            new()
+            {
+                Tag = new OperationLayerExportImage(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/file-image-16x16.png"))
                 }
             },
             new()
@@ -1245,7 +1260,7 @@ namespace UVtools.WPF
                 _showLayerImageRotated = mat.Height > mat.Width;
             }
 
-            if (SlicerFile.MirrorDisplay)
+            if (SlicerFile.DisplayMirror)
             {
                 _showLayerImageFlipped = true;
             }

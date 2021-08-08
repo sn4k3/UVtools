@@ -267,7 +267,7 @@ namespace UVtools.Core.FileFormats
                 get
                 {
                     //2021-01-23 at 04:07:36 UTC
-                    var now = DateTime.Now;
+                    var now = DateTime.UtcNow;
                     return $"{now.Year}-{now.Month:D2}-{now.Day:D2} at {now.Hour:D2}:{now.Minute:D2}:{now.Second:D2} {now.Kind}";
                 }
                 set{}
@@ -375,7 +375,7 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override bool MirrorDisplay
+        public override bool DisplayMirror
         {
             get => PrinterSettings.DisplayMirrorX || PrinterSettings.DisplayMirrorY;  
             set

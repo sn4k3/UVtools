@@ -398,7 +398,7 @@ namespace UVtools.Core.FileFormats
             set => base.MachineZ = OutputSettings.PlatformZSize = (float)Math.Round(value, 2);
         }
 
-        public override bool MirrorDisplay
+        public override bool DisplayMirror
         {
             get => OutputSettings.FlipX;
             set
@@ -546,7 +546,7 @@ namespace UVtools.Core.FileFormats
                 GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Partial,
                 GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.MillimetersPerMinute,
                 GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds,
-                GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.LayerIndexZero,
+                GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.LayerIndex0Started,
                 LayerMoveCommand = GCodeBuilder.GCodeMoveCommands.G1,
                 EndGCodeMoveCommand = GCodeBuilder.GCodeMoveCommands.G1
             };
@@ -629,7 +629,7 @@ namespace UVtools.Core.FileFormats
                 var entry = outputFile.CreateEntry("slice.conf");
 
                 using TextWriter tw = new StreamWriter(entry.Open());
-                tw.WriteLine($"# {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.Now}");
+                tw.WriteLine($"# {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.UtcNow}");
                 tw.WriteLine("# conf version 1.0");
                 tw.WriteLine("");
 
@@ -875,7 +875,7 @@ namespace UVtools.Core.FileFormats
             if (!SupportsGCode || SuppressRebuildGCode) return;
             //string arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
             //GCode.Clear();
-            //GCode.AppendLine($"; {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.Now}");
+            //GCode.AppendLine($"; {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.UtcNow}");
             StringBuilder sb = new();
             sb.AppendLine(";(**** Build and Slicing Parameters ****)");
 
@@ -1005,7 +1005,7 @@ namespace UVtools.Core.FileFormats
                 using (TextWriter tw = new StreamWriter(stream))
                 {
 
-                    tw.WriteLine($"# {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.Now}");
+                    tw.WriteLine($"# {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.UtcNow}");
                     tw.WriteLine("# conf version 1.0");
                     tw.WriteLine("");
 

@@ -128,7 +128,7 @@ namespace UVtools.ScriptSample
 
             if (InputDoNotUseLift.Value)
             {
-                SlicerFile.LayerManager.SetNoLiftForSamePositionedLayers();
+                SlicerFile.LayerManager.SetLiftForSamePositionedLayers(SlicerFile.SupportsGCode ? 0 : 0.1f);
             }
             Progress++;
 
