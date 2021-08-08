@@ -1,0 +1,119 @@
+//------------------------------------------------
+//--- 010 Editor v8.0.1 Binary Template
+//
+//      File: osla, omsla, odlp
+//   Authors: Tiago Conceição
+//------------------------------------------------
+
+LittleEndian();
+
+struct FILE {
+    char Marker[8] <fgcolor=cBlack, bgcolor=cRed>;
+    ushort Version <fgcolor=cBlack, bgcolor=cRed>;
+    
+    char CreatedDateTime[20] <fgcolor=cBlack, bgcolor=cRed>;
+    char CreatedBy[50] <fgcolor=cBlack, bgcolor=cRed>;
+    char ModifiedDateTime[20] <fgcolor=cBlack, bgcolor=cRed>;
+    char ModifiedBy[50] <fgcolor=cBlack, bgcolor=cRed>;
+} file;
+
+struct HEADER {
+    uint TableSize <fgcolor=cBlack, bgcolor=cRed>;
+    uint ResolutionX <fgcolor=cBlack, bgcolor=cRed>;
+    uint ResolutionY <fgcolor=cBlack, bgcolor=cRed>;
+    
+    float MachineZ <fgcolor=cBlack, bgcolor=cRed>;
+    float DisplayWidth <fgcolor=cBlack, bgcolor=cRed>;
+    float DisplayHeight <fgcolor=cBlack, bgcolor=cRed>;
+    byte DisplayMirror <fgcolor=cBlack, bgcolor=cRed>;
+    
+    char PreviewDataType[10] <fgcolor=cBlack, bgcolor=cRed>;
+    char LayerDataType[10] <fgcolor=cBlack, bgcolor=cRed>;
+    
+    uint PreviewTableSize <fgcolor=cBlack, bgcolor=cRed>;
+    uint PreviewCount <fgcolor=cBlack, bgcolor=cRed>;
+    uint LayerTableSize <fgcolor=cBlack, bgcolor=cRed>;
+    ushort BottomLayersCount <fgcolor=cBlack, bgcolor=cRed>;
+    uint LayerCount <fgcolor=cBlack, bgcolor=cRed>;
+    uint LayerDefinitionsAddress <fgcolor=cBlack, bgcolor=cRed>;
+    uint GCodeAddress <fgcolor=cBlack, bgcolor=cRed>;
+    uint PrintTime <fgcolor=cBlack, bgcolor=cRed>;
+    float MaterialMilliliters <fgcolor=cBlack, bgcolor=cRed>;
+    float MaterialCost <fgcolor=cBlack, bgcolor=cRed>;
+} header;
+
+int headerSize = sizeof(header);
+if(header.TableSize > headerSize)
+{
+    FSkip(header.TableSize - headerSize);
+}
+
+struct CUSTOM {
+    uint TableSize <fgcolor=cBlack, bgcolor=cRed>;
+    byte Data[TableSize] <fgcolor=cBlack, bgcolor=cRed>;
+} custom;
+
+
+struct PREVIEW {
+    ushort ResolutionX <fgcolor=cBlack, bgcolor=cRed>;
+    ushort ResolutionY <fgcolor=cBlack, bgcolor=cRed>;
+    uint ImageLength <fgcolor=cBlack, bgcolor=cRed>;
+    byte Data[ImageLength] <fgcolor=cBlack, bgcolor=cRed>;
+};
+
+
+/*if(header.PreviewLargeOffsetAddress > 0)
+{
+    FSeek(header.PreviewLargeOffsetAddress);
+    PREVIEW previewLarge <fgcolor=cBlack, bgcolor=cYellow>;
+}
+if(header.PreviewSmallOffsetAddress > 0)
+{
+    FSeek(header.PreviewSmallOffsetAddress);
+    PREVIEW previewSmall <fgcolor=cBlack, bgcolor=cYellow>;
+}
+
+if(header.PrintParametersOffsetAddress > 0){
+    FSeek(header.PrintParametersOffsetAddress);
+    PRINT_PARAMETERS parameters <fgcolor=cBlack, bgcolor=cYellow>;
+}
+
+if(header.SlicerOffset > 0){
+    FSeek(header.SlicerOffset);
+    SLICER_INFO SlicerInfo <fgcolor=cBlack, bgcolor=cYellow>;
+}*/
+
+typedef struct() {
+    uint DataAddress <fgcolor=cBlack, bgcolor=cRed>;
+} LAYER_DEF;
+
+
+typedef struct(int size) {
+    byte data[size] <fgcolor=cBlack, bgcolor=cGreen>;
+} LAYER_RLE;
+
+/*FSeek(header.LayersDefinitionOffsetAddress);
+struct LAYERS {
+    local int aa;
+    local int i;
+    local uint currentPos;
+
+    for( aa = 0; aa < header.AntiAliasLevel; aa++)
+    {
+        for( i = 0; i < header.LayerCount; i++ ){
+            LAYER_DATA layerData <fgcolor=cBlack, bgcolor=cYellow>;
+            currentPos = FTell();
+
+            if(header.Version >= 3)
+            {
+                FSeek(layerData.DataAddress - 84);
+                LAYER_DATAEX layerDataEx;
+            }
+            
+            FSeek(layerData.DataAddress);
+            LAYER_RLE layerRLE(layerData.DataSize);
+            FSeek(currentPos);
+        }
+    }
+} layers;
+*/
