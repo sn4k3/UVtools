@@ -1,4 +1,4 @@
-# Open source and universal binnary file format for mSLA/DLP (.osla)
+# Open source and universal binary file format for mSLA/DLP (.osla)
 
 This file format aims for simplicity, versatility, cleanest as possible and universal format for low-end printers that can't handle
 a ZIP + PNG slices approach due the incapacity of CPU to process such data schemes. 
@@ -64,6 +64,9 @@ While this is optional and either way it must be valid to print, is highly recom
    - RGB555
    - RGB565
    - RGB888
+   - BGR555
+   - BGR565
+   - BGR888
    - RLE-XXXX
    - Custom
 2. Having different data types for previews and layers are allowed.
@@ -123,7 +126,7 @@ DisplayMirror=0 (byte) 0 = No mirror | 1 = Horizontally | 2 = Vertically | 3 = H
 PreviewDataType=RGB565\0\0\0\0 (char[10]) compressed image data type, eg: RLE-XXX or RGB565 or PNG or JPG or BMP OR other?
 LayerDataType=PNG\0\0\0\0\0\0\0 (char[10]) compressed image data type, eg: RLE-XXX or PNG or JPG or BMP OR other?
 PreviewTableSize=8 (uint), Size of each preview table
-NumberOfPreviews=2 (byte) Number of previews/thumbnails on this file
+PreviewCount=2 (byte) Number of previews/thumbnails on this file
 LayerTableSize=4 (uint), Size of each layer table
 BottomLayerCount=4 (ushort) Total number of bottom/burn layers
 LayerCount=1000 (uint) Total number of layers
