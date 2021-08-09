@@ -102,7 +102,7 @@ eg: `PreviewDataType=RGB565` and `LayerDataType=PNG`
 ## Layers
 
 1. Layer table must contain a copy of the used values even if running from gcode
-2. If gcode is not present (`GCodeAddress=0` or `GCodeSize=0`) or machine not able to follow gcode, the layer table must be followed
+2. If gcode is not present (`GCodeAddress=0` or `GCodeSize=0`) or machine not able to follow gcode, the layer table must be followed instead
 3. A slicer can skip gcode generation for a printer with `GCodeAddress=0` and printer will follow the layer table instead
 
 ### Rules: 
