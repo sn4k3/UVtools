@@ -17,17 +17,35 @@ This file format share and reserve the following file extensions:
 - Universal: the file and revisions should always be compatible with any firmware that take this file
 - No encrypted files: The data should be plain and easy to access
 - No property or changed variant of the file format should exists!
-- Machine follows sequential gcode commands
+- Machine follows sequential gcode commands or in alternative follows the layer def table
 - Endianness: Little-Endian (LE)
 
-## Printer firmware checks (can print this file?)
+## Printer - Firmware checks (can print this file?)
 
 1. Marker == "OSLATiCo" - This is a double check if file is really a .osla beside it extension, case sensitive compare.
 1. Compare machine resolution with file resoltuion.
 2. Can use ImageDataType? For example, if processor is unable to process PNG images, trigger an error and dont allow to continue.
-3. Parse gcode and check for problems, such as, print on a position out of printer Z range.
+3. Parse gcode/layer def and check for problems, such as, print on a position out of printer Z range.
 
-## Printer firmware layer data adquisiton
+## Printer - Print sequence
+
+1. Home
+2. Go to next layer `PositionZ`
+3. Display the layer image
+3. Lift sequence (If `SUM(LiftHeight + LiftHeight2)` > 0mm)
+   1. `LiftHeight` @ `LiftSpeed` (if > 0mm)
+   2. `LiftHeight2` @ `LiftSpeed2` (if > 0mm)
+   3. `WaitTimeAfterLift` (if > 0s)
+   4. `RetractHeight2` @ `RetractSpeed2` (if > 0mm)
+   5. Retract to layer `PositionZ` at `RetractSpeed`
+4. Wait `WaitTimeBeforeCure`
+6. Turn on LED @ `LightPWM`
+7. Wait `ExposureTime`
+8. Turn off LED
+9. Wait `WaitTimeAfterCure`
+10. Repeat from 2.
+
+## Printer - Firmware layer data adquisiton (GCode)
 
 1. Machine firmware detects `M6054 i` gcode command.
 2. Goes to the layer definition table at the `i` index given by the `M6054` command.
@@ -39,7 +57,7 @@ This file format share and reserve the following file extensions:
 When using a sencond board to display the image, it must send a OK back in order to resume the gcode execution.
 But a custom flag or M code command should exist to buffer the image in the background, eg: M6055.
 
-## Software data adquisiton
+## Software - Data adquisiton (GCode)
 
 For slicers and other programs, data and per layer settings should be parsed from gcode.  
 For example, take UVtools [GCodeBuilder.cs](https://github.com/sn4k3/UVtools/blob/master/UVtools.Core/GCode/GCodeBuilder.cs) as example and search for `ParseLayersFromGCode` method
@@ -81,6 +99,19 @@ eg: `PreviewDataType=RGB565` and `LayerDataType=PNG`
 2. Previews must all use same image data type
 3. Previews must be sorted from bigger to smaller
 
+## Layers
+
+1. Layer table must contain a copy of the used values even if running from gcode
+2. If gcode is not present (`GCodeAddress=0` or `GCodeSize=0`) or machine not able to follow gcode, the layer table must be followed
+3. A slicer can skip gcode generation for a printer with `GCodeAddress=0` and printer will follow the layer table instead
+
+### Rules: 
+
+* All printers must implement and know how to print by layer table definitions. 
+If printer able to gcode, that can be done by issue the gcode equivalent commands while going
+* If is able to print with gcode, and if present, gcode is preferred
+* If able to print with gcode, but if not present, layer table definitions must be used to print
+
 ## Offsets
 
 - Preview n = `sizeof(File) + sizeof(Header) + sizeof(CustomTable) + n * PreviewTableSize + SUM(sizeof(..n PreviewDataSize))`
@@ -98,8 +129,8 @@ eg: `PreviewDataType=RGB565` and `LayerDataType=PNG`
    - Preview 2 (8 bytes + sizeof(preview image data))
    - Preview n (8 bytes + sizeof(preview image data))
 5. [Layer definitions]
-   - Layer 0 (4 bytes)
-   - Layer 1 (4 bytes)
+   - Layer 0 (69 bytes)
+   - Layer 1 (69 bytes)
 6. [Layer image data]
    - Layer 0 data (n bytes) 
    - Layer 1 data (n bytes) 
@@ -130,7 +161,7 @@ PreviewCount=2 (byte) Number of previews/thumbnails on this file
 LayerHeight=0.05 (float) Layer height in mm
 BottomLayerCount=4 (ushort) Total number of bottom/burn layers
 LayerCount=1000 (uint) Total number of layers
-LayerTableSize=4 (uint), Size of each layer table
+LayerTableSize=69 (uint), Size of each layer table
 LayerDefinitionsAddress=00000 (uint) Address for layer definition start
 GCodeAddress=000000 (uint) Address for gcode definition start
 PrintTime=12345 (uint) Print time in seconds
@@ -160,11 +191,30 @@ RLE/RGB16/PNG/JPG/BMP
 
 [LayerDefinitions]
 [Layer 1]
-DataAddress=0000 (uint)
+DataAddress=0000            (uint)
+PositionZ=0.05              (float) Z height of this layer in mm
+LiftHeight=5                (float) Distance in mm to raise from PositionZ
+LiftSpeed=100               (float) Speed in mm/min
+LiftHeight2=0               (float) Extra distance in mm to raise from current position
+LiftSpeed2=50               (float) Speed in mm/min
+WaitTimeAfterLift=0         (float) Time to wait in seconds after lift / before retract
+RetractHeight2=0            (float) Offset retract distance in mm to perform
+RetractSpeed2=150           (float) Speed in mm/min
+RetractSpeed=100            (float) Speed in mm/min
+WaitTimeBeforeCure=2.5      (float) Time to wait in seconds before cure the layer / turn on LED
+ExposureTime=2.8            (float) Time in seconds while curing the layer
+WaitTimeAfterCure=1         (float) Time to wait in seconds after cure the layer / turn off LED
+LightPWM=255                (byte)  PWM value of the light source
+BoundingRectangleX=300      (uint)  Start X position where first pixels are [Optional, can be 0]
+BoundingRectangleX=500      (uint)  Start Y position where first pixels are [Optional, can be 0]
+BoundingRectangleWidth=500  (uint)  Rectangle width [Optional, can be 0]
+BoundingRectangleHeight=500 (uint)  Rectangle height [Optional, can be 0]
 [Layer 2]
 DataAddress=1111 (uint)
+...
 [Layer 3]
 DataAddress=1111 (uint) (Identical layers can point to the same data if they share the same image, sparing space on file)
+...
 
 DataSize=sizeof(RLE) (uint)
 RLE/PNG/JPG/BMP of layer 1
