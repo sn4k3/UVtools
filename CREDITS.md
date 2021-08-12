@@ -8,6 +8,10 @@
 - First code contributor with pull requests
 - https://github.com/byancey
 
+### Timothy Slater (tslater2006)
+- Code contributor
+- https://github.com/tslater2006
+
 ### Photonsters (Photon Owners Group)
 - For information about cbddlp file format
 - https://github.com/Photonsters
