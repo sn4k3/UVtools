@@ -6,8 +6,8 @@
 //------------------------------------------------
 // CHANGELOG:
 // Add uint16 unknown after header (Set to 2)
-// Add uint32 modelSize and BYTE model[modelSize] after unknown
-// Add byte offset[64] after resolutionY (Zeros)
+// Add uint32 modelSize and ubyte model[modelSize] after unknown
+// Add ubyte offset[64] after resolutionY (Zeros)
 
 
 BigEndian();
@@ -26,36 +26,36 @@ typedef struct() {
     uint32 layerPointNum <fgcolor=cBlack, bgcolor=cWhite>;
 
     layerPointsData pD()[layerPointNum];
-    BYTE CR_LF2[2] <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte CR_LF2[2] <fgcolor=cBlack, bgcolor=cRed>;
 } layerData;
 
 typedef struct(int size) {
-    BYTE layerDataBlock[size] <fgcolor=cBlack, bgcolor=0x00FF00>;
+    ubyte layerDataBlock[size] <fgcolor=cBlack, bgcolor=0x00FF00>;
 } rgbPreviewImageRawData;
 
 struct HEADER {
     uint32 headerSize <fgcolor=cBlack, bgcolor=cWhite>;
-    BYTE header[headerSize] <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte header[headerSize] <fgcolor=cBlack, bgcolor=cRed>;
 
     uint16 version <fgcolor=cBlack, bgcolor=cWhite>;
 
     uint32 modelSize <fgcolor=cBlack, bgcolor=cWhite>;
-    BYTE model[modelSize] <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte model[modelSize] <fgcolor=cBlack, bgcolor=cRed>;
 
     uint16 totalLayers <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 resolutionX <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 resolutionY <fgcolor=cBlack, bgcolor=cWhite>;
 
-    byte offset[64];
+    ubyte offset[64];
 
     rgbPreviewImageRawData preview(116*116*2);
-    BYTE rn0[2] <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte rn0[2] <fgcolor=cBlack, bgcolor=cRed>;
 
     rgbPreviewImageRawData preview2(290*290*2);
-    BYTE rn1[2] <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte rn1[2] <fgcolor=cBlack, bgcolor=cRed>;
 
     rgbPreviewImageRawData preview2(290*290*2);
-    BYTE rn2[2] <fgcolor=cBlack, bgcolor=cRed>;   
+    ubyte rn2[2] <fgcolor=cBlack, bgcolor=cRed>;   
 
     uint32 plateformXLength <fgcolor=cBlack, bgcolor=cWhite>;
     wchar_t plateformX[plateformXLength/2];
@@ -85,7 +85,7 @@ struct LAYER_DEF {
     for( i = 0; i < header.totalLayers; i++ ){
         layerDef lD();
     }
-    BYTE rn3[2] <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte rn3[2] <fgcolor=cBlack, bgcolor=cRed>;
 } layerDefs;
 
 struct LAYERS {
@@ -97,8 +97,8 @@ struct LAYERS {
  
 struct FOOTER {
     uint32 footerSize <fgcolor=cBlack, bgcolor=cWhite>;
-    BYTE str[footer.footerSize] <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte str[footer.footerSize] <fgcolor=cBlack, bgcolor=cRed>;
 
-    byte checkSumControl[3] <fgcolor=cBlack, bgcolor=cWhite>;
-    unsigned byte checkSumByte <fgcolor=cBlack, bgcolor=cWhite>;
+    ubyte checkSumControl[3] <fgcolor=cBlack, bgcolor=cWhite>;
+    ubyte checkSumByte <fgcolor=cBlack, bgcolor=cWhite>;
 } footer;

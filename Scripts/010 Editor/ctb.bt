@@ -52,7 +52,7 @@ struct PREVIEW {
     uint Unknown3 <fgcolor=cBlack, bgcolor=cRed>;
     uint Unknown4 <fgcolor=cBlack, bgcolor=cRed>;
 
-    byte Data[ImageLength] <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte Data[ImageLength] <fgcolor=cBlack, bgcolor=cRed>;
 };
 
 struct PRINT_PARAMETERS {
@@ -149,7 +149,7 @@ if(header.Version >= 4)
         uint Padding6 <fgcolor=cWhite, bgcolor=cBlue>;
         uint Unknown5 <fgcolor=cWhite, bgcolor=cBlue>; // 23047 but changes
         uint Unknown6 <fgcolor=cWhite, bgcolor=cBlue>; // 320 but changes
-        byte Reserved[420] <fgcolor=cWhite, bgcolor=cBlue>;
+        ubyte Reserved[420] <fgcolor=cWhite, bgcolor=cBlue>;
     } printParametersV4;
 }
 
@@ -183,7 +183,7 @@ typedef struct() {
 
 
 typedef struct(int size) {
-    byte layerDataBlock[size] <fgcolor=cBlack, bgcolor=cGreen>;
+    ubyte layerDataBlock[size] <fgcolor=cBlack, bgcolor=cGreen>;
 } LAYER_RLE;
 
 FSeek(header.LayersDefinitionOffsetAddress);

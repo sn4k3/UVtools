@@ -15,11 +15,11 @@ typedef struct() {
     uint32 ResolutionY <fgcolor=cBlack, bgcolor=cWhite>;
     uint32 DataSize <fgcolor=cBlack, bgcolor=cWhite>;
     uint32 Unknown4 <fgcolor=cBlack, bgcolor=cWhite>; // 2684702720
-    BYTE LayerRLE[DataSize / 8 - 4] <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte LayerRLE[DataSize / 8 - 4] <fgcolor=cBlack, bgcolor=cRed>;
 } layerData;
 
 typedef struct(int size) {
-    BYTE layerDataBlock[size] <fgcolor=cBlack, bgcolor=0x00FF00>;
+    ubyte layerDataBlock[size] <fgcolor=cBlack, bgcolor=0x00FF00>;
 } rgbPreviewImageRawData;
 
 struct HEADER {

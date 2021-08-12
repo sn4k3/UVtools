@@ -18,23 +18,23 @@ typedef struct() {
     uint32 LayerPointNum <fgcolor=cBlack, bgcolor=cWhite>;
 
     layerPointsData pD()[LayerPointNum];
-    BYTE CR_LF2[2] <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte CR_LF2[2] <fgcolor=cBlack, bgcolor=cRed>;
 } layerData;
 
 typedef struct(int size) {
-    BYTE layerDataBlock[size] <fgcolor=cBlack, bgcolor=0x00FF00>;
+    ubyte layerDataBlock[size] <fgcolor=cBlack, bgcolor=0x00FF00>;
 } rgbPreviewImageRawData;
 
 struct HEADER {
     char version[2] <fgcolor=cBlack, bgcolor=cWhite>;
     ushort headerSize <fgcolor=cBlack, bgcolor=cWhite>;
-    BYTE header[header.headerSize] <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte header[header.headerSize] <fgcolor=cBlack, bgcolor=cRed>;
 
     rgbPreviewImageRawData preview(116*116*2);
-    BYTE rn0[2] <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte rn0[2] <fgcolor=cBlack, bgcolor=cRed>;
 
     rgbPreviewImageRawData preview2(290*290*2);
-    BYTE rn1[2] <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte rn1[2] <fgcolor=cBlack, bgcolor=cRed>;
 
     uint16 totalLayers <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 resolutionX <fgcolor=cBlack, bgcolor=cWhite>;
@@ -64,5 +64,5 @@ struct LAYERS {
  
 struct FOOTER {
     uint32 footerSize <fgcolor=cBlack, bgcolor=cWhite>;
-    BYTE str[footer.footerSize] <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte str[footer.footerSize] <fgcolor=cBlack, bgcolor=cRed>;
 } footer;

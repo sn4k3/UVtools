@@ -9,7 +9,7 @@ LittleEndian();
 
 typedef struct() {
     uint32 DataSize <fgcolor=cBlack, bgcolor=cWhite>;
-    BYTE LayerRLE[DataSize] <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte LayerRLE[DataSize] <fgcolor=cBlack, bgcolor=cRed>;
 } layerData;
 
 
@@ -62,13 +62,13 @@ struct HEADER {
 } header;
 
 
-byte preview_data[header.PreviewSizeX*header.PreviewSizeY*2];
+ubyte preview_data[header.PreviewSizeX*header.PreviewSizeY*2];
 
 if(header.PrinterModel == 120) // .lgs120
 {
     struct PNG_PREVIEW {
         uint32 pngLength <fgcolor=cBlack, bgcolor=cRed>;
-        byte png[pngLength] <fgcolor=cBlack, bgcolor=cYellow>;
+        ubyte png[pngLength] <fgcolor=cBlack, bgcolor=cYellow>;
         ushort padding <fgcolor=cBlack, bgcolor=cRed>;
     } png_preview;
 }

@@ -57,7 +57,7 @@ if(header.TableSize > headerSize)
 struct CUSTOM {
     uint TableSize <fgcolor=cBlack, bgcolor=cWhite>;
     if(TableSize > 0){
-        byte Data[TableSize] <fgcolor=cBlack, bgcolor=cWhite>;
+        ubyte Data[TableSize] <fgcolor=cBlack, bgcolor=cWhite>;
     }
 } custom;
 
